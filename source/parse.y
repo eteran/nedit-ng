@@ -471,11 +471,7 @@ static int yylex(void)
     Symbol *s;
     static DataValue value = {NO_TAG, {0}};
     static char escape[] = "\\\"ntbrfave";
-#ifdef EBCDIC_CHARSET
-    static char replace[] = "\\\"\n\t\b\r\f\a\v\x27"; /* EBCDIC escape */
-#else
     static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
-#endif
 
     /* skip whitespace, backslash-newline combinations, and comments, which are
        all considered whitespace */

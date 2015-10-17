@@ -807,11 +807,7 @@ static unsigned char literal_escape (unsigned char c, int action) {
 
    static unsigned char control_actual [] =  {
       '\a', '\b',
-#ifdef EBCDIC_CHARSET
-      0x27,  /* Escape character in IBM's EBCDIC character set. */
-#else
       0x1B,  /* Escape character in ASCII character set. */
-#endif
       '\f', '\n', '\r', '\t', '\v', '\0'
    };
 
