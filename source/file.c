@@ -1914,7 +1914,7 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
     if (XmToggleButtonGetState(w)) {
         XtPointer userData;
         XtVaGetValues(w, XmNuserData, &userData, NULL);
-        *(int*) clientData = (int) userData;
+        *(int*) clientData = (long) userData;
     }
 }
 

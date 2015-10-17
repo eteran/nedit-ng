@@ -1116,7 +1116,7 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 	    	XtVaGetValues(items[n], XmNsubMenuId, &subMenu, NULL);
 		dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
 	    } else {
-		index = (int)userData - 10;
+		index = (long)userData - 10;
 		if (index <0 || index >= nMenuItems)
     		    return;
 		if (menuList[index]->input == FROM_SELECTION)

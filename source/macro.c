@@ -2965,7 +2965,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
     	return; /* shouldn't happen */
     if (XtClass(w) == xmPushButtonWidgetClass) {
 	XtVaGetValues(w, XmNuserData, &userData, NULL);
-	retVal.val.n = (int)userData;
+	retVal.val.n = (long)userData;
     } else
     	retVal.val.n = 1;
     retVal.tag = INT_TAG;
@@ -3155,7 +3155,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
 	XtVaGetValues(w, XmNuserData, &userData, NULL);
-	btnNum = (int)userData;
+	btnNum = (long)userData;
     } else
     	btnNum = 1;
     
@@ -3760,7 +3760,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
       XtVaGetValues(w, XmNuserData, &userData, NULL);
-      btnNum = (int)userData;
+      btnNum = (long)userData;
     } else
       btnNum = 1;
     
