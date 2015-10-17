@@ -59,10 +59,6 @@
 #include <Xm/PrimitiveP.h>
 #endif
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 #ifdef UNICOS
 #define XtOffset(p_type,field) ((size_t)__INTADDR__(&(((p_type)0)->field)))

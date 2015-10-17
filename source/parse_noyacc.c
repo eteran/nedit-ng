@@ -34,10 +34,6 @@ static int yygrowstack();
 #endif
 #endif /*VMS*/
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1

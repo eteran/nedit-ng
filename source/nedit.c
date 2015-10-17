@@ -81,10 +81,6 @@
 #endif
 #endif /*VMS*/
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure);

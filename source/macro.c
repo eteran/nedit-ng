@@ -89,10 +89,6 @@
 #include <Xm/Text.h>
 #include <Xm/Separator.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Maximum number of actions in a macro and args in 
    an action (to simplify the reader) */
 #define MAX_MACRO_ACTIONS 1024

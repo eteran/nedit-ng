@@ -59,10 +59,6 @@
 #include <Xm/PrimitiveP.h>
 #endif
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* How much re-parsing to do when an unfinished style is encountered */
 #define PASS_2_REPARSE_CHUNK_SIZE 1000
 

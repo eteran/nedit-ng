@@ -107,10 +107,6 @@
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */
 #define PANE_MIN_HEIGHT 39

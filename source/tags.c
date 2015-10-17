@@ -61,10 +61,6 @@
 #include <Xm/SelectioB.h>
 #include <X11/Xatom.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 #define MAXLINE 2048
 #define MAX_TAG_LEN 256
 #define MAXDUPTAGS 100

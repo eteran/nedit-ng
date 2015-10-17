@@ -45,10 +45,6 @@
 
 #include <Xm/Xm.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 static void shiftRect(WindowInfo *window, int direction, int byTab,
 	int selStart, int selEnd, int rectStart, int rectEnd);

@@ -41,10 +41,6 @@
 #include <Xm/PrimitiveP.h>
 #endif
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 static void trackModifyRange(int *rangeStart, int *modRangeEnd,
     	int *unmodRangeEnd, int modPos, int nInserted, int nDeleted);
 static void findTextMargins(textBuffer *buf, int start, int end, int *leftMargin,

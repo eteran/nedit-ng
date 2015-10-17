@@ -61,10 +61,6 @@
 #include <Xm/SeparatoG.h>
 #include <Xm/PanedW.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 static char MacroEndBoundary[] = "--End-of-Macro--";
 

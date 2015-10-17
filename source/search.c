@@ -76,10 +76,6 @@
 #include <X11/keysym.h>
 #include <X11/X.h>		/* " " */
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 int NHist = 0;
 

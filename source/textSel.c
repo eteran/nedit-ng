@@ -45,10 +45,6 @@
 #include <Xm/PrimitiveP.h>
 #endif
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 #define N_SELECT_TARGETS 7
 #define N_ATOMS 11

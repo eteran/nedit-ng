@@ -60,10 +60,6 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
 

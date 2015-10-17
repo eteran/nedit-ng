@@ -69,10 +69,6 @@
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /*============================================================================*/
 /*                              SYMBOL DEFINITIONS                            */
 /*============================================================================*/

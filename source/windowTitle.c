@@ -66,10 +66,6 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 #define WINDOWTITLE_MAX_LEN 500
 

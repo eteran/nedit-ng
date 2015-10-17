@@ -37,10 +37,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* -------------------------------------------------------------------------- */
 
 struct _Range {

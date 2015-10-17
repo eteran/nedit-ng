@@ -40,10 +40,6 @@
 #include <stdio.h>
 #endif
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 #define rbTreeNodeRed       0
 #define rbTreeNodeBlack     1

@@ -68,10 +68,6 @@
 #include <Xm/CascadeB.h>
 #include <Xm/MenuShell.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 #if XmVersion >= 1002
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
 #else

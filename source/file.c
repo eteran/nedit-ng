@@ -71,10 +71,6 @@
 #include <Xm/Form.h>
 #include <Xm/Label.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file

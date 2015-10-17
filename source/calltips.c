@@ -40,10 +40,6 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 static char *expandAllTabs( char *text, int tab_width );
 
 /*

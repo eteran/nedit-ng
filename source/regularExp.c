@@ -85,10 +85,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 /* The first byte of the regexp internal `program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the

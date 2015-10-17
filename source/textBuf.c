@@ -34,10 +34,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 #define PREFERRED_GAP_SIZE 80	/* Initial size for the buffer gap (empty space
                                    in the buffer where text might be inserted
                                    if the user is typing sequential chars) */

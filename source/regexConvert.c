@@ -52,10 +52,6 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 /* Utility definitions. */
 

@@ -26,9 +26,5 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 const char linkdate[] = __DATE__;
 const char linktime[] = __TIME__;

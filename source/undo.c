@@ -48,10 +48,6 @@
 #include <Xm/Xm.h>
 #include <Xm/Text.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 #define FORWARD 1
 #define REVERSE 2

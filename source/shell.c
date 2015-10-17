@@ -71,10 +71,6 @@
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 /* Tuning parameters */
 #define IO_BUF_SIZE 4096	/* size of buffers for collecting cmd output */

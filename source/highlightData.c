@@ -61,10 +61,6 @@
 #include <Xm/RowColumn.h>
 #include <Xm/SeparatoG.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Maximum allowed number of styles (also limited by representation of
    styles as a byte - 'b') */
 #define MAX_HIGHLIGHT_STYLES 128

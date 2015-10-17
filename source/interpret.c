@@ -53,10 +53,6 @@
 
 #include "window.h"
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 #define PROGRAM_SIZE  4096	/* Maximum program size */
 #define MAX_ERR_MSG_LEN 256	/* Max. length for error messages */
 #define LOOP_STACK_SIZE 200	/* (Approx.) Number of break/continue stmts

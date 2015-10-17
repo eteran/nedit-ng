@@ -63,10 +63,6 @@
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 static void processServerCommand(void);
 static void cleanUpServerCommunication(void);

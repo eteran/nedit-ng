@@ -55,10 +55,6 @@
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
 	Atom *type, char *value, int *length, int *format);

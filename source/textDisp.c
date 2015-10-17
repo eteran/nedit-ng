@@ -53,10 +53,6 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
-
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
 #define FILL_SHIFT 8
