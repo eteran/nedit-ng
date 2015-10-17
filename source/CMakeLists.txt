@@ -8,7 +8,9 @@ find_package(BISON REQUIRED)
 
 find_library(LibM m)
 
-
+# using a different name from parse.c
+# because it will also output parse.h, which will conflict with the
+# in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 
 

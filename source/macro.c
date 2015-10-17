@@ -2845,7 +2845,8 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     Arg al[20];
     int ac;
     Widget dialog, btn;
-    int i, nBtns;
+    long i;
+	int nBtns;
     XmString s1, s2;
     
     /* Ignore the focused window passed as the function argument and put
@@ -3020,7 +3021,8 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     char *btnLabel;
     char *message;
     Widget dialog, btn;
-    int i, nBtns;
+    long i;
+	int nBtns;
     XmString s1, s2;
     Arg al[20];
     int ac;
@@ -3493,7 +3495,8 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     char *btnLabel;
     char *message, *text;
     Widget dialog, btn;
-    int i, nBtns;
+    long i;
+	int nBtns;
     XmString s1, s2;
     long nlines = 0;
     char *p, *old_p, **text_lines, *tmp;

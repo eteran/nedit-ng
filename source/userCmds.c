@@ -1928,7 +1928,7 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
     	    XmNmnemonic, f->mnemonic,
-    	    XmNuserData, (XtPointer)(index+10), NULL);
+    	    XmNuserData, (XtPointer)((long)index+10), NULL);
     XtAddCallback(btn, XmNactivateCallback, cbRtn, cbArg);
     XmStringFree(st1);
     XmStringFree(st2);

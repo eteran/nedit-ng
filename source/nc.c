@@ -503,7 +503,7 @@ static int startServer(const char *message, const char *commandLineArgs)
     
     /* prompt user whether to start server */
     if (!Preferences.autoStart) {
-	printf(message);
+	printf("%s", message);
 	do {
     	    c = getc(stdin);
 	} while (c == ' ' || c == '\t');

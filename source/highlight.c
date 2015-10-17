@@ -111,7 +111,7 @@ typedef struct _highlightDataRec {
     int flags;
     int nSubPatterns;
     int nSubBranches; /* Number of top-level branches of subPatternRE */
-    int userStyleIndex;
+    long userStyleIndex;
     struct _highlightDataRec **subPatterns;
 } highlightDataRec;
 

@@ -5124,7 +5124,7 @@ void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
 */
 static void updateLanguageModeSubmenu(WindowInfo *window)
 {
-    int i;
+    long i;
     XmString s1;
     Widget menu, btn;
     Arg args[1] = {{XmNradioBehavior, (XtArgVal)True}};

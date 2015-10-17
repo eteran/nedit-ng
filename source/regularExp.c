@@ -4157,10 +4157,10 @@ static unsigned char * makeDelimiterTable (
       table [*c] = 1;
    }
 
-   table [(int) NULL] = 1; /* These       */
-   table [(int) '\t'] = 1; /* characters  */
-   table [(int) '\n'] = 1; /* are always  */
-   table [(int) ' ' ] = 1; /* delimiters. */
+   table [(long) NULL] = 1; /* These       */
+   table [(long) '\t'] = 1; /* characters  */
+   table [(long) '\n'] = 1; /* are always  */
+   table [(long) ' ' ] = 1; /* delimiters. */
 
    return table;
 }
