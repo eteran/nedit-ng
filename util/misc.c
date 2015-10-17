@@ -194,9 +194,7 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg)
 */
 void SuppressPassiveGrabWarnings(void)
 {
-#if !defined(__alpha) && !defined(__EMX__)
     XtSetWarningHandler(warnHandlerCB);
-#endif
 }
 
 /*

@@ -290,12 +290,7 @@ ResolvePath(const char * pathIn, char * pathResolved)
 int NormalizePathname(char *pathname)
 {
     /* if this is a relative pathname, prepend current directory */
-#ifdef __EMX__
-    /* OS/2, ...: welcome to the world of drive letters ... */
-    if (!_fnisabs(pathname)) {
-#else
     if (pathname[0] != '/') {
-#endif
         char *oldPathname;
         size_t len;
 

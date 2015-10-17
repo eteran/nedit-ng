@@ -83,11 +83,7 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.25 2004/08/01 10:06:12 yooden
 #endif
 
 /* Separator between directory references in PATH environmental variable */
-#ifdef __EMX__  /* For OS/2 */
-#define SEPARATOR ';'
-#else
 #define SEPARATOR ':'  
-#endif
 
 /* Number of extra pixels down to place a label even with a text widget */
 #define LABEL_TEXT_DIFF 6
