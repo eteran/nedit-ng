@@ -427,11 +427,6 @@ int main(int argc, char **argv)
     XmRepTypeInstallTearOffModelConverter();
 #endif
     
-#ifdef __EMX__
-    /* expand wildcards if necessary */
-    _wildcard(&argc, &argv);
-#endif
-    
     /* Read the preferences file and command line into a database */
     prefDB = CreateNEditPrefDB(&argc, argv);
 

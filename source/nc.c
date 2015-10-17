@@ -44,10 +44,6 @@
 #include <pwd.h>
 #include "../util/clearcase.h"
 
-#ifdef __EMX__
-#include <process.h>
-#endif
-
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 
@@ -218,11 +214,6 @@ int main(int argc, char **argv)
     AppContext = context = XtCreateApplicationContext();
     
 
-#ifdef __EMX__
-    /* expand wildcards if necessary */
-    _wildcard(&argc, &argv);
-#endif
-    
     /* Read the preferences command line into a database (note that we
        don't support the .nc file anymore) */
     prefDB = CreatePreferencesDatabase(NULL, APP_CLASS, 
