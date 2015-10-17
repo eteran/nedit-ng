@@ -26,10 +26,6 @@
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"

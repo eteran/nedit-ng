@@ -28,10 +28,6 @@ static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "macro.h"
 #include "textBuf.h"
 #include "text.h"

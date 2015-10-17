@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert 
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "interpret.h"
 #include "textBuf.h"
 #include "nedit.h"

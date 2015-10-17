@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: textBuf.c,v 1.37 2008/01/04 22:11:04 yooden Ex
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "textBuf.h"
 #include "rangeset.h"
 

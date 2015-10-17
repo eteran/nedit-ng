@@ -29,10 +29,6 @@
 *									       *
 *									       *
 *******************************************************************************/
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "textBuf.h"
 #include "textDisp.h"
 #include "rangeset.h"

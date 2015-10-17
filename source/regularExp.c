@@ -78,10 +78,6 @@ static const char CVSID[] = "$Id: regularExp.c,v 1.34 2009/09/14 19:16:25 edg Ex
  *    especially in client code.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "regularExp.h"
 
 #include <ctype.h>

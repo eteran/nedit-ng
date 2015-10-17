@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: textDrag.c,v 1.11 2005/02/02 09:15:31 edg Exp 
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "textDrag.h"
 #include "textBuf.h"
 #include "textDisp.h"

@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: window.c,v 1.204 2008/03/03 22:32:24 tringali 
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "window.h"
 #include "textBuf.h"
 #include "textSel.h"

@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "tags.h"
 #include "textBuf.h"
 #include "text.h"

@@ -31,10 +31,6 @@ static const char CVSID[] = "$Id: nedit.c,v 1.101 2012/10/25 14:10:25 tringali E
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "nedit.h"
 /* #include "textBuf.h" */
 #include "file.h"

@@ -43,10 +43,6 @@ static const char CVSID[] = "$Id: regexConvert.c,v 1.10 2004/07/21 11:32:05 yood
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "regexConvert.h"
 
 #include <stdio.h>

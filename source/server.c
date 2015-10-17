@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: server.c,v 1.35 2010/07/05 06:23:59 lebert Exp
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "server.h"
 #include "textBuf.h"
 #include "nedit.h"

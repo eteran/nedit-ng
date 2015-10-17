@@ -1,9 +1,5 @@
 /* $Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $ */
 %{
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "parse.h"
 #include "textBuf.h"
 #include "nedit.h"

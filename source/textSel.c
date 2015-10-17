@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: textSel.c,v 1.19 2008/01/04 22:11:05 yooden Ex
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "textSel.h"
 #include "textP.h"
 #include "text.h"

@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: preferences.c,v 1.160 2008/10/22 09:00:48 lebe
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "preferences.h"
 #include "textBuf.h"
 #include "nedit.h"

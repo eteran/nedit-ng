@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: search.c,v 1.90 2008/10/06 04:40:42 ajbj Exp $
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "search.h"
 #include "regularExp.h"
 #include "textBuf.h"

@@ -27,10 +27,6 @@ static const char CVSID[] = "$Id: smartIndent.c,v 1.42 2011/04/21 06:43:02 leber
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "smartIndent.h"
 #include "textBuf.h"
 #include "nedit.h"

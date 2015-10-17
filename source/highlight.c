@@ -28,10 +28,6 @@ static const char CVSID[] = "$Id: highlight.c,v 1.56 2008/01/04 22:11:03 yooden 
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "highlight.h"
 #include "textBuf.h"
 #include "textDisp.h"

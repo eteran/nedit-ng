@@ -14,10 +14,6 @@ yyrcsid[] = "$FreeBSD: src/usr.bin/yacc/skeleton.c,v 1.28 2000/01/17 02:04:06 bd
 static int yygrowstack();
 #define YYPREFIX "yy"
 #line 3 "parse.y"
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "parse.h"
 #include "textBuf.h"
 #include "nedit.h"

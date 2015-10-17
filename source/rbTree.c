@@ -32,10 +32,6 @@ static const char CVSID[] = "$Id: rbTree.c,v 1.7 2002/07/11 21:18:10 slobasso Ex
 ** and a node count
 */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "rbTree.h"
 
 #include <stdlib.h>
