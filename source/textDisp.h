@@ -225,10 +225,6 @@ void TextDMaintainAbsLineNum(textDisp *textD, int state);
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 
-#ifdef VMS /* VMS linker doesn't like long names (>31 chars) */
-#define TextDImposeGraphicsExposeTranslation TextDGraphicsExposeTranslation
-#endif /* VMS */
-
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);

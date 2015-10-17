@@ -33,13 +33,10 @@
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/XmStrDefs.h>
-#ifdef VMS
-#include "../util/VMSparam.h"
-#else
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#endif /*VMS*/
+
 
 #define NEDIT_VERSION           5
 #define NEDIT_REVISION          6
@@ -62,12 +59,8 @@
 #define MAX_SEARCH_HISTORY 100	/* Maximum length of search string history */
 #define MAX_PANES 6		/* Max # of ADDITIONAL text editing panes
 				   that can be added to a window */
-#ifndef VMS
-#define AUTOSAVE_CHAR_LIMIT 30	/* number of characters user can type before
-				   NEdit generates a new backup file */
-#else
+
 #define AUTOSAVE_CHAR_LIMIT 80	/* set higher on VMS becaus saving is slower */
-#endif /*VMS*/
 #define AUTOSAVE_OP_LIMIT 8	/* number of distinct editing operations user
 				   can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100	/* maximum length for a font name */

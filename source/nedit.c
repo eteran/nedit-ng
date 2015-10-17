@@ -70,16 +70,9 @@
 #include <Xm/RepType.h>
 #endif
 
-#ifdef VMS
-#include <rmsdef.h>
-#include "../util/VMSparam.h"
-#include "../util/VMSUtils.h"
-#else
-
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#endif /*VMS*/
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
@@ -376,7 +369,7 @@ Ctrl<Key>G:help-button-action(\"findAgain\")\\n\
 };
 
 static const char cmdLineHelp[] =
-#ifndef VMS
+
 "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
 	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
 	      [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n\
@@ -386,9 +379,7 @@ static const char cmdLineHelp[] =
 	      [-import file] [-background color] [-foreground color]\n\
 	      [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n\
 	      [--] [file...]\n";
-#else
-"[Sorry, no on-line help available.]\n"; /* Why is that ? */
-#endif /*VMS*/
+
 
 int main(int argc, char **argv)
 {
@@ -438,10 +429,6 @@ int main(int argc, char **argv)
     XmRepTypeInstallTearOffModelConverter();
 #endif
     
-#ifdef VMS
-    /* Convert the command line to Unix style (This is not an ideal solution) */
-    ConvertVMSCommandLine(&argc, &argv);
-#endif /*VMS*/
 #ifdef __EMX__
     /* expand wildcards if necessary */
     _wildcard(&argc, &argv);
@@ -640,82 +627,12 @@ int main(int argc, char **argv)
 	    fprintf(stderr, "%s", cmdLineHelp);
 	    exit(EXIT_SUCCESS);
 	} else if (opts && (*argv[i] == '-')) {
-#ifdef VMS
-	    *argv[i] = '/';
-#endif /*VMS*/
+
     	    fprintf(stderr, "nedit: Unrecognized option %s\n%s", argv[i],
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {
-#ifdef VMS
-	    int numFiles, j;
-	    char **nameList = NULL;
-	    /* Use VMS's LIB$FILESCAN for filename in argv[i] to process */
-	    /* wildcards and to obtain a full VMS file specification     */
-	    numFiles = VMSFileScan(argv[i], &nameList, NULL, INCLUDE_FNF);
-            /* Should we warn the user if he provided a -line or -do switch
-               and a wildcard pattern that expands to more than one file?  */
-	    /* for each expanded file name do: */
-	    for (j = 0; j < numFiles; ++j) {
-	    	if (ParseFilename(nameList[j], filename, pathname) == 0) {
-		    /* determine if file is to be openned in new tab, by
-		       factoring the options -group, -tabbed & -untabbed */
-    		    if (group == 2) {
-	        	isTabbed = 0;  /* start a new window for new group */
-			group = 1;     /* next file will be within group */
-		    } else if (group == 1) {
-	    		isTabbed = 1;  /* new tab for file in group */
-		    } else {           /* not in group */
-	    		isTabbed = tabbed==-1? GetPrefOpenInTab() : tabbed; 
-		    }
 
-		    /* Files are opened in background to improve opening speed
-		       by defering certain time  consuiming task such as syntax
-		       highlighting. At the end of the file-opening loop, the 
-		       last file opened will be raised to restore those deferred
-		       items. The current file may also be raised if there're
-		       macros to execute on. */
-		    window = EditExistingFile(WindowList, filename, pathname, 
-		    	    editFlags, geometry, iconic, langMode, isTabbed, 
-			    True);
-		    fileSpecified = TRUE;
-
-		    if (window) {
-			CleanUpTabBarExposeQueue(window);
-
-			/* raise the last file of previous window */
-			if (lastFile && window->shell != lastFile->shell) {
-			    CleanUpTabBarExposeQueue(lastFile);
-			    RaiseDocument(lastFile);
-			}
-			
-			if (!macroFileRead) {
-		            ReadMacroInitFile(WindowList);
-		            macroFileRead = True;
-			}
-	    		if (gotoLine)
-	    	            SelectNumberedLine(window, lineNum);
-			if (toDoCommand != NULL) {
-			    DoMacro(window, toDoCommand, "-do macro");
-			    toDoCommand = NULL;
-			    if (!IsValidWindow(window))
-		    		window = NULL; /* window closed by macro */
-			    if (lastFile && !IsValidWindow(lastFile))
-		    		lastFile = NULL; /* window closed by macro */
-			}
-		    }
-		    
-		    /* register last opened file for later use */
-		    if (window)
-    	    		lastFile = window;
-                } else {
-		    fprintf(stderr, "nedit: file name too long: %s\n", nameList[j]);
-                }
-		free(nameList[j]);
-	    }
-	    if (nameList != NULL)
-	    	free(nameList);
-#else
 	    if (ParseFilename(argv[i], filename, pathname) == 0 ) {
 		/* determine if file is to be openned in new tab, by
 		   factoring the options -group, -tabbed & -untabbed */
@@ -768,15 +685,13 @@ int main(int argc, char **argv)
 	    } else {
 		fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 	    }
-#endif /*VMS*/
+
 
             /* -line/+n does only affect the file following this switch */
             gotoLine = False;
 	}
     }
-#ifdef VMS
-    VMSFileScanDone();
-#endif /*VMS*/
+
     
     /* Raise the last file opened */
     if (lastFile) {
@@ -814,9 +729,6 @@ int main(int argc, char **argv)
 static void nextArg(int argc, char **argv, int *argIndex)
 {
     if (*argIndex + 1 >= argc) {
-#ifdef VMS
-	    *argv[*argIndex] = '/';
-#endif /*VMS*/
     	fprintf(stderr, "NEdit: %s requires an argument\n%s", argv[*argIndex],
     	        cmdLineHelp);
     	exit(EXIT_FAILURE);

@@ -50,19 +50,13 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef VMS
-#include "../util/VMSparam.h"
-#include <types.h>
-#include <stat.h>
-#include <unixio.h>
-#else
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
 #include <fcntl.h>
-#endif /*VMS*/
 
 #include <Xm/Xm.h>
 #include <Xm/ToggleB.h>
@@ -95,10 +89,6 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData,
     XtPointer callData);
 static void forceShowLineNumbers(WindowInfo *window);
 
-#ifdef VMS
-void removeVersionNumber(char *fileName);
-#endif /*VMS*/
-
 WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
         const char *languageMode, const char *defaultPath)
 {
@@ -122,24 +112,12 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     strcpy(window->filename, name);
     strcpy(path, (defaultPath && *defaultPath) ? defaultPath : GetCurrentDir());
     pathlen = strlen(window->path);
-#ifndef VMS
+
     /* do we have a "/" at the end? if not, add one */
     if (0 < pathlen && path[pathlen - 1] != '/' && pathlen < MAXPATHLEN - 1) {
         strcpy(&path[pathlen], "/");
     }
-#else /* VMS */
-    /* A logical name should be followed by a colon so that the filename can
-       be added to it to make a full file specification; otherwise a directory
-       path had the form
-         device_or_logicalname:[dir.dir.dir]
-       this requires no separator before the file name.
-     */
-    if (0 < pathlen && strchr(":]", path[pathlen - 1]) == NULL) {
-        strcpy(&path[pathlen], ":"); /* could not find a separator at end */
-    }
-    /* TODO: is this enough for VMS? what of posix emulation? */
-    /* TODO: what about other platforms? */
-#endif /* VMS */
+
     SetWindowModified(window, FALSE);
     CLEAR_ALL_LOCKS(window->lockReasons);
     UpdateWindowReadOnly(window);
@@ -420,10 +398,6 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
                 return FALSE;
             } 
 	    else {
-#ifdef VMS
-                /* get correct version number and close before removing */
-                getname(fd, fullname);
-#endif
                 close(fd);
                 remove(fullname);
             }
@@ -806,16 +780,13 @@ int SaveWindow(WindowInfo *window)
         }
     }
     
-#ifdef VMS
-    RemoveBackupFile(window);
-    stat = doSave(window);
-#else
+
     if (writeBckVersion(window))
     	return FALSE;
     stat = doSave(window);
     if (stat) 
         RemoveBackupFile(window);
-#endif /*VMS*/
+
     return stat;
 }
     
@@ -944,10 +915,6 @@ static int doSave(WindowInfo *window)
         }
     }
 
-#ifdef VMS
-    /* strip the version number from the file so VMS will begin a new one */
-    removeVersionNumber(fullname);
-#endif
 
     /* add a terminating newline if the file doesn't already have one for
        Unix utilities which get confused otherwise 
@@ -964,11 +931,7 @@ static int doSave(WindowInfo *window)
     }
     
     /* open the file */
-#ifdef VMS
-    fp = fopen(fullname, "w", "rfm = stmlf");
-#else
     fp = fopen(fullname, "wb");
-#endif /* VMS */
     if (fp == NULL)
     {
         result = DialogF(DF_WARN, window->shell, 2, "Error saving File",
@@ -983,11 +946,6 @@ static int doSave(WindowInfo *window)
         return FALSE;
     }
 
-#ifdef VMS
-    /* get the complete name of the file including the new version number */
-    fgetname(fp, fullname);
-#endif
-    
     /* get the text buffer contents and its length */
     fileString = BufGetAll(window->buffer);
     fileLen = window->buffer->length;
@@ -1037,11 +995,6 @@ static int doSave(WindowInfo *window)
     /* free the text buffer copy returned from XmTextGetString */
     XtFree(fileString);
     
-#ifdef VMS
-    /* reflect the fact that NEdit is now editing a new version of the file */
-    ParseFilename(fullname, window->filename, window->path);
-#endif /*VMS*/
-
     /* success, file was written */
     SetWindowModified(window, FALSE);
     
@@ -1085,12 +1038,8 @@ int WriteBackupFile(WindowInfo *window)
     /* open the file, set more restrictive permissions (using default
         permissions was somewhat of a security hole, because permissions were
         independent of those of the original file being edited */
-#ifdef VMS
-    if ((fp = fopen(name, "w", "rfm = stmlf")) == NULL)
-#else
     if ((fd = open(name, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
             || (fp = fdopen(fd, "w")) == NULL)
-#endif /* VMS */
     {
         DialogF(DF_WARN, window->shell, 1, "Error writing Backup",
                 "Unable to save backup for %s:\n%s\n"
@@ -1100,11 +1049,6 @@ int WriteBackupFile(WindowInfo *window)
         SetToggleButtonState(window, window->autoSaveItem, FALSE, FALSE);
         return FALSE;
     }
-
-    /* Set VMS permissions */
-#ifdef VMS
-    chmod(name, S_IRUSR | S_IWUSR);
-#endif
 
     /* get the text buffer contents and its length */
     fileString = BufGetAll(window->buffer);
@@ -1170,12 +1114,7 @@ void RemoveBackupFile(WindowInfo *window)
 static void backupFileName(WindowInfo *window, char *name, size_t len)
 {
     char bckname[MAXPATHLEN];
-#ifdef VMS
-    if (window->filenameSet)
-    	sprintf(name, "%s_%s", window->path, window->filename);
-    else
-    	sprintf(name, "%s_%s", "SYS$LOGIN:", window->filename);
-#else
+
     if (window->filenameSet)
     {
         sprintf(name, "%s~%s", window->path, window->filename);
@@ -1185,7 +1124,6 @@ static void backupFileName(WindowInfo *window, char *name, size_t len)
         strncat(bckname, window->filename, MAXPATHLEN - 1);
         PrependHome(bckname, name, len);
     }
-#endif /*VMS*/
 }
 
 /*
@@ -1195,7 +1133,6 @@ static void backupFileName(WindowInfo *window, char *name, size_t len)
 */
 static int writeBckVersion(WindowInfo *window)
 {
-#ifndef VMS
     char fullname[MAXPATHLEN], bckname[MAXPATHLEN];
     struct stat statbuf;
     int in_fd, out_fd;
@@ -1293,8 +1230,6 @@ static int writeBckVersion(WindowInfo *window)
 
     free(io_buffer);
 
-#endif /* VMS */
-
     return FALSE;
 }
 
@@ -1313,9 +1248,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
     	return TRUE;
     if (resp == 2) {
     	window->saveOldVersion = FALSE;
-#ifndef VMS
     	SetToggleButtonState(window, window->saveLastItem, FALSE, FALSE);
-#endif
     }
     return FALSE;
 }
@@ -1377,11 +1310,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     tmpnam(tmpFileName);
 
     /* open the temporary file */
-#ifdef VMS
-    if ((fp = fopen(tmpFileName, "w", "rfm = stmlf")) == NULL)
-#else
     if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL)
-#endif /* VMS */
     {
         DialogF(DF_WARN, parent, 1, "Error while Printing",
                 "Unable to write file for printing:\n%s", "OK",
@@ -1389,9 +1318,6 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
         return;
     }
 
-#ifdef VMS
-    chmod(tmpFileName, S_IRUSR | S_IWUSR);    
-#endif
     
     /* write to the file */
 #ifdef IBM_FWRITE_BUG
@@ -1419,13 +1345,8 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     }
 
     /* Print the temporary file, then delete it and return success */
-#ifdef VMS
-    strcat(tmpFileName, ".");
-    PrintFile(parent, tmpFileName, jobName, True);
-#else
     PrintFile(parent, tmpFileName, jobName);
     remove(tmpFileName);
-#endif /*VMS*/
     return;
 }
 
@@ -1875,26 +1796,8 @@ int CheckReadOnly(WindowInfo *window)
 */
 static const char *errorString(void)
 {
-#ifdef VMS
-    return strerror(errno, vaxc$errno);
-#else
     return strerror(errno);
-#endif
 }
-
-#ifdef VMS
-/*
-** Removing the VMS version number from a file name (if has one).
-*/
-void removeVersionNumber(char *fileName)
-{
-    char *versionStart;
-    
-    versionStart = strrchr(fileName, ';');
-    if (versionStart != NULL)
-    	*versionStart = '\0';
-}
-#endif /*VMS*/
 
 /*
 ** Callback procedure for File Format toggle buttons.  Format is stored

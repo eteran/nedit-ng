@@ -63,14 +63,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#ifdef VMS
-#include "../util/VMSparam.h"
-#else
+
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
 #include "../util/clearcase.h"
-#endif /*VMS*/
+
 #include <limits.h>
 #include <math.h>
 #include <ctype.h>
@@ -953,10 +951,8 @@ void CloseWindow(WindowInfo *window)
        window), leave the window alive until the macro completes */
     keepWindow = !MacroWindowCloseActions(window);
     
-#ifndef VMS
     /* Kill shell sub-process and free related memory */
     AbortShellCommand(window);
-#endif /*VMS*/
     
     /* Unload the default tips files for this language mode if necessary */
     UnloadLanguageModeTipsFile(window);
@@ -1138,7 +1134,6 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
 
 /* I don't think this algorithm will work on vms so I am
    disabling it for now */
-#ifndef VMS
     if (!GetPrefHonorSymlinks())
     {
         char fullname[MAXPATHLEN + 1];
@@ -1158,7 +1153,6 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
         }   /*  else:  Not an error condition, just a new file. Continue to check
                 whether the filename is already in use for an unsaved document.  */
     }
-#endif
 
     for (window = WindowList; window != NULL; window = window->next) {
         if (!strcmp(window->filename, name) && !strcmp(window->path, path)) {
@@ -2037,11 +2031,7 @@ void UpdateWindowTitle(const WindowInfo *window)
 
     title = FormatWindowTitle(window->filename,
                                     window->path,
-#ifdef VMS
-                                    NULL,
-#else
                                     GetClearCaseViewTag(),
-#endif /* VMS */
                                     GetPrefServerName(),
                                     IsServer,
                                     window->filenameSet,
@@ -2336,9 +2326,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
                it works on selections in external applications.
                Desensitizing it if there's no NEdit selection 
                disables this feature. */
-#ifndef VMS
             XtSetSensitive(window->filterItem, selected);
-#endif
 
             DimSelectionDepUserMenuItems(window, selected);
             if (window->replaceDlog != NULL && XtIsManaged(window->replaceDlog))
@@ -3724,9 +3712,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
     XmToggleButtonSetState(window->highlightItem, window->highlightSyntax, False);
     XtSetSensitive(window->highlightItem, window->languageMode != PLAIN_LANGUAGE_MODE);
     XmToggleButtonSetState(window->backlightCharsItem, window->backlightChars, False);
-#ifndef VMS
     XmToggleButtonSetState(window->saveLastItem, window->saveOldVersion, False);
-#endif
     XmToggleButtonSetState(window->autoSaveItem, window->autoSave, False);
     XmToggleButtonSetState(window->overtypeModeItem, window->overstrike, False);
     XmToggleButtonSetState(window->matchSyntaxBasedItem, window->matchSyntaxBased, False);

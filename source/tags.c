@@ -48,13 +48,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#ifdef VMS
-#include "../util/VMSparam.h"
-#else
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#endif /*VMS*/
+
 
 #include <Xm/PrimitiveP.h> /* For Calltips */
 #include <Xm/Xm.h>
@@ -1971,16 +1968,11 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
     }
     
     /* find the tips file */
-#ifndef VMS
     /* Allow ~ in Unix filenames */
     strncpy(tipPath, tipsFile, MAXPATHLEN);    /* ExpandTilde is destructive */
     ExpandTilde(tipPath);
     if(!ResolvePath(tipPath, resolvedTipsFile))
         return 0;
-#else
-    if(!ResolvePath(tipsFile, resolvedTipsFile))
-        return 0;
-#endif
 
     /* Get the path to the tips file */
     ParseFilename(resolvedTipsFile, NULL, tipPath);

@@ -36,14 +36,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
-#ifdef VMS
-#include <lib$routines.h>
-#include descrip
-#include ssdef
-#include syidef
-#include "../util/VMSparam.h"
-#include "../util/VMSutils.h"
-#else
+
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
@@ -52,7 +45,7 @@
 #include <unistd.h>
 #include <pwd.h>
 #include "../util/clearcase.h"
-#endif /* VMS */
+
 #ifdef __EMX__
 #include <process.h>
 #endif
@@ -101,9 +94,6 @@ static Atom currentWaitForAtom;
 static Atom noAtom = (Atom)(-1);
 
 static const char cmdLineHelp[] =
-#ifdef VMS
-"[Sorry, no on-line help available.]\n"; /* Why is that ? */
-#else
 "Usage:  nc [-read] [-create]\n"
 "           [-line n | +n] [-do command] [-lm languagemode]\n"
 "           [-svrname name] [-svrcmd command]\n"
@@ -113,7 +103,7 @@ static const char cmdLineHelp[] =
 "           [-V | -version] [-h|-help]\n"
 "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
 "           [--] [file...]\n";
-#endif /*VMS*/
+
 
 /* Structure to hold X Resource values */
 static struct {
@@ -229,10 +219,7 @@ int main(int argc, char **argv)
     XtToolkitInitialize();
     AppContext = context = XtCreateApplicationContext();
     
-#ifdef VMS
-    /* Convert the command line to Unix style */
-    ConvertVMSCommandLine(&argc, &argv);
-#endif /*VMS*/
+
 #ifdef __EMX__
     /* expand wildcards if necessary */
     _wildcard(&argc, &argv);
@@ -269,7 +256,6 @@ int main(int argc, char **argv)
 	Preferences.timeOut = 1000;
     }
     
-#ifndef VMS
     /* For Clearcase users who have not set a server name, use the clearcase
        view name.  Clearcase views make files with the same absolute path names
        but different contents (and therefore can't be edited in the same nedit
@@ -280,7 +266,6 @@ int main(int argc, char **argv)
             strcpy(Preferences.serverName, viewTag);
         }
     }
-#endif /* VMS */
     
     /* Create the wait properties for the various files. */
     createWaitProperties();
@@ -482,15 +467,8 @@ static void startNewServer(XtAppContext context,
 static int startServer(const char *message, const char *commandLineArgs)
 {
     char c, *commandLine;
-#ifdef VMS
-    int spawnFlags = 1 /* + 1<<3 */;			/* NOWAIT, NOKEYPAD */
-    int spawn_sts;
-    struct dsc$descriptor_s *cmdDesc;
-    char *nulDev = "NL:";
-    struct dsc$descriptor_s *nulDevDesc;
-#else
+
     int sysrc;
-#endif /* !VMS */
     
     /* prompt user whether to start server */
     if (!Preferences.autoStart) {
@@ -503,54 +481,9 @@ static int startServer(const char *message, const char *commandLineArgs)
     }
     
     /* start the server */
-#ifdef VMS
-    commandLine = XtMalloc(strlen(Preferences.serverCmd) +
-    	    strlen(commandLineArgs) + 3);
-    sprintf(commandLine, "%s %s", Preferences.serverCmd, commandLineArgs);
-    cmdDesc = NulStrToDesc(commandLine);	/* build command descriptor */
-    nulDevDesc = NulStrToDesc(nulDev);		/* build "NL:" descriptor */
-    spawn_sts = lib$spawn(cmdDesc, nulDevDesc, 0, &spawnFlags, 0,0,0,0,0,0,0,0);
-    XtFree(commandLine);
-    if (spawn_sts != SS$_NORMAL) {
-	fprintf(stderr, "Error return from lib$spawn: %d\n", spawn_sts);
-	fprintf(stderr, "Nedit server not started.\n");
-	return (-1);
-    } else {
-       FreeStrDesc(cmdDesc);
-       return 0;
-    }
-#else
-#if defined(__EMX__)  /* OS/2 */
-    /* Unfortunately system() calls a shell determined by the environment
-       variables COMSPEC and EMXSHELL. We have to figure out which one. */
-    {
-    char *sh_spec, *sh, *base;
-    char *CMD_EXE="cmd.exe";
-
-    commandLine = XtMalloc(strlen(Preferences.serverCmd) +
-	   strlen(commandLineArgs) + 15);
-    sh = getenv ("EMXSHELL");
-    if (sh == NULL)
-      sh = getenv ("COMSPEC");
-    if (sh == NULL)
-      sh = CMD_EXE;
-    sh_spec=XtNewString(sh);
-    base=_getname(sh_spec);
-    _remext(base);
-    if (stricmp (base, "cmd") == 0 || stricmp (base, "4os2") == 0) {
-       sprintf(commandLine, "start /C /MIN %s %s",
-               Preferences.serverCmd, commandLineArgs);
-    } else {
-       sprintf(commandLine, "%s %s &", 
-               Preferences.serverCmd, commandLineArgs);
-    }
-    XtFree(sh_spec);
-    }
-#else /* Unix */
     commandLine = XtMalloc(strlen(Preferences.serverCmd) +
     	    strlen(commandLineArgs) + 3);
     sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
-#endif
 
     sysrc=system(commandLine);
     XtFree(commandLine);
@@ -559,7 +492,7 @@ static int startServer(const char *message, const char *commandLineArgs)
        return 0;
     else
        return (-1);
-#endif /* !VMS */
+
 }
 
 /* Reconstruct the command line in string commandLine in case we have to
@@ -684,65 +617,11 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
 	    fprintf(stderr, "%s", cmdLineHelp);
 	    exit(EXIT_SUCCESS);
     	} else if (opts && (*argv[i] == '-')) {
-#ifdef VMS
-	    *argv[i] = '/';
-#endif /*VMS*/
+
     	    fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i],
     	    	    cmdLineHelp);
     	    exit(EXIT_FAILURE);
     	} else {
-#ifdef VMS
-	    int numFiles, j, oldLength;
-	    char **nameList = NULL, *newCommandString;
-	    /* Use VMS's LIB$FILESCAN for filename in argv[i] to process */
-	    /* wildcards and to obtain a full VMS file specification     */
-	    numFiles = VMSFileScan(argv[i], &nameList, NULL, INCLUDE_FNF);
-            /* Should we warn the user if he provided a -line or -do switch
-               and a wildcard pattern that expands to more than one file?  */
-	    /* for each expanded file name do: */
-	    for (j = 0; j < numFiles; ++j) {
-	    	oldLength = outPtr-commandString;
-	    	newCommandString = XtMalloc(oldLength+length+1);
-	    	strncpy(newCommandString, commandString, oldLength);
-	    	XtFree(commandString);
-	    	commandString = newCommandString;
-	    	outPtr = newCommandString + oldLength;
-	    	if (ParseFilename(nameList[j], name, path) != 0) {
-	           /* An Error, most likely too long paths/strings given */
-	           commandLine->serverRequest = NULL;
-	           return;
-		}
-    		strcat(path, name);
-
-		/* determine if file is to be openned in new tab, by
-		   factoring the options -group, -tabbed & -untabbed */
-    		if (group == 2) {
-	            isTabbed = 0;  /* start a new window for new group */
-		    group = 1;     /* next file will be within group */
-		} 
-		else if (group == 1) {
-	    	    isTabbed = 1;  /* new tab for file in group */
-		}
-		else {
-	    	    isTabbed = tabbed; /* not in group */
-		}
-	    
-                /* See below for casts */
-    		sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%s\n%s\n%s\n%s\n%n",
-			lineNum, read, create, iconic, tabbed, (long) strlen(path),
-			(long) strlen(toDoCommand), (long) strlen(langMode), 
-                        (long) strlen(geometry),
-			path, toDoCommand, langMode, geometry, &charsWritten);
-		outPtr += charsWritten;
-		free(nameList[j]);
-
-                /* Create the file open atoms for the paths supplied */
-                addToFileList(path);
-	        fileCount++;
-	    }
-	    if (nameList != NULL)
-	    	free(nameList);
-#else
     	    if (ParseFilename(argv[i], name, path) != 0) {
 	       /* An Error, most likely too long paths/strings given */
 	       commandLine->serverRequest = NULL;
@@ -791,16 +670,13 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
             /* Create the file open atoms for the paths supplied */
             addToFileList(path);
 	    fileCount++;
-#endif /* VMS */
+
 
             /* These switches only affect the next filename argument, not all */
             toDoCommand = "";
             lineNum = 0;
     	}
     }
-#ifdef VMS
-    VMSFileScanDone();
-#endif /*VMS*/
     
     /* If there's an un-written -do command, or we are to open a new window,
      * or user has requested iconic state, but not provided a file name,
@@ -945,9 +821,6 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context,
 static void nextArg(int argc, char **argv, int *argIndex)
 {
     if (*argIndex + 1 >= argc) {
-#ifdef VMS
-	    *argv[*argIndex] = '/';
-#endif /*VMS*/
     	fprintf(stderr, "nc: %s requires an argument\n%s",
 	        argv[*argIndex], cmdLineHelp);
     	exit(EXIT_FAILURE);
@@ -965,14 +838,7 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
 {
     const char *c;
     char *outPtr = commandLine->shell + strlen(commandLine->shell);
-#if defined(VMS) || defined(__EMX__)
-    /* Non-Unix shells don't want/need esc */
-    for (c=arg; *c!='\0'; c++) {
-	*outPtr++ = *c;
-    }
-    *outPtr++ = ' ';
-    *outPtr = '\0';
-#else
+
     *outPtr++ = '\'';
     for (c=arg; *c!='\0'; c++) {
 	if (*c == '\'') {
@@ -987,7 +853,6 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
     *outPtr++ = '\'';
     *outPtr++ = ' ';
     *outPtr = '\0';
-#endif /* VMS */
 }
 
 /* Print version of 'nc' */

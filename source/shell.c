@@ -45,9 +45,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #ifndef __MVS__
-#ifndef VMS
 #include <sys/param.h>
-#endif
 #endif
 #include <sys/wait.h>
 #include <unistd.h>
@@ -966,11 +964,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     }
     
     /* Fork the process */
-#ifdef VMS
-    childPid = vfork();
-#else
     childPid = fork();
-#endif
     
     /*
     ** Child process context (fork returned 0), clean up the
@@ -1010,9 +1004,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	/* make this process the leader of a new process group, so the sub
 	   processes can be killed, if necessary, with a killpg call */
 #ifndef __EMX__  /* OS/2 doesn't have this */
-#ifndef VMS  /* VMS doesn't have this */
 	setsid();
-#endif
 #endif
      
         /* change the current working directory to the directory of the

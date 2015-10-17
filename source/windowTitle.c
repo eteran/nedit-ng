@@ -41,14 +41,11 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#ifdef VMS
-#include "../util/VMSparam.h"
-#else
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
 #include "../util/clearcase.h"
-#endif /*VMS*/
+
 
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>
@@ -419,9 +416,9 @@ char *FormatWindowTitle(const char* filename,
         XmToggleButtonSetState(etDialog.fileW,   fileNamePresent,   False);
         XmToggleButtonSetState(etDialog.statusW, fileStatusPresent, False);
         XmToggleButtonSetState(etDialog.serverW, serverNamePresent, False);
-#ifndef VMS
+
         XmToggleButtonSetState(etDialog.ccW,     clearCasePresent,  False);
-#endif /* VMS */
+
         XmToggleButtonSetState(etDialog.dirW,    dirNamePresent,    False);
         XmToggleButtonSetState(etDialog.hostW,   hostNamePresent,   False);
         XmToggleButtonSetState(etDialog.nameW,   userNamePresent,   False);
@@ -461,11 +458,10 @@ char *FormatWindowTitle(const char* filename,
 	    
         XtSetSensitive(etDialog.oServerNameW, serverNamePresent);
 	
-#ifndef VMS
+
         XtSetSensitive(etDialog.oCcViewTagW,       clearCasePresent);
         XtSetSensitive(etDialog.oServerEqualViewW, clearCasePresent &&
-	                                           serverNamePresent);
-#endif  /* VMS */      
+	                                           serverNamePresent);     
 	
         XtSetSensitive(etDialog.oDirW,    dirNamePresent);
 	
@@ -491,9 +487,6 @@ static void setToggleButtons(void)
     /* Read-only takes precedence on locked */
     XtSetSensitive(etDialog.oFileLockedW, !IS_PERM_LOCKED(etDialog.lockReasons));
 
-#ifdef VMS
-    XmToggleButtonSetState(etDialog.oServerNameW, etDialog.isServer, False);
-#else
     XmToggleButtonSetState(etDialog.oCcViewTagW,
     	    	GetClearCaseViewTag() != NULL, False);
     XmToggleButtonSetState(etDialog.oServerNameW,
@@ -506,7 +499,6 @@ static void setToggleButtons(void)
     } else {
         XmToggleButtonSetState(etDialog.oServerEqualViewW, False, False);
     }
-#endif /* VMS */
 }    
 
 static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -523,12 +515,11 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
     
     format = XmTextGetString(etDialog.formatW);
     
-#ifndef VMS
+
     if (XmToggleButtonGetState(etDialog.oServerEqualViewW) &&
 	XmToggleButtonGetState(etDialog.ccW)) {
        serverName = etDialog.viewTag;
     } else
-#endif /* VMS */
     {
        serverName = XmToggleButtonGetState(etDialog.oServerNameW) ?
                                        etDialog.serverName : "";
@@ -539,12 +530,9 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
                   etDialog.filenameSet == True ?
                                    etDialog.path :
                                    "/a/very/long/path/used/as/example/",
-#ifdef VMS
-		  NULL,
-#else
+
                   XmToggleButtonGetState(etDialog.oCcViewTagW) ?
                                    etDialog.viewTag : NULL,
-#endif /* VMS */
                   serverName,
                   etDialog.isServer,
                   filenameSet,
@@ -555,7 +543,6 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
     XmTextFieldSetString(etDialog.previewW, title);
 }
 
-#ifndef VMS
 static void ccViewTagCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w) == False) {
@@ -563,7 +550,6 @@ static void ccViewTagCB(Widget w, XtPointer clientData, XtPointer callData)
     }
     formatChangedCB(w, clientData, callData);
 }
-#endif /* VMS */
 
 static void serverNameCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -592,7 +578,6 @@ static void fileReadOnlyCB(Widget w, XtPointer clientData, XtPointer callData)
     formatChangedCB(w, clientData, callData);
 }
 
-#ifndef VMS
 static void serverEqualViewCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(w) == True) {
@@ -602,7 +587,6 @@ static void serverEqualViewCB(Widget w, XtPointer clientData, XtPointer callData
     }
     formatChangedCB(w, clientData, callData);
 }         
-#endif /* VMS */
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -745,7 +729,6 @@ static void toggleHostCB(Widget w, XtPointer clientData, XtPointer callData)
 	removeFromFormat("%h");
 }
 
-#ifndef VMS
 static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     if (XmToggleButtonGetState(etDialog.ccW))
@@ -753,7 +736,6 @@ static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData
     else
 	removeFromFormat("%c");
 }
-#endif /* VMS */
 
 static void toggleStatusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
@@ -1084,11 +1066,9 @@ static void createEditTitleDialog(Widget parent)
 	    XmNtopWidget, etDialog.statusW,
     	    XmNlabelString, s1=XmStringCreateSimple("ClearCase view tag (%c) "),
     	    XmNmnemonic, 'C', NULL);
-#ifdef VMS
-    XtSetSensitive(etDialog.ccW, False);
-#else
+
     XtAddCallback(etDialog.ccW, XmNvalueChangedCallback, toggleClearCaseCB, NULL);
-#endif /* VMS */
+
     XmStringFree(s1);
 
     etDialog.dirW = XtVaCreateManagedWidget("directory", 
@@ -1308,17 +1288,13 @@ static void createEditTitleDialog(Widget parent)
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, etDialog.oServerNameW,
     	    XmNlabelString, s1=XmStringCreateSimple("CC view tag present"),
-#ifdef VMS
-   	    XmNset, False,
-#else
+
    	    XmNset, GetClearCaseViewTag() != NULL,
-#endif /* VMS */
+
     	    XmNmnemonic, 'w', NULL);
-#ifdef VMS
-    XtSetSensitive(etDialog.oCcViewTagW, False);
-#else
+
     XtAddCallback(etDialog.oCcViewTagW, XmNvalueChangedCallback, ccViewTagCB, NULL);
-#endif /* VMS */
+
     XmStringFree(s1);
 
     etDialog.oServerEqualViewW = XtVaCreateManagedWidget("serverEqualView", 
@@ -1329,11 +1305,9 @@ static void createEditTitleDialog(Widget parent)
 	    XmNtopWidget, etDialog.oServerNameW,
     	    XmNlabelString, s1=XmStringCreateSimple("Server name equals CC view tag  "),
     	    XmNmnemonic, 'q', NULL);
-#ifdef VMS
-    XtSetSensitive(etDialog.oServerEqualViewW, False);
-#else
+
     XtAddCallback(etDialog.oServerEqualViewW, XmNvalueChangedCallback, serverEqualViewCB, NULL);
-#endif /* VMS */
+
     XmStringFree(s1);
 
     etDialog.oDirW = XtVaCreateManagedWidget("pathSet", 
@@ -1436,11 +1410,9 @@ void EditCustomTitleFormat(WindowInfo *window)
      */
     strcpy(etDialog.path, window->path);
     strcpy(etDialog.filename, window->filename);
-#ifndef VMS
     strcpy(etDialog.viewTag, GetClearCaseViewTag() != NULL ?
                              GetClearCaseViewTag() :
                              "viewtag");
-#endif /* VMS */
     strcpy(etDialog.serverName, IsServer ?
                              GetPrefServerName() :
                              "servername");

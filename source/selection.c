@@ -41,13 +41,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
-#ifdef VMS
-#include "../util/VMSparam.h"
-#else
 #ifndef __MVS__
 #include <sys/param.h>
 #endif
-#endif /*VMS*/
+
 #if !defined(DONT_HAVE_GLOB) && !defined(USE_MOTIF_GLOB) && !defined(VMS)
 #include <glob.h>
 #endif
@@ -240,15 +237,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
     char nameText[MAXPATHLEN], includeName[MAXPATHLEN];
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *inPtr, *outPtr;
-#ifdef VMS
-#ifndef __DECC
-    static char includeDir[] = "sys$library:";
-#else
-    static char includeDir[] = "decc$library_include:";
-#endif
-#else
     static char includeDir[] = "/usr/include/";
-#endif /* VMS */
     
     /* get the string, or skip if we can't get the selection data, or it's
        obviously not a file name */
@@ -284,16 +273,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
     	    *outPtr++ = *inPtr;
     *outPtr = '\0';
 
-#ifdef VMS
-    /* If path name is relative, make it refer to current window's directory */
-    if ((strchr(nameText, ':') == NULL) && (strlen(nameText) > 1) &&
-      	    !((nameText[0] == '[') && (nameText[1] != '-') &&
-	      (nameText[1] != '.'))) {
-	strcpy(filename, window->path);
-	strcat(filename, nameText);
-	strcpy(nameText, filename);
-    }
-#else
+
     /* Process ~ characters in name */
     ExpandTilde(nameText);
         
@@ -303,7 +283,6 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
 	strcat(filename, nameText);
 	strcpy(nameText, filename);
     }
-#endif
     
     /* Expand wildcards in file name.
        Some older systems don't have the glob subroutine for expanding file
