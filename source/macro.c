@@ -1080,7 +1080,7 @@ void AbortMacroCommand(WindowInfo *window)
 */
 int MacroWindowCloseActions(WindowInfo *window)
 {
-    macroCmdInfo *mcd, *cmdData = window->macroCmdData;
+    macroCmdInfo *mcd, *cmdData = (macroCmdInfo *)window->macroCmdData;
     WindowInfo *w;
 
     if (MacroRecordActionHook != 0 && MacroRecordWindow == window) {
@@ -1124,7 +1124,7 @@ int MacroWindowCloseActions(WindowInfo *window)
 */
 static void finishMacroCmdExecution(WindowInfo *window)
 {
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     int closeOnCompletion = cmdData->closeOnCompletion;
     XmString s;
     XClientMessageEvent event;
@@ -1668,7 +1668,7 @@ static int isIgnoredAction(const char *action)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XmString xmCancel;
     char *cCancel = "\0";
     char message[MAX_TIMEOUT_MSG_LEN];
@@ -1719,7 +1719,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 static Boolean continueWorkProc(XtPointer clientData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     char *errMsg;
     int stat;
     DataValue result;
@@ -2823,7 +2823,7 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status)
 {
     DataValue retVal;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     
     if (cmdData == NULL)
     	return;
@@ -2852,7 +2852,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     window = MacroRunWindow();
-    cmdData = window->macroCmdData;
+    cmdData = (macroCmdInfo *)window->macroCmdData;
     
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -2955,7 +2955,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
     DataValue retVal;
     
@@ -2983,7 +2983,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
     
     /* Return 0 to show that the dialog was closed via the window close box */
@@ -3030,7 +3030,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     window = MacroRunWindow();
-    cmdData = window->macroCmdData;
+    cmdData = (macroCmdInfo *)window->macroCmdData;
     
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3134,7 +3134,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     	XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
     DataValue retVal;
     char *text;
@@ -3177,7 +3177,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
     	XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
 
     /* shouldn't happen, but would crash if it did */
@@ -3511,7 +3511,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     window = MacroRunWindow();
-    cmdData = window->macroCmdData;
+    cmdData = (macroCmdInfo *)window->macroCmdData;
     
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3579,7 +3579,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     is_last = 0;
     p = old_p = text;
     tmp_len = 0;      /* current allocated size of temporary buffer tmp */
-    tmp = malloc(1);  /* temporary buffer into which to expand tabs */
+    tmp = (char *)malloc(1);  /* temporary buffer into which to expand tabs */
     do {
       is_last = (*p == '\0');
       if (*p == '\n' || is_last) {
@@ -3598,7 +3598,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
               /* verify tmp is big enough then tab-expand old_p into tmp */
               if (l > tmp_len)
-                  tmp = realloc(tmp, (tmp_len = l) + 1);
+                  tmp = (char *)realloc(tmp, (tmp_len = l) + 1);
               for (s = old_p, t = tmp, l = 0; *s; s++) {
                   if (*s == '\t') {
                       for (i = tabDist - (l % tabDist); i--; l++)
@@ -3713,7 +3713,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
       XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
     DataValue retVal;
     char *text;
@@ -3735,7 +3735,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     }
     else {
       sel_index = seltable[0] - 1;
-      XtFree((XtPointer)seltable);
+      XtFree((char *)seltable);
     }
 
     if (!n_sel) {
@@ -3750,8 +3750,8 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
 
     /* don't need text_lines anymore: free it */
     for (sel_index = 0; text_lines[sel_index]; sel_index++)
-      XtFree((XtPointer)text_lines[sel_index]);
-    XtFree((XtPointer)text_lines);
+      XtFree((char *)text_lines[sel_index]);
+    XtFree((char *)text_lines);
 
     retVal.tag = STRING_TAG;
     retVal.val.str.rep = text;
@@ -3783,7 +3783,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
       XtPointer callData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    macroCmdInfo *cmdData = window->macroCmdData;
+    macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
     char **text_lines;
     int sel_index;
@@ -3797,8 +3797,8 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
     theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
     XtVaGetValues(theList, XmNuserData, &text_lines, NULL);
     for (sel_index = 0; text_lines[sel_index]; sel_index++)
-      XtFree((XtPointer)text_lines[sel_index]);
-    XtFree((XtPointer)text_lines);
+      XtFree((char *)text_lines[sel_index]);
+    XtFree((char *)text_lines);
 
     /* Return an empty string */
     retVal.tag = STRING_TAG;

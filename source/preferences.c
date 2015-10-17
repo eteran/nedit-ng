@@ -3830,7 +3830,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     fd = (fontDialog *)XtMalloc(sizeof(fontDialog));
     fd->window = window;
     fd->forWindow = forWindow;
-    window->fontDialog = (void*)fd;
+    window->fontDialog = (Widget)(void*)fd;
     
     /* Create a form widget in a dialog shell */
     ac = 0;
@@ -5543,7 +5543,7 @@ static void updatePatternsTo5dot6(void)
  *      2.  The X resource is not equal to the default entry
  */
 static void migrateColor(XrmDatabase prefDB, XrmDatabase appDB,
-        char *class, char *name, int color_index, char *default_val)
+        char *clazz, char *name, int color_index, char *default_val)
 {
     char *type, *valueString;
     XrmValue rsrcValue;
@@ -5554,14 +5554,14 @@ static void migrateColor(XrmDatabase prefDB, XrmDatabase appDB,
         return;
     
     /* Retrieve the value of the resource from the DB */
-    if (XrmGetResource(prefDB, name, class, &type, &rsrcValue)) {
+    if (XrmGetResource(prefDB, name, clazz, &type, &rsrcValue)) {
         if (strcmp(type, XmRString)) {
             fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
                     type);
             return;
         }
         valueString = rsrcValue.addr;
-    } else if (XrmGetResource(appDB, name, class, &type, &rsrcValue)) {
+    } else if (XrmGetResource(appDB, name, clazz, &type, &rsrcValue)) {
         if (strcmp(type, XmRString)) {
             fprintf(stderr,"Internal Error: Unexpected resource type, %s\n",
                     type);
@@ -6350,7 +6350,7 @@ void ChooseColors(WindowInfo *window)
     
     /* Create a structure for keeping track of dialog state */
     cd = XtNew(colorDialog);
-    window->colorDialog = (void*)cd;
+    window->colorDialog = (Widget)(void*)cd;
     
     /* Create a form widget in a dialog shell */
     ac = 0;

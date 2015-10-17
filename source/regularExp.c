@@ -2260,7 +2260,7 @@ static unsigned char * shortcut_escape (
    int           *flag_param,
    int            emit) {
 
-   register unsigned char *class   = NULL;
+   register unsigned char *clazz   = NULL;
    static   unsigned char *codes   = (unsigned char *) "ByYdDlLsSwW";
             unsigned char *ret_val = (unsigned char *) 1; /* Assume success. */
             unsigned char *valid_codes;
@@ -2281,7 +2281,7 @@ static unsigned char * shortcut_escape (
       case 'd':
       case 'D':
          if (emit == EMIT_CLASS_BYTES) {
-            class = ASCII_Digits;
+            clazz = ASCII_Digits;
          } else if (emit == EMIT_NODE) {
             ret_val = (islower (c) ? emit_node (DIGIT)
                                    : emit_node (NOT_DIGIT));
@@ -2292,7 +2292,7 @@ static unsigned char * shortcut_escape (
       case 'l':
       case 'L':
          if (emit == EMIT_CLASS_BYTES) {
-            class = Letter_Char;
+            clazz = Letter_Char;
          } else if (emit == EMIT_NODE) {
             ret_val = (islower (c) ? emit_node (LETTER)
                                    : emit_node (NOT_LETTER));
@@ -2305,7 +2305,7 @@ static unsigned char * shortcut_escape (
          if (emit == EMIT_CLASS_BYTES) {
             if (Match_Newline) emit_byte ('\n');
 
-            class = White_Space;
+            clazz = White_Space;
          } else if (emit == EMIT_NODE) {
             if (Match_Newline) {
                ret_val = (islower (c) ? emit_node (SPACE_NL)
@@ -2321,7 +2321,7 @@ static unsigned char * shortcut_escape (
       case 'w':
       case 'W':
          if (emit == EMIT_CLASS_BYTES) {
-            class = Word_Char;
+            clazz = Word_Char;
          } else if (emit == EMIT_NODE) {
             ret_val = (islower (c) ? emit_node (WORD_CHAR)
                                    : emit_node (NOT_WORD_CHAR));
@@ -2374,11 +2374,11 @@ static unsigned char * shortcut_escape (
       *flag_param |= (HAS_WIDTH | SIMPLE);
    }
 
-   if (class) {
+   if (clazz) {
       /* Emit bytes within a character class operand. */
 
-      while (*class != '\0') {
-         emit_byte (*class++);
+      while (*clazz != '\0') {
+         emit_byte (*clazz++);
       }
    }
 

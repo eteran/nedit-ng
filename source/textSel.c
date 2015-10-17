@@ -604,7 +604,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
     	*value = (XtPointer)BufGetSelectionText(buf);
     	*length = strlen((char *)*value);
     	*format = 8;
-	BufUnsubstituteNullChars(*value, buf);
+	BufUnsubstituteNullChars((char *)*value, buf);
     	return True;
     }
     
@@ -703,7 +703,7 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target,
     *value = (XtPointer)BufGetSecSelectText(buf);
     *length = strlen((char *)*value);
     *format = 8;
-    BufUnsubstituteNullChars(*value, buf);
+    BufUnsubstituteNullChars((char *)*value, buf);
     return True;
 }
 

@@ -79,7 +79,7 @@ static const char CVSID[] = "$Id: tags.c,v 1.71 2009/06/23 21:30:09 lebert Exp $
    (should probably be a language-dependent option, but...) */
 #define TIP_DEFAULT_LINES 4
 
-#define STRSAVE(a)  ((a!=NULL)?strcpy(malloc(strlen(a)+1),(a)):strcpy(malloc(1),""))
+#define STRSAVE(a)  ((a!=NULL)?strcpy((char *)malloc(strlen(a)+1),(a)):strcpy((char *)malloc(1),""))
 
 typedef struct _tag {
     struct _tag *next;

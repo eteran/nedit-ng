@@ -254,7 +254,7 @@ static void setWindowGroup(Widget shell) {
 
     if (firstTime) {
     	/* Create a dummy window to be the group leader for our windows */
-        String name, class;
+        String name, clazz;
     	XClassHint *classHint;
 	
     	groupLeader = XCreateSimpleWindow(display, 
@@ -263,10 +263,10 @@ static void setWindowGroup(Widget shell) {
 		
 	/* Set it's class hint so it will be identified correctly by the 
 	   window manager */
-    	XtGetApplicationNameAndClass(display, &name, &class);
+    	XtGetApplicationNameAndClass(display, &name, &clazz);
 	classHint = XAllocClassHint();
 	classHint->res_name = name;
-	classHint->res_class = class;
+	classHint->res_class = clazz;
 	XSetClassHint(display, groupLeader, classHint);
 	XFree(classHint);
 	
@@ -537,7 +537,7 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
 	XInstallColormap(display, cachedColormap);
     }
     /* printf("Chose visual with depth %d, class %d, colormap %ld, id 0x%x\n",
-	    visList[bestVisual].depth, visList[bestVisual].class,
+	    visList[bestVisual].depth, visList[bestVisual].clazz,
 	    *colormap, cachedVisual->visualid); */
     /* Fix memory leak */
     if (visList != NULL) {
@@ -639,18 +639,18 @@ Widget CreateErrorDialog(Widget parent, char *name,
 	    argcount);
 }
 
-Widget CreateWidget(Widget parent, const char *name, WidgetClass class,
+Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz,
 	ArgList arglist, Cardinal  argcount)
 {
     Widget result;
     ArgList al = addParentVisArgs(parent, arglist, &argcount);
-    result = XtCreateWidget(name, class, parent, al, argcount);
+    result = XtCreateWidget(name, clazz, parent, al, argcount);
     XtFree((char *)al);
     return result;
 }
 
 Widget CreateShellWithBestVis(String appName, String appClass,
-	   WidgetClass class, Display *display, ArgList args, Cardinal nArgs)
+	   WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs)
 {
     Visual *visual;
     int depth;
@@ -666,18 +666,18 @@ Widget CreateShellWithBestVis(String appName, String appClass,
     XtSetArg(al[ac], XtNvisual, visual); ac++;
     XtSetArg(al[ac], XtNdepth, depth); ac++;
     XtSetArg(al[ac], XtNcolormap, colormap); ac++;
-    result = XtAppCreateShell(appName, appClass, class, display, al, ac);
+    result = XtAppCreateShell(appName, appClass, clazz, display, al, ac);
     XtFree((char *)al);
     return result;
 }
 
 
-Widget CreatePopupShellWithBestVis(String shellName, WidgetClass class,
+Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz,
     Widget parent, ArgList arglist, Cardinal argcount)
 {
    Widget result;
    ArgList al = addParentVisArgs(parent, arglist, &argcount);
-   result = XtCreatePopupShell(shellName, class, parent, al, argcount);
+   result = XtCreatePopupShell(shellName, clazz, parent, al, argcount);
    XtFree((char *)al);
    return result;
 }

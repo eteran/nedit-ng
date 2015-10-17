@@ -2038,7 +2038,7 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b)
 
     /* Get the entire colormap so we can find the closest one. */
     ncolors = (1 << depth);
-    allColorDefs = malloc(ncolors * sizeof(XColor));
+    allColorDefs = (XColor *)malloc(ncolors * sizeof(XColor));
     memset(allColorDefs, 0, ncolors * sizeof(XColor));
     
     for (i = 0; i < ncolors; i++)

@@ -112,10 +112,10 @@ Widget CreateMessageDialog(Widget parent, char *name, ArgList arglist,
 Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, 
-	WidgetClass class, Display *display, ArgList args, Cardinal nArgs);
-Widget CreatePopupShellWithBestVis(String shellName, WidgetClass class,
+	WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
+Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz,
     Widget parent, ArgList arglist, Cardinal argcount);
-Widget CreateWidget(Widget parent, const char *name, WidgetClass class,
+Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz,
 	ArgList arglist, Cardinal  argcount);
 Modifiers GetNumLockModMask(Display *display);
 void InstallMouseWheelActions(XtAppContext context);

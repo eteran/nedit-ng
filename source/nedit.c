@@ -1046,14 +1046,14 @@ static void patchResourcesForKDEbug(void)
         const char* buggyValue = buggyResources[i][1];
         const char* defaultValue = buggyResources[i][2];
         char name[128] = APP_NAME;
-        char class[128] = APP_CLASS;
+        char clazz[128] = APP_CLASS;
         char* type;
         XrmValue resValue;
         
         strcat(name, resource);
-        strcat(class, resource); /* Is this ok ? */
+        strcat(clazz, resource); /* Is this ok ? */
         
-        if (XrmGetResource(db, name, class, &type, &resValue) &&
+        if (XrmGetResource(db, name, clazz, &type, &resValue) &&
             !strcmp(type, XmRString))
         {
             /* Buggy value? Replace by the default. */

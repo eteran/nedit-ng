@@ -52,7 +52,7 @@ static void histogramCharacters(const char *string, int length, char hist[256],
 static void subsChars(char *string, int length, char fromChar, char toChar);
 static char chooseNullSubsChar(char hist[256]);
 static int insert(textBuffer *buf, int pos, const char *text);
-static void delete(textBuffer *buf, int start, int end);
+static void deleteRange(textBuffer *buf, int start, int end);
 static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd, int *replaceLen, int *endPos);
 static void insertCol(textBuffer *buf, int column, int startPos, const char *insText,
@@ -362,7 +362,7 @@ void BufReplace(textBuffer *buf, int start, int end, const char *text)
     
     callPreDeleteCBs(buf, start, end-start);
     deletedText = BufGetRange(buf, start, end);
-    delete(buf, start, end);
+    deleteRange(buf, start, end);
     insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
     callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
@@ -387,7 +387,7 @@ void BufRemove(textBuffer *buf, int start, int end)
     callPreDeleteCBs(buf, start, end-start);
     /* Remove and redisplay */
     deletedText = BufGetRange(buf, start, end);
-    delete(buf, start, end);
+    deleteRange(buf, start, end);
     buf->cursorPosHint = start;
     callModifyCBs(buf, start, end-start, 0, 0, deletedText);
     XtFree(deletedText);
@@ -819,7 +819,7 @@ void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     
     newModifyProcs = (bufModifyCallbackProc *)
     	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
+    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
     for (i=0; i<buf->nModifyProcs; i++) {
     	newModifyProcs[i] = buf->modifyProcs[i];
     	newCBArgs[i] = buf->cbArgs[i];
@@ -848,7 +848,7 @@ void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifi
     
     newModifyProcs = (bufModifyCallbackProc *)
     	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
+    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
     for (i=0; i<buf->nModifyProcs; i++) {
     	newModifyProcs[i+1] = buf->modifyProcs[i];
     	newCBArgs[i+1] = buf->cbArgs[i];
@@ -896,7 +896,7 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     }
     newModifyProcs = (bufModifyCallbackProc *)
     	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nModifyProcs));
+    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs));
     
     /* copy out the remaining members and free the old lists */
     for (i=0; i<toRemove; i++) {
@@ -925,7 +925,7 @@ void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
     
     newPreDeleteProcs = (bufPreDeleteCallbackProc *)
     	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs+1));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
+    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
     for (i=0; i<buf->nPreDeleteProcs; i++) {
     	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
     	newCBArgs[i] = buf->preDeleteCbArgs[i];
@@ -974,7 +974,7 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDelete
     }
     newPreDeleteProcs = (bufPreDeleteCallbackProc *)
     	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs));
-    newCBArgs = (void *)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
+    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
     
     /* copy out the remaining members and free the old lists */
     for (i=0; i<toRemove; i++) {
@@ -1489,7 +1489,7 @@ static int insert(textBuffer *buf, int pos, const char *text)
 ** of the buffer between start and end (and moves the gap to the site of
 ** the delete).
 */
-static void delete(textBuffer *buf, int start, int end)
+static void deleteRange(textBuffer *buf, int start, int end)
 {
     /* if the gap is not contiguous to the area to remove, move it there */
     if (start > buf->gapStart)
@@ -1589,7 +1589,7 @@ static void insertCol(textBuffer *buf, int column, int startPos,
     *outPtr = '\0';
     
     /* replace the text between start and end with the new stuff */
-    delete(buf, start, end);
+    deleteRange(buf, start, end);
     insert(buf, start, outStr);
     *nInserted = outPtr - outStr;
     *nDeleted = end - start;
@@ -1643,7 +1643,7 @@ static void deleteRect(textBuffer *buf, int start, int end, int rectStart,
     *outPtr = '\0';
     
     /* replace the text between start and end with the newly created string */
-    delete(buf, start, end);
+    deleteRange(buf, start, end);
     insert(buf, start, outStr);
     *replaceLen = outPtr - outStr;
     *endPos = start + (outPtr - outStr) - len + endOffset;
@@ -1714,7 +1714,7 @@ static void overlayRect(textBuffer *buf, int startPos, int rectStart,
     *outPtr = '\0';
     
     /* replace the text between start and end with the new stuff */
-    delete(buf, start, end);
+    deleteRange(buf, start, end);
     insert(buf, start, outStr);
     *nInserted = outPtr - outStr;
     *nDeleted = end - start;

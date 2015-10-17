@@ -214,7 +214,7 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
        the application database, then the default value if neither are found */
     for (i=0; i<nRsrc; i++) {
     	sprintf(rsrcName,"%s.%s", appName, rsrcDescrip[i].name);
-    	sprintf(rsrcClass, "%s.%s", appClass, rsrcDescrip[i].class);
+    	sprintf(rsrcClass, "%s.%s", appClass, rsrcDescrip[i].clazz);
     	if (prefDB!=NULL &&
     	       XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
     	    if (strcmp(type, XmRString)) {

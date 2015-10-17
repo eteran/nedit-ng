@@ -1792,7 +1792,7 @@ static void freeWritableWindowsCB(Widget w, WindowInfo* window,
                                   XmAnyCallbackStruct *callData)
 {
     window = WidgetToWindow(w);
-    XtFree((XtPointer)window->writableWindows);
+    XtFree((char *)window->writableWindows);
     window->writableWindows = NULL;
     window->nWritableWindows = 0;
 }
@@ -2845,7 +2845,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
                     "Selection not appropriate for searching", "OK");
     	else
     	    XBell(TheDisplay, 0);
-        XtFree(callData);
+        XtFree((char *)callData);
 	return;
     }
     if (*length > SEARCHMAX) {
@@ -2855,13 +2855,13 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     	else
     	    XBell(TheDisplay, 0);
 	XtFree(value);
-        XtFree(callData);
+        XtFree((char *)callData);
 	return;
     }
     if (*length == 0) {
     	XBell(TheDisplay, 0);
 	XtFree(value);
-        XtFree(callData);
+        XtFree((char *)callData);
 	return;
     }
     /* should be of type text??? */
@@ -2869,7 +2869,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     	fprintf(stderr, "NEdit: can't handle non 8-bit text\n");
     	XBell(TheDisplay, 0);
 	XtFree(value);
-        XtFree(callData);
+        XtFree((char *)callData);
 	return;
     }
     /* make the selection the current search string */
@@ -2888,7 +2888,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
     /* search for it in the window */
     SearchAndSelect(window, callDataItems->direction, searchString,
         searchType, callDataItems->searchWrap);
-    XtFree(callData);
+    XtFree((char *)callData);
 }
 
 /*

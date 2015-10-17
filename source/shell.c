@@ -445,7 +445,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
 */
 void AbortShellCommand(WindowInfo *window)
 {
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 
     if (cmdData == NULL)
     	return;
@@ -583,7 +583,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     buffer *buf;
     int nRead;
 
@@ -624,7 +624,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     buffer *buf;
     int nRead;
     
@@ -665,7 +665,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     int nWritten;
 
     nWritten = write(cmdData->stdinFD, cmdData->inPtr, cmdData->inLength);
@@ -701,7 +701,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     XmString xmCancel;
     char* cCancel;
     char message[MAX_TIMEOUT_MSG_LEN];
@@ -759,7 +759,7 @@ static void safeBufReplace(textBuffer *buf, int *start, int *end,
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     textBuffer *buf = TextGetBuffer(cmdData->textW);
     int len;
     char *outText;
@@ -795,7 +795,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
 */
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
 {
-    shellCmdInfo *cmdData = window->shellCmdData;
+    shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     textBuffer *buf;
     int status, failure, errorReport, reselectStart, outTextLen, errTextLen;
     int resp, cancel = False, fromMacro = cmdData->fromMacro;
@@ -1381,7 +1381,7 @@ static char *shellCommandSubstitutes(const char *inStr, const char *fileStr,
 
     cmdLen = shellSubstituter(NULL, inStr, fileStr, lineStr, 0, 1);
     if (cmdLen >= 0) {
-        subsCmdStr = malloc(cmdLen);
+        subsCmdStr = (char *)malloc(cmdLen);
         if (subsCmdStr) {
             cmdLen = shellSubstituter(subsCmdStr, inStr, fileStr, lineStr, cmdLen, 0);
             if (cmdLen < 0) {

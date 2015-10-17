@@ -79,7 +79,7 @@ target_link_libraries(nc LINK_PUBLIC
 	${X11_LIBRARIES}	
 )
 
-#set_property(TARGET nedit PROPERTY C_STANDARD 99)
-#set_property(TARGET nc    PROPERTY C_STANDARD 99)
+set_property(TARGET nedit PROPERTY C_STANDARD 99)
+set_property(TARGET nc    PROPERTY C_STANDARD 99)
 
-#set(CMAKE_C_FLAGS -Wc++-compat) 
+set(CMAKE_C_FLAGS -Wc++-compat) 

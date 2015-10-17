@@ -193,7 +193,7 @@ static void addToFileList(const char *path)
 
     /* Add the atom to the head of the file list if it wasn't found. */
     if (item == 0) {
-        item = malloc(sizeof(item[0]));
+        item = (FileListEntry *)malloc(sizeof(item[0]));
         item->waitForFileOpenAtom = None;
         item->waitForFileClosedAtom = None;
         item->path = (char*)malloc(strlen(path)+1);

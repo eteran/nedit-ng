@@ -257,11 +257,20 @@ static const char *getBuildInfo(void)
             Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME,
                                                         APP_CLASS, &visual,
                                                         &depth, &map);
+														
+#if defined	(__cplusplus)
+            sprintf(visualStr,"%d-bit %s (ID %#lx%s)",
+                    depth,
+                    visualClass[visual->c_class],
+                    visual->visualid,
+                    usingDefaultVisual ? ", Default" : "");
+#else
             sprintf(visualStr,"%d-bit %s (ID %#lx%s)",
                     depth,
                     visualClass[visual->class],
                     visual->visualid,
                     usingDefaultVisual ? ", Default" : "");
+#endif
         }
 
         bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
@@ -551,15 +560,18 @@ void Help(enum HelpTopic topic)
 /* Setup Window/Icon title for the help window. */
 static void setHelpWinTitle(Widget win, enum HelpTopic topic) 
 {
-    char * buf, *topStr=HelpTitles[topic];
+
+	int topic_num = topic;
+
+    char * buf, *topStr=HelpTitles[topic_num];
     
-    buf=malloc(strlen(topStr) + 24);
-    topic++; 
+    buf=(char *)malloc(strlen(topStr) + 24);
+    topic_num++; 
     
-    sprintf(buf, "NEdit Help (%d)", (int)topic);
+    sprintf(buf, "NEdit Help (%d)", topic_num);
     XtVaSetValues(win, XmNiconName, buf, NULL);
     
-    sprintf(buf, "NEdit Help: %s (%d)", topStr, (int)topic);
+    sprintf(buf, "NEdit Help: %s (%d)", topStr, topic_num);
     XtVaSetValues(win, XmNtitle, buf, NULL);
   
     free(buf);
