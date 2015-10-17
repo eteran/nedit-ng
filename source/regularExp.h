@@ -1,4 +1,3 @@
-/* $Id: regularExp.h,v 1.16 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * regularExp.h -- Nirvana Editor Regular Expression Package Header File        *

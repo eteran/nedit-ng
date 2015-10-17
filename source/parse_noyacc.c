@@ -48,7 +48,6 @@ static int yygrowstack();
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
 
-static const char CVSID[] = "$Id: parse_noyacc.c,v 1.10 2007/01/12 16:19:35 tringali Exp $";
 static int yyerror(char *s);
 static int yylex(void);
 int yyparse(void);

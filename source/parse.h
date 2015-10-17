@@ -1,4 +1,3 @@
-/* $Id: parse.h,v 1.7 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * parse.h -- Nirvana Editor Macro Parsing Header File                          *

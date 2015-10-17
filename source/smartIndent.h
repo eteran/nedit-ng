@@ -1,4 +1,3 @@
-/* $Id: smartIndent.h,v 1.8 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * smartIndent.h -- Nirvana Editor Smart Indent Header File                     *

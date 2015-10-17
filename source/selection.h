@@ -1,4 +1,3 @@
-/* $Id: selection.h,v 1.7 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * selection.h -- Nirvana Editor Selection Header File                          *

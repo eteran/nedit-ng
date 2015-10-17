@@ -1,4 +1,3 @@
-/* $Id: highlight.h,v 1.16 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * highlight.h -- Nirvana Editor Syntax Highlighting Header File                *

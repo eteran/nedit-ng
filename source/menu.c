@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: menu.c,v 1.143 2008/01/04 22:11:03 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * menu.c -- Nirvana Editor menus                                               *

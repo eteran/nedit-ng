@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: macro.c,v 1.116 2008/08/20 14:57:35 lebert Exp $";
 /*******************************************************************************
 *                                                                              *
 * macro.c -- Macro file processing, learn/replay, and built-in macro           *

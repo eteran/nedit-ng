@@ -1,4 +1,3 @@
-/* $Id: calltips.h,v 1.5 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * calltips.h -- Nirvana Editor Calltips Header File                            *

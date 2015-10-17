@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: nc.c,v 1.48.2.2 2009/11/30 20:21:18 lebert Exp $";
 /*******************************************************************************
 *									       *
 * nc.c -- Nirvana Editor client program for nedit server processes	       *

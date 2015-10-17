@@ -1,4 +1,3 @@
-/* $Id: windowTitle.h,v 1.5 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * windowTitle.h -- Nirvana Editor window title customization                   *

@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: shift.c,v 1.18 2006/10/17 10:10:59 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shift.c -- Nirvana Editor built-in filter commands			       *

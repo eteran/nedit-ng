@@ -1,4 +1,3 @@
-/* $Id: textDisp.h,v 1.31 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDisp.h -- Nirvana Editor Text Diplay Header File                         *

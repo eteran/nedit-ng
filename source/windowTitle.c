@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: windowTitle.c,v 1.16 2007/12/31 11:12:44 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * windowTitle.c -- Nirvana Editor window title customization                   *

@@ -1,4 +1,3 @@
-/* $Id: rangeset.c,v 1.21 2008/02/11 19:50:53 ajbj Exp $ */
 /*******************************************************************************
 *									       *
 * rangeset.c	 -- Nirvana Editor rangest functions			       *

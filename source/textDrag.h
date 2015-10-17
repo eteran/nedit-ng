@@ -1,4 +1,3 @@
-/* $Id: textDrag.h,v 1.5 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textDrag.h -- Nirvana Editor Drag/Drop Header File                           *

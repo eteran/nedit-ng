@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: file.c,v 1.119 2008/11/05 09:09:44 lebert Exp $";
 /*******************************************************************************
 *									       *
 * file.c -- Nirvana Editor file i/o					       *

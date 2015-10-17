@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: rbTree.c,v 1.7 2002/07/11 21:18:10 slobasso Exp $";
 /*******************************************************************************
 *                                                                              *
 * rbTree.c -- Nirvana editor red-black balanced binary tree                    *

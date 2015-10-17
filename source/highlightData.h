@@ -1,4 +1,3 @@
-/* $Id: highlightData.h,v 1.13 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * highlightData.h -- Nirvana Editor Highlight Data Header File                 *

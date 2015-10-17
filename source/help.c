@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: help.c,v 1.107 2008/08/19 22:24:41 ajbj Exp $";
 /*******************************************************************************
 *                                                                              *
 * help.c -- Nirvana Editor help display                                        *

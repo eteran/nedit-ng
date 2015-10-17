@@ -1,4 +1,3 @@
-/* $Id: rbTree.h,v 1.5 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * rbTree.h -- Nirvana Editor Red-Black Balanced Binary Tree Header File        *

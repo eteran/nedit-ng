@@ -1,4 +1,3 @@
-/* $Id: textSel.h,v 1.6 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textSel.h -- Nirvana Editor Selection header file                            *

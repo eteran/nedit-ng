@@ -1,4 +1,3 @@
-/* $Id: textP.h,v 1.12 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textP.h -- Nirvana Editor Text Editing Widget private include file           *

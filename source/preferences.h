@@ -1,4 +1,3 @@
-/* $Id: preferences.h,v 1.57 2008/01/04 22:11:03 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * preference.h -- Nirvana Editor Preferences Header File                       *

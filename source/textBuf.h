@@ -1,4 +1,3 @@
-/* $Id: textBuf.h,v 1.22 2008/01/04 22:11:04 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * textBuf.h -- Nirvana Editor Text Buffer Header File                          *

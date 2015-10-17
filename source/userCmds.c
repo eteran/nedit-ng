@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: userCmds.c,v 1.57 2009/06/23 21:03:13 lebert Exp $";
 /*******************************************************************************
 *									       *
 * userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *

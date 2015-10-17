@@ -1,4 +1,3 @@
-/* $Id: server_common.h,v 1.3 2004/11/09 21:58:44 yooden Exp $ */
 /*******************************************************************************
 *									       *
 * server_common.h -- Nirvana Editor common server stuff			       *

@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: textSel.c,v 1.19 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *									       *
 * textSel.c - Selection and clipboard routines for NEdit text widget		       *

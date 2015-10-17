@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: shell.c,v 1.44 2008/01/04 22:11:04 yooden Exp $";
 /*******************************************************************************
 *									       *
 * shell.c -- Nirvana Editor shell command execution			       *

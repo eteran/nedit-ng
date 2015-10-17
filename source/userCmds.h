@@ -1,4 +1,3 @@
-/* $Id: userCmds.h,v 1.11 2005/01/31 14:34:24 edg Exp $ */
 /*******************************************************************************
 *                                                                              *
 * userCmds.h -- Nirvana Editor user commands header file                       *

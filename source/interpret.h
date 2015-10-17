@@ -1,4 +1,3 @@
-/* $Id: interpret.h,v 1.22 2008/10/03 14:34:55 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * interpret.h -- Nirvana Editor Interpreter Header File                        *

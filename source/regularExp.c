@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: regularExp.c,v 1.34 2009/09/14 19:16:25 edg Exp $";
 /*------------------------------------------------------------------------*
  * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
  *

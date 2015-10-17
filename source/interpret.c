@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: interpret.c,v 1.55 2008/10/06 16:58:16 lebert Exp $";
 /*******************************************************************************
 *									       *
 * interpret.c -- Nirvana Editor macro interpreter			       *
