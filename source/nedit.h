@@ -33,9 +33,7 @@
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/XmStrDefs.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 
 #define NEDIT_VERSION           5

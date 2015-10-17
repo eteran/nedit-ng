@@ -64,9 +64,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 #include "../util/clearcase.h"
 
 #include <limits.h>

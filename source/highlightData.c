@@ -43,9 +43,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 
 #include <Xm/Xm.h>

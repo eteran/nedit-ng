@@ -26,9 +26,7 @@ static int yygrowstack();
 #include <ctype.h>
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 
 /* Macros to add error processing to AddOp and AddSym calls */

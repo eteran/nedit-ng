@@ -98,23 +98,11 @@ static char *unexpandTabs(const char *text, int startIndent, int tabDist,
 static int max(int i1, int i2);
 static int min(int i1, int i2);
 
-#ifdef __MVS__
-static const char *ControlCodeTable[64] = {
-     "nul", "soh", "stx", "etx", "sel", "ht", "rnl", "del",
-     "ge", "sps", "rpt", "vt", "ff", "cr", "so", "si",
-     "dle", "dc1", "dc2", "dc3", "res", "nl", "bs", "poc",
-     "can", "em", "ubs", "cu1", "ifs", "igs", "irs", "ius",
-     "ds", "sos", "fs", "wus", "byp", "lf", "etb", "esc",
-     "sa", "sfe", "sm", "csp", "mfa", "enq", "ack", "bel",
-     "x30", "x31", "syn", "ir", "pp", "trn", "nbs", "eot",
-     "sbs", "it", "rff", "cu3", "dc4", "nak", "x3e", "sub"};
-#else
 static const char *ControlCodeTable[32] = {
      "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
      "bs", "ht", "nl", "vt", "np", "cr", "so", "si",
      "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
      "can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
-#endif
 
 /*
 ** Create an empty text buffer
@@ -1045,18 +1033,13 @@ int BufExpandCharacter(const char c, const int indent, char *outStr,
 	return nSpaces;
     }
     
-    /* Convert ASCII (and EBCDIC in the __MVS__ (OS/390) case) control
+    /* Convert ASCII control
        codes to readable character sequences */
     if (c == nullSubsChar) {
 	sprintf(outStr, "<nul>");
     	return 5;
     }
-#ifdef __MVS__
-    if (((unsigned char)c) <= 63) {
-    	sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
-    	return strlen(outStr);
-    }
-#else
+
     if (((unsigned char)c) <= 31) {
     	sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
     	return strlen(outStr);
@@ -1064,7 +1047,6 @@ int BufExpandCharacter(const char c, const int indent, char *outStr,
     	sprintf(outStr, "<del>");
     	return 5;
     }
-#endif
     
     /* Otherwise, just return the character */
     *outStr = c;

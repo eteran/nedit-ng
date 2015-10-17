@@ -40,9 +40,7 @@
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 #include <limits.h>
 

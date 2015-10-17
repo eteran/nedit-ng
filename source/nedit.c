@@ -70,9 +70,7 @@
 #include <Xm/RepType.h>
 #endif
 
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);

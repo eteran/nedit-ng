@@ -48,9 +48,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 
 #include <Xm/PrimitiveP.h> /* For Calltips */

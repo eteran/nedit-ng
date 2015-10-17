@@ -61,9 +61,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 #include <fcntl.h>
 
 #include <X11/Intrinsic.h>

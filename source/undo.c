@@ -37,9 +37,7 @@
 #include "preferences.h"
 
 #include <string.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 
 #include <Xm/Xm.h>

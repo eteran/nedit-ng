@@ -28,9 +28,7 @@
 #include <stdio.h>
 #include <Xm/Xm.h>
 #include <sys/types.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 #include "nedit.h"
 #include "server_common.h"

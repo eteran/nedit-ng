@@ -41,9 +41,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 
 #if !defined(DONT_HAVE_GLOB) && !defined(USE_MOTIF_GLOB) && !defined(VMS)
 #include <glob.h>

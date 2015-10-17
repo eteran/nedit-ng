@@ -58,9 +58,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 #include "../util/clearcase.h"
 
 #include <Xm/Xm.h>

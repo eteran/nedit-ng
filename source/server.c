@@ -47,9 +47,7 @@
 
 #include <sys/types.h>
 #include <sys/utsname.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 #include <unistd.h>
 #include <pwd.h>
 
