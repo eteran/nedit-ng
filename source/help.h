@@ -42,10 +42,10 @@ typedef struct HelpMenu         /* Maintains help menu structure */
     struct HelpMenu * next;
     int               level;    /* menu level, submenu > 1               */
     enum HelpTopic    topic;    /* HELP_none for submenu & separator     */
-    char            * wgtName;
+    const char            * wgtName;
     int               hideIt;   /* value which determines displayability */
     char              mnemonic; /* '-' for separator                     */
-    char            * subTitle; /* title for sub menu, or NULL           */
+    const char            * subTitle; /* title for sub menu, or NULL           */
 } HelpMenu;
 
 typedef struct Href             /* Source to topic internal hyperlinks */
@@ -53,7 +53,7 @@ typedef struct Href             /* Source to topic internal hyperlinks */
     struct Href *  next;
     int            location;    /* position to link in topic    */
     enum HelpTopic topic;       /* target of link in this topic */
-    char *         source;      /* hypertext link characters    */
+    const char *         source;      /* hypertext link characters    */
 } Href;
 
 /*============================================================================*/
@@ -61,7 +61,7 @@ typedef struct Href             /* Source to topic internal hyperlinks */
 /*============================================================================*/
 
 extern HelpMenu H_M[];
-extern char *HelpTitles[];
+extern const char *HelpTitles[];
 extern const char linkdate[];
 extern const char linktime[];
 

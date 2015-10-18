@@ -38,7 +38,7 @@
 *                                                                              *
 *******************************************************************************/
 
-char *HelpTitles[] = {
+const char *HelpTitles[] = {
     "Getting Started",
     "Selecting Text",
     "Finding and Replacing Text",
@@ -84,7 +84,7 @@ char *HelpTitles[] = {
     NULL
 };
 
-static char * htxt_start [] = {
+static const char * htxt_start [] = {
 "\01IWelcome to NEdit! ",
 "\n\n",
 "NEdit is a standard GUI (Graphical User Interface) style text editor for ",
@@ -173,7 +173,7 @@ static char * htxt_start [] = {
 NULL
 };
 
-static char * htxt_select [] = {
+static const char * htxt_select [] = {
 "\01INEdit has two general types of selections, primary (highlighted text), and ",
 "secondary (underlined text). Selections can cover either a simple range of ",
 "text between two points in the file, or they can cover a rectangular area of ",
@@ -230,7 +230,7 @@ static char * htxt_select [] = {
 NULL
 };
 
-static char * htxt_search [] = {
+static const char * htxt_search [] = {
 "\01IThe Search menu contains a number of commands for finding and replacing text. ",
 "\n\n",
 "The Find... and Replace... commands present dialogs for entering text for ",
@@ -300,7 +300,7 @@ static char * htxt_search [] = {
 NULL
 };
 
-static char * htxt_clipboard [] = {
+static const char * htxt_clipboard [] = {
 "\01IThe easiest way to copy and move text around in your file or between windows, ",
 "is to use the clipboard, an imaginary area that temporarily stores text and ",
 "data.  The Cut command removes the selected text (see \01QSelecting Text\01I) from ",
@@ -327,7 +327,7 @@ static char * htxt_clipboard [] = {
 NULL
 };
 
-static char * htxt_mouse [] = {
+static const char * htxt_mouse [] = {
 "\01IMouse-based editing is what NEdit is all about, and learning to use the more ",
 "advanced features like secondary selections and primary selection dragging ",
 "will be well worth your while. ",
@@ -489,7 +489,7 @@ static char * htxt_mouse [] = {
 NULL
 };
 
-static char * htxt_keyboard [] = {
+static const char * htxt_keyboard [] = {
 "\01IMost of the keyboard shortcuts in NEdit are shown on the right hand sides of ",
 "the pull-down menus.  However, there are more which are not as obvious.  These ",
 "include; dialog button shortcuts; menu and dialog mnemonics; labeled keyboard ",
@@ -688,7 +688,7 @@ static char * htxt_keyboard [] = {
 NULL
 };
 
-static char * htxt_fill [] = {
+static const char * htxt_fill [] = {
 "\01RShift Left, Shift Right\01I",
 "\n\n",
 "While shifting blocks of text is most important for programmers (See Features ",
@@ -776,7 +776,7 @@ static char * htxt_fill [] = {
 NULL
 };
 
-static char * htxt_interface [] = {
+static const char * htxt_interface [] = {
 "\01INEdit is able to display files in distinct editor windows, or to display files ",
 "under tabs in the same editor window.  The Options for controlling the tabbed ",
 "interface are found under Preferences -> Default Settings -> Tabbed Editing ",
@@ -794,7 +794,7 @@ static char * htxt_interface [] = {
 NULL
 };
 
-static char * htxt_format [] = {
+static const char * htxt_format [] = {
 "\01IWhile plain-text is probably the simplest and most interchangeable file ",
 "format in the computer world, there is still variation in what plain-text ",
 "means from system to system.  Plain-text files can differ in character set, ",
@@ -836,7 +836,7 @@ static char * htxt_format [] = {
 NULL
 };
 
-static char * htxt_programmer [] = {
+static const char * htxt_programmer [] = {
 "\01IThough general in appearance, NEdit has many features intended specifically ",
 "for programmers.  Major programming-related topics are listed in separate ",
 "sections under the heading: \"Features for Programming\": \01QSyntax Highlighting\01I, ",
@@ -941,7 +941,7 @@ static char * htxt_programmer [] = {
 NULL
 };
 
-static char * htxt_tabs [] = {
+static const char * htxt_tabs [] = {
 "\01RChanging the Tab Stop Distance\01I",
 "\n\n",
 "Tab stops are important for programming in languages which use indentation to ",
@@ -991,7 +991,7 @@ static char * htxt_tabs [] = {
 NULL
 };
 
-static char * htxt_indent [] = {
+static const char * htxt_indent [] = {
 "\01IProgrammers who use structured languages usually require some form of ",
 "automatic indent, so that they don't have to continually re-type the ",
 "sequences of tabs and/or spaces needed to maintain lengthy running indents. ",
@@ -1037,7 +1037,7 @@ static char * htxt_indent [] = {
 NULL
 };
 
-static char * htxt_syntax [] = {
+static const char * htxt_syntax [] = {
 "\01ISyntax Highlighting means using colors and fonts to help distinguish language ",
 "elements in programming languages and other types of structured files. ",
 "Programmers use syntax highlighting to understand code faster and better, and ",
@@ -1083,7 +1083,7 @@ static char * htxt_syntax [] = {
 NULL
 };
 
-static char * htxt_tags [] = {
+static const char * htxt_tags [] = {
 "\01INEdit can process tags files generated using the Unix ctags command or the ",
 "Exuberant Ctags program.  Ctags creates index files correlating names of ",
 "functions and declarations with their locations in C, Fortran, or Pascal source ",
@@ -1126,7 +1126,7 @@ static char * htxt_tags [] = {
 NULL
 };
 
-static char * htxt_calltips [] = {
+static const char * htxt_calltips [] = {
 "\01ICalltips are little yellow boxes that pop up to remind you what the arguments ",
 "and return type of a function are.  More generally, they're a UI mechanism to ",
 "present a small amount of crucial information in a prominent location.  To ",
@@ -1187,7 +1187,7 @@ static char * htxt_calltips [] = {
 NULL
 };
 
-static char * htxt_basicSyntax [] = {
+static const char * htxt_basicSyntax [] = {
 "\01IRegular expressions (regex's) are useful as a way to match inexact sequences ",
 "of characters.  They can be used in the `Find...' and `Replace...' search ",
 "dialogs and are at the core of Color Syntax Highlighting patterns.  To specify ",
@@ -1336,7 +1336,7 @@ static char * htxt_basicSyntax [] = {
 NULL
 };
 
-static char * htxt_escapeSequences [] = {
+static const char * htxt_escapeSequences [] = {
 "\01REscaping Metacharacters\01I",
 "\n\n",
 "In a regular expression (regex), most ordinary characters match themselves. ",
@@ -1426,7 +1426,7 @@ static char * htxt_escapeSequences [] = {
 NULL
 };
 
-static char * htxt_parenConstructs [] = {
+static const char * htxt_parenConstructs [] = {
 "\01RCapturing Parentheses\01I",
 "\n\n",
 "Capturing Parentheses are of the form `(<regex>)' and can be used to group ",
@@ -1597,7 +1597,7 @@ static char * htxt_parenConstructs [] = {
 NULL
 };
 
-static char * htxt_advancedTopics [] = {
+static const char * htxt_advancedTopics [] = {
 "\01RSubstitutions\01I",
 "\n\n",
 "Regular expression substitution can be used to program automatic editing ",
@@ -1653,7 +1653,7 @@ static char * htxt_advancedTopics [] = {
 NULL
 };
 
-static char * htxt_examples [] = {
+static const char * htxt_examples [] = {
 "\01IThe following are regular expression examples which will match: ",
 "\n\n",
 "    * An entire line.\n",
@@ -1689,7 +1689,7 @@ static char * htxt_examples [] = {
 NULL
 };
 
-static char * htxt_shell [] = {
+static const char * htxt_shell [] = {
 "\01IThe Shell menu (Unix versions only) allows you to execute Unix shell commands ",
 "from within NEdit.  You can add items to the menu to extend NEdit's command ",
 "set or to incorporate custom automatic editing features using shell commands ",
@@ -1722,7 +1722,7 @@ static char * htxt_shell [] = {
 NULL
 };
 
-static char * htxt_learn [] = {
+static const char * htxt_learn [] = {
 "\01ISelecting Learn Keystrokes from the Macro menu puts NEdit in learn mode.  In ",
 "learn mode, keystrokes and menu commands are recorded, to be played back ",
 "later, using the Replay Keystrokes command, or pasted into a macro in the ",
@@ -1770,7 +1770,7 @@ static char * htxt_learn [] = {
 NULL
 };
 
-static char * htxt_macro_lang [] = {
+static const char * htxt_macro_lang [] = {
 "\01IMacros can be called from Macro menu commands, window background menu ",
 "commands, within the smart-indent framework, from the autoload macro file, ",
 "cf. \01QPreferences\01I, and from the command line. ",
@@ -2174,7 +2174,7 @@ static char * htxt_macro_lang [] = {
 NULL
 };
 
-static char * htxt_macro_subrs [] = {
+static const char * htxt_macro_subrs [] = {
 "\01RBuilt in Variables\01I",
 "\n\n",
 "These variables are read-only and cannot be changed by direct assignment. ",
@@ -2588,7 +2588,7 @@ static char * htxt_macro_subrs [] = {
 NULL
 };
 
-static char * htxt_rangeset [] = {
+static const char * htxt_rangeset [] = {
 "\01IRangesets are a tool of the macro language to tag parts, or ranges, of the ",
 "text, which shall be viewed as a group. A range is merely a contiguous range ",
 "of characters between a start and an end position in the document, and a set ",
@@ -2792,7 +2792,7 @@ static char * htxt_rangeset [] = {
 NULL
 };
 
-static char * htxt_hiliteInfo [] = {
+static const char * htxt_hiliteInfo [] = {
 "\01IThe user can interrogate the current window to determine the color ",
 "highlighting used on a particular piece of text. The following functions ",
 "provide information on the highlighting pattern against which text at a ",
@@ -2870,7 +2870,7 @@ static char * htxt_hiliteInfo [] = {
 NULL
 };
 
-static char * htxt_actions [] = {
+static const char * htxt_actions [] = {
 "\01IAll of the editing capabilities of NEdit are represented as a special type of ",
 "subroutine, called an action routine, which can be invoked from both macros ",
 "and translation table entries (see \"\01QKey Binding\01I\" in the ",
@@ -3429,7 +3429,7 @@ static char * htxt_actions [] = {
 NULL
 };
 
-static char * htxt_customize [] = {
+static const char * htxt_customize [] = {
 "\01INEdit can be customized in many different ways.  The most important ",
 "user-settable options are presented in the Preferences menu, including all ",
 "options that users might need to change during an editing session.  Options ",
@@ -3457,7 +3457,7 @@ static char * htxt_customize [] = {
 NULL
 };
 
-static char * htxt_preferences [] = {
+static const char * htxt_preferences [] = {
 "\01IThe Preferences menu allows you to set options for both the current editing ",
 "window, and default values for newly created windows and future NEdit ",
 "sessions.  Options in the Preferences menu itself (not in the Default ",
@@ -3890,7 +3890,7 @@ static char * htxt_preferences [] = {
 NULL
 };
 
-static char * htxt_resources [] = {
+static const char * htxt_resources [] = {
 "\01INEdit has additional options to those provided in the Preferences menu which ",
 "are set using X resources.  Like most other X programs, NEdit can be ",
 "customized to vastly unnecessary proportions, from initial window positions ",
@@ -4290,7 +4290,7 @@ static char * htxt_resources [] = {
 NULL
 };
 
-static char * htxt_binding [] = {
+static const char * htxt_binding [] = {
 "\01IThere are several ways to change key bindings in NEdit.  The easiest way to ",
 "add a new key binding in NEdit is to define a macro in Preferences -> Default ",
 "Settings -> Customize Menus -> Macro Menu.  However, if you want to change ",
@@ -4374,7 +4374,7 @@ static char * htxt_binding [] = {
 NULL
 };
 
-static char * htxt_patterns [] = {
+static const char * htxt_patterns [] = {
 "\01RWriting Syntax Highlighting Patterns\01I",
 "\n\n",
 "Patterns are the mechanism by which language syntax highlighting is ",
@@ -4587,7 +4587,7 @@ static char * htxt_patterns [] = {
 NULL
 };
 
-static char * htxt_smart_indent [] = {
+static const char * htxt_smart_indent [] = {
 "\01ISmart indent macros can be written for any language, but are usually more ",
 "difficult to write than highlighting patterns.  A good place to start, of ",
 "course, is to look at the existing macros for C and C++. ",
@@ -4626,7 +4626,7 @@ static char * htxt_smart_indent [] = {
 NULL
 };
 
-static char * htxt_command_line [] = {
+static const char * htxt_command_line [] = {
 "\01A   \01Bnedit\01A [-\01Bread\01A] [-\01Bcreate\01A] [-\01Bline\01A n | +n] [-\01Bserver\01A]\n",
 "      [-\01Bdo\01A command] [-\01Btags\01A file] [-\01Btabs\01A n] [-\01Bwrap\01A]\n",
 "      [-\01Bnowrap\01A] [-\01Bautowrap\01A] [-\01Bautoindent\01A] [-\01Bnoautoindent\01A]\n",
@@ -4766,7 +4766,7 @@ static char * htxt_command_line [] = {
 NULL
 };
 
-static char * htxt_server [] = {
+static const char * htxt_server [] = {
 "\01INEdit can be operated on its own, or as a two-part client/server ",
 "application.  Client/server mode is useful for integrating NEdit with ",
 "software development environments, mailers, and other programs; or just as a ",
@@ -4924,7 +4924,7 @@ static char * htxt_server [] = {
 NULL
 };
 
-static char * htxt_recovery [] = {
+static const char * htxt_recovery [] = {
 "\01IIf a system crash, network failure, X server crash, or program error should ",
 "happen while you are editing a file, you can still recover most of your ",
 "work.  NEdit maintains a backup file which it updates periodically (every 8 ",
@@ -4948,7 +4948,7 @@ static char * htxt_recovery [] = {
 NULL
 };
 
-static char * htxt_version [] = {
+static const char * htxt_version [] = {
 "\01A%s\n",
 "\01I\n",
 "Active developers: Tony Balinski, Arne Førlie, Nathaniel Gray, Eddy De ",
@@ -4998,7 +4998,7 @@ static char * htxt_version [] = {
 NULL
 };
 
-static char * htxt_distribution [] = {
+static const char * htxt_distribution [] = {
 "\01IGNU GENERAL PUBLIC LICENSE ",
 "\n\n",
 "Version 2, June 1991 ",
@@ -5267,7 +5267,7 @@ static char * htxt_distribution [] = {
 NULL
 };
 
-static char * htxt_mailing_list [] = {
+static const char * htxt_mailing_list [] = {
 "\01IThere are two separate mailing lists for nedit users, and one for developers. ",
 "Users may post to the developer mailing list to report defects and communicate ",
 "with the nedit developers.  Remember that nedit is entirely a volunteer ",
@@ -5299,7 +5299,7 @@ static char * htxt_mailing_list [] = {
 NULL
 };
 
-static char * htxt_defects [] = {
+static const char * htxt_defects [] = {
 "\01RSolutions to Common Problems\01I",
 "\n\n",
 "For a much more comprehensive list of common problems and solutions, see the ",
@@ -5427,7 +5427,7 @@ static char * htxt_defects [] = {
 NULL
 };
 
-static char * htxt_tabs_dialog [] = {
+static const char * htxt_tabs_dialog [] = {
 "\01IThe Tabs dialog controls both the operation of the Tab key, and ",
 "the interpretation of tab characters within a file. ",
 "\n\n",
@@ -5467,7 +5467,7 @@ static char * htxt_tabs_dialog [] = {
 NULL
 };
 
-static char * htxt_custom_title_dialog [] = {
+static const char * htxt_custom_title_dialog [] = {
 "\01IThe Customize Window Title dialog allows you to customize ",
 "and test the way information will be displayed in each window's ",
 "title field. ",
@@ -5526,7 +5526,7 @@ static char * htxt_custom_title_dialog [] = {
 NULL
 };
 
-static char **HelpText[] = {
+static const char **HelpText[] = {
     htxt_start,
     htxt_select,
     htxt_search,

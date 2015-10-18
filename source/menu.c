@@ -1224,11 +1224,11 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 static Widget makeHelpMenuItem(
 
     Widget           parent,
-    char            *name,      /* to be assigned to the child widget */
-    char            *label,     /* text to be displayed in menu       */
+    const char            *name,      /* to be assigned to the child widget */
+    const char            *label,     /* text to be displayed in menu       */
     char             mnemonic,  /* letter in label to be underlined   */
     menuCallbackProc callback,  /* activated when menu item selected  */
-    void            *cbArg,     /* passed to activated call back      */
+    const void            *cbArg,     /* passed to activated call back      */
     int              mode,      /* SGI_CUSTOM menu option             */
     enum HelpTopic   topic      /* associated with this menu item     */
 )

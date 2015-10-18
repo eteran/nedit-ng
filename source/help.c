@@ -171,7 +171,7 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpAgainCB(Widget w, XtPointer clientData,
         XtPointer callData);
 static void printCB(Widget w, XtPointer clientData, XtPointer callData);
-static char *stitch(Widget  parent, char **string_list,char **styleMap);
+static char *stitch(Widget  parent, const char **string_list, char **styleMap);
 static void searchHelpText(Widget parent, int parentTopic,
         const char *searchFor, int allSections, int startPos, int startTopic);
 static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic);
@@ -295,7 +295,7 @@ static void initHelpStyles (Widget parent)
     {
         Pixel fg;
         int   styleIndex;
-        char ** line;
+        const char ** line;
 
         XtVaGetValues(parent, XtNforeground, &fg, NULL);
 
@@ -449,16 +449,16 @@ static void adaptNavigationButtons(int topic) {
 static char * stitch (
 
     Widget  parent,      /* used for dynamic font/color allocation */
-    char ** string_list, /* given help strings to stitch together */
+    const char ** string_list, /* given help strings to stitch together */
     char ** styleMap     /* NULL, or a place to store help styles */
 )
 {
-    char  *  cp;
+    const char  *  cp;
     char  *  section, * sp;       /* resulting help text section            */
     char  *  styleData, * sdp;    /* resulting style data for text          */
     char     style = STYLE_PLAIN; /* start off each section with this style */
     int      total_size = 0;      /* help text section size                 */
-    char  ** crnt_line;
+    const char  ** crnt_line;
 
     /*----------------------------------------------------
     * How many characters are there going to be displayed?
@@ -549,7 +549,8 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
 
 	int topic_num = topic;
 
-    char * buf, *topStr=HelpTitles[topic_num];
+    char * buf;
+	const char *topStr=HelpTitles[topic_num];
     
     buf=(char *)malloc(strlen(topStr) + 24);
     topic_num++; 
@@ -593,13 +594,13 @@ static Widget createHelpPanel(enum HelpTopic topic)
        width should be larger than the width of the scrollbar. 50 is probably 
        a safe value; this leaves room for a few characters */
     XtVaSetValues(appShell, XtNminWidth, 50, NULL);
-    form = XtVaCreateManagedWidget("helpForm", xmFormWidgetClass, appShell,
+    form = XtVaCreateManagedWidget((String)"helpForm", xmFormWidgetClass, appShell,
             NULL);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
     
     /* Create the bottom row of buttons */
     btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Find..."),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Find..."),
             XmNmnemonic, 'F',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -611,7 +612,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("findAgain", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Find Again"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Find Again"),
             XmNmnemonic, 'A',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -623,7 +624,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("print", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Print..."),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Print..."),
             XmNmnemonic, 'P',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -636,7 +637,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
 
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Close"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Close"),
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 75,
@@ -648,7 +649,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             
     /* Create the next row of buttons (for navigation) */
     btn = XtVaCreateManagedWidget("prevTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("<< Browse"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"<< Browse"),
             XmNmnemonic, 'o', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -661,7 +662,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("nextTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Browse >>"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Browse >>"),
             XmNmnemonic, 'e', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -674,7 +675,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("histBack", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Back"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Back"),
             XmNmnemonic, 'B', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -687,7 +688,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple("Forward"),
+            XmNlabelString, st1=XmStringCreateSimple((String)"Forward"),
             XmNmnemonic, 'w', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -1147,9 +1148,9 @@ void InstallHelpLinkActions(XtAppContext context)
 {   
     static XtActionsRec Actions[] =
     {
-        {"help-hyperlink", helpHyperlinkAP},
-        {"help-focus-buttons", helpFocusButtonsAP},
-        {"help-button-action", helpButtonActionAP}
+        {(String)"help-hyperlink", helpHyperlinkAP},
+        {(String)"help-focus-buttons", helpFocusButtonsAP},
+        {(String)"help-button-action", helpButtonActionAP}
     };
 
     XtAppAddActions(context, Actions, XtNumber(Actions));
