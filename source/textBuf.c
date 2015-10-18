@@ -1293,7 +1293,7 @@ int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 ** substitution.  Returns False, if substitution is no longer possible
 ** because all non-printable characters are already in use.
 */
-int BufSubstituteNullChars(char *string, int length, textBuffer *buf)
+int BufSubstituteNullChars(const char *string, int length, textBuffer *buf)
 {
     char histogram[256];
 

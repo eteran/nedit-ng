@@ -1223,7 +1223,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
 
             strcpy(dupTagsList[i],temp);
         }
-        createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
+        createSelectMenu(dialogParent, (String)"Duplicate Tags", nMatches, dupTagsList);
         for (i=0; i<nMatches; i++)
             free(dupTagsList[i]);
         free(dupTagsList);

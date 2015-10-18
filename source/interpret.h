@@ -66,7 +66,7 @@ typedef union InstTag {
 } Inst;
 
 typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList, 
-        int nArgs, struct DataValueTag *result, char **errMsg);
+        int nArgs, struct DataValueTag *result, const char **errMsg);
 
 typedef struct NStringTag {
   char *rep;
