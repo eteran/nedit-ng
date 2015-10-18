@@ -54,8 +54,8 @@ void PrintWindow(WindowInfo *window, int selectedOnly);
 void PrintString(const char *string, int length, Widget parent, const char *jobName);
 int WriteBackupFile(WindowInfo *window);
 int IncludeFile(WindowInfo *window, const char *name);
-int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname);
-int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
+int PromptForExistingFile(WindowInfo *window, const char *prompt, const char *fullname);
+int PromptForNewFile(WindowInfo *window, const char *prompt, const char *fullname,
     	int *fileFormat, int *addWrap);
 int CheckReadOnly(WindowInfo *window);
 void RemoveBackupFile(WindowInfo *window);

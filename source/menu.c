@@ -327,19 +327,19 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
 static void endOfSelectionAP(Widget w, XEvent *event, String *args,
 	Cardinal *nArgs);
-static Widget createMenu(Widget parent, char *name, char *label,
+static Widget createMenu(Widget parent, const char *name, const char *label,
     	char mnemonic, Widget *cascadeBtn, int mode);
-static Widget createMenuItem(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int mode);
-static Widget createFakeMenuItem(Widget parent, char *name,
-	menuCallbackProc callback, void *cbArg);
-static Widget createMenuToggle(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int set,
+static Widget createMenuItem(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int mode);
+static Widget createFakeMenuItem(Widget parent, const char *name,
+	menuCallbackProc callback, const void *cbArg);
+static Widget createMenuToggle(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int set,
 	int mode);
-static Widget createMenuRadioToggle(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int set,
+static Widget createMenuRadioToggle(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int set,
 	int mode);
-static Widget createMenuSeparator(Widget parent, char *name, int mode);
+static Widget createMenuSeparator(Widget parent, const char *name, int mode);
 static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(const WindowInfo *window);
 static void updatePrevOpenMenu(WindowInfo *window);
@@ -351,9 +351,9 @@ static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData);
-static void openPrevCB(Widget w, char *name, caddr_t callData);
-static void unloadTagsFileCB(Widget w, char *name, caddr_t callData);
-static void unloadTipsFileCB(Widget w, char *name, caddr_t callData);
+static void openPrevCB(Widget w, const char *name, caddr_t callData);
+static void unloadTagsFileCB(Widget w, const char *name, caddr_t callData);
+static void unloadTipsFileCB(Widget w, const char *name, caddr_t callData);
 static int cmpStrPtr(const void *strA, const void *strB);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
@@ -415,159 +415,159 @@ static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu,
 
 /* Application action table */
 static XtActionsRec Actions[] = {
-    {"new", newAP},
-    {"new_opposite", newOppositeAP},
-    {"new_tab", newTabAP},
-    {"open", openAP},
-    {"open-dialog", openDialogAP},
-    {"open_dialog", openDialogAP},
-    {"open-selected", openSelectedAP},
-    {"open_selected", openSelectedAP},
-    {"close", closeAP},
-    {"save", saveAP},
-    {"save-as", saveAsAP},
-    {"save_as", saveAsAP},
-    {"save-as-dialog", saveAsDialogAP},
-    {"save_as_dialog", saveAsDialogAP},
-    {"revert-to-saved", revertAP},
-    {"revert_to_saved", revertAP},
-    {"revert_to_saved_dialog", revertDialogAP},
-    {"include-file", includeAP},
-    {"include_file", includeAP},
-    {"include-file-dialog", includeDialogAP},
-    {"include_file_dialog", includeDialogAP},
-    {"load-macro-file", loadMacroAP},
-    {"load_macro_file", loadMacroAP},
-    {"load-macro-file-dialog", loadMacroDialogAP},
-    {"load_macro_file_dialog", loadMacroDialogAP},
-    {"load-tags-file", loadTagsAP},
-    {"load_tags_file", loadTagsAP},
-    {"load-tags-file-dialog", loadTagsDialogAP},
-    {"load_tags_file_dialog", loadTagsDialogAP},
-    {"unload_tags_file", unloadTagsAP},
-    {"load_tips_file", loadTipsAP},
-    {"load_tips_file_dialog", loadTipsDialogAP},
-    {"unload_tips_file", unloadTipsAP},
-    {"print", printAP},
-    {"print-selection", printSelAP},
-    {"print_selection", printSelAP},
-    {"exit", exitAP},
-    {"undo", undoAP},
-    {"redo", redoAP},
-    {"delete", clearAP},
-    {"select-all", selAllAP},
-    {"select_all", selAllAP},
-    {"shift-left", shiftLeftAP},
-    {"shift_left", shiftLeftAP},
-    {"shift-left-by-tab", shiftLeftTabAP},
-    {"shift_left_by_tab", shiftLeftTabAP},
-    {"shift-right", shiftRightAP},
-    {"shift_right", shiftRightAP},
-    {"shift-right-by-tab", shiftRightTabAP},
-    {"shift_right_by_tab", shiftRightTabAP},
-    {"find", findAP},
-    {"find-dialog", findDialogAP},
-    {"find_dialog", findDialogAP},
-    {"find-again", findSameAP},
-    {"find_again", findSameAP},
-    {"find-selection", findSelAP},
-    {"find_selection", findSelAP},
-    {"find_incremental", findIncrAP},
-    {"start_incremental_find", startIncrFindAP},
-    {"replace", replaceAP},
-    {"replace-dialog", replaceDialogAP},
-    {"replace_dialog", replaceDialogAP},
-    {"replace-all", replaceAllAP},
-    {"replace_all", replaceAllAP},
-    {"replace-in-selection", replaceInSelAP},
-    {"replace_in_selection", replaceInSelAP},
-    {"replace-again", replaceSameAP},
-    {"replace_again", replaceSameAP},
-    {"replace_find", replaceFindAP},
-    {"replace_find_same", replaceFindSameAP},
-    {"replace_find_again", replaceFindSameAP},
-    {"goto-line-number", gotoAP},
-    {"goto_line_number", gotoAP},
-    {"goto-line-number-dialog", gotoDialogAP},
-    {"goto_line_number_dialog", gotoDialogAP},
-    {"goto-selected", gotoSelectedAP},
-    {"goto_selected", gotoSelectedAP},
-    {"mark", markAP},
-    {"mark-dialog", markDialogAP},
-    {"mark_dialog", markDialogAP},
-    {"goto-mark", gotoMarkAP},
-    {"goto_mark", gotoMarkAP},
-    {"goto-mark-dialog", gotoMarkDialogAP},
-    {"goto_mark_dialog", gotoMarkDialogAP},
-    {"match", selectToMatchingAP},
-    {"select_to_matching", selectToMatchingAP},
-    {"goto_matching", gotoMatchingAP},
-    {"find-definition", findDefAP},
-    {"find_definition", findDefAP},
-    {"show_tip", showTipAP},
-    {"split-pane", splitPaneAP},
-    {"split_pane", splitPaneAP},
-    {"close-pane", closePaneAP},
-    {"close_pane", closePaneAP},
-    {"detach_document", detachDocumentAP},
-    {"detach_document_dialog", detachDocumentDialogAP},
-    {"move_document_dialog", moveDocumentDialogAP},
-    {"next_document", nextDocumentAP},
-    {"previous_document", prevDocumentAP},
-    {"last_document", lastDocumentAP},
-    {"uppercase", capitalizeAP},
-    {"lowercase", lowercaseAP},
-    {"fill-paragraph", fillAP},
-    {"fill_paragraph", fillAP},
-    {"control-code-dialog", controlDialogAP},
-    {"control_code_dialog", controlDialogAP},
+    {(String)"new", newAP},
+    {(String)"new_opposite", newOppositeAP},
+    {(String)"new_tab", newTabAP},
+    {(String)"open", openAP},
+    {(String)"open-dialog", openDialogAP},
+    {(String)"open_dialog", openDialogAP},
+    {(String)"open-selected", openSelectedAP},
+    {(String)"open_selected", openSelectedAP},
+    {(String)"close", closeAP},
+    {(String)"save", saveAP},
+    {(String)"save-as", saveAsAP},
+    {(String)"save_as", saveAsAP},
+    {(String)"save-as-dialog", saveAsDialogAP},
+    {(String)"save_as_dialog", saveAsDialogAP},
+    {(String)"revert-to-saved", revertAP},
+    {(String)"revert_to_saved", revertAP},
+    {(String)"revert_to_saved_dialog", revertDialogAP},
+    {(String)"include-file", includeAP},
+    {(String)"include_file", includeAP},
+    {(String)"include-file-dialog", includeDialogAP},
+    {(String)"include_file_dialog", includeDialogAP},
+    {(String)"load-macro-file", loadMacroAP},
+    {(String)"load_macro_file", loadMacroAP},
+    {(String)"load-macro-file-dialog", loadMacroDialogAP},
+    {(String)"load_macro_file_dialog", loadMacroDialogAP},
+    {(String)"load-tags-file", loadTagsAP},
+    {(String)"load_tags_file", loadTagsAP},
+    {(String)"load-tags-file-dialog", loadTagsDialogAP},
+    {(String)"load_tags_file_dialog", loadTagsDialogAP},
+    {(String)"unload_tags_file", unloadTagsAP},
+    {(String)"load_tips_file", loadTipsAP},
+    {(String)"load_tips_file_dialog", loadTipsDialogAP},
+    {(String)"unload_tips_file", unloadTipsAP},
+    {(String)"print", printAP},
+    {(String)"print-selection", printSelAP},
+    {(String)"print_selection", printSelAP},
+    {(String)"exit", exitAP},
+    {(String)"undo", undoAP},
+    {(String)"redo", redoAP},
+    {(String)"delete", clearAP},
+    {(String)"select-all", selAllAP},
+    {(String)"select_all", selAllAP},
+    {(String)"shift-left", shiftLeftAP},
+    {(String)"shift_left", shiftLeftAP},
+    {(String)"shift-left-by-tab", shiftLeftTabAP},
+    {(String)"shift_left_by_tab", shiftLeftTabAP},
+    {(String)"shift-right", shiftRightAP},
+    {(String)"shift_right", shiftRightAP},
+    {(String)"shift-right-by-tab", shiftRightTabAP},
+    {(String)"shift_right_by_tab", shiftRightTabAP},
+    {(String)"find", findAP},
+    {(String)"find-dialog", findDialogAP},
+    {(String)"find_dialog", findDialogAP},
+    {(String)"find-again", findSameAP},
+    {(String)"find_again", findSameAP},
+    {(String)"find-selection", findSelAP},
+    {(String)"find_selection", findSelAP},
+    {(String)"find_incremental", findIncrAP},
+    {(String)"start_incremental_find", startIncrFindAP},
+    {(String)"replace", replaceAP},
+    {(String)"replace-dialog", replaceDialogAP},
+    {(String)"replace_dialog", replaceDialogAP},
+    {(String)"replace-all", replaceAllAP},
+    {(String)"replace_all", replaceAllAP},
+    {(String)"replace-in-selection", replaceInSelAP},
+    {(String)"replace_in_selection", replaceInSelAP},
+    {(String)"replace-again", replaceSameAP},
+    {(String)"replace_again", replaceSameAP},
+    {(String)"replace_find", replaceFindAP},
+    {(String)"replace_find_same", replaceFindSameAP},
+    {(String)"replace_find_again", replaceFindSameAP},
+    {(String)"goto-line-number", gotoAP},
+    {(String)"goto_line_number", gotoAP},
+    {(String)"goto-line-number-dialog", gotoDialogAP},
+    {(String)"goto_line_number_dialog", gotoDialogAP},
+    {(String)"goto-selected", gotoSelectedAP},
+    {(String)"goto_selected", gotoSelectedAP},
+    {(String)"mark", markAP},
+    {(String)"mark-dialog", markDialogAP},
+    {(String)"mark_dialog", markDialogAP},
+    {(String)"goto-mark", gotoMarkAP},
+    {(String)"goto_mark", gotoMarkAP},
+    {(String)"goto-mark-dialog", gotoMarkDialogAP},
+    {(String)"goto_mark_dialog", gotoMarkDialogAP},
+    {(String)"match", selectToMatchingAP},
+    {(String)"select_to_matching", selectToMatchingAP},
+    {(String)"goto_matching", gotoMatchingAP},
+    {(String)"find-definition", findDefAP},
+    {(String)"find_definition", findDefAP},
+    {(String)"show_tip", showTipAP},
+    {(String)"split-pane", splitPaneAP},
+    {(String)"split_pane", splitPaneAP},
+    {(String)"close-pane", closePaneAP},
+    {(String)"close_pane", closePaneAP},
+    {(String)"detach_document", detachDocumentAP},
+    {(String)"detach_document_dialog", detachDocumentDialogAP},
+    {(String)"move_document_dialog", moveDocumentDialogAP},
+    {(String)"next_document", nextDocumentAP},
+    {(String)"previous_document", prevDocumentAP},
+    {(String)"last_document", lastDocumentAP},
+    {(String)"uppercase", capitalizeAP},
+    {(String)"lowercase", lowercaseAP},
+    {(String)"fill-paragraph", fillAP},
+    {(String)"fill_paragraph", fillAP},
+    {(String)"control-code-dialog", controlDialogAP},
+    {(String)"control_code_dialog", controlDialogAP},
 
-    {"filter-selection-dialog", filterDialogAP},
-    {"filter_selection_dialog", filterDialogAP},
-    {"filter-selection", shellFilterAP},
-    {"filter_selection", shellFilterAP},
-    {"execute-command", execAP},
-    {"execute_command", execAP},
-    {"execute-command-dialog", execDialogAP},
-    {"execute_command_dialog", execDialogAP},
-    {"execute-command-line", execLineAP},
-    {"execute_command_line", execLineAP},
-    {"shell-menu-command", shellMenuAP},
-    {"shell_menu_command", shellMenuAP},
+    {(String)"filter-selection-dialog", filterDialogAP},
+    {(String)"filter_selection_dialog", filterDialogAP},
+    {(String)"filter-selection", shellFilterAP},
+    {(String)"filter_selection", shellFilterAP},
+    {(String)"execute-command", execAP},
+    {(String)"execute_command", execAP},
+    {(String)"execute-command-dialog", execDialogAP},
+    {(String)"execute_command_dialog", execDialogAP},
+    {(String)"execute-command-line", execLineAP},
+    {(String)"execute_command_line", execLineAP},
+    {(String)"shell-menu-command", shellMenuAP},
+    {(String)"shell_menu_command", shellMenuAP},
 
-    {"macro-menu-command", macroMenuAP},
-    {"macro_menu_command", macroMenuAP},
-    {"bg_menu_command", bgMenuAP},
-    {"post_window_bg_menu", bgMenuPostAP},
-    {"post_tab_context_menu", tabMenuPostAP},
-    {"beginning-of-selection", beginningOfSelectionAP},
-    {"beginning_of_selection", beginningOfSelectionAP},
-    {"end-of-selection", endOfSelectionAP},
-    {"end_of_selection", endOfSelectionAP},
-    {"repeat_macro", repeatMacroAP},
-    {"repeat_dialog", repeatDialogAP},
-    {"raise_window", raiseWindowAP},
-    {"focus_pane", focusPaneAP},
-    {"set_statistics_line", setStatisticsLineAP},
-    {"set_incremental_search_line", setIncrementalSearchLineAP},
-    {"set_show_line_numbers", setShowLineNumbersAP},
-    {"set_auto_indent", setAutoIndentAP},
-    {"set_wrap_text", setWrapTextAP},
-    {"set_wrap_margin", setWrapMarginAP},
-    {"set_highlight_syntax", setHighlightSyntaxAP},
+    {(String)"macro-menu-command", macroMenuAP},
+    {(String)"macro_menu_command", macroMenuAP},
+    {(String)"bg_menu_command", bgMenuAP},
+    {(String)"post_window_bg_menu", bgMenuPostAP},
+    {(String)"post_tab_context_menu", tabMenuPostAP},
+    {(String)"beginning-of-selection", beginningOfSelectionAP},
+    {(String)"beginning_of_selection", beginningOfSelectionAP},
+    {(String)"end-of-selection", endOfSelectionAP},
+    {(String)"end_of_selection", endOfSelectionAP},
+    {(String)"repeat_macro", repeatMacroAP},
+    {(String)"repeat_dialog", repeatDialogAP},
+    {(String)"raise_window", raiseWindowAP},
+    {(String)"focus_pane", focusPaneAP},
+    {(String)"set_statistics_line", setStatisticsLineAP},
+    {(String)"set_incremental_search_line", setIncrementalSearchLineAP},
+    {(String)"set_show_line_numbers", setShowLineNumbersAP},
+    {(String)"set_auto_indent", setAutoIndentAP},
+    {(String)"set_wrap_text", setWrapTextAP},
+    {(String)"set_wrap_margin", setWrapMarginAP},
+    {(String)"set_highlight_syntax", setHighlightSyntaxAP},
 
-    {"set_make_backup_copy", setMakeBackupCopyAP},
+    {(String)"set_make_backup_copy", setMakeBackupCopyAP},
 
-    {"set_incremental_backup", setIncrementalBackupAP},
-    {"set_show_matching", setShowMatchingAP},
-    {"set_match_syntax_based", setMatchSyntaxBasedAP},
-    {"set_overtype_mode", setOvertypeModeAP},
-    {"set_locked", setLockedAP},
-    {"set_tab_dist", setTabDistAP},
-    {"set_em_tab_dist", setEmTabDistAP},
-    {"set_use_tabs", setUseTabsAP},
-    {"set_fonts", setFontsAP},
-    {"set_language_mode", setLanguageModeAP}
+    {(String)"set_incremental_backup", setIncrementalBackupAP},
+    {(String)"set_show_matching", setShowMatchingAP},
+    {(String)"set_match_syntax_based", setMatchSyntaxBasedAP},
+    {(String)"set_overtype_mode", setOvertypeModeAP},
+    {(String)"set_locked", setLockedAP},
+    {(String)"set_tab_dist", setTabDistAP},
+    {(String)"set_em_tab_dist", setEmTabDistAP},
+    {(String)"set_use_tabs", setUseTabsAP},
+    {(String)"set_fonts", setFontsAP},
+    {(String)"set_language_mode", setLanguageModeAP}
 };
 
 /* List of previously opened files for File menu */
@@ -620,7 +620,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /*
     ** Create the menu bar (row column) widget
     */
-    menuBar = XmCreateMenuBar(parent, "menuBar", NULL, 0);
+    menuBar = XmCreateMenuBar(parent, (String)"menuBar", NULL, 0);
 
 #ifdef SGI_CUSTOM
     /*
@@ -1366,12 +1366,12 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) 
 {
-    static char *params[1] = {"rect"};
+    static const char *params[1] = {"rect"};
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "paste_clipboard",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1475,14 +1475,14 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
     XEvent *event = ((XmAnyCallbackStruct *)callData)->event;
     WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
     int extend = event->xbutton.state & ShiftMask;
-    static char *params[1] = {"extend"};
+    static const char *params[1] = {"extend"};
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     if (event->type == KeyPress || event->type == KeyRelease)
     	BeginGotoMarkCommand(window, extend);
     else
-    	XtCallActionProc(window->lastFocus, "goto_mark_dialog", event, params,
+    	XtCallActionProc(window->lastFocus, "goto_mark_dialog", event, (char **)params,
 		extend ? 1 : 0);
 }
 
@@ -1498,7 +1498,7 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"off"};
+    static const char *params[1] = {"off"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1512,12 +1512,12 @@ static void autoIndentOffCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"on"};
+    static const char *params[1] = {"on"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1531,12 +1531,12 @@ static void autoIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"smart"};
+    static const char *params[1] = {"smart"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1550,7 +1550,7 @@ static void smartIndentCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void autoSaveCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1591,7 +1591,7 @@ static void preserveCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {NO_FLASH_STRING};
+    static const char *params[1] = {NO_FLASH_STRING};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1605,12 +1605,12 @@ static void showMatchingOffCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {FLASH_DELIMIT_STRING};
+    static const char *params[1] = {FLASH_DELIMIT_STRING};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1624,12 +1624,12 @@ static void showMatchingDelimitCB(Widget w, WindowInfo *window, caddr_t callData
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {FLASH_RANGE_STRING};
+    static const char *params[1] = {FLASH_RANGE_STRING};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1643,7 +1643,7 @@ static void showMatchingRangeCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void matchSyntaxBasedCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -1671,7 +1671,7 @@ static void fontCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"none"};
+    static const char *params[1] = {"none"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1685,12 +1685,12 @@ static void noWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"auto"};
+    static const char *params[1] = {"auto"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1704,12 +1704,12 @@ static void newlineWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
 {
-    static char *params[1] = {"continuous"};
+    static const char *params[1] = {"continuous"};
     Widget menu = MENU_WIDGET(w);
 
     window = WidgetToWindow(menu);
@@ -1723,7 +1723,7 @@ static void continuousWrapCB(Widget w, WindowInfo *window, caddr_t callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void wrapMarginCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -2616,12 +2616,12 @@ static void savePrefCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
-    static char *params[1] = {"\f"};
+    static const char *params[1] = {"\f"};
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "insert_string",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 static void cancelShellCB(Widget w, WindowInfo *window, XtPointer callData)
@@ -4264,7 +4264,7 @@ static void setLanguageModeAP(Widget w, XEvent *event, String *args,
 ** of SGI_CUSTOM mode, 3) optionally returns the cascade button widget
 ** in "cascadeBtn" if "cascadeBtn" is non-NULL.
 */
-static Widget createMenu(Widget parent, char *name, char *label,
+static Widget createMenu(Widget parent, const char *name, const char *label,
     	char mnemonic, Widget *cascadeBtn, int mode)
 {
     Widget menu, cascade;
@@ -4295,8 +4295,8 @@ static Widget createMenu(Widget parent, char *name, char *label,
 ** (these are set in the fallback app-defaults so users can change them),
 ** and with the short/full option required in SGI_CUSTOM mode.
 */
-static Widget createMenuItem(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int mode)
+static Widget createMenuItem(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int mode)
 {
     Widget button;
     XmString st1;
@@ -4325,8 +4325,8 @@ static Widget createMenuItem(Widget parent, char *name, char *label,
 ** Motif does not properly process the event descriptions in accelerator
 ** resources, and you can't specify "shift key is optional"
 */
-static Widget createFakeMenuItem(Widget parent, char *name,
-	menuCallbackProc callback, void *cbArg)
+static Widget createFakeMenuItem(Widget parent, const char *name,
+	menuCallbackProc callback, const void *cbArg)
 {
     Widget button;
     XmString st1;
@@ -4347,8 +4347,8 @@ static Widget createFakeMenuItem(Widget parent, char *name,
 ** Add a toggle button item to an already established pull-down or pop-up
 ** menu, including mnemonics, accelerators and callbacks.
 */
-static Widget createMenuToggle(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int set,
+static Widget createMenuToggle(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int set,
 	int mode)
 {
     Widget button;
@@ -4376,8 +4376,8 @@ static Widget createMenuToggle(Widget parent, char *name, char *label,
 /*
 ** Create a toggle button with a diamond (radio-style) appearance
 */
-static Widget createMenuRadioToggle(Widget parent, char *name, char *label,
-	char mnemonic, menuCallbackProc callback, void *cbArg, int set,
+static Widget createMenuRadioToggle(Widget parent, const char *name, const char *label,
+	char mnemonic, menuCallbackProc callback, const void *cbArg, int set,
 	int mode)
 {
     Widget button;
@@ -4387,7 +4387,7 @@ static Widget createMenuRadioToggle(Widget parent, char *name, char *label,
     return button;
 }
 
-static Widget createMenuSeparator(Widget parent, char *name, int mode)
+static Widget createMenuSeparator(Widget parent, const char *name, int mode)
 {
     Widget button;
     
@@ -5102,11 +5102,11 @@ static int searchType(int ignoreArgs, String *args, Cardinal *nArgs)
 */
 static char **shiftKeyToDir(XtPointer callData)
 {
-    static char *backwardParam[1] = {"backward"};
-    static char *forwardParam[1] = {"forward"};
+    static const char *backwardParam[1] = {"backward"};
+    static const char *forwardParam[1] = {"forward"};
     if (((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask)
-    	return backwardParam;
-    return forwardParam;
+    	return (char **)backwardParam;
+    return (char **)forwardParam;
 }
 
 static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
@@ -5116,34 +5116,34 @@ static void raiseCB(Widget w, WindowInfo *window, caddr_t callData)
     RaiseFocusDocumentWindow(window, True /* always focus */);
 }
 
-static void openPrevCB(Widget w, char *name, caddr_t callData)
+static void openPrevCB(Widget w, const char *name, caddr_t callData)
 {
-    char *params[1];
+    const char *params[1];
     Widget menu = MENU_WIDGET(w);
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     params[0] = name;
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "open",
-    	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+    	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
     CheckCloseDim();
 }
 
-static void unloadTagsFileCB(Widget w, char *name, caddr_t callData)
+static void unloadTagsFileCB(Widget w, const char *name, caddr_t callData)
 {
-    char *params[1];
+    const char *params[1];
     Widget menu = MENU_WIDGET(w);
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     params[0] = name;
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tags_file",
-	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
-static void unloadTipsFileCB(Widget w, char *name, caddr_t callData)
+static void unloadTipsFileCB(Widget w, const char *name, caddr_t callData)
 {
-    char *params[1];
+    const char *params[1];
 #if XmVersion >= 1002
     Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */
 #else
@@ -5152,7 +5152,7 @@ static void unloadTipsFileCB(Widget w, char *name, caddr_t callData)
     
     params[0] = name;
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tips_file",
-	    ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	    ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
 /*

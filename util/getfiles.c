@@ -250,7 +250,7 @@ static void (*OrigFileSearchProc)();	/* Built in Motif file search proc */
 /* 
  * Do the hard work of setting up a file selection dialog
  */
-Widget getFilenameHelper(Widget parent, char *promptString, char *filename, 
+Widget getFilenameHelper(Widget parent, const char *promptString, const char *filename, 
         int existing) 
 {
     int       n;                      /* number of arguments               */
@@ -259,7 +259,7 @@ Widget getFilenameHelper(Widget parent, char *promptString, char *filename,
     XmString  titleString;	      /* compound string for dialog title  */
 
     n = 0;
-    titleString = XmStringCreateSimple(promptString);
+    titleString = XmStringCreateSimple((String)promptString);
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n], XmNdialogTitle, titleString); n++;
     fileSB = CreateFileSelectionDialog(parent,"FileSelect",args,n);
@@ -310,7 +310,7 @@ Widget getFilenameHelper(Widget parent, char *promptString, char *filename,
 /*  Returns:	GFN_OK	      - file was selected and OK button pressed	   */
 /*		GFN_CANCEL    - Cancel button pressed and no returned file */
 /*									   */
-int GetExistingFilename(Widget parent, char *promptString, char *filename) 
+int GetExistingFilename(Widget parent, const char *promptString, char *filename) 
 {
     Widget existFileSB = getFilenameHelper(parent, promptString, filename, 
             True);
@@ -323,8 +323,8 @@ int GetExistingFilename(Widget parent, char *promptString, char *filename)
  * In this case the text area of the FSB is *not* unmanaged, so the user can
  * enter a new filename.
  */
-int GetNewFilename(Widget parent, char *promptString, char *filename,
-        char *defaultName)
+int GetNewFilename(Widget parent, const char *promptString, char *filename,
+        const char *defaultName)
 {
     Widget fileSB = getFilenameHelper(parent, promptString, filename, False);
     return HandleCustomNewFileSB(fileSB, filename, defaultName);
@@ -481,7 +481,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
 **		GFN_CANCEL    - Cancel button pressed and no returned file
 **
 */
-int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
+int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName)
 {
     Boolean   done_with_dialog=False; /* ok to destroy dialog flag	   */
     Widget    help;		      /* help window form dialog	   */
@@ -566,7 +566,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName)
 	XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
         XmTextFieldSetSelection(nameField, 0, 0, CurrentTime);
 #else
-	XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
+	XmTextInsert(nameField, XmTextGetLastPosition(nameField), (String)defaultName);
 #endif
     }
 
@@ -645,11 +645,11 @@ char *GetFileDialogDefaultPattern(void)
 ** "dir" can be passed as NULL to clear the current default directory
 ** and use the application's working directory instead.
 */
-void SetFileDialogDefaultDirectory(char *dir)
+void SetFileDialogDefaultDirectory(const char *dir)
 {
     if (DefaultDirectory != NULL)
     	XmStringFree(DefaultDirectory);
-    DefaultDirectory = dir==NULL ? NULL : XmStringCreateSimple(dir);
+    DefaultDirectory = dir==NULL ? NULL : XmStringCreateSimple((String)dir);
 }
 
 /*
@@ -657,11 +657,11 @@ void SetFileDialogDefaultDirectory(char *dir)
 ** "pattern" can be passed as NULL as the equivalent a pattern matching
 ** all files in the directory.
 */
-void SetFileDialogDefaultPattern(char *pattern)
+void SetFileDialogDefaultPattern(const char *pattern)
 {
     if (DefaultPattern != NULL)
     	XmStringFree(DefaultPattern);
-    DefaultPattern = pattern==NULL ? NULL : XmStringCreateSimple(pattern);
+    DefaultPattern = pattern==NULL ? NULL : XmStringCreateSimple((String)pattern);
 }
 
 /*

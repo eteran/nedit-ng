@@ -33,15 +33,14 @@
 #define GFN_OK		1               /* Get Filename OK constant     */
 #define GFN_CANCEL	2               /* Get Filename Cancel constant */
 
-int GetExistingFilename(Widget parent, char *promptString, char *filename);
-int GetNewFilename(Widget parent, char *promptString, char *filename, 
-        char *defaultName);
+int GetExistingFilename(Widget parent, const char *promptString, char *filename);
+int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);
 int HandleCustomExistFileSB(Widget existFileSB, char *filename);
-int HandleCustomNewFileSB(Widget newFileSB, char *filename, char *defaultName);
+int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName);
 char *GetFileDialogDefaultDirectory(void);
 char *GetFileDialogDefaultPattern(void);
-void SetFileDialogDefaultDirectory(char *dir);
-void SetFileDialogDefaultPattern(char *pattern);
+void SetFileDialogDefaultDirectory(const char *dir);
+void SetFileDialogDefaultPattern(const char *pattern);
 void SetGetEFTextFieldRemoval(int state);
 
 #endif /* NEDIT_GETFILES_H_INCLUDED */

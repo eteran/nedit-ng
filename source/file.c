@@ -1352,7 +1352,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 ** Wrapper for GetExistingFilename which uses the current window's path
 ** (if set) as the default directory.
 */
-int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
+int PromptForExistingFile(WindowInfo *window, const char *prompt, const char *fullname)
 {
     char *savedDefaultDir;
     int retVal;
@@ -1377,7 +1377,7 @@ int PromptForExistingFile(WindowInfo *window, char *prompt, char *fullname)
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
+int PromptForNewFile(WindowInfo *window, const char *prompt, const char *fullname,
     	int *fileFormat, int *addWrap)
 {
     int n, retVal;
