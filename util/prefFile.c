@@ -206,7 +206,9 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB,
         const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip,
         int nRsrc, int overlay)
 {
-    char rsrcName[256], rsrcClass[256], *valueString, *type;
+    char rsrcName[256], rsrcClass[256];
+	const char *valueString;
+	char *type;
     XrmValue rsrcValue;
     int i;
 

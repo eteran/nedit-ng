@@ -392,7 +392,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        userData resource to be used by WidgetToWindow to recover the
        window pointer from the widget id of any of the window's widgets */
     XtSetArg(al[ac], XmNuserData, window); ac++;
-    mainWin = XmCreateMainWindow(winShell, "main", al, ac);
+    mainWin = XmCreateMainWindow(winShell, (String)"main", al, ac);
     window->mainWin = mainWin;
     XtManageChild(mainWin);
     
@@ -440,7 +440,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     }
     window->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton",
             xmPushButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("Find"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Find"),
             XmNlabelType, XmPIXMAP,
             XmNlabelPixmap, isrcFind,
             XmNtraversalOn, False,
@@ -458,7 +458,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("Case"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Case"),
             XmNset, GetPrefSearch() == SEARCH_CASE_SENSE 
             || GetPrefSearch() == SEARCH_REGEX
             || GetPrefSearch() == SEARCH_CASE_SENSE_WORD,
@@ -473,7 +473,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("RegExp"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"RegExp"),
             XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
             || GetPrefSearch() == SEARCH_REGEX,
             XmNtopAttachment, XmATTACH_FORM,
@@ -488,7 +488,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("Rev"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Rev"),
             XmNset, False,
             XmNtopAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
@@ -506,7 +506,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     }
     window->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton",
             xmPushButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimple("<x"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"<x"),
             XmNlabelType, XmPIXMAP,
             XmNlabelPixmap, isrcClear,
             XmNtraversalOn, False,
@@ -619,7 +619,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* A separate display of the line/column number */
     window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo",
             xmLabelWidgetClass, window->statsLineForm,
-            XmNlabelString, s1=XmStringCreateSimple("L: ---  C: ---"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"L: ---  C: ---"),
             XmNshadowThickness, 0,
             XmNmarginHeight, 2,
             XmNtraversalOn, False,
@@ -1003,7 +1003,7 @@ void CloseWindow(WindowInfo *window)
         XmToggleButtonSetState(window->readOnlyItem, FALSE, FALSE);
         ClearUndoList(window);
         ClearRedoList(window);
-        XmTextSetString(window->statsLine, ""); /* resets scroll pos of stats
+        XmTextSetString(window->statsLine, (String)""); /* resets scroll pos of stats
                                                    line from long file names */
         UpdateStatsLine(window);
         DetermineLanguageMode(window, True);
@@ -1737,11 +1737,11 @@ void UpdateNewOppositeMenu(WindowInfo *window, int openInTab)
     XmString lbl;
     if ( openInTab )
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimple("New Window"), 
+                XmNlabelString, lbl=XmStringCreateSimple((String)"New Window"), 
                 XmNmnemonic, 'W', NULL);
     else
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimple("New Tab"), 
+                XmNlabelString, lbl=XmStringCreateSimple((String)"New Tab"), 
                 XmNmnemonic, 'T', NULL);
     XmStringFree(lbl);
 }
@@ -2504,8 +2504,8 @@ void AttachSessionMgrHandler(Widget appShell)
     /* Add wm protocol callback for making nedit restartable by session
        managers.  Doesn't yet handle multiple-desktops or iconifying right. */
     if (syAtom == 0) {
-        wmpAtom = XmInternAtom(TheDisplay, "WM_PROTOCOLS", FALSE);
-        syAtom = XmInternAtom(TheDisplay, "WM_SAVE_YOURSELF", FALSE);
+        wmpAtom = XmInternAtom(TheDisplay, (String)"WM_PROTOCOLS",     FALSE);
+        syAtom  = XmInternAtom(TheDisplay, (String)"WM_SAVE_YOURSELF", FALSE);
     }
     XmAddProtocolCallback(appShell, wmpAtom, syAtom,
             (XtCallbackProc)saveYourselfCB, (XtPointer)appShell);
@@ -2692,8 +2692,8 @@ void UpdateStatsLine(WindowInfo *window)
     /* Compose the string to display. If line # isn't available, leave it off */
     pos = TextGetCursorPos(window->lastFocus);
     string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
-    format = window->fileFormat == DOS_FILE_FORMAT ? " DOS" :
-            (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
+    format = window->fileFormat == DOS_FILE_FORMAT ? (String)" DOS" :
+            (window->fileFormat == MAC_FILE_FORMAT ? (String)" Mac" : (String)"");
     if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
         sprintf(string, "%s%s%s %d bytes", window->path, window->filename,
                 format, window->buffer->length);
@@ -3582,7 +3582,7 @@ void RefreshTabState(WindowInfo *win)
 
     /* Make the top document stand out a little more */
     if (IsTopDocument(win))
-        tag = "BOLD";
+        tag = (String)"BOLD";
 
     s1 = XmStringCreateLtoR(labelString, tag);
 
@@ -4531,7 +4531,7 @@ void MoveDocumentDialog(WindowInfo *window)
 
     /* create the dialog */
     parent = window->shell;
-    popupTitle = XmStringCreateSimple("Move Document");
+    popupTitle = XmStringCreateSimple((String)"Move Document");
     sprintf(tmpStr, "Move %s into window of", window->filename);
     s1 = XmStringCreateSimple(tmpStr);
     ac = 0;
@@ -4542,7 +4542,7 @@ void MoveDocumentDialog(WindowInfo *window)
     XtSetArg(csdargs[ac], XmNlistItemCount, nList); ac++;
     XtSetArg(csdargs[ac], XmNvisibleItemCount, 12); ac++;
     XtSetArg(csdargs[ac], XmNautoUnmanage, False); ac++;
-    dialog = CreateSelectionDialog(parent,"moveDocument",csdargs,ac);
+    dialog = CreateSelectionDialog(parent, (String)"moveDocument",csdargs,ac);
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));        
@@ -4558,7 +4558,7 @@ void MoveDocumentDialog(WindowInfo *window)
     XtFree((char *)list);    
 
     /* create the option box for moving all documents */    
-    s1 = MKSTRING("Move all documents in this window");
+    s1 = MKSTRING((String)"Move all documents in this window");
     moveAllOption =  XtVaCreateWidget("moveAll", 
     	    xmToggleButtonWidgetClass, dialog,
 	    XmNlabelString, s1,
@@ -4572,7 +4572,7 @@ void MoveDocumentDialog(WindowInfo *window)
     /* disable option if only one document in the window */
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
-    s1 = MKSTRING("Move");
+    s1 = MKSTRING((String)"Move");
     XtVaSetValues (dialog, XmNokLabelString, s1, NULL);
     XmStringFree(s1);
     
