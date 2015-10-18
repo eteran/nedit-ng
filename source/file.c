@@ -796,7 +796,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     
     /* Get the new name for the file */
     if (newName == NULL) {
-	response = PromptForNewFile(window, "Save File As", fullname,
+	response = PromptForNewFile(window, (String)"Save File As", fullname,
 		&fileFormat, &addWrap);
 	if (response != GFN_OK)
     	    return FALSE;
@@ -1401,12 +1401,12 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     n = 0;
     XtSetArg(args[n],
             XmNselectionLabelString,
-            s1 = XmStringCreateLocalized("New File Name:")); n++;
+            s1 = XmStringCreateLocalized((String)"New File Name:")); n++;
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n],
             XmNdialogTitle,
             s2 = XmStringCreateSimple(prompt)); n++;
-    fileSB = CreateFileSelectionDialog(window->shell,"FileSelect",args,n);
+    fileSB = CreateFileSelectionDialog(window->shell, (String)"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
     formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass,
@@ -1420,11 +1420,11 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
             XmNleftAttachment, XmATTACH_FORM,
             NULL);
     XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
-	    XmNlabelString, s1=XmStringCreateSimple("Format:"), NULL);
+	    XmNlabelString, s1=XmStringCreateSimple((String)"Format:"), NULL);
     XmStringFree(s1);
     unixFormat = XtVaCreateManagedWidget("unixFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimple("Unix"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"Unix"),
             XmNset, *fileFormat == UNIX_FILE_FORMAT,
             XmNuserData, (XtPointer)UNIX_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1436,7 +1436,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     	    fileFormat);
     dosFormat = XtVaCreateManagedWidget("dosFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimple("DOS"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"DOS"),
             XmNset, *fileFormat == DOS_FILE_FORMAT,
             XmNuserData, (XtPointer)DOS_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1448,7 +1448,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     	    fileFormat);
     macFormat = XtVaCreateManagedWidget("macFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimple("Macintosh"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"Macintosh"),
             XmNset, *fileFormat == MAC_FILE_FORMAT,
             XmNuserData, (XtPointer)MAC_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1461,7 +1461,7 @@ int PromptForNewFile(WindowInfo *window, char *prompt, char *fullname,
     if (window->wrapMode == CONTINUOUS_WRAP) {
 	wrapToggle = XtVaCreateManagedWidget("addWrap",
                 xmToggleButtonWidgetClass, formatForm,
-                XmNlabelString, s1 = XmStringCreateSimple("Add line breaks where wrapped"),
+                XmNlabelString, s1 = XmStringCreateSimple((String)"Add line breaks where wrapped"),
                 XmNalignment, XmALIGNMENT_BEGINNING,
                 XmNmnemonic, 'A',
                 XmNtopAttachment, XmATTACH_WIDGET,
@@ -1604,8 +1604,8 @@ void CheckForChangesToFile(WindowInfo *window)
         /* Warn the user, if they like to be warned (Maybe this should be its
             own preference setting: GetPrefWarnFileDeleted()) */
         if (GetPrefWarnFileMods()) {
-            char* title;
-            char* body;
+            const char* title;
+            const char* body;
 
             /* See note below about pop-up timing and XUngrabPointer */
             XUngrabPointer(XtDisplay(window->shell), timestamp);

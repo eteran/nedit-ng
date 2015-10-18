@@ -412,7 +412,8 @@ void MarkDialog(WindowInfo *window)
 
 void GotoMarkDialog(WindowInfo *window, int extend)
 {
-    char letterText[DF_MAX_PROMPT_LENGTH], *params[2];
+    char letterText[DF_MAX_PROMPT_LENGTH];
+	const char *params[2];
     int response;
     
     response = DialogF(DF_PROMPT, window->shell, 2, "Goto Mark",
@@ -429,7 +430,7 @@ void GotoMarkDialog(WindowInfo *window, int extend)
     }
     params[0] = letterText;
     params[1] = "extend";
-    XtCallActionProc(window->lastFocus, "goto_mark", NULL, params,
+    XtCallActionProc(window->lastFocus, "goto_mark", NULL, (char **)params,
 	    extend ? 2 : 1);
 }
 
@@ -491,7 +492,8 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
     WindowInfo *window = WidgetToWindow(w);
     Modifiers modifiers;
     KeySym keysym;
-    char *params[2], string[2];
+    const char *params[2];
+	char string[2];
 
     XtTranslateKeycode(TheDisplay, e->keycode, e->state, &modifiers,
     	    &keysym);
@@ -500,7 +502,7 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
     	string[1] = '\0';
     	params[0] = string;
 	params[1] = "extend";
-    	XtCallActionProc(window->lastFocus, action, event, params,
+    	XtCallActionProc(window->lastFocus, action, event, (char **)params,
 		extend ? 2 : 1);
     	*continueDispatch = False;
     }
@@ -512,17 +514,17 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event,
     	Boolean *continueDispatch)
 {
-    processMarkEvent(w, clientData, event, continueDispatch, "mark", False);
+    processMarkEvent(w, clientData, event, continueDispatch, (String)"mark", False);
 }
 static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event,
     	Boolean *continueDispatch)
 {
-    processMarkEvent(w, clientData, event, continueDispatch, "goto_mark",False);
+    processMarkEvent(w, clientData, event, continueDispatch, (String)"goto_mark",False);
 }
 static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event,
     	Boolean *continueDispatch)
 {
-    processMarkEvent(w, clientData, event, continueDispatch, "goto_mark", True);
+    processMarkEvent(w, clientData, event, continueDispatch, (String)"goto_mark", True);
 }
 
 void AddMark(WindowInfo *window, Widget widget, char label)

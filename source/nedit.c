@@ -122,7 +122,7 @@ Widget TheAppShell;
                                 "Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n" \
                                 "Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n"
 
-static char *fallbackResources[] = {
+static const char *fallbackResources[] = {
     /* Try to avoid Motif's horrificly ugly default colors and fonts,
        if the user's environment provides no usable defaults.  We try
        to choose a Windows-y default color setting here.  Editable text 
@@ -420,7 +420,7 @@ int main(int argc, char **argv)
     XtAppSetWarningHandler(context, noWarningFilter);
     
     /* Set up default resources if no app-defaults file is found */
-    XtAppSetFallbackResources(context, fallbackResources);
+    XtAppSetFallbackResources(context, (char **)fallbackResources);
     
 #if XmVersion >= 1002
     /* Allow users to change tear off menus with X resources */
@@ -449,7 +449,7 @@ int main(int argc, char **argv)
        Users can set this variable before starting NEdit, but it is much 
        more convenient that NEdit takes care of this. This must be done before
        the display is opened (empirically verified). */
-    putenv("XLIB_SKIP_ARGB_VISUALS=1");
+    putenv((char *)"XLIB_SKIP_ARGB_VISUALS=1");
     TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS,
 	    NULL, 0, &argc, argv);
     unmaskArgvKeywords(argc, argv, protectedKeywords);
@@ -487,8 +487,8 @@ int main(int argc, char **argv)
     /* Create a hidden application shell that is the parent of all the
        main editor windows.  Realize it so it the window can act as 
        group leader. */
-    TheAppShell = CreateShellWithBestVis(APP_NAME, 
-                                         APP_CLASS,
+    TheAppShell = CreateShellWithBestVis((char *)APP_NAME, 
+                                         (char *)APP_CLASS,
                                          applicationShellWidgetClass,
                                          TheDisplay,
                                          NULL,
@@ -798,7 +798,7 @@ static void fixupBrokenXKeysymDB(void)
     const char *keysym = getenv("XKEYSYMDB");
     
     if (keysym != NULL && access(keysym, F_OK) != 0)
-        putenv("XKEYSYMDB");
+        putenv((char *)"XKEYSYMDB");
 }
 
 /*
