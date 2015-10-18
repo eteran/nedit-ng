@@ -84,4 +84,4 @@ set_property(TARGET nc    PROPERTY C_STANDARD 99)
 
 set(CMAKE_C_FLAGS "-Wc++-compat")
 
-# -Wwrite-strings
+# 
