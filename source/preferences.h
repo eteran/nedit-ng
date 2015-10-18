@@ -172,10 +172,10 @@ char *GetWindowDelimiters(const WindowInfo *window);
 int ReadNumericField(char **inPtr, int *value);
 char *ReadSymbolicField(char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
-int ReadQuotedString(char **inPtr, char **errMsg, char **string);
+int ReadQuotedString(char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
-int SkipDelimiter(char **inPtr, char **errMsg);
+int SkipDelimiter(char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);
