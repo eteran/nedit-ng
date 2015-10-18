@@ -1128,7 +1128,7 @@ static int matchLanguageMode(WindowInfo *window);
 static int loadLanguageModesString(char *inString, int fileVer);
 static char *writeLanguageModesString(void);
 static char *createExtString(char **extensions, int nExtensions);
-static char **readExtensionList(char **inPtr, int *nExtensions);
+static char **readExtensionList(const char **inPtr, int *nExtensions);
 static void updateLanguageModeSubmenu(WindowInfo *window);
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
 static int modeError(languageModeRec *lm, const char *stringStart,
@@ -3545,7 +3545,9 @@ static languageModeRec *readLMDialogFields(int silent)
 {
     languageModeRec *lm;
     regexp *compiledRE;
-    char *compileMsg, *extStr, *extPtr;
+    const char *compileMsg;
+	const char *extStr;
+	const char *extPtr;
 
     /* Allocate a language mode structure to return, set unread fields to
        empty so everything can be freed on errors by freeLanguageModeRec */
@@ -3578,7 +3580,7 @@ static languageModeRec *readLMDialogFields(int silent)
     /* read the extension list field */
     extStr = extPtr = XmTextGetString(LMDialog.extW);
     lm->extensions = readExtensionList(&extPtr, &lm->nExtensions);
-    XtFree(extStr);
+    XtFree((char *)extStr);
     
     /* read recognition expression */
     lm->recognitionExpr = XmTextGetString(LMDialog.recogW);
@@ -4069,7 +4071,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
 {
     fontDialog *fd = (fontDialog *)clientData;
     char *primaryName;
-	char *errMsg;
+	const char *errMsg;
     char modifiedFontName[MAX_FONT_LEN];
     const char *searchString = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
     const char *italicReplaceString = "\\1-\\2-o-\\4";
@@ -4490,7 +4492,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
 {    
     const char *errMsg;
 	char *styleName;
-	char *inPtr = inString;
+	const char *inPtr = inString;
     languageModeRec *lm;
     int i;
 
@@ -4703,10 +4705,11 @@ static char *createExtString(char **extensions, int nExtensions)
     return outStr;
 }
 
-static char **readExtensionList(char **inPtr, int *nExtensions)
+static char **readExtensionList(const char **inPtr, int *nExtensions)
 {
     char *extensionList[MAX_FILE_EXTENSIONS];
-    char **retList, *strStart;
+    char **retList;
+	const char *strStart;
     int i, len;
     
     /* skip over blank space */
@@ -4730,7 +4733,7 @@ static char **readExtensionList(char **inPtr, int *nExtensions)
     return retList;
 }
 
-int ReadNumericField(char **inPtr, int *value)
+int ReadNumericField(const char **inPtr, int *value)
 {
     int charsRead;
     
@@ -4749,9 +4752,11 @@ int ReadNumericField(char **inPtr, int *value)
 ** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
 ** whitespace is compressed to single space characters.
 */
-char *ReadSymbolicField(char **inPtr)
+char *ReadSymbolicField(const char **inPtr)
 {
-    char *outStr, *outPtr, *strStart, *strPtr;
+    char *outStr, *outPtr;
+	const char *strStart;
+	const char *strPtr;
     int len;
     
     /* skip over initial blank space */
@@ -4797,9 +4802,10 @@ char *ReadSymbolicField(char **inPtr)
 ** argument minus quotes.  If not successful, returns False with
 ** (statically allocated) message in "errMsg".
 */
-int ReadQuotedString(char **inPtr, const char **errMsg, char **string)
+int ReadQuotedString(const char **inPtr, const char **errMsg, char **string)
 {
-    char *outPtr, *c;
+    char *outPtr;
+	const char *c;
     
     /* skip over blank space */
     *inPtr += strspn(*inPtr, " \t");
@@ -4934,15 +4940,19 @@ char *MakeQuotedString(const char *string)
 */
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent)
 {
-    char *string, *stringPtr, *parsedString;
+    char *string;
+	char *stringPtr;
+	char *parsedString;
+	const char *str;
     
     /* read from the text widget */
     string = stringPtr = XmTextGetString(textW);
+	str = string;
     
     /* parse it with the same routine used to read symbolic fields from
        files.  If the string is not read entirely, there are invalid
        characters, so warn the user if not in silent mode. */
-    parsedString = ReadSymbolicField(&stringPtr);
+    parsedString = ReadSymbolicField(&str);
     if (*stringPtr != '\0')
     {
         if (!silent)
@@ -5098,7 +5108,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
 /*
 ** Skip a delimiter and it's surrounding whitespace
 */
-int SkipDelimiter(char **inPtr, const char **errMsg)
+int SkipDelimiter(const char **inPtr, const char **errMsg)
 {
     *inPtr += strspn(*inPtr, " \t");
     if (**inPtr != ':') {

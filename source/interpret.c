@@ -1194,7 +1194,7 @@ static int pushSymVal(void)
             symVal = FP_GET_ARG_N(FrameP, argNum);
         }
     } else if (s->type == PROC_VALUE_SYM) {
-	char *errMsg;
+	const char *errMsg;
 	if (!(s->value.val.subr)(FocusWindow, NULL, 0,
 	    	&symVal, &errMsg)) {
 	    return execError(errMsg, s->name);
@@ -1892,7 +1892,7 @@ static int callSubroutine(void)
     int i, nArgs;
     static DataValue noValue = {NO_TAG, {0}};
     Program *prog;
-    char *errMsg;
+    const char *errMsg;
     
     sym = PC->sym;
     PC++;

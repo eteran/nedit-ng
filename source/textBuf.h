@@ -165,7 +165,7 @@ int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
 int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 	int *foundPos);
-int BufSubstituteNullChars(const char *string, int length, textBuffer *buf);
+int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
 int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText);
 

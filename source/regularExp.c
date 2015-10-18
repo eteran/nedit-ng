@@ -465,7 +465,7 @@ static unsigned char *Code_Emit_Ptr;   /* When Code_Emit_Ptr is set to
                                           points to where compiled regex code is
                                           to be written. */
 static unsigned long  Reg_Size;        /* Size of compiled regex code. */
-static char         **Error_Ptr;       /* Place to store error messages so
+static const char         **Error_Ptr;       /* Place to store error messages so
                                           they can be returned by `CompileRE' */
 static char           Error_Text [128];/* Sting to build error messages in. */
 
@@ -502,7 +502,7 @@ static unsigned char * emit_special    (unsigned char op_code,
 static unsigned char   literal_escape  (unsigned char c);
 static unsigned char   numeric_escape  (unsigned char c, unsigned char **parse);
 static unsigned char * atom            (int *flag_param, len_range *range_param);
-static void            reg_error       (char *str);
+static void            reg_error       (const char *str);
 static unsigned char * insert          (unsigned char op, unsigned char *opnd,
                                         long min, long max, int index);
 static unsigned char * next_ptr        (unsigned char *ptr);
@@ -533,7 +533,7 @@ static int             init_ansi_classes  (void);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-regexp * CompileRE (const char *exp, char **errorText, int defaultFlags) {
+regexp * CompileRE (const char *exp, const char **errorText, int defaultFlags) {
 
    register                regexp *comp_regex = NULL;
    register unsigned char *scan;
@@ -4112,7 +4112,7 @@ static void adjustcase (unsigned char *str, int len, unsigned char chgcase) {
  * reg_error
  *----------------------------------------------------------------------*/
 
-static void reg_error (char *str) {
+static void reg_error (const char *str) {
 
    fprintf (
       stderr,

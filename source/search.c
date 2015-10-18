@@ -2582,7 +2582,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction,
 {
     char *replaceText, *replaceWithText;
     regexp *compiledRE = NULL;
-    char *compileMsg;
+    const char *compileMsg;
     
     /* Get the search and replace strings, search type, and direction
        from the dialog */
@@ -2661,7 +2661,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction,
 {
     char *findText;
     regexp *compiledRE = NULL;
-    char *compileMsg;
+    const char *compileMsg;
     
     /* Get the search string, search type, and direction from the dialog */
     findText = XmTextGetString(window->findText);
@@ -3206,7 +3206,7 @@ static void iSearchTextValueChangedCB(Widget w, WindowInfo *window,
        correct syntax doesn't match) */
     if (isRegexType(searchType)) {
 	regexp *compiledRE = NULL;
-	char *compileMsg;
+	const char *compileMsg;
 	compiledRE = CompileRE(searchString, &compileMsg, 
 	                       defaultRegexFlags(searchType));
 	if (compiledRE == NULL) {
@@ -4491,7 +4491,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
         int *searchExtentFW, const char *delimiters, int defaultFlags)
 {
     regexp *compiledRE = NULL;
-    char *compileMsg;
+    const char *compileMsg;
     
     /* compile the search string for searching with ExecRE.  Note that
        this does not process errors from compiling the expression.  It
@@ -4542,7 +4542,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	int *searchExtentFW, const char *delimiters, int defaultFlags)
 {
     regexp *compiledRE = NULL;
-    char *compileMsg;
+    const char *compileMsg;
     int length;
 
     /* compile the search string for searching with ExecRE */
@@ -4723,7 +4723,7 @@ static Boolean replaceUsingRE(const char* searchStr, const char* replaceStr,
         const int defaultFlags)
 {
     regexp *compiledRE;
-    char *compileMsg;
+    const char *compileMsg;
     Boolean substResult = False;
     
     compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);

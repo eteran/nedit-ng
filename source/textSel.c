@@ -165,7 +165,7 @@ void CopyToClipboard(Widget w, Time time)
     
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
-    s = XmStringCreateSimple("NEdit");
+    s = XmStringCreateSimple((String)"NEdit");
     stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
     	    time, w, NULL, &itemID);
     XmStringFree(s);
@@ -178,7 +178,7 @@ void CopyToClipboard(Widget w, Time time)
        that this was inconsistent with the somewhat ambiguous policy of
        including a terminating null but not mentioning it in the length */
 
-    if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, "STRING",
+    if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String)"STRING",
     	    text, length, 0, NULL) != ClipboardSuccess) {
     	XtFree(text);
         SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
@@ -286,7 +286,7 @@ void InsertClipboard(Widget w, int isColumnar)
        size of the data that be transferred via the clipboard, and are
        generally slower and buggier, they do preserve the clipboard across
        widget destruction and even program termination. */
-    if (SpinClipboardInquireLength(XtDisplay(w), XtWindow(w), "STRING", &length)
+    if (SpinClipboardInquireLength(XtDisplay(w), XtWindow(w), (String)"STRING", &length)
     	    != ClipboardSuccess || length == 0) {
         /*
          * Possibly, the clipboard can remain in a locked state after
@@ -296,7 +296,7 @@ void InsertClipboard(Widget w, int isColumnar)
     	return;
     }
     string = XtMalloc(length+1);
-    if (SpinClipboardRetrieve(XtDisplay(w), XtWindow(w), "STRING", string,
+    if (SpinClipboardRetrieve(XtDisplay(w), XtWindow(w), (String)"STRING", string,
     	    length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
     	XtFree(string);
         /*
@@ -870,7 +870,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id)
 static Atom getAtom(Display *display, int atomNum)
 {
     static Atom atomList[N_ATOMS] = {0};
-    static char *atomNames[N_ATOMS] = {"TEXT", "TARGETS", "MULTIPLE",
+    static const char *atomNames[N_ATOMS] = {"TEXT", "TARGETS", "MULTIPLE",
     	    "TIMESTAMP", "INSERT_SELECTION", "DELETE", "CLIPBOARD",
     	    "INSERT_INFO", "ATOM_PAIR", "MOTIF_DESTINATION", "COMPOUND_TEXT"};
     

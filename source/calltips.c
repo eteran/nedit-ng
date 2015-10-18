@@ -254,7 +254,7 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
         XtSetArg(args[argcnt], XmNsaveUnder, True); argcnt++;
         XtSetArg(args[argcnt], XmNallowShellResize, True); argcnt++;
         
-        textD->calltipShell = CreatePopupShellWithBestVis("calltipshell", 
+        textD->calltipShell = CreatePopupShellWithBestVis((String)"calltipshell", 
              overrideShellWidgetClass, textD->w, args, argcnt);
                 
         /* Might want to make this a read-only XmText eventually so that 

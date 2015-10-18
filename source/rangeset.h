@@ -41,7 +41,7 @@ typedef struct _Rangeset Rangeset;
 void RangesetRefreshRange(Rangeset *rangeset, int start, int end);
 void RangesetEmpty(Rangeset *rangeset);
 void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf);
-int RangesetChangeModifyResponse(Rangeset *rangeset, char *name);
+int RangesetChangeModifyResponse(Rangeset *rangeset, const char *name);
 int RangesetFindRangeNo(Rangeset *rangeset, int index, int *start, int *end);
 int RangesetFindRangeOfPos(Rangeset *rangeset, int pos, int incl_end);
 int RangesetCheckRangeOfPos(Rangeset *rangeset, int pos);
@@ -52,7 +52,7 @@ int RangesetRemove(Rangeset *origSet, Rangeset *minusSet);
 int RangesetRemoveBetween(Rangeset *rangeset, int start, int end);
 int RangesetGetNRanges(Rangeset *rangeset);
 void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
-        int *count, char **color, char **name, char **mode);
+        int *count, const char **color, const char **name, const char **mode);
 RangesetTable *RangesetTableAlloc(textBuffer *buf);
 RangesetTable *RangesetTableFree(RangesetTable *table);
 RangesetTable *RangesetTableClone(RangesetTable *srcTable,

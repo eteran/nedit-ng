@@ -169,13 +169,13 @@ void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window);
 char *LanguageModeName(int mode);
 char *GetWindowDelimiters(const WindowInfo *window);
-int ReadNumericField(char **inPtr, int *value);
-char *ReadSymbolicField(char **inPtr);
+int ReadNumericField(const char **inPtr, int *value);
+char *ReadSymbolicField(const char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
-int ReadQuotedString(char **inPtr, const char **errMsg, char **string);
+int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
-int SkipDelimiter(char **inPtr, const char **errMsg);
+int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);

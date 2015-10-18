@@ -379,7 +379,7 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, const char **errMsg);
 
 static int fillStyleResult(DataValue *result, const char **errMsg,
-        WindowInfo *window, char *styleName, Boolean preallocatedStyleName,
+        WindowInfo *window, const char *styleName, Boolean preallocatedStyleName,
         Boolean includeName, int patCode, int bufferPos);
 static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, const char **errMsg);
@@ -5013,7 +5013,9 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
     RangesetTable *rangesetTable = window->buffer->rangesetTable;
     Rangeset *rangeset = NULL;
     int count, defined;
-    char *color, *name, *mode;
+    const char *color;
+	const char *name;
+	const char *mode;
     DataValue element;
     int label = 0;
     
@@ -5359,7 +5361,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
 **
 */
 static int fillStyleResult(DataValue *result, const char **errMsg,
-        WindowInfo *window, char *styleName, Boolean preallocatedStyleName,
+        WindowInfo *window, const char *styleName, Boolean preallocatedStyleName,
         Boolean includeName, int patCode, int bufferPos)
 {
     DataValue DV;
@@ -5376,7 +5378,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg,
     if (includeName) {
         /* insert style name */
         if (preallocatedStyleName) {
-            DV.val.str.rep = styleName;
+            DV.val.str.rep = (String)styleName;
             DV.val.str.len = strlen(styleName);
         }
         else {
@@ -5537,7 +5539,8 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     return fillStyleResult(result, errMsg, window,
-        HighlightStyleOfCode(window, patCode), False, True, patCode, bufferPos);
+        HighlightStyleOfCode(window, patCode),
+		False, True, patCode, bufferPos);
 }
 
 /*
@@ -5684,8 +5687,8 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     return fillPatternResult(result, errMsg, window,
-        HighlightNameOfCode(window, patCode), False, True,
-        HighlightStyleOfCode(window, patCode), bufferPos);
+        (String)HighlightNameOfCode(window, patCode), False, True,
+        (String)HighlightStyleOfCode(window, patCode), bufferPos);
 }
 
 static int wrongNArgsErr(const char **errMsg)

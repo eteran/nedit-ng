@@ -204,15 +204,15 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int startPos,
 	int rectangular);
 static void checkAutoShowInsertPos(Widget w);
 static int checkReadOnly(Widget w);
-static void simpleInsertAtCursor(Widget w, char *chars, XEvent *event,
+static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event,
     	int allowPendingDelete);
 static int pendingSelection(Widget w);
 static int deletePendingSelection(Widget w, XEvent *event);
 static int deleteEmulatedTab(Widget w, XEvent *event);
 static void selectWord(Widget w, int pointerX);
-static int spanForward(textBuffer *buf, int startPos, char *searchChars,
+static int spanForward(textBuffer *buf, int startPos, const char *searchChars,
 	int ignoreSpace, int *foundPos);
-static int spanBackward(textBuffer *buf, int startPos, char *searchChars, int
+static int spanBackward(textBuffer *buf, int startPos, const char *searchChars, int
     	ignoreSpace, int *foundPos);
 static void selectLine(Widget w);
 static int startOfWord(TextWidget w, int pos);
@@ -224,7 +224,7 @@ static void callCursorMovementCBs(Widget w, XEvent *event);
 static void adjustSelection(TextWidget tw, int x, int y);
 static void adjustSecondarySelection(TextWidget tw, int x, int y);
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
-static char *wrapText(TextWidget tw, char *startLine, char *text, int bufOffset,
+static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufOffset,
     	int wrapMargin, int *breakBefore);
 static int wrapLine(TextWidget tw, textBuffer *buf, int bufOffset,
     	int lineStartPos, int lineEndPos, int limitPos, int *breakAt,
@@ -434,132 +434,132 @@ static char defaultTranslations[] =
 
 
 static XtActionsRec actionsList[] = {
-    {"self-insert", selfInsertAP},
-    {"self_insert", selfInsertAP},
-    {"grab-focus", grabFocusAP},
-    {"grab_focus", grabFocusAP},
-    {"extend-adjust", extendAdjustAP},
-    {"extend_adjust", extendAdjustAP},
-    {"extend-start", extendStartAP},
-    {"extend_start", extendStartAP},
-    {"extend-end", extendEndAP},
-    {"extend_end", extendEndAP},
-    {"secondary-adjust", secondaryAdjustAP},
-    {"secondary_adjust", secondaryAdjustAP},
-    {"secondary-or-drag-adjust", secondaryOrDragAdjustAP},
-    {"secondary_or_drag_adjust", secondaryOrDragAdjustAP},
-    {"secondary-start", secondaryStartAP},
-    {"secondary_start", secondaryStartAP},
-    {"secondary-or-drag-start", secondaryOrDragStartAP},
-    {"secondary_or_drag_start", secondaryOrDragStartAP},
-    {"process-bdrag", secondaryOrDragStartAP},
-    {"process_bdrag", secondaryOrDragStartAP},
-    {"move-destination", moveDestinationAP},
-    {"move_destination", moveDestinationAP},
-    {"move-to", moveToAP},
-    {"move_to", moveToAP},
-    {"move-to-or-end-drag", moveToOrEndDragAP},
-    {"move_to_or_end_drag", moveToOrEndDragAP},
-    {"end_drag", endDragAP},
-    {"copy-to", copyToAP},
-    {"copy_to", copyToAP},
-    {"copy-to-or-end-drag", copyToOrEndDragAP},
-    {"copy_to_or_end_drag", copyToOrEndDragAP},
-    {"exchange", exchangeAP},
-    {"process-cancel", processCancelAP},
-    {"process_cancel", processCancelAP},
-    {"paste-clipboard", pasteClipboardAP},
-    {"paste_clipboard", pasteClipboardAP},
-    {"copy-clipboard", copyClipboardAP},
-    {"copy_clipboard", copyClipboardAP},
-    {"cut-clipboard", cutClipboardAP},
-    {"cut_clipboard", cutClipboardAP},
-    {"copy-primary", copyPrimaryAP},
-    {"copy_primary", copyPrimaryAP},
-    {"cut-primary", cutPrimaryAP},
-    {"cut_primary", cutPrimaryAP},
-    {"newline", newlineAP},
-    {"newline-and-indent", newlineAndIndentAP},
-    {"newline_and_indent", newlineAndIndentAP},
-    {"newline-no-indent", newlineNoIndentAP},
-    {"newline_no_indent", newlineNoIndentAP},
-    {"delete-selection", deleteSelectionAP},
-    {"delete_selection", deleteSelectionAP},
-    {"delete-previous-character", deletePreviousCharacterAP},
-    {"delete_previous_character", deletePreviousCharacterAP},
-    {"delete-next-character", deleteNextCharacterAP},
-    {"delete_next_character", deleteNextCharacterAP},
-    {"delete-previous-word", deletePreviousWordAP},
-    {"delete_previous_word", deletePreviousWordAP},
-    {"delete-next-word", deleteNextWordAP},
-    {"delete_next_word", deleteNextWordAP},
-    {"delete-to-start-of-line", deleteToStartOfLineAP},
-    {"delete_to_start_of_line", deleteToStartOfLineAP},
-    {"delete-to-end-of-line", deleteToEndOfLineAP},
-    {"delete_to_end_of_line", deleteToEndOfLineAP},
-    {"forward-character", forwardCharacterAP},
-    {"forward_character", forwardCharacterAP},
-    {"backward-character", backwardCharacterAP},
-    {"backward_character", backwardCharacterAP},
-    {"key-select", keySelectAP},
-    {"key_select", keySelectAP},
-    {"process-up", processUpAP},
-    {"process_up", processUpAP},
-    {"process-down", processDownAP},
-    {"process_down", processDownAP},
-    {"process-shift-up", processShiftUpAP},
-    {"process_shift_up", processShiftUpAP},
-    {"process-shift-down", processShiftDownAP},
-    {"process_shift_down", processShiftDownAP},
-    {"process-home", beginningOfLineAP},
-    {"process_home", beginningOfLineAP},
-    {"forward-word", forwardWordAP},
-    {"forward_word", forwardWordAP},
-    {"backward-word", backwardWordAP},
-    {"backward_word", backwardWordAP},
-    {"forward-paragraph", forwardParagraphAP},
-    {"forward_paragraph", forwardParagraphAP},
-    {"backward-paragraph", backwardParagraphAP},
-    {"backward_paragraph", backwardParagraphAP},
-    {"beginning-of-line", beginningOfLineAP},
-    {"beginning_of_line", beginningOfLineAP},
-    {"end-of-line", endOfLineAP},
-    {"end_of_line", endOfLineAP},
-    {"beginning-of-file", beginningOfFileAP},
-    {"beginning_of_file", beginningOfFileAP},
-    {"end-of-file", endOfFileAP},
-    {"end_of_file", endOfFileAP},
-    {"next-page", nextPageAP},
-    {"next_page", nextPageAP},
-    {"previous-page", previousPageAP},
-    {"previous_page", previousPageAP},
-    {"page-left", pageLeftAP},
-    {"page_left", pageLeftAP},
-    {"page-right", pageRightAP},
-    {"page_right", pageRightAP},
-    {"toggle-overstrike", toggleOverstrikeAP},
-    {"toggle_overstrike", toggleOverstrikeAP},
-    {"scroll-up", scrollUpAP},
-    {"scroll_up", scrollUpAP},
-    {"scroll-down", scrollDownAP},
-    {"scroll_down", scrollDownAP},
-    {"scroll_left", scrollLeftAP},
-    {"scroll_right", scrollRightAP},
-    {"scroll-to-line", scrollToLineAP},
-    {"scroll_to_line", scrollToLineAP},
-    {"select-all", selectAllAP},
-    {"select_all", selectAllAP},
-    {"deselect-all", deselectAllAP},
-    {"deselect_all", deselectAllAP},
-    {"focusIn", focusInAP},
-    {"focusOut", focusOutAP},
-    {"process-return", selfInsertAP},
-    {"process_return", selfInsertAP},
-    {"process-tab", processTabAP},
-    {"process_tab", processTabAP},
-    {"insert-string", insertStringAP},
-    {"insert_string", insertStringAP},
-    {"mouse_pan", mousePanAP},
+    {(String)"self-insert", selfInsertAP},
+    {(String)"self_insert", selfInsertAP},
+    {(String)"grab-focus", grabFocusAP},
+    {(String)"grab_focus", grabFocusAP},
+    {(String)"extend-adjust", extendAdjustAP},
+    {(String)"extend_adjust", extendAdjustAP},
+    {(String)"extend-start", extendStartAP},
+    {(String)"extend_start", extendStartAP},
+    {(String)"extend-end", extendEndAP},
+    {(String)"extend_end", extendEndAP},
+    {(String)"secondary-adjust", secondaryAdjustAP},
+    {(String)"secondary_adjust", secondaryAdjustAP},
+    {(String)"secondary-or-drag-adjust", secondaryOrDragAdjustAP},
+    {(String)"secondary_or_drag_adjust", secondaryOrDragAdjustAP},
+    {(String)"secondary-start", secondaryStartAP},
+    {(String)"secondary_start", secondaryStartAP},
+    {(String)"secondary-or-drag-start", secondaryOrDragStartAP},
+    {(String)"secondary_or_drag_start", secondaryOrDragStartAP},
+    {(String)"process-bdrag", secondaryOrDragStartAP},
+    {(String)"process_bdrag", secondaryOrDragStartAP},
+    {(String)"move-destination", moveDestinationAP},
+    {(String)"move_destination", moveDestinationAP},
+    {(String)"move-to", moveToAP},
+    {(String)"move_to", moveToAP},
+    {(String)"move-to-or-end-drag", moveToOrEndDragAP},
+    {(String)"move_to_or_end_drag", moveToOrEndDragAP},
+    {(String)"end_drag", endDragAP},
+    {(String)"copy-to", copyToAP},
+    {(String)"copy_to", copyToAP},
+    {(String)"copy-to-or-end-drag", copyToOrEndDragAP},
+    {(String)"copy_to_or_end_drag", copyToOrEndDragAP},
+    {(String)"exchange", exchangeAP},
+    {(String)"process-cancel", processCancelAP},
+    {(String)"process_cancel", processCancelAP},
+    {(String)"paste-clipboard", pasteClipboardAP},
+    {(String)"paste_clipboard", pasteClipboardAP},
+    {(String)"copy-clipboard", copyClipboardAP},
+    {(String)"copy_clipboard", copyClipboardAP},
+    {(String)"cut-clipboard", cutClipboardAP},
+    {(String)"cut_clipboard", cutClipboardAP},
+    {(String)"copy-primary", copyPrimaryAP},
+    {(String)"copy_primary", copyPrimaryAP},
+    {(String)"cut-primary", cutPrimaryAP},
+    {(String)"cut_primary", cutPrimaryAP},
+    {(String)"newline", newlineAP},
+    {(String)"newline-and-indent", newlineAndIndentAP},
+    {(String)"newline_and_indent", newlineAndIndentAP},
+    {(String)"newline-no-indent", newlineNoIndentAP},
+    {(String)"newline_no_indent", newlineNoIndentAP},
+    {(String)"delete-selection", deleteSelectionAP},
+    {(String)"delete_selection", deleteSelectionAP},
+    {(String)"delete-previous-character", deletePreviousCharacterAP},
+    {(String)"delete_previous_character", deletePreviousCharacterAP},
+    {(String)"delete-next-character", deleteNextCharacterAP},
+    {(String)"delete_next_character", deleteNextCharacterAP},
+    {(String)"delete-previous-word", deletePreviousWordAP},
+    {(String)"delete_previous_word", deletePreviousWordAP},
+    {(String)"delete-next-word", deleteNextWordAP},
+    {(String)"delete_next_word", deleteNextWordAP},
+    {(String)"delete-to-start-of-line", deleteToStartOfLineAP},
+    {(String)"delete_to_start_of_line", deleteToStartOfLineAP},
+    {(String)"delete-to-end-of-line", deleteToEndOfLineAP},
+    {(String)"delete_to_end_of_line", deleteToEndOfLineAP},
+    {(String)"forward-character", forwardCharacterAP},
+    {(String)"forward_character", forwardCharacterAP},
+    {(String)"backward-character", backwardCharacterAP},
+    {(String)"backward_character", backwardCharacterAP},
+    {(String)"key-select", keySelectAP},
+    {(String)"key_select", keySelectAP},
+    {(String)"process-up", processUpAP},
+    {(String)"process_up", processUpAP},
+    {(String)"process-down", processDownAP},
+    {(String)"process_down", processDownAP},
+    {(String)"process-shift-up", processShiftUpAP},
+    {(String)"process_shift_up", processShiftUpAP},
+    {(String)"process-shift-down", processShiftDownAP},
+    {(String)"process_shift_down", processShiftDownAP},
+    {(String)"process-home", beginningOfLineAP},
+    {(String)"process_home", beginningOfLineAP},
+    {(String)"forward-word", forwardWordAP},
+    {(String)"forward_word", forwardWordAP},
+    {(String)"backward-word", backwardWordAP},
+    {(String)"backward_word", backwardWordAP},
+    {(String)"forward-paragraph", forwardParagraphAP},
+    {(String)"forward_paragraph", forwardParagraphAP},
+    {(String)"backward-paragraph", backwardParagraphAP},
+    {(String)"backward_paragraph", backwardParagraphAP},
+    {(String)"beginning-of-line", beginningOfLineAP},
+    {(String)"beginning_of_line", beginningOfLineAP},
+    {(String)"end-of-line", endOfLineAP},
+    {(String)"end_of_line", endOfLineAP},
+    {(String)"beginning-of-file", beginningOfFileAP},
+    {(String)"beginning_of_file", beginningOfFileAP},
+    {(String)"end-of-file", endOfFileAP},
+    {(String)"end_of_file", endOfFileAP},
+    {(String)"next-page", nextPageAP},
+    {(String)"next_page", nextPageAP},
+    {(String)"previous-page", previousPageAP},
+    {(String)"previous_page", previousPageAP},
+    {(String)"page-left", pageLeftAP},
+    {(String)"page_left", pageLeftAP},
+    {(String)"page-right", pageRightAP},
+    {(String)"page_right", pageRightAP},
+    {(String)"toggle-overstrike", toggleOverstrikeAP},
+    {(String)"toggle_overstrike", toggleOverstrikeAP},
+    {(String)"scroll-up", scrollUpAP},
+    {(String)"scroll_up", scrollUpAP},
+    {(String)"scroll-down", scrollDownAP},
+    {(String)"scroll_down", scrollDownAP},
+    {(String)"scroll_left", scrollLeftAP},
+    {(String)"scroll_right", scrollRightAP},
+    {(String)"scroll-to-line", scrollToLineAP},
+    {(String)"scroll_to_line", scrollToLineAP},
+    {(String)"select-all", selectAllAP},
+    {(String)"select_all", selectAllAP},
+    {(String)"deselect-all", deselectAllAP},
+    {(String)"deselect_all", deselectAllAP},
+    {(String)"focusIn", focusInAP},
+    {(String)"focusOut", focusOutAP},
+    {(String)"process-return", selfInsertAP},
+    {(String)"process_return", selfInsertAP},
+    {(String)"process-tab", processTabAP},
+    {(String)"process_tab", processTabAP},
+    {(String)"insert-string", insertStringAP},
+    {(String)"insert_string", insertStringAP},
+    {(String)"mouse_pan", mousePanAP},
 };
 
 /* The motif text widget defined a bunch of actions which the nedit text
@@ -604,80 +604,80 @@ static XtResource resources[] = {
     {XmNshadowThickness, XmCShadowThickness, XmRDimension, sizeof(Dimension),
       XtOffset(TextWidget, primitive.shadow_thickness), XmRInt, 0},
     {textNfont, textCFont, XmRFontStruct, sizeof(XFontStruct *),
-      XtOffset(TextWidget, text.fontStruct), XmRString, "fixed"},
+      XtOffset(TextWidget, text.fontStruct), XmRString, (String)"fixed"},
     {textNselectForeground, textCSelectForeground, XmRPixel, sizeof(Pixel),
       XtOffset(TextWidget, text.selectFGPixel), XmRString, 
-      NEDIT_DEFAULT_SEL_FG},
+      (String)NEDIT_DEFAULT_SEL_FG},
     {textNselectBackground, textCSelectBackground, XmRPixel, sizeof(Pixel),
       XtOffset(TextWidget, text.selectBGPixel), XmRString, 
-      NEDIT_DEFAULT_SEL_BG},
+      (String)NEDIT_DEFAULT_SEL_BG},
     {textNhighlightForeground, textCHighlightForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.highlightFGPixel), XmRString, 
-      NEDIT_DEFAULT_HI_FG},
+      (String)NEDIT_DEFAULT_HI_FG},
     {textNhighlightBackground, textCHighlightBackground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.highlightBGPixel), XmRString, 
-      NEDIT_DEFAULT_HI_BG},
+      (String)NEDIT_DEFAULT_HI_BG},
     {textNlineNumForeground, textCLineNumForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.lineNumFGPixel), XmRString, 
-      NEDIT_DEFAULT_LINENO_FG},
+      (String)NEDIT_DEFAULT_LINENO_FG},
     {textNcursorForeground, textCCursorForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.cursorFGPixel), XmRString, 
-      NEDIT_DEFAULT_CURSOR_FG},
+      (String)NEDIT_DEFAULT_CURSOR_FG},
     {textNcalltipForeground, textCcalltipForeground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.calltipFGPixel), XmRString, 
-      NEDIT_DEFAULT_CALLTIP_FG},
+      (String)NEDIT_DEFAULT_CALLTIP_FG},
     {textNcalltipBackground, textCcalltipBackground, XmRPixel,sizeof(Pixel),
       XtOffset(TextWidget, text.calltipBGPixel), XmRString, 
-      NEDIT_DEFAULT_CALLTIP_BG},
+      (String)NEDIT_DEFAULT_CALLTIP_BG},
     {textNbacklightCharTypes,textCBacklightCharTypes,XmRString,sizeof(XmString),
       XtOffset(TextWidget, text.backlightCharTypes), XmRString, NULL},
     {textNrows, textCRows, XmRInt,sizeof(int),
-      XtOffset(TextWidget, text.rows), XmRString, "24"},
+      XtOffset(TextWidget, text.rows), XmRString, (String)"24"},
     {textNcolumns, textCColumns, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.columns), XmRString, "80"},
+      XtOffset(TextWidget, text.columns), XmRString, (String)"80"},
     {textNmarginWidth, textCMarginWidth, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.marginWidth), XmRString, "5"},
+      XtOffset(TextWidget, text.marginWidth), XmRString, (String)"5"},
     {textNmarginHeight, textCMarginHeight, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.marginHeight), XmRString, "5"},
+      XtOffset(TextWidget, text.marginHeight), XmRString, (String)"5"},
     {textNpendingDelete, textCPendingDelete, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.pendingDelete), XmRString, "True"},
+      XtOffset(TextWidget, text.pendingDelete), XmRString, (String)"True"},
     {textNautoWrap, textCAutoWrap, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.autoWrap), XmRString, "True"},
+      XtOffset(TextWidget, text.autoWrap), XmRString, (String)"True"},
     {textNcontinuousWrap, textCContinuousWrap, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.continuousWrap), XmRString, "True"},
+      XtOffset(TextWidget, text.continuousWrap), XmRString, (String)"True"},
     {textNautoIndent, textCAutoIndent, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.autoIndent), XmRString, "True"},
+      XtOffset(TextWidget, text.autoIndent), XmRString, (String)"True"},
     {textNsmartIndent, textCSmartIndent, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.smartIndent), XmRString, "False"},
+      XtOffset(TextWidget, text.smartIndent), XmRString, (String)"False"},
     {textNoverstrike, textCOverstrike, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.overstrike), XmRString, "False"},
+      XtOffset(TextWidget, text.overstrike), XmRString, (String)"False"},
     {textNheavyCursor, textCHeavyCursor, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.heavyCursor), XmRString, "False"},
+      XtOffset(TextWidget, text.heavyCursor), XmRString, (String)"False"},
     {textNreadOnly, textCReadOnly, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.readOnly), XmRString, "False"},
+      XtOffset(TextWidget, text.readOnly), XmRString, (String)"False"},
     {textNhidePointer, textCHidePointer, XmRBoolean, sizeof(Boolean),
-      XtOffset(TextWidget, text.hidePointer), XmRString, "False"},
+      XtOffset(TextWidget, text.hidePointer), XmRString, (String)"False"},
     {textNwrapMargin, textCWrapMargin, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.wrapMargin), XmRString, "0"},
+      XtOffset(TextWidget, text.wrapMargin), XmRString, (String)"0"},
     {textNhScrollBar, textCHScrollBar, XmRWidget, sizeof(Widget),
-      XtOffset(TextWidget, text.hScrollBar), XmRString, ""},
+      XtOffset(TextWidget, text.hScrollBar), XmRString, (String)""},
     {textNvScrollBar, textCVScrollBar, XmRWidget, sizeof(Widget),
-      XtOffset(TextWidget, text.vScrollBar), XmRString, ""},
+      XtOffset(TextWidget, text.vScrollBar), XmRString, (String)""},
     {textNlineNumCols, textCLineNumCols, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.lineNumCols), XmRString, "0"},
+      XtOffset(TextWidget, text.lineNumCols), XmRString, (String)"0"},
     {textNautoShowInsertPos, textCAutoShowInsertPos, XmRBoolean,
       sizeof(Boolean), XtOffset(TextWidget, text.autoShowInsertPos),
-      XmRString, "True"},
+      XmRString, (String)"True"},
     {textNautoWrapPastedText, textCAutoWrapPastedText, XmRBoolean,
       sizeof(Boolean), XtOffset(TextWidget, text.autoWrapPastedText),
-      XmRString, "False"},
+      XmRString, (String)"False"},
     {textNwordDelimiters, textCWordDelimiters, XmRString, sizeof(char *),
       XtOffset(TextWidget, text.delimiters), XmRString,
-      ".,/\\`'!@#%^&*()-=+{}[]\":;<>?"},
+      (String)".,/\\`'!@#%^&*()-=+{}[]\":;<>?"},
     {textNblinkRate, textCBlinkRate, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.cursorBlinkRate), XmRString, "500"},
+      XtOffset(TextWidget, text.cursorBlinkRate), XmRString, (String)"500"},
     {textNemulateTabs, textCEmulateTabs, XmRInt, sizeof(int),
-      XtOffset(TextWidget, text.emulateTabs), XmRString, "0"},
+      XtOffset(TextWidget, text.emulateTabs), XmRString, (String)"0"},
     {textNfocusCallback, textCFocusCallback, XmRCallback, sizeof(caddr_t),
       XtOffset(TextWidget, text.focusInCB), XtRCallback, NULL},
     {textNlosingFocusCallback, textCLosingFocusCallback, XmRCallback,
@@ -693,14 +693,14 @@ static XtResource resources[] = {
       sizeof(caddr_t), XtOffset(TextWidget, text.smartIndentCB), XtRCallback,
       NULL},
     {textNcursorVPadding, textCCursorVPadding, XtRCardinal, sizeof(Cardinal),
-      XtOffset(TextWidget, text.cursorVPadding), XmRString, "0"}
+      XtOffset(TextWidget, text.cursorVPadding), XmRString, (String)"0"}
 };
 
 static TextClassRec textClassRec = {
      /* CoreClassPart */
   {
     (WidgetClass) &xmPrimitiveClassRec,  /* superclass       */
-    "Text",                         /* class_name            */
+    (String)"Text",                         /* class_name            */
     sizeof(TextRec),                /* widget_size           */
     NULL,                           /* class_initialize      */
     NULL,                           /* class_part_initialize */
@@ -1403,11 +1403,12 @@ int TextLastVisiblePos(Widget w)
 ** treated as pending delete selections (True), or ignored (False). "event"
 ** is optional and is just passed on to the cursor movement callbacks.
 */
-void TextInsertAtCursor(Widget w, char *chars, XEvent *event,
+void TextInsertAtCursor(Widget w, const char *chars, XEvent *event,
     	int allowPendingDelete, int allowWrap)
 {
     int wrapMargin, colNum, lineStartPos, cursorPos;
-    char *c, *lineStartText, *wrappedText;
+    const char *c;
+	char *lineStartText, *wrappedText;
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
     textBuffer *buf = textD->buffer;
@@ -3473,12 +3474,12 @@ static int checkReadOnly(Widget w)
 ** typed.  Same as TextInsertAtCursor, but without the complicated auto-wrap
 ** scanning and re-formatting.
 */
-static void simpleInsertAtCursor(Widget w, char *chars, XEvent *event,
+static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event,
     	int allowPendingDelete)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    char *c;
+    const char *c;
 
     if (allowPendingDelete && pendingSelection(w)) {
     	BufReplaceSelected(buf, chars);
@@ -3670,11 +3671,11 @@ static int endOfWord(TextWidget w, int pos)
 ** result in "foundPos" returns True if found, False if not. If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-static int spanForward(textBuffer *buf, int startPos, char *searchChars,
+static int spanForward(textBuffer *buf, int startPos, const char *searchChars,
 	int ignoreSpace, int *foundPos)
 {
     int pos;
-    char *c;
+    const char *c;
     
     pos = startPos;
     while (pos < buf->length) {
@@ -3698,11 +3699,11 @@ static int spanForward(textBuffer *buf, int startPos, char *searchChars,
 ** result in "foundPos" returns True if found, False if not. If ignoreSpace is
 ** set, then Space, Tab, and Newlines are ignored in searchChars. 
 */
-static int spanBackward(textBuffer *buf, int startPos, char *searchChars, int
+static int spanBackward(textBuffer *buf, int startPos, const char *searchChars, int
     	ignoreSpace, int *foundPos)
 {
     int pos;
-    char *c;
+    const char *c;
     
     if (startPos == 0) {
         *foundPos = 0;
@@ -3889,7 +3890,7 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y)
 ** smart indent (which can be triggered by wrapping) can search back farther
 ** in the buffer than just the text in startLine.
 */
-static char *wrapText(TextWidget tw, char *startLine, char *text, int bufOffset,
+static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufOffset,
     	int wrapMargin, int *breakBefore)
 {
     textBuffer *wrapBuf, *buf = tw->text.textD->buffer;
@@ -3967,7 +3968,8 @@ static int wrapLine(TextWidget tw, textBuffer *buf, int bufOffset,
 	int *charsAdded)
 {
     int p, length, column;
-    char c, *indentStr;
+    char c;
+	char *indentStr;
     
     /* Scan backward for whitespace or BOL.  If BOL, return False, no
        whitespace in line at which to wrap */
@@ -3988,7 +3990,7 @@ static int wrapLine(TextWidget tw, textBuffer *buf, int bufOffset,
 	if (column >= p-lineStartPos)
 	    indentStr[1] = '\0';
     } else {
-    	indentStr = "\n";
+    	indentStr = (String)"\n";
     	length = 1;
     }
     

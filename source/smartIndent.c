@@ -101,7 +101,7 @@ static int isDefaultIndentSpec(smartIndentRec *indentSpec);
 static smartIndentRec *findIndentSpec(const char *modeName);
 static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(char *lmName);
-static int siParseError(char *stringStart, char *stoppedAt, char *message);
+static int siParseError(char *stringStart, char *stoppedAt, const char *message);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1802,7 +1802,8 @@ static int loadDefaultIndentSpec(char *lmName)
 
 int LoadSmartIndentString(char *inString)
 {
-   char *errMsg, *inPtr = inString;
+   const char *errMsg;
+   char *inPtr = inString;
    smartIndentRec is, *isCopy;
    int i;
 
@@ -1966,7 +1967,7 @@ static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
 	    AllocatedStringsDiffer(is1->modMacro, is2->modMacro);
 }
 
-static int siParseError(char *stringStart, char *stoppedAt, char *message)
+static int siParseError(char *stringStart, char *stoppedAt, const char *message)
 {
     return ParseError(NULL, stringStart, stoppedAt,
     	    "smart indent specification", message);

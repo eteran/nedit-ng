@@ -844,7 +844,7 @@ int TextDGetInsertPosition(textDisp *textD)
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
-void TextDInsert(textDisp *textD, char *text)
+void TextDInsert(textDisp *textD, const char *text)
 {
     int pos = textD->cursorPos;
     
@@ -857,14 +857,15 @@ void TextDInsert(textDisp *textD, char *text)
 ** Insert "text" (which must not contain newlines), overstriking the current
 ** cursor location.
 */
-void TextDOverstrike(textDisp *textD, char *text)
+void TextDOverstrike(textDisp *textD, const char *text)
 {
     int startPos = textD->cursorPos;
     textBuffer *buf = textD->buffer;
     int lineStart = BufStartOfLine(buf, startPos);
     int textLen = strlen(text);
     int i, p, endPos, indent, startIndent, endIndent;
-    char *c, ch, *paddedText = NULL;
+    const char *c;
+	char ch, *paddedText = NULL;
     
     /* determine how many displayed character positions are covered */
     startIndent = BufCountDispChars(textD->buffer, lineStart, startPos);

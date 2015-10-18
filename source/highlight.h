@@ -42,7 +42,7 @@
 
 /* Pattern specification structure */
 typedef struct {
-    char *name;
+    const char *name;
     char *startRE;
     char *endRE;
     char *errorRE;
@@ -53,7 +53,7 @@ typedef struct {
 
 /* Header for a set of patterns */
 typedef struct {
-    char *languageMode;
+    const char *languageMode;
     int lineContext;
     int charContext;
     int nPatterns;
@@ -76,8 +76,8 @@ highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName);
-char *HighlightNameOfCode(WindowInfo *window, int hCode);
-char *HighlightStyleOfCode(WindowInfo *window, int hCode);
+const char *HighlightNameOfCode(WindowInfo *window, int hCode);
+const char *HighlightStyleOfCode(WindowInfo *window, int hCode);
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b);
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,

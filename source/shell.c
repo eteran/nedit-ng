@@ -1138,15 +1138,15 @@ static void createOutputDialog(Widget parent, char *text)
     if (wrapped)
 	hasScrollBar = True;
     ac = 0;
-    form = CreateFormDialog(parent, "shellOutForm", al, ac);
+    form = CreateFormDialog(parent, (String)"shellOutForm", al, ac);
 
     ac = 0;
-    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING("OK")); ac++;
+    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING((String)"OK")); ac++;
     XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN); ac++;
     XtSetArg(al[ac], XmNhighlightThickness, 2);  ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
-    button = XmCreatePushButtonGadget(form, "ok", al, ac);
+    button = XmCreatePushButtonGadget(form, (String)"ok", al, ac);
     XtManageChild(button);
     XtVaSetValues(form, XmNdefaultButton, button, NULL);
     XtVaSetValues(form, XmNcancelButton, button, NULL);
@@ -1172,7 +1172,7 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);  ac++;
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
-    textW = XmCreateScrolledText(form, "outText", al, ac);
+    textW = XmCreateScrolledText(form, (String)"outText", al, ac);
     AddMouseWheelSupport(textW);
     MakeSingleLineTextW(textW); /* Binds <Return> to activate() */
     XtManageChild(textW);

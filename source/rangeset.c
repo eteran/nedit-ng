@@ -47,7 +47,7 @@ typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
 struct _Rangeset {
     RangesetUpdateFn *update_fn;	/* modification update function */
-    char *update_name;			/* update function name */
+    const char *update_name;			/* update function name */
     int maxpos;				/* text buffer maxpos */
     int last_index;			/* a place to start looking */
     int n_ranges;			/* how many ranges in ranges */
@@ -93,7 +93,7 @@ static RangesetUpdateFn rangesetBreakMaintain;
 #define DEFAULT_UPDATE_FN_NAME	"maintain"
 
 static struct {
-    char *name;
+    const char *name;
     RangesetUpdateFn *update_fn;
 } RangesetUpdateMap[] = {
     {DEFAULT_UPDATE_FN_NAME,	rangesetInsDelMaintain},
@@ -254,7 +254,7 @@ void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf)
 ** if the update function name was found, else false.
 */
 
-int RangesetChangeModifyResponse(Rangeset *rangeset, char *name)
+int RangesetChangeModifyResponse(Rangeset *rangeset, const char *name)
 {
     int i;
 
@@ -684,7 +684,7 @@ int RangesetGetNRanges(Rangeset *rangeset)
 ** Get information about rangeset.
 */
 void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
-        int *count, char **color, char **name, char **mode)
+        int *count, const char **color, const char **name, const char **mode)
 {
     if (rangeset == NULL) {
         *defined = False;

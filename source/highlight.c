@@ -581,7 +581,8 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     int contextChars = patSet->charContext;
     int i, nPass1Patterns, nPass2Patterns;
     int noPass1, noPass2;
-    char *parentStyles, *parentStylesPtr, *parentName;
+    char *parentStyles, *parentStylesPtr;
+	char *parentName;
     highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
     styleTableEntry *styleTable, *styleTablePtr;
     textBuffer *styleBuf;
@@ -673,7 +674,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     p1Ptr->startRE = p2Ptr->startRE = NULL;
     p1Ptr->endRE = p2Ptr->endRE = NULL;
     p1Ptr->errorRE = p2Ptr->errorRE = NULL;
-    p1Ptr->style = p2Ptr->style = "Plain";
+    p1Ptr->style = p2Ptr->style = (String)"Plain";
     p1Ptr->subPatternOf = p2Ptr->subPatternOf = NULL;
     p1Ptr->flags = p2Ptr->flags = 0;
     p1Ptr++; p2Ptr++;
@@ -831,7 +832,8 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 {
     int i, nSubExprs, patternNum, length, subPatIndex, subExprNum, charsRead;
     int parentIndex;
-    char *ptr, *bigPattern, *compileMsg;
+    char *ptr, *bigPattern;
+	const char *compileMsg;
     highlightDataRec *compiledPats;
     
     /* Allocate memory for the compiled patterns.  The list is terminated
@@ -1183,13 +1185,13 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode)
 ** Functions to return style information from the highlighting style table.
 */
 
-char *HighlightNameOfCode(WindowInfo *window, int hCode)
+const char *HighlightNameOfCode(WindowInfo *window, int hCode)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
     return entry ? entry->highlightName : "";
 }
 
-char *HighlightStyleOfCode(WindowInfo *window, int hCode)
+const char *HighlightStyleOfCode(WindowInfo *window, int hCode)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
     return entry ? entry->styleName : "";
@@ -2079,7 +2081,7 @@ static char getPrevChar(textBuffer *buf, int pos)
 static regexp *compileREAndWarn(Widget parent, const char *re)
 {
     regexp *compiledRE;
-    char *compileMsg;
+    const char *compileMsg;
     
     compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
     if (compiledRE == NULL)

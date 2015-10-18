@@ -39,9 +39,9 @@ enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 #define NO_HINT -1
 
 typedef struct {
-    char *highlightName;
-    char *styleName;
-    char *colorName;
+    const char *highlightName;
+    const char *styleName;
+    const char *colorName;
     char isBold;
     char isItalic;
     unsigned short red;
@@ -50,7 +50,7 @@ typedef struct {
     Pixel color;
     Boolean underline;
     XFontStruct *font;
-    char *bgColorName;      /* background style coloring (name may be NULL) */
+    const char *bgColorName;      /* background style coloring (name may be NULL) */
     unsigned short bgRed;
     unsigned short bgGreen;
     unsigned short bgBlue;
@@ -186,8 +186,8 @@ void TextDRedisplayRect(textDisp *textD, int left, int top, int width,
 	int height);
 void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset);
 void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
-void TextDInsert(textDisp *textD, char *text);
-void TextDOverstrike(textDisp *textD, char *text);
+void TextDInsert(textDisp *textD, const char *text);
+void TextDOverstrike(textDisp *textD, const char *text);
 void TextDSetInsertPosition(textDisp *textD, int newPos);
 int TextDGetInsertPosition(textDisp *textD);
 int TextDXYToPosition(textDisp *textD, int x, int y);
