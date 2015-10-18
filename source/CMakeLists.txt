@@ -55,7 +55,7 @@ include_directories(nedit
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH})
-	
+
 target_link_libraries(nedit LINK_PUBLIC
 	Xlt
 	NUtil
@@ -72,14 +72,16 @@ add_executable(nc
 include_directories(nc
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH})
-	
+
 target_link_libraries(nc LINK_PUBLIC
 	NUtil
 	${X11_Xt_LIB}
-	${X11_LIBRARIES}	
+	${X11_LIBRARIES}
 )
 
 set_property(TARGET nedit PROPERTY C_STANDARD 99)
 set_property(TARGET nc    PROPERTY C_STANDARD 99)
 
-set(CMAKE_C_FLAGS -Wc++-compat) 
+set(CMAKE_C_FLAGS "-Wc++-compat")
+
+# -Wwrite-strings
