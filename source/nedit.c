@@ -736,7 +736,8 @@ static int checkDoMacroArg(const char *macro)
 {
     Program *prog;
     const char *errMsg;
-	char *stoppedAt, *tMacro;
+	const char *stoppedAt;
+	char *tMacro;
     int macroLen;
     
     /* Add a terminating newline (which command line users are likely to omit

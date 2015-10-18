@@ -32,10 +32,10 @@ int yyparse(void);
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static int follow_non_whitespace(char expect, int yes, int no);
-static Symbol *matchesActionRoutine(char **inPtr);
+static Symbol *matchesActionRoutine(const char **inPtr);
 
 static const char *ErrMsg;
-static char *InPtr;
+static const char *InPtr;
 extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
@@ -438,7 +438,7 @@ blank:  /* nothing */
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *ParseMacro(char *expr, const char **msg, char **stoppedAt)
+Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt)
 {
     Program *prog;
 
@@ -561,7 +561,7 @@ static int yylex(void)
 
     if (*InPtr == '\"') {
         char string[MAX_STRING_CONST_LEN], *p = string;
-        char *backslash;
+        const char *backslash;
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
             if (p >= string + MAX_STRING_CONST_LEN) {
@@ -702,7 +702,7 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
 
 static int follow_non_whitespace(char expect, int yes, int no)
 {
-    char *localInPtr = InPtr;
+    const char *localInPtr = InPtr;
 
     while (1) {
         if (*localInPtr == ' ' || *localInPtr == '\t') {
@@ -729,9 +729,10 @@ static int follow_non_whitespace(char expect, int yes, int no)
 ** names contain hyphens.  Handling them here in the lexical analysis process
 ** is much easier than trying to deal with it in the parser itself.  (sorry)
 */
-static Symbol *matchesActionRoutine(char **inPtr)
+static Symbol *matchesActionRoutine(const char **inPtr)
 {
-    char *c, *symPtr;
+    const char *c;
+	char *symPtr;
     int hasDash = False;
     char symbolName[MAX_SYM_LEN+1];
     Symbol *s;

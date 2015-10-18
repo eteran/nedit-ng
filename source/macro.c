@@ -132,7 +132,7 @@ static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, const char *string,
-	WindowInfo *runWindow, const char *errIn, char **errPos);
+	WindowInfo *runWindow, const char *errIn, const char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
 static int escapeStringChars(char *fromString, char *toString);
@@ -494,7 +494,7 @@ static const char* RedundantActions[] = {"open_dialog", "save_as_dialog",
 static char *LastCommand = NULL;
 
 /* The current macro to execute on Replay command */
-static char *ReplayMacro = NULL;
+static const char *ReplayMacro = NULL;
 
 /* Buffer where macro commands are recorded in Learn mode */
 static textBuffer *MacroRecordBuf = NULL;
@@ -640,7 +640,7 @@ void FinishLearn(void)
     MacroRecordActionHook = 0;
     
     /* Free the old learn/replay sequence */
-    XtFree(ReplayMacro);
+    XtFree((char *)ReplayMacro);
     
     /* Store the finished action for the replay menu item */
     ReplayMacro = BufGetAll(MacroRecordBuf);
@@ -719,7 +719,7 @@ void Replay(WindowInfo *window)
 {
     Program *prog;
     const char *errMsg;
-	char *stoppedAt;
+	const char *stoppedAt;
 
     /* Verify that a replay macro exists and it's not empty and that */
     /* we're not already running a macro */
@@ -795,7 +795,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 int ReadMacroString(WindowInfo *window, const char *string, const char *errIn)
 {   
     return readCheckMacroString(window->shell, string, window, errIn, NULL);
-}  
+}
 
 /*
 ** Check a macro string containing definitions for errors.  Returns True
@@ -803,7 +803,7 @@ int ReadMacroString(WindowInfo *window, const char *string, const char *errIn)
 ** a dialog explaining if macro did not compile successfully.
 */  
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
-	char **errPos)
+	const char **errPos)
 {
     return readCheckMacroString(dialogParent, string, NULL, errIn, errPos);
 }    
@@ -817,9 +817,9 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 ** returns a pointer to the error location in the string.
 */
 static int readCheckMacroString(Widget dialogParent, const char *string,
-	WindowInfo *runWindow, const char *errIn, char **errPos)
+	WindowInfo *runWindow, const char *errIn, const char **errPos)
 {
-    char *stoppedAt;
+    const char *stoppedAt;
 	const char *inPtr;
 	char *namePtr;
 	const char *errMsg;
@@ -864,7 +864,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
 		return ParseError(dialogParent, string, inPtr,
 	    	    	errIn, "expected '{'");
 	    }
-	    prog = ParseMacro((String)inPtr, &errMsg, &stoppedAt);
+	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
 	    if (prog == NULL) {
 	    	if (errPos != NULL) *errPos = stoppedAt;
 	    	return ParseError(dialogParent, string, stoppedAt,
@@ -892,7 +892,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
 	   definitions in a file which is loaded from another macro file, it
 	   will probably run the code blocks in reverse order! */
 	} else {
-	    prog = ParseMacro((String)inPtr, &errMsg, &stoppedAt);
+	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
 	    if (prog == NULL) {
                 if (errPos != NULL) {
                     *errPos = stoppedAt;
@@ -1182,7 +1182,8 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
 {
     Program *prog;
     const char *errMsg;
-	char *stoppedAt, *tMacro;
+	const char *stoppedAt;
+	char *tMacro;
     int macroLen;
     
     /* Add a terminating newline (which command line users are likely to omit
@@ -1211,7 +1212,7 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
 ** pointer to the stored macro and should not be freed by the caller (and
 ** will cease to exist when the next replay macro is installed)
 */
-char *GetReplayMacro(void)
+const char *GetReplayMacro(void)
 {
     return ReplayMacro;
 }
@@ -1433,7 +1434,7 @@ void RepeatMacro(WindowInfo *window, const char *command, int how)
 {
     Program *prog;
     const char *errMsg;
-	char *stoppedAt;
+	const char *stoppedAt;
 	const char *loopMacro;
 	char *loopedCmd;
 

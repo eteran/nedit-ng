@@ -674,7 +674,8 @@ void BeginSmartIndent(WindowInfo *window, int warn)
 {
     windowSmartIndentData *winData;
     smartIndentRec *indentMacros;
-    char *modeName, *stoppedAt;
+    char *modeName;
+	const char *stoppedAt;
 	const char *errMsg;
     static int initialized;
 
@@ -1403,7 +1404,7 @@ static int checkSmartIndentDialogData(void)
 {
     char *widgetText;
 	const char *errMsg;
-	char *stoppedAt;
+	const char *stoppedAt;
     Program *prog;
     
     /* Check the initialization macro */
@@ -1720,7 +1721,8 @@ static int updateSmartIndentCommonData(void)
 
 static int checkSmartIndentCommonDialogData(void)
 {
-    char *widgetText, *stoppedAt;
+    char *widgetText;
+	const char *stoppedAt;
     
     if (!TextWidgetIsBlank(CommonDialog.text)) {
 	widgetText = ensureNewline(XmTextGetString(CommonDialog.text));

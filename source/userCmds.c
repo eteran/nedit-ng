@@ -286,7 +286,7 @@ static void genAccelEventName(char *text, unsigned int modifiers,
 static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 	KeySym *keysym);
 static int parseError(const char *message);
-static char *copyMacroToEnd(char **inPtr);
+static char *copyMacroToEnd(const char **inPtr);
 static void addTerminatingNewline(char **string);
 static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems,
         userMenuInfo **infoList, userSubMenuCache *subMenus);
@@ -2060,7 +2060,7 @@ static int checkMacroText(char *macro, Widget errorParent, Widget errFocus)
 {
     Program *prog;
     const char *errMsg;
-	char *stoppedAt;
+	const char *stoppedAt;
 
     prog = ParseMacro(macro, &errMsg, &stoppedAt);
     if (prog == NULL) {
@@ -2142,7 +2142,7 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData)
     	return;
     
     XmTextInsert(ucd->cmdTextW, XmTextGetInsertionPosition(ucd->cmdTextW),
-    	    GetReplayMacro());
+    	    (String)GetReplayMacro());
 }
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2678,7 +2678,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
 {
     menuItemRec *f;
     char *cmdStr;
-    char *inPtr = inString;
+    const char *inPtr = inString;
     char *nameStr, accStr[MAX_ACCEL_LEN], mneChar;
     KeySym keysym;
     unsigned int modifiers;
@@ -3000,11 +3000,13 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-static char *copyMacroToEnd(char **inPtr)
+static char *copyMacroToEnd(const char **inPtr)
 {
     char *retStr;
 	const char *errMsg;
-	char *stoppedAt, *p, *retPtr;
+	const char *stoppedAt;
+	const char *p;
+	char *retPtr;
     Program *prog;
     
     /* Skip over whitespace to find make sure there's a beginning brace
