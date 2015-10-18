@@ -735,7 +735,8 @@ static void nextArg(int argc, char **argv, int *argIndex)
 static int checkDoMacroArg(const char *macro)
 {
     Program *prog;
-    char *errMsg, *stoppedAt, *tMacro;
+    const char *errMsg;
+	char *stoppedAt, *tMacro;
     int macroLen;
     
     /* Add a terminating newline (which command line users are likely to omit

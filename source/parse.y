@@ -26,7 +26,7 @@
 #define MAX_STRING_CONST_LEN 5000
 
 static const char CVSID[] = "$Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $";
-static int yyerror(char *s);
+static int yyerror(const char *s);
 static int yylex(void);
 int yyparse(void);
 static int follow(char expect, int yes, int no);
@@ -34,7 +34,7 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static int follow_non_whitespace(char expect, int yes, int no);
 static Symbol *matchesActionRoutine(char **inPtr);
 
-static char *ErrMsg;
+static const char *ErrMsg;
 static char *InPtr;
 extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
@@ -438,7 +438,7 @@ blank:  /* nothing */
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *ParseMacro(char *expr, char **msg, char **stoppedAt)
+Program *ParseMacro(char *expr, const char **msg, char **stoppedAt)
 {
     Program *prog;
 
@@ -758,7 +758,7 @@ static Symbol *matchesActionRoutine(char **inPtr)
 ** parsing, so this message is immediately reported to the caller
 ** of ParseExpr)
 */
-static int yyerror(char *s)
+static int yyerror(const char *s)
 {
     ErrMsg = s;
     return 0;

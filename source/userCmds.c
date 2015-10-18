@@ -2059,7 +2059,8 @@ static int checkMacro(userCmdDialog *ucd)
 static int checkMacroText(char *macro, Widget errorParent, Widget errFocus)
 {
     Program *prog;
-    char *errMsg, *stoppedAt;
+    const char *errMsg;
+	char *stoppedAt;
 
     prog = ParseMacro(macro, &errMsg, &stoppedAt);
     if (prog == NULL) {
@@ -3001,7 +3002,9 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers,
 */
 static char *copyMacroToEnd(char **inPtr)
 {
-    char *retStr, *errMsg, *stoppedAt, *p, *retPtr;
+    char *retStr;
+	const char *errMsg;
+	char *stoppedAt, *p, *retPtr;
     Program *prog;
     
     /* Skip over whitespace to find make sure there's a beginning brace

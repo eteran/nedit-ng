@@ -5124,7 +5124,7 @@ int SkipDelimiter(const char **inPtr, const char **errMsg)
 ** Skip an optional separator and its surrounding whitespace
 ** return true if delimiter found
 */
-int SkipOptSeparator(char separator, char **inPtr)
+int SkipOptSeparator(char separator, const char **inPtr)
 {
     *inPtr += strspn(*inPtr, " \t");
     if (**inPtr != separator) {

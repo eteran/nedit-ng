@@ -86,7 +86,7 @@ static unsigned char *Code_Emit_Ptr;   /* When Code_Emit_Ptr is set to
                                           Code_Emit_Ptr points to where compiled
                                           regex code is to be written. */
 static unsigned char  Compute_Size;
-static char         **Error_Ptr;       /* Place to store error messages so
+static const char         **Error_Ptr;       /* Place to store error messages so
                                           they can be returned by `ConvertRE' */
 static char           Error_Text [128];/* Sting to build error messages in. */
 
@@ -101,7 +101,7 @@ static int            chunk             (int paren, int *flag_param);
 static void           emit_convert_byte (unsigned char c);
 static unsigned char  literal_escape    (unsigned char c, int);
 static int            atom              (int *flag_param);
-static void           reg_error         (char *str);
+static void           reg_error         (const char *str);
 static int            piece             (int *flag_param);
 
 /*----------------------------------------------------------------------*
@@ -114,7 +114,7 @@ static int            piece             (int *flag_param);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-char * ConvertRE (const char *exp, char **errorText) {
+char * ConvertRE (const char *exp, const char **errorText) {
 
    int  flags_local, pass;
 
@@ -955,7 +955,7 @@ void ConvertSubstituteRE (
  * reg_error
  *----------------------------------------------------------------------*/
 
-static void reg_error (char *str) {
+static void reg_error (const char *str) {
 
    fprintf (
       stderr,

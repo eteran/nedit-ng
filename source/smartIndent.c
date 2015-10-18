@@ -60,10 +60,10 @@
 static char MacroEndBoundary[] = "--End-of-Macro--";
 
 typedef struct {
-    char *lmName;
-    char *initMacro;
-    char *newlineMacro;
-    char *modMacro;
+    const char *lmName;
+    const char *initMacro;
+    const char *newlineMacro;
+    const char *modMacro;
 } smartIndentRec;
 
 typedef struct {
@@ -100,8 +100,8 @@ static void insertShiftedMacro(textBuffer *buf, char *macro);
 static int isDefaultIndentSpec(smartIndentRec *indentSpec);
 static smartIndentRec *findIndentSpec(const char *modeName);
 static char *ensureNewline(char *string);
-static int loadDefaultIndentSpec(char *lmName);
-static int siParseError(char *stringStart, char *stoppedAt, const char *message);
+static int loadDefaultIndentSpec(const char *lmName);
+static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -125,7 +125,7 @@ static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static int updateSmartIndentCommonData(void);
 static int checkSmartIndentCommonDialogData(void);
 static int updateSmartIndentData(void);
-static char *readSIMacro(char **inPtr);
+static char *readSIMacro(const char **inPtr);
 static smartIndentRec *copyIndentSpec(smartIndentRec *is);
 static void freeIndentSpec(smartIndentRec *is);
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
@@ -674,7 +674,8 @@ void BeginSmartIndent(WindowInfo *window, int warn)
 {
     windowSmartIndentData *winData;
     smartIndentRec *indentMacros;
-    char *modeName, *stoppedAt, *errMsg;
+    char *modeName, *stoppedAt;
+	const char *errMsg;
     static int initialized;
 
     /* Find the window's language mode.  If none is set, warn the user */
@@ -732,7 +733,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     winData = (windowSmartIndentData *)XtMalloc(sizeof(windowSmartIndentData));
     winData->inNewLineMacro = 0;
     winData->inModMacro = 0;
-    winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg,
+    winData->newlineMacro = ParseMacro((String)indentMacros->newlineMacro, &errMsg,
     	    &stoppedAt);
     if (winData->newlineMacro == NULL) {
         XtFree((char *)winData);
@@ -743,7 +744,7 @@ void BeginSmartIndent(WindowInfo *window, int warn)
     if (indentMacros->modMacro == NULL)
     	winData->modMacro = NULL;
     else {
-    	winData->modMacro = ParseMacro(indentMacros->modMacro, &errMsg,
+    	winData->modMacro = ParseMacro((String)indentMacros->modMacro, &errMsg,
     	    	&stoppedAt);
     	if (winData->modMacro == NULL) {
             FreeProgram(winData->newlineMacro);
@@ -811,7 +812,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;
     RestartData *continuation;
-    char *errMsg;
+    const char *errMsg;
     int stat;
     
     /* Beware of recursion: the newline macro may insert a string which
@@ -884,7 +885,7 @@ static void executeModMacro(WindowInfo *window,smartIndentCBStruct *cbInfo)
     static int inModCB = False;
     DataValue result;
     RestartData *continuation;
-    char *errMsg;
+    const char *errMsg;
     int stat;
     
     /* Check for inappropriate calls and prevent re-entering if the macro
@@ -985,12 +986,12 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION); n++;
     XtSetArg(args[n], XmNleftPosition, 50); n++;
     XtSetArg(args[n], XmNsubMenuId, SmartIndentDialog.lmPulldown); n++;
-    lmOptMenu = XmCreateOptionMenu(lmForm, "langModeOptMenu", args, n);
+    lmOptMenu = XmCreateOptionMenu(lmForm, (String)"langModeOptMenu", args, n);
     XtManageChild(lmOptMenu);
     SmartIndentDialog.lmOptMenu = lmOptMenu;
     
     XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
-    	    XmNlabelString, s1=XmStringCreateSimple("Language Mode:"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Language Mode:"),
     	    XmNmnemonic, 'L',
     	    XmNuserData, XtParent(SmartIndentDialog.lmOptMenu),
     	    XmNalignment, XmALIGNMENT_END,
@@ -1002,7 +1003,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm,
-    	    XmNlabelString, s1=MKSTRING("Add / Modify\nLanguage Mode..."),
+    	    XmNlabelString, s1=MKSTRING((String)"Add / Modify\nLanguage Mode..."),
     	    XmNmnemonic, 'A',
     	    XmNrightAttachment, XmATTACH_FORM,
     	    XmNtopAttachment, XmATTACH_FORM, NULL);
@@ -1011,7 +1012,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     
     commonBtn = XtVaCreateManagedWidget("commonBtn", xmPushButtonWidgetClass,
     	    lmForm,
-    	    XmNlabelString, s1=MKSTRING("Common / Shared\nInitialization..."),
+    	    XmNlabelString, s1=MKSTRING((String)"Common / Shared\nInitialization..."),
     	    XmNmnemonic, 'C',
     	    XmNleftAttachment, XmATTACH_FORM,
     	    XmNtopAttachment, XmATTACH_FORM, NULL);
@@ -1019,7 +1020,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
@@ -1031,7 +1032,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
     	    XmNmnemonic, 'y',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
@@ -1043,7 +1044,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Check"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Check"),
     	    XmNmnemonic, 'k',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 26,
@@ -1055,7 +1056,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Delete"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Delete"),
     	    XmNmnemonic, 'D',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 39,
@@ -1067,7 +1068,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Restore Defaults"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Restore Defaults"),
     	    XmNmnemonic, 'f',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 52,
@@ -1080,7 +1081,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-            XmNlabelString, s1=XmStringCreateSimple("Close"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 73,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1092,7 +1093,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Help"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Help"),
     	    XmNmnemonic, 'H',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 86,
@@ -1118,7 +1119,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     initForm = XtVaCreateManagedWidget("initForm", xmFormWidgetClass,
 	    pane, NULL);
     initLbl = XtVaCreateManagedWidget("initLbl", xmLabelGadgetClass, initForm,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimple((String)
     	     "Language Specific Initialization Macro Commands and Definitions"),
     	    XmNmnemonic, 'I', NULL);
     XmStringFree(s1);
@@ -1132,7 +1133,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.initMacro = XmCreateScrolledText(initForm,
-    	    "initMacro", args, n);
+    	    (String)"initMacro", args, n);
     AddMouseWheelSupport(SmartIndentDialog.initMacro);
     XtManageChild(SmartIndentDialog.initMacro);
     RemapDeleteKey(SmartIndentDialog.initMacro);
@@ -1142,12 +1143,12 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    pane, NULL);
     newlineLbl = XtVaCreateManagedWidget("newlineLbl", xmLabelGadgetClass,
     	    newlineForm,
-    	    XmNlabelString, s1=XmStringCreateSimple("Newline Macro"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Newline Macro"),
     	    XmNmnemonic, 'N', NULL);
     XmStringFree(s1);
     XtVaCreateManagedWidget("newlineArgsLbl", xmLabelGadgetClass,
     	    newlineForm, XmNalignment, XmALIGNMENT_END,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimple((String)
 	       "($1 is insert position, return indent request or -1)"),
 	    XmNrightAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
@@ -1161,7 +1162,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.newlineMacro = XmCreateScrolledText(newlineForm,
-    	    "newlineMacro", args, n);
+    	    (String)"newlineMacro", args, n);
     AddMouseWheelSupport(SmartIndentDialog.newlineMacro);
     XtManageChild(SmartIndentDialog.newlineMacro);
     RemapDeleteKey(SmartIndentDialog.newlineMacro);
@@ -1170,13 +1171,13 @@ void EditSmartIndentMacros(WindowInfo *window)
     modifyForm = XtVaCreateManagedWidget("modifyForm", xmFormWidgetClass,
 	    pane, NULL);
     modifyLbl = XtVaCreateManagedWidget("modifyLbl", xmLabelGadgetClass,
-    	    modifyForm, XmNlabelString,s1=XmStringCreateSimple("Type-in Macro"),
+    	    modifyForm, XmNlabelString,s1=XmStringCreateSimple((String)"Type-in Macro"),
     	    XmNmnemonic, 'M', NULL);
     XmStringFree(s1);
     XtVaCreateManagedWidget("modifyArgsLbl", xmLabelGadgetClass,
     	    modifyForm, XmNalignment, XmALIGNMENT_END,
     	    XmNlabelString, s1=XmStringCreateSimple(
-	        "($1 is position, $2 is character to be inserted)"),
+	        (String)"($1 is position, $2 is character to be inserted)"),
 	    XmNrightAttachment, XmATTACH_FORM, NULL);
     XmStringFree(s1);
     n = 0;
@@ -1189,7 +1190,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     SmartIndentDialog.modMacro = XmCreateScrolledText(modifyForm,
-    	    "modifyMacro", args, n);
+    	    (String)"modifyMacro", args, n);
     AddMouseWheelSupport(SmartIndentDialog.modMacro);
     XtManageChild(SmartIndentDialog.modMacro);
     RemapDeleteKey(SmartIndentDialog.modMacro);
@@ -1400,7 +1401,9 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static int checkSmartIndentDialogData(void)
 {
-    char *widgetText, *errMsg, *stoppedAt;
+    char *widgetText;
+	const char *errMsg;
+	char *stoppedAt;
     Program *prog;
     
     /* Check the initialization macro */
@@ -1476,19 +1479,19 @@ static smartIndentRec *getSmartIndentDialogData(void)
 static void setSmartIndentDialogData(smartIndentRec *is)
 {
     if (is == NULL) {
-	XmTextSetString(SmartIndentDialog.initMacro, "");
-	XmTextSetString(SmartIndentDialog.newlineMacro, "");
-	XmTextSetString(SmartIndentDialog.modMacro, "");
+	XmTextSetString(SmartIndentDialog.initMacro,    (String)"");
+	XmTextSetString(SmartIndentDialog.newlineMacro, (String)"");
+	XmTextSetString(SmartIndentDialog.modMacro,     (String)"");
     } else {
 	if (is->initMacro == NULL)
-	    XmTextSetString(SmartIndentDialog.initMacro, "");
+	    XmTextSetString(SmartIndentDialog.initMacro, (String)"");
 	else
-	    XmTextSetString(SmartIndentDialog.initMacro, is->initMacro);
-	XmTextSetString(SmartIndentDialog.newlineMacro, is->newlineMacro);
+	    XmTextSetString(SmartIndentDialog.initMacro, (String)is->initMacro);
+	XmTextSetString(SmartIndentDialog.newlineMacro,  (String)is->newlineMacro);
 	if (is->modMacro == NULL)
-	    XmTextSetString(SmartIndentDialog.modMacro, "");
+	    XmTextSetString(SmartIndentDialog.modMacro, (String)"");
 	else
-	    XmTextSetString(SmartIndentDialog.modMacro, is->modMacro);
+	    XmTextSetString(SmartIndentDialog.modMacro, (String)is->modMacro);
     }
 }
 
@@ -1524,7 +1527,7 @@ void EditCommonSmartIndentMacro(void)
     
     topLbl = XtVaCreateManagedWidget("topLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple(
-	        "Common Definitions for Smart Indent Macros"),
+	        (String)"Common Definitions for Smart Indent Macros"),
     	    XmNmnemonic, 'C',
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNtopOffset, VERT_BORDER,
@@ -1532,7 +1535,7 @@ void EditCommonSmartIndentMacro(void)
 	    XmNleftPosition, 1, NULL);
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimple("OK"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 6,
@@ -1544,7 +1547,7 @@ void EditCommonSmartIndentMacro(void)
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
     	    XmNmnemonic, 'y',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 22,
@@ -1556,7 +1559,7 @@ void EditCommonSmartIndentMacro(void)
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Check"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Check"),
     	    XmNmnemonic, 'k',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 39,
@@ -1569,7 +1572,7 @@ void EditCommonSmartIndentMacro(void)
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass,
     form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Restore Default"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Restore Default"),
     	    XmNmnemonic, 'f',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 56,
@@ -1582,7 +1585,7 @@ void EditCommonSmartIndentMacro(void)
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple("Close"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 81,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1606,7 +1609,7 @@ void EditCommonSmartIndentMacro(void)
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++;
     XtSetArg(args[n], XmNbottomWidget, okBtn); n++;
     XtSetArg(args[n], XmNbottomOffset, VERT_BORDER); n++;
-    CommonDialog.text = XmCreateScrolledText(form, "commonText", args, n);
+    CommonDialog.text = XmCreateScrolledText(form, (String)"commonText", args, n);
     AddMouseWheelSupport(CommonDialog.text);
     XtManageChild(CommonDialog.text);
     RemapDeleteKey(CommonDialog.text);
@@ -1786,7 +1789,7 @@ static int updateSmartIndentData(void)
     return True;
 }
 
-static int loadDefaultIndentSpec(char *lmName)
+static int loadDefaultIndentSpec(const char *lmName)
 {
     int i;
     
@@ -1803,7 +1806,7 @@ static int loadDefaultIndentSpec(char *lmName)
 int LoadSmartIndentString(char *inString)
 {
    const char *errMsg;
-   char *inPtr = inString;
+   const char *inPtr = inString;
    smartIndentRec is, *isCopy;
    int i;
 
@@ -1821,7 +1824,7 @@ int LoadSmartIndentString(char *inString)
 	if (is.lmName == NULL)
     	    return siParseError(inString, inPtr, "language mode name required");
 	if (!SkipDelimiter(&inPtr, &errMsg)) {
-    	    XtFree(is.lmName);
+    	    XtFree((char *)is.lmName);
     	    return siParseError(inString, inPtr, errMsg);
     	}
     	
@@ -1830,11 +1833,11 @@ int LoadSmartIndentString(char *inString)
 	if (!strncmp(inPtr, "Default", 7)) {
     	    inPtr += 7;
     	    if (!loadDefaultIndentSpec(is.lmName)) {
-    		XtFree(is.lmName);
+    		XtFree((char *)is.lmName);
     		return siParseError(inString, inPtr,
     	    		"no default smart indent macros");
     	    }
-    	    XtFree(is.lmName);
+    	    XtFree((char *)is.lmName);
     	    continue;
 	}
 
@@ -1842,7 +1845,7 @@ int LoadSmartIndentString(char *inString)
 	   macro end boundary string) */
 	is.initMacro = readSIMacro(&inPtr);
 	if (is.initMacro == NULL) {
-    	    XtFree(is.lmName);
+    	    XtFree((char *)is.lmName);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to initialization macro");
 	}
@@ -1850,8 +1853,8 @@ int LoadSmartIndentString(char *inString)
 	/* read the newline macro */
 	is.newlineMacro = readSIMacro(&inPtr);
 	if (is.newlineMacro == NULL) {
-    	    XtFree(is.lmName);
-    	    XtFree(is.initMacro);
+    	    XtFree((char *)is.lmName);
+    	    XtFree((char *)is.initMacro);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to newline macro");
 	}
@@ -1859,16 +1862,16 @@ int LoadSmartIndentString(char *inString)
 	/* read the modify macro */
 	is.modMacro = readSIMacro(&inPtr);
 	if (is.modMacro == NULL) {
-    	    XtFree(is.lmName);
-    	    XtFree(is.initMacro);
-    	    XtFree(is.newlineMacro);
+    	    XtFree((char *)is.lmName);
+    	    XtFree((char *)is.initMacro);
+    	    XtFree((char *)is.newlineMacro);
     	    return siParseError(inString, inPtr,
     	    	    "no end boundary to modify macro");
 	}
 	
 	/* if there's no mod macro, make it null so it won't be executed */
 	if (is.modMacro[0] == '\0') {
-	    XtFree(is.modMacro);
+	    XtFree((char *)is.modMacro);
             is.modMacro = NULL;
     	}
     	
@@ -1916,7 +1919,7 @@ int LoadSmartIndentCommonString(char *inString)
 ** allocated copy of the string, and advance *inPtr to the end of the macro.
 ** Returns NULL if the macro end boundary string is not found.
 */
-static char *readSIMacro(char **inPtr)
+static char *readSIMacro(const char **inPtr)
 {
     char *retStr, *macroStr, *macroEnd;
     int shiftedLen;
@@ -1954,10 +1957,10 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is)
 
 static void freeIndentSpec(smartIndentRec *is)
 {
-    XtFree(is->lmName);
-    if (is->initMacro != NULL) XtFree(is->initMacro);
-    XtFree(is->newlineMacro);
-    if (is->modMacro != NULL)XtFree(is->modMacro);
+    XtFree((char *)is->lmName);
+    if (is->initMacro != NULL) XtFree((char *)is->initMacro);
+    XtFree((char *)is->newlineMacro);
+    if (is->modMacro != NULL)XtFree((char *)is->modMacro);
 }
 
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
@@ -1967,7 +1970,7 @@ static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2)
 	    AllocatedStringsDiffer(is1->modMacro, is2->modMacro);
 }
 
-static int siParseError(char *stringStart, char *stoppedAt, const char *message)
+static int siParseError(const char *stringStart, const char *stoppedAt, const char *message)
 {
     return ParseError(NULL, stringStart, stoppedAt,
     	    "smart indent specification", message);
@@ -1989,9 +1992,9 @@ char *WriteSmartIndentString(void)
     	if (isDefaultIndentSpec(sis))
     	    BufInsert(outBuf, outBuf->length, "Default\n");
     	else {
-    	    insertShiftedMacro(outBuf, sis->initMacro);
-    	    insertShiftedMacro(outBuf, sis->newlineMacro);
-    	    insertShiftedMacro(outBuf, sis->modMacro);
+    	    insertShiftedMacro(outBuf, (String)sis->initMacro);
+    	    insertShiftedMacro(outBuf, (String)sis->newlineMacro);
+    	    insertShiftedMacro(outBuf, (String)sis->modMacro);
     	}
     }
     
@@ -2122,7 +2125,7 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName)
 
     for (i=0; i<NSmartIndentSpecs; i++) {
     	if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
-    	    XtFree(SmartIndentSpecs[i]->lmName);
+    	    XtFree((char *)SmartIndentSpecs[i]->lmName);
     	    SmartIndentSpecs[i]->lmName = XtNewString(newName);
     	}
     }

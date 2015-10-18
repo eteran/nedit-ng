@@ -305,7 +305,7 @@ void FreeProgram(Program *prog)
 /*
 ** Add an operator (instruction) to the end of the current program
 */
-int AddOp(int op, char **msg)
+int AddOp(int op, const char **msg)
 {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
 	*msg = "macro too large";
@@ -319,7 +319,7 @@ int AddOp(int op, char **msg)
 /*
 ** Add a symbol operand to the current program
 */
-int AddSym(Symbol *sym, char **msg)
+int AddSym(Symbol *sym, const char **msg)
 {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
 	*msg = "macro too large";
@@ -333,7 +333,7 @@ int AddSym(Symbol *sym, char **msg)
 /*
 ** Add an immediate value operand to the current program
 */
-int AddImmediate(int value, char **msg)
+int AddImmediate(int value, const char **msg)
 {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
 	*msg = "macro too large";
@@ -347,7 +347,7 @@ int AddImmediate(int value, char **msg)
 /*
 ** Add a branch offset operand to the current program
 */
-int AddBranchOffset(Inst *to, char **msg)
+int AddBranchOffset(Inst *to, const char **msg)
 {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
 	*msg = "macro too large";
@@ -452,7 +452,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr)
 ** macro exceeded its alotted time-slice and scheduled...
 */
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
-    	DataValue *result, RestartData **continuation, char **msg)
+    	DataValue *result, RestartData **continuation, const char **msg)
 {
     RestartData *context;
     static DataValue noValue = {NO_TAG, {0}};
@@ -502,7 +502,7 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacro(RestartData *continuation, DataValue *result, char **msg)
+int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg)
 {
     register int status, instCount = 0;
     register Inst *inst;

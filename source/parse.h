@@ -29,6 +29,6 @@
 
 #include "interpret.h"
 
-Program *ParseMacro(char *expr, char **msg, char **stoppedAt);
+Program *ParseMacro(char *expr, const char **msg, char **stoppedAt);
 
 #endif /* NEDIT_PARSE_H_INCLUDED */

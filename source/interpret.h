@@ -131,10 +131,10 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
 void BeginCreatingProgram(void);
-int AddOp(int op, char **msg);
-int AddSym(Symbol *sym, char **msg);
-int AddImmediate(int value, char **msg);
-int AddBranchOffset(Inst *to, char **msg);
+int AddOp(int op, const char **msg);
+int AddSym(Symbol *sym, const char **msg);
+int AddImmediate(int value, const char **msg);
+int AddBranchOffset(Inst *to, const char **msg);
 Inst *GetPC(void);
 Symbol *InstallIteratorSymbol(void);
 Symbol *LookupStringConstSymbol(const char *value);
@@ -153,8 +153,8 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
 /* Routines for executing programs */
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
-    	DataValue *result, RestartData **continuation, char **msg);
-int ContinueMacro(RestartData *continuation, DataValue *result, char **msg);
+    	DataValue *result, RestartData **continuation, const char **msg);
+int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro(void);
 char *AllocString(int length);

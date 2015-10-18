@@ -176,7 +176,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
-int SkipOptSeparator(char separator, char **inPtr);
+int SkipOptSeparator(char separator, const char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
 	const char *errorIn, const char *message);
 int AllocatedStringsDiffer(const char *s1, const char *s2);

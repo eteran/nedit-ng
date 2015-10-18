@@ -48,8 +48,8 @@ int MacroWindowCloseActions(WindowInfo *window);
 void RepeatDialog(WindowInfo *window);
 void RepeatMacro(WindowInfo *window, const char *command, int how);
 int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist);
-int ReadMacroString(WindowInfo *window, char *string, const char *errIn);
-int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
+int ReadMacroString(WindowInfo *window, const char *string, const char *errIn);
+int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	char **errPos);
 char *GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);

@@ -131,7 +131,7 @@ static char *actionToString(Widget w, const char *actionName, XEvent *event,
 static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
-static int readCheckMacroString(Widget dialogParent, char *string,
+static int readCheckMacroString(Widget dialogParent, const char *string,
 	WindowInfo *runWindow, const char *errIn, char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
@@ -718,7 +718,8 @@ static void cancelLearn(void)
 void Replay(WindowInfo *window)
 {
     Program *prog;
-    char *errMsg, *stoppedAt;
+    const char *errMsg;
+	char *stoppedAt;
 
     /* Verify that a replay macro exists and it's not empty and that */
     /* we're not already running a macro */
@@ -791,7 +792,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 ** Parse and execute a macro string including macro definitions.  Report
 ** parsing errors in a dialog posted over window->shell.
 */
-int ReadMacroString(WindowInfo *window, char *string, const char *errIn)
+int ReadMacroString(WindowInfo *window, const char *string, const char *errIn)
 {   
     return readCheckMacroString(window->shell, string, window, errIn, NULL);
 }  
@@ -801,7 +802,7 @@ int ReadMacroString(WindowInfo *window, char *string, const char *errIn)
 ** if macro compiled successfully.  Returns False and puts up
 ** a dialog explaining if macro did not compile successfully.
 */  
-int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
+int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	char **errPos)
 {
     return readCheckMacroString(dialogParent, string, NULL, errIn, errPos);
@@ -815,10 +816,13 @@ int CheckMacroString(Widget dialogParent, char *string, const char *errIn,
 ** runWindow is passed as NULL, does parse only.  If errPos is non-null, 
 ** returns a pointer to the error location in the string.
 */
-static int readCheckMacroString(Widget dialogParent, char *string,
+static int readCheckMacroString(Widget dialogParent, const char *string,
 	WindowInfo *runWindow, const char *errIn, char **errPos)
 {
-    char *stoppedAt, *inPtr, *namePtr, *errMsg;
+    char *stoppedAt;
+	const char *inPtr;
+	char *namePtr;
+	const char *errMsg;
     char subrName[MAX_SYM_LEN];
     Program *prog;
     Symbol *sym;
@@ -860,7 +864,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 		return ParseError(dialogParent, string, inPtr,
 	    	    	errIn, "expected '{'");
 	    }
-	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+	    prog = ParseMacro((String)inPtr, &errMsg, &stoppedAt);
 	    if (prog == NULL) {
 	    	if (errPos != NULL) *errPos = stoppedAt;
 	    	return ParseError(dialogParent, string, stoppedAt,
@@ -888,7 +892,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 	   definitions in a file which is loaded from another macro file, it
 	   will probably run the code blocks in reverse order! */
 	} else {
-	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+	    prog = ParseMacro((String)inPtr, &errMsg, &stoppedAt);
 	    if (prog == NULL) {
                 if (errPos != NULL) {
                     *errPos = stoppedAt;
@@ -944,7 +948,7 @@ static int readCheckMacroString(Widget dialogParent, char *string,
 static void runMacro(WindowInfo *window, Program *prog)
 {
     DataValue result;
-    char *errMsg;
+    const char *errMsg;
     int stat;
     macroCmdInfo *cmdData;
     XmString s;
@@ -1177,7 +1181,8 @@ void SafeGC(void)
 void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
 {
     Program *prog;
-    char *errMsg, *stoppedAt, *tMacro;
+    const char *errMsg;
+	char *stoppedAt, *tMacro;
     int macroLen;
     
     /* Add a terminating newline (which command line users are likely to omit
@@ -1427,7 +1432,7 @@ static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 void RepeatMacro(WindowInfo *window, const char *command, int how)
 {
     Program *prog;
-    char *errMsg;
+    const char *errMsg;
 	char *stoppedAt;
 	const char *loopMacro;
 	char *loopedCmd;
@@ -1701,7 +1706,7 @@ static Boolean continueWorkProc(XtPointer clientData)
 {
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
-    char *errMsg;
+    const char *errMsg;
     int stat;
     DataValue result;
     
