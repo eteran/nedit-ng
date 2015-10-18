@@ -2740,7 +2740,8 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     WindowInfo *window = WidgetToWindow(w);
-    char fullname[MAXPATHLEN], *params[2];
+    char fullname[MAXPATHLEN];
+	const char *params[2];
     int response;
     int n=1;
     
@@ -2752,7 +2753,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (*nArgs>0 && !strcmp(args[0], "1"))
         params[n++] = "1";
     
-    XtCallActionProc(window->lastFocus, "open", event, params, n);
+    XtCallActionProc(window->lastFocus, "open", event, (char **)params, n);
     CheckCloseDim();
 }
 
@@ -2816,7 +2817,8 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
 {
     WindowInfo *window = WidgetToWindow(w);
     int response, addWrap, fileFormat;
-    char fullname[MAXPATHLEN], *params[2];
+    char fullname[MAXPATHLEN];
+	const char *params[2];
     
     response = PromptForNewFile(window, "Save File As", fullname,
 	    &fileFormat, &addWrap);
@@ -2825,7 +2827,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args,
     window->fileFormat = fileFormat;
     params[0] = fullname;
     params[1] = "wrapped";
-    XtCallActionProc(window->lastFocus, "save_as", event, params, addWrap?2:1);
+    XtCallActionProc(window->lastFocus, "save_as", event, (char **)params, addWrap?2:1);
 }
 
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
@@ -4270,9 +4272,9 @@ static Widget createMenu(Widget parent, const char *name, const char *label,
     Widget menu, cascade;
     XmString st1;
 
-    menu = CreatePulldownMenu(parent, name, NULL, 0);
+    menu = CreatePulldownMenu(parent, (String)name, NULL, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
-    	XmNlabelString, st1=XmStringCreateSimple(label),
+    	XmNlabelString, st1=XmStringCreateSimple((String)label),
     	XmNsubMenuId, menu, NULL);
     XmStringFree(st1);
     if (mnemonic != 0)
@@ -4303,9 +4305,9 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
     
 
     button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, 
-    	    XmNlabelString, st1=XmStringCreateSimple(label),
+    	    XmNlabelString, st1=XmStringCreateSimple((String)label),
     	    XmNmnemonic, mnemonic, NULL);
-    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, cbArg);
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
@@ -4332,11 +4334,11 @@ static Widget createFakeMenuItem(Widget parent, const char *name,
     XmString st1;
     
     button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent,
-    	    XmNlabelString, st1=XmStringCreateSimple(""),
+    	    XmNlabelString, st1=XmStringCreateSimple((String)""),
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
     	    XmNheight, 0, NULL);
-    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, cbArg);
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
     XtVaSetValues(button, XmNtraversalOn, False, NULL);
 
@@ -4355,11 +4357,11 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
     XmString st1;
     
     button = XtVaCreateWidget(name, xmToggleButtonWidgetClass, parent, 
-    	    XmNlabelString, st1=XmStringCreateSimple(label),
+    	    XmNlabelString, st1=XmStringCreateSimple((String)label),
     	    XmNmnemonic, mnemonic,
     	    XmNset, set, NULL);
     XtAddCallback(button, XmNvalueChangedCallback, (XtCallbackProc)callback,
-    	    cbArg);
+    	    (void *)cbArg);
     XmStringFree(st1);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
@@ -4381,7 +4383,7 @@ static Widget createMenuRadioToggle(Widget parent, const char *name, const char 
 	int mode)
 {
     Widget button;
-    button = createMenuToggle(parent, name, label, mnemonic, callback, cbArg,
+    button = createMenuToggle(parent, name, label, mnemonic, callback, (void *)cbArg,
 	    set, mode);
     XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, NULL);
     return button;
@@ -4391,7 +4393,7 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode)
 {
     Widget button;
     
-    button = XmCreateSeparator(parent, name, NULL, 0);
+    button = XmCreateSeparator(parent, (String)name, NULL, 0);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
     	XtManageChild(button);
@@ -5016,7 +5018,7 @@ static void updateWindowSizeMenu(WindowInfo *win)
     } else {
     	XmToggleButtonSetState(win->sizeCustomDefItem, False, False);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple("Custom..."), NULL);
+    	    	XmNlabelString, st1=XmStringCreateSimple((String)"Custom..."), NULL);
     	XmStringFree(st1);
     }
 }
@@ -5211,7 +5213,7 @@ Widget CreateBGMenu(WindowInfo *window)
        when it failed often in development, and certainly ignores the ~ syntax
        in translation event specifications. */
     XtSetArg(args[0], XmNmenuPost, GetPrefBGMenuBtn());
-    return CreatePopupMenu(window->textArea, "bgMenu", args, 1);
+    return CreatePopupMenu(window->textArea, (String)"bgMenu", args, 1);
 }
 
 /*
@@ -5225,7 +5227,7 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
 
     n = 0;
     XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
-    menu = CreatePopupMenu(parent, "tabContext", args, n);
+    menu = CreatePopupMenu(parent, (String)"tabContext", args, n);
     
     createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new_tab", SHORT);
     createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
@@ -5289,8 +5291,8 @@ void AddTabContextMenuAction(Widget widget)
     static XtTranslations table = NULL;
 
     if (table == NULL) {
-	char *translations = "<Btn3Down>: post_tab_context_menu()\n";
-    	table = XtParseTranslationTable(translations);
+	const char *translations = "<Btn3Down>: post_tab_context_menu()\n";
+    	table = XtParseTranslationTable((String)translations);
     }
     XtOverrideTranslations(widget, table);
 }
