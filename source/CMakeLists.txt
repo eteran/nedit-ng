@@ -15,38 +15,38 @@ bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 
 
 add_executable(nedit
-	nedit.cpp
+	calltips.cpp
 	file.cpp
-	menu.cpp
-	window.cpp
-	selection.cpp
-	search.cpp
-	undo.cpp
-	shift.cpp
 	help.cpp
-	preferences.cpp
-	tags.cpp
-	userCmds.cpp
-	shell.cpp
-	regularExp.cpp
-	macro.cpp
-	text.cpp
-	textSel.cpp
-	textDisp.cpp
-	textBuf.cpp
-	textDrag.cpp
-	server.cpp
 	highlight.cpp
 	highlightData.cpp
 	interpret.cpp
-	smartIndent.cpp
-	regexConvert.cpp
-	rbTree.cpp
-	windowTitle.cpp
-	calltips.cpp
-	server_common.cpp
-	rangeset.cpp
 	linkdate.cpp
+	macro.cpp
+	menu.cpp
+	nedit.cpp
+	preferences.cpp
+	rangeset.cpp
+	rbTree.cpp
+	regexConvert.cpp
+	regularExp.cpp
+	search.cpp
+	selection.cpp
+	server.cpp
+	server_common.cpp
+	shell.cpp
+	shift.cpp
+	smartIndent.cpp
+	tags.cpp
+	text.cpp
+	textBuf.cpp
+	textDisp.cpp
+	textDrag.cpp
+	textSel.cpp
+	undo.cpp
+	userCmds.cpp
+	window.cpp
+	windowTitle.cpp
 	${BISON_parser_OUTPUT_SOURCE})
 
 add_definitions(-DUSE_DIRENT -DUSE_LPR_PRINT_CMD)
