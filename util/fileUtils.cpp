@@ -86,7 +86,7 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     int i, pathLen, fileLen;
 	    
 
-    char *viewExtendPath;
+    const char *viewExtendPath;
     int scanStart;
     
     /* For clearcase version extended paths, slash characters after the "@@/"

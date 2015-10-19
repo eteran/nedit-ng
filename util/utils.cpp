@@ -42,8 +42,8 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 
 #define DEFAULT_NEDIT_HOME ".nedit"
 
-static char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
-static char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
+static const char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
+static const char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
 
 static void buildFilePath(char* fullPath, const char* dir, const char* file);
 static Boolean isDir(const char* file);
@@ -126,7 +126,7 @@ const char
        return getenv("USER");
     }
     else {
-       userName=malloc(strlen(passwdEntry->pw_name)+1);
+       userName = (char *)malloc(strlen(passwdEntry->pw_name)+1);
        strcpy(userName, passwdEntry->pw_name);
        return userName;
     }

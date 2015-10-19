@@ -261,7 +261,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     RemapDeleteKey(fontName);   /* kludge to handle delete and BS */
 
     n = 0; 
-    tempStr = XmStringCreate("Font Name:", XmSTRING_DEFAULT_CHARSET);
+    tempStr = XmStringCreate((char *)"Font Name:", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
     XtSetArg(args[n], XmNmnemonic, 'N'); n++;
     XtSetArg(args[n], XmNuserData, fontName); n++;
@@ -293,7 +293,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
                                        args, n);
 
     n = 0; 
-    tempStr = XmStringCreate("Sample:", XmSTRING_DEFAULT_CHARSET);
+    tempStr = XmStringCreate((char *)"Sample:", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
     XtSetArg(args[n], XmNmnemonic, 'S'); n++;
     XtSetArg(args[n], XmNleftAttachment, XmATTACH_OPPOSITE_WIDGET); n++; 
@@ -308,7 +308,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     /*  create toggle buttons */
 
     n = 0; 
-    tempStr = XmStringCreate("Show Size in Points", 
+    tempStr = XmStringCreate((char *)"Show Size in Points", 
                               XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
     XtSetArg(args[n], XmNmnemonic, 'P'); n++;
@@ -324,7 +324,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     if (showPropFonts != ONLY_FIXED)
     {
         n = 0; 
-        tempStr = XmStringCreate("Show Proportional Width Fonts", 
+        tempStr = XmStringCreate((char *)"Show Proportional Width Fonts", 
                                  XmSTRING_DEFAULT_CHARSET);
         XtSetArg(args[n], XmNlabelString, tempStr); n++;
         XtSetArg(args[n], XmNmnemonic, 'W'); n++;
@@ -346,7 +346,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     /*  "Font" list */
 
     n = 0;
-    tempStr = XmStringCreate("Font:", XmSTRING_DEFAULT_CHARSET);
+    tempStr = XmStringCreate((char *)"Font:", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
     XtSetArg(args[n], XmNmnemonic, 'F'); n++; 
     XtSetArg(args[n], XmNtopOffset, 2); n++;
@@ -367,7 +367,7 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNtopWidget, nameLabel); n++;
     XtSetArg(args[n], XmNleftWidget, nameLabel); n++;
     XtSetArg(args[n], XmNrightPosition, 52); n++;
-    fontList = XmCreateScrolledList(form, "fontlist", args, n);
+    fontList = XmCreateScrolledList(form, (char *)"fontlist", args, n);
     AddMouseWheelSupport(fontList);
     XtManageChild(fontList);
     XtVaSetValues(nameLabel, XmNuserData, fontList, NULL);
@@ -384,12 +384,12 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNleftWidget, XtParent(fontList)); n++;
     XtSetArg(args[n], XmNbottomWidget, XtParent(fontList)); n++;
     XtSetArg(args[n], XmNrightPosition, 85); n++;
-    styleList = XmCreateScrolledList(form, "stylelist", args, n);
+    styleList = XmCreateScrolledList(form, (char *)"stylelist", args, n);
     AddMouseWheelSupport(styleList);
     XtManageChild(styleList);
 
     n = 0;
-    tempStr = XmStringCreate("Style:", XmSTRING_DEFAULT_CHARSET);
+    tempStr = XmStringCreate((char *)"Style:", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNmnemonic, 'y'); n++; 
     XtSetArg(args[n], XmNuserData, styleList); n++;
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
@@ -412,12 +412,12 @@ char    *FontSel(Widget parent, int showPropFonts, const char *currFont,
     XtSetArg(args[n], XmNbottomWidget, XtParent(fontList)); n++;
     XtSetArg(args[n], XmNleftOffset, 5); n++;
     XtSetArg(args[n], XmNrightPosition, 99); n++;
-    sizeList = XmCreateScrolledList(form, "sizelist", args, n);
+    sizeList = XmCreateScrolledList(form, (char *)"sizelist", args, n);
     AddMouseWheelSupport(sizeList);
     XtManageChild(sizeList);
 
     n = 0;
-    tempStr = XmStringCreate("Size:", XmSTRING_DEFAULT_CHARSET);
+    tempStr = XmStringCreate((char *)"Size:", XmSTRING_DEFAULT_CHARSET);
     XtSetArg(args[n], XmNlabelString, tempStr); n++;
     XtSetArg(args[n], XmNmnemonic, 'z'); n++; 
     XtSetArg(args[n], XmNuserData, sizeList); n++;
@@ -903,7 +903,7 @@ static void propFontToggleAction(Widget widget,
 
         setupScrollLists(NONE, *ctrlBlk);
 
-        XmTextSetString(ctrlBlk->fontNameField, "");
+        XmTextSetString(ctrlBlk->fontNameField, (char *)"");
         enableSample(ctrlBlk, False, NULL);
     }
 }
@@ -1014,7 +1014,7 @@ static void fontAction(Widget widget, xfselControlBlkType *ctrlBlk,
     else
     {
         enableSample(ctrlBlk, False, NULL);
-        XmTextSetString(ctrlBlk->fontNameField, "");
+        XmTextSetString(ctrlBlk->fontNameField, (char *)"");
     }
 }
 
@@ -1055,7 +1055,7 @@ static void styleAction(Widget widget, xfselControlBlkType *ctrlBlk,
     else
     {
         enableSample(ctrlBlk, False, NULL);
-        XmTextSetString(ctrlBlk->fontNameField, "");
+        XmTextSetString(ctrlBlk->fontNameField, (char *)"");
     }
 }
 
@@ -1095,7 +1095,7 @@ static void sizeAction(Widget widget, xfselControlBlkType *ctrlBlk,
     else
     {
         enableSample(ctrlBlk, False, NULL);
-        XmTextSetString(ctrlBlk->fontNameField, "");
+        XmTextSetString(ctrlBlk->fontNameField, (char *)"");
     }
 }
 

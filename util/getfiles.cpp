@@ -233,8 +233,8 @@ static Widget YesNoDialog;		/* "Overwrite?" dialog widget	   */
 static int YesNoResult;			/* Result of overwrite dialog	   */
 static Widget ErrorDialog;		/* Dialog widget for error msgs	   */
 static int ErrorDone;			/* Flag to mark dialog completed   */
-static void (*OrigDirSearchProc)();	/* Built in Motif directory search */
-static void (*OrigFileSearchProc)();	/* Built in Motif file search proc */
+static void (*OrigDirSearchProc)(Widget, XtPointer);	/* Built in Motif directory search */
+static void (*OrigFileSearchProc)(Widget, XtPointer);	/* Built in Motif file search proc */
 
 /* 
  * Do the hard work of setting up a file selection dialog
@@ -682,10 +682,10 @@ static void createYesNoDialog(Widget parent)
     XtAddCallback (YesNoDialog, XmNcancelCallback,
     	    (XtCallbackProc)yesNoCancelCB, NULL);
     XtUnmanageChild(XmMessageBoxGetChild (YesNoDialog, XmDIALOG_HELP_BUTTON));
-    buttonString = XmStringCreateSimple("Yes");
+    buttonString = XmStringCreateSimple((char *)"Yes");
     SET_ONE_RSRC(YesNoDialog, XmNokLabelString, buttonString);
     XmStringFree(buttonString);
-    buttonString = XmStringCreateSimple("No");
+    buttonString = XmStringCreateSimple((char *)"No");
     SET_ONE_RSRC(YesNoDialog, XmNcancelLabelString, buttonString);
     XmStringFree(buttonString);
 }
@@ -704,7 +704,7 @@ static void createErrorDialog(Widget parent)
     	    NULL);
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_OK_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_HELP_BUTTON));
-    buttonString = XmStringCreateLtoR("OK", XmSTRING_DEFAULT_CHARSET);
+    buttonString = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET);
     XtVaSetValues(ErrorDialog, XmNcancelLabelString, buttonString, NULL);
     XtVaSetValues(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_CANCEL_BUTTON),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
@@ -887,10 +887,10 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     ac = 0;
     XtSetArg (al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;
     XtSetArg (al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
-    XtSetArg(al[ac], XmNlabelString, st1=XmStringCreateLtoR ("OK", 
+    XtSetArg(al[ac], XmNlabelString, st1=XmStringCreateLtoR ((char *)"OK", 
                       XmSTRING_DEFAULT_CHARSET)); ac++;
     XtSetArg (al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN);  ac++;
-    button = XmCreatePushButtonGadget(form, "ok", al, ac);
+    button = XmCreatePushButtonGadget(form, (char *)"ok", al, ac);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)helpDismissCB,
     	    (char *)form);
     XmStringFree(st1);
@@ -912,7 +912,7 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);  ac++;
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);  ac++;
     XtSetArg(al[ac], XmNbottomWidget, button);  ac++;
-    text = XmCreateScrolledText(form, "helpText", al, ac);
+    text = XmCreateScrolledText(form, (char *)"helpText", al, ac);
     AddMouseWheelSupport(text);
     XtManageChild(text);
     

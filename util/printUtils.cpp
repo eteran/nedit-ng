@@ -279,7 +279,7 @@ static Widget createForm(Widget parent)
     XtSetArg(args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
     argcnt++;
     XtSetArg(args[argcnt], XmNdialogTitle, (st0=XmStringCreateLtoR(
-		"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+		(char *)"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
     form = CreateFormDialog(parent, "printForm", args, argcnt);
     XtVaSetValues(form, XmNshadowThickness, 0, NULL);
@@ -290,13 +290,13 @@ static Widget createForm(Widget parent)
     if (CopiesOption[0] != '\0') {
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		"Number of copies (1)", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+		(char *)"Number of copies (1)", XmSTRING_DEFAULT_CHARSET))); argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'N'); argcnt++;
 	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
 	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+5); argcnt++;
 	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
 	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-	label1 = XmCreateLabelGadget(form, "label1", args, argcnt);
+	label1 = XmCreateLabelGadget(form, (char *)"label1", args, argcnt);
 	XmStringFree( st0 );
 	bwidgetarray[bwidgetcnt] = label1; bwidgetcnt++;
     
@@ -310,7 +310,7 @@ static Widget createForm(Widget parent)
 	XtSetArg(args[argcnt], XmNtopOffset, 5); argcnt++;
 	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET); argcnt++; 
 	XtSetArg(args[argcnt], XmNleftWidget, label1); argcnt++;
-	Text1 = XmCreateText(form, "text1", args, argcnt);
+	Text1 = XmCreateText(form, (char *)"text1", args, argcnt);
 	bwidgetarray[bwidgetcnt] = Text1; bwidgetcnt++; 
 	XtAddCallback(Text1, XmNmodifyVerifyCallback,
 		(XtCallbackProc)allowOnlyNumInput, NULL);
@@ -324,8 +324,7 @@ static Widget createForm(Widget parent)
     /************************ LABEL 2 and TEXT 2 ************************/
     if (QueueOption[0] != '\0') {
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		    "  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'Q'); argcnt++;
 	XtSetArg(args[argcnt], XmNrecomputeSize, True); argcnt++;
 	XtSetArg(args[argcnt], XmNtopAttachment,
@@ -334,7 +333,7 @@ static Widget createForm(Widget parent)
 	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
 	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+4); argcnt++;
 	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-	Label2 = XmCreateLabelGadget(form, "label2", args, argcnt);
+	Label2 = XmCreateLabelGadget(form, (char *)"label2", args, argcnt);
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = Label2; bwidgetcnt++;
 	setQueueLabelText();
@@ -352,7 +351,7 @@ static Widget createForm(Widget parent)
 	XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
 	XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
 	XtSetArg(args[argcnt], XmNtopOffset, 4); argcnt++;
-	Text2 = XmCreateText(form, "text2", args, argcnt);
+	Text2 = XmCreateText(form, (char *)"text2", args, argcnt);
 	XtAddCallback(Text2, XmNmodifyVerifyCallback,
 		(XtCallbackProc)noSpaceOrPunct, NULL);
 	XtAddCallback(Text2, XmNvalueChangedCallback,
@@ -366,8 +365,7 @@ static Widget createForm(Widget parent)
     /****************** LABEL 3 and TEXT 3 *********************/
     if (HostOption[0] != '\0') {
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		   "  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'H'); argcnt++;
 	XtSetArg(args[argcnt], XmNrecomputeSize, True); argcnt++;
 	XtSetArg(args[argcnt], XmNvalue , ""); argcnt++;
@@ -377,7 +375,7 @@ static Widget createForm(Widget parent)
 	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
 	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
 	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+4); argcnt++;
-	Label3 = XmCreateLabelGadget(form, "label3", args, argcnt);
+	Label3 = XmCreateLabelGadget(form, (char *)"label3", args, argcnt);
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = Label3; bwidgetcnt++;
 	setHostLabelText();      
@@ -395,7 +393,7 @@ static Widget createForm(Widget parent)
 	XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
 	XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
     	XtSetArg(args[argcnt], XmNtopOffset, 4); argcnt++;
-	Text3 = XmCreateText(form, "Text3", args, argcnt);
+	Text3 = XmCreateText(form, (char *)"Text3", args, argcnt);
 	XtAddCallback(Text3, XmNmodifyVerifyCallback,
 		(XtCallbackProc)noSpaceOrPunct, NULL);
 	XtAddCallback(Text3, XmNvalueChangedCallback,
@@ -417,7 +415,7 @@ static Widget createForm(Widget parent)
     XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
     XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
-    Text4 = XmCreateText(form, "Text4", args, argcnt);
+    Text4 = XmCreateText(form, (char *)"Text4", args, argcnt);
     XtAddCallback(Text4, XmNmodifyVerifyCallback,
 	    (XtCallbackProc)printCmdModified, NULL);
     bwidgetarray[bwidgetcnt] = Text4; bwidgetcnt++; 
@@ -433,20 +431,19 @@ static Widget createForm(Widget parent)
     XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 8); argcnt++;
     XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
-    separator = XmCreateSeparatorGadget(form, "separator", args, argcnt);
+    separator = XmCreateSeparatorGadget(form, (char *)"separator", args, argcnt);
     bwidgetarray[bwidgetcnt] = separator; bwidgetcnt++; 
     topWidget = separator;
 
     /********************** CANCEL BUTTON *************************/
     argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		"Cancel", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"Cancel", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
     XtSetArg(args[argcnt], XmNleftPosition, 60); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
     XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
     XtSetArg(args[argcnt], XmNtopOffset, 7); argcnt++;
-    printCancel = XmCreatePushButton(form, "printCancel", args, argcnt);
+    printCancel = XmCreatePushButton(form, (char *)"printCancel", args, argcnt);
     XmStringFree( st0 );
     bwidgetarray[bwidgetcnt] = printCancel; bwidgetcnt++;
     XtAddCallback (printCancel, XmNactivateCallback,
@@ -454,15 +451,14 @@ static Widget createForm(Widget parent)
 
     /*********************** PRINT BUTTON **************************/
     argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
     XtSetArg(args[argcnt], XmNshowAsDefault, True); argcnt++;
     XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
     XtSetArg(args[argcnt], XmNrightPosition, 40); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
     XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
     XtSetArg(args[argcnt], XmNtopOffset, 7); argcnt++;
-    printOk = XmCreatePushButton(form, "printOk", args, argcnt);
+    printOk = XmCreatePushButton(form, (char *)"printOk", args, argcnt);
     XmStringFree( st0 );
     bwidgetarray[bwidgetcnt] = printOk; bwidgetcnt++; 
     XtAddCallback (printOk, XmNactivateCallback,

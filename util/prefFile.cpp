@@ -124,7 +124,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
     char **argvCopy;
     char *fileString;
     static XrmOptionDescRec xrmOnlyTable[] =
-	    {{"-xrm", NULL, XrmoptionResArg, (caddr_t)NULL}};
+	    {{(char *)"-xrm", NULL, XrmoptionResArg, (caddr_t)NULL}};
         
     /* read the preferences file into an X database.
        On failure prefDB will be NULL. */
@@ -348,7 +348,7 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip)
       case PREF_STRING:
 	if ((int)strlen(string) >= (long)rsrcDescrip->arg)
       	    return False;
-	strncpy(rsrcDescrip->valueAddr, string, (long)rsrcDescrip->arg);
+	strncpy((char *)rsrcDescrip->valueAddr, string, (long)rsrcDescrip->arg);
       	return True;
       case PREF_ALLOC_STRING:
       	*(char **)rsrcDescrip->valueAddr = XtMalloc(strlen(string) + 1);

@@ -77,7 +77,12 @@ static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $
 
 
 #ifndef LESSTIF_VERSION
+#ifdef __cplusplus
+extern "C" void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
+#else
 extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
+#endif
+
 #endif
 
 /* structure for passing history-recall data to callbacks */
@@ -166,8 +171,8 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg)
 
     /* add a delete window protocol callback instead */
     if (dwAtom == 0) {
-    	wmpAtom = XmInternAtom(display, "WM_PROTOCOLS", FALSE);
-    	dwAtom = XmInternAtom(display, "WM_DELETE_WINDOW", FALSE);
+    	wmpAtom = XmInternAtom(display, (char *)"WM_PROTOCOLS",     FALSE);
+    	dwAtom  = XmInternAtom(display, (char *)"WM_DELETE_WINDOW", FALSE);
     }
     XmAddProtocolCallback(shell, wmpAtom, dwAtom, closeCB, arg);
 }
@@ -212,7 +217,7 @@ void SuppressPassiveGrabWarnings(void)
 void RemapDeleteKey(Widget w)
 {
     static XtTranslations table = NULL;
-    static char *translations =
+    static const char *translations =
     	"~Shift~Ctrl~Meta~Alt<Key>osfDelete: delete-previous-character()\n";
 
     if (RemapDeleteEnabled) {
@@ -440,7 +445,12 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
 	    fprintf(stderr, "VisualID resource value not valid\n");
     }
     if (visList == NULL && reqClass != -1 && reqDepth != -1) {
+#if defined(__cplusplus)
+	visTemplate.c_class = reqClass;
+#else
 	visTemplate.class = reqClass;
+#endif
+
 	visTemplate.depth = reqDepth;
     	visList = XGetVisualInfo(display,
 		                 VisualScreenMask| VisualClassMask | VisualDepthMask,
@@ -449,7 +459,11 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
 	    fprintf(stderr, "Visual class/depth combination not available\n");
     }
     if (visList == NULL && reqClass != -1) {
+#if defined(__cplusplus)
+ 	visTemplate.c_class = reqClass;
+#else
  	visTemplate.class = reqClass;
+#endif
     	visList = XGetVisualInfo(display, VisualScreenMask|VisualClassMask, 
                                  &visTemplate, &nVis);
     	if (visList == NULL)
@@ -506,7 +520,11 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
 		bestVisual = i;
 	    if (visList[bestVisual].visual != DefaultVisual(display, screen)) {
 		for (j = 0; j < (int)XtNumber(bestClasses); j++) {
+#if defined(__cplusplus)
+		    if (visList[i].c_class == bestClasses[j] && j > bestClass) {
+#else
 		    if (visList[i].class == bestClasses[j] && j > bestClass) {
+#endif
 			bestClass = j;
 			bestVisual = i;
 		    }
@@ -1282,7 +1300,7 @@ int TextWidgetIsBlank(Widget textW)
 void MakeSingleLineTextW(Widget textW)
 {
     static XtTranslations noReturnTable = NULL;
-    static char *noReturnTranslations = "<Key>Return: activate()\n";
+    static const char *noReturnTranslations = "<Key>Return: activate()\n";
     
     if (noReturnTable == NULL)
     	noReturnTable = XtParseTranslationTable(noReturnTranslations);
@@ -1348,7 +1366,7 @@ static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
     }
     
     /* Change the text field contents */
-    XmTextSetString(w, histData->index == -1 ? "" :
+    XmTextSetString(w, histData->index == -1 ? (char *)"" :
 	    (*histData->list)[histData->index]);
 }
 
@@ -1781,7 +1799,7 @@ static int parseAccelString(Display *display, const char *string, KeySym *keySym
 {
 #define N_MODIFIERS 12
     /*... Is NumLock always Mod3? */
-    static char *modifierNames[N_MODIFIERS] = {"Ctrl", "Shift", "Alt", "Mod2",
+    static const char *modifierNames[N_MODIFIERS] = {"Ctrl", "Shift", "Alt", "Mod2",
 	    "Mod3", "Mod4", "Mod5", "Button1", "Button2", "Button3", "Button4",
 	    "Button5"};
     static unsigned int modifierMasks[N_MODIFIERS] = {ControlMask, ShiftMask,
@@ -1916,10 +1934,10 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode,
 void InstallMouseWheelActions(XtAppContext context)
 {   
     static XtActionsRec Actions[] = {
-      	{"scrolled-window-scroll-up",   scrollUpAP},
-      	{"scrolled-window-page-up",     pageUpAP},
-      	{"scrolled-window-scroll-down", scrollDownAP},
-      	{"scrolled-window-page-down",   pageDownAP} 
+      	{(String)"scrolled-window-scroll-up",   scrollUpAP},
+      	{(String)"scrolled-window-page-up",     pageUpAP},
+      	{(String)"scrolled-window-scroll-down", scrollDownAP},
+      	{(String)"scrolled-window-page-down",   pageDownAP} 
     };
 
     XtAppAddActions(context, Actions, XtNumber(Actions));
@@ -1955,7 +1973,7 @@ static void pageUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     Widget scrolledWindow, scrollBar;
     String al[1];
     
-    al[0] = "Up";
+    al[0] = (char *)"Up";
     scrolledWindow = XtParent(w);
     scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
     if (scrollBar)
@@ -1968,7 +1986,7 @@ static void pageDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     Widget scrolledWindow, scrollBar;
     String al[1];
     
-    al[0] = "Down";
+    al[0] = (char *)"Down";
     scrolledWindow = XtParent(w);
     scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
     if (scrollBar)
@@ -1984,7 +2002,7 @@ static void scrollUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     
     if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
        return;
-    al[0] = "Up";
+    al[0] = (char *)"Up";
     scrolledWindow = XtParent(w);
     scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
     if (scrollBar)
@@ -2001,7 +2019,7 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     
     if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
        return;
-    al[0] = "Down";
+    al[0] = (char *)"Down";
     scrolledWindow = XtParent(w);
     scrollBar = XtNameToWidget (scrolledWindow, "VertScrollBar");
     if (scrollBar)

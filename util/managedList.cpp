@@ -27,8 +27,6 @@ static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg E
 *									       *
 *******************************************************************************/
 
-
-
 #include "managedList.h"
 #include "misc.h"
 #include "DialogF.h"
@@ -67,7 +65,7 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData);
 static int incorporateDialogData(managedListData *ml, int listPos,
-    	int explicit);
+    	int is_explicit);
 static void updateDialogFromList(managedListData *ml, int selection);
 static void updateListWidgetItem(managedListData *ml, int listPos);
 static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -116,16 +114,16 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
     	    XmNtopAttachment, XmATTACH_FORM,
     	    XmNbottomAttachment, XmATTACH_FORM, NULL);
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Delete"), NULL);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple((char *)"Delete"), NULL);
     XmStringFree(s1);
     copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol,
-    	    XmNlabelString, s1=XmStringCreateSimple("Copy"), NULL);
+    	    XmNlabelString, s1=XmStringCreateSimple((char *)"Copy"), NULL);
     XmStringFree(s1);
     moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move ^"), NULL);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple((char *)"Move ^"), NULL);
     XmStringFree(s1);
     moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass,
-    	    rowCol, XmNlabelString, s1=XmStringCreateSimple("Move v"), NULL);
+    	    rowCol, XmNlabelString, s1=XmStringCreateSimple((char *)"Move v"), NULL);
     XmStringFree(s1);
     
     /* AFAIK the only way to make a list widget n-columns wide is to make up
@@ -146,7 +144,7 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args,
     XtSetArg(al[ac], XmNleftWidget, rowCol); ac++;
     XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
-    listW = XmCreateScrolledList(form, "list", al, ac);
+    listW = XmCreateScrolledList(form, (char *)"list", al, ac);
     AddMouseWheelSupport(listW);
     XtManageChild(listW);
     FreeStringTable(placeholderTable);
@@ -538,7 +536,7 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData)
 ** is allowed to reject whatever request triggered the update.  If the
 ** request is rejected, the return value from this function will be False.
 */
-static int incorporateDialogData(managedListData *ml, int listPos, int explicit)
+static int incorporateDialogData(managedListData *ml, int listPos, int is_explicit)
 {
     int abort = False;
     void *item;
@@ -546,7 +544,7 @@ static int incorporateDialogData(managedListData *ml, int listPos, int explicit)
     /* Get the current contents of the dialog fields.  Callback will set
        abort to True if canceled */
     item = (*ml->getDialogDataCB)(listPos == 1 ? NULL : ml->itemList[
-    	    listPos-2], explicit, &abort, ml->getDialogDataArg);
+    	    listPos-2], is_explicit, &abort, ml->getDialogDataArg);
     if (abort)
     	return False;
     if (item == NULL) /* don't modify if fields are empty */
@@ -587,7 +585,7 @@ static void updateDialogFromList(managedListData *ml, int selection)
 
     /* Fill in the list widget with the names from the item list */
     stringTable = (XmString *)XtMalloc(sizeof(XmString) * (*ml->nItems+1));
-    stringTable[0] = XmStringCreateSimple("New");
+    stringTable[0] = XmStringCreateSimple((char *)"New");
     for (i=0; i < *ml->nItems; i++)
     	stringTable[i+1] = XmStringCreateSimple(*(char **)ml->itemList[i]);
     XtVaSetValues(ml->listW, XmNitems, stringTable,
