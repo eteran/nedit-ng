@@ -897,7 +897,7 @@ void SortTabBar(WindowInfo *window)
         return;
 
     /* first sort the documents */
-    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
+    windows = new WindowInfo*[nDoc];
     for (w=WindowList, i=0; w!=nullptr; w=w->next) {
     	if (window->shell == w->shell)
     	    windows[i++] = w;
@@ -921,7 +921,7 @@ void SortTabBar(WindowInfo *window)
         j++;
     }
     
-    XtFree((char *)windows);
+    delete [] windows;
 }
 
 /* 
@@ -2459,7 +2459,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
         nWindows++;
     }
     argv = (char **)XtMalloc(maxArgc*sizeof(char *));
-    revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *)*nWindows);
+    revWindowList = new WindowInfo*[nWindows];
     for (win=WindowList, i=nWindows-1; win!=nullptr; win=win->next, i--)
         revWindowList[i] = win;
         
@@ -2513,7 +2513,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 	}
     }
 
-    XtFree((char *)revWindowList);
+    delete [] revWindowList;
 
     /* Set the window's WM_COMMAND property to the created command line */
     XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
@@ -3262,7 +3262,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     int nCols, nRows;
     
     /* Allocate some memory for the new window data structure */
-    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    window = new WindowInfo;
     
     /* inherit settings and later reset those required */
     memcpy(window, shellWindow, sizeof(WindowInfo));
@@ -4385,7 +4385,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
     UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
 
     for (undo = orgList; undo; undo = undo->next) {
-	clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+	clone = new UndoInfo;
 	memcpy(clone, undo, sizeof(UndoInfo));
 
 	if (undo->oldText) {
@@ -4542,7 +4542,7 @@ void MoveDocumentDialog(WindowInfo *window)
        the document to be moved */    
     nWindows = NWindows();
     list = (XmStringTable) XtMalloc(nWindows * sizeof(XmString *));
-    shellWinList = (WindowInfo **) XtMalloc(nWindows * sizeof(WindowInfo *));
+    shellWinList = new WindowInfo *[nWindows];
 
     for (win=WindowList; win; win=win->next) {
 	if (!IsTopDocument(win) || win->shell == window->shell)
@@ -4559,7 +4559,7 @@ void MoveDocumentDialog(WindowInfo *window)
     /* stop here if there's no other window to move to */
     if (!nList) {
         XtFree((char *)list);
-        XtFree((char *)shellWinList);
+        delete[] shellWinList;
         return;
     }
 
@@ -4648,7 +4648,7 @@ void MoveDocumentDialog(WindowInfo *window)
 	}
     }
 
-    XtFree((char *)shellWinList);    
+    delete [] shellWinList;    
     XtDestroyWidget(dialog);	
 }
 
