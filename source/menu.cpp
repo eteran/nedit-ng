@@ -4975,6 +4975,9 @@ void ReadNEditDB(void)
             return;
         }
     }
+	
+	// NOTE(eteran): fixes resource leak
+	fclose(fp);
 }
 
 static void setWindowSizeDefault(int rows, int cols)

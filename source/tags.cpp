@@ -2051,6 +2051,10 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                 ;/* Ignore TF_VERSION for now */
         }
     }
+	
+	
+	// NOTE(eteran): fix resource leak
+	fclose(fp);
     
     /* Now resolve any aliases */
     tmp_alias = aliases;

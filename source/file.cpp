@@ -956,6 +956,9 @@ static int doSave(WindowInfo *window)
         {
             DialogF(DF_ERR, window->shell, 1, "Out of Memory",
                     "Out of memory!  Try\nsaving in Unix format", "OK");
+					
+			// NOTE(eteran): fixes resource leak error
+			fclose(fp);
             return FALSE;
         }
     } else if (window->fileFormat == MAC_FILE_FORMAT)

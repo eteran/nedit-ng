@@ -58,6 +58,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -3609,8 +3610,12 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
                   l += (*s == '\t') ? tabDist - (l % tabDist) : 1;
 
               /* verify tmp is big enough then tab-expand old_p into tmp */
-              if (l > tmp_len)
-                  tmp = (char *)realloc(tmp, (tmp_len = l) + 1);
+              if (l > tmp_len) {
+             
+                  char *new_tmp = (char *)realloc(tmp, (tmp_len = l) + 1);
+				  assert(new_tmp);
+			      tmp = new_tmp;
+			 }
               for (s = old_p, t = tmp, l = 0; *s; s++) {
                   if (*s == '\t') {
                       for (i = tabDist - (l % tabDist); i--; l++)
