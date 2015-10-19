@@ -28,15 +28,7 @@
 #ifndef NEDIT_CLEARCASE_H_INCLUDED
 #define NEDIT_CLEARCASE_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 const char* GetClearCaseVersionExtendedPath(const char* fullname);
 const char *GetClearCaseViewTag(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NEDIT_CLEARCASE_H_INCLUDED */

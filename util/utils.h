@@ -33,10 +33,6 @@
 
 #include <sys/param.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 const char *GetCurrentDir(void);
 const char *GetHomeDir(void);
 char *PrependHome(const char *filename, char *buf, size_t buflen);
@@ -85,10 +81,6 @@ enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
 #define MAXNODENAMELEN SYS_NMLN
 #else
 #define MAXNODENAMELEN (MAXPATHLEN+2)
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif /* NEDIT_UTILS_H_INCLUDED */

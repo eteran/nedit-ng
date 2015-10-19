@@ -23,10 +23,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 enum MotifStability
 {
     MotifKnownGood,
@@ -40,6 +36,3 @@ enum MotifStability GetMotifStability(void);
 /* Acquire a list of good version for showing to the user. */
 const char *GetMotifStableVersions(void);
 
-#ifdef __cplusplus
-}
-#endif

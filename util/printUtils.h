@@ -36,15 +36,8 @@
 #define DESTINATION_REMOTE 1
 #define DESTINATION_LOCAL  2
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr);
 void PrintFile(Widget parent, const char *PrintFileName, const char *jobName);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NEDIT_PRINTUTILS_H_INCLUDED */

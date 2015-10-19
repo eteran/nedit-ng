@@ -47,10 +47,6 @@
 /*  button margin width to avoid cramped buttons  */
 #define BUTTON_WIDTH_MARGIN 12
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void SuppressPassiveGrabWarnings(void);
@@ -146,9 +142,5 @@ void WmClientMsg(Display *disp, Window win, const char *msg,
         unsigned long data0, unsigned long data1,
         unsigned long data2, unsigned long data3,
         unsigned long data4);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NEDIT_MISC_H_INCLUDED */

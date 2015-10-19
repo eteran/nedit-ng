@@ -30,10 +30,6 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 Widget CreateManagedList(Widget parent, char *name, Arg *args,
     	int argC, void **itemList, int *nItems, int maxItems, int nColumns,
     	void *(*getDialogDataCB)(void *, int, int *, void *),
@@ -51,9 +47,5 @@ void ChangeManagedListData(Widget listW);
 void SelectManagedListItem(Widget listW, int itemIndex);
 void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *),
     	void *deleteConfirmArg);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NEDIT_MANAGEDLIST_H_INCLUDED */

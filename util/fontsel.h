@@ -78,17 +78,9 @@
 #define PREF_PROP	2
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* function prototype */
 
 char    *FontSel(Widget parent, int showPropFont, const char *currFont,
         Pixel sampleFG, Pixel sampleBG);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NEDIT_FONTSEL_H_INCLUDED */
