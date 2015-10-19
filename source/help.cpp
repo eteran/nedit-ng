@@ -33,6 +33,7 @@
 #include "textP.h"
 #include "textDisp.h"
 #include "textSel.h"
+#include "MotifHelper.h"
 #include "nedit.h"
 #include "search.h"
 #include "window.h"
@@ -601,7 +602,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     
     /* Create the bottom row of buttons */
     btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Find..."),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Find..."),
             XmNmnemonic, 'F',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -613,7 +614,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("findAgain", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Find Again"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Find Again"),
             XmNmnemonic, 'A',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -625,7 +626,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("print", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Print..."),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Print..."),
             XmNmnemonic, 'P',
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
@@ -638,7 +639,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
 
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Close"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Close"),
             XmNbottomAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_POSITION,
             XmNleftPosition, 75,
@@ -650,7 +651,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             
     /* Create the next row of buttons (for navigation) */
     btn = XtVaCreateManagedWidget("prevTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"<< Browse"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("<< Browse"),
             XmNmnemonic, 'o', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -663,7 +664,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("nextTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Browse >>"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Browse >>"),
             XmNmnemonic, 'e', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -676,7 +677,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btn = XtVaCreateManagedWidget("histBack", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Back"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Back"),
             XmNmnemonic, 'B', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,
@@ -689,7 +690,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     XmStringFree(st1);
 
     btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimple((String)"Forward"),
+            XmNlabelString, st1=XmStringCreateSimpleEx("Forward"),
             XmNmnemonic, 'w', 
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, closeBtn,

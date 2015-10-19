@@ -38,6 +38,7 @@
 #include "file.h"
 #include "interpret.h"
 #include "parse.h"
+#include "MotifHelper.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/managedList.h"
@@ -376,7 +377,7 @@ void EditShellMenu(WindowInfo *window)
 
     ucd->loadAfterBtn = XtVaCreateManagedWidget("loadAfterBtn",
     	    xmToggleButtonWidgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Re-load file after executing command"),
+    	    XmNlabelString, s1=MKSTRING("Re-load file after executing command"),
     	    XmNmnemonic, 'R',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNset, False,
@@ -389,7 +390,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->saveFirstBtn = XtVaCreateManagedWidget("saveFirstBtn",
     	    xmToggleButtonWidgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Save file before executing command"),
+    	    XmNlabelString, s1=MKSTRING("Save file before executing command"),
     	    XmNmnemonic, 'f',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNset, False,
@@ -402,7 +403,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->repInpBtn = XtVaCreateManagedWidget("repInpBtn",
     	    xmToggleButtonWidgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Output replaces input"),
+    	    XmNlabelString, s1=MKSTRING("Output replaces input"),
     	    XmNmnemonic, 'f',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNset, False,
@@ -427,7 +428,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNbottomOffset, 4, nullptr);
     ucd->sameOutBtn = XtVaCreateManagedWidget("sameOutBtn",
     	    xmToggleButtonWidgetClass, outBox,
-    	    XmNlabelString, s1=MKSTRING((String)"same document"),
+    	    XmNlabelString, s1=MKSTRING("same document"),
     	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -436,7 +437,7 @@ void EditShellMenu(WindowInfo *window)
     XtAddCallback(ucd->sameOutBtn, XmNvalueChangedCallback, sameOutCB, ucd);
     ucd->dlogOutBtn = XtVaCreateManagedWidget("dlogOutBtn",
     	    xmToggleButtonWidgetClass, outBox,
-    	    XmNlabelString, s1=MKSTRING((String)"dialog"),
+    	    XmNlabelString, s1=MKSTRING("dialog"),
     	    XmNmnemonic, 'g',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -444,14 +445,14 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->winOutBtn = XtVaCreateManagedWidget("winOutBtn", xmToggleButtonWidgetClass,
     	    outBox,
-    	    XmNlabelString, s1=MKSTRING((String)"new document"),
+    	    XmNlabelString, s1=MKSTRING("new document"),
     	    XmNmnemonic, 'n',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
     	    XmNset, False, nullptr);
     XmStringFree(s1);
     outLabel = XtVaCreateManagedWidget("outLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Command Output (stdout/stderr):"),
+    	    XmNlabelString, s1=MKSTRING("Command Output (stdout/stderr):"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -475,7 +476,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNbottomWidget, outLabel, nullptr);
     ucd->selInpBtn = XtVaCreateManagedWidget("selInpBtn", xmToggleButtonWidgetClass,
     	    inpBox,
-    	    XmNlabelString, s1=MKSTRING((String)"selection"),
+    	    XmNlabelString, s1=MKSTRING("selection"),
     	    XmNmnemonic, 's',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -483,7 +484,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->winInpBtn = XtVaCreateManagedWidget("winInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
-    	    XmNlabelString, s1=MKSTRING((String)"document"),
+    	    XmNlabelString, s1=MKSTRING("document"),
     	    XmNmnemonic, 'w',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -491,7 +492,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->eitherInpBtn = XtVaCreateManagedWidget("eitherInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
-    	    XmNlabelString, s1=MKSTRING((String)"either"),
+    	    XmNlabelString, s1=MKSTRING("either"),
     	    XmNmnemonic, 't',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -499,14 +500,14 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
     ucd->noInpBtn = XtVaCreateManagedWidget("noInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
-    	    XmNlabelString, s1=MKSTRING((String)"none"),
+    	    XmNlabelString, s1=MKSTRING("none"),
     	    XmNmnemonic, 'o',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
     	    XmNset, False, nullptr);
     XmStringFree(s1);
     inpLabel = XtVaCreateManagedWidget("inpLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Command Input (stdin):"),
+    	    XmNlabelString, s1=MKSTRING("Command Input (stdin):"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -543,7 +544,7 @@ void EditShellMenu(WindowInfo *window)
     XtAddCallback(ucd->accTextW, XmNfocusCallback, accFocusCB, ucd);
     XtAddCallback(ucd->accTextW, XmNlosingFocusCallback, accLoseFocusCB, ucd);
     accLabel = XtVaCreateManagedWidget("accLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Accelerator"),
+    	    XmNlabelString, s1=MKSTRING("Accelerator"),
     	    XmNmnemonic, 'l',
     	    XmNuserData, ucd->accTextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -557,7 +558,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("mneLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Mnemonic"),
+    	    XmNlabelString, s1=MKSTRING("Mnemonic"),
     	    XmNmnemonic, 'i',
     	    XmNuserData, ucd->mneTextW,
     	    XmNalignment, XmALIGNMENT_END,
@@ -580,7 +581,7 @@ void EditShellMenu(WindowInfo *window)
     RemapDeleteKey(ucd->nameTextW);
  
     nameLabel = XtVaCreateManagedWidget("nameLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Menu Entry"),
+    	    XmNlabelString, s1=MKSTRING("Menu Entry"),
     	    XmNmnemonic, 'y',
     	    XmNuserData, ucd->nameTextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -592,7 +593,7 @@ void EditShellMenu(WindowInfo *window)
     XmStringFree(s1);
  
     XtVaCreateManagedWidget("nameNotes", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"(> for sub-menu, @ language mode)"),
+    	    XmNlabelString, s1=MKSTRING("(> for sub-menu, @ language mode)"),
     	    XmNalignment, XmALIGNMENT_END,
     	    XmNmarginTop, 5,
     	    XmNleftAttachment, XmATTACH_WIDGET,
@@ -618,7 +619,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
  
     cmdLabel = XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Shell Command to Execute"),
+    	    XmNlabelString, s1=MKSTRING("Shell Command to Execute"),
     	    XmNmnemonic, 'x',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
@@ -628,7 +629,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNleftPosition, LEFT_MARGIN_POS, nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"(% expands to current filename, # to line number)"),
+    	    XmNlabelString, s1=MKSTRING("(% expands to current filename, # to line number)"),
     	    XmNalignment, XmALIGNMENT_END,
     	    XmNmarginTop, 5,
     	    XmNtopAttachment, XmATTACH_POSITION,
@@ -640,7 +641,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-            XmNlabelString, s1=MKSTRING((String)"OK"),
+            XmNlabelString, s1=MKSTRING("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
@@ -652,7 +653,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("apply",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING((String)"Apply"),
+    	    XmNlabelString, s1=MKSTRING("Apply"),
     	    XmNmnemonic, 'A',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 42,
@@ -665,7 +666,7 @@ Select \"New\" to add a new command to the menu."),
 
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=MKSTRING((String)"Close"),
+            XmNlabelString, s1=MKSTRING("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 71,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -795,7 +796,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     
     ucd->selInpBtn = XtVaCreateManagedWidget("selInpBtn",
 	    xmToggleButtonWidgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Requires Selection"),
+    	    XmNlabelString, s1=MKSTRING("Requires Selection"),
     	    XmNmnemonic, 'R',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
@@ -835,7 +836,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     XtAddCallback(ucd->accTextW, XmNlosingFocusCallback, accLoseFocusCB, ucd);
  
     accLabel = XtVaCreateManagedWidget("accLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Accelerator"),
+    	    XmNlabelString, s1=MKSTRING("Accelerator"),
     	    XmNmnemonic, 'l',
     	    XmNuserData, ucd->accTextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -849,7 +850,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("mneLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Mnemonic"),
+    	    XmNlabelString, s1=MKSTRING("Mnemonic"),
     	    XmNmnemonic, 'i',
     	    XmNuserData, ucd->mneTextW,
     	    XmNalignment, XmALIGNMENT_END,
@@ -864,7 +865,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 
     pasteReplayBtn = XtVaCreateManagedWidget("pasteReplay",
     	    xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Paste Learn/\nReplay Macro"),
+    	    XmNlabelString, s1=MKSTRING("Paste Learn/\nReplay Macro"),
     	    XmNmnemonic, 'P',
     	    XmNsensitive, GetReplayMacro() != nullptr,
      	    XmNleftAttachment, XmATTACH_POSITION,
@@ -887,7 +888,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     RemapDeleteKey(ucd->nameTextW);
  
     nameLabel = XtVaCreateManagedWidget("nameLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Menu Entry"),
+    	    XmNlabelString, s1=MKSTRING("Menu Entry"),
     	    XmNmnemonic, 'y',
     	    XmNuserData, ucd->nameTextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -899,7 +900,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     XmStringFree(s1);
  
     XtVaCreateManagedWidget("nameNotes", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"(> for sub-menu, @ language mode)"),
+    	    XmNlabelString, s1=MKSTRING("(> for sub-menu, @ language mode)"),
     	    XmNalignment, XmALIGNMENT_END,
     	    XmNmarginTop, 5,
     	    XmNleftAttachment, XmATTACH_WIDGET,
@@ -925,7 +926,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
  
     cmdLabel = XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING((String)"Macro Command to Execute"),
+    	    XmNlabelString, s1=MKSTRING("Macro Command to Execute"),
     	    XmNmnemonic, 'x',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginTop, 5,
@@ -936,7 +937,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-            XmNlabelString, s1=MKSTRING((String)"OK"),
+            XmNlabelString, s1=MKSTRING("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 8,
@@ -948,7 +949,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("apply",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING((String)"Apply"),
+    	    XmNlabelString, s1=MKSTRING("Apply"),
     	    XmNmnemonic, 'A',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 31,
@@ -960,7 +961,7 @@ Select \"New\" to add a new command to the menu."),
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("check",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=MKSTRING((String)"Check"),
+    	    XmNlabelString, s1=MKSTRING("Check"),
     	    XmNmnemonic, 'C',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 54,
@@ -973,7 +974,7 @@ Select \"New\" to add a new command to the menu."),
 
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=MKSTRING((String)"Close"),
+            XmNlabelString, s1=MKSTRING("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 77,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1907,8 +1908,8 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     Widget btn;
     
     generateAcceleratorString(accText, f->modifiers, f->keysym);
-    st1=XmStringCreateSimple(name);
-    st2=XmStringCreateSimple(accText);
+    st1=XmStringCreateSimpleEx(name);
+    st2=XmStringCreateSimpleEx(accText);
     btn = XtVaCreateWidget("cmd", xmPushButtonWidgetClass, menuPane,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
@@ -1934,7 +1935,7 @@ static Widget createUserSubMenu(Widget parent, char *label, Widget *menuItem)
    
     menuPane  = CreatePulldownMenu(parent, (String)"userPulldown", args, 1);
     *menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent,
-    	                XmNlabelString, st1=XmStringCreateSimple(label),
+    	                XmNlabelString, st1=XmStringCreateSimpleEx(label),
     	                XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM,
                         nullptr);
     XmStringFree(st1);

@@ -38,6 +38,7 @@
 #include "shift.h"
 #include "help.h"
 #include "preferences.h"
+#include "MotifHelper.h"
 #include "tags.h"
 #include "userCmds.h"
 #include "shell.h"
@@ -4270,7 +4271,7 @@ static Widget createMenu(Widget parent, const char *name, const char *label,
 
     menu = CreatePulldownMenu(parent, (String)name, nullptr, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
-    	XmNlabelString, st1=XmStringCreateSimple((String)label),
+    	XmNlabelString, st1=XmStringCreateSimpleEx(label),
     	XmNsubMenuId, menu, nullptr);
     XmStringFree(st1);
     if (mnemonic != 0)
@@ -4301,7 +4302,7 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
     
 
     button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, 
-    	    XmNlabelString, st1=XmStringCreateSimple((String)label),
+    	    XmNlabelString, st1=XmStringCreateSimpleEx(label),
     	    XmNmnemonic, mnemonic, nullptr);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
@@ -4330,7 +4331,7 @@ static Widget createFakeMenuItem(Widget parent, const char *name,
     XmString st1;
     
     button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent,
-    	    XmNlabelString, st1=XmStringCreateSimple((String)""),
+    	    XmNlabelString, st1=XmStringCreateSimpleEx(""),
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
     	    XmNheight, 0, nullptr);
@@ -4353,7 +4354,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
     XmString st1;
     
     button = XtVaCreateWidget(name, xmToggleButtonWidgetClass, parent, 
-    	    XmNlabelString, st1=XmStringCreateSimple((String)label),
+    	    XmNlabelString, st1=XmStringCreateSimpleEx(label),
     	    XmNmnemonic, mnemonic,
     	    XmNset, set, nullptr);
     XtAddCallback(button, XmNvalueChangedCallback, (XtCallbackProc)callback,
@@ -4600,7 +4601,7 @@ static void updateWindowMenu(const WindowInfo *window)
                 XmString st1;
                 char* title = getWindowsMenuEntry(windows[windowIndex]);
 		XtVaSetValues(items[n], XmNlabelString,
-    	    		st1=XmStringCreateSimple(title), nullptr);
+    	    		st1=XmStringCreateSimpleEx(title), nullptr);
 		XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 		XtAddCallback(items[n], XmNactivateCallback,
 			(XtCallbackProc)raiseCB, windows[windowIndex]);
@@ -4616,7 +4617,7 @@ static void updateWindowMenu(const WindowInfo *window)
         char* title = getWindowsMenuEntry(windows[windowIndex]);
         Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
     		window->windowMenuPane, 
-    		XmNlabelString, st1=XmStringCreateSimple(title),
+    		XmNlabelString, st1=XmStringCreateSimpleEx(title),
 		XmNmarginHeight, 0,
     		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)raiseCB, 
@@ -4678,7 +4679,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
             XtDestroyWidget(items[n]);          
         } else {
             XtVaSetValues(items[n], XmNlabelString,
-                    st1=XmStringCreateSimple(prevOpenSorted[index]), nullptr);
+                    st1=XmStringCreateSimpleEx(prevOpenSorted[index]), nullptr);
             XtRemoveAllCallbacks(items[n], XmNactivateCallback);
             XtAddCallback(items[n], XmNactivateCallback,
                     (XtCallbackProc)openPrevCB, prevOpenSorted[index]);
@@ -4691,7 +4692,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
     for (; index<NPrevOpen; index++) {
         btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
                 window->prevOpenMenuPane, 
-                XmNlabelString, st1=XmStringCreateSimple(prevOpenSorted[index]),
+                XmNlabelString, st1=XmStringCreateSimpleEx(prevOpenSorted[index]),
                 XmNmarginHeight, 0,
                 XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
         XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)openPrevCB, 
@@ -4730,7 +4731,7 @@ static void updateTagsFileMenu(WindowInfo *window)
 	    XtDestroyWidget(items[n]);          
 	} else {
 	    XtVaSetValues(items[n], XmNlabelString,
-		    st1=XmStringCreateSimple(tf->filename), nullptr);
+		    st1=XmStringCreateSimpleEx(tf->filename), nullptr);
 	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 	    XtAddCallback(items[n], XmNactivateCallback,
 		    (XtCallbackProc)unloadTagsFileCB, tf->filename);
@@ -4743,7 +4744,7 @@ static void updateTagsFileMenu(WindowInfo *window)
     while (tf) {
 	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
 		window->unloadTagsMenuPane, XmNlabelString,
-		st1=XmStringCreateSimple(tf->filename),XmNmarginHeight, 0,
+		st1=XmStringCreateSimpleEx(tf->filename),XmNmarginHeight, 0,
 		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback,
 		(XtCallbackProc)unloadTagsFileCB, tf->filename);
@@ -4780,7 +4781,7 @@ static void updateTipsFileMenu(WindowInfo *window)
 	    XtDestroyWidget(items[n]);          
 	} else {
 	    XtVaSetValues(items[n], XmNlabelString,
-		    st1=XmStringCreateSimple(tf->filename), nullptr);
+		    st1=XmStringCreateSimpleEx(tf->filename), nullptr);
 	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 	    XtAddCallback(items[n], XmNactivateCallback,
 		    (XtCallbackProc)unloadTipsFileCB, tf->filename);
@@ -4793,7 +4794,7 @@ static void updateTipsFileMenu(WindowInfo *window)
     while (tf) {
 	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
 		window->unloadTipsMenuPane, XmNlabelString,
-		st1=XmStringCreateSimple(tf->filename),XmNmarginHeight, 0,
+		st1=XmStringCreateSimpleEx(tf->filename),XmNmarginHeight, 0,
 		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback,
 		(XtCallbackProc)unloadTipsFileCB, tf->filename);
@@ -5012,12 +5013,12 @@ static void updateWindowSizeMenu(WindowInfo *win)
     	XmToggleButtonSetState(win->sizeCustomDefItem, True, False);
     	sprintf(title, "Custom... (%d x %d)", rows, cols);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple(title), nullptr);
+    	    	XmNlabelString, st1=XmStringCreateSimpleEx(title), nullptr);
     	XmStringFree(st1);
     } else {
     	XmToggleButtonSetState(win->sizeCustomDefItem, False, False);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple((String)"Custom..."), nullptr);
+    	    	XmNlabelString, st1=XmStringCreateSimpleEx("Custom..."), nullptr);
     	XmStringFree(st1);
     }
 }

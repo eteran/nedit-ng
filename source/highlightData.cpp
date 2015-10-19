@@ -32,6 +32,7 @@
 #include "nedit.h"
 #include "highlight.h"
 #include "regularExp.h"
+#include "MotifHelper.h"
 #include "preferences.h"
 #include "help.h"
 #include "window.h"
@@ -1400,7 +1401,7 @@ static Widget createHighlightStylesMenu(Widget parent)
     menu = CreatePulldownMenu(parent, (String)"highlightStyles", nullptr, 0);
     for (i=0; i<NHighlightStyles; i++) {
         XtVaCreateManagedWidget("highlightStyles", xmPushButtonWidgetClass,menu,
-    	      XmNlabelString, s1=XmStringCreateSimple(HighlightStyles[i]->name),
+    	      XmNlabelString, s1=XmStringCreateSimpleEx(HighlightStyles[i]->name),
     	      XmNuserData, (void *)HighlightStyles[i]->name, nullptr);
         XmStringFree(s1);
     }
@@ -1754,7 +1755,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XmStringFree(s1);
     
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Name:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Name:"),
     	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -1775,7 +1776,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtVaSetValues(nameLbl, XmNuserData, HSDialog.nameW, nullptr);
     
     colorLbl = XtVaCreateManagedWidget("colorLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Foreground Color:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Foreground Color:"),
     	    XmNmnemonic, 'C',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -1797,7 +1798,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     
     bgColorLbl = XtVaCreateManagedWidget("bgColorLbl", xmLabelGadgetClass, form,
     	    XmNlabelString,
-    	      s1=XmStringCreateSimple((String)"Background Color (optional)"),
+    	      s1=XmStringCreateSimpleEx("Background Color (optional)"),
     	    XmNmnemonic, 'g',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -1819,7 +1820,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtVaSetValues(bgColorLbl, XmNuserData, HSDialog.bgColorW, nullptr);
     
     fontLbl = XtVaCreateManagedWidget("fontLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Font:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Font:"),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, HS_LIST_RIGHT,
@@ -1839,27 +1840,27 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     HSDialog.plainW = XtVaCreateManagedWidget("plain", 
     	    xmToggleButtonWidgetClass, fontBox,
     	    XmNset, True,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Plain"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Plain"),
     	    XmNmnemonic, 'P', nullptr);
     XmStringFree(s1);
     HSDialog.boldW = XtVaCreateManagedWidget("bold", 
     	    xmToggleButtonWidgetClass, fontBox,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Bold"),
     	    XmNmnemonic, 'B', nullptr);
     XmStringFree(s1);
     HSDialog.italicW = XtVaCreateManagedWidget("italic", 
     	    xmToggleButtonWidgetClass, fontBox,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Italic"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Italic"),
     	    XmNmnemonic, 'I', nullptr);
     XmStringFree(s1);
     HSDialog.boldItalicW = XtVaCreateManagedWidget("boldItalic", 
     	    xmToggleButtonWidgetClass, fontBox,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold Italic"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Bold Italic"),
     	    XmNmnemonic, 'o', nullptr);
     XmStringFree(s1);
     	    
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
-            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
+            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
@@ -1871,7 +1872,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("apply",xmPushButtonWidgetClass,form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
     	    XmNmnemonic, 'A',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 40,
@@ -1884,7 +1885,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 70,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2349,7 +2350,7 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.lmOptMenu = lmOptMenu;
     
     XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Language Mode:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Language Mode:"),
     	    XmNmnemonic, 'M',
     	    XmNuserData, XtParent(HighlightDialog.lmOptMenu),
     	    XmNalignment, XmALIGNMENT_END,
@@ -2361,7 +2362,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm,
-    	    XmNlabelString, s1=MKSTRING((String)"Add / Modify\nLanguage Mode..."),
+    	    XmNlabelString, s1=MKSTRING("Add / Modify\nLanguage Mode..."),
     	    XmNmnemonic, 'A',
     	    XmNrightAttachment, XmATTACH_FORM,
     	    XmNtopAttachment, XmATTACH_FORM, nullptr);
@@ -2369,7 +2370,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
+            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
@@ -2381,7 +2382,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
     	    XmNmnemonic, 'y',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
@@ -2393,7 +2394,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Check"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Check"),
     	    XmNmnemonic, 'k',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 26,
@@ -2405,7 +2406,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Delete"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Delete"),
     	    XmNmnemonic, 'D',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 39,
@@ -2417,7 +2418,7 @@ void EditHighlightPatterns(WindowInfo *window)
     XmStringFree(s1);
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Restore Defaults"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Restore Defaults"),
     	    XmNmnemonic, 'f',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 52,
@@ -2430,7 +2431,7 @@ void EditHighlightPatterns(WindowInfo *window)
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 73,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2442,7 +2443,7 @@ void EditHighlightPatterns(WindowInfo *window)
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Help"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Help"),
     	    XmNmnemonic, 'H',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 86,
@@ -2465,7 +2466,7 @@ void EditHighlightPatterns(WindowInfo *window)
     contextForm = XtVaCreateManagedWidget("contextForm", xmFormWidgetClass,
 	    contextFrame, nullptr);
     XtVaCreateManagedWidget("contextLbl", xmLabelGadgetClass, contextFrame,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	      "Context requirements for incremental re-parsing after changes"),
 	    XmNchildType, XmFRAME_TITLE_CHILD, nullptr);
     XmStringFree(s1);
@@ -2482,7 +2483,7 @@ void EditHighlightPatterns(WindowInfo *window)
     
     XtVaCreateManagedWidget("lineContLbl",
     	    xmLabelGadgetClass, contextForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"lines"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("lines"),
     	    XmNmnemonic, 'l',
     	    XmNuserData, HighlightDialog.lineContextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -2506,7 +2507,7 @@ void EditHighlightPatterns(WindowInfo *window)
     
     XtVaCreateManagedWidget("charContLbl",
     	    xmLabelGadgetClass, contextForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"characters"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("characters"),
     	    XmNmnemonic, 'c',
     	    XmNuserData, HighlightDialog.charContextW,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -2533,7 +2534,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    patternsFrame, nullptr);
     patternsLbl = XtVaCreateManagedWidget("patternsLbl", xmLabelGadgetClass,
     	    patternsFrame,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Patterns"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Patterns"),
     	    XmNmnemonic, 'P',
     	    XmNmarginHeight, 0,
 	    XmNchildType, XmFRAME_TITLE_CHILD, nullptr);
@@ -2541,7 +2542,7 @@ void EditHighlightPatterns(WindowInfo *window)
     
     typeLbl = XtVaCreateManagedWidget("typeLbl", xmLabelGadgetClass,
     	    patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Pattern Type:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Pattern Type:"),
     	    XmNmarginHeight, 0,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2561,7 +2562,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	        (String)"Pass-1 (applied to all text when loaded or modified)"),
     	    XmNmnemonic, '1', nullptr);
     XmStringFree(s1);
@@ -2570,7 +2571,7 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.deferredW = XtVaCreateManagedWidget("deferred", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	        (String)"Pass-2 (parsing is deferred until text is exposed)"),
     	    XmNmnemonic, '2', nullptr);
     XmStringFree(s1);
@@ -2579,7 +2580,7 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.subPatW = XtVaCreateManagedWidget("subPat", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	    	(String)"Sub-pattern (processed within start & end of parent)"),
     	    XmNmnemonic, 'u', nullptr);
     XmStringFree(s1);
@@ -2588,7 +2589,7 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.colorPatW = XtVaCreateManagedWidget("color", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	    	(String)"Coloring for sub-expressions of parent pattern"),
     	    XmNmnemonic, 'g', nullptr);
     XmStringFree(s1);
@@ -2597,7 +2598,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     HighlightDialog.matchLbl = XtVaCreateManagedWidget("matchLbl",
     	    xmLabelGadgetClass, patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Matching:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Matching:"),
     	    XmNmarginHeight, 0,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2619,7 +2620,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    xmToggleButtonWidgetClass, matchBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	    	(String)"Highlight text matching regular expression"),
     	    XmNmnemonic, 'x', nullptr);
     XmStringFree(s1);
@@ -2628,7 +2629,7 @@ void EditHighlightPatterns(WindowInfo *window)
     HighlightDialog.rangeW = XtVaCreateManagedWidget("range", 
     	    xmToggleButtonWidgetClass, matchBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	    	(String)"Highlight text between starting and ending REs"),
     	    XmNmnemonic, 'b', nullptr);
     XmStringFree(s1);
@@ -2637,7 +2638,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass,
     	    patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Pattern Name"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Pattern Name"),
     	    XmNmnemonic, 'N',
     	    XmNrows, 20,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -2661,7 +2662,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     HighlightDialog.parentLbl = XtVaCreateManagedWidget("parentLbl",
     	    xmLabelGadgetClass, patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Parent Pattern"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Parent Pattern"),
     	    XmNmnemonic, 't',
     	    XmNrows, 20,
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -2706,7 +2707,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     HighlightDialog.errorLbl = XtVaCreateManagedWidget("errorLbl",
     	    xmLabelGadgetClass, patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple(
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	    	(String)"Regular Expression Indicating Error in Match (Optional)"),
     	    XmNmnemonic, 'o',
     	    XmNuserData, HighlightDialog.errorW,
@@ -2762,7 +2763,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     styleBtn = XtVaCreateManagedWidget("styleLbl", xmPushButtonWidgetClass,
     	    patternsForm,
-    	    XmNlabelString, s1=MKSTRING((String)"Add / Modify\nStyle..."),
+    	    XmNlabelString, s1=MKSTRING("Add / Modify\nStyle..."),
     	    XmNmnemonic, 'i',
 	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, LIST_RIGHT-1,
@@ -2788,7 +2789,7 @@ void EditHighlightPatterns(WindowInfo *window)
 
     styleLbl = XtVaCreateManagedWidget("styleLbl", xmLabelGadgetClass,
     	    patternsForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Highlight Style"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Highlight Style"),
     	    XmNmnemonic, 'S',
     	    XmNuserData, XtParent(HighlightDialog.styleOptMenu),
     	    XmNalignment, XmALIGNMENT_BEGINNING,
@@ -3266,10 +3267,10 @@ Regular Expression";
     XtSetSensitive(HighlightDialog.rangeW, matchSense);
     XtSetSensitive(HighlightDialog.matchLbl, matchSense);
     XtVaSetValues(HighlightDialog.startLbl, XmNlabelString,
-    	    s1=XmStringCreateSimple((String)startLbl), nullptr);
+    	    s1=XmStringCreateSimpleEx(startLbl), nullptr);
     XmStringFree(s1);
     XtVaSetValues(HighlightDialog.endLbl, XmNlabelString,
-    	    s1=XmStringCreateSimple((String)endLbl), nullptr);
+    	    s1=XmStringCreateSimpleEx(endLbl), nullptr);
     XmStringFree(s1);
 }
 
