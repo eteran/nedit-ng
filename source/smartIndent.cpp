@@ -37,6 +37,7 @@
 #include "parse.h"
 #include "shift.h"
 #include "help.h"
+#include "MotifHelper.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 
@@ -992,7 +993,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     SmartIndentDialog.lmOptMenu = lmOptMenu;
     
     XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Language Mode:"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Language Mode:"),
     	    XmNmnemonic, 'L',
     	    XmNuserData, XtParent(SmartIndentDialog.lmOptMenu),
     	    XmNalignment, XmALIGNMENT_END,
@@ -1021,7 +1022,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
+            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
@@ -1033,7 +1034,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
     	    XmNmnemonic, 'y',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 13,
@@ -1045,7 +1046,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Check"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Check"),
     	    XmNmnemonic, 'k',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 26,
@@ -1057,7 +1058,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Delete"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Delete"),
     	    XmNmnemonic, 'D',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 39,
@@ -1069,7 +1070,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     XmStringFree(s1);
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Restore Defaults"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Restore Defaults"),
     	    XmNmnemonic, 'f',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 52,
@@ -1082,7 +1083,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-            XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
+            XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 73,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -1094,7 +1095,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Help"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Help"),
     	    XmNmnemonic, 'H',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 86,
@@ -1120,7 +1121,7 @@ void EditSmartIndentMacros(WindowInfo *window)
     initForm = XtVaCreateManagedWidget("initForm", xmFormWidgetClass,
 	    pane, nullptr);
     initLbl = XtVaCreateManagedWidget("initLbl", xmLabelGadgetClass, initForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
     	     "Language Specific Initialization Macro Commands and Definitions"),
     	    XmNmnemonic, 'I', nullptr);
     XmStringFree(s1);
@@ -1144,12 +1145,12 @@ void EditSmartIndentMacros(WindowInfo *window)
 	    pane, nullptr);
     newlineLbl = XtVaCreateManagedWidget("newlineLbl", xmLabelGadgetClass,
     	    newlineForm,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Newline Macro"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Newline Macro"),
     	    XmNmnemonic, 'N', nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("newlineArgsLbl", xmLabelGadgetClass,
     	    newlineForm, XmNalignment, XmALIGNMENT_END,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
 	       "($1 is insert position, return indent request or -1)"),
 	    XmNrightAttachment, XmATTACH_FORM, nullptr);
     XmStringFree(s1);
@@ -1172,13 +1173,13 @@ void EditSmartIndentMacros(WindowInfo *window)
     modifyForm = XtVaCreateManagedWidget("modifyForm", xmFormWidgetClass,
 	    pane, nullptr);
     modifyLbl = XtVaCreateManagedWidget("modifyLbl", xmLabelGadgetClass,
-    	    modifyForm, XmNlabelString,s1=XmStringCreateSimple((String)"Type-in Macro"),
+    	    modifyForm, XmNlabelString,s1=XmStringCreateSimpleEx("Type-in Macro"),
     	    XmNmnemonic, 'M', nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("modifyArgsLbl", xmLabelGadgetClass,
     	    modifyForm, XmNalignment, XmALIGNMENT_END,
-    	    XmNlabelString, s1=XmStringCreateSimple(
-	        (String)"($1 is position, $2 is character to be inserted)"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+	        "($1 is position, $2 is character to be inserted)"),
 	    XmNrightAttachment, XmATTACH_FORM, nullptr);
     XmStringFree(s1);
     n = 0;
@@ -1527,8 +1528,8 @@ void EditCommonSmartIndentMacro(void)
     AddMotifCloseCallback(CommonDialog.shell, comCloseCB, nullptr);
     
     topLbl = XtVaCreateManagedWidget("topLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple(
-	        (String)"Common Definitions for Smart Indent Macros"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+	        "Common Definitions for Smart Indent Macros"),
     	    XmNmnemonic, 'C',
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNtopOffset, VERT_BORDER,
@@ -1536,7 +1537,7 @@ void EditCommonSmartIndentMacro(void)
 	    XmNleftPosition, 1, nullptr);
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
+            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 6,
@@ -1548,7 +1549,7 @@ void EditCommonSmartIndentMacro(void)
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
     	    XmNmnemonic, 'y',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 22,
@@ -1560,7 +1561,7 @@ void EditCommonSmartIndentMacro(void)
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Check"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Check"),
     	    XmNmnemonic, 'k',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 39,
@@ -1573,7 +1574,7 @@ void EditCommonSmartIndentMacro(void)
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass,
     form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Restore Default"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Restore Default"),
     	    XmNmnemonic, 'f',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 56,
@@ -1586,7 +1587,7 @@ void EditCommonSmartIndentMacro(void)
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
     	    form,
-    	    XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
+    	    XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 81,
     	    XmNrightAttachment, XmATTACH_POSITION,

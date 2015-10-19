@@ -36,6 +36,7 @@
 #include "search.h"
 #include "selection.h"
 #include "calltips.h"
+#include "MotifHelper.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
@@ -1488,9 +1489,9 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
     
     list = (XmStringTable) XtMalloc(nArgs * sizeof(XmString *));
     for (i=0; i<nArgs; i++)
-        list[i] = XmStringCreateSimple(args[i]);
+        list[i] = XmStringCreateSimpleEx(args[i]);
     sprintf(tmpStr,"Select File With TAG: %s",tagName);
-    popupTitle = XmStringCreateSimple(tmpStr);
+    popupTitle = XmStringCreateSimpleEx(tmpStr);
     ac = 0;
     XtSetArg(csdargs[ac], XmNlistLabelString, popupTitle); ac++;
     XtSetArg(csdargs[ac], XmNlistItems, list); ac++;

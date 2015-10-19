@@ -38,6 +38,7 @@
 #include "file.h"
 #include "interpret.h"
 #include "parse.h"
+#include "MotifHelper.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/managedList.h"
@@ -1907,8 +1908,8 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     Widget btn;
     
     generateAcceleratorString(accText, f->modifiers, f->keysym);
-    st1=XmStringCreateSimple(name);
-    st2=XmStringCreateSimple(accText);
+    st1=XmStringCreateSimpleEx(name);
+    st2=XmStringCreateSimpleEx(accText);
     btn = XtVaCreateWidget("cmd", xmPushButtonWidgetClass, menuPane,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
@@ -1934,7 +1935,7 @@ static Widget createUserSubMenu(Widget parent, char *label, Widget *menuItem)
    
     menuPane  = CreatePulldownMenu(parent, (String)"userPulldown", args, 1);
     *menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent,
-    	                XmNlabelString, st1=XmStringCreateSimple(label),
+    	                XmNlabelString, st1=XmStringCreateSimpleEx(label),
     	                XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM,
                         nullptr);
     XmStringFree(st1);

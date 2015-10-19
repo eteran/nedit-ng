@@ -38,6 +38,7 @@
 #include "file.h"
 #include "highlight.h"
 #include "selection.h"
+#include "MotifHelper.h"
 #ifdef REPLACE_SCOPE
 #include "textDisp.h"
 #include "textP.h"
@@ -2080,7 +2081,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
        } else {
           sprintf(buf, "%s", w->filename);
        }
-       names[i] = XmStringCreateSimple(buf);
+       names[i] = XmStringCreateSimpleEx(buf);
     }
     
     /*

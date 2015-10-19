@@ -44,6 +44,7 @@
 #include "rbTree.h"
 #include "tags.h"
 #include "calltips.h"
+#include "MotifHelper.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
@@ -560,7 +561,7 @@ void BeginLearn(WindowInfo *window)
     }
     SetSensitive(window, window->finishLearnItem, True);
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Learn"), nullptr);
+    	    s=XmStringCreateSimpleEx("Cancel Learn"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, True);
     
@@ -967,7 +968,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     
     /* enable the cancel menu item */
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Macro"), nullptr);
+    	    s=XmStringCreateSimpleEx("Cancel Macro"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, True);
 
@@ -1119,7 +1120,7 @@ static void finishMacroCmdExecution(WindowInfo *window)
     /* Clean up waiting-for-macro-command-to-complete mode */
     EndWait(window->shell);
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Learn"), nullptr);
+    	    s=XmStringCreateSimpleEx("Cancel Learn"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, False);
     if (cmdData->bannerIsUp)
@@ -1278,14 +1279,14 @@ void RepeatDialog(WindowInfo *window)
     	    XmNleftAttachment, XmATTACH_FORM, nullptr);
     rd->lastCmdToggle = XtVaCreateManagedWidget("lastCmdToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, True,
-	    XmNlabelString, s1=XmStringCreateSimple(lastCmdLabel),
+	    XmNlabelString, s1=XmStringCreateSimpleEx(lastCmdLabel),
 	    XmNmnemonic, 'C', nullptr);
     XmStringFree(s1);
     XtFree(lastCmdLabel);
     XtVaCreateManagedWidget("learnReplayToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
 	    XmNlabelString,
-	    	s1=XmStringCreateSimple((String)"Learn/Replay"),
+	    	s1=XmStringCreateSimpleEx("Learn/Replay"),
 	    XmNmnemonic, 'L',
 	    XmNsensitive, ReplayMacro != nullptr, nullptr);
     XmStringFree(s1);
@@ -1305,17 +1306,17 @@ void RepeatDialog(WindowInfo *window)
     	    XmNleftAttachment, XmATTACH_FORM, nullptr);
     rd->inSelToggle = XtVaCreateManagedWidget("inSelToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
-	    XmNlabelString, s1=XmStringCreateSimple((String)"In Selection"),
+	    XmNlabelString, s1=XmStringCreateSimpleEx("In Selection"),
 	    XmNmnemonic, 'I', nullptr);
     XmStringFree(s1);
     rd->toEndToggle = XtVaCreateManagedWidget("toEndToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
-	    XmNlabelString, s1=XmStringCreateSimple((String)"To End"),
+	    XmNlabelString, s1=XmStringCreateSimpleEx("To End"),
 	    XmNmnemonic, 'T', nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("nTimesToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, True,
-	    XmNlabelString, s1=XmStringCreateSimple((String)"N Times"),
+	    XmNlabelString, s1=XmStringCreateSimpleEx("N Times"),
 	    XmNmnemonic, 'N',
 	    XmNset, True, nullptr);
     XmStringFree(s1);
@@ -2267,7 +2268,7 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
        If errors occur, just give up.  */
     result->tag = NO_TAG;
     stat = SpinClipboardStartCopy(TheDisplay, XtWindow(window->textArea),
-    	  s=XmStringCreateSimple((String)"NEdit"), XtLastTimestampProcessed(TheDisplay),
+    	  s=XmStringCreateSimpleEx("NEdit"), XtLastTimestampProcessed(TheDisplay),
 	  window->textArea, nullptr, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess)
@@ -2900,7 +2901,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     ac = 0;
     XtSetArg(al[ac], XmNtitle, " "); ac++;
     XtSetArg(al[ac], XmNmessageString, s1=MKSTRING((String)message)); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple((String)btnLabel)); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimpleEx(btnLabel)); ac++;
     dialog = CreateMessageDialog(window->shell, (String)"macroDialog", al, ac);
     if (1 == nArgs)
     {
@@ -2931,7 +2932,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     for (i=1; i<nBtns; i++) {
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-    	    	XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
+    	    	XmNlabelString, s1=XmStringCreateSimpleEx(btnLabel),
     	    	XmNuserData, (XtPointer)(i+1), nullptr);
     	XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
     	XmStringFree(s1);
@@ -3075,7 +3076,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     ac = 0;
     XtSetArg(al[ac], XmNtitle, " "); ac++;
     XtSetArg(al[ac], XmNselectionLabelString, s1=MKSTRING((String)message)); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple((String)btnLabel)); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimpleEx(btnLabel)); ac++;
     dialog = CreatePromptDialog(window->shell, (String)"macroStringDialog", al, ac);
     if (1 == nArgs)
     {
@@ -3109,7 +3110,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     for (i=1; i<nBtns; i++) {
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-    	    	XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
+    	    	XmNlabelString, s1=XmStringCreateSimpleEx(btnLabel),
     	    	XmNuserData, (XtPointer)(i+1), nullptr);
     	XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
     	XmStringFree(s1);
@@ -3652,7 +3653,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     XtSetArg(al[ac], XmNlistItems, test_strings); ac++;
     XtSetArg(al[ac], XmNlistItemCount, nlines); ac++;
     XtSetArg(al[ac], XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines); ac++;
-    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimple((String)btnLabel)); ac++;
+    XtSetArg(al[ac], XmNokLabelString, s2=XmStringCreateSimpleEx(btnLabel)); ac++;
     dialog = CreateSelectionDialog(window->shell, (String)"macroListDialog", al, ac);
     if (2 == nArgs)
     {
@@ -3699,7 +3700,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     for (i=1; i<nBtns; i++) {
       readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
       btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
-              XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
+              XmNlabelString, s1=XmStringCreateSimpleEx(btnLabel),
               XmNuserData, (XtPointer)(i+1), nullptr);
       XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
       XmStringFree(s1);
