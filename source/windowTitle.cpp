@@ -501,6 +501,11 @@ static void setToggleButtons(void)
 
 static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     char *format;
     int  filenameSet = XmToggleButtonGetState(etDialog.oDirW);
     char *title;
@@ -588,6 +593,11 @@ static void serverEqualViewCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     char *format = XmTextGetString(etDialog.formatW);
 
     /* pop down the dialog */
@@ -601,28 +611,50 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* pop down the dialog */
     XtUnmanageChild(etDialog.form);
 }
 
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     XmTextSetString(etDialog.formatW, (String)"{%c} [%s] %f (%S) - %d");
 }
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     Help(HELP_CUSTOM_TITLE_DIALOG);
 }
 
 static void wtDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     if (w == etDialog.form) /* Prevent disconnecting the replacing dialog */
         etDialog.form = NULL;
 }
 
 static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     if (etDialog.form == w)  /* Prevent destroying the replacing dialog */
         XtDestroyWidget(etDialog.form);
 }
@@ -705,6 +737,10 @@ static void removeFromFormat(const char* string)
 
 static void toggleFileCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (XmToggleButtonGetState(etDialog.fileW))
 	appendToFormat(" %f");
     else
@@ -713,6 +749,10 @@ static void toggleFileCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void toggleServerCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     if (XmToggleButtonGetState(etDialog.serverW))
 	appendToFormat(" [%s]");
     else
@@ -721,6 +761,10 @@ static void toggleServerCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void toggleHostCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (XmToggleButtonGetState(etDialog.hostW))
 	appendToFormat(" [%h]");
     else
@@ -729,6 +773,11 @@ static void toggleHostCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (XmToggleButtonGetState(etDialog.ccW))
 	appendToFormat(" {%c}");
     else
@@ -737,6 +786,10 @@ static void toggleClearCaseCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void toggleStatusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     if (XmToggleButtonGetState(etDialog.statusW))
     {
 	if (XmToggleButtonGetState(etDialog.shortStatusW))
@@ -753,6 +806,11 @@ static void toggleStatusCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     char *format, *pos;
     
     if (etDialog.suppressFormatUpdate)
@@ -801,6 +859,11 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void toggleUserCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     if (XmToggleButtonGetState(etDialog.nameW))
 	appendToFormat(" %u");
     else
@@ -809,6 +872,10 @@ static void toggleUserCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void toggleDirectoryCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+
     if (XmToggleButtonGetState(etDialog.dirW))
     {
         char buf[20];
@@ -847,6 +914,10 @@ static void toggleDirectoryCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+
     int maxComp = -1;
     char *format;
     char *value;

@@ -173,9 +173,11 @@ char *GetAnySelection(WindowInfo *window)
     return selText;
 }
 
-static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, int *length, int *format)
+static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)sel;
+	
      /* two integers and some space in between */
     char lineText[(TYPE_INT_STR_SIZE(int) * 2) + 5];
     int rc, lineNum, column, position, curCol;
@@ -229,9 +231,12 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel,
     TextSetCursorPos(widget, position);
 }
 
-static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
-    	Atom *type, char *value, int *length, int *format)
+static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)widget;
+	(void)sel;
+
     char nameText[MAXPATHLEN], includeName[MAXPATHLEN];
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     char *inPtr, *outPtr;
@@ -338,9 +343,12 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel,
     CheckCloseDim();
 }
 
-static void getAnySelectionCB(Widget widget, char **result, Atom *sel,
-	Atom *type, char *value, int *length, int *format)
+static void getAnySelectionCB(Widget widget, char **result, Atom *sel, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)widget;
+	(void)sel;
+
     /* Confirm that the returned value is of the correct type */
     if (*type != XA_STRING || *format != 8) {
 	XBell(TheDisplay, 0);
@@ -470,6 +478,8 @@ void BeginGotoMarkCommand(WindowInfo *window, int extend)
 */
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
+	(void)id;
+
     Widget w = (Widget)clientData;
     WindowInfo *window = WidgetToWindow(w);
     
@@ -485,9 +495,11 @@ static void markTimeoutProc(XtPointer clientData, XtIntervalId *id)
 ** procedure to mark (or go to) the selection, otherwise, remove the handler
 ** and give up.
 */
-static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event,
-    	Boolean *continueDispatch, char *action, int extend)
+static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend)
 {
+
+	(void)clientData;
+
     XKeyEvent *e = (XKeyEvent *)event;
     WindowInfo *window = WidgetToWindow(w);
     Modifiers modifiers;

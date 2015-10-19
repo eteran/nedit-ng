@@ -545,9 +545,12 @@ static void setTextField(WindowInfo *window, Time time, Widget textField)
     XtFree((char*)selectionInfo);
 }    
 
-static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection,
-        Atom *type, char *value, int *length, int *format)
+static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)w;
+	(void)selection;
+
     WindowInfo *window = selectionInfo->window;
 
     /* return an empty string if we can't get the selection data */
@@ -1665,11 +1668,17 @@ static void removeDoomedWindowFromList(WindowInfo* window, int index)
 */
 static void fFocusCB(Widget w, WindowInfo *window, caddr_t *callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     SET_ONE_RSRC(window->findDlog, XmNdefaultButton, window->findBtn);
 }
 static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     SET_ONE_RSRC(window->replaceDlog, XmNdefaultButton, window->replaceBtn);
 }
@@ -1677,6 +1686,9 @@ static void rFocusCB(Widget w, WindowInfo *window, caddr_t *callData)
 /* when keeping a window up, clue the user what window it's associated with */
 static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData) 
 {
+
+	(void)callData;
+
     char title[MAXPATHLEN + 19];
 
     window = WidgetToWindow(w);
@@ -1689,6 +1701,9 @@ static void rKeepCB(Widget w, WindowInfo *window, caddr_t *callData)
 }
 static void fKeepCB(Widget w, WindowInfo *window, caddr_t *callData) 
 {
+
+	(void)callData;
+
     char title[MAXPATHLEN + 11];
 
     window = WidgetToWindow(w);
@@ -1763,9 +1778,11 @@ static void replaceAllCB(Widget w, WindowInfo *window,
     	unmanageReplaceDialogs(window);
 }
 
-static void replaceMultiFileCB(Widget w, WindowInfo *window,
-				   XmAnyCallbackStruct *callData) 
+static void replaceMultiFileCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     DoReplaceMultiFileDlog(window);
 }
@@ -1774,9 +1791,11 @@ static void replaceMultiFileCB(Widget w, WindowInfo *window,
 ** Callback that frees the list of windows the multi-file replace
 ** dialog is unmapped.
 **/
-static void freeWritableWindowsCB(Widget w, WindowInfo* window,
-                                  XmAnyCallbackStruct *callData)
+static void freeWritableWindowsCB(Widget w, WindowInfo* window, XmAnyCallbackStruct *callData)
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     XtFree((char *)window->writableWindows);
     window->writableWindows = NULL;
@@ -1962,6 +1981,9 @@ static void rMultiFileReplaceCB(Widget w, WindowInfo *window,
 
 static void rMultiFileCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
 
     /* Set the initial focus of the dialog back to the search string	*/
@@ -1971,9 +1993,11 @@ static void rMultiFileCancelCB(Widget w, WindowInfo *window, caddr_t callData)
     XtUnmanageChild(window->replaceMultiFileDlog);
 }
 
-static void rMultiFileSelectAllCB(Widget w, WindowInfo *window, 
-   XmAnyCallbackStruct *callData) 
+static void rMultiFileSelectAllCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData) 
 {
+
+	(void)callData;
+
     int i;
     char policy;
     Widget list;
@@ -2004,16 +2028,20 @@ static void rMultiFileSelectAllCB(Widget w, WindowInfo *window,
     XtVaSetValues(list, XmNselectionPolicy, policy, NULL);
 }
 
-static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window,  
-   XmAnyCallbackStruct *callData) 
+static void rMultiFileDeselectAllCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     XmListDeselectAllItems(window->replaceMultiFileList);
 }
 
-static void rMultiFilePathCB(Widget w, WindowInfo *window,  
-   XmAnyCallbackStruct *callData) 
+static void rMultiFilePathCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
     uploadFileListItems(window, True);  /* Replace */
 }
@@ -2189,6 +2217,9 @@ static void rInSelCB(Widget w, WindowInfo *window,
 
 static void rCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
 
     /* Set the initial focus of the dialog back to the search string	*/
@@ -2200,6 +2231,9 @@ static void rCancelCB(Widget w, WindowInfo *window, caddr_t callData)
 
 static void fCancelCB(Widget w, WindowInfo *window, caddr_t callData) 
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
 
     /* Set the initial focus of the dialog back to the search string	*/
@@ -2394,6 +2428,9 @@ static int textFieldNonEmpty(Widget w)
 
 static void rFindTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
 {
+
+	(void)event;
+
     window = WidgetToWindow(w);
     UpdateReplaceActionButtons(window);
 }
@@ -2490,6 +2527,9 @@ static void fUpdateActionButtons(WindowInfo *window)
 
 static void findTextValueChangedCB(Widget w, WindowInfo *window, XKeyEvent *event)
 {
+
+	(void)event;
+
     window = WidgetToWindow(w);
     fUpdateActionButtons(window);
 }
@@ -2815,9 +2855,11 @@ void SearchForSelected(WindowInfo *window, int direction, int searchType,
     	    (XtSelectionCallbackProc)selectedSearchCB, callData, time);
 }
 
-static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection,
-	Atom *type, char *value, int *length, int *format)
+static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)selection;
+
     WindowInfo *window = WidgetToWindow(w);
     SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;
     int searchType;
@@ -3072,9 +3114,11 @@ void SetISearchTextCallbacks(WindowInfo *window)
 ** Remove callbacks before resetting the incremental search text to avoid any
 ** cursor movement and/or clearing of selections.
 */
-static void iSearchTextSetString(Widget w, WindowInfo *window,
-	char *str)
+static void iSearchTextSetString(Widget w, WindowInfo *window, char *str)
 {
+
+	(void)w;
+
     /* remove callbacks which would be activated by emptying the text */
     XtRemoveAllCallbacks(window->iSearchText, XmNvalueChangedCallback);
     XtRemoveAllCallbacks(window->iSearchText, XmNactivateCallback);
@@ -3091,9 +3135,12 @@ static void iSearchTextSetString(Widget w, WindowInfo *window,
 ** Action routine for Mouse Button 2 on the iSearchClearButton: resets the
 ** string then calls the activate callback for the text directly.
 */
-static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
-        Cardinal *nArg)
+static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg)
 {
+
+	(void)args;
+	(void)nArg;
+
     WindowInfo *window;
     char *selText;
     XmAnyCallbackStruct cbdata;
@@ -3117,9 +3164,11 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args,
 ** before resetting the text to avoid any cursor movement and/or clearing
 ** of selections.
 */
-static void iSearchTextClearCB(Widget w, WindowInfo *window,
-	XmAnyCallbackStruct *callData)
+static void iSearchTextClearCB(Widget w, WindowInfo *window, XmAnyCallbackStruct *callData)
 {
+
+	(void)callData;
+
     window = WidgetToWindow(w);
 
     iSearchTextSetString(w, window, NULL);
@@ -3538,6 +3587,9 @@ static int findMatchingChar(WindowInfo *window, char toMatch,
 */
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
+
+	(void)id;
+
     eraseFlash((WindowInfo *)clientData);
     ((WindowInfo *)clientData)->flashTimeoutID = 0;
 }
@@ -4913,6 +4965,10 @@ static int defaultRegexFlags(int searchType)
 */
 static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo * window = WidgetToWindow(w);
     int searchRegex = XmToggleButtonGetState(w);
     int searchCaseSense = XmToggleButtonGetState(window->findCaseToggle);
@@ -4935,6 +4991,10 @@ static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callDat
 
 static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo * window = WidgetToWindow(w);
     int searchRegex = XmToggleButtonGetState(w);
     int searchCaseSense = XmToggleButtonGetState(window->replaceCaseToggle);
@@ -4957,6 +5017,10 @@ static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo * window = WidgetToWindow(w);
     int searchRegex = XmToggleButtonGetState(w);
     int searchCaseSense = XmToggleButtonGetState(window->iSearchCaseToggle);
@@ -4977,6 +5041,10 @@ static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 }
 static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo * window = WidgetToWindow(w);
     int searchCaseSense = XmToggleButtonGetState(w);
     
@@ -4990,6 +5058,10 @@ static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo * window = WidgetToWindow(w);
     int searchCaseSense = XmToggleButtonGetState(w);
     
@@ -5003,6 +5075,9 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)clientData;
+	(void)callData;
+
     WindowInfo * window = WidgetToWindow(w);
     int searchCaseSense = XmToggleButtonGetState(w);
     

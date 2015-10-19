@@ -1032,9 +1032,10 @@ void RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del)
     }
 }
 
-void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-	const char *deletedText, void *cbArg)
+void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const char *deletedText, void *cbArg)
 {
+	(void)nRestyled;
+
     RangesetTable *table = (RangesetTable *)cbArg;
     if ((nInserted != nDeleted) || BufCmp(table->buf, pos, nInserted, deletedText) != 0) {
         RangesetTableUpdatePos(table, pos, nInserted, nDeleted);

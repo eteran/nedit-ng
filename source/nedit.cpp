@@ -1015,6 +1015,10 @@ static void patchLocaleForMotif(void)
 
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
 {
+
+	(void)dpy;
+	(void)closure;
+
     /* "xnl" will be set if the user passes in a new language via the
        "-xnllanguage" flag.  If it's empty, then setlocale will get
        the default locale by some system-dependent means (usually, 
@@ -1225,5 +1229,6 @@ static void showWarningFilter(String message)
 
 static void noWarningFilter(String message)
 {
+	(void)message;
   return;
 }

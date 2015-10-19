@@ -195,7 +195,7 @@ static const Dimension XT_IGNORE_PPOSITION = 32767;
 WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 {
     Widget winShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
-    Widget closeTabBtn, tabForm, form;
+    Widget closeTabBtn, tabForm;
     WindowInfo *window;
     Pixel bgpix, fgpix;
     Arg al[20];
@@ -592,11 +592,13 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* create an unmanaged composite widget to get the folder
        widget to hide the 3D shadow for the manager area.
        Note: this works only on the patched XmLFolder widget */
-    form = XtVaCreateWidget("form",
+    Widget form = XtVaCreateWidget("form",
 	    xmFormWidgetClass, window->tabBar,
 	    XmNheight, 1,
 	    XmNresizable, False,
 	    NULL);
+		
+	(void)form;
 
     XtAddCallback(window->tabBar, XmNactivateCallback,
     	    raiseTabCB, NULL);
@@ -795,6 +797,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 */
 static void tabClickEH(Widget w, XtPointer clientData, XEvent *event)
 {
+
+	(void)clientData;
+	(void)event;
+
     /* hide the tooltip when user clicks with any button. */
     if (BubbleButton_Timer(w)) {
     	XtRemoveTimeOut(BubbleButton_Timer(w));
@@ -2270,6 +2276,9 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
 
 static void movedCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
+
+	(void)callData;
+
     TextWidget textWidget = (TextWidget) w;
 
     if (window->ignoreModify)
@@ -2296,9 +2305,11 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData)
     }
 }
 
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-        const char *deletedText, void *cbArg) 
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const char *deletedText, void *cbArg) 
 {
+
+	(void)nRestyled;
+
     WindowInfo *window = (WindowInfo *)cbArg;
     int selected = window->buffer->primary.selected;
     
@@ -2367,6 +2378,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
 
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
+
+	(void)callData;
+
     /* record which window pane last had the keyboard focus */
     window->lastFocus = w;
     
@@ -2382,12 +2396,19 @@ static void focusCB(Widget w, WindowInfo *window, XtPointer callData)
 
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData) 
 {
+
+	(void)callData;
+	(void)w;
+
     /* don't record all of the intermediate drag steps for undo */
     window->ignoreModify = True;
 }
 
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData) 
 {
+
+	(void)w;
+
     /* restore recording of undo information */
     window->ignoreModify = False;
     
@@ -2414,6 +2435,10 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData)
 #ifndef NO_SESSION_RESTART
 static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+
     WindowInfo *win, *topWin, **revWindowList;
     char geometry[MAX_GEOM_STRING_LEN];
     int argc = 0, maxArgc, nWindows, i;
@@ -3042,6 +3067,9 @@ static void getGeometryString(WindowInfo *window, char *geomString)
 */
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id)
 {
+
+	(void)id;
+
     UpdateWMSizeHints((WindowInfo *)clientData);
 }
 
@@ -3658,6 +3686,9 @@ int CloseAllDocumentInWindow(WindowInfo *window)
 
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData) 
 {
+
+	(void)w;
+
     int nDocuments = NDocuments(window);
     
     if (nDocuments == NWindows()) {
@@ -4482,9 +4513,12 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
     return cloneWin;
 }
 
-static void moveDocumentCB(Widget dialog, WindowInfo *window,
-	XtPointer call_data)
+static void moveDocumentCB(Widget dialog, WindowInfo *window, XtPointer call_data)
 {
+
+	(void)window;
+	(void)dialog;
+
     XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *) call_data;
     DoneWithMoveDocumentDialog = cbs->reason;
 }
@@ -4628,6 +4662,7 @@ static void hideTooltip(Widget tab)
 
 static void closeTabProc(XtPointer clientData, XtIntervalId *id)
 {
+	(void)id;
     CloseFileAndWindow((WindowInfo*)clientData, PROMPT_SBC_DIALOG_RESPONSE);
 }
 
@@ -4636,6 +4671,9 @@ static void closeTabProc(XtPointer clientData, XtIntervalId *id)
 */
 static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
 {
+
+	(void)callData;
+
     /* FIXME: XtRemoveActionHook() related coredump
     
        An unknown bug seems to be associated with the XtRemoveActionHook()
@@ -4662,6 +4700,9 @@ static void closeTabCB(Widget w, Widget mainWin, caddr_t callData)
 */
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)clientData;
+
     XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)callData;
     WidgetList tabList;
     Widget tab;

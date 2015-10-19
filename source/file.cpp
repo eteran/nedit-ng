@@ -1530,9 +1530,11 @@ void UniqueUntitledName(char *name)
 ** Callback that guards us from trying to access a window after it has 
 ** been destroyed while a modal dialog is up.
 */
-static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, 
-    XtPointer callData)
+static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
+	
     *(Bool*)clientData = TRUE;
 }
 
@@ -1803,6 +1805,9 @@ static const char *errorString(void)
 */
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+
     if (XmToggleButtonGetState(w)) {
         XtPointer userData;
         XtVaGetValues(w, XmNuserData, &userData, NULL);
@@ -1816,6 +1821,8 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 */
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)callData;
+
     int resp;
     int *addWrap = (int *)clientData;
     
