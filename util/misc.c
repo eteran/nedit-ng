@@ -138,7 +138,7 @@ static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event,
 static ArgList addParentVisArgs(Widget parent, ArgList arglist, 
    Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine,
-	Widget parent, char *name, ArgList arglist, Cardinal  argcount);
+	Widget parent, const char *name, ArgList arglist, Cardinal  argcount);
 static void scrollDownAP(Widget w, XEvent *event, String *args, 
 	Cardinal *nArgs);
 static void scrollUpAP(Widget w, XEvent *event, String *args, 
@@ -543,7 +543,7 @@ Boolean FindBestVisual(Display *display, const char *appName, const char *appCla
 ** from the parent widget (CreatePopupMenu and CreatePulldownMenu), or from the
 ** best visual, obtained via FindBestVisual above (CreateShellWithBestVis).
 */
-Widget CreateDialogShell(Widget parent, char *name,
+Widget CreateDialogShell(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateDialogShell, parent, name, arglist,
@@ -551,7 +551,7 @@ Widget CreateDialogShell(Widget parent, char *name,
 }
 
 
-Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
+Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist,
 	Cardinal argcount)
 {
     return addParentVisArgsAndCall(XmCreatePopupMenu, parent, name,
@@ -559,7 +559,7 @@ Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
 }
 
 
-Widget CreatePulldownMenu(Widget parent, char *name,
+Widget CreatePulldownMenu(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreatePulldownMenu, parent, name, arglist,
@@ -567,7 +567,7 @@ Widget CreatePulldownMenu(Widget parent, char *name,
 }
 
 
-Widget CreatePromptDialog(Widget parent, char *name,
+Widget CreatePromptDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreatePromptDialog, parent, name, arglist,
@@ -575,7 +575,7 @@ Widget CreatePromptDialog(Widget parent, char *name,
 }
 
 
-Widget CreateSelectionDialog(Widget parent, char *name,
+Widget CreateSelectionDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     Widget dialog = addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name,
@@ -585,7 +585,7 @@ Widget CreateSelectionDialog(Widget parent, char *name,
 }
 
 
-Widget CreateFormDialog(Widget parent, char *name,
+Widget CreateFormDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateFormDialog, parent, name, arglist,
@@ -593,7 +593,7 @@ Widget CreateFormDialog(Widget parent, char *name,
 }
 
 
-Widget CreateFileSelectionDialog(Widget parent, char *name,
+Widget CreateFileSelectionDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     Widget dialog = addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, 
@@ -605,7 +605,7 @@ Widget CreateFileSelectionDialog(Widget parent, char *name,
 }
 
 
-Widget CreateQuestionDialog(Widget parent, char *name,
+Widget CreateQuestionDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateQuestionDialog, parent, name,
@@ -613,7 +613,7 @@ Widget CreateQuestionDialog(Widget parent, char *name,
 }
 
 
-Widget CreateMessageDialog(Widget parent, char *name,
+Widget CreateMessageDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateMessageDialog, parent, name,
@@ -621,7 +621,7 @@ Widget CreateMessageDialog(Widget parent, char *name,
 }
 
 
-Widget CreateErrorDialog(Widget parent, char *name,
+Widget CreateErrorDialog(Widget parent, const char *name,
 	ArgList arglist, Cardinal  argcount)
 {
     return addParentVisArgsAndCall(XmCreateErrorDialog, parent, name, arglist,
@@ -723,11 +723,11 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist,
 ** arguments for visual, colormap, and depth.
 */
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine,
-	Widget parent, char *name, ArgList arglist, Cardinal argcount)
+	Widget parent, const char *name, ArgList arglist, Cardinal argcount)
 {
-    Widget result;
+
     ArgList al = addParentVisArgs(parent, arglist, &argcount);
-    result = (*createRoutine)(parent, name, al, argcount);
+    Widget result = (*createRoutine)(parent, (char *)name, al, argcount);
     XtFree((char *)al);
     return result;
 }

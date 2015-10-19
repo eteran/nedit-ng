@@ -95,25 +95,25 @@ void CreateGeometryString(char *string, int x, int y,
 	int width, int height, int bitmask);
 Boolean FindBestVisual(Display *display, const char *appName, const char *appClass,
 	Visual **visual, int *depth, Colormap *colormap);
-Widget CreateDialogShell(Widget parent, char *name, ArgList arglist,
+Widget CreateDialogShell(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreatePopupMenu(Widget parent, char *name, ArgList arglist,
+Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist,
 	Cardinal argcount);
-Widget CreatePulldownMenu(Widget parent, char *name, ArgList arglist,
+Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreatePromptDialog(Widget parent, char *name, ArgList arglist,
+Widget CreatePromptDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreateSelectionDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreateFormDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist,
     	Cardinal  argcount);
-Widget CreateFileSelectionDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateFileSelectionDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreateQuestionDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateQuestionDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreateMessageDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateMessageDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
-Widget CreateErrorDialog(Widget parent, char *name, ArgList arglist,
+Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist,
 	Cardinal  argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, 
 	WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
