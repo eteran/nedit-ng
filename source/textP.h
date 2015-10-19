@@ -37,6 +37,10 @@
 #include <Xm/PrimitiveP.h>
 #include <X11/CoreP.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum dragStates {NOT_CLICKED, PRIMARY_CLICKED, SECONDARY_CLICKED,
 	CLICKED_IN_SELECTION,  PRIMARY_DRAG, PRIMARY_RECT_DRAG, SECONDARY_DRAG,
 	SECONDARY_RECT_DRAG, PRIMARY_BLOCK_DRAG, DRAG_CANCELED, MOUSE_PAN};
@@ -133,5 +137,9 @@ typedef struct _TextRec {
    XmPrimitivePart primitive;
    TextPart        text;
 } TextRec;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_TEXTP_H_INCLUDED */

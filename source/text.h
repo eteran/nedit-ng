@@ -33,6 +33,10 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Resource strings */
 #define textNfont (String)"font"
 #define textCFont (String)"Font"
@@ -166,5 +170,9 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_TEXT_H_INCLUDED */

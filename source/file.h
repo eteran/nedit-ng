@@ -40,6 +40,10 @@
 #define YES_SBC_DIALOG_RESPONSE 1
 #define NO_SBC_DIALOG_RESPONSE 2
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
         const char *languageMode, const char *defaultPath);
 WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
@@ -61,5 +65,9 @@ int CheckReadOnly(WindowInfo *window);
 void RemoveBackupFile(WindowInfo *window);
 void UniqueUntitledName(char *name);
 void CheckForChangesToFile(WindowInfo *window);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_FILE_H_INCLUDED */

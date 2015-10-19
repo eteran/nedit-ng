@@ -32,6 +32,10 @@
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum SearchDirection {SEARCH_FORWARD, SEARCH_BACKWARD};
 
 void CreateFindDlog(Widget parent, WindowInfo *window);
@@ -122,5 +126,9 @@ int StringToSearchType(const char * string, int *searchType);
 ** History of search actions.
 */
 extern int NHist;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_SEARCH_H_INCLUDED */

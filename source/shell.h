@@ -29,6 +29,10 @@
 
 #include "nedit.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* sources for command input and destinations for command output */
 enum inSrcs {FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE};
 enum outDests {TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG};
@@ -42,5 +46,9 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input,
         int output, int outputReplaceInput,
 	int saveFirst, int loadAfter, int fromMacro);
 void AbortShellCommand(WindowInfo *window);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_SHELL_H_INCLUDED */

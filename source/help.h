@@ -37,6 +37,10 @@
 /*                          VARIABLE TYPE DEFINITIONS                         */
 /*============================================================================*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct HelpMenu         /* Maintains help menu structure */
 {
     struct HelpMenu * next;
@@ -72,5 +76,9 @@ extern const char linktime[];
 void Help(enum HelpTopic topic);
 void PrintVersion(void);
 void InstallHelpLinkActions(XtAppContext context);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_HELP_H_INCLUDED */

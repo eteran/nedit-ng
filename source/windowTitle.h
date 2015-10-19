@@ -33,6 +33,10 @@
 
 #include <X11/Intrinsic.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *FormatWindowTitle(const char* filename,
                         const char* path,
                         const char* clearCaseViewTag,
@@ -44,5 +48,9 @@ char *FormatWindowTitle(const char* filename,
                         const char* titleFormat);
                         
 void EditCustomTitleFormat(WindowInfo *window);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_WINDOWTITLE_H_INCLUDED */

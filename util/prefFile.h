@@ -30,6 +30,10 @@
 
 #include <X11/Intrinsic.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum PrefDataTypes {PREF_INT, PREF_BOOLEAN, PREF_ENUM, PREF_STRING,
 	PREF_ALLOC_STRING};
 
@@ -53,5 +57,9 @@ void OverlayPreferences(XrmDatabase prefDB, const char *appName,
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
 int SavePreferences(Display *display, const char *fileName,
         const  char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_PREFFILE_H_INCLUDED */

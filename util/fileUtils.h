@@ -28,6 +28,10 @@
 #ifndef NEDIT_FILEUTILS_H_INCLUDED
 #define NEDIT_FILEUTILS_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum fileFormats {UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT};
 
 int ParseFilename(const char *fullname, char *filename, char *pathname);
@@ -45,5 +49,9 @@ void ConvertFromMacFileString(char *fileString, int length);
 int ConvertToDosFileString(char **fileString, int *length);
 void ConvertToMacFileString(char *fileString, int length);
 char *ReadAnyTextFile(const char *fileName, int forceNL);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_FILEUTILS_H_INCLUDED */

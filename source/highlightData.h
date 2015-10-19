@@ -33,6 +33,10 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 patternSet *FindPatternSet(const char *langModeName);
 int LoadHighlightString(char *inString, int convertOld);
 char *WriteHighlightString(void);
@@ -50,5 +54,9 @@ const char *BgColorOfNamedStyle(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
 int NamedStyleExists(const char *styleName);
 void RenameHighlightPattern(const char *oldName, const char *newName);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_HIGHLIGHTDATA_H_INCLUDED */

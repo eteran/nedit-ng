@@ -37,6 +37,10 @@
 #endif
 #endif /*VMS*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DF_ERR 1        /* Error Dialog       */
 #define DF_INF 2        /* Information Dialog */
 #define DF_MSG 3        /* Message Dialog     */
@@ -53,5 +57,9 @@
 unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
         const char* msgstr, ...);                    /* variable # arguments */
 void SetDialogFPromptHistory(char **historyList, int nItems);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_DIALOGF_H_INCLUDED */

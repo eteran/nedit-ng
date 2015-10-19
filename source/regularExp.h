@@ -33,6 +33,10 @@
 
 #define NSUBEXP 50
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Structure to contain the compiled form of a regular expression plus
    pointers to matched text.  `program' is the actual compiled regex code. */
 
@@ -96,5 +100,9 @@ Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
 
 void SetREDefaultWordDelimiters (
    char *delimiters);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_REGULAREXP_H_INCLUDED */

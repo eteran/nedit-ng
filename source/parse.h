@@ -29,6 +29,14 @@
 
 #include "interpret.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_PARSE_H_INCLUDED */

@@ -30,6 +30,10 @@
 #include "nedit.h"
 #include "rbTree.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define STACK_SIZE 1024		/* Maximum stack size */
 #define MAX_SYM_LEN 100 	/* Max. symbol name length */
 #define MACRO_EVENT_MARKER 2 	/* Special value for the send_event field of
@@ -173,5 +177,9 @@ WindowInfo *MacroFocusWindow(void);
 void SetMacroFocusWindow(WindowInfo *window);
 /* function used for implicit conversion from string to number */
 int StringToNum(const char *string, int *number);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_INTERPRET_H_INCLUDED */

@@ -33,6 +33,10 @@
 #include <X11/Xlib.h>
 #include <Xm/Xm.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
 	HEAVY_CURSOR};
 
@@ -228,5 +232,9 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
 Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_TEXTDISP_H_INCLUDED */

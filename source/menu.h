@@ -32,6 +32,10 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
 
@@ -49,5 +53,9 @@ void HidePointerOnKeyedEvent(Widget w, XEvent *event);
 Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
 void AddTabContextMenuAction(Widget widget);
 void ShowHiddenTearOff(Widget menuPane);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_MENU_H_INCLUDED */

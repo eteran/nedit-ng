@@ -32,6 +32,10 @@
 
 #include <X11/Intrinsic.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void AttachSessionMgrHandler(Widget appShell);
 WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 void CloseWindow(WindowInfo *window);
@@ -103,4 +107,9 @@ void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state,
         Boolean notify);
 void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive);
 void CleanUpTabBarExposeQueue(WindowInfo *window);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* NEDIT_WINDOW_H_INCLUDED */

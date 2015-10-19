@@ -29,6 +29,10 @@
 
 #include "nedit.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void EditShellMenu(WindowInfo *window);
 void EditMacroMenu(WindowInfo *window);
 void EditBGMenu(WindowInfo *window);
@@ -53,5 +57,9 @@ void InitUserBGMenuCache(UserBGMenuCache *cache);
 void FreeUserBGMenuCache(UserBGMenuCache *cache);
 void SetupUserMenuInfo(void);
 void UpdateUserMenuInfo(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_USERCMDS_H_INCLUDED */

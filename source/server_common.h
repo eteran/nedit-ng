@@ -36,6 +36,10 @@
 
 #define DEFAULTSERVERNAME ""
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void CreateServerPropertyAtoms(const char *serverName, 
 			       Atom *serverExistsAtomReturn, 
 			       Atom *serverRequestAtomReturn);
@@ -45,5 +49,9 @@ Atom CreateServerFileClosedAtom(const char *serverName,
 	                        const char *path,
                                 Bool only_if_exists);
 void DeleteServerFileAtoms(const char* serverName, Window rootWindow);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_SERVER_COMMON_H_INCLUDED */

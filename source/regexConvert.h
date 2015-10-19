@@ -27,7 +27,15 @@
 #ifndef NEDIT_REGEXCONVERT_H_INCLUDED
 #define NEDIT_REGEXCONVERT_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *ConvertRE(const char *exp, const char **errorText);
 void ConvertSubstituteRE(const char *source, char *dest, int max);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_REGEXCONVERT_H_INCLUDED */

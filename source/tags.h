@@ -33,6 +33,10 @@
 #include <X11/X.h>
 #include <time.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct _tagFile {
     struct _tagFile *next;
     char *filename;
@@ -67,5 +71,9 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg);
 int ShowTipString(WindowInfo *window, char *text, Boolean anchored,
         int pos, Boolean lookup, int search_type, int hAlign, int vAlign,
         int alignMode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NEDIT_TAGS_H_INCLUDED */
