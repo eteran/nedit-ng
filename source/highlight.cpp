@@ -748,37 +748,38 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     /* Set up table for mapping colors and fonts to syntax */
     styleTablePtr = styleTable = (styleTableEntry *)XtMalloc(
     	    sizeof(styleTableEntry) * (nPass1Patterns + nPass2Patterns + 1));
-#define setStyleTablePtr(styleTablePtr, patternSrc) \
-    do { \
-      styleTableEntry *p = styleTablePtr; \
-      highlightPattern *pat = patternSrc; \
-      int r, g, b; \
-      \
-      p->highlightName = pat->name; \
-      p->styleName = pat->style; \
-      p->colorName = ColorOfNamedStyle(pat->style); \
-      p->bgColorName = BgColorOfNamedStyle(pat->style); \
-      p->isBold = FontOfNamedStyleIsBold(pat->style); \
-      p->isItalic = FontOfNamedStyleIsItalic(pat->style); \
-      /* And now for the more physical stuff */ \
-      p->color = AllocColor(window->textArea, p->colorName, &r, &g, &b); \
-      p->red = r; \
-      p->green = g; \
-      p->blue = b; \
-      if (p->bgColorName) { \
-        p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b); \
-        p->bgRed = r; \
-        p->bgGreen = g; \
-        p->bgBlue = b; \
-      } \
-      else { \
-        p->bgColor = p->color; \
-        p->bgRed = r; \
-        p->bgGreen = g; \
-        p->bgBlue = b; \
-      } \
-      p->font = FontOfNamedStyle(window, pat->style); \
-    } while (0)
+			
+			
+	auto setStyleTablePtr = [window](styleTableEntry *styleTablePtr, highlightPattern *patternSrc) {
+      styleTableEntry *p = styleTablePtr; 
+      highlightPattern *pat = patternSrc; 
+      int r, g, b; 
+      
+      p->highlightName = pat->name; 
+      p->styleName = pat->style; 
+      p->colorName = ColorOfNamedStyle(pat->style); 
+      p->bgColorName = BgColorOfNamedStyle(pat->style); 
+      p->isBold = FontOfNamedStyleIsBold(pat->style); 
+      p->isItalic = FontOfNamedStyleIsItalic(pat->style); 
+      /* And now for the more physical stuff */ 
+      p->color = AllocColor(window->textArea, p->colorName, &r, &g, &b); 
+      p->red = r; 
+      p->green = g; 
+      p->blue = b; 
+      if (p->bgColorName) { 
+        p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b); 
+        p->bgRed = r; 
+        p->bgGreen = g; 
+        p->bgBlue = b; 
+      } 
+      else { 
+        p->bgColor = p->color; 
+        p->bgRed = r; 
+        p->bgGreen = g; 
+        p->bgBlue = b; 
+      } 
+      p->font = FontOfNamedStyle(window, pat->style); 	
+	};
 
     /* PLAIN_STYLE (pass 1) */
     styleTablePtr->underline = FALSE;
