@@ -40,6 +40,7 @@
 #include "help_data.h"
 #include "file.h"
 #include "highlight.h"
+#include "linkdate.h"
 #include "../util/motif.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"

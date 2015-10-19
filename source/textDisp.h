@@ -67,7 +67,9 @@ typedef struct graphicExposeTranslationEntry {
     struct graphicExposeTranslationEntry *next;
 } graphicExposeTranslationEntry;
 
-typedef void (*unfinishedStyleCBProc)();
+struct _textDisp;
+
+typedef void (*unfinishedStyleCBProc)(const struct _textDisp *, int, const void *);
 
 typedef struct _calltipStruct {
     int ID;                 /* ID of displayed calltip.  Equals

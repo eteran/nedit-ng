@@ -70,7 +70,11 @@
 #define MENU_WIDGET(w) (w)
 #endif
 
-extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
+#ifdef __cplusplus
+extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
+#else
+extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
+#endif
 
 /* max. number of user programmable menu commands allowed per each of the
    macro, shell, and background menus */
@@ -3340,7 +3344,7 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus,
 */
 static char *stripLanguageMode(const char *menuItemName)
 {
-    char *firstAtPtr;
+    const char *firstAtPtr;
 
     firstAtPtr = strchr(menuItemName, '@');
     if (firstAtPtr == NULL)

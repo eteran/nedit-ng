@@ -1923,7 +1923,9 @@ int LoadSmartIndentCommonString(char *inString)
 */
 static char *readSIMacro(const char **inPtr)
 {
-    char *retStr, *macroStr, *macroEnd;
+    char *retStr;
+	char *macroStr;
+	const char *macroEnd;
     int shiftedLen;
     
     /* Strip leading newline */

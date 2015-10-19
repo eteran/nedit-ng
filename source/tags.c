@@ -612,8 +612,11 @@ static int scanETagsLine(const char *line, const char * tagPath, int index,
 {
     char name[MAXLINE], searchString[MAXLINE];
     char incPath[MAXPATHLEN];
-    int pos, len;
-    char *posDEL, *posSOH, *posCOM;
+    int pos;
+	int len;
+    const char *posDEL;
+	const char *posSOH;
+	const char *posCOM;
     
     /* check for destination file separator  */
     if(line[0]==12) { /* <np> */

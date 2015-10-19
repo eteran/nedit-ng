@@ -26,5 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "linkdate.h"
+
 const char linkdate[] = __DATE__;
 const char linktime[] = __TIME__;
