@@ -34,9 +34,7 @@
 #include <Xm/Xm.h>
 #include <X11/Xlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #define PLAIN_LANGUAGE_MODE -1
 
@@ -215,8 +213,6 @@ Boolean GetPrefHonorSymlinks(void);
 Boolean GetPrefForceOSConversion(void);
 void SetPrefFocusOnRaise(Boolean);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_PREFERENCES_H_INCLUDED */

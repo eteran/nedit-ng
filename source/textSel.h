@@ -30,9 +30,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 void HandleXSelections(Widget w);
 void StopHandlingXSelections(Widget w);
@@ -44,8 +42,6 @@ void ExchangeSelections(Widget w, Time time);
 void InsertClipboard(Widget w, int isColumnar);
 void TakeMotifDestination(Widget w, Time time);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_TEXTSEL_H_INCLUDED */

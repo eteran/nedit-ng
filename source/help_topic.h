@@ -47,9 +47,7 @@
 #define STYLE_PLAIN   'A'
 #define TKN_LIST_SIZE 4
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 enum HelpTopic {
     HELP_START,
@@ -100,6 +98,4 @@ enum HelpTopic {
 
 #define NUM_TOPICS HELP_LAST_ENTRY
 
-#ifdef __cplusplus
-}
-#endif
+

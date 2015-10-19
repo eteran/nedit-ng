@@ -33,9 +33,7 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 char *FormatWindowTitle(const char* filename,
                         const char* path,
@@ -49,8 +47,6 @@ char *FormatWindowTitle(const char* filename,
                         
 void EditCustomTitleFormat(WindowInfo *window);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_WINDOWTITLE_H_INCLUDED */

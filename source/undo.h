@@ -29,9 +29,7 @@
 
 #include "nedit.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 enum undoTypes {UNDO_NOOP, ONE_CHAR_INSERT, ONE_CHAR_REPLACE, ONE_CHAR_DELETE,
 		BLOCK_INSERT, BLOCK_REPLACE, BLOCK_DELETE};
@@ -43,8 +41,6 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 void ClearUndoList(WindowInfo *window);
 void ClearRedoList(WindowInfo *window);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_UNDO_H_INCLUDED */

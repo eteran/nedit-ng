@@ -27,9 +27,7 @@
 #ifndef NEDIT_RBTREE_H_INCLUDED
 #define NEDIT_RBTREE_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 typedef struct rbTreeNode {
     struct rbTreeNode *left;   /* left child */
@@ -64,8 +62,6 @@ int rbTreeSize(rbTreeNode *base);
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode);
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_RBTREE_H_INCLUDED */

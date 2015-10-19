@@ -31,9 +31,7 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 void BeginSmartIndent(WindowInfo *window, int warn);
 void EndSmartIndent(WindowInfo *window);
@@ -50,8 +48,6 @@ int LMHasSmartIndentMacros(const char *languageMode);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void UpdateLangModeMenuSmartIndent(void);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_SMARTINDENT_H_INCLUDED */

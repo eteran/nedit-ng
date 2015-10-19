@@ -29,9 +29,7 @@
 
 #include "nedit.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 enum ShiftDirection {SHIFT_LEFT, SHIFT_RIGHT};
 
@@ -42,8 +40,6 @@ void FillSelection(WindowInfo *window);
 char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
 	int nChars, int *newLen);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_SHIFT_H_INCLUDED */

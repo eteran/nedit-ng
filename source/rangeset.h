@@ -35,9 +35,7 @@
 
 #define N_RANGESETS 63
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 typedef struct _Range Range;
 typedef struct _Rangeset Rangeset;
@@ -82,8 +80,6 @@ int RangesetTableGetColorValid(RangesetTable *table, int index, Pixel *color);
 int RangesetTableAssignColorPixel(RangesetTable *table, int index, Pixel color,
 	int ok);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* rangeset_h_DEFINED */

@@ -40,9 +40,7 @@
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
 #define ASCII_A ((char)65)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /* Pattern specification structure */
 typedef struct {
@@ -88,8 +86,6 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
       int *r, int *g, int *b);
 
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_HIGHLIGHT_H_INCLUDED */

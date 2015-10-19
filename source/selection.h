@@ -32,9 +32,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column );
 void GotoSelectedLineNumber(WindowInfo *window, Time time);
@@ -51,8 +49,6 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel);
 void MarkDialog(WindowInfo *window);
 void GotoMarkDialog(WindowInfo *window, int extend);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_SELECTION_H_INCLUDED */

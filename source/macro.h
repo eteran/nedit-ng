@@ -31,9 +31,7 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
@@ -59,8 +57,6 @@ const char *GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_MACRO_H_INCLUDED */

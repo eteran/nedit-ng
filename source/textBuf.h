@@ -31,9 +31,7 @@
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 typedef struct _RangesetTable RangesetTable;
 
@@ -173,8 +171,6 @@ int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
 int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_TEXTBUF_H_INCLUDED */

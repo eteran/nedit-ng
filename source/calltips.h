@@ -34,9 +34,7 @@
 #define NEDIT_DEFAULT_CALLTIP_BG "LemonChiffon1"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 enum TipHAlignMode {TIP_LEFT, TIP_CENTER, TIP_RIGHT};
 enum TipVAlignMode {TIP_ABOVE, TIP_BELOW};
@@ -49,8 +47,6 @@ void TextDKillCalltip(textDisp *textD, int calltipID);
 int  GetCalltipID(WindowInfo *window, int calltipID);
 void TextDRedrawCalltip(textDisp *textD, int calltipID);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* ifndef NEDIT_CALLTIPS_H_INCLUDED */

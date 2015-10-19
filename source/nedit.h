@@ -35,9 +35,7 @@
 #include <Xm/XmStrDefs.h>
 #include <sys/param.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #define NEDIT_VERSION           5
 #define NEDIT_REVISION          6
@@ -558,8 +556,6 @@ extern Widget TheAppShell;
 extern char *ArgV0;
 extern Boolean IsServer;
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* NEDIT_NEDIT_H_INCLUDED */
