@@ -15,38 +15,38 @@ bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 
 
 add_executable(nedit
-	nedit.c
-	file.c
-	menu.c
-	window.c
-	selection.c
-	search.c
-	undo.c
-	shift.c
-	help.c
-	preferences.c
-	tags.c
-	userCmds.c
-	shell.c
-	regularExp.c
-	macro.c
-	text.c
-	textSel.c
-	textDisp.c
-	textBuf.c
-	textDrag.c
-	server.c
-	highlight.c
-	highlightData.c
-	interpret.c
-	smartIndent.c
-	regexConvert.c
-	rbTree.c
-	windowTitle.c
-	calltips.c
-	server_common.c
-	rangeset.c
-	linkdate.c
+	nedit.cpp
+	file.cpp
+	menu.cpp
+	window.cpp
+	selection.cpp
+	search.cpp
+	undo.cpp
+	shift.cpp
+	help.cpp
+	preferences.cpp
+	tags.cpp
+	userCmds.cpp
+	shell.cpp
+	regularExp.cpp
+	macro.cpp
+	text.cpp
+	textSel.cpp
+	textDisp.cpp
+	textBuf.cpp
+	textDrag.cpp
+	server.cpp
+	highlight.cpp
+	highlightData.cpp
+	interpret.cpp
+	smartIndent.cpp
+	regexConvert.cpp
+	rbTree.cpp
+	windowTitle.cpp
+	calltips.cpp
+	server_common.cpp
+	rangeset.cpp
+	linkdate.cpp
 	${BISON_parser_OUTPUT_SOURCE})
 
 add_definitions(-DUSE_DIRENT -DUSE_LPR_PRINT_CMD)
@@ -66,8 +66,8 @@ target_link_libraries(nedit LINK_PUBLIC
 	${X11_Xt_LIB})
 
 add_executable(nc
-	nc.c
-	server_common.c)
+	nc.cpp
+	server_common.cpp)
 
 include_directories(nc
 	${X11_INCLUDE_DIR}
@@ -82,4 +82,8 @@ target_link_libraries(nc LINK_PUBLIC
 set_property(TARGET nedit PROPERTY C_STANDARD 99)
 set_property(TARGET nc    PROPERTY C_STANDARD 99)
 
+set_property(TARGET nedit PROPERTY CXX_STANDARD 11)
+set_property(TARGET nc    PROPERTY CXX_STANDARD 11)
+
 set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")
+#set(CMAKE_CXX_FLAGS "-W -Wall -pedantic")
