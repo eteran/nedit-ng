@@ -148,7 +148,7 @@ void BeginBlockDrag(TextWidget tw)
     tw->text.dragState = PRIMARY_BLOCK_DRAG;
     
     /* Call the callback announcing the start of a block drag */
-    XtCallCallbacks((Widget)tw, textNdragStartCallback, (XtPointer)NULL);
+    XtCallCallbacks((Widget)tw, textNdragStartCallback, (XtPointer)nullptr);
 }
 
 /*
@@ -381,7 +381,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     	TextDSetInsertPosition(textD, insStart + origSel->end - origSel->start);
     }
     TextDUnblankCursor(textD);
-    XtCallCallbacks((Widget)tw, textNcursorMovementCallback, (XtPointer)NULL);
+    XtCallCallbacks((Widget)tw, textNcursorMovementCallback, (XtPointer)nullptr);
     tw->text.emTabsBeforeCursor = 0;
 }
 
@@ -459,7 +459,7 @@ void CancelBlockDrag(TextWidget tw)
     else
     	BufSelect(buf, origSel->start, origSel->end);
     TextDSetInsertPosition(tw->text.textD, buf->cursorPosHint);
-    XtCallCallbacks((Widget)tw, textNcursorMovementCallback, NULL);
+    XtCallCallbacks((Widget)tw, textNcursorMovementCallback, nullptr);
     tw->text.emTabsBeforeCursor = 0;
     
     /* Free the backup buffer */
@@ -472,7 +472,7 @@ void CancelBlockDrag(TextWidget tw)
     endStruct.startPos = 0;
     endStruct.nCharsDeleted = 0;
     endStruct.nCharsInserted = 0;
-    endStruct.deletedText = NULL;
+    endStruct.deletedText = nullptr;
     XtCallCallbacks((Widget)tw, textNdragEndCallback, (XtPointer)&endStruct);
 }
 

@@ -491,19 +491,19 @@ static const char* RedundantActions[] = {"open_dialog", "save_as_dialog",
     "repeat_dialog", "start_incremental_find"};
 
 /* The last command executed (used by the Repeat command) */
-static char *LastCommand = NULL;
+static char *LastCommand = nullptr;
 
 /* The current macro to execute on Replay command */
-static const char *ReplayMacro = NULL;
+static const char *ReplayMacro = nullptr;
 
 /* Buffer where macro commands are recorded in Learn mode */
-static textBuffer *MacroRecordBuf = NULL;
+static textBuffer *MacroRecordBuf = nullptr;
 
 /* Action Hook id for recording actions for Learn mode */
 static XtActionHookId MacroRecordActionHook = 0;
 
 /* Window where macro recording is taking place */
-static WindowInfo *MacroRecordWindow = NULL;
+static WindowInfo *MacroRecordWindow = nullptr;
 
 /* Arrays for translating escape characters in escapeStringChars */
 static char ReplaceChars[] = "\\\"ntbrfav";
@@ -552,14 +552,14 @@ void BeginLearn(WindowInfo *window)
     	return;
     
     /* dim the inappropriate menus and items, and undim finish and cancel */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XtSetSensitive(win->learnItem, False);
     }
     SetSensitive(window, window->finishLearnItem, True);
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Learn"), NULL);
+    	    s=XmStringCreateSimple((String)"Cancel Learn"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, True);
     
@@ -575,8 +575,8 @@ void BeginLearn(WindowInfo *window)
     	    learnActionHook, window);
 
     /* Extract accelerator texts from menu PushButtons */
-    XtVaGetValues(window->finishLearnItem, XmNacceleratorText, &xmFinish, NULL);
-    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
+    XtVaGetValues(window->finishLearnItem, XmNacceleratorText, &xmFinish, nullptr);
+    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, nullptr);
 
     /* Translate Motif strings to char* */
     cFinish = GetXmStringText(xmFinish);
@@ -624,7 +624,7 @@ void BeginLearn(WindowInfo *window)
 
 void AddLastCommandActionHook(XtAppContext context)
 {
-    XtAppAddActionHook(context, lastActionHook, NULL);
+    XtAppAddActionHook(context, lastActionHook, nullptr);
 }
 
 void FinishLearn(void)
@@ -649,7 +649,7 @@ void FinishLearn(void)
     BufFree(MacroRecordBuf);
     
     /* Undim the menu items dimmed during learn */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XtSetSensitive(win->learnItem, True);
@@ -660,7 +660,7 @@ void FinishLearn(void)
     }
     
     /* Undim the replay and paste-macro buttons */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XtSetSensitive(win->replayItem, True);
@@ -678,7 +678,7 @@ void CancelMacroOrLearn(WindowInfo *window)
 {
     if (MacroRecordActionHook != 0)
     	cancelLearn();
-    else if (window->macroCmdData != NULL)
+    else if (window->macroCmdData != nullptr)
     	AbortMacroCommand(window);
 }
 
@@ -698,7 +698,7 @@ static void cancelLearn(void)
     BufFree(MacroRecordBuf);
     
     /* Undim the menu items dimmed during learn */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XtSetSensitive(win->learnItem, True);
@@ -723,13 +723,13 @@ void Replay(WindowInfo *window)
 
     /* Verify that a replay macro exists and it's not empty and that */
     /* we're not already running a macro */
-    if (ReplayMacro != NULL &&
+    if (ReplayMacro != nullptr &&
             ReplayMacro[0] != 0 &&
-            window->macroCmdData == NULL) {
+            window->macroCmdData == nullptr) {
         /* Parse the replay macro (it's stored in text form) and compile it into
         an executable program "prog" */
         prog = ParseMacro(ReplayMacro, &errMsg, &stoppedAt);
-        if (prog == NULL) {
+        if (prog == nullptr) {
             fprintf(stderr,
                 "NEdit internal error, learn/replay macro syntax error: %s\n",
                 errMsg);
@@ -749,9 +749,9 @@ void ReadMacroInitFile(WindowInfo *window)
     const char* autoloadName = GetRCFileName(AUTOLOAD_NM);
     static int initFileLoaded = False;
 
-    /*  GetRCFileName() might return NULL if an error occurs during
+    /*  GetRCFileName() might return nullptr if an error occurs during
         creation of the preference file directory. */
-    if (autoloadName != NULL && !initFileLoaded)
+    if (autoloadName != nullptr && !initFileLoaded)
     {
         ReadMacroFile(window, autoloadName, False);
         initFileLoaded = True;
@@ -771,7 +771,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
     ** errors with statements on the last line
     */
     fileString = ReadAnyTextFile(fileName, True);
-    if (fileString == NULL){
+    if (fileString == nullptr){
         if (errno != ENOENT || warnNotExist)
         {
             DialogF(DF_ERR, window->shell, 1, "Read Macro",
@@ -783,7 +783,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 
     /* Parse fileString */
     result = readCheckMacroString(window->shell, fileString, window, fileName,
-	    NULL);
+	    nullptr);
     XtFree(fileString);
     return result;
 }
@@ -794,7 +794,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist)
 */
 int ReadMacroString(WindowInfo *window, const char *string, const char *errIn)
 {   
-    return readCheckMacroString(window->shell, string, window, errIn, NULL);
+    return readCheckMacroString(window->shell, string, window, errIn, nullptr);
 }
 
 /*
@@ -805,7 +805,7 @@ int ReadMacroString(WindowInfo *window, const char *string, const char *errIn)
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	const char **errPos)
 {
-    return readCheckMacroString(dialogParent, string, NULL, errIn, errPos);
+    return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }    
 
 /*
@@ -813,7 +813,7 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 ** Report parsing errors in a dialog posted over dialogParent, using the
 ** string errIn to identify the entity being parsed (filename, macro string,
 ** etc.).  If runWindow is specified, runs the macro against the window.  If
-** runWindow is passed as NULL, does parse only.  If errPos is non-null, 
+** runWindow is passed as nullptr, does parse only.  If errPos is non-null, 
 ** returns a pointer to the error location in the string.
 */
 static int readCheckMacroString(Widget dialogParent, const char *string,
@@ -828,7 +828,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
     Symbol *sym;
     DataValue subrPtr;
     Stack* progStack = (Stack*) XtMalloc(sizeof(Stack));
-    progStack->top = NULL;
+    progStack->top = nullptr;
     progStack->size = 0;
 
     inPtr = string;
@@ -860,19 +860,19 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
             }
 	    inPtr += strspn(inPtr, " \t\n");
 	    if (*inPtr != '{') {
-	    	if (errPos != NULL) *errPos = stoppedAt;
+	    	if (errPos != nullptr) *errPos = stoppedAt;
 		return ParseError(dialogParent, string, inPtr,
 	    	    	errIn, "expected '{'");
 	    }
 	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
-	    if (prog == NULL) {
-	    	if (errPos != NULL) *errPos = stoppedAt;
+	    if (prog == nullptr) {
+	    	if (errPos != nullptr) *errPos = stoppedAt;
 	    	return ParseError(dialogParent, string, stoppedAt,
 	    	    	errIn, errMsg);
 	    }
-	    if (runWindow != NULL) {
+	    if (runWindow != nullptr) {
 		sym = LookupSymbol(subrName);
-		if (sym == NULL) {
+		if (sym == nullptr) {
 		    subrPtr.val.prog = prog;
 		    subrPtr.tag = NO_TAG;
 		    sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
@@ -893,8 +893,8 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
 	   will probably run the code blocks in reverse order! */
 	} else {
 	    prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
-	    if (prog == NULL) {
-                if (errPos != NULL) {
+	    if (prog == nullptr) {
+                if (errPos != nullptr) {
                     *errPos = stoppedAt;
                 }
 
@@ -902,11 +902,11 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
 	    	    	errIn, errMsg);
 	    }
 
-	    if (runWindow != NULL) {
+	    if (runWindow != nullptr) {
                 XEvent nextEvent;
-		if (runWindow->macroCmdData == NULL) {
+		if (runWindow->macroCmdData == nullptr) {
 	            runMacro(runWindow, prog);
-		    while (runWindow->macroCmdData != NULL) {
+		    while (runWindow->macroCmdData != nullptr) {
 			XtAppNextEvent(XtWidgetToApplicationContext(
 				runWindow->shell),  &nextEvent);
                         ServerDispatchEvent(&nextEvent);
@@ -930,7 +930,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
     }
 
     /*  Unroll reversal stack for macros loaded from macros.  */
-    while (NULL != (prog = (Program*) Pop(progStack))) {
+    while (nullptr != (prog = (Program*) Pop(progStack))) {
         RunMacroAsSubrCall(prog);
     }
 
@@ -956,7 +956,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     /* If a macro is already running, just call the program as a subroutine,
        instead of starting a new one, so we don't have to keep a separate
        context, and the macros will serialize themselves automatically */
-    if (window->macroCmdData != NULL) {
+    if (window->macroCmdData != nullptr) {
     	RunMacroAsSubrCall(prog);
 	return;
     }
@@ -966,7 +966,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     
     /* enable the cancel menu item */
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Macro"), NULL);
+    	    s=XmStringCreateSimple((String)"Cancel Macro"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, True);
 
@@ -977,9 +977,9 @@ static void runMacro(WindowInfo *window, Program *prog)
     cmdData->bannerIsUp = False;
     cmdData->closeOnCompletion = False;
     cmdData->program = prog;
-    cmdData->context = NULL;
+    cmdData->context = nullptr;
     cmdData->continueWorkProcID = 0;
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
     
     /* Set up timer proc for putting up banner when macro takes too long */
     cmdData->bannerTimeoutID = XtAppAddTimeOut(
@@ -987,7 +987,7 @@ static void runMacro(WindowInfo *window, Program *prog)
     	    bannerTimeoutProc, window);
     
     /* Begin macro execution */
-    stat = ExecuteMacro(window, prog, 0, NULL, &result, &cmdData->context,
+    stat = ExecuteMacro(window, prog, 0, nullptr, &result, &cmdData->context,
     	    &errMsg);
 
     if (stat == MACRO_ERROR)
@@ -1020,7 +1020,7 @@ void ResumeMacroExecution(WindowInfo *window)
 {
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     
-    if (cmdData != NULL)
+    if (cmdData != nullptr)
 	cmdData->continueWorkProcID = XtAppAddWorkProc(
 	    	XtWidgetToApplicationContext(window->shell),
 	    	continueWorkProc, window);
@@ -1031,14 +1031,14 @@ void ResumeMacroExecution(WindowInfo *window)
 */
 void AbortMacroCommand(WindowInfo *window)
 {
-    if (window->macroCmdData == NULL)
+    if (window->macroCmdData == nullptr)
     	return;
     
     /* If there's both a macro and a shell command executing, the shell command
        must have been called from the macro.  When called from a macro, shell
        commands don't put up cancellation controls of their own, but rely
        instead on the macro cancellation mechanism (here) */
-    if (window->shellCmdData != NULL)
+    if (window->shellCmdData != nullptr)
     	AbortShellCommand(window);
     
     /* Free the continuation */
@@ -1070,12 +1070,12 @@ int MacroWindowCloseActions(WindowInfo *window)
     /* If no macro is executing in the window, allow the close, but check
        if macros executing in other windows have it as focus.  If so, set
        their focus back to the window from which they were originally run */
-    if (cmdData == NULL) {
-    	for (w=WindowList; w!=NULL; w=w->next) {
+    if (cmdData == nullptr) {
+    	for (w=WindowList; w!=nullptr; w=w->next) {
 	    mcd = (macroCmdInfo *)w->macroCmdData;
 	    if (w == MacroRunWindow() && MacroFocusWindow() == window)
 		SetMacroFocusWindow(MacroRunWindow());
-	    else if (mcd != NULL && mcd->context->focusWindow == window)
+	    else if (mcd != nullptr && mcd->context->focusWindow == window)
 		mcd->context->focusWindow = mcd->context->runWindow;
 	}
     	return True;
@@ -1118,27 +1118,27 @@ static void finishMacroCmdExecution(WindowInfo *window)
     /* Clean up waiting-for-macro-command-to-complete mode */
     EndWait(window->shell);
     XtVaSetValues(window->cancelMacroItem, XmNlabelString,
-    	    s=XmStringCreateSimple((String)"Cancel Learn"), NULL);
+    	    s=XmStringCreateSimple((String)"Cancel Learn"), nullptr);
     XmStringFree(s);
     SetSensitive(window, window->cancelMacroItem, False);
     if (cmdData->bannerIsUp)
     	ClearModeMessage(window);
 
     /* If a dialog was up, get rid of it */
-    if (cmdData->dialog != NULL)
+    if (cmdData->dialog != nullptr)
     	XtDestroyWidget(XtParent(cmdData->dialog));
 
     /* Free execution information */
     FreeProgram(cmdData->program);
     XtFree((char *)cmdData);
-    window->macroCmdData = NULL;
+    window->macroCmdData = nullptr;
     
     /* If macro closed its own window, window was made empty and untitled,
        but close was deferred until completion.  This is completion, so if
        the window is still empty, do the close */
     if (closeOnCompletion && !window->filenameSet && !window->fileChanged) {
     	CloseWindow(window);
-	window = NULL;
+	window = nullptr;
     }
 
     /* If no other macros are executing, do garbage collection */
@@ -1167,8 +1167,8 @@ void SafeGC(void)
 {
     WindowInfo *win;
     
-    for (win=WindowList; win!=NULL; win=win->next)
-	if (win->macroCmdData != NULL || InSmartIndentMacros(win))
+    for (win=WindowList; win!=nullptr; win=win->next)
+	if (win->macroCmdData != nullptr || InSmartIndentMacros(win))
 	    return;
     GarbageCollectStrings();
 }
@@ -1196,7 +1196,7 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
     
     /* Parse the macro and report errors if it fails */
     prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
-    if (prog == NULL) {
+    if (prog == nullptr) {
     	ParseError(window->shell, tMacro, stoppedAt, errInName, errMsg);
 	XtFree(tMacro);
     	return;
@@ -1229,7 +1229,7 @@ void RepeatDialog(WindowInfo *window)
     XmString s1;
     int cmdNameLen;
 
-    if (LastCommand == NULL)
+    if (LastCommand == nullptr)
     {
         DialogF(DF_WARN, window->shell, 1, "Repeat Macro",
                 "No previous commands or learn/\nreplay sequences to repeat",
@@ -1245,7 +1245,7 @@ void RepeatDialog(WindowInfo *window)
     /* make a label for the Last command item of the dialog, which includes
        the last executed action name */
     parenChar = strchr(LastCommand, '(');
-    if (parenChar == NULL)
+    if (parenChar == nullptr)
 	return;
     cmdNameLen = parenChar-LastCommand;
     lastCmdLabel = XtMalloc(16 + cmdNameLen);
@@ -1264,21 +1264,21 @@ void RepeatDialog(WindowInfo *window)
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_APPLY_BUTTON));
-    XtVaSetValues(XtParent(selBox), XmNtitle, "Repeat Macro", NULL);
+    XtVaSetValues(XtParent(selBox), XmNtitle, "Repeat Macro", nullptr);
     AddMotifCloseCallback(XtParent(selBox), repeatCancelCB, rd);
     
-    form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, NULL);
+    form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
 
     radioBox = XtVaCreateManagedWidget("cmdSrc", xmRowColumnWidgetClass, form,
     	    XmNradioBehavior, True,
 	    XmNorientation, XmHORIZONTAL,
 	    XmNpacking, XmPACK_TIGHT,
 	    XmNtopAttachment, XmATTACH_FORM,
-    	    XmNleftAttachment, XmATTACH_FORM, NULL);
+    	    XmNleftAttachment, XmATTACH_FORM, nullptr);
     rd->lastCmdToggle = XtVaCreateManagedWidget("lastCmdToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, True,
 	    XmNlabelString, s1=XmStringCreateSimple(lastCmdLabel),
-	    XmNmnemonic, 'C', NULL);
+	    XmNmnemonic, 'C', nullptr);
     XmStringFree(s1);
     XtFree(lastCmdLabel);
     XtVaCreateManagedWidget("learnReplayToggle",
@@ -1286,14 +1286,14 @@ void RepeatDialog(WindowInfo *window)
 	    XmNlabelString,
 	    	s1=XmStringCreateSimple((String)"Learn/Replay"),
 	    XmNmnemonic, 'L',
-	    XmNsensitive, ReplayMacro != NULL, NULL);
+	    XmNsensitive, ReplayMacro != nullptr, nullptr);
     XmStringFree(s1);
 
     timesForm = XtVaCreateManagedWidget("form", xmFormWidgetClass, form,
 	    XmNtopAttachment, XmATTACH_WIDGET,
     	    XmNtopWidget, radioBox,
 	    XmNtopOffset, 10,
-    	    XmNleftAttachment, XmATTACH_FORM, NULL);
+    	    XmNleftAttachment, XmATTACH_FORM, nullptr);
     radioBox = XtVaCreateManagedWidget("method", xmRowColumnWidgetClass,
 	    timesForm,
     	    XmNradioBehavior, True,
@@ -1301,22 +1301,22 @@ void RepeatDialog(WindowInfo *window)
 	    XmNpacking, XmPACK_TIGHT,
 	    XmNtopAttachment, XmATTACH_FORM,
     	    XmNbottomAttachment, XmATTACH_FORM, 
-    	    XmNleftAttachment, XmATTACH_FORM, NULL);
+    	    XmNleftAttachment, XmATTACH_FORM, nullptr);
     rd->inSelToggle = XtVaCreateManagedWidget("inSelToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
 	    XmNlabelString, s1=XmStringCreateSimple((String)"In Selection"),
-	    XmNmnemonic, 'I', NULL);
+	    XmNmnemonic, 'I', nullptr);
     XmStringFree(s1);
     rd->toEndToggle = XtVaCreateManagedWidget("toEndToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, False,
 	    XmNlabelString, s1=XmStringCreateSimple((String)"To End"),
-	    XmNmnemonic, 'T', NULL);
+	    XmNmnemonic, 'T', nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("nTimesToggle",
     	    xmToggleButtonWidgetClass, radioBox, XmNset, True,
 	    XmNlabelString, s1=XmStringCreateSimple((String)"N Times"),
 	    XmNmnemonic, 'N',
-	    XmNset, True, NULL);
+	    XmNset, True, nullptr);
     XmStringFree(s1);
     rd->repeatText = XtVaCreateManagedWidget("repeatText", xmTextWidgetClass,
 	    timesForm,
@@ -1324,7 +1324,7 @@ void RepeatDialog(WindowInfo *window)
     	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_FORM,
     	    XmNleftAttachment, XmATTACH_WIDGET,
-    	    XmNleftWidget, radioBox, NULL);
+    	    XmNleftWidget, radioBox, nullptr);
     RemapDeleteKey(rd->repeatText);
 
     /* Handle mnemonic selection of buttons and focus to dialog */
@@ -1332,8 +1332,8 @@ void RepeatDialog(WindowInfo *window)
 
     /* Set initial focus */
 #if XmVersion >= 1002
-    XtVaSetValues(form, XmNinitialFocus, timesForm, NULL);
-    XtVaSetValues(timesForm, XmNinitialFocus, rd->repeatText, NULL);
+    XtVaSetValues(form, XmNinitialFocus, timesForm, nullptr);
+    XtVaSetValues(timesForm, XmNinitialFocus, rd->repeatText, nullptr);
 #endif
     
     /* put up dialog */
@@ -1395,7 +1395,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
     if (XmToggleButtonGetState(rd->lastCmdToggle))
 	params[1] = XtNewString(rd->lastCommand);
     else {
-	if (ReplayMacro == NULL)
+	if (ReplayMacro == nullptr)
 	    return False;
 	params[1] = XtNewString(ReplayMacro);
     }
@@ -1438,7 +1438,7 @@ void RepeatMacro(WindowInfo *window, const char *command, int how)
 	const char *loopMacro;
 	char *loopedCmd;
 
-    if (command == NULL)
+    if (command == nullptr)
 	return;
     
     /* Wrap a for loop and counter/tests around the command */
@@ -1463,7 +1463,7 @@ selEnd += $text_length - startLength\n}\n";
     
     /* Parse the resulting macro into an executable program "prog" */
     prog = ParseMacro(loopedCmd, &errMsg, &stoppedAt);
-    if (prog == NULL) {
+    if (prog == nullptr) {
 	fprintf(stderr, "NEdit internal error, repeat macro syntax wrong: %s\n",
     		errMsg);
     	return;
@@ -1487,7 +1487,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
     
     /* Select only actions in text panes in the window for which this
        action hook is recording macros (from clientData). */
-    for (window=WindowList; window!=NULL; window=window->next) {
+    for (window=WindowList; window!=nullptr; window=window->next) {
 	if (window->textArea == w)
 	    break;
 	for (i=0; i<window->nPanes; i++) {
@@ -1497,7 +1497,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
 	if (i < window->nPanes)
 	    break;
     }
-    if (window == NULL || window != (WindowInfo *)clientData)
+    if (window == nullptr || window != (WindowInfo *)clientData)
     	return;
     
     /* beep on un-recordable operations which require a mouse position, to
@@ -1509,7 +1509,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
     
     /* Record the action and its parameters */
     actionString = actionToString(w, actionName, event, params, *numParams);
-    if (actionString != NULL) {
+    if (actionString != nullptr) {
 	BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
 	XtFree(actionString);
     }
@@ -1526,7 +1526,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
     char *actionString;
     
     /* Find the window to which this action belongs */
-    for (window=WindowList; window!=NULL; window=window->next) {
+    for (window=WindowList; window!=nullptr; window=window->next) {
 	if (window->textArea == w)
 	    break;
 	for (i=0; i<window->nPanes; i++) {
@@ -1536,7 +1536,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 	if (i < window->nPanes)
 	    break;
     }
-    if (window == NULL)
+    if (window == nullptr)
     	return;
 
     /* The last action is recorded for the benefit of repeating the last
@@ -1546,7 +1546,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
         
     /* Record the action and its parameters */
     actionString = actionToString(w, actionName, event, params, *numParams);
-    if (actionString != NULL) {
+    if (actionString != nullptr) {
         XtFree(LastCommand);
 	LastCommand = actionString;
     }
@@ -1554,7 +1554,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName,
 
 /*
 ** Create a macro string to represent an invocation of an action routine.
-** Returns NULL for non-operational or un-recordable actions.
+** Returns nullptr for non-operational or un-recordable actions.
 */
 static char *actionToString(Widget w, const char *actionName, XEvent *event,
 	String *params, Cardinal numParams)
@@ -1568,23 +1568,23 @@ static char *actionToString(Widget w, const char *actionName, XEvent *event,
     
     if (isIgnoredAction(actionName) || isRedundantAction(actionName) ||
 	    isMouseAction(actionName))
-    	return NULL;
+    	return nullptr;
     
     /* Convert self_insert actions, to insert_string */
     if (!strcmp(actionName, "self_insert") ||
     	    !strcmp(actionName, "self-insert")) {
     	actionName = "insert_string";
 #ifdef NO_XMIM
-	nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, NULL);
+	nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, nullptr);
 	if (nChars == 0)
-	    return NULL;
+	    return nullptr;
 #else
 
 	nChars = XmImMbLookupString(w, (XKeyEvent *)event,
 				    chars, 19, &keysym, &status);
 	if (nChars == 0 || status == XLookupNone ||
 		status == XLookupKeySym || status == XBufferOverflow)
-	    return NULL;
+	    return nullptr;
 #endif
     	chars[nChars] = '\0';
     	charList[0] = chars;
@@ -1661,7 +1661,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     cmdData->bannerIsUp = True;
 
     /* Extract accelerator text from menu PushButtons */
-    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, NULL);
+    XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, nullptr);
 
     if (!XmStringEmpty(xmCancel))
         {
@@ -1869,14 +1869,14 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
         return False;
     } else {
         /* just use the plain name as supplied */
-	for (w=WindowList; w != NULL; w = w->next) {
+	for (w=WindowList; w != nullptr; w = w->next) {
 	    sprintf(fullname, "%s%s", w->path, w->filename);
 	    if (!strcmp(string, fullname)) {
 		break;
 	    }
 	}
         /* didn't work? try normalizing the string passed in */
-        if (w == NULL) {
+        if (w == nullptr) {
             strncpy(normalizedString, string, MAXPATHLEN);
             normalizedString[MAXPATHLEN-1] = '\0';
             if (1 == NormalizePathname(normalizedString)) {
@@ -1884,7 +1884,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
                 *errMsg = "Pathname too long in focus_window()";
                 return False;
             }
-            for (w=WindowList; w != NULL; w = w->next) {
+            for (w=WindowList; w != nullptr; w = w->next) {
                 sprintf(fullname, "%s%s", w->path, w->filename);
                 if (!strcmp(normalizedString, fullname))
                     break;
@@ -1893,7 +1893,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
     
     /* If no matching window was found, return empty string and do nothing */
-    if (w == NULL) {
+    if (w == nullptr) {
 	result->tag = STRING_TAG;
 	result->val.str.rep = PERM_ALLOC_STR("");
         result->val.str.len = 0;
@@ -1904,7 +1904,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs,
     SetMacroFocusWindow(w);
 
     /* turn on syntax highlight that might have been deferred */
-    if (w->highlightSyntax && w->highlightData==NULL)
+    if (w->highlightSyntax && w->highlightData==nullptr)
     	StartHighlighting(w, False);
 
     /* Return the name of the window */
@@ -2090,7 +2090,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 	    return False;
     	}
 	selText = GetAnySelection(window);
-	if (selText == NULL)
+	if (selText == nullptr)
 	    selText = XtNewString("");
     } else {
 	selText = BufGetSelectionText(window->buffer);
@@ -2122,7 +2122,7 @@ static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     result->tag = INT_TAG;
-    result->val.n = StringToNum(string, NULL);
+    result->val.n = StringToNum(string, nullptr);
 
     return True;
 }
@@ -2267,12 +2267,12 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
     result->tag = NO_TAG;
     stat = SpinClipboardStartCopy(TheDisplay, XtWindow(window->textArea),
     	  s=XmStringCreateSimple((String)"NEdit"), XtLastTimestampProcessed(TheDisplay),
-	  window->textArea, NULL, &itemID);
+	  window->textArea, nullptr, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess)
     	return True;
     if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea), itemID, (String)"STRING",
-    	    (String)string, strlen(string), 0, NULL) != ClipboardSuccess) {
+    	    (String)string, strlen(string), 0, nullptr) != ClipboardSuccess) {
         SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea), itemID);      
     	return True;
     }
@@ -2347,7 +2347,7 @@ static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
     	return False;
     
     /* Read the whole file into an allocated string */
-    if ((fp = fopen(name, "r")) == NULL)
+    if ((fp = fopen(name, "r")) == nullptr)
     	goto errorNoClose;
     if (fstat(fileno(fp), &statbuf) != 0)
     	goto error;
@@ -2428,7 +2428,7 @@ static int writeOrAppendFile(int append, WindowInfo *window,
     	return False;
     
     /* open the file */
-    if ((fp = fopen(name, append ? "a" : "w")) == NULL) {
+    if ((fp = fopen(name, append ? "a" : "w")) == nullptr) {
 	result->tag = INT_TAG;
 	result->val.n = False;
 	return True;
@@ -2543,7 +2543,7 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     if (!skipSearch) 
 	found = SearchString(string, searchStr, direction, type, wrap, beginPos,
-	    &foundStart, &foundEnd, NULL, NULL, GetWindowDelimiters(window));
+	    &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
     
     /* Return the results */
     ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2606,7 +2606,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Return the results */
     result->tag = STRING_TAG;
-    if (replacedStr == NULL) {
+    if (replacedStr == nullptr) {
         if (force) {
             /* Just copy the original DataValue */
             if (argList[0].tag == STRING_TAG) {
@@ -2783,7 +2783,7 @@ static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs,
 	return False;
     }
     value = getenv(name);
-    if (value == NULL)
+    if (value == nullptr)
 	value = "";
 	
     /* Return the text as an allocated string */
@@ -2808,7 +2808,7 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Shell command execution requires that the macro be suspended, so
        this subroutine can't be run if macro execution can't be interrupted */
-    if (MacroRunWindow()->macroCmdData == NULL) {
+    if (MacroRunWindow()->macroCmdData == nullptr) {
       *errMsg = "%s can't be called from non-suspendable context";
        return False;
     }
@@ -2831,7 +2831,7 @@ void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int statu
     DataValue retVal;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
     	return;
     retVal.tag = STRING_TAG;
     AllocNStringCpy(&retVal.val.str, outText);
@@ -2906,7 +2906,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         /*  Only set margin width for the default OK button  */
         XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
                 XmNmarginWidth, BUTTON_WIDTH_MARGIN,
-                NULL);
+                nullptr);
     }
 
     XmStringFree(s1);
@@ -2914,7 +2914,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     AddMotifCloseCallback(XtParent(dialog), dialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, dialogBtnCB, window);
     XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
-    	    XmNuserData, (XtPointer)1, NULL);
+    	    XmNuserData, (XtPointer)1, nullptr);
     cmdData->dialog = dialog;
 
     /* Unmanage default buttons, except for "OK" */
@@ -2931,7 +2931,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
     	    	XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
-    	    	XmNuserData, (XtPointer)(i+1), NULL);
+    	    	XmNuserData, (XtPointer)(i+1), nullptr);
     	XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
     	XmStringFree(s1);
     }
@@ -2968,10 +2968,10 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Return the index of the button which was pressed (stored in the userData
        field of the button widget).  The 1st button, being a gadget, is not
        returned in w. */
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
     	return; /* shouldn't happen */
     if (XtClass(w) == xmPushButtonWidgetClass) {
-	XtVaGetValues(w, XmNuserData, &userData, NULL);
+	XtVaGetValues(w, XmNuserData, &userData, nullptr);
 	retVal.val.n = (long)userData;
     } else
     	retVal.val.n = 1;
@@ -2980,7 +2980,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -2999,7 +2999,7 @@ static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -3011,8 +3011,8 @@ static void dialogEscCB(Widget w, XtPointer clientData, XEvent *event,
 {
     if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
     	return;
-    if (clientData != NULL) {
-        dialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    if (clientData != nullptr) {
+        dialogCloseCB(w, (WindowInfo *)clientData, nullptr);
     }
     *cont = False;
 }
@@ -3081,7 +3081,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         /*  Only set margin width for the default OK button  */
         XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
                 XmNmarginWidth, BUTTON_WIDTH_MARGIN,
-                NULL);
+                nullptr);
     }
 
     XmStringFree(s1);
@@ -3089,7 +3089,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     AddMotifCloseCallback(XtParent(dialog), stringDialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, stringDialogBtnCB, window);
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
-    	    XmNuserData, (XtPointer)1, NULL);
+    	    XmNuserData, (XtPointer)1, nullptr);
     cmdData->dialog = dialog;
 
     /* Unmanage unneded widgets */
@@ -3104,12 +3104,12 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Add user specified buttons (1st is already done).  Selection box
        requires a place-holder widget to be added before buttons can be
        added, that's what the separator below is for */
-    XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, NULL);
+    XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
     for (i=1; i<nBtns; i++) {
         readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
     	btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
     	    	XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
-    	    	XmNuserData, (XtPointer)(i+1), NULL);
+    	    	XmNuserData, (XtPointer)(i+1), nullptr);
     	XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
     	XmStringFree(s1);
     }
@@ -3147,7 +3147,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     int btnNum;
 
     /* shouldn't happen, but would crash if it did */
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
     	return; 
 
     /* Return the string entered in the selection text area */
@@ -3162,7 +3162,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
        field of the button widget).  The 1st button, being a gadget, is not
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
-	XtVaGetValues(w, XmNuserData, &userData, NULL);
+	XtVaGetValues(w, XmNuserData, &userData, nullptr);
 	btnNum = (long)userData;
     } else
     	btnNum = 1;
@@ -3173,7 +3173,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -3187,7 +3187,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
     DataValue retVal;
 
     /* shouldn't happen, but would crash if it did */
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
     	return; 
 
     /* Return an empty string */
@@ -3202,7 +3202,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData,
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -3214,8 +3214,8 @@ static void stringDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
 {
     if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
     	return;
-    if (clientData != NULL) {
-        stringDialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    if (clientData != nullptr) {
+        stringDialogCloseCB(w, (WindowInfo *)clientData, nullptr);
     }
     *cont = False;
 }
@@ -3412,7 +3412,7 @@ static int filenameDialogMS(WindowInfo* window, DataValue* argList, int nArgs,
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
-    if (NULL == window->macroCmdData) {
+    if (nullptr == window->macroCmdData) {
         M_FAILURE("%s can't be called from non-suspendable context");
     }
 
@@ -3654,13 +3654,13 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
         /*  Only set margin width for the default OK button  */
         XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
                 XmNmarginWidth, BUTTON_WIDTH_MARGIN,
-                NULL);
+                nullptr);
     }
 
     AddMotifCloseCallback(XtParent(dialog), listDialogCloseCB, window);
     XtAddCallback(dialog, XmNokCallback, listDialogBtnCB, window);
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON),
-          XmNuserData, (XtPointer)1, NULL);
+          XmNuserData, (XtPointer)1, nullptr);
     XmStringFree(s1);
     XmStringFree(s2);
     cmdData->dialog = dialog;
@@ -3673,7 +3673,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* modify the list */
     XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST),
                 XmNselectionPolicy, XmSINGLE_SELECT,
-                XmNuserData, (XtPointer)text_lines, NULL);
+                XmNuserData, (XtPointer)text_lines, nullptr);
 
     /* Unmanage unneeded widgets */
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
@@ -3690,12 +3690,12 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     /* Add user specified buttons (1st is already done).  Selection box
        requires a place-holder widget to be added before buttons can be
        added, that's what the separator below is for */
-    XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, NULL);
+    XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
     for (i=1; i<nBtns; i++) {
       readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
       btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog,
               XmNlabelString, s1=XmStringCreateSimple((String)btnLabel),
-              XmNuserData, (XtPointer)(i+1), NULL);
+              XmNuserData, (XtPointer)(i+1), nullptr);
       XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
       XmStringFree(s1);
     }
@@ -3736,12 +3736,12 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     size_t length;
 
     /* shouldn't happen, but would crash if it did */
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
       return; 
 
     theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
     /* Return the string selected in the selection list area */
-    XtVaGetValues(theList, XmNuserData, &text_lines, NULL);
+    XtVaGetValues(theList, XmNuserData, &text_lines, nullptr);
     if (!XmListGetSelectedPos(theList, &seltable, &n_sel)) {
       n_sel = 0;
     }
@@ -3774,7 +3774,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
        field of the button widget).  The 1st button, being a gadget, is not
        returned in w. */
     if (XtClass(w) == xmPushButtonWidgetClass) {
-      XtVaGetValues(w, XmNuserData, &userData, NULL);
+      XtVaGetValues(w, XmNuserData, &userData, nullptr);
       btnNum = (long)userData;
     } else
       btnNum = 1;
@@ -3785,7 +3785,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -3802,12 +3802,12 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
     Widget theList;
 
     /* shouldn't happen, but would crash if it did */
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
       return; 
 
     /* don't need text_lines anymore: retrieve it then free it */
     theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
-    XtVaGetValues(theList, XmNuserData, &text_lines, NULL);
+    XtVaGetValues(theList, XmNuserData, &text_lines, nullptr);
     for (sel_index = 0; text_lines[sel_index]; sel_index++)
       XtFree((char *)text_lines[sel_index]);
     XtFree((char *)text_lines);
@@ -3824,7 +3824,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData,
 
     /* Pop down the dialog */
     XtDestroyWidget(XtParent(cmdData->dialog));
-    cmdData->dialog = NULL;
+    cmdData->dialog = nullptr;
 
     /* Continue preempted macro execution */
     ResumeMacroExecution(window);
@@ -3837,8 +3837,8 @@ static void listDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
 {
     if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
     	return;
-    if (clientData != NULL) {
-        listDialogCloseCB(w, (WindowInfo *)clientData, NULL);
+    if (clientData != nullptr) {
+        listDialogCloseCB(w, (WindowInfo *)clientData, nullptr);
     }
     *cont = False;
 }
@@ -3915,14 +3915,14 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         return(False);
     }
     if (!readStringArg(argList[1], &splitStr, stringStorage[1], errMsg)) {
-        splitStr = NULL;
+        splitStr = nullptr;
     }
     else {
         if (splitStr[0] == 0) {
-            splitStr = NULL;
+            splitStr = nullptr;
         }
     }
-    if (splitStr == NULL) {
+    if (splitStr == nullptr) {
         *errMsg = "second argument must be a non-empty string: %s";
         return(False);
     }
@@ -3954,7 +3954,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
         strcpy(allocIndexStr, indexStr);
         found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType,
             False, beginPos, &foundStart, &foundEnd,
-	        NULL, NULL, GetWindowDelimiters(window));
+	        nullptr, nullptr, GetWindowDelimiters(window));
         elementEnd = found ? foundStart : strLength;
         elementLen = elementEnd - lastEnd;
         element.tag = STRING_TAG;
@@ -4019,7 +4019,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs,
                and add an empty chunk in case it does. */
             found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, 
                 searchType, False, strLength, &foundStart, &foundEnd, 
-                NULL, NULL, GetWindowDelimiters(window));
+                nullptr, nullptr, GetWindowDelimiters(window));
             if (found) {
                 ++indexNum;
                 sprintf(indexStr, "%d", indexNum);
@@ -4070,7 +4070,7 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
     if (strcmp(backlightString, "default") == 0)
       backlightString = GetPrefBacklightCharTypes();
     if (backlightString && *backlightString == '\0')  / * empty string param * /
-      backlightString = NULL;                 / * turns of backlighting * /
+      backlightString = nullptr;                 / * turns of backlighting * /
 
     SetBacklightChars(window, backlightString);
     return True;
@@ -4178,7 +4178,7 @@ static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     int margin, nCols;
     
     XtVaGetValues(window->textArea, textNcolumns, &nCols,
-    	    textNwrapMargin, &margin, NULL);
+    	    textNwrapMargin, &margin, nullptr);
     result->tag = INT_TAG;
     result->val.n = margin == 0 ? nCols : margin;
     return True;
@@ -4211,7 +4211,7 @@ static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, const char **errMsg)
 {
-    char *res = NULL;
+    char *res = nullptr;
 
     switch (window->indentStyle) {
         case NO_AUTO_INDENT:
@@ -4237,7 +4237,7 @@ static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, const char **errMsg)
 {
-    char *res = NULL;
+    char *res = nullptr;
 
     switch (window->wrapMode) {
         case NO_WRAP:
@@ -4287,7 +4287,7 @@ static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, const char **errMsg)
 {
-    char *res = NULL;
+    char *res = nullptr;
 
     switch (window->showMatchingStyle) {
         case NO_FLASH:
@@ -4347,7 +4347,7 @@ static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, const char **errMsg)
 {
-    char *res = NULL;
+    char *res = nullptr;
 
     switch (window->fileFormat) {
         case UNIX_FILE_FORMAT:
@@ -4470,7 +4470,7 @@ static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs,
     DataValue *result, const char **errMsg)
 {
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = nullptr;
     return True;
 }
 
@@ -4495,7 +4495,7 @@ static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
 {
     int dist;
     
-    XtVaGetValues(window->textArea, textNemulateTabs, &dist, NULL);
+    XtVaGetValues(window->textArea, textNemulateTabs, &dist, nullptr);
     result->tag = INT_TAG;
     result->val.n = dist;
     return True;
@@ -4522,7 +4522,7 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs,
 {
     const char *lmName = LanguageModeName(window->languageMode);
     
-    if (lmName == NULL)
+    if (lmName == nullptr)
     	lmName = "Plain";
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, lmName);
@@ -4560,7 +4560,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = ArrayNew();
     
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         return True;
     }
     
@@ -4572,7 +4572,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
 
         sprintf(indexStr, "%d", nRangesets - i - 1);
         allocIndexStr = AllocString(strlen(indexStr) + 1);
-        if (allocIndexStr == NULL)
+        if (allocIndexStr == nullptr)
             M_FAILURE("Failed to allocate array key in %s");
         strcpy(allocIndexStr, indexStr);
         
@@ -4624,7 +4624,7 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs,
     if (nArgs > 1)
         return wrongNArgsErr(errMsg);
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         window->buffer->rangesetTable = rangesetTable = 
                 RangesetTableAlloc(window->buffer);
     }
@@ -4714,7 +4714,7 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs,
             M_FAILURE("Invalid rangeset label in %s");
         }
         
-        if(rangesetTable != NULL) {
+        if(rangesetTable != nullptr) {
             RangesetForget(rangesetTable, label);
         }
     }
@@ -4755,7 +4755,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = ArrayNew();
     
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         return True;
     }
     
@@ -4772,7 +4772,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 
                 sprintf(indexStr, "%d", insertIndex);
                 allocIndexStr = AllocString(strlen(indexStr) + 1);
-                if (allocIndexStr == NULL)
+                if (allocIndexStr == nullptr)
                     M_FAILURE("Failed to allocate array key in %s");
 
                 strcpy(allocIndexStr, indexStr);
@@ -4812,13 +4812,13 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     targetRangeset = RangesetFetch(rangesetTable, label);
 
-    if (targetRangeset == NULL) {
+    if (targetRangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
     
@@ -4843,7 +4843,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
       
         sourceRangeset = RangesetFetch(rangesetTable, label);
-        if (sourceRangeset == NULL) {
+        if (sourceRangeset == nullptr) {
             M_FAILURE("Second rangeset does not exist in %s");
         }
       
@@ -4912,12 +4912,12 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
     
     targetRangeset = RangesetFetch(rangesetTable, label);
-    if (targetRangeset == NULL) {
+    if (targetRangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
@@ -4938,7 +4938,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
         }
         
         sourceRangeset = RangesetFetch(rangesetTable, label);
-        if (sourceRangeset == NULL) {
+        if (sourceRangeset == nullptr) {
             M_FAILURE("Second rangeset does not exist in %s");
         }
         RangesetRemove(targetRangeset, sourceRangeset);
@@ -4989,12 +4989,12 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
     
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
     
@@ -5017,7 +5017,7 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
       DataValue *result, const char **errMsg)
 {
     RangesetTable *rangesetTable = window->buffer->rangesetTable;
-    Rangeset *rangeset = NULL;
+    Rangeset *rangeset = nullptr;
     int count, defined;
     const char *color;
 	const char *name;
@@ -5033,7 +5033,7 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable != NULL) {
+    if (rangesetTable != nullptr) {
         rangeset = RangesetFetch(rangesetTable, label);
     }
 
@@ -5100,13 +5100,13 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
     
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     ok = False;
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset != NULL) {
+    if (rangeset != nullptr) {
         if (nArgs == 1) {
             rangeIndex = RangesetGetNRanges(rangeset) - 1;
             ok = RangesetFindRangeNo(rangeset, 0, &start, &dummy);
@@ -5165,12 +5165,12 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
     
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
     
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
@@ -5220,17 +5220,17 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     color_name = (String)"";
-    if (rangeset != NULL) {
+    if (rangeset != nullptr) {
         if (!readStringArg(argList[1], &color_name, stringStorage[0], errMsg)) {
             M_FAILURE("Second parameter is not a color name string in %s");
         }
@@ -5266,17 +5266,17 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     name = (String)"";
-    if (rangeset != NULL) {
+    if (rangeset != nullptr) {
         if (!readStringArg(argList[1], &name, stringStorage[0], errMsg)) {
             M_FAILURE("Second parameter is not a valid name string in %s");
         }
@@ -5313,17 +5313,17 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList,
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-    if (rangesetTable == NULL) {
+    if (rangesetTable == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     rangeset = RangesetFetch(rangesetTable, label);
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         M_FAILURE("Rangeset does not exist in %s");
     }
 
     update_fn_name = (String)"";
-    if (rangeset != NULL) {
+    if (rangeset != nullptr) {
         if (nArgs == 2) {
             if (!readStringArg(argList[1], &update_fn_name, stringStorage[0], errMsg)) {
                 M_FAILURE("Second parameter is not a string in %s");
@@ -5453,7 +5453,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg,
 
     if (bufferPos >= 0) {
         /* insert extent */
-        const char *styleNameNotUsed = NULL;
+        const char *styleNameNotUsed = nullptr;
         DV.val.n = StyleLengthOfCodeFromPos(window, bufferPos, &styleNameNotUsed);
         if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -5483,7 +5483,7 @@ static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Prepare result */
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = nullptr;
 
     if (!readStringArg(argList[0], &styleName, stringStorage[0], errMsg)) {
         M_FAILURE("First parameter is not a string in %s");
@@ -5524,7 +5524,7 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Prepare result */
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = nullptr;
 
     if (!readIntArg(argList[0], &bufferPos, errMsg)) {
         return False;
@@ -5620,12 +5620,12 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
         DataValue *result, const char **errMsg)
 {
     char stringStorage[1][TYPE_INT_STR_SIZE(int)];
-    char *patternName = NULL;
+    char *patternName = nullptr;
     highlightPattern *pattern;
     
     /* Begin of building the result. */
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = nullptr;
 
     /* Validate number of arguments */
     if (nArgs != 1) {
@@ -5637,7 +5637,7 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
     
     pattern = FindPatternOfWindow(window, patternName);
-    if (pattern == NULL) {
+    if (pattern == nullptr) {
         /* The pattern's name is unknown. */
         return True;
     }
@@ -5663,7 +5663,7 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
     
     /* Begin of building the result. */
     result->tag = ARRAY_TAG;
-    result->val.arrayPtr = NULL;
+    result->val.arrayPtr = nullptr;
 
     /* Validate number of arguments */
     if (nArgs != 1) {

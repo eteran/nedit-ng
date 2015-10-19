@@ -111,25 +111,25 @@ static struct {
 /* Application resources */
 static PrefDescripRec PrefDescrip[] = {
     {"autoStart", "AutoStart", PREF_BOOLEAN, "True",
-      &Preferences.autoStart, NULL, True},
+      &Preferences.autoStart, nullptr, True},
     {"serverCommand", "ServerCommand", PREF_STRING, "nedit -server",
       Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},
     {"serverName", "serverName", PREF_STRING, "", Preferences.serverName,
       (void *)sizeof(Preferences.serverName), False},
     {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False",
-      &Preferences.waitForClose, NULL, False},
+      &Preferences.waitForClose, nullptr, False},
     {"timeOut", "TimeOut", PREF_INT, "10",
-      &Preferences.timeOut, NULL, False}
+      &Preferences.timeOut, nullptr, False}
 };
 
 /* Resource related command line options */
 static XrmOptionDescRec OpTable[] = {
     {(String)"-ask",     (String)".autoStart",     XrmoptionNoArg,  (caddr_t)"False"},
     {(String)"-noask",   (String)".autoStart",     XrmoptionNoArg,  (caddr_t)"True"},
-    {(String)"-svrname", (String)".serverName",    XrmoptionSepArg, (caddr_t)NULL},
-    {(String)"-svrcmd",  (String)".serverCommand", XrmoptionSepArg, (caddr_t)NULL},
+    {(String)"-svrname", (String)".serverName",    XrmoptionSepArg, (caddr_t)nullptr},
+    {(String)"-svrcmd",  (String)".serverCommand", XrmoptionSepArg, (caddr_t)nullptr},
     {(String)"-wait",    (String)".waitForClose",  XrmoptionNoArg,  (caddr_t)"True"},
-    {(String)"-timeout", (String)".timeOut",       XrmoptionSepArg, (caddr_t)NULL}
+    {(String)"-timeout", (String)".timeOut",       XrmoptionSepArg, (caddr_t)nullptr}
 };
 
 /* Struct to hold info about files being opened and edited. */
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 
     /* Read the preferences command line into a database (note that we
        don't support the .nc file anymore) */
-    prefDB = CreatePreferencesDatabase(NULL, APP_CLASS, 
+    prefDB = CreatePreferencesDatabase(nullptr, APP_CLASS, 
 	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
     
     /* Process the command line before calling XtOpenDisplay, because the
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
     commandLine = processCommandLine(argc, argv);
         
     /* Open the display and find the root window */
-    TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS, NULL,
+    TheDisplay = XtOpenDisplay (context, nullptr, APP_NAME, APP_CLASS, nullptr,
     	    0, &argc, argv);
     if (!TheDisplay) {
 	XtWarning ("nc: Can't open display\n");
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
        session). This should have no bad side-effects for non-clearcase users */
     if (Preferences.serverName[0] == '\0') {
         const char* viewTag = GetClearCaseViewTag();
-        if (viewTag != NULL && strlen(viewTag) < MAXPATHLEN) {
+        if (viewTag != nullptr && strlen(viewTag) < MAXPATHLEN) {
             strcpy(Preferences.serverName, viewTag);
         }
     }
@@ -503,7 +503,7 @@ static CommandLine processCommandLine(int argc, char** argv)
 
     /* Convert command line arguments into a command string for the server */
     parseCommandLine(argc, argv, &commandLine);
-    if (commandLine.serverRequest == NULL) {
+    if (commandLine.serverRequest == nullptr) {
         fprintf(stderr, "nc: Invalid commandline argument\n");
 	exit(EXIT_FAILURE);
     }
@@ -613,7 +613,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
     	} else {
     	    if (ParseFilename(argv[i], name, path) != 0) {
 	       /* An Error, most likely too long paths/strings given */
-	       commandLine->serverRequest = NULL;
+	       commandLine->serverRequest = nullptr;
 	       return;
 	    }
     	    strcat(path, name);

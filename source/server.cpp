@@ -292,9 +292,9 @@ static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
     if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
         /* A new window is requested, unless we find an untitled unmodified
             document on the current desktop */
-        for (window=WindowList; window!=NULL; window=window->next) {
+        for (window=WindowList; window!=nullptr; window=window->next) {
             if (window->filenameSet || window->fileChanged ||
-                    window->macroCmdData != NULL) {
+                    window->macroCmdData != nullptr) {
                 continue;
             }
             /* No check for top document here! */
@@ -304,7 +304,7 @@ static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
         }
     } else {
         /* Find a window on the current desktop to hold the new document */
-        for (window=WindowList; window!=NULL; window=window->next) {
+        for (window=WindowList; window!=nullptr; window=window->next) {
             /* Avoid unnecessary property access (server round-trip) */
             if (!IsTopDocument(window)) {
                 continue;
@@ -315,7 +315,7 @@ static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop)
         }
     }
 
-    return NULL; /* No window found on current desktop -> create new window */
+    return nullptr; /* No window found on current desktop -> create new window */
 }
 
 static void processServerCommandString(char *string)
@@ -325,20 +325,20 @@ static void processServerCommandString(char *string)
     int editFlags, stringLen = strlen(string);
     int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed = -1;
     int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
-    WindowInfo *window, *lastFile = NULL;
+    WindowInfo *window, *lastFile = nullptr;
     long currentDesktop = QueryCurrentDesktop(TheDisplay, 
        RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
 
     /* If the command string is empty, put up an empty, Untitled window
        (or just pop one up if it already exists) */
     if (string[0] == '\0') {
-    	for (window=WindowList; window!=NULL; window=window->next)
+    	for (window=WindowList; window!=nullptr; window=window->next)
     	    if (!window->filenameSet && !window->fileChanged &&
                 isLocatedOnDesktop(window, currentDesktop))
     	    	break;
-    	if (window == NULL) {
-            EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), NULL, 
-                        False, NULL, NULL);
+    	if (window == nullptr) {
+            EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, 
+                        False, nullptr, nullptr);
     	    CheckCloseDim();
     	} 
 	else {
@@ -396,15 +396,15 @@ static void processServerCommandString(char *string)
 	 *   choose a random window for executing the -do macro upon
 	 */
 	if (fileLen <= 0) {
-    	    for (window=WindowList; window!=NULL; window=window->next)
+    	    for (window=WindowList; window!=nullptr; window=window->next)
     		if (!window->filenameSet && !window->fileChanged &&
                     isLocatedOnDesktop(window, currentDesktop))
     	    	    break;
 
     	    if (*doCommand == '\0') {
-                if (window == NULL) {
+                if (window == nullptr) {
     		    EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), 
-                                NULL, iconicFlag, lmLen==0?NULL:langMode, NULL);
+                                nullptr, iconicFlag, lmLen==0?nullptr:langMode, nullptr);
     	        } else {
 	            if (iconicFlag)
 		    	RaiseDocument(window);
@@ -415,7 +415,7 @@ static void processServerCommandString(char *string)
                 WindowInfo *win = WindowList;
 		/* Starting a new command while another one is still running
 		   in the same window is not possible (crashes). */
-		while (win != NULL && win->macroCmdData != NULL) {
+		while (win != nullptr && win->macroCmdData != nullptr) {
 		    win = win->next;
 		}
 		
@@ -445,7 +445,7 @@ static void processServerCommandString(char *string)
 	}
 
     	window = FindWindowWithFile(filename, pathname);
-    	if (window == NULL) {
+    	if (window == nullptr) {
 	    /* Files are opened in background to improve opening speed
 	       by defering certain time  consuiming task such as syntax
 	       highlighting. At the end of the file-opening loop, the 
@@ -454,7 +454,7 @@ static void processServerCommandString(char *string)
 	       macros to execute on. */
 	    window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop),
 		    filename, pathname, editFlags, geometry, iconicFlag, 
-		    lmLen == 0 ? NULL : langMode, 
+		    lmLen == 0 ? nullptr : langMode, 
 		    tabbed == -1? GetPrefOpenInTab() : tabbed, True);
 
     	    if (window) {
@@ -469,7 +469,7 @@ static void processServerCommandString(char *string)
 	
 	/* Do the actions requested (note DoMacro is last, since the do
 	   command can do anything, including closing the window!) */
-	if (window != NULL) {
+	if (window != nullptr) {
             deleteFileOpenProperty(window);
             getFileClosedProperty(window);
 
@@ -487,16 +487,16 @@ static void processServerCommandString(char *string)
 
 		/* Starting a new command while another one is still running
 		   in the same window is not possible (crashes). */
-		if (window->macroCmdData != NULL) {
+		if (window->macroCmdData != nullptr) {
 		    XBell(TheDisplay, 0);
 		} else {
 		    DoMacro(window, doCommand, "-do macro");
 		    /* in case window is closed by macro functions
 		       such as close() or detach_document() */
 		    if (!IsValidWindow(window))
-		    	window = NULL;
+		    	window = nullptr;
 		    if (lastFile && !IsValidWindow(lastFile))
-		    	lastFile = NULL;
+		    	lastFile = nullptr;
 		}
 	    }
 	    

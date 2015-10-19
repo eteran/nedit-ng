@@ -98,7 +98,7 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
         return;
     
     /* Get the location/dimensions of the text area */
-    XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, NULL);
+    XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, nullptr);
     
     if( textD->calltip.anchored ) {
         /* Put it at the anchor position */
@@ -124,7 +124,7 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
     }
 
     XtVaGetValues(textD->calltipShell, XmNwidth, &tipWidth, XmNheight, 
-            &tipHeight, XmNborderWidth, &borderWidth, NULL);
+            &tipHeight, XmNborderWidth, &borderWidth, nullptr);
     rel_x += borderWidth;
     rel_y += lineHeight/2 + borderWidth;
     
@@ -169,12 +169,12 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
         }
     }
     
-    XtVaSetValues( textD->calltipShell, XmNx, abs_x, XmNy, abs_y, NULL );
+    XtVaSetValues( textD->calltipShell, XmNx, abs_x, XmNy, abs_y, nullptr );
 }
 
 /* 
 ** Returns a new string with each \t replaced with tab_width spaces or
-** a pointer to text if there were no tabs.  Returns NULL on malloc failure.
+** a pointer to text if there were no tabs.  Returns nullptr on malloc failure.
 ** Note that this is dumb replacement, not smart tab-like behavior!  The goal
 ** is to prevent tabs from turning into squares in calltips, not to get the
 ** formatting just right.
@@ -197,7 +197,7 @@ static char *expandAllTabs( char *text, int tab_width ) {
     if( !textCpy ) {
         fprintf(stderr, 
                 "nedit: Out of heap memory in expandAllTabs!\n");
-        return NULL;
+        return nullptr;
     }
     
     /* Now replace 'em */
@@ -230,12 +230,12 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
     /* Destroy any previous calltip */
     TextDKillCalltip( textD, 0 );
 
-    /* Make sure the text isn't NULL */
-    if (text == NULL) return 0;
+    /* Make sure the text isn't nullptr */
+    if (text == nullptr) return 0;
     
     /* Expand any tabs in the calltip and make it an XmString */
     textCpy = expandAllTabs( text, BufGetTabDistance(textD->buffer) );
-    if( textCpy == NULL )
+    if( textCpy == nullptr )
         return 0;       /* Out of memory */
     str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
     if( textCpy != text )
@@ -245,10 +245,10 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
     XtVaGetValues(textD->w,
         XmNx, &txtX,
         XmNy, &txtY,
-        NULL);
+        nullptr);
     
     /* Create the calltip widget on first request */
-    if (textD->calltipW == NULL) {
+    if (textD->calltipW == nullptr) {
         Arg args[10];
         int argcnt = 0;
         XtSetArg(args[argcnt], XmNsaveUnder, True); argcnt++;
@@ -266,11 +266,11 @@ int ShowCalltip(WindowInfo *window, char *text, Boolean anchored,
                 XmNalignment, XmALIGNMENT_BEGINNING,
                 XmNforeground, textD->calltipFGPixel,
                 XmNbackground, textD->calltipBGPixel,
-                NULL );
+                nullptr );
     }
     
     /* Set the text on the label */
-    XtVaSetValues( textD->calltipW, XmNlabelString, str, NULL );
+    XtVaSetValues( textD->calltipW, XmNlabelString, str, nullptr );
     XmStringFree( str );
     
     /* Figure out where to put the tip */

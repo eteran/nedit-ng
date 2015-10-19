@@ -167,7 +167,7 @@ void CopyToClipboard(Widget w, Time time)
        If errors occur, just give up.  */
     s = XmStringCreateSimple((String)"NEdit");
     stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
-    	    time, w, NULL, &itemID);
+    	    time, w, nullptr, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess) {
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
@@ -179,7 +179,7 @@ void CopyToClipboard(Widget w, Time time)
        including a terminating null but not mentioning it in the length */
 
     if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String)"STRING",
-    	    text, length, 0, NULL) != ClipboardSuccess) {
+    	    text, length, 0, nullptr) != ClipboardSuccess) {
     	XtFree(text);
         SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
@@ -217,7 +217,7 @@ void InsertPrimarySelection(Widget w, Time time, int isColumnar)
 void SendSecondarySelection(Widget w, Time time, int removeAfter)
 {
     sendSecondary(w, time, getAtom(XtDisplay(w), A_MOTIF_DESTINATION),
-    	    removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, NULL, 0);
+    	    removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
 }
 
 /*
@@ -240,7 +240,7 @@ void ExchangeSelections(Widget w, Time time)
       duplicating all of Xt's selection handling routines for a little
       performance, and this would make the code incompatible with Motif text
       widgets */
-   XtGetSelectionValue(w, XA_PRIMARY, XA_STRING, getExchSelCB, NULL, time);
+   XtGetSelectionValue(w, XA_PRIMARY, XA_STRING, getExchSelCB, nullptr, time);
 }
 
 /*
@@ -322,17 +322,17 @@ void InsertClipboard(Widget w, int isColumnar)
     	cursorLineStart = BufStartOfLine(buf, cursorPos);
     	column = BufCountDispChars(buf, cursorLineStart, cursorPos);
         if (((TextWidget)w)->text.overstrike) {
-	    BufOverlayRect(buf, cursorLineStart, column, -1, string, NULL,
-			   NULL);
+	    BufOverlayRect(buf, cursorLineStart, column, -1, string, nullptr,
+			   nullptr);
 	} else {
-	    BufInsertCol(buf, column, cursorLineStart, string, NULL, NULL);
+	    BufInsertCol(buf, column, cursorLineStart, string, nullptr, nullptr);
 	}
     	TextDSetInsertPosition(textD,
     	    	BufCountForwardDispChars(buf, cursorLineStart, column));
 	if (((TextWidget)w)->text.autoShowInsertPos)
     	    TextDMakeInsertPosVisible(textD);
     } else
-    	TextInsertAtCursor(w, string, NULL, True,
+    	TextInsertAtCursor(w, string, nullptr, True,
 		((TextWidget)w)->text.autoWrapPastedText);
     XtFree(string);
 }
@@ -350,7 +350,7 @@ void TakeMotifDestination(Widget w, Time time)
     	
     /* Take ownership of the MOTIF_DESTINATION selection */
     if (!XtOwnSelection(w, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), time,
-    	    convertMotifDestCB, loseMotifDestCB, NULL)) {
+    	    convertMotifDestCB, loseMotifDestCB, nullptr)) {
     	return;
     }
     ((TextWidget)w)->text.motifDestOwner = True;
@@ -388,7 +388,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted,
 
     /* Take ownership of the selection */
     if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB,
-    	    loseSelectionCB, NULL))
+    	    loseSelectionCB, nullptr))
     	BufUnselect(w->text.textD->buffer);
     else
     	w->text.selectionOwner = True;
@@ -398,7 +398,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted,
 ** Send an INSERT_SELECTION request to "sel".
 ** Upon completion, do the action specified by "action" (one of enum
 ** selectNotifyActions) using "actionText" and freeing actionText (if
-** not NULL) when done.
+** not nullptr) when done.
 */
 static void sendSecondary(Widget w, Time time, Atom sel, int action,
 	char *actionText, int actionTextLen)
@@ -410,7 +410,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action,
     
     /* Take ownership of the secondary selection, give up if we can't */
     if (!XtOwnSelection(w, XA_SECONDARY, time, convertSecondaryCB,
-    	    loseSecondaryCB, NULL)) {
+    	    loseSecondaryCB, nullptr)) {
     	BufSecondaryUnselect(((TextWidget)w)->text.textD->buffer);
     	return;
     }
@@ -462,7 +462,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
     }
     
     /* Copy the string just to make space for the null character (this may
-       not be necessary, XLib documentation claims a NULL is already added,
+       not be necessary, XLib documentation claims a nullptr is already added,
        but the Xt documentation for this routine makes no such claim) */
     string = XtMalloc(*length + 1);
     memcpy(string, (char *)value, *length);
@@ -483,10 +483,10 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
     	cursorLineStart = BufStartOfLine(textD->buffer, cursorPos);
 	TextDXYToUnconstrainedPosition(textD, ((TextWidget)w)->text.btnDownX,
 		((TextWidget)w)->text.btnDownY, &row, &column);
-    	BufInsertCol(textD->buffer, column, cursorLineStart, string, NULL,NULL);
+    	BufInsertCol(textD->buffer, column, cursorLineStart, string, nullptr,nullptr);
     	TextDSetInsertPosition(textD, textD->buffer->cursorPosHint);
     } else
-    	TextInsertAtCursor(w, string, NULL, False,
+    	TextInsertAtCursor(w, string, nullptr, False,
 		((TextWidget)w)->text.autoWrapPastedText);
     XtFree(string);
     
@@ -510,7 +510,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
     int *resultFlag = (int *)clientData;
  
     /* Confirm that the returned value is of the correct type */
-    if (*type != XA_STRING || *format != 8 || value == NULL) {
+    if (*type != XA_STRING || *format != 8 || value == nullptr) {
         XtFree((char*) value);
     	*resultFlag = UNSUCCESSFUL_INSERT;
     	return;
@@ -531,7 +531,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
     }
     
     /* Insert it in the text widget */
-    TextInsertAtCursor(w, string, NULL, True,
+    TextInsertAtCursor(w, string, nullptr, True,
 	    ((TextWidget)w)->text.autoWrapPastedText);
     XtFree(string);
     *resultFlag = SUCCESSFUL_INSERT;
@@ -551,7 +551,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType,
 	Atom *type, XtPointer value, unsigned long *length, int *format)
 {
     /* Confirm that there is a value and it is of the correct type */
-    if (*length == 0 || value == NULL || *type != XA_STRING || *format != 8) {
+    if (*length == 0 || value == nullptr || *type != XA_STRING || *format != 8) {
         XtFree((char*) value);
     	XBell(XtDisplay(w), 0);
     	BufSecondaryUnselect(((TextWidget)w)->text.textD->buffer);
@@ -641,7 +641,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
 	}
 	*type = getAtom(display, A_INSERT_SELECTION);
 	*format = 8;
-	*value = NULL;
+	*value = nullptr;
 	*length = 0;
 	return result == SUCCESSFUL_INSERT;
     }
@@ -652,7 +652,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
     	*length = 0;
     	*format = 8;
     	*type = getAtom(display, A_DELETE);
-    	*value = NULL;
+    	*value = nullptr;
     	return True;
     }
     
@@ -757,7 +757,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target,
 	}
 	*type = getAtom(display, A_INSERT_SELECTION);
 	*format = 8;
-	*value = NULL;
+	*value = nullptr;
 	*length = 0;
 	return result == SUCCESSFUL_INSERT;
     }

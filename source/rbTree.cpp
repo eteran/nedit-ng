@@ -51,7 +51,7 @@ static void rotateLeft(rbTreeNode *x, rbTreeNode **root)
 {
     rbTreeNode *y = x->right;
     x->right = y->left;
-    if (y->left != NULL) {
+    if (y->left != nullptr) {
         y->left->parent = x;
     }
     y->parent = x->parent;
@@ -76,7 +76,7 @@ static void rotateRight(rbTreeNode *x, rbTreeNode **root)
 {
     rbTreeNode *y = x->left;
     x->left = y->right;
-    if (y->right != NULL) {
+    if (y->right != nullptr) {
         y->right->parent = x;
     }
     y->parent = x->parent;
@@ -158,14 +158,14 @@ rbTreeNode *rbTreeReverseBegin(rbTreeNode *base)
 }
 
 /*
-** search for a node and return it's pointer, NULL if not found
+** search for a node and return it's pointer, nullptr if not found
 */
 rbTreeNode *rbTreeFind(rbTreeNode *base, rbTreeNode *searchNode,
                         rbTreeCompareNodeCB compareRecords)
 {
-    rbTreeNode *foundNode = NULL;
+    rbTreeNode *foundNode = nullptr;
     rbTreeNode *current = base->parent;
-    while(current != NULL) {
+    while(current != nullptr) {
         int compareResult = compareRecords(searchNode, current);
 
         if (compareResult < 0) {
@@ -176,7 +176,7 @@ rbTreeNode *rbTreeFind(rbTreeNode *base, rbTreeNode *searchNode,
         }
         else {
             foundNode = current;
-            current = NULL;
+            current = nullptr;
         }
     }
     return(foundNode);
@@ -196,9 +196,9 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
     int fromLeft = 0, foundMatch = 0;
 
     current = base->parent;
-    parent = NULL;
-    x = NULL;
-    while(current != NULL) {
+    parent = nullptr;
+    x = nullptr;
+    while(current != nullptr) {
         int compareResult = compareRecords(searchNode, current);
 
         if (compareResult < 0) {
@@ -214,9 +214,9 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
         else {
             x = current;
             if (!copyToNode(x, searchNode)) {
-                x = NULL;
+                x = nullptr;
             }
-            current = NULL;
+            current = nullptr;
             foundMatch = 1;
         }
     }
@@ -225,8 +225,8 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
         x = allocateNode(searchNode);
         if (x) {
             x->parent = parent;
-            x->left = NULL;
-            x->right = NULL;
+            x->left = nullptr;
+            x->right = nullptr;
             x->color = rbTreeNodeRed;
 
             if (parent) {
@@ -241,10 +241,10 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode,
                 base->parent = x;
             }
             ++(base->color);
-            if (x->parent == base->left && (x->parent == NULL || x->parent->left == x)) {
+            if (x->parent == base->left && (x->parent == nullptr || x->parent->left == x)) {
                 base->left = x;
             }
-            if (x->parent == base->right && (x->parent == NULL || x->parent->right == x)) {
+            if (x->parent == base->right && (x->parent == nullptr || x->parent->right == x)) {
                 base->right = x;
             }
             insertBalance(x, &base->parent);
@@ -263,14 +263,14 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
     rbTreeNode *x, *y, *x_parent;
 
     y = z;
-    if (y->left == NULL) {
+    if (y->left == nullptr) {
         x = y->right;
         if (y == base->left) {
             base->left = rbTreeNext(y);
         }
     }
     else {
-        if (y->right == NULL) {
+        if (y->right == nullptr) {
             x = y->left;
             if (y == base->right) {
                 base->right = rbTreePrevious(y);
@@ -278,7 +278,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
         }
         else {
             y = y->right;
-            while (y->left != NULL) {
+            while (y->left != nullptr) {
                 y = y->left;
             }
             x = y->right;
@@ -289,7 +289,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
         y->left = z->left;
         if (y != z->right) {
             x_parent = y->parent;
-            if (x != NULL) {
+            if (x != nullptr) {
                 x->parent = y->parent;
             }
             y->parent->left = x;
@@ -318,7 +318,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
     }
     else {
         x_parent = y->parent;
-        if (x != NULL) {
+        if (x != nullptr) {
             x->parent = y->parent;
         }
         if (base->parent == z) {
@@ -337,7 +337,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
     --(base->color);
 
     if (y->color != rbTreeNodeRed) { 
-        while (x != base->parent && (x == NULL || x->color == rbTreeNodeBlack)) {
+        while (x != base->parent && (x == nullptr || x->color == rbTreeNodeBlack)) {
             if (x == x_parent->left) {
                 rbTreeNode *w = x_parent->right;
                 if (w->color == rbTreeNodeRed) {
@@ -346,16 +346,16 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
                     rotateLeft(x_parent, &base->parent);
                     w = x_parent->right;
                 }
-                if ((w->left == NULL || 
+                if ((w->left == nullptr || 
                 w->left->color == rbTreeNodeBlack) &&
-                (w->right == NULL || 
+                (w->right == nullptr || 
                 w->right->color == rbTreeNodeBlack)) {
 
                     w->color = rbTreeNodeRed;
                     x = x_parent;
                     x_parent = x_parent->parent;
                 } else {
-                    if (w->right == NULL || 
+                    if (w->right == nullptr || 
                     w->right->color == rbTreeNodeBlack) {
 
                         if (w->left) {
@@ -382,9 +382,9 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
                     rotateRight(x_parent, &base->parent);
                     w = x_parent->left;
                 }
-                if ((w->right == NULL || 
+                if ((w->right == nullptr || 
                     w->right->color == rbTreeNodeBlack) &&
-                    (w->left == NULL || 
+                    (w->left == nullptr || 
                     w->left->color == rbTreeNodeBlack)) {
 
                     w->color = rbTreeNodeRed;
@@ -392,7 +392,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z)
                     x_parent = x_parent->parent;
                 }
                 else {
-                    if (w->left == NULL || 
+                    if (w->left == nullptr || 
                         w->left->color == rbTreeNodeBlack) {
 
                         if (w->right) {
@@ -441,7 +441,7 @@ int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode,
     rbTreeNode *z;
 
     z = rbTreeFind(base, searchNode, compareRecords);
-    if (z != NULL) {
+    if (z != nullptr) {
         rbTreeDeleteNode(base, z, disposeNode);
         foundNode = 1;
     }
@@ -451,13 +451,13 @@ int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode,
 /*
 ** move an iterator foreward one element
 ** note that a valid pointer must be passed,
-** passing NULL will result in unpredictable results
+** passing nullptr will result in unpredictable results
 */
 rbTreeNode *rbTreeNext(rbTreeNode *x)
 {
-    if (x->right != NULL) {
+    if (x->right != nullptr) {
         x = x->right;
-        while (x->left != NULL) {
+        while (x->left != nullptr) {
             x = x->left;
         }
     }
@@ -474,13 +474,13 @@ rbTreeNode *rbTreeNext(rbTreeNode *x)
 /*
 ** move an iterator back one element
 ** note that a valid pointer must be passed,
-** passing NULL will result in unpredictable results
+** passing nullptr will result in unpredictable results
 */
 rbTreeNode *rbTreePrevious(rbTreeNode *x)
 {
-    if (x->left != NULL) {
+    if (x->left != nullptr) {
         x = x->left;
-        while (x->right != NULL) {
+        while (x->right != nullptr) {
             x = x->right;
         }
     }
@@ -510,9 +510,9 @@ rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode)
 {
     rbTreeNode *rootStorage = allocateEmptyNode();
     if (rootStorage) {
-        rootStorage->left = NULL;   /* leftmost node */
-        rootStorage->right = NULL;  /* rightmost node */
-        rootStorage->parent = NULL; /* root node */
+        rootStorage->left = nullptr;   /* leftmost node */
+        rootStorage->right = nullptr;  /* rightmost node */
+        rootStorage->parent = nullptr; /* root node */
         rootStorage->color = 0;     /* node count */
     }
     return(rootStorage);
@@ -529,7 +529,7 @@ rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode)
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode)
 {
     rbTreeNode *iter = rbTreeBegin(base);
-    while (iter != NULL) {
+    while (iter != nullptr) {
         rbTreeNode *nextIter = rbTreeNext(iter);
 
         if (iter->parent) {
@@ -540,12 +540,12 @@ void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode)
                 iter->parent->right = iter->right;
             }
         }
-        if (iter->right != NULL) {
+        if (iter->right != nullptr) {
             iter->right->parent = iter->parent;
         }
         base->left = nextIter;
         if (base->right == iter) {
-            base->right = NULL;
+            base->right = nullptr;
         }
         --(base->color);
         if (base->parent == iter) {
@@ -591,15 +591,15 @@ static rbTreeNode *rbTreeAllocateNode_TestNode(rbTreeNode *src)
             }
             else {
                 free(newNode->str);
-                newNode->str = NULL;
+                newNode->str = nullptr;
 
                 free(newNode);
-                newNode = NULL;
+                newNode = nullptr;
             }
         }
         else {
             free(newNode);
-            newNode = NULL;
+            newNode = nullptr;
         }
     }
     return((rbTreeNode *)newNode);
@@ -609,8 +609,8 @@ rbTreeNode *rbTreeAllocateEmptyNodeCB_TestNode(void)
 {
     TestNode *newNode = malloc(sizeof(TestNode));
     if (newNode) {
-        newNode->str = NULL;
-        newNode->key = NULL;
+        newNode->str = nullptr;
+        newNode->key = nullptr;
     }
     return((rbTreeNode *)newNode);
 }
@@ -620,11 +620,11 @@ static void rbTreeDisposeNode_TestNode(rbTreeNode *src)
     if (src) {
         if (((TestNode *)src)->str) {
             free(((TestNode *)src)->str);
-            ((TestNode *)src)->str = NULL;
+            ((TestNode *)src)->str = nullptr;
         }
         if (((TestNode *)src)->key) {
             free(((TestNode *)src)->key);
-            ((TestNode *)src)->key = NULL;
+            ((TestNode *)src)->key = nullptr;
         }
         src->left = (void *)-1;
         src->right = (void *)-1;
@@ -654,7 +654,7 @@ static int rbTreeCopyToNode_TestNode(rbTreeNode *dst, rbTreeNode *src)
         }
         else {
             free(newValues.str);
-            newValues.str = NULL;
+            newValues.str = nullptr;
         }
     }
     return(copiedOK);
@@ -665,7 +665,7 @@ static void DumpTree(rbTreeNode *base)
     rbTreeNode *newNode;
     
     newNode = rbTreeBegin(base);
-    while (newNode != NULL) {
+    while (newNode != nullptr) {
         rbTreeNode *nextNode = rbTreeNext(newNode);
         
         printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);
@@ -705,7 +705,7 @@ int main(int argc, char **argv)
     }
     
     newNode = rbTreeBegin(base);
-    while (newNode != NULL) {
+    while (newNode != nullptr) {
         rbTreeNode *nextNode = rbTreeNext(newNode);
         
         printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);

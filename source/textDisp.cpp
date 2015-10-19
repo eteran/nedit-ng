@@ -208,8 +208,8 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->descent = fontStruct->descent;
     textD->fixedFontWidth = fontStruct->min_bounds.width ==
     	    fontStruct->max_bounds.width ? fontStruct->min_bounds.width : -1;
-    textD->styleBuffer = NULL;
-    textD->styleTable = NULL;
+    textD->styleBuffer = nullptr;
+    textD->styleTable = nullptr;
     textD->nStyles = 0;
     textD->bgPixel = bgPixel;
     textD->fgPixel = fgPixel;
@@ -232,22 +232,22 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
     textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
     textD->lineStarts[0] = 0;
-    textD->calltipW = NULL;
-    textD->calltipShell = NULL;
+    textD->calltipW = nullptr;
+    textD->calltipShell = nullptr;
     textD->calltip.ID = 0;
     textD->calltipFGPixel = calltipFGPixel;
     textD->calltipBGPixel = calltipBGPixel;
     for (i=1; i<textD->nVisibleLines; i++)
     	textD->lineStarts[i] = -1;
-    textD->bgClassPixel = NULL;
-    textD->bgClass = NULL;
+    textD->bgClassPixel = nullptr;
+    textD->bgClass = nullptr;
     TextDSetupBGClasses(widget, bgClassString, &textD->bgClassPixel,
           &textD->bgClass, bgPixel);
     textD->suppressResync = 0;
     textD->nLinesDeleted = 0;
     textD->modifyingTabDist = 0;
     textD->pointerHidden = False;
-    textD->graphicsExposeQueue = NULL;
+    textD->graphicsExposeQueue = nullptr;
 
     /* Attach an event handler to the widget so we can know the visibility
        (used for choosing the fastest drawing method) */
@@ -256,31 +256,31 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 
     /* Attach the callback to the text buffer for receiving modification
        information */
-    if (buffer != NULL) {
+    if (buffer != nullptr) {
 	BufAddModifyCB(buffer, bufModifiedCB, textD);
 	BufAddPreDeleteCB(buffer, bufPreDeleteCB, textD);
     }
     
     /* Initialize the scroll bars and attach movement callbacks */
-    if (vScrollBar != NULL) {
+    if (vScrollBar != nullptr) {
 	XtVaSetValues(vScrollBar, XmNminimum, 1, XmNmaximum, 2,
-    		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, NULL);
+    		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, nullptr);
 	XtAddCallback(vScrollBar, XmNdragCallback, vScrollCB, (XtPointer)textD);
 	XtAddCallback(vScrollBar, XmNvalueChangedCallback, vScrollCB, 
 		(XtPointer)textD);
     }
-    if (hScrollBar != NULL) {
+    if (hScrollBar != nullptr) {
 	XtVaSetValues(hScrollBar, XmNminimum, 0, XmNmaximum, 1,
     		XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 0,
-    		XmNincrement, fontStruct->max_bounds.width, NULL);
+    		XmNincrement, fontStruct->max_bounds.width, nullptr);
 	XtAddCallback(hScrollBar, XmNdragCallback, hScrollCB, (XtPointer)textD);
 	XtAddCallback(hScrollBar, XmNvalueChangedCallback, hScrollCB,
 		(XtPointer)textD);
     }
 
     /* Update the display to reflect the contents of the buffer */
-    if (buffer != NULL)
-    	bufModifiedCB(0, buffer->length, 0, 0, NULL, textD);
+    if (buffer != nullptr)
+    	bufModifiedCB(0, buffer->length, 0, 0, nullptr, textD);
 
     /* Decide if the horizontal scroll bar needs to be visible */
     hideOrShowHScrollBar(textD);
@@ -319,8 +319,8 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
 {
     /* If the text display is already displaying a buffer, clear it off
        of the display and remove our callback from it */
-    if (textD->buffer != NULL) {
-    	bufModifiedCB(0, 0, textD->buffer->length, 0, NULL, textD);
+    if (textD->buffer != nullptr) {
+    	bufModifiedCB(0, 0, textD->buffer->length, 0, nullptr, textD);
     	BufRemoveModifyCB(textD->buffer, bufModifiedCB, textD);
     	BufRemovePreDeleteCB(textD->buffer, bufPreDeleteCB, textD);
     }
@@ -332,7 +332,7 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
     BufAddPreDeleteCB(buffer, bufPreDeleteCB, textD);
     
     /* Update the display */
-    bufModifiedCB(0, buffer->length, 0, 0, NULL, textD);
+    bufModifiedCB(0, buffer->length, 0, 0, nullptr, textD);
 }
 
 /*
@@ -422,9 +422,9 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
        maximum font height for this text display */
     for (i=0; i<textD->nStyles; i++) {
         styleFont = textD->styleTable[i].font;
-        if (styleFont != NULL && styleFont->ascent > maxAscent)
+        if (styleFont != nullptr && styleFont->ascent > maxAscent)
             maxAscent = styleFont->ascent;
-        if (styleFont != NULL && styleFont->descent > maxDescent)
+        if (styleFont != nullptr && styleFont->descent > maxDescent)
             maxDescent = styleFont->descent;
     }
     textD->ascent = maxAscent;
@@ -437,7 +437,7 @@ void TextDSetFont(textDisp *textD, XFontStruct *fontStruct)
     else {
         for (i=0; i<textD->nStyles; i++) {
             styleFont = textD->styleTable[i].font;
-            if (styleFont != NULL && 
+            if (styleFont != nullptr && 
                     (styleFont->max_bounds.width != fontWidth ||
                     styleFont->max_bounds.width != styleFont->min_bounds.width))
                 fontWidth = -1;
@@ -732,7 +732,7 @@ void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset)
         topLineNum = max(textD->topLineNum,
                 textD->nBufferLines + 2 - textD->nVisibleLines + vPadding);
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
-            XmNsliderSize, &sliderSize, NULL);
+            XmNsliderSize, &sliderSize, nullptr);
     if (horizOffset < 0)
         horizOffset = 0;
     if (horizOffset > sliderMax - sliderSize)
@@ -865,7 +865,7 @@ void TextDOverstrike(textDisp *textD, const char *text)
     int textLen = strlen(text);
     int i, p, endPos, indent, startIndent, endIndent;
     const char *c;
-	char ch, *paddedText = NULL;
+	char ch, *paddedText = nullptr;
     
     /* determine how many displayed character positions are covered */
     startIndent = BufCountDispChars(textD->buffer, lineStart, startPos);
@@ -902,7 +902,7 @@ void TextDOverstrike(textDisp *textD, const char *text)
     endPos = p;	    
     
     textD->cursorToHint = startPos + textLen;
-    BufReplace(buf, startPos, endPos, paddedText == NULL ? text : paddedText);
+    BufReplace(buf, startPos, endPos, paddedText == nullptr ? text : paddedText);
     textD->cursorToHint = NO_HINT;
     XtFree(paddedText);
 }
@@ -1767,7 +1767,7 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     lineStartPos = textD->lineStarts[visLineNum];
     if (lineStartPos == -1) {
     	lineLen = 0;
-    	lineStr = NULL;
+    	lineStr = nullptr;
     } else {
 	lineLen = visLineLength(textD, visLineNum);
 	lineStr = BufGetRange(buf, lineStartPos, lineStartPos + lineLen);
@@ -1975,7 +1975,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
             /* here you could pick up specific select and highlight fground */
         }
         else {
-            styleRec = NULL;
+            styleRec = nullptr;
             gcValues.font = fs->fid;
             fground = textD->fgPixel;
         }
@@ -2150,14 +2150,14 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
     textBuffer *styleBuf = textD->styleBuffer;
     int pos, style = 0;
     
-    if (lineStartPos == -1 || buf == NULL)
+    if (lineStartPos == -1 || buf == nullptr)
     	return FILL_MASK;
     
     pos = lineStartPos + min(lineIndex, lineLen);
     
     if (lineIndex >= lineLen)
    	style = FILL_MASK;
-    else if (styleBuf != NULL) {
+    else if (styleBuf != nullptr) {
     	style = (unsigned char)BufGetCharacter(styleBuf, pos);
     	if (style == textD->unfinishedStyle) {
     	    /* encountered "unfinished" style, trigger parsing */
@@ -2606,10 +2606,10 @@ Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD)
 
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry)
 {
-    graphicExposeTranslationEntry *newGEQEntry = NULL;
+    graphicExposeTranslationEntry *newGEQEntry = nullptr;
     if (appendEntry) {
         newGEQEntry = (graphicExposeTranslationEntry *)XtMalloc(sizeof(graphicExposeTranslationEntry));
-        newGEQEntry->next = NULL;
+        newGEQEntry->next = nullptr;
         newGEQEntry->horizontal = xOffset;
         newGEQEntry->vertical = yOffset;
     }
@@ -2661,10 +2661,10 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
     /* Update the scroll bar positions if requested, note: updating the
        horizontal scroll bars can have the further side-effect of changing
        the horizontal scroll position, textD->horizOffset */
-    if (updateVScrollBar && textD->vScrollBar != NULL) {
+    if (updateVScrollBar && textD->vScrollBar != nullptr) {
         updateVScrollBarRange(textD);
     }
-    if (updateHScrollBar && textD->hScrollBar != NULL) {
+    if (updateHScrollBar && textD->hScrollBar != nullptr) {
         updateHScrollBarRange(textD);
     }
     
@@ -2720,7 +2720,7 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
         TextDRedrawCalltip(textD, 0);
     }
 
-    HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, NULL);
+    HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, nullptr);
 }
 
 /*
@@ -2731,7 +2731,7 @@ static void updateVScrollBarRange(textDisp *textD)
 {
     int sliderSize, sliderMax, sliderValue;
     
-    if (textD->vScrollBar == NULL)
+    if (textD->vScrollBar == nullptr)
         return;
     
     /* The Vert. scroll bar value and slider size directly represent the top
@@ -2747,7 +2747,7 @@ static void updateVScrollBarRange(textDisp *textD)
             XmNmaximum, sliderMax,
             XmNsliderSize, sliderSize,
             XmNpageIncrement, max(1, textD->nVisibleLines - 1),
-            XmNvalue, sliderValue, NULL);
+            XmNvalue, sliderValue, nullptr);
 }
 
 /*
@@ -2766,7 +2766,7 @@ static int updateHScrollBarRange(textDisp *textD)
     int i, maxWidth = 0, sliderMax, sliderWidth;
     int origHOffset = textD->horizOffset;
     
-    if (textD->hScrollBar == NULL || !XtIsManaged(textD->hScrollBar))
+    if (textD->hScrollBar == nullptr || !XtIsManaged(textD->hScrollBar))
     	return False;
     
     /* Scan all the displayed lines to find the width of the longest line */
@@ -2786,7 +2786,7 @@ static int updateHScrollBarRange(textDisp *textD)
     	    XmNmaximum, sliderMax,
     	    XmNsliderSize, sliderWidth,
     	    XmNpageIncrement, max(textD->width - 100, 10),
-    	    XmNvalue, textD->horizOffset, NULL);
+    	    XmNvalue, textD->horizOffset, nullptr);
     
     /* Return True if scroll position was changed */
     return origHOffset != textD->horizOffset;
@@ -2918,7 +2918,7 @@ static int countLines(const char *string)
     const char *c;
     int lineCount = 0;
     
-    if (string == NULL)
+    if (string == nullptr)
 	return 0;
     for (c=string; *c!='\0'; c++)
     	if (*c == '\n') lineCount++;
@@ -2934,7 +2934,7 @@ static int measureVisLine(textDisp *textD, int visLineNum)
     int charCount = 0, lineStartPos = textD->lineStarts[visLineNum];
     char expandedChar[MAX_EXP_CHAR_LEN];
     
-    if (textD->styleBuffer == NULL) {
+    if (textD->styleBuffer == nullptr) {
 	for (i=0; i<lineLen; i++) {
     	    len = BufGetExpandedChar(textD->buffer, lineStartPos + i,
     		    charCount, expandedChar);
@@ -3503,7 +3503,7 @@ static int measurePropChar(const textDisp* textD, const char c,
     
     charLen = BufExpandCharacter(c, colNum, expChar, 
 	    textD->buffer->tabDist, textD->buffer->nullSubsChar);
-    if (styleBuf == NULL) {
+    if (styleBuf == nullptr) {
 	style = 0;
     } else {
 	style = (unsigned char)BufGetCharacter(styleBuf, pos);
@@ -3705,8 +3705,8 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel,
     XtFree((char *)*pp_bgClass);
     XtFree((char *)*pp_bgClassPixel);
 
-    *pp_bgClassPixel = NULL;
-    *pp_bgClass = NULL;
+    *pp_bgClassPixel = nullptr;
+    *pp_bgClass = nullptr;
 
     if (!s)
       return;

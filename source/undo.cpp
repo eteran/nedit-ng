@@ -63,7 +63,7 @@ void Undo(WindowInfo *window)
     int restoredTextLength;
     
     /* return if nothing to undo */
-    if (undo == NULL)
+    if (undo == nullptr)
     	return;
     
     /* BufReplace will eventually call SaveUndoInformation.  This is mostly
@@ -75,9 +75,9 @@ void Undo(WindowInfo *window)
     
     /* use the saved undo information to reverse changes */
     BufReplace(window->buffer, undo->startPos, undo->endPos,
-    	    (undo->oldText != NULL ? undo->oldText : ""));
+    	    (undo->oldText != nullptr ? undo->oldText : ""));
     
-    restoredTextLength = undo->oldText != NULL ? strlen(undo->oldText) : 0;
+    restoredTextLength = undo->oldText != nullptr ? strlen(undo->oldText) : 0;
     if (!window->buffer->primary.selected || GetPrefUndoModifiesSelection()) {
 	/* position the cursor in the focus pane after the changed text
 	   to show the user where the undo was done */
@@ -115,7 +115,7 @@ void Redo(WindowInfo *window)
     int restoredTextLength;
 
     /* return if nothing to redo */
-    if (window->redo == NULL)
+    if (window->redo == nullptr)
     	return;
 
     /* BufReplace will eventually call SaveUndoInformation.  To indicate
@@ -125,9 +125,9 @@ void Redo(WindowInfo *window)
     
     /* use the saved redo information to reverse changes */
     BufReplace(window->buffer, redo->startPos, redo->endPos,
-    	    (redo->oldText != NULL ? redo->oldText : ""));
+    	    (redo->oldText != nullptr ? redo->oldText : ""));
     
-    restoredTextLength = redo->oldText != NULL ? strlen(redo->oldText) : 0;
+    restoredTextLength = redo->oldText != nullptr ? strlen(redo->oldText) : 0;
     if (!window->buffer->primary.selected || GetPrefUndoModifiesSelection()) {
 	/* position the cursor in the focus pane after the changed text
 	   to show the user where the undo was done */
@@ -173,13 +173,13 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 {
     int newType, oldType;
     UndoInfo *u, *undo = window->undo;
-    int isUndo = (undo != NULL && undo->inUndo);
-    int isRedo = (window->redo != NULL && window->redo->inUndo);
+    int isUndo = (undo != nullptr && undo->inUndo);
+    int isRedo = (window->redo != nullptr && window->redo->inUndo);
     
     /* redo operations become invalid once the user begins typing or does
        other editing.  If this is not a redo or undo operation and a redo
        list still exists, clear it and dim the redo menu item */
-    if (!(isUndo || isRedo) && window->redo != NULL)
+    if (!(isUndo || isRedo) && window->redo != nullptr)
     	ClearRedoList(window);
 
     /* figure out what kind of editing operation this is, and recall
@@ -187,7 +187,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
     newType = determineUndoType(nInserted, nDeleted);
     if (newType == UNDO_NOOP)
     	return;
-    oldType = (undo == NULL || isUndo) ? UNDO_NOOP : undo->type;
+    oldType = (undo == nullptr || isUndo) ? UNDO_NOOP : undo->type;
         
     /*
     ** Check for continuations of single character operations.  These are
@@ -238,7 +238,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
     */
     undo = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
     undo->oldLen = 0;
-    undo->oldText = NULL;
+    undo->oldText = nullptr;
     undo->type = newType;
     undo->inUndo = False;
     undo->restoresToSaved = False;
@@ -259,9 +259,9 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
        restoresToSaved marker, and set it on this record */
     if (!window->fileChanged) {
     	undo->restoresToSaved = True;
-	for (u=window->undo; u!=NULL; u=u->next)
+	for (u=window->undo; u!=nullptr; u=u->next)
     	    u->restoresToSaved = False;
-	for (u=window->redo; u!=NULL; u=u->next)
+	for (u=window->redo; u!=nullptr; u=u->next)
     	    u->restoresToSaved = False;
     }
     	
@@ -282,12 +282,12 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
 */
 void ClearUndoList(WindowInfo *window)
 {
-    while (window->undo != NULL)
+    while (window->undo != nullptr)
     	removeUndoItem(window);
 }
 void ClearRedoList(WindowInfo *window)
 {
-    while (window->redo != NULL)
+    while (window->redo != nullptr)
     	removeRedoItem(window);
 }
 
@@ -300,7 +300,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo)
 {
     
     /* Make the undo menu item sensitive now that there's something to undo */
-    if (window->undo == NULL) {
+    if (window->undo == nullptr) {
     	SetSensitive(window, window->undoItem, True);
 	SetBGMenuUndoSensitivity(window, True);
     }
@@ -328,7 +328,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo)
 static void addRedoItem(WindowInfo *window, UndoInfo *redo)
 {
     /* Make the redo menu item sensitive now that there's something to redo */
-    if (window->redo == NULL) {
+    if (window->redo == nullptr) {
     	SetSensitive(window, window->redoItem, True);
 	SetBGMenuRedoSensitivity(window, True);
     }
@@ -345,7 +345,7 @@ static void removeUndoItem(WindowInfo *window)
 {
     UndoInfo *undo = window->undo;
     
-    if (undo == NULL)
+    if (undo == nullptr)
     	return;
     
     /* Decrement the operation and memory counts */
@@ -357,7 +357,7 @@ static void removeUndoItem(WindowInfo *window)
     freeUndoRecord(undo);
     
     /* if there are no more undo records left, dim the Undo menu item */
-    if (window->undo == NULL) {
+    if (window->undo == nullptr) {
     	SetSensitive(window, window->undoItem, False);
 	SetBGMenuUndoSensitivity(window, False);
     }
@@ -375,7 +375,7 @@ static void removeRedoItem(WindowInfo *window)
     freeUndoRecord(redo);
     
     /* if there are no more redo records left, dim the Redo menu item */
-    if (window->redo == NULL) {
+    if (window->redo == nullptr) {
     	SetSensitive(window, window->redoItem, False);
 	SetBGMenuRedoSensitivity(window, False);
     }
@@ -423,17 +423,17 @@ static void trimUndoList(WindowInfo *window, int maxLength)
     int i;
     UndoInfo *u, *lastRec;
     
-    if (window->undo == NULL)
+    if (window->undo == nullptr)
     	return;
 
     /* Find last item on the list to leave intact */
-    for (i=1, u=window->undo; i<maxLength && u!=NULL; i++, u=u->next);
-    if (u == NULL)
+    for (i=1, u=window->undo; i<maxLength && u!=nullptr; i++, u=u->next);
+    if (u == nullptr)
     	return;
     
     /* Trim off all subsequent entries */
     lastRec = u;
-    while (lastRec->next != NULL) {
+    while (lastRec->next != nullptr) {
 	u = lastRec->next;
 	lastRec->next = u->next;
     	window->undoOpCount--;
@@ -475,7 +475,7 @@ static int determineUndoType(int nInserted, int nDeleted)
 
 static void freeUndoRecord(UndoInfo *undo)
 {
-    if (undo == NULL)
+    if (undo == nullptr)
     	return;
     	
     XtFree(undo->oldText);

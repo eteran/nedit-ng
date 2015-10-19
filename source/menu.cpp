@@ -86,11 +86,7 @@ enum menuModes {FULL, SHORT};
 
 typedef void (*menuCallbackProc)(Widget, XtPointer, XtPointer);
 
-#ifdef __cplusplus
 extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
-#else
-extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
-#endif
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -572,7 +568,7 @@ static XtActionsRec Actions[] = {
 
 /* List of previously opened files for File menu */
 static int NPrevOpen = 0;
-static char** PrevOpen = NULL;
+static char** PrevOpen = nullptr;
 
 #ifdef SGI_CUSTOM
 /* Window to receive items to be toggled on and off in short menus mode */
@@ -620,7 +616,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /*
     ** Create the menu bar (row column) widget
     */
-    menuBar = XmCreateMenuBar(parent, (String)"menuBar", NULL, 0);
+    menuBar = XmCreateMenuBar(parent, (String)"menuBar", nullptr, 0);
 
 #ifdef SGI_CUSTOM
     /*
@@ -641,7 +637,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /*
     ** "File" pull down menu.
     */
-    menuPane = createMenu(menuBar, "fileMenu", "File", 0, NULL, SHORT);
+    menuPane = createMenu(menuBar, "fileMenu", "File", 0, nullptr, SHORT);
     createMenuItem(menuPane, "new", "New", 'N', doActionCB, "new", SHORT);
     if ( GetPrefOpenInTab() )
         window->newOppositeItem = createMenuItem(menuPane, "newOpposite", 
@@ -677,14 +673,14 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    doActionCB, "load_tags_file_dialog", FULL);
     window->unloadTagsMenuPane = createMenu(menuPane, "unloadTagsFiles",
 	    "Unload Tags File", 'U', &window->unloadTagsMenuItem, FULL);
-    XtSetSensitive(window->unloadTagsMenuItem, TagsFileList != NULL);
+    XtSetSensitive(window->unloadTagsMenuItem, TagsFileList != nullptr);
     XtAddCallback(window->unloadTagsMenuItem, XmNcascadingCallback,
 	    (XtCallbackProc)unloadTagsFileMenuCB, window);
     createMenuItem(menuPane, "loadTipsFile", "Load Calltips File...", 'F',
     	    doActionCB, "load_tips_file_dialog", FULL);
     window->unloadTipsMenuPane = createMenu(menuPane, "unloadTipsFiles",
 	    "Unload Calltips File", 'e', &window->unloadTipsMenuItem, FULL);
-    XtSetSensitive(window->unloadTipsMenuItem, TipsFileList != NULL);
+    XtSetSensitive(window->unloadTipsMenuItem, TipsFileList != nullptr);
     XtAddCallback(window->unloadTipsMenuItem, XmNcascadingCallback,
 	    (XtCallbackProc)unloadTipsFileMenuCB, window);
     createMenuSeparator(menuPane, "sep3", SHORT);
@@ -701,7 +697,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /* 
     ** "Edit" pull down menu.
     */
-    menuPane = createMenu(menuBar, "editMenu", "Edit", 0, NULL, SHORT);
+    menuPane = createMenu(menuBar, "editMenu", "Edit", 0, nullptr, SHORT);
     window->undoItem = createMenuItem(menuPane, "undo", "Undo", 'U',
     	    doActionCB, "undo", SHORT);
     XtSetSensitive(window->undoItem, False);
@@ -753,7 +749,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     /* 
     ** "Search" pull down menu.
     */
-    menuPane = createMenu(menuBar, "searchMenu", "Search", 0, NULL, SHORT);
+    menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
     createMenuItem(menuPane, "find", "Find...", 'F', findCB, window, SHORT);
     createFakeMenuItem(menuPane, "findShift", findCB, window);
     window->findAgainItem=createMenuItem(menuPane, "findAgain", "Find Again", 'i', findSameCB, window,
@@ -793,25 +789,25 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
     window->findDefItem = createMenuItem(menuPane, "findDefinition",
     	    "Find Definition", 'D', doActionCB, "find_definition", FULL);
-    XtSetSensitive(window->findDefItem, TagsFileList != NULL);
+    XtSetSensitive(window->findDefItem, TagsFileList != nullptr);
     window->showTipItem = createMenuItem(menuPane, "showCalltip",
     	    "Show Calltip", 'C', doActionCB, "show_tip", FULL);
-    XtSetSensitive(window->showTipItem, (TagsFileList != NULL || 
-                                         TipsFileList != NULL) );
+    XtSetSensitive(window->showTipItem, (TagsFileList != nullptr || 
+                                         TipsFileList != nullptr) );
     
     /*
     ** Preferences menu, Default Settings sub menu
     */
-    menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, NULL,
+    menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, nullptr,
     	    SHORT);
     subPane = createMenu(menuPane, "defaultSettings", "Default Settings", 'D',
-    	    NULL, FULL);
+    	    nullptr, FULL);
     createMenuItem(subPane, "languageModes", "Language Modes...", 'L',
     	    languageDefCB, window, FULL);
     
     /* Auto Indent sub menu */
     subSubPane = createMenu(subPane, "autoIndent", "Auto Indent", 'A',
-    	    NULL, FULL);
+    	    nullptr, FULL);
     window->autoIndentOffDefItem = createMenuRadioToggle(subSubPane, "off",
     	    "Off", 'O', autoIndentOffDefCB, window,
     	    GetPrefAutoIndent(PLAIN_LANGUAGE_MODE) == NO_AUTO_INDENT, SHORT);
@@ -826,7 +822,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    'P', smartMacrosDefCB, window, FULL);
     
     /* Wrap sub menu */
-    subSubPane = createMenu(subPane, "wrap", "Wrap", 'W', NULL, FULL);
+    subSubPane = createMenu(subPane, "wrap", "Wrap", 'W', nullptr, FULL);
     window->noWrapDefItem = createMenuRadioToggle(subSubPane,
     	    "none", "None", 'N', noWrapDefCB,
 	    window, GetPrefWrap(PLAIN_LANGUAGE_MODE) == NO_WRAP, SHORT);
@@ -842,7 +838,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Smart Tags sub menu */
     subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'l',
-	    NULL, FULL);
+	    nullptr, FULL);
     window->allTagsDefItem = createMenuRadioToggle(subSubPane, "showall",
 	    "Show All", 'A', showAllTagsDefCB, window, !GetPrefSmartTags(),
 	    FULL);
@@ -860,7 +856,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Customize Menus sub menu */
     subSubPane = createMenu(subPane, "customizeMenus", "Customize Menus",
-    	    'u', NULL, FULL);
+    	    'u', nullptr, FULL);
 
     createMenuItem(subSubPane, "shellMenu", "Shell Menu...", 'S',
     	    shellDefCB, window, FULL);
@@ -882,7 +878,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     /* Search sub menu */
     subSubPane = createMenu(subPane, "searching", "Searching",
-    	    'g', NULL, FULL);
+    	    'g', nullptr, FULL);
     window->searchDlogsDefItem = createMenuToggle(subSubPane, "verbose",
     	    "Verbose", 'V', searchDlogsDefCB, window,
     	    GetPrefSearchDlogs(), SHORT);
@@ -896,8 +892,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "keepDialogsUp", "Keep Dialogs Up", 'K',
     	    keepSearchDlogsDefCB, window, GetPrefKeepSearchDlogs(), SHORT);
     subSubSubPane = createMenu(subSubPane, "defaultSearchStyle",
-    	    "Default Search Style", 'D', NULL, FULL);
-    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, NULL); 
+    	    "Default Search Style", 'D', nullptr, FULL);
+    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, nullptr); 
     window->searchLiteralDefItem = createMenuToggle(subSubSubPane, "literal",
     	    "Literal", 'L', searchLiteralCB, window,
     	    GetPrefSearch() == SEARCH_LITERAL, FULL);
@@ -918,8 +914,8 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    GetPrefSearch() == SEARCH_REGEX_NOCASE, FULL);
 #ifdef REPLACE_SCOPE
     subSubSubPane = createMenu(subSubPane, "defaultReplaceScope",
-    	    "Default Replace Scope", 'R', NULL, FULL);
-    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, NULL); 
+    	    "Default Replace Scope", 'R', nullptr, FULL);
+    XtVaSetValues(subSubSubPane, XmNradioBehavior, True, nullptr); 
     window->replScopeWinDefItem = createMenuToggle(subSubSubPane, "window",
     	    "In Window", 'W', replaceScopeWindowCB, window,
     	    GetPrefReplaceDefScope() == REPL_DEF_SCOPE_WINDOW, FULL);
@@ -933,7 +929,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     /* Syntax Highlighting sub menu */
     subSubPane = createMenu(subPane, "syntaxHighlighting","Syntax Highlighting",
-    	    'H', NULL, FULL);
+    	    'H', nullptr, FULL);
     window->highlightOffDefItem = createMenuRadioToggle(subSubPane, "off","Off",
     	    'O', highlightOffDefCB, window, !GetPrefHighlightSyntax(), FULL);
     window->highlightDefItem = createMenuRadioToggle(subSubPane, "on",
@@ -988,7 +984,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Show Matching sub menu */
     subSubPane = createMenu(subPane, "showMatching", "Show Matching (..)", 'M',
-	    NULL, FULL);
+	    nullptr, FULL);
     window->showMatchingOffDefItem = createMenuRadioToggle(subSubPane, "off",
 	    "Off", 'O', showMatchingOffDefCB, window, 
             GetPrefShowMatching() == NO_FLASH, SHORT);
@@ -1005,7 +1001,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
 
     /* Append LF at end of files on save */
     window->appendLFItem = createMenuToggle(subPane, "appendLFItem",
-            "Terminate with Line Break on Save", 'v', appendLFCB, NULL,
+            "Terminate with Line Break on Save", 'v', appendLFCB, nullptr,
             GetPrefAppendLF(), FULL);
 
     window->reposDlogsDefItem = createMenuToggle(subPane, "popupsUnderPointer",
@@ -1014,7 +1010,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->autoScrollDefItem = createMenuToggle(subPane, "autoScroll",
     	    "Auto Scroll Near Window Top/Bottom", 0, autoScrollDefCB, window,
     	    GetPrefAutoScroll(), FULL);
-    subSubPane = createMenu(subPane, "warnings", "Warnings", 'r', NULL, FULL);
+    subSubPane = createMenu(subPane, "warnings", "Warnings", 'r', nullptr, FULL);
     window->modWarnDefItem = createMenuToggle(subSubPane,
 	    "filesModifiedExternally", "Files Modified Externally", 'F',
 	    modWarnDefCB, window, GetPrefWarnFileMods(), FULL);
@@ -1027,23 +1023,23 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     
     /* Initial Window Size sub menu (simulates radioBehavior) */
     subSubPane = createMenu(subPane, "initialwindowSize",
-    	    "Initial Window Size", 'z', NULL, FULL);
-    /* XtVaSetValues(subSubPane, XmNradioBehavior, True, NULL);  */
+    	    "Initial Window Size", 'z', nullptr, FULL);
+    /* XtVaSetValues(subSubPane, XmNradioBehavior, True, nullptr);  */
     window->size24x80DefItem = btn = createMenuToggle(subSubPane, "24X80",
     	    "24 x 80", '2', size24x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, nullptr);
     window->size40x80DefItem = btn = createMenuToggle(subSubPane, "40X80",
     	    "40 x 80", '4', size40x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, nullptr);
     window->size60x80DefItem = btn = createMenuToggle(subSubPane, "60X80",
     	    "60 x 80", '6', size60x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, nullptr);
     window->size80x80DefItem = btn = createMenuToggle(subSubPane, "80X80",
     	    "80 x 80", '8', size80x80CB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, nullptr);
     window->sizeCustomDefItem = btn = createMenuToggle(subSubPane, "custom",
     	    "Custom...", 'C', sizeCustomCB, window, False, SHORT);
-    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(btn, XmNindicatorType, XmONE_OF_MANY, nullptr);
     updateWindowSizeMenu(window);
     
     /*
@@ -1066,7 +1062,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     CreateLanguageModeSubMenu(window, menuPane, "languageMode",
     	    "Language Mode", 'L');
     subPane = createMenu(menuPane, "autoIndent", "Auto Indent",
-	    'A', NULL, FULL);
+	    'A', nullptr, FULL);
     window->autoIndentOffItem = createMenuRadioToggle(subPane, "off", "Off",
     	    'O', autoIndentOffCB, window, window->indentStyle == NO_AUTO_INDENT,
 	    SHORT);
@@ -1076,7 +1072,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    'S', smartIndentCB, window, window->indentStyle == SMART_INDENT,
 	    SHORT);
     subPane = createMenu(menuPane, "wrap", "Wrap",
-	    'W', NULL, FULL);
+	    'W', nullptr, FULL);
     window->noWrapItem = createMenuRadioToggle(subPane, "none",
     	    "None", 'N', noWrapCB, window,
     	    window->wrapMode==NO_WRAP, SHORT);
@@ -1108,7 +1104,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    SHORT);
 
     subPane = createMenu(menuPane, "showMatching", "Show Matching (..)",
-        'M', NULL, FULL);
+        'M', nullptr, FULL);
     window->showMatchingOffItem = createMenuRadioToggle(subPane, "off", "Off",
         'O', showMatchingOffCB, window, window->showMatchingStyle == NO_FLASH, 
         SHORT);
@@ -1139,21 +1135,21 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    createMenu(menuBar, "shellMenu", "Shell", 0, &cascade, FULL);
     btn = createMenuItem(menuPane, "executeCommand", "Execute Command...",
     	    'E', doActionCB, "execute_command_dialog", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     btn = createMenuItem(menuPane, "executeCommandLine", "Execute Command Line",
     	    'x', doActionCB, "execute_command_line", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     window->filterItem = createMenuItem(menuPane, "filterSelection",
     	    "Filter Selection...", 'F', doActionCB, "filter_selection_dialog",
     	    SHORT);
     XtVaSetValues(window->filterItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, window->wasSelected, NULL);
+    	    XmNsensitive, window->wasSelected, nullptr);
     window->cancelShellItem = createMenuItem(menuPane, "cancelShellCommand",
     	    "Cancel Shell Command", 'C', cancelShellCB, window, SHORT);
     XtVaSetValues(window->cancelShellItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, NULL);
+    	    XmNsensitive, False, nullptr);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 
     /*
     ** Create the Macro menu
@@ -1162,24 +1158,24 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    createMenu(menuBar, "macroMenu", "Macro", 0, &cascade, FULL);
     window->learnItem = createMenuItem(menuPane, "learnKeystrokes",
     	    "Learn Keystrokes", 'L', learnCB, window, SHORT);
-    XtVaSetValues(window->learnItem , XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(window->learnItem , XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     window->finishLearnItem = createMenuItem(menuPane, "finishLearn",
     	    "Finish Learn", 'F', finishLearnCB, window, SHORT);
     XtVaSetValues(window->finishLearnItem , XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, NULL);
+    	    XmNsensitive, False, nullptr);
     window->cancelMacroItem = createMenuItem(menuPane, "cancelLearn",
     	    "Cancel Learn", 'C', cancelLearnCB, window, SHORT);
     XtVaSetValues(window->cancelMacroItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, False, NULL);
+    	    XmNsensitive, False, nullptr);
     window->replayItem = createMenuItem(menuPane, "replayKeystrokes",
     	    "Replay Keystrokes", 'K', replayCB, window, SHORT);
     XtVaSetValues(window->replayItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, GetReplayMacro() != NULL, NULL);
+    	    XmNsensitive, GetReplayMacro() != nullptr, nullptr);
     window->repeatItem = createMenuItem(menuPane, "repeat",
     	    "Repeat...", 'R', doActionCB, "repeat_dialog", SHORT);
-    XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 
     /*
     ** Create the Windows menu
@@ -1191,14 +1187,14 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->splitPaneItem = createMenuItem(menuPane, "splitPane",
     	    "Split Pane", 'S', doActionCB, "split_pane", SHORT);
     XtVaSetValues(window->splitPaneItem, XmNuserData, PERMANENT_MENU_ITEM,
-	    NULL);
+	    nullptr);
     window->closePaneItem = createMenuItem(menuPane, "closePane",
     	    "Close Pane", 'C', doActionCB, "close_pane", SHORT);
-    XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,NULL);
+    XtVaSetValues(window->closePaneItem, XmNuserData, PERMANENT_MENU_ITEM,nullptr);
     XtSetSensitive(window->closePaneItem, False);
 
     btn = createMenuSeparator(menuPane, "sep01", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     window->detachDocumentItem = createMenuItem(menuPane, "detachBuffer",
     	    "Detach Tab", 'D', doActionCB, "detach_document", SHORT);
     XtSetSensitive(window->detachDocumentItem, False);
@@ -1207,13 +1203,13 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    "Move Tab To...", 'M', doActionCB, "move_document_dialog", SHORT);
     XtSetSensitive(window->moveDocumentItem, False);
     btn = createMenuSeparator(menuPane, "sep1", SHORT);
-    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
     
     /* 
     ** Create "Help" pull down menu.
     */
     menuPane = createMenu(menuBar, "helpMenu", "Help", 0, &cascade, SHORT);
-    XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, NULL);
+    XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, nullptr);
     buildHelpMenu( menuPane, &H_M[0], window );
 
     return menuBar;
@@ -1236,7 +1232,7 @@ static Widget makeHelpMenuItem(
     Widget menuItem = 
         createMenuItem( parent, name, label, mnemonic, callback, cbArg, mode );
     
-    XtVaSetValues( menuItem, XmNuserData, (XtPointer)topic, NULL );
+    XtVaSetValues( menuItem, XmNuserData, (XtPointer)topic, nullptr );
     return menuItem;
 }
 
@@ -1249,7 +1245,7 @@ static void helpCB( Widget menuItem, XtPointer clientData, XtPointer callData )
     
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    XtVaGetValues( menuItem, XmNuserData, &userData, NULL );
+    XtVaGetValues( menuItem, XmNuserData, &userData, nullptr );
     topic = (enum HelpTopic)(long)userData;
     
     Help(topic);
@@ -1268,14 +1264,14 @@ static HelpMenu * buildHelpMenu(
 {
     int hideIt = -1; /* This value should make all menu items accessible  */
 
-    if( menu != NULL )
+    if( menu != nullptr )
     {
         int crntLevel = menu->level;
 
         /*-------------------------
         * For each menu element ...
         *-------------------------*/
-        while( menu != NULL && menu->level == crntLevel )
+        while( menu != nullptr && menu->level == crntLevel )
         {
             /*----------------------------------------------
             * ... see if dealing with a separator or submenu
@@ -1295,14 +1291,14 @@ static HelpMenu * buildHelpMenu(
                     if( menu->hideIt == hideIt || menu->hideIt == NON_MENU_HELP )
                     {
                         do {     menu = menu->next;
-                        } while( menu != NULL && menu->level > crntLevel );
+                        } while( menu != nullptr && menu->level > crntLevel );
                         
                     }
                     else
                     {
                         Widget subPane = 
                             createMenu( pane, menu->wgtName, menu->subTitle, 
-                               menu->mnemonic, NULL, FULL);
+                               menu->mnemonic, nullptr, FULL);
 
                         menu = buildHelpMenu( subPane, menu->next, window );
                     }
@@ -1344,12 +1340,12 @@ static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData)
     
     /* extract the window to be acted upon, see comment in
        tabMenuPostAP() for detail */
-    XtVaGetValues(window->tabMenuPane, XmNuserData, &win, NULL);
+    XtVaGetValues(window->tabMenuPane, XmNuserData, &win, nullptr);
     
     HidePointerOnKeyedEvent(win->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(win->lastFocus, (char *)clientData,
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1361,7 +1357,7 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData)
 
     HidePointerOnKeyedEvent(widget, event);
 
-    XtCallActionProc(widget, action, event, NULL, 0);
+    XtCallActionProc(widget, action, event, nullptr, 0);
 }
 
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) 
@@ -1381,7 +1377,7 @@ static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData)
     XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "shift_left_by_tab" : "shift_left",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1391,7 +1387,7 @@ static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData)
     XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "shift_right_by_tab" : "shift_right",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void findCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1467,7 +1463,7 @@ static void markCB(Widget w, XtPointer clientData, XtPointer callData)
     if (event->type == KeyPress || event->type == KeyRelease)
     	BeginMarkCommand(window);
     else
-    	XtCallActionProc(window->lastFocus, "mark_dialog", event, NULL, 0);
+    	XtCallActionProc(window->lastFocus, "mark_dialog", event, nullptr, 0);
 }
 
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1493,7 +1489,7 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData)
     XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
     	    ((XmAnyCallbackStruct *)callData)->event->xbutton.state & ShiftMask
     	    ? "select_to_matching" : "goto_matching",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1568,7 +1564,7 @@ static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_incremental_backup",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void preserveCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1586,7 +1582,7 @@ static void preserveCB(Widget w, XtPointer clientData, XtPointer callData)
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_make_backup_copy",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1661,7 +1657,7 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_match_syntax_based",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void fontCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1739,7 +1735,7 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     int applyBacklight = XmToggleButtonGetState(w);
     WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
-    SetBacklightChars(window, applyBacklight?GetPrefBacklightCharTypes():NULL);
+    SetBacklightChars(window, applyBacklight?GetPrefBacklightCharTypes():nullptr);
 }
 
 static void tabsCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1766,7 +1762,7 @@ static void statsCB(Widget w, XtPointer clientData, XtPointer callData)
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_statistics_line",
-    	    ((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    	    ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1775,7 +1771,7 @@ static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callDat
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(NO_AUTO_INDENT);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->autoIndentOffDefItem, True, False);
@@ -1790,7 +1786,7 @@ static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(AUTO_INDENT);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->autoIndentDefItem, True, False);
@@ -1805,7 +1801,7 @@ static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoIndent(SMART_INDENT);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->smartIndentDefItem, True, False);
@@ -1821,7 +1817,7 @@ static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoSave(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->autoSaveDefItem, state, False);
     }
@@ -1834,7 +1830,7 @@ static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSaveOldVersion(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->saveLastDefItem, state, False);
     }
@@ -1860,7 +1856,7 @@ static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NO_WRAP);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->noWrapDefItem, True, False);
@@ -1875,7 +1871,7 @@ static void newlineWrapDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(NEWLINE_WRAP);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->newlineWrapDefItem, True, False);
@@ -1890,7 +1886,7 @@ static void contWrapDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWrap(CONTINUOUS_WRAP);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->contWrapDefItem, True, False);
@@ -1903,7 +1899,7 @@ static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    WrapMarginDialog(WidgetToWindow(MENU_WIDGET(w))->shell, NULL);
+    WrapMarginDialog(WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
 }
 
 static void smartTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
@@ -1911,7 +1907,7 @@ static void smartTagsDefCB(Widget w, XtPointer client_data, XtPointer callData)
     WindowInfo *win;
 	
     SetPrefSmartTags(True);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XmToggleButtonSetState(win->smartTagsDefItem, True, False);
@@ -1924,7 +1920,7 @@ static void showAllTagsDefCB(Widget w, XtPointer client_data, XtPointer callData
     WindowInfo *win;
 	
     SetPrefSmartTags(False);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XmToggleButtonSetState(win->smartTagsDefItem, False, False);
@@ -1936,14 +1932,14 @@ static void shellSelDefCB(Widget widget, XtPointer clientData, XtPointer callDat
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(widget))->lastFocus,
             ((XmAnyCallbackStruct*) callData)->event);
-    SelectShellDialog(WidgetToWindow(MENU_WIDGET(widget))->shell, NULL);
+    SelectShellDialog(WidgetToWindow(MENU_WIDGET(widget))->shell, nullptr);
 }
 
 static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    TabsPrefDialog(WidgetToWindow(MENU_WIDGET(w))->shell, NULL);
+    TabsPrefDialog(WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
 }
 
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1952,7 +1948,7 @@ static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callD
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(NO_FLASH);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, True, False);
@@ -1967,7 +1963,7 @@ static void showMatchingDelimitDefCB(Widget w, XtPointer clientData, XtPointer c
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_DELIMIT);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
@@ -1982,7 +1978,7 @@ static void showMatchingRangeDefCB(Widget w, XtPointer clientData, XtPointer cal
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowMatching(FLASH_RANGE);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
 	XmToggleButtonSetState(win->showMatchingOffDefItem, False, False);
@@ -1999,7 +1995,7 @@ static void matchSyntaxBasedDefCB(Widget w, XtPointer clientData, XtPointer call
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefMatchSyntaxBased(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
 	    XmToggleButtonSetState(win->matchSyntaxBasedDefItem, state, False);
     }
@@ -2012,7 +2008,7 @@ static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callDa
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefBacklightChars(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
 	    XmToggleButtonSetState(win->backlightCharsDefItem, state, False);
     }
@@ -2024,7 +2020,7 @@ static void highlightOffDefCB(Widget w, XtPointer clientData, XtPointer callData
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(False);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->highlightOffDefItem, True, False);
@@ -2038,7 +2034,7 @@ static void highlightDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefHighlightSyntax(True);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->highlightOffDefItem, False, False);
@@ -2064,7 +2060,7 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
-    EditHighlightStyles(NULL);
+    EditHighlightStyles(nullptr);
 }
 
 static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -2111,7 +2107,7 @@ static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchDlogs(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->searchDlogsDefItem, state, False);
     }
@@ -2124,7 +2120,7 @@ static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer call
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefBeepOnSearchWrap(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->beepOnSearchWrapDefItem, state, False);
     }
@@ -2137,7 +2133,7 @@ static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callD
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefKeepSearchDlogs(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->keepSearchDlogsDefItem, state, False);
     }
@@ -2150,7 +2146,7 @@ static void searchWrapsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSearchWraps(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->searchWrapsDefItem, state, False);
     }
@@ -2162,7 +2158,7 @@ static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData)
     int state = XmToggleButtonGetState(w);
 
     SetPrefAppendLF(state);
-    for (win = WindowList; win != NULL; win = win->next) {
+    for (win = WindowList; win != nullptr; win = win->next) {
     	if (IsTopDocument(win))
             XmToggleButtonSetState(win->appendLFItem, state, False);
     }
@@ -2176,7 +2172,7 @@ static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->sortOpenPrevDefItem, state, False);
     }
@@ -2190,7 +2186,7 @@ static void reposDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefRepositionDialogs(state);
     SetPointerCenteredDialogs(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->reposDlogsDefItem, state, False);
     }
@@ -2204,7 +2200,7 @@ static void autoScrollDefCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Set the preference and make the other windows' menus agree */
     SetPrefAutoScroll(state);
     /* XXX: Should we ensure auto-scroll now if needed? */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->autoScrollDefItem, state, False);
     }
@@ -2217,7 +2213,7 @@ static void modWarnDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnFileMods(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->modWarnDefItem, state, False);
@@ -2232,7 +2228,7 @@ static void modWarnRealDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnRealFileMods(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->modWarnRealDefItem, state, False);
     }
@@ -2245,7 +2241,7 @@ static void exitWarnDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefWarnExit(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->exitWarnDefItem, state, False);
     }
@@ -2258,7 +2254,7 @@ static void openInTabDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefOpenInTab(state);
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=nullptr; win=win->next)
     	XmToggleButtonSetState(win->openInTabDefItem, state, False);
 }
 
@@ -2269,7 +2265,7 @@ static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefTabBar(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->tabBarDefItem, state, False);
@@ -2284,7 +2280,7 @@ static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefTabBarHideOne(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (!IsTopDocument(win))
 	    continue;
     	XmToggleButtonSetState(win->tabBarHideDefItem, state, False);
@@ -2299,8 +2295,8 @@ static void toolTipsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefToolTips(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
-    	XtVaSetValues(win->tab, XltNshowBubble, GetPrefToolTips(), NULL);
+    for (win=WindowList; win!=nullptr; win=win->next) {
+    	XtVaSetValues(win->tab, XltNshowBubble, GetPrefToolTips(), nullptr);
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->toolTipsDefItem, state, False);
     }
@@ -2313,7 +2309,7 @@ static void tabNavigateDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefGlobalTabNavigate(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->tabNavigateDefItem, state, False);
     }
@@ -2326,7 +2322,7 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefSortTabs(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->tabSortDefItem, state, False);
     }
@@ -2336,7 +2332,7 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData)
        touches windows that are earlier in the WindowList so it's ok. */
     if (state) {
         Widget shell=(Widget)0;
-        for (win=WindowList; win!=NULL; win=win->next) {
+        for (win=WindowList; win!=nullptr; win=win->next) {
             if ( win->shell != shell ) {
                 SortTabBar(win);
                 shell = win->shell;
@@ -2352,7 +2348,7 @@ static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefStatsLine(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->statsLineDefItem, state, False);
     }
@@ -2365,7 +2361,7 @@ static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefISearchLine(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->iSearchLineDefItem, state, False);
     }
@@ -2378,7 +2374,7 @@ static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefLineNums(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->lineNumsDefItem, state, False);
     }
@@ -2391,7 +2387,7 @@ static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer cal
 
     /* Set the preference and make the other windows' menus agree */
     SetPrefShowPathInWindowsMenu(state);
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	if (IsTopDocument(win))
     	    XmToggleButtonSetState(win->pathInWindowsMenuDefItem, state, False);
     }
@@ -2405,7 +2401,7 @@ static void searchLiteralCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, True, False);
@@ -2425,7 +2421,7 @@ static void searchCaseSenseCB(Widget w, XtPointer clientData, XtPointer callData
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE);
-    	for (win=WindowList; win!=NULL; win=win->next) {
+    	for (win=WindowList; win!=nullptr; win=win->next) {
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
@@ -2445,7 +2441,7 @@ static void searchLiteralWordCB(Widget w, XtPointer clientData, XtPointer callDa
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_LITERAL_WORD);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
@@ -2465,7 +2461,7 @@ static void searchCaseSenseWordCB(Widget w, XtPointer clientData, XtPointer call
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_CASE_SENSE_WORD);
-    	for (win=WindowList; win!=NULL; win=win->next) {
+    	for (win=WindowList; win!=nullptr; win=win->next) {
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
@@ -2485,7 +2481,7 @@ static void searchRegexCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
@@ -2505,7 +2501,7 @@ static void searchRegexNoCaseCB(Widget w, XtPointer clientData, XtPointer callDa
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefSearch(SEARCH_REGEX_NOCASE);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->searchLiteralDefItem, False, False);
@@ -2526,7 +2522,7 @@ static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callD
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, True, False);
@@ -2543,7 +2539,7 @@ static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer ca
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
@@ -2560,7 +2556,7 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
     /* Set the preference and make the other windows' menus agree */
     if (XmToggleButtonGetState(w)) {
     	SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
-    	for (win=WindowList; win!=NULL; win=win->next){
+    	for (win=WindowList; win!=nullptr; win=win->next){
     	    if (!IsTopDocument(win))
 		continue;
     	    XmToggleButtonSetState(win->replScopeWinDefItem, False, False);
@@ -2712,7 +2708,7 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
         }
     }
     
-    EditNewFile(openInTab? window : NULL, NULL, False, NULL, window->path);
+    EditNewFile(openInTab? window : nullptr, nullptr, False, nullptr, window->path);
     CheckCloseDim();
 }
 
@@ -2725,7 +2721,7 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 {
     WindowInfo *window = WidgetToWindow(w);
 
-    EditNewFile(GetPrefOpenInTab()? NULL : window, NULL, False, NULL,
+    EditNewFile(GetPrefOpenInTab()? nullptr : window, nullptr, False, nullptr,
             window->path);
     CheckCloseDim();
 }
@@ -2733,7 +2729,7 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
 
-    EditNewFile(window, NULL, False, NULL, window->path);
+    EditNewFile(window, nullptr, False, nullptr, window->path);
     CheckCloseDim();
 }
 
@@ -2772,8 +2768,8 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
                 args[0]);
         return;
     }
-    EditExistingFile(window, filename, pathname, 0, NULL, False, 
-            NULL, GetPrefOpenInTab(), False);
+    EditExistingFile(window, filename, pathname, 0, nullptr, False, 
+            nullptr, GetPrefOpenInTab(), False);
     CheckCloseDim();
 }
 
@@ -2863,7 +2859,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args,
     {
         return;
     }
-    XtCallActionProc(window->lastFocus, "revert_to_saved", event, NULL, 0);
+    XtCallActionProc(window->lastFocus, "revert_to_saved", event, nullptr, 0);
 }
 
 
@@ -2966,14 +2962,14 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	/* refresh the "Unload Tags File" tear-offs after unloading, or 
 	   close the tear-offs if all tags files have been unloaded */
-	for (win=WindowList; win!=NULL; win=win->next) {
+	for (win=WindowList; win!=nullptr; win=win->next) {
     	    if (IsTopDocument(win) && 
 	            !XmIsMenuShell(XtParent(win->unloadTagsMenuPane))) {
     		if (XtIsSensitive(win->unloadTagsMenuItem))
 		    updateTagsFileMenu(win);
 		else
 		    _XmDismissTearOff(XtParent(win->unloadTagsMenuPane),
-		            NULL, NULL);
+		            nullptr, nullptr);
 	    }
 	}
     }
@@ -3020,14 +3016,14 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     if (DeleteTagsFile(args[0], TIP, True)) {
     	WindowInfo *win;
 
-	for (win=WindowList; win!=NULL; win=win->next) {
+	for (win=WindowList; win!=nullptr; win=win->next) {
     	    if (IsTopDocument(win) && 
 	            !XmIsMenuShell(XtParent(win->unloadTipsMenuPane))) {
     		if (XtIsSensitive(win->unloadTipsMenuItem))
 		    updateTipsFileMenu(win);
 		else
 		    _XmDismissTearOff(XtParent(win->unloadTipsMenuPane),
-		            NULL, NULL);
+		            nullptr, nullptr);
 	    }
 	}
     }
@@ -3052,7 +3048,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     
     /* If this is not the last window (more than one window is open),
        confirm with the user before exiting. */
-    if (GetPrefWarnExit() && !(window == WindowList && window->next == NULL)) {
+    if (GetPrefWarnExit() && !(window == WindowList && window->next == nullptr)) {
         int resp, titleLen, lineLen;
         char exitMsg[DF_MAX_MSG_LENGTH], *ptr, *title;
 	char filename[MAXPATHLEN];
@@ -3063,7 +3059,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
         ptr = exitMsg;
 	lineLen = 0;
         strcpy(ptr, "Editing: "); ptr += 9; lineLen += 9;
-        for (win=WindowList; win!=NULL; win=win->next) {
+        for (win=WindowList; win!=nullptr; win=win->next) {
     	    sprintf(filename, "%s%s", win->filename, win->fileChanged? "*": "");
 	    title = filename;
             titleLen = strlen(title);
@@ -3071,11 +3067,11 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
         	strcpy(ptr, "..."); ptr += 3;
         	break;
             }
-	    if (lineLen + titleLen + (win->next==NULL?5:2) > 50) {
+	    if (lineLen + titleLen + (win->next==nullptr?5:2) > 50) {
 		*ptr++ = '\n';
 		lineLen = 0;
 	    }
-	    if (win->next == NULL) {
+	    if (win->next == nullptr) {
 		sprintf(ptr, "and %s.", title);
 		ptr += 5 + titleLen;
 		lineLen += 5 + titleLen;
@@ -3445,13 +3441,13 @@ static void gotoMatchingAP(Widget w, XEvent *event, String *args,
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     FindDefinition(WidgetToWindow(w), event->xbutton.time,
-	    *nArgs == 0 ? NULL : args[0]);
+	    *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 {
     FindDefCalltip(WidgetToWindow(w), event->xbutton.time,
-	    *nArgs == 0 ? NULL : args[0]);
+	    *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void splitPaneAP(Widget w, XEvent *event, String *args,
@@ -3599,7 +3595,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
     int resp;
-    static char **cmdHistory = NULL;
+    static char **cmdHistory = nullptr;
     static int nHistoryCmds = 0;
     
     if (CheckReadOnly(window))
@@ -3643,7 +3639,7 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     WindowInfo *window = WidgetToWindow(w);
     char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
     int resp;
-    static char **cmdHistory = NULL;
+    static char **cmdHistory = nullptr;
     static int nHistoryCmds = 0;
 
     if (CheckReadOnly(window))
@@ -3716,7 +3712,7 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
        is explicitly invoking another macro via the menu or an accelerator,
        UNLESS the macro event marker is set */
     if (event->xany.send_event != MACRO_EVENT_MARKER) {
-	if (WidgetToWindow(w)->macroCmdData != NULL) {
+	if (WidgetToWindow(w)->macroCmdData != nullptr) {
 	    XBell(TheDisplay, 0);
             return;
 	}
@@ -3734,7 +3730,7 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     }
     /* Same remark as for macro menu commands (see above). */
     if (event->xany.send_event != MACRO_EVENT_MARKER) {
-	if (WidgetToWindow(w)->macroCmdData != NULL) {
+	if (WidgetToWindow(w)->macroCmdData != nullptr) {
 	    XBell(TheDisplay, 0);
             return;
 	}
@@ -3788,9 +3784,9 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
         }
         else if (strcmp(args[0], "first") == 0) {
             window = WindowList;
-            if (window != NULL) {
+            if (window != nullptr) {
                 nextWindow = window->next;
-                while (nextWindow != NULL) {
+                while (nextWindow != nullptr) {
                     window = nextWindow;
                     nextWindow = nextWindow->next;
                 }
@@ -3799,21 +3795,21 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
         else if (strcmp(args[0], "previous") == 0) {
             tmpWindow = window;
             window = WindowList;
-            if (window != NULL) {
+            if (window != nullptr) {
                 nextWindow = window->next;
-                while (nextWindow != NULL && nextWindow != tmpWindow) {
+                while (nextWindow != nullptr && nextWindow != tmpWindow) {
                     window = nextWindow;
                     nextWindow = nextWindow->next;
                 }
-                if (nextWindow == NULL && tmpWindow != WindowList) {
-                    window = NULL;
+                if (nextWindow == nullptr && tmpWindow != WindowList) {
+                    window = nullptr;
                 }
             }
         }
         else if (strcmp(args[0], "next") == 0) {
-            if (window != NULL) {
+            if (window != nullptr) {
                 window = window->next;
-                if (window == NULL) {
+                if (window == nullptr) {
                     window = WindowList;
                 }
             }
@@ -3821,32 +3817,32 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
         else {
             if (sscanf(args[0], "%d", &windowIndex) == 1) {
                 if (windowIndex > 0) {
-                    for (window = WindowList; window != NULL && windowIndex > 1;
+                    for (window = WindowList; window != nullptr && windowIndex > 1;
                         --windowIndex) {
                         window = window->next;
                     }
                 }
                 else if (windowIndex < 0) {
-                    for (window = WindowList; window != NULL;
+                    for (window = WindowList; window != nullptr;
                         window = window->next) {
                         ++windowIndex;
                     }
                     if (windowIndex >= 0) {
-                        for (window = WindowList; window != NULL &&
+                        for (window = WindowList; window != nullptr &&
                             windowIndex > 0; window = window->next) {
                             --windowIndex;
                         }
                     }
                     else {
-                        window = NULL;
+                        window = nullptr;
                     }
                 }
                 else {
-                    window = NULL;
+                    window = nullptr;
                 }
             }
             else {
-                window = NULL;
+                window = nullptr;
             }
         }
 
@@ -3859,7 +3855,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args,
             }
         }
     }
-    if (window != NULL) {
+    if (window != nullptr) {
         RaiseFocusDocumentWindow(window, focus);
     }
     else {
@@ -3871,7 +3867,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs)
 {
     WindowInfo *window = WidgetToWindow(w);
-    Widget newFocusPane = NULL;
+    Widget newFocusPane = nullptr;
     int paneIndex;
     
     if (*nArgs > 0) {
@@ -3909,7 +3905,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args,
         if (paneIndex >= 0 && paneIndex <= window->nPanes) {
             newFocusPane = GetPaneByIndex(window, paneIndex);
         }
-        if (newFocusPane != NULL) {
+        if (newFocusPane != nullptr) {
             window->lastFocus = newFocusPane;
             XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
         }
@@ -4038,9 +4034,9 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args,
             newMargin < 1000) {
             int i;
             
-            XtVaSetValues(window->textArea, textNwrapMargin, newMargin, NULL);
+            XtVaSetValues(window->textArea, textNwrapMargin, newMargin, nullptr);
             for (i = 0; i < window->nPanes; ++i) {
-                XtVaSetValues(window->textPanes[i], textNwrapMargin, newMargin, NULL);
+                XtVaSetValues(window->textPanes[i], textNwrapMargin, newMargin, nullptr);
             }
         }
         else {
@@ -4151,7 +4147,7 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args,
     WindowInfo *window = WidgetToWindow(w);
     Boolean newState;
     
-    if (window == NULL)
+    if (window == nullptr)
         return;
  
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike, "set_overtype_mode");
@@ -4264,7 +4260,7 @@ static void setLanguageModeAP(Widget w, XEvent *event, String *args,
 ** users like to be able to re-arrange the mnemonics so they can set Alt
 ** key combinations as accelerators), 2) supports the short/full option
 ** of SGI_CUSTOM mode, 3) optionally returns the cascade button widget
-** in "cascadeBtn" if "cascadeBtn" is non-NULL.
+** in "cascadeBtn" if "cascadeBtn" is non-nullptr.
 */
 static Widget createMenu(Widget parent, const char *name, const char *label,
     	char mnemonic, Widget *cascadeBtn, int mode)
@@ -4272,13 +4268,13 @@ static Widget createMenu(Widget parent, const char *name, const char *label,
     Widget menu, cascade;
     XmString st1;
 
-    menu = CreatePulldownMenu(parent, (String)name, NULL, 0);
+    menu = CreatePulldownMenu(parent, (String)name, nullptr, 0);
     cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, 
     	XmNlabelString, st1=XmStringCreateSimple((String)label),
-    	XmNsubMenuId, menu, NULL);
+    	XmNsubMenuId, menu, nullptr);
     XmStringFree(st1);
     if (mnemonic != 0)
-    	XtVaSetValues(cascade, XmNmnemonic, mnemonic, NULL);
+    	XtVaSetValues(cascade, XmNmnemonic, mnemonic, nullptr);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
     	XtManageChild(cascade);
@@ -4287,7 +4283,7 @@ static Widget createMenu(Widget parent, const char *name, const char *label,
 #else
     XtManageChild(cascade);
 #endif
-    if (cascadeBtn != NULL)
+    if (cascadeBtn != nullptr)
     	*cascadeBtn = cascade;
     return menu;
 }
@@ -4306,7 +4302,7 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
 
     button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, 
     	    XmNlabelString, st1=XmStringCreateSimple((String)label),
-    	    XmNmnemonic, mnemonic, NULL);
+    	    XmNmnemonic, mnemonic, nullptr);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
 #ifdef SGI_CUSTOM
@@ -4314,7 +4310,7 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 #else
     XtManageChild(button);
 #endif
@@ -4337,10 +4333,10 @@ static Widget createFakeMenuItem(Widget parent, const char *name,
     	    XmNlabelString, st1=XmStringCreateSimple((String)""),
     	    XmNshadowThickness, 0,
     	    XmNmarginHeight, 0,
-    	    XmNheight, 0, NULL);
+    	    XmNheight, 0, nullptr);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
-    XtVaSetValues(button, XmNtraversalOn, False, NULL);
+    XtVaSetValues(button, XmNtraversalOn, False, nullptr);
 
     return button;
 }
@@ -4359,7 +4355,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
     button = XtVaCreateWidget(name, xmToggleButtonWidgetClass, parent, 
     	    XmNlabelString, st1=XmStringCreateSimple((String)label),
     	    XmNmnemonic, mnemonic,
-    	    XmNset, set, NULL);
+    	    XmNset, set, nullptr);
     XtAddCallback(button, XmNvalueChangedCallback, (XtCallbackProc)callback,
     	    (void *)cbArg);
     XmStringFree(st1);
@@ -4368,7 +4364,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 #else
     XtManageChild(button);
 #endif
@@ -4385,7 +4381,7 @@ static Widget createMenuRadioToggle(Widget parent, const char *name, const char 
     Widget button;
     button = createMenuToggle(parent, name, label, mnemonic, callback, (void *)cbArg,
 	    set, mode);
-    XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, NULL);
+    XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, nullptr);
     return button;
 }
 
@@ -4393,13 +4389,13 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode)
 {
     Widget button;
     
-    button = XmCreateSeparator(parent, (String)name, NULL, 0);
+    button = XmCreateSeparator(parent, (String)name, nullptr, 0);
 #ifdef SGI_CUSTOM
     if (mode == SHORT || !GetPrefShortMenus())
     	XtManageChild(button);
     if (mode == FULL)
     	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, NULL);
+    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 #else
     XtManageChild(button);
 #endif
@@ -4415,15 +4411,15 @@ void CheckCloseDim(void)
 {
     WindowInfo *window;
     
-    if (WindowList == NULL)
+    if (WindowList == nullptr)
     	return;
-    if (WindowList->next==NULL &&
+    if (WindowList->next==nullptr &&
     	    !WindowList->filenameSet && !WindowList->fileChanged) {
     	XtSetSensitive(WindowList->closeItem, FALSE);
     	return;
     }
     
-    for (window=WindowList; window!=NULL; window=window->next) {
+    for (window=WindowList; window!=nullptr; window=window->next) {
     	if (!IsTopDocument(window))
 	    continue;
     	XtSetSensitive(window->closeItem, True);
@@ -4444,7 +4440,7 @@ void InvalidateWindowMenus(void)
     /* Mark the window menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    for (w=WindowList; w!=NULL; w=w->next) {
+    for (w=WindowList; w!=nullptr; w=w->next) {
     	if (!XmIsMenuShell(XtParent(w->windowMenuPane)))
     	    updateWindowMenu(w);
     	else
@@ -4464,7 +4460,7 @@ static void invalidatePrevOpenMenus(void)
     /* Mark the menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    for (w=WindowList; w!=NULL; w=w->next) {
+    for (w=WindowList; w!=nullptr; w=w->next) {
     	if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane)))
     	    updatePrevOpenMenu(w);
     }
@@ -4523,7 +4519,7 @@ void AddToPrevOpenMenu(const char *filename)
 
     /* Undim the menu in all windows if it was previously empty */
     if (NPrevOpen > 0) {
-    	for (w=WindowList; w!=NULL; w=w->next) {
+    	for (w=WindowList; w!=nullptr; w=w->next) {
     	    if (!IsTopDocument(w))
 		continue;
     	    XtSetSensitive(w->prevOpenMenuItem, True);
@@ -4566,9 +4562,9 @@ static void updateWindowMenu(const WindowInfo *window)
     	return;
 	
     /* Make a sorted list of windows */
-    for (w=WindowList, nWindows=0; w!=NULL; w=w->next, nWindows++);
+    for (w=WindowList, nWindows=0; w!=nullptr; w=w->next, nWindows++);
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
-    for (w=WindowList, i=0; w!=NULL; w=w->next, i++)
+    for (w=WindowList, i=0; w!=nullptr; w=w->next, i++)
     	windows[i] = w;
     qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
 
@@ -4589,12 +4585,12 @@ static void updateWindowMenu(const WindowInfo *window)
     /* Go thru all of the items in the menu and rename them to
        match the window list.  Delete any extras */
     XtVaGetValues(window->windowMenuPane, XmNchildren, &items,
-    	    XmNnumChildren, &nItems, NULL);
+    	    XmNnumChildren, &nItems, nullptr);
     windowIndex = 0;
     nWindows = NWindows();
     for (n=0; n<(int)nItems; n++) {
         XtPointer userData;
-    	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
+    	XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
     	if (userData == TEMPORARY_MENU_ITEM) {
 	    if (windowIndex >= nWindows) {
     		/* unmanaging before destroying stops parent from displaying */
@@ -4604,7 +4600,7 @@ static void updateWindowMenu(const WindowInfo *window)
                 XmString st1;
                 char* title = getWindowsMenuEntry(windows[windowIndex]);
 		XtVaSetValues(items[n], XmNlabelString,
-    	    		st1=XmStringCreateSimple(title), NULL);
+    	    		st1=XmStringCreateSimple(title), nullptr);
 		XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 		XtAddCallback(items[n], XmNactivateCallback,
 			(XtCallbackProc)raiseCB, windows[windowIndex]);
@@ -4622,7 +4618,7 @@ static void updateWindowMenu(const WindowInfo *window)
     		window->windowMenuPane, 
     		XmNlabelString, st1=XmStringCreateSimple(title),
 		XmNmarginHeight, 0,
-    		XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+    		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)raiseCB, 
 	    	windows[windowIndex]);
     	XmStringFree(st1);
@@ -4637,9 +4633,9 @@ static void updateWindowMenu(const WindowInfo *window)
     	Dimension width, height;
 	
 	XtVaGetValues(window->windowMenuPane, XmNwidth, &width,
-	        XmNheight, &height, NULL);
+	        XmNheight, &height, nullptr);
 	XtVaSetValues(XtParent(window->windowMenuPane), XmNwidth, width,
-	        XmNheight, height, NULL);
+	        XmNheight, height, nullptr);
         XtManageChild(window->windowMenuPane);
     }
 }
@@ -4673,7 +4669,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
        code was already written for the Windows menu and is well tested, I'll
        stick with this weird method of re-naming the items */
     XtVaGetValues(window->prevOpenMenuPane, XmNchildren, &items,
-            XmNnumChildren, &nItems, NULL);
+            XmNnumChildren, &nItems, nullptr);
     index = 0;
     for (n=0; n<(int)nItems; n++) {
         if (index >= NPrevOpen) {
@@ -4682,7 +4678,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
             XtDestroyWidget(items[n]);          
         } else {
             XtVaSetValues(items[n], XmNlabelString,
-                    st1=XmStringCreateSimple(prevOpenSorted[index]), NULL);
+                    st1=XmStringCreateSimple(prevOpenSorted[index]), nullptr);
             XtRemoveAllCallbacks(items[n], XmNactivateCallback);
             XtAddCallback(items[n], XmNactivateCallback,
                     (XtCallbackProc)openPrevCB, prevOpenSorted[index]);
@@ -4697,7 +4693,7 @@ static void updatePrevOpenMenu(WindowInfo *window)
                 window->prevOpenMenuPane, 
                 XmNlabelString, st1=XmStringCreateSimple(prevOpenSorted[index]),
                 XmNmarginHeight, 0,
-                XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+                XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
         XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)openPrevCB, 
                 prevOpenSorted[index]);
         XmStringFree(st1);
@@ -4725,7 +4721,7 @@ static void updateTagsFileMenu(WindowInfo *window)
        code was already written for the Windows menu and is well tested, I'll
        stick with this weird method of re-naming the items */
     XtVaGetValues(window->unloadTagsMenuPane, XmNchildren, &items,
-	    XmNnumChildren, &nItems, NULL);
+	    XmNnumChildren, &nItems, nullptr);
     tf = TagsFileList;
     for (n=0; n<(int)nItems; n++) {
 	if (!tf) {
@@ -4734,7 +4730,7 @@ static void updateTagsFileMenu(WindowInfo *window)
 	    XtDestroyWidget(items[n]);          
 	} else {
 	    XtVaSetValues(items[n], XmNlabelString,
-		    st1=XmStringCreateSimple(tf->filename), NULL);
+		    st1=XmStringCreateSimple(tf->filename), nullptr);
 	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 	    XtAddCallback(items[n], XmNactivateCallback,
 		    (XtCallbackProc)unloadTagsFileCB, tf->filename);
@@ -4748,7 +4744,7 @@ static void updateTagsFileMenu(WindowInfo *window)
 	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
 		window->unloadTagsMenuPane, XmNlabelString,
 		st1=XmStringCreateSimple(tf->filename),XmNmarginHeight, 0,
-		XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback,
 		(XtCallbackProc)unloadTagsFileCB, tf->filename);
 	XmStringFree(st1);
@@ -4775,7 +4771,7 @@ static void updateTipsFileMenu(WindowInfo *window)
        code was already written for the Windows menu and is well tested, I'll
        stick with this weird method of re-naming the items */
     XtVaGetValues(window->unloadTipsMenuPane, XmNchildren, &items,
-	    XmNnumChildren, &nItems, NULL);
+	    XmNnumChildren, &nItems, nullptr);
     tf = TipsFileList;
     for (n=0; n<(int)nItems; n++) {
 	if (!tf) {
@@ -4784,7 +4780,7 @@ static void updateTipsFileMenu(WindowInfo *window)
 	    XtDestroyWidget(items[n]);          
 	} else {
 	    XtVaSetValues(items[n], XmNlabelString,
-		    st1=XmStringCreateSimple(tf->filename), NULL);
+		    st1=XmStringCreateSimple(tf->filename), nullptr);
 	    XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 	    XtAddCallback(items[n], XmNactivateCallback,
 		    (XtCallbackProc)unloadTipsFileCB, tf->filename);
@@ -4798,7 +4794,7 @@ static void updateTipsFileMenu(WindowInfo *window)
 	btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass,
 		window->unloadTipsMenuPane, XmNlabelString,
 		st1=XmStringCreateSimple(tf->filename),XmNmarginHeight, 0,
-		XmNuserData, TEMPORARY_MENU_ITEM, NULL);
+		XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XtAddCallback(btn, XmNactivateCallback,
 		(XtCallbackProc)unloadTipsFileCB, tf->filename);
 	XmStringFree(st1);
@@ -4830,8 +4826,8 @@ void WriteNEditDB(void)
     static char fileHeader[] =
             "# File name database for NEdit Open Previous command\n";
 
-    if (fullName == NULL) {
-        /*  GetRCFileName() might return NULL if an error occurs during
+    if (fullName == nullptr) {
+        /*  GetRCFileName() might return nullptr if an error occurs during
             creation of the preference file directory. */
         return;
     }
@@ -4842,7 +4838,7 @@ void WriteNEditDB(void)
     }
 
     /* open the file */
-    if ((fp = fopen(fullName, "w")) == NULL) {
+    if ((fp = fopen(fullName, "w")) == nullptr) {
         return;
     }
 
@@ -4899,9 +4895,9 @@ void ReadNEditDB(void)
 
     /* Don't move this check ahead of the previous statements. PrevOpen
        must be initialized at all times. */
-    if (fullName == NULL)
+    if (fullName == nullptr)
     {
-        /*  GetRCFileName() might return NULL if an error occurs during
+        /*  GetRCFileName() might return nullptr if an error occurs during
             creation of the preference file directory. */
         return;
     }
@@ -4926,7 +4922,7 @@ void ReadNEditDB(void)
     }
       
     /* open the file */
-    if ((fp = fopen(fullName, "r")) == NULL) {
+    if ((fp = fopen(fullName, "r")) == nullptr) {
         return;
     }
 
@@ -4939,7 +4935,7 @@ void ReadNEditDB(void)
        comments and are thrown away.  Lines are subject to cursory checking,
        then just copied to the Open Previous file menu list */
     while (True) {
-        if (fgets(line, sizeof(line), fp) == NULL) {
+        if (fgets(line, sizeof(line), fp) == nullptr) {
             /* end of file */
             fclose(fp);
             return;
@@ -4956,7 +4952,7 @@ void ReadNEditDB(void)
         if (line[lineLen - 1] != '\n') {
             /* no newline, probably truncated */
             fprintf(stderr, "nedit: Line too long in history file\n");
-            while (fgets(line, sizeof(line), fp) != NULL) {
+            while (fgets(line, sizeof(line), fp) != nullptr) {
                 lineLen = strlen(line);
                 if (lineLen > 0 && line[lineLen - 1] == '\n') {
                     break;
@@ -4992,7 +4988,7 @@ static void updateWindowSizeMenus(void)
 {
     WindowInfo *win;
     
-    for (win=WindowList; win!=NULL; win=win->next)
+    for (win=WindowList; win!=nullptr; win=win->next)
     	updateWindowSizeMenu(win);
 }
 
@@ -5013,12 +5009,12 @@ static void updateWindowSizeMenu(WindowInfo *win)
     	XmToggleButtonSetState(win->sizeCustomDefItem, True, False);
     	sprintf(title, "Custom... (%d x %d)", rows, cols);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple(title), NULL);
+    	    	XmNlabelString, st1=XmStringCreateSimple(title), nullptr);
     	XmStringFree(st1);
     } else {
     	XmToggleButtonSetState(win->sizeCustomDefItem, False, False);
     	XtVaSetValues(win->sizeCustomDefItem,
-    	    	XmNlabelString, st1=XmStringCreateSimple((String)"Custom..."), NULL);
+    	    	XmNlabelString, st1=XmStringCreateSimple((String)"Custom..."), nullptr);
     	XmStringFree(st1);
     }
 }
@@ -5248,9 +5244,9 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window)
 */
 void AddBGMenuAction(Widget widget)
 {
-    static XtTranslations table = NULL;
+    static XtTranslations table = nullptr;
 
-    if (table == NULL) {
+    if (table == nullptr) {
 	char translations[MAX_ACCEL_LEN + 25];
 	sprintf(translations, "%s: post_window_bg_menu()\n",GetPrefBGMenuBtn());
     	table = XtParseTranslationTable(translations);
@@ -5266,7 +5262,7 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args,
     /* The Motif popup handling code BLOCKS events while the menu is posted,
        including the matching btn-up events which complete various dragging
        operations which it may interrupt.  Cancel to head off problems */
-    XtCallActionProc(window->lastFocus, "process_cancel", event, NULL, 0);
+    XtCallActionProc(window->lastFocus, "process_cancel", event, nullptr, 0);
     
     /* Pop up the menu */
     XmMenuPosition(window->bgMenuPane, (XButtonPressedEvent *)event);
@@ -5288,9 +5284,9 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args,
 
 void AddTabContextMenuAction(Widget widget)
 {
-    static XtTranslations table = NULL;
+    static XtTranslations table = nullptr;
 
-    if (table == NULL) {
+    if (table == nullptr) {
 	const char *translations = "<Btn3Down>: post_tab_context_menu()\n";
     	table = XtParseTranslationTable((String)translations);
     }
@@ -5327,12 +5323,12 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args,
     else {
     	window = WidgetToWindow(w);
     }
-    XtVaSetValues(window->tabMenuPane, XmNuserData, (XtPointer)window, NULL);
+    XtVaSetValues(window->tabMenuPane, XmNuserData, (XtPointer)window, nullptr);
     
     /* The Motif popup handling code BLOCKS events while the menu is posted,
        including the matching btn-up events which complete various dragging
        operations which it may interrupt.  Cancel to head off problems */
-    XtCallActionProc(window->lastFocus, "process_cancel", event, NULL, 0);
+    XtCallActionProc(window->lastFocus, "process_cancel", event, nullptr, 0);
     
     /* Pop up the menu */
     XmMenuPosition(window->tabMenuPane, (XButtonPressedEvent *)event);
@@ -5417,7 +5413,7 @@ static void shortMenusCB(Widget w, XtPointer clientData, XtPointer callData)
     SetPrefShortMenus(state);
     
     /* Re-create the menus for all windows */
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
     	for (i=0; i<win->nToggleShortItems; i++) {
     	    if (state)
     	    	XtUnmanageChild(win->toggleShortItems[i]);

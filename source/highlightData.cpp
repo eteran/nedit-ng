@@ -157,7 +157,7 @@ static struct {
     Widget managedListW;
     highlightStyleRec **highlightStyleList;
     int nHighlightStyles;
-} HSDialog = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0};
+} HSDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0};
 
 /* Highlight dialog information */
 static struct {
@@ -188,9 +188,9 @@ static struct {
     char *langModeName;
     int nPatterns;
     highlightPattern **patterns;
-} HighlightDialog = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, NULL, NULL, NULL, NULL, 0, NULL };
+} HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                     nullptr, nullptr, nullptr, nullptr, nullptr, 0, nullptr };
 
 /* Pattern sources loaded from the .nedit file or set by the user */
 static int NPatternSets = 0;
@@ -476,7 +476,7 @@ static const char *DefaultPatternSets[] = {
 	storage keyword:\"<(const|extern|auto|register|static|unsigned|signed|volatile|char|double|float|int|long|short|void|typedef|struct|union|enum)>\":::Storage Type::D\n\
 	keyword:\"<(return|goto|if|else|case|default|switch|break|continue|while|do|for|sizeof)>\":::Keyword::D\n\
 	lex keyword:\"<(yylval|yytext|input|unput|output|lex_input|lex_output|yylex|yymore|yyless|yyin|yyout|yyleng|yywtext|yywleng|yyterminate|REJECT|ECHO|BEGIN|YY_NEW_FILE|yy_create_buffer|yy_switch_to_buffer|yy_delete_buffer|YY_CURRENT_BUFFER|YY_BUFFER_STATE|YY_DECL|YY_INPUT|yywrap|YY_USER_ACTION|YY_USER_INIT|YY_BREAK)>\":::Text Arg::D\n\
-	stdlib:\"<(BUFSIZ|CHAR_BIT|CHAR_MAX|CHAR_MIN|CLOCKS_PER_SEC|DBL_DIG|DBL_EPSILON|DBL_MANT_DIG|DBL_MAX|DBL_MAX_10_EXP|DBL_MAX_EXP|DBL_MIN|DBL_MIN_10_EXP|DBL_MIN_EXP|EDOM|EOF|ERANGE|EXIT_FAILURE|EXIT_SUCCESS|FILE|FILENAME_MAX|FLT_DIG|FLT_EPSILON|FLT_MANT_DIG|FLT_MAX|FLT_MAX_10_EXP|FLT_MAX_EXP|FLT_MIN|FLT_MIN_10_EXP|FLT_MIN_EXP|FLT_RADIX|FLT_ROUNDS|FOPEN_MAX|HUGE_VAL|INT_MAX|INT_MIN|LC_ALL|LC_COLLATE|LC_CTYPE|LC_MONETARY|LC_NUMERIC|LC_TIME|LDBL_DIG|LDBL_EPSILON|LDBL_MANT_DIG|LDBL_MAX|LDBL_MAX_10_EXP|LDBL_MAX_EXP|LDBL_MIN|LDBL_MIN_10_EXP|LDBL_MIN_EXP|LONG_MAX|LONG_MIN|L_tmpnam|MB_CUR_MAX|MB_LEN_MAX|NULL|RAND_MAX|SCHAR_MAX|SCHAR_MIN|SEEK_CUR|SEEK_END|SEEK_SET|SHRT_MAX|SHRT_MIN|SIGABRT|SIGFPE|SIGILL|SIGINT|SIGSEGV|SIGTERM|SIG_DFL|SIG_ERR|SIG_IGN|TMP_MAX|UCHAR_MAX|UINT_MAX|ULONG_MAX|USHRT_MAX|WCHAR_MAX|WCHAR_MIN|WEOF|_IOFBF|_IOLBF|_IONBF|abort|abs|acos|asctime|asin|assert|atan|atan2|atexit|atof|atoi|atol|bsearch|btowc|calloc|ceil|clearerr|clock|clock_t|cos|cosh|ctime|difftime|div|div_t|errno|exit|exp|fabs|fclose|feof|ferror|fflush|fgetc|fgetpos|fgets|fgetwc|fgetws|floor|fmod|fopen|fpos_t|fprintf|fputc|fputs|fputwc|fputws|fread|free|freopen|frexp|fscanf|fseek|fsetpos|ftell|fwide|fwprintf|fwrite|fwscanf|getc|getchar|getenv|gets|getwc|getwchar|gmtime|isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|iswalnum|iswalpha|iswcntrl|iswctype|iswdigit|iswgraph|iswlower|iswprint|iswpunct|iswspace|iswupper|iswxdigit|isxdigit|jmp_buf|labs|lconv|ldexp|ldiv|ldiv_t|localeconv|localtime|log|log10|longjmp|malloc|mblen|mbrlen|mbrtowc|mbsinit|mbsrtowcs|mbstate_t|mbstowcs|mbtowc|memchr|memcmp|memcpy|memmove|memset|mktime|modf|offsetof|perror|pow|printf|ptrdiff_t|putc|puts|putwc|putwchar|qsort|raise|rand|realloc|remove|rename|rewind|scanf|setbuf|setjmp|setlocale|setvbuf|sig_atomic_t|signal|sin|sinh|size_t|sprintf|sqrt|srand|sscanf|stderr|stdin|stdout|strcat|strchr|strcmp|strcoll|strcpy|strcspn|strerror|strftime|strlen|strncat|strncmp|strncpy|stroul|strpbrk|strrchr|strspn|strstr|strtod|strtok|strtol|strxfrm|swprintf|swscanf|system|tan|tanh|time|time_t|tm|tmpfile|tmpnam|tolower|toupper|towctrans|towlower|towupper|ungetc|ungetwc|va_arg|va_end|va_list|va_start|vfwprintf|vprintf|vsprintf|vswprintf|vwprintf|wint_t|wmemchr|wmemcmp|wmemcpy|wmemmove|wmemset|wprintf|wscanf)>\":::Subroutine::D\n\
+	stdlib:\"<(BUFSIZ|CHAR_BIT|CHAR_MAX|CHAR_MIN|CLOCKS_PER_SEC|DBL_DIG|DBL_EPSILON|DBL_MANT_DIG|DBL_MAX|DBL_MAX_10_EXP|DBL_MAX_EXP|DBL_MIN|DBL_MIN_10_EXP|DBL_MIN_EXP|EDOM|EOF|ERANGE|EXIT_FAILURE|EXIT_SUCCESS|FILE|FILENAME_MAX|FLT_DIG|FLT_EPSILON|FLT_MANT_DIG|FLT_MAX|FLT_MAX_10_EXP|FLT_MAX_EXP|FLT_MIN|FLT_MIN_10_EXP|FLT_MIN_EXP|FLT_RADIX|FLT_ROUNDS|FOPEN_MAX|HUGE_VAL|INT_MAX|INT_MIN|LC_ALL|LC_COLLATE|LC_CTYPE|LC_MONETARY|LC_NUMERIC|LC_TIME|LDBL_DIG|LDBL_EPSILON|LDBL_MANT_DIG|LDBL_MAX|LDBL_MAX_10_EXP|LDBL_MAX_EXP|LDBL_MIN|LDBL_MIN_10_EXP|LDBL_MIN_EXP|LONG_MAX|LONG_MIN|L_tmpnam|MB_CUR_MAX|MB_LEN_MAX|nullptr|RAND_MAX|SCHAR_MAX|SCHAR_MIN|SEEK_CUR|SEEK_END|SEEK_SET|SHRT_MAX|SHRT_MIN|SIGABRT|SIGFPE|SIGILL|SIGINT|SIGSEGV|SIGTERM|SIG_DFL|SIG_ERR|SIG_IGN|TMP_MAX|UCHAR_MAX|UINT_MAX|ULONG_MAX|USHRT_MAX|WCHAR_MAX|WCHAR_MIN|WEOF|_IOFBF|_IOLBF|_IONBF|abort|abs|acos|asctime|asin|assert|atan|atan2|atexit|atof|atoi|atol|bsearch|btowc|calloc|ceil|clearerr|clock|clock_t|cos|cosh|ctime|difftime|div|div_t|errno|exit|exp|fabs|fclose|feof|ferror|fflush|fgetc|fgetpos|fgets|fgetwc|fgetws|floor|fmod|fopen|fpos_t|fprintf|fputc|fputs|fputwc|fputws|fread|free|freopen|frexp|fscanf|fseek|fsetpos|ftell|fwide|fwprintf|fwrite|fwscanf|getc|getchar|getenv|gets|getwc|getwchar|gmtime|isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|iswalnum|iswalpha|iswcntrl|iswctype|iswdigit|iswgraph|iswlower|iswprint|iswpunct|iswspace|iswupper|iswxdigit|isxdigit|jmp_buf|labs|lconv|ldexp|ldiv|ldiv_t|localeconv|localtime|log|log10|longjmp|malloc|mblen|mbrlen|mbrtowc|mbsinit|mbsrtowcs|mbstate_t|mbstowcs|mbtowc|memchr|memcmp|memcpy|memmove|memset|mktime|modf|offsetof|perror|pow|printf|ptrdiff_t|putc|puts|putwc|putwchar|qsort|raise|rand|realloc|remove|rename|rewind|scanf|setbuf|setjmp|setlocale|setvbuf|sig_atomic_t|signal|sin|sinh|size_t|sprintf|sqrt|srand|sscanf|stderr|stdin|stdout|strcat|strchr|strcmp|strcoll|strcpy|strcspn|strerror|strftime|strlen|strncat|strncmp|strncpy|stroul|strpbrk|strrchr|strspn|strstr|strtod|strtok|strtol|strxfrm|swprintf|swscanf|system|tan|tanh|time|time_t|tm|tmpfile|tmpnam|tolower|toupper|towctrans|towlower|towupper|ungetc|ungetwc|va_arg|va_end|va_list|va_start|vfwprintf|vprintf|vsprintf|vswprintf|vwprintf|wint_t|wmemchr|wmemcmp|wmemcpy|wmemmove|wmemset|wprintf|wscanf)>\":::Subroutine::D\n\
 	label:\"<goto>|(^[ \\t]*[A-Za-z_][A-Za-z0-9_]*[ \\t]*:)\":::Flag::D\n\
 	braces:\"[{}]\":::Keyword::D\n\
 	markers:\"(?<!\\Y)(%\\{|%\\}|%%)(?!\\Y)\":::Flag::D}",
@@ -789,7 +789,7 @@ static const char *DefaultPatternSets[] = {
 	md parameter entity:\"%(\\(\\l[\\l\\d\\-\\.]*\\))?\\l[\\l\\d\\-\\.]*;?\":::Text Escape:markup declaration:\n\
 	system-public id:\"<(?isystem|public|cdata)>\":::Storage Type:markup declaration:}",
     "SQL:1:0{\n\
-	keywords:\",|%|\\<|\\>|:=|=|<(SELECT|ON|FROM|ORDER BY|DESC|WHERE|AND|OR|NOT|NULL|TRUE|FALSE)>\":::Keyword::\n\
+	keywords:\",|%|\\<|\\>|:=|=|<(SELECT|ON|FROM|ORDER BY|DESC|WHERE|AND|OR|NOT|nullptr|TRUE|FALSE)>\":::Keyword::\n\
 	comment:\"--\":\"$\"::Comment::\n\
 	data types:\"<(CHAR|VARCHAR2\\([0-9]*\\)|INT[0-9]*|POINT|BOX|TEXT|BOOLEAN|VARCHAR2|VARCHAR|NUMBER\\([0-9]*\\)|NUMBER)(?!\\Y)\":::Storage Type::\n\
 	string:\"'\":\"'\"::String::\n\
@@ -1017,7 +1017,7 @@ int LoadStylesString(char *inString)
 
 	/* read style name */
 	hs->name = ReadSymbolicField(&inPtr);
-	if (hs->name == NULL)
+	if (hs->name == nullptr)
     	    return styleError(inString,inPtr, "style name required");
 	if (!SkipDelimiter(&inPtr, &errMsg)) {
 	    XtFree(hs->name);
@@ -1027,12 +1027,12 @@ int LoadStylesString(char *inString)
     	
     	/* read color */
 	hs->color = ReadSymbolicField(&inPtr);
-	if (hs->color == NULL) {
+	if (hs->color == nullptr) {
 	    XtFree(hs->name);
 	    XtFree((char *)hs);
     	    return styleError(inString,inPtr, "color name required");
 	}
-        hs->bgColor = NULL;
+        hs->bgColor = nullptr;
         if (SkipOptSeparator('/', &inPtr)) {
     	    /* read bgColor */
 	    hs->bgColor = ReadSymbolicField(&inPtr); /* no error if fails */
@@ -1132,7 +1132,7 @@ int LoadHighlightString(char *inString, int convertOld)
    	
    	/* Read each pattern set, abort on error */
    	patSet = readPatternSet(&inPtr, convertOld);
-   	if (patSet == NULL)
+   	if (patSet == nullptr)
    	    return False;
    	
 	/* Add/change the pattern set in the list */
@@ -1234,7 +1234,7 @@ static void convertPatternExpr(char **patternRE, const char *patSetName,
     char *newRE;
 	const char *errorText;
     
-    if (*patternRE == NULL)
+    if (*patternRE == nullptr)
 	return;
     if (isSubsExpr) {
 	newRE = XtMalloc(strlen(*patternRE) + 5000);
@@ -1244,7 +1244,7 @@ static void convertPatternExpr(char **patternRE, const char *patSetName,
 	XtFree(newRE);
     } else{
 	newRE = ConvertRE(*patternRE, &errorText);
-	if (newRE == NULL) {
+	if (newRE == nullptr) {
 	    fprintf(stderr, "NEdit error converting old format regular "
 		    "expression in pattern set %s, pattern %s: %s\n",
 		    patSetName, patName, errorText);
@@ -1277,7 +1277,7 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName)
     	font = GetDefaultFontStruct(window->fontList);
     
     /* If font isn't loaded, silently substitute primary font */
-    return font == NULL ? GetDefaultFontStruct(window->fontList) : font;
+    return font == nullptr ? GetDefaultFontStruct(window->fontList) : font;
 }
 
 int FontOfNamedStyleIsBold(const char *styleName)
@@ -1336,19 +1336,19 @@ int NamedStyleExists(const char *styleName)
 
 /*
 ** Look through the list of pattern sets, and find the one for a particular
-** language.  Returns NULL if not found.
+** language.  Returns nullptr if not found.
 */
 patternSet *FindPatternSet(const char *langModeName)
 {
     int i;
     
-    if (langModeName == NULL)
-    	return NULL;
+    if (langModeName == nullptr)
+    	return nullptr;
 	
     for (i=0; i<NPatternSets; i++)
     	if (!strcmp(langModeName, PatternSets[i]->languageMode))
     	    return PatternSets[i];
-    return NULL;
+    return nullptr;
     
 }
 
@@ -1358,9 +1358,9 @@ patternSet *FindPatternSet(const char *langModeName)
 */
 int LMHasHighlightPatterns(const char *languageMode)
 {
-    if (FindPatternSet(languageMode) != NULL)
+    if (FindPatternSet(languageMode) != nullptr)
     	return True;
-    return HighlightDialog.shell!=NULL && !strcmp(HighlightDialog.langModeName,
+    return HighlightDialog.shell!=nullptr && !strcmp(HighlightDialog.langModeName,
     	    languageMode) && HighlightDialog.nPatterns != 0;
 }
 
@@ -1379,7 +1379,7 @@ void RenameHighlightPattern(const char *oldName, const char *newName)
     	    PatternSets[i]->languageMode = XtNewString(newName);
     	}
     }
-    if (HighlightDialog.shell != NULL) {
+    if (HighlightDialog.shell != nullptr) {
     	if (!strcmp(HighlightDialog.langModeName, oldName)) {
     	    XtFree(HighlightDialog.langModeName);
     	    HighlightDialog.langModeName = XtNewString(newName);
@@ -1397,11 +1397,11 @@ static Widget createHighlightStylesMenu(Widget parent)
     int i;
     XmString s1;
 
-    menu = CreatePulldownMenu(parent, (String)"highlightStyles", NULL, 0);
+    menu = CreatePulldownMenu(parent, (String)"highlightStyles", nullptr, 0);
     for (i=0; i<NHighlightStyles; i++) {
         XtVaCreateManagedWidget("highlightStyles", xmPushButtonWidgetClass,menu,
     	      XmNlabelString, s1=XmStringCreateSimple(HighlightStyles[i]->name),
-    	      XmNuserData, (void *)HighlightStyles[i]->name, NULL);
+    	      XmNuserData, (void *)HighlightStyles[i]->name, nullptr);
         XmStringFree(s1);
     }
     return menu;
@@ -1420,18 +1420,18 @@ static char *createPatternsString(patternSet *patSet, const char *indentStr)
     	BufInsert(outBuf, outBuf->length, indentStr);
     	BufInsert(outBuf, outBuf->length, pat->name);
     	BufInsert(outBuf, outBuf->length, ":");
-    	if (pat->startRE != NULL) {
+    	if (pat->startRE != nullptr) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(pat->startRE));
     	    XtFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
-    	if (pat->endRE != NULL) {
+    	if (pat->endRE != nullptr) {
     	    BufInsert(outBuf, outBuf->length, str=MakeQuotedString(pat->endRE));
     	    XtFree(str);
     	}
     	BufInsert(outBuf, outBuf->length, ":");
-    	if (pat->errorRE != NULL) {
+    	if (pat->errorRE != nullptr) {
     	    BufInsert(outBuf, outBuf->length,
     	    	    str=MakeQuotedString(pat->errorRE));
     	    XtFree(str);
@@ -1439,7 +1439,7 @@ static char *createPatternsString(patternSet *patSet, const char *indentStr)
     	BufInsert(outBuf, outBuf->length, ":");
     	BufInsert(outBuf, outBuf->length, pat->style);
     	BufInsert(outBuf, outBuf->length, ":");
-    	if (pat->subPatternOf != NULL)
+    	if (pat->subPatternOf != nullptr)
     	    BufInsert(outBuf, outBuf->length, pat->subPatternOf);
     	BufInsert(outBuf, outBuf->length, ":");
     	if (pat->flags & DEFER_PARSING)
@@ -1457,7 +1457,7 @@ static char *createPatternsString(patternSet *patSet, const char *indentStr)
 
 /*
 ** Read in a pattern set character string, and advance *inPtr beyond it.
-** Returns NULL and outputs an error to stderr on failure.
+** Returns nullptr and outputs an error to stderr on failure.
 */
 static patternSet *readPatternSet(const char **inPtr, int convertOld)
 {
@@ -1470,7 +1470,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld)
 
     /* read language mode field */
     patSet.languageMode = ReadSymbolicField(inPtr);
-    if (patSet.languageMode == NULL)
+    if (patSet.languageMode == nullptr)
     	return highlightError(stringStart, *inPtr,
     	    	"language mode must be specified");
     if (!SkipDelimiter(inPtr, &errMsg))
@@ -1482,7 +1482,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld)
     	*inPtr += 7;
     	retPatSet = readDefaultPatternSet(patSet.languageMode);
     	XtFree((char *)patSet.languageMode);
-    	if (retPatSet == NULL)
+    	if (retPatSet == nullptr)
     	    return highlightError(stringStart, *inPtr,
     	    	    "No default pattern set");
     	return retPatSet;
@@ -1503,7 +1503,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld)
     /* read pattern list */
     patSet.patterns = readHighlightPatterns(inPtr,
    	    True, &errMsg, &patSet.nPatterns);
-    if (patSet.patterns == NULL)
+    if (patSet.patterns == nullptr)
 	return highlightError(stringStart, *inPtr, errMsg);
 
     /* pattern set was read correctly, make an allocated copy to return */
@@ -1520,7 +1520,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld)
 
 /*
 ** Parse a set of highlight patterns into an array of highlightPattern
-** structures, and a language mode name.  If unsuccessful, returns NULL with
+** structures, and a language mode name.  If unsuccessful, returns nullptr with
 ** (statically allocated) message in "errMsg".
 */
 static highlightPattern *readHighlightPatterns(const char **inPtr, int withBraces,
@@ -1549,7 +1549,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
     	if (**inPtr == '\0') {
     	    if (withBraces) {
     		*errMsg = "end of pattern list not found";
-    		return NULL;
+    		return nullptr;
     	    } else
     	    	break;
 	} else if (**inPtr == '}') {
@@ -1558,10 +1558,10 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
     	}
     	if (pat - patternList >= MAX_PATTERNS) {
     	    *errMsg = "max number of patterns exceeded\n";
-    	    return NULL;
+    	    return nullptr;
     	}
     	if (!readHighlightPattern(inPtr, errMsg, pat++))
-    	    return NULL;
+    	    return nullptr;
     }
     
     /* allocate a more appropriately sized list to return patterns */
@@ -1577,7 +1577,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg,
 {
     /* read the name field */
     pattern->name = ReadSymbolicField(inPtr);
-    if (pattern->name == NULL) {
+    if (pattern->name == nullptr) {
     	*errMsg = "pattern name is required";
     	return False;
     }
@@ -1592,7 +1592,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg,
     
     /* read the end pattern */
     if (**inPtr == ':')
-    	pattern->endRE = NULL;
+    	pattern->endRE = nullptr;
     else if (!ReadQuotedString(inPtr, errMsg, &pattern->endRE))
     	return False;
     if (!SkipDelimiter(inPtr, errMsg))
@@ -1600,7 +1600,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg,
     
     /* read the error pattern */
     if (**inPtr == ':')
-    	pattern->errorRE = NULL;
+    	pattern->errorRE = nullptr;
     else if (!ReadQuotedString(inPtr, errMsg, &pattern->errorRE))
     	return False;
     if (!SkipDelimiter(inPtr, errMsg))
@@ -1608,7 +1608,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg,
     
     /* read the style field */
     pattern->style = ReadSymbolicField(inPtr);
-    if (pattern->style == NULL) {
+    if (pattern->style == nullptr) {
     	*errMsg = "style field required in pattern";
     	return False;
     }
@@ -1657,7 +1657,7 @@ static patternSet *readDefaultPatternSet(const char *langModeName)
     	    return readPatternSet(&strPtr, False);
     	}
     }
-    return NULL;
+    return nullptr;
 }
 
 /*
@@ -1669,7 +1669,7 @@ static int isDefaultPatternSet(patternSet *patSet)
     int retVal;
     
     defaultPatSet = readDefaultPatternSet(patSet->languageMode);
-    if (defaultPatSet == NULL)
+    if (defaultPatSet == nullptr)
     	return False;
     retVal = !patternSetsDiffer(patSet, defaultPatSet);
     freePatternSet(defaultPatSet);
@@ -1682,15 +1682,15 @@ static int isDefaultPatternSet(patternSet *patSet)
 static patternSet *highlightError(const char *stringStart, const char *stoppedAt,
     	const char *message)
 {
-    ParseError(NULL, stringStart, stoppedAt, "highlight pattern", message);
-    return NULL;
+    ParseError(nullptr, stringStart, stoppedAt, "highlight pattern", message);
+    return nullptr;
 }
 
 
 static int styleError(const char *stringStart, const char *stoppedAt,
         const  char *message)
 {
-    ParseError(NULL, stringStart, stoppedAt, "style specification", message);
+    ParseError(nullptr, stringStart, stoppedAt, "style specification", message);
     return False;
 }
 
@@ -1710,8 +1710,8 @@ void EditHighlightStyles(const char *initialStyle)
     Arg args[20];
 
     /* if the dialog is already displayed, just pop it to the top and return */
-    if (HSDialog.shell != NULL) {
-	if (initialStyle != NULL)
+    if (HSDialog.shell != nullptr) {
+	if (initialStyle != nullptr)
 	    setStyleByName(initialStyle);
     	RaiseDialogWindow(HSDialog.shell);
     	return;
@@ -1736,9 +1736,9 @@ void EditHighlightStyles(const char *initialStyle)
     AddSmallIcon(HSDialog.shell);
     form = XtVaCreateManagedWidget("editHighlightStyles", xmFormWidgetClass,
 	    HSDialog.shell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, NULL);
-    XtAddCallback(form, XmNdestroyCallback, hsDestroyCB, NULL);
-    AddMotifCloseCallback(HSDialog.shell, hsCloseCB, NULL);
+	    XmNresizePolicy, XmRESIZE_NONE, nullptr);
+    XtAddCallback(form, XmNdestroyCallback, hsDestroyCB, nullptr);
+    AddMotifCloseCallback(HSDialog.shell, hsCloseCB, nullptr);
         
     topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)
@@ -1750,7 +1750,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, HS_LEFT_MARGIN_POS,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, HS_RIGHT_MARGIN_POS, NULL);
+	    XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
     XmStringFree(s1);
     
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass, form,
@@ -1761,7 +1761,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, HS_H_MARGIN,
-	    XmNtopWidget, topLbl, NULL);
+	    XmNtopWidget, topLbl, nullptr);
     XmStringFree(s1);
  
     HSDialog.nameW = XtVaCreateManagedWidget("name", xmTextWidgetClass, form,
@@ -1770,9 +1770,9 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, nameLbl,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, HS_RIGHT_MARGIN_POS, NULL);
+	    XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
     RemapDeleteKey(HSDialog.nameW);
-    XtVaSetValues(nameLbl, XmNuserData, HSDialog.nameW, NULL);
+    XtVaSetValues(nameLbl, XmNuserData, HSDialog.nameW, nullptr);
     
     colorLbl = XtVaCreateManagedWidget("colorLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Foreground Color:"),
@@ -1782,7 +1782,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, HS_H_MARGIN,
-	    XmNtopWidget, HSDialog.nameW, NULL);
+	    XmNtopWidget, HSDialog.nameW, nullptr);
     XmStringFree(s1);
  
     HSDialog.colorW = XtVaCreateManagedWidget("color", xmTextWidgetClass, form,
@@ -1791,9 +1791,9 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, colorLbl,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, HS_RIGHT_MARGIN_POS, NULL);
+	    XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
     RemapDeleteKey(HSDialog.colorW);
-    XtVaSetValues(colorLbl, XmNuserData, HSDialog.colorW, NULL);
+    XtVaSetValues(colorLbl, XmNuserData, HSDialog.colorW, nullptr);
     
     bgColorLbl = XtVaCreateManagedWidget("bgColorLbl", xmLabelGadgetClass, form,
     	    XmNlabelString,
@@ -1804,7 +1804,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, HS_H_MARGIN,
-	    XmNtopWidget, HSDialog.colorW, NULL);
+	    XmNtopWidget, HSDialog.colorW, nullptr);
     XmStringFree(s1);
  
     HSDialog.bgColorW = XtVaCreateManagedWidget("bgColor",
@@ -1814,9 +1814,9 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, bgColorLbl,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, HS_RIGHT_MARGIN_POS, NULL);
+	    XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
     RemapDeleteKey(HSDialog.bgColorW);
-    XtVaSetValues(bgColorLbl, XmNuserData, HSDialog.bgColorW, NULL);
+    XtVaSetValues(bgColorLbl, XmNuserData, HSDialog.bgColorW, nullptr);
     
     fontLbl = XtVaCreateManagedWidget("fontLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Font:"),
@@ -1825,7 +1825,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, HS_H_MARGIN,
-	    XmNtopWidget, HSDialog.bgColorW, NULL);
+	    XmNtopWidget, HSDialog.bgColorW, nullptr);
     XmStringFree(s1);
 
     fontBox = XtVaCreateManagedWidget("fontBox", xmRowColumnWidgetClass, form,
@@ -1835,27 +1835,27 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, HS_LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
-	    XmNtopWidget, fontLbl, NULL);
+	    XmNtopWidget, fontLbl, nullptr);
     HSDialog.plainW = XtVaCreateManagedWidget("plain", 
     	    xmToggleButtonWidgetClass, fontBox,
     	    XmNset, True,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Plain"),
-    	    XmNmnemonic, 'P', NULL);
+    	    XmNmnemonic, 'P', nullptr);
     XmStringFree(s1);
     HSDialog.boldW = XtVaCreateManagedWidget("bold", 
     	    xmToggleButtonWidgetClass, fontBox,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold"),
-    	    XmNmnemonic, 'B', NULL);
+    	    XmNmnemonic, 'B', nullptr);
     XmStringFree(s1);
     HSDialog.italicW = XtVaCreateManagedWidget("italic", 
     	    xmToggleButtonWidgetClass, fontBox,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Italic"),
-    	    XmNmnemonic, 'I', NULL);
+    	    XmNmnemonic, 'I', nullptr);
     XmStringFree(s1);
     HSDialog.boldItalicW = XtVaCreateManagedWidget("boldItalic", 
     	    xmToggleButtonWidgetClass, fontBox,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold Italic"),
-    	    XmNmnemonic, 'o', NULL);
+    	    XmNmnemonic, 'o', nullptr);
     XmStringFree(s1);
     	    
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
@@ -1866,8 +1866,8 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 30,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(okBtn, XmNactivateCallback, hsOkCB, NULL);
+    	    XmNbottomPosition, 99, nullptr);
+    XtAddCallback(okBtn, XmNactivateCallback, hsOkCB, nullptr);
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("apply",xmPushButtonWidgetClass,form,
@@ -1878,8 +1878,8 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 60,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
-    XtAddCallback(applyBtn, XmNactivateCallback, hsApplyCB, NULL);
+    	    XmNbottomPosition, 99, nullptr);
+    XtAddCallback(applyBtn, XmNactivateCallback, hsApplyCB, nullptr);
     XmStringFree(s1);
 
     closeBtn = XtVaCreateManagedWidget("close",
@@ -1891,8 +1891,8 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     	    XmNrightPosition, 90,
     	    XmNbottomAttachment, XmATTACH_POSITION,
     	    XmNbottomPosition, 99,
-            NULL);
-    XtAddCallback(closeBtn, XmNactivateCallback, hsCloseCB, NULL);
+            nullptr);
+    XtAddCallback(closeBtn, XmNactivateCallback, hsCloseCB, nullptr);
     XmStringFree(s1);
     
     sep1 = XtVaCreateManagedWidget("sep1", xmSeparatorGadgetClass, form,
@@ -1903,7 +1903,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
  	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
     	    XmNbottomWidget, closeBtn, 0,
-	    XmNbottomOffset, HS_H_MARGIN, NULL);
+	    XmNbottomOffset, HS_H_MARGIN, nullptr);
     
     ac = 0;
     XtSetArg(args[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
@@ -1918,16 +1918,16 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
     XtSetArg(args[ac], XmNbottomOffset, HS_H_MARGIN); ac++;
     HSDialog.managedListW = CreateManagedList(form, (String)"list", args, ac,
     	    (void **)HSDialog.highlightStyleList, &HSDialog.nHighlightStyles,
-    	    MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, NULL, hsSetDisplayedCB,
+    	    MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, nullptr, hsSetDisplayedCB,
     	    form, hsFreeItemCB);
-    XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, NULL);
+    XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, nullptr);
  
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
     
     /* If there's a suggestion for an initial selection, make it */
-    if (initialStyle != NULL)
+    if (initialStyle != nullptr)
 	setStyleByName(initialStyle);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
@@ -1953,7 +1953,7 @@ static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData)
 
     /* pop down and destroy the dialog */
     XtDestroyWidget(HSDialog.shell);
-    HSDialog.shell = NULL;
+    HSDialog.shell = nullptr;
 }
 
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData)
@@ -1965,7 +1965,7 @@ static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     /* pop down and destroy the dialog */
     XtDestroyWidget(HSDialog.shell);
-    HSDialog.shell = NULL;
+    HSDialog.shell = nullptr;
 }
 
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
@@ -1975,12 +1975,12 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     
     /* If the dialog is currently displaying the "new" entry and the
        fields are empty, that's just fine */
-    if (oldItem == NULL && hsDialogEmpty())
-    	return NULL;
+    if (oldItem == nullptr && hsDialogEmpty())
+    	return nullptr;
     
     /* If there are no problems reading the data, just return it */
     hs = readHSDialogFields(True);
-    if (hs != NULL)
+    if (hs != nullptr)
     	return (void *)hs;
     
     /* If there are problems, and the user didn't ask for the fields to be
@@ -1991,8 +1991,8 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
                 "Discard incomplete entry\nfor current highlight style?",
                 "Keep", "Discard") == 2)
         {
-            return oldItem == NULL
-                    ? NULL
+            return oldItem == nullptr
+                    ? nullptr
                     : (void *)copyHighlightStyleRec((highlightStyleRec *)oldItem);
         }
     }
@@ -2000,14 +2000,14 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     /* Do readHSDialogFields again without "silent" mode to display warning */
     hs = readHSDialogFields(False);
     *abort = True;
-    return NULL;
+    return nullptr;
 }
 
 static void hsSetDisplayedCB(void *item, void *cbArg)
 {
     highlightStyleRec *hs = (highlightStyleRec *)item;
 
-    if (item == NULL) {
+    if (item == nullptr) {
     	XmTextSetString(HSDialog.nameW, (String)"");
     	XmTextSetString(HSDialog.colorW, (String)"");
     	XmTextSetString(HSDialog.bgColorW, (String)"");
@@ -2066,9 +2066,9 @@ static highlightStyleRec *readHSDialogFields(int silent)
     /* read the name field */
     hs->name = ReadSymbolicFieldTextWidget(HSDialog.nameW,
     	    "highlight style name", silent);
-    if (hs->name == NULL) {
+    if (hs->name == nullptr) {
     	XtFree((char *)hs);
-    	return NULL;
+    	return nullptr;
     }
 
     if (*hs->name == '\0')
@@ -2081,15 +2081,15 @@ static highlightStyleRec *readHSDialogFields(int silent)
         }
         XtFree(hs->name);
         XtFree((char *)hs);
-        return NULL;
+        return nullptr;
     }
 
     /* read the color field */
     hs->color = ReadSymbolicFieldTextWidget(HSDialog.colorW, "color", silent);
-    if (hs->color == NULL) {
+    if (hs->color == nullptr) {
     	XtFree(hs->name);
     	XtFree((char *)hs);
-    	return NULL;
+    	return nullptr;
     }
 
     if (*hs->color == '\0')
@@ -2104,7 +2104,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         XtFree(hs->name);
         XtFree(hs->color);
         XtFree((char *)hs);
-        return NULL;
+        return nullptr;
     }
 
     /* Verify that the color is a valid X color spec */
@@ -2121,7 +2121,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         XtFree(hs->name);
         XtFree(hs->color);
         XtFree((char *)hs);
-        return NULL;;
+        return nullptr;;
     }
     
     /* read the background color field - this may be empty */
@@ -2129,7 +2129,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
                         "bgColor", silent);
     if (hs->bgColor && *hs->bgColor == '\0') {
         XtFree(hs->bgColor);
-        hs->bgColor = NULL;
+        hs->bgColor = nullptr;
     }
 
     /* Verify that the background color (if present) is a valid X color spec */
@@ -2147,7 +2147,7 @@ static highlightStyleRec *readHSDialogFields(int silent)
         XtFree(hs->color);
         XtFree(hs->bgColor);
         XtFree((char *)hs);
-        return NULL;;
+        return nullptr;;
     }
     
     /* read the font buttons */
@@ -2174,14 +2174,14 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs)
     newHS = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
     newHS->name = XtMalloc(strlen(hs->name)+1);
     strcpy(newHS->name, hs->name);
-    if (hs->color == NULL)
-    	newHS->color = NULL;
+    if (hs->color == nullptr)
+    	newHS->color = nullptr;
     else {
 	newHS->color = XtMalloc(strlen(hs->color)+1);
 	strcpy(newHS->color, hs->color);
     }
-    if (hs->bgColor == NULL)
-    	newHS->bgColor = NULL;
+    if (hs->bgColor == nullptr)
+    	newHS->bgColor = nullptr;
     else {
 	newHS->bgColor = XtMalloc(strlen(hs->bgColor)+1);
 	strcpy(newHS->bgColor, hs->bgColor);
@@ -2252,7 +2252,7 @@ static int updateHSList(void)
     updateHighlightStyleMenu();
     
     /* Redisplay highlighted windows which use changed style(s) */
-    for (window=WindowList; window!=NULL; window=window->next)
+    for (window=WindowList; window!=nullptr; window=window->next)
     	UpdateHighlightStyles(window);
     
     /* Note that preferences have been changed */
@@ -2278,12 +2278,12 @@ void EditHighlightPatterns(WindowInfo *window)
     Arg args[20];
 
     /* if the dialog is already displayed, just pop it to the top and return */
-    if (HighlightDialog.shell != NULL) {
+    if (HighlightDialog.shell != nullptr) {
     	RaiseDialogWindow(HighlightDialog.shell);
     	return;
     }
     
-    if (LanguageModeName(0) == NULL)
+    if (LanguageModeName(0) == nullptr)
     {
         DialogF(DF_WARN, window->shell, 1, "No Language Modes",
                 "No Language Modes available for syntax highlighting\n"
@@ -2303,9 +2303,9 @@ void EditHighlightPatterns(WindowInfo *window)
     /* Copy the list of patterns to one that the user can freely edit */
     HighlightDialog.patterns = (highlightPattern **)XtMalloc(
     	    sizeof(highlightPattern *) * MAX_PATTERNS);
-    nPatterns = patSet == NULL ? 0 : patSet->nPatterns;
+    nPatterns = patSet == nullptr ? 0 : patSet->nPatterns;
     for (i=0; i<nPatterns; i++)
-    	HighlightDialog.patterns[i] = copyPatternSrc(&patSet->patterns[i],NULL);
+    	HighlightDialog.patterns[i] = copyPatternSrc(&patSet->patterns[i],nullptr);
     HighlightDialog.nPatterns = nPatterns;
 
 
@@ -2321,9 +2321,9 @@ void EditHighlightPatterns(WindowInfo *window)
             xmFormWidgetClass, HighlightDialog.shell,
             XmNautoUnmanage, False,
             XmNresizePolicy, XmRESIZE_NONE,
-            NULL);
-    XtAddCallback(form, XmNdestroyCallback, destroyCB, NULL);
-    AddMotifCloseCallback(HighlightDialog.shell, closeCB, NULL);
+            nullptr);
+    XtAddCallback(form, XmNdestroyCallback, destroyCB, nullptr);
+    AddMotifCloseCallback(HighlightDialog.shell, closeCB, nullptr);
 
     lmForm = XtVaCreateManagedWidget("lmForm", xmFormWidgetClass,
     	    form,
@@ -2333,10 +2333,10 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopPosition, 1,
 	    XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 99,
-            NULL);
+            nullptr);
  
     HighlightDialog.lmPulldown = CreateLanguageModeMenu(lmForm, langModeCB,
-    	    NULL);
+    	    nullptr);
     n = 0;
     XtSetArg(args[n], XmNspacing, 0); n++;
     XtSetArg(args[n], XmNmarginWidth, 0); n++;
@@ -2357,15 +2357,15 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNrightPosition, 50,
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
-	    XmNbottomWidget, lmOptMenu, NULL);
+	    XmNbottomWidget, lmOptMenu, nullptr);
     XmStringFree(s1);
     
     lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm,
     	    XmNlabelString, s1=MKSTRING((String)"Add / Modify\nLanguage Mode..."),
     	    XmNmnemonic, 'A',
     	    XmNrightAttachment, XmATTACH_FORM,
-    	    XmNtopAttachment, XmATTACH_FORM, NULL);
-    XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, NULL);
+    	    XmNtopAttachment, XmATTACH_FORM, nullptr);
+    XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, nullptr);
     XmStringFree(s1);
     
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
@@ -2376,8 +2376,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 13,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(okBtn, XmNactivateCallback, okCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(okBtn, XmNactivateCallback, okCB, nullptr);
     XmStringFree(s1);
     
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
@@ -2388,8 +2388,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 26,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(applyBtn, XmNactivateCallback, applyCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(applyBtn, XmNactivateCallback, applyCB, nullptr);
     XmStringFree(s1);
     
     checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form,
@@ -2400,8 +2400,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 39,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(checkBtn, XmNactivateCallback, checkCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(checkBtn, XmNactivateCallback, checkCB, nullptr);
     XmStringFree(s1);
     
     deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, form,
@@ -2412,8 +2412,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 52,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(deleteBtn, XmNactivateCallback, deleteCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(deleteBtn, XmNactivateCallback, deleteCB, nullptr);
     XmStringFree(s1);
     
     restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form,
@@ -2424,8 +2424,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 73,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, nullptr);
     XmStringFree(s1);
     
     closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass,
@@ -2436,8 +2436,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 86,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, nullptr);
     XmStringFree(s1);
     
     helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass,
@@ -2449,8 +2449,8 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 99,
     	    XmNbottomAttachment, XmATTACH_FORM,
-    	    XmNbottomOffset, BORDER, NULL);
-    XtAddCallback(helpBtn, XmNactivateCallback, helpCB, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
+    XtAddCallback(helpBtn, XmNactivateCallback, helpCB, nullptr);
     XmStringFree(s1);
     
     contextFrame = XtVaCreateManagedWidget("contextFrame", xmFrameWidgetClass,
@@ -2461,13 +2461,13 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNrightPosition, 99,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
     	    XmNbottomWidget, okBtn,
-    	    XmNbottomOffset, BORDER, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
     contextForm = XtVaCreateManagedWidget("contextForm", xmFormWidgetClass,
-	    contextFrame, NULL);
+	    contextFrame, nullptr);
     XtVaCreateManagedWidget("contextLbl", xmLabelGadgetClass, contextFrame,
     	    XmNlabelString, s1=XmStringCreateSimple((String)
     	      "Context requirements for incremental re-parsing after changes"),
-	    XmNchildType, XmFRAME_TITLE_CHILD, NULL);
+	    XmNchildType, XmFRAME_TITLE_CHILD, nullptr);
     XmStringFree(s1);
     
     HighlightDialog.lineContextW = XtVaCreateManagedWidget("lineContext",
@@ -2477,7 +2477,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 15,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 25, NULL);
+	    XmNrightPosition, 25, nullptr);
     RemapDeleteKey(HighlightDialog.lineContextW);
     
     XtVaCreateManagedWidget("lineContLbl",
@@ -2491,7 +2491,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
 	    XmNtopWidget, HighlightDialog.lineContextW,
 	    XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
-    	    XmNbottomWidget, HighlightDialog.lineContextW, NULL);
+    	    XmNbottomWidget, HighlightDialog.lineContextW, nullptr);
     XmStringFree(s1);
 
     HighlightDialog.charContextW = XtVaCreateManagedWidget("charContext",
@@ -2501,7 +2501,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, 58,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 68, NULL);
+	    XmNrightPosition, 68, nullptr);
     RemapDeleteKey(HighlightDialog.lineContextW);
     
     XtVaCreateManagedWidget("charContLbl",
@@ -2515,7 +2515,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
 	    XmNtopWidget, HighlightDialog.charContextW,
 	    XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
-    	    XmNbottomWidget, HighlightDialog.charContextW, NULL);
+    	    XmNbottomWidget, HighlightDialog.charContextW, nullptr);
     XmStringFree(s1);
     
     patternsFrame = XtVaCreateManagedWidget("patternsFrame", xmFrameWidgetClass,
@@ -2528,15 +2528,15 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNrightPosition, 99,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
     	    XmNbottomWidget, contextFrame,
-    	    XmNbottomOffset, BORDER, NULL);
+    	    XmNbottomOffset, BORDER, nullptr);
     patternsForm = XtVaCreateManagedWidget("patternsForm", xmFormWidgetClass,
-	    patternsFrame, NULL);
+	    patternsFrame, nullptr);
     patternsLbl = XtVaCreateManagedWidget("patternsLbl", xmLabelGadgetClass,
     	    patternsFrame,
     	    XmNlabelString, s1=XmStringCreateSimple((String)"Patterns"),
     	    XmNmnemonic, 'P',
     	    XmNmarginHeight, 0,
-	    XmNchildType, XmFRAME_TITLE_CHILD, NULL);
+	    XmNchildType, XmFRAME_TITLE_CHILD, nullptr);
     XmStringFree(s1);
     
     typeLbl = XtVaCreateManagedWidget("typeLbl", xmLabelGadgetClass,
@@ -2546,7 +2546,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, LIST_RIGHT,
-	    XmNtopAttachment, XmATTACH_FORM, NULL);
+	    XmNtopAttachment, XmATTACH_FORM, nullptr);
     XmStringFree(s1);
 
     typeBox = XtVaCreateManagedWidget("typeBox", xmRowColumnWidgetClass,
@@ -2556,44 +2556,44 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
-	    XmNtopWidget, typeLbl, NULL);
+	    XmNtopWidget, typeLbl, nullptr);
     HighlightDialog.topLevelW = XtVaCreateManagedWidget("top", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	        (String)"Pass-1 (applied to all text when loaded or modified)"),
-    	    XmNmnemonic, '1', NULL);
+    	    XmNmnemonic, '1', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.topLevelW, XmNvalueChangedCallback,
-    	    patTypeCB, NULL);
+    	    patTypeCB, nullptr);
     HighlightDialog.deferredW = XtVaCreateManagedWidget("deferred", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	        (String)"Pass-2 (parsing is deferred until text is exposed)"),
-    	    XmNmnemonic, '2', NULL);
+    	    XmNmnemonic, '2', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.deferredW, XmNvalueChangedCallback,
-    	    patTypeCB, NULL);
+    	    patTypeCB, nullptr);
     HighlightDialog.subPatW = XtVaCreateManagedWidget("subPat", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Sub-pattern (processed within start & end of parent)"),
-    	    XmNmnemonic, 'u', NULL);
+    	    XmNmnemonic, 'u', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.subPatW, XmNvalueChangedCallback,
-    	    patTypeCB, NULL);
+    	    patTypeCB, nullptr);
     HighlightDialog.colorPatW = XtVaCreateManagedWidget("color", 
     	    xmToggleButtonWidgetClass, typeBox,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Coloring for sub-expressions of parent pattern"),
-    	    XmNmnemonic, 'g', NULL);
+    	    XmNmnemonic, 'g', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.colorPatW, XmNvalueChangedCallback,
-    	    patTypeCB, NULL);
+    	    patTypeCB, nullptr);
 
     HighlightDialog.matchLbl = XtVaCreateManagedWidget("matchLbl",
     	    xmLabelGadgetClass, patternsForm,
@@ -2604,7 +2604,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNleftPosition, LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopOffset, BORDER,
-	    XmNtopWidget, typeBox, NULL);
+	    XmNtopWidget, typeBox, nullptr);
     XmStringFree(s1);
 
     matchBox = XtVaCreateManagedWidget("matchBox", xmRowColumnWidgetClass,
@@ -2614,26 +2614,26 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
-	    XmNtopWidget, HighlightDialog.matchLbl, NULL);
+	    XmNtopWidget, HighlightDialog.matchLbl, nullptr);
     HighlightDialog.simpleW = XtVaCreateManagedWidget("simple", 
     	    xmToggleButtonWidgetClass, matchBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Highlight text matching regular expression"),
-    	    XmNmnemonic, 'x', NULL);
+    	    XmNmnemonic, 'x', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.simpleW, XmNvalueChangedCallback,
-    	    matchTypeCB, NULL);
+    	    matchTypeCB, nullptr);
     HighlightDialog.rangeW = XtVaCreateManagedWidget("range", 
     	    xmToggleButtonWidgetClass, matchBox,
     	    XmNmarginHeight, 0,
     	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Highlight text between starting and ending REs"),
-    	    XmNmnemonic, 'b', NULL);
+    	    XmNmnemonic, 'b', nullptr);
     XmStringFree(s1);
     XtAddCallback(HighlightDialog.rangeW, XmNvalueChangedCallback,
-    	    matchTypeCB, NULL);
+    	    matchTypeCB, nullptr);
 
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass,
     	    patternsForm,
@@ -2645,7 +2645,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNleftPosition, LIST_RIGHT,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, matchBox,
-	    XmNtopOffset, BORDER, NULL);
+	    XmNtopOffset, BORDER, nullptr);
     XmStringFree(s1);
  
     HighlightDialog.nameW = XtVaCreateManagedWidget("name", xmTextWidgetClass,
@@ -2655,9 +2655,9 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, nameLbl,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, (99 + LIST_RIGHT)/2, NULL);
+	    XmNrightPosition, (99 + LIST_RIGHT)/2, nullptr);
     RemapDeleteKey(HighlightDialog.nameW);
-    XtVaSetValues(nameLbl, XmNuserData, HighlightDialog.nameW, NULL);
+    XtVaSetValues(nameLbl, XmNuserData, HighlightDialog.nameW, nullptr);
 
     HighlightDialog.parentLbl = XtVaCreateManagedWidget("parentLbl",
     	    xmLabelGadgetClass, patternsForm,
@@ -2669,7 +2669,7 @@ void EditHighlightPatterns(WindowInfo *window)
     	    XmNleftPosition, (99 + LIST_RIGHT)/2 + 1,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, matchBox,
-	    XmNtopOffset, BORDER, NULL);
+	    XmNtopOffset, BORDER, nullptr);
     XmStringFree(s1);
  
     HighlightDialog.parentW = XtVaCreateManagedWidget("parent",
@@ -2679,10 +2679,10 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, HighlightDialog.parentLbl,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 99, NULL);
+	    XmNrightPosition, 99, nullptr);
     RemapDeleteKey(HighlightDialog.parentW);
     XtVaSetValues(HighlightDialog.parentLbl, XmNuserData,
-    	    HighlightDialog.parentW, NULL);
+    	    HighlightDialog.parentW, nullptr);
 
     HighlightDialog.startLbl = XtVaCreateManagedWidget("startLbl",
     	    xmLabelGadgetClass, patternsForm,
@@ -2692,7 +2692,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNtopWidget, HighlightDialog.parentW,
 	    XmNtopOffset, BORDER,
 	    XmNleftAttachment, XmATTACH_POSITION,
-    	    XmNleftPosition, 1, NULL);
+    	    XmNleftPosition, 1, nullptr);
  
     HighlightDialog.errorW = XtVaCreateManagedWidget("error",
     	    xmTextWidgetClass, patternsForm,
@@ -2701,7 +2701,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, 99,
 	    XmNbottomAttachment, XmATTACH_POSITION,
-	    XmNbottomPosition, 99, NULL);
+	    XmNbottomPosition, 99, nullptr);
     RemapDeleteKey(HighlightDialog.errorW);
 
     HighlightDialog.errorLbl = XtVaCreateManagedWidget("errorLbl",
@@ -2714,7 +2714,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, HighlightDialog.errorW, NULL);
+	    XmNbottomWidget, HighlightDialog.errorW, nullptr);
     XmStringFree(s1);
  
     HighlightDialog.endW = XtVaCreateManagedWidget("end",
@@ -2725,7 +2725,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNbottomWidget, HighlightDialog.errorLbl,
 	    XmNbottomOffset, BORDER,
 	    XmNrightAttachment, XmATTACH_POSITION,
-	    XmNrightPosition, 99, NULL);
+	    XmNrightPosition, 99, nullptr);
     RemapDeleteKey(HighlightDialog.endW);
 
     HighlightDialog.endLbl = XtVaCreateManagedWidget("endLbl",
@@ -2736,7 +2736,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, HighlightDialog.endW, NULL);
+	    XmNbottomWidget, HighlightDialog.endW, nullptr);
 
     n = 0;
     XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT); n++;
@@ -2758,7 +2758,7 @@ void EditHighlightPatterns(WindowInfo *window)
     MakeSingleLineTextW(HighlightDialog.startW);
     RemapDeleteKey(HighlightDialog.startW);
     XtVaSetValues(HighlightDialog.startLbl,
-    		XmNuserData,HighlightDialog.startW, NULL);
+    		XmNuserData,HighlightDialog.startW, nullptr);
 
     styleBtn = XtVaCreateManagedWidget("styleLbl", xmPushButtonWidgetClass,
     	    patternsForm,
@@ -2767,9 +2767,9 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, LIST_RIGHT-1,
 	    XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
-	    XmNbottomWidget, HighlightDialog.parentW, NULL);
+	    XmNbottomWidget, HighlightDialog.parentW, nullptr);
     XmStringFree(s1);
-    XtAddCallback(styleBtn, XmNactivateCallback, styleDialogCB, NULL);
+    XtAddCallback(styleBtn, XmNactivateCallback, styleDialogCB, nullptr);
 
     HighlightDialog.stylePulldown = createHighlightStylesMenu(patternsForm);
     n = 0;
@@ -2795,7 +2795,7 @@ void EditHighlightPatterns(WindowInfo *window)
 	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 1,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, HighlightDialog.styleOptMenu, NULL);
+	    XmNbottomWidget, HighlightDialog.styleOptMenu, nullptr);
     XmStringFree(s1);
 
     n = 0;
@@ -2809,21 +2809,21 @@ void EditHighlightPatterns(WindowInfo *window)
     XtSetArg(args[n], XmNbottomOffset, BORDER); n++;
     HighlightDialog.managedListW = CreateManagedList(patternsForm, (String)"list", args,
     	    n, (void **)HighlightDialog.patterns, &HighlightDialog.nPatterns,
-    	    MAX_PATTERNS, 18, getDisplayedCB, NULL, setDisplayedCB,
-    	    NULL, freeItemCB);
-    XtVaSetValues(patternsLbl, XmNuserData, HighlightDialog.managedListW, NULL);
+    	    MAX_PATTERNS, 18, getDisplayedCB, nullptr, setDisplayedCB,
+    	    nullptr, freeItemCB);
+    XtVaSetValues(patternsLbl, XmNuserData, HighlightDialog.managedListW, nullptr);
 
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
     
     /* Fill in the dialog information for the selected language mode */
-    SetIntText(HighlightDialog.lineContextW, patSet==NULL ? 1 :
+    SetIntText(HighlightDialog.lineContextW, patSet==nullptr ? 1 :
     	    patSet->lineContext);
-    SetIntText(HighlightDialog.charContextW, patSet==NULL ? 0 :
+    SetIntText(HighlightDialog.charContextW, patSet==nullptr ? 0 :
     	    patSet->charContext);
     SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
     updateLabels();
@@ -2841,14 +2841,14 @@ static void updateHighlightStyleMenu(void)
     Widget oldMenu;
     int patIndex;
     
-    if (HighlightDialog.shell == NULL)
+    if (HighlightDialog.shell == nullptr)
     	return;
     
     oldMenu = HighlightDialog.stylePulldown;
     HighlightDialog.stylePulldown = createHighlightStylesMenu(
     	    XtParent(XtParent(oldMenu)));
     XtVaSetValues(XmOptionButtonGadget(HighlightDialog.styleOptMenu),
-    	    XmNsubMenuId, HighlightDialog.stylePulldown, NULL);
+    	    XmNsubMenuId, HighlightDialog.stylePulldown, nullptr);
     patIndex = ManagedListSelectedIndex(HighlightDialog.managedListW);
     if (patIndex == -1)
     	setStyleMenu("Plain");
@@ -2866,14 +2866,14 @@ void UpdateLanguageModeMenu(void)
 {
     Widget oldMenu;
 
-    if (HighlightDialog.shell == NULL)
+    if (HighlightDialog.shell == nullptr)
     	return;
 
     oldMenu = HighlightDialog.lmPulldown;
     HighlightDialog.lmPulldown = CreateLanguageModeMenu(
-    	    XtParent(XtParent(oldMenu)), langModeCB, NULL);
+    	    XtParent(XtParent(oldMenu)), langModeCB, nullptr);
     XtVaSetValues(XmOptionButtonGadget(HighlightDialog.lmOptMenu),
-    	    XmNsubMenuId, HighlightDialog.lmPulldown, NULL);
+    	    XmNsubMenuId, HighlightDialog.lmPulldown, nullptr);
     SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
 
     XtDestroyWidget(oldMenu);
@@ -2886,24 +2886,24 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
     XtFree((char*) HighlightDialog.langModeName);
     for (i=0; i<HighlightDialog.nPatterns; i++)
      	freePatternSrc(HighlightDialog.patterns[i], True);
-    HighlightDialog.shell = NULL;
+    HighlightDialog.shell = nullptr;
 }
 
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     char *modeName;
     patternSet *oldPatSet, *newPatSet;
-    patternSet emptyPatSet = {NULL, 1, 0, 0, NULL};
+    patternSet emptyPatSet = {nullptr, 1, 0, 0, nullptr};
     int i, resp;
     
     /* Get the newly selected mode name.  If it's the same, do nothing */
-    XtVaGetValues(w, XmNuserData, &modeName, NULL);
+    XtVaGetValues(w, XmNuserData, &modeName, nullptr);
     if (!strcmp(modeName, HighlightDialog.langModeName))
     	return;
     
     /* Look up the original version of the patterns being edited */
     oldPatSet = FindPatternSet(HighlightDialog.langModeName);
-    if (oldPatSet == NULL)
+    if (oldPatSet == nullptr)
     	oldPatSet = &emptyPatSet;
     
     /* Get the current information displayed by the dialog.  If it's bad,
@@ -2911,7 +2911,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
        it has changed, give the user the chance to apply discard or cancel. */
     newPatSet = getDialogPatternSet();
 
-    if (newPatSet == NULL)
+    if (newPatSet == nullptr)
     {
         if (DialogF(DF_WARN, HighlightDialog.shell, 2,
                 "Incomplete Language Mode", "Discard incomplete entry\n"
@@ -2938,7 +2938,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
         }
     }
 
-    if (newPatSet != NULL)
+    if (newPatSet != nullptr)
     	freePatternSet(newPatSet);
 
     /* Free the old dialog information */
@@ -2949,14 +2949,14 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
     /* Fill the dialog with the new language mode information */
     HighlightDialog.langModeName = XtNewString(modeName);
     newPatSet = FindPatternSet(modeName);
-    if (newPatSet == NULL) {
+    if (newPatSet == nullptr) {
     	HighlightDialog.nPatterns = 0;
     	SetIntText(HighlightDialog.lineContextW, 1);
     	SetIntText(HighlightDialog.charContextW, 0);
     } else {
 	for (i=0; i<newPatSet->nPatterns; i++)
     	    HighlightDialog.patterns[i] =
-    		    copyPatternSrc(&newPatSet->patterns[i], NULL);
+    		    copyPatternSrc(&newPatSet->patterns[i], nullptr);
 	HighlightDialog.nPatterns = newPatSet->nPatterns;
     	SetIntText(HighlightDialog.lineContextW, newPatSet->lineContext);
     	SetIntText(HighlightDialog.charContextW, newPatSet->charContext);
@@ -2976,10 +2976,10 @@ static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData)
     
     XtVaGetValues(HighlightDialog.styleOptMenu,
             XmNmenuHistory, &selectedItem,
-            NULL);
+            nullptr);
     XtVaGetValues(selectedItem,
             XmNuserData, &style,
-            NULL);
+            nullptr);
     EditHighlightStyles(style);
 }
 
@@ -3015,7 +3015,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     int i, psn;
     
     defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName);
-    if (defaultPatSet == NULL)
+    if (defaultPatSet == nullptr)
     {
         DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern",
                 "There is no default pattern set\nfor language mode %s",
@@ -3052,7 +3052,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
     HighlightDialog.nPatterns = defaultPatSet->nPatterns;
     for (i=0; i<defaultPatSet->nPatterns; i++)
     	HighlightDialog.patterns[i] =
-    		copyPatternSrc(&defaultPatSet->patterns[i], NULL);
+    		copyPatternSrc(&defaultPatSet->patterns[i], nullptr);
     	SetIntText(HighlightDialog.lineContextW, defaultPatSet->lineContext);
     	SetIntText(HighlightDialog.charContextW, defaultPatSet->charContext);
     ChangeManagedListData(HighlightDialog.managedListW);
@@ -3123,12 +3123,12 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
     
     /* If the dialog is currently displaying the "new" entry and the
        fields are empty, that's just fine */
-    if (oldItem == NULL && dialogEmpty())
-    	return NULL;
+    if (oldItem == nullptr && dialogEmpty())
+    	return nullptr;
     
     /* If there are no problems reading the data, just return it */
     pat = readDialogFields(True);
-    if (pat != NULL)
+    if (pat != nullptr)
     	return (void *)pat;
     
     /* If there are problems, and the user didn't ask for the fields to be
@@ -3139,16 +3139,16 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
                 "Discard incomplete entry\nfor current pattern?", "Keep",
                 "Discard") == 2)
         {
-            return oldItem == NULL
-                    ? NULL
-                    : (void *)copyPatternSrc((highlightPattern *)oldItem, NULL);
+            return oldItem == nullptr
+                    ? nullptr
+                    : (void *)copyPatternSrc((highlightPattern *)oldItem, nullptr);
         }
     }
 
     /* Do readDialogFields again without "silent" mode to display warning */
     pat = readDialogFields(False);
     *abort = True;
-    return NULL;
+    return nullptr;
 }
 
 static void setDisplayedCB(void *item, void *cbArg)
@@ -3156,7 +3156,7 @@ static void setDisplayedCB(void *item, void *cbArg)
     highlightPattern *pat = (highlightPattern *)item;
     int isSubpat, isDeferred, isColorOnly, isRange;
 
-    if (item == NULL) {
+    if (item == nullptr) {
     	XmTextSetString(HighlightDialog.nameW, (String)"");
     	XmTextSetString(HighlightDialog.parentW, (String)"");
     	XmTextSetString(HighlightDialog.startW, (String)"");
@@ -3170,10 +3170,10 @@ static void setDisplayedCB(void *item, void *cbArg)
     	RadioButtonChangeState(HighlightDialog.rangeW, False, False);
     	setStyleMenu("Plain");
     } else {
-    	isSubpat = pat->subPatternOf != NULL;
+    	isSubpat = pat->subPatternOf != nullptr;
     	isDeferred = pat->flags & DEFER_PARSING;
     	isColorOnly = pat->flags & COLOR_ONLY;
-    	isRange = pat->endRE != NULL;
+    	isRange = pat->endRE != nullptr;
     	XmTextSetString(HighlightDialog.nameW, (String)pat->name);
     	XmTextSetString(HighlightDialog.parentW, (String)pat->subPatternOf);
     	XmTextSetString(HighlightDialog.startW, (String)pat->startRE);
@@ -3210,7 +3210,7 @@ static int checkHighlightDialogData(void)
     
     /* Get the pattern information from the dialog */
     patSet = getDialogPatternSet();
-    if (patSet == NULL)
+    if (patSet == nullptr)
     	return False;
      
     /* Compile the patterns  */
@@ -3266,10 +3266,10 @@ Regular Expression";
     XtSetSensitive(HighlightDialog.rangeW, matchSense);
     XtSetSensitive(HighlightDialog.matchLbl, matchSense);
     XtVaSetValues(HighlightDialog.startLbl, XmNlabelString,
-    	    s1=XmStringCreateSimple((String)startLbl), NULL);
+    	    s1=XmStringCreateSimple((String)startLbl), nullptr);
     XmStringFree(s1);
     XtVaSetValues(HighlightDialog.endLbl, XmNlabelString,
-    	    s1=XmStringCreateSimple((String)endLbl), NULL);
+    	    s1=XmStringCreateSimple((String)endLbl), nullptr);
     XmStringFree(s1);
 }
 
@@ -3286,12 +3286,12 @@ static void setStyleMenu(const char *styleName)
     char *itemStyle;
 
     XtVaGetValues(HighlightDialog.stylePulldown, XmNchildren, &items,
-    	    XmNnumChildren, &nItems, NULL);
+    	    XmNnumChildren, &nItems, nullptr);
     if (nItems == 0)
     	return;
     selectedItem = items[0];
     for (i=0; i<(int)nItems; i++) {
-    	XtVaGetValues(items[i], XmNuserData, &itemStyle, NULL);
+    	XtVaGetValues(items[i], XmNuserData, &itemStyle, nullptr);
     	if (!strcmp(itemStyle, styleName)) {
     	    selectedItem = items[i];
     	    break;
@@ -3304,7 +3304,7 @@ static void setStyleMenu(const char *styleName)
 ** Read the pattern fields of the highlight dialog, and produce an allocated
 ** highlightPattern structure reflecting the contents, or pop up dialogs
 ** telling the user what's wrong (Passing "silent" as True, suppresses these
-** dialogs).  Returns NULL on error.
+** dialogs).  Returns nullptr on error.
 */ 
 static highlightPattern *readDialogFields(int silent)
 {
@@ -3316,10 +3316,10 @@ static highlightPattern *readDialogFields(int silent)
     /* Allocate a pattern source structure to return, zero out fields
        so that the whole pattern can be freed on error with freePatternSrc */
     pat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
-    pat->endRE = NULL;
-    pat->errorRE = NULL;
-    pat->style = NULL;
-    pat->subPatternOf = NULL;
+    pat->endRE = nullptr;
+    pat->errorRE = nullptr;
+    pat->style = nullptr;
+    pat->subPatternOf = nullptr;
     
     /* read the type buttons */
     pat->flags = 0;
@@ -3332,9 +3332,9 @@ static highlightPattern *readDialogFields(int silent)
     /* read the name field */
     pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW,
     	    "highlight pattern name", silent);
-    if (pat->name == NULL) {
+    if (pat->name == nullptr) {
     	XtFree((char *)pat);
-    	return NULL;
+    	return nullptr;
     }
 
     if (*pat->name == '\0')
@@ -3347,7 +3347,7 @@ static highlightPattern *readDialogFields(int silent)
         }
         XtFree((char *)pat->name);
         XtFree((char *)pat);
-        return NULL;
+        return nullptr;
     }
     
     /* read the startRE field */
@@ -3361,7 +3361,7 @@ static highlightPattern *readDialogFields(int silent)
             XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
         }
         freePatternSrc(pat, True);
-        return NULL;
+        return nullptr;
     }
     
     /* Make sure coloring patterns contain only sub-expression references
@@ -3379,7 +3379,7 @@ static highlightPattern *readDialogFields(int silent)
         *outPtr = '\0';
         if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE)
                 || (*pat->startRE != '\\' && *pat->startRE != '&')
-                || strstr(pat->startRE, "\\\\") != NULL)
+                || strstr(pat->startRE, "\\\\") != nullptr)
         {
             if (!silent)
             {
@@ -3392,7 +3392,7 @@ static highlightPattern *readDialogFields(int silent)
                 XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -3409,14 +3409,14 @@ static highlightPattern *readDialogFields(int silent)
                 XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
-            return NULL;
+            return nullptr;
         }
         pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
     }
     
     /* read the styles option menu */
-    XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, NULL);
-    XtVaGetValues(selectedItem, XmNuserData, &style, NULL);
+    XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, nullptr);
+    XtVaGetValues(selectedItem, XmNuserData, &style, nullptr);
     pat->style = XtMalloc(strlen(style) + 1);
     strcpy(pat->style, style);
     
@@ -3435,7 +3435,7 @@ static highlightPattern *readDialogFields(int silent)
                 XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
             }
             freePatternSrc(pat, True);
-            return NULL;
+            return nullptr;
         }
     }
     
@@ -3444,7 +3444,7 @@ static highlightPattern *readDialogFields(int silent)
 	pat->errorRE = XmTextGetString(HighlightDialog.errorW);
 	if (*pat->errorRE == '\0') {
             XtFree((char *)pat->errorRE);
-            pat->errorRE = NULL;
+            pat->errorRE = nullptr;
 	}
     }
     return pat;
@@ -3483,7 +3483,7 @@ static int updatePatternSet(void)
     
     /* Get the current data */
     patSet = getDialogPatternSet();
-    if (patSet == NULL)
+    if (patSet == nullptr)
     	return False;
     
     /* Find the pattern being modified */
@@ -3505,7 +3505,7 @@ static int updatePatternSet(void)
 
     /* Find windows that are currently using this pattern set and
        re-do the highlighting */
-    for (window = WindowList; window != NULL; window = window->next) {
+    for (window = WindowList; window != nullptr; window = window->next) {
         if (patSet->nPatterns > 0) {
             if (window->languageMode != PLAIN_LANGUAGE_MODE
                     && 0 == strcmp(LanguageModeName(window->languageMode),
@@ -3556,7 +3556,7 @@ static int updatePatternSet(void)
 
 /*
 ** Get the current information that the user has entered in the syntax
-** highlighting dialog.  Return NULL if the data is currently invalid
+** highlighting dialog.  Return nullptr if the data is currently invalid
 */
 static patternSet *getDialogPatternSet(void)
 {
@@ -3565,15 +3565,15 @@ static patternSet *getDialogPatternSet(void)
     
     /* Get the current contents of the "patterns" dialog fields */
     if (!UpdateManagedList(HighlightDialog.managedListW, True))
-    	return NULL;
+    	return nullptr;
     
     /* Get the line and character context values */
     if (GetIntTextWarn(HighlightDialog.lineContextW, &lineContext,
     	    "context lines", True) != TEXT_READ_OK)
-    	return NULL;
+    	return nullptr;
     if (GetIntTextWarn(HighlightDialog.charContextW, &charContext,
     	    "context lines", True) != TEXT_READ_OK)
-    	return NULL;
+    	return nullptr;
     
     /* Allocate a new pattern set structure and copy the fields read from the
        dialog, including the modified pattern list into it */
@@ -3635,7 +3635,7 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
 {
     highlightPattern *newPat;
     
-    if (copyTo == NULL)
+    if (copyTo == nullptr)
     	newPat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
     else
     	newPat = copyTo;

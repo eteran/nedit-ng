@@ -65,7 +65,7 @@
    (should probably be a language-dependent option, but...) */
 #define TIP_DEFAULT_LINES 4
 
-#define STRSAVE(a)  ((a!=NULL)?strcpy((char *)malloc(strlen(a)+1),(a)):strcpy((char *)malloc(1),""))
+#define STRSAVE(a)  ((a!=nullptr)?strcpy((char *)malloc(strlen(a)+1),(a)):strcpy((char *)malloc(1),""))
 
 typedef struct _tag {
     struct _tag *next;
@@ -120,15 +120,15 @@ static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt,
 static int loadTipsFile(const char *tipsFile, int index, int recLevel);
 
 /* Hash table of tags, implemented as an array.  Each bin contains a 
-    NULL-terminated linked list of parsed tags */
-static tag **Tags = NULL;
+    nullptr-terminated linked list of parsed tags */
+static tag **Tags = nullptr;
 static int DefTagHashSize = 10000;
 /* list of loaded tags files */
-tagFile *TagsFileList = NULL;
+tagFile *TagsFileList = nullptr;
 
 /* Hash table of calltip tags */
-static tag **Tips = NULL;
-tagFile *TipsFileList = NULL;
+static tag **Tips = nullptr;
+tagFile *TipsFileList = nullptr;
 
 
 /* These are all transient global variables -- they don't hold any state
@@ -193,7 +193,7 @@ static tag *getTag(const char *name, int search_type)
     else
         table = Tags;
         
-    if (table == NULL) return NULL;
+    if (table == nullptr) return nullptr;
     
     if (name) {
         addr = hashAddr(name) % DefTagHashSize;
@@ -204,11 +204,11 @@ static tag *getTag(const char *name, int search_type)
         name = lastName;
         t = t->next;
     }
-    else return NULL;
+    else return nullptr;
     
     for (;t; t = t->next) 
         if (!strcmp(name,t->name)) return t;
-    return NULL;
+    return nullptr;
 }
 
 /* Add a tag specification to the hash table 
@@ -226,11 +226,11 @@ static int addTag(const char *name, const char *file, int lang,
     tag **table;
 
     if (searchMode == TIP) {
-        if (Tips == NULL) 
+        if (Tips == nullptr) 
             Tips = (tag **)calloc(DefTagHashSize, sizeof(tag*));
         table = Tips;
     } else {
-        if (Tags == NULL) 
+        if (Tags == nullptr) 
             Tags = (tag **)calloc(DefTagHashSize, sizeof(tag*));
         table = Tags;
     }
@@ -268,7 +268,7 @@ static int addTag(const char *name, const char *file, int lang,
 /*  Delete a tag from the cache.  
  *  Search is limited to valid matches of 'name','file', 'search', posInf, and 'index'.
  *  EX: delete all tags matching index 2 ==> 
- *                      delTag(tagname,NULL,-2,NULL,-2,2);
+ *                      delTag(tagname,nullptr,-2,nullptr,-2,2);
  *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
      lang = -2 is also an invalid match)
  */
@@ -284,7 +284,7 @@ static int delTag(const char *name, const char *file, int lang,
     else
         table = Tags;
         
-    if (table == NULL) return FALSE;
+    if (table == nullptr) return FALSE;
     if (name)
         start = finish = hashAddr(name) % DefTagHashSize;
     else {
@@ -292,7 +292,7 @@ static int delTag(const char *name, const char *file, int lang,
         finish = DefTagHashSize;
     }
     for (i = start; i<finish; i++) {
-        for (last = NULL, t = table[i]; t; last = t, t = t?t->next:table[i]) {
+        for (last = nullptr, t = table[i]; t; last = t, t = t?t->next:table[i]) {
             if (name && strcmp(name,t->name)) continue;
             if (index && index != t->index) continue;
             if (file && strcmp(file,t->file)) continue;
@@ -308,7 +308,7 @@ static int delTag(const char *name, const char *file, int lang,
             rcs_free(t->searchString);
             rcs_free(t->path);
             free(t);
-            t = NULL;
+            t = nullptr;
             del++;
         }
     }
@@ -341,7 +341,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type)
 
     tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
     strcpy(tmptagSpec, tagSpec);
-    for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(NULL, ":")){
+    for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")){
         if (*filename == '/' || *filename == '~')
             continue;
         if (windowPath && *windowPath) {
@@ -397,9 +397,9 @@ int AddTagsFile(const char *tagSpec, int file_type)
     tagFile *FileList;
     
     /* To prevent any possible segfault */
-    if (tagSpec == NULL) {
+    if (tagSpec == nullptr) {
         fprintf(stderr, "nedit: Internal Error!\n"
-                "  Passed NULL pointer to AddTagsFile!\n");
+                "  Passed nullptr pointer to AddTagsFile!\n");
         return FALSE;
     }
     
@@ -411,7 +411,7 @@ int AddTagsFile(const char *tagSpec, int file_type)
 
     tmptagSpec = (char *) malloc(strlen(tagSpec)+1);
     strcpy(tmptagSpec, tagSpec);    
-    for (filename = strtok(tmptagSpec,":"); filename; filename = strtok(NULL,":")) {
+    for (filename = strtok(tmptagSpec,":"); filename; filename = strtok(nullptr,":")) {
         if (*filename != '/') {
           strcpy(pathName, GetCurrentDir());
             strcat(pathName,"/");
@@ -467,8 +467,8 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
     int removed;
     
     /* To prevent any possible segfault */
-    if (tagSpec == NULL) {
-        fprintf(stderr, "nedit: Internal Error: Passed NULL pointer to DeleteTagsFile!\n");
+    if (tagSpec == nullptr) {
+        fprintf(stderr, "nedit: Internal Error: Passed nullptr pointer to DeleteTagsFile!\n");
         return FALSE;
     }
     
@@ -482,7 +482,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
     strcpy(tmptagSpec, tagSpec);
     removed=1;
     for (filename = strtok(tmptagSpec,":"); filename; 
-            filename = strtok(NULL,":")) {
+            filename = strtok(nullptr,":")) {
         if (*filename != '/') {
           strcpy(pathName, GetCurrentDir());
             strcat(pathName,"/");
@@ -492,7 +492,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
         }
         NormalizePathname(pathName);
 
-        for (last=NULL,t = FileList; t; last = t,t = t->next) {
+        for (last=nullptr,t = FileList; t; last = t,t = t->next) {
             if (strcmp(t->filename, pathName))
                 continue;
             /* Don't unload tips files with nonzero refcounts unless forced */
@@ -500,7 +500,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload)
                 break;
             }
             if (t->loaded)
-                delTag(NULL,NULL,-2,NULL,-2,t->index);
+                delTag(nullptr,nullptr,-2,nullptr,-2,t->index);
             if (last) last->next = t->next;
             else FileList = setFileListHead(t->next, file_type);
             free(t->filename);
@@ -530,7 +530,7 @@ static void updateMenuItems(void)
     if (TipsFileList) tipStat=TRUE;
     if (TagsFileList) tagStat=TRUE;
     
-    for (w=WindowList; w!=NULL; w=w->next) {
+    for (w=WindowList; w!=nullptr; w=w->next) {
     	if (!IsTopDocument(w))
 	    continue;
         XtSetSensitive(w->showTipItem, tipStat || tagStat);
@@ -700,7 +700,7 @@ typedef enum {
 */
 static int loadTagsFile(const char *tagsFile, int index, int recLevel)
 {
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     char line[MAXLINE];
     char file[MAXPATHLEN], tagPath[MAXPATHLEN];
     char resolvedTagsFile[MAXPATHLEN+1];
@@ -719,11 +719,11 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel)
     }
 
     /* Open the file */
-    if ((fp = fopen(resolvedTagsFile, "r")) == NULL) {
+    if ((fp = fopen(resolvedTagsFile, "r")) == nullptr) {
        return 0;
     }
 
-    ParseFilename(resolvedTagsFile, NULL, tagPath);
+    ParseFilename(resolvedTagsFile, nullptr, tagPath);
 
     /* Read the file and store its contents */
     while (fgets(line, MAXLINE, fp)) {
@@ -760,9 +760,9 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel)
 ** and the proper search string. Returned strings are pointers
 ** to internal storage which are valid until the next loadTagsFile call.
 **
-** Invocation with name != NULL (containing the searched definition) 
+** Invocation with name != nullptr (containing the searched definition) 
 **    --> returns first definition of  name
-** Successive invocation with name == NULL
+** Successive invocation with name == nullptr
 **    --> returns further definitions (resulting from multiple tags files)
 **
 ** Return Value: TRUE:  tag spec found
@@ -791,7 +791,7 @@ int LookupTag(const char *name, const char **file, int *language,
     **   - check for update of the tags file and reload it in that case
     **   - save the modification date of the tags file
     **
-    ** Do this only as long as name != NULL, not for sucessive calls 
+    ** Do this only as long as name != nullptr, not for sucessive calls 
     ** to find multiple tags specs.
     **
     */    
@@ -806,7 +806,7 @@ int LookupTag(const char *name, const char **file, int *language,
                 }
             }
             /* tags file has been modified, delete it's entries and reload it */
-            delTag(NULL,NULL,-2,NULL,-2,tf->index);
+            delTag(nullptr,nullptr,-2,nullptr,-2,tf->index);
         }
         /* If we get here we have to try to (re-) load the tags file */
         if (FileList == TipsFileList)
@@ -866,7 +866,7 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
             status = findAllMatches(window, tagText);
 
             /* If we didn't find a requested calltip, see if we can use a tag */
-            if (status == 0 && search_type == TIP && TagsFileList != NULL) {
+            if (status == 0 && search_type == TIP && TagsFileList != nullptr) {
                 searchMode = TIP_FROM_TAG;
                 status = findAllMatches(window, tagText);
             }
@@ -945,7 +945,7 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
         Atom *type, char *value, int *length, int *format)
 {
     /* skip if we can't get the selection data, or it's obviously too long */
-    if (*type == XT_CONVERT_FAIL || value == NULL) {
+    if (*type == XT_CONVERT_FAIL || value == nullptr) {
         XBell(TheDisplay, 0);
     } else {
         findDef(window, value, searchMode);
@@ -999,7 +999,7 @@ static void setTag(tag *t, const char *name, const char *file,
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which 
 ** 
-** If in_buffer is not NULL then it is searched instead of the window buffer.
+** If in_buffer is not nullptr then it is searched instead of the window buffer.
 ** In this case in_buffer should be an XtMalloc allocated buffer and the
 ** caller is responsible for freeing it.
 */
@@ -1010,7 +1010,7 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
     char searchSubs[3*MAXLINE+3], *outPtr;
     const char *fileString, *inPtr;
     
-    if (in_buffer == NULL) {
+    if (in_buffer == nullptr) {
         /* get the entire (sigh) text buffer from the text area widget */
         fileString = BufAsString(window->buffer);
     } else {
@@ -1076,7 +1076,7 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
     *outPtr=0; /* Terminate searchSubs */
     
     found = SearchString(fileString, searchSubs, dir, SEARCH_REGEX, 
-      	    False, searchStartPos, startPos, endPos, NULL, NULL, NULL);
+      	    False, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
     
     if(!found && !ctagsMode) {
         /* position of the target definition could have been drifted before
@@ -1084,8 +1084,8 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer,
            again from startPos.
         */
         found = SearchString(fileString, searchSubs, SEARCH_BACKWARD, 
-                SEARCH_REGEX, False, searchStartPos, startPos, endPos, NULL, 
-                NULL, NULL);
+                SEARCH_REGEX, False, searchStartPos, startPos, endPos, nullptr, 
+                nullptr, nullptr);
     }
 
     /* return the result */
@@ -1127,7 +1127,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
         if (window->languageMode != PLAIN_LANGUAGE_MODE && 
                 GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE &&
                 langMode != window->languageMode) {
-            string=NULL;
+            string=nullptr;
             continue;
         }
         if (*fileToSearch == '/') 
@@ -1159,7 +1159,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
             break;
         }
         /* Tell LookupTag to look for more definitions of the same tag: */
-        string = NULL; 
+        string = nullptr; 
     }
 
     /* Did we find any matches? */
@@ -1210,7 +1210,7 @@ static int findAllMatches(WindowInfo *window, const char *string)
                 sprintf(temp,"%2d. %s%s",i+1,pathname,filename);
             }
 
-            if (NULL == (dupTagsList[i] = (char*) malloc(strlen(temp) + 1))) {
+            if (nullptr == (dupTagsList[i] = (char*) malloc(strlen(temp) + 1))) {
                 int j;
                 fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
 
@@ -1317,7 +1317,7 @@ static void showMatchingCalltip( Widget parent, int i )
     /* 1. Open the target file */
     NormalizePathname(tagFiles[i]);
     fp = fopen(tagFiles[i], "r");
-    if (fp == NULL) {
+    if (fp == nullptr) {
         DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s",
                 "OK", tagFiles[i]);
         return;
@@ -1333,7 +1333,7 @@ static void showMatchingCalltip( Widget parent, int i )
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileLen = statbuf.st_size;
     fileString = XtMalloc(fileLen+1);  /* +1 = space for null */
-    if (fileString == NULL) {
+    if (fileString == nullptr) {
         fclose(fp);
         DialogF(DF_ERR, parent, 1, "File too large",
                 "File is too large to load", "OK");
@@ -1387,8 +1387,8 @@ static void showMatchingCalltip( Widget parent, int i )
         /* 4. Find the end of the calltip (delimited by an empty line) */
         endPos = startPos;
         found = SearchString(fileString, "\\n\\s*\\n", SEARCH_FORWARD,
-                    SEARCH_REGEX, False, startPos, &endPos, &dummy, NULL, 
-                    NULL, NULL);
+                    SEARCH_REGEX, False, startPos, &endPos, &dummy, nullptr, 
+                    nullptr, nullptr);
         if (!found) {
             /* Just take 4 lines */
             moveAheadNLines( fileString, &endPos, TIP_DEFAULT_LINES );
@@ -1407,7 +1407,7 @@ static void showMatchingCalltip( Widget parent, int i )
     /* 5. Copy the calltip to a string */
     tipLen = endPos - startPos;
     message = XtMalloc(tipLen+1);  /* +1 = space for null */
-    if (message == NULL)
+    if (message == nullptr)
     {
         DialogF(DF_ERR, parent, 1, "Out of Memory",
                 "Can't allocate memory for calltip message", "OK");
@@ -1436,10 +1436,10 @@ static void editTaggedLocation( Widget parent, int i )
     
     ParseFilename(tagFiles[i],filename,pathname);
     /* open the file containing the definition */
-    EditExistingFile(parentWindow, filename, pathname, 0, NULL, False, 
-    	    NULL, GetPrefOpenInTab(), False);
+    EditExistingFile(parentWindow, filename, pathname, 0, nullptr, False, 
+    	    nullptr, GetPrefOpenInTab(), False);
     windowToSearch = FindWindowWithFile(filename, pathname);
-    if (windowToSearch == NULL) {
+    if (windowToSearch == nullptr) {
         DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK",
                 tagFiles[i]);
         return;
@@ -1454,7 +1454,7 @@ static void editTaggedLocation( Widget parent, int i )
     }
 
     /* search for the tags file search string in the newly opened file */
-    if(!fakeRegExSearch(windowToSearch, NULL, tagSearch[i], &startPos,
+    if(!fakeRegExSearch(windowToSearch, nullptr, tagSearch[i], &startPos,
             &endPos)){
         DialogF(DF_WARN, windowToSearch->shell, 1, "Tag Error",
                 "Definition for %s\nnot found in %s", "OK", tagName,
@@ -1469,7 +1469,7 @@ static void editTaggedLocation( Widget parent, int i )
     /* Position it nicely in the window, 
        about 1/4 of the way down from the top */
     lineNum = BufCountLines(windowToSearch->buffer, 0, startPos);
-    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, NULL);
+    XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, nullptr);
     TextSetScroll(windowToSearch->lastFocus, lineNum - rows/4, 0);
     TextSetCursorPos(windowToSearch->lastFocus, endPos);
 }
@@ -1504,7 +1504,7 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs,
     XtAddCallback(menu, XmNokCallback, (XtCallbackProc)findAllCB, menu);
     XtAddCallback(menu, XmNapplyCallback, (XtCallbackProc)findAllCB, menu);
     XtAddCallback(menu, XmNcancelCallback, (XtCallbackProc)findAllCB, menu);
-    AddMotifCloseCallback(XtParent(menu), findAllCloseCB, NULL);
+    AddMotifCloseCallback(XtParent(menu), findAllCloseCB, nullptr);
     for (i=0; i<nArgs; i++)
         XmStringFree(list[i]);
     XtFree((char *)list);
@@ -1556,12 +1556,12 @@ static const char *rcs_strdup(const char *str)
     int bucket;
     size_t len;
     struct rcs *rp;
-    struct rcs *prev = NULL;
+    struct rcs *prev = nullptr;
   
-    char *newstr = NULL;
+    char *newstr = nullptr;
     
-    if (str == NULL)
-        return NULL;
+    if (str == nullptr)
+        return nullptr;
         
     bucket = hashAddr(str) % RCS_SIZE;
     len = strlen(str);
@@ -1601,14 +1601,14 @@ static const char *rcs_strdup(const char *str)
     else     /* Doesn't exist, conjure up a new one. */
     {
         struct rcs* newrcs;
-        if (NULL == (newrcs = (struct rcs*) malloc(sizeof(struct rcs)))) {
+        if (nullptr == (newrcs = (struct rcs*) malloc(sizeof(struct rcs)))) {
             /*  Not much to fall back to here.  */
             fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
             XBell(TheDisplay, 0);
             exit(1);
         }
 
-        if (NULL == (newrcs->string = (char*) malloc(len + 1))) {
+        if (nullptr == (newrcs->string = (char*) malloc(len + 1))) {
             /*  Not much to fall back to here.  */
             fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
             XBell(TheDisplay, 0);
@@ -1616,7 +1616,7 @@ static const char *rcs_strdup(const char *str)
         }
         strcpy(newrcs->string, str);
         newrcs->usage = 1;
-        newrcs->next = NULL;
+        newrcs->next = nullptr;
 
         if (Rcs[bucket])
             prev->next = newrcs;
@@ -1639,9 +1639,9 @@ static void rcs_free(const char *rcs_str)
 {
     int bucket;
     struct rcs *rp;
-    struct rcs *prev = NULL;
+    struct rcs *prev = nullptr;
 
-    if (rcs_str == NULL)
+    if (rcs_str == nullptr)
         return;
         
     bucket = hashAddr(rcs_str) % RCS_SIZE;
@@ -1692,7 +1692,7 @@ enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE,
 static int searchLine(char *line, const char *regex) {
     int dummy1, dummy2;
     return SearchString(line, regex, SEARCH_FORWARD, SEARCH_REGEX,
-                             False, 0, &dummy1, &dummy2, NULL, NULL, NULL);
+                             False, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
 }
 
 /* Check if a line has non-ws characters */
@@ -1710,7 +1710,7 @@ static void rstrip( char *dst, const char *src ) {
     int wsStart, dummy2;
     /* Strip trailing whitespace */
     if(SearchString(src, "\\s*\\n", SEARCH_FORWARD, SEARCH_REGEX,
-                         False, 0, &wsStart, &dummy2, NULL, NULL, NULL)) {
+                         False, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
         if(dst != src)
             memcpy(dst, src, wsStart);
         dst[wsStart] = 0;
@@ -1923,12 +1923,12 @@ static tf_alias *new_alias(const char *dest, char *sources) {
     /* Allocate the alias */
     alias = (tf_alias *)malloc( sizeof(tf_alias) );
     if(!alias) 
-        return NULL;
+        return nullptr;
 
     /* Fill it in */
     alias->dest = (char*)malloc( strlen(dest)+1 );
     if(!(alias->dest))
-        return NULL;
+        return nullptr;
     strcpy( alias->dest, dest );
     alias->sources = sources;
     return alias;
@@ -1954,14 +1954,14 @@ static void free_alias_list(tf_alias *alias) {
 */
 static int loadTipsFile(const char *tipsFile, int index, int recLevel)
 {
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     char header[MAXLINE];
     char *body, *tipIncFile;
     char tipPath[MAXPATHLEN];
     char resolvedTipsFile[MAXPATHLEN+1];
     int nTipsAdded=0, langMode = PLAIN_LANGUAGE_MODE, oldLangMode;
     int currLine=0, code, blkLine;
-    tf_alias *aliases=NULL, *tmp_alias;
+    tf_alias *aliases=nullptr, *tmp_alias;
     
     if(recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
         fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile);
@@ -1976,10 +1976,10 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
         return 0;
 
     /* Get the path to the tips file */
-    ParseFilename(resolvedTipsFile, NULL, tipPath);
+    ParseFilename(resolvedTipsFile, nullptr, tipPath);
 
     /* Open the file */
-    if ((fp = fopen(resolvedTipsFile, "r")) == NULL)
+    if ((fp = fopen(resolvedTipsFile, "r")) == nullptr)
        return 0;
 
     while( 1 ) {
@@ -2005,7 +2005,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                 /* nextTFBlock returns a colon-separated list of tips files
                     in body */
                 for(tipIncFile=strtok(body,":"); tipIncFile; 
-                        tipIncFile=strtok(NULL,":")) {
+                        tipIncFile=strtok(nullptr,":")) {
                     /* fprintf(stderr,
                         "nedit: DEBUG: including tips file '%s'\n",
                         tipIncFile); */
@@ -2063,7 +2063,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel)
                     "  in calltips file:\n   \"%s\"\n",
                     tmp_alias->dest, resolvedTipsFile);
         } else {
-            for(src=strtok(tmp_alias->sources,":"); src; src=strtok(NULL,":"))
+            for(src=strtok(tmp_alias->sources,":"); src; src=strtok(nullptr,":"))
                 addTag(src, resolvedTipsFile, t->language, "", t->posInf,
                         tipPath, index);
         }

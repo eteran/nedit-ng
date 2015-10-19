@@ -198,7 +198,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
     windowHighlightData 
     	    *highlightData = (windowHighlightData *)window->highlightData;
     
-    if (highlightData == NULL)
+    if (highlightData == nullptr)
     	return;
     	
     /* Restyling-only modifications (usually a primary or secondary  selection)
@@ -254,12 +254,12 @@ void StartHighlighting(WindowInfo *window, int warn)
     /* Find the pattern set matching the window's current
        language mode, tell the user if it can't be done */
     patterns = findPatternsForWindow(window, warn);
-    if (patterns == NULL)
+    if (patterns == nullptr)
     	return;
     
     /* Compile the patterns */
     highlightData = createHighlightData(window, patterns);
-    if (highlightData == NULL)
+    if (highlightData == nullptr)
     	return;
     
     /* Prepare for a long delay, refresh display and put up a watch cursor */
@@ -269,14 +269,14 @@ void StartHighlighting(WindowInfo *window, int warn)
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
     stylePtr = styleString = XtMalloc(window->buffer->length + 1);
-    if (highlightData->pass1Patterns == NULL) {
+    if (highlightData->pass1Patterns == nullptr) {
     	for (i=0; i<window->buffer->length; i++)
     	    *stylePtr++ = UNFINISHED_STYLE;
     } else {
 	stringPtr = bufString = BufAsString(window->buffer);
 	parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr,
     		window->buffer->length, &prevChar, False,
-    		GetWindowDelimiters(window), bufString, NULL);
+    		GetWindowDelimiters(window), bufString, nullptr);
     }
     *stylePtr = '\0';
     BufSetAll(highlightData->styleBuffer, styleString);
@@ -317,7 +317,7 @@ void StopHighlighting(WindowInfo *window)
 {
     int i, oldFontHeight;
 
-    if (window->highlightData==NULL)
+    if (window->highlightData==nullptr)
     	return;
     	
     /* Get the line height being used by the highlight fonts in the window,
@@ -327,7 +327,7 @@ void StopHighlighting(WindowInfo *window)
     
     /* Free and remove the highlight data from the window */
     freeHighlightData((windowHighlightData *)window->highlightData);
-    window->highlightData = NULL;
+    window->highlightData = nullptr;
     
     /* Remove and detach style buffer and style table from all text
        display(s) of window, and redisplay without highlighting */
@@ -350,18 +350,18 @@ void FreeHighlightingData(WindowInfo *window)
 {
     int i;
     
-    if (window->highlightData == NULL)
+    if (window->highlightData == nullptr)
 	return;
     
     /* Free and remove the highlight data from the window */
     freeHighlightData((windowHighlightData *)window->highlightData);
-    window->highlightData = NULL;
+    window->highlightData = nullptr;
     
     /* The text display may make a last desperate attempt to access highlight
        information when it is destroyed, which would be a disaster. */
-    ((TextWidget)window->textArea)->text.textD->styleBuffer = NULL;
+    ((TextWidget)window->textArea)->text.textD->styleBuffer = nullptr;
     for (i=0; i<window->nPanes; i++)
-	((TextWidget)window->textPanes[i])->text.textD->styleBuffer = NULL;
+	((TextWidget)window->textPanes[i])->text.textD->styleBuffer = nullptr;
 }
 
 /*
@@ -385,7 +385,7 @@ void AttachHighlightToWidget(Widget widget, WindowInfo *window)
 void RemoveWidgetHighlight(Widget widget)
 {
     TextDAttachHighlightData(((TextWidget)widget)->text.textD,
-    	    NULL, NULL, 0, UNFINISHED_STYLE, NULL, NULL);
+    	    nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /*
@@ -402,19 +402,19 @@ void UpdateHighlightStyles(WindowInfo *window)
     int i;
     
     /* Do nothing if window not highlighted */
-    if (window->highlightData == NULL)
+    if (window->highlightData == nullptr)
     	return;
 
     /* Find the pattern set for the window's current language mode */
     patterns = findPatternsForWindow(window, False);
-    if (patterns == NULL) {
+    if (patterns == nullptr) {
     	StopHighlighting(window);
     	return;
     }
     
     /* Build new patterns */
     highlightData = createHighlightData(window, patterns);
-    if (highlightData == NULL) {
+    if (highlightData == nullptr) {
     	StopHighlighting(window);
     	return;
     }
@@ -453,7 +453,7 @@ int TestHighlightPatterns(patternSet *patSet)
     /* Compile the patterns (passing a random window as a source for fonts, and
        parent for dialogs, since we really don't care what fonts are used) */
     highlightData = createHighlightData(WindowList, patSet);
-    if (highlightData == NULL)
+    if (highlightData == nullptr)
     	return False;
     freeHighlightData(highlightData);
     return True;
@@ -464,7 +464,7 @@ int TestHighlightPatterns(patternSet *patSet)
 ** window. To avoid breaking encapsulation, the highlight style is converted 
 ** to a void* pointer (no other module has to know that characters are used
 ** to represent highlight styles; that would complicate future extensions).
-** Returns NULL if the window has highlighting turned off.
+** Returns nullptr if the window has highlighting turned off.
 ** The only guarantee that this function offers, is that when the same
 ** pointer is returned for two positions, the corresponding characters have
 ** the same highlight style.
@@ -472,11 +472,11 @@ int TestHighlightPatterns(patternSet *patSet)
 void* GetHighlightInfo(WindowInfo *window, int pos)
 {
     int style;
-    highlightDataRec *pattern = NULL;
+    highlightDataRec *pattern = nullptr;
     windowHighlightData *highlightData = 
 	(windowHighlightData *)window->highlightData; 
     if (!highlightData)
-	return NULL;
+	return nullptr;
     
     /* Be careful with signed/unsigned conversions. NO conversion here! */
     style = (int)BufGetCharacter(highlightData->styleBuffer, pos);
@@ -496,7 +496,7 @@ void* GetHighlightInfo(WindowInfo *window, int pos)
     }
     
     if (!pattern) {
-	return NULL;
+	return nullptr;
     }
     return (void*)pattern->userStyleIndex;    
 }
@@ -504,17 +504,17 @@ void* GetHighlightInfo(WindowInfo *window, int pos)
 /*
 ** Free allocated memory associated with highlight data, including compiled
 ** regular expressions, style buffer and style table.  Note: be sure to
-** NULL out the widget references to the objects in this structure before
+** nullptr out the widget references to the objects in this structure before
 ** calling this.  Because of the slow, multi-phase destruction of
 ** widgets, this data can be referenced even AFTER destroying the widget.
 */
 static void freeHighlightData(windowHighlightData *hd)
 {
-    if (hd == NULL)
+    if (hd == nullptr)
     	return;
-    if (hd->pass1Patterns != NULL)
+    if (hd->pass1Patterns != nullptr)
     	freePatterns(hd->pass1Patterns);
-    if (hd->pass2Patterns != NULL)
+    if (hd->pass2Patterns != nullptr)
     	freePatterns(hd->pass2Patterns);
     XtFree(hd->parentStyles);
     BufFree(hd->styleBuffer);
@@ -524,7 +524,7 @@ static void freeHighlightData(windowHighlightData *hd)
 
 /*
 ** Find the pattern set matching the window's current language mode, or
-** tell the user if it can't be done (if warn is True) and return NULL.
+** tell the user if it can't be done (if warn is True) and return nullptr.
 */
 static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
 {
@@ -533,7 +533,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
     
     /* Find the window's language mode.  If none is set, warn user */
     modeName = LanguageModeName(window->languageMode);
-    if (modeName == NULL) {
+    if (modeName == nullptr) {
     	if (warn)
     	    DialogF(DF_WARN, window->shell, 1, "Language Mode",
                     "No language-specific mode has been set for this file.\n\n"
@@ -543,12 +543,12 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
                     "added via Preferences -> Default Settings -> Language Modes,\n"
                     "and Preferences -> Default Settings -> Syntax Highlighting.",
                     "OK");
-    	return NULL;
+    	return nullptr;
     }
     
     /* Look up the appropriate pattern for the language */
     patterns = FindPatternSet(modeName);
-    if (patterns == NULL)
+    if (patterns == nullptr)
     {
         if (warn)
         {
@@ -559,7 +559,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
                     "Preferences -> Default Settings -> Syntax Highlighting\n"
                     "dialog, or choose a different language mode from:\n"
                     "Preferences -> Language Mode.", "OK", modeName);
-            return NULL;
+            return nullptr;
         }
     }
     
@@ -569,7 +569,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn)
 /*
 ** Create complete syntax highlighting information from "patternSrc", using
 ** highlighting fonts from "window", includes pattern compilation.  If errors
-** are encountered, warns user with a dialog and returns NULL.  To free the
+** are encountered, warns user with a dialog and returns nullptr.  To free the
 ** allocated components of the returned data structure, use freeHighlightData.
 */
 static windowHighlightData *createHighlightData(WindowInfo *window,
@@ -592,7 +592,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     /* The highlighting code can't handle empty pattern sets, quietly say no */
     if (nPatterns == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     /* Check that the styles and parent pattern names actually exist */
@@ -600,12 +600,12 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     {
         DialogF(DF_WARN, window->shell, 1, "Highlight Style",
                 "Highlight style \"Plain\" is missing", "OK");
-        return NULL;
+        return nullptr;
     }
 
     for (i=0; i<nPatterns; i++)
     {
-        if (patternSrc[i].subPatternOf != NULL
+        if (patternSrc[i].subPatternOf != nullptr
                 && indexOfNamedPattern(patternSrc, nPatterns,
                         patternSrc[i].subPatternOf) == -1)
         {
@@ -613,7 +613,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
                     "Parent field \"%s\" in pattern \"%s\"\n"
                     "does not match any highlight patterns in this set",
                     "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -625,7 +625,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
                     "Style \"%s\" named in pattern \"%s\"\n"
                     "does not match any existing style", "OK",
                     patternSrc[i].style, patternSrc[i].name);
-            return NULL;
+            return nullptr;
         }
     }
     
@@ -634,7 +634,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
        shows this setting only on top patterns which is much less confusing) */
     for (i = 0; i < nPatterns; i++)
     {
-        if (patternSrc[i].subPatternOf != NULL)
+        if (patternSrc[i].subPatternOf != nullptr)
         {
             int parentindex;
 
@@ -644,7 +644,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
                 DialogF(DF_WARN, window->shell, 1, "Parent Pattern",
                         "Pattern \"%s\" does not have valid parent", "OK",
                         patternSrc[i].name);
-                return NULL;
+                return nullptr;
             }
 
             if (patternSrc[parentindex].flags & DEFER_PARSING)
@@ -671,11 +671,11 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     p2Ptr = pass2PatternSrc = (highlightPattern *)XtMalloc(
     	    sizeof(highlightPattern) * nPass2Patterns);
     p1Ptr->name = p2Ptr->name = "";
-    p1Ptr->startRE = p2Ptr->startRE = NULL;
-    p1Ptr->endRE = p2Ptr->endRE = NULL;
-    p1Ptr->errorRE = p2Ptr->errorRE = NULL;
+    p1Ptr->startRE = p2Ptr->startRE = nullptr;
+    p1Ptr->endRE = p2Ptr->endRE = nullptr;
+    p1Ptr->errorRE = p2Ptr->errorRE = nullptr;
     p1Ptr->style = p2Ptr->style = (String)"Plain";
-    p1Ptr->subPatternOf = p2Ptr->subPatternOf = NULL;
+    p1Ptr->subPatternOf = p2Ptr->subPatternOf = nullptr;
     p1Ptr->flags = p2Ptr->flags = 0;
     p1Ptr++; p2Ptr++;
     for (i=0; i<nPatterns; i++) {
@@ -694,20 +694,20 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
 
     /* Compile patterns */
     if (nPass1Patterns == 0)
-    	pass1Pats = NULL;
+    	pass1Pats = nullptr;
     else {
 	pass1Pats = compilePatterns(window->shell, pass1PatternSrc,
     		nPass1Patterns);
-	if (pass1Pats == NULL)
-    	    return NULL;
+	if (pass1Pats == nullptr)
+    	    return nullptr;
     }
     if (nPass2Patterns == 0)
-    	pass2Pats = NULL;
+    	pass2Pats = nullptr;
     else {
 	pass2Pats = compilePatterns(window->shell, pass2PatternSrc,
     		nPass2Patterns);  
-	if (pass2Pats == NULL)
-    	    return NULL;
+	if (pass2Pats == nullptr)
+    	    return nullptr;
     }
     
     /* Set pattern styles.  If there are pass 2 patterns, pass 1 pattern
@@ -735,13 +735,13 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     *parentStylesPtr++ = '\0';
     for (i=1; i<nPass1Patterns; i++) {
 	parentName = pass1PatternSrc[i].subPatternOf;
-	*parentStylesPtr++ = parentName == NULL ? PLAIN_STYLE :
+	*parentStylesPtr++ = parentName == nullptr ? PLAIN_STYLE :
 		pass1Pats[indexOfNamedPattern(pass1PatternSrc,
 		nPass1Patterns, parentName)].style;
     }
     for (i=1; i<nPass2Patterns; i++) {
 	parentName = pass2PatternSrc[i].subPatternOf;
-	*parentStylesPtr++ = parentName == NULL ? PLAIN_STYLE :
+	*parentStylesPtr++ = parentName == nullptr ? PLAIN_STYLE :
 		pass2Pats[indexOfNamedPattern(pass2PatternSrc,
 		nPass2Patterns, parentName)].style;
     }
@@ -848,19 +848,19 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	compiledPats[i].nSubBranches = 0;
     }
     for (i=1; i<nPatterns; i++)
-    	if (patternSrc[i].subPatternOf == NULL)
+    	if (patternSrc[i].subPatternOf == nullptr)
     	    compiledPats[0].nSubPatterns++;
     	else
     	    compiledPats[indexOfNamedPattern(patternSrc, nPatterns,
     	    	    patternSrc[i].subPatternOf)].nSubPatterns++;
     for (i=0; i<nPatterns; i++)
     	compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ?
-    	    	NULL : (highlightDataRec **)XtMalloc(
+    	    	nullptr : (highlightDataRec **)XtMalloc(
     	    	    sizeof(highlightDataRec *) * compiledPats[i].nSubPatterns);
     for (i=0; i<nPatterns; i++)
     	compiledPats[i].nSubPatterns = 0;
     for (i=1; i<nPatterns; i++) {
-    	if (patternSrc[i].subPatternOf == NULL) {
+    	if (patternSrc[i].subPatternOf == nullptr) {
     	    compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] =
     	    		&compiledPats[i];
     	} else {
@@ -881,10 +881,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
             DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern",
                     "Color-only pattern \"%s\" may not have subpatterns", 
                     "OK", patternSrc[i].name);
-            return NULL;
+            return nullptr;
         }
         nSubExprs = 0;
-        if (patternSrc[i].startRE != NULL) {
+        if (patternSrc[i].startRE != nullptr) {
             ptr = patternSrc[i].startRE;
             while(TRUE) {
 		if (*ptr == '&') {
@@ -899,7 +899,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
         }
         compiledPats[i].startSubexprs[nSubExprs] = -1;
         nSubExprs = 0;
-        if (patternSrc[i].endRE != NULL) {
+        if (patternSrc[i].endRE != nullptr) {
             ptr = patternSrc[i].endRE;
             while(TRUE) {
 		if (*ptr == '&') {
@@ -917,26 +917,26 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 
     /* Compile regular expressions for all highlight patterns */
     for (i=0; i<nPatterns; i++) {
-	if (patternSrc[i].startRE == NULL || compiledPats[i].colorOnly)
-	    compiledPats[i].startRE = NULL;
+	if (patternSrc[i].startRE == nullptr || compiledPats[i].colorOnly)
+	    compiledPats[i].startRE = nullptr;
 	else {
 	    if ((compiledPats[i].startRE = compileREAndWarn(dialogParent,
-	    	    patternSrc[i].startRE)) == NULL)
-   		return NULL;
+	    	    patternSrc[i].startRE)) == nullptr)
+   		return nullptr;
     	}
-    	if (patternSrc[i].endRE == NULL || compiledPats[i].colorOnly)
-    	    compiledPats[i].endRE = NULL;
+    	if (patternSrc[i].endRE == nullptr || compiledPats[i].colorOnly)
+    	    compiledPats[i].endRE = nullptr;
     	else {
     	    if ((compiledPats[i].endRE = compileREAndWarn(dialogParent,
-    	    	    patternSrc[i].endRE)) == NULL)
- 		return NULL;
+    	    	    patternSrc[i].endRE)) == nullptr)
+ 		return nullptr;
     	}
-    	if (patternSrc[i].errorRE == NULL)
-    	    compiledPats[i].errorRE = NULL;
+    	if (patternSrc[i].errorRE == nullptr)
+    	    compiledPats[i].errorRE = nullptr;
     	else {
     	    if ((compiledPats[i].errorRE = compileREAndWarn(dialogParent,
-    	    	    patternSrc[i].errorRE)) == NULL)
- 		return NULL;
+    	    	    patternSrc[i].errorRE)) == nullptr)
+ 		return nullptr;
     	}
     }
     
@@ -944,17 +944,17 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
        end pattern, the error pattern, and all of the start patterns of the
        sub-patterns */
     for (patternNum=0; patternNum<nPatterns; patternNum++) {
-	if (patternSrc[patternNum].endRE == NULL &&
-	    	patternSrc[patternNum].errorRE == NULL &&
+	if (patternSrc[patternNum].endRE == nullptr &&
+	    	patternSrc[patternNum].errorRE == nullptr &&
 	    	compiledPats[patternNum].nSubPatterns == 0) {
-	    compiledPats[patternNum].subPatternRE = NULL;
+	    compiledPats[patternNum].subPatternRE = nullptr;
 	    continue;
 	}
 	length = (compiledPats[patternNum].colorOnly ||
-	    	patternSrc[patternNum].endRE == NULL) ? 0 :
+	    	patternSrc[patternNum].endRE == nullptr) ? 0 :
 	    	strlen(patternSrc[patternNum].endRE) + 5;
 	length += (compiledPats[patternNum].colorOnly ||
-                   patternSrc[patternNum].errorRE == NULL) ? 0 :
+                   patternSrc[patternNum].errorRE == nullptr) ? 0 :
 	    	strlen(patternSrc[patternNum].errorRE) + 5;
 	for (i=0; i<compiledPats[patternNum].nSubPatterns; i++) {
     	    subPatIndex = compiledPats[patternNum].subPatterns[i]-compiledPats;
@@ -962,12 +962,12 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    	    strlen(patternSrc[subPatIndex].startRE) + 5;
 	}
 	if (length == 0) {
-	    compiledPats[patternNum].subPatternRE = NULL;
+	    compiledPats[patternNum].subPatternRE = nullptr;
 	    continue;
 	}
 	bigPattern = XtMalloc(sizeof(char) * (length+1));
 	ptr=bigPattern;
-	if (patternSrc[patternNum].endRE != NULL) {
+	if (patternSrc[patternNum].endRE != nullptr) {
 	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
     	    strcpy(ptr, patternSrc[patternNum].endRE);
     	    ptr += strlen(patternSrc[patternNum].endRE);
@@ -975,7 +975,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
     	    *ptr++ = '|';
 	    compiledPats[patternNum].nSubBranches++;
 	}
-	if (patternSrc[patternNum].errorRE != NULL) {
+	if (patternSrc[patternNum].errorRE != nullptr) {
 	    *ptr++ = '('; *ptr++ = '?'; *ptr++ = ':';
     	    strcpy(ptr, patternSrc[patternNum].errorRE);
     	    ptr += strlen(patternSrc[patternNum].errorRE);
@@ -997,10 +997,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent,
 	*(ptr-1) = '\0';
 	compiledPats[patternNum].subPatternRE = CompileRE(bigPattern,
 	    	&compileMsg, REDFLT_STANDARD);
-	if (compiledPats[patternNum].subPatternRE == NULL) {
+	if (compiledPats[patternNum].subPatternRE == nullptr) {
     	    fprintf(stderr, "Error compiling syntax highlight patterns:\n%s",
     	    	    compileMsg);
-    	    return NULL;
+    	    return nullptr;
 	}
 	XtFree(bigPattern);
     }
@@ -1020,13 +1020,13 @@ static void freePatterns(highlightDataRec *patterns)
     int i;
     
     for (i=0; patterns[i].style!=0; i++) {
-    	if (patterns[i].startRE != NULL)
+    	if (patterns[i].startRE != nullptr)
     	    free((char *)patterns[i].startRE);
-    	if (patterns[i].endRE != NULL)
+    	if (patterns[i].endRE != nullptr)
     	    free((char *)patterns[i].endRE);
-    	if (patterns[i].errorRE != NULL)
+    	if (patterns[i].errorRE != nullptr)
     	    free((char *)patterns[i].errorRE);
-    	if (patterns[i].subPatternRE != NULL)
+    	if (patterns[i].subPatternRE != nullptr)
     	    free((char *)patterns[i].subPatternRE);
     }
 
@@ -1051,7 +1051,7 @@ highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name)
           if (strcmp(set->patterns[i].name, name) == 0)
               return &set->patterns[i];
     }
-    return NULL;
+    return nullptr;
 }
 
 /*
@@ -1063,10 +1063,10 @@ int HighlightCodeOfPos(WindowInfo *window, int pos)
     windowHighlightData *highlightData =
           (windowHighlightData *)window->highlightData;
     textBuffer *styleBuf =
-          highlightData ? highlightData->styleBuffer : NULL;
+          highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
     
-    if (styleBuf != NULL) {
+    if (styleBuf != nullptr) {
       hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
       if (hCode == UNFINISHED_STYLE) {
           /* encountered "unfinished" style, trigger parsing */
@@ -1089,11 +1089,11 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode)
     windowHighlightData *highlightData =
           (windowHighlightData *)window->highlightData;
     textBuffer *styleBuf =
-          highlightData ? highlightData->styleBuffer : NULL;
+          highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
     int oldPos = pos;
     
-    if (styleBuf != NULL) {
+    if (styleBuf != nullptr) {
       hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
       if (!hCode)
           return 0;
@@ -1130,12 +1130,12 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos,
     windowHighlightData *highlightData =
           (windowHighlightData *)window->highlightData;
     textBuffer *styleBuf =
-          highlightData ? highlightData->styleBuffer : NULL;
+          highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
     int oldPos = pos;
     styleTableEntry *entry;
     
-    if (styleBuf != NULL) {
+    if (styleBuf != nullptr) {
       hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
       if (!hCode)
           return 0;
@@ -1145,9 +1145,9 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos,
           hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
       }
       entry = styleTableEntryOfCode(window, hCode);
-      if (entry == NULL) 
+      if (entry == nullptr) 
           return 0;
-      if ((*checkStyleName) == NULL)
+      if ((*checkStyleName) == nullptr)
           (*checkStyleName) = entry->styleName;
       while (hCode == UNFINISHED_STYLE ||
              ((entry = styleTableEntryOfCode(window, hCode)) &&
@@ -1177,7 +1177,7 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode)
 
     hCode -= UNFINISHED_STYLE;       /* get the correct index value */
     if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
-      return NULL;
+      return nullptr;
     return &highlightData->styleTable[hCode];
 }
 
@@ -1217,7 +1217,7 @@ Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
         XtVaGetValues(window->textArea,
                       XtNcolormap,   &cMap,
                       XtNforeground, &colorDef.pixel,
-                      NULL);
+                      nullptr);
         if (XQueryColor(display, cMap, &colorDef)) {
             *r = colorDef.red;
             *g = colorDef.green;
@@ -1247,7 +1247,7 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
         XtVaGetValues(window->textArea,
                       XtNcolormap,   &cMap,
                       XtNbackground, &colorDef.pixel,
-                      NULL);
+                      nullptr);
         if (XQueryColor(display, cMap, &colorDef)) {
             *r = colorDef.red;
             *g = colorDef.green;
@@ -1282,7 +1282,7 @@ static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
     
     /* If there are no pass 2 patterns to process, do nothing (but this
        should never be triggered) */
-    if (pass2Patterns == NULL)
+    if (pass2Patterns == nullptr)
     	return;
     
     /* Find the point at which to begin parsing to ensure that the character at
@@ -1331,7 +1331,7 @@ static void handleUnparsedRegion(const WindowInfo* window, textBuffer* styleBuf,
     /* Parse it with pass 2 patterns */
     prevChar = getPrevChar(buf, beginSafety);
     parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety,
-    	    &prevChar, False, GetWindowDelimiters(window), string, NULL);
+    	    &prevChar, False, GetWindowDelimiters(window), string, nullptr);
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
@@ -1394,7 +1394,7 @@ static void incrementalReparse(windowHighlightData *highlightData,
         startPattern = patternOfStyle(pass1Patterns, parseInStyle);
         /* If there is no pattern matching the style, it must be a pass-2
            style. It that case, it is (probably) safe to start parsing with
-           the root pass-1 pattern again. Anyway, passing a NULL-pointer to
+           the root pass-1 pattern again. Anyway, passing a nullptr-pointer to
            the parse routine would result in a crash; restarting with pass-1 
            patterns is certainly preferable, even if there is a slight chance 
            of a faulty coloring. */
@@ -1457,7 +1457,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     const char *stringPtr;
     int endSafety, endPass2Safety, startPass2Safety, tempLen;
     int modStart, modEnd, beginSafety, beginStyle, p, style;
-    int firstPass2Style = pass2Patterns == NULL ? INT_MAX :
+    int firstPass2Style = pass2Patterns == nullptr ? INT_MAX :
 	    (unsigned char)pass2Patterns[1].style;
     
     /* Begin parsing one context distance back (or to the last style change) */
@@ -1504,13 +1504,13 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
     stringPtr = &string[beginParse-beginSafety];
     stylePtr = &styleString[beginParse-beginSafety];
     parseString(pass1Patterns, &stringPtr, &stylePtr, endParse-beginParse,
-    	    &prevChar, False, delimiters, string, NULL);
+    	    &prevChar, False, delimiters, string, nullptr);
 
     /* On non top-level patterns, parsing can end early */
     endParse = min(endParse, stringPtr-string + beginSafety);
     
     /* If there are no pass 2 patterns, we're done */
-    if (pass2Patterns == NULL)
+    if (pass2Patterns == nullptr)
     	goto parseDone;
     
     /* Parsing of pass 2 patterns is done only as necessary for determining
@@ -1541,14 +1541,14 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	prevChar = getPrevChar(buf, beginSafety);
 	if (endPass2Safety == endSafety) {
 	    passTwoParseString(pass2Patterns, string, styleString,
-                    endParse - beginSafety, &prevChar, delimiters, string, NULL);
+                    endParse - beginSafety, &prevChar, delimiters, string, nullptr);
 	    goto parseDone;
 	} else {
 	    tempLen = endPass2Safety - modStart;
 	    temp = XtMalloc(tempLen);
 	    strncpy(temp, &styleString[modStart-beginSafety], tempLen);
 	    passTwoParseString(pass2Patterns, string, styleString,
-                    modStart - beginSafety, &prevChar, delimiters, string, NULL);
+                    modStart - beginSafety, &prevChar, delimiters, string, nullptr);
 	    strncpy(&styleString[modStart-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1561,7 +1561,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
 	if (beginSafety > modEnd) {
 	    prevChar = getPrevChar(buf, beginSafety);
 	    passTwoParseString(pass2Patterns, string, styleString,
-                    endParse - beginSafety, &prevChar, delimiters, string, NULL);
+                    endParse - beginSafety, &prevChar, delimiters, string, nullptr);
 	} else {
 	    startPass2Safety = max(beginSafety,
 	    	    backwardOneContext(buf, contextRequirements, modEnd));
@@ -1573,7 +1573,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns,
                     &string[startPass2Safety-beginSafety],
                     &styleString[startPass2Safety-beginSafety],
                     endParse-startPass2Safety, &prevChar, delimiters, string,
-                    NULL);
+                    nullptr);
 	    strncpy(&styleString[startPass2Safety-beginSafety], temp, tempLen);
 	    XtFree(temp);
 	}
@@ -1605,9 +1605,9 @@ parseDone:
 ** required (the string may or may not be parsed beyond "length").
 **
 ** "lookBehindTo" indicates the boundary till where look-behind patterns may
-** look back. If NULL, the start of the string is assumed to be the boundary.
+** look back. If nullptr, the start of the string is assumed to be the boundary.
 **
-** "match_till" indicates the boundary till where matches may extend. If NULL,
+** "match_till" indicates the boundary till where matches may extend. If nullptr,
 ** it is assumed that the terminating \0 indicates the boundary. Note that
 ** look-ahead patterns can peek beyond the boundary, if supplied.
 **
@@ -1626,7 +1626,7 @@ static int parseString(highlightDataRec *pattern, const char **string,
     signed char *subExpr;
     char savedPrevChar;
     char succChar = match_till ? (*match_till) : '\0';
-    highlightDataRec *subPat = NULL, *subSubPat;
+    highlightDataRec *subPat = nullptr, *subSubPat;
     
     if (length <= 0)
     	return False;
@@ -1657,7 +1657,7 @@ static int parseString(highlightDataRec *pattern, const char **string,
 	   end expression if there were coloring sub-patterns, and return */
 	savedStartPtr = stringPtr;
 	savedPrevChar = *prevChar;
-	if (pattern->endRE != NULL) {
+	if (pattern->endRE != nullptr) {
 	    if (subIndex == 0) {
 		fillStyleString(&stringPtr, &stylePtr, 
 		    pattern->subPatternRE->endp[0], pattern->style, prevChar);
@@ -1689,7 +1689,7 @@ static int parseString(highlightDataRec *pattern, const char **string,
     	
     	/* If the combined pattern matched this pattern's error pattern, we're
     	   done.  Fill in the style string, update the pointers, and return */
-    	if (pattern->errorRE != NULL) {
+    	if (pattern->errorRE != nullptr) {
 	    if (subIndex == 0) {
 		fillStyleString(&stringPtr, &stylePtr, 
 		    pattern->subPatternRE->startp[0], pattern->style, prevChar);
@@ -1712,12 +1712,12 @@ static int parseString(highlightDataRec *pattern, const char **string,
     	}
     	
     	/* the sub-pattern is a simple match, just color it */
-    	if (subPat->subPatternRE == NULL) {
+    	if (subPat->subPatternRE == nullptr) {
     	    fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
     	    	    subPat->style, prevChar);
     	
     	/* Parse the remainder of the sub-pattern */	    
-    	} else if (subPat->endRE != NULL) {
+    	} else if (subPat->endRE != nullptr) {
             /* The pattern is a starting/ending type of pattern, proceed with
                the regular hierarchical parsing. */
            
@@ -1792,7 +1792,7 @@ static int parseString(highlightDataRec *pattern, const char **string,
     /* Advance the string and style pointers to the end of the parsed text */
     *string = stringPtr;
     *styleString = stylePtr;
-    return pattern->endRE == NULL;
+    return pattern->endRE == nullptr;
 }
 
 /*
@@ -1806,7 +1806,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string,
         const char *lookBehindTo, const char *match_till)
 {
     int inParseRegion = False;
-    char *stylePtr, temp, *parseStart = NULL, *parseEnd, *s, *c;
+    char *stylePtr, temp, *parseStart = nullptr, *parseEnd, *s, *c;
     const char *stringPtr;
     int firstPass2Style = (unsigned char)pattern[1].style;
     
@@ -1853,7 +1853,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr,
     	
     for (i=0; i<len; i++)
     	*(*stylePtr)++ = style;
-    if (prevChar != NULL) *prevChar = *(toPtr-1);
+    if (prevChar != nullptr) *prevChar = *(toPtr-1);
     *stringPtr = toPtr;
 }
 
@@ -1981,7 +1981,7 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b)
                   XtNcolormap,   &cMap,
                   XtNdepth,      &depth,
                   XtNforeground, &foreground,
-                  NULL);
+                  nullptr);
 
     bestPixel = foreground; /* Our last fallback */
 
@@ -2084,7 +2084,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
     const char *compileMsg;
     
     compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
-    if (compiledRE == NULL)
+    if (compiledRE == nullptr)
     {
         char *boundedRe = XtNewString(re);
         size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
@@ -2100,7 +2100,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re)
                 "Error in syntax highlighting regular expression:\n%s\n%s",
                 "OK", boundedRe, compileMsg);
         XtFree(boundedRe);
-        return NULL;
+        return nullptr;
     }
     return compiledRE;
 }
@@ -2130,7 +2130,7 @@ static int isParentStyle(const char *parentStyles, int style1, int style2)
 */
 static int patternIsParsable(highlightDataRec *pattern)
 {
-    return pattern != NULL && pattern->subPatternRE != NULL;
+    return pattern != nullptr && pattern->subPatternRE != nullptr;
 }
 
 /*
@@ -2333,7 +2333,7 @@ static void recolorSubexpr(regexp *re, int subexpr, int style,
     	
     stringPtr = re->startp[subexpr];
     stylePtr = &styleString[stringPtr - string];
-    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, NULL);
+    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, nullptr);
 }
 
 /*
@@ -2347,7 +2347,7 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style)
     	    return &patterns[i];
     if (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
 	return &patterns[0];
-    return NULL;
+    return nullptr;
 }
 
 static int max(int i1, int i2)
@@ -2365,7 +2365,7 @@ static int indexOfNamedPattern(highlightPattern *patList, int nPats,
 {
     int i;
     
-    if (patName == NULL)
+    if (patName == nullptr)
     	return -1;
     for (i=0; i<nPats; i++)
     	if (!strcmp(patList[i].name, patName))
@@ -2379,7 +2379,7 @@ static int findTopLevelParentIndex(highlightPattern *patList, int nPats,
     int topIndex;
     
     topIndex = index;
-    while (patList[topIndex].subPatternOf != NULL) {
+    while (patList[topIndex].subPatternOf != nullptr) {
     	topIndex = indexOfNamedPattern(patList, nPats,
     	    	patList[topIndex].subPatternOf);
 	if (index==topIndex)
@@ -2408,12 +2408,12 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
 	
     /* Decompose the window height into the part devoted to displaying
        text (textHeight) and the non-text part (boderHeight) */
-    XtVaGetValues(window->shell, XmNheight, &windowHeight, NULL);
+    XtVaGetValues(window->shell, XmNheight, &windowHeight, nullptr);
     XtVaGetValues(window->textArea, XmNheight, &textAreaHeight,
-    	    textNmarginHeight, &marginHeight, NULL);
+    	    textNmarginHeight, &marginHeight, nullptr);
     textHeight = textAreaHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
-    	XtVaGetValues(window->textPanes[i], XmNheight, &textAreaHeight, NULL);
+    	XtVaGetValues(window->textPanes[i], XmNheight, &textAreaHeight, nullptr);
     	textHeight += textAreaHeight - 2*marginHeight;
     }
     borderHeight = windowHeight - textHeight;
@@ -2426,10 +2426,10 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight)
        requests.  Our height increment is probably wrong because it is still
        set for the previous font.  Set the new height in advance, before
        attempting to resize. */
-    XtVaSetValues(window->shell, XmNheightInc, getFontHeight(window), NULL);
+    XtVaSetValues(window->shell, XmNheightInc, getFontHeight(window), nullptr);
     
     /* Re-size the window */
-    XtVaSetValues(window->shell, XmNheight, newWindowHeight, NULL);
+    XtVaSetValues(window->shell, XmNheight, newWindowHeight, nullptr);
 }
 
 /*

@@ -220,14 +220,14 @@ static userSubMenuCache  BGSubMenus;
 static int NBGMenuItems = 0;
 
 /* Top level shells of the user-defined menu editing dialogs */
-static Widget ShellCmdDialog = NULL;
-static Widget MacroCmdDialog = NULL;
-static Widget BGMenuCmdDialog = NULL;
+static Widget ShellCmdDialog = nullptr;
+static Widget MacroCmdDialog = nullptr;
+static Widget BGMenuCmdDialog = nullptr;
 
 /* Paste learn/replay sequence buttons in user defined menu editing dialogs
    (for dimming and undimming externally when replay macro is available) */
-static Widget MacroPasteReplayBtn = NULL;
-static Widget BGMenuPasteReplayBtn = NULL;
+static Widget MacroPasteReplayBtn = nullptr;
+static Widget BGMenuPasteReplayBtn = nullptr;
 
 static void editMacroOrBGMenu(WindowInfo *window, int dialogType);
 static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
@@ -330,7 +330,7 @@ void EditShellMenu(WindowInfo *window)
     Arg args[20];
 
     /* if the dialog is already displayed, just pop it to the top and return */
-    if (ShellCmdDialog != NULL) {
+    if (ShellCmdDialog != nullptr) {
     	RaiseDialogWindow(ShellCmdDialog);
     	return;
     }
@@ -356,7 +356,7 @@ void EditShellMenu(WindowInfo *window)
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editShellCommands", xmFormWidgetClass,
 	    ucd->dlogShell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, NULL);
+	    XmNresizePolicy, XmRESIZE_NONE, nullptr);
     ShellCmdDialog = ucd->dlogShell;
     XtAddCallback(form, XmNdestroyCallback, destroyCB, ucd);
     AddMotifCloseCallback(ucd->dlogShell, closeCB, ucd);
@@ -385,7 +385,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_POSITION,
-	    XmNbottomPosition, SHELL_CMD_TOP, NULL);
+	    XmNbottomPosition, SHELL_CMD_TOP, nullptr);
     XmStringFree(s1);
     ucd->saveFirstBtn = XtVaCreateManagedWidget("saveFirstBtn",
     	    xmToggleButtonWidgetClass, form,
@@ -398,7 +398,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, ucd->loadAfterBtn, NULL);
+	    XmNbottomWidget, ucd->loadAfterBtn, nullptr);
     XmStringFree(s1);
     ucd->repInpBtn = XtVaCreateManagedWidget("repInpBtn",
     	    xmToggleButtonWidgetClass, form,
@@ -411,7 +411,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, ucd->saveFirstBtn, NULL);
+	    XmNbottomWidget, ucd->saveFirstBtn, nullptr);
     XmStringFree(s1);
     outBox = XtVaCreateManagedWidget("outBox", xmRowColumnWidgetClass, form,
 	    XmNpacking, XmPACK_TIGHT,
@@ -424,14 +424,14 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
 	    XmNbottomWidget, ucd->repInpBtn,
-	    XmNbottomOffset, 4, NULL);
+	    XmNbottomOffset, 4, nullptr);
     ucd->sameOutBtn = XtVaCreateManagedWidget("sameOutBtn",
     	    xmToggleButtonWidgetClass, outBox,
     	    XmNlabelString, s1=MKSTRING((String)"same document"),
     	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, True, NULL);
+    	    XmNset, True, nullptr);
     XmStringFree(s1);
     XtAddCallback(ucd->sameOutBtn, XmNvalueChangedCallback, sameOutCB, ucd);
     ucd->dlogOutBtn = XtVaCreateManagedWidget("dlogOutBtn",
@@ -440,7 +440,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNmnemonic, 'g',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, False, NULL);
+    	    XmNset, False, nullptr);
     XmStringFree(s1);
     ucd->winOutBtn = XtVaCreateManagedWidget("winOutBtn", xmToggleButtonWidgetClass,
     	    outBox,
@@ -448,7 +448,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNmnemonic, 'n',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, False, NULL);
+    	    XmNset, False, nullptr);
     XmStringFree(s1);
     outLabel = XtVaCreateManagedWidget("outLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)"Command Output (stdout/stderr):"),
@@ -459,7 +459,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, outBox, NULL);
+	    XmNbottomWidget, outBox, nullptr);
     XmStringFree(s1);
 
     inpBox = XtVaCreateManagedWidget("inpBox", xmRowColumnWidgetClass, form,
@@ -472,14 +472,14 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, outLabel, NULL);
+	    XmNbottomWidget, outLabel, nullptr);
     ucd->selInpBtn = XtVaCreateManagedWidget("selInpBtn", xmToggleButtonWidgetClass,
     	    inpBox,
     	    XmNlabelString, s1=MKSTRING((String)"selection"),
     	    XmNmnemonic, 's',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, True, NULL);
+    	    XmNset, True, nullptr);
     XmStringFree(s1);
     ucd->winInpBtn = XtVaCreateManagedWidget("winInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
@@ -487,7 +487,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNmnemonic, 'w',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, False, NULL);
+    	    XmNset, False, nullptr);
     XmStringFree(s1);
     ucd->eitherInpBtn = XtVaCreateManagedWidget("eitherInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
@@ -495,7 +495,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNmnemonic, 't',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, False, NULL);
+    	    XmNset, False, nullptr);
     XmStringFree(s1);
     ucd->noInpBtn = XtVaCreateManagedWidget("noInpBtn",
     	    xmToggleButtonWidgetClass, inpBox,
@@ -503,7 +503,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNmnemonic, 'o',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
     	    XmNmarginHeight, 0,
-    	    XmNset, False, NULL);
+    	    XmNset, False, nullptr);
     XmStringFree(s1);
     inpLabel = XtVaCreateManagedWidget("inpLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)"Command Input (stdin):"),
@@ -514,7 +514,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-	    XmNbottomWidget, inpBox, NULL);
+	    XmNbottomWidget, inpBox, nullptr);
     XmStringFree(s1);
  
     ucd->mneTextW = XtVaCreateManagedWidget("mne", xmTextWidgetClass, form,
@@ -525,7 +525,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, inpLabel, NULL);
+    	    XmNbottomWidget, inpLabel, nullptr);
     RemapDeleteKey(ucd->mneTextW);
 
     ucd->accTextW = XtVaCreateManagedWidget("acc", xmTextWidgetClass, form,
@@ -537,7 +537,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS-15,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, inpLabel, NULL);
+    	    XmNbottomWidget, inpLabel, nullptr);
     XtAddEventHandler(ucd->accTextW, KeyPressMask, False,
     	    (XtEventHandler)accKeyCB, ucd);
     XtAddCallback(ucd->accTextW, XmNfocusCallback, accFocusCB, ucd);
@@ -553,7 +553,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, LIST_RIGHT + 24,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->mneTextW, NULL);
+    	    XmNbottomWidget, ucd->mneTextW, nullptr);
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("mneLabel", xmLabelGadgetClass, form,
@@ -567,7 +567,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, RIGHT_MARGIN_POS,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->mneTextW, NULL);
+    	    XmNbottomWidget, ucd->mneTextW, nullptr);
     XmStringFree(s1);
     
     ucd->nameTextW = XtVaCreateManagedWidget("name", xmTextWidgetClass, form,
@@ -576,7 +576,7 @@ void EditShellMenu(WindowInfo *window)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, accLabel, NULL);
+    	    XmNbottomWidget, accLabel, nullptr);
     RemapDeleteKey(ucd->nameTextW);
  
     nameLabel = XtVaCreateManagedWidget("nameLabel", xmLabelGadgetClass, form,
@@ -588,7 +588,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, LIST_RIGHT,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->nameTextW, NULL);
+    	    XmNbottomWidget, ucd->nameTextW, nullptr);
     XmStringFree(s1);
  
     XtVaCreateManagedWidget("nameNotes", xmLabelGadgetClass, form,
@@ -600,7 +600,7 @@ void EditShellMenu(WindowInfo *window)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, RIGHT_MARGIN_POS,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->nameTextW, NULL);
+    	    XmNbottomWidget, ucd->nameTextW, nullptr);
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form,
@@ -614,7 +614,7 @@ Select \"New\" to add a new command to the menu."),
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, nameLabel, NULL);
+    	    XmNbottomWidget, nameLabel, nullptr);
     XmStringFree(s1);
  
     cmdLabel = XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
@@ -625,7 +625,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNtopAttachment, XmATTACH_POSITION,
     	    XmNtopPosition, SHELL_CMD_TOP,
     	    XmNleftAttachment, XmATTACH_POSITION,
-    	    XmNleftPosition, LEFT_MARGIN_POS, NULL);
+    	    XmNleftPosition, LEFT_MARGIN_POS, nullptr);
     XmStringFree(s1);
     XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)"(% expands to current filename, # to line number)"),
@@ -636,7 +636,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNleftAttachment, XmATTACH_WIDGET,
     	    XmNleftWidget, cmdLabel,
     	    XmNrightAttachment, XmATTACH_POSITION,
-    	    XmNrightPosition, RIGHT_MARGIN_POS, NULL);
+    	    XmNrightPosition, RIGHT_MARGIN_POS, nullptr);
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
@@ -647,7 +647,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 29,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
+    	    XmNbottomPosition, 99, nullptr);
     XtAddCallback(okBtn, XmNactivateCallback, okCB, ucd);
     XmStringFree(s1);
 
@@ -659,7 +659,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 58,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
+    	    XmNbottomPosition, 99, nullptr);
     XtAddCallback(applyBtn, XmNactivateCallback, applyCB, ucd);
     XmStringFree(s1);
 
@@ -672,7 +672,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightPosition, 87,
     	    XmNbottomAttachment, XmATTACH_POSITION,
     	    XmNbottomPosition, 99,
-            NULL);
+            nullptr);
     XtAddCallback(closeBtn, XmNactivateCallback, closeCB, ucd);
     XmStringFree(s1);
     
@@ -694,18 +694,18 @@ Select \"New\" to add a new command to the menu."),
     XtManageChild(ucd->cmdTextW);
     MakeSingleLineTextW(ucd->cmdTextW);
     RemapDeleteKey(ucd->cmdTextW);
-    XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, NULL); /* for mnemonic */
+    XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); /* for mnemonic */
    
     /* Disable text input for the accelerator key widget, let the
        event handler manage it instead */
     disableTextW(ucd->accTextW);
 
     /* initializs the dialog fields to match "New" list item */
-    updateDialogFields(NULL, ucd); 
+    updateDialogFields(nullptr, ucd); 
     
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -738,11 +738,11 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     Arg args[20];
 
     /* if the dialog is already displayed, just pop it to the top and return */
-    if (dialogType == MACRO_CMDS && MacroCmdDialog != NULL) {
+    if (dialogType == MACRO_CMDS && MacroCmdDialog != nullptr) {
     	RaiseDialogWindow(MacroCmdDialog);
     	return;
     }
-    if (dialogType == BG_MENU_CMDS && BGMenuCmdDialog != NULL) {
+    if (dialogType == BG_MENU_CMDS && BGMenuCmdDialog != nullptr) {
     	RaiseDialogWindow(BGMenuCmdDialog);
     	return;
     }
@@ -776,7 +776,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     AddSmallIcon(ucd->dlogShell);
     form = XtVaCreateManagedWidget("editMacroCommands", xmFormWidgetClass,
 	    ucd->dlogShell, XmNautoUnmanage, False,
-	    XmNresizePolicy, XmRESIZE_NONE, NULL);
+	    XmNresizePolicy, XmRESIZE_NONE, nullptr);
     XtAddCallback(form, XmNdestroyCallback, destroyCB, ucd);
     AddMotifCloseCallback(ucd->dlogShell, closeCB, ucd);
  
@@ -803,7 +803,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 	    XmNleftAttachment, XmATTACH_POSITION,
 	    XmNleftPosition, LIST_RIGHT,
 	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, MACRO_CMD_TOP, NULL);
+    	    XmNbottomPosition, MACRO_CMD_TOP, nullptr);
     XmStringFree(s1);
  
     ucd->mneTextW = XtVaCreateManagedWidget("mne", xmTextWidgetClass, form,
@@ -815,7 +815,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 	    XmNrightPosition, RIGHT_MARGIN_POS-21,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
     	    XmNbottomWidget, ucd->selInpBtn,
-	    XmNbottomOffset, 5, NULL);
+	    XmNbottomOffset, 5, nullptr);
     RemapDeleteKey(ucd->mneTextW);
 
     ucd->accTextW = XtVaCreateManagedWidget("acc", xmTextWidgetClass, form,
@@ -828,7 +828,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 	    XmNrightPosition, RIGHT_MARGIN_POS-20-10,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
     	    XmNbottomWidget, ucd->selInpBtn,
-	    XmNbottomOffset, 5, NULL);
+	    XmNbottomOffset, 5, nullptr);
     XtAddEventHandler(ucd->accTextW, KeyPressMask, False,
     	    (XtEventHandler)accKeyCB, ucd);
     XtAddCallback(ucd->accTextW, XmNfocusCallback, accFocusCB, ucd);
@@ -845,7 +845,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, LIST_RIGHT + 22,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->mneTextW, NULL);
+    	    XmNbottomWidget, ucd->mneTextW, nullptr);
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("mneLabel", xmLabelGadgetClass, form,
@@ -859,20 +859,20 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, RIGHT_MARGIN_POS-21,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->mneTextW, NULL);
+    	    XmNbottomWidget, ucd->mneTextW, nullptr);
     XmStringFree(s1);
 
     pasteReplayBtn = XtVaCreateManagedWidget("pasteReplay",
     	    xmPushButtonWidgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)"Paste Learn/\nReplay Macro"),
     	    XmNmnemonic, 'P',
-    	    XmNsensitive, GetReplayMacro() != NULL,
+    	    XmNsensitive, GetReplayMacro() != nullptr,
      	    XmNleftAttachment, XmATTACH_POSITION,
    	    XmNleftPosition, RIGHT_MARGIN_POS-20,
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, MACRO_CMD_TOP, NULL);
+    	    XmNbottomPosition, MACRO_CMD_TOP, nullptr);
     XtAddCallback(pasteReplayBtn, XmNactivateCallback,
     	    pasteReplayCB, ucd);
     XmStringFree(s1);
@@ -883,7 +883,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, accLabel, NULL);
+    	    XmNbottomWidget, accLabel, nullptr);
     RemapDeleteKey(ucd->nameTextW);
  
     nameLabel = XtVaCreateManagedWidget("nameLabel", xmLabelGadgetClass, form,
@@ -895,7 +895,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, LIST_RIGHT,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->nameTextW, NULL);
+    	    XmNbottomWidget, ucd->nameTextW, nullptr);
     XmStringFree(s1);
  
     XtVaCreateManagedWidget("nameNotes", xmLabelGadgetClass, form,
@@ -907,7 +907,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, RIGHT_MARGIN_POS,
     	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, ucd->nameTextW, NULL);
+    	    XmNbottomWidget, ucd->nameTextW, nullptr);
     XmStringFree(s1);
 
     XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form,
@@ -921,7 +921,7 @@ Select \"New\" to add a new command to the menu."),
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS,
 	    XmNbottomAttachment, XmATTACH_WIDGET,
-    	    XmNbottomWidget, nameLabel, NULL);
+    	    XmNbottomWidget, nameLabel, nullptr);
     XmStringFree(s1);
  
     cmdLabel = XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form,
@@ -932,7 +932,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNtopAttachment, XmATTACH_POSITION,
     	    XmNtopPosition, MACRO_CMD_TOP,
     	    XmNleftAttachment, XmATTACH_POSITION,
-    	    XmNleftPosition, LEFT_MARGIN_POS, NULL);
+    	    XmNleftPosition, LEFT_MARGIN_POS, nullptr);
     XmStringFree(s1);
 
     okBtn = XtVaCreateManagedWidget("ok",xmPushButtonWidgetClass,form,
@@ -943,7 +943,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 23,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
+    	    XmNbottomPosition, 99, nullptr);
     XtAddCallback(okBtn, XmNactivateCallback, okCB, ucd);
     XmStringFree(s1);
 
@@ -955,7 +955,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 46,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
+    	    XmNbottomPosition, 99, nullptr);
     XtAddCallback(applyBtn, XmNactivateCallback, applyCB, ucd);
     XmStringFree(s1);
 
@@ -967,7 +967,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightAttachment, XmATTACH_POSITION,
     	    XmNrightPosition, 69,
     	    XmNbottomAttachment, XmATTACH_POSITION,
-    	    XmNbottomPosition, 99, NULL);
+    	    XmNbottomPosition, 99, nullptr);
     XtAddCallback(applyBtn, XmNactivateCallback, checkCB, ucd);
     XmStringFree(s1);
 
@@ -980,7 +980,7 @@ Select \"New\" to add a new command to the menu."),
     	    XmNrightPosition, 92,
     	    XmNbottomAttachment, XmATTACH_POSITION,
     	    XmNbottomPosition, 99,
-            NULL);
+            nullptr);
     XtAddCallback(closeBtn, XmNactivateCallback, closeCB, ucd);
     XmStringFree(s1);
     
@@ -999,18 +999,18 @@ Select \"New\" to add a new command to the menu."),
     AddMouseWheelSupport(ucd->cmdTextW);
     XtManageChild(ucd->cmdTextW);
     RemapDeleteKey(ucd->cmdTextW);
-    XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, NULL); /* for mnemonic */
+    XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); /* for mnemonic */
    
     /* Disable text input for the accelerator key widget, let the
        event handler manage it instead */
     disableTextW(ucd->accTextW);
 
     /* initializs the dialog fields to match "New" list item */
-    updateDialogFields(NULL, ucd); 
+    updateDialogFields(nullptr, ucd); 
       
     /* Set initial default button */
-    XtVaSetValues(form, XmNdefaultButton, okBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
     
     /* Handle mnemonic selection of buttons and focus to dialog */
     AddDialogMnemonicHandler(form, FALSE);
@@ -1063,9 +1063,9 @@ void UpdateUserMenus(WindowInfo *window)
 */
 void DimPasteReplayBtns(int sensitive)
 {
-    if (MacroCmdDialog != NULL)
+    if (MacroCmdDialog != nullptr)
     	XtSetSensitive(MacroPasteReplayBtn, sensitive);
-    if (BGMenuCmdDialog != NULL)
+    if (BGMenuCmdDialog != nullptr)
     	XtSetSensitive(BGMenuPasteReplayBtn, sensitive);
 }
 
@@ -1095,12 +1095,12 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
     int n, index;
     Cardinal nItems;
     
-    XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, NULL);
+    XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
     for (n=0; n<(int)nItems; n++) {
-	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
+	XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
     	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
-	    	XtVaGetValues(items[n], XmNsubMenuId, &subMenu, NULL);
+	    	XtVaGetValues(items[n], XmNsubMenuId, &subMenu, nullptr);
 		dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
 	    } else {
 		index = (long)userData - 10;
@@ -1120,12 +1120,12 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList,
 */
 void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive)
 {
-    if (window->bgMenuUndoItem != NULL)
+    if (window->bgMenuUndoItem != nullptr)
     	SetSensitive(window, window->bgMenuUndoItem, sensitive);
 }
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive)
 {
-    if (window->bgMenuRedoItem != NULL)
+    if (window->bgMenuRedoItem != nullptr)
 	SetSensitive(window, window->bgMenuRedoItem, sensitive);
 }
 
@@ -1290,7 +1290,7 @@ static void rebuildMenuOfAllWindows(int menuType)
 {
     WindowInfo *w;
 
-    for (w=WindowList; w!=NULL; w=w->next)
+    for (w=WindowList; w!=nullptr; w=w->next)
         rebuildMenu(w, menuType);
 }
 
@@ -1322,7 +1322,7 @@ static void rebuildMenu(WindowInfo *window, int menuType)
        this also for the main user menu tearoffs shouldn't
        be so bad */
     if (!XmIsMenuShell(XtParent(menu.sumMenuPane)))
-        _XmDismissTearOff(XtParent(menu.sumMenuPane), NULL, NULL);
+        _XmDismissTearOff(XtParent(menu.sumMenuPane), nullptr, nullptr);
 
     /* destroy all widgets related to menu pane */
     deleteMenuItems(menu.sumMenuPane);
@@ -1418,8 +1418,8 @@ static void manageTearOffMenu(Widget menuPane)
        attempt to change the shell window dimension by
        setting the XmNwidth & XmNheight directly. Using
        XtResizeWidget() seem to fix it */
-    XtVaGetValues(XtParent(menuPane), XmNborderWidth, &border, NULL);
-    XtVaGetValues(menuPane, XmNwidth, &width, XmNheight, &height, NULL);
+    XtVaGetValues(XtParent(menuPane), XmNborderWidth, &border, nullptr);
+    XtVaGetValues(menuPane, XmNwidth, &width, XmNheight, &height, nullptr);
     XtResizeWidget(XtParent(menuPane), width, height, border);
 
     XtManageChild(menuPane);
@@ -1443,7 +1443,7 @@ static void resetManageMode(UserMenuList *list)
         element->umleManageMode     = UMMM_UNMANAGE;
 
         /* recursively reset manage mode of sub-menus */
-        if (element->umleSubMenuList != NULL)
+        if (element->umleSubMenuList != nullptr)
             resetManageMode(element->umleSubMenuList);
     }
 }
@@ -1472,7 +1472,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu)
     XtVaGetValues(subMenu->umleSubMenuPane,
           XmNchildren, &widgetList,
           XmNnumChildren, &nWidgetListItems,
-          NULL);
+          nullptr);
     XtManageChildren(widgetList, nWidgetListItems);
 
     /* scan, if an menu item of given sub-menu holds a nested
@@ -1482,7 +1482,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu)
     for (i=0; i<subMenuList->umlNbrItems; i ++) {
         element = subMenuList->umlItems[i];
 
-        if (element->umleSubMenuList != NULL) {
+        if (element->umleSubMenuList != nullptr) {
             /* if element is a sub-menu, then continue managing
                all items of that sub-menu recursively */
             manageAllSubMenuWidgets(element);
@@ -1526,7 +1526,7 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu)
     XtVaGetValues(subMenu->umleSubMenuPane,
           XmNchildren, &widgetList,
           XmNnumChildren, &nWidgetListItems,
-          NULL);
+          nullptr);
     XtUnmanageChildren(widgetList, nWidgetListItems);
 
     /* scan, if an menu item of given sub-menu holds a nested
@@ -1536,7 +1536,7 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu)
     for (i=0; i<subMenuList->umlNbrItems; i ++) {
         element = subMenuList->umlItems[i];
 
-        if (element->umleSubMenuList != NULL) {
+        if (element->umleSubMenuList != nullptr) {
             /* if element is a sub-menu, then continue unmanaging
                all items of that sub-menu recursively */
             unmanageAllSubMenuWidgets(element);
@@ -1579,7 +1579,7 @@ static void manageMenuWidgets(UserMenuList *list)
 
                 /* if element is a sub-menu, then continue (un)managing
                    single elements of that sub-menu one by one */
-                if (element->umleSubMenuList != NULL) {
+                if (element->umleSubMenuList != nullptr) {
                     /* if the sub-menu is torn off, unmanage the menu pane
                        before updating it to prevent the tear-off menu
                        from shrinking and expanding as the menu entries
@@ -1626,15 +1626,15 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList)
     for (i=0; i<menuList->umlNbrItems; i ++) {
         element = menuList->umlItems[i];
 
-        if (element->umleSubMenuList != NULL) {
+        if (element->umleSubMenuList != nullptr) {
             /* if element is a sub-menu, then continue removing accelerators
                from all items of that sub-menu recursively */
             removeAccelFromMenuWidgets(element->umleSubMenuList);
-        } else if (element->umleAccKeys != NULL &&
+        } else if (element->umleAccKeys != nullptr &&
                    element->umleManageMode == UMMM_UNMANAGE &&
                    element->umlePrevManageMode == UMMM_MANAGE) {
             /* remove accelerator if one was bound */
-            XtVaSetValues(element->umleMenuItem, XmNaccelerator, NULL, NULL);
+            XtVaSetValues(element->umleMenuItem, XmNaccelerator, nullptr, nullptr);
         }
     }
 }
@@ -1652,16 +1652,16 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window)
     for (i=0; i<menuList->umlNbrItems; i ++) {
         element = menuList->umlItems[i];
 
-        if (element->umleSubMenuList != NULL) {
+        if (element->umleSubMenuList != nullptr) {
             /* if element is a sub-menu, then continue assigning accelerators
                to all managed items of that sub-menu recursively */
             assignAccelToMenuWidgets(element->umleSubMenuList, window);
-        } else if (element->umleAccKeys != NULL &&
+        } else if (element->umleAccKeys != nullptr &&
                    element->umleManageMode == UMMM_MANAGE &&
                    element->umlePrevManageMode == UMMM_UNMANAGE) {
             /* assign accelerator if applicable */
             XtVaSetValues(element->umleMenuItem, XmNaccelerator,
-                  element->umleAccKeys, NULL);
+                  element->umleAccKeys, nullptr);
             if (!element->umleAccLockPatchApplied) {
                 UpdateAccelLockPatch(window->splitPane, element->umleMenuItem);
                 element->umleAccLockPatchApplied = True;
@@ -1701,7 +1701,7 @@ static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window)
         for (i=0; i<info->umiIdLen; i ++) {
             currentLE = menuList->umlItems[*id];
             mode = &currentLE->umleManageMode;
-            currentLEisSubMenu = (currentLE->umleSubMenuList != NULL);
+            currentLEisSubMenu = (currentLE->umleSubMenuList != nullptr);
 
             if (info->umiToBeManaged) {
                 /* menu record needs to be managed: */
@@ -1803,8 +1803,8 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
     
     /* Harmless kludge: undo and redo items are marked specially if found
        in the background menu, and used to dim/undim with edit menu */
-    window->bgMenuUndoItem = NULL;
-    window->bgMenuRedoItem = NULL;
+    window->bgMenuUndoItem = nullptr;
+    window->bgMenuRedoItem = nullptr;
     
     /*
     ** Add items to the menu pane, creating hierarchical sub-menus as
@@ -1825,7 +1825,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
         subPane = menu->sumMenuPane;
 	for (;;) {
 	    subSep = strchr(namePtr, '>');
-	    if (subSep == NULL) {
+	    if (subSep == nullptr) {
 		btn = createUserMenuItem(subPane, namePtr, item, n,
 			(XtCallbackProc)(menuType == SHELL_CMDS ? shellMenuCB :
 			(menuType == MACRO_CMDS ? macroMenuCB : bgMenuCB)),
@@ -1836,7 +1836,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 		    window->bgMenuRedoItem = btn;
                 /* generate accelerator keys */
                 genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
-                accKeys = item->keysym == NoSymbol ? NULL : XtNewString(accKeysBuf);
+                accKeys = item->keysym == NoSymbol ? nullptr : XtNewString(accKeysBuf);
                 /* create corresponding menu list item */
                 menuList->umlItems[menuList->umlNbrItems ++] =
                         allocUserMenuListElement(btn, accKeys);
@@ -1845,14 +1845,14 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu)
 	    hierName = copySubstring(fullName, subSep - fullName);
             subMenuInfo = findSubMenuInfo(subMenus, hierName);
 	    newSubPane = findInMenuTree(menuTree, nTreeEntries, hierName);
-	    if (newSubPane == NULL) {
+	    if (newSubPane == nullptr) {
 		subMenuName = copySubstring(namePtr, subSep - namePtr);
 	    	newSubPane = createUserSubMenu(subPane, subMenuName, &btn);
 		XtFree(subMenuName);
 		menuTree[nTreeEntries].name = hierName;
 		menuTree[nTreeEntries++].menuPane = newSubPane;
 
-                currentLE = allocUserMenuListElement(btn, NULL);
+                currentLE = allocUserMenuListElement(btn, nullptr);
                 menuList->umlItems[menuList->umlNbrItems ++] = currentLE;
                 currentLE->umleSubMenuPane = newSubPane;
                 currentLE->umleSubMenuList =
@@ -1887,7 +1887,7 @@ static Widget findInMenuTree(menuTreeItem *menuTree, int nTreeEntries,
     for (i=0; i<nTreeEntries; i++)
 	if (!strcmp(hierName, menuTree[i].name))
 	    return menuTree[i].menuPane;
-    return NULL;
+    return nullptr;
 }
 
 static char *copySubstring(const char *string, int length)
@@ -1913,7 +1913,7 @@ static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f,
     	    XmNlabelString, st1,
     	    XmNacceleratorText, st2,
     	    XmNmnemonic, f->mnemonic,
-    	    XmNuserData, (XtPointer)((long)index+10), NULL);
+    	    XmNuserData, (XtPointer)((long)index+10), nullptr);
     XtAddCallback(btn, XmNactivateCallback, cbRtn, cbArg);
     XmStringFree(st1);
     XmStringFree(st2);
@@ -1936,7 +1936,7 @@ static Widget createUserSubMenu(Widget parent, char *label, Widget *menuItem)
     *menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent,
     	                XmNlabelString, st1=XmStringCreateSimple(label),
     	                XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM,
-                        NULL);
+                        nullptr);
     XmStringFree(st1);
     return menuPane;
 }
@@ -1955,7 +1955,7 @@ static void deleteMenuItems(Widget menuPane)
     
     /* Fetch the list of children from the menu pane to delete */
     XtVaGetValues(menuPane, XmNchildren, &itemList,
-            XmNnumChildren, &nItems, NULL);
+            XmNnumChildren, &nItems, nullptr);
 
     /* make a copy because the widget alters the list as you delete widgets */
     items = (WidgetList)XtMalloc(sizeof(Widget) * nItems);
@@ -1963,14 +1963,14 @@ static void deleteMenuItems(Widget menuPane)
     
     /* delete all of the widgets not marked as PERMANENT_MENU_ITEM */
     for (n=0; n<(int)nItems; n++) {
-	XtVaGetValues(items[n], XmNuserData, &userData, NULL);
+	XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
     	if (userData !=  (XtPointer)PERMANENT_MENU_ITEM) {
     	    if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
-		XtVaGetValues(items[n], XmNsubMenuId, &subMenuID, NULL);
+		XtVaGetValues(items[n], XmNsubMenuId, &subMenuID, nullptr);
 
                 /* prevent dangling submenu tearoffs */
                 if (!XmIsMenuShell(XtParent(subMenuID)))
-                    _XmDismissTearOff(XtParent(subMenuID), NULL, NULL);
+                    _XmDismissTearOff(XtParent(subMenuID), nullptr, nullptr);
 
                 deleteMenuItems(subMenuID);
 #if XmVersion < 2000
@@ -1984,7 +1984,7 @@ static void deleteMenuItems(Widget menuPane)
 #endif
             } else {
                 /* remove accel. before destroy or lose it forever */
-    		XtVaSetValues(items[n], XmNaccelerator, NULL, NULL);
+    		XtVaSetValues(items[n], XmNaccelerator, nullptr, nullptr);
             }
     	    XtDestroyWidget(items[n]);
     	}
@@ -1998,11 +1998,11 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
     
     /* Mark that there's no longer a (macro, bg, or shell) dialog up */
     if (ucd->dialogType == SHELL_CMDS)
-    	ShellCmdDialog = NULL;
+    	ShellCmdDialog = nullptr;
     else if (ucd->dialogType == MACRO_CMDS)
-    	MacroCmdDialog = NULL;
+    	MacroCmdDialog = nullptr;
     else
-	BGMenuCmdDialog = NULL;
+	BGMenuCmdDialog = nullptr;
 
     /* pop down and destroy the dialog (memory for ucd is freed in the
        destroy callback) */
@@ -2019,11 +2019,11 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
     
     /* Mark that there's no longer a (macro, bg, or shell) dialog up */
     if (ucd->dialogType == SHELL_CMDS)
-    	ShellCmdDialog = NULL;
+    	ShellCmdDialog = nullptr;
     else if (ucd->dialogType == MACRO_CMDS)
-    	MacroCmdDialog = NULL;
+    	MacroCmdDialog = nullptr;
     else
-	BGMenuCmdDialog = NULL;
+	BGMenuCmdDialog = nullptr;
 
     /* pop down and destroy the dialog (memory for ucd is freed in the
        destroy callback) */
@@ -2051,7 +2051,7 @@ static int checkMacro(userCmdDialog *ucd)
     menuItemRec *f;
     
     f = readDialogFields(ucd, False);
-    if (f == NULL)
+    if (f == nullptr)
 	return False;
     if (!checkMacroText(f->cmd, ucd->dlogShell, ucd->cmdTextW)) {
 	freeMenuItemRec(f);
@@ -2067,8 +2067,8 @@ static int checkMacroText(char *macro, Widget errorParent, Widget errFocus)
 	const char *stoppedAt;
 
     prog = ParseMacro(macro, &errMsg, &stoppedAt);
-    if (prog == NULL) {
-	if (errorParent != NULL) {
+    if (prog == nullptr) {
+	if (errorParent != nullptr) {
 	    ParseError(errorParent, macro, stoppedAt, "macro", errMsg);
     	    XmTextSetInsertionPosition(errFocus, stoppedAt - macro);
  	    XmProcessTraversal(errFocus, XmTRAVERSE_CURRENT);
@@ -2077,7 +2077,7 @@ static int checkMacroText(char *macro, Widget errorParent, Widget errFocus)
     }
     FreeProgram(prog);
     if (*stoppedAt != '\0') {
-	if (errorParent != NULL) {
+	if (errorParent != nullptr) {
 	    ParseError(errorParent, macro, stoppedAt,"macro","syntax error");
     	    XmTextSetInsertionPosition(errFocus, stoppedAt - macro);
 	    XmProcessTraversal(errFocus, XmTRAVERSE_CURRENT);
@@ -2142,7 +2142,7 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
-    if (GetReplayMacro() == NULL)
+    if (GetReplayMacro() == nullptr)
     	return;
     
     XmTextInsert(ucd->cmdTextW, XmTextGetInsertionPosition(ucd->cmdTextW),
@@ -2232,7 +2232,7 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     window = WidgetToWindow(MENU_WIDGET(w));
     
     /* get the index of the shell command and verify that it's in range */
-    XtVaGetValues(w, XmNuserData, &userData, NULL);
+    XtVaGetValues(w, XmNuserData, &userData, nullptr);
     index = (int)userData - 10;
     if (index <0 || index >= NShellMenuItems)
     	return;
@@ -2258,13 +2258,13 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData)
        repeat any operation, and to embed macros within eachother at any
        level, however, a call here with a macro running means that THE USER
        is explicitly invoking another macro via the menu or an accelerator. */
-    if (window->macroCmdData != NULL) {
+    if (window->macroCmdData != nullptr) {
 	XBell(TheDisplay, 0);
 	return;
     }
     
     /* get the index of the macro command and verify that it's in range */
-    XtVaGetValues(w, XmNuserData, &userData, NULL);
+    XtVaGetValues(w, XmNuserData, &userData, nullptr);
     index = (int)userData - 10;
     if (index <0 || index >= NMacroMenuItems)
     	return;
@@ -2281,13 +2281,13 @@ static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData)
     char *params[1];
 
     /* Same remark as for macro menu commands (see above). */
-    if (window->macroCmdData != NULL) {
+    if (window->macroCmdData != nullptr) {
 	XBell(TheDisplay, 0);
 	return;
     }
     
     /* get the index of the macro command and verify that it's in range */
-    XtVaGetValues(w, XmNuserData, &userData, NULL);
+    XtVaGetValues(w, XmNuserData, &userData, nullptr);
     index = (int)userData - 10;
     if (index <0 || index >= NBGMenuItems)
     	return;
@@ -2308,7 +2308,7 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd)
     
     /* fill in the name, accelerator, mnemonic, and command fields of the
        dialog for the newly selected item, or blank them if "New" is selected */
-    if (f == NULL) {
+    if (f == nullptr) {
     	XmTextSetString(ucd->nameTextW, (String)"");
 	XmTextSetString(ucd->cmdTextW, (String)"");
 	XmTextSetString(ucd->accTextW, (String)"");
@@ -2354,7 +2354,7 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd)
 /*
 ** Read the name, accelerator, mnemonic, and command fields from the shell or
 ** macro commands dialog into a newly allocated menuItemRec.  Returns a
-** pointer to the new menuItemRec structure as the function value, or NULL on
+** pointer to the new menuItemRec structure as the function value, or nullptr on
 ** failure.
 */
 static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
@@ -2372,7 +2372,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
-        return NULL;
+        return nullptr;
     }
 
     if (strchr(nameText, ':'))
@@ -2385,11 +2385,11 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
             XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
         }
         XtFree(nameText);
-        return NULL;
+        return nullptr;
     }
 
     cmdText = XmTextGetString(ucd->cmdTextW);
-    if (cmdText == NULL || *cmdText == '\0')
+    if (cmdText == nullptr || *cmdText == '\0')
     {
         if (!silent)
         {
@@ -2403,28 +2403,28 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent)
         XtFree(nameText);
         XtFree(cmdText);
 
-        return NULL;
+        return nullptr;
     }
 
     if (ucd->dialogType == MACRO_CMDS || ucd->dialogType == BG_MENU_CMDS) {
     	addTerminatingNewline(&cmdText);
-	if (!checkMacroText(cmdText, silent ? NULL : ucd->dlogShell,
+	if (!checkMacroText(cmdText, silent ? nullptr : ucd->dlogShell,
 		ucd->cmdTextW)) {
 	    XtFree(nameText);
 	    XtFree(cmdText);
-	    return NULL;
+	    return nullptr;
 	}
     }
     f = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
     f->name = nameText;
     f->cmd = cmdText;
-    if ((mneText = XmTextGetString(ucd->mneTextW)) != NULL) {
-    	f->mnemonic = mneText==NULL ? '\0' : mneText[0];
+    if ((mneText = XmTextGetString(ucd->mneTextW)) != nullptr) {
+    	f->mnemonic = mneText==nullptr ? '\0' : mneText[0];
     	XtFree(mneText);
     	if (f->mnemonic == ':')		/* colons mess up string parsing */
     	    f->mnemonic = '\0';
     }
-    if ((accText = XmTextGetString(ucd->accTextW)) != NULL) {
+    if ((accText = XmTextGetString(ucd->accTextW)) != nullptr) {
     	parseAcceleratorString(accText, &f->modifiers, &f->keysym);
     	XtFree(accText);
     }
@@ -2494,12 +2494,12 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort,
 
     /* If the dialog is currently displaying the "new" entry and the
        fields are empty, that's just fine */
-    if (oldItem == NULL && dialogFieldsAreEmpty(ucd))
-    	return NULL;
+    if (oldItem == nullptr && dialogFieldsAreEmpty(ucd))
+    	return nullptr;
     
     /* If there are no problems reading the data, just return it */
     currentFields = readDialogFields(ucd, True);
-    if (currentFields != NULL)
+    if (currentFields != nullptr)
     	return (void *)currentFields;
 
     /* If user might not be expecting fields to be read, give more warning */
@@ -2509,8 +2509,8 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort,
                 "Discard incomplete entry\nfor current menu item?", "Keep",
                 "Discard") == 2)
         {
-            return oldItem == NULL
-                    ? NULL
+            return oldItem == nullptr
+                    ? nullptr
                     : (void *)copyMenuItemRec((menuItemRec *)oldItem);
         }
     }
@@ -2518,7 +2518,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort,
     /* Do readDialogFields again without "silent" mode to display warning(s) */
     readDialogFields(ucd, False);
     *abort = True;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2551,7 +2551,7 @@ static void freeItemCB(void *item)
 */
 static void disableTextW(Widget textW)
 {
-    static XtTranslations emptyTable = NULL;
+    static XtTranslations emptyTable = nullptr;
     static const char *emptyTranslations = "\
     	<EnterWindow>:	enter()\n\
 	<Btn1Down>:	grab-focus()\n\
@@ -2566,9 +2566,9 @@ static void disableTextW(Widget textW)
 	<Unmap>:	unmap()\n";
 
     /* replace the translation table with the slimmed down one above */
-    if (emptyTable == NULL)
+    if (emptyTable == nullptr)
     	emptyTable = XtParseTranslationTable(emptyTranslations);
-    XtVaSetValues(textW, XmNtranslations, emptyTable, NULL);
+    XtVaSetValues(textW, XmNtranslations, emptyTable, nullptr);
 }
 
 static char *writeMenuItemString(menuItemRec **menuItems, int nItems,
@@ -2785,7 +2785,7 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems,
     	    inPtr += cmdLen;
 	} else {
 	    cmdStr = copyMacroToEnd(&inPtr);
-	    if (cmdStr == NULL)
+	    if (cmdStr == nullptr)
 	    	return False;
 	}
    	while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n')
@@ -3017,15 +3017,15 @@ static char *copyMacroToEnd(const char **inPtr)
        to anchor the parse (if not, it will take the whole file) */
     *inPtr += strspn(*inPtr, " \t\n");
     if (**inPtr != '{') {
-    	ParseError(NULL, *inPtr, *inPtr-1, "macro menu item", "expecting '{'");
-    	return NULL;
+    	ParseError(nullptr, *inPtr, *inPtr-1, "macro menu item", "expecting '{'");
+    	return nullptr;
     }
 
     /* Parse the input */
     prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
-    if (prog == NULL) {
-    	ParseError(NULL, *inPtr, stoppedAt, "macro menu item", errMsg);
-    	return NULL;
+    if (prog == nullptr) {
+    	ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
+    	return nullptr;
     }
     FreeProgram(prog);
     
@@ -3085,9 +3085,9 @@ UserMenuCache *CreateUserMenuCache(void)
     cache->umcShellMenuCreated          =  False;
     cache->umcMacroMenuCreated          =  False;
     cache->umcShellMenuList.umlNbrItems =  0;
-    cache->umcShellMenuList.umlItems    =  NULL;
+    cache->umcShellMenuList.umlItems    =  nullptr;
     cache->umcMacroMenuList.umlNbrItems =  0;
-    cache->umcMacroMenuList.umlItems    =  NULL;
+    cache->umcMacroMenuList.umlItems    =  nullptr;
 
     return cache;
 }
@@ -3109,7 +3109,7 @@ void InitUserBGMenuCache(UserBGMenuCache *cache)
     cache->ubmcLanguageMode         = -2;
     cache->ubmcMenuCreated          =  False;
     cache->ubmcMenuList.umlNbrItems =  0;
-    cache->ubmcMenuList.umlItems    =  NULL;
+    cache->ubmcMenuList.umlItems    =  nullptr;
 }
 
 void FreeUserBGMenuCache(UserBGMenuCache *cache)
@@ -3163,7 +3163,7 @@ static int getSubMenuDepth(const char *menuName)
 
     /* determine sub-menu depth by counting '>' of given "menuName" */
     subSep = menuName;
-    while ((subSep = strchr(subSep, '>')) != NULL ) {
+    while ((subSep = strchr(subSep, '>')) != nullptr ) {
         depth ++;
         subSep ++;
     }
@@ -3199,7 +3199,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item)
     newInfo->umiIdLen              = 0;
     newInfo->umiIsDefault          = False;
     newInfo->umiNbrOfLanguageModes = 0;
-    newInfo->umiLanguageMode       = NULL;
+    newInfo->umiLanguageMode       = nullptr;
     newInfo->umiDefaultIndex       = -1;
     newInfo->umiToBeManaged        = False;
 
@@ -3224,7 +3224,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info)
     int size;
 
     atPtr = firstAtPtr = strchr(menuItemName, '@');
-    if (atPtr != NULL) {
+    if (atPtr != nullptr) {
         if (!strcmp(atPtr+1, "*")) {
             /* only language is "*": this is for all but language specific
                macros */
@@ -3233,7 +3233,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info)
         }
 
         /* setup a list of all language modes related to given menu item */
-        while (atPtr != NULL) {
+        while (atPtr != nullptr) {
             /* extract language mode name after "@" sign */
             for(endPtr=atPtr+1; isalnum((unsigned char)*endPtr) || *endPtr=='_' ||
                     *endPtr=='-' || *endPtr==' ' || *endPtr=='+' || *endPtr=='$' ||
@@ -3284,10 +3284,10 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus)
     /* find sub-menus, stripping off '>' until item name is
        reached */
     subSep = info->umiName;
-    while ((subSep = strchr(subSep, '>')) != NULL) {
+    while ((subSep = strchr(subSep, '>')) != nullptr) {
         hierName = copySubstring(info->umiName, subSep - info->umiName);
         curSubMenu = findSubMenuInfo(subMenus, hierName);
-        if (curSubMenu == NULL) {
+        if (curSubMenu == nullptr) {
             /* sub-menu info not stored before: new sub-menu;
                remember its hierarchical position */
             info->umiId[subMenuDepth] = *menuIdx;
@@ -3334,7 +3334,7 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus,
     for (i=0; i<subMenus->usmcNbrOfSubMenus; i++)
         if (!strcmp(hierName, subMenus->usmcInfo[i].usmiName))
             return &subMenus->usmcInfo[i];
-    return NULL;
+    return nullptr;
 }
 
 /*
@@ -3347,7 +3347,7 @@ static char *stripLanguageMode(const char *menuItemName)
     const char *firstAtPtr;
 
     firstAtPtr = strchr(menuItemName, '@');
-    if (firstAtPtr == NULL)
+    if (firstAtPtr == nullptr)
         return XtNewString(menuItemName);
     else
         return copySubstring(menuItemName, firstAtPtr-menuItemName);
@@ -3488,7 +3488,7 @@ static void freeUserMenuList(UserMenuList *list)
     list->umlNbrItems = 0;
 
     XtFree((char*) list->umlItems);
-    list->umlItems = NULL;
+    list->umlItems = nullptr;
 }
 
 static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys)
@@ -3502,15 +3502,15 @@ static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accK
     element->umleAccKeys             = accKeys;
     element->umleAccLockPatchApplied = False;
     element->umleMenuItem            = menuItem;
-    element->umleSubMenuPane         = NULL;
-    element->umleSubMenuList         = NULL;
+    element->umleSubMenuPane         = nullptr;
+    element->umleSubMenuList         = nullptr;
 
     return element;
 }
 
 static void freeUserMenuListElement(UserMenuListElement *element)
 {
-    if (element->umleSubMenuList != NULL)
+    if (element->umleSubMenuList != nullptr)
         freeUserSubMenuList(element->umleSubMenuList);
 
     XtFree(element->umleAccKeys);

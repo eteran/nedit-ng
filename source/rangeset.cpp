@@ -139,7 +139,7 @@ static Range *RangesNew(int n)
 	return newRanges;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -154,7 +154,7 @@ static Range* RangesRealloc(Range* ranges, int n)
         /* see RangesNew() for comments */
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
         size = n * sizeof (Range);
-        newRanges = (Range*) (ranges != NULL
+        newRanges = (Range*) (ranges != nullptr
                 ? XtRealloc((char *)ranges, size)
                 : XtMalloc(size));
         return newRanges;
@@ -162,7 +162,7 @@ static Range* RangesRealloc(Range* ranges, int n)
         XtFree((char*) ranges);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -171,7 +171,7 @@ static Range *RangesFree(Range *ranges)
 {
     XtFree((char*) ranges);
 
-    return NULL;
+    return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -183,7 +183,7 @@ static Range *RangesFree(Range *ranges)
 
 void RangesetRefreshRange(Rangeset *rangeset, int start, int end)
 {
-    if (rangeset->buf != NULL)
+    if (rangeset->buf != nullptr)
 	BufCheckDisplay(rangeset->buf, start, end);
 }
 
@@ -258,7 +258,7 @@ int RangesetChangeModifyResponse(Rangeset *rangeset, const char *name)
 {
     int i;
 
-    if (name == NULL)
+    if (name == nullptr)
 	name = DEFAULT_UPDATE_FN_NAME;
 
     for (i = 0; RangesetUpdateMap[i].name; i++)
@@ -686,7 +686,7 @@ int RangesetGetNRanges(Rangeset *rangeset)
 void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
         int *count, const char **color, const char **name, const char **mode)
 {
-    if (rangeset == NULL) {
+    if (rangeset == nullptr) {
         *defined = False;
         *label = 0;
         *count = 0;
@@ -795,11 +795,11 @@ static void rangesetClone(Rangeset *destRangeset, Rangeset *srcRangeset)
 RangesetTable *RangesetTableClone(RangesetTable *srcTable,
         textBuffer *destBuffer)
 {
-    RangesetTable *newTable = NULL;
+    RangesetTable *newTable = nullptr;
     int i;
 
-    if (srcTable == NULL)
-    	return NULL;
+    if (srcTable == nullptr)
+    	return nullptr;
 	
     newTable = RangesetTableAlloc(destBuffer);
 
@@ -832,7 +832,7 @@ int RangesetFindIndex(RangesetTable *table, int label, int must_be_active)
        return -1;
     }
 
-    if (table != NULL) {
+    if (table != nullptr) {
 	p_label = (unsigned char*)strchr((char*)rangeset_labels, label);
 	if (p_label) {
 	    i = p_label - rangeset_labels;
@@ -864,7 +864,7 @@ static void RangesetTableListSet(RangesetTable *table)
 
 int RangesetLabelOK(int label)
 {
-    return strchr((char*)rangeset_labels, label) != NULL;
+    return strchr((char*)rangeset_labels, label) != nullptr;
 }
 
 /*
@@ -1001,12 +1001,12 @@ Rangeset *RangesetFetch(RangesetTable *table, int label)
     int rangesetIndex = RangesetFindIndex(table, label, 0);
 
     if (rangesetIndex < 0)
-	return (Rangeset *)NULL;
+	return (Rangeset *)nullptr;
 
     if (table->active[rangesetIndex])
 	return &table->set[rangesetIndex];
     else
-        return (Rangeset *)NULL;
+        return (Rangeset *)nullptr;
 }
 
 

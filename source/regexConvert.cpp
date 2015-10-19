@@ -123,7 +123,7 @@ char * ConvertRE (const char *exp, const char **errorText) {
     Error_Ptr = errorText;
    *Error_Ptr = "";
 
-   if (exp == NULL) CONVERT_FAIL ("NULL argument to `ConvertRE\'");
+   if (exp == nullptr) CONVERT_FAIL ("nullptr argument to `ConvertRE\'");
 
    Code_Emit_Ptr = &Compute_Size;
    Convert_Size  = 0UL;
@@ -146,7 +146,7 @@ char * ConvertRE (const char *exp, const char **errorText) {
       Reg_Parse   = (unsigned char *) exp;
       Total_Paren = 1;
 
-      if (chunk (NO_PAREN, &flags_local) == 0) return (NULL); /* Something
+      if (chunk (NO_PAREN, &flags_local) == 0) return (nullptr); /* Something
                                                                  went wrong */
       emit_convert_byte ('\0');
 
@@ -156,7 +156,7 @@ char * ConvertRE (const char *exp, const char **errorText) {
          Convert_Str =
             (unsigned char *) XtMalloc (sizeof (unsigned char) * Convert_Size);
 
-         if (Convert_Str == NULL) {
+         if (Convert_Str == nullptr) {
             CONVERT_FAIL ("out of memory in `ConvertRE\'");
          }
 
@@ -793,7 +793,7 @@ static void emit_convert_byte (unsigned char c) {
  * Recognize escaped literal characters (prefixed with backslash),
  * and translate them into the corresponding character.
  *
- * Returns the proper character value or NULL if not a valid literal
+ * Returns the proper character value or nullptr if not a valid literal
  * escape.
  *--------------------------------------------------------------------*/
 
@@ -861,8 +861,8 @@ void ConvertSubstituteRE (
    register unsigned char  c;
    register unsigned char  test;
 
-   if (source == NULL || dest == NULL) {
-      reg_error ("NULL parm to `ConvertSubstituteRE\'");
+   if (source == nullptr || dest == nullptr) {
+      reg_error ("nullptr parm to `ConvertSubstituteRE\'");
 
       return;
    }

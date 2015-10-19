@@ -142,17 +142,17 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->highlight.zeroWidth = False;
     buf->highlight.start = buf->highlight.end = 0;
     buf->highlight.rectangular = False;
-    buf->modifyProcs = NULL;
-    buf->cbArgs = NULL;
+    buf->modifyProcs = nullptr;
+    buf->cbArgs = nullptr;
     buf->nModifyProcs = 0;
-    buf->preDeleteProcs = NULL;
-    buf->preDeleteCbArgs = NULL;
+    buf->preDeleteProcs = nullptr;
+    buf->preDeleteCbArgs = nullptr;
     buf->nPreDeleteProcs = 0;
     buf->nullSubsChar = '\0';
 #ifdef PURIFY
     {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
 #endif
-    buf->rangesetTable = NULL;
+    buf->rangesetTable = nullptr;
     return buf;
 }
 
@@ -327,7 +327,7 @@ void BufInsert(textBuffer *buf, int pos, const char *text)
     /* insert and redisplay */
     nInserted = insert(buf, pos, text);
     buf->cursorPosHint = pos + nInserted;
-    callModifyCBs(buf, pos, 0, nInserted, 0, NULL);
+    callModifyCBs(buf, pos, 0, nInserted, 0, nullptr);
 }
 
 /*
@@ -410,7 +410,7 @@ void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
 ** Insert "text" columnwise into buffer starting at displayed character
 ** position "column" on the line beginning at "startPos".  Opens a rectangular
 ** space the width and height of "text", by moving all text to the right of
-** "column" right.  If charsInserted and charsDeleted are not NULL, the
+** "column" right.  If charsInserted and charsDeleted are not nullptr, the
 ** number of characters inserted and deleted in the operation (beginning
 ** at startPos) are returned in these arguments
 */
@@ -432,16 +432,16 @@ void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text,
     	fprintf(stderr, "NEdit internal consistency check ins1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
     XtFree(deletedText);
-    if (charsInserted != NULL)
+    if (charsInserted != nullptr)
     	*charsInserted = nInserted;
-    if (charsDeleted != NULL)
+    if (charsDeleted != nullptr)
     	*charsDeleted = nDeleted;
 }
 
 /*
 ** Overlay "text" between displayed character positions "rectStart" and
 ** "rectEnd" on the line beginning at "startPos".  If charsInserted and
-** charsDeleted are not NULL, the number of characters inserted and deleted
+** charsDeleted are not nullptr, the number of characters inserted and deleted
 ** in the operation (beginning at startPos) are returned in these arguments.
 ** If rectEnd equals -1, the width of the inserted text is measured first.
 */
@@ -466,9 +466,9 @@ void BufOverlayRect(textBuffer *buf, int startPos, int rectStart,
     	fprintf(stderr, "NEdit internal consistency check ovly1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
     XtFree(deletedText);
-    if (charsInserted != NULL)
+    if (charsInserted != nullptr)
     	*charsInserted = nInserted;
-    if (charsDeleted != NULL)
+    if (charsDeleted != nullptr)
     	*charsDeleted = nDeleted;
 }
 
@@ -481,7 +481,7 @@ void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart,
 	int rectEnd, const char *text)
 {
     char *deletedText;
-    char *insText=NULL;
+    char *insText=nullptr;
     int i, nInsertedLines, nDeletedLines, insLen, hint;
     int insertDeleted, insertInserted, deleteInserted;
     int linesPadded = 0;
@@ -576,7 +576,7 @@ void BufClearRect(textBuffer *buf, int start, int end, int rectStart,
     	newlineString[i] = '\n';
     newlineString[i] = '\0';
     BufOverlayRect(buf, start, rectStart, rectEnd, newlineString,
-    	    NULL, NULL);
+    	    nullptr, nullptr);
     XtFree(newlineString);
 }
 
@@ -646,7 +646,7 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
 void BufCheckDisplay(textBuffer *buf, int start, int end)
 {
     /* just to make sure colors in the selected region are up to date */
-    callModifyCBs(buf, start, 0, 0, end-start, NULL);
+    callModifyCBs(buf, start, 0, 0, end-start, nullptr);
 }
 
 void BufSelect(textBuffer *buf, int start, int end)
@@ -868,9 +868,9 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
     if (buf->nModifyProcs == 0) {
     	buf->nModifyProcs = 0;
     	XtFree((char *)buf->modifyProcs);
-    	buf->modifyProcs = NULL;
+    	buf->modifyProcs = nullptr;
 	XtFree((char *)buf->cbArgs);
-	buf->cbArgs = NULL;
+	buf->cbArgs = nullptr;
 	return;
     }
     newModifyProcs = (bufModifyCallbackProc *)
@@ -946,9 +946,9 @@ void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDelete
     if (buf->nPreDeleteProcs == 0) {
     	buf->nPreDeleteProcs = 0;
     	XtFree((char *)buf->preDeleteProcs);
-    	buf->preDeleteProcs = NULL;
+    	buf->preDeleteProcs = nullptr;
 	XtFree((char *)buf->preDeleteCbArgs);
-	buf->preDeleteCbArgs = NULL;
+	buf->preDeleteCbArgs = nullptr;
 	return;
     }
     newPreDeleteProcs = (bufPreDeleteCallbackProc *)
@@ -1275,7 +1275,7 @@ int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 
 /*
 ** A horrible design flaw in NEdit (from the very start, before we knew that
-** NEdit would become so popular), is that it uses C NULL terminated strings
+** NEdit would become so popular), is that it uses C nullptr terminated strings
 ** to hold text.  This means editing text containing NUL characters is not
 ** possible without special consideration.  Here is the special consideration.
 ** The routines below maintain a special substitution-character which stands
@@ -2118,11 +2118,11 @@ static void redisplaySelection(textBuffer *buf, selection *oldSelection,
     if (!oldSelection->selected && !newSelection->selected)
     	return;
     if (!oldSelection->selected) {
-    	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, NULL);
+    	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, nullptr);
     	return;
     }
     if (!newSelection->selected) {
-    	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, NULL);
+    	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, nullptr);
     	return;
     }
 
@@ -2134,15 +2134,15 @@ static void redisplaySelection(textBuffer *buf, selection *oldSelection,
     	    	(oldSelection->rectStart != newSelection->rectStart) ||
     	    	(oldSelection->rectEnd != newSelection->rectEnd)))) {
     	callModifyCBs(buf, min(oldStart, newStart), 0, 0,
-    		max(oldEnd, newEnd) - min(oldStart, newStart), NULL);
+    		max(oldEnd, newEnd) - min(oldStart, newStart), nullptr);
     	return;
     }
     
     /* If the selections are non-contiguous, do two separate updates
        and return */
     if (oldEnd < newStart || newEnd < oldStart) {
-	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, NULL);
-	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, NULL);
+	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, nullptr);
+	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, nullptr);
 	return;
     }
     
@@ -2154,9 +2154,9 @@ static void redisplaySelection(textBuffer *buf, selection *oldSelection,
     ch1End = max(oldStart, newStart);
     ch2Start = min(oldEnd, newEnd);
     if (ch1Start != ch1End)
-    	callModifyCBs(buf, ch1Start, 0, 0, ch1End-ch1Start, NULL);
+    	callModifyCBs(buf, ch1Start, 0, 0, ch1End-ch1Start, nullptr);
     if (ch2Start != ch2End)
-    	callModifyCBs(buf, ch2Start, 0, 0, ch2End-ch2Start, NULL);
+    	callModifyCBs(buf, ch2Start, 0, 0, ch2End-ch2Start, nullptr);
 }
 
 static void moveGap(textBuffer *buf, int pos)

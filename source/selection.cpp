@@ -100,7 +100,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 
     /* Get column */
     if ( *endptr != '\0' ) {
-        tempNum = strtol( endptr, NULL, 10 );
+        tempNum = strtol( endptr, nullptr, 10 );
         if      ( tempNum >= INT_MAX ) { *column = INT_MAX; }
         else if ( tempNum <  0       ) { *column = 0;       }
         else                           { *column = tempNum; }
@@ -125,7 +125,7 @@ void GotoLineNumber(WindowInfo *window)
 	return;
     }
     params[0] = lineNumText;
-    XtCallActionProc(window->lastFocus, "goto_line_number", NULL, params, 1);
+    XtCallActionProc(window->lastFocus, "goto_line_number", nullptr, params, 1);
 }
     
 void GotoSelectedLineNumber(WindowInfo *window, Time time)
@@ -143,7 +143,7 @@ void OpenSelectedFile(WindowInfo *window, Time time)
 /*
 ** Getting the current selection by making the request, and then blocking
 ** (processing events) while waiting for a reply.  On failure (timeout or
-** bad format) returns NULL, otherwise returns the contents of the selection.
+** bad format) returns nullptr, otherwise returns the contents of the selection.
 */
 char *GetAnySelection(WindowInfo *window)
 {
@@ -183,7 +183,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
     int rc, lineNum, column, position, curCol;
     
     /* skip if we can't get the selection data, or it's obviously not a number */
-    if (*type == XT_CONVERT_FAIL || value == NULL) {
+    if (*type == XT_CONVERT_FAIL || value == nullptr) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -244,7 +244,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
     
     /* get the string, or skip if we can't get the selection data, or it's
        obviously not a file name */
-    if (*type == XT_CONVERT_FAIL || value == NULL) {
+    if (*type == XT_CONVERT_FAIL || value == nullptr) {
     	XBell(TheDisplay, 0);
 	return;
     }
@@ -299,9 +299,9 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
 	return;
     }	
     EditExistingFile(window, filename, 
-            pathname, 0, NULL, False, NULL, GetPrefOpenInTab(), False);
+            pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 #elif defined(USE_MOTIF_GLOB)
-    { char **nameList = NULL;
+    { char **nameList = nullptr;
       int i, nFiles = 0, maxFiles = 30;
 
       if (ParseFilename(nameText, filename, pathname) != 0) {
@@ -316,7 +316,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
 	  }
         else {
     	      EditExistingFile(window, filename, pathname, 0, 
-	              NULL, False, NULL, GetPrefOpenInTab(), False);
+	              nullptr, False, nullptr, GetPrefOpenInTab(), False);
 	  }
       }
       for (i=0; i<nFiles; i++) {
@@ -328,13 +328,13 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
     { glob_t globbuf;
       int i;
 
-      glob(nameText, GLOB_NOCHECK, NULL, &globbuf);
+      glob(nameText, GLOB_NOCHECK, nullptr, &globbuf);
       for (i=0; i<(int)globbuf.gl_pathc; i++) {
 	  if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
 	      XBell(TheDisplay, 0);
 	  else
-    	      EditExistingFile(GetPrefOpenInTab()? window : NULL, 
-	              filename, pathname, 0, NULL, False, NULL, 
+    	      EditExistingFile(GetPrefOpenInTab()? window : nullptr, 
+	              filename, pathname, 0, nullptr, False, nullptr, 
 		      GetPrefOpenInTab(), False);
       }
       globfree(&globbuf);
@@ -353,7 +353,7 @@ static void getAnySelectionCB(Widget widget, char **result, Atom *sel, Atom *typ
     if (*type != XA_STRING || *format != 8) {
 	XBell(TheDisplay, 0);
         XtFree((char*) value);
-	*result = NULL;
+	*result = nullptr;
 	return;
     }
 
@@ -415,7 +415,7 @@ void MarkDialog(WindowInfo *window)
 	return;
     }
     params[0] = letterText;
-    XtCallActionProc(window->lastFocus, "mark", NULL, params, 1);
+    XtCallActionProc(window->lastFocus, "mark", nullptr, params, 1);
 }
 
 void GotoMarkDialog(WindowInfo *window, int extend)
@@ -438,7 +438,7 @@ void GotoMarkDialog(WindowInfo *window, int extend)
     }
     params[0] = letterText;
     params[1] = "extend";
-    XtCallActionProc(window->lastFocus, "goto_mark", NULL, (char **)params,
+    XtCallActionProc(window->lastFocus, "goto_mark", nullptr, (char **)params,
 	    extend ? 2 : 1);
 }
 
@@ -608,10 +608,10 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel)
        cursor position without first using the less pleasing capability
        of the widget itself for bringing the cursor in to view, you have to
        first turn it off, set the position, then turn it back on. */
-    XtVaSetValues(w, textNautoShowInsertPos, False, NULL);
+    XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
     TextSetCursorPos(w, cursorPos);
     MakeSelectionVisible(window, window->lastFocus);
-    XtVaSetValues(w, textNautoShowInsertPos, True, NULL);
+    XtVaSetValues(w, textNautoShowInsertPos, True, nullptr);
 }
 
 /*

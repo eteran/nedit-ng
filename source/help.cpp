@@ -80,9 +80,9 @@
 /*                             VARIABLE DECLARATIONS                          */
 /*============================================================================*/
 
-static Widget HelpWindows[NUM_TOPICS] = {NULL}; 
-static Widget HelpTextPanes[NUM_TOPICS] = {NULL};
-static textBuffer *HelpStyleBuffers[NUM_TOPICS] = {NULL};
+static Widget HelpWindows[NUM_TOPICS] = {nullptr}; 
+static Widget HelpTextPanes[NUM_TOPICS] = {nullptr};
+static textBuffer *HelpStyleBuffers[NUM_TOPICS] = {nullptr};
 static int navHistForw[NUM_TOPICS];
 static int navHistBack[NUM_TOPICS];
 
@@ -195,7 +195,7 @@ static char _XmVersionString[] = "unknown";
 ** string must NOT be freed by caller.
 */
 
-static char *bldInfoString = NULL;
+static char *bldInfoString = nullptr;
 
 static void freeBuildInfo(void)
 {
@@ -231,7 +231,7 @@ static const char *getBuildInfo(void)
 
     static const char *const stabilities[] = {"", "(Untested) ", "(Known Bad) "};
 
-    if (bldInfoString == NULL)
+    if (bldInfoString == nullptr)
     {
         const char *locale;
         char visualStr[500] = "<unknown>";
@@ -271,8 +271,8 @@ static const char *getBuildInfo(void)
              XmVERSION_STRING, 
              xmUseVersion/1000, xmUseVersion%1000,
              _XmVersionString,
-             (NULL == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
-             (NULL == TheDisplay ? 0 : VendorRelease(TheDisplay)),
+             (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
+             (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)),
              visualStr,
              locale ? locale : "None");
 
@@ -298,13 +298,13 @@ static void initHelpStyles (Widget parent)
         int   styleIndex;
         const char ** line;
 
-        XtVaGetValues(parent, XtNforeground, &fg, NULL);
+        XtVaGetValues(parent, XtNforeground, &fg, nullptr);
 
         for (styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++) 
         {
             HelpStyleInfo[ styleIndex ].color     = fg;
             HelpStyleInfo[ styleIndex ].underline = StyleUnderlines[styleIndex];
-            HelpStyleInfo[ styleIndex ].font      = NULL;
+            HelpStyleInfo[ styleIndex ].font      = nullptr;
         }
 
         styleTableInitialized  = True;
@@ -315,7 +315,7 @@ static void initHelpStyles (Widget parent)
         * This special case is needed to incorporate this 
         * dynamically created information into the static help.
         *-------------------------------------------------------*/
-        for (line = HelpText[ HELP_VERSION ]; *line != NULL; line++) 
+        for (line = HelpText[ HELP_VERSION ]; *line != nullptr; line++) 
         {
             /*--------------------------------------------------
             * If and when this printf format is found in the
@@ -323,7 +323,7 @@ static void initHelpStyles (Widget parent)
             * build information. Then stitching the help text
             * will have the final count of characters to use.
             *--------------------------------------------------*/
-            if (strstr (*line, "%s")  != NULL) 
+            if (strstr (*line, "%s")  != nullptr) 
             {
                 const char * bldInfo  = getBuildInfo();
                 char * text     = XtMalloc (strlen (*line)  + strlen (bldInfo));
@@ -375,16 +375,16 @@ static void loadFontsAndColors(Widget parent, int style)
 {
     XFontStruct *font;
     int r,g,b;
-    if (HelpStyleInfo[STYLE_INDEX(style)].font == NULL)
+    if (HelpStyleInfo[STYLE_INDEX(style)].font == nullptr)
     {
         font = XLoadQueryFont(XtDisplay(parent),
                 GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
-        if (font == NULL)
+        if (font == nullptr)
         {
             fprintf(stderr, "NEdit: help font, %s, not available\n",
                     GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
             font = XLoadQueryFont(XtDisplay(parent), "fixed");
-            if (font == NULL)
+            if (font == nullptr)
             {
                 fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
                         "available, cannot continue\n");
@@ -402,7 +402,7 @@ static void loadFontsAndColors(Widget parent, int style)
 static void adaptNavigationButtons(int topic) {
     Widget btn;
     
-    if(HelpWindows[topic] == NULL)
+    if(HelpWindows[topic] == nullptr)
         return; /* Shouldn't happen */
     
     btn=XtNameToWidget(HelpWindows[topic], "helpForm.prevTopic");
@@ -451,7 +451,7 @@ static char * stitch (
 
     Widget  parent,      /* used for dynamic font/color allocation */
     const char ** string_list, /* given help strings to stitch together */
-    char ** styleMap     /* NULL, or a place to store help styles */
+    char ** styleMap     /* nullptr, or a place to store help styles */
 )
 {
     const char  *  cp;
@@ -464,7 +464,7 @@ static char * stitch (
     /*----------------------------------------------------
     * How many characters are there going to be displayed?
     *----------------------------------------------------*/
-    for (crnt_line = string_list; *crnt_line != NULL; crnt_line++) 
+    for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) 
     {
         for (cp = *crnt_line; *cp != EOS; cp++) 
         {
@@ -489,14 +489,14 @@ static char * stitch (
     * stitched together, another for the styles to be applied.
     *--------------------------------------------------------*/
     sp  = section   = XtMalloc (total_size +1);
-    sdp = styleData = (styleMap) ? XtMalloc (total_size +1)  : NULL;
+    sdp = styleData = (styleMap) ? XtMalloc (total_size +1)  : nullptr;
     *sp = EOS;
     
     /*--------------------------------------------
     * Fill in the newly acquired contiguous space
     * with help text and style information.
     *--------------------------------------------*/
-    for (crnt_line = string_list; *crnt_line != NULL; crnt_line++) 
+    for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) 
     {
         for (cp = *crnt_line; *cp != EOS; cp++) 
         {
@@ -536,7 +536,7 @@ static char * stitch (
 */
 void Help(enum HelpTopic topic)
 {
-    if (HelpWindows[topic] != NULL)
+    if (HelpWindows[topic] != nullptr)
         RaiseShellWindow(HelpWindows[topic], True);
     else
         HelpWindows[topic] = createHelpPanel(topic);
@@ -557,10 +557,10 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
     topic_num++; 
     
     sprintf(buf, "NEdit Help (%d)", topic_num);
-    XtVaSetValues(win, XmNiconName, buf, NULL);
+    XtVaSetValues(win, XmNiconName, buf, nullptr);
     
     sprintf(buf, "NEdit Help: %s (%d)", topStr, topic_num);
-    XtVaSetValues(win, XmNtitle, buf, NULL);
+    XtVaSetValues(win, XmNtitle, buf, nullptr);
   
     free(buf);
 }
@@ -581,8 +581,8 @@ static Widget createHelpPanel(enum HelpTopic topic)
     Widget appShell, btn, closeBtn, form, btnFW;
     Widget sw, hScrollBar, vScrollBar;
     XmString st1;
-    char * helpText  = NULL;
-    char * styleData = NULL;
+    char * helpText  = nullptr;
+    char * styleData = nullptr;
 
     ac = 0;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
@@ -594,10 +594,10 @@ static Widget createHelpPanel(enum HelpTopic topic)
        minimum _window_ width, we can work around this problem. The minimum 
        width should be larger than the width of the scrollbar. 50 is probably 
        a safe value; this leaves room for a few characters */
-    XtVaSetValues(appShell, XtNminWidth, 50, NULL);
+    XtVaSetValues(appShell, XtNminWidth, 50, nullptr);
     form = XtVaCreateManagedWidget((String)"helpForm", xmFormWidgetClass, appShell,
-            NULL);
-    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
+            nullptr);
+    XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
     
     /* Create the bottom row of buttons */
     btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form,
@@ -608,7 +608,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 3,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 25,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, searchHelpCB, appShell);
     XmStringFree(st1);
 
@@ -620,7 +620,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 27,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 49,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, searchHelpAgainCB, appShell);
     XmStringFree(st1);
 
@@ -632,7 +632,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 51,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 73,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, printCB, appShell);
     XmStringFree(st1);
 
@@ -644,7 +644,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 75,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 97,
-            NULL);
+            nullptr);
     XtAddCallback(closeBtn, XmNactivateCallback, closeCB, appShell);
     XmStringFree(st1);
             
@@ -658,7 +658,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 51,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 73,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, prevTopicCB, appShell);
     XmStringFree(st1);
 
@@ -671,7 +671,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 75, 
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 97,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, nextTopicCB, appShell);
     XmStringFree(st1);
 
@@ -684,7 +684,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 3,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 25,
-            NULL);
+            nullptr);
     XtAddCallback(btn, XmNactivateCallback, bwHistoryCB, appShell);
     XmStringFree(st1);
 
@@ -697,7 +697,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNleftPosition, 27,
             XmNrightAttachment, XmATTACH_POSITION,
             XmNrightPosition, 49,
-            NULL);
+            nullptr);
     XtAddCallback(btnFW, XmNactivateCallback, fwHistoryCB, appShell);
     XmStringFree(st1);
     
@@ -709,17 +709,17 @@ static Widget createHelpPanel(enum HelpTopic topic)
             XmNrightAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_WIDGET,
             XmNbottomWidget, btnFW,
-            NULL);
+            nullptr);
     hScrollBar = XtVaCreateManagedWidget("hScrollBar",
             xmScrollBarWidgetClass, sw,
             XmNorientation, XmHORIZONTAL, 
             XmNrepeatDelay, 10,
-            NULL);
+            nullptr);
     vScrollBar = XtVaCreateManagedWidget("vScrollBar",
             xmScrollBarWidgetClass, sw,
             XmNorientation, XmVERTICAL,
             XmNrepeatDelay, 10,
-            NULL);
+            nullptr);
     /* Make sure the fixed size help font is loaded, such that we can base
        our text widget size calculation on it. */
     loadFontsAndColors(sw, 'A');
@@ -728,17 +728,17 @@ static Widget createHelpPanel(enum HelpTopic topic)
             textNfont, HelpStyleInfo[0].font, /* MUST correspond to 'A' above */
             textNrows, 30,
             textNcolumns, 65,
-            textNbacklightCharTypes, NULL,
+            textNbacklightCharTypes, nullptr,
             textNhScrollBar, hScrollBar,
             textNvScrollBar, vScrollBar,
             textNreadOnly, True,
             textNcontinuousWrap, True,
             textNautoShowInsertPos, True,
-            NULL);
+            nullptr);
     XtVaSetValues(sw, XmNworkWindow, HelpTextPanes[topic],
             XmNhorizontalScrollBar, hScrollBar,
             XmNverticalScrollBar, vScrollBar,
-            NULL);
+            nullptr);
     
     /* Initialize help style information, if it hasn't already been init'd */
     initHelpStyles (HelpTextPanes[topic]);
@@ -757,7 +757,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     BufSetAll(HelpStyleBuffers[topic], styleData);
     XtFree (styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
-            HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', NULL, NULL);
+            HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
     
     /* This shouldn't be necessary (what's wrong in text.c?) */
     HandleXSelections(HelpTextPanes[topic]);
@@ -766,8 +766,8 @@ static Widget createHelpPanel(enum HelpTopic topic)
     AddDialogMnemonicHandler(form, FALSE);
     
     /* Set the default button */
-    XtVaSetValues(form, XmNdefaultButton, closeBtn, NULL);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, NULL);
+    XtVaSetValues(form, XmNdefaultButton, closeBtn, nullptr);
+    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
     
     /* realize all of the widgets in the new window */
     RealizeWithoutForcingPosition(appShell);
@@ -787,14 +787,14 @@ static Widget createHelpPanel(enum HelpTopic topic)
     
 #ifdef EDITRES
     XtAddEventHandler (appShell, (EventMask)0, True,
-            (XtEventHandler)_XEditResCheckMessages, NULL);
+            (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif /* EDITRES */
     
     return appShell;
 }
 
 static void changeTopicOrRaise(int existingTopic, int newTopic) {
-    if(HelpWindows[newTopic] == NULL)
+    if(HelpWindows[newTopic] == nullptr)
     {
         changeWindowTopic(existingTopic, (enum HelpTopic) newTopic);
         adaptNavigationButtons(newTopic);
@@ -818,13 +818,13 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
         return;
     
     /* I don't understand the mechanism by which this can be called with
-       HelpWindows[topic] as NULL, but it has happened */
+       HelpWindows[topic] as nullptr, but it has happened */
     XtDestroyWidget(HelpWindows[topic]);
-    HelpWindows[topic] = NULL;
-    if (HelpStyleBuffers[topic] != NULL)
+    HelpWindows[topic] = nullptr;
+    if (HelpStyleBuffers[topic] != nullptr)
     {
         BufFree(HelpStyleBuffers[topic]);
-        HelpStyleBuffers[topic] = NULL;
+        HelpStyleBuffers[topic] = nullptr;
     }        
 }
 
@@ -882,7 +882,7 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
     char promptText[DF_MAX_PROMPT_LENGTH];
     int response, topic;
-    static char **searchHistory = NULL;
+    static char **searchHistory = nullptr;
     static int nHistoryStrings = 0;
     
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
@@ -935,7 +935,7 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
     /*------------------------------
     * Direct topic links found here.
     *------------------------------*/
-    for (*topic=0; HelpTitles[*topic] != NULL; (*topic)++) 
+    for (*topic=0; HelpTitles[*topic] != nullptr; (*topic)++) 
     {
         if (strcmp (link_name, HelpTitles[*topic])  == 0) 
         {
@@ -947,7 +947,7 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
     /*------------------------------------
     * Links internal to topics found here.
     *------------------------------------*/
-    for (hypertext = &H_R[0]; hypertext != NULL; hypertext = hypertext->next) 
+    for (hypertext = &H_R[0]; hypertext != nullptr; hypertext = hypertext->next) 
     {
         if (strcmp (link_name, hypertext->source)  == 0) 
         {
@@ -984,7 +984,7 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
     
     if (is_known_link (link_text, &link_topic, &link_pos) ) 
     {
-        if (HelpWindows[link_topic] != NULL)
+        if (HelpWindows[link_topic] != nullptr)
         {
             RaiseShellWindow(HelpWindows[link_topic], True);
         } else
@@ -1035,7 +1035,7 @@ static void helpButtonActionAP(Widget w, XEvent *event, String *args,
         if (HelpTextPanes[topic] == w)
             break;
     
-    if(topic == NUM_TOPICS || HelpWindows[topic] == NULL)
+    if(topic == NUM_TOPICS || HelpWindows[topic] == nullptr)
         return; /* Shouldn't happen */
 
     /* Compose the button widget name */    
@@ -1104,7 +1104,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
             || abs(pressY - e->y) > CLICK_THRESHOLD)
     {
         if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, NULL, 0);
+            XtCallActionProc(w, args[2], event, nullptr, 0);
         return;
     }
     
@@ -1114,7 +1114,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
            (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK])
     {
         if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, NULL, 0);
+            XtCallActionProc(w, args[2], event, nullptr, 0);
         return;
     }
 
@@ -1129,7 +1129,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
          * text widget (!) Or some other really strange thing happened.
          */
         if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, NULL, 0);
+            XtCallActionProc(w, args[2], event, nullptr, 0);
         return;
     }
     
@@ -1137,7 +1137,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
      * named in arg #2 before really following the link.
      */
     if (*nArgs == 3)
-        XtCallActionProc(w, args[1], event, NULL, 0);
+        XtCallActionProc(w, args[1], event, nullptr, 0);
     
     followHyperlink(topic, clickedPos, newWin);
 }  
@@ -1166,18 +1166,18 @@ static void searchHelpText(Widget parent, int parentTopic,
 {    
     int topic, beginMatch, endMatch;
     int found = False;
-    char * helpText  = NULL;
+    char * helpText  = nullptr;
     
     /* Search for the string */
     for (topic=startTopic; topic<NUM_TOPICS; topic++)
     {
         if (!allSections && topic != parentTopic)
             continue;
-        helpText = stitch(parent, HelpText[topic], NULL);
+        helpText = stitch(parent, HelpText[topic], nullptr);
 
         if (SearchString(helpText, searchFor, SEARCH_FORWARD, SEARCH_LITERAL,
                 False, topic == startTopic ? startPos : 0, &beginMatch,
-                &endMatch, NULL, NULL, GetPrefDelimiters()))
+                &endMatch, nullptr, nullptr, GetPrefDelimiters()))
         {
             found = True;
             XtFree(helpText);
@@ -1232,11 +1232,11 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic)
     if (newTopic != existingTopic)
     {
         HelpWindows[newTopic] = HelpWindows[existingTopic];
-        HelpWindows[existingTopic] = NULL;
+        HelpWindows[existingTopic] = nullptr;
         HelpStyleBuffers[newTopic] = HelpStyleBuffers[existingTopic];
-        HelpStyleBuffers[existingTopic] = NULL;
+        HelpStyleBuffers[existingTopic] = nullptr;
         HelpTextPanes[newTopic] = HelpTextPanes[existingTopic];
-        HelpTextPanes[existingTopic] = NULL;
+        HelpTextPanes[existingTopic] = nullptr;
         setHelpWinTitle(HelpWindows[newTopic], newTopic);
     } 
     
@@ -1246,14 +1246,14 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic)
        old, mismatched, highlighting to the new text */
     helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
-            NULL, NULL, 0, '\0', NULL, NULL);
+            nullptr, nullptr, 0, '\0', nullptr, nullptr);
     BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
     XtFree(helpText);
     BufSetAll(HelpStyleBuffers[newTopic], styleData);
     XtFree(styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
-            HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', NULL,
-            NULL);
+            HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr,
+            nullptr);
 }
 
 static int findTopicFromShellWidget(Widget shellWidget)

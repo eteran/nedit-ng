@@ -727,7 +727,7 @@ int yystacksize;
 /*
 ** Parse a null terminated string and create a program from it (this is the
 ** parser entry point).  The program created by this routine can be
-** executed using ExecuteProgram.  Returns program on success, or NULL
+** executed using ExecuteProgram.  Returns program on success, or nullptr
 ** on failure.  If the command failed, the error message is returned
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
@@ -746,7 +746,7 @@ Program *ParseMacro(char *expr, char **msg, char **stoppedAt)
         *msg = ErrMsg;
         *stoppedAt = InPtr;
         FreeProgram(FinishCreatingProgram());
-        return NULL;
+        return nullptr;
     }
 
     /* get the newly created program */
@@ -799,7 +799,7 @@ static int yylex(void)
         sprintf(name, "const %d", value.val.n);
         InPtr += len;
         value.tag = INT_TAG;
-        if ((yylval.sym=LookupSymbol(name)) == NULL)
+        if ((yylval.sym=LookupSymbol(name)) == nullptr)
             yylval.sym = InstallSymbol(name, CONST_SYM, value);
         return NUMBER;
     }
@@ -809,7 +809,7 @@ static int yylex(void)
        is action routine names which are allowed to contain '-' despite
        the ambiguity, handled in matchesActionRoutine. */
     if (isalpha((unsigned char)*InPtr) || *InPtr == '$') {
-        if ((s=matchesActionRoutine(&InPtr)) == NULL) {
+        if ((s=matchesActionRoutine(&InPtr)) == nullptr) {
             char symName[MAX_SYM_LEN+1], *p = symName;
             *p++ = *InPtr++;
             while (isalnum((unsigned char)*InPtr) || *InPtr=='_') {
@@ -833,7 +833,7 @@ static int yylex(void)
                 InPtr -= 6;
                 return 0;
             }
-            if ((s=LookupSymbol(symName)) == NULL) {
+            if ((s=LookupSymbol(symName)) == nullptr) {
                 s = InstallSymbol(symName, symName[0]=='$' ?
                         (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ?
                         ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
@@ -876,7 +876,7 @@ static int yylex(void)
                     const char *hexD;
                     InPtr++;
                     if (*InPtr == '\0' ||
-                        (hexD = strchr(hexDigits, tolower(*InPtr))) == NULL) {
+                        (hexD = strchr(hexDigits, tolower(*InPtr))) == nullptr) {
                         *p++ = 'x';
                     }
                     else {
@@ -884,7 +884,7 @@ static int yylex(void)
                         InPtr++;
                         /* now do we have another digit? only accept one more */
                         if (*InPtr != '\0' &&
-                            (hexD = strchr(hexDigits,tolower(*InPtr))) != NULL){
+                            (hexD = strchr(hexDigits,tolower(*InPtr))) != nullptr){
                           hexValue = hexD - hexDigits + (hexValue << 4);
                           InPtr++;
                         }
@@ -1038,10 +1038,10 @@ static Symbol *matchesActionRoutine(char **inPtr)
         *symPtr++ = *c;
     }
     if (!hasDash)
-        return NULL;
+        return nullptr;
     *symPtr = '\0';
     s = LookupSymbol(symbolName);
-    if (s != NULL)
+    if (s != nullptr)
         *inPtr = c;
     return s;
 }
@@ -1074,13 +1074,13 @@ static int yygrowstack()
     i = yyssp - yyss;
     newss = yyss ? (short *)realloc(yyss, newsize * sizeof *newss) :
       (short *)malloc(newsize * sizeof *newss);
-    if (newss == NULL)
+    if (newss == nullptr)
         return -1;
     yyss = newss;
     yyssp = newss + i;
     newvs = yyvs ? (YYSTYPE *)realloc(yyvs, newsize * sizeof *newvs) :
       (YYSTYPE *)malloc(newsize * sizeof *newvs);
-    if (newvs == NULL)
+    if (newvs == nullptr)
         return -1;
     yyvs = newvs;
     yyvsp = newvs + i;
@@ -1135,7 +1135,7 @@ yyparse (YYPARSE_PARAM_ARG)
     yyerrflag = 0;
     yychar = (-1);
 
-    if (yyss == NULL && yygrowstack()) goto yyoverflow;
+    if (yyss == nullptr && yygrowstack()) goto yyoverflow;
     yyssp = yyss;
     yyvsp = yyvs;
     *yyssp = yystate = 0;

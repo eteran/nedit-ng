@@ -123,7 +123,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
     UpdateWindowTitle(window);
     RefreshTabState(window);
     
-    if (languageMode == NULL) 
+    if (languageMode == nullptr) 
     	DetermineLanguageMode(window, True);
     else
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
@@ -141,7 +141,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 
 /*
 ** Open an existing file specified by name and path.  Use the window inWindow
-** unless inWindow is NULL or points to a window which is already in use
+** unless inWindow is nullptr or points to a window which is already in use
 ** (displays a file other than Untitled, or is Untitled but modified).  Flags
 ** can be any of:
 **
@@ -150,7 +150,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
 **	SUPPRESS_CREATE_WARN	When creating a file, don't ask the user
 **	PREF_READ_ONLY		Make the file read-only regardless
 **
-** If languageMode is passed as NULL, it will be determined automatically
+** If languageMode is passed as nullptr, it will be determined automatically
 ** from the file extension or file contents.
 **
 ** If bgOpen is True, then the file will be open in background. This
@@ -167,7 +167,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     
     /* first look to see if file is already displayed in a window */
     window = FindWindowWithFile(name, path);
-    if (window != NULL) {
+    if (window != nullptr) {
     	if (!bgOpen) {
 	    if (iconic)
 		RaiseDocument(window);
@@ -180,11 +180,11 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
     /* If an existing window isn't specified; or the window is already
        in use (not Untitled or Untitled and modified), or is currently
        busy running a macro; create the window */
-    if (inWindow == NULL) {
+    if (inWindow == nullptr) {
 	window = CreateWindow(name, geometry, iconic);
     }
     else if (inWindow->filenameSet || inWindow->fileChanged ||
-	    inWindow->macroCmdData != NULL) {
+	    inWindow->macroCmdData != nullptr) {
 	if (tabbed) {
 	    window = CreateDocument(inWindow, name);
     	}
@@ -208,12 +208,12 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
 	   warning dialog; don't close it twice */
 	safeClose(window);
 	
-    	return NULL;
+    	return nullptr;
     }
     forceShowLineNumbers(window);
 
     /* Decide what language mode to use, trigger language specific actions */
-    if (languageMode == NULL) 
+    if (languageMode == nullptr) 
     	DetermineLanguageMode(window, True);
     else
 	SetLanguageMode(window, FindLanguageMode(languageMode), True);
@@ -325,7 +325,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     struct stat statbuf;
     int fileLen, readLen;
     char *fileString, *c;
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     int fd;
     int resp;
     
@@ -350,15 +350,15 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
 		      To avoid requiring special builds for clearcase users,
 		      this is now the default. */
     {
-	if ((fp = fopen(fullname, "r")) != NULL) {
+	if ((fp = fopen(fullname, "r")) != nullptr) {
     	    if(access(fullname, W_OK) != 0)
                 SET_PERM_LOCKED(window->lockReasons, TRUE);
 #else
     fp = fopen(fullname, "rb+");
-    if (fp == NULL) {
+    if (fp == nullptr) {
     	/* Error opening file or file is not writeable */
 	fp = fopen(fullname, "rb");
-	if (fp != NULL) {
+	if (fp != nullptr) {
 	    /* File is read only */
             SET_PERM_LOCKED(window->lockReasons, TRUE);
 #endif
@@ -370,7 +370,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
                 RaiseShellWindow(window->shell, False);
 
                 /* ask user for next action if file not found */
-                if (WindowList == window && window->next == NULL) {
+                if (WindowList == window && window->next == nullptr) {
                     resp = DialogF(DF_WARN, window->shell, 3, "New File",
                             "Can't open %s:\n%s", "New File", "Cancel",
                             "Exit NEdit", fullname, errorString());
@@ -450,7 +450,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     
     /* Allocate space for the whole contents of the file (unfortunately) */
     fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
-    if (fileString == NULL) {
+    if (fileString == nullptr) {
         fclose(fp);
         window->filenameSet = FALSE; /* Temp. prevent check for changes. */
         DialogF(DF_ERR, window->shell, 1, "Error while opening File",
@@ -495,7 +495,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path,
     if (GetPrefForceOSConversion()) {
         window->fileFormat = FormatOfFile(fileString);
         if (window->fileFormat == DOS_FILE_FORMAT) {
-            ConvertFromDosFileString(fileString, &readLen, NULL);
+            ConvertFromDosFileString(fileString, &readLen, nullptr);
         } else if (window->fileFormat == MAC_FILE_FORMAT) {
             ConvertFromMacFileString(fileString, readLen);
         }
@@ -559,11 +559,11 @@ int IncludeFile(WindowInfo *window, const char *name)
     struct stat statbuf;
     int fileLen, readLen;
     char *fileString;
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
 
     /* Open the file */
     fp = fopen(name, "rb");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "Could not open %s:\n%s", "OK", name, errorString());
@@ -590,7 +590,7 @@ int IncludeFile(WindowInfo *window, const char *name)
  
     /* allocate space for the whole contents of the file */
     fileString = (char *)malloc(fileLen+1);  /* +1 = space for null */
-    if (fileString == NULL)
+    if (fileString == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Error opening File",
                 "File is too large to include", "OK");
@@ -613,7 +613,7 @@ int IncludeFile(WindowInfo *window, const char *name)
     /* Detect and convert DOS and Macintosh format files */
     switch (FormatOfFile(fileString)) {
         case DOS_FILE_FORMAT:
-            ConvertFromDosFileString(fileString, &readLen, NULL);
+            ConvertFromDosFileString(fileString, &readLen, nullptr);
             break;
         case MAC_FILE_FORMAT:
             ConvertFromMacFileString(fileString, readLen);
@@ -658,7 +658,7 @@ int IncludeFile(WindowInfo *window, const char *name)
 */
 int CloseAllFilesAndWindows(void)
 {
-    while (WindowList->next != NULL || 
+    while (WindowList->next != nullptr || 
     		WindowList->filenameSet || WindowList->fileChanged) {
         /*
          * When we're exiting through a macro, the document running the 
@@ -669,7 +669,7 @@ int CloseAllFilesAndWindows(void)
          * document that gets closed, but it won't disappear; it becomes
          * Untitled.)
          */
-        if (WindowList == MacroRunWindow() && WindowList->next != NULL) {
+        if (WindowList == MacroRunWindow() && WindowList->next != nullptr) {
             if (!CloseAllDocumentInWindow(WindowList->next)) {
                 return False;
             }
@@ -755,7 +755,7 @@ int SaveWindow(WindowInfo *window)
     	return TRUE;
     /* Prompt for a filename if this is an Untitled window */
     if (!window->filenameSet)
-    	return SaveWindowAs(window, NULL, False);
+    	return SaveWindowAs(window, nullptr, False);
 
     /* Check for external modifications and warn the user */
     if (GetPrefWarnFileMods() && fileWasModifiedExternally(window))
@@ -795,7 +795,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
     WindowInfo *otherWindow;
     
     /* Get the new name for the file */
-    if (newName == NULL) {
+    if (newName == nullptr) {
 	response = PromptForNewFile(window, (String)"Save File As", fullname,
 		&fileFormat, &addWrap);
 	if (response != GFN_OK)
@@ -832,7 +832,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
        is still up, because the dialog is not application modal, so after
        doing the dialog, check again whether the window still exists. */
     otherWindow = FindWindowWithFile(filename, pathname);
-    if (otherWindow != NULL)
+    if (otherWindow != nullptr)
     {
         response = DialogF(DF_WARN, window->shell, 2, "File open",
         "%s is open in another NEdit window", "Cancel",
@@ -887,7 +887,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
 
 static int doSave(WindowInfo *window)
 {
-    char *fileString = NULL;
+    char *fileString = nullptr;
     char fullname[MAXPATHLEN];
     struct stat statbuf;
     FILE *fp;
@@ -930,7 +930,7 @@ static int doSave(WindowInfo *window)
     
     /* open the file */
     fp = fopen(fullname, "wb");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
         result = DialogF(DF_WARN, window->shell, 2, "Error saving File",
                 "Unable to save %s:\n%s\n\nSave as a new file?",
@@ -939,7 +939,7 @@ static int doSave(WindowInfo *window)
 
         if (result == 1)
         {
-            return SaveWindowAs(window, NULL, 0);
+            return SaveWindowAs(window, nullptr, 0);
         }
         return FALSE;
     }
@@ -1021,7 +1021,7 @@ static int doSave(WindowInfo *window)
 */
 int WriteBackupFile(WindowInfo *window)
 {
-    char *fileString = NULL;
+    char *fileString = nullptr;
     char name[MAXPATHLEN];
     FILE *fp;
     int fd, fileLen;
@@ -1037,7 +1037,7 @@ int WriteBackupFile(WindowInfo *window)
         permissions was somewhat of a security hole, because permissions were
         independent of those of the original file being edited */
     if ((fd = open(name, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0
-            || (fp = fdopen(fd, "w")) == NULL)
+            || (fp = fdopen(fd, "w")) == nullptr)
     {
         DialogF(DF_WARN, window->shell, 1, "Error writing Backup",
                 "Unable to save backup for %s:\n%s\n"
@@ -1186,7 +1186,7 @@ static int writeBckVersion(WindowInfo *window)
 
     /* Allocate I/O buffer */
     io_buffer = (char*) malloc(IO_BUFFER_SIZE);
-    if (NULL == io_buffer) {
+    if (nullptr == io_buffer) {
         close(in_fd);
         close(out_fd);
         remove(bckname);
@@ -1255,7 +1255,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
 {
     textBuffer *buf = window->buffer;
     selection *sel = &buf->primary;
-    char *fileString = NULL;
+    char *fileString = nullptr;
     int fileLen;
     
     /* get the contents of the text buffer from the text area widget.  Add
@@ -1308,7 +1308,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
     tmpnam(tmpFileName);
 
     /* open the temporary file */
-    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL)
+    if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr)
     {
         DialogF(DF_WARN, parent, 1, "Error while Printing",
                 "Unable to write file for printing:\n%s", "OK",
@@ -1410,7 +1410,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     XmStringFree(s1);
     XmStringFree(s2);
     formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass,
-	    fileSB, NULL);
+	    fileSB, nullptr);
     formatBtns = XtVaCreateManagedWidget("formatBtns",
             xmRowColumnWidgetClass, formatForm,
             XmNradioBehavior, XmONE_OF_MANY,
@@ -1418,9 +1418,9 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
             XmNpacking, XmPACK_TIGHT,
             XmNtopAttachment, XmATTACH_FORM,
             XmNleftAttachment, XmATTACH_FORM,
-            NULL);
+            nullptr);
     XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
-	    XmNlabelString, s1=XmStringCreateSimple((String)"Format:"), NULL);
+	    XmNlabelString, s1=XmStringCreateSimple((String)"Format:"), nullptr);
     XmStringFree(s1);
     unixFormat = XtVaCreateManagedWidget("unixFormat",
             xmToggleButtonWidgetClass, formatBtns,
@@ -1430,7 +1430,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'U',
-            NULL);
+            nullptr);
     XmStringFree(s1);
     XtAddCallback(unixFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1442,7 +1442,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'O',
-            NULL);
+            nullptr);
     XmStringFree(s1);
     XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1454,7 +1454,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
             XmNmarginHeight, 0,
             XmNalignment, XmALIGNMENT_BEGINNING,
             XmNmnemonic, 'M',
-            NULL);
+            nullptr);
     XmStringFree(s1);
     XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB,
     	    fileFormat);
@@ -1467,7 +1467,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
                 XmNtopAttachment, XmATTACH_WIDGET,
                 XmNtopWidget, formatBtns,
                 XmNleftAttachment, XmATTACH_FORM,
-                NULL);
+                nullptr);
 	XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB,
     	    	addWrap);
 	XmStringFree(s1);
@@ -1476,24 +1476,24 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_LABEL),
             XmNmnemonic, 'l',
             XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT),
-            NULL);
+            nullptr);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL),
             XmNmnemonic, 'D',
             XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST),
-            NULL);
+            nullptr);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL),
             XmNmnemonic, 'F',
             XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST),
-            NULL);
+            nullptr);
     XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL),
             XmNmnemonic, prompt[strspn(prompt, "lFD")],
             XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT),
-            NULL);
+            nullptr);
     AddDialogMnemonicHandler(fileSB, FALSE);
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
     RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
     retVal = HandleCustomNewFileSB(fileSB, fullname,
-    	    window->filenameSet ? window->filename : NULL);
+    	    window->filenameSet ? window->filename : nullptr);
 
     if (retVal != GFN_OK)
     	SetFileDialogDefaultDirectory(savedDefaultDir);
@@ -1518,10 +1518,10 @@ void UniqueUntitledName(char *name)
     	    sprintf(name, "Untitled");
     	else
     	    sprintf(name, "Untitled_%d", i);
-	for (w=WindowList; w!=NULL; w=w->next)
+	for (w=WindowList; w!=nullptr; w=w->next)
      	    if (!strcmp(w->filename, name))
     	    	break;
-    	if (w == NULL)
+    	if (w == nullptr)
     	    break;
     }
 }
@@ -1544,7 +1544,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 */
 void CheckForChangesToFile(WindowInfo *window)
 {
-    static WindowInfo* lastCheckWindow = NULL;
+    static WindowInfo* lastCheckWindow = nullptr;
     static Time lastCheckTime = 0;
     char fullname[MAXPATHLEN];
     struct stat statbuf;
@@ -1693,13 +1693,13 @@ void CheckForChangesToFile(WindowInfo *window)
         window->fileMode = statbuf.st_mode;
         window->fileUid = statbuf.st_uid;
         window->fileGid = statbuf.st_gid;
-        if ((fp = fopen(fullname, "r")) != NULL) {
+        if ((fp = fopen(fullname, "r")) != nullptr) {
             int readOnly;
             fclose(fp);
 #ifndef DONT_USE_ACCESS 
             readOnly = access(fullname, W_OK) != 0;
 #else
-            if (((fp = fopen(fullname, "r+")) != NULL)) {
+            if (((fp = fopen(fullname, "r+")) != nullptr)) {
                 readOnly = FALSE;
                 fclose(fp);
             } else
@@ -1810,7 +1810,7 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData)
 
     if (XmToggleButtonGetState(w)) {
         XtPointer userData;
-        XtVaGetValues(w, XmNuserData, &userData, NULL);
+        XtVaGetValues(w, XmNuserData, &userData, nullptr);
         *(int*) clientData = (long) userData;
     }
 }

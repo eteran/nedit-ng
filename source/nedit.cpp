@@ -88,9 +88,9 @@ static void restoreInsaneVirtualKeyBindings(unsigned char* bindings);
 static void noWarningFilter(String);
 static void showWarningFilter(String);
 
-WindowInfo *WindowList = NULL;
-Display *TheDisplay = NULL;
-char *ArgV0 = NULL;
+WindowInfo *WindowList = nullptr;
+Display *TheDisplay = nullptr;
+char *ArgV0 = nullptr;
 Boolean IsServer = False;
 Widget TheAppShell;
 
@@ -363,7 +363,7 @@ Ctrl<Key>G:help-button-action(\"findAgain\")\\n\
     process-bdrag() help-hyperlink()\\n\
 ~Meta~Ctrl~Shift<Btn2Up>:\
     help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")",
-    NULL
+    nullptr
 };
 
 static const char cmdLineHelp[] =
@@ -384,15 +384,15 @@ int main(int argc, char **argv)
     int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
     int gotoLine = False, macroFileRead = False, opts = True;
     int iconic=False, tabbed = -1, group = 0, isTabbed;
-    char *toDoCommand = NULL, *geometry = NULL, *langMode = NULL;
+    char *toDoCommand = nullptr, *geometry = nullptr, *langMode = nullptr;
     char filename[MAXPATHLEN], pathname[MAXPATHLEN];
     XtAppContext context;
     XrmDatabase prefDB;
-    WindowInfo *window = NULL, *lastFile = NULL;
+    WindowInfo *window = nullptr, *lastFile = nullptr;
     static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry",
             "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth",
-	    "-bw", "-title", NULL};
-    unsigned char* invalidBindings = NULL;
+	    "-bw", "-title", nullptr};
+    unsigned char* invalidBindings = nullptr;
 
     /* Warn user if this has been compiled wrong. */
     enum MotifStability stability = GetMotifStability();
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 
     /* Set locale for C library, X, and Motif input functions. 
        Reverts to "C" if requested locale not available. */
-    XtSetLanguageProc(NULL, neditLanguageProc, NULL);
+    XtSetLanguageProc(nullptr, neditLanguageProc, nullptr);
  
     /* Initialize X toolkit (does not open display yet) */
     XtToolkitInitialize();
@@ -450,8 +450,8 @@ int main(int argc, char **argv)
        more convenient that NEdit takes care of this. This must be done before
        the display is opened (empirically verified). */
     putenv((char *)"XLIB_SKIP_ARGB_VISUALS=1");
-    TheDisplay = XtOpenDisplay (context, NULL, APP_NAME, APP_CLASS,
-	    NULL, 0, &argc, argv);
+    TheDisplay = XtOpenDisplay (context, nullptr, APP_NAME, APP_CLASS,
+	    nullptr, 0, &argc, argv);
     unmaskArgvKeywords(argc, argv, protectedKeywords);
     if (!TheDisplay) {
         /* Respond to -V or -version even if there is no display */
@@ -491,7 +491,7 @@ int main(int argc, char **argv)
                                          (char *)APP_CLASS,
                                          applicationShellWidgetClass,
                                          TheDisplay,
-                                         NULL,
+                                         nullptr,
                                          0);
     
     /* Restore the original bindings ASAP such that other apps are not affected. */
@@ -662,13 +662,13 @@ int main(int argc, char **argv)
 		    }
 		    if (gotoLine)
 			SelectNumberedLine(window, lineNum);
-		    if (toDoCommand != NULL) {
+		    if (toDoCommand != nullptr) {
 			DoMacro(window, toDoCommand, "-do macro");
-	    	    	toDoCommand = NULL;
+	    	    	toDoCommand = nullptr;
 			if (!IsValidWindow(window))
-		    	    window = NULL; /* window closed by macro */
+		    	    window = nullptr; /* window closed by macro */
 			if (lastFile && !IsValidWindow(lastFile))
-		    	    lastFile = NULL; /* window closed by macro */
+		    	    lastFile = nullptr; /* window closed by macro */
 		    }
 		}
 		
@@ -695,10 +695,10 @@ int main(int argc, char **argv)
 
     /* If no file to edit was specified, open a window to edit "Untitled" */
     if (!fileSpecified) {
-    	EditNewFile(NULL, geometry, iconic, langMode, NULL);
+    	EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
 	ReadMacroInitFile(WindowList);
 	CheckCloseDim();
-	if (toDoCommand != NULL)
+	if (toDoCommand != nullptr)
 	    DoMacro(WindowList, toDoCommand, "-do macro");
     }
     
@@ -751,8 +751,8 @@ static int checkDoMacroArg(const char *macro)
     /* Do a test parse */
     prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
     XtFree(tMacro);
-    if (prog == NULL) {
-    	ParseError(NULL, tMacro, stoppedAt, "argument to -do", errMsg);
+    if (prog == nullptr) {
+    	ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
 	return False;
     }
     FreeProgram(prog);
@@ -773,7 +773,7 @@ static void maskArgvKeywords(int argc, char **argv, const char **maskArgs)
     int i, k;
 
     for (i=1; i<argc; i++)
-	for (k=0; maskArgs[k]!=NULL; k++)
+	for (k=0; maskArgs[k]!=nullptr; k++)
 	    if (!strcmp(argv[i], maskArgs[k]))
     		argv[i][0] = ' ';
 }
@@ -784,7 +784,7 @@ static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs)
     int i, k;
 
     for (i=1; i<argc; i++)
-	for (k=0; maskArgs[k]!=NULL; k++)
+	for (k=0; maskArgs[k]!=nullptr; k++)
 	    if (argv[i][0]==' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
     		argv[i][0] = '-';
 }
@@ -799,7 +799,7 @@ static void fixupBrokenXKeysymDB(void)
 {
     const char *keysym = getenv("XKEYSYMDB");
     
-    if (keysym != NULL && access(keysym, F_OK) != 0)
+    if (keysym != nullptr && access(keysym, F_OK) != 0)
         putenv((char *)"XKEYSYMDB");
 }
 
@@ -928,7 +928,7 @@ static void patchResourcesForKDEbug(void)
   /* { "*shell",                  "/bin/sh"                                   }, OK */
      { "*statsLine.background",   "BACKGROUND",        NEDIT_DEFAULT_BG       },
      { "*statsLine.foreground",   "FOREGROUND",        NEDIT_DEFAULT_FG       },
-     { NULL,                      NULL,                NULL                   } };
+     { nullptr,                      nullptr,                nullptr                   } };
     XrmDatabase db;
     int i;
     
@@ -991,7 +991,7 @@ static void patchLocaleForMotif(void)
        others do, we'll have to iterate over a list of locale cateogries
        and patch every one of them. */
        
-    ctype = setlocale(LC_CTYPE, NULL);
+    ctype = setlocale(LC_CTYPE, nullptr);
     
     if (!ctype)
         return;
@@ -1037,7 +1037,7 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure)
     if (! XSetLocaleModifiers(""))
         XtWarning("X locale modifiers not supported, using default");
 
-    return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
+    return setlocale(LC_ALL, nullptr); /* re-query in case overwritten */
 }
 
 static int sortAlphabetical(const void* k1, const void* k2)
@@ -1146,9 +1146,9 @@ static unsigned char* sanitizeVirtualKeyBindings(void)
     Atom dummyAtom;
     int getFmt;
     unsigned long dummyULong, nItems;
-    unsigned char *insaneVirtKeyBindings = NULL;
+    unsigned char *insaneVirtKeyBindings = nullptr;
     
-    if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER) return NULL;
+    if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER) return nullptr;
     
     virtKeyAtom =  XInternAtom(TheDisplay, virtKeyPropName, False);
     rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
@@ -1159,7 +1159,7 @@ static unsigned char* sanitizeVirtualKeyBindings(void)
                            &dummyULong, &insaneVirtKeyBindings) != Success 
         || nItems == 0) 
     {
-        return NULL; /* No binding yet; nothing to do */
+        return nullptr; /* No binding yet; nothing to do */
     }
     
     if (overrideBindings == VIRT_KEY_OVERRIDE_AUTO)
@@ -1171,7 +1171,7 @@ static unsigned char* sanitizeVirtualKeyBindings(void)
                             PropModeReplace, insaneVirtKeyBindings, 
                             strlen((const char*)insaneVirtKeyBindings));
             XFree((char*)insaneVirtKeyBindings);
-            return NULL; /* Prevent restoration */
+            return nullptr; /* Prevent restoration */
         }
     }
     return insaneVirtKeyBindings;
@@ -1207,7 +1207,7 @@ static void showWarningFilter(String message)
     "No type converter registered for 'String' to 'PathMode' conversion.",
     "XtRemoveGrab asked to remove a widget not on the list",
 #endif
-    NULL 
+    nullptr 
   };
   const char **bogusMessage = &bogusMessages[0]; 
   

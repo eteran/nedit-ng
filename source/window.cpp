@@ -178,8 +178,8 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
 static UndoInfo *cloneUndoItems(UndoInfo *orgList);
 static Widget containingPane(Widget w);
 
-static WindowInfo *inFocusDocument = NULL;  	/* where we are now */
-static WindowInfo *lastFocusDocument = NULL;	    	/* where we came from */
+static WindowInfo *inFocusDocument = nullptr;  	/* where we are now */
+static WindowInfo *lastFocusDocument = nullptr;	    	/* where we came from */
 static int DoneWithMoveDocumentDialog;
 static int updateLineNumDisp(WindowInfo* window);
 static int updateGutterWidth(WindowInfo* window);
@@ -219,23 +219,23 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
       memset(window, 0, sizeof(WindowInfo));
          be added here ?
     */
-    window->replaceDlog = NULL;
-    window->replaceText = NULL;
-    window->replaceWithText = NULL;
-    window->replaceWordToggle = NULL;
-    window->replaceCaseToggle = NULL;
-    window->replaceRegexToggle = NULL;
-    window->findDlog = NULL;
-    window->findText = NULL;
-    window->findWordToggle = NULL;
-    window->findCaseToggle = NULL;
-    window->findRegexToggle = NULL;
-    window->replaceMultiFileDlog = NULL;
-    window->replaceMultiFilePathBtn = NULL;
-    window->replaceMultiFileList = NULL;
+    window->replaceDlog = nullptr;
+    window->replaceText = nullptr;
+    window->replaceWithText = nullptr;
+    window->replaceWordToggle = nullptr;
+    window->replaceCaseToggle = nullptr;
+    window->replaceRegexToggle = nullptr;
+    window->findDlog = nullptr;
+    window->findText = nullptr;
+    window->findWordToggle = nullptr;
+    window->findCaseToggle = nullptr;
+    window->findRegexToggle = nullptr;
+    window->replaceMultiFileDlog = nullptr;
+    window->replaceMultiFilePathBtn = nullptr;
+    window->replaceMultiFileList = nullptr;
     window->multiFileReplSelected = FALSE;
     window->multiFileBusy = FALSE;
-    window->writableWindows = NULL;
+    window->writableWindows = nullptr;
     window->nWritableWindows = 0;
     window->fileChanged = FALSE;
     window->fileMode = 0;
@@ -246,8 +246,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->lastModTime = 0;
     window->fileMissing = True;
     strcpy(window->filename, name);
-    window->undo = NULL;
-    window->redo = NULL;
+    window->undo = nullptr;
+    window->redo = nullptr;
     window->nPanes = 0;
     window->autoSaveCharCount = 0;
     window->autoSaveOpCount = 0;
@@ -265,7 +265,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->showISearchLine = GetPrefISearchLine();
     window->showLineNumbers = GetPrefLineNums();
     window->highlightSyntax = GetPrefHighlightSyntax();
-    window->backlightCharTypes = NULL;
+    window->backlightCharTypes = nullptr;
     window->backlightChars = GetPrefBacklightChars();
     if (window->backlightChars) {
         char *cTypes = GetPrefBacklightCharTypes();
@@ -275,7 +275,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
         }
     }
     window->modeMessageDisplayed = FALSE;
-    window->modeMessage = NULL;
+    window->modeMessage = nullptr;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
     window->flashTimeoutID = 0;
@@ -286,18 +286,18 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     strcpy(window->italicFontName, GetPrefItalicFontName());
     strcpy(window->boldFontName, GetPrefBoldFontName());
     strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
-    window->colorDialog = NULL;
+    window->colorDialog = nullptr;
     window->fontList = GetPrefFontList();
     window->italicFontStruct = GetPrefItalicFont();
     window->boldFontStruct = GetPrefBoldFont();
     window->boldItalicFontStruct = GetPrefBoldItalicFont();
-    window->fontDialog = NULL;
+    window->fontDialog = nullptr;
     window->nMarks = 0;
     window->markTimeoutID = 0;
-    window->highlightData = NULL;
-    window->shellCmdData = NULL;
-    window->macroCmdData = NULL;
-    window->smartIndentData = NULL;
+    window->highlightData = nullptr;
+    window->shellCmdData = nullptr;
+    window->macroCmdData = nullptr;
+    window->smartIndentData = nullptr;
     window->languageMode = PLAIN_LANGUAGE_MODE;
     window->iSearchHistIndex = 0;
     window->iSearchStartPos = -1;
@@ -307,7 +307,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     window->iSearchLastLiteralCase = FALSE;
     window->findLastRegexCase      = TRUE;
     window->findLastLiteralCase    = FALSE;
-    window->tab = NULL;
+    window->tab = nullptr;
     window->device = 0;
     window->inode = 0;
 
@@ -320,9 +320,9 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        application resource, which is pretty useless because width and height
        are the same as the rows and cols preferences, and specifying a window
        location will force all the windows to pile on top of one another */
-    if (geometry == NULL || geometry[0] == '\0')
+    if (geometry == nullptr || geometry[0] == '\0')
         geometry = GetPrefGeometry();
-    if (geometry == NULL || geometry[0] == '\0') {
+    if (geometry == nullptr || geometry[0] == '\0') {
         rows = GetPrefRows();
         cols = GetPrefCols();
         newGeometry[0] = '\0';
@@ -353,7 +353,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 #else
     XtSetArg(al[ac], XmNiconName, name); ac++;
 #endif
-    XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?NULL:newGeometry); ac++;
+    XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?nullptr:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
 
@@ -381,7 +381,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
 #ifdef EDITRES
     XtAddEventHandler (winShell, (EventMask)0, True,
-                (XtEventHandler)_XEditResCheckMessages, NULL);
+                (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif /* EDITRES */
 
 #ifndef SGI_CUSTOM
@@ -402,7 +402,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNmarginWidth, STAT_SHADOW_THICKNESS,
             XmNmarginHeight, STAT_SHADOW_THICKNESS,
             /* XmNautoUnmanage, False, */
-            NULL);
+            nullptr);
     
     /* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
        the i-search bar was active, and the i-search text widget was focussed,
@@ -423,7 +423,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    XmNtopOffset, STAT_SHADOW_THICKNESS,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNrightOffset, STAT_SHADOW_THICKNESS,
-	    XmNbottomOffset, STAT_SHADOW_THICKNESS, NULL);
+	    XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
     if(window->showISearchLine)
         XtManageChild(window->iSearchForm);
 
@@ -453,7 +453,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopOffset, 1,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, 1,
-            NULL);
+            nullptr);
     XmStringFree(s1);
 
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
@@ -468,7 +468,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightAttachment, XmATTACH_FORM,
             XmNmarginHeight, 0, 
             XmNtraversalOn, False,
-            NULL);
+            nullptr);
     XmStringFree(s1);
     
     window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
@@ -483,7 +483,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightWidget, window->iSearchCaseToggle,
             XmNmarginHeight, 0,
             XmNtraversalOn, False,
-            NULL);
+            nullptr);
     XmStringFree(s1);
     
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
@@ -497,7 +497,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightWidget, window->iSearchRegexToggle,
             XmNmarginHeight, 0,
             XmNtraversalOn, False,
-            NULL);
+            nullptr);
     XmStringFree(s1);
     
     if (isrcClear == 0) {
@@ -519,7 +519,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopOffset, 1,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, 1,
-            NULL);
+            nullptr);
     XmStringFree(s1);
 
     window->iSearchText = XtVaCreateManagedWidget("iSearchText",
@@ -534,7 +534,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopAttachment, XmATTACH_FORM,
             XmNtopOffset, 0, /* see openmotif note above */
             XmNbottomAttachment, XmATTACH_FORM,
-            XmNbottomOffset, 0, NULL);
+            XmNbottomOffset, 0, nullptr);
     RemapDeleteKey(window->iSearchText);
 
     SetISearchTextCallbacks(window);
@@ -548,7 +548,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     	    XmNresizable, False, 
             XmNleftAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_FORM,
-	    XmNshadowThickness, 0, NULL);
+	    XmNshadowThickness, 0, nullptr);
 
     /* button to close top document */
     if (closeTabPixmap == 0) {
@@ -568,7 +568,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNrightOffset, 3,
             XmNbottomAttachment, XmATTACH_FORM,	    
             XmNbottomOffset, 3,
-	    NULL);
+	    nullptr);
     XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, 
 	    mainWin);
     
@@ -584,7 +584,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNbottomAttachment, XmATTACH_FORM,
             XmNbottomOffset, 0,
             XmNtopAttachment, XmATTACH_FORM,
-	    NULL);
+	    nullptr);
 
     window->tabMenuPane = CreateTabContextMenu(window->tabBar, window);
     AddTabContextMenuAction(window->tabBar);
@@ -596,12 +596,12 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 	    xmFormWidgetClass, window->tabBar,
 	    XmNheight, 1,
 	    XmNresizable, False,
-	    NULL);
+	    nullptr);
 		
 	(void)form;
 
     XtAddCallback(window->tabBar, XmNactivateCallback,
-    	    raiseTabCB, NULL);
+    	    raiseTabCB, nullptr);
 
     window->tab = addTab(window->tabBar, name);
 
@@ -616,7 +616,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNleftAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
             XmNresizable, False,    /*  */
-            NULL);
+            nullptr);
     
     /* A separate display of the line/column number */
     window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo",
@@ -628,7 +628,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNtopAttachment, XmATTACH_FORM,
             XmNrightAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM, /*  */
-            NULL);
+            nullptr);
     XmStringFree(s1);
 
     /* Create file statistics display area.  Using a text widget rather than
@@ -638,8 +638,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        file names and line numbers.  Colors are copied from parent
        widget, because many users and some system defaults color text
        backgrounds differently from other widgets. */
-    XtVaGetValues(window->statsLineForm, XmNbackground, &bgpix, NULL);
-    XtVaGetValues(window->statsLineForm, XmNforeground, &fgpix, NULL);
+    XtVaGetValues(window->statsLineForm, XmNbackground, &bgpix, nullptr);
+    XtVaGetValues(window->statsLineForm, XmNforeground, &fgpix, nullptr);
     stats = XtVaCreateManagedWidget("statsLine", 
             xmTextWidgetClass,  window->statsLineForm,
             XmNbackground, bgpix,
@@ -663,21 +663,21 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
             XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
             XmNbottomWidget, window->statsLineColNo,
             XmNrightOffset, 3,
-            NULL);
+            nullptr);
     window->statsLine = stats;
 
     /* Give the statsLine the same font as the statsLineColNo */
-    XtVaGetValues(window->statsLineColNo, XmNfontList, &statsFontList, NULL);
-    XtVaSetValues(window->statsLine, XmNfontList, statsFontList, NULL);
+    XtVaGetValues(window->statsLineColNo, XmNfontList, &statsFontList, nullptr);
+    XtVaSetValues(window->statsLine, XmNfontList, statsFontList, nullptr);
     
     /* Manage the statsLineForm */
     if(window->showStats)
         XtManageChild(window->statsLineForm);
     
-    /* If the fontList was NULL, use the magical default provided by Motif,
+    /* If the fontList was nullptr, use the magical default provided by Motif,
        since it must have worked if we've gotten this far */
-    if (window->fontList == NULL)
-        XtVaGetValues(stats, XmNfontList, &window->fontList, NULL);
+    if (window->fontList == nullptr)
+        XtVaGetValues(stats, XmNfontList, &window->fontList, nullptr);
 
     /* Create the menu bar */
     menuBar = CreateMenuBar(mainWin, window);
@@ -687,13 +687,13 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* Create paned window to manage split pane behavior */
     pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass,  mainWin,
             XmNseparatorOn, False,
-            XmNspacing, 3, XmNsashIndent, -2, NULL);
+            XmNspacing, 3, XmNsashIndent, -2, nullptr);
     window->splitPane = pane;
-    XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, NULL, NULL, pane);
+    XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
     
     /* Store a copy of document/window pointer in text pane to support
        action procedures. See also WidgetToWindow() for info. */
-    XtVaSetValues(pane, XmNuserData, window, NULL);
+    XtVaSetValues(pane, XmNuserData, window, nullptr);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
        recognize Caps Lock and Num Lock as modifiers, and don't trigger if
@@ -804,7 +804,7 @@ static void tabClickEH(Widget w, XtPointer clientData, XEvent *event)
     /* hide the tooltip when user clicks with any button. */
     if (BubbleButton_Timer(w)) {
     	XtRemoveTimeOut(BubbleButton_Timer(w));
-    	BubbleButton_Timer(w) = (XtIntervalId)NULL;
+    	BubbleButton_Timer(w) = (XtIntervalId)nullptr;
     }
     else {
         hideTooltip(w);
@@ -832,7 +832,7 @@ static Widget addTab(Widget folder, const char *string)
 	    XltNslidingBubble, False,
 	    /* XltNdelay, 800,*/
 	    /* XltNbubbleDuration, 8000,*/
-	    NULL);
+	    nullptr);
     XmStringFree(s1);
 
     /* there's things to do as user click on the tab */
@@ -845,12 +845,12 @@ static Widget addTab(Widget folder, const char *string)
     XtVaSetValues(tooltipLabel,
     	    XmNbackground, AllocateColor(tab, GetPrefTooltipBgColor()),
     	    XmNforeground, AllocateColor(tab, NEDIT_DEFAULT_FG),
-	    NULL);
+	    nullptr);
 
     /* put borders around tooltip. BubbleButton use 
        transientShellWidgetClass as tooltip shell, which
        came without borders */
-    XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, NULL);
+    XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, nullptr);
 	
 #ifdef LESSTIF_VERSION
     /* If we don't do this, no popup when right-click on tabs */
@@ -898,7 +898,7 @@ void SortTabBar(WindowInfo *window)
 
     /* first sort the documents */
     windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
-    for (w=WindowList, i=0; w!=NULL; w=w->next) {
+    for (w=WindowList, i=0; w!=nullptr; w=w->next) {
     	if (window->shell == w->shell)
     	    windows[i++] = w;
     }
@@ -906,7 +906,7 @@ void SortTabBar(WindowInfo *window)
 
     /* assign tabs to documents in sorted order */
     XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList,
-                  XmNtabCount, &tabCount, NULL);
+                  XmNtabCount, &tabCount, nullptr);
 
     for (i=0, j=0; i<tabCount && j<nDoc; i++) {
         if (tabList[i]->core.being_destroyed)
@@ -935,7 +935,7 @@ WindowInfo *TabToWindow(Widget tab)
 	    return win;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /*
@@ -945,7 +945,7 @@ void CloseWindow(WindowInfo *window)
 {
     int keepWindow, state;
     char name[MAXPATHLEN];
-    WindowInfo *win, *topBuf = NULL, *nextBuf = NULL;
+    WindowInfo *win, *topBuf = nullptr, *nextBuf = nullptr;
 
     /* Free smart indent macro programs */
     EndSmartIndent(window);
@@ -979,7 +979,7 @@ void CloseWindow(WindowInfo *window)
 
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
-    if (keepWindow || (WindowList == window && window->next == NULL)) {
+    if (keepWindow || (WindowList == window && window->next == nullptr)) {
         window->filename[0] = '\0';
         UniqueUntitledName(name);
         CLEAR_ALL_LOCKS(window->lockReasons);
@@ -1148,7 +1148,7 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
         fullname[MAXPATHLEN] = '\0';
 
         if (0 == stat(fullname, &attribute)) {
-            for (window = WindowList; window != NULL; window = window->next) {
+            for (window = WindowList; window != nullptr; window = window->next) {
                 if (attribute.st_dev == window->device
                         && attribute.st_ino == window->inode) {
                     return window;
@@ -1158,12 +1158,12 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path)
                 whether the filename is already in use for an unsaved document.  */
     }
 
-    for (window = WindowList; window != NULL; window = window->next) {
+    for (window = WindowList; window != nullptr; window = window->next) {
         if (!strcmp(window->filename, name) && !strcmp(window->path, path)) {
             return window;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /*
@@ -1177,7 +1177,7 @@ void SplitPane(WindowInfo *window)
     int horizOffsets[MAX_PANES+1];
     int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight=0;
     char *delimiters;
-    Widget text = NULL;
+    Widget text = nullptr;
     textDisp *textD, *newTextD;
     
     /* Don't create new panes if we're already at the limit */
@@ -1190,7 +1190,7 @@ void SplitPane(WindowInfo *window)
     for (i=0; i<=window->nPanes; i++) {
         text = i==0 ? window->textArea : window->textPanes[i-1];
         insertPositions[i] = TextGetCursorPos(text);
-        XtVaGetValues(containingPane(text),XmNheight,&paneHeights[i],NULL);
+        XtVaGetValues(containingPane(text),XmNheight,&paneHeights[i],nullptr);
         totalHeight += paneHeights[i];
         TextGetScroll(text, &topLines[i], &horizOffsets[i]);
         if (text == window->lastFocus)
@@ -1204,17 +1204,17 @@ void SplitPane(WindowInfo *window)
        highlight data to be the same as the other panes in the document */
     XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist,
             textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
-            textNlineNumCols, &lineNumCols, NULL);
+            textNlineNumCols, &lineNumCols, nullptr);
     text = createTextArea(window->splitPane, window, 1, 1, emTabDist,
             delimiters, wrapMargin, lineNumCols);
     
     TextSetBuffer(text, window->buffer);
-    if (window->highlightData != NULL)
+    if (window->highlightData != nullptr)
     	AttachHighlightToWidget(text, window);
     if (window->backlightChars)
     {
         XtVaSetValues(text, textNbacklightCharTypes,
-                window->backlightCharTypes, NULL);
+                window->backlightCharTypes, nullptr);
     }
     XtManageChild(text);
     window->textPanes[window->nPanes++] = text;
@@ -1225,7 +1225,7 @@ void SplitPane(WindowInfo *window)
     XtVaSetValues(text,
                 XmNforeground, textD->fgPixel,
                 XmNbackground, textD->bgPixel,
-                NULL);
+                nullptr);
     TextDSetColors( newTextD, textD->fgPixel, textD->bgPixel, 
             textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel,
             textD->highlightBGPixel, textD->lineNumFGPixel, 
@@ -1272,7 +1272,7 @@ void SplitPane(WindowInfo *window)
 
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex)
 {
-    Widget text = NULL;
+    Widget text = nullptr;
     if (paneIndex >= 0 && paneIndex <= window->nPanes) {
         text = (paneIndex == 0) ? window->textArea : window->textPanes[paneIndex - 1];
     }
@@ -1317,7 +1317,7 @@ void ClosePane(WindowInfo *window)
         text = i==0 ? window->textArea : window->textPanes[i-1];
         insertPositions[i] = TextGetCursorPos(text);
         XtVaGetValues(containingPane(text),
-                            XmNheight, &paneHeights[i], NULL);
+                            XmNheight, &paneHeights[i], nullptr);
         TextGetScroll(text, &topLines[i], &horizOffsets[i]);
         if (text == window->lastFocus)
             focusPane = i;
@@ -1396,15 +1396,15 @@ void ShowLineNumbers(WindowInfo *window, int state)
     if (state) {
         reqCols = updateLineNumDisp(window);
     } else {
-        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+        XtVaGetValues(window->shell, XmNwidth, &windowWidth, nullptr);
         XtVaGetValues(window->textArea,
-	        textNmarginWidth, &marginWidth, NULL);
+	        textNmarginWidth, &marginWidth, nullptr);
         XtVaSetValues(window->shell, XmNwidth,
-                windowWidth - textD->left + marginWidth, NULL);
+                windowWidth - textD->left + marginWidth, nullptr);
 	
         for (i=0; i<=window->nPanes; i++) {
             text = i==0 ? window->textArea : window->textPanes[i-1];
-            XtVaSetValues(text, textNlineNumCols, 0, NULL);
+            XtVaSetValues(text, textNlineNumCols, 0, nullptr);
         }
     }
 
@@ -1419,7 +1419,7 @@ void ShowLineNumbers(WindowInfo *window, int state)
         for (i=0; i<=win->nPanes; i++) {
             text = i==0 ? win->textArea : win->textPanes[i-1];
             /*  reqCols should really be cast here, but into what? XmRInt?  */
-            XtVaSetValues(text, textNlineNumCols, reqCols, NULL);
+            XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
         }               
     }
     
@@ -1465,9 +1465,9 @@ void SetEmTabDist(WindowInfo *window, int emTabDist)
 {
     int i;
 
-    XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, NULL);
+    XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, nullptr);
     for (i = 0; i < window->nPanes; ++i) {
-        XtVaSetValues(window->textPanes[i], textNemulateTabs, emTabDist, NULL);
+        XtVaSetValues(window->textPanes[i], textNemulateTabs, emTabDist, nullptr);
     }
 }
 
@@ -1615,17 +1615,17 @@ static void showStatsForm(WindowInfo *window)
     if (manageToolBars(statsAreaForm)) {
         XtUnmanageChild(statsAreaForm);    /*... will this fix Solaris 7??? */
         XtVaSetValues(mainW, XmNcommandWindowLocation,
-                XmCOMMAND_ABOVE_WORKSPACE, NULL);
+                XmCOMMAND_ABOVE_WORKSPACE, nullptr);
 #if XmVersion < 2001
-        XtVaSetValues(mainW, XmNshowSeparator, True, NULL);
+        XtVaSetValues(mainW, XmNshowSeparator, True, nullptr);
 #endif
         XtManageChild(statsAreaForm);
-        XtVaSetValues(mainW, XmNshowSeparator, False, NULL);
+        XtVaSetValues(mainW, XmNshowSeparator, False, nullptr);
         UpdateStatsLine(window);
     } else {
         XtUnmanageChild(statsAreaForm);
         XtVaSetValues(mainW, XmNcommandWindowLocation,
-                XmCOMMAND_BELOW_WORKSPACE, NULL);
+                XmCOMMAND_BELOW_WORKSPACE, nullptr);
     }
     
     /* Tell WM that the non-expandable part of the window has changed size */
@@ -1667,7 +1667,7 @@ void ClearModeMessage(WindowInfo *window)
 
     window->modeMessageDisplayed = False;
     XtFree(window->modeMessage);
-    window->modeMessage = NULL;
+    window->modeMessage = nullptr;
     
     if (!IsTopDocument(window))
     	return;
@@ -1688,7 +1688,7 @@ int NWindows(void)
     WindowInfo *win;
     int n;
     
-    for (win=WindowList, n=0; win!=NULL; win=win->next, n++);
+    for (win=WindowList, n=0; win!=nullptr; win=win->next, n++);
     return n;
 }
 
@@ -1706,10 +1706,10 @@ void SetAutoIndent(WindowInfo *window, int state)
         BeginSmartIndent(window, True);
     window->indentStyle = state;
     XtVaSetValues(window->textArea, textNautoIndent, autoIndent,
-            textNsmartIndent, smartIndent, NULL);
+            textNsmartIndent, smartIndent, nullptr);
     for (i=0; i<window->nPanes; i++)
         XtVaSetValues(window->textPanes[i], textNautoIndent, autoIndent,
-                textNsmartIndent, smartIndent, NULL);
+                textNsmartIndent, smartIndent, nullptr);
     if (IsTopDocument(window)) {
 	XmToggleButtonSetState(window->smartIndentItem, smartIndent, False);
 	XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
@@ -1744,11 +1744,11 @@ void UpdateNewOppositeMenu(WindowInfo *window, int openInTab)
     if ( openInTab )
         XtVaSetValues(window->newOppositeItem, 
                 XmNlabelString, lbl=XmStringCreateSimple((String)"New Window"), 
-                XmNmnemonic, 'W', NULL);
+                XmNmnemonic, 'W', nullptr);
     else
         XtVaSetValues(window->newOppositeItem, 
                 XmNlabelString, lbl=XmStringCreateSimple((String)"New Tab"), 
-                XmNmnemonic, 'T', NULL);
+                XmNmnemonic, 'T', nullptr);
     XmStringFree(lbl);
 }
 
@@ -1788,14 +1788,14 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     /* Get information about the current window sizing, to be used to
        determine the correct window size after the font is changed */
     XtVaGetValues(window->shell, XmNwidth, &oldWindowWidth, XmNheight,
-            &oldWindowHeight, NULL);
+            &oldWindowHeight, nullptr);
     XtVaGetValues(window->textArea, XmNheight, &textHeight,
             textNmarginHeight, &marginHeight, textNmarginWidth,
-            &marginWidth, textNfont, &oldFont, NULL);
+            &marginWidth, textNfont, &oldFont, nullptr);
     oldTextWidth = textD->width + textD->lineNumWidth;
     oldTextHeight = textHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
-        XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, NULL);
+        XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, nullptr);
         oldTextHeight += textHeight - 2*marginHeight;
     }
     borderWidth = oldWindowWidth - oldTextWidth;
@@ -1806,14 +1806,14 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
         
     /* Change the fonts in the window data structure.  If the primary font
        didn't work, use Motif's fallback mechanism by stealing it from the
-       statistics line.  Highlight fonts are allowed to be NULL, which
+       statistics line.  Highlight fonts are allowed to be nullptr, which
        is interpreted as "use the primary font" */
     if (primaryChanged) {
         strcpy(window->fontName, fontName);
         font = XLoadQueryFont(TheDisplay, fontName);
-        if (font == NULL)
+        if (font == nullptr)
             XtVaGetValues(window->statsLine, XmNfontList, &window->fontList,
-                    NULL);
+                    nullptr);
         else
             window->fontList = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
     }
@@ -1829,14 +1829,14 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
     /* Change the primary font in all the widgets */
     if (primaryChanged) {
         font = GetDefaultFontStruct(window->fontList);
-        XtVaSetValues(window->textArea, textNfont, font, NULL);
+        XtVaSetValues(window->textArea, textNfont, font, nullptr);
         for (i=0; i<window->nPanes; i++)
-            XtVaSetValues(window->textPanes[i], textNfont, font, NULL);
+            XtVaSetValues(window->textPanes[i], textNfont, font, nullptr);
     }
     
     /* Change the highlight fonts, even if they didn't change, because
        primary font is read through the style table for syntax highlighting */
-    if (window->highlightData != NULL)
+    if (window->highlightData != nullptr)
         UpdateHighlightStyles(window);
         
     /* Change the window manager size hints. 
@@ -1856,7 +1856,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
 	newWindowHeight = (oldTextHeight*fontHeight) / oldFontHeight + 
 	        borderHeight;
 	XtVaSetValues(window->shell, XmNwidth, newWindowWidth, XmNheight,
-        	newWindowHeight, NULL);
+        	newWindowHeight, nullptr);
     }
     
     /* Change the minimum pane height */
@@ -1890,7 +1890,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
     XtVaSetValues(window->textArea,
             XmNforeground, textFgPix,
             XmNbackground, textBgPix,
-            NULL);
+            nullptr);
     textD = ((TextWidget)window->textArea)->text.textD;
     TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
             hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
@@ -1899,14 +1899,14 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg,
         XtVaSetValues(window->textPanes[i],
                 XmNforeground, textFgPix,
                 XmNbackground, textBgPix,
-                NULL);
+                nullptr);
         textD = ((TextWidget)window->textPanes[i])->text.textD;
         TextDSetColors( textD, textFgPix, textBgPix, selectFgPix, selectBgPix, 
                 hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix );
     }
     
     /* Redo any syntax highlighting */
-    if (window->highlightData != NULL)
+    if (window->highlightData != nullptr)
         UpdateHighlightStyles(window);
 }
 
@@ -1917,9 +1917,9 @@ void SetOverstrike(WindowInfo *window, int overstrike)
 {
     int i;
 
-    XtVaSetValues(window->textArea, textNoverstrike, overstrike, NULL);
+    XtVaSetValues(window->textArea, textNoverstrike, overstrike, nullptr);
     for (i=0; i<window->nPanes; i++)
-        XtVaSetValues(window->textPanes[i], textNoverstrike, overstrike, NULL);
+        XtVaSetValues(window->textPanes[i], textNoverstrike, overstrike, nullptr);
     window->overstrike = overstrike;
 }
 
@@ -1932,10 +1932,10 @@ void SetAutoWrap(WindowInfo *window, int state)
     int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;
 
     XtVaSetValues(window->textArea, textNautoWrap, autoWrap,
-            textNcontinuousWrap, contWrap, NULL);
+            textNcontinuousWrap, contWrap, nullptr);
     for (i=0; i<window->nPanes; i++)
         XtVaSetValues(window->textPanes[i], textNautoWrap, autoWrap,
-                textNcontinuousWrap, contWrap, NULL);
+                textNcontinuousWrap, contWrap, nullptr);
     window->wrapMode = state;
     
     if (IsTopDocument(window)) {
@@ -1952,9 +1952,9 @@ void SetAutoScroll(WindowInfo *window, int margin)
 {
     int i;
     
-    XtVaSetValues(window->textArea, textNcursorVPadding, margin, NULL);
+    XtVaSetValues(window->textArea, textNcursorVPadding, margin, nullptr);
     for (i=0; i<window->nPanes; i++)
-        XtVaSetValues(window->textPanes[i], textNcursorVPadding, margin, NULL);
+        XtVaSetValues(window->textPanes[i], textNcursorVPadding, margin, nullptr);
 }
     
 /*
@@ -1969,7 +1969,7 @@ void SetAutoScroll(WindowInfo *window, int margin)
 */
 WindowInfo *WidgetToWindow(Widget w)
 {
-    WindowInfo *window = NULL;
+    WindowInfo *window = nullptr;
     Widget parent;
     
     while (True) {
@@ -1982,14 +1982,14 @@ WindowInfo *WidgetToWindow(Widget w)
 
 	    /* there should be only 1 child for the shell -
 	       the main window widget */
-    	    XtVaGetValues(w, XmNchildren, &items, NULL);
+    	    XtVaGetValues(w, XmNchildren, &items, nullptr);
 	    w = items[0];
 	    break;
 	}
 	
     	parent = XtParent(w);
-    	if (parent == NULL)
-    	    return NULL;
+    	if (parent == nullptr)
+    	    return nullptr;
 	
 	/* make sure it is not a dialog shell */
     	if (XtClass(parent) == topLevelShellWidgetClass &&
@@ -1999,7 +1999,7 @@ WindowInfo *WidgetToWindow(Widget w)
     	w = parent;
     }
     
-    XtVaGetValues(w, XmNuserData, &window, NULL);
+    XtVaGetValues(w, XmNuserData, &window, nullptr);
 
     return window;
 }
@@ -2048,17 +2048,17 @@ void UpdateWindowTitle(const WindowInfo *window)
     strcpy(iconTitle, window->filename);
     if (window->fileChanged)
         strcat(iconTitle, "*");
-    XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, iconTitle, NULL);
+    XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, iconTitle, nullptr);
     
     /* If there's a find or replace dialog up in "Keep Up" mode, with a
        file name in the title, update it too */
     if (window->findDlog && XmToggleButtonGetState(window->findKeepBtn)) {
         sprintf(title, "Find (in %s)", window->filename);
-        XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, NULL);
+        XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, nullptr);
     }
     if (window->replaceDlog && XmToggleButtonGetState(window->replaceKeepBtn)) {
         sprintf(title, "Replace (in %s)", window->filename);
-        XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, NULL);
+        XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, nullptr);
     }
     XtFree(iconTitle);
 
@@ -2079,9 +2079,9 @@ void UpdateWindowReadOnly(WindowInfo *window)
     	return;
 
     state = IS_ANY_LOCKED(window->lockReasons);
-    XtVaSetValues(window->textArea, textNreadOnly, state, NULL);
+    XtVaSetValues(window->textArea, textNreadOnly, state, nullptr);
     for (i=0; i<window->nPanes; i++)
-        XtVaSetValues(window->textPanes[i], textNreadOnly, state, NULL);
+        XtVaSetValues(window->textPanes[i], textNreadOnly, state, nullptr);
     XmToggleButtonSetState(window->readOnlyItem, state, FALSE);
     XtSetSensitive(window->readOnlyItem,
         !IS_ANY_LOCKED_IGNORING_USER(window->lockReasons));
@@ -2146,7 +2146,7 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
        necessary), around 1/3 of the height of the window */
     if (!((left >= topChar && right <= lastChar) ||
             (left <= topChar && right >= lastChar))) {
-        XtVaGetValues(textPane, textNrows, &rows, NULL);
+        XtVaGetValues(textPane, textNrows, &rows, nullptr);
         scrollOffset = rows/3;
         TextGetScroll(textPane, &topLineNum, &horizOffset);
         if (right > lastChar) {
@@ -2193,7 +2193,7 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane)
             TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
         TextGetScroll(textPane, &topLineNum, &horizOffset);
         XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin,
-                NULL);
+                nullptr);
         if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
             horizOffset -=
                     margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
@@ -2215,15 +2215,15 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
     /* Create a text widget inside of a scrolled window widget */
     sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass,
             parent, XmNpaneMaximum, SHRT_MAX,
-            XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, NULL); 
+            XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr); 
     hScrollBar = XtVaCreateManagedWidget("textHorScrollBar",
             xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, 
-            XmNrepeatDelay, 10, NULL);
+            XmNrepeatDelay, 10, nullptr);
     vScrollBar = XtVaCreateManagedWidget("textVertScrollBar",
             xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL,
-            XmNrepeatDelay, 10, NULL);
+            XmNrepeatDelay, 10, nullptr);
     frame = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw,
-            XmNshadowType, XmSHADOW_IN, NULL);      
+            XmNshadowType, XmSHADOW_IN, nullptr);      
     text = XtVaCreateManagedWidget("text", textWidgetClass, frame,
             textNbacklightCharTypes, window->backlightCharTypes,
             textNrows, rows, textNcolumns, cols,
@@ -2241,10 +2241,10 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows,
             textNoverstrike, window->overstrike,
             textNhidePointer, (Boolean) GetPrefTypingHidesPointer(),
             textNcursorVPadding, GetVerticalAutoScroll(),
-            NULL);
+            nullptr);
 
     XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, 
-                    hScrollBar, XmNverticalScrollBar, vScrollBar, NULL);
+                    hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
     /* add focus, drag, cursor tracking, and smart indent callbacks */
     XtAddCallback(text, textNfocusCallback, (XtCallbackProc)focusCB, window);
@@ -2338,7 +2338,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, cons
             XtSetSensitive(window->filterItem, selected);
 
             DimSelectionDepUserMenuItems(window, selected);
-            if (window->replaceDlog != NULL && XtIsManaged(window->replaceDlog))
+            if (window->replaceDlog != nullptr && XtIsManaged(window->replaceDlog))
             {
         	UpdateReplaceActionButtons(window);
             }
@@ -2454,13 +2454,13 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
        new windows created by a restored application */
     maxArgc = 4;  /* nedit -server -svrname name */
     nWindows = 0;
-    for (win=WindowList; win!=NULL; win=win->next) {
+    for (win=WindowList; win!=nullptr; win=win->next) {
         maxArgc += 5;  /* -iconic -group -geometry WxH+x+y filename */
         nWindows++;
     }
     argv = (char **)XtMalloc(maxArgc*sizeof(char *));
     revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *)*nWindows);
-    for (win=WindowList, i=nWindows-1; win!=NULL; win=win->next, i--)
+    for (win=WindowList, i=nWindows-1; win!=nullptr; win=win->next, i--)
         revWindowList[i] = win;
         
     /* Create command line arguments for restoring each window in the list */
@@ -2475,14 +2475,14 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 
     /* editor windows are popup-shell children of top-level appShell */
     XtVaGetValues(appShell, XmNchildren, &children, 
-    	    XmNnumChildren, &nItems, NULL);
+    	    XmNnumChildren, &nItems, nullptr);
 
     for (n=nItems-1; n>=0; n--) {
     	WidgetList tabs;
 	int tabCount;
 	
 	if (strcmp(XtName(children[n]), "textShell") ||
-	  ((topWin = WidgetToWindow(children[n])) == NULL))
+	  ((topWin = WidgetToWindow(children[n])) == nullptr))
 	    continue;   /* skip non-editor windows */ 
 
 	/* create a group for each window */
@@ -2500,7 +2500,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 	
 	/* add filename of each tab in window... */
     	XtVaGetValues(topWin->tabBar, XmNtabWidgetList, &tabs,
-            	XmNtabCount, &tabCount, NULL);
+            	XmNtabCount, &tabCount, nullptr);
 
     	for (i=0; i< tabCount; i++) {
 	    win = TabToWindow(tabs[i]);
@@ -2544,7 +2544,7 @@ void AttachSessionMgrHandler(Widget appShell)
 */
 int IsIconic(WindowInfo *window)
 {
-    unsigned long *property = NULL;
+    unsigned long *property = nullptr;
     unsigned long nItems;
     unsigned long leftover;
     static Atom wmStateAtom = 0;
@@ -2557,7 +2557,7 @@ int IsIconic(WindowInfo *window)
     if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell),
             wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat,
             &nItems, &leftover, (unsigned char **)&property) != Success ||
-            nItems != 1 || property == NULL)
+            nItems != 1 || property == nullptr)
         return FALSE;
     result = *property == IconicState;
     XtFree((char *)property);
@@ -2586,7 +2586,7 @@ static void removeFromWindowList(WindowInfo *window)
     if (WindowList == window)
         WindowList = window->next;
     else {
-        for (temp = WindowList; temp != NULL; temp = temp->next) {
+        for (temp = WindowList; temp != nullptr; temp = temp->next) {
             if (temp->next == window) {
                 temp->next = window->next;
                 break;
@@ -2608,7 +2608,7 @@ static int updateGutterWidth(WindowInfo* window)
     int newColsDiff = 0;
     int maxCols = 0;
 
-    for (document = WindowList; NULL != document; document = document->next) {
+    for (document = WindowList; nullptr != document; document = document->next) {
         if (document->shell == window->shell) {
             /*  We found ourselves a document from this window.  */
             int lineNumCols, tmpReqCols;
@@ -2616,7 +2616,7 @@ static int updateGutterWidth(WindowInfo* window)
 
             XtVaGetValues(document->textArea,
                     textNlineNumCols, &lineNumCols,
-                    NULL);
+                    nullptr);
 
             /* Is the width of the line number area sufficient to display all the
                line numbers in the file?  If not, expand line number field, and the
@@ -2643,25 +2643,25 @@ static int updateGutterWidth(WindowInfo* window)
 
         newColsDiff = reqCols - maxCols;
 
-        XtVaGetValues(window->textArea, textNfont, &fs, NULL);
+        XtVaGetValues(window->textArea, textNfont, &fs, nullptr);
         fontWidth = fs->max_bounds.width;
 
-        XtVaGetValues(window->shell, XmNwidth, &windowWidth, NULL);
+        XtVaGetValues(window->shell, XmNwidth, &windowWidth, nullptr);
         XtVaSetValues(window->shell,
                 XmNwidth, (Dimension) windowWidth + (newColsDiff * fontWidth),
-                NULL);
+                nullptr);
 
         UpdateWMSizeHints(window);
     }
 
-    for (document = WindowList; NULL != document; document = document->next) {
+    for (document = WindowList; nullptr != document; document = document->next) {
         if (document->shell == window->shell) {
             Widget text;
             int i;
             int lineNumCols;
 
             XtVaGetValues(document->textArea,
-                textNlineNumCols, &lineNumCols, NULL);
+                textNlineNumCols, &lineNumCols, nullptr);
 
             if (lineNumCols == reqCols) {
                 continue;
@@ -2670,7 +2670,7 @@ static int updateGutterWidth(WindowInfo* window)
             /*  Update all panes of this document.  */
             for (i = 0; i <= document->nPanes; i++) {
                 text = 0==i ? document->textArea : document->textPanes[i-1];
-                XtVaSetValues(text, textNlineNumCols, reqCols, NULL);
+                XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
             }
         }
     }
@@ -2737,7 +2737,7 @@ void UpdateStatsLine(WindowInfo *window)
     /* Update the line/column number */
     xmslinecol = XmStringCreateSimple(slinecol);
     XtVaSetValues( window->statsLineColNo, 
-            XmNlabelString, xmslinecol, NULL );
+            XmNlabelString, xmslinecol, nullptr );
     XmStringFree(xmslinecol);
     
     /* Don't clobber the line if there's a special message being displayed */
@@ -2746,7 +2746,7 @@ void UpdateStatsLine(WindowInfo *window)
 #ifdef SGI_CUSTOM
         /* don't show full pathname, just dir and filename (+ byte info) */
         smid = strchr(string, '/'); 
-        if ( smid != NULL ) {
+        if ( smid != nullptr ) {
             sleft = smid;
             sright = strrchr(string, '/'); 
             while (strcmp(smid, sright)) {
@@ -2765,7 +2765,7 @@ void UpdateStatsLine(WindowInfo *window)
     /* Update the line/col display */
     xmslinecol = XmStringCreateSimple(slinecol);
     XtVaSetValues(window->statsLineColNo,
-            XmNlabelString, xmslinecol, NULL);
+            XmNlabelString, xmslinecol, nullptr);
     XmStringFree(xmslinecol);
 }
 
@@ -2780,7 +2780,7 @@ static long getRelTimeInTenthsOfSeconds()
 {
 #ifdef __unix__
     struct timeval current;
-    gettimeofday(&current, NULL);
+    gettimeofday(&current, nullptr);
     return (current.tv_sec*10 + current.tv_usec/100000) & 0xFFFFFFFL;
 #else
     time_t current;
@@ -2798,7 +2798,7 @@ void AllWindowsBusy(const char *message)
 	busyStartTime = getRelTimeInTenthsOfSeconds();
 	modeMessageSet = False;
         
-        for (w=WindowList; w!=NULL; w=w->next)
+        for (w=WindowList; w!=nullptr; w=w->next)
         {
             /* We don't the display message here yet, but defer it for 
                a while. If the wait is short, we don't want
@@ -2813,7 +2813,7 @@ void AllWindowsBusy(const char *message)
     } else if (!modeMessageSet && message && 
 		getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 	/* Show the mode message when we've been busy for more than a second */ 
-	for (w=WindowList; w!=NULL; w=w->next) {
+	for (w=WindowList; w!=nullptr; w=w->next) {
 	    SetModeMessage(w, message);
 	}
 	modeMessageSet = True;
@@ -2827,7 +2827,7 @@ void AllWindowsUnbusy(void)
 {
     WindowInfo *w;
 
-    for (w=WindowList; w!=NULL; w=w->next)
+    for (w=WindowList; w!=nullptr; w=w->next)
     {
         ClearModeMessage(w);
         EndWait(w->shell);
@@ -2872,7 +2872,7 @@ void UpdateWMSizeHints(WindowInfo *window)
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
     /* Find the dimensions of a single character of the text font */
-    XtVaGetValues(window->textArea, textNfont, &fs, NULL);
+    XtVaGetValues(window->textArea, textNfont, &fs, nullptr);
     fontHeight = textD->ascent + textD->descent;
     fontWidth = fs->max_bounds.width;
 
@@ -2891,20 +2891,20 @@ void UpdateWMSizeHints(WindowInfo *window)
     */
     XtVaGetValues(window->textArea, XmNheight, &textHeight,
             textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth,
-            NULL);
+            nullptr);
     totalHeight = textHeight - 2*marginHeight;
     for (i=0; i<window->nPanes; i++) {
         XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, 
-                textNhScrollBar, &hScrollBar, NULL);
+                textNhScrollBar, &hScrollBar, nullptr);
         totalHeight += textHeight - 2*marginHeight;
         if (!XtIsManaged(hScrollBar)) {
-            XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, NULL);
+            XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
             totalHeight -= hScrollBarHeight;
         }
     }
     
     XtVaGetValues(window->shell, XmNwidth, &shellWidth,
-            XmNheight, &shellHeight, NULL);
+            XmNheight, &shellHeight, nullptr);
     nCols = textD->width / fontWidth;
     nRows = totalHeight / fontHeight;
     baseWidth = shellWidth - nCols * fontWidth;
@@ -2915,7 +2915,7 @@ void UpdateWMSizeHints(WindowInfo *window)
             XmNheightInc, fontHeight,
             XmNbaseWidth, baseWidth, XmNbaseHeight, baseHeight,
             XmNminWidth, baseWidth + fontWidth,
-            XmNminHeight, baseHeight + (1+window->nPanes) * fontHeight, NULL);
+            XmNminHeight, baseHeight + (1+window->nPanes) * fontHeight, nullptr);
 
     /* Motif will keep placing this on the shell every time we change it,
        so it needs to be undone every single time.  This only seems to
@@ -2936,13 +2936,13 @@ void UpdateMinPaneHeights(WindowInfo *window)
     Widget hScrollBar;
 
     /* find the minimum allowable size for a pane */
-    XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, NULL);
+    XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, nullptr);
     XtVaGetValues(containingPane(window->textArea),
-            XmNscrolledWindowMarginHeight, &swMarginHeight, NULL);
+            XmNscrolledWindowMarginHeight, &swMarginHeight, nullptr);
     XtVaGetValues(XtParent(window->textArea),
-            XmNshadowThickness, &frameShadowHeight, NULL);
-    XtVaGetValues(window->textArea, textNmarginHeight, &marginHeight, NULL);
-    XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, NULL);
+            XmNshadowThickness, &frameShadowHeight, nullptr);
+    XtVaGetValues(window->textArea, textNmarginHeight, &marginHeight, nullptr);
+    XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, nullptr);
     minPaneHeight = textD->ascent + textD->descent + marginHeight*2 +
             swMarginHeight*2 + hsbHeight + 2*frameShadowHeight;
     
@@ -2973,7 +2973,7 @@ static void addWindowIcon(Widget shell)
                 iconBitmapWidth, iconBitmapHeight);
     }
     XtVaSetValues(shell, XmNiconPixmap, iconPixmap, XmNiconMask, maskPixmap,
-            NULL);
+            nullptr);
 }
 void AddSmallIcon(Widget shell)
 { 
@@ -2988,7 +2988,7 @@ void AddSmallIcon(Widget shell)
                 n_width, n_height);
     }
     XtVaSetValues(shell, XmNiconPixmap, iconPixmap,
-            XmNiconMask, maskPixmap, NULL);
+            XmNiconMask, maskPixmap, nullptr);
 }
 
 /* 
@@ -3007,7 +3007,7 @@ static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width,
     int depth;
 
     XtVaGetValues (w, XmNforeground, &fg, XmNbackground, &bg,
-	    XmNdepth, &depth, NULL);
+	    XmNdepth, &depth, nullptr);
     pixmap = XCreatePixmapFromBitmapData(XtDisplay(w),
             RootWindowOfScreen(XtScreen(w)), (char *)data,
             width, height, fg, bg, depth);
@@ -3049,7 +3049,7 @@ static void getGeometryString(WindowInfo *window, char *geomString)
        translate the width and height into characters, as opposed to pixels */
     XtVaGetValues(window->shell, XmNwidthInc, &fontWidth,
             XmNheightInc, &fontHeight, XmNbaseWidth, &baseWidth,
-            XmNbaseHeight, &baseHeight, NULL);
+            XmNbaseHeight, &baseHeight, nullptr);
     width = (width-baseWidth) / fontWidth;
     height = (height-baseHeight) / fontHeight;
 
@@ -3115,13 +3115,13 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
       (window->backlightCharTypes = XtMalloc(strlen(applyBacklightTypes)+1)))
       strcpy(window->backlightCharTypes, applyBacklightTypes);
     else
-      window->backlightCharTypes = NULL;
+      window->backlightCharTypes = nullptr;
 
     XtVaSetValues(window->textArea,
-          textNbacklightCharTypes, window->backlightCharTypes, NULL);
+          textNbacklightCharTypes, window->backlightCharTypes, nullptr);
     for (i=0; i<window->nPanes; i++)
       XtVaSetValues(window->textPanes[i],
-              textNbacklightCharTypes, window->backlightCharTypes, NULL);
+              textNbacklightCharTypes, window->backlightCharTypes, nullptr);
     if (is_applied != do_apply)
       SetToggleButtonState(window, window->backlightCharsItem, do_apply, False);
 }
@@ -3148,12 +3148,12 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes)
 */
 static Widget manageToolBars(Widget toolBarsForm)
 {
-    Widget topWidget = NULL;
+    Widget topWidget = nullptr;
     WidgetList children;
     int n, nItems=0;
 
     XtVaGetValues(toolBarsForm, XmNchildren, &children, 
-    	    XmNnumChildren, &nItems, NULL);
+    	    XmNnumChildren, &nItems, nullptr);
 
     for (n=0; n<nItems; n++) {
     	Widget tbar = children[n];
@@ -3165,7 +3165,7 @@ static Widget manageToolBars(Widget toolBarsForm)
 		    	XmNbottomAttachment, XmATTACH_NONE,
 	    	    	XmNleftOffset, STAT_SHADOW_THICKNESS,
 	    	    	XmNrightOffset, STAT_SHADOW_THICKNESS,			
-			NULL);
+			nullptr);
 	    }
 	    else {
 	    	/* the very first toolbar on top */
@@ -3174,7 +3174,7 @@ static Widget manageToolBars(Widget toolBarsForm)
 	    	    	XmNleftOffset, STAT_SHADOW_THICKNESS,
 	    	    	XmNtopOffset, STAT_SHADOW_THICKNESS,			
 	    	    	XmNrightOffset, STAT_SHADOW_THICKNESS,			
-			NULL);
+			nullptr);
 	    }
 
 	    topWidget = tbar;	    
@@ -3190,7 +3190,7 @@ static Widget manageToolBars(Widget toolBarsForm)
 	       later, it will trigger the parent form to resize properly as
 	       if the widget is being inserted */
 	    XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE,
-		    XmNbottomAttachment, XmATTACH_FORM, NULL);
+		    XmNbottomAttachment, XmATTACH_FORM, nullptr);
 	    
 	    /* if the next widget is a separator, turn it off */
 	    if (n+1<nItems && !strcmp(XtName(children[n+1]), "TOOLBAR_SEP")) {
@@ -3204,19 +3204,19 @@ static Widget manageToolBars(Widget toolBarsForm)
 	    XtVaSetValues(topWidget, 
 		    XmNbottomAttachment, XmATTACH_FORM,
 		    XmNbottomOffset, STAT_SHADOW_THICKNESS,
-		    NULL);
+		    nullptr);
 	}
 	else {
 	    /* is a separator */
 	    Widget wgt;
-	    XtVaGetValues(topWidget, XmNtopWidget, &wgt, NULL);
+	    XtVaGetValues(topWidget, XmNtopWidget, &wgt, nullptr);
 	    
 	    /* don't need sep below bottom-most toolbar */
 	    XtUnmanageChild(topWidget);
 	    XtVaSetValues(wgt, 
 		    XmNbottomAttachment, XmATTACH_FORM,
 		    XmNbottomOffset, STAT_SHADOW_THICKNESS,
-		    NULL);
+		    nullptr);
 	}
     }
     
@@ -3235,14 +3235,14 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols)
     textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
     /* width is the same for panes */
-    XtVaGetValues(window->textArea, textNcolumns, nCols, NULL);
+    XtVaGetValues(window->textArea, textNcolumns, nCols, nullptr);
     
     /* we have to work out the height, as the text area may have been split */
     XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar,
             textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth,
-	    NULL);
-    XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, NULL);
-    XtVaGetValues(window->splitPane, XmNheight, &paneHeight, NULL);
+	    nullptr);
+    XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
+    XtVaGetValues(window->splitPane, XmNheight, &paneHeight, nullptr);
     totalHeight = paneHeight - 2*marginHeight -hScrollBarHeight;
     fontHeight = textD->ascent + textD->descent;
     *nRows = totalHeight/fontHeight;
@@ -3269,20 +3269,20 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     
 #if 0
     /* share these dialog items with parent shell */
-    window->replaceDlog = NULL;
-    window->replaceText = NULL;
-    window->replaceWithText = NULL;
-    window->replaceWordToggle = NULL;
-    window->replaceCaseToggle = NULL;
-    window->replaceRegexToggle = NULL;
-    window->findDlog = NULL;
-    window->findText = NULL;
-    window->findWordToggle = NULL;
-    window->findCaseToggle = NULL;
-    window->findRegexToggle = NULL;
-    window->replaceMultiFileDlog = NULL;
-    window->replaceMultiFilePathBtn = NULL;
-    window->replaceMultiFileList = NULL;
+    window->replaceDlog = nullptr;
+    window->replaceText = nullptr;
+    window->replaceWithText = nullptr;
+    window->replaceWordToggle = nullptr;
+    window->replaceCaseToggle = nullptr;
+    window->replaceRegexToggle = nullptr;
+    window->findDlog = nullptr;
+    window->findText = nullptr;
+    window->findWordToggle = nullptr;
+    window->findCaseToggle = nullptr;
+    window->findRegexToggle = nullptr;
+    window->replaceMultiFileDlog = nullptr;
+    window->replaceMultiFilePathBtn = nullptr;
+    window->replaceMultiFileList = nullptr;
     window->showLineNumbers = GetPrefLineNums();
     window->showStats = GetPrefStatsLine();
     window->showISearchLine = GetPrefISearchLine();
@@ -3290,7 +3290,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
 
     window->multiFileReplSelected = FALSE;
     window->multiFileBusy = FALSE;
-    window->writableWindows = NULL;
+    window->writableWindows = nullptr;
     window->nWritableWindows = 0;
     window->fileChanged = FALSE;
     window->fileMissing = True;
@@ -3301,8 +3301,8 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     window->fileFormat = UNIX_FILE_FORMAT;
     window->lastModTime = 0;
     strcpy(window->filename, name);
-    window->undo = NULL;
-    window->redo = NULL;
+    window->undo = nullptr;
+    window->redo = nullptr;
     window->nPanes = 0;
     window->autoSaveCharCount = 0;
     window->autoSaveOpCount = 0;
@@ -3317,7 +3317,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     window->showMatchingStyle = GetPrefShowMatching();
     window->matchSyntaxBased = GetPrefMatchSyntaxBased();
     window->highlightSyntax = GetPrefHighlightSyntax();
-    window->backlightCharTypes = NULL;
+    window->backlightCharTypes = nullptr;
     window->backlightChars = GetPrefBacklightChars();
     if (window->backlightChars) {
       char *cTypes = GetPrefBacklightCharTypes();
@@ -3327,7 +3327,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
       }
     }
     window->modeMessageDisplayed = FALSE;
-    window->modeMessage = NULL;
+    window->modeMessage = nullptr;
     window->ignoreModify = FALSE;
     window->windowMenuValid = FALSE;
     window->flashTimeoutID = 0;
@@ -3337,18 +3337,18 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     strcpy(window->italicFontName, GetPrefItalicFontName());
     strcpy(window->boldFontName, GetPrefBoldFontName());
     strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
-    window->colorDialog = NULL;
+    window->colorDialog = nullptr;
     window->fontList = GetPrefFontList();
     window->italicFontStruct = GetPrefItalicFont();
     window->boldFontStruct = GetPrefBoldFont();
     window->boldItalicFontStruct = GetPrefBoldItalicFont();
-    window->fontDialog = NULL;
+    window->fontDialog = nullptr;
     window->nMarks = 0;
     window->markTimeoutID = 0;
-    window->highlightData = NULL;
-    window->shellCmdData = NULL;
-    window->macroCmdData = NULL;
-    window->smartIndentData = NULL;
+    window->highlightData = nullptr;
+    window->shellCmdData = nullptr;
+    window->macroCmdData = nullptr;
+    window->smartIndentData = nullptr;
     window->languageMode = PLAIN_LANGUAGE_MODE;
     window->iSearchHistIndex = 0;
     window->iSearchStartPos = -1;
@@ -3358,15 +3358,15 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     window->iSearchLastLiteralCase = FALSE;
     window->findLastRegexCase      = TRUE;
     window->findLastLiteralCase    = FALSE;
-    window->tab = NULL;
-    window->bgMenuUndoItem = NULL;
-    window->bgMenuRedoItem = NULL;
+    window->tab = nullptr;
+    window->bgMenuUndoItem = nullptr;
+    window->bgMenuRedoItem = nullptr;
     window->device = 0;
     window->inode = 0;
 
-    if (window->fontList == NULL)
+    if (window->fontList == nullptr)
         XtVaGetValues(shellWindow->statsLine, XmNfontList, 
-    	    	&window->fontList,NULL);
+    	    	&window->fontList,nullptr);
 
     getTextPaneDimension(shellWindow, &nRows, &nCols);
     
@@ -3385,14 +3385,14 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     	    XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
     	    XmNspacing, 3, XmNsashIndent, -2,
 	    XmNmappedWhenManaged, False,
-	    NULL);
-    XtVaSetValues(window->mainWin, XmNworkWindow, pane, NULL);
+	    nullptr);
+    XtVaSetValues(window->mainWin, XmNworkWindow, pane, nullptr);
     XtManageChild(pane);
     window->splitPane = pane;
     
     /* Store a copy of document/window pointer in text pane to support
        action procedures. See also WidgetToWindow() for info. */
-    XtVaSetValues(pane, XmNuserData, window, NULL);
+    XtVaSetValues(pane, XmNuserData, window, nullptr);
 
     /* Patch around Motif's most idiotic "feature", that its menu accelerators
        recognize Caps Lock and Num Lock as modifiers, and don't trigger if
@@ -3471,10 +3471,10 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
 #endif /* LESSTIF_VERSION */
 
     /* return the shell ownership to previous tabbed doc */
-    XtVaSetValues(window->mainWin, XmNworkWindow, shellWindow->splitPane, NULL);
+    XtVaSetValues(window->mainWin, XmNworkWindow, shellWindow->splitPane, nullptr);
     XLowerWindow(TheDisplay, XtWindow(window->splitPane));
     XtUnmanageChild(window->splitPane);
-    XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, NULL);
+    XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, nullptr);
     
     return window;
 }
@@ -3498,7 +3498,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     int nBuf = crossWin? NWindows() : NDocuments(window);
 
     if (nBuf <= 1)
-    	return NULL;
+    	return nullptr;
 
     /* get the list of tabs */
     tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
@@ -3508,16 +3508,16 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
 	WidgetList children;
 
 	XtVaGetValues(TheAppShell, XmNchildren, &children, 
-    		XmNnumChildren, &nItems, NULL);
+    		XmNnumChildren, &nItems, nullptr);
 	
 	/* get list of tabs in all windows */
     	for (n=0; n<nItems; n++) {
 	    if (strcmp(XtName(children[n]), "textShell") ||
-	      ((win = WidgetToWindow(children[n])) == NULL))
+	      ((win = WidgetToWindow(children[n])) == nullptr))
 	    	continue;   /* skip non-text-editor windows */ 
 	    
     	    XtVaGetValues(win->tabBar, XmNtabWidgetList, &tabList,
-            	    XmNtabCount, &tabCount, NULL);
+            	    XmNtabCount, &tabCount, nullptr);
 	    
     	    for (i=0; i< tabCount; i++) {
 	    	tabs[tabTotalCount++] = tabList[i];
@@ -3527,7 +3527,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction,
     else {
 	/* get list of tabs in this window */
     	XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList,
-            	XmNtabCount, &tabCount, NULL);
+            	XmNtabCount, &tabCount, nullptr);
 
     	for (i=0; i< tabCount; i++) {
 	    if (TabToWindow(tabList[i]))    /* make sure tab is valid */
@@ -3575,7 +3575,7 @@ static int getTabPosition(Widget tab)
     Widget tabBar = XtParent(tab);
     
     XtVaGetValues(tabBar, XmNtabWidgetList, &tabList,
-            XmNtabCount, &tabCount, NULL);
+            XmNtabCount, &tabCount, nullptr);
 
     for (i=0; i< tabCount; i++) {
     	if (tab == tabList[i])
@@ -3597,7 +3597,7 @@ void RefreshTabState(WindowInfo *win)
 
     /* Set tab label to document's filename. Position of
        "*" (modified) will change per label alignment setting */
-    XtVaGetValues(win->tab, XmNalignment, &alignment, NULL);
+    XtVaGetValues(win->tab, XmNalignment, &alignment, nullptr);
     if (alignment != XmALIGNMENT_END) {
        sprintf(labelString, "%s%s",
                win->fileChanged? "*" : "",
@@ -3623,7 +3623,7 @@ void RefreshTabState(WindowInfo *win)
     XtVaSetValues(win->tab,
 	    XltNbubbleString, tipString,
 	    XmNlabelString, s1,
-	    NULL);
+	    nullptr);
     XmStringFree(s1);
     XmStringFree(tipString);
 }
@@ -3694,7 +3694,7 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
     if (nDocuments == NWindows()) {
     	/* this is only window, then exit */
 	XtCallActionProc(WindowList->lastFocus, "exit",
-    		((XmAnyCallbackStruct *)callData)->event, NULL, 0);
+    		((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
     }
     else {
         if (nDocuments == 1) {
@@ -3727,8 +3727,8 @@ void RefreshMenuToggleStates(WindowInfo *window)
     XtSetSensitive(window->printSelItem, window->wasSelected);
 
     /* Edit menu */
-    XtSetSensitive(window->undoItem, window->undo != NULL);
-    XtSetSensitive(window->redoItem, window->redo != NULL);
+    XtSetSensitive(window->undoItem, window->undo != nullptr);
+    XtSetSensitive(window->redoItem, window->redo != nullptr);
     XtSetSensitive(window->printSelItem, window->wasSelected);
     XtSetSensitive(window->cutItem, window->wasSelected);
     XtSetSensitive(window->copyItem, window->wasSelected);
@@ -3764,7 +3764,7 @@ void RefreshMenuToggleStates(WindowInfo *window)
     for (win=WindowList; win; win=win->next)
     	if (win->shell != window->shell)  
 	    break;
-    XtSetSensitive(window->moveDocumentItem, win != NULL);
+    XtSetSensitive(window->moveDocumentItem, win != nullptr);
 }
 
 /*
@@ -3815,11 +3815,11 @@ void NextDocument(WindowInfo *window)
 {
     WindowInfo *win;
     
-    if (WindowList->next == NULL)
+    if (WindowList->next == nullptr)
     	return;
 
     win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate(), 1);
-    if (win == NULL)
+    if (win == nullptr)
     	return;
 	
     if (window->shell == win->shell)
@@ -3835,11 +3835,11 @@ void PreviousDocument(WindowInfo *window)
 {
     WindowInfo *win;
     
-    if (WindowList->next == NULL)
+    if (WindowList->next == nullptr)
     	return;
 
     win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate(), 1);
-    if (win == NULL)
+    if (win == nullptr)
     	return;
 	
     if (window->shell == win->shell)
@@ -3920,10 +3920,10 @@ static void redisplayTearOffs(Widget menuPane)
 
     /* redisplay all submenu tearoffs */
     XtVaGetValues(menuPane, XmNchildren, &itemList, 
-            XmNnumChildren, &nItems, NULL);
+            XmNnumChildren, &nItems, nullptr);
     for (n=0; n<(int)nItems; n++) {
     	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
-	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
+	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
 	    redisplayTearOffs(subMenuID);
 	}
     }
@@ -3946,10 +3946,10 @@ static void hideTearOffs(Widget menuPane)
 
     /* hide all submenu tearoffs */
     XtVaGetValues(menuPane, XmNchildren, &itemList, 
-            XmNnumChildren, &nItems, NULL);
+            XmNnumChildren, &nItems, nullptr);
     for (n=0; n<(int)nItems; n++) {
     	if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
-	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, NULL);
+	    XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
 	    hideTearOffs(subMenuID);
 	}
     }
@@ -3977,15 +3977,15 @@ void RaiseDocument(WindowInfo *window)
     	MarkLastDocument(lastwin);
 
     /* document already on top? */
-    XtVaGetValues(window->mainWin, XmNuserData, &win, NULL);
+    XtVaGetValues(window->mainWin, XmNuserData, &win, nullptr);
     if (win == window)
     	return;    
 
     /* set the document as top document */
-    XtVaSetValues(window->mainWin, XmNuserData, window, NULL);
+    XtVaSetValues(window->mainWin, XmNuserData, window, nullptr);
     
     /* show the new top document */ 
-    XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, NULL);
+    XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, nullptr);
     XtManageChild(window->splitPane);
     XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
 
@@ -3994,7 +3994,7 @@ void RaiseDocument(WindowInfo *window)
            XmNworkWindow and managed, else the parent shell 
 	   window may shrink on some window-managers such as 
 	   metacity, due to changes made in UpdateWMSizeHints().*/
-    if (window->highlightSyntax && window->highlightData==NULL)
+    if (window->highlightSyntax && window->highlightData==nullptr)
     	StartHighlighting(window, False);
 
     /* put away the bg menu tearoffs of last active document */
@@ -4036,7 +4036,7 @@ void RaiseDocument(WindowInfo *window)
 
     /* Make sure that the "In Selection" button tracks the presence of a
        selection and that the window inherits the proper search scope. */
-    if (window->replaceDlog != NULL && XtIsManaged(window->replaceDlog))
+    if (window->replaceDlog != nullptr && XtIsManaged(window->replaceDlog))
     {
 #ifdef REPLACE_SCOPE
         window->replaceScope = win->replaceScope;
@@ -4061,7 +4061,7 @@ Boolean IsTopDocument(const WindowInfo *window)
 
 static void deleteDocument(WindowInfo *window)
 {
-    if (NULL == window) {
+    if (nullptr == window) {
         return;
     }
 
@@ -4161,7 +4161,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
     for (i=0; i<=orgWin->nPanes; i++) {
     	text = i==0 ? orgWin->textArea : orgWin->textPanes[i-1];
     	insertPositions[i] = TextGetCursorPos(text);
-    	XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], NULL);
+    	XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
     	totalHeight += paneHeights[i];
     	TextGetScroll(text, &topLines[i], &horizOffsets[i]);
     	if (text == orgWin->lastFocus)
@@ -4173,11 +4173,11 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
     /* Copy some parameters */
     XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist,
     	    textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin,
-            NULL);
+            nullptr);
     lineNumCols = orgWin->showLineNumbers ? MIN_LINE_NUM_COLS : 0;
     XtVaSetValues(window->textArea, textNemulateTabs, emTabDist,
     	    textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin,
-	    textNlineNumCols, lineNumCols, NULL);
+	    textNlineNumCols, lineNumCols, nullptr);
     
     
     /* clone split panes, if any */
@@ -4195,7 +4195,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
     		    delimiters, wrapMargin, lineNumCols);
 	    TextSetBuffer(text, window->buffer);
 
-	    if (window->highlightData != NULL)
+	    if (window->highlightData != nullptr)
     		AttachHighlightToWidget(text, window);
 	    XtManageChild(text);
 	    window->textPanes[i] = text;
@@ -4203,7 +4203,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
             /* Fix up the colors */
             newTextD = ((TextWidget)text)->text.textD;
             XtVaSetValues(text, XmNforeground, textD->fgPixel,
-                    XmNbackground, textD->bgPixel, NULL);
+                    XmNbackground, textD->bgPixel, nullptr);
             TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, 
                     textD->selectFGPixel, textD->selectBGPixel,
                     textD->highlightFGPixel,textD->highlightBGPixel,
@@ -4276,7 +4276,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     /* copy the tab preferences (here!) */
     BufSetTabDistance(window->buffer, orgWin->buffer->tabDist);
     window->buffer->useTabs = orgWin->buffer->useTabs;
-    XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, NULL);
+    XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, nullptr);
     SetEmTabDist(window, emTabDist);
     
     window->ignoreModify = False;
@@ -4286,7 +4286,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     params[1] = orgWin->italicFontName;
     params[2] = orgWin->boldFontName;
     params[3] = orgWin->boldItalicFontName;
-    XtCallActionProc(window->textArea, "set_fonts", NULL, params, 4);
+    XtCallActionProc(window->textArea, "set_fonts", nullptr, params, 4);
 
     SetBacklightChars(window, orgWin->backlightCharTypes);
     
@@ -4382,7 +4382,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 
 static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 {
-    UndoInfo *head = NULL, *undo, *clone, *last = NULL;
+    UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
 
     for (undo = orgList; undo; undo = undo->next) {
 	clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
@@ -4392,7 +4392,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 	    clone->oldText = XtMalloc(strlen(undo->oldText)+1);
 	    strcpy(clone->oldText, undo->oldText);
 	}
-	clone->next = NULL;
+	clone->next = nullptr;
 
 	if (last)
 	    last->next = clone;
@@ -4410,10 +4410,10 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
 */
 WindowInfo *DetachDocument(WindowInfo *window)
 {
-    WindowInfo *win = NULL, *cloneWin;
+    WindowInfo *win = nullptr, *cloneWin;
     
     if (NDocuments(window) < 2)
-    	return NULL;
+    	return nullptr;
 
     /* raise another document in the same shell window if the window
        being detached is the top document */
@@ -4423,7 +4423,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
     }
     
     /* Create a new window */
-    cloneWin = CreateWindow(window->filename, NULL, False);
+    cloneWin = CreateWindow(window->filename, nullptr, False);
     
     /* CreateWindow() simply adds the new window's pointer to the
        head of WindowList. We need to adjust the detached window's 
@@ -4469,7 +4469,7 @@ WindowInfo *DetachDocument(WindowInfo *window)
 */
 WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window)
 {
-    WindowInfo *win = NULL, *cloneWin;
+    WindowInfo *win = nullptr, *cloneWin;
 
     /* prepare to move document */
     if (NDocuments(window) < 2) {
@@ -4533,7 +4533,7 @@ void MoveDocumentDialog(WindowInfo *window)
     int i, nList=0, nWindows=0, ac;
     char tmpStr[MAXPATHLEN+50];
     Widget parent, dialog, listBox, moveAllOption;
-    XmString *list = NULL;
+    XmString *list = nullptr;
     XmString popupTitle, s1;
     Arg csdargs[20];
     int *position_list, position_count;
@@ -4597,7 +4597,7 @@ void MoveDocumentDialog(WindowInfo *window)
     	    xmToggleButtonWidgetClass, dialog,
 	    XmNlabelString, s1,
 	    XmNalignment, XmALIGNMENT_BEGINNING,
-	    NULL);
+	    nullptr);
     XmStringFree(s1);
     
     if (NDocuments(window) >1)
@@ -4607,7 +4607,7 @@ void MoveDocumentDialog(WindowInfo *window)
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
     s1 = MKSTRING((String)"Move");
-    XtVaSetValues (dialog, XmNokLabelString, s1, NULL);
+    XtVaSetValues (dialog, XmNokLabelString, s1, nullptr);
     XmStringFree(s1);
     
     /* default to the first window on the list */
@@ -4707,7 +4707,7 @@ static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData)
     WidgetList tabList;
     Widget tab;
 
-    XtVaGetValues(w, XmNtabWidgetList, &tabList, NULL);
+    XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
     tab = tabList[cbs->pos];
     RaiseDocument(TabToWindow(tab));
 }
@@ -4758,7 +4758,7 @@ void CleanUpTabBarExposeQueue(WindowInfo *window)
     XExposeEvent ev;
     int count;
     
-    if (window == NULL)
+    if (window == nullptr)
     	return;
     
     /* remove redundant expose events on tab bar */

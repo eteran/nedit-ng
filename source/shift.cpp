@@ -104,7 +104,7 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
     
     /* shift the text by the appropriate distance */
     if (byTab) {
-    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, NULL);
+    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
     	shiftDist = emTabDist == 0 ? buf->tabDist : emTabDist;
     } else
     	shiftDist = 1;
@@ -131,7 +131,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     
     /* Calculate the the left/right offset for the new rectangle */
     if (byTab) {
-    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, NULL);
+    	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
     	offset = emTabDist == 0 ? buf->tabDist : emTabDist;
     } else
     	offset = 1;
@@ -151,7 +151,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     /* Do the shift in the temporary buffer */
     text = BufGetTextInRect(buf, selStart, selEnd, rectStart, rectEnd);
     BufRemoveRect(tempBuf, 0, selEnd-selStart, rectStart, rectEnd);
-    BufInsertCol(tempBuf, rectStart+offset, 0, text, NULL, NULL);
+    BufInsertCol(tempBuf, rectStart+offset, 0, text, nullptr, nullptr);
     XtFree(text);
     
     /* Make the change in the real buffer */
@@ -265,7 +265,7 @@ void FillSelection(WindowInfo *window)
         XtVaGetValues(window->textArea,
                 textNcolumns, &nCols,
                 textNwrapMargin, &wrapMargin,
-                NULL);
+                nullptr);
         rightMargin = (wrapMargin == 0 ? nCols : wrapMargin);
     }
     
@@ -724,7 +724,7 @@ static int findParagraphEnd(textBuffer *buf, int startPos)
     	c = BufGetCharacter(buf, pos);
     	if (c == '\n')
     	    break;
-    	if (strchr(whiteChars, c) != NULL)
+    	if (strchr(whiteChars, c) != nullptr)
     	    pos++;
     	else
     	    pos = BufEndOfLine(buf, pos)+1;
@@ -745,7 +745,7 @@ static int findParagraphStart(textBuffer *buf, int startPos)
     	c = BufGetCharacter(buf, pos);
     	if (c == '\n')
     	    break;
-    	if (strchr(whiteChars, c) != NULL)
+    	if (strchr(whiteChars, c) != nullptr)
     	    pos--;
     	else {
     	    parStart = BufStartOfLine(buf, pos);

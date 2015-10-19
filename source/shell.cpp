@@ -145,7 +145,7 @@ void FilterSelection(WindowInfo *window, const char *command, int fromMacro)
     char *text;
 
     /* Can't do two shell commands at once in the same window */
-    if (window->shellCmdData != NULL) {
+    if (window->shellCmdData != nullptr) {
     	XBell(TheDisplay, 0);
     	return;
     }
@@ -181,7 +181,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
     char lineNumber[11];
 
     /* Can't do two shell commands at once in the same window */
-    if (window->shellCmdData != NULL) {
+    if (window->shellCmdData != nullptr) {
     	XBell(TheDisplay, 0);
     	return;
     }
@@ -201,7 +201,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-    if (subsCommand == NULL)
+    if (subsCommand == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
@@ -211,7 +211,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro)
     }
 
     /* issue the command */
-    issueCommand(window, subsCommand, NULL, 0, flags, window->lastFocus, left,
+    issueCommand(window, subsCommand, nullptr, 0, flags, window->lastFocus, left,
 	    right, fromMacro);
     free(subsCommand);
 }
@@ -227,11 +227,11 @@ void ShellCmdToMacroString(WindowInfo *window, const char *command,
     
     /* Make a copy of the input string for issueCommand to hold and free
        upon completion */
-    inputCopy = *input == '\0' ? NULL : XtNewString(input);
+    inputCopy = *input == '\0' ? nullptr : XtNewString(input);
     
     /* fork the command and begin processing input/output */
     issueCommand(window, command, inputCopy, strlen(input),
-	    ACCUMULATE | OUTPUT_TO_STRING, NULL, 0, 0, True);
+	    ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
 }
 
 /*
@@ -247,7 +247,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     char lineNumber[11];
 
     /* Can't do two shell commands at once in the same window */
-    if (window->shellCmdData != NULL) {
+    if (window->shellCmdData != nullptr) {
     	XBell(TheDisplay, 0);
     	return;
     }
@@ -275,7 +275,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(cmdText, fullName, lineNumber);
-    if (subsCommand == NULL)
+    if (subsCommand == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
@@ -285,7 +285,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     }
 
     /* issue the command */
-    issueCommand(window, subsCommand, NULL, 0, 0, window->lastFocus, insertPos+1,
+    issueCommand(window, subsCommand, nullptr, 0, 0, window->lastFocus, insertPos+1,
 	    insertPos+1, fromMacro);
     free(subsCommand);
     XtFree(cmdText);
@@ -310,7 +310,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     Widget outWidget;
 
     /* Can't do two shell commands at once in the same window */
-    if (window->shellCmdData != NULL) {
+    if (window->shellCmdData != nullptr) {
     	XBell(TheDisplay, 0);
     	return;
     }
@@ -324,7 +324,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     sprintf(lineNumber, "%d", line);
     
     subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-    if (subsCommand == NULL)
+    if (subsCommand == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
                 "Shell command is too long due to\n"
@@ -355,11 +355,11 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
     	}
     	flags |= ACCUMULATE | ERROR_DIALOGS;
     } else /* FROM_NONE */
-    	text = NULL;
+    	text = nullptr;
     
     /* If the buffer was substituting another character for ascii-nuls,
        put the nuls back in before exporting the text */
-    if (text != NULL) {
+    if (text != nullptr) {
 	textLen = strlen(text);
 	BufUnsubstituteNullChars(text, window->buffer);
     } else
@@ -369,11 +369,11 @@ void DoShellMenuCmd(WindowInfo *window, const char *command,
        create it, and run the command from it instead of the current
        one, to free the current one from waiting for lengthy execution */
     if (output == TO_DIALOG) {
-    	outWidget = NULL;
+    	outWidget = nullptr;
 	flags |= OUTPUT_TO_DIALOG;
     	left = right = 0;
     } else if (output == TO_NEW_WINDOW) {
-    	EditNewFile(GetPrefOpenInTab()?inWindow:NULL, NULL, False, NULL, window->path);
+    	EditNewFile(GetPrefOpenInTab()?inWindow:nullptr, nullptr, False, nullptr, window->path);
     	outWidget = WindowList->textArea;
 	inWindow = WindowList;
     	left = right = 0;
@@ -431,7 +431,7 @@ void AbortShellCommand(WindowInfo *window)
 {
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 
-    if (cmdData == NULL)
+    if (cmdData == nullptr)
     	return;
     kill(- cmdData->childPid, SIGTERM);
     finishCmdExecution(window, True);
@@ -442,7 +442,7 @@ void AbortShellCommand(WindowInfo *window)
 ** directed either to text widget "textW" where it replaces the text between
 ** the positions "replaceLeft" and "replaceRight", to a separate pop-up dialog
 ** (OUTPUT_TO_DIALOG), or to a macro-language string (OUTPUT_TO_STRING).  If
-** "input" is NULL, no input is fed to the process.  If an input string is
+** "input" is nullptr, no input is fed to the process.  If an input string is
 ** provided, it is freed when the command completes.  Flags:
 **
 **   ACCUMULATE     	Causes output from the command to be saved up until
@@ -490,7 +490,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
 
     /* fork the subprocess and issue the command */
     childPid = forkCommand(window->shell, command, window->path, &stdinFD,
-	    &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : NULL);
+	    &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
     
     /* set the pipes connected to the process for non-blocking i/o */
     if (fcntl(stdinFD, F_SETFL, O_NONBLOCK) < 0)
@@ -503,7 +503,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     }
     
     /* if there's nothing to write to the process' stdin, close it now */
-    if (input == NULL)
+    if (input == nullptr)
     	close(stdinFD);
     
     /* Create a data structure for passing process information around
@@ -515,8 +515,8 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     cmdData->stdoutFD = stdoutFD;
     cmdData->stderrFD = stderrFD;
     cmdData->childPid = childPid;
-    cmdData->outBufs = NULL;
-    cmdData->errBufs = NULL;
+    cmdData->outBufs = nullptr;
+    cmdData->errBufs = nullptr;
     cmdData->input = input;
     cmdData->inPtr = input;
     cmdData->textW = textW;
@@ -534,7 +534,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     	    	bannerTimeoutProc, window);
 
     /* Set up timer proc for flushing output buffers periodically */
-    if ((flags & ACCUMULATE) || textW == NULL)
+    if ((flags & ACCUMULATE) || textW == nullptr)
     	cmdData->flushTimeoutID = 0;
     else
 	cmdData->flushTimeoutID = XtAppAddTimeOut(context, OUTPUT_FLUSH_FREQ,
@@ -543,7 +543,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
     /* set up callbacks for activity on the file descriptors */
     cmdData->stdoutInputID = XtAppAddInput(context, stdoutFD,
     	    (XtPointer)XtInputReadMask, stdoutReadProc, window);
-    if (input != NULL)
+    if (input != nullptr)
     	cmdData->stdinInputID = XtAppAddInput(context, stdinFD,
     	    	(XtPointer)XtInputWriteMask, stdinWriteProc, window);
     else
@@ -660,7 +660,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 	    XtRemoveInput(cmdData->stdinInputID);
 	    cmdData->stdinInputID = 0;
     	    close(cmdData->stdinFD);
-    	    cmdData->inPtr = NULL;
+    	    cmdData->inPtr = nullptr;
     	} else if (errno != EWOULDBLOCK && errno != EAGAIN) {
     	    perror("nedit: Write to shell command failed");
     	    finishCmdExecution(window, True);
@@ -672,7 +672,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 	    XtRemoveInput(cmdData->stdinInputID);
 	    cmdData->stdinInputID = 0;
     	    close(cmdData->stdinFD);
-    	    cmdData->inPtr = NULL;
+    	    cmdData->inPtr = nullptr;
     	}
     }
 }
@@ -693,7 +693,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
     cmdData->bannerIsUp = True;
 
     /* Extract accelerator text from menu PushButtons */
-    XtVaGetValues(window->cancelShellItem, XmNacceleratorText, &xmCancel, NULL);
+    XtVaGetValues(window->cancelShellItem, XmNacceleratorText, &xmCancel, nullptr);
 
     /* Translate Motif string to char* */
     cCancel = GetXmStringText(xmCancel);
@@ -749,7 +749,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
     char *outText;
     
     /* shouldn't happen, but it would be bad if it did */
-    if (cmdData->textW == NULL)
+    if (cmdData->textW == nullptr)
     	return;
 
     outText = coalesceOutput(&cmdData->outBufs, &len);
@@ -783,7 +783,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     textBuffer *buf;
     int status, failure, errorReport, reselectStart, outTextLen, errTextLen;
     int resp, cancel = False, fromMacro = cmdData->fromMacro;
-    char *outText, *errText = NULL;
+    char *outText, *errText = nullptr;
 
     /* Cancel any pending i/o on the file descriptors */
     if (cmdData->stdoutInputID != 0)
@@ -797,7 +797,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     close(cmdData->stdoutFD);
     if (cmdData->flags & ERROR_DIALOGS)
     	close(cmdData->stderrFD);
-    if (cmdData->inPtr != NULL)
+    if (cmdData->inPtr != nullptr)
     	close(cmdData->stdinFD);
 
     /* Free the provided input text */
@@ -908,7 +908,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError)
     XtFree(outText);
 cmdDone:
     XtFree((char *)cmdData);
-    window->shellCmdData = NULL;
+    window->shellCmdData = nullptr;
     if (fromMacro)
     	ResumeMacroExecution(window);
 }
@@ -917,7 +917,7 @@ cmdDone:
 ** Fork a subprocess to execute a command, return file descriptors for pipes
 ** connected to the subprocess' stdin, stdout, and stderr streams.  cmdDir
 ** sets the default directory for the subprocess.  If stderrFD is passed as
-** NULL, the pipe represented by stdoutFD is connected to both stdin and
+** nullptr, the pipe represented by stdoutFD is connected to both stdin and
 ** stderr.  The function value returns the pid of the new subprocess, or -1
 ** if an error occured.
 */
@@ -947,7 +947,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     }
     *stdinFD = pipeFDs[1];
     childStdinFD = pipeFDs[0];
-    if (stderrFD == NULL)
+    if (stderrFD == nullptr)
     	childStderrFD = childStdoutFD;
     else {
 	if (pipe(pipeFDs) != 0) {
@@ -969,7 +969,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	/* close the parent end of the pipes in the child process   */
 	close(*stdinFD);
 	close(*stdoutFD);
-	if (stderrFD != NULL)
+	if (stderrFD != nullptr)
 	    close(*stderrFD);
 
 	/* close current stdin, stdout, and stderr file descriptors before
@@ -1010,7 +1010,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
         }
      
 	/* execute the command using the shell specified by preferences */
-	execlp(GetPrefShell(), GetPrefShell(), "-c", command, NULL);
+	execlp(GetPrefShell(), GetPrefShell(), "-c", command, nullptr);
 
 	/* if we reach here, execlp failed */
 	fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
@@ -1028,7 +1028,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
     /* close the child ends of the pipes */
     close(childStdinFD);
     close(childStdoutFD);
-    if (stderrFD != NULL)
+    if (stderrFD != nullptr)
     	close(childStderrFD);
 
     return childPid;
@@ -1050,19 +1050,19 @@ static void addOutput(buffer **bufList, buffer *buf)
 */
 static char *coalesceOutput(buffer **bufList, int *outLength)
 {
-    buffer *buf, *rBufList = NULL;
+    buffer *buf, *rBufList = nullptr;
     char *outBuf, *outPtr, *p;
     int i, length = 0;
     
     /* find the total length of data read */
-    for (buf=*bufList; buf!=NULL; buf=buf->next)
+    for (buf=*bufList; buf!=nullptr; buf=buf->next)
     	length += buf->length;
     
     /* allocate contiguous memory for returning data */
     outBuf = XtMalloc(length+1);
     
     /* reverse the buffer list */
-    while (*bufList != NULL) {
+    while (*bufList != nullptr) {
     	buf = *bufList;
     	*bufList = buf->next;
     	buf->next = rBufList;
@@ -1071,7 +1071,7 @@ static char *coalesceOutput(buffer **bufList, int *outLength)
     
     /* copy the buffers into the output buffer */
     outPtr = outBuf;
-    for (buf=rBufList; buf!=NULL; buf=buf->next) {
+    for (buf=rBufList; buf!=nullptr; buf=buf->next) {
     	p = buf->contents;
     	for (i=0; i<buf->length; i++)
     	    *outPtr++ = *p++;
@@ -1091,7 +1091,7 @@ static void freeBufList(buffer **bufList)
 {
     buffer *buf;
     
-    while (*bufList != NULL) {
+    while (*bufList != nullptr) {
     	buf = *bufList;
     	*bufList = buf->next;
     	XtFree((char *)buf);
@@ -1148,8 +1148,8 @@ static void createOutputDialog(Widget parent, char *text)
     XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);  ac++;
     button = XmCreatePushButtonGadget(form, (String)"ok", al, ac);
     XtManageChild(button);
-    XtVaSetValues(form, XmNdefaultButton, button, NULL);
-    XtVaSetValues(form, XmNcancelButton, button, NULL);
+    XtVaSetValues(form, XmNdefaultButton, button, nullptr);
+    XtVaSetValues(form, XmNcancelButton, button, nullptr);
     XmStringFree(st1);
     XtAddCallback(button, XmNactivateCallback, destroyOutDialogCB,
     	    XtParent(form));
@@ -1177,7 +1177,7 @@ static void createOutputDialog(Widget parent, char *text)
     MakeSingleLineTextW(textW); /* Binds <Return> to activate() */
     XtManageChild(textW);
     
-    XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", NULL);
+    XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", nullptr);
     ManageDialogCenteredOnPointer(form);
 
 #ifdef LESSTIF_VERSION
@@ -1278,7 +1278,7 @@ static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr
         const char *lineStr, int outLen, int predictOnly)
 {
     const char *inChar;
-    char *outChar = NULL;
+    char *outChar = nullptr;
     int outWritten = 0;
     int fileLen, lineLen;
 
@@ -1354,16 +1354,16 @@ static char *shellCommandSubstitutes(const char *inStr, const char *fileStr,
         const char *lineStr)
 {
     int cmdLen;
-    char *subsCmdStr = NULL;
+    char *subsCmdStr = nullptr;
 
-    cmdLen = shellSubstituter(NULL, inStr, fileStr, lineStr, 0, 1);
+    cmdLen = shellSubstituter(nullptr, inStr, fileStr, lineStr, 0, 1);
     if (cmdLen >= 0) {
         subsCmdStr = (char *)malloc(cmdLen);
         if (subsCmdStr) {
             cmdLen = shellSubstituter(subsCmdStr, inStr, fileStr, lineStr, cmdLen, 0);
             if (cmdLen < 0) {
                 free(subsCmdStr);
-                subsCmdStr = NULL;
+                subsCmdStr = nullptr;
             }
         }
     }
