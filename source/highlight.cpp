@@ -518,7 +518,8 @@ static void freeHighlightData(windowHighlightData *hd)
     XtFree(hd->parentStyles);
     BufFree(hd->styleBuffer);
     XtFree((char *)hd->styleTable);
-    XtFree((char *)hd);
+    
+	delete hd;
 }
 
 /*
@@ -665,10 +666,10 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     	    nPass2Patterns++;
     	else
     	    nPass1Patterns++;
-    p1Ptr = pass1PatternSrc = (highlightPattern *)XtMalloc(
-    	    sizeof(highlightPattern) * nPass1Patterns);
-    p2Ptr = pass2PatternSrc = (highlightPattern *)XtMalloc(
-    	    sizeof(highlightPattern) * nPass2Patterns);
+    
+	p1Ptr = pass1PatternSrc = new highlightPattern[nPass1Patterns];
+    p2Ptr = pass2PatternSrc = new highlightPattern[nPass2Patterns];
+	
     p1Ptr->name = p2Ptr->name = "";
     p1Ptr->startRE = p2Ptr->startRE = nullptr;
     p1Ptr->endRE = p2Ptr->endRE = nullptr;
@@ -695,16 +696,14 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     if (nPass1Patterns == 0)
     	pass1Pats = nullptr;
     else {
-	pass1Pats = compilePatterns(window->shell, pass1PatternSrc,
-    		nPass1Patterns);
+	pass1Pats = compilePatterns(window->shell, pass1PatternSrc, nPass1Patterns);
 	if (pass1Pats == nullptr)
     	    return nullptr;
     }
     if (nPass2Patterns == 0)
     	pass2Pats = nullptr;
     else {
-	pass2Pats = compilePatterns(window->shell, pass2PatternSrc,
-    		nPass2Patterns);  
+	pass2Pats = compilePatterns(window->shell, pass2PatternSrc, nPass2Patterns);  
 	if (pass2Pats == nullptr)
     	    return nullptr;
     }
@@ -783,12 +782,12 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
 
     /* PLAIN_STYLE (pass 1) */
     styleTablePtr->underline = FALSE;
-    setStyleTablePtr(styleTablePtr++,
-                   noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+    setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+
     /* PLAIN_STYLE (pass 2) */
     styleTablePtr->underline = FALSE;
-    setStyleTablePtr(styleTablePtr++,
-                   noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+    setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+
     /* explicit styles (pass 1) */
     for (i=1; i<nPass1Patterns; i++) {
     	styleTablePtr->underline = FALSE;
@@ -801,14 +800,14 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     }
 
     /* Free the temporary sorted pattern source list */
-    XtFree((char *)pass1PatternSrc);
-    XtFree((char *)pass2PatternSrc);
+	delete [] pass1PatternSrc;
+	delete [] pass2PatternSrc;
     
     /* Create the style buffer */
     styleBuf = BufCreate();
     
     /* Collect all of the highlighting information in a single structure */
-    highlightData =(windowHighlightData *)XtMalloc(sizeof(windowHighlightData));
+    highlightData = new windowHighlightData;
     highlightData->pass1Patterns = pass1Pats;
     highlightData->pass2Patterns = pass2Pats;
     highlightData->parentStyles = parentStyles;
