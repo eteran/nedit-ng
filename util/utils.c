@@ -22,9 +22,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "utils.h"
 
@@ -32,13 +30,7 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#ifdef VMS
-#include <lib$routines.h>
-#include ssdef
-#include syidef
-#include "../util/VMSparam.h"
-#include "../util/VMSutils.h"
-#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
@@ -46,18 +38,12 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 /* just to get 'Boolean' types defined: */
 #include <X11/Intrinsic.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #define DEFAULT_NEDIT_HOME ".nedit"
-#ifdef VMS
-    static char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb;1"};
-    static char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history;1"};
-#else
-    static char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
-    static char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
-#endif
+
+static char* hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
+static char* plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
 
 static void buildFilePath(char* fullPath, const char* dir, const char* file);
 static Boolean isDir(const char* file);
@@ -118,9 +104,6 @@ const char* GetHomeDir(void)
 const char
 *GetUserName(void)
 {
-#ifdef VMS
-    return cuserid(NULL);
-#else
     /* cuserid has apparently been dropped from the ansi C standard, and if
        strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
        to cuserid fail to compile.  Older versions of nedit try to use the
@@ -147,7 +130,6 @@ const char
        strcpy(userName, passwdEntry->pw_name);
        return userName;
     }
-#endif /* VMS */
 }
 
 
@@ -165,27 +147,6 @@ const char
     static int  hostnameFound = False;
     
     if (!hostnameFound) {
-#ifdef VMS
-        /* This should be simple, but uname is not supported in the DEC C RTL and
-           gethostname on VMS depends either on Multinet or UCX.  So use uname 
-           on Unix, and use LIB$GETSYI on VMS. Note the VMS hostname will
-           be in DECNET format with trailing double colons, e.g. "FNALV1::".    */
-        int syi_status;
-        struct dsc$descriptor_s *hostnameDesc;
-        unsigned long int syiItemCode = SYI$_NODENAME;	/* get Nodename */
-        unsigned long int unused = 0;
-        unsigned short int hostnameLen = MAXNODENAMELEN+1;
-
-        hostnameDesc = NulStrWrtDesc(hostname, MAXNODENAMELEN+1);
-        syi_status = lib$getsyi(&syiItemCode, &unused, hostnameDesc, &hostnameLen,
-    			        0, 0);
-        if (syi_status != SS$_NORMAL) {
-	    fprintf(stderr, "nedit: Error return from lib$getsyi: %d", syi_status);
-	    strcpy(hostname, "VMS");
-        } else
-    	    hostname[hostnameLen] = '\0';
-        FreeStrDesc(hostnameDesc);
-#else
         struct utsname nameStruct;
         int rc = uname(&nameStruct);
         if (rc<0) {
@@ -194,7 +155,6 @@ const char
            exit(EXIT_FAILURE);
         }
         strcpy(hostname, nameStruct.nodename);
-#endif /* VMS */
         hostnameFound = True;
     }
     return hostname;
@@ -255,13 +215,7 @@ const char* GetRCFileName(int type)
         if ((nedit_home = getenv("NEDIT_HOME")) == NULL)
         {
             /*  No NEDIT_HOME */
-#ifdef VMS
-            /* This is a default VMS setup */
-            for (i = 0; i < N_FILE_TYPES; i++)
-            {
-                buildFilePath(rcFiles[i], "SYS$LOGIN", hiddenFileNames[i]);
-            }
-#else /* #ifdef VMS */
+
             /* Let's try if ~/.nedit is a regular file or not. */
             char legacyFile[MAXPATHLEN + 1];
             buildFilePath(legacyFile, GetHomeDir(), hiddenFileNames[NEDIT_RC]);
@@ -296,7 +250,6 @@ const char* GetRCFileName(int type)
                     buildFilePath(rcFiles[i], defaultNEditHome, plainFileNames[i]);
                 }
             }
-#endif /* #ifdef VMS */
         } else
         {
             /*  $NEDIT_HOME is set. */
@@ -350,11 +303,7 @@ static void buildFilePath(char* fullPath, const char* dir, const char* file)
 
     /*  The length is already checked */
     strcpy(fullPath, dir);
-#ifdef VMS
-    strcat(fullPath, ":");
-#else /* #ifdef VMS */
     strcat(fullPath, "/");
-#endif /* #ifdef VMS */
     strcat(fullPath, file);
 }
 

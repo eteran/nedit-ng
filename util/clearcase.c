@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden E
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "clearcase.h"
 
@@ -38,9 +36,7 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden E
 
 #include <X11/Intrinsic.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 static int ClearCaseViewTagFound = 0;
 static char *ClearCaseViewRoot = NULL;

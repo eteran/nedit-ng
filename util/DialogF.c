@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Ex
 *                                                                               *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "DialogF.h"
 #include "misc.h"
@@ -50,9 +48,7 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Ex
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #define NUM_DIALOGS_SUPPORTED 6
 #define NUM_BUTTONS_SUPPORTED 3		/* except prompt dialog */

@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.29 2006/12/02 10:27:06 yooden Ex
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "fontsel.h"
 #include "misc.h"
@@ -52,9 +50,7 @@ static const char CVSID[] = "$Id: fontsel.c,v 1.29 2006/12/02 10:27:06 yooden Ex
 #include <Xm/MessageB.h>
 #include <Xm/DialogS.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #define MAX_ARGS                        20
 #define MAX_NUM_FONTS                   32767

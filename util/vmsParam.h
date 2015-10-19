@@ -28,11 +28,4 @@
 #ifndef NEDIT_VMSPARAM_H_INCLUDED
 #define NEDIT_VMSPARAM_H_INCLUDED
 
-#ifdef VMS
-
-#define MAXHOSTNAMELEN 255
-#define MAXPATHLEN     255
-
-#endif /*VMS*/
-
 #endif /* NEDIT_VMSPARAM_H_INCLUDED */

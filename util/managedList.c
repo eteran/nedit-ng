@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg E
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "managedList.h"
 #include "misc.h"
@@ -44,9 +42,7 @@ static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg E
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 /* Common data between the managed list callback functions */
 typedef struct {

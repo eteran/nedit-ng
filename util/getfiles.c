@@ -44,9 +44,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.37 2008/02/29 16:06:05 tringali
 *                                                                              *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "getfiles.h"
 #include "fileUtils.h"
@@ -57,18 +55,11 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.37 2008/02/29 16:06:05 tringali
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
-#ifdef VMS
-#include <unixio.h>
-#include <file.h>
-#include "VMSparam.h"
-#else
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
-#endif /*VMS*/
 #include <sys/stat.h>
 
 #include <X11/keysym.h>
@@ -81,9 +72,7 @@ static const char CVSID[] = "$Id: getfiles.c,v 1.37 2008/02/29 16:06:05 tringali
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #define MAX_ARGS 20			/* Maximum number of X arguments */
 #define PERMS 0666     			/* UNIX file permission, RW for owner,
@@ -433,13 +422,9 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename)
            page states that it always returns the full path name. We can
            easily work around this by checking that the first character of the
            file name is a `/'. */
-#ifdef VMS
-       /* VMS  won't return `/' as the 1st character of the full file spec.
-         `:' terminates the device name and is not allowed elsewhere */
-        if (strchr(fileString, ':') != NULL) {
-#else
+
         if (fileString[0] == '/') {
-#endif        /* VMS */
+
 	    /* The directory name is already present in the file name or
 	       the user entered a full path name. */
 	    strcpy(filename, fileString);
@@ -584,13 +569,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	DefaultPattern = cPattern;
 	XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
 	/* See note in existing file routines about Motif 2.x bug. */
-#ifdef VMS
-	/* VMS  won't return `/' as the 1st character of the full file spec.
-	 `:' terminates the device name and is not allowed elsewhere */
-	if (strchr(fileString, ':') != NULL) {
-#else
+
 	if (fileString[0] == '/') {
-#endif /* VMS */
+
 	    /* The directory name is already present in the file name or
 	       the user entered a full path name. */
 	    strcpy(filename, fileString);
@@ -801,11 +782,8 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
     	return;
     }
 
-#ifdef VMS
-    if (strchr(filename,';') && (fd = open(filename, O_RDONLY, 0)) != -1) {
-#else  /* not VMS*/
+ /* not VMS*/
     if ((fd = open(filename, O_RDONLY, 0)) != -1) {     /* exists */
-#endif /*VMS*/
 	fstat(fd, &buf);
         close(fd);
 	if (buf.st_mode & S_IFDIR) {
@@ -814,17 +792,8 @@ static void newFileOKCB(Widget	w, Boolean *client_data,
 	    return;
 	}
         response = doYesNoDialog(filename);
-#ifdef VMS
-	if (response) {
-            if (access(filename, 2) != 0) { /* have write/delete access? */
-		doErrorDialog("Error: can't overwrite %s ", filename);
-		XtFree(filename);
-		return;
-	    }
-	} else {
-#else
+
         if (!response) {
-#endif /*VMS*/
              return;
 	}
     } else {
@@ -1010,11 +979,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event,
     if (nKeystrokes >= MAX_LIST_KEYSTROKES)
     	XBell(XtDisplay(w), 0);
     else
-#ifdef VMS
-    	keystrokes[nKeystrokes++] = toupper(c);
-#else
     	keystrokes[nKeystrokes++] = c;
-#endif
     
     /* Get the items (filenames) in the list widget */
     XtVaGetValues(w, XmNitems, &items, XmNitemCount, &nItems, NULL);

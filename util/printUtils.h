@@ -40,14 +40,8 @@
 extern "C" {
 #endif
 
-void LoadPrintPreferences(XrmDatabase prefDB, const char *appName,
-     const char *appClass, int lookForFlpr);
-
-#ifdef VMS
-void PrintFile(Widget parent, const char *PrintFileName, const char *jobName, int delete);
-#else
+void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr);
 void PrintFile(Widget parent, const char *PrintFileName, const char *jobName);
-#endif /*VMS*/
 
 #ifdef __cplusplus
 }

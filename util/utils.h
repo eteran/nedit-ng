@@ -31,11 +31,7 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 
-#ifdef VMS
-#include "vmsparam.h"
-#else
 #include <sys/param.h>
-#endif /*VMS*/
 
 #ifdef __cplusplus
 extern "C" {

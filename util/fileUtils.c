@@ -29,9 +29,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "fileUtils.h"
 #include "utils.h"
@@ -44,22 +42,15 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 #ifdef VAXC
 #define NULL (void *) 0
 #endif /*VAXC*/
-#ifdef VMS
-#include "vmsparam.h"
-#include <stat.h>
-#else
+
 #include <sys/types.h>
-#ifndef __MVS__
 #include <sys/param.h>
-#endif
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
-#endif /*VMS*/
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
+
 
 #ifndef MAXSYMLINKS  /* should be defined in <sys/param.h> */
 #define MAXSYMLINKS 20
@@ -94,13 +85,7 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
     int fullLen = strlen(fullname);
     int i, pathLen, fileLen;
 	    
-#ifdef VMS
-    /* find the last ] or : */
-    for (i=fullLen-1; i>=0; i--) {
-    	if (fullname[i] == ']' || fullname[i] == ':')
-	    break;
-    }
-#else  /* UNIX */
+
     char *viewExtendPath;
     int scanStart;
     
@@ -116,7 +101,6 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
         if (fullname[i] == '/')
 	    break;
     }
-#endif
 
     /* move chars before / (or ] or :) into pathname,& after into filename */
     pathLen = i + 1;
@@ -136,23 +120,18 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
       	filename[fileLen] = 0;
     }
 
-#ifndef VMS /* UNIX specific... Modify at a later date for VMS */
     if(pathname) {
 	if (NormalizePathname(pathname)) {
 	    return 1; /* pathname too long */
 	}
 	pathLen = strlen(pathname);
     }
-#endif
     
     if (filename && pathname && ((pathLen + 1 + fileLen) >= MAXPATHLEN)) {
 	return 1; /* pathname + filename too long */
     }
     return 0;
 }
-
-#ifndef VMS
-
 
 /*
 ** Expand tilde characters which begin file names as done by the shell
@@ -458,45 +437,6 @@ copyThruSlash(char **toString, char **fromString)
     }
 }
 
-#else /* VMS */
-
-/* 
-** Dummy versions of the public functions for VMS.
-*/
-
-/*
-** Return 0 if everything's fine, 1 else.
-*/
-int NormalizePathname(char *pathname)
-{
-    return 0;
-}
-
-/*
-** Return 0 if everything's fine, 1 else.
-*/
-int CompressPathname(char *pathname)
-{
-    return 0;
-}
-
-/*
- * Returns:
- *   TRUE  if no error occured
- *
- *   FALSE if an error occured.
- */
-int ResolvePath(const char * pathIn, char * pathResolved)
-{
-    if (strlen(pathIn) < MAXPATHLEN) {
-	strcpy(pathResolved, pathIn);
-	return TRUE;
-    } else {
- 	return FALSE;
-    }
-}
-
-#endif /* VMS */
 
 /*
 ** Return the trailing 'n' no. of path components

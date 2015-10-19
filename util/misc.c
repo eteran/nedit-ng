@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "misc.h"
 #include "DialogF.h"
@@ -52,11 +50,6 @@ static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $
 #endif
 #endif
 
-#ifdef VMS
-#include <types.h>
-#include <unixio.h>
-#include <file.h>
-#endif /*VMS*/
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
@@ -81,9 +74,7 @@ static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $
 #include <Xm/ScrolledW.h>
 #include <Xm/PrimitiveP.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #ifndef LESSTIF_VERSION
 extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);

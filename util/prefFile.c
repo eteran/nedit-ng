@@ -27,9 +27,7 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.27 2008/08/20 14:57:36 lebert E
 *									       *
 *******************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+
 
 #include "prefFile.h"
 #include "fileUtils.h"
@@ -38,18 +36,11 @@ static const char CVSID[] = "$Id: prefFile.c,v 1.27 2008/08/20 14:57:36 lebert E
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef VMS
-#include "VMSparam.h"
-#else
-#ifndef __MVS__
+
 #include <sys/param.h>
-#endif
-#endif
 #include <Xm/Xm.h>
 
-#ifdef HAVE_DEBUG_H
-#include "../debug.h"
-#endif
+
 
 #define N_BOOLEAN_STRINGS 13
 static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t",
