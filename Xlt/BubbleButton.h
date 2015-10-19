@@ -27,52 +27,48 @@
 
 #include <X11/IntrinsicP.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef XltNfadeRate
-#define XltNfadeRate "fadeRate"
+#define XltNfadeRate (String)"fadeRate"
 #endif
 #ifndef XltCFadeRate
-#define XltCFadeRate "FadeRate"
+#define XltCFadeRate (String)"FadeRate"
 #endif
 #ifndef XltNdelay
-#define XltNdelay "delay"
+#define XltNdelay (String)"delay"
 #endif
 #ifndef XltCDelay
-#define XltCDelay "Delay"
+#define XltCDelay (String)"Delay"
 #endif
-#define XltNbubbleString "bubbleString"
-#define XltCBubbleString "BubbleString"
-#define XltNshowBubble "showBubble"
-#define XltCShowBubble "ShowBubble"
+#define XltNbubbleString (String)"bubbleString"
+#define XltCBubbleString (String)"BubbleString"
+#define XltNshowBubble (String)"showBubble"
+#define XltCShowBubble (String)"ShowBubble"
 
 #ifndef XltNmouseOverPixmap
-#define XltNmouseOverPixmap "mouseOverPixmap"
-#define XltCMouseOverPixmap "MouseOverPixmap"
+#define XltNmouseOverPixmap (String)"mouseOverPixmap"
+#define XltCMouseOverPixmap (String)"MouseOverPixmap"
 #endif
 #ifndef XltNmouseOverString
-#define XltNmouseOverString "mouseOverString"
-#define XltCMouseOverString "MouseOverString"
+#define XltNmouseOverString (String)"mouseOverString"
+#define XltCMouseOverString (String)"MouseOverString"
 #endif
 #ifndef XltNbubbleDuration
-#define XltNbubbleDuration "bubbleDuration"
+#define XltNbubbleDuration (String)"bubbleDuration"
 #endif
 #ifndef XltCBubbleDuration
-#define XltCBubbleDuration "BubbleDuration"
+#define XltCBubbleDuration (String)"BubbleDuration"
 #endif
 #ifndef XltNslidingBubble
-#define XltNslidingBubble "slidingBubble"
+#define XltNslidingBubble (String)"slidingBubble"
 #endif
 #ifndef XltCslidingBubble
-#define XltCslidingBubble "SlidingBubble"
+#define XltCslidingBubble (String)"SlidingBubble"
 #endif
 #ifndef XltNautoParkBubble
-#define XltNautoParkBubble "autoParkBubble"
+#define XltNautoParkBubble (String)"autoParkBubble"
 #endif
 #ifndef XltCautoParkBubble
-#define XltCautoParkBubble "AutoParkBubble"
+#define XltCautoParkBubble (String)"AutoParkBubble"
 #endif
 
 extern WidgetClass xrwsBubbleButtonWidgetClass;
@@ -94,8 +90,4 @@ extern Widget XltCreateBubbleButton(Widget parent,
 			     char *name,
 			     Arg *arglist,
 			     Cardinal argCount);
-#ifdef __cplusplus
-}  /* Close scope of 'extern "C"' declaration which encloses file. */
-#endif
-
 #endif

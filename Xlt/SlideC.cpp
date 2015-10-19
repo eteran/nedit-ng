@@ -107,7 +107,7 @@ XltSlideContextClassRec xltSlideContextClassRec = {
 	/* Object Class Part */
 	{
 /* pointer to superclass ClassRec   WidgetClass       */ (WidgetClass) &objectClassRec,
-/* widget resource class name       String            */ "XltSlideContext",
+/* widget resource class name       String            */ (String)"XltSlideContext",
 /* size in bytes of widget record   Cardinal          */ sizeof(XltSlideContextRec),
 /* class initialization proc        XtProc            */ class_initialize,
 /* dynamic initialization           XtWidgetClassProc */ class_part_initialize,

@@ -28,60 +28,56 @@
 
 #include <X11/Intrinsic.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef XltIsSlideContext
 #define XltIsSlideContext(w) XtIsSubclass(w,xltSlideContextClass)
 #endif
 #ifndef XltNslideFinishCallback
-#define XltNslideFinishCallback "slideFinishCallback"
+#define XltNslideFinishCallback (String)"slideFinishCallback"
 #endif
 #ifndef XltCSlideFinishCallback
-#define XltCSlideFinishCallback "SlideFinishCallback"
+#define XltCSlideFinishCallback (String)"SlideFinishCallback"
 #endif
 #ifndef XltNslideMotionCallback
-#define XltNslideMotionCallback "slideMotionCallback"
+#define XltNslideMotionCallback (String)"slideMotionCallback"
 #endif
 #ifndef XltCSlideMotionCallback
-#define XltCSlideMotionCallback "SlideMotionCallback"
+#define XltCSlideMotionCallback (String)"SlideMotionCallback"
 #endif
 #ifndef XltNslideWidget
-#define XltNslideWidget "slideWidget"
+#define XltNslideWidget (String)"slideWidget"
 #endif
 #ifndef XltCSlideWidget
-#define XltCSlideWidget "SlideWidget"
+#define XltCSlideWidget (String)"SlideWidget"
 #endif
 #ifndef XltNslideInterval
-#define XltNslideInterval "slideInterval"
+#define XltNslideInterval (String)"slideInterval"
 #endif
 #ifndef XltCSlideInterval
-#define XltCSlideInterval "SlideInterval"
+#define XltCSlideInterval (String)"SlideInterval"
 #endif
 #ifndef XltNslideDestWidth
-#define XltNslideDestWidth "slideDestWidth"
+#define XltNslideDestWidth (String)"slideDestWidth"
 #endif
 #ifndef XltCSlideDestWidth
-#define XltCSlideDestWidth "SlideDestWidth"
+#define XltCSlideDestWidth (String)"SlideDestWidth"
 #endif
 #ifndef XltNslideDestHeight
-#define XltNslideDestHeight "slideDestHeight"
+#define XltNslideDestHeight (String)"slideDestHeight"
 #endif
 #ifndef XltCSlideDestHeight
-#define XltCSlideDestHeight "SlideDestHeight"
+#define XltCSlideDestHeight (String)"SlideDestHeight"
 #endif
 #ifndef XltNslideDestX
-#define XltNslideDestX "slideDestX"
+#define XltNslideDestX (String)"slideDestX"
 #endif
 #ifndef XltCSlideDestX
-#define XltCSlideDestX "SlideDestX"
+#define XltCSlideDestX (String)"SlideDestX"
 #endif
 #ifndef XltNslideDestY
-#define XltNslideDestY "slideDestY"
+#define XltNslideDestY (String)"slideDestY"
 #endif
 #ifndef XltCSlideDestY
-#define XltCSlideDestY "SlideDestY"
+#define XltCSlideDestY (String)"SlideDestY"
 #endif
 
 extern WidgetClass xltSlideContextWidgetClass;
@@ -98,7 +94,4 @@ typedef struct _XltSlideStruct {
 
 void XltSlide(XltSlidePtr slide_info);
 
-#ifdef __cplusplus
-}
-#endif
 #endif

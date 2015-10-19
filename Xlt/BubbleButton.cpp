@@ -135,8 +135,8 @@ static void LeaveWindow(Widget w, XEvent *event, String *params, Cardinal *num_p
 
 static XtActionsRec actions[] =
 {
-	{"Enter", EnterWindow},
-	{"Leave", LeaveWindow},
+	{(String)"Enter", EnterWindow},
+	{(String)"Leave", LeaveWindow},
 };
 
 /* *INDENT-OFF* */
@@ -144,7 +144,7 @@ XltBubbleButtonClassRec xrwsBubbleButtonClassRec = {
     /* Core class part */
     {
 	/* superclass            */ (WidgetClass) &xmPushButtonClassRec,
-        /* class_name            */ "XltBubbleButton",
+    /* class_name            */ (String)"XltBubbleButton",
 	/* widget_size           */ sizeof(XltBubbleButtonRec),
 	/* class_initialize      */ class_initialize,
 	/* class_part_initialize */ class_part_initialize,
@@ -239,7 +239,7 @@ int argcnt = 0;
     BubbleButton_DurationTimer(new_w) = (XtIntervalId)NULL;
     BubbleButton_Swapped(new_w) = False;
     BubbleButton_Slider(new_w) = NULL;
-    Shell = CreatePopupShellWithBestVis("BubbleShell", 
+    Shell = CreatePopupShellWithBestVis((String)"BubbleShell", 
              transientShellWidgetClass, new_w, arg, argcnt);
     XtVaSetValues(Shell,
     	XmNoverrideRedirect, True,
@@ -269,7 +269,7 @@ int argcnt = 0;
     {
     	BubbleButton_BubbleString(new_w) = XmStringCopy(BubbleButton_BubbleString(new_w));
     }
-    BubbleButton_Label(new_w) = XmCreateLabel(Shell, "BubbleLabel", NULL, 0);
+    BubbleButton_Label(new_w) = XmCreateLabel(Shell, (String)"BubbleLabel", NULL, 0);
     XtVaSetValues(BubbleButton_Label(new_w),
     	XmNlabelString, BubbleButton_BubbleString(new_w),
     	XmNforeground, ((XltBubbleButtonWidget)new_w)->core.background_pixel,
@@ -326,7 +326,11 @@ set_values(Widget old, Widget request, Widget new_w, ArgList args, Cardinal *num
 /*
  * Short-term solution. Doesn't belong here. See SF bug #923924.
  */
+#ifdef __cplusplus
+extern "C" XmString _XmStringCreateExternal(XmFontList fontlist, _XmString cs);
+#else
 extern XmString _XmStringCreateExternal(XmFontList fontlist, _XmString cs);
+#endif
 
 static void
 _XmExportLabelString(Widget w, int offset, XtArgVal *value)
