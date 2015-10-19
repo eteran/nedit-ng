@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <algorithm>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -82,7 +82,6 @@ static void addWrapNewlines(WindowInfo *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
-static int min(int i1, int i2);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData,
     XtPointer callData);
 static void forceShowLineNumbers(WindowInfo *window);
@@ -1938,7 +1937,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
     /* For large files, the comparison can take a while. If it takes too long,
        the user should be given a clue about what is happening. */
     sprintf(message, "Comparing externally modified %s ...", window->filename);
-    restLen = min(PREFERRED_CMPBUF_LEN, fileLen);
+    restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
     bufPos = 0;
     filePos = 0;
     while (restLen > 0) {
@@ -1981,7 +1980,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName)
             return (rv);
         }
         bufPos += nRead;
-        restLen = min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
+        restLen = std::min<int>(fileLen - filePos, PREFERRED_CMPBUF_LEN);
     }
     AllWindowsUnbusy();
     fclose(fp);
@@ -2009,9 +2008,4 @@ static void forceShowLineNumbers(WindowInfo *window)
         window->showLineNumbers = False;
         ShowLineNumbers(window, showLineNum);
     }
-}
-
-static int min(int i1, int i2)
-{
-    return i1 <= i2 ? i1 : i2;
 }

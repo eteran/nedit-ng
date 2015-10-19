@@ -40,6 +40,7 @@
 #include <string.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <algorithm>
 
 
 #include <Xm/Xm.h>
@@ -127,8 +128,6 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event,
 static void redrawLineNumbers(textDisp *textD, int clearAll);
 static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
-static int max(int i1, int i2);
-static int min(int i1, int i2);
 static int countLines(const char *string);
 static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
@@ -578,7 +577,7 @@ void TextDResize(textDisp *textD, int width, int height)
        more text by scrolling down */
     if (canRedraw && oldVisibleLines < newVisibleLines && textD->topLineNum +
             textD->nVisibleLines > textD->nBufferLines)
-        setScroll(textD, max(1, textD->nBufferLines - textD->nVisibleLines + 
+        setScroll(textD, std::max<int>(1, textD->nBufferLines - textD->nVisibleLines + 
                                 2 + TEXT_OF_TEXTD(textD).cursorVPadding),
                   textD->horizOffset, False, False);
     
@@ -729,7 +728,7 @@ void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset)
     else if ((topLineNum > textD->topLineNum) &&
              (topLineNum > (textD->nBufferLines + 2 - textD->nVisibleLines +
                           vPadding)))
-        topLineNum = max(textD->topLineNum,
+        topLineNum = std::max<int>(textD->topLineNum,
                 textD->nBufferLines + 2 - textD->nVisibleLines + vPadding);
     XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, 
             XmNsliderSize, &sliderSize, nullptr);
@@ -1177,10 +1176,10 @@ void TextDMakeInsertPosVisible(textDisp *textD)
         /* Keep the cursor away from the top or bottom of screen. */
         if (textD->nVisibleLines <= 2*(int)cursorVPadding) {
             topLine += (linesFromTop - textD->nVisibleLines/2);
-            topLine = max(topLine, 1);
+            topLine = std::max<int>(topLine, 1);
         } else if (linesFromTop < (int)cursorVPadding) {
             topLine -= (cursorVPadding - linesFromTop);
-            topLine = max(topLine, 1);
+            topLine = std::max<int>(topLine, 1);
         } else if (linesFromTop > textD->nVisibleLines-(int)cursorVPadding-1) {
             topLine += (linesFromTop - (textD->nVisibleLines-cursorVPadding-1));
         }
@@ -1240,7 +1239,7 @@ int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos)
 
     newPos = BufCountForwardDispChars(textD->buffer, lineStartPos, column);
     if (textD->continuousWrap) {
-        newPos = min(newPos, TextDEndOfLine(textD, lineStartPos, True));
+        newPos = std::min<int>(newPos, TextDEndOfLine(textD, lineStartPos, True));
     }
     return(newPos);
 }
@@ -1298,7 +1297,7 @@ int TextDMoveUp(textDisp *textD, int absolute)
 
     newPos = BufCountForwardDispChars(textD->buffer, prevLineStartPos, column);
     if (textD->continuousWrap && !absolute)
-    	newPos = min(newPos, TextDEndOfLine(textD, prevLineStartPos, True));
+    	newPos = std::min<int>(newPos, TextDEndOfLine(textD, prevLineStartPos, True));
     
     /* move the cursor */
     TextDSetInsertPosition(textD, newPos);
@@ -1339,7 +1338,7 @@ int TextDMoveDown(textDisp *textD, int absolute)
     newPos = BufCountForwardDispChars(textD->buffer, nextLineStartPos, column);
 
     if (textD->continuousWrap && !absolute) {
-        newPos = min(newPos, TextDEndOfLine(textD, nextLineStartPos, True));
+        newPos = std::min<int>(newPos, TextDEndOfLine(textD, nextLineStartPos, True));
     }
 
     TextDSetInsertPosition(textD, newPos);
@@ -1590,7 +1589,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
        beyond the left and right edges of the text. */
     startDispPos = textD->continuousWrap ? wrapModStart : pos;
     if (origCursorPos == startDispPos && textD->cursorPos != startDispPos)
-    	startDispPos = min(startDispPos, origCursorPos-1);
+    	startDispPos = std::min<int>(startDispPos, origCursorPos-1);
     if (linesInserted == linesDeleted) {
         if (nInserted == 0 && nDeleted == 0)
             endDispPos = pos + nRestyled;
@@ -1709,7 +1708,7 @@ static int posToVisibleLineNum(textDisp *textD, int pos, int *lineNum)
     		}
     		return ++(*lineNum) <= textD->nVisibleLines-1;
             } else {
-            	posToVisibleLineNum(textD, max(textD->lastChar-1, 0), lineNum);
+            	posToVisibleLineNum(textD, std::max<int>(textD->lastChar-1, 0), lineNum);
             	return True;
             }
 	}
@@ -1752,8 +1751,8 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     	return;
 
     /* Shrink the clipping range to the active display area */
-    leftClip = max(textD->left, leftClip);
-    rightClip = min(rightClip, textD->left + textD->width);
+    leftClip = std::max<int>(textD->left, leftClip);
+    rightClip = std::min<int>(rightClip, textD->left + textD->width);
     
     if (leftClip > rightClip) {
         return;
@@ -2006,8 +2005,8 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX,
     if (style & FILL_MASK) {
         /* wipes out to right hand edge of widget */
 	if (toX >= textD->left)
-	    clearRect(textD, bgGC, max(x, textD->left), y,
-		    toX - max(x, textD->left), textD->ascent + textD->descent);
+	    clearRect(textD, bgGC, std::max<int>(x, textD->left), y,
+		    toX - std::max<int>(x, textD->left), textD->ascent + textD->descent);
         return;
     }
 
@@ -2153,7 +2152,7 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
     if (lineStartPos == -1 || buf == nullptr)
     	return FILL_MASK;
     
-    pos = lineStartPos + min(lineIndex, lineLen);
+    pos = lineStartPos + std::min<int>(lineIndex, lineLen);
     
     if (lineIndex >= lineLen)
    	style = FILL_MASK;
@@ -2421,7 +2420,7 @@ static void updateLineStarts(textDisp *textD, int pos, int charsInserted,
     	/* If some text remains in the window, anchor on that  */
     	if (posToVisibleLineNum(textD, pos + charsDeleted, &lineOfEnd) &&
     		++lineOfEnd < nVisLines && lineStarts[lineOfEnd] != -1) {
-    	    textD->topLineNum = max(1, textD->topLineNum + lineDelta);
+    	    textD->topLineNum = std::max<int>(1, textD->topLineNum + lineDelta);
     	    textD->firstChar = TextDCountBackwardNLines(textD,
     	    	    lineStarts[lineOfEnd] + charDelta, lineOfEnd);
     	/* Otherwise anchor on original line number and recount everything */
@@ -2462,7 +2461,7 @@ static void updateLineStarts(textDisp *textD, int pos, int charsInserted,
     		lineStarts[i] = lineStarts[i-lineDelta] +
     			(lineStarts[i-lineDelta] == -1 ? 0 : charDelta);
     	} else /* (lineDelta < 0) */ {
-    	    for (i=max(0,lineOfPos+1); i<nVisLines+lineDelta; i++)
+    	    for (i=std::max<int>(0,lineOfPos+1); i<nVisLines+lineDelta; i++)
     	    	lineStarts[i] = lineStarts[i-lineDelta] +
     	    		(lineStarts[i-lineDelta] == -1 ? 0 : charDelta);
     	}
@@ -2738,15 +2737,15 @@ static void updateVScrollBarRange(textDisp *textD)
        line number, and the number of visible lines respectively.  The scroll
        bar maximum value is chosen to generally represent the size of the whole
        buffer, with minor adjustments to keep the scroll bar widget happy */
-    sliderSize = max(textD->nVisibleLines, 1); /* Avoid X warning (size < 1) */
+    sliderSize = std::max<int>(textD->nVisibleLines, 1); /* Avoid X warning (size < 1) */
     sliderValue = textD->topLineNum;
-    sliderMax = max(textD->nBufferLines + 2 + 
+    sliderMax = std::max<int>(textD->nBufferLines + 2 + 
                     TEXT_OF_TEXTD(textD).cursorVPadding, 
                     sliderSize + sliderValue);
     XtVaSetValues(textD->vScrollBar,
             XmNmaximum, sliderMax,
             XmNsliderSize, sliderSize,
-            XmNpageIncrement, max(1, textD->nVisibleLines - 1),
+            XmNpageIncrement, std::max<int>(1, textD->nVisibleLines - 1),
             XmNvalue, sliderValue, nullptr);
 }
 
@@ -2771,21 +2770,21 @@ static int updateHScrollBarRange(textDisp *textD)
     
     /* Scan all the displayed lines to find the width of the longest line */
     for (i=0; i<textD->nVisibleLines && textD->lineStarts[i]!= -1; i++)
-    	maxWidth = max(measureVisLine(textD, i), maxWidth);
+    	maxWidth = std::max<int>(measureVisLine(textD, i), maxWidth);
     
     /* If the scroll position is beyond what's necessary to keep all lines
        in view, scroll to the left to bring the end of the longest line to
        the right margin */
     if (maxWidth < textD->width + textD->horizOffset && textD->horizOffset > 0)
-    	textD->horizOffset = max(0, maxWidth - textD->width);
+    	textD->horizOffset = std::max<int>(0, maxWidth - textD->width);
     
     /* Readjust the scroll bar */
     sliderWidth = textD->width;
-    sliderMax = max(maxWidth, sliderWidth + textD->horizOffset);
+    sliderMax = std::max<int>(maxWidth, sliderWidth + textD->horizOffset);
     XtVaSetValues(textD->hScrollBar,
     	    XmNmaximum, sliderMax,
     	    XmNsliderSize, sliderWidth,
-    	    XmNpageIncrement, max(textD->width - 100, 10),
+    	    XmNpageIncrement, std::max<int>(textD->width - 100, 10),
     	    XmNvalue, textD->horizOffset, nullptr);
     
     /* Return True if scroll position was changed */
@@ -2845,7 +2844,7 @@ static void redrawLineNumbers(textDisp *textD, int clearAll)
                 textD->top, textD->lineNumWidth, textD->height, False);
     
     /* Draw the line numbers, aligned to the text */
-    nCols = min(11, textD->lineNumWidth / charWidth);
+    nCols = std::min<int>(11, textD->lineNumWidth / charWidth);
     y = textD->top;
     line = getAbsTopLineNum(textD);
     for (visLine=0; visLine < textD->nVisibleLines; visLine++) {
@@ -2898,16 +2897,6 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event,
        is used for choosing the scrolling methodology for optimal performance,
        if the window is partially obscured, XCopyArea may not work */
     ((textDisp *)data)->visibility = ((XVisibilityEvent *)event)->state;
-}
-
-static int max(int i1, int i2)
-{
-    return i1 >= i2 ? i1 : i2;
-}
-
-static int min(int i1, int i2)
-{
-    return i1 <= i2 ? i1 : i2;
 }
 
 /*
@@ -3193,11 +3182,11 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
     		countFrom = lineStart;
     		nLines = 0;
     		if (visLineNum+1 < nVisLines && lineStarts[visLineNum+1] != -1)
-    		    *modRangeStart = min(pos, lineStarts[visLineNum+1]-1);
+    		    *modRangeStart = std::min<int>(pos, lineStarts[visLineNum+1]-1);
     		else
     		    *modRangeStart = countFrom;
     	    } else
-    	    	*modRangeStart = min(*modRangeStart, lineStart-1);
+    	    	*modRangeStart = std::min<int>(*modRangeStart, lineStart-1);
     	}
     	
    	/* check for synchronization with the original line starts array
@@ -3448,7 +3437,7 @@ static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
     	    	}
     	    }
     	    if (!foundBreak) { /* no whitespace, just break at margin */
-    	    	newLineStart = max(p, lineStart+1);
+    	    	newLineStart = std::max<int>(p, lineStart+1);
     	    	colNum = BufCharWidth(c, colNum, tabDist, nullSubsChar);
     	    	if (countPixels)
    	    	    width = measurePropChar(textD, c, colNum, p+styleBufOffset);
@@ -3463,7 +3452,7 @@ static void wrappedLineCounter(const textDisp* textD, const textBuffer* buf,
     	    }
     	    nLines++;
     	    if (nLines >= maxLines) {
-    		*retPos = foundBreak ? b + 1 : max(p, lineStart+1);
+    		*retPos = foundBreak ? b + 1 : std::max<int>(p, lineStart+1);
     		*retLines = nLines;
     		*retLineStart = lineStart;
     		*retLineEnd = foundBreak ? b : p;
@@ -3534,7 +3523,7 @@ static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart,
     /* if we're not wrapping use more efficient BufEndOfLine */
     if (!textD->continuousWrap) {
     	*lineEnd = BufEndOfLine(textD->buffer, startPos);
-    	*nextLineStart = min(textD->buffer->length, *lineEnd + 1);
+    	*nextLineStart = std::min<int>(textD->buffer->length, *lineEnd + 1);
     	return;
     }
     

@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <algorithm>
 
 #define PREFERRED_GAP_SIZE 80	/* Initial size for the buffer gap (empty space
                                    in the buffer where text might be inserted
@@ -95,8 +96,6 @@ static char *expandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen);
 static char *unexpandTabs(const char *text, int startIndent, int tabDist,
 	char nullSubsChar, int *newLen);
-static int max(int i1, int i2);
-static int min(int i1, int i2);
 
 static const char *ControlCodeTable[32] = {
      "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
@@ -1831,7 +1830,7 @@ static void deleteRectFromLine(const char *line, int rectStart, int rectEnd,
     
     /* fill in any space left by removed tabs or control characters
        which straddled the boundaries */
-    indent = max(rectStart + postRectIndent-rectEnd, preRectIndent);
+    indent = std::max<int>(rectStart + postRectIndent-rectEnd, preRectIndent);
     addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar,
 	    &len);
     outPtr += len;
@@ -1955,8 +1954,8 @@ static void setSelection(selection *sel, int start, int end)
     sel->selected = start != end;
     sel->zeroWidth = (start == end) ? 1 : 0;
     sel->rectangular = False;
-    sel->start = min(start, end);
-    sel->end = max(start, end);
+    sel->start = std::min<int>(start, end);
+    sel->end = std::max<int>(start, end);
 }
 
 static void setRectSelect(selection *sel, int start, int end,
@@ -2133,8 +2132,8 @@ static void redisplaySelection(textBuffer *buf, selection *oldSelection,
     	    (oldSelection->rectangular && (
     	    	(oldSelection->rectStart != newSelection->rectStart) ||
     	    	(oldSelection->rectEnd != newSelection->rectEnd)))) {
-    	callModifyCBs(buf, min(oldStart, newStart), 0, 0,
-    		max(oldEnd, newEnd) - min(oldStart, newStart), nullptr);
+    	callModifyCBs(buf, std::min<int>(oldStart, newStart), 0, 0,
+    		std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), nullptr);
     	return;
     }
     
@@ -2149,10 +2148,10 @@ static void redisplaySelection(textBuffer *buf, selection *oldSelection,
     /* Otherwise, separate into 3 separate regions: ch1, and ch2 (the two
        changed areas), and the unchanged area of their intersection,
        and update only the changed area(s) */
-    ch1Start = min(oldStart, newStart);
-    ch2End = max(oldEnd, newEnd);
-    ch1End = max(oldStart, newStart);
-    ch2Start = min(oldEnd, newEnd);
+    ch1Start = std::min<int>(oldStart, newStart);
+    ch2End = std::max<int>(oldEnd, newEnd);
+    ch1End = std::max<int>(oldStart, newStart);
+    ch2Start = std::min<int>(oldEnd, newEnd);
     if (ch1Start != ch1End)
     	callModifyCBs(buf, ch1Start, 0, 0, ch1End-ch1Start, nullptr);
     if (ch2Start != ch2End)
@@ -2542,12 +2541,3 @@ static char *unexpandTabs(const char *text, int startIndent, int tabDist,
     return outStr;
 }
 
-static int max(int i1, int i2)
-{
-    return i1 >= i2 ? i1 : i2;
-}
-
-static int min(int i1, int i2)
-{
-    return i1 <= i2 ? i1 : i2;
-}
