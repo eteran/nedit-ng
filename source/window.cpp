@@ -212,7 +212,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     static Pixmap closeTabPixmap = 0;
 
     /* Allocate some memory for the new window data structure */
-    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+    window = new WindowInfo;
     
     /* initialize window structure */
     /* + Schwarzenberg: should a 
@@ -1101,7 +1101,7 @@ void CloseWindow(WindowInfo *window)
     }
 
     /* deallocate the window data structure */
-    XtFree((char*)window);
+    delete window;
 }
 
 /*
