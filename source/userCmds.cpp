@@ -337,12 +337,11 @@ void EditShellMenu(WindowInfo *window)
     }
 
     /* Create a structure for keeping track of dialog state */
-    ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+    ucd = new userCmdDialog;
     ucd->window = window;
     
     /* Set the dialog to operate on the Shell menu */
-    ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec *) *
-    	    MAX_ITEMS_PER_MENU);
+    ucd->menuItemsList = new menuItemRec*[MAX_ITEMS_PER_MENU];
     for (i=0; i<NShellMenuItems; i++)
     	ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
     ucd->nMenuItems = NShellMenuItems;
@@ -749,12 +748,11 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     }
 
     /* Create a structure for keeping track of dialog state */
-    ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+    ucd = new userCmdDialog;
     ucd->window = window;
 
     /* Set the dialog to operate on the Macro menu */
-    ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec **) *
-    	    MAX_ITEMS_PER_MENU);
+    ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
     if (dialogType == MACRO_CMDS) {
 	for (i=0; i<NMacroMenuItems; i++)
     	    ucd->menuItemsList[i] = copyMenuItemRec(MacroMenuItems[i]);
@@ -1995,6 +1993,9 @@ static void deleteMenuItems(Widget menuPane)
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
     /* Mark that there's no longer a (macro, bg, or shell) dialog up */
@@ -2012,6 +2013,10 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
     /* Read the dialog fields, and update the menus */
@@ -2033,11 +2038,17 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
     applyDialogChanges((userCmdDialog *)clientData);
 }
 
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
     if (checkMacro(ucd))
@@ -2141,6 +2152,10 @@ static int applyDialogChanges(userCmdDialog *ucd)
 
 static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
     if (GetReplayMacro() == nullptr)
@@ -2152,17 +2167,26 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     int i;
     
     for (i=0; i<ucd->nMenuItems; i++)
     	freeMenuItemRec(ucd->menuItemsList[i]);
-    XtFree((char *)ucd->menuItemsList);
-    XtFree((char *)ucd);
+		
+	delete [] ucd->menuItemsList;
+	delete ucd;
 }
 
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     userCmdDialog *ucd = (userCmdDialog *)clientData;
 
     RemoveDialogMnemonicHandler(XtParent(ucd->accTextW));
@@ -2170,6 +2194,10 @@ static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+	(void)w;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
 
     AddDialogMnemonicHandler(XtParent(ucd->accTextW), FALSE);
@@ -2177,6 +2205,9 @@ static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event)
 {
+
+	(void)w;
+
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     KeySym keysym = XLookupKeysym(event, 0);
     char outStr[MAX_ACCEL_LEN];
@@ -2220,6 +2251,9 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event)
 
 static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+
     XtSetSensitive(((userCmdDialog *)clientData)->repInpBtn,
     	    XmToggleButtonGetState(w));
 }

@@ -161,10 +161,6 @@ int GetPrefStdOpenDialog(void);
 char *GetPrefDelimiters(void);
 int GetPrefMaxPrevOpenFiles(void);
 int GetPrefTypingHidesPointer(void);
-#ifdef SGI_CUSTOM
-void SetPrefShortMenus(int state);
-int GetPrefShortMenus(void);
-#endif
 void SelectShellDialog(Widget parent, WindowInfo* forWindow);
 void EditLanguageModes(void);
 void ChooseFonts(WindowInfo *window, int forWindow);
