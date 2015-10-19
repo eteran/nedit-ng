@@ -59,19 +59,19 @@
 
 static char MacroEndBoundary[] = "--End-of-Macro--";
 
-typedef struct {
+struct smartIndentRec {
     const char *lmName;
     const char *initMacro;
     const char *newlineMacro;
     const char *modMacro;
-} smartIndentRec;
+};
 
-typedef struct {
+struct windowSmartIndentData {
     Program *newlineMacro;
     int inNewLineMacro;
     Program *modMacro;
     int inModMacro;
-} windowSmartIndentData;
+};
 
 /* Smart indent macros dialog information */
 static struct {

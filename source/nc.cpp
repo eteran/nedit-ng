@@ -55,11 +55,11 @@
 #define REQUEST_TIMEOUT         (Preferences.timeOut * 1000) /* milliseconds */
 #define FILE_OPEN_TIMEOUT       (Preferences.timeOut * 3000) /* milliseconds */
 
-typedef struct
+struct CommandLine
 {
    char* shell;
    char* serverRequest;
-} CommandLine;
+} ;
 
 static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id);
 static int startServer(const char *message, const char *commandLine);
@@ -133,18 +133,18 @@ static XrmOptionDescRec OpTable[] = {
 };
 
 /* Struct to hold info about files being opened and edited. */
-typedef struct _FileListEntry {
+struct FileListEntry {
     Atom                  waitForFileOpenAtom;
     Atom                  waitForFileClosedAtom;
     char*                 path;
-    struct _FileListEntry *next;
-} FileListEntry;
+    struct FileListEntry *next;
+};
 
-typedef struct {
+struct FileListHead {
     int            waitForOpenCount;
     int            waitForCloseCount;
     FileListEntry* fileList;
-} FileListHead;
+} ;
 static FileListHead fileListHead;
 
 static void setPropertyValue(Atom atom) {

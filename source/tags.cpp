@@ -67,8 +67,8 @@
 
 #define STRSAVE(a)  ((a!=nullptr)?strcpy((char *)malloc(strlen(a)+1),(a)):strcpy((char *)malloc(1),""))
 
-typedef struct _tag {
-    struct _tag *next;
+struct tag {
+    struct tag *next;
     const char *path;
     const char *name;
     const char *file;
@@ -76,7 +76,7 @@ typedef struct _tag {
     const char *searchString; /* see comment below */
     int posInf;               /* see comment below */
     short index;
-} tag;
+} ;
 
 /*
 **  contents of                   tag->searchString   | tag->posInf
@@ -690,9 +690,9 @@ static int scanETagsLine(const char *line, const char * tagPath, int index,
 }
 
 /* Tag File Type */
-typedef enum {
+enum TFT {
    TFT_CHECK, TFT_ETAGS, TFT_CTAGS
-} TFT;
+};
 
 /*  
 ** Loads tagsFile into the hash table. 
@@ -1906,11 +1906,11 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine,
 }
 
 /* A struct for describing a calltip alias */
-typedef struct _alias {
+struct tf_alias {
     char *dest;
     char *sources;
-    struct _alias *next;
-} tf_alias;
+    struct tf_alias *next;
+} ;
 
 /*
 ** Allocate a new alias, copying dest and stealing sources.  This may

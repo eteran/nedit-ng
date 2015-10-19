@@ -37,8 +37,8 @@
 
 
 
-typedef struct _Range Range;
-typedef struct _Rangeset Rangeset;
+struct Range;
+struct Rangeset;
 
 void RangesetRefreshRange(Rangeset *rangeset, int start, int end);
 void RangesetEmpty(Rangeset *rangeset);

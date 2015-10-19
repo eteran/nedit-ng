@@ -35,14 +35,14 @@
 
 
 
-typedef struct _tagFile {
-    struct _tagFile *next;
+struct tagFile {
+    struct tagFile *next;
     char *filename;
     time_t  date;
     Boolean loaded;
     short index;
     short refcount;     /* Only tips files are refcounted, not tags files */
-} tagFile;
+} ;
 
 extern tagFile *TagsFileList;         /* list of loaded tags files */
 extern tagFile *TipsFileList;         /* list of loaded calltips tag files */

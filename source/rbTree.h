@@ -29,12 +29,12 @@
 
 
 
-typedef struct rbTreeNode {
+struct rbTreeNode {
     struct rbTreeNode *left;   /* left child */
     struct rbTreeNode *right;  /* right child */
     struct rbTreeNode *parent; /* parent */
     int color;                 /* node color (rbTreeNodeBlack, rbTreeNodeRed) */
-} rbTreeNode;
+} ;
 
 typedef int (*rbTreeCompareNodeCB)(rbTreeNode *left, rbTreeNode *right);
 typedef rbTreeNode *(*rbTreeAllocateNodeCB)(rbTreeNode *src);

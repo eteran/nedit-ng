@@ -485,7 +485,7 @@ static unsigned char  Brace_Char;
 static unsigned char  Default_Meta_Char [] = "{.*+?[(|)^<>$";
 static unsigned char *Meta_Char;
 
-typedef struct { long lower; long upper; } len_range;
+struct len_range { long lower; long upper; };
 
 /* Forward declarations for functions used by `CompileRE'. */
 
@@ -2635,9 +2635,9 @@ static int Succ_Is_Delim;
 
 /* Define a pointer to an array to hold general (...){m,n} counts. */
 
-typedef struct brace_counts {
+struct brace_counts {
     unsigned long count [1]; /* More unwarranted chumminess with compiler. */
-} brace_counts;
+};
 
 static struct brace_counts *Brace;
 

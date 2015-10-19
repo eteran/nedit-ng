@@ -118,25 +118,25 @@
 
 extern WidgetClass textWidgetClass;
 
-struct _TextClassRec;
-struct _TextRec;
+struct TextClassRec;
+struct TextRec;
 
-typedef struct _TextRec *TextWidget;
+typedef struct TextRec *TextWidget;
 
-typedef struct {
+struct dragEndCBStruct {
     int startPos;
     int nCharsDeleted;
     int nCharsInserted;
     char *deletedText;
-} dragEndCBStruct;
+};
 
 enum smartIndentCallbackReasons {NEWLINE_INDENT_NEEDED, CHAR_TYPED};
-typedef struct {
+struct smartIndentCBStruct {
     int reason;
     int pos;
     int indentRequest;
     char *charsTyped;
-} smartIndentCBStruct;
+};
 
 /* User callable routines */
 void TextSetBuffer(Widget w, textBuffer *buffer);
@@ -158,8 +158,7 @@ void TextCutClipboard(Widget w, Time time);
 int TextFirstVisibleLine(Widget w);
 int TextNumVisibleLines(Widget w);
 int TextVisibleWidth(Widget w);
-void TextInsertAtCursor(Widget w, const char *chars, XEvent *event,
-    	int allowPendingDelete, int allowWrap);
+void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap);
 int TextFirstVisiblePos(Widget w);
 int TextLastVisiblePos(Widget w);
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);

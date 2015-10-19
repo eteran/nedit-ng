@@ -151,11 +151,11 @@ static Symbol *GlobalSymList = nullptr;
 /* List of all memory allocated for strings */
 static char *AllocatedStrings = nullptr;
 
-typedef struct SparseArrayEntryWrapperTag {
+struct SparseArrayEntryWrapper {
     SparseArrayEntry 	data; /* LEAVE this as top entry */
     int inUse;              /* we use pointers to the data to refer to the entire struct */
-    struct SparseArrayEntryWrapperTag *next;
-} SparseArrayEntryWrapper;
+    struct SparseArrayEntryWrapper *next;
+};
 
 static SparseArrayEntryWrapper *AllocatedSparseArrayEntries = nullptr; 
 

@@ -64,14 +64,14 @@ enum selectNotifyActions {UNSELECT_SECONDARY, REMOVE_SECONDARY,
 	
 /* temporary structure for passing data to the event handler for completing
    selection requests (the hard way, via xlib calls) */
-typedef struct {
+struct selectNotifyInfo {
     int action;
     XtIntervalId timeoutProcID;
     Time timeStamp;
     Widget widget;
     char *actionText;
     int length;
-} selectNotifyInfo;
+};
 
 static void modifiedCB(int pos, int nInserted, int nDeleted,
 	int nRestyled, const char *deletedText, void *cbArg);

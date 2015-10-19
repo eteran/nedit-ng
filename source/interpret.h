@@ -56,67 +56,66 @@ enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
 
 #define ARRAY_DIM_SEP "\034"
 
-struct DataValueTag;
-struct SparseArrayEntryTag;
-struct ProgramTag;
-struct SymbolRec;
+struct DataValue;
+struct SparseArrayEntry;
+struct Program;
+struct Symbol;
 
-typedef union InstTag {
+union Inst {
     int (*func)(void);
     int value;
-    struct SymbolRec *sym;
-} Inst;
+    struct Symbol *sym;
+};
 
-typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValueTag *argList, 
-        int nArgs, struct DataValueTag *result, const char **errMsg);
+typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
-typedef struct NStringTag {
-  char *rep;
-  size_t len;
-} NString;
+struct NString {
+	char *rep;
+	size_t len;
+};
 
-typedef struct DataValueTag {
+struct DataValue {
     enum typeTags tag;
     union {
         int n;
-        struct NStringTag str;
+        NString str;
         BuiltInSubr subr;
-        struct ProgramTag* prog;
+        struct Program* prog;
         XtActionProc xtproc;
         Inst* inst;
-        struct DataValueTag* dataval;
-        struct SparseArrayEntryTag *arrayPtr;
+        struct DataValue* dataval;
+        struct SparseArrayEntry *arrayPtr;
     } val;
-} DataValue;
+};
 
-typedef struct SparseArrayEntryTag {
+struct SparseArrayEntry {
     rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
     char *key;
     DataValue value;
-} SparseArrayEntry;
+};
 
 /* symbol table entry */
-typedef struct SymbolRec {
+struct Symbol {
     char *name;
     enum symTypes type;
     DataValue value;
-    struct SymbolRec *next;     /* to link to another */  
-} Symbol;
+    struct Symbol *next;     /* to link to another */  
+} ;
 
-typedef struct ProgramTag {
+struct Program {
     Symbol *localSymList;
     Inst *code;
-} Program;
+};
 
 /* Information needed to re-start a preempted macro */
-typedef struct {
+struct RestartData {
     DataValue *stack;
     DataValue *stackP;
     DataValue *frameP;
     Inst *pc;
     WindowInfo *runWindow;
     WindowInfo *focusWindow;
-} RestartData;
+} ;
 
 void InitMacroGlobals(void);
 

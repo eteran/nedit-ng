@@ -70,12 +70,12 @@ enum fontTypes {PLAIN_FONT, ITALIC_FONT, BOLD_FONT, BOLD_ITALIC_FONT};
 static const char *FontTypeNames[N_FONT_TYPES] =
    {"Plain", "Italic", "Bold", "Bold Italic"};
 
-typedef struct {
+struct highlightStyleRec {
     char *name;
     char *color;
     char *bgColor;
     int font;
-} highlightStyleRec;
+};
 
 static int styleError(const char *stringStart, const char *stoppedAt,
        const char *message);

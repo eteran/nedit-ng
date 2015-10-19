@@ -39,7 +39,7 @@
 
 
 
-typedef struct HelpMenu         /* Maintains help menu structure */
+struct HelpMenu         /* Maintains help menu structure */
 {
     struct HelpMenu * next;
     int               level;    /* menu level, submenu > 1               */
@@ -48,15 +48,15 @@ typedef struct HelpMenu         /* Maintains help menu structure */
     int               hideIt;   /* value which determines displayability */
     char              mnemonic; /* '-' for separator                     */
     const char            * subTitle; /* title for sub menu, or NULL           */
-} HelpMenu;
+};
 
-typedef struct Href             /* Source to topic internal hyperlinks */
+struct Href             /* Source to topic internal hyperlinks */
 {
     struct Href *  next;
     int            location;    /* position to link in topic    */
     enum HelpTopic topic;       /* target of link in this topic */
     const char *         source;      /* hypertext link characters    */
-} Href;
+};
 
 /*============================================================================*/
 /*                             VARIABLE DECLARATIONS                          */

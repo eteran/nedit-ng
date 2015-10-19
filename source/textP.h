@@ -44,19 +44,19 @@ enum dragStates {NOT_CLICKED, PRIMARY_CLICKED, SECONDARY_CLICKED,
 	SECONDARY_RECT_DRAG, PRIMARY_BLOCK_DRAG, DRAG_CANCELED, MOUSE_PAN};
 enum multiClickStates {NO_CLICKS, ONE_CLICK, TWO_CLICKS, THREE_CLICKS};
 
-typedef struct _TextClassPart{
+struct TextClassPart{
     int ignore;
-} TextClassPart;
+};
 
-typedef struct _TextClassRec{
+struct TextClassRec{
     CoreClassPart  core_class;
     XmPrimitiveClassPart primitive_class;
     TextClassPart  text_class;
-} TextClassRec;
+};
 
 extern TextClassRec nTextClassRec;
 
-typedef struct _TextPart {
+struct TextPart {
     /* resources */
     Pixel selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel;
     Pixel cursorFGPixel, lineNumFGPixel, calltipFGPixel, calltipBGPixel;
@@ -128,13 +128,13 @@ typedef struct _TextPart {
     int dragSourceDeleted;  	    	/* # of chars. deleted "" */
     int dragNLines; 	    	    	/* # of newlines in text being drag'd */
     XmString backlightCharTypes;	/* background class string to parse */
-} TextPart;
+};
 
-typedef struct _TextRec {
+struct TextRec {
    CorePart        core;
    XmPrimitivePart primitive;
    TextPart        text;
-} TextRec;
+};
 
 
 

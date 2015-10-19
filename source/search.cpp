@@ -74,17 +74,17 @@
 
 int NHist = 0;
 
-typedef struct _SelectionInfo {
+struct SelectionInfo {
     int done;
     WindowInfo* window;
     char* selection;
-} SelectionInfo;
+} ;
 
-typedef struct {
+struct SearchSelectedCallData {
     int direction;
     int searchType;
     int searchWrap;
-} SearchSelectedCallData;
+} ;
 
 /* History mechanism for search and replace strings */
 static char *SearchHistory[MAX_SEARCH_HISTORY];
@@ -232,11 +232,11 @@ static void iSearchRecordLastBeginPos(WindowInfo *window, int direction,
 static Boolean prefOrUserCancelsSubst(const Widget parent,
         const Display* display);
 
-typedef struct _charMatchTable {
+struct charMatchTable {
     char c;
     char match;
     char direction;
-} charMatchTable;
+} ;
 
 #define N_MATCH_CHARS 13
 #define N_FLASH_CHARS 6

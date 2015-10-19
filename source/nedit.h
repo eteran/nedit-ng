@@ -150,8 +150,8 @@ enum truncSubstitution {TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TRU
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
 /* Record on undo list */
-typedef struct _UndoInfo {
-    struct _UndoInfo *next;		/* pointer to the next undo record */
+struct UndoInfo {
+    struct UndoInfo *next;		/* pointer to the next undo record */
     int		type;
     int		startPos;
     int		endPos;
@@ -165,14 +165,14 @@ typedef struct _UndoInfo {
     char	restoresToSaved;	/* flag to indicate undoing this
     	    	    	    	    	   operation will restore file to
     	    	    	    	    	   last saved (unmodified) state */
-} UndoInfo;
+};
 
 /* Element in bookmark table */
-typedef struct {
+struct Bookmark {
     char label;
     int cursorPos;
     selection sel;
-} Bookmark;
+};
 
 /* Identifiers for the different colors that can be adjusted. */
 enum colorTypes {
@@ -188,7 +188,7 @@ enum colorTypes {
 };
 
 /* cache user menus: manage mode of user menu list element */
-typedef enum {
+enum UserMenuManageMode {
     UMMM_UNMANAGE,     /* user menu item is unmanaged */
     UMMM_UNMANAGE_ALL, /* user menu item is a sub menu and is
                           completely unmanaged (including nested
@@ -198,10 +198,12 @@ typedef enum {
                           individually */
     UMMM_MANAGE_ALL    /* user menu item is a sub menu and is
                           completely managed */
-} UserMenuManageMode;
+};
+
+struct UserMenuList;
 
 /* structure representing one user menu item */
-typedef struct _UserMenuListElement {
+struct UserMenuListElement {
     UserMenuManageMode    umleManageMode;          /* current manage mode */
     UserMenuManageMode    umlePrevManageMode;      /* previous manage mode */
     char                 *umleAccKeys;             /* accelerator keys of item */
@@ -211,20 +213,20 @@ typedef struct _UserMenuListElement {
                                                       this element */
     Widget                umleSubMenuPane;         /* holds menu pane, if item
                                                       represents a sub menu */
-    struct _UserMenuList *umleSubMenuList;         /* elements of sub menu, if
+    struct UserMenuList *umleSubMenuList;         /* elements of sub menu, if
                                                       item represents a sub menu */
-} UserMenuListElement;
+} ;
 
 /* structure holding a list of user menu items */
-typedef struct _UserMenuList {
+struct UserMenuList {
     int                   umlNbrItems;
     UserMenuListElement **umlItems;
-} UserMenuList;
+};
 
 /* structure holding cache info about Shell and Macro menus, which are
    shared over all "tabbed" documents (needed to manage/unmanage this
    user definable menus when language mode changes) */
-typedef struct _UserMenuCache {
+struct UserMenuCache {
     int          umcLanguageMode;     /* language mode applied for shared
                                          user menus */
     Boolean      umcShellMenuCreated; /* indicating, if all shell menu items
@@ -233,18 +235,18 @@ typedef struct _UserMenuCache {
                                          were created */
     UserMenuList umcShellMenuList;    /* list of all shell menu items */
     UserMenuList umcMacroMenuList;    /* list of all macro menu items */
-} UserMenuCache;
+} ;
 
 /* structure holding cache info about Background menu, which is
    owned by each document individually (needed to manage/unmanage this
    user definable menu when language mode changes) */
-typedef struct _UserBGMenuCache {
+struct UserBGMenuCache {
     int          ubmcLanguageMode;    /* language mode applied for background
                                          user menu */
     Boolean      ubmcMenuCreated;     /* indicating, if all background menu
                                          items were created */
     UserMenuList ubmcMenuList;        /* list of all background menu items */
-} UserBGMenuCache;
+} ;
 
 /* The WindowInfo structure holds the information on a Document. A number
    of 'tabbed' documents may reside within a shell window, hence some of 
@@ -263,8 +265,8 @@ typedef struct _UserBGMenuCache {
    WindowInfo. This struct name has been preserved to ease the transition
    when tabbed mode was introduced after NEdit 5.4.
 */
-typedef struct _WindowInfo {
-    struct _WindowInfo *next;
+struct WindowInfo {
+    struct WindowInfo *next;
     Widget	shell;			/* application shell of window */
     Widget	mainWin;		/* main window of shell */
     Widget	splitPane;		/* paned win. for splitting text area */
@@ -522,7 +524,7 @@ typedef struct _WindowInfo {
     	    	    	    	    	   selected in the window */
     Boolean	multiFileReplSelected;	/* selected during last multi-window 
 					   replacement operation (history) */
-    struct _WindowInfo**		/* temporary list of writable windows */
+    struct WindowInfo**		/* temporary list of writable windows */
 		writableWindows;	/* used during multi-file replacements */
     int		nWritableWindows;	/* number of elements in the list */
     Bool 	multiFileBusy;		/* suppresses multiple beeps/dialogs
@@ -548,7 +550,7 @@ typedef struct _WindowInfo {
     UserBGMenuCache  userBGMenuCache;   /* shell & macro menu are shared over all
                                            "tabbed" documents, while each document
                                            has its own background menu. */
-} WindowInfo;
+};
 
 extern WindowInfo *WindowList;
 extern Display *TheDisplay;

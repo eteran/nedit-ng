@@ -149,7 +149,7 @@ static const char* TruncSubstitutionModes[] = {"Silent", "Fail", "Warn", "Ignore
 
 /* list of available language modes and language specific preferences */
 static int NLanguageModes = 0;
-typedef struct {
+struct languageModeRec {
     char *name;
     int nExtensions;
     char **extensions;
@@ -160,7 +160,7 @@ typedef struct {
     int indentStyle;	
     int tabDist;	
     int emTabDist;	
-} languageModeRec;
+} ;
 static languageModeRec *LanguageModes[MAX_LANGUAGE_MODES];
 
 /* Language mode dialog information */
@@ -188,7 +188,7 @@ static struct {
               nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,0};
 
 /* Font dialog information */
-typedef struct {
+struct fontDialog {
     Widget shell;
     Widget primaryW;
     Widget fillW;
@@ -200,10 +200,10 @@ typedef struct {
     Widget boldItalicErrW;
     WindowInfo *window;
     int forWindow;
-} fontDialog;
+} ;
 
 /* Color dialog information */
-typedef struct {
+struct colorDialog {
     Widget shell;
     Widget textFgW;
     Widget textFgErrW;
@@ -222,7 +222,7 @@ typedef struct {
     Widget cursorFgW;
     Widget cursorFgErrW;
     WindowInfo *window;
-} colorDialog;
+} ;
 
 /* Repository for simple preferences settings */
 static struct prefData {

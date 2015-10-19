@@ -39,13 +39,13 @@
 
 /* -------------------------------------------------------------------------- */
 
-struct _Range {
+struct Range {
     int start, end;			/* range from [start-]end */
 };
 
 typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
-struct _Rangeset {
+struct Rangeset {
     RangesetUpdateFn *update_fn;	/* modification update function */
     const char *update_name;			/* update function name */
     int maxpos;				/* text buffer maxpos */
@@ -61,7 +61,7 @@ struct _Rangeset {
     char *name;                         /* name of rangeset */
 };
 
-struct _RangesetTable {
+struct RangesetTable {
     int n_set;				/* how many sets are active */
     textBuffer *buf;			/* the text buffer of the rangeset */
     Rangeset set[N_RANGESETS];		/* the rangeset table */

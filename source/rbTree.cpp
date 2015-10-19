@@ -565,11 +565,11 @@ void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode)
 ** code to test basic stuff of tree routines
 */
 
-typedef struct TestNode {
+struct TestNode {
     rbTreeNode      nodePointers; /* MUST BE FIRST MEMBER */
     char *str;
     char *key;
-} TestNode;
+};
 
 
 static int rbTreeCompareNode_TestNode(rbTreeNode *left, rbTreeNode *right)

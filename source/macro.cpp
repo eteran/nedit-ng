@@ -96,7 +96,7 @@
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
-typedef struct {
+struct macroCmdInfo {
     XtIntervalId bannerTimeoutID;
     XtWorkProcId continueWorkProcID;
     char bannerIsUp;
@@ -104,15 +104,15 @@ typedef struct {
     Program *program;
     RestartData *context;
     Widget dialog;
-} macroCmdInfo;
+};
 
 /* Widgets and global data for Repeat dialog */
-typedef struct {
+struct repeatDialog {
     WindowInfo *forWindow;
     char *lastCommand;
     Widget shell, repeatText, lastCmdToggle;
     Widget inSelToggle, toEndToggle;
-} repeatDialog;
+} ;
 
 static void cancelLearn(void);
 static void runMacro(WindowInfo *window, Program *prog);

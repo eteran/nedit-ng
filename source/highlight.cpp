@@ -85,7 +85,7 @@
     	(contextRequirements->nLines != 1 || contextRequirements->nChars != 0)
 
 /* "Compiled" version of pattern specification */
-typedef struct _highlightDataRec {
+struct highlightDataRec {
     regexp *startRE;
     regexp *endRE;
     regexp *errorRE;
@@ -98,18 +98,18 @@ typedef struct _highlightDataRec {
     int nSubPatterns;
     int nSubBranches; /* Number of top-level branches of subPatternRE */
     long userStyleIndex;
-    struct _highlightDataRec **subPatterns;
-} highlightDataRec;
+    struct highlightDataRec **subPatterns;
+} ;
 
 /* Context requirements for incremental reparsing of a pattern set */
-typedef struct {
+struct reparseContext {
     int nLines;
     int nChars;
-} reparseContext;
+};
 
 /* Data structure attached to window to hold all syntax highlighting
    information (for both drawing and incremental reparsing) */
-typedef struct {
+struct windowHighlightData {
     highlightDataRec *pass1Patterns;
     highlightDataRec *pass2Patterns;
     char *parentStyles;
@@ -118,7 +118,7 @@ typedef struct {
     int nStyles;
     textBuffer *styleBuffer;
     patternSet *patternSetForWindow;
-} windowHighlightData;
+};
 
 static windowHighlightData *createHighlightData(WindowInfo *window,
 	patternSet *patSet);

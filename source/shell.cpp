@@ -83,20 +83,20 @@
 #define OUTPUT_TO_STRING 32
 
 /* element of a buffer list for collecting output from shell processes */
-typedef struct bufElem {
+struct bufElem {
     struct bufElem *next;
     int length;
     char contents[IO_BUF_SIZE];
-} buffer;
+};
 
 /* data attached to window during shell command execution with
    information for controling and communicating with the process */
-typedef struct {
+struct shellCmdInfo {
     int flags;
     int stdinFD, stdoutFD, stderrFD;
     pid_t childPid;
     XtInputId stdinInputID, stdoutInputID, stderrInputID;
-    buffer *outBufs, *errBufs;
+    bufElem *outBufs, *errBufs;
     char *input;
     char *inPtr;
     Widget textW;
@@ -105,7 +105,7 @@ typedef struct {
     XtIntervalId bannerTimeoutID, flushTimeoutID;
     char bannerIsUp;
     char fromMacro;
-} shellCmdInfo;
+} ;
 
 static void issueCommand(WindowInfo *window, const char *command, char *input,
 	int inputLen, int flags, Widget textW, int replaceLeft,
@@ -116,9 +116,9 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError);
 static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	int *stdinFD, int *stdoutFD, int *stderrFD);
-static void addOutput(buffer **bufList, buffer *buf);
-static char *coalesceOutput(buffer **bufList, int *length);
-static void freeBufList(buffer **bufList);
+static void addOutput(bufElem **bufList, bufElem *buf);
+static char *coalesceOutput(bufElem **bufList, int *length);
+static void freeBufList(bufElem **bufList);
 static void removeTrailingNewlines(char *string);
 static void createOutputDialog(Widget parent, char *text);
 static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure);
@@ -568,11 +568,11 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-    buffer *buf;
+    bufElem *buf;
     int nRead;
 
     /* read from the process' stdout stream */
-    buf = (buffer *)XtMalloc(sizeof(buffer));
+    buf = (bufElem *)XtMalloc(sizeof(bufElem));
     nRead = read(cmdData->stdoutFD, buf->contents, IO_BUF_SIZE);
     
     /* error in read */
@@ -609,11 +609,11 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-    buffer *buf;
+    bufElem *buf;
     int nRead;
     
     /* read from the process' stderr stream */
-    buf = (buffer *)XtMalloc(sizeof(buffer));
+    buf = (bufElem *)XtMalloc(sizeof(bufElem));
     nRead = read(cmdData->stderrFD, buf->contents, IO_BUF_SIZE);
     
     /* error in read */
@@ -1037,7 +1037,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 /*
 ** Add a buffer full of output to a buffer list
 */
-static void addOutput(buffer **bufList, buffer *buf)
+static void addOutput(bufElem **bufList, bufElem *buf)
 {
     buf->next = *bufList;
     *bufList = buf;
@@ -1048,9 +1048,9 @@ static void addOutput(buffer **bufList, buffer *buf)
 ** freeing the memory occupied by the buffer list.  Returns the memory block
 ** as the function result, and its length as parameter "length".
 */
-static char *coalesceOutput(buffer **bufList, int *outLength)
+static char *coalesceOutput(bufElem **bufList, int *outLength)
 {
-    buffer *buf, *rBufList = nullptr;
+    bufElem *buf, *rBufList = nullptr;
     char *outBuf, *outPtr, *p;
     int i, length = 0;
     
@@ -1069,7 +1069,7 @@ static char *coalesceOutput(buffer **bufList, int *outLength)
     	rBufList = buf;
     }
     
-    /* copy the buffers into the output buffer */
+    /* copy the buffers into the output bufElem */
     outPtr = outBuf;
     for (buf=rBufList; buf!=nullptr; buf=buf->next) {
     	p = buf->contents;
@@ -1087,9 +1087,9 @@ static char *coalesceOutput(buffer **bufList, int *outLength)
     return outBuf;
 }
 
-static void freeBufList(buffer **bufList)
+static void freeBufList(bufElem **bufList)
 {
-    buffer *buf;
+    bufElem *buf;
     
     while (*bufList != nullptr) {
     	buf = *bufList;

@@ -95,7 +95,7 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 enum dialogTypes {SHELL_CMDS, MACRO_CMDS, BG_MENU_CMDS};
 
 /* Structure representing a menu item for shell, macro and BG menus*/
-typedef struct {
+struct menuItemRec {
     char *name;
     unsigned int modifiers;
     KeySym keysym;
@@ -106,11 +106,11 @@ typedef struct {
     char saveFirst;
     char loadAfter;
     char *cmd;
-} menuItemRec;
+};
 
 /* Structure for widgets and flags associated with shell command,
    macro command and BG command editing dialogs */
-typedef struct {
+struct userCmdDialog {
     int dialogType;
     WindowInfo *window;
     Widget nameTextW, accTextW, mneTextW, cmdTextW, saveFirstBtn;
@@ -119,14 +119,14 @@ typedef struct {
     Widget managedList;
     menuItemRec **menuItemsList;
     int nMenuItems;
-} userCmdDialog;
+};
 
 /* Structure for keeping track of hierarchical sub-menus during user-menu
    creation */
-typedef struct {
+struct menuTreeItem {
     char *name;
     Widget menuPane;
-} menuTreeItem;
+} ;
 
 /* Structure holding hierarchical info about one sub-menu.
 
@@ -151,18 +151,18 @@ typedef struct {
    1.) "subMenuA" (hierarchical ID = {1} means: element nbr. "1" of main menu)
    2.) "subMenuA>subMenuB" (hierarchical ID = {1, 2} means: el. nbr. "2" of
        "subMenuA", which itself is el. nbr. "0" of main menu) */
-typedef struct {
+struct userSubMenuInfo {
     char *usmiName;  /* hierarchical name of sub-menu */
     int  *usmiId;    /* hierarchical ID of sub-menu   */
     int   usmiIdLen; /* length of hierarchical ID     */
-} userSubMenuInfo;
+} ;
 
 /* Holds info about sub-menu structure of an user menu */
-typedef struct {
+struct userSubMenuCache {
     int              usmcNbrOfMainMenuItems; /* number of main menu items */
     int              usmcNbrOfSubMenus;      /* number of sub-menus */
     userSubMenuInfo *usmcInfo;               /* list of sub-menu info */
-} userSubMenuCache;
+};
 
 /* Structure holding info about a single menu item.
    According to above example there exist 5 user menu items:
@@ -173,7 +173,7 @@ typedef struct {
    d.) "menuItemB1" (hierarchical ID = {1, 2, 0})
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
-typedef struct {
+struct userMenuInfo {
     char    *umiName;               /* hierarchical name of menu item
                                        (w.o. language mode info) */
     int     *umiId;                 /* hierarchical ID of menu item */
@@ -187,11 +187,11 @@ typedef struct {
                                        matches */
     Boolean  umiToBeManaged;        /* indicates, that menu item needs
                                        to be managed */
-} userMenuInfo;
+};
 
 /* Structure holding info about a selected user menu (shell, macro or
    background) */
-typedef struct {
+struct selectedUserMenu {
     int                sumType;            /* type of menu (shell, macro or
                                               background */
     Widget             sumMenuPane;        /* pane of main menu */
@@ -202,7 +202,7 @@ typedef struct {
     UserMenuList      *sumMainMenuList;    /* cached info about main menu */
     Boolean           *sumMenuCreated;     /* pointer to "menu created"
                                               indicator */
-} selectedUserMenu;
+};
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */

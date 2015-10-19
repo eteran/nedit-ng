@@ -38,7 +38,7 @@
 /* Structure to contain the compiled form of a regular expression plus
    pointers to matched text.  `program' is the actual compiled regex code. */
 
-typedef struct regexp {
+struct regexp {
    char *startp [NSUBEXP];  /* Captured text starting locations. */
    char *endp   [NSUBEXP];  /* Captured text ending locations. */
    char *extentpBW;         /* Points to the maximum extent of text scanned by
@@ -52,15 +52,15 @@ typedef struct regexp {
    char  match_start;       /* Internal use only. */
    char  anchor;            /* Internal use only. */
    char  program [1];       /* Unwarranted chumminess with compiler. */
-} regexp;
+};
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 
-typedef enum {
+enum RE_DEFAULT_FLAG {
   REDFLT_STANDARD         = 0,
   REDFLT_CASE_INSENSITIVE = 1
   /* REDFLT_MATCH_NEWLINE = 2    Currently not used. */ 
-} RE_DEFAULT_FLAG;
+};
 
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 

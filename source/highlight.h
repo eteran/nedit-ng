@@ -43,7 +43,7 @@
 
 
 /* Pattern specification structure */
-typedef struct {
+struct highlightPattern {
     const char *name;
     char *startRE;
     char *endRE;
@@ -51,16 +51,16 @@ typedef struct {
     char *style;
     char *subPatternOf;
     int flags;
-} highlightPattern;
+};
 
 /* Header for a set of patterns */
-typedef struct {
+struct patternSet {
     const char *languageMode;
     int lineContext;
     int charContext;
     int nPatterns;
     highlightPattern *patterns;
-} patternSet;
+};
 
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted,
     	int nRestyled, const char *deletedText, void *cbArg);
