@@ -50,7 +50,6 @@
 #include "windowTitle.h"
 #include "interpret.h"
 #include "rangeset.h"
-#include "MotifHelper.h"
 #include "../util/clearcase.h"
 #include "../util/misc.h"
 #include "../util/fileUtils.h"
@@ -213,7 +212,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     static Pixmap closeTabPixmap = 0;
 
     /* Allocate some memory for the new window data structure */
-    window = new WindowInfo;
+    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     
     /* initialize window structure */
     /* + Schwarzenberg: should a 
@@ -345,7 +344,15 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     ac = 0;
     XtSetArg(al[ac], XmNtitle, name); ac++;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
+#ifdef SGI_CUSTOM
+    if (strncmp(name, "Untitled", 8) == 0) { 
+        XtSetArg(al[ac], XmNiconName, APP_NAME); ac++;
+    } else {
+        XtSetArg(al[ac], XmNiconName, name); ac++;
+    }
+#else
     XtSetArg(al[ac], XmNiconName, name); ac++;
+#endif
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?nullptr:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
@@ -376,6 +383,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     XtAddEventHandler (winShell, (EventMask)0, True,
                 (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif /* EDITRES */
+
+#ifndef SGI_CUSTOM
+    addWindowIcon(winShell);
+#endif
 
     /* Create a MainWindow to manage the menubar and text area, set the
        userData resource to be used by WidgetToWindow to recover the
@@ -429,7 +440,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     }
     window->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton",
             xmPushButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Find"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Find"),
             XmNlabelType, XmPIXMAP,
             XmNlabelPixmap, isrcFind,
             XmNtraversalOn, False,
@@ -447,7 +458,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
 
     window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Case"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Case"),
             XmNset, GetPrefSearch() == SEARCH_CASE_SENSE 
             || GetPrefSearch() == SEARCH_REGEX
             || GetPrefSearch() == SEARCH_CASE_SENSE_WORD,
@@ -462,7 +473,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     window->iSearchRegexToggle = XtVaCreateManagedWidget("iSearchREToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("RegExp"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"RegExp"),
             XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE 
             || GetPrefSearch() == SEARCH_REGEX,
             XmNtopAttachment, XmATTACH_FORM,
@@ -477,7 +488,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     
     window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle",
             xmToggleButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Rev"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Rev"),
             XmNset, False,
             XmNtopAttachment, XmATTACH_FORM,
             XmNbottomAttachment, XmATTACH_FORM,
@@ -495,7 +506,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     }
     window->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton",
             xmPushButtonWidgetClass, window->iSearchForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("<x"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"<x"),
             XmNlabelType, XmPIXMAP,
             XmNlabelPixmap, isrcClear,
             XmNtraversalOn, False,
@@ -610,7 +621,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     /* A separate display of the line/column number */
     window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo",
             xmLabelWidgetClass, window->statsLineForm,
-            XmNlabelString, s1=XmStringCreateSimpleEx("L: ---  C: ---"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"L: ---  C: ---"),
             XmNshadowThickness, 0,
             XmNmarginHeight, 2,
             XmNtraversalOn, False,
@@ -808,7 +819,7 @@ static Widget addTab(Widget folder, const char *string)
     Widget tooltipLabel, tab;
     XmString s1;
 
-    s1 = XmStringCreateSimpleEx((char *)string);
+    s1 = XmStringCreateSimple((char *)string);
     tab = XtVaCreateManagedWidget("tab",
 	    xrwsBubbleButtonWidgetClass, folder,
 	    /* XmNmarginWidth, <default@nedit.c>, */
@@ -886,7 +897,7 @@ void SortTabBar(WindowInfo *window)
         return;
 
     /* first sort the documents */
-    windows = new WindowInfo*[nDoc];
+    windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
     for (w=WindowList, i=0; w!=nullptr; w=w->next) {
     	if (window->shell == w->shell)
     	    windows[i++] = w;
@@ -910,7 +921,7 @@ void SortTabBar(WindowInfo *window)
         j++;
     }
     
-    delete [] windows;
+    XtFree((char *)windows);
 }
 
 /* 
@@ -1090,7 +1101,7 @@ void CloseWindow(WindowInfo *window)
     }
 
     /* deallocate the window data structure */
-    delete window;
+    XtFree((char*)window);
 }
 
 /*
@@ -1732,11 +1743,11 @@ void UpdateNewOppositeMenu(WindowInfo *window, int openInTab)
     XmString lbl;
     if ( openInTab )
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimpleEx("New Window"), 
+                XmNlabelString, lbl=XmStringCreateSimple((String)"New Window"), 
                 XmNmnemonic, 'W', nullptr);
     else
         XtVaSetValues(window->newOppositeItem, 
-                XmNlabelString, lbl=XmStringCreateSimpleEx("New Tab"), 
+                XmNlabelString, lbl=XmStringCreateSimple((String)"New Tab"), 
                 XmNmnemonic, 'T', nullptr);
     XmStringFree(lbl);
 }
@@ -2448,7 +2459,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
         nWindows++;
     }
     argv = (char **)XtMalloc(maxArgc*sizeof(char *));
-    revWindowList = new WindowInfo*[nWindows];
+    revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *)*nWindows);
     for (win=WindowList, i=nWindows-1; win!=nullptr; win=win->next, i--)
         revWindowList[i] = win;
         
@@ -2502,7 +2513,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData)
 	}
     }
 
-    delete [] revWindowList;
+    XtFree((char *)revWindowList);
 
     /* Set the window's WM_COMMAND property to the created command line */
     XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
@@ -2691,6 +2702,9 @@ void UpdateStatsLine(WindowInfo *window)
     char *string, *format, slinecol[32];
     Widget statW = window->statsLine;
     XmString xmslinecol;
+#ifdef SGI_CUSTOM
+    char *sleft, *smid, *sright;
+#endif
     
     if (!IsTopDocument(window))
       return;
@@ -2721,7 +2735,7 @@ void UpdateStatsLine(WindowInfo *window)
     }
     
     /* Update the line/column number */
-    xmslinecol = XmStringCreateSimpleEx(slinecol);
+    xmslinecol = XmStringCreateSimple(slinecol);
     XtVaSetValues( window->statsLineColNo, 
             XmNlabelString, xmslinecol, nullptr );
     XmStringFree(xmslinecol);
@@ -2729,12 +2743,27 @@ void UpdateStatsLine(WindowInfo *window)
     /* Don't clobber the line if there's a special message being displayed */
     if (!window->modeMessageDisplayed) {
         /* Change the text in the stats line */
+#ifdef SGI_CUSTOM
+        /* don't show full pathname, just dir and filename (+ byte info) */
+        smid = strchr(string, '/'); 
+        if ( smid != nullptr ) {
+            sleft = smid;
+            sright = strrchr(string, '/'); 
+            while (strcmp(smid, sright)) {
+                    sleft = smid;
+                    smid = strchr(sleft + 1, '/');
+            }
+            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), sleft + 1);
+        } else
+            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
+#else
         XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
+#endif
     }
     XtFree(string);
     
     /* Update the line/col display */
-    xmslinecol = XmStringCreateSimpleEx(slinecol);
+    xmslinecol = XmStringCreateSimple(slinecol);
     XtVaSetValues(window->statsLineColNo,
             XmNlabelString, xmslinecol, nullptr);
     XmStringFree(xmslinecol);
@@ -3233,7 +3262,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
     int nCols, nRows;
     
     /* Allocate some memory for the new window data structure */
-    window = new WindowInfo;
+    window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
     
     /* inherit settings and later reset those required */
     memcpy(window, shellWindow, sizeof(WindowInfo));
@@ -3589,7 +3618,7 @@ void RefreshTabState(WindowInfo *win)
        strcat(labelString, " - ");
        strcat(labelString, win->path);
     }
-    tipString=XmStringCreateSimpleEx(labelString);
+    tipString=XmStringCreateSimple(labelString);
     
     XtVaSetValues(win->tab,
 	    XltNbubbleString, tipString,
@@ -4356,7 +4385,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList)
     UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
 
     for (undo = orgList; undo; undo = undo->next) {
-	clone = new UndoInfo;
+	clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
 	memcpy(clone, undo, sizeof(UndoInfo));
 
 	if (undo->oldText) {
@@ -4513,7 +4542,7 @@ void MoveDocumentDialog(WindowInfo *window)
        the document to be moved */    
     nWindows = NWindows();
     list = (XmStringTable) XtMalloc(nWindows * sizeof(XmString *));
-    shellWinList = new WindowInfo *[nWindows];
+    shellWinList = (WindowInfo **) XtMalloc(nWindows * sizeof(WindowInfo *));
 
     for (win=WindowList; win; win=win->next) {
 	if (!IsTopDocument(win) || win->shell == window->shell)
@@ -4522,7 +4551,7 @@ void MoveDocumentDialog(WindowInfo *window)
 	sprintf(tmpStr, "%s%s",
 		win->filenameSet? win->path : "", win->filename);
 
-	list[nList] = XmStringCreateSimpleEx(tmpStr);
+	list[nList] = XmStringCreateSimple(tmpStr);
 	shellWinList[nList] = win;
 	nList++;
     }
@@ -4530,15 +4559,15 @@ void MoveDocumentDialog(WindowInfo *window)
     /* stop here if there's no other window to move to */
     if (!nList) {
         XtFree((char *)list);
-        delete[] shellWinList;
+        XtFree((char *)shellWinList);
         return;
     }
 
     /* create the dialog */
     parent = window->shell;
-    popupTitle = XmStringCreateSimpleEx("Move Document");
+    popupTitle = XmStringCreateSimple((String)"Move Document");
     sprintf(tmpStr, "Move %s into window of", window->filename);
-    s1 = XmStringCreateSimpleEx(tmpStr);
+    s1 = XmStringCreateSimple(tmpStr);
     ac = 0;
     XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); ac++;
     XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle); ac++;
@@ -4563,7 +4592,7 @@ void MoveDocumentDialog(WindowInfo *window)
     XtFree((char *)list);    
 
     /* create the option box for moving all documents */    
-    s1 = MKSTRING("Move all documents in this window");
+    s1 = MKSTRING((String)"Move all documents in this window");
     moveAllOption =  XtVaCreateWidget("moveAll", 
     	    xmToggleButtonWidgetClass, dialog,
 	    XmNlabelString, s1,
@@ -4577,7 +4606,7 @@ void MoveDocumentDialog(WindowInfo *window)
     /* disable option if only one document in the window */
     XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
-    s1 = MKSTRING("Move");
+    s1 = MKSTRING((String)"Move");
     XtVaSetValues (dialog, XmNokLabelString, s1, nullptr);
     XmStringFree(s1);
     
@@ -4619,7 +4648,7 @@ void MoveDocumentDialog(WindowInfo *window)
 	}
     }
 
-    delete [] shellWinList;    
+    XtFree((char *)shellWinList);    
     XtDestroyWidget(dialog);	
 }
 

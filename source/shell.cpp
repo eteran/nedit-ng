@@ -1141,7 +1141,7 @@ static void createOutputDialog(Widget parent, char *text)
     form = CreateFormDialog(parent, (String)"shellOutForm", al, ac);
 
     ac = 0;
-    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING("OK")); ac++;
+    XtSetArg(al[ac], XmNlabelString, st1=MKSTRING((String)"OK")); ac++;
     XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN); ac++;
     XtSetArg(al[ac], XmNhighlightThickness, 2);  ac++;
     XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);  ac++;

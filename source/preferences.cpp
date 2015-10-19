@@ -39,7 +39,6 @@
 #include "help.h"
 #include "regularExp.h"
 #include "smartIndent.h"
-#include "MotifHelper.h"
 #include "windowTitle.h"
 #include "server.h"
 #include "tags.h"
@@ -266,6 +265,9 @@ static struct prefData {
     int prefFileRead;	    	/* detects whether a .nedit existed */
     int backlightChars;		/* whether to apply character "backlighting" */
     char *backlightCharTypes;	/* the backlighting color definitions */
+#ifdef SGI_CUSTOM
+    int shortMenus; 	    	/* short menu mode */
+#endif
     char fontString[MAX_FONT_LEN]; /* names of fonts for text widget */
     char boldFontString[MAX_FONT_LEN];
     char italicFontString[MAX_FONT_LEN];
@@ -975,6 +977,10 @@ static PrefDescripRec PrefDescrip[] = {
       	PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, False},
     {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False",
     	&PrefData.prefFileRead, nullptr, True},
+#ifdef SGI_CUSTOM
+    {"shortMenus", "ShortMenus", PREF_BOOLEAN, "False", &PrefData.shortMenus,
+      nullptr, True},
+#endif
     {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False",
     	&PrefData.findReplaceUsesSelection, nullptr, False},
     {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", 
@@ -1165,6 +1171,10 @@ static int replaceMacroIfUnchanged(const char* oldText, const char* newStart,
                                     const char* newEnd);
 static const char* getDefaultShell(void);
 
+
+#ifdef SGI_CUSTOM
+static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault);
+#endif
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
 {
@@ -2040,6 +2050,18 @@ int GetPrefTypingHidesPointer(void)
     return(PrefData.typingHidesPointer);
 }
 
+#ifdef SGI_CUSTOM
+void SetPrefShortMenus(int state)
+{
+    setIntPref(&PrefData.shortMenus, state);
+}
+
+int GetPrefShortMenus(void)
+{
+    return PrefData.shortMenus;
+}
+#endif
+
 void SetPrefTitleFormat(const char* format)
 {
     const WindowInfo* window;
@@ -2294,7 +2316,7 @@ void RowColumnPrefDialog(Widget parent)
     RemapDeleteKey(RowText);
  
     XtVaCreateManagedWidget("xLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=MKSTRING("x"),
+    	    XmNlabelString, s1=MKSTRING((String)"x"),
     	    XmNtopAttachment, XmATTACH_WIDGET,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2381,7 +2403,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     	    XmNrightAttachment, XmATTACH_FORM, nullptr);
     RemapDeleteKey(TabDistText);
     XtVaCreateManagedWidget("tabDistLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+    	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Tab spacing (for hardware tab characters)"),
 	    XmNmnemonic, 'T',
     	    XmNuserData, TabDistText,
@@ -2401,7 +2423,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     	    XmNrightWidget, TabDistText, nullptr);
     RemapDeleteKey(EmTabText);
     EmTabLabel = XtVaCreateManagedWidget("emTabLabel", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Emulated tab spacing"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Emulated tab spacing"),
 	    XmNmnemonic, 's',
     	    XmNuserData, EmTabText,
     	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -2413,7 +2435,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     XmStringFree(s1);
     EmTabToggle = XtVaCreateManagedWidget("emTabToggle",
     	    xmToggleButtonWidgetClass, form, XmNlabelString,
-    	    	s1=XmStringCreateSimpleEx("Emulate tabs"),
+    	    	s1=XmStringCreateSimple((String)"Emulate tabs"),
 	    XmNmnemonic, 'E',
     	    XmNtopAttachment, XmATTACH_WIDGET,
     	    XmNtopWidget, TabDistText,
@@ -2424,7 +2446,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
     XtAddCallback(EmTabToggle, XmNvalueChangedCallback, emTabsCB, nullptr);
     UseTabsToggle = XtVaCreateManagedWidget("useTabsToggle",
     	    xmToggleButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+    	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Use tab characters in padding and emulated tabs"),
 	    XmNmnemonic, 'U',
     	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -2507,6 +2529,23 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     } else
     	emTabDist = 0;
     
+#ifdef SGI_CUSTOM
+    /* Ask the user about saving as a default preference */
+    if (TabsDialogForWindow != nullptr) {
+	int setDefault;
+	if (!shortPrefToDefault(window->shell, "Tab Settings", &setDefault)) {
+	    DoneWithTabsDialog = True;
+    	    return;
+	}
+	if (setDefault) {
+    	    SetPrefTabDist(tabDist);
+    	    SetPrefEmTabDist(emTabDist);
+    	    SetPrefInsertTabs(useTabs);
+	    SaveNEditPrefs(window->shell, GetPrefShortMenus());
+	}
+    }
+#endif
+
     /* Set the value in either the requested window or default preferences */
     if (TabsDialogForWindow == nullptr) {
     	SetPrefTabDist(tabDist);
@@ -2576,7 +2615,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
 
     WrapWindowToggle = XtVaCreateManagedWidget("wrapWindowToggle",
     	    xmToggleButtonWidgetClass, form, XmNlabelString,
-    	    	s1=XmStringCreateSimpleEx("Wrap and Fill at width of window"),
+    	    	s1=XmStringCreateSimple((String)"Wrap and Fill at width of window"),
 	    XmNmnemonic, 'W',
     	    XmNtopAttachment, XmATTACH_FORM,
     	    XmNleftAttachment, XmATTACH_FORM, nullptr);
@@ -2590,7 +2629,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
     RemapDeleteKey(WrapText);
     WrapTextLabel = XtVaCreateManagedWidget("wrapMarginLabel",
     	    xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+    	    XmNlabelString, s1=XmStringCreateSimple(
     	    	(String)"Margin for Wrap and Fill"),
 	    XmNmnemonic, 'M',
     	    XmNuserData, WrapText,
@@ -2653,6 +2692,22 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
        }
 
     }
+
+#ifdef SGI_CUSTOM
+    /* Ask the user about saving as a default preference */
+    if (WrapDialogForWindow != nullptr) {
+	int setDefault;
+	if (!shortPrefToDefault(window->shell, "Wrap Margin Settings",
+	    	&setDefault)) {
+	    DoneWithWrapDialog = True;
+    	    return;
+	}
+	if (setDefault) {
+    	    SetPrefWrapMargin(margin);
+	    SaveNEditPrefs(window->shell, GetPrefShortMenus());
+	}
+    }
+#endif
 
     /* Set the value in either the requested window or default preferences */
     if (WrapDialogForWindow == nullptr)
@@ -2820,7 +2875,7 @@ the list on the left.  To add a new language, select \"New\" from the list."),
     XmStringFree(s1);
     
     nameLbl = XtVaCreateManagedWidget("nameLbl", xmLabelGadgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Name"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Name"),
 	    XmNmnemonic, 'm',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2843,7 +2898,7 @@ the list on the left.  To add a new language, select \"New\" from the list."),
     
     extLbl = XtVaCreateManagedWidget("extLbl", xmLabelGadgetClass, form,
     	    XmNlabelString, 	    	
-    	    	s1=XmStringCreateSimpleEx("File extensions (separate w/ space)"),
+    	    	s1=XmStringCreateSimple((String)"File extensions (separate w/ space)"),
     	    XmNmnemonic, 'F',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNleftAttachment, XmATTACH_POSITION,
@@ -2910,7 +2965,7 @@ characters of file to determine type from content)"),
     XtVaSetValues(defTipsLbl, XmNuserData, LMDialog.defTipsW, nullptr);
 	    
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 10,
@@ -2922,7 +2977,7 @@ characters of file to determine type from content)"),
     XmStringFree(s1);
 
     applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
     	    XmNmnemonic, 'A',
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 40,
@@ -2934,7 +2989,7 @@ characters of file to determine type from content)"),
     XmStringFree(s1);
 
     closeBtn = XtVaCreateManagedWidget("close",xmPushButtonWidgetClass,form,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
     	    XmNleftAttachment, XmATTACH_POSITION,
     	    XmNleftPosition, 70,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2956,7 +3011,7 @@ characters of file to determine type from content)"),
     overrideForm = XtVaCreateManagedWidget("overrideForm", xmFormWidgetClass,
 	    overrideFrame, nullptr);
     XtVaCreateManagedWidget("overrideLbl", xmLabelGadgetClass, overrideFrame,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Override Defaults"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Override Defaults"),
 	    XmNchildType, XmFRAME_TITLE_CHILD,
 	    XmNchildHorizontalAlignment, XmALIGNMENT_CENTER, nullptr);
     XmStringFree(s1);
@@ -2971,7 +3026,7 @@ characters of file to determine type from content)"),
 	    XmNrightPosition, RIGHT_MARGIN_POS, nullptr);
     delimitLbl = XtVaCreateManagedWidget("delimitLbl", xmLabelGadgetClass,
     	    delimitForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Word delimiters"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Word delimiters"),
     	    XmNmnemonic, 'W',
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -2997,7 +3052,7 @@ characters of file to determine type from content)"),
 	    XmNrightAttachment, XmATTACH_POSITION,
 	    XmNrightPosition, RIGHT_MARGIN_POS, nullptr);
     tabLbl = XtVaCreateManagedWidget("tabLbl", xmLabelGadgetClass, tabForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+    	    XmNlabelString, s1=XmStringCreateSimple((String)
     	    	"Alternative hardware tab spacing"),
     	    XmNmnemonic, 't',
 	    XmNleftAttachment, XmATTACH_FORM,
@@ -3022,7 +3077,7 @@ characters of file to determine type from content)"),
     RemapDeleteKey(LMDialog.emTabW);
     XtVaCreateManagedWidget("emTabLbl", xmLabelGadgetClass, tabForm,
     	    XmNlabelString,
-    	    s1=XmStringCreateSimpleEx("Alternative emulated tab spacing"),
+    	    s1=XmStringCreateSimple((String)"Alternative emulated tab spacing"),
     	    XmNalignment, XmALIGNMENT_END, 
     	    XmNmnemonic, 'e',
 	    XmNuserData, LMDialog.emTabW,
@@ -3048,25 +3103,25 @@ characters of file to determine type from content)"),
     	    xmToggleButtonWidgetClass, indentBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Default indent style"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Default indent style"),
     	    XmNmnemonic, 'D', nullptr);
     XmStringFree(s1);
     LMDialog.noIndentW = XtVaCreateManagedWidget("noIndent", 
     	    xmToggleButtonWidgetClass, indentBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("No automatic indent"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"No automatic indent"),
     	    XmNmnemonic, 'N', nullptr);
     XmStringFree(s1);
     LMDialog.autoIndentW = XtVaCreateManagedWidget("autoIndent", 
     	    xmToggleButtonWidgetClass, indentBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Auto-indent"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Auto-indent"),
     	    XmNmnemonic, 'A', nullptr);
     XmStringFree(s1);
     LMDialog.smartIndentW = XtVaCreateManagedWidget("smartIndent", 
     	    xmToggleButtonWidgetClass, indentBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Smart-indent"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Smart-indent"),
     	    XmNmnemonic, 'S', nullptr);
     XmStringFree(s1);
 
@@ -3086,25 +3141,25 @@ characters of file to determine type from content)"),
     	    xmToggleButtonWidgetClass, wrapBox,
     	    XmNset, True,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Default wrap style"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Default wrap style"),
     	    XmNmnemonic, 'D', nullptr);
     XmStringFree(s1);
     LMDialog.noWrapW = XtVaCreateManagedWidget("noWrap", 
     	    xmToggleButtonWidgetClass, wrapBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("No wrapping"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"No wrapping"),
     	    XmNmnemonic, 'N', nullptr);
     XmStringFree(s1);
     LMDialog.newlineWrapW = XtVaCreateManagedWidget("newlineWrap", 
     	    xmToggleButtonWidgetClass, wrapBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Auto newline wrap"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Auto newline wrap"),
     	    XmNmnemonic, 'A', nullptr);
     XmStringFree(s1);
     LMDialog.contWrapW = XtVaCreateManagedWidget("contWrap", 
     	    xmToggleButtonWidgetClass, wrapBox,
     	    XmNmarginHeight, 0,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Continuous wrap"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Continuous wrap"),
     	    XmNmnemonic, 'C', nullptr);
     XmStringFree(s1);
 
@@ -3723,7 +3778,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 	    primaryFrame, nullptr);
     primaryLbl = XtVaCreateManagedWidget("primaryFont", xmLabelGadgetClass,
     	    primaryFrame,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Primary Font"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Primary Font"),
     	    XmNmnemonic, 'P',
 	    XmNchildType, XmFRAME_TITLE_CHILD,
 	    XmNchildHorizontalAlignment, XmALIGNMENT_CENTER, nullptr);
@@ -3731,7 +3786,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     primaryBtn = XtVaCreateManagedWidget("primaryBtn",
     	    xmPushButtonWidgetClass, primaryForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Browse..."),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Browse..."),
     	    XmNmnemonic, 'r',
 	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 2,
@@ -3772,7 +3827,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtVaCreateManagedWidget("highlightFonts", xmLabelGadgetClass,
     	    highlightFrame,
     	    XmNlabelString,
-    	    	s1=XmStringCreateSimpleEx("Fonts for Syntax Highlighting"),
+    	    	s1=XmStringCreateSimple((String)"Fonts for Syntax Highlighting"),
 	    XmNchildType, XmFRAME_TITLE_CHILD,
 	    XmNchildHorizontalAlignment, XmALIGNMENT_CENTER, nullptr);
     XmStringFree(s1);
@@ -3780,7 +3835,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     fd->fillW = XtVaCreateManagedWidget("fillBtn",
     	    xmPushButtonWidgetClass, highlightForm,
     	    XmNlabelString,
-    	    	s1=XmStringCreateSimpleEx("Fill Highlight Fonts from Primary"),
+    	    	s1=XmStringCreateSimple((String)"Fill Highlight Fonts from Primary"),
     	    XmNmnemonic, 'F',
     	    XmNtopAttachment, XmATTACH_POSITION,
 	    XmNtopPosition, 2,
@@ -3792,7 +3847,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     italicLbl = XtVaCreateManagedWidget("italicLbl", xmLabelGadgetClass,
     	    highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Italic Font"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Italic Font"),
     	    XmNmnemonic, 'I',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -3804,7 +3859,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     fd->italicErrW = XtVaCreateManagedWidget("italicErrLbl",
     	    xmLabelGadgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(
+    	    XmNlabelString, s1=XmStringCreateSimple((String)
     	    	"(vvv  spacing is inconsistent with primary font  vvv)"),
     	    XmNalignment, XmALIGNMENT_END,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -3818,7 +3873,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     italicBtn = XtVaCreateManagedWidget("italicBtn",
     	    xmPushButtonWidgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Browse..."),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Browse..."),
     	    XmNmnemonic, 'o',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, italicLbl,
@@ -3844,7 +3899,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     boldLbl = XtVaCreateManagedWidget("boldLbl", xmLabelGadgetClass,
     	    highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Bold Font"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold Font"),
     	    XmNmnemonic, 'B',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -3856,7 +3911,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     fd->boldErrW = XtVaCreateManagedWidget("boldErrLbl",
     	    xmLabelGadgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(""),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)""),
     	    XmNalignment, XmALIGNMENT_END,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, italicBtn,
@@ -3869,7 +3924,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     boldBtn = XtVaCreateManagedWidget("boldBtn",
     	    xmPushButtonWidgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Browse..."),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Browse..."),
     	    XmNmnemonic, 'w',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, boldLbl,
@@ -3895,7 +3950,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     boldItalicLbl = XtVaCreateManagedWidget("boldItalicLbl", xmLabelGadgetClass,
     	    highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Bold Italic Font"),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Bold Italic Font"),
     	    XmNmnemonic, 'l',
     	    XmNalignment, XmALIGNMENT_BEGINNING,
 	    XmNtopAttachment, XmATTACH_WIDGET,
@@ -3907,7 +3962,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     fd->boldItalicErrW = XtVaCreateManagedWidget("boldItalicErrLbl",
     	    xmLabelGadgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx(""),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)""),
     	    XmNalignment, XmALIGNMENT_END,
 	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, boldBtn,
@@ -3920,7 +3975,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     boldItalicBtn = XtVaCreateManagedWidget("boldItalicBtn",
     	    xmPushButtonWidgetClass, highlightForm,
-    	    XmNlabelString, s1=XmStringCreateSimpleEx("Browse..."),
+    	    XmNlabelString, s1=XmStringCreateSimple((String)"Browse..."),
     	    XmNmnemonic, 's',
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, boldItalicLbl,
@@ -3945,7 +4000,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     XtVaSetValues(boldItalicLbl, XmNuserData, fd->boldItalicW, nullptr);    
 
     okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, highlightFrame,
@@ -3959,7 +4014,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
 
     if (forWindow) {
 	applyBtn = XtVaCreateManagedWidget("apply",xmPushButtonWidgetClass,form,
-    		XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
+    		XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
     		XmNmnemonic, 'A',
     		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, highlightFrame,
@@ -3975,7 +4030,7 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     cancelBtn = XtVaCreateManagedWidget("cancel",
             xmPushButtonWidgetClass, form,
             XmNlabelString,
-                    s1 = XmStringCreateSimpleEx(forWindow ? (char *)"Close" : (char *)"Cancel"),
+                    s1 = XmStringCreateSimple(forWindow ? (char *)"Close" : (char *)"Cancel"),
     	    XmNtopAttachment, XmATTACH_WIDGET,
 	    XmNtopWidget, highlightFrame,
 	    XmNtopOffset, MARGIN_SPACING,
@@ -4213,7 +4268,7 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW,
     else
     	msg = "";
     
-    XtVaSetValues(errorLabelW, XmNlabelString, s=XmStringCreateSimpleEx(msg),
+    XtVaSetValues(errorLabelW, XmNlabelString, s=XmStringCreateSimple((String)msg),
 	    nullptr);
     XmStringFree(s);
     return status;
@@ -4934,7 +4989,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
     for (i=0; i<NLanguageModes; i++) {
         btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass,
         	menu,
-        	XmNlabelString, s1=XmStringCreateSimpleEx(LanguageModes[i]->name),
+        	XmNlabelString, s1=XmStringCreateSimple(LanguageModes[i]->name),
 		XmNmarginHeight, 0,
     		XmNuserData, (void *)LanguageModes[i]->name, nullptr);
         XmStringFree(s1);
@@ -4976,7 +5031,7 @@ void SetLangModeMenu(Widget optMenu, const char *modeName)
 void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
         const char* name, const char* label, const char mnemonic)
 {
-    XmString string = XmStringCreateSimpleEx((char*) label);
+    XmString string = XmStringCreateSimple((char*) label);
 
     window->langModeCascade = XtVaCreateManagedWidget(name,
             xmCascadeButtonGadgetClass, parent,
@@ -5008,7 +5063,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
     	    (String)"languageModes", args, 1);
     btn = XtVaCreateManagedWidget("languageMode",
             xmToggleButtonGadgetClass, menu,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Plain"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Plain"),
     	    XmNuserData, (void *)PLAIN_LANGUAGE_MODE,
     	    XmNset, window->languageMode==PLAIN_LANGUAGE_MODE, nullptr);
     XmStringFree(s1);
@@ -5016,7 +5071,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
     for (i=0; i<NLanguageModes; i++) {
         btn = XtVaCreateManagedWidget("languageMode",
             	xmToggleButtonGadgetClass, menu,
-            	XmNlabelString, s1=XmStringCreateSimpleEx(LanguageModes[i]->name),
+            	XmNlabelString, s1=XmStringCreateSimple(LanguageModes[i]->name),
  	    	XmNmarginHeight, 0,
    		XmNuserData, (void *)i,
     		XmNset, window->languageMode==i, nullptr);
@@ -5805,6 +5860,39 @@ static void updateMacroCmdsTo5dot6(void)
     return;
 }
 
+#ifdef SGI_CUSTOM
+/*
+** Present the user a dialog for specifying whether or not a short
+** menu mode preference should be applied toward the default setting.
+** Return False (function value) if operation was canceled, return True
+** in setDefault if requested to reset the default value.
+*/
+static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault)
+{
+    char msg[100] = "";
+    
+    if (!GetPrefShortMenus()) {
+        *setDefault = False;
+        return True;
+    }
+    
+    sprintf(msg, "%s\nSave as default for future windows as well?", settingName);
+    switch (DialogF (DF_QUES, parent, 3, "Save Default", msg, "Yes", "No",
+            "Cancel"))
+    {
+        case 1: /* yes */
+            *setDefault = True;
+            return True;
+        case 2: /* no */
+            *setDefault = False;
+            return True;
+        case 3: /* cancel */
+            return False;
+    }
+    return False; /* not reached */
+}
+#endif
+
 /* Decref the default calltips file(s) for this window */
 void UnloadLanguageModeTipsFile(WindowInfo *window)
 {
@@ -6042,7 +6130,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
     strcat(longerName, "Lbl");
     lblW = XtVaCreateManagedWidget(longerName,
           xmLabelGadgetClass, parent,
-          XmNlabelString, s1=XmStringCreateSimpleEx( (String)label ),
+          XmNlabelString, s1=XmStringCreateSimple( (String)label ),
           XmNmnemonic, mnemonic,
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, topWidget,
@@ -6055,7 +6143,7 @@ static Widget addColorGroup( Widget parent, const char *name, char mnemonic,
     strcpy(&(longerName[nameLen]), "ErrLbl");
     *errW = XtVaCreateManagedWidget(longerName,
           xmLabelWidgetClass, parent,
-          XmNlabelString, s1=XmStringCreateSimpleEx("(Invalid!)"),
+          XmNlabelString, s1=XmStringCreateSimple((String)"(Invalid!)"),
           XmNalignment, XmALIGNMENT_END,
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, topWidget,
@@ -6194,7 +6282,7 @@ void ChooseColors(WindowInfo *window)
     /* The OK, Apply, and Cancel buttons */
     okBtn = XtVaCreateManagedWidget("ok",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimpleEx("OK"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"OK"),
             XmNmarginWidth, BUTTON_WIDTH_MARGIN,
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, tmpW,
@@ -6209,7 +6297,7 @@ void ChooseColors(WindowInfo *window)
 
     applyBtn = XtVaCreateManagedWidget(
             "apply", xmPushButtonWidgetClass, form,
-          XmNlabelString, s1=XmStringCreateSimpleEx("Apply"),
+          XmNlabelString, s1=XmStringCreateSimple((String)"Apply"),
           XmNtopAttachment, XmATTACH_WIDGET,
           XmNtopWidget, tmpW,
           XmNtopOffset, MARGIN_SPACING,
@@ -6223,7 +6311,7 @@ void ChooseColors(WindowInfo *window)
     
     closeBtn = XtVaCreateManagedWidget("close",
             xmPushButtonWidgetClass, form,
-            XmNlabelString, s1=XmStringCreateSimpleEx("Close"),
+            XmNlabelString, s1=XmStringCreateSimple((String)"Close"),
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, tmpW,
             XmNtopOffset, MARGIN_SPACING,

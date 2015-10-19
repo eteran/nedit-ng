@@ -37,7 +37,6 @@
 #include "preferences.h"
 #include "file.h"
 #include "highlight.h"
-#include "MotifHelper.h"
 #include "selection.h"
 #ifdef REPLACE_SCOPE
 #include "textDisp.h"
@@ -713,7 +712,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNleftOffset, 4); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("String to Find:"));
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"String to Find:"));
     	    argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 't'); argcnt++;
     label1 = XmCreateLabel(form, (String)"label1", args, argcnt);
@@ -766,7 +765,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Replace With:")); argcnt++;
+    	     st1=MKSTRING((String)"Replace With:")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'W'); argcnt++;
     label = XmCreateLabel(form, (String)"label", args, argcnt);
     XmStringFree(st1);
@@ -809,7 +808,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString, 
-    	     st1=MKSTRING("Regular Expression")); argcnt++;
+    	     st1=MKSTRING((String)"Regular Expression")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'R'); argcnt++;
     window->replaceRegexToggle = XmCreateToggleButton(searchTypeBox, (String)"regExp", args, argcnt);
     XmStringFree(st1);
@@ -819,7 +818,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Case Sensitive")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Case Sensitive")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'C'); argcnt++;
     window->replaceCaseToggle = XmCreateToggleButton(searchTypeBox, (String)"caseSensitive", args, argcnt);
     XmStringFree(st1);
@@ -829,7 +828,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Whole Word")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Whole Word")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'h'); argcnt++;
     window->replaceWordToggle = XmCreateToggleButton(searchTypeBox, (String)"wholeWord", args, argcnt);
     XmStringFree(st1);
@@ -851,7 +850,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
  
     argcnt = 0;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Search Backward")); argcnt++;
+    	     st1=MKSTRING((String)"Search Backward")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'B'); argcnt++;
     reverseBtn = XmCreateToggleButton(searchDirBox, (String)"reverse", args, argcnt);
     XmStringFree(st1);
@@ -859,7 +858,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     
     argcnt = 0;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Keep Dialog")); argcnt++;
+    	     st1=MKSTRING((String)"Keep Dialog")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'K'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 0); argcnt++;
@@ -894,7 +893,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("In Window")); 
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"In Window")); 
         argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'i'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -911,7 +910,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("In Selection")); argcnt++;
+    	     st1=MKSTRING((String)"In Selection")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -928,7 +927,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("In Multiple Documents")); argcnt++;
+    	     st1=MKSTRING((String)"In Multiple Documents")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -961,7 +960,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNleftOffset, 4); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace all in:"));
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Replace all in:"));
     	    argcnt++;
     label3 = XmCreateLabel(allForm, (String)"label3", args, argcnt);
     XmStringFree(st1);
@@ -970,7 +969,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Window")); 
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Window")); 
         argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'i'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -988,7 +987,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Selection")); argcnt++;
+    	     st1=MKSTRING((String)"Selection")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -1005,7 +1004,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Multiple Documents...")); argcnt++;
+    	     st1=MKSTRING((String)"Multiple Documents...")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'M'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -1039,7 +1038,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Replace")); argcnt++;
     XtSetArg(args[argcnt], XmNshowAsDefault, (short)1); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
@@ -1062,7 +1061,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Find")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Find")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'F'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_FORM); argcnt++;
@@ -1085,7 +1084,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace & Find")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Replace & Find")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'n'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_FORM); argcnt++;
@@ -1110,7 +1109,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Replace All")); argcnt++;
+    	     st1=MKSTRING((String)"Replace All")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'A'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -1129,7 +1128,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Cancel")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Cancel")); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
@@ -1203,7 +1202,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNleftOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("String to Find:"));
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"String to Find:"));
     	    argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
     label1 = XmCreateLabel(form, (String)"label1", args, argcnt);
@@ -1265,7 +1264,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString, 
-    	     st1=MKSTRING("Regular Expression")); argcnt++;
+    	     st1=MKSTRING((String)"Regular Expression")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'R'); argcnt++;
     window->findRegexToggle = XmCreateToggleButton(searchTypeBox, (String)"regExp", args, argcnt);
     XmStringFree(st1);
@@ -1275,7 +1274,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Case Sensitive")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Case Sensitive")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'C'); argcnt++;
     window->findCaseToggle = XmCreateToggleButton(searchTypeBox, (String)"caseSensitive", args, argcnt);
     XmStringFree(st1);
@@ -1285,7 +1284,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Whole Word")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Whole Word")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'h'); argcnt++;
     window->findWordToggle = XmCreateToggleButton(searchTypeBox, (String)"wholeWord", args, argcnt);
     XmStringFree(st1);
@@ -1307,7 +1306,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     
     argcnt = 0;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Search Backward")); argcnt++;
+    	     st1=MKSTRING((String)"Search Backward")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'B'); argcnt++;
     reverseBtn = XmCreateToggleButton(searchDirBox, (String)"reverse", args, argcnt);
     XmStringFree(st1);
@@ -1315,7 +1314,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     
     argcnt = 0;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Keep Dialog")); argcnt++;
+    	     st1=MKSTRING((String)"Keep Dialog")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'K'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
     XtSetArg(args[argcnt], XmNtopOffset, 0); argcnt++;
@@ -1344,7 +1343,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Find")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Find")); argcnt++;
     XtSetArg(args[argcnt], XmNshowAsDefault, (short)1); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
@@ -1362,7 +1361,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Cancel")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Cancel")); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
     XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_NONE); argcnt++;
@@ -1430,7 +1429,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     XtSetArg(args[argcnt], XmNleftOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString, 
-       st1=MKSTRING("Files in which to Replace All:")); argcnt++;
+       st1=MKSTRING((String)"Files in which to Replace All:")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'F'); argcnt++;
     label1 = XmCreateLabel(form, (String)"label1", args, argcnt);
     XmStringFree(st1);
@@ -1449,7 +1448,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     XtSetArg(args[argcnt], XmNtopOffset, 6); argcnt++;
     XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_END); argcnt++;
     XtSetArg(args[argcnt], XmNlabelString,
-    	     st1=MKSTRING("Show Path Names")); argcnt++;
+    	     st1=MKSTRING((String)"Show Path Names")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'P'); argcnt++;
     pathBtn = XmCreateToggleButton(form, (String)"path", args, argcnt);
     XmStringFree(st1);
@@ -1480,7 +1479,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Replace")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Replace")); argcnt++;
     XtSetArg(args[argcnt], XmNshowAsDefault, (short)1); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'R'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -1512,7 +1511,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Select All")); 
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Select All")); 
        argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'S'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -1532,7 +1531,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Deselect All")); 
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Deselect All")); 
        argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'D'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
@@ -1552,7 +1551,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window)
     argcnt = 0;
     XtSetArg(args[argcnt], XmNtraversalOn, True); argcnt++;
     XtSetArg(args[argcnt], XmNhighlightThickness, 2); argcnt++;
-    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING("Cancel")); argcnt++;
+    XtSetArg(args[argcnt], XmNlabelString, st1=MKSTRING((String)"Cancel")); argcnt++;
     XtSetArg(args[argcnt], XmNmnemonic, 'C'); argcnt++;
     XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
     XtSetArg(args[argcnt], XmNbottomAttachment, XmATTACH_NONE); argcnt++;
@@ -2081,7 +2080,7 @@ static void uploadFileListItems(WindowInfo* window, Bool replace)
        } else {
           sprintf(buf, "%s", w->filename);
        }
-       names[i] = XmStringCreateSimpleEx(buf);
+       names[i] = XmStringCreateSimple(buf);
     }
     
     /*

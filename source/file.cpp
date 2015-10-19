@@ -33,7 +33,6 @@
 #include "preferences.h"
 #include "undo.h"
 #include "menu.h"
-#include "MotifHelper.h"
 #include "tags.h"
 #include "server.h"
 #include "interpret.h"
@@ -1407,7 +1406,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL); n++;
     XtSetArg(args[n],
             XmNdialogTitle,
-            s2 = XmStringCreateSimpleEx(prompt)); n++;
+            s2 = XmStringCreateSimple((String)prompt)); n++;
     fileSB = CreateFileSelectionDialog(window->shell, (String)"FileSelect",args,n);
     XmStringFree(s1);
     XmStringFree(s2);
@@ -1422,11 +1421,11 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
             XmNleftAttachment, XmATTACH_FORM,
             nullptr);
     XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns,
-	    XmNlabelString, s1=XmStringCreateSimpleEx("Format:"), nullptr);
+	    XmNlabelString, s1=XmStringCreateSimple((String)"Format:"), nullptr);
     XmStringFree(s1);
     unixFormat = XtVaCreateManagedWidget("unixFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimpleEx("Unix"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"Unix"),
             XmNset, *fileFormat == UNIX_FILE_FORMAT,
             XmNuserData, (XtPointer)UNIX_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1438,7 +1437,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     	    fileFormat);
     dosFormat = XtVaCreateManagedWidget("dosFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimpleEx("DOS"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"DOS"),
             XmNset, *fileFormat == DOS_FILE_FORMAT,
             XmNuserData, (XtPointer)DOS_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1450,7 +1449,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     	    fileFormat);
     macFormat = XtVaCreateManagedWidget("macFormat",
             xmToggleButtonWidgetClass, formatBtns,
-            XmNlabelString, s1 = XmStringCreateSimpleEx("Macintosh"),
+            XmNlabelString, s1 = XmStringCreateSimple((String)"Macintosh"),
             XmNset, *fileFormat == MAC_FILE_FORMAT,
             XmNuserData, (XtPointer)MAC_FILE_FORMAT,
             XmNmarginHeight, 0,
@@ -1463,7 +1462,7 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
     if (window->wrapMode == CONTINUOUS_WRAP) {
 	wrapToggle = XtVaCreateManagedWidget("addWrap",
                 xmToggleButtonWidgetClass, formatForm,
-                XmNlabelString, s1 = XmStringCreateSimpleEx("Add line breaks where wrapped"),
+                XmNlabelString, s1 = XmStringCreateSimple((String)"Add line breaks where wrapped"),
                 XmNalignment, XmALIGNMENT_BEGINNING,
                 XmNmnemonic, 'A',
                 XmNtopAttachment, XmATTACH_WIDGET,

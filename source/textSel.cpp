@@ -31,7 +31,6 @@
 #include "text.h"
 #include "textDisp.h"
 #include "textBuf.h"
-#include "MotifHelper.h"
 #include "../util/misc.h"
 
 #include <stdio.h>
@@ -166,7 +165,7 @@ void CopyToClipboard(Widget w, Time time)
     
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
-    s = XmStringCreateSimpleEx("NEdit");
+    s = XmStringCreateSimple((String)"NEdit");
     stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
     	    time, w, nullptr, &itemID);
     XmStringFree(s);
