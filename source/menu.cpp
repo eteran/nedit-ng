@@ -401,11 +401,6 @@ static void setFontsAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
 static void setLanguageModeAP(Widget w, XEvent *event, String *args,
     Cardinal *nArgs);
-#ifdef SGI_CUSTOM
-static void shortMenusCB(Widget w, XtPointer clientData, XtPointer callData);
-static void addToToggleShortList(Widget w);
-static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName);
-#endif
 
 static HelpMenu * buildHelpMenu( Widget pane, HelpMenu * menu, 
 	WindowInfo * window);
@@ -571,10 +566,6 @@ static XtActionsRec Actions[] = {
 static int NPrevOpen = 0;
 static char** PrevOpen = nullptr;
 
-#ifdef SGI_CUSTOM
-/* Window to receive items to be toggled on and off in short menus mode */
-static WindowInfo *ShortMenuWindow;
-#endif
 
 void HidePointerOnKeyedEvent(Widget w, XEvent *event)
 {
@@ -618,22 +609,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     ** Create the menu bar (row column) widget
     */
     menuBar = XmCreateMenuBar(parent, (String)"menuBar", nullptr, 0);
-
-#ifdef SGI_CUSTOM
-    /*
-    ** Short menu mode is a special feature for the SGI system distribution
-    ** version of NEdit.
-    **
-    ** To make toggling short-menus mode faster (re-creating the menus was
-    ** too slow), a list is kept in the window data structure of items to
-    ** be turned on and off.  Initialize that list and give the menu creation
-    ** routines a pointer to the window on which this list is kept.  This is
-    ** (unfortunately) a global variable to keep the interface simple for
-    ** the mainstream case.
-    */
-    ShortMenuWindow = window;
-    window->nToggleShortItems = 0;
-#endif
 
     /*
     ** "File" pull down menu.
@@ -739,13 +714,6 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     	    formFeedCB, window, FULL);
     createMenuItem(menuPane, "insertCtrlCode", "Insert Ctrl Code...", 'n',
     	    doActionCB, "control_code_dialog", FULL);
-#ifdef SGI_CUSTOM
-    createMenuSeparator(menuPane, "sep4", SHORT);
-    window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O',
-    	    doActionCB, "set_overtype_mode", False, SHORT);
-    window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only",
-    	    'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons), FULL);
-#endif
 
     /* 
     ** "Search" pull down menu.
@@ -1048,11 +1016,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     */
     createMenuItem(menuPane, "saveDefaults", "Save Defaults...", 'v',
     	    savePrefCB, window, FULL);
-#ifdef SGI_CUSTOM
-    window->shortMenusDefItem = createMenuToggle(menuPane,
-    	    "shortMenus", "Short Menus", 'h', shortMenusCB, window,
-    	    GetPrefShortMenus(), SHORT);
-#endif
+
     createMenuSeparator(menuPane, "sep1", SHORT);
     window->statsLineItem = createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S',
     	    statsCB, window, GetPrefStatsLine(), SHORT);
@@ -1500,12 +1464,6 @@ static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Auto Indent Off")) {
-	autoIndentOffDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
@@ -1519,12 +1477,6 @@ static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Auto Indent")) {
-	autoIndentDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
@@ -1538,12 +1490,6 @@ static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Smart Indent")) {
-	smartIndentDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent",
@@ -1556,12 +1502,6 @@ static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Incremental Backup")) {
-	autoSaveDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_incremental_backup",
@@ -1574,12 +1514,6 @@ static void preserveCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Make Backup Copy")) {
-        preserveDefCB(w, window, callData);
-        SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_make_backup_copy",
@@ -1593,12 +1527,6 @@ static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Show Matching Off")) {
-	showMatchingOffDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
@@ -1612,12 +1540,6 @@ static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer call
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Show Matching Delimiter")) {
-	showMatchingDelimitDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
@@ -1631,12 +1553,6 @@ static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callDa
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Show Matching Range")) {
-	showMatchingRangeDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching",
@@ -1649,12 +1565,6 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Match Syntax Based")) {
-	matchSyntaxBasedDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_match_syntax_based",
@@ -1673,12 +1583,6 @@ static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "No Wrap")) {
-	noWrapDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
@@ -1692,12 +1596,6 @@ static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Auto Newline Wrap")) {
-	newlineWrapDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
@@ -1711,12 +1609,6 @@ static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Continuous Wrap")) {
-    	contWrapDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text",
@@ -1754,12 +1646,6 @@ static void statsCB(Widget w, XtPointer clientData, XtPointer callData)
 
     WindowInfo *window = WidgetToWindow(menu);
 
-#ifdef SGI_CUSTOM
-    if (shortPrefAskDefault(window->shell, w, "Statistics Line")) {
-	statsLineDefCB(w, window, callData);
-	SaveNEditPrefs(window->shell, GetPrefShortMenus());
-    }
-#endif
     HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
             ((XmAnyCallbackStruct *)callData)->event);
     XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_statistics_line",
@@ -4276,14 +4162,8 @@ static Widget createMenu(Widget parent, const char *name, const char *label,
     XmStringFree(st1);
     if (mnemonic != 0)
     	XtVaSetValues(cascade, XmNmnemonic, mnemonic, nullptr);
-#ifdef SGI_CUSTOM
-    if (mode == SHORT || !GetPrefShortMenus())
-    	XtManageChild(cascade);
-    if (mode == FULL)
-    	addToToggleShortList(cascade);
-#else
     XtManageChild(cascade);
-#endif
+
     if (cascadeBtn != nullptr)
     	*cascadeBtn = cascade;
     return menu;
@@ -4306,15 +4186,8 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
     	    XmNmnemonic, mnemonic, nullptr);
     XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
     XmStringFree(st1);
-#ifdef SGI_CUSTOM
-    if (mode == SHORT || !GetPrefShortMenus())
-    	XtManageChild(button);
-    if (mode == FULL)
-    	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-#else
+
     XtManageChild(button);
-#endif
     return button;
 }
 
@@ -4360,15 +4233,8 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
     XtAddCallback(button, XmNvalueChangedCallback, (XtCallbackProc)callback,
     	    (void *)cbArg);
     XmStringFree(st1);
-#ifdef SGI_CUSTOM
-    if (mode == SHORT || !GetPrefShortMenus())
-    	XtManageChild(button);
-    if (mode == FULL)
-    	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-#else
+
     XtManageChild(button);
-#endif
     return button;
 }
 
@@ -4391,15 +4257,7 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode)
     Widget button;
     
     button = XmCreateSeparator(parent, (String)name, nullptr, 0);
-#ifdef SGI_CUSTOM
-    if (mode == SHORT || !GetPrefShortMenus())
-    	XtManageChild(button);
-    if (mode == FULL)
-    	addToToggleShortList(button);
-    XtVaSetValues(button, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-#else
     XtManageChild(button);
-#endif
     return button;
 }
 
@@ -5402,70 +5260,3 @@ void ShowHiddenTearOff(Widget menuPane)
     }
 }
 
-#ifdef SGI_CUSTOM
-static void shortMenusCB(Widget w, XtPointer clientData, XtPointer callData)
-{
-    WindowInfo *win;
-    int i, state = XmToggleButtonGetState(w);
-    Widget parent;
-
-    window = WidgetToWindow(w);
-
-    HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus,
-            ((XmAnyCallbackStruct *)callData)->event);
-    /* Set the preference */
-    SetPrefShortMenus(state);
-    
-    /* Re-create the menus for all windows */
-    for (win=WindowList; win!=nullptr; win=win->next) {
-    	for (i=0; i<win->nToggleShortItems; i++) {
-    	    if (state)
-    	    	XtUnmanageChild(win->toggleShortItems[i]);
-    	    else
-    	    	XtManageChild(win->toggleShortItems[i]);
-    	}
-    }
-    if (GetPrefShortMenus())
-    	SaveNEditPrefs(window->shell, True);
-}
-
-static void addToToggleShortList(Widget w)
-{
-    if (ShortMenuWindow->nToggleShortItems >= MAX_SHORTENED_ITEMS) {
-    	fprintf(stderr,"nedit, internal error: increase MAX_SHORTENED_ITEMS\n");
-    	return;
-    }
-    ShortMenuWindow->toggleShortItems[ShortMenuWindow->nToggleShortItems++] = w;
-}   	       
-
-/*
-** Present the user a dialog for specifying whether or not a short
-** menu mode preference should be applied toward the default setting.
-** Return True if user requested to reset and save the default value.
-** If operation was canceled, will return toggle widget "w" to it's 
-** original (opposite) state.
-*/
-static int shortPrefAskDefault(Widget parent, Widget w, const char *settingName)
-{
-    char msg[100] = "";
-    
-    if (!GetPrefShortMenus()) {
-    	return False;
-    }
-    
-    sprintf(msg, "%s: %s\nSave as default for future windows as well?",
-    	    settingName, XmToggleButtonGetState(w) ? "On" : "Off");
-    switch (DialogF (DF_QUES, parent, 3, "Save Default", msg, "Yes", "No",
-            "Cancel"))
-    {
-        case 1: /* yes */
-            return True;
-        case 2: /* no */
-           return False;
-        case 3: /* cancel */
-            XmToggleButtonSetState(w, !XmToggleButtonGetState(w), False);
-            return False;
-    }
-    return False; /* not reached */
-}
-#endif

@@ -266,9 +266,6 @@ static struct prefData {
     int prefFileRead;	    	/* detects whether a .nedit existed */
     int backlightChars;		/* whether to apply character "backlighting" */
     char *backlightCharTypes;	/* the backlighting color definitions */
-#ifdef SGI_CUSTOM
-    int shortMenus; 	    	/* short menu mode */
-#endif
     char fontString[MAX_FONT_LEN]; /* names of fonts for text widget */
     char boldFontString[MAX_FONT_LEN];
     char italicFontString[MAX_FONT_LEN];
@@ -978,10 +975,6 @@ static PrefDescripRec PrefDescrip[] = {
       	PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, False},
     {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False",
     	&PrefData.prefFileRead, nullptr, True},
-#ifdef SGI_CUSTOM
-    {"shortMenus", "ShortMenus", PREF_BOOLEAN, "False", &PrefData.shortMenus,
-      nullptr, True},
-#endif
     {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False",
     	&PrefData.findReplaceUsesSelection, nullptr, False},
     {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", 
@@ -1172,10 +1165,6 @@ static int replaceMacroIfUnchanged(const char* oldText, const char* newStart,
                                     const char* newEnd);
 static const char* getDefaultShell(void);
 
-
-#ifdef SGI_CUSTOM
-static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault);
-#endif
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut)
 {
@@ -2051,18 +2040,6 @@ int GetPrefTypingHidesPointer(void)
     return(PrefData.typingHidesPointer);
 }
 
-#ifdef SGI_CUSTOM
-void SetPrefShortMenus(int state)
-{
-    setIntPref(&PrefData.shortMenus, state);
-}
-
-int GetPrefShortMenus(void)
-{
-    return PrefData.shortMenus;
-}
-#endif
-
 void SetPrefTitleFormat(const char* format)
 {
     const WindowInfo* window;
@@ -2530,23 +2507,6 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
     } else
     	emTabDist = 0;
     
-#ifdef SGI_CUSTOM
-    /* Ask the user about saving as a default preference */
-    if (TabsDialogForWindow != nullptr) {
-	int setDefault;
-	if (!shortPrefToDefault(window->shell, "Tab Settings", &setDefault)) {
-	    DoneWithTabsDialog = True;
-    	    return;
-	}
-	if (setDefault) {
-    	    SetPrefTabDist(tabDist);
-    	    SetPrefEmTabDist(emTabDist);
-    	    SetPrefInsertTabs(useTabs);
-	    SaveNEditPrefs(window->shell, GetPrefShortMenus());
-	}
-    }
-#endif
-
     /* Set the value in either the requested window or default preferences */
     if (TabsDialogForWindow == nullptr) {
     	SetPrefTabDist(tabDist);
@@ -2693,22 +2653,6 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
        }
 
     }
-
-#ifdef SGI_CUSTOM
-    /* Ask the user about saving as a default preference */
-    if (WrapDialogForWindow != nullptr) {
-	int setDefault;
-	if (!shortPrefToDefault(window->shell, "Wrap Margin Settings",
-	    	&setDefault)) {
-	    DoneWithWrapDialog = True;
-    	    return;
-	}
-	if (setDefault) {
-    	    SetPrefWrapMargin(margin);
-	    SaveNEditPrefs(window->shell, GetPrefShortMenus());
-	}
-    }
-#endif
 
     /* Set the value in either the requested window or default preferences */
     if (WrapDialogForWindow == nullptr)
@@ -5860,39 +5804,6 @@ static void updateMacroCmdsTo5dot6(void)
         replaceMacroIfUnchanged(pats[i], pats[i+1], pats[i+2]);
     return;
 }
-
-#ifdef SGI_CUSTOM
-/*
-** Present the user a dialog for specifying whether or not a short
-** menu mode preference should be applied toward the default setting.
-** Return False (function value) if operation was canceled, return True
-** in setDefault if requested to reset the default value.
-*/
-static int shortPrefToDefault(Widget parent, const char *settingName, int *setDefault)
-{
-    char msg[100] = "";
-    
-    if (!GetPrefShortMenus()) {
-        *setDefault = False;
-        return True;
-    }
-    
-    sprintf(msg, "%s\nSave as default for future windows as well?", settingName);
-    switch (DialogF (DF_QUES, parent, 3, "Save Default", msg, "Yes", "No",
-            "Cancel"))
-    {
-        case 1: /* yes */
-            *setDefault = True;
-            return True;
-        case 2: /* no */
-            *setDefault = False;
-            return True;
-        case 3: /* cancel */
-            return False;
-    }
-    return False; /* not reached */
-}
-#endif
 
 /* Decref the default calltips file(s) for this window */
 void UnloadLanguageModeTipsFile(WindowInfo *window)

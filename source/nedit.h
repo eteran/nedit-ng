@@ -87,9 +87,6 @@
 #define UNDO_OP_LIMIT 400	  /* normal limit for length of undo list */
 #define UNDO_OP_TRIMTO 200	  /* size undo list is normally trimmed to
 				     when it exceeds UNDO_OP_TRIMTO in length */
-#ifdef SGI_CUSTOM
-#define MAX_SHORTENED_ITEMS 100   /* max. number of items excluded in short- */
-#endif	    	    	    	  /*     menus mode */
 
 enum indentStyle {NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT};
 enum wrapStyle {NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP};
@@ -437,13 +434,7 @@ struct WindowInfo {
     Widget	contextDetachDocumentItem;
     Widget  	bgMenuUndoItem;
     Widget  	bgMenuRedoItem;
-#ifdef SGI_CUSTOM
-    Widget	shortMenusDefItem;
-    Widget	toggleShortItems[MAX_SHORTENED_ITEMS]; /* Menu items to be
-    	    	    	    	    	   managed and unmanaged to toggle
-    	    	    	    	    	   short menus on and off */
-    int     	nToggleShortItems;
-#endif
+
     char	filename[MAXPATHLEN];	/* name component of file being edited*/
     char	path[MAXPATHLEN];	/* path component of file being edited*/
     unsigned	fileMode;		/* permissions of file being edited */

@@ -345,15 +345,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
     ac = 0;
     XtSetArg(al[ac], XmNtitle, name); ac++;
     XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-#ifdef SGI_CUSTOM
-    if (strncmp(name, "Untitled", 8) == 0) { 
-        XtSetArg(al[ac], XmNiconName, APP_NAME); ac++;
-    } else {
-        XtSetArg(al[ac], XmNiconName, name); ac++;
-    }
-#else
     XtSetArg(al[ac], XmNiconName, name); ac++;
-#endif
     XtSetArg(al[ac], XmNgeometry, newGeometry[0]=='\0'?nullptr:newGeometry); ac++;
     XtSetArg(al[ac], XmNinitialState,
             iconic ? IconicState : NormalState); ac++;
@@ -2703,9 +2695,6 @@ void UpdateStatsLine(WindowInfo *window)
     char *string, *format, slinecol[32];
     Widget statW = window->statsLine;
     XmString xmslinecol;
-#ifdef SGI_CUSTOM
-    char *sleft, *smid, *sright;
-#endif
     
     if (!IsTopDocument(window))
       return;
@@ -2744,22 +2733,7 @@ void UpdateStatsLine(WindowInfo *window)
     /* Don't clobber the line if there's a special message being displayed */
     if (!window->modeMessageDisplayed) {
         /* Change the text in the stats line */
-#ifdef SGI_CUSTOM
-        /* don't show full pathname, just dir and filename (+ byte info) */
-        smid = strchr(string, '/'); 
-        if ( smid != nullptr ) {
-            sleft = smid;
-            sright = strrchr(string, '/'); 
-            while (strcmp(smid, sright)) {
-                    sleft = smid;
-                    smid = strchr(sleft + 1, '/');
-            }
-            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), sleft + 1);
-        } else
-            XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
-#else
         XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
-#endif
     }
     XtFree(string);
     
