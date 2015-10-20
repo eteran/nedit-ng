@@ -168,7 +168,7 @@ struct UndoInfo {
 struct Bookmark {
     char label;
     int cursorPos;
-    selection sel;
+    Selection sel;
 };
 
 /* Identifiers for the different colors that can be adjusted. */

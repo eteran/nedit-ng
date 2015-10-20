@@ -37,7 +37,7 @@
 
 struct RangesetTable;
 
-struct selection {
+struct Selection {
     char selected;          /* True if the selection is active */
     char rectangular;       /* True if the selection is rectangular */
     char zeroWidth;         /* Width 0 selections aren't "real" selections, but
@@ -61,9 +61,9 @@ struct textBuffer {
     char *buf;                  /* allocated memory where the text is stored */
     int gapStart;  	        /* points to the first character of the gap */
     int gapEnd;                 /* points to the first char after the gap */
-    selection primary;		/* highlighted areas */
-    selection secondary;
-    selection highlight;
+    Selection primary;		/* highlighted areas */
+    Selection secondary;
+    Selection highlight;
     int tabDist;		/* equiv. number of characters in a tab */
     int useTabs;		/* True if buffer routines are allowed to use
     				   tabs for padding in rectangular operations */
@@ -154,6 +154,7 @@ void BufUnhighlight(textBuffer *buf);
 void BufUnselect(textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
 
+int BufSubstituteNullCharsEx(std::string &string, int length, textBuffer *buf);
 void BufUnsubstituteNullCharsEx(std::string &string, textBuffer *buf);
 
 

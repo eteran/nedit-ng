@@ -111,7 +111,7 @@ static int styleOfPos(textDisp *textD, int lineStartPos,
         int lineLen, int lineIndex, int dispIndex, int thisChar);
 static int stringWidth(const textDisp* textD, const char* string,
         const int length, const int style);
-static int inSelection(selection *sel, int pos, int lineStartPos,
+static int inSelection(Selection *sel, int pos, int lineStartPos,
         int dispIndex);
 static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
@@ -153,7 +153,7 @@ static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart,
         int *lineEnd, int *nextLineStart);
 static int wrapUsesCharacter(textDisp *textD, int lineEndPos);
 static void hideOrShowHScrollBar(textDisp *textD);
-static int rangeTouchesRectSel(selection *sel, int rangeStart, int rangeEnd);
+static int rangeTouchesRectSel(Selection *sel, int rangeStart, int rangeEnd);
 static void extendRangeForStyleMods(textDisp *textD, int *start, int *end);
 static int getAbsTopLineNum(textDisp *textD);
 static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
@@ -2203,7 +2203,7 @@ static int stringWidth(const textDisp* textD, const char *string,
 ** Return true if position "pos" with indentation "dispIndex" is in
 ** selection "sel"
 */
-static int inSelection(selection *sel, int pos, int lineStartPos, int dispIndex)
+static int inSelection(Selection *sel, int pos, int lineStartPos, int dispIndex)
 {
     return sel->selected &&
     	 ((!sel->rectangular &&
@@ -3583,7 +3583,7 @@ static void hideOrShowHScrollBar(textDisp *textD)
 ** Return true if the selection "sel" is rectangular, and touches a
 ** buffer position withing "rangeStart" to "rangeEnd"
 */
-static int rangeTouchesRectSel(selection *sel, int rangeStart, int rangeEnd)
+static int rangeTouchesRectSel(Selection *sel, int rangeStart, int rangeEnd)
 {
     return sel->selected && sel->rectangular && sel->end >= rangeStart &&
     	    sel->start <= rangeEnd;
@@ -3596,7 +3596,7 @@ static int rangeTouchesRectSel(selection *sel, int rangeStart, int rangeEnd)
 */
 static void extendRangeForStyleMods(textDisp *textD, int *start, int *end)
 {
-    selection *sel = &textD->styleBuffer->primary;
+    Selection *sel = &textD->styleBuffer->primary;
     int extended = False;
     
     /* The peculiar protocol used here is that modifications to the style

@@ -42,6 +42,7 @@
 static void histogramCharacters(const char *string, int length, char hist[256],
 	int init);
 static void subsChars(char *string, int length, char fromChar, char toChar);
+static void subsCharsEx(std::string &string, int length, char fromChar, char toChar);
 static char chooseNullSubsChar(char hist[256]);
 static int insert(textBuffer *buf, int pos, const char *text);
 static void deleteRange(textBuffer *buf, int start, int end);
@@ -63,23 +64,23 @@ static void overlayRectInLine(const char *line, const char *insLine, int rectSta
 static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted);
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
 	int nInserted, int nRestyled, const char *deletedText);
-static void redisplaySelection(textBuffer *buf, selection *oldSelection,
-	selection *newSelection);
+static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
+	Selection *newSelection);
 static void moveGap(textBuffer *buf, int pos);
 static void reallocateBuf(textBuffer *buf, int newGapStart, int newGapLen);
-static void setSelection(selection *sel, int start, int end);
-static void setRectSelect(selection *sel, int start, int end,
+static void setSelection(Selection *sel, int start, int end);
+static void setRectSelect(Selection *sel, int start, int end,
 	int rectStart, int rectEnd);
 static void updateSelections(textBuffer *buf, int pos, int nDeleted,
 	int nInserted);
-static void updateSelection(selection *sel, int pos, int nDeleted,
+static void updateSelection(Selection *sel, int pos, int nDeleted,
 	int nInserted);
-static int getSelectionPos(selection *sel, int *start, int *end,
+static int getSelectionPos(Selection *sel, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
-static char *getSelectionText(textBuffer *buf, selection *sel);
-static std::string getSelectionTextEx(textBuffer *buf, selection *sel);
-static void removeSelected(textBuffer *buf, selection *sel);
-static void replaceSelected(textBuffer *buf, selection *sel, const char *text);
+static char *getSelectionText(textBuffer *buf, Selection *sel);
+static std::string getSelectionTextEx(textBuffer *buf, Selection *sel);
+static void removeSelected(textBuffer *buf, Selection *sel);
+static void replaceSelected(textBuffer *buf, Selection *sel, const char *text);
 static void addPadding(char *string, int startIndent, int toIndent,
 	int tabDist, int useTabs, char nullSubsChar, int *charsAdded);
 static int searchForward(textBuffer *buf, int startPos, char searchChar,
@@ -737,7 +738,7 @@ void BufCheckDisplay(textBuffer *buf, int start, int end)
 
 void BufSelect(textBuffer *buf, int start, int end)
 {
-    selection oldSelection = buf->primary;
+    Selection oldSelection = buf->primary;
 
     setSelection(&buf->primary, start, end);
     redisplaySelection(buf, &oldSelection, &buf->primary);
@@ -745,7 +746,7 @@ void BufSelect(textBuffer *buf, int start, int end)
 
 void BufUnselect(textBuffer *buf)
 {
-    selection oldSelection = buf->primary;
+    Selection oldSelection = buf->primary;
 
     buf->primary.selected = False;
     buf->primary.zeroWidth = False;
@@ -755,7 +756,7 @@ void BufUnselect(textBuffer *buf)
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart,
         int rectEnd)
 {
-    selection oldSelection = buf->primary;
+    Selection oldSelection = buf->primary;
 
     setRectSelect(&buf->primary, start, end, rectStart, rectEnd);
     redisplaySelection(buf, &oldSelection, &buf->primary);
@@ -793,7 +794,7 @@ void BufReplaceSelected(textBuffer *buf, const char *text)
 
 void BufSecondarySelect(textBuffer *buf, int start, int end)
 {
-    selection oldSelection = buf->secondary;
+    Selection oldSelection = buf->secondary;
 
     setSelection(&buf->secondary, start, end);
     redisplaySelection(buf, &oldSelection, &buf->secondary);
@@ -801,7 +802,7 @@ void BufSecondarySelect(textBuffer *buf, int start, int end)
 
 void BufSecondaryUnselect(textBuffer *buf)
 {
-    selection oldSelection = buf->secondary;
+    Selection oldSelection = buf->secondary;
 
     buf->secondary.selected = False;
     buf->secondary.zeroWidth = False;
@@ -811,7 +812,7 @@ void BufSecondaryUnselect(textBuffer *buf)
 void BufSecRectSelect(textBuffer *buf, int start, int end,
         int rectStart, int rectEnd)
 {
-    selection oldSelection = buf->secondary;
+    Selection oldSelection = buf->secondary;
 
     setRectSelect(&buf->secondary, start, end, rectStart, rectEnd);
     redisplaySelection(buf, &oldSelection, &buf->secondary);
@@ -847,7 +848,7 @@ void BufReplaceSecSelect(textBuffer *buf, const char *text)
 
 void BufHighlight(textBuffer *buf, int start, int end)
 {
-    selection oldSelection = buf->highlight;
+    Selection oldSelection = buf->highlight;
 
     setSelection(&buf->highlight, start, end);
     redisplaySelection(buf, &oldSelection, &buf->highlight);
@@ -855,7 +856,7 @@ void BufHighlight(textBuffer *buf, int start, int end)
 
 void BufUnhighlight(textBuffer *buf)
 {
-    selection oldSelection = buf->highlight;
+    Selection oldSelection = buf->highlight;
 
     buf->highlight.selected = False;
     buf->highlight.zeroWidth = False;
@@ -865,7 +866,7 @@ void BufUnhighlight(textBuffer *buf)
 void BufRectHighlight(textBuffer *buf, int start, int end,
         int rectStart, int rectEnd)
 {
-    selection oldSelection = buf->highlight;
+    Selection oldSelection = buf->highlight;
 
     setRectSelect(&buf->highlight, start, end, rectStart, rectEnd);
     redisplaySelection(buf, &oldSelection, &buf->highlight);
@@ -1419,6 +1420,49 @@ int BufSubstituteNullChars(char *string, int length, textBuffer *buf)
 }
 
 /*
+** The primary routine for integrating new text into a text buffer with
+** substitution of another character for ascii nuls.  This substitutes null
+** characters in the string in preparation for being copied or replaced
+** into the buffer, and if neccessary, adjusts the buffer as well, in the
+** event that the string contains the character it is currently using for
+** substitution.  Returns False, if substitution is no longer possible
+** because all non-printable characters are already in use.
+*/
+int BufSubstituteNullCharsEx(std::string &string, int length, textBuffer *buf)
+{
+    char histogram[256];
+
+    /* Find out what characters the string contains */
+    histogramCharacters(string.c_str(), length, histogram, True);
+    
+    /* Does the string contain the null-substitute character?  If so, re-
+       histogram the buffer text to find a character which is ok in both the
+       string and the buffer, and change the buffer's null-substitution
+       character.  If none can be found, give up and return False */
+    if (histogram[(unsigned char)buf->nullSubsChar] != 0) {
+        char *bufString;
+		char newSubsChar;
+        /* here we know we can modify the file buffer directly,
+           so we cast away constness */
+        bufString = (char *)BufAsString(buf);
+        histogramCharacters(bufString, buf->length, histogram, False);
+        newSubsChar = chooseNullSubsChar(histogram);
+        if (newSubsChar == '\0') {
+            return False;
+        }
+        /* bufString points to the buffer's data, so we substitute in situ */
+        subsChars(bufString, buf->length, buf->nullSubsChar, newSubsChar);
+        buf->nullSubsChar = newSubsChar;
+    }
+
+    /* If the string contains null characters, substitute them with the
+       buffer's null substitution character */
+    if (histogram[0] != 0)
+		subsCharsEx(string, length, '\0', buf->nullSubsChar);
+    return True;
+}
+
+/*
 ** Convert strings obtained from buffers which contain null characters, which
 ** have been substituted for by a special substitution character, back to
 ** a null-containing string.  There is no time penalty for calling this
@@ -1523,6 +1567,17 @@ static void subsChars(char *string, int length, char fromChar, char toChar)
     
     for (c=string; c < &string[length]; c++)
 	if (*c == fromChar) *c = toChar;
+}
+
+
+/*
+** Substitute fromChar with toChar in string.
+*/
+static void subsCharsEx(std::string &string, int length, char fromChar, char toChar)
+{
+    for(char &ch : string) {
+		if (ch == fromChar) ch = toChar;
+	}	
 }
 
 /*
@@ -2066,7 +2121,7 @@ static void overlayRectInLine(const char *line, const char *insLine,
     *outLen = (outPtr - outStr) + strlen(linePtr);
 }
 
-static void setSelection(selection *sel, int start, int end)
+static void setSelection(Selection *sel, int start, int end)
 {
     sel->selected = start != end;
     sel->zeroWidth = (start == end) ? 1 : 0;
@@ -2075,7 +2130,7 @@ static void setSelection(selection *sel, int start, int end)
     sel->end = std::max<int>(start, end);
 }
 
-static void setRectSelect(selection *sel, int start, int end,
+static void setRectSelect(Selection *sel, int start, int end,
 	int rectStart, int rectEnd)
 {
     sel->selected = rectStart < rectEnd;
@@ -2087,7 +2142,7 @@ static void setRectSelect(selection *sel, int start, int end,
     sel->rectEnd = rectEnd;
 }
 
-static int getSelectionPos(selection *sel, int *start, int *end,
+static int getSelectionPos(Selection *sel, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd)
 {
     /* Always fill in the parameters (zero-width can be requested too). */
@@ -2101,7 +2156,7 @@ static int getSelectionPos(selection *sel, int *start, int *end,
     return sel->selected;
 }
 
-static char *getSelectionText(textBuffer *buf, selection *sel)
+static char *getSelectionText(textBuffer *buf, Selection *sel)
 {
     int start, end, isRect, rectStart, rectEnd;
     char *text;
@@ -2120,7 +2175,7 @@ static char *getSelectionText(textBuffer *buf, selection *sel)
     	return BufGetRange(buf, start, end);
 }
 
-static std::string getSelectionTextEx(textBuffer *buf, selection *sel)
+static std::string getSelectionTextEx(textBuffer *buf, Selection *sel)
 {
     int start, end, isRect, rectStart, rectEnd;
     std::string text;
@@ -2137,7 +2192,7 @@ static std::string getSelectionTextEx(textBuffer *buf, selection *sel)
     	return BufGetRangeEx(buf, start, end);
 }
 
-static void removeSelected(textBuffer *buf, selection *sel)
+static void removeSelected(textBuffer *buf, Selection *sel)
 {
     int start, end;
     int isRect, rectStart, rectEnd;
@@ -2150,10 +2205,10 @@ static void removeSelected(textBuffer *buf, selection *sel)
         BufRemove(buf, start, end);
 }
 
-static void replaceSelected(textBuffer *buf, selection *sel, const char *text)
+static void replaceSelected(textBuffer *buf, Selection *sel, const char *text)
 {
     int start, end, isRect, rectStart, rectEnd;
-    selection oldSelection = *sel;
+    Selection oldSelection = *sel;
     
     /* If there's no selection, return */
     if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
@@ -2229,8 +2284,8 @@ static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted)
 ** Call the stored redisplay procedure(s) for this buffer to update the
 ** screen for a change in a selection.
 */
-static void redisplaySelection(textBuffer *buf, selection *oldSelection,
-	selection *newSelection)
+static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
+	Selection *newSelection)
 {
     int oldStart, oldEnd, newStart, newEnd, ch1Start, ch1End, ch2Start, ch2End;
     
@@ -2354,7 +2409,7 @@ static void updateSelections(textBuffer *buf, int pos, int nDeleted,
 /*
 ** Update an individual selection for changes in the corresponding text
 */
-static void updateSelection(selection *sel, int pos, int nDeleted,
+static void updateSelection(Selection *sel, int pos, int nDeleted,
 	int nInserted)
 {
     if ((!sel->selected && !sel->zeroWidth) || pos > sel->end)

@@ -943,7 +943,7 @@ static int doSave(WindowInfo *window)
     }
 
     /* get the text buffer contents and its length */
-    std::string fileString = BufGetAll(window->buffer);
+    std::string fileString = BufGetAllEx(window->buffer);
     fileLen = window->buffer->length;
     
     /* If null characters are substituted for, put them back */
@@ -1236,7 +1236,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
 void PrintWindow(WindowInfo *window, int selectedOnly)
 {
     textBuffer *buf = window->buffer;
-    selection *sel = &buf->primary;
+    Selection *sel = &buf->primary;
     char *fileString = nullptr;
     int fileLen;
     

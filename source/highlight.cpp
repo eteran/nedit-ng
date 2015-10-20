@@ -1868,7 +1868,7 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString,
 {
     char *c, bufChar;
     int pos, modStart, modEnd, minPos = INT_MAX, maxPos = 0;
-    selection *sel = &styleBuf->primary;
+    Selection *sel = &styleBuf->primary;
     
     /* Skip the range already marked for redraw */
     if (sel->selected) {

@@ -4161,7 +4161,7 @@ static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, const char **errMsg)
 {
-    selection *sel = &window->buffer->primary;
+    Selection *sel = &window->buffer->primary;
     
     result->tag = INT_TAG;
     result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
@@ -4171,7 +4171,7 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs,
 static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs,
     	DataValue *result, const char **errMsg)
 {
-    selection *sel = &window->buffer->primary;
+    Selection *sel = &window->buffer->primary;
     
     result->tag = INT_TAG;
     result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;

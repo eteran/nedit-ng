@@ -665,7 +665,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
 static void loseSelectionCB(Widget w, Atom *selType)
 {
     TextWidget tw = (TextWidget)w;
-    selection *sel = &tw->text.textD->buffer->primary;
+    Selection *sel = &tw->text.textD->buffer->primary;
     char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
     
     /* For zero width rect. sel. we give up the selection but keep the 

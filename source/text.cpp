@@ -1699,7 +1699,7 @@ static void extendStartAP(Widget w, XEvent *event, String *args,
     XMotionEvent *e = &event->xmotion;
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *sel = &buf->primary;
+    Selection *sel = &buf->primary;
     int anchor, rectAnchor, anchorLineStart, newPos, row, column;
 
     /* Find the new anchor point for the rest of this drag operation */
@@ -1782,7 +1782,7 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args,
     XMotionEvent *e = &event->xmotion;
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *sel = &buf->secondary;
+    Selection *sel = &buf->secondary;
     int anchor, pos, row, column;
 
     /* Find the new anchor point and make the new selection */
@@ -1909,7 +1909,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     textDisp *textD = tw->text.textD;
     int dragState = tw->text.dragState;
     textBuffer *buf = textD->buffer;
-    selection *secondary = &buf->secondary, *primary = &buf->primary;
+    Selection *secondary = &buf->secondary, *primary = &buf->primary;
     int rectangular = secondary->rectangular;
     char *textToCopy;
     int insertPos, lineStart, column;
@@ -1978,7 +1978,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     textDisp *textD = ((TextWidget)w)->text.textD;
     int dragState = ((TextWidget)w)->text.dragState;
     textBuffer *buf = textD->buffer;
-    selection *secondary = &buf->secondary, *primary = &buf->primary;
+    Selection *secondary = &buf->secondary, *primary = &buf->primary;
     int insertPos, rectangular = secondary->rectangular;
     int column, lineStart;
     char *textToCopy;
@@ -2054,7 +2054,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     XButtonEvent *e = &event->xbutton;
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *sec = &buf->secondary, *primary = &buf->primary;
+    Selection *sec = &buf->secondary, *primary = &buf->primary;
     char *primaryText, *secText;
     int newPrimaryStart, newPrimaryEnd, secWasRect;
     int dragState = ((TextWidget)w)->text.dragState; /* save before endDrag */
@@ -2113,7 +2113,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args,
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *primary = &buf->primary;
+    Selection *primary = &buf->primary;
     int rectangular = hasKey("rect", args, nArgs);
     char *textToCopy;
     int insertPos, col;
@@ -2151,7 +2151,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args,
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *primary = &buf->primary;
+    Selection *primary = &buf->primary;
     char *textToCopy;
     int rectangular = hasKey("rect", args, nArgs);
     int insertPos, col;
@@ -2371,7 +2371,7 @@ static void processTabAP(Widget w, XEvent *event, String *args,
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *sel = &buf->primary;
+    Selection *sel = &buf->primary;
     int emTabDist = ((TextWidget)w)->text.emulateTabs;
     int emTabsBeforeCursor = ((TextWidget)w)->text.emTabsBeforeCursor;
     int insertPos, indent, startIndent, toIndent, lineStart, tabWidth;
@@ -3436,7 +3436,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos,
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
     textBuffer *buf = textD->buffer;
-    selection *sel = &buf->primary;
+    Selection *sel = &buf->primary;
     int newPos = TextDGetInsertPosition(textD);
     int startPos, endPos, startCol, endCol, newCol, origCol;
     int anchor, rectAnchor, anchorLineStart;
@@ -3572,7 +3572,7 @@ static int deletePendingSelection(Widget w, XEvent *event)
 */
 static int pendingSelection(Widget w)
 {
-    selection *sel = &((TextWidget)w)->text.textD->buffer->primary;
+    Selection *sel = &((TextWidget)w)->text.textD->buffer->primary;
     int pos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     
     return ((TextWidget)w)->text.pendingDelete && sel->selected &&

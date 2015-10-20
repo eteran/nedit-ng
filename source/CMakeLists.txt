@@ -87,3 +87,8 @@ set_property(TARGET nc    PROPERTY CXX_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")
 #set(CMAKE_CXX_FLAGS "-W -Wall -pedantic")
+
+set_target_properties(nedit nc
+	PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
