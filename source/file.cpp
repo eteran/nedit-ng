@@ -886,7 +886,6 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap)
 
 static int doSave(WindowInfo *window)
 {
-    char *fileString = nullptr;
     char fullname[MAXPATHLEN];
     struct stat statbuf;
     FILE *fp;
@@ -944,16 +943,16 @@ static int doSave(WindowInfo *window)
     }
 
     /* get the text buffer contents and its length */
-    fileString = BufGetAll(window->buffer);
+    std::string fileString = BufGetAll(window->buffer);
     fileLen = window->buffer->length;
     
     /* If null characters are substituted for, put them back */
-    BufUnsubstituteNullChars(fileString, window->buffer);
+    BufUnsubstituteNullCharsEx(fileString, window->buffer);
     
     /* If the file is to be saved in DOS or Macintosh format, reconvert */
     if (window->fileFormat == DOS_FILE_FORMAT)
     {
-        if (!ConvertToDosFileString(&fileString, &fileLen))
+        if (!ConvertToDosFileStringEx(fileString, &fileLen))
         {
             DialogF(DF_ERR, window->shell, 1, "Out of Memory",
                     "Out of memory!  Try\nsaving in Unix format", "OK");
@@ -964,22 +963,17 @@ static int doSave(WindowInfo *window)
         }
     } else if (window->fileFormat == MAC_FILE_FORMAT)
     {
-        ConvertToMacFileString(fileString, fileLen);
+        ConvertToMacFileStringEx(fileString, fileLen);
     }
 
     /* write to the file */
-#ifdef IBM_FWRITE_BUG
-    write(fileno(fp), fileString, fileLen);
-#else
-    fwrite(fileString, sizeof(char), fileLen, fp);
-#endif
+    fwrite(fileString.c_str(), sizeof(char), fileLen, fp);
     if (ferror(fp))
     {
         DialogF(DF_ERR, window->shell, 1, "Error saving File",
                 "%s not saved:\n%s", "OK", window->filename, strerror(errno));
         fclose(fp);
         remove(fullname);
-        XtFree(fileString);
         return FALSE;
     }
     
@@ -988,14 +982,10 @@ static int doSave(WindowInfo *window)
     {
         DialogF(DF_ERR, window->shell, 1, "Error closing File",
                 "Error closing file:\n%s", "OK", strerror(errno));
-        XtFree(fileString);
         return FALSE;
     }
 
-    /* free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
-    
-    /* success, file was written */
+	/* success, file was written */
     SetWindowModified(window, FALSE);
     
     /* update the modification time */
@@ -1023,7 +1013,6 @@ static int doSave(WindowInfo *window)
 */
 int WriteBackupFile(WindowInfo *window)
 {
-    char *fileString = nullptr;
     char name[MAXPATHLEN];
     FILE *fp;
     int fd, fileLen;
@@ -1051,22 +1040,18 @@ int WriteBackupFile(WindowInfo *window)
     }
 
     /* get the text buffer contents and its length */
-    fileString = BufGetAll(window->buffer);
+    std::string fileString = BufGetAllEx(window->buffer);
     fileLen = window->buffer->length;
     
     /* If null characters are substituted for, put them back */
-    BufUnsubstituteNullChars(fileString, window->buffer);
+    BufUnsubstituteNullCharsEx(fileString, window->buffer);
     
     /* add a terminating newline if the file doesn't already have one */
     if (fileLen != 0 && fileString[fileLen-1] != '\n')
     	fileString[fileLen++] = '\n'; 	 /* null terminator no longer needed */
     
     /* write out the file */
-#ifdef IBM_FWRITE_BUG
-    write(fileno(fp), fileString, fileLen);
-#else
-    fwrite(fileString, sizeof(char), fileLen, fp);
-#endif
+    fwrite(fileString.c_str(), sizeof(char), fileLen, fp);
     if (ferror(fp))
     {
         DialogF(DF_ERR, window->shell, 1, "Error saving Backup",
@@ -1075,19 +1060,14 @@ int WriteBackupFile(WindowInfo *window)
                 strerror(errno));
         fclose(fp);
         remove(name);
-        XtFree(fileString);
         window->autoSave = FALSE;
         return FALSE;
     }
     
     /* close the backup file */
     if (fclose(fp) != 0) {
-	XtFree(fileString);
 	return FALSE;
     }
-
-    /* Free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
 
     return TRUE;
 }

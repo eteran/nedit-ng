@@ -1525,6 +1525,55 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen)
 }
 
 /*
+** Fetch text from the widget's buffer, adding wrapping newlines to emulate
+** effect acheived by wrapping in the text display in continuous wrap mode.
+*/
+std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen)
+{
+    textDisp *textD = ((TextWidget)w)->text.textD;
+    textBuffer *buf = textD->buffer;
+    textBuffer *outBuf;
+    int fromPos, toPos, outPos;
+    char c;
+    
+    if (!((TextWidget)w)->text.continuousWrap || startPos == endPos) {
+    	*outLen = endPos - startPos;
+    	return BufGetRange(buf, startPos, endPos);
+    }
+    
+    /* Create a text buffer with a good estimate of the size that adding
+       newlines will expand it to.  Since it's a text buffer, if we guess
+       wrong, it will fail softly, and simply expand the size */
+    outBuf = BufCreatePreallocated((endPos-startPos) + (endPos-startPos)/5);
+    outPos = 0;
+    
+    /* Go (displayed) line by line through the buffer, adding newlines where
+       the text is wrapped at some character other than an existing newline */
+    fromPos = startPos;
+    toPos = TextDCountForwardNLines(textD, startPos, 1, False);
+    while (toPos < endPos) {
+    	BufCopyFromBuf(buf, outBuf, fromPos, toPos, outPos);
+    	outPos += toPos - fromPos;
+    	c = BufGetCharacter(outBuf, outPos-1);
+    	if (c == ' ' || c == '\t')
+    	    BufReplace(outBuf, outPos-1, outPos, "\n");
+    	else if (c != '\n') {
+    	    BufInsert(outBuf, outPos, "\n");
+    	    outPos++;
+    	}
+    	fromPos = toPos;
+    	toPos = TextDCountForwardNLines(textD, fromPos, 1, True);
+    }
+    BufCopyFromBuf(buf, outBuf, fromPos, endPos, outPos);
+    
+    /* return the contents of the output buffer as a string */
+    std::string outString = BufGetAllEx(outBuf);
+    *outLen = outBuf->length;
+    BufFree(outBuf);
+    return outString;
+}
+
+/*
 ** Return the (statically allocated) action table for menu item actions.
 **
 ** Warning: This routine can only be used before the first text widget is

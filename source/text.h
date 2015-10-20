@@ -167,7 +167,7 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-
+std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen);
 
 
 #endif /* NEDIT_TEXT_H_INCLUDED */

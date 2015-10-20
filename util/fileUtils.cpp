@@ -38,10 +38,9 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <algorithm>
+
 #include <X11/Intrinsic.h>
-#ifdef VAXC
-#define NULL (void *) 0
-#endif /*VAXC*/
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -579,6 +578,50 @@ int ConvertToDosFileString(char **fileString, int *length)
     return TRUE;
 }
 
+
+/*
+** Converts a string (which may represent the entire contents of the file) from
+** Unix to DOS format.  String is re-allocated (with malloc), and length is
+** modified.  If allocation fails, which it may, because this can potentially
+** be a huge hunk of memory, returns FALSE and no conversion is done.
+**
+** This could be done more efficiently by asking doSave to allocate some
+** extra memory for this, and only re-allocating if it wasn't enough.  If
+** anyone cares about the performance or the potential for running out of
+** memory on a save, it should probably be redone.
+*/
+int ConvertToDosFileStringEx(std::string &fileString, int *length)
+{
+
+    /* How long a string will we need? */
+	int outLength = 0;
+	for(char ch : fileString) {
+		if(ch == '\n') {
+			outLength++;
+		}
+		outLength++;
+	}
+	
+	/* Allocate the new string */
+	std::string outString;
+	outString.reserve(outLength);
+	
+	auto outPtr = std::back_inserter(outString);
+	
+	/* Do the conversion, free the old string */
+	for(char ch : fileString) {
+		if (ch == '\n') {
+			*outPtr++ = '\r';
+		}
+		*outPtr++ = ch;	
+	}
+
+	fileString = outString;
+	*length    = fileString.size();
+	
+	return TRUE;
+}
+
 /*
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
@@ -592,6 +635,22 @@ void ConvertToMacFileString(char *fileString, int length)
             *inPtr = '\r';
 	inPtr++;
     }
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file)
+** from Unix to Macintosh format.
+*/
+void ConvertToMacFileStringEx(std::string &fileString, int length)
+{
+
+	std::transform(fileString.begin(), fileString.end(), fileString.begin(), [](char ch) {
+		if (ch == '\n') {
+			return '\r';
+		}
+		
+		return ch;
+	});
 }
 
 /*

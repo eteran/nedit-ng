@@ -77,6 +77,7 @@ static void updateSelection(selection *sel, int pos, int nDeleted,
 static int getSelectionPos(selection *sel, int *start, int *end,
         int *isRect, int *rectStart, int *rectEnd);
 static char *getSelectionText(textBuffer *buf, selection *sel);
+static std::string getSelectionTextEx(textBuffer *buf, selection *sel);
 static void removeSelected(textBuffer *buf, selection *sel);
 static void replaceSelected(textBuffer *buf, selection *sel, const char *text);
 static void addPadding(char *string, int startIndent, int toIndent,
@@ -90,12 +91,15 @@ static int countLines(const char *string);
 static int textWidth(const char *text, int tabDist, char nullSubsChar);
 static void findRectSelBoundariesForCopy(textBuffer *buf, int lineStartPos,
 	int rectStart, int rectEnd, int *selStart, int *selEnd);
-static char *realignTabs(const char *text, int origIndent, int newIndent,
-	int tabDist, int useTabs, char nullSubsChar, int *newLength);
-static char *expandTabs(const char *text, int startIndent, int tabDist,
-	char nullSubsChar, int *newLen);
-static char *unexpandTabs(const char *text, int startIndent, int tabDist,
-	char nullSubsChar, int *newLen);
+
+static char *realignTabs(const char *text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength);
+static char *expandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen);
+static char *unexpandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen);
+
+
+static std::string realignTabsEx(const char *text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength);
+static std::string expandTabsEx(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen);
+static std::string unexpandTabsEx(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen);
 
 static const char *ControlCodeTable[32] = {
      "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
@@ -187,6 +191,21 @@ char *BufGetAll(textBuffer *buf)
     memcpy(&text[buf->gapStart], &buf->buf[buf->gapEnd],
             buf->length - buf->gapStart);
     text[buf->length] = '\0';
+    return text;
+}
+
+/*
+** Get the entire contents of a text buffer.  Memory is allocated to contain
+** the returned string, which the caller must free.
+*/
+std::string BufGetAllEx(textBuffer *buf)
+{
+	std::string text;
+	text.reserve(buf->length);
+    
+	std::copy_n(buf->buf,             buf->gapStart,               std::back_inserter(text));
+	std::copy_n(&text[buf->gapStart], buf->length - buf->gapStart, std::back_inserter(text));
+    
     return text;
 }
 
@@ -297,6 +316,48 @@ char* BufGetRange(const textBuffer* buf, int start, int end)
 }
 
 /*
+** Return a copy of the text between "start" and "end" character positions
+** from text buffer "buf".  Positions start at 0, and the range does not
+** include the character pointed to by "end"
+*/
+std::string BufGetRangeEx(const textBuffer* buf, int start, int end)
+{
+    std::string text;
+    int length, part1Length;
+    
+    /* Make sure start and end are ok, and allocate memory for returned string.
+       If start is bad, return "", if end is bad, adjust it. */
+    if (start < 0 || start > buf->length) {
+        return text;
+    }
+    if (end < start) {
+    	int temp = start;
+    	start = end;
+    	end = temp;
+    }
+	
+    if (end > buf->length)
+        end = buf->length;
+		
+    length = end - start;
+	text.reserve(length);
+    
+    /* Copy the text from the buffer to the returned string */
+    if (end <= buf->gapStart) {
+		std::copy_n(&buf->buf[start], length, std::back_inserter(text));
+    } else if (start >= buf->gapStart) {
+        std::copy_n(&buf->buf[start+(buf->gapEnd-buf->gapStart)], length, std::back_inserter(text));
+    } else {
+        part1Length = buf->gapStart - start;
+        
+		std::copy_n(&buf->buf[start],       part1Length,          std::back_inserter(text));
+        std::copy_n(&buf->buf[buf->gapEnd], length - part1Length, std::back_inserter(text));
+    }
+
+    return text;
+}
+
+/*
 ** Return the character at buffer position "pos".  Positions start at 0.
 */
 char BufGetCharacter(const textBuffer* buf, const int pos)
@@ -335,22 +396,18 @@ void BufInsert(textBuffer *buf, int pos, const char *text)
 */
 void BufReplace(textBuffer *buf, int start, int end, const char *text)
 {
-    char *deletedText;
     int nInserted = strlen(text);
     
     callPreDeleteCBs(buf, start, end-start);
-    deletedText = BufGetRange(buf, start, end);
+    std::string deletedText = BufGetRange(buf, start, end);
     deleteRange(buf, start, end);
     insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
-    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
-    XtFree(deletedText);
-}
+    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText.c_str());
+ }
 
 void BufRemove(textBuffer *buf, int start, int end)
 {
-    char *deletedText;
-    
     /* Make sure the arguments make sense */
     if (start > end) {
     	int temp = start;
@@ -364,11 +421,10 @@ void BufRemove(textBuffer *buf, int start, int end)
 
     callPreDeleteCBs(buf, start, end-start);
     /* Remove and redisplay */
-    deletedText = BufGetRange(buf, start, end);
+    std::string deletedText = BufGetRange(buf, start, end);
     deleteRange(buf, start, end);
     buf->cursorPosHint = start;
-    callModifyCBs(buf, start, end-start, 0, 0, deletedText);
-    XtFree(deletedText);
+    callModifyCBs(buf, start, end-start, 0, 0, deletedText.c_str());
 }
 
 void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
@@ -613,6 +669,37 @@ char *BufGetTextInRect(textBuffer *buf, int start, int end,
     return retabbedStr;
 }
 
+std::string BufGetTextInRectEx(textBuffer *buf, int start, int end,
+	int rectStart, int rectEnd)
+{
+    int lineStart, selLeft, selRight, len;
+    char *textOut, *textIn, *outPtr, *retabbedStr;
+   
+    start = BufStartOfLine(buf, start);
+    end = BufEndOfLine(buf, end);
+    textOut = XtMalloc((end - start) + 1);
+    lineStart = start;
+    outPtr = textOut;
+    while (lineStart <= end) {
+        findRectSelBoundariesForCopy(buf, lineStart, rectStart, rectEnd, &selLeft, &selRight);
+        std::string textIn = BufGetRangeEx(buf, selLeft, selRight);
+        len = selRight - selLeft;
+        memcpy(outPtr, textIn.data(), len);
+        outPtr += len;
+        lineStart = BufEndOfLine(buf, selRight) + 1;
+        *outPtr++ = '\n';
+    }
+    if (outPtr != textOut)
+    	outPtr--;  /* don't leave trailing newline */
+    *outPtr = '\0';
+    
+    /* If necessary, realign the tabs in the selection as if the text were
+       positioned at the left margin */
+    retabbedStr = realignTabs(textOut, rectStart, 0, buf->tabDist, buf->useTabs, buf->nullSubsChar, &len);
+    XtFree(textOut);
+    return retabbedStr;
+}
+
 /*
 ** Get the hardware tab distance used by all displays for this buffer,
 ** and used in computing offsets for rectangular selection operations.
@@ -740,6 +827,12 @@ int BufGetSecSelectPos(textBuffer *buf, int *start, int *end,
 char *BufGetSecSelectText(textBuffer *buf)
 {
     return getSelectionText(buf, &buf->secondary);
+}
+
+
+std::string BufGetSecSelectTextEx(textBuffer *buf)
+{
+    return getSelectionTextEx(buf, &buf->secondary);
 }
 
 void BufRemoveSecSelect(textBuffer *buf)
@@ -1333,7 +1426,7 @@ int BufSubstituteNullChars(char *string, int length, textBuffer *buf)
 */
 void BufUnsubstituteNullChars(char *string, textBuffer *buf)
 {
-    register char *c, subsChar = buf->nullSubsChar;
+    char *c, subsChar = buf->nullSubsChar;
     
     if (subsChar == '\0')
 	return;
@@ -1341,6 +1434,30 @@ void BufUnsubstituteNullChars(char *string, textBuffer *buf)
     	if (*c == subsChar)
 	    *c = '\0';
 }
+
+/*
+** Convert strings obtained from buffers which contain null characters, which
+** have been substituted for by a special substitution character, back to
+** a null-containing string.  There is no time penalty for calling this
+** routine if no substitution has been done.
+*/
+void BufUnsubstituteNullCharsEx(std::string &string, textBuffer *buf)
+{
+	char subsChar = buf->nullSubsChar;
+    
+    if (subsChar == '\0')
+		return;
+		
+
+	std::transform(string.begin(), string.end(), string.begin(), [subsChar](char ch) {
+    	if (ch == subsChar) {
+			return '\0';
+		}
+		
+		return ch;	
+	});
+}
+
 
 /* 
 ** Compares len Bytes contained in buf starting at Position pos with
@@ -2003,6 +2120,23 @@ static char *getSelectionText(textBuffer *buf, selection *sel)
     	return BufGetRange(buf, start, end);
 }
 
+static std::string getSelectionTextEx(textBuffer *buf, selection *sel)
+{
+    int start, end, isRect, rectStart, rectEnd;
+    std::string text;
+    
+    /* If there's no selection, return an allocated empty string */
+    if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd)) {
+    	return text;
+    }
+    
+    /* If the selection is not rectangular, return the selected range */
+    if (isRect)
+    	return BufGetTextInRectEx(buf, start, end, rectStart, rectEnd);
+    else
+    	return BufGetRangeEx(buf, start, end);
+}
+
 static void removeSelected(textBuffer *buf, selection *sel)
 {
     int start, end;
@@ -2424,8 +2558,7 @@ static void findRectSelBoundariesForCopy(textBuffer *buf, int lineStartPos,
 ** "origIndent" to starting at "newIndent".  Returns an allocated string
 ** which must be freed by the caller with XtFree.
 */
-static char *realignTabs(const char *text, int origIndent, int newIndent,
-	int tabDist, int useTabs, char nullSubsChar, int *newLength)
+static char *realignTabs(const char *text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength)
 {
     char *expStr, *outStr;
     int len;
@@ -2449,6 +2582,37 @@ static char *realignTabs(const char *text, int origIndent, int newIndent,
     outStr = unexpandTabs(expStr, newIndent, tabDist, nullSubsChar, newLength);
     XtFree(expStr);
     return outStr;
+} 
+
+/*
+** Adjust the space and tab characters from string "text" so that non-white
+** characters remain stationary when the text is shifted from starting at
+** "origIndent" to starting at "newIndent".  Returns an allocated string
+** which must be freed by the caller with XtFree.
+*/
+static std::string realignTabsEx(const char *text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength)
+{
+    int len;
+    
+    /* If the tabs settings are the same, retain original tabs */
+    if (origIndent % tabDist == newIndent %tabDist) {		
+		std::string outStr(text);
+    	*newLength = outStr.size();
+    	return outStr;
+    }
+    
+	
+	
+    /* If the tab settings are not the same, brutally convert tabs to
+       spaces, then back to tabs in the new position */
+    std::string expStr = expandTabsEx(text, origIndent, tabDist, nullSubsChar, &len);
+    if (!useTabs) {
+    	*newLength = len;
+    	return expStr;
+    }
+	
+    std::string outStr = unexpandTabsEx(expStr.c_str(), newIndent, tabDist, nullSubsChar, newLength);
+    return outStr;
 }    
 
 /*
@@ -2456,8 +2620,7 @@ static char *realignTabs(const char *text, int origIndent, int newIndent,
 ** "startIndent" if nonzero, indicates that the text is a rectangular selection
 ** beginning at column "startIndent"
 */
-static char *expandTabs(const char *text, int startIndent, int tabDist,
-	char nullSubsChar, int *newLen)
+static char *expandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen)
 {
     char *outStr, *outPtr;
     const char *c;
@@ -2502,6 +2665,66 @@ static char *expandTabs(const char *text, int startIndent, int tabDist,
 }
 
 /*
+** Expand tabs to spaces for a block of text.  The additional parameter
+** "startIndent" if nonzero, indicates that the text is a rectangular selection
+** beginning at column "startIndent"
+*/
+static std::string expandTabsEx(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen)
+{
+    const char *c;
+    int indent;
+	int len;
+	int outLen = 0;
+
+    /* rehearse the expansion to figure out length for output string */
+    indent = startIndent;
+    for (c=text; *c!='\0'; c++) {
+    	if (*c == '\t') {
+    	    len = BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    	    outLen += len;
+    	    indent += len;
+    	} else if (*c == '\n') {
+    	    indent = startIndent;
+    	    outLen++;
+    	} else {
+    	    indent += BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    	    outLen++;
+    	}
+    }
+    
+    /* do the expansion */
+	std::string outStr;
+	outStr.reserve(outLen);
+
+    auto outPtr = std::back_inserter(outStr);
+	
+    indent = startIndent;
+    for (c=text; *c!= '\0'; c++) {
+    	if (*c == '\t') {
+		
+			char temp[MAX_EXP_CHAR_LEN];
+			char *temp_ptr = temp;
+    	    len = BufExpandCharacter(*c, indent, temp, tabDist, nullSubsChar);
+			
+			for(int i = 0; i < len; ++i) {
+				*outPtr++ = *temp_ptr++;
+			}
+			
+    	    indent += len;
+    	} else if (*c == '\n') {
+    	    indent = startIndent;
+    	    *outPtr++ = *c;
+    	} else {
+    	    indent += BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    	    *outPtr++ = *c;
+    	}
+    }
+
+    *newLen = outLen;
+    return outStr;
+}
+
+/*
 ** Convert sequences of spaces into tabs.  The threshold for conversion is
 ** when 3 or more spaces can be converted into a single tab, this avoids
 ** converting double spaces after a period withing a block of text.
@@ -2538,6 +2761,48 @@ static char *unexpandTabs(const char *text, int startIndent, int tabDist,
     }
     *outPtr = '\0';
     *newLen = outPtr - outStr;
+    return outStr;
+}
+
+/*
+** Convert sequences of spaces into tabs.  The threshold for conversion is
+** when 3 or more spaces can be converted into a single tab, this avoids
+** converting double spaces after a period withing a block of text.
+*/
+static std::string unexpandTabsEx(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen)
+{
+    std::string outStr;
+	char expandedChar[MAX_EXP_CHAR_LEN];
+    const char *c;
+    int indent, len;
+    
+    outStr.reserve(strlen(text));
+	
+	auto outPtr = std::back_inserter(outStr);
+    indent = startIndent;
+	
+    for (c=text; *c!='\0';) {
+    	if (*c == ' ') {
+    	    len = BufExpandCharacter('\t', indent, expandedChar, tabDist,
+		    nullSubsChar);
+    	    if (len >= 3 && !strncmp(c, expandedChar, len)) {
+    	    	c += len;
+    	    	*outPtr++ = '\t';
+    	    	indent += len;
+    	    } else {
+    	    	*outPtr++ = *c++;
+    	    	indent++;
+    	    }
+    	} else if (*c == '\n') {
+    	    indent = startIndent;
+    	    *outPtr++ = *c++;
+    	} else {
+    	    *outPtr++ = *c++;
+    	    indent++;
+    	}
+    }
+
+    *newLen = outStr.size();
     return outStr;
 }
 
