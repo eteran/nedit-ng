@@ -41,33 +41,6 @@ const char *GetNameOfHost(void);
 int Min(int i1, int i2);
 const char* GetRCFileName(int type);
 
-/*
-**  Simple stack implementation which only keeps void pointers.
-**  The stack must already be allocated and initialised:
-**
-**  Stack* stack = (Stack*) XtMalloc(sizeof(Stack));
-**  stack->top = NULL;
-**  stack->size = 0;
-**
-**  NULL is not allowed to pass in, as it is used to signal an empty stack.
-**
-**  The user should only ever care about Stack, stackObject is an internal
-**  object. (So it should really go in utils.c. A forward reference was
-**  refused by my compiler for some reason though.)
-*/
-typedef struct _stackObject {
-    void* value;
-    struct _stackObject* next;
-} stackObject;
-
-typedef struct {
-    unsigned size;
-    stackObject* top;
-} Stack;
-
-void Push(Stack* stack, const void* value);
-void* Pop(Stack* stack);
-
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
 enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
 

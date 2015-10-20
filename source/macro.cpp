@@ -60,6 +60,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <stack>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -829,9 +830,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
     Program *prog;
     Symbol *sym;
     DataValue subrPtr;
-    Stack* progStack = (Stack*) XtMalloc(sizeof(Stack));
-    progStack->top = nullptr;
-    progStack->size = 0;
+	std::stack<Program *> progStack;
 
     inPtr = string;
     while (*inPtr != '\0') {
@@ -924,7 +923,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
                         So we don't hand the Programs over to the interpreter
                         just yet (via RunMacroAsSubrCall()), but put it on a
                         stack of our own, reversing order once again.   */
-                    Push(progStack, (void*) prog);
+					progStack.push(prog);
                 }
 	    }
 	    inPtr = stoppedAt;
@@ -932,12 +931,13 @@ static int readCheckMacroString(Widget dialogParent, const char *string,
     }
 
     /*  Unroll reversal stack for macros loaded from macros.  */
-    while (nullptr != (prog = (Program*) Pop(progStack))) {
+	while(!progStack.empty()) {
+	
+		prog = progStack.top();
+		progStack.pop();
+
         RunMacroAsSubrCall(prog);
     }
-
-    /*  This stack is empty, so just free it without checking the members.  */
-    XtFree((char*) progStack);
 
     return True;
 }
