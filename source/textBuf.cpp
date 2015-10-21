@@ -129,7 +129,7 @@ textBuffer *BufCreatePreallocated(int requestedSize)
 {
     textBuffer *buf;
     
-    buf = (textBuffer *)XtMalloc(sizeof(textBuffer));
+    buf = new textBuffer;
     buf->length = 0;
     buf->buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
     buf->buf[requestedSize + PREFERRED_GAP_SIZE] = '\0';
@@ -149,9 +149,7 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->highlight.zeroWidth = False;
     buf->highlight.start = buf->highlight.end = 0;
     buf->highlight.rectangular = False;
-    buf->modifyProcs = nullptr;
-    buf->cbArgs = nullptr;
-    buf->nModifyProcs = 0;
+
     buf->preDeleteProcs = nullptr;
     buf->preDeleteCbArgs = nullptr;
     buf->nPreDeleteProcs = 0;
@@ -169,17 +167,15 @@ textBuffer *BufCreatePreallocated(int requestedSize)
 void BufFree(textBuffer *buf)
 {
     XtFree(buf->buf);
-    if (buf->nModifyProcs != 0) {
-    	XtFree((char *)buf->modifyProcs);
-    	XtFree((char *)buf->cbArgs);
-    }
+
     if (buf->rangesetTable)
 	RangesetTableFree(buf->rangesetTable);
     if (buf->nPreDeleteProcs != 0) {
     	XtFree((char *)buf->preDeleteProcs);
     	XtFree((char *)buf->preDeleteCbArgs);
     }
-    XtFree((char *)buf);
+	
+	delete buf;
 }
 
 /*
@@ -1093,107 +1089,38 @@ int BufGetHighlightPos(textBuffer *buf, int *start, int *end,
 /*
 ** Add a callback routine to be called when the buffer is modified
 */
-void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
-	void *cbArg)
+void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg)
 {
-    bufModifyCallbackProc *newModifyProcs;
-    void **newCBArgs;
-    int i;
-    
-    newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
-    for (i=0; i<buf->nModifyProcs; i++) {
-    	newModifyProcs[i] = buf->modifyProcs[i];
-    	newCBArgs[i] = buf->cbArgs[i];
-    }
-    if (buf->nModifyProcs != 0) {
-	XtFree((char *)buf->modifyProcs);
-	XtFree((char *)buf->cbArgs);
-    }
-    newModifyProcs[buf->nModifyProcs] = bufModifiedCB;
-    newCBArgs[buf->nModifyProcs] = cbArg;
-    buf->nModifyProcs++;
-    buf->modifyProcs = newModifyProcs;
-    buf->cbArgs = newCBArgs;
+	CallbackPair<bufModifyCallbackProc> pair{bufModifiedCB, cbArg};
+	buf->modifyProcs.push_back(pair);
 }
 
 /*
 ** Similar to the above, but makes sure that the callback is called before
 ** normal priority callbacks.
 */
-void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
-	void *cbArg)
+void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg)
 {
-    bufModifyCallbackProc *newModifyProcs;
-    void **newCBArgs;
-    int i;
-    
-    newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs+1));
-    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs+1));
-    for (i=0; i<buf->nModifyProcs; i++) {
-    	newModifyProcs[i+1] = buf->modifyProcs[i];
-    	newCBArgs[i+1] = buf->cbArgs[i];
-    }
-    if (buf->nModifyProcs != 0) {
-	XtFree((char *)buf->modifyProcs);
-	XtFree((char *)buf->cbArgs);
-    }
-    newModifyProcs[0] = bufModifiedCB;
-    newCBArgs[0] = cbArg;
-    buf->nModifyProcs++;
-    buf->modifyProcs = newModifyProcs;
-    buf->cbArgs = newCBArgs;
+	CallbackPair<bufModifyCallbackProc> pair{bufModifiedCB, cbArg};
+	buf->modifyProcs.push_front(pair);
 }
 
-void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB,
-	void *cbArg)
+void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg)
 {
     int i, toRemove = -1;
     bufModifyCallbackProc *newModifyProcs;
     void **newCBArgs;
-
-    /* find the matching callback to remove */
-    for (i=0; i<buf->nModifyProcs; i++) {
-    	if (buf->modifyProcs[i] == bufModifiedCB && buf->cbArgs[i] == cbArg) {
-    	    toRemove = i;
-    	    break;
-    	}
-    }
-    if (toRemove == -1) {
-    	fprintf(stderr, "NEdit Internal Error: Can't find modify CB to remove\n");
-    	return;
-    }
-    
-    /* Allocate new lists for remaining callback procs and args (if
-       any are left) */
-    buf->nModifyProcs--;
-    if (buf->nModifyProcs == 0) {
-    	buf->nModifyProcs = 0;
-    	XtFree((char *)buf->modifyProcs);
-    	buf->modifyProcs = nullptr;
-	XtFree((char *)buf->cbArgs);
-	buf->cbArgs = nullptr;
-	return;
-    }
-    newModifyProcs = (bufModifyCallbackProc *)
-    	    XtMalloc(sizeof(bufModifyCallbackProc *) * (buf->nModifyProcs));
-    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nModifyProcs));
-    
-    /* copy out the remaining members and free the old lists */
-    for (i=0; i<toRemove; i++) {
-    	newModifyProcs[i] = buf->modifyProcs[i];
-    	newCBArgs[i] = buf->cbArgs[i];
-    }
-    for (; i<buf->nModifyProcs; i++) {
-	newModifyProcs[i] = buf->modifyProcs[i+1];
-    	newCBArgs[i] = buf->cbArgs[i+1];
-    }
-    XtFree((char *)buf->modifyProcs);
-    XtFree((char *)buf->cbArgs);
-    buf->modifyProcs = newModifyProcs;
-    buf->cbArgs = newCBArgs;
+	
+	
+	for(auto it = buf->modifyProcs.begin(); it != buf->modifyProcs.end(); ++it) {
+		CallbackPair<bufModifyCallbackProc> &pair = *it;
+		if(pair.callback == bufModifiedCB && pair.argument == cbArg) {
+			buf->modifyProcs.erase(it);
+			return;
+		}
+	}
+	
+   	fprintf(stderr, "NEdit Internal Error: Can't find modify CB to remove\n");
 }
 
 /*
@@ -2966,10 +2893,10 @@ static void addPadding(char *string, int startIndent, int toIndent,
 */
 static void callModifyCBs(textBuffer *buf, int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText)
 {
-    int i;
-    
-    for (i=0; i<buf->nModifyProcs; i++)
-    	(*buf->modifyProcs[i])(pos, nInserted, nDeleted, nRestyled, deletedText, buf->cbArgs[i]);
+
+	for(const auto &pair : buf->modifyProcs) {
+		(pair.callback)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.argument);
+	}
 }
 
 /*

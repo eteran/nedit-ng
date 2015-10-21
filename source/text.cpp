@@ -927,7 +927,7 @@ static void destroy(TextWidget w)
     StopHandlingXSelections((Widget)w);
     buf = w->text.textD->buffer;
     TextDFree(w->text.textD);
-    if (buf->nModifyProcs == 0)
+    if (buf->modifyProcs.empty())
     	BufFree(buf);
 
     if (w->text.cursorBlinkProcID != 0)
@@ -1222,7 +1222,7 @@ void TextSetBuffer(Widget w, textBuffer *buffer)
     
     StopHandlingXSelections(w);
     TextDSetBuffer(((TextWidget)w)->text.textD, buffer);
-    if (oldBuf->nModifyProcs == 0)
+    if (oldBuf->modifyProcs.empty())
     	BufFree(oldBuf);
 }
 

@@ -28,6 +28,7 @@
 #define NEDIT_TEXTBUF_H_INCLUDED
 
 #include <string>
+#include <deque>
 
 /* Maximum length in characters of a tab or control character expansion
    of a single buffer character */
@@ -54,36 +55,39 @@ struct Selection {
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
+template <class T>
+struct CallbackPair {
+	T     callback;
+	void *argument;
+};
+
 struct textBuffer {
-    int length; 	        /* length of the text in the buffer (the length
-                                   of the buffer itself must be calculated:
-                                   gapEnd - gapStart + length) */
-    char *buf;                  /* allocated memory where the text is stored */
-    int gapStart;  	        /* points to the first character of the gap */
-    int gapEnd;                 /* points to the first char after the gap */
-    Selection primary;		/* highlighted areas */
+    int length; 	                          /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length) */ 
+    char *buf;                                /* allocated memory where the text is stored */																		 
+    int gapStart;  	                          /* points to the first character of the gap */ 																		 
+    int gapEnd;                               /* points to the first char after the gap */																			 
+    Selection primary;                        /* highlighted areas */																								 
     Selection secondary;
     Selection highlight;
-    int tabDist;		/* equiv. number of characters in a tab */
-    int useTabs;		/* True if buffer routines are allowed to use
-    				   tabs for padding in rectangular operations */
-    int nModifyProcs;		/* number of modify-redisplay procs attached */
-    bufModifyCallbackProc	/* procedures to call when buffer is */
-    	    *modifyProcs;	/*    modified to redisplay contents */
-    void **cbArgs;		/* caller arguments for modifyProcs above */
-    int nPreDeleteProcs;	/* number of pre-delete procs attached */
-    bufPreDeleteCallbackProc	/* procedure to call before text is deleted */
-	 *preDeleteProcs;	/* from the buffer; at most one is supported. */
-    void **preDeleteCbArgs;	/* caller argument for pre-delete proc above */
-    int cursorPosHint;		/* hint for reasonable cursor position after
-    				   a buffer modification operation */
-    char nullSubsChar;	    	/* NEdit is based on C null-terminated strings,
-    	    	    	    	   so ascii-nul characters must be substituted
-				   with something else.  This is the else, but
-				   of course, things get quite messy when you
-				   use it */
-    RangesetTable *rangesetTable;
-				/* current range sets */
+    int tabDist;		                      /* equiv. number of characters in a tab */ 																			 
+    int useTabs;		                      /* True if buffer routines are allowed to use tabs for padding in rectangular operations */							 
+    
+	
+	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs;
+	
+#if 0
+	int nModifyProcs;		                  /* number of modify-redisplay procs attached */																		 
+    bufModifyCallbackProc *modifyProcs;       /* procedures to call when buffer is modified to redisplay contents */ 												 
+    void **cbArgs;		                      /* caller arguments for modifyProcs above */																			 
+#endif
+
+	int nPreDeleteProcs;	                  /* number of pre-delete procs attached */																				 
+    bufPreDeleteCallbackProc* preDeleteProcs; /* procedure to call before text is deleted from the buffer; at most one is supported. */
+    void **preDeleteCbArgs;	                  /* caller argument for pre-delete proc above */
+    
+	int cursorPosHint;		                  /* hint for reasonable cursor position after a buffer modification operation */
+    char nullSubsChar;                        /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it */
+    RangesetTable *rangesetTable;             /* current range sets */
 };
 
 char *BufGetAll(textBuffer *buf);

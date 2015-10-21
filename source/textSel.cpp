@@ -103,16 +103,15 @@ static Atom getAtom(Display *display, int atomNum);
 */
 void HandleXSelections(Widget w)
 {
-    int i;
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     
-    /* Remove any existing selection handlers for other widgets */
-    for (i=0; i<buf->nModifyProcs; i++) {
-    	if (buf->modifyProcs[i] == modifiedCB) {
-    	    BufRemoveModifyCB(buf, modifiedCB, buf->cbArgs[i]);
-    	    break;
-    	}
-    }
+    /* Remove any existing selection handlers for other widgets */	
+	for(const auto &pair : buf->modifyProcs) {
+		if(pair.callback == modifiedCB) {
+    	    BufRemoveModifyCB(buf, pair.callback, pair.argument);
+    	    break;		
+		}
+	}
     
     /* Add a handler with this widget as the CB arg (and thus the sel. owner) */
     BufAddModifyCB(((TextWidget)w)->text.textD->buffer, modifiedCB, w);
@@ -124,15 +123,15 @@ void HandleXSelections(Widget w)
 */
 void StopHandlingXSelections(Widget w)
 {
-    int i;
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     
-    for (i=0; i<buf->nModifyProcs; i++) {
-    	if (buf->modifyProcs[i] == modifiedCB && buf->cbArgs[i] == w) {
-    	    BufRemoveModifyCB(buf, modifiedCB, buf->cbArgs[i]);
-    	    return;
-    	}
-    }
+	
+	for(const auto &pair : buf->modifyProcs) {
+		if(pair.callback == modifiedCB && pair.argument == w) {
+    	    BufRemoveModifyCB(buf, pair.callback, pair.argument);
+    	    return;		
+		}
+	}	
 }
 
 /*
