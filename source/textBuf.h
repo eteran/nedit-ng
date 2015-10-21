@@ -87,21 +87,15 @@ struct textBuffer {
 };
 
 char *BufGetAll(textBuffer *buf);
+char *BufGetRange(const textBuffer* buf, int start, int end);
 char *BufGetSecSelectText(textBuffer *buf);
 char *BufGetSelectionText(textBuffer *buf);
 char *BufGetTextInRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
-char *BufGetRange(const textBuffer* buf, int start, int end);
-
-std::string BufGetAllEx(textBuffer *buf);
-std::string BufGetSecSelectTextEx(textBuffer *buf);
-std::string BufGetSelectionTextEx(textBuffer *buf);
-std::string BufGetTextInRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
-std::string BufGetRangeEx(const textBuffer* buf, int start, int end);
-
 char BufGetCharacter(const textBuffer* buf, const int pos);
 const char *BufAsString(textBuffer *buf);
 int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText);
+int BufCmpEx(textBuffer * buf, int pos, int len, const std::string &cmpText);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
 int BufCountDispChars(const textBuffer* buf, const int lineStartPos, const int targetPos);
 int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
@@ -110,15 +104,23 @@ int BufCountLines(textBuffer *buf, int startPos, int endPos);
 int BufEndOfLine(textBuffer *buf, int pos);
 int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 int BufGetEmptySelectionPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
-int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent, char* outStr);
+int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent, char *outStr);
 int BufGetHighlightPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 int BufGetSecSelectPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 int BufGetSelectionPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 int BufGetTabDistance(textBuffer *buf);
 int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars, int *foundPos);
+int BufSearchBackwardEx(textBuffer *buf, int startPos, const std::string &searchChars, int *foundPos);
 int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars, int *foundPos);
+int BufSearchForwardEx(textBuffer *buf, int startPos, const std::string &searchChars, int *foundPos);
 int BufStartOfLine(textBuffer *buf, int pos);
 int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
+int BufSubstituteNullCharsEx(std::string &string, int length, textBuffer *buf);
+std::string BufGetAllEx(textBuffer *buf);
+std::string BufGetRangeEx(const textBuffer* buf, int start, int end);
+std::string BufGetSecSelectTextEx(textBuffer *buf);
+std::string BufGetSelectionTextEx(textBuffer *buf);
+std::string BufGetTextInRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 textBuffer *BufCreate(void);
 textBuffer *BufCreatePreallocated(int requestedSize);
 void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg);
@@ -131,7 +133,10 @@ void BufFree(textBuffer *buf);
 void BufHighlight(textBuffer *buf, int start, int end);
 void BufInsert(textBuffer *buf, int pos, const char *text);
 void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);
+void BufInsertColEx(textBuffer *buf, int column, int startPos, const std::string &text, int *charsInserted, int *charsDeleted);
+void BufInsertEx(textBuffer *buf, int pos, const std::string &text);
 void BufOverlayRect(textBuffer *buf, int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);
+void BufOverlayRectEx(textBuffer *buf, int startPos, int rectStart, int rectEnd, const std::string &text, int *charsInserted, int *charsDeleted);
 void BufRectHighlight(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemove(textBuffer *buf, int start, int end);
@@ -139,22 +144,24 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, voi
 void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc  bufPreDeleteCB,	void *cbArg);
 void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemoveSecSelect(textBuffer *buf);
-void BufRemoveSelected(textBuffer *buf);
+void BufRemoveSelected(textBuffer *buf);void BufSecRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufReplace(textBuffer *buf, int start, int end, const char *text);
+void BufReplaceEx(textBuffer *buf, int start, int end, const std::string &text);
 void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd, const char *text);
+void BufReplaceRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd, const std::string &text);
 void BufReplaceSecSelect(textBuffer *buf, const char *text);
+void BufReplaceSecSelectEx(textBuffer *buf, const std::string &text);
 void BufReplaceSelected(textBuffer *buf, const char *text);
-void BufSecRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
+void BufReplaceSelectedEx(textBuffer *buf, const std::string &text);
 void BufSecondarySelect(textBuffer *buf, int start, int end);
 void BufSecondaryUnselect(textBuffer *buf);
 void BufSelect(textBuffer *buf, int start, int end);
 void BufSetAll(textBuffer *buf, const char *text);
+void BufSetAllEx(textBuffer *buf, const std::string &text);
 void BufSetTabDistance(textBuffer *buf, int tabDist);
 void BufUnhighlight(textBuffer *buf);
 void BufUnselect(textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
-
-int BufSubstituteNullCharsEx(std::string &string, int length, textBuffer *buf);
 void BufUnsubstituteNullCharsEx(std::string &string, textBuffer *buf);
 
 
