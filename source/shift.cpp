@@ -44,9 +44,9 @@
 static void shiftRect(WindowInfo *window, int direction, int byTab,
 	int selStart, int selEnd, int rectStart, int rectEnd);
 static void changeCase(WindowInfo *window, int makeUpper);
-static char *shiftLineRight(char *line, int lineLen, int tabsAllowed,
+static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed,
 	int tabDist, int nChars);
-static char *shiftLineLeft(char *line, int lineLen, int tabDist, int nChars);
+static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
 static int findLeftMargin(char *text, int length, int tabDist);
 static char *fillParagraphs(char *text, int rightMargin, int tabDist,
 	int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
@@ -69,8 +69,9 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
 {
     int selStart, selEnd, isRect, rectStart, rectEnd;
     int shiftedLen, newEndPos, cursorPos, origLength, emTabDist, shiftDist;
-    char *text, *shiftedText;
+    char *shiftedText;
     textBuffer *buf = window->buffer;
+	std::string text;
 
     /* get selection, if no text selected, use current insert position */
     if (!BufGetSelectionPos(buf, &selStart, &selEnd, &isRect,
@@ -82,7 +83,7 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
 	    selEnd++;
 	BufSelect(buf, selStart, selEnd);
     	isRect = False;
-    	text = BufGetRange(buf, selStart, selEnd);
+    	text = BufGetRangeEx(buf, selStart, selEnd);
     } else if (isRect) {
 	cursorPos = TextGetCursorPos(window->lastFocus);
 	origLength = buf->length;
@@ -99,7 +100,7 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
 		selEnd++;
 	}
 	BufSelect(buf, selStart, selEnd);
-	text = BufGetRange(buf, selStart, selEnd);
+	text = BufGetRangeEx(buf, selStart, selEnd);
     }
     
     /* shift the text by the appropriate distance */
@@ -108,9 +109,9 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab)
     	shiftDist = emTabDist == 0 ? buf->tabDist : emTabDist;
     } else
     	shiftDist = 1;
-    shiftedText = ShiftText(text, direction, buf->useTabs, buf->tabDist,
+    shiftedText = ShiftText(text.c_str(), direction, buf->useTabs, buf->tabDist,
     	    shiftDist, &shiftedLen);
-    XtFree(text);
+
     BufReplaceSelected(buf, shiftedText);
     XtFree(shiftedText);
     
@@ -122,8 +123,8 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
 	int selStart, int selEnd, int rectStart, int rectEnd)
 {
     int offset, emTabDist;
-    textBuffer *tempBuf, *buf = window->buffer;
-    char *text;
+    textBuffer *tempBuf;
+	textBuffer *buf = window->buffer;
     
     /* Make sure selStart and SelEnd refer to whole lines */
     selStart = BufStartOfLine(buf, selStart);
@@ -144,15 +145,13 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     tempBuf = BufCreate();
     tempBuf->tabDist = buf->tabDist;
     tempBuf->useTabs = buf->useTabs;
-    text = BufGetRange(buf, selStart, selEnd);
-    BufSetAll(tempBuf, text);
-    XtFree(text);
+    std::string text = BufGetRangeEx(buf, selStart, selEnd);
+    BufSetAllEx(tempBuf, text);
     
     /* Do the shift in the temporary buffer */
-    text = BufGetTextInRect(buf, selStart, selEnd, rectStart, rectEnd);
+    text = BufGetTextInRectEx(buf, selStart, selEnd, rectStart, rectEnd);
     BufRemoveRect(tempBuf, 0, selEnd-selStart, rectStart, rectEnd);
-    BufInsertCol(tempBuf, rectStart+offset, 0, text, nullptr, nullptr);
-    XtFree(text);
+    BufInsertColEx(tempBuf, rectStart+offset, 0, text, nullptr, nullptr);
     
     /* Make the change in the real buffer */
     BufReplace(buf, selStart, selEnd, BufAsString(tempBuf));
@@ -300,11 +299,11 @@ void FillSelection(WindowInfo *window)
 ** shift lines left and right in a multi-line text string.  Returns the
 ** shifted text in memory that must be freed by the caller with XtFree.
 */
-char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
-	int nChars, int *newLen)
+char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen)
 {
     char *shiftedText, *shiftedLine;
-    char *textPtr, *lineStartPtr, *shiftedPtr;
+    char *shiftedPtr;
+	const char *textPtr;
     int bufLen;
     
     /*
@@ -321,7 +320,7 @@ char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
     /*
     ** break into lines and call shiftLine(Left/Right) on each
     */
-    lineStartPtr = text;
+    const char *lineStartPtr = text;
     textPtr = text;
     shiftedPtr = shiftedText;
     while (TRUE) {
@@ -351,11 +350,12 @@ char *ShiftText(char *text, int direction, int tabsAllowed, int tabDist,
     return shiftedText;
 }
 
-static char *shiftLineRight(char *line, int lineLen, int tabsAllowed,
+static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed,
 	int tabDist, int nChars)
 {
     char *lineOut;
-    char *lineInPtr, *lineOutPtr;
+    const char *lineInPtr;
+	char *lineOutPtr;
     int whiteWidth, i;
     
     lineInPtr = line;
@@ -395,11 +395,12 @@ static char *shiftLineRight(char *line, int lineLen, int tabsAllowed,
     }
 }
 
-static char *shiftLineLeft(char *line, int lineLen, int tabDist, int nChars)
+static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars)
 {
     char *lineOut;
     int i, whiteWidth, lastWhiteWidth, whiteGoal;
-    char *lineInPtr, *lineOutPtr;
+    const char *lineInPtr;
+	char *lineOutPtr;
     
     lineInPtr = line;
     lineOut = XtMalloc(lineLen + tabDist + 1);

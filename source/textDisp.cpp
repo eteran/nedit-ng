@@ -942,7 +942,7 @@ int TextDLineAndColToPos(textDisp *textD, int lineNum, int column)
 {
     int i, lineEnd, charIndex, outIndex;
     int lineStart=0, charLen=0;
-    char *lineStr, expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[MAX_EXP_CHAR_LEN];
 
     /* Count lines */
     if (lineNum < 1)
@@ -964,7 +964,7 @@ int TextDLineAndColToPos(textDisp *textD, int lineNum, int column)
     /* Only have to count columns if column isn't zero (or negative) */
     if (column > 0) {
       /* Count columns, expanding each character */
-      lineStr = BufGetRange(textD->buffer, lineStart, lineEnd);
+      std::string lineStr = BufGetRangeEx(textD->buffer, lineStart, lineEnd);
       outIndex = 0;
       for(i=lineStart; i<lineEnd; i++, charIndex++) {
           charLen = BufExpandCharacter(lineStr[charIndex], outIndex,
@@ -972,6 +972,8 @@ int TextDLineAndColToPos(textDisp *textD, int lineNum, int column)
                   textD->buffer->nullSubsChar);
           if ( outIndex+charLen >= column ) break;
           outIndex+=charLen;
+		  
+		// NOTE(eteran): previous code leaked here lineStr here!
       }
 
       /* If the column is in the middle of an expanded character, put cursor
@@ -1000,7 +1002,7 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
 {
     int charIndex, lineStartPos, fontHeight, lineLen;
     int visLineNum, charLen, outIndex, xStep, charStyle;
-    char *lineStr, expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[MAX_EXP_CHAR_LEN];
     
     /* If position is not displayed, return false */
     if (pos < textD->firstChar ||
@@ -1022,7 +1024,7 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
     	return True;
     }
     lineLen = visLineLength(textD, visLineNum);
-    lineStr = BufGetRange(textD->buffer, lineStartPos, lineStartPos + lineLen);
+    std::string lineStr = BufGetRangeEx(textD->buffer, lineStartPos, lineStartPos + lineLen);
     
     /* Step through character positions from the beginning of the line
        to "pos" to calculate the x coordinate */
@@ -1037,7 +1039,6 @@ int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y)
     	outIndex += charLen;
     }
     *x = xStep;
-    XtFree(lineStr);
     return True;
 }
 
@@ -1743,8 +1744,9 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     int charLen, outStartIndex, outIndex, cursorX = 0, hasCursor = False;
     int dispIndexOffset, cursorPos = textD->cursorPos, y_orig;
     char expandedChar[MAX_EXP_CHAR_LEN], outStr[MAX_DISP_LINE_LEN];
-    char *lineStr, *outPtr;
+    char *outPtr;
     char baseChar;
+	std::string lineStr;
 
     /* If line is not displayed, skip it */
     if (visLineNum < 0 || visLineNum >= textD->nVisibleLines)
@@ -1766,10 +1768,9 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     lineStartPos = textD->lineStarts[visLineNum];
     if (lineStartPos == -1) {
     	lineLen = 0;
-    	lineStr = nullptr;
     } else {
-	lineLen = visLineLength(textD, visLineNum);
-	lineStr = BufGetRange(buf, lineStartPos, lineStartPos + lineLen);
+		lineLen = visLineLength(textD, visLineNum);
+		lineStr = BufGetRangeEx(buf, lineStartPos, lineStartPos + lineLen);
     }
     
     /* Space beyond the end of the line is still counted in units of characters
@@ -1780,7 +1781,6 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     stdCharWidth = textD->fontStruct->max_bounds.width;
     if (stdCharWidth <= 0) {
     	fprintf(stderr, "nedit: Internal Error, bad font measurement\n");
-    	XtFree(lineStr);
     	return;
     }
     
@@ -1916,8 +1916,6 @@ static void redisplayLine(textDisp *textD, int visLineNum, int leftClip,
     /* If the y position of the cursor has changed, redraw the calltip */
     if (hasCursor && (y_orig != textD->cursorY || y_orig != y))
         TextDRedrawCalltip(textD, 0);
-    
-    XtFree(lineStr);
 }
 
 /*
@@ -2224,7 +2222,7 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
 {
     int charIndex, lineStart, lineLen, fontHeight;
     int charWidth, charLen, charStyle, visLineNum, xStep, outIndex;
-    char *lineStr, expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[MAX_EXP_CHAR_LEN];
 
     /* Find the visible line number corresponding to the y coordinate */
     fontHeight = textD->ascent + textD->descent;
@@ -2243,7 +2241,7 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
     
     /* Get the line text and its length */
     lineLen = visLineLength(textD, visLineNum);
-    lineStr = BufGetRange(textD->buffer, lineStart, lineStart + lineLen);
+    std::string lineStr = BufGetRangeEx(textD->buffer, lineStart, lineStart + lineLen);
     
     /* Step through character positions from the beginning of the line
        to find the character position corresponding to the x coordinate */
@@ -2256,7 +2254,6 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
 				lineStr[charIndex]);
     	charWidth = stringWidth(textD, expandedChar, charLen, charStyle);
     	if (x < xStep + (posType == CURSOR_POS ? charWidth/2 : charWidth)) {
-    	    XtFree(lineStr);
     	    return lineStart + charIndex;
     	}
     	xStep += charWidth;
@@ -2265,7 +2262,6 @@ static int xyToPos(textDisp *textD, int x, int y, int posType)
     
     /* If the x position was beyond the end of the line, return the position
        of the newline at the end of the line */
-    XtFree(lineStr);
     return lineStart + lineLen;
 }
 

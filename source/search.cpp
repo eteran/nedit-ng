@@ -3640,8 +3640,7 @@ int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap)
 ** Replace selection with "replaceString" and search for string "searchString" in window "window", 
 ** using algorithm "searchType" and direction "direction"
 */
-int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString,
-                     const char *replaceString, int searchType, int searchWrap)
+int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap)
 {
     int startPos = 0, endPos = 0, replaceLen = 0;
     int searchExtentBW, searchExtentFW;
@@ -3653,20 +3652,24 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
     replaced = 0;
 
     /* Replace the selected text only if it matches the search string */
-    if (searchMatchesSelection(window, searchString, searchType,
-	                       &startPos, &endPos, &searchExtentBW,
-			       &searchExtentFW)) {
+    if (searchMatchesSelection(window, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 	/* replace the text */
 	if (isRegexType(searchType)) {
-    	    char replaceResult[SEARCHMAX+1], *foundString;
-	    foundString = BufGetRange(window->buffer, searchExtentBW,
-				      searchExtentFW+1);
-    	    replaceUsingRE(searchString, replaceString, foundString,
-		    startPos-searchExtentBW,
-		    replaceResult, SEARCHMAX, startPos == 0 ? '\0' :
-		    BufGetCharacter(window->buffer, startPos-1),
-		    GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	    XtFree(foundString);
+    	    char replaceResult[SEARCHMAX+1];
+	    std::string foundString = BufGetRangeEx(window->buffer, searchExtentBW, searchExtentFW+1);
+    	    
+			replaceUsingRE(
+				searchString, 
+				replaceString, 
+				foundString.c_str(),
+				startPos-searchExtentBW,
+				replaceResult, 
+				SEARCHMAX, 
+				startPos == 0 ? '\0' : 
+					BufGetCharacter(window->buffer, startPos-1), 
+					GetWindowDelimiters(window),
+				defaultRegexFlags(searchType));
+
     	    BufReplace(window->buffer, startPos, endPos, replaceResult);
     	    replaceLen = strlen(replaceResult);
 	} else {
@@ -3726,14 +3729,14 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
     
     /* replace the text */
     if (isRegexType(searchType)) {
-    	char replaceResult[SEARCHMAX], *foundString;
-	foundString = BufGetRange(window->buffer, searchExtentBW, searchExtentFW+1);
-    	replaceUsingRE(searchString, replaceString, foundString,
+    	char replaceResult[SEARCHMAX];
+	std::string foundString = BufGetRangeEx(window->buffer, searchExtentBW, searchExtentFW+1);
+    	replaceUsingRE(searchString, replaceString, foundString.c_str(),
 		startPos - searchExtentBW,
 		replaceResult, SEARCHMAX, startPos == 0 ? '\0' :
 		BufGetCharacter(window->buffer, startPos-1),
 		GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	XtFree(foundString);
+
     	BufReplace(window->buffer, startPos, endPos, replaceResult);
     	replaceLen = strlen(replaceResult);
     } else {
@@ -3828,7 +3831,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     int selStart, selEnd, beginPos, startPos, endPos, realOffset, replaceLen;
     int found, isRect, rectStart, rectEnd, lineStart, cursorPos;
     int extentBW, extentFW;
-    char *fileString;
+    std::string fileString;
     textBuffer *tempBuf;
     Boolean substSuccess = False;
     Boolean anyFound = False;
@@ -3846,15 +3849,15 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     if (isRect) {
     	selStart = BufStartOfLine(window->buffer, selStart);
     	selEnd = BufEndOfLine(window->buffer, selEnd);
-    	fileString = BufGetRange(window->buffer, selStart, selEnd);
+    	fileString = BufGetRangeEx(window->buffer, selStart, selEnd);
     } else
-    	fileString = BufGetSelectionText(window->buffer);
+    	fileString = BufGetSelectionTextEx(window->buffer);
     
     /* create a temporary buffer in which to do the replacements to hide the
        intermediate steps from the display routines, and so everything can
        be undone in a single operation */
     tempBuf = BufCreate();
-    BufSetAll(tempBuf, fileString);
+    BufSetAllEx(tempBuf, fileString);
     
     /* search the string and do the replacements in the temporary buffer */
     replaceLen = strlen(replaceString);
@@ -3863,9 +3866,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     cursorPos = 0;
     realOffset = 0;
     while (found) {
-	found = SearchString(fileString, searchString, SEARCH_FORWARD,
-		searchType, FALSE, beginPos, &startPos, &endPos, &extentBW,
-                &extentFW, GetWindowDelimiters(window));
+	found = SearchString(fileString.c_str(), searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
 	if (!found)
 	    break;
 
@@ -3905,16 +3906,20 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
 
 	/* replace the string and compensate for length change */
 	if (isRegexType(searchType)) {
-    	    char replaceResult[SEARCHMAX], *foundString;
-	    foundString = BufGetRange(tempBuf, extentBW+realOffset,
+    	    char replaceResult[SEARCHMAX];
+	    std::string foundString = BufGetRangeEx(tempBuf, extentBW+realOffset,
 		    extentFW+realOffset+1);
-            substSuccess = replaceUsingRE(searchString, replaceString,
-                    foundString, startPos - extentBW, replaceResult, SEARCHMAX,
-                    0 == (startPos + realOffset)
-                        ? '\0'
-                        : BufGetCharacter(tempBuf, startPos + realOffset - 1),
-                    GetWindowDelimiters(window), defaultRegexFlags(searchType));
-	    XtFree(foundString);
+            substSuccess = replaceUsingRE(
+				searchString, 
+				replaceString,
+                foundString.c_str(),
+				startPos - extentBW,
+				replaceResult, SEARCHMAX,
+				0 == (startPos + realOffset) ? 
+					'\0'
+					: BufGetCharacter(tempBuf, startPos + realOffset - 1),
+				GetWindowDelimiters(window), 
+				defaultRegexFlags(searchType));
 
             if (!substSuccess) {
                 /*  The substitution failed. Primary reason for this would be
@@ -3945,7 +3950,6 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
 	if (fileString[endPos] == '\0')
 	    break;
     }
-    XtFree(fileString);
 
     if (anyFound) {
         if (substSuccess || !cancelSubst) {
@@ -4693,7 +4697,7 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
 {
     int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
     int regexLookContext = isRegexType(searchType) ? 1000 : 0;
-    char *string;
+    std::string string;
     int found, isRect, rectStart, rectEnd, lineStart = 0;
     
     /* find length of selection, give up on no selection or too long */
@@ -4715,30 +4719,28 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString,
     if (isRect) {
 	int stringStart = lineStart + rectStart - regexLookContext;
 	if (stringStart < 0) stringStart = 0;
-    	string = BufGetRange(window->buffer, stringStart,
+    	string = BufGetRangeEx(window->buffer, stringStart,
 		lineStart + rectEnd + regexLookContext);
     	selLen = rectEnd - rectStart;
 	beginPos = lineStart + rectStart - stringStart;
     } else {
 	int stringStart = selStart - regexLookContext;
 	if (stringStart < 0) stringStart = 0;
-	string = BufGetRange(window->buffer, stringStart,
+	string = BufGetRangeEx(window->buffer, stringStart,
 		selEnd + regexLookContext);
     	selLen = selEnd - selStart;
 	beginPos = selStart - stringStart;
     }
-    if (*string == '\0') {
-    	XtFree(string);
+    if (string.empty()) {
     	return FALSE;
     }
 
     /* search for the string in the selection (we are only interested 	*/
     /* in an exact match, but the procedure SearchString does important */
     /* stuff like applying the correct matching algorithm)		*/
-    found = SearchString(string, searchString, SEARCH_FORWARD, searchType,
+    found = SearchString(string.c_str(), searchString, SEARCH_FORWARD, searchType,
     	    FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW,
             GetWindowDelimiters(window));
-    XtFree(string);
 
     /* decide if it is an exact match */
     if (!found)

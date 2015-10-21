@@ -240,7 +240,6 @@ void ShellCmdToMacroString(WindowInfo *window, const char *command,
 */
 void ExecCursorLine(WindowInfo *window, int fromMacro)
 {
-    char *cmdText;
     int left, right, insertPos;
     char *subsCommand, fullName[MAXPATHLEN];
     int pos, line, column;
@@ -261,8 +260,8 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
 	insertPos = right;
     } else
     	insertPos = BufEndOfLine(window->buffer, right);
-    cmdText = BufGetRange(window->buffer, left, right);
-    BufUnsubstituteNullChars(cmdText, window->buffer);
+    std::string cmdText = BufGetRangeEx(window->buffer, left, right);
+    BufUnsubstituteNullCharsEx(cmdText, window->buffer);
     
     /* insert a newline after the entire line */
     BufInsert(window->buffer, insertPos, "\n");
@@ -274,7 +273,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
     sprintf(lineNumber, "%d", line);
     
-    subsCommand = shellCommandSubstitutes(cmdText, fullName, lineNumber);
+    subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName, lineNumber);
     if (subsCommand == nullptr)
     {
         DialogF(DF_ERR, window->shell, 1, "Shell Command",
@@ -288,7 +287,6 @@ void ExecCursorLine(WindowInfo *window, int fromMacro)
     issueCommand(window, subsCommand, nullptr, 0, 0, window->lastFocus, insertPos+1,
 	    insertPos+1, fromMacro);
     free(subsCommand);
-    XtFree(cmdText);
 }
 
 /*

@@ -4389,26 +4389,22 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 */
 static int matchLanguageMode(WindowInfo *window)
 {
-    char *ext, *first200;
+    char *ext;
     int i, j, fileNameLen, extLen, beginPos, endPos, start;
     const char *versionExtendedPath;
 
     /*... look for an explicit mode statement first */
     
     /* Do a regular expression search on for recognition pattern */
-    first200 = BufGetRange(window->buffer, 0, 200);
+    std::string first200 = BufGetRangeEx(window->buffer, 0, 200);
     for (i=0; i<NLanguageModes; i++) {
     	if (LanguageModes[i]->recognitionExpr != nullptr) {
-    	    if (SearchString(first200, LanguageModes[i]->recognitionExpr,
-    	    	    SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos,
-    	    	    &endPos, nullptr, nullptr, nullptr))
+    	    if (SearchString(first200.c_str(), LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
             {
-		XtFree(first200);
     	    	return i;
 	    }
     	}
     }
-    XtFree(first200);
     
     /* Look at file extension ("@@/" starts a ClearCase version extended path,
        which gets appended after the file extension, and therefore must be
@@ -4571,7 +4567,7 @@ static int loadLanguageModesString(char *inString, int fileVer)
 static char *writeLanguageModesString(void)
 {
     int i;
-    char *outStr, *escapedStr, *str, numBuf[25];
+    char *escapedStr, *str, numBuf[25];
     textBuffer *outBuf;
     
     outBuf = BufCreate();
@@ -4623,10 +4619,9 @@ static char *writeLanguageModesString(void)
     }
     
     /* Get the output, and lop off the trailing newline */
-    outStr = BufGetRange(outBuf, 0, outBuf->length - 1);
+    std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - 1);
     BufFree(outBuf);
-    escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    escapedStr = EscapeSensitiveChars(outStr.c_str());
     return escapedStr;
 }
 

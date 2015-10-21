@@ -107,11 +107,12 @@ void BeginBlockDrag(TextWidget tw)
     tw->text.dragInserted = sel->end - sel->start;
     if (sel->rectangular) {
     	textBuffer *testBuf = BufCreate();
-    	char *testText = BufGetRange(buf, sel->start, sel->end);
+
+    	std::string testText = BufGetRangeEx(buf, sel->start, sel->end);
         BufSetTabDistance(testBuf, buf->tabDist);
         testBuf->useTabs = buf->useTabs;
-    	BufSetAll(testBuf, testText);
-    	XtFree(testText);
+    	BufSetAllEx(testBuf, testText);
+
     	BufRemoveRect(testBuf, 0, sel->end - sel->start, sel->rectStart,
     	    	sel->rectEnd);
     	tw->text.dragDeleted = testBuf->length;
@@ -169,7 +170,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     int overlay, oldDragType = tw->text.dragType;
     int nLines = tw->text.dragNLines;
     int insLineNum, insLineStart, insRectStart, insRectEnd, insStart;
-    char *repText, *text, *insText;
+    char *insText;
     int modRangeStart = -1, tempModRangeEnd = -1, bufModRangeEnd = -1;
     int referenceLine, referencePos, tempStart, tempEnd, origSelLen;
     int insertInserted, insertDeleted, row, column;
@@ -209,9 +210,9 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     tempEnd = BufCountForwardNLines(buf, max3(tw->text.dragInsertPos,
     	 origSel->start, textD->lastChar), nLines+2) +
     	 origSel->end - origSel->start;
-    text = BufGetRange(origBuf, tempStart, tempEnd);
-    BufSetAll(tempBuf, text);
-    XtFree(text);
+    std::string text = BufGetRangeEx(origBuf, tempStart, tempEnd);
+    BufSetAllEx(tempBuf, text);
+
 
     /* If the drag type is USE_LAST, use the last dragType applied */
     if (dragType == USE_LAST)
@@ -351,12 +352,10 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     }
  
     /* Make the changes in the real buffer */
-    repText = BufGetRange(tempBuf, modRangeStart - tempStart,
-    	    tempModRangeEnd - tempStart);
+    std::string repText = BufGetRangeEx(tempBuf, modRangeStart - tempStart, tempModRangeEnd - tempStart);
     BufFree(tempBuf);
     TextDBlankCursor(textD);
-    BufReplace(buf, modRangeStart, bufModRangeEnd, repText);
-    XtFree(repText);
+    BufReplaceEx(buf, modRangeStart, bufModRangeEnd, repText);
     
     /* Store the necessary information for undoing this step */
     tw->text.dragInsertPos = insStart;
@@ -405,8 +404,7 @@ void FinishBlockDrag(TextWidget tw)
     	    	tw->text.dragDeleted);
 
     /* Get the original (pre-modified) range of text from saved backup buffer */
-    deletedText = BufGetRange(tw->text.dragOrigBuf, modRangeStart,
-    	    origModRangeEnd);
+    deletedText = BufGetRange(tw->text.dragOrigBuf, modRangeStart, origModRangeEnd);
 
     /* Free the backup buffer */
     BufFree(tw->text.dragOrigBuf);
@@ -415,10 +413,15 @@ void FinishBlockDrag(TextWidget tw)
     tw->text.dragState = NOT_CLICKED;
     
     /* Call finish-drag calback */
-    endStruct.startPos = modRangeStart;
-    endStruct.nCharsDeleted = origModRangeEnd - modRangeStart;
+    endStruct.startPos       = modRangeStart;
+    endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
     endStruct.nCharsInserted = bufModRangeEnd - modRangeStart;
-    endStruct.deletedText = deletedText;
+    endStruct.deletedText    = deletedText;
+	
+	// TODO(eteran): figure out the best way to have endStruct.deletedtext
+	//               not need a copy of the string, while still being able
+	//               to use std::string here
+	
     XtCallCallbacks((Widget)tw, textNdragEndCallback, (XtPointer)&endStruct);
     XtFree(deletedText);
 }
@@ -432,7 +435,7 @@ void CancelBlockDrag(TextWidget tw)
     textBuffer *origBuf = tw->text.dragOrigBuf;
     Selection *origSel = &origBuf->primary;
     int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
-    char *repText;
+
     dragEndCBStruct endStruct;
 
     /* If the operation was a move, make the modify range reflect the
@@ -448,9 +451,8 @@ void CancelBlockDrag(TextWidget tw)
     	   tw->text.dragInsertPos, tw->text.dragInserted, tw->text.dragDeleted);
  
     /* Make the changes in the buffer */
-    repText = BufGetRange(origBuf, modRangeStart, origModRangeEnd);
-    BufReplace(buf, modRangeStart, bufModRangeEnd, repText);
-    XtFree(repText);
+    std::string repText = BufGetRangeEx(origBuf, modRangeStart, origModRangeEnd);
+    BufReplaceEx(buf, modRangeStart, bufModRangeEnd, repText);
     
     /* Reset the selection and cursor position */
     if (origSel->rectangular)

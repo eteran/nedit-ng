@@ -929,7 +929,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 ** Find the topic and text position within that topic targeted by a hyperlink
 ** with name "link_name". Returns true if the link was successfully interpreted.
 */
-static int is_known_link(char *link_name, int *topic, int *textPosition)
+static int is_known_link(const char *link_name, int *topic, int *textPosition)
 {
     Href * hypertext;
     
@@ -968,7 +968,7 @@ static int is_known_link(char *link_name, int *topic, int *textPosition)
 static void followHyperlink(int topic, int charPosition, int newWindow)
 {
     textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
-    char * link_text;
+    std::string link_text;
     int    link_topic;
     int    link_pos;
     int end        = charPosition;
@@ -981,9 +981,9 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
     while (whatStyle == BufGetCharacter(textD->styleBuffer, ++end));
     while (whatStyle == BufGetCharacter(textD->styleBuffer, begin-1))  begin--;
 
-    link_text = BufGetRange (textD->buffer, begin, end);
+    link_text = BufGetRangeEx(textD->buffer, begin, end);
     
-    if (is_known_link (link_text, &link_topic, &link_pos) ) 
+    if (is_known_link (link_text.c_str(), &link_topic, &link_pos) ) 
     {
         if (HelpWindows[link_topic] != nullptr)
         {
@@ -1005,7 +1005,6 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
         adaptNavigationButtons(link_topic);
         adaptNavigationButtons(topic);
     }
-    XtFree (link_text);
 }
 
 static void helpFocusButtonsAP(Widget w, XEvent *event, String *args,

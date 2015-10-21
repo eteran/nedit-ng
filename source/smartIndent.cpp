@@ -1986,7 +1986,7 @@ char *WriteSmartIndentString(void)
     int i;
     smartIndentRec *sis;
     textBuffer *outBuf;
-    char *outStr, *escapedStr;
+    char *escapedStr;
     
     outBuf = BufCreate();
     for (i=0; i<NSmartIndentSpecs; i++) {
@@ -2004,13 +2004,12 @@ char *WriteSmartIndentString(void)
     }
     
     /* Get the output string, and lop off the trailing newline */
-    outStr = BufGetRange(outBuf, 0, outBuf->length > 0 ? outBuf->length-1 : 0);
+    std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length > 0 ? outBuf->length-1 : 0);
     BufFree(outBuf);
     
     /* Protect newlines and backslashes from translation by the resource
        reader */
-    escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    escapedStr = EscapeSensitiveChars(outStr.c_str());
     return escapedStr;
 }
 

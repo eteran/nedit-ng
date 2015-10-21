@@ -29,6 +29,7 @@
 
 #include "nedit.h"
 #include "highlight.h"
+#include <string>
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>

@@ -1164,7 +1164,7 @@ int LoadHighlightString(char *inString, int convertOld)
 */
 char *WriteHighlightString(void)
 {
-    char *outStr, *str, *escapedStr;
+    char *str, *escapedStr;
     textBuffer *outBuf;
     int psn, written = False;
     patternSet *patSet;
@@ -1192,13 +1192,12 @@ char *WriteHighlightString(void)
     }
     
     /* Get the output string, and lop off the trailing newline and tab */
-    outStr = BufGetRange(outBuf, 0, outBuf->length - (written?2:0));
+    std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - (written?2:0));
     BufFree(outBuf);
     
     /* Protect newlines and backslashes from translation by the resource
        reader */
-    escapedStr = EscapeSensitiveChars(outStr);
-    XtFree(outStr);
+    escapedStr = EscapeSensitiveChars(outStr.c_str());
     return escapedStr;
 }
 

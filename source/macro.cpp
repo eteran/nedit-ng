@@ -1925,7 +1925,6 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
 {
     int from, to;
     textBuffer *buf = window->buffer;
-    char *rangeText;
     
     /* Validate arguments and convert to int */
     if (nArgs != 2)
@@ -1944,12 +1943,16 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs,
        provided a routine for writing into a pre-allocated string) */
     result->tag = STRING_TAG;
     AllocNString(&result->val.str, to - from + 1);
-    rangeText = BufGetRange(buf, from, to);
-    BufUnsubstituteNullChars(rangeText, buf);
-    strcpy(result->val.str.rep, rangeText);
+	
+    std::string rangeText = BufGetRangeEx(buf, from, to);
+    BufUnsubstituteNullCharsEx(rangeText, buf);
+	
+	// TODO(eteran): I think we can fix this to work with std::string
+	// and not care about the NULs
+    strcpy(result->val.str.rep, rangeText.c_str());
     /* Note: after the un-substitution, it is possible that strlen() != len,
        but that's because strlen() can't deal with 0-characters. */
-    XtFree(rangeText);
+
     return True;
 }
 

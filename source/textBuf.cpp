@@ -89,7 +89,7 @@ static int searchForward(textBuffer *buf, int startPos, char searchChar,
 static int searchBackward(textBuffer *buf, int startPos, char searchChar,
 	int *foundPos);
 static char *copyLine(const char *text, int *lineLen);
-static std::string copyLineEx(const std::string &text, int *lineLen);
+static std::string copyLineEx(std::string::const_iterator first, std::string::const_iterator last, int *lineLen);
 static int countLines(const char *string);
 static int countLinesEx(const std::string &string);
 static int textWidth(const char *text, int tabDist, char nullSubsChar);
@@ -459,7 +459,7 @@ void BufReplace(textBuffer *buf, int start, int end, const char *text)
     int nInserted = strlen(text);
     
     callPreDeleteCBs(buf, start, end-start);
-    std::string deletedText = BufGetRange(buf, start, end);
+    std::string deletedText = BufGetRangeEx(buf, start, end);
     deleteRange(buf, start, end);
     insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
@@ -475,7 +475,7 @@ void BufReplaceEx(textBuffer *buf, int start, int end, const std::string &text)
     int nInserted = text.size();
     
     callPreDeleteCBs(buf, start, end-start);
-    std::string deletedText = BufGetRange(buf, start, end);
+    std::string deletedText = BufGetRangeEx(buf, start, end);
     deleteRange(buf, start, end);
     insertEx(buf, start, text);
     buf->cursorPosHint = start + nInserted;
@@ -497,7 +497,7 @@ void BufRemove(textBuffer *buf, int start, int end)
 
     callPreDeleteCBs(buf, start, end-start);
     /* Remove and redisplay */
-    std::string deletedText = BufGetRange(buf, start, end);
+    std::string deletedText = BufGetRangeEx(buf, start, end);
     deleteRange(buf, start, end);
     buf->cursorPosHint = start;
     callModifyCBs(buf, start, end-start, 0, 0, deletedText.c_str());
@@ -582,10 +582,11 @@ void BufInsertColEx(textBuffer *buf, int column, int startPos, const std::string
     
     nLines = countLinesEx(text);
     lineStartPos = BufStartOfLine(buf, startPos);
-    nDeleted     = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) - lineStartPos;
+    nDeleted = BufEndOfLine(buf, BufCountForwardNLines(buf, startPos, nLines)) -
+    	    lineStartPos;
     callPreDeleteCBs(buf, lineStartPos, nDeleted);
     std::string deletedText = BufGetRangeEx(buf, lineStartPos, lineStartPos + nDeleted);
-    insertColEx(buf, column, lineStartPos, text, &insertDeleted, &nInserted, &buf->cursorPosHint);
+    insertColEx(buf, column, lineStartPos, text.c_str(), &insertDeleted, &nInserted, &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ins1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText.c_str());
@@ -976,6 +977,11 @@ int BufGetEmptySelectionPos(textBuffer *buf, int *start, int *end,
 char *BufGetSelectionText(textBuffer *buf)
 {
     return getSelectionText(buf, &buf->primary);
+}
+
+std::string BufGetSelectionTextEx(textBuffer *buf)
+{
+    return getSelectionTextEx(buf, &buf->primary);
 }
 
 void BufRemoveSelected(textBuffer *buf)
@@ -2091,14 +2097,9 @@ static void insertCol(textBuffer *buf, int column, int startPos, const char *ins
 */
 static void insertColEx(textBuffer *buf, int column, int startPos, const std::string &insText, int *nDeleted, int *nInserted, int *endPos)
 {
-    int nLines, start, end, insWidth, lineStart;
-    int expReplLen;
-	int expInsLen;
-	int len;
-	int endOffset;
-	std::string replText;
-	std::string expText;
-    
+    int nLines, start, end, insWidth, lineStart, lineEnd;
+    int expReplLen, expInsLen, len, endOffset;
+    char *outStr, *outPtr;
 
     if (column < 0)
     	column = 0;
@@ -2118,28 +2119,26 @@ static void insertColEx(textBuffer *buf, int column, int startPos, const std::st
 	
     insWidth = textWidthEx(insText, buf->tabDist, buf->nullSubsChar);
     end = BufEndOfLine(buf, BufCountForwardNLines(buf, start, nLines-1));
-    
-	replText = BufGetRangeEx(buf, start, end);
-	
-    expText = expandTabsEx(replText, 0, buf->tabDist, buf->nullSubsChar, &expReplLen);    
+    std::string replText = BufGetRangeEx(buf, start, end);
+    std::string expText = expandTabsEx(replText, 0, buf->tabDist, buf->nullSubsChar, &expReplLen);
+
     expText = expandTabsEx(insText, 0, buf->tabDist, buf->nullSubsChar, &expInsLen);
-	
-    char *outStr = XtMalloc(expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
+
+    outStr = XtMalloc(expReplLen + expInsLen +
+    	    nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
     
     /* Loop over all lines in the buffer between start and end inserting
        text at column, splitting tabs and adding padding appropriately */
-    char *outPtr = outStr;
+    outPtr = outStr;
     lineStart = start;
-	
-	auto insPtr = insText.begin();
-
+    auto insPtr = insText.begin();
     while (True) {
-    	int lineEnd = BufEndOfLine(buf, lineStart);
-    	std::string line    = BufGetRangeEx(buf, lineStart, lineEnd);
-    	std::string insLine = std::string(insPtr, insPtr + len);
-		
+    	lineEnd = BufEndOfLine(buf, lineStart);
+    	std::string line = BufGetRangeEx(buf, lineStart, lineEnd);
+    	std::string insLine = copyLineEx(insPtr, insText.end(), &len);
     	insPtr += len;
     	insertColInLineEx(line, insLine, column, insWidth, buf->tabDist, buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
+
 
 #if 0   /* Earlier comments claimed that trailing whitespace could multiply on
         the ends of lines, but insertColInLine looks like it should never
@@ -2151,11 +2150,10 @@ static void insertColEx(textBuffer *buf, int column, int startPos, const std::st
                 len--;
         }
 #endif
-
 	outPtr += len;
 	*outPtr++ = '\n';
     	lineStart = lineEnd < buf->length ? lineEnd + 1 : buf->length;
-    	if (insPtr == insText.end())
+    	if (*insPtr == '\0')
     	    break;
     	insPtr++;
     }
@@ -2337,8 +2335,8 @@ static void overlayRectEx(textBuffer *buf, int startPos, int rectStart, int rect
     auto insPtr = insText.begin();
     while (True) {
     	lineEnd = BufEndOfLine(buf, lineStart);
-    	std::string line = BufGetRangeEx(buf, lineStart, lineEnd);
-    	std::string insLine = std::string(insPtr, insPtr + len);
+    	std::string line    = BufGetRangeEx(buf, lineStart, lineEnd);
+    	std::string insLine = copyLineEx(insPtr, insText.end(), &len);
     	insPtr += len;
     	overlayRectInLineEx(line, insLine, rectStart, rectEnd, buf->tabDist, buf->useTabs, buf->nullSubsChar, outPtr, &len, &endOffset);
 
@@ -2463,27 +2461,27 @@ static void insertColInLine(const char *line, const char *insLine, int column, i
 static void insertColInLineEx(const std::string &line, const std::string &insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset)
 {
     char *c, *outPtr;
-    const char *linePtr;
     int indent, toIndent, len, postColIndent;
         
     /* copy the line up to "column" */ 
     outPtr = outStr;
     indent = 0;
-
-
-	for(char ch : line) {
-		len = BufCharWidth(ch, indent, tabDist, nullSubsChar);
+	
+	
+	auto linePtr = line.begin();
+    for (; linePtr != line.end(); ++linePtr) {
+		len = BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
 		if (indent + len > column)
-    	    	break;
-    		indent += len;
-		*outPtr++ = ch;
+	    	    break;
+	    	indent += len;
+		*outPtr++ = *linePtr;
     }
     
     /* If "column" falls in the middle of a character, and the character is a
        tab, leave it off and leave the indent short and it will get padded
        later.  If it's a control character, insert it and adjust indent
        accordingly. */
-    if (indent < column && *linePtr != '\0') {
+    if (indent < column && linePtr != line.end()) {
     	postColIndent = indent + len;
     	if (*linePtr == '\t')
     	    linePtr++;
@@ -2495,7 +2493,7 @@ static void insertColInLineEx(const std::string &line, const std::string &insLin
     	postColIndent = indent;
     
     /* If there's no text after the column and no text to insert, that's all */
-    if (insLine.empty() && *linePtr == '\0') {
+    if (insLine.empty() && linePtr == line.end()) {
     	*outLen = *endOffset = outPtr - outStr;
     	return;
     }
@@ -2510,16 +2508,17 @@ static void insertColInLineEx(const std::string &line, const std::string &insLin
     /* Copy the text from "insLine" (if any), recalculating the tabs as if
        the inserted string began at column 0 to its new column destination */
     if (!insLine.empty()) {
-		std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar, &len);
-		for(char ch : retabbedStr) {
+	std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar, &len);
+	
+	for(char ch : retabbedStr) {
     	    *outPtr++ = ch;
     	    len = BufCharWidth(ch, indent, tabDist, nullSubsChar);
     	    indent += len;
-		}
+	}
     }
     
     /* If the original line did not extend past "column", that's all */
-    if (*linePtr == '\0') {
+    if (linePtr == line.end()) {
     	*outLen = *endOffset = outPtr - outStr;
     	return;
     }
@@ -2532,7 +2531,8 @@ static void insertColInLineEx(const std::string &line, const std::string &insLin
     indent = toIndent;
     
     /* realign tabs for text beyond "column" and write it out */
-    std::string retabbedStr = realignTabsEx(linePtr, postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	// TODO(eteran): fix this std::string copy inefficiency!
+    std::string retabbedStr = realignTabsEx(std::string(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
     strcpy(outPtr, retabbedStr.c_str());
 
     *endOffset = outPtr - outStr;
@@ -2714,28 +2714,31 @@ static void overlayRectInLine(const char *line, const char *insLine, int rectSta
 */
 static void overlayRectInLineEx(const std::string &line, const std::string &insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset)
 {
-    char *c, *outPtr, *retabbedStr;
-    const char *linePtr;
+    char *outPtr;
+	std::string retabbedStr;
     int inIndent, outIndent, len, postRectIndent;
         
     /* copy the line up to "rectStart" or just before the char that 
         contains it*/ 
     outPtr = outStr;
     inIndent = outIndent = 0;
-    for(char ch : line) {
-	len = BufCharWidth(ch, inIndent, tabDist, nullSubsChar);
+	
+	auto linePtr = line.begin();
+	
+    for (; linePtr!=line.end(); ++linePtr) {
+	len = BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
 	if (inIndent + len > rectStart)
     	    break;
     	inIndent += len;
     	outIndent += len;
-	*outPtr++ = ch;
+	*outPtr++ = *linePtr;
     }
     
     /* If "rectStart" falls in the middle of a character, and the character
        is a tab, leave it off and leave the outIndent short and it will get
        padded later.  If it's a control character, insert it and adjust
        outIndent accordingly. */
-    if (inIndent < rectStart && *linePtr != '\0') {
+    if (inIndent < rectStart && linePtr != line.end()) {
     	if (*linePtr == '\t') {
             /* Skip past the tab */
     	    linePtr++;
@@ -2758,23 +2761,22 @@ static void overlayRectInLineEx(const std::string &line, const std::string &insL
         the position at which that character is supposed to appear */
     
     /* If there's no text after rectStart and no text to insert, that's all */
-    if (insLine.empty() && *linePtr == '\0') {
+    if (insLine.empty() && linePtr == line.end()) {
     	*outLen = *endOffset = outPtr - outStr;
     	return;
     }
 
     /* pad out to rectStart if text is too short */
     if (outIndent < rectStart) {
-	addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar,
-		&len);
+	addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar, &len);
 	outPtr += len;
     }
     outIndent = rectStart;
     
     /* Copy the text from "insLine" (if any), recalculating the tabs as if
        the inserted string began at column 0 to its new column destination */
-    if (!insLine.empty()) {
-	std::string retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar, &len);
+    if (insLine.empty()) {
+	retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar, &len);
 	for(char ch : retabbedStr) {
     	    *outPtr++ = ch;
     	    len = BufCharWidth(ch, outIndent, tabDist, nullSubsChar);
@@ -2795,10 +2797,14 @@ static void overlayRectInLineEx(const std::string &line, const std::string &insL
     outPtr += len;
     outIndent = postRectIndent;
     
+	
+	// TODO(eteran): fix this std::string copy inefficiency!
+	std::string temp(linePtr, line.end());
+	
     /* copy the text beyond "rectEnd" */
-    strcpy(outPtr, linePtr);
+    strcpy(outPtr, temp.c_str());
     *endOffset = outPtr - outStr;
-    *outLen = (outPtr - outStr) + strlen(linePtr);
+    *outLen = (outPtr - outStr) + temp.size();
 }
 
 static void setSelection(Selection *sel, int start, int end)
@@ -3226,17 +3232,18 @@ static char *copyLine(const char *text, int *lineLen)
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-static std::string copyLineEx(const std::string &text, int *lineLen)
+static std::string copyLineEx(std::string::const_iterator first, std::string::const_iterator last, int *lineLen)
 {
     int len = 0;
+	
     
-    for(auto it = text.begin(); it != text.end() && *it != '\n'; ++it) {
+    for(auto it = first; it != last && *it != '\n'; ++it) {
 		len++;
 	}
     	
-	std::string outStr(text.begin(), text.begin() + len);
+	std::string outStr(first, first + len);
 
-    *lineLen = text.size();
+    *lineLen = outStr.size();
     return outStr;
 }
 
@@ -3473,7 +3480,6 @@ static char *expandTabs(const char *text, int startIndent, int tabDist, char nul
 */
 static std::string expandTabsEx(const std::string &text, int startIndent, int tabDist, char nullSubsChar, int *newLen)
 {
-    const char *c;
     int indent;
 	int len;
 	int outLen = 0;
@@ -3513,12 +3519,12 @@ static std::string expandTabsEx(const std::string &text, int startIndent, int ta
 			}
 			
     	    indent += len;
-    	} else if (*c == '\n') {
+    	} else if (ch == '\n') {
     	    indent = startIndent;
-    	    *outPtr++ = *c;
+    	    *outPtr++ = ch;
     	} else {
-    	    indent += BufCharWidth(*c, indent, tabDist, nullSubsChar);
-    	    *outPtr++ = *c;
+    	    indent += BufCharWidth(ch, indent, tabDist, nullSubsChar);
+    	    *outPtr++ = ch;
     	}
     }
 
