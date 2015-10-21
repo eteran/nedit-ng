@@ -48,7 +48,7 @@ static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed,
 	int tabDist, int nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
 static int findLeftMargin(char *text, int length, int tabDist);
-static char *fillParagraphs(char *text, int rightMargin, int tabDist,
+static char *fillParagraphs(const char *text, int rightMargin, int tabDist,
 	int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
 static char *fillParagraph(char *text, int leftMargin, int firstLineIndent,
 	int rightMargin, int tabDist, int allowTabs, char nullSubsChar,
@@ -222,11 +222,12 @@ static void changeCase(WindowInfo *window, int makeUpper)
 void FillSelection(WindowInfo *window)
 {
     textBuffer *buf = window->buffer;
-    char *text, *filledText;
+    char *filledText;
     int left, right, nCols, len, isRect, rectStart, rectEnd;
     int rightMargin, wrapMargin;
     int insertPos = TextGetCursorPos(window->lastFocus);
     int hasSelection = window->buffer->primary.selected;
+	std::string text;
     
     /* Find the range of characters and get the text to fill.  If there is a
        selection, use it but extend non-rectangular selections to encompass
@@ -239,11 +240,11 @@ void FillSelection(WindowInfo *window)
     	    XBell(TheDisplay, 0);
     	    return;
 	}
-	text = BufGetRange(buf, left, right);
+	text = BufGetRangeEx(buf, left, right);
     } else if (isRect) {
     	left = BufStartOfLine(buf, left);
     	right = BufEndOfLine(buf, right);
-    	text = BufGetTextInRect(buf, left, right, rectStart, INT_MAX);
+    	text = BufGetTextInRectEx(buf, left, right, rectStart, INT_MAX);
     } else {
 	left = BufStartOfLine(buf, left);
 	if (right != 0 && BufGetCharacter(buf, right-1) != '\n') {
@@ -252,7 +253,7 @@ void FillSelection(WindowInfo *window)
 		right++;
 	}
     	BufSelect(buf, left, right);
-    	text = BufGetRange(buf, left, right);
+    	text = BufGetRangeEx(buf, left, right);
     }
     
     /* Find right margin either as specified in the rectangular selection, or
@@ -269,9 +270,8 @@ void FillSelection(WindowInfo *window)
     }
     
     /* Fill the text */
-    filledText = fillParagraphs(text, rightMargin, buf->tabDist, buf->useTabs,
-	    buf->nullSubsChar, &len, False);
-    XtFree(text);
+    filledText = fillParagraphs(text.c_str(), rightMargin, buf->tabDist, buf->useTabs, buf->nullSubsChar, &len, False);
+
         
     /* Replace the text in the window */
     if (hasSelection && isRect) {
@@ -516,7 +516,7 @@ static int findLeftMargin(char *text, int length, int tabDist)
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-static char *fillParagraphs(char *text, int rightMargin, int tabDist,
+static char *fillParagraphs(const char *text, int rightMargin, int tabDist,
 	int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst)
 {
     int paraStart, paraEnd, fillEnd;

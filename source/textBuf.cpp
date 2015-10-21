@@ -586,7 +586,7 @@ void BufInsertColEx(textBuffer *buf, int column, int startPos, const std::string
     	    lineStartPos;
     callPreDeleteCBs(buf, lineStartPos, nDeleted);
     std::string deletedText = BufGetRangeEx(buf, lineStartPos, lineStartPos + nDeleted);
-    insertColEx(buf, column, lineStartPos, text.c_str(), &insertDeleted, &nInserted, &buf->cursorPosHint);
+    insertColEx(buf, column, lineStartPos, text, &insertDeleted, &nInserted, &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ins1 failed");
     callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText.c_str());
