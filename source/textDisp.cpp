@@ -117,8 +117,7 @@ static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row,
         int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
-static void bufModifiedCB(int pos, int nInserted, int nDeleted,
-        int nRestyled, const char *deletedText, void *cbArg);
+static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset,
         int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -129,6 +128,7 @@ static void redrawLineNumbers(textDisp *textD, int clearAll);
 static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
 static int countLines(const char *string);
+static int countLinesEx(const std::string &string);
 static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
 static void blankCursorProtrusions(textDisp *textD);
@@ -279,7 +279,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 
     /* Update the display to reflect the contents of the buffer */
     if (buffer != nullptr)
-    	bufModifiedCB(0, buffer->length, 0, 0, nullptr, textD);
+    	bufModifiedCB(0, buffer->length, 0, 0, std::string(), textD);
 
     /* Decide if the horizontal scroll bar needs to be visible */
     hideOrShowHScrollBar(textD);
@@ -319,7 +319,7 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
     /* If the text display is already displaying a buffer, clear it off
        of the display and remove our callback from it */
     if (textD->buffer != nullptr) {
-    	bufModifiedCB(0, 0, textD->buffer->length, 0, nullptr, textD);
+    	bufModifiedCB(0, 0, textD->buffer->length, 0, std::string(), textD);
     	BufRemoveModifyCB(textD->buffer, bufModifiedCB, textD);
     	BufRemovePreDeleteCB(textD->buffer, bufPreDeleteCB, textD);
     }
@@ -331,7 +331,7 @@ void TextDSetBuffer(textDisp *textD, textBuffer *buffer)
     BufAddPreDeleteCB(buffer, bufPreDeleteCB, textD);
     
     /* Update the display */
-    bufModifiedCB(0, buffer->length, 0, 0, nullptr, textD);
+    bufModifiedCB(0, buffer->length, 0, 0, std::string(), textD);
 }
 
 /*
@@ -1500,8 +1500,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg)
 /*
 ** Callback attached to the text buffer to receive modification information
 */
-static void bufModifiedCB(int pos, int nInserted, int nDeleted,
-	int nRestyled, const char *deletedText, void *cbArg)
+static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg)
 {
     int linesInserted, linesDeleted, startDispPos, endDispPos;
     textDisp *textD = (textDisp *)cbArg;
@@ -1517,12 +1516,11 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     /* Count the number of lines inserted and deleted, and in the case
        of continuous wrap mode, how much has changed */
     if (textD->continuousWrap) {
-    	findWrapRange(textD, deletedText, pos, nInserted, nDeleted,
-    	    	&wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
+    	findWrapRange(textD, deletedText.c_str(), pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
     } else {
 	linesInserted = nInserted == 0 ? 0 :
     		BufCountLines(buf, pos, pos + nInserted);
-	linesDeleted = nDeleted == 0 ? 0 : countLines(deletedText);
+	linesDeleted = nDeleted == 0 ? 0 : countLinesEx(deletedText);
     }
 
     /* Update the line starts and topLineNum */
@@ -1543,7 +1541,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted,
     if (maintainingAbsTopLineNum(textD) && (nInserted != 0 || nDeleted != 0)) {
 	if (pos + nDeleted < oldFirstChar)
 	    textD->absTopLineNum += BufCountLines(buf, pos, pos + nInserted) -
-		    countLines(deletedText);
+		    countLinesEx(deletedText);
 	else if (pos < oldFirstChar)
 	    resetAbsLineNum(textD);
     }    	    
@@ -2909,6 +2907,21 @@ static int countLines(const char *string)
     	if (*c == '\n') lineCount++;
     return lineCount;
 }
+
+/*
+** Count the number of newlines in a null-terminated text string;
+*/
+static int countLinesEx(const std::string &string)
+{
+    int lineCount = 0;
+
+	for(char ch : string) {
+		if (ch == '\n') lineCount++;
+	}
+       	
+    return lineCount;
+}
+
 
 /*
 ** Return the width in pixels of the displayed line pointed to by "visLineNum"

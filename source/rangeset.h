@@ -67,8 +67,7 @@ Rangeset *RangesetForget(RangesetTable *table, int label);
 Rangeset *RangesetFetch(RangesetTable *table, int label);
 unsigned char * RangesetGetList(RangesetTable *table);
 void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
-void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled,
-	const char *deletedText, void *cbArg);
+void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
 int RangesetAssignColorName(Rangeset *rangeset, char *color_name);
 int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok);

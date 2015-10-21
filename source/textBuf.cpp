@@ -62,8 +62,7 @@ static void overlayRectInLine(const char *line, const char *insLine, int rectSta
 static void overlayRectInLineEx(const std::string &line, const std::string &insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset);
 
 static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted);
-static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
-	int nInserted, int nRestyled, const char *deletedText);
+static void callModifyCBs(textBuffer *buf, int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText);
 static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
 	Selection *newSelection);
 static void moveGap(textBuffer *buf, int pos);
@@ -311,7 +310,7 @@ void BufSetAllEx(textBuffer *buf, const std::string &text)
     updateSelections(buf, 0, deletedLength, 0);
     
     /* Call the saved display routine(s) to update the screen */
-    callModifyCBs(buf, 0, deletedLength, length, 0, deletedText.c_str());
+    callModifyCBs(buf, 0, deletedLength, length, 0, deletedText);
 }
 
 /*
@@ -427,7 +426,7 @@ void BufInsert(textBuffer *buf, int pos, const char *text)
     /* insert and redisplay */
     nInserted = insert(buf, pos, text);
     buf->cursorPosHint = pos + nInserted;
-    callModifyCBs(buf, pos, 0, nInserted, 0, nullptr);
+    callModifyCBs(buf, pos, 0, nInserted, 0, std::string());
 }
 
 /*
@@ -447,7 +446,7 @@ void BufInsertEx(textBuffer *buf, int pos, const std::string &text)
     /* insert and redisplay */
     nInserted = insertEx(buf, pos, text);
     buf->cursorPosHint = pos + nInserted;
-    callModifyCBs(buf, pos, 0, nInserted, 0, nullptr);
+    callModifyCBs(buf, pos, 0, nInserted, 0, std::string());
 }
 
 /*
@@ -463,7 +462,7 @@ void BufReplace(textBuffer *buf, int start, int end, const char *text)
     deleteRange(buf, start, end);
     insert(buf, start, text);
     buf->cursorPosHint = start + nInserted;
-    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText.c_str());
+    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
 }
 
 /*
@@ -479,7 +478,7 @@ void BufReplaceEx(textBuffer *buf, int start, int end, const std::string &text)
     deleteRange(buf, start, end);
     insertEx(buf, start, text);
     buf->cursorPosHint = start + nInserted;
-    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText.c_str());
+    callModifyCBs(buf, start, end-start, nInserted, 0, deletedText);
 }
 
 void BufRemove(textBuffer *buf, int start, int end)
@@ -500,7 +499,7 @@ void BufRemove(textBuffer *buf, int start, int end)
     std::string deletedText = BufGetRangeEx(buf, start, end);
     deleteRange(buf, start, end);
     buf->cursorPosHint = start;
-    callModifyCBs(buf, start, end-start, 0, 0, deletedText.c_str());
+    callModifyCBs(buf, start, end-start, 0, 0, deletedText);
 }
 
 void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart,
@@ -589,7 +588,7 @@ void BufInsertColEx(textBuffer *buf, int column, int startPos, const std::string
     insertColEx(buf, column, lineStartPos, text, &insertDeleted, &nInserted, &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ins1 failed");
-    callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText.c_str());
+    callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
 
     if (charsInserted != nullptr)
     	*charsInserted = nInserted;
@@ -653,7 +652,7 @@ void BufOverlayRectEx(textBuffer *buf, int startPos, int rectStart, int rectEnd,
     overlayRectEx(buf, lineStartPos, rectStart, rectEnd, text, &insertDeleted, &nInserted, &buf->cursorPosHint);
     if (nDeleted != insertDeleted)
     	fprintf(stderr, "NEdit internal consistency check ovly1 failed");
-    callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText.c_str());
+    callModifyCBs(buf, lineStartPos, nDeleted, nInserted, 0, deletedText);
 
     if (charsInserted != nullptr)
     	*charsInserted = nInserted;
@@ -930,7 +929,7 @@ void BufSetTabDistance(textBuffer *buf, int tabDist)
 void BufCheckDisplay(textBuffer *buf, int start, int end)
 {
     /* just to make sure colors in the selected region are up to date */
-    callModifyCBs(buf, start, 0, 0, end-start, nullptr);
+    callModifyCBs(buf, start, 0, 0, end-start, std::string());
 }
 
 void BufSelect(textBuffer *buf, int start, int end)
@@ -2965,14 +2964,12 @@ static void addPadding(char *string, int startIndent, int toIndent,
 ** Call the stored modify callback procedure(s) for this buffer to update the
 ** changed area(s) on the screen and any other listeners.
 */
-static void callModifyCBs(textBuffer *buf, int pos, int nDeleted,
-	int nInserted, int nRestyled, const char *deletedText)
+static void callModifyCBs(textBuffer *buf, int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText)
 {
     int i;
     
     for (i=0; i<buf->nModifyProcs; i++)
-    	(*buf->modifyProcs[i])(pos, nInserted, nDeleted, nRestyled,
-    		deletedText, buf->cbArgs[i]);
+    	(*buf->modifyProcs[i])(pos, nInserted, nDeleted, nRestyled, deletedText, buf->cbArgs[i]);
 }
 
 /*
@@ -3013,11 +3010,11 @@ static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
     if (!oldSelection->selected && !newSelection->selected)
     	return;
     if (!oldSelection->selected) {
-    	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, nullptr);
+    	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, std::string());
     	return;
     }
     if (!newSelection->selected) {
-    	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, nullptr);
+    	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, std::string());
     	return;
     }
 
@@ -3028,16 +3025,15 @@ static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
     	    (oldSelection->rectangular && (
     	    	(oldSelection->rectStart != newSelection->rectStart) ||
     	    	(oldSelection->rectEnd != newSelection->rectEnd)))) {
-    	callModifyCBs(buf, std::min<int>(oldStart, newStart), 0, 0,
-    		std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), nullptr);
+    	callModifyCBs(buf, std::min<int>(oldStart, newStart), 0, 0, std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), std::string());
     	return;
     }
     
     /* If the selections are non-contiguous, do two separate updates
        and return */
     if (oldEnd < newStart || newEnd < oldStart) {
-	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, nullptr);
-	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, nullptr);
+	callModifyCBs(buf, oldStart, 0, 0, oldEnd-oldStart, std::string());
+	callModifyCBs(buf, newStart, 0, 0, newEnd-newStart, std::string());
 	return;
     }
     
@@ -3049,9 +3045,9 @@ static void redisplaySelection(textBuffer *buf, Selection *oldSelection,
     ch1End = std::max<int>(oldStart, newStart);
     ch2Start = std::min<int>(oldEnd, newEnd);
     if (ch1Start != ch1End)
-    	callModifyCBs(buf, ch1Start, 0, 0, ch1End-ch1Start, nullptr);
+    	callModifyCBs(buf, ch1Start, 0, 0, ch1End-ch1Start, std::string());
     if (ch2Start != ch2End)
-    	callModifyCBs(buf, ch2Start, 0, 0, ch2End-ch2Start, nullptr);
+    	callModifyCBs(buf, ch2Start, 0, 0, ch2End-ch2Start, std::string());
 }
 
 static void moveGap(textBuffer *buf, int pos)

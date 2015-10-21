@@ -51,7 +51,7 @@ struct Selection {
     int rectEnd;            /* Indent of right edge of rect. selection */
 } ;
 
-typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const char *deletedText, void *cbArg);
+typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
 struct textBuffer {
