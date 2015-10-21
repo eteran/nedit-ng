@@ -150,9 +150,6 @@ textBuffer *BufCreatePreallocated(int requestedSize)
     buf->highlight.start = buf->highlight.end = 0;
     buf->highlight.rectangular = False;
 
-    buf->preDeleteProcs = nullptr;
-    buf->preDeleteCbArgs = nullptr;
-    buf->nPreDeleteProcs = 0;
     buf->nullSubsChar = '\0';
 #ifdef PURIFY
     {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
@@ -169,11 +166,7 @@ void BufFree(textBuffer *buf)
     XtFree(buf->buf);
 
     if (buf->rangesetTable)
-	RangesetTableFree(buf->rangesetTable);
-    if (buf->nPreDeleteProcs != 0) {
-    	XtFree((char *)buf->preDeleteProcs);
-    	XtFree((char *)buf->preDeleteCbArgs);
-    }
+		RangesetTableFree(buf->rangesetTable);
 	
 	delete buf;
 }
@@ -1107,11 +1100,6 @@ void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifi
 
 void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg)
 {
-    int i, toRemove = -1;
-    bufModifyCallbackProc *newModifyProcs;
-    void **newCBArgs;
-	
-	
 	for(auto it = buf->modifyProcs.begin(); it != buf->modifyProcs.end(); ++it) {
 		CallbackPair<bufModifyCallbackProc> &pair = *it;
 		if(pair.callback == bufModifiedCB && pair.argument == cbArg) {
@@ -1126,79 +1114,26 @@ void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, voi
 /*
 ** Add a callback routine to be called before text is deleted from the buffer.
 */
-void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
-	void *cbArg)
+void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg)
 {
-    bufPreDeleteCallbackProc *newPreDeleteProcs;
-    void **newCBArgs;
-    int i;
-    
-    newPreDeleteProcs = (bufPreDeleteCallbackProc *)
-    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs+1));
-    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs+1));
-    for (i=0; i<buf->nPreDeleteProcs; i++) {
-    	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
-    	newCBArgs[i] = buf->preDeleteCbArgs[i];
-    }
-    if (buf->nPreDeleteProcs != 0) {
-	XtFree((char *)buf->preDeleteProcs);
-	XtFree((char *)buf->preDeleteCbArgs);
-    }
-    newPreDeleteProcs[buf->nPreDeleteProcs] =  bufPreDeleteCB;
-    newCBArgs[buf->nPreDeleteProcs] = cbArg;
-    buf->nPreDeleteProcs++;
-    buf->preDeleteProcs = newPreDeleteProcs;
-    buf->preDeleteCbArgs = newCBArgs;
+
+	CallbackPair<bufPreDeleteCallbackProc> pair{bufPreDeleteCB, cbArg};
+	buf->preDeleteProcs.push_back(pair);
 }
 
-void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB,
-	void *cbArg)
+void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg)
 {
-    int i, toRemove = -1;
-    bufPreDeleteCallbackProc *newPreDeleteProcs;
-    void **newCBArgs;
 
-    /* find the matching callback to remove */
-    for (i=0; i<buf->nPreDeleteProcs; i++) {
-    	if (buf->preDeleteProcs[i] == bufPreDeleteCB && 
-	    buf->preDeleteCbArgs[i] == cbArg) {
-    	    toRemove = i;
-    	    break;
-    	}
-    }
-    if (toRemove == -1) {
-    	fprintf(stderr, "NEdit Internal Error: Can't find pre-delete CB to remove\n");
-    	return;
-    }
-    
-    /* Allocate new lists for remaining callback procs and args (if
-       any are left) */
-    buf->nPreDeleteProcs--;
-    if (buf->nPreDeleteProcs == 0) {
-    	buf->nPreDeleteProcs = 0;
-    	XtFree((char *)buf->preDeleteProcs);
-    	buf->preDeleteProcs = nullptr;
-	XtFree((char *)buf->preDeleteCbArgs);
-	buf->preDeleteCbArgs = nullptr;
-	return;
-    }
-    newPreDeleteProcs = (bufPreDeleteCallbackProc *)
-    	    XtMalloc(sizeof(bufPreDeleteCallbackProc *) * (buf->nPreDeleteProcs));
-    newCBArgs = (void **)XtMalloc(sizeof(void *) * (buf->nPreDeleteProcs));
-    
-    /* copy out the remaining members and free the old lists */
-    for (i=0; i<toRemove; i++) {
-    	newPreDeleteProcs[i] = buf->preDeleteProcs[i];
-    	newCBArgs[i] = buf->preDeleteCbArgs[i];
-    }
-    for (; i<buf->nPreDeleteProcs; i++) {
-	newPreDeleteProcs[i] = buf->preDeleteProcs[i+1];
-    	newCBArgs[i] = buf->preDeleteCbArgs[i+1];
-    }
-    XtFree((char *)buf->preDeleteProcs);
-    XtFree((char *)buf->preDeleteCbArgs);
-    buf->preDeleteProcs = newPreDeleteProcs;
-    buf->preDeleteCbArgs = newCBArgs;
+
+	for(auto it = buf->preDeleteProcs.begin(); it != buf->preDeleteProcs.end(); ++it) {
+		CallbackPair<bufPreDeleteCallbackProc> &pair = *it;
+		if(pair.callback == bufPreDeleteCB && pair.argument == cbArg) {
+			buf->preDeleteProcs.erase(it);
+			return;
+		}
+	}
+	
+	fprintf(stderr, "NEdit Internal Error: Can't find pre-delete CB to remove\n");
 }
 
 /*
@@ -2905,10 +2840,10 @@ static void callModifyCBs(textBuffer *buf, int pos, int nDeleted, int nInserted,
 */
 static void callPreDeleteCBs(textBuffer *buf, int pos, int nDeleted)
 {
-    int i;
-    
-    for (i=0; i<buf->nPreDeleteProcs; i++)
-    	(*buf->preDeleteProcs[i])(pos, nDeleted, buf->preDeleteCbArgs[i]);
+
+	for(const auto &pair : buf->preDeleteProcs) {
+		(pair.callback)(pos, nDeleted, pair.argument);
+	}
 }
 
 /*

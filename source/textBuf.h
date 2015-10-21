@@ -71,19 +71,10 @@ struct textBuffer {
     Selection highlight;
     int tabDist;		                      /* equiv. number of characters in a tab */ 																			 
     int useTabs;		                      /* True if buffer routines are allowed to use tabs for padding in rectangular operations */							 
-    
+    	
+	std::deque<CallbackPair<bufModifyCallbackProc>>    modifyProcs;    /* procedures to call when buffer is modified to redisplay contents */
+	std::deque<CallbackPair<bufPreDeleteCallbackProc>> preDeleteProcs; /* procedure to call before text is deleted from the buffer; at most one is supported. */
 	
-	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs;
-	
-#if 0
-	int nModifyProcs;		                  /* number of modify-redisplay procs attached */																		 
-    bufModifyCallbackProc *modifyProcs;       /* procedures to call when buffer is modified to redisplay contents */ 												 
-    void **cbArgs;		                      /* caller arguments for modifyProcs above */																			 
-#endif
-
-	int nPreDeleteProcs;	                  /* number of pre-delete procs attached */																				 
-    bufPreDeleteCallbackProc* preDeleteProcs; /* procedure to call before text is deleted from the buffer; at most one is supported. */
-    void **preDeleteCbArgs;	                  /* caller argument for pre-delete proc above */
     
 	int cursorPosHint;		                  /* hint for reasonable cursor position after a buffer modification operation */
     char nullSubsChar;                        /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it */
