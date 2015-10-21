@@ -136,7 +136,7 @@ void BufRectHighlight(textBuffer *buf, int start, int end, int rectStart, int re
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemove(textBuffer *buf, int start, int end);
 void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg);
-void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc  bufPreDeleteCB,	void *cbArg);
+void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc  bufPreDeleteCB, void *cbArg);
 void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemoveSecSelect(textBuffer *buf);
 void BufRemoveSelected(textBuffer *buf);void BufSecRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);

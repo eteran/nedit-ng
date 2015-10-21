@@ -178,7 +178,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     XGCValues gcValues;
     int i;
     
-    textD = (textDisp *)XtMalloc(sizeof(textDisp));
+    textD = new textDisp;
     textD->w = widget;
     textD->top = top;
     textD->left = left;
@@ -308,7 +308,8 @@ void TextDFree(textDisp *textD)
     }
     XtFree((char *)textD->bgClassPixel);
     XtFree((char *)textD->bgClass);
-    XtFree((char *)textD);
+	
+	delete textD;
 }
 
 /*
