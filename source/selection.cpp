@@ -285,11 +285,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
 	strcpy(nameText, filename);
     }
     
-    /* Expand wildcards in file name.
-       Some older systems don't have the glob subroutine for expanding file
-       names, in these cases, either don't expand names, or try to use the
-       Motif internal parsing routine _XmOSGetDirEntries, which is not
-       guranteed to be available, but in practice is there and does work. */
+    /* Expand wildcards in file name. */
 
     { glob_t globbuf;
       int i;
