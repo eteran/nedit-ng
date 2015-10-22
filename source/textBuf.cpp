@@ -237,13 +237,12 @@ const char *BufAsString(textBuffer *buf)
 void BufSetAll(textBuffer *buf, const char *text)
 {
     int length, deletedLength;
-    char *deletedText;
     length = strlen(text);
 
     callPreDeleteCBs(buf, 0, buf->length);
     
     /* Save information for redisplay, and get rid of the old buffer */
-    deletedText = BufGetAll(buf);
+    std::string deletedText = BufGetAllEx(buf);
     deletedLength = buf->length;
     XtFree(buf->buf);
     
@@ -264,7 +263,6 @@ void BufSetAll(textBuffer *buf, const char *text)
     
     /* Call the saved display routine(s) to update the screen */
     callModifyCBs(buf, 0, deletedLength, length, 0, deletedText);
-    XtFree(deletedText);
 }
 
 /*

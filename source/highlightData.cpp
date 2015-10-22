@@ -93,8 +93,7 @@ static int isDefaultPatternSet(patternSet *patSet);
 static patternSet *readPatternSet(const char **inPtr, int convertOld);
 static patternSet *highlightError(const char *stringStart, const char *stoppedAt,
     	const char *message);
-static char *intToStr(int i);
-static char *createPatternsString(patternSet *patSet, const char *indentStr);
+static std::string createPatternsString(patternSet *patSet, const char *indentStr);
 static void setStyleByName(const char *style);
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1164,7 +1163,7 @@ int LoadHighlightString(char *inString, int convertOld)
 */
 char *WriteHighlightString(void)
 {
-    char *str, *escapedStr;
+    char *escapedStr;
     textBuffer *outBuf;
     int psn, written = False;
     patternSet *patSet;
@@ -1180,13 +1179,11 @@ char *WriteHighlightString(void)
     	if (isDefaultPatternSet(patSet))
     	    BufInsert(outBuf, outBuf->length, "Default\n\t");
     	else {
-    	    BufInsert(outBuf, outBuf->length, intToStr(patSet->lineContext));
+    	    BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->lineContext));
     	    BufInsert(outBuf, outBuf->length, ":");
-    	    BufInsert(outBuf, outBuf->length, intToStr(patSet->charContext));
+    	    BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->charContext));
     	    BufInsert(outBuf, outBuf->length, "{\n");
-    	    BufInsert(outBuf, outBuf->length,
-    	    	    str = createPatternsString(patSet, "\t\t"));
-    	    XtFree(str);
+    	    BufInsertEx(outBuf, outBuf->length, createPatternsString(patSet, "\t\t"));
     	    BufInsert(outBuf, outBuf->length, "\t}\n\t");
     	}
     }
@@ -1407,9 +1404,9 @@ static Widget createHighlightStylesMenu(Widget parent)
     return menu;
 }
 
-static char *createPatternsString(patternSet *patSet, const char *indentStr)
+static std::string createPatternsString(patternSet *patSet, const char *indentStr)
 {
-    char *outStr, *str;
+    char *str;
     textBuffer *outBuf;
     int pn;
     highlightPattern *pat;
@@ -1450,9 +1447,9 @@ static char *createPatternsString(patternSet *patSet, const char *indentStr)
     	    BufInsert(outBuf, outBuf->length, "C");
     	BufInsert(outBuf, outBuf->length, "\n");
     }
-    outStr = BufGetAll(outBuf);
+    std::string outStr = BufGetAllEx(outBuf);
     BufFree(outBuf);
-    return outStr;
+	return outStr;
 }
 
 /*
@@ -1566,8 +1563,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
     
     /* allocate a more appropriately sized list to return patterns */
     *nPatterns = pat - patternList;
-    returnedList = (highlightPattern *)XtMalloc(
-    	    sizeof(highlightPattern) * *nPatterns);
+    returnedList = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * *nPatterns);
     memcpy(returnedList, patternList, sizeof(highlightPattern) * *nPatterns);
     return returnedList;
 }
@@ -3408,9 +3404,9 @@ static highlightPattern *readDialogFields(int silent)
     /* Allocate a pattern source structure to return, zero out fields
        so that the whole pattern can be freed on error with freePatternSrc */
     pat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
-    pat->endRE = nullptr;
-    pat->errorRE = nullptr;
-    pat->style = nullptr;
+    pat->endRE        = nullptr;
+    pat->errorRE      = nullptr;
+    pat->style        = nullptr;
     pat->subPatternOf = nullptr;
     
     /* read the type buttons */
@@ -3674,8 +3670,7 @@ static patternSet *getDialogPatternSet(void)
     patSet->lineContext = lineContext;
     patSet->charContext = charContext;
     patSet->nPatterns = HighlightDialog.nPatterns;
-    patSet->patterns = (highlightPattern *)XtMalloc(sizeof(highlightPattern) *
-    	    HighlightDialog.nPatterns);
+    patSet->patterns = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * HighlightDialog.nPatterns);
     for (i=0; i<HighlightDialog.nPatterns; i++)
     	copyPatternSrc(HighlightDialog.patterns[i], &patSet->patterns[i]);
     return patSet;
@@ -3722,8 +3717,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2)
 ** otherwise allocate a new highlightPattern structure and return it as the
 ** function value.
 */
-static highlightPattern *copyPatternSrc(highlightPattern *pat,
-    	highlightPattern *copyTo)
+static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo)
 {
     highlightPattern *newPat;
     
@@ -3731,13 +3725,14 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat,
     	newPat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
     else
     	newPat = copyTo;
-    newPat->name = XtNewString(pat->name);
-    newPat->startRE = XtNewString(pat->startRE);
-    newPat->endRE = XtNewString(pat->endRE);
-    newPat->errorRE = XtNewString(pat->errorRE);
-    newPat->style = XtNewString(pat->style);
+		
+    newPat->name         = XtNewString(pat->name);
+    newPat->startRE      = XtNewString(pat->startRE);
+    newPat->endRE        = XtNewString(pat->endRE);
+    newPat->errorRE      = XtNewString(pat->errorRE);
+    newPat->style        = XtNewString(pat->style);
     newPat->subPatternOf = XtNewString(pat->subPatternOf);
-    newPat->flags = pat->flags;    
+    newPat->flags        = pat->flags;    
     return newPat;
 }
 
@@ -3813,16 +3808,4 @@ static int lookupNamedStyle(const char *styleName)
 int IndexOfNamedStyle(const char *styleName)
 {
     return lookupNamedStyle(styleName);
-}
-
-/*
-** Write the string representation of int "i" to a static area, and
-** return a pointer to it.
-*/
-static char *intToStr(int i)
-{
-    static char outBuf[12];
-    
-    sprintf(outBuf, "%d", i);
-    return outBuf;
 }

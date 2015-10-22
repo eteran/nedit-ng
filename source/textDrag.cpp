@@ -49,7 +49,6 @@ static int findRelativeLineStart(textBuffer *buf, int referencePos,
     	int referenceLineNum, int newLineNum);
 static int min3(int i1, int i2, int i3);
 static int max3(int i1, int i2, int i3);
-static int max(int i1, int i2);
 
 /*
 ** Start the process of dragging the current primary-selected text across
@@ -66,16 +65,16 @@ void BeginBlockDrag(TextWidget tw)
     int nLines, mousePos, lineStart;
     int x, y, lineEnd;
     
-    char *text;
     
     /* Save a copy of the whole text buffer as a backup, and for
        deriving changes */
     tw->text.dragOrigBuf = BufCreate();
     BufSetTabDistance(tw->text.dragOrigBuf, buf->tabDist);
     tw->text.dragOrigBuf->useTabs = buf->useTabs;
-    text = BufGetAll(buf);
-    BufSetAll(tw->text.dragOrigBuf, text);
-    XtFree(text);
+    
+	std::string text = BufGetAllEx(buf);
+    BufSetAllEx(tw->text.dragOrigBuf, text);
+	
     if (sel->rectangular)
     	BufRectSelect(tw->text.dragOrigBuf, sel->start, sel->end, sel->rectStart,
     	    	sel->rectEnd);
@@ -284,8 +283,8 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
     /* Find the line number and column of the insert position.  Note that in
        continuous wrap mode, these must be calculated as if the text were
        not wrapped */
-    TextDXYToUnconstrainedPosition(textD, max(0, x - dragXOffset),
-    	    max(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
+    TextDXYToUnconstrainedPosition(textD, std::max<int>(0, x - dragXOffset),
+    	    std::max<int>(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
     column = TextDOffsetWrappedColumn(textD, row, column);
     row = TextDOffsetWrappedRow(textD, row);
     insLineNum = row + textD->topLineNum - tw->text.dragYOffset / fontHeight;
@@ -571,7 +570,3 @@ static int max3(int i1, int i2, int i3)
     return i2 >= i3 ? i2 : i3;
 }
 
-static int max(int i1, int i2)
-{
-    return i1 >= i2 ? i1 : i2;
-}
