@@ -1310,7 +1310,7 @@ int BufCountForwardNLines(const textBuffer* buf, const int startPos,
         const unsigned nLines)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
-    int lineCount = 0;
+    unsigned lineCount = 0;
     
     if (nLines == 0)
     	return startPos;
