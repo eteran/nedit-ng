@@ -855,22 +855,20 @@ char *BufGetTextInRect(textBuffer *buf, int start, int end,
     return retabbedStr;
 }
 
-std::string BufGetTextInRectEx(textBuffer *buf, int start, int end,
-	int rectStart, int rectEnd)
+std::string BufGetTextInRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd)
 {
     int lineStart, selLeft, selRight, len;
-    char *textOut, *outPtr, *retabbedStr;
    
     start = BufStartOfLine(buf, start);
-    end = BufEndOfLine(buf, end);
-    textOut = XtMalloc((end - start) + 1);
+    end   = BufEndOfLine(buf, end);
+    char *textOut = new char[(end - start) + 1];
     lineStart = start;
-    outPtr = textOut;
+    char *outPtr = textOut;
     while (lineStart <= end) {
         findRectSelBoundariesForCopy(buf, lineStart, rectStart, rectEnd, &selLeft, &selRight);
         std::string textIn = BufGetRangeEx(buf, selLeft, selRight);
         len = selRight - selLeft;
-        memcpy(outPtr, textIn.data(), len);
+		std::copy_n(textIn.data(), len, outPtr);
         outPtr += len;
         lineStart = BufEndOfLine(buf, selRight) + 1;
         *outPtr++ = '\n';
@@ -881,8 +879,8 @@ std::string BufGetTextInRectEx(textBuffer *buf, int start, int end,
     
     /* If necessary, realign the tabs in the selection as if the text were
        positioned at the left margin */
-    retabbedStr = realignTabs(textOut, rectStart, 0, buf->tabDist, buf->useTabs, buf->nullSubsChar, &len);
-    XtFree(textOut);
+    std::string retabbedStr = realignTabsEx(textOut, rectStart, 0, buf->tabDist, buf->useTabs, buf->nullSubsChar, &len);
+    delete [] textOut;
     return retabbedStr;
 }
 
@@ -3278,8 +3276,7 @@ static std::string realignTabsEx(const std::string &text, int origIndent, int ne
     	return expStr;
     }
 	
-    std::string outStr = unexpandTabsEx(expStr, newIndent, tabDist, nullSubsChar, newLength);
-    return outStr;
+    return unexpandTabsEx(expStr, newIndent, tabDist, nullSubsChar, newLength);
 }    
 
 /*
@@ -3395,8 +3392,7 @@ static std::string expandTabsEx(const std::string &text, int startIndent, int ta
 ** when 3 or more spaces can be converted into a single tab, this avoids
 ** converting double spaces after a period withing a block of text.
 */
-static char *unexpandTabs(const char *text, int startIndent, int tabDist,
-	char nullSubsChar, int *newLen)
+static char *unexpandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen)
 {
     char *outStr, *outPtr, expandedChar[MAX_EXP_CHAR_LEN];
     const char *c;
