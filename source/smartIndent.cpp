@@ -791,6 +791,11 @@ int SmartIndentMacrosAvailable(char *languageModeName)
 */
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) 
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     WindowInfo *window = WidgetToWindow(w);
     smartIndentCBStruct *cbInfo = (smartIndentCBStruct *)callData;
     
@@ -1215,12 +1220,22 @@ void EditSmartIndentMacros(WindowInfo *window)
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     XtFree(SmartIndentDialog.langModeName);
     SmartIndentDialog.shell = nullptr;
 }
 
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     char *modeName;
     int i, resp;
     static smartIndentRec emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
@@ -1282,16 +1297,30 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
     EditLanguageModes();
 }
 
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     EditCommonSmartIndentMacro();
 }
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the macro */
     if (!updateSmartIndentData())
     	return;
@@ -1303,12 +1332,22 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the patterns */
     updateSmartIndentData();
 }
 	
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (checkSmartIndentDialogData())
         DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled",
                 "Macros compiled without error", "OK");
@@ -1316,6 +1355,11 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 	
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
    int i;
    smartIndentRec *defaultIS;
     
@@ -1364,6 +1408,11 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 	
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     int i;
     
     if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Delete Macros",
@@ -1389,8 +1438,13 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
     setSmartIndentDialogData(nullptr);
 }
 
-static void closeCB(Widget widget, XtPointer clientData, XtPointer callData)
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* pop down and destroy the dialog */
     CloseAllPopupsFor(SmartIndentDialog.shell);
     XtDestroyWidget(SmartIndentDialog.shell);
@@ -1398,6 +1452,11 @@ static void closeCB(Widget widget, XtPointer clientData, XtPointer callData)
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     Help(HELP_SMART_INDENT);
 }
 
@@ -1630,11 +1689,21 @@ void EditCommonSmartIndentMacro(void)
 
 static void comDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     CommonDialog.shell = nullptr;
 }
 
 static void comOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the macro */
     if (!updateSmartIndentCommonData())
     	return;
@@ -1645,12 +1714,22 @@ static void comOKCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the macro */
     updateSmartIndentCommonData();
 }
 
 static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (checkSmartIndentCommonDialogData())
     {
         DialogF(DF_INF, CommonDialog.shell, 1, "Macro compiled",
@@ -1660,6 +1739,10 @@ static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (DialogF(DF_WARN, CommonDialog.shell, 2, "Discard Changes",
             "Are you sure you want to discard all\n"
             "changes to common smart indent macros", "Discard", "Cancel") == 2)
@@ -1677,6 +1760,11 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* pop down and destroy the dialog */
     XtDestroyWidget(CommonDialog.shell);
 }

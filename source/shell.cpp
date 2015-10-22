@@ -564,6 +564,10 @@ static void issueCommand(WindowInfo *window, const char *command, char *input,
 */
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
+
+	(void)id;
+	(void)source;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     bufElem *buf;
@@ -605,6 +609,10 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id)
 */
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
 {
+
+	(void)id;
+	(void)source;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     bufElem *buf;
@@ -646,6 +654,10 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id)
 */
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 {
+
+	(void)id;
+	(void)source;
+
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     int nWritten;
@@ -682,6 +694,9 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id)
 #define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
+
+	(void)id;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     XmString xmCancel;
@@ -740,6 +755,9 @@ static void safeBufReplace(textBuffer *buf, int *start, int *end,
 */
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
+
+	(void)id;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
     textBuffer *buf = TextGetBuffer(cmdData->textW);
@@ -1195,6 +1213,9 @@ static void createOutputDialog(Widget parent, char *text)
 */
 static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure)
 {
+	(void)w;
+	(void)closure;
+	
     XtDestroyWidget((Widget)callback);
 }
 

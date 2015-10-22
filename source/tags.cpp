@@ -942,9 +942,14 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg)
 }
 
 /* Callback function for FindDefinition */
-static void findDefCB(Widget widget, WindowInfo *window, Atom *sel,
-        Atom *type, char *value, int *length, int *format)
+static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format)
 {
+
+	(void)widget;
+	(void)sel;
+	(void)length;
+	(void)format;
+	
     /* skip if we can't get the selection data, or it's obviously too long */
     if (*type == XT_CONVERT_FAIL || value == nullptr) {
         XBell(TheDisplay, 0);
@@ -1248,6 +1253,9 @@ static int findAllMatches(WindowInfo *window, const char *string)
 /*      Callback function for the FindAll widget. Process the users response. */
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data)
 {
+
+	(void)client_data;
+
     int i;
     char *eptr;
     
@@ -1276,9 +1284,12 @@ static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data)
 }
 
 /*      Window manager close-box callback for tag-collision dialog */
-static void findAllCloseCB(Widget parent, XtPointer client_data,
-        XtPointer call_data)
+static void findAllCloseCB(Widget parent, XtPointer client_data, XtPointer call_data)
 {
+
+	(void)client_data;
+	(void)call_data;
+	
     XtDestroyWidget(parent);
 }
 

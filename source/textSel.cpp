@@ -368,10 +368,17 @@ void TakeMotifDestination(Widget w, Time time)
 */
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg)
 {
+
+	(void)pos;
+	(void)nInserted;
+	(void)nRestyled;
+	(void)nDeleted;
+	(void)deletedText;
+	
     TextWidget w = (TextWidget)cbArg;
-    Time time = XtLastTimestampProcessed(XtDisplay((Widget)w));
+    Time time    = XtLastTimestampProcessed(XtDisplay((Widget)w));
     int selected = w->text.textD->buffer->primary.selected;
-    int isOwner = w->text.selectionOwner;
+    int isOwner  = w->text.selectionOwner;
     
     /* If the widget owns the selection and the buffer text is still selected,
        or if the widget doesn't own it and there's no selection, do nothing */
@@ -445,9 +452,11 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action,
 ** everything is in order, it inserts it at the cursor in the requesting
 ** widget.
 */
-static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
-	Atom *type, XtPointer value, unsigned long *length, int *format)
+static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format)
 {
+
+	(void)selType;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int isColumnar = *(int *)clientData;
     int cursorLineStart, cursorPos, column, row;
@@ -500,9 +509,11 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType,
 ** the flag passed in clientData to SUCCESSFUL_INSERT or UNSUCCESSFUL_INSERT
 ** depending on the success of the operation.
 */
-static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
-	Atom *type, XtPointer value, unsigned long *length, int *format)
+static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format)
 {
+
+	(void)selType;
+	
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     char *string;
     int *resultFlag = (int *)clientData;
@@ -545,9 +556,12 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData,Atom *selType,
 ** initiates a request to replace the primary selection with this widget's
 ** secondary selection.
 */
-static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType,
-	Atom *type, XtPointer value, unsigned long *length, int *format)
+static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format)
 {
+
+	(void)selType;
+	(void)clientData;
+	
     /* Confirm that there is a value and it is of the correct type */
     if (*length == 0 || value == nullptr || *type != XA_STRING || *format != 8) {
         XtFree((char*) value);
@@ -661,6 +675,9 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target,
 
 static void loseSelectionCB(Widget w, Atom *selType)
 {
+
+	(void)selType;
+	
     TextWidget tw = (TextWidget)w;
     Selection *sel = &tw->text.textD->buffer->primary;
     char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
@@ -677,9 +694,11 @@ static void loseSelectionCB(Widget w, Atom *selType)
 ** the secondary selection data to a single requestor who has been asked
 ** to insert it.
 */
-static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target,
-	Atom *type, XtPointer *value, unsigned long *length, int *format)
+static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format)
 {
+
+	(void)selType;
+	
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     
     /* target must be string */
@@ -698,6 +717,10 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target,
 
 static void loseSecondaryCB(Widget w, Atom *selType)
 {
+
+	(void)selType;
+	(void)w;
+	
     /* do nothing, secondary selections are transient anyhow, and it
        will go away on its own */
 }
@@ -767,6 +790,9 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target,
 
 static void loseMotifDestCB(Widget w, Atom *selType)
 {
+
+	(void)selType;
+	
     ((TextWidget)w)->text.motifDestOwner = False;
     if (((TextWidget)w)->text.textD->cursorStyle == CARET_CURSOR)
     	TextDSetCursorStyle(((TextWidget)w)->text.textD, DIM_CURSOR);
@@ -782,9 +808,11 @@ static void loseMotifDestCB(Widget w, Atom *selType)
 ** installed to do, and removes itself and its backup timer (which would do
 ** the clean up if the selectionNotify event never arrived.)
 */
-static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
-	Boolean *continueDispatch)
+static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch)
 {
+
+	(void)continueDispatch;
+	
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     XSelectionEvent *e = (XSelectionEvent *)event;
     selectNotifyInfo *cbInfo = (selectNotifyInfo *)data;
@@ -850,6 +878,9 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event,
 */
 static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id)
 {    
+
+	(void)id;
+	
     selectNotifyInfo *cbInfo = (selectNotifyInfo *)clientData;
     textBuffer *buf = ((TextWidget)cbInfo->widget)->text.textD->buffer;
 
