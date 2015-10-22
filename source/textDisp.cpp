@@ -229,7 +229,7 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
     textD->nVisibleLines = (height - 1) / (textD->ascent + textD->descent) + 1;
     gcValues.foreground = cursorFGPixel;
     textD->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
-    textD->lineStarts = (int *)XtMalloc(sizeof(int) * textD->nVisibleLines);
+    textD->lineStarts = new int[textD->nVisibleLines];
     textD->lineStarts[0] = 0;
     textD->calltipW = nullptr;
     textD->calltipShell = nullptr;
@@ -303,7 +303,9 @@ void TextDFree(textDisp *textD)
     releaseGC(textD->w, textD->highlightBGGC);
     releaseGC(textD->w, textD->styleGC);
     releaseGC(textD->w, textD->lineNumGC);
-    XtFree((char *)textD->lineStarts);
+    
+	delete [] textD->lineStarts;
+	
     while (TextDPopGraphicExposeQueueEntry(textD)) {
     }
     XtFree((char *)textD->bgClassPixel);
@@ -560,9 +562,10 @@ void TextDResize(textDisp *textD, int width, int height)
        size and/or contents. (contents can change in continuous wrap mode
        when the width changes, even without a change in height) */
     if (oldVisibleLines < newVisibleLines) {
-        XtFree((char *)textD->lineStarts);
-        textD->lineStarts = (int *)XtMalloc(sizeof(int) * newVisibleLines);
+        delete [] textD->lineStarts;
+        textD->lineStarts = new int[newVisibleLines];
     }
+	
     textD->nVisibleLines = newVisibleLines;
     calcLineStarts(textD, 0, newVisibleLines);
     calcLastChar(textD);
@@ -865,7 +868,8 @@ void TextDOverstrike(textDisp *textD, const char *text)
     int textLen = strlen(text);
     int i, p, endPos, indent, startIndent, endIndent;
     const char *c;
-	char ch, *paddedText = nullptr;
+	char ch;
+	char *paddedText = nullptr;
     
     /* determine how many displayed character positions are covered */
     startIndent = BufCountDispChars(textD->buffer, lineStart, startPos);
@@ -890,7 +894,7 @@ void TextDOverstrike(textDisp *textD, const char *text)
     	} else if (indent > endIndent) {
     	    if (ch != '\t') {
     	    	p++;
-    	    	paddedText = XtMalloc(textLen + MAX_EXP_CHAR_LEN + 1);
+    	    	paddedText = new char(textLen + MAX_EXP_CHAR_LEN + 1);
     	    	strcpy(paddedText, text);
     	    	for (i=0; i<indent-endIndent; i++)
     	    	    paddedText[textLen+i] = ' ';
@@ -904,7 +908,7 @@ void TextDOverstrike(textDisp *textD, const char *text)
     textD->cursorToHint = startPos + textLen;
     BufReplace(buf, startPos, endPos, paddedText == nullptr ? text : paddedText);
     textD->cursorToHint = NO_HINT;
-    XtFree(paddedText);
+    delete [] paddedText;
 }
 
 /*

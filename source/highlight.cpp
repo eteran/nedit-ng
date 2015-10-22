@@ -516,8 +516,7 @@ static void freeHighlightData(windowHighlightData *hd)
     	freePatterns(hd->pass2Patterns);
     XtFree(hd->parentStyles);
     BufFree(hd->styleBuffer);
-    XtFree((char *)hd->styleTable);
-    
+    delete [] hd->styleTable;
 	delete hd;
 }
 
@@ -583,7 +582,6 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     char *parentStyles, *parentStylesPtr;
 	char *parentName;
     highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
-    styleTableEntry *styleTable, *styleTablePtr;
     textBuffer *styleBuf;
     highlightDataRec *pass1Pats, *pass2Pats;
     windowHighlightData *highlightData;
@@ -744,38 +742,42 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
     }
     
     /* Set up table for mapping colors and fonts to syntax */
-    styleTablePtr = styleTable = (styleTableEntry *)XtMalloc(
-    	    sizeof(styleTableEntry) * (nPass1Patterns + nPass2Patterns + 1));
+    const auto styleTable = new styleTableEntry[nPass1Patterns + nPass2Patterns + 1];
+	
+	styleTableEntry *styleTablePtr = styleTable;
 			
-			
+	
 	auto setStyleTablePtr = [window](styleTableEntry *styleTablePtr, highlightPattern *patternSrc) {
       styleTableEntry *p = styleTablePtr; 
       highlightPattern *pat = patternSrc; 
       int r, g, b; 
       
       p->highlightName = pat->name; 
-      p->styleName = pat->style; 
-      p->colorName = ColorOfNamedStyle(pat->style); 
-      p->bgColorName = BgColorOfNamedStyle(pat->style); 
-      p->isBold = FontOfNamedStyleIsBold(pat->style); 
-      p->isItalic = FontOfNamedStyleIsItalic(pat->style); 
+      p->styleName     = pat->style; 
+      p->colorName     = ColorOfNamedStyle(pat->style); 
+      p->bgColorName   = BgColorOfNamedStyle(pat->style); 
+      p->isBold        = FontOfNamedStyleIsBold(pat->style); 
+      p->isItalic      = FontOfNamedStyleIsItalic(pat->style); 
+	  
       /* And now for the more physical stuff */ 
       p->color = AllocColor(window->textArea, p->colorName, &r, &g, &b); 
-      p->red = r; 
+      p->red   = r; 
       p->green = g; 
-      p->blue = b; 
+      p->blue  = b; 
+	  
       if (p->bgColorName) { 
         p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b); 
-        p->bgRed = r; 
+        p->bgRed   = r; 
         p->bgGreen = g; 
-        p->bgBlue = b; 
+        p->bgBlue  = b; 
       } 
       else { 
         p->bgColor = p->color; 
-        p->bgRed = r; 
+        p->bgRed   = r; 
         p->bgGreen = g; 
-        p->bgBlue = b; 
+        p->bgBlue  = b; 
       } 
+	  
       p->font = FontOfNamedStyle(window, pat->style); 	
 	};
 
@@ -1183,13 +1185,13 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode)
 ** Functions to return style information from the highlighting style table.
 */
 
-const char *HighlightNameOfCode(WindowInfo *window, int hCode)
+std::string HighlightNameOfCode(WindowInfo *window, int hCode)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
     return entry ? entry->highlightName : "";
 }
 
-const char *HighlightStyleOfCode(WindowInfo *window, int hCode)
+std::string HighlightStyleOfCode(WindowInfo *window, int hCode)
 {
     styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
     return entry ? entry->styleName : "";

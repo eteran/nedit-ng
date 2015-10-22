@@ -35,13 +35,18 @@
 
 
 
-enum cursorStyles {NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR,
-	HEAVY_CURSOR};
+enum cursorStyles {
+	NORMAL_CURSOR,
+	CARET_CURSOR,
+	DIM_CURSOR,
+	BLOCK_CURSOR,
+	HEAVY_CURSOR
+};
 
 #define NO_HINT -1
 
 struct styleTableEntry {
-    const char *highlightName;
+    std::string highlightName;
     const char *styleName;
     const char *colorName;
     char isBold;
@@ -174,56 +179,52 @@ textDisp *TextDCreate(Widget widget, Widget hScrollBar, Widget vScrollBar,
 	Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel,
         int continuousWrap, int wrapMargin, XmString bgClassString, 
         Pixel calltipFGPixel, Pixel calltipBGPixel);
-void TextDFree(textDisp *textD);
-void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
-void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer,
-    	styleTableEntry *styleTable, int nStyles, char unfinishedStyle,
-    	unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
-void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
-void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
-int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
-int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
-void TextDResize(textDisp *textD, int width, int height);
-void TextDRedisplayRect(textDisp *textD, int left, int top, int width, int height);
-void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset);
-void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
-void TextDInsert(textDisp *textD, const char *text);
-void TextDOverstrike(textDisp *textD, const char *text);
-void TextDSetInsertPosition(textDisp *textD, int newPos);
+		
+Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
+int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
+int TextDCountForwardNLines(const textDisp* textD, const int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
+int TextDCountLines(textDisp *textD, int startPos, int endPos, int startPosIsLineStart);
+int TextDEndOfLine(const textDisp* textD, const int pos, const Boolean startPosIsLineStart);
 int TextDGetInsertPosition(textDisp *textD);
-int TextDXYToPosition(textDisp *textD, int x, int y);
-int TextDXYToCharPos(textDisp *textD, int x, int y);
-void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row, int *column);
+int TextDInSelection(textDisp *textD, int x, int y);
 int TextDLineAndColToPos(textDisp *textD, int lineNum, int column);
+int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
+int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
+int TextDMoveDown(textDisp *textD, int absolute);
+int TextDMoveLeft(textDisp *textD);
+int TextDMoveRight(textDisp *textD);
+int TextDMoveUp(textDisp *textD, int absolute);
 int TextDOffsetWrappedColumn(textDisp *textD, int row, int column);
 int TextDOffsetWrappedRow(textDisp *textD, int row);
-int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y);
-int TextDPosToLineAndCol(textDisp *textD, int pos, int *lineNum, int *column);
-int TextDInSelection(textDisp *textD, int x, int y);
-void TextDMakeInsertPosVisible(textDisp *textD);
-int TextDMoveRight(textDisp *textD);
-int TextDMoveLeft(textDisp *textD);
-int TextDMoveUp(textDisp *textD, int absolute);
-int TextDMoveDown(textDisp *textD, int absolute);
-void TextDBlankCursor(textDisp *textD);
-void TextDUnblankCursor(textDisp *textD);
-void TextDSetCursorStyle(textDisp *textD, int style);
-void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
-int TextDEndOfLine(const textDisp* textD, const int pos, const Boolean startPosIsLineStart);
-int TextDStartOfLine(const textDisp* textD, const int pos);
-int TextDCountForwardNLines(const textDisp* textD, const int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
-int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
-int TextDCountLines(textDisp *textD, int startPos, int endPos, int startPosIsLineStart);
-void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
-void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth, int textLeft);
-void TextDMaintainAbsLineNum(textDisp *textD, int state);
 int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
+int TextDPosToLineAndCol(textDisp *textD, int pos, int *lineNum, int *column);
+int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y);
 int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
-
+int TextDStartOfLine(const textDisp* textD, const int pos);
+int TextDXYToCharPos(textDisp *textD, int x, int y);
+int TextDXYToPosition(textDisp *textD, int x, int y);
+void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer, styleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
+void TextDBlankCursor(textDisp *textD);
+void TextDFree(textDisp *textD);
+void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
-Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
+void TextDInsert(textDisp *textD, const char *text);
+void TextDMaintainAbsLineNum(textDisp *textD, int state);
+void TextDMakeInsertPosVisible(textDisp *textD);
+void TextDOverstrike(textDisp *textD, const char *text);
+void TextDRedisplayRect(textDisp *textD, int left, int top, int width, int height);
+void TextDResize(textDisp *textD, int width, int height);
+void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
+void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
+void TextDSetCursorStyle(textDisp *textD, int style);
+void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
+void TextDSetInsertPosition(textDisp *textD, int newPos);
+void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth, int textLeft);
+void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset);
+void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
+void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
-
-
+void TextDUnblankCursor(textDisp *textD);
+void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row, int *column);
 
 #endif /* NEDIT_TEXTDISP_H_INCLUDED */

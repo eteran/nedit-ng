@@ -43,9 +43,7 @@
 #include <limits.h>
 #include <sys/param.h>
 
-#if !defined(DONT_HAVE_GLOB) && !defined(USE_MOTIF_GLOB) && !defined(VMS)
 #include <glob.h>
-#endif
 
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
@@ -292,39 +290,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
        names, in these cases, either don't expand names, or try to use the
        Motif internal parsing routine _XmOSGetDirEntries, which is not
        guranteed to be available, but in practice is there and does work. */
-#if defined(DONT_HAVE_GLOB) || defined(VMS)
-    /* Open the file */
-    if (ParseFilename(nameText, filename, pathname) != 0) {
-        XBell(TheDisplay, 0);
-	return;
-    }	
-    EditExistingFile(window, filename, 
-            pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
-#elif defined(USE_MOTIF_GLOB)
-    { char **nameList = nullptr;
-      int i, nFiles = 0, maxFiles = 30;
 
-      if (ParseFilename(nameText, filename, pathname) != 0) {
-           XBell(TheDisplay, 0);
-	   return;
-      }
-      _XmOSGetDirEntries(pathname, filename, XmFILE_ANY_TYPE, False, True,
-	      &nameList, &nFiles, &maxFiles);
-      for (i=0; i<nFiles; i++) {
-	  if (ParseFilename(nameList[i], filename, pathname) != 0) {
-	      XBell(TheDisplay, 0);
-	  }
-        else {
-    	      EditExistingFile(window, filename, pathname, 0, 
-	              nullptr, False, nullptr, GetPrefOpenInTab(), False);
-	  }
-      }
-      for (i=0; i<nFiles; i++) {
-	   XtFree(nameList[i]);
-	}
-      XtFree((char *)nameList);
-    }
-#else
     { glob_t globbuf;
       int i;
 
@@ -339,7 +305,7 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
       }
       globfree(&globbuf);
     }
-#endif
+
     CheckCloseDim();
 }
 

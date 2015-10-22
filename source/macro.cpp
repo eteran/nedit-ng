@@ -5553,9 +5553,15 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
         return True;
     }
 
-    return fillStyleResult(result, errMsg, window,
-        HighlightStyleOfCode(window, patCode),
-		False, True, patCode, bufferPos);
+    return fillStyleResult(
+		result,
+		errMsg,
+		window,
+        HighlightStyleOfCode(window, patCode).c_str(),
+		False, 
+		True, 
+		patCode, 
+		bufferPos);
 }
 
 /*
@@ -5702,8 +5708,8 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs,
     }
 
     return fillPatternResult(result, errMsg, window,
-        (String)HighlightNameOfCode(window, patCode), False, True,
-        (String)HighlightStyleOfCode(window, patCode), bufferPos);
+        (String)HighlightNameOfCode(window, patCode).c_str(), False, True,
+        (String)HighlightStyleOfCode(window, patCode).c_str(), bufferPos);
 }
 
 static int wrongNArgsErr(const char **errMsg)

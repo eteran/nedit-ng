@@ -77,12 +77,10 @@ highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName);
-const char *HighlightNameOfCode(WindowInfo *window, int hCode);
-const char *HighlightStyleOfCode(WindowInfo *window, int hCode);
-Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode,
-      int *r, int *g, int *b);
-Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode,
-      int *r, int *g, int *b);
+std::string HighlightNameOfCode(WindowInfo *window, int hCode);
+std::string HighlightStyleOfCode(WindowInfo *window, int hCode);
+Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
+Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
 
 
 
