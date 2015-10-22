@@ -293,6 +293,8 @@ int main(int argc, char **argv)
 */
 static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id)
 {
+
+	(void)id;
    /* NOTE: XtAppNextEvent() does call this routine but
    ** doesn't return unless there are more events.
    ** Hence, we generate this (synthetic) event to break the deadlock

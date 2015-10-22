@@ -375,9 +375,22 @@ Inst *GetPC(void)
 */
 void SwapCode(Inst *start, Inst *boundary, Inst *end)
 {
-#define reverseCode(L, H) \
-    do { register Inst t, *l = L, *h = H - 1; \
-         while (l < h) { t = *h; *h-- = *l; *l++ = t; } } while (0)
+
+	// TODO(eteran): this looks like a stock reverse, can probably
+	//               use std::reverse
+	auto reverseCode = [](Inst *L, Inst *H) {
+		Inst t;
+		Inst *l = L;
+		Inst *h = H - 1; 
+		
+		while (l < h) {
+			t = *h;
+			*h-- = *l; 
+			*l++ = t;
+		}
+	};
+
+
     /* double-reverse method: reverse elements of both parts then whole lot */
     /* eg abcdefABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba */
     reverseCode(start, boundary);   /* 1 */

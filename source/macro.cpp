@@ -1345,6 +1345,7 @@ void RepeatDialog(WindowInfo *window)
 
 static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
     repeatDialog *rd = (repeatDialog *)clientData;
 
     if (doRepeatDialogAction(rd, ((XmAnyCallbackStruct *)callData)->event))
@@ -1357,6 +1358,8 @@ static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData)
    stop button for the macro, and possibly in-selection with selection */
 static void repeatApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
     doRepeatDialogAction((repeatDialog *)clientData,
 	    ((XmAnyCallbackStruct *)callData)->event);
 }
@@ -1410,6 +1413,8 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
 
 static void repeatCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
     repeatDialog *rd = (repeatDialog *)clientData;
 
     XtDestroyWidget(rd->shell);
@@ -1417,6 +1422,8 @@ static void repeatCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
     repeatDialog *rd = (repeatDialog *)clientData;
     
     XtFree(rd->lastCommand);
@@ -1520,9 +1527,10 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName,
 /*
 ** Permanent action hook for remembering last action for possible replay
 */
-static void lastActionHook(Widget w, XtPointer clientData, String actionName,
-	XEvent *event, String *params, Cardinal *numParams)
+static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams)
 {
+
+    (void)clientData;
     WindowInfo *window;
     int i;
     char *actionString;
@@ -1654,6 +1662,8 @@ static int isIgnoredAction(const char *action)
 #define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id)
 {
+	(void)id;
+
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XmString xmCancel;
@@ -1791,9 +1801,11 @@ static int escapedStringLength(char *string)
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     char *string;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
     
@@ -1809,9 +1821,10 @@ static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Built-in macro subroutines for min and max
 */
-static int minMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int minMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)window;
+	
     int minVal, value, i;
     
     if (nArgs == 1)
@@ -1827,9 +1840,10 @@ static int minMS(WindowInfo *window, DataValue *argList, int nArgs,
     result->val.n = minVal;
     return True;
 }
-static int maxMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int maxMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)window;
+	
     int maxVal, value, i;
     
     if (nArgs == 1)
@@ -2113,9 +2127,10 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** Built-in macro subroutine for determining if implicit conversion of
 ** a string to number will succeed or fail
 */
-static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs,
-        DataValue *result, const char **errMsg)
+static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)window;
+	
     char *string;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
     
@@ -2135,9 +2150,13 @@ static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Built-in macro subroutine for replacing a substring within another string
 */
-static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	(void)nArgs;
+	(void)argList;
+	
     int from, to, length, replaceLen, outLen;
     char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *string;
@@ -2176,9 +2195,11 @@ static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** Built-in macro subroutine for getting a substring of a string.
 ** Called as substring(string, from [, to])
 */
-static int substringMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int substringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     int from, to, length;
     char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
@@ -2208,9 +2229,10 @@ static int substringMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
     int i, length;
     char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
@@ -2230,9 +2252,10 @@ static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
     int i, length;
     char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
@@ -2285,9 +2308,11 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
     return True;
 }
 
-static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)argList;
+	
     unsigned long length, retLength;
     long id = 0;
 
@@ -2336,9 +2361,10 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
 ** file as a string in the subroutine return value.  On failure, returns
 ** the empty string "" and an 0 $readStatus.
 */
-static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)window;
+	
     char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *name;
     struct stat statbuf;
@@ -2416,9 +2442,11 @@ static int appendFileMS(WindowInfo *window, DataValue *argList, int nArgs,
     return writeOrAppendFile(True, window, argList, nArgs, result, errMsg);
 }
 
-static int writeOrAppendFile(int append, WindowInfo *window,
-    	DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
+static int writeOrAppendFile(int append, WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *name;
 	char *string;
@@ -2741,9 +2769,11 @@ static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Macro subroutine to ring the bell
 */
-static int beepMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int beepMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)argList;
+	
     if (nArgs != 0)
     	return wrongNArgsErr(errMsg);
     XBell(XtDisplay(window->shell), 0);
@@ -2751,9 +2781,11 @@ static int beepMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
     int i;
@@ -2773,9 +2805,11 @@ static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
 ** Built-in macro subroutine for getting the value of an environment variable
 */
-static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     char stringStorage[1][TYPE_INT_STR_SIZE(int)];
     char *name;
     const char *value;
@@ -2965,6 +2999,9 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs,
 
 static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
@@ -2993,6 +3030,9 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
@@ -3141,9 +3181,11 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static void stringDialogBtnCB(Widget w, XtPointer clientData,
-    	XtPointer callData)
+static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
@@ -3184,9 +3226,11 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData,
     ResumeMacroExecution(window);
 }
 
-static void stringDialogCloseCB(Widget w, XtPointer clientData,
-    	XtPointer callData)
+static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
@@ -3368,9 +3412,13 @@ static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs,
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-static int calltipIDMV(WindowInfo *window, DataValue *argList, 
-        int nArgs, DataValue *result, const char **errMsg)
+static int calltipIDMV(WindowInfo *window, DataValue *argList,  int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = GetCalltipID(window, 0);
     return True;
@@ -3730,9 +3778,10 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static void listDialogBtnCB(Widget w, XtPointer clientData,
-      XtPointer callData)
+static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)callData;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     XtPointer userData;
@@ -3800,9 +3849,12 @@ static void listDialogBtnCB(Widget w, XtPointer clientData,
     ResumeMacroExecution(window);
 }
 
-static void listDialogCloseCB(Widget w, XtPointer clientData,
-      XtPointer callData)
+static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)callData;
+	(void)w;
+	
     WindowInfo *window = (WindowInfo *)clientData;
     macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
     DataValue retVal;
@@ -3854,9 +3906,11 @@ static void listDialogEscCB(Widget w, XtPointer clientData, XEvent *event,
 #endif /* LESSTIF_VERSION */
 
 
-static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	
     char stringStorage[3][TYPE_INT_STR_SIZE(int)];
     char *leftStr, *rightStr, *argStr;
     int considerCase = True;
@@ -4085,17 +4139,25 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
     return True;
 } */
 
-static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextGetCursorPos(window->lastFocus);
     return True;
 }
 
-static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
-        DataValue *result, const char **errMsg)
+static int lineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     int line, cursorPos, colNum;
 
     result->tag = INT_TAG;
@@ -4106,9 +4168,13 @@ static int lineMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int columnMV(WindowInfo *window, DataValue *argList, int nArgs,
-        DataValue *result, const char **errMsg)
+static int columnMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     textBuffer *buf = window->buffer;
     int cursorPos;
 
@@ -4119,51 +4185,75 @@ static int columnMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->filename);
     return True;
 }
 
-static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->path);
     return True;
 }
 
-static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->buffer->length;
     return True;
 }
 
-static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->buffer->primary.selected ?
     	    window->buffer->primary.start : -1;
     return True;
 }
 
-static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->buffer->primary.selected ?
     	    window->buffer->primary.end : -1;
     return True;
 }
 
-static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     Selection *sel = &window->buffer->primary;
     
     result->tag = INT_TAG;
@@ -4171,9 +4261,13 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     Selection *sel = &window->buffer->primary;
     
     result->tag = INT_TAG;
@@ -4181,9 +4275,13 @@ static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     int margin, nCols;
     
     XtVaGetValues(window->textArea, textNcolumns, &nCols,
@@ -4193,33 +4291,49 @@ static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->showStats ? 1 : 0;
     return True;
 }
 
-static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->showISearchLine ? 1 : 0;
     return True;
 }
 
-static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->showLineNumbers ? 1 : 0;
     return True;
 }
 
-static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     char *res = nullptr;
 
     switch (window->indentStyle) {
@@ -4243,9 +4357,13 @@ static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     char *res = nullptr;
 
     switch (window->wrapMode) {
@@ -4269,33 +4387,49 @@ static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->highlightSyntax ? 1 : 0;
     return True;
 }
 
-static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->saveOldVersion ? 1 : 0;
     return True;
 }
 
-static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->autoSave ? 1 : 0;
     return True;
 }
 
-static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     char *res = nullptr;
 
     switch (window->showMatchingStyle) {
@@ -4319,9 +4453,13 @@ static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->matchSyntaxBased ? 1 : 0;
     return True;
@@ -4329,33 +4467,49 @@ static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs,
 
 
 
-static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = window->overstrike ? 1 : 0;
     return True;
 }
 
-static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = (IS_ANY_LOCKED(window->lockReasons)) ? 1 : 0;
     return True;
 }
 
-static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = (IS_USER_LOCKED(window->lockReasons)) ? 1 : 0;
     return True;
 }
 
-static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     char *res = nullptr;
 
     switch (window->fileFormat) {
@@ -4378,130 +4532,188 @@ static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->fontName);
     return True;
 }
 
-static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->italicFontName);
     return True;
 }
 
-static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->boldFontName);
     return True;
 }
 
-static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, window->boldItalicFontName);
     return True;
 }
 
-static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)window;
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = STRING_TAG;
     result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
     result->val.str.len = strlen(result->val.str.rep);
     return True;
 }
 
-static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextGetMinFontWidth(window->textArea, window->highlightSyntax);
     return True;
 }
 
-static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextGetMaxFontWidth(window->textArea, window->highlightSyntax);
     return True;
 }
 
-static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextFirstVisibleLine(window->lastFocus);
     return True;
 }
 
-static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextNumVisibleLines(window->lastFocus);
     return True;
 }
 
-static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	
     result->tag = INT_TAG;
     result->val.n = TextVisibleWidth(window->lastFocus);
     return True;
 }
 
-static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = INT_TAG;
     result->val.n = WidgetToPaneIndex(window, window->lastFocus) + 1;
     return True;
 }
 
-static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = INT_TAG;
     result->val.n = window->nPanes + 1;
     return True;
 }
 
-static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = nullptr;
     return True;
 }
 
-static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs,
-    DataValue *result, const char **errMsg)
+static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)window;
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = STRING_TAG;
     AllocNStringCpy(&result->val.str, GetPrefServerName());
     return True;
 }
 
-static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = INT_TAG;
     result->val.n = window->buffer->tabDist;
     return True;
 }
 
-static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     int dist;
     
     XtVaGetValues(window->textArea, textNemulateTabs, &dist, nullptr);
@@ -4510,25 +4722,36 @@ static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs,
     return True;
 }
 
-static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = INT_TAG;
     result->val.n = window->buffer->useTabs;
     return True;
 }
 
-static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     result->tag = INT_TAG;
     result->val.n = window->fileChanged;
     return True;
 }
 
-static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs,
-    	DataValue *result, const char **errMsg)
+static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+	(void)errMsg;
+	
     const char *lmName = LanguageModeName(window->languageMode);
     
     if (lmName == nullptr)
@@ -4556,9 +4779,12 @@ static int backlightStringMV(WindowInfo *window, DataValue *argList,
 /*
 ** Range set macro variables and functions
 */
-static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
-      DataValue *result, const char **errMsg)
+static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg)
 {
+
+	(void)nArgs;
+	(void)argList;
+
     RangesetTable *rangesetTable = window->buffer->rangesetTable;
     unsigned char *rangesetList;
     char *allocIndexStr;
@@ -4602,9 +4828,14 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs,
 **  different point revisions. This is done because the macro interface
 **  does not change for the same version.
 */
-static int versionMV(WindowInfo* window, DataValue* argList, int nArgs,
-        DataValue* result, const char** errMsg)
+static int versionMV(WindowInfo* window, DataValue* argList, int nArgs, DataValue* result, const char** errMsg)
 {
+
+	(void)errMsg;
+	(void)nArgs;
+	(void)argList;
+	(void)window;
+	
     static unsigned version = NEDIT_VERSION * 1000 + NEDIT_REVISION;
 
     result->tag = INT_TAG;

@@ -8,7 +8,7 @@ find_package(BISON REQUIRED)
 
 find_library(LibM m)
 
-# using a different name from parse.c
+# using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
@@ -86,7 +86,7 @@ set_property(TARGET nedit PROPERTY CXX_STANDARD 11)
 set_property(TARGET nc    PROPERTY CXX_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")
-#set(CMAKE_CXX_FLAGS "-W -Wall -pedantic")
+set(CMAKE_CXX_FLAGS "-W -Wall -pedantic")
 
 set_target_properties(nedit nc
 	PROPERTIES
