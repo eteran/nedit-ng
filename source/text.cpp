@@ -866,15 +866,21 @@ static void initialize(TextWidget request, TextWidget new_widget)
 }
 
 /* Hide the pointer while the user is typing */
-static void handleHidePointer(Widget w, XtPointer unused, 
-        XEvent *event, Boolean *continue_to_dispatch) {
+static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
+	(void)unused;
+	(void)event;
+	(void)continue_to_dispatch;
+	
     TextWidget tw = (TextWidget) w;
     ShowHidePointer(tw, True);
 }
 
 /* Restore the pointer if the mouse moves or focus changes */
-static void handleShowPointer(Widget w, XtPointer unused, 
-        XEvent *event, Boolean *continue_to_dispatch) {
+static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
+	(void)unused;
+	(void)event;
+	(void)continue_to_dispatch;
+	
     TextWidget tw = (TextWidget) w;
     ShowHidePointer(tw, False);
 }
@@ -996,6 +1002,9 @@ static void resize(TextWidget w)
 */
 static void redisplay(TextWidget w, XEvent *event, Region region)
 {
+
+	(void)region;
+	
     XExposeEvent *e = &event->xexpose;
     
     TextDRedisplayRect(w->text.textD, e->x, e->y, e->width, e->height);
@@ -1052,9 +1061,12 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
     }
 }
 
-static void redisplayGE(TextWidget w, XtPointer client_data,
-                    XEvent *event, Boolean *continue_to_dispatch_return)
+static void redisplayGE(TextWidget w, XtPointer client_data, XEvent *event, Boolean *continue_to_dispatch_return)
 {
+
+	(void)client_data;
+	(void)continue_to_dispatch_return;
+	
     if (event->type == GraphicsExpose || event->type == NoExpose) {
         HandleAllPendingGraphicsExposeNoExposeEvents(w, event);
     }
@@ -1083,9 +1095,11 @@ void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event)
 /*
 ** Widget setValues method
 */
-static Boolean setValues(TextWidget current, TextWidget request,
-	TextWidget new_widget)
+static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_widget)
 {
+
+	(void)request;
+	
     Boolean redraw = False, reconfigure = False;
     
     if (new_widget->text.overstrike != current->text.overstrike) {
@@ -1643,9 +1657,13 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     tw->text.rectAnchor = column;
 }
 
-static void moveDestinationAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void moveDestinationAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     XButtonEvent *e = &event->xbutton;
     textDisp *textD = ((TextWidget)w)->text.textD;
  
@@ -1658,9 +1676,13 @@ static void moveDestinationAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void extendAdjustAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     TextWidget tw = (TextWidget)w;
     XMotionEvent *e = &event->xmotion;
     int dragState = tw->text.dragState;
@@ -1693,8 +1715,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args,
     adjustSelection(tw, e->x, e->y);
 }
 
-static void extendStartAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {    
     XMotionEvent *e = &event->xmotion;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -1749,9 +1770,13 @@ static void extendStartAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void extendEndAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void extendEndAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     XButtonEvent *e = &event->xbutton;
     TextWidget tw = (TextWidget)w;
     
@@ -1761,9 +1786,13 @@ static void extendEndAP(Widget w, XEvent *event, String *args,
     endDrag(w);
 }
 
-static void processCancelAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     int dragState = ((TextWidget)w)->text.dragState;
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -1776,9 +1805,12 @@ static void processCancelAP(Widget w, XEvent *event, String *args,
     cancelDrag(w);
 }
 
-static void secondaryStartAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
-{    
+static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+
+	(void)args;
+	(void)nArgs;
+		
     XMotionEvent *e = &event->xmotion;
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
@@ -1808,8 +1840,7 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args,
     ((TextWidget)w)->text.dragState = SECONDARY_CLICKED;
 }
 
-static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {    
     XMotionEvent *e = &event->xmotion;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -1833,8 +1864,7 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args,
     ((TextWidget)w)->text.dragState = CLICKED_IN_SELECTION;
 }
 
-static void secondaryAdjustAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     TextWidget tw = (TextWidget)w;
     XMotionEvent *e = &event->xmotion;
@@ -1868,8 +1898,7 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args,
     adjustSecondarySelection(tw, e->x, e->y);
 }
 
-static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     TextWidget tw = (TextWidget)w;
     XMotionEvent *e = &event->xmotion;
@@ -1904,6 +1933,10 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args,
 
 static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     XButtonEvent *e = &event->xbutton;
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
@@ -1974,6 +2007,10 @@ static void copyToOrEndDragAP(Widget w, XEvent *event, String *args,
 
 static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     XButtonEvent *e = &event->xbutton;
     textDisp *textD = ((TextWidget)w)->text.textD;
     int dragState = ((TextWidget)w)->text.dragState;
@@ -2028,9 +2065,9 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     } 
 }
 
-static void moveToOrEndDragAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void moveToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
     int dragState = ((TextWidget)w)->text.dragState;
 
     if (dragState != PRIMARY_BLOCK_DRAG) {
@@ -2043,6 +2080,11 @@ static void moveToOrEndDragAP(Widget w, XEvent *event, String *args,
 
 static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     if (((TextWidget)w)->text.dragState == PRIMARY_BLOCK_DRAG)
     	FinishBlockDrag((TextWidget)w);
     else
@@ -2106,8 +2148,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     checkAutoShowInsertPos(w);
 }
 
-static void copyPrimaryAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     TextWidget tw = (TextWidget)w;
@@ -2145,8 +2186,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args,
     	InsertPrimarySelection(w, e->time, False);
 }
 
-static void cutPrimaryAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -2189,6 +2229,10 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args,
 
 static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     XButtonEvent *e = &event->xbutton;
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
@@ -2214,8 +2258,7 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	cancelDrag(w);
 }
 
-static void pasteClipboardAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void pasteClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     if (hasKey("rect", args, nArgs))
     	TextColPasteClipboard(w, event->xkey.time);
@@ -2223,21 +2266,30 @@ static void pasteClipboardAP(Widget w, XEvent *event, String *args,
 	TextPasteClipboard(w, event->xkey.time);
 }
 
-static void copyClipboardAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void copyClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     TextCopyClipboard(w, event->xkey.time);
 }
 
-static void cutClipboardAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void cutClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     TextCutClipboard(w, event->xkey.time);
 }
 
-static void insertStringAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {   
+
+	(void)args;
+	(void)nArgs;
+	
     smartIndentCBStruct smartIndent;
     textDisp *textD = ((TextWidget)w)->text.textD;
     
@@ -2259,6 +2311,10 @@ static void insertStringAP(Widget w, XEvent *event, String *args,
 
 static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {   
+
+	(void)args;
+	(void)nArgs;
+	
     WindowInfo* window = WidgetToWindow(w);
 
 #ifdef NO_XMIM
@@ -2316,9 +2372,12 @@ static void newlineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     	newlineNoIndentAP(w, event, args, nArgs);
 }
 
-static void newlineNoIndentAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
-{   
+static void newlineNoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+
+	(void)args;
+	(void)nArgs;
+	
     XKeyEvent *e = &event->xkey;
 
     cancelDrag(w);
@@ -2329,9 +2388,12 @@ static void newlineNoIndentAP(Widget w, XEvent *event, String *args,
     BufUnselect((((TextWidget)w)->text.textD)->buffer);
 }
 
-static void newlineAndIndentAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
-{   
+static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+
+	(void)args;
+	(void)nArgs;
+	
     XKeyEvent *e = &event->xkey;
     TextWidget tw = (TextWidget)w;
     textDisp *textD = tw->text.textD;
@@ -2366,9 +2428,12 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args,
     BufUnselect(buf);
 }
 
-static void processTabAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
     Selection *sel = &buf->primary;
@@ -2433,9 +2498,12 @@ static void processTabAP(Widget w, XEvent *event, String *args,
     BufUnselect(buf);
 }
 
-static void deleteSelectionAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deleteSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+		
     XKeyEvent *e = &event->xkey;
 
     cancelDrag(w);
@@ -2445,8 +2513,7 @@ static void deleteSelectionAP(Widget w, XEvent *event, String *args,
     deletePendingSelection(w, event);
 }
 
-static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -2485,8 +2552,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void deleteNextCharacterAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -2508,8 +2574,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void deletePreviousWordAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -2545,8 +2610,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void deleteNextWordAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     XKeyEvent *e = &event->xkey;
     textDisp *textD = ((TextWidget)w)->text.textD;
@@ -2640,8 +2704,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void forwardCharacterAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
@@ -2655,8 +2718,7 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void backwardCharacterAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
     int silent = hasKey("nobell", args, nArgs);
@@ -2670,8 +2732,7 @@ static void backwardCharacterAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void forwardWordAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
@@ -2712,8 +2773,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void backwardWordAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
@@ -2737,8 +2797,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void forwardParagraphAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     int pos, insertPos = TextDGetInsertPosition(textD);
@@ -2768,8 +2827,7 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void backwardParagraphAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     int parStart, pos, insertPos = TextDGetInsertPosition(textD);
@@ -2886,8 +2944,7 @@ static void processShiftDownAP(Widget w, XEvent *event, String *args,
     callCursorMovementCBs(w, event);
 }
 
-static void beginningOfLineAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     int insertPos = TextDGetInsertPosition(textD);
@@ -2919,8 +2976,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     textD->cursorPreferredCol = -1;
 }
 
-static void beginningOfFileAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void beginningOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     int insertPos = TextDGetInsertPosition(((TextWidget)w)->text.textD);
 	textDisp *textD = ((TextWidget)w)->text.textD;
@@ -3059,8 +3115,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     }
 }
 
-static void previousPageAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
     textDisp *textD = ((TextWidget)w)->text.textD;
     int insertPos = TextDGetInsertPosition(textD);
@@ -3183,6 +3238,11 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     textBuffer *buf = textD->buffer;
     int insertPos = TextDGetInsertPosition(textD);
@@ -3218,9 +3278,13 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
     }
 }
 
-static void toggleOverstrikeAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void toggleOverstrikeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     TextWidget tw = (TextWidget)w;
     
     if (tw->text.overstrike) {
@@ -3235,9 +3299,11 @@ static void toggleOverstrikeAP(Widget w, XEvent *event, String *args,
     }
 }
 
-static void scrollUpAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void scrollUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int topLineNum, horizOffset, nLines;
 
@@ -3256,9 +3322,13 @@ static void scrollUpAP(Widget w, XEvent *event, String *args,
     TextDSetScroll(textD, topLineNum-nLines, horizOffset);
 }
 
-static void scrollDownAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int topLineNum, horizOffset, nLines;
     
@@ -3277,9 +3347,13 @@ static void scrollDownAP(Widget w, XEvent *event, String *args,
     TextDSetScroll(textD, topLineNum+nLines, horizOffset);
 }
 
-static void scrollLeftAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void scrollLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int horizOffset, nPixels;
     int sliderMax, sliderSize;
@@ -3294,9 +3368,13 @@ static void scrollLeftAP(Widget w, XEvent *event, String *args,
     }
 }
 
-static void scrollRightAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void scrollRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int horizOffset, nPixels;
     int sliderMax, sliderSize;
@@ -3311,9 +3389,13 @@ static void scrollRightAP(Widget w, XEvent *event, String *args,
     }
 }
 
-static void scrollToLineAP(Widget w, XEvent *event, String *args,
-    	Cardinal *nArgs)
+static void scrollToLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     int topLineNum, horizOffset, lineNum;
     
@@ -3323,18 +3405,26 @@ static void scrollToLineAP(Widget w, XEvent *event, String *args,
     TextDSetScroll(textD, lineNum, horizOffset);
 }
   
-static void selectAllAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void selectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     textBuffer *buf = ((TextWidget)w)->text.textD->buffer;
 
     cancelDrag(w);
     BufSelect(buf, 0, buf->length);
 }
 
-static void deselectAllAP(Widget w, XEvent *event, String *args,
-	Cardinal *nArgs)
+static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	(void)event;
+	
     cancelDrag(w);
     BufUnselect(((TextWidget)w)->text.textD->buffer);
 }
@@ -3345,9 +3435,12 @@ static void deselectAllAP(Widget w, XEvent *event, String *args,
 **  Note that the widget has no internal state about the focus, ie. it does
 **  not know whether it has the focus or not.
 */
-static void focusInAP(Widget widget, XEvent* event, String* unused1,
-        Cardinal* unused2)
+static void focusInAP(Widget widget, XEvent* event, String* unused1, Cardinal* unused2)
 {
+
+	(void)unused1;
+	(void)unused2;
+	
     TextWidget textwidget = (TextWidget) widget;
     textDisp* textD = textwidget->text.textD;
 
@@ -3390,6 +3483,10 @@ static void focusInAP(Widget widget, XEvent* event, String* unused1,
 
 static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)args;
+	(void)nArgs;
+	
     textDisp *textD = ((TextWidget)w)->text.textD;
     
     /* Remove the cursor blinking timer procedure */
@@ -4128,6 +4225,8 @@ static char *createIndentString(TextWidget tw, textBuffer *buf, int bufOffset,
 */
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id)
 {
+	(void)id;
+	
     TextWidget w = (TextWidget)clientData;
     textDisp *textD = w->text.textD;
     int topLineNum, horizOffset, newPos, cursorX, y;
@@ -4188,6 +4287,8 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id)
 */
 static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id)
 {
+	(void)id;
+	
     TextWidget w = (TextWidget)clientData;
     textDisp *textD = w->text.textD;
     

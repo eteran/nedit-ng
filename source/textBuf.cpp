@@ -859,7 +859,7 @@ std::string BufGetTextInRectEx(textBuffer *buf, int start, int end,
 	int rectStart, int rectEnd)
 {
     int lineStart, selLeft, selRight, len;
-    char *textOut, *textIn, *outPtr, *retabbedStr;
+    char *textOut, *outPtr, *retabbedStr;
    
     start = BufStartOfLine(buf, start);
     end = BufEndOfLine(buf, end);
@@ -1409,7 +1409,6 @@ int BufSearchForward(textBuffer *buf, int startPos, const char *searchChars,
 int BufSearchForwardEx(textBuffer *buf, int startPos, const std::string &searchChars, int *foundPos)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
-    const char *c;
     
     pos = startPos;
     while (pos < buf->gapStart) {
@@ -1480,7 +1479,6 @@ int BufSearchBackward(textBuffer *buf, int startPos, const char *searchChars,
 int BufSearchBackwardEx(textBuffer *buf, int startPos, const std::string &searchChars, int *foundPos)
 {
     int pos, gapLen = buf->gapEnd - buf->gapStart;
-    const char *c;
     
     if (startPos == 0) {
     	*foundPos = 0;
@@ -1752,6 +1750,9 @@ static void subsChars(char *string, int length, char fromChar, char toChar)
 */
 static void subsCharsEx(std::string &string, int length, char fromChar, char toChar)
 {
+
+	(void)length;
+	
     for(char &ch : string) {
 		if (ch == fromChar) ch = toChar;
 	}	
@@ -2167,7 +2168,7 @@ static void overlayRectEx(textBuffer *buf, int startPos, int rectStart, int rect
 {
     int nLines, start, end, lineStart, lineEnd;
     int expInsLen, len, endOffset;
-    char *c, *outStr, *outPtr, *line;
+    char *c, *outStr, *outPtr;
 
     /* Allocate a buffer for the replacement string large enough to hold
        possibly expanded tabs in the inserted text, as well as per line: 1)
@@ -2321,7 +2322,7 @@ static void insertColInLine(const char *line, const char *insLine, int column, i
 */
 static void insertColInLineEx(const std::string &line, const std::string &insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset)
 {
-    char *c, *outPtr;
+    char *outPtr;
     int indent, toIndent, len, postColIndent;
         
     /* copy the line up to "column" */ 
@@ -3153,7 +3154,6 @@ static int textWidth(const char *text, int tabDist, char nullSubsChar)
 static int textWidthEx(const std::string &text, int tabDist, char nullSubsChar)
 {
     int width = 0, maxWidth = 0;
-    const char *c;
     
 	for(char ch : text) {
     	if (ch == '\n') {
