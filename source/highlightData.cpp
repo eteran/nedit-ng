@@ -1939,6 +1939,11 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     int i;
     
     for (i=0; i<HSDialog.nHighlightStyles; i++)
@@ -1948,6 +1953,11 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (!updateHSList())
     	return;
 
@@ -1958,19 +1968,31 @@ static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     updateHSList();
 }
 
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* pop down and destroy the dialog */
     XtDestroyWidget(HSDialog.shell);
     HSDialog.shell = nullptr;
 }
 
-static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
-    	void *cbArg)
+static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg)
 {
+
+	(void)cbArg;
+	
     highlightStyleRec *hs;
     
     /* If the dialog is currently displaying the "new" entry and the
@@ -2881,6 +2903,11 @@ void UpdateLanguageModeMenu(void)
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     int i;
     
     XtFree((char*) HighlightDialog.langModeName);
@@ -2891,6 +2918,11 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     char *modeName;
     patternSet *oldPatSet, *newPatSet;
     patternSet emptyPatSet = {nullptr, 1, 0, 0, nullptr};
@@ -2966,11 +2998,21 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     EditLanguageModes();
 }
 
 static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     Widget selectedItem;
     char *style;
     
@@ -2985,6 +3027,11 @@ static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the patterns */
     if (!updatePatternSet())
     	return;
@@ -2996,12 +3043,22 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* change the patterns */
     updatePatternSet();
 }
 
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     if (checkHighlightDialogData())
     {
         DialogF(DF_INF, HighlightDialog.shell, 1, "Pattern compiled",
@@ -3011,6 +3068,11 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     patternSet *defaultPatSet;
     int i, psn;
     
@@ -3060,6 +3122,11 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData)
 	
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     int i, psn;
     
     if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern",
@@ -3096,6 +3163,11 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     /* pop down and destroy the dialog */
     CloseAllPopupsFor(HighlightDialog.shell);
     XtDestroyWidget(HighlightDialog.shell);
@@ -3103,22 +3175,39 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     Help(HELP_PATTERNS);
 }
 
 static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     updateLabels();
 }
 
 static void matchTypeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     updateLabels();
 }
 
-static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
-    	void *cbArg)
+static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg)
 {
+
+	(void)cbArg;
+	
     highlightPattern *pat;
     
     /* If the dialog is currently displaying the "new" entry and the
@@ -3153,6 +3242,9 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort,
 
 static void setDisplayedCB(void *item, void *cbArg)
 {
+
+	(void)cbArg;
+	
     highlightPattern *pat = (highlightPattern *)item;
     int isSubpat, isDeferred, isColorOnly, isRange;
 
