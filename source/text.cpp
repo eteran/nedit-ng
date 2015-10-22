@@ -792,7 +792,7 @@ static void initialize(TextWidget request, TextWidget new_widget)
     
     /* Create the initial text buffer for the widget to display (which can
        be replaced later with TextSetBuffer) */
-    buf = BufCreate();
+    buf = new textBuffer;
     
     /* Create and initialize the text-display part of the widget */
     textLeft = new_widget->text.marginWidth +
@@ -934,7 +934,7 @@ static void destroy(TextWidget w)
     buf = w->text.textD->buffer;
     TextDFree(w->text.textD);
     if (buf->modifyProcs.empty())
-    	BufFree(buf);
+    	delete buf;
 
     if (w->text.cursorBlinkProcID != 0)
     	XtRemoveTimeOut(w->text.cursorBlinkProcID);
@@ -1237,7 +1237,7 @@ void TextSetBuffer(Widget w, textBuffer *buffer)
     StopHandlingXSelections(w);
     TextDSetBuffer(((TextWidget)w)->text.textD, buffer);
     if (oldBuf->modifyProcs.empty())
-    	BufFree(oldBuf);
+    	delete oldBuf;
 }
 
 /*
@@ -1509,7 +1509,7 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen)
     /* Create a text buffer with a good estimate of the size that adding
        newlines will expand it to.  Since it's a text buffer, if we guess
        wrong, it will fail softly, and simply expand the size */
-    outBuf = BufCreatePreallocated((endPos-startPos) + (endPos-startPos)/5);
+    outBuf = new textBuffer((endPos-startPos) + (endPos-startPos)/5);
     outPos = 0;
     
     /* Go (displayed) line by line through the buffer, adding newlines where
@@ -1534,7 +1534,7 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen)
     /* return the contents of the output buffer as a string */
     outString = BufGetAll(outBuf);
     *outLen = outBuf->length;
-    BufFree(outBuf);
+    delete outBuf;
     return outString;
 }
 
@@ -1558,7 +1558,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen)
     /* Create a text buffer with a good estimate of the size that adding
        newlines will expand it to.  Since it's a text buffer, if we guess
        wrong, it will fail softly, and simply expand the size */
-    outBuf = BufCreatePreallocated((endPos-startPos) + (endPos-startPos)/5);
+    outBuf = new textBuffer((endPos-startPos) + (endPos-startPos)/5);
     outPos = 0;
     
     /* Go (displayed) line by line through the buffer, adding newlines where
@@ -1583,7 +1583,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen)
     /* return the contents of the output buffer as a string */
     std::string outString = BufGetAllEx(outBuf);
     *outLen = outBuf->length;
-    BufFree(outBuf);
+    delete outBuf;
     return outString;
 }
 
@@ -4045,7 +4045,7 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
     char c, *wrappedText;
     
     /* Create a temporary text buffer and load it with the strings */
-    wrapBuf = BufCreate();
+    wrapBuf = new textBuffer;
     BufInsert(wrapBuf, 0, startLine);
     BufInsert(wrapBuf, wrapBuf->length, text);
     
@@ -4089,7 +4089,7 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
     	wrappedText = BufGetRange(wrapBuf, startLineLen - *breakBefore,
     	    	wrapBuf->length);
     }
-    BufFree(wrapBuf);
+    delete wrapBuf;
     return wrappedText;
 }
 

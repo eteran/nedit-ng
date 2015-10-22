@@ -4699,9 +4699,8 @@ static char *writeLanguageModesString(void)
 {
     int i;
     char *escapedStr, *str, numBuf[25];
-    textBuffer *outBuf;
     
-    outBuf = BufCreate();
+    auto outBuf = new textBuffer;;
     for (i=0; i<NLanguageModes; i++) {
     	BufInsert(outBuf, outBuf->length, "\t");
     	BufInsert(outBuf, outBuf->length, LanguageModes[i]->name);
@@ -4751,7 +4750,7 @@ static char *writeLanguageModesString(void)
     
     /* Get the output, and lop off the trailing newline */
     std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - 1);
-    BufFree(outBuf);
+    delete outBuf;
     escapedStr = EscapeSensitiveChars(outStr.c_str());
     return escapedStr;
 }

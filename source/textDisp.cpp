@@ -3237,7 +3237,7 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
     }
 
     length = (pos-countFrom) + nDeleted +(countTo-(pos+nInserted));
-    deletedTextBuf = BufCreatePreallocated(length);
+    deletedTextBuf = new textBuffer(length);
     if (pos > countFrom)
         BufCopyFromBuf(textD->buffer, deletedTextBuf, countFrom, pos, 0);
     if (nDeleted != 0)
@@ -3249,7 +3249,7 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos,
        the deletedTextBuf can be out of sync with the style buffer. */
     wrappedLineCounter(textD, deletedTextBuf, 0, length, INT_MAX, True, 
 	    countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
-    BufFree(deletedTextBuf);
+    delete deletedTextBuf;
     *linesDeleted = retLines;
     textD->suppressResync = 0;
 }

@@ -519,7 +519,7 @@ static void freeHighlightData(windowHighlightData *hd)
     if (hd->pass2Patterns != nullptr)
     	freePatterns(hd->pass2Patterns);
     XtFree(hd->parentStyles);
-    BufFree(hd->styleBuffer);
+    delete hd->styleBuffer;
     delete [] hd->styleTable;
 	delete hd;
 }
@@ -809,7 +809,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window,
 	delete [] pass2PatternSrc;
     
     /* Create the style buffer */
-    styleBuf = BufCreate();
+    styleBuf = new textBuffer;
     
     /* Collect all of the highlighting information in a single structure */
     highlightData = new windowHighlightData;

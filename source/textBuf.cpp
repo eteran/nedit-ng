@@ -111,13 +111,11 @@ static const char *ControlCodeTable[32] = {
      "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
      "can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
 
+
 /*
 ** Create an empty text buffer
 */
-textBuffer *BufCreate(void)
-{
-    textBuffer *buf = BufCreatePreallocated(0);
-    return buf;
+textBuffer::textBuffer() : textBuffer(0) {
 }
 
 /*
@@ -125,50 +123,45 @@ textBuffer *BufCreate(void)
 ** avoid unnecessary re-allocation if you know exactly how much the buffer
 ** will need to hold
 */
-textBuffer *BufCreatePreallocated(int requestedSize)
-{
-    textBuffer *buf;
-    
-    buf = new textBuffer;
-    buf->length = 0;
-    buf->buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
-    buf->buf[requestedSize + PREFERRED_GAP_SIZE] = '\0';
-    buf->gapStart = 0;
-    buf->gapEnd = PREFERRED_GAP_SIZE;
-    buf->tabDist = 8;
-    buf->useTabs = True;
-    buf->primary.selected = False;
-    buf->primary.zeroWidth = False;
-    buf->primary.rectangular = False;
-    buf->primary.start = buf->primary.end = 0;
-    buf->secondary.selected = False;
-    buf->secondary.zeroWidth = False;
-    buf->secondary.start = buf->secondary.end = 0;
-    buf->secondary.rectangular = False;
-    buf->highlight.selected = False;
-    buf->highlight.zeroWidth = False;
-    buf->highlight.start = buf->highlight.end = 0;
-    buf->highlight.rectangular = False;
+textBuffer::textBuffer(int requestedSize) {
+    length = 0;
+    buf = XtMalloc(requestedSize + PREFERRED_GAP_SIZE + 1);
+    buf[requestedSize + PREFERRED_GAP_SIZE] = '\0';
+    gapStart = 0;
+    gapEnd = PREFERRED_GAP_SIZE;
+    tabDist = 8;
+    useTabs = True;
+    primary.selected = False;
+    primary.zeroWidth = False;
+    primary.rectangular = False;
+    primary.start = 0;
+	primary.end = 0;
+    secondary.selected = False;
+    secondary.zeroWidth = False;
+    secondary.start = 0;
+	secondary.end = 0;
+    secondary.rectangular = False;
+    highlight.selected = False;
+    highlight.zeroWidth = False;
+    highlight.start = 0;
+	highlight.end = 0;
+    highlight.rectangular = False;
 
-    buf->nullSubsChar = '\0';
+    nullSubsChar = '\0';
 #ifdef PURIFY
-    {int i; for (i=buf->gapStart; i<buf->gapEnd; i++) buf->buf[i] = '.';}
+    {int i; for (i=gapStart; i<gapEnd; i++) buf[i] = '.';}
 #endif
-    buf->rangesetTable = nullptr;
-    return buf;
+    rangesetTable = nullptr;
 }
 
 /*
 ** Free a text buffer
 */
-void BufFree(textBuffer *buf)
-{
-    XtFree(buf->buf);
+textBuffer::~textBuffer() {
+    XtFree(buf);
 
-    if (buf->rangesetTable)
-		RangesetTableFree(buf->rangesetTable);
-	
-	delete buf;
+    if (rangesetTable)
+		RangesetTableFree(rangesetTable);
 }
 
 /*

@@ -726,7 +726,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic)
        with the text area widget.  This is done so the syntax highlighting
        modify callback can be called to synchronize the style buffer BEFORE
        the text display's callback is called upon to display a modification */
-    window->buffer = BufCreate();
+    window->buffer = new textBuffer;
     BufAddModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
     
     /* Attach the buffer to the text widget, and add callbacks for modify */
@@ -3407,7 +3407,7 @@ WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name)
        with the text area widget.  This is done so the syntax highlighting
        modify callback can be called to synchronize the style buffer BEFORE
        the text display's callback is called upon to display a modification */
-    window->buffer = BufCreate();
+    window->buffer = new textBuffer;
     BufAddModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
     
     /* Attach the buffer to the text widget, and add callbacks for modify */

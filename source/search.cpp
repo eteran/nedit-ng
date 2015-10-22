@@ -3832,7 +3832,6 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     int found, isRect, rectStart, rectEnd, lineStart, cursorPos;
     int extentBW, extentFW;
     std::string fileString;
-    textBuffer *tempBuf;
     Boolean substSuccess = False;
     Boolean anyFound = False;
     Boolean cancelSubst = True;
@@ -3856,7 +3855,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     /* create a temporary buffer in which to do the replacements to hide the
        intermediate steps from the display routines, and so everything can
        be undone in a single operation */
-    tempBuf = BufCreate();
+    auto tempBuf = new textBuffer;
     BufSetAllEx(tempBuf, fileString);
     
     /* search the string and do the replacements in the temporary buffer */
@@ -3985,7 +3984,7 @@ void ReplaceInSelection(const WindowInfo* window, const char* searchString,
     	    XBell(TheDisplay, 0);
     }
 
-    BufFree(tempBuf);
+    delete tempBuf;
     return;
 }
 

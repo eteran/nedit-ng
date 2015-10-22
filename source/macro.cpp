@@ -570,7 +570,7 @@ void BeginLearn(WindowInfo *window)
     MacroRecordWindow = window;
     
     /* Allocate a text buffer for accumulating the macro strings */
-    MacroRecordBuf = BufCreate();
+    MacroRecordBuf = new textBuffer;
     
     /* Add the action hook for recording the actions */
     MacroRecordActionHook =
@@ -649,7 +649,7 @@ void FinishLearn(void)
     ReplayMacro = BufGetAll(MacroRecordBuf);
     
     /* Free the buffer used to accumulate the macro sequence */
-    BufFree(MacroRecordBuf);
+    delete MacroRecordBuf;
     
     /* Undim the menu items dimmed during learn */
     for (win=WindowList; win!=nullptr; win=win->next) {
@@ -698,7 +698,7 @@ static void cancelLearn(void)
     MacroRecordActionHook = 0;
     
     /* Free the macro under construction */
-    BufFree(MacroRecordBuf);
+    delete MacroRecordBuf;
     
     /* Undim the menu items dimmed during learn */
     for (win=WindowList; win!=nullptr; win=win->next) {

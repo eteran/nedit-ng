@@ -68,7 +68,7 @@ void BeginBlockDrag(TextWidget tw)
     
     /* Save a copy of the whole text buffer as a backup, and for
        deriving changes */
-    tw->text.dragOrigBuf = BufCreate();
+    tw->text.dragOrigBuf = new textBuffer;
     BufSetTabDistance(tw->text.dragOrigBuf, buf->tabDist);
     tw->text.dragOrigBuf->useTabs = buf->useTabs;
     
@@ -105,7 +105,7 @@ void BeginBlockDrag(TextWidget tw)
     tw->text.dragInsertPos = sel->start;
     tw->text.dragInserted = sel->end - sel->start;
     if (sel->rectangular) {
-    	textBuffer *testBuf = BufCreate();
+    	textBuffer *testBuf = new textBuffer;
 
     	std::string testText = BufGetRangeEx(buf, sel->start, sel->end);
         BufSetTabDistance(testBuf, buf->tabDist);
@@ -115,7 +115,7 @@ void BeginBlockDrag(TextWidget tw)
     	BufRemoveRect(testBuf, 0, sel->end - sel->start, sel->rectStart,
     	    	sel->rectEnd);
     	tw->text.dragDeleted = testBuf->length;
-    	BufFree(testBuf);
+    	delete testBuf;
     	tw->text.dragRectStart = sel->rectStart;
     } else {
     	tw->text.dragDeleted = 0;
@@ -201,7 +201,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
        eventually be replaced in the real buffer.  Load the buffer with the
        range of characters which might be modified in this drag step
        (this could be tighter, but hopefully it's not too slow) */
-    tempBuf = BufCreate();
+    tempBuf = new textBuffer;
     tempBuf->tabDist = buf->tabDist;
     tempBuf->useTabs = buf->useTabs;
     tempStart = min3(tw->text.dragInsertPos, origSel->start,
@@ -322,7 +322,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
        would be nice if this decision could be made earlier) */
     if (insStart == tw->text.dragInsertPos &&
     	    insRectStart == tw->text.dragRectStart && dragType == oldDragType) {
-    	BufFree(tempBuf);
+    	delete tempBuf;
     	return;
     }
 
@@ -352,7 +352,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType)
  
     /* Make the changes in the real buffer */
     std::string repText = BufGetRangeEx(tempBuf, modRangeStart - tempStart, tempModRangeEnd - tempStart);
-    BufFree(tempBuf);
+    delete tempBuf;
     TextDBlankCursor(textD);
     BufReplaceEx(buf, modRangeStart, bufModRangeEnd, repText);
     
@@ -406,7 +406,7 @@ void FinishBlockDrag(TextWidget tw)
     deletedText = BufGetRange(tw->text.dragOrigBuf, modRangeStart, origModRangeEnd);
 
     /* Free the backup buffer */
-    BufFree(tw->text.dragOrigBuf);
+    delete tw->text.dragOrigBuf;
     
     /* Return to normal drag state */
     tw->text.dragState = NOT_CLICKED;
@@ -464,7 +464,7 @@ void CancelBlockDrag(TextWidget tw)
     tw->text.emTabsBeforeCursor = 0;
     
     /* Free the backup buffer */
-    BufFree(origBuf);
+    delete origBuf;
     
     /* Indicate end of drag */
     tw->text.dragState = DRAG_CANCELED;

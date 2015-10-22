@@ -754,7 +754,7 @@ static Widget createHelpPanel(enum HelpTopic topic)
     
     /* Create a style buffer for the text widget and fill it with the style
        data which was generated along with the text content */
-    HelpStyleBuffers[topic] = BufCreate(); 
+    HelpStyleBuffers[topic] = new textBuffer;
     BufSetAll(HelpStyleBuffers[topic], styleData);
     XtFree (styleData);
     TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
@@ -828,7 +828,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
     HelpWindows[topic] = nullptr;
     if (HelpStyleBuffers[topic] != nullptr)
     {
-        BufFree(HelpStyleBuffers[topic]);
+        delete HelpStyleBuffers[topic];
         HelpStyleBuffers[topic] = nullptr;
     }        
 }

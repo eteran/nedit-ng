@@ -1088,10 +1088,9 @@ char *WriteStylesString(void)
 {
     int i;
     char *outStr;
-    textBuffer *outBuf;
     highlightStyleRec *style;
     
-    outBuf = BufCreate();
+    auto outBuf = new textBuffer;;
     for (i=0; i<NHighlightStyles; i++) {
     	style = HighlightStyles[i];
     	BufInsert(outBuf, outBuf->length, "\t");
@@ -1109,7 +1108,7 @@ char *WriteStylesString(void)
     
     /* Get the output, and lop off the trailing newlines */
     outStr = BufGetRange(outBuf, 0, outBuf->length - (i==1?0:4));
-    BufFree(outBuf);
+    delete outBuf;
     return outStr;
 }
 
@@ -1164,11 +1163,10 @@ int LoadHighlightString(char *inString, int convertOld)
 char *WriteHighlightString(void)
 {
     char *escapedStr;
-    textBuffer *outBuf;
     int psn, written = False;
     patternSet *patSet;
     
-    outBuf = BufCreate();
+    auto outBuf = new textBuffer;;
     for (psn=0; psn<NPatternSets; psn++) {
     	patSet = PatternSets[psn];
     	if (patSet->nPatterns == 0)
@@ -1190,7 +1188,7 @@ char *WriteHighlightString(void)
     
     /* Get the output string, and lop off the trailing newline and tab */
     std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - (written?2:0));
-    BufFree(outBuf);
+    delete outBuf;
     
     /* Protect newlines and backslashes from translation by the resource
        reader */
@@ -1407,11 +1405,10 @@ static Widget createHighlightStylesMenu(Widget parent)
 static std::string createPatternsString(patternSet *patSet, const char *indentStr)
 {
     char *str;
-    textBuffer *outBuf;
     int pn;
     highlightPattern *pat;
     
-    outBuf = BufCreate();
+    auto outBuf = new textBuffer;;
     for (pn=0; pn<patSet->nPatterns; pn++) {
     	pat = &patSet->patterns[pn];
     	BufInsert(outBuf, outBuf->length, indentStr);
@@ -1448,7 +1445,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
     	BufInsert(outBuf, outBuf->length, "\n");
     }
     std::string outStr = BufGetAllEx(outBuf);
-    BufFree(outBuf);
+    delete outBuf;
 	return outStr;
 }
 

@@ -62,6 +62,12 @@ struct CallbackPair {
 };
 
 struct textBuffer {
+public:
+	textBuffer();
+	textBuffer(int requestedSize);
+	~textBuffer();
+
+public:
     int length; 	                          /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length) */ 
     char *buf;                                /* allocated memory where the text is stored */																		 
     int gapStart;  	                          /* points to the first character of the gap */ 																		 
@@ -116,15 +122,12 @@ std::string BufGetRangeEx(const textBuffer* buf, int start, int end);
 std::string BufGetSecSelectTextEx(textBuffer *buf);
 std::string BufGetSelectionTextEx(textBuffer *buf);
 std::string BufGetTextInRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
-textBuffer *BufCreate(void);
-textBuffer *BufCreatePreallocated(int requestedSize);
 void BufAddHighPriorityModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg);
 void BufAddModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg);
 void BufAddPreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
 void BufCheckDisplay(textBuffer *buf, int start, int end);
 void BufClearRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufCopyFromBuf(textBuffer *fromBuf, textBuffer *toBuf, int fromStart, int fromEnd, int toPos);
-void BufFree(textBuffer *buf);
 void BufHighlight(textBuffer *buf, int start, int end);
 void BufInsert(textBuffer *buf, int pos, const char *text);
 void BufInsertCol(textBuffer *buf, int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);

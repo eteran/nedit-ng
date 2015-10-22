@@ -142,7 +142,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     
     /* Create a temporary buffer for the lines containing the selection, to
        hide the intermediate steps from the display update routines */
-    tempBuf = BufCreate();
+    tempBuf = new textBuffer;
     tempBuf->tabDist = buf->tabDist;
     tempBuf->useTabs = buf->useTabs;
     std::string text = BufGetRangeEx(buf, selStart, selEnd);
@@ -157,7 +157,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab,
     BufReplace(buf, selStart, selEnd, BufAsString(tempBuf));
     BufRectSelect(buf, selStart, selStart + tempBuf->length,
 	    rectStart+offset, rectEnd+offset);
-    BufFree(tempBuf);
+    delete tempBuf;
 }
 
 void UpcaseSelection(WindowInfo *window)
@@ -525,7 +525,7 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist,
     textBuffer *buf;
     
     /* Create a buffer to accumulate the filled paragraphs */
-    buf = BufCreate();
+    buf = new textBuffer;
     BufSetAll(buf, text);
     
     /*
@@ -583,7 +583,7 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist,
     /* Free the buffer and return its contents */
     filledText = BufGetAll(buf);
     *filledLen = buf->length;
-    BufFree(buf);
+    delete buf;
     return filledText;
 }
 

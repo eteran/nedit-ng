@@ -2076,7 +2076,7 @@ char *WriteSmartIndentString(void)
     textBuffer *outBuf;
     char *escapedStr;
     
-    outBuf = BufCreate();
+    outBuf = new textBuffer;
     for (i=0; i<NSmartIndentSpecs; i++) {
     	sis = SmartIndentSpecs[i];
     	BufInsert(outBuf, outBuf->length, "\t");
@@ -2093,7 +2093,7 @@ char *WriteSmartIndentString(void)
     
     /* Get the output string, and lop off the trailing newline */
     std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length > 0 ? outBuf->length-1 : 0);
-    BufFree(outBuf);
+    delete outBuf;
     
     /* Protect newlines and backslashes from translation by the resource
        reader */
