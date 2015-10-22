@@ -192,6 +192,10 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode);
 */
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) 
 {    
+
+	(void)nRestyled;
+	(void)deletedText;
+	
     WindowInfo *window = (WindowInfo *)cbArg;
     windowHighlightData 
     	    *highlightData = (windowHighlightData *)window->highlightData;

@@ -813,6 +813,10 @@ static void changeTopicOrRaise(int existingTopic, int newTopic) {
 */
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     int topic;
     
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
@@ -830,7 +834,12 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
 }
 
 static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData) 
-{   int topic;
+{
+
+	(void)w;
+	(void)callData;
+	
+	int topic;
 
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
         return; /* shouldn't happen */
@@ -841,7 +850,12 @@ static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData)
 }
 
 static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData) 
-{   int topic;
+{
+
+	(void)w;
+	(void)callData;
+	
+	int topic;
 
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
         return; /* shouldn't happen */
@@ -852,7 +866,11 @@ static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData)
 }
 
 static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) 
-{   int topic, goTo;
+{
+	(void)w;
+	(void)callData;
+	
+	int topic, goTo;
 
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
         return; /* shouldn't happen */
@@ -866,7 +884,11 @@ static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData)
 }
 
 static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData)
-{   int topic, goTo;
+{
+	(void)w;
+	(void)callData;
+	
+	int topic, goTo;
 
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
         return; /* shouldn't happen */
@@ -881,6 +903,9 @@ static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
+	
     char promptText[DF_MAX_PROMPT_LENGTH];
     int response, topic;
     static char **searchHistory = nullptr;
@@ -898,9 +923,12 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
     searchHelpText(HelpWindows[topic], topic, promptText, response == 2, 0, 0);
 }
 
-static void searchHelpAgainCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+
     int topic;
     
     if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
@@ -911,6 +939,10 @@ static void searchHelpAgainCB(Widget w, XtPointer clientData,
 
 static void printCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     int topic, helpStringLen;
     char *helpString;
     
@@ -1007,9 +1039,13 @@ static void followHyperlink(int topic, int charPosition, int newWindow)
     }
 }
 
-static void helpFocusButtonsAP(Widget w, XEvent *event, String *args,
-        Cardinal *nArgs)
-{   
+static void helpFocusButtonsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
+{
+
+	(void)event;
+	(void)args;
+	(void)nArgs;
+	
     XmProcessTraversal(w, XmTRAVERSE_NEXT_TAB_GROUP);
 }
 
@@ -1017,9 +1053,11 @@ static void helpFocusButtonsAP(Widget w, XEvent *event, String *args,
  * handler for help-button-action(<button-name>)
  * Calls the activate callback for the named button widget of the help text win.
  */
-static void helpButtonActionAP(Widget w, XEvent *event, String *args,
-        Cardinal *nArgs)
+static void helpButtonActionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 {
+
+	(void)event;
+	
     char buf[80];
     int topic;
     Widget btn;

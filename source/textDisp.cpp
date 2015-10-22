@@ -127,7 +127,6 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event,
 static void redrawLineNumbers(textDisp *textD, int clearAll);
 static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
-static int countLines(const char *string);
 static int countLinesEx(const std::string &string);
 static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
@@ -2871,6 +2870,8 @@ static void redrawLineNumbers(textDisp *textD, int clearAll)
 */
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	
     textDisp *textD = (textDisp *)clientData;
     int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
     int lineDelta = newValue - textD->topLineNum;
@@ -2881,6 +2882,8 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData)
 }
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	
     textDisp *textD = (textDisp *)clientData;
     int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
     
@@ -2889,28 +2892,15 @@ static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData)
     setScroll(textD, textD->topLineNum, newValue, False, False);
 }
 
-static void visibilityEH(Widget w, XtPointer data, XEvent *event,
-        Boolean *continueDispatch)
+static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch)
 {
+	(void)w;
+	(void)continueDispatch;
+	
     /* Record whether the window is fully visible or not.  This information
        is used for choosing the scrolling methodology for optimal performance,
        if the window is partially obscured, XCopyArea may not work */
     ((textDisp *)data)->visibility = ((XVisibilityEvent *)event)->state;
-}
-
-/*
-** Count the number of newlines in a null-terminated text string;
-*/
-static int countLines(const char *string)
-{
-    const char *c;
-    int lineCount = 0;
-    
-    if (string == nullptr)
-	return 0;
-    for (c=string; *c!='\0'; c++)
-    	if (*c == '\n') lineCount++;
-    return lineCount;
 }
 
 /*

@@ -2330,6 +2330,11 @@ void RowColumnPrefDialog(Widget parent)
 
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int rowValue, colValue, stat;
     
     /* get the values that the user entered and make sure they're ok */
@@ -2348,6 +2353,11 @@ static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     DoneWithSizeDialog = True;
 }
 
@@ -2476,6 +2486,11 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow)
 
 static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int emulate, useTabs, stat, tabDist, emTabDist;
     WindowInfo *window = TabsDialogForWindow;
     
@@ -2536,16 +2551,31 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     DoneWithTabsDialog = True;
 }
 
 static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     Help(HELP_TABS_DIALOG);
 }
 
 static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int state = XmToggleButtonGetState(w);
     
     XtSetSensitive(EmTabLabel, state);
@@ -2633,6 +2663,11 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow)
 
 static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int wrapAtWindow, margin, stat;
     WindowInfo *window = WrapDialogForWindow;
     
@@ -2669,11 +2704,21 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     DoneWithWrapDialog = True;
 }
 
 static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int wrapAtWindow = XmToggleButtonGetState(w);
     
     XtSetSensitive(WrapTextLabel, !wrapAtWindow);
@@ -2685,6 +2730,9 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData)
 */
 void SelectShellDialog(Widget parent, WindowInfo* forWindow)
 {
+
+	(void)forWindow;
+	
     Widget shellSelDialog;
     Arg shellSelDialogArgs[2];
     XmString label;
@@ -2724,9 +2772,12 @@ void SelectShellDialog(Widget parent, WindowInfo* forWindow)
     XtDestroyWidget(shellSelDialog);
 }
 
-static void shellSelOKCB(Widget widget, XtPointer clientData,
-        XtPointer callData)
+static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData)
 {
+
+	(void)widget;
+	(void)callData;
+	
     Widget shellSelDialog = (Widget) clientData;
     String shellName = XtMalloc(MAXPATHLEN);
     struct stat attribute;
@@ -2757,9 +2808,13 @@ static void shellSelOKCB(Widget widget, XtPointer clientData,
     DoneWithShellSelDialog = True;
 }
 
-static void shellSelCancelCB(Widget widgget, XtPointer clientData,
-        XtPointer callData)
+static void shellSelCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)clientData;
+	(void)callData;
+	
     DoneWithShellSelDialog = True;
 }
 
@@ -3150,6 +3205,11 @@ characters of file to determine type from content)"),
 
 static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     int i;
     
     for (i=0; i<LMDialog.nLanguageModes; i++)
@@ -3159,6 +3219,11 @@ static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     if (!updateLMList())
     	return;
 
@@ -3169,11 +3234,21 @@ static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     updateLMList();
 }
 
 static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     /* pop down and destroy the dialog */
     XtDestroyWidget(LMDialog.shell);
     LMDialog.shell = nullptr;
@@ -3181,6 +3256,9 @@ static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static int lmDeleteConfirmCB(int itemIndex, void *cbArg)
 {
+
+	(void)cbArg;
+	
     int i;
     
     /* Allow duplicate names to be deleted regardless of dependencies */
@@ -3308,9 +3386,11 @@ static int updateLMList(void)
     return True;
 }
 
-static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
-    	void *cbArg)
+static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg)
 {
+
+	(void)cbArg;
+	
     languageModeRec *lm, *oldLM = (languageModeRec *)oldItem;
     char *tempName;
     int i, nCopies, oldLen;
@@ -3370,6 +3450,9 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort,
 
 static void lmSetDisplayedCB(void *item, void *cbArg)
 {
+
+	(void)cbArg;
+	
     languageModeRec *lm = (languageModeRec *)item;
     char *extStr;
 
@@ -4011,16 +4094,19 @@ void ChooseFonts(WindowInfo *window, int forWindow)
     ManageDialogCenteredOnPointer(form);
 }
 
-static void fillFromPrimaryCB(Widget w, XtPointer clientData,
-    	XtPointer callData)
+static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
     char *primaryName;
 	const char *errMsg;
     char modifiedFontName[MAX_FONT_LEN];
-    const char *searchString = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
-    const char *italicReplaceString = "\\1-\\2-o-\\4";
-    const char *boldReplaceString = "\\1-bold-\\3-\\4";
+    const char *searchString            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
+    const char *italicReplaceString     = "\\1-\\2-o-\\4";
+    const char *boldReplaceString       = "\\1-bold-\\3-\\4";
     const char *boldItalicReplaceString = "\\1-bold-o-\\4";
     regexp *compiledRE;
 
@@ -4049,9 +4135,12 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData,
     free(compiledRE);
 }
 
-static void primaryModifiedCB(Widget w, XtPointer clientData,
-	XtPointer callData)
+static void primaryModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     showFontStatus(fd, fd->italicW, fd->italicErrW);
@@ -4060,19 +4149,30 @@ static void primaryModifiedCB(Widget w, XtPointer clientData,
 }
 static void italicModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     showFontStatus(fd, fd->italicW, fd->italicErrW);
 }
 static void boldModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     showFontStatus(fd, fd->boldW, fd->boldErrW);
 }
-static void boldItalicModifiedCB(Widget w, XtPointer clientData,
-    	XtPointer callData)
+static void boldItalicModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     showFontStatus(fd, fd->boldItalicW, fd->boldItalicErrW);
@@ -4080,25 +4180,40 @@ static void boldItalicModifiedCB(Widget w, XtPointer clientData,
 
 static void primaryBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     browseFont(fd->shell, fd->primaryW);
 }
 static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     browseFont(fd->shell, fd->italicW);
 }
 static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     browseFont(fd->shell, fd->boldW);
 }
-static void boldItalicBrowseCB(Widget w, XtPointer clientData,
-    	XtPointer callData)
+static void boldItalicBrowseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
    fontDialog *fd = (fontDialog *)clientData;
 
    browseFont(fd->shell, fd->boldItalicW);
@@ -4106,6 +4221,10 @@ static void boldItalicBrowseCB(Widget w, XtPointer clientData,
 
 static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
     
     fd->window->fontDialog = nullptr;
@@ -4114,6 +4233,10 @@ static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
     
     updateFonts(fd);
@@ -4124,6 +4247,10 @@ static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
     
     updateFonts(fd);
@@ -4131,6 +4258,10 @@ static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void fontCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     fontDialog *fd = (fontDialog *)clientData;
 
     /* pop down and destroy the dialog */
@@ -5023,6 +5154,11 @@ static void updateLanguageModeSubmenu(WindowInfo *window)
 
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	(void)clientData;
+	
     WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
     const char *params[1];
     void *mode;
@@ -5832,58 +5968,82 @@ cursorFg              CURSOR_FG_COLOR
 /* 
  * Callbacks for field modifications
  */
-static void textFgModifiedCB(Widget w, XtPointer clientData,
-      XtPointer callData)
+static void textFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->textFgW, cd->textFgErrW);
 }
     
-static void textBgModifiedCB(Widget w, XtPointer clientData,
-      XtPointer callData)
+static void textBgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->textBgW, cd->textBgErrW);
 }
 
-static void selectFgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void selectFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->selectFgW, cd->selectFgErrW);
 }
 
-static void selectBgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void selectBgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->selectBgW, cd->selectBgErrW);
 }
 
-static void hiliteFgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void hiliteFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->hiliteFgW, cd->hiliteFgErrW);
 }
 
-static void hiliteBgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void hiliteBgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->hiliteBgW, cd->hiliteBgErrW);
 }
 
-static void lineNoFgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void lineNoFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->lineNoFgW, cd->lineNoFgErrW);
 }
 
-static void cursorFgModifiedCB(Widget w, XtPointer clientData,
-        XtPointer callData)
+static void cursorFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     showColorStatus(cd, cd->cursorFgW, cd->cursorFgErrW);
 }
@@ -5975,6 +6135,10 @@ static void updateColors(colorDialog *cd)
 
 static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
 
     cd->window->colorDialog = nullptr;
@@ -5983,6 +6147,10 @@ static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     
     if(!verifyAllColors(cd))
@@ -5999,6 +6167,10 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
     
     if(!verifyAllColors(cd))
@@ -6012,6 +6184,9 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void colorCloseCB(Widget w, XtPointer clientData, XtPointer callData)
 {
+	(void)w;
+	(void)callData;
+	
     colorDialog *cd = (colorDialog *)clientData;
 
     /* pop down and destroy the dialog */
