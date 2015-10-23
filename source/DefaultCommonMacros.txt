@@ -1,0 +1,428 @@
+#
+# C/C++ Style/tuning parameters
+#
+
+# Number of characters in a normal indent level.  May be a number, or the
+# string "default", meaning, guess the value from the current tab settings.
+$cIndentDist = "default"
+
+# Number of characters in a line continuation.  May be a number or the
+# string "default", meaning, guess the value from the current tab settings.
+$cContinuationIndent = "default"
+
+# How far back from the current position to search for an anchoring position
+# on which to base indent.  When no reliable indicators of proper indent level
+# can be found within the requested distance, reverts to plain auto indent.
+$cMaxSearchBackLines = 10
+
+#
+# Find the start of the line containing position $1
+#
+define startOfLine {
+
+    for (i=$1-1; ; i--) {
+	if (i <= 0)
+	    return 0
+	if (get_character(i) == "\n")
+	    return i + 1
+    }
+}
+
+#
+# Find the indent level of the line containing character position $1
+#
+define measureIndent {
+    
+    # measure the indentation to the first non-white character on the line
+    indent = 0
+    for (i=startOfLine($1); i < $text_length; i++) {
+	c = get_character(i)
+	if (c != " " && c != "\t")
+	    break
+	if (c == "\t")
+	    indent += $tab_dist - (indent % $tab_dist)
+	else
+	    indent++
+    }
+    return indent
+}
+
+#
+# Make a string to produce an indent of $1 characters
+#
+define makeIndentString {
+
+    if ($use_tabs) {
+	nTabs = $1 / $tab_dist
+	nSpaces = $1 % $tab_dist
+    } else {
+	nTabs = 0
+	nSpaces = $1
+    }
+    indentString = ""
+    for (i=0; i<nTabs; i++)
+	indentString = indentString "\t"
+    for (i=0; i<nSpaces; i++)
+	indentString = indentString " "
+    return indentString
+}
+
+#
+# If $1 is a number, just pass it on.  If it is the string "default",
+# figure out a reasonable indent distance for a structured languages
+# like C, based on how tabs are set.
+#
+define defaultIndent {
+
+    if ($1 != "default")
+    	return $1
+    if ($em_tab_dist)
+    	return $em_tab_dist
+    if ($tab_dist <= 8)
+    	return $tab_dist
+    return 4
+}
+   
+#
+# If $1 is a number, just pass it on.  If it is the string "default",
+# figure out a reasonable amount of indentation for continued lines
+# based on how tabs are set.
+#
+define defaultContIndent {
+
+    if ($1 != "default")
+    	return $1
+    if ($em_tab_dist)
+    	return $em_tab_dist * 2
+    if ($tab_dist <= 8)
+    	return $tab_dist * 2
+    return 8
+}
+
+#
+# Find the end of the conditional part of if/while/for, by looking for balanced
+# parenthesis between $1 and $2.  returns -1 if parens don't balance before
+# $2, or if no parens are found
+#
+define findBalancingParen {
+
+    openParens = 0
+    parensFound = 0
+    for (i=$1; i<$2; i++) {
+	c = get_character(i)
+	if (c == "(") {
+	    openParens++
+	    parensFound = 1
+	} else if (c == ")")
+	    openParens--
+	else if (!parensFound && c != " " && c != "\t")
+	    return -1
+	if (parensFound && openParens <=0)
+	    return i+1
+    }
+    return -1
+}
+
+#
+# Skip over blank space and comments and preprocessor directives from position
+# $1 to a maximum of $2.
+# if $3 is non-zero, newlines are considered blank space as well.  Return -1
+# if the maximum position ($2) is hit mid-comment or mid-directive
+#
+define cSkipBlankSpace {
+    
+    for (i=$1; i<$2; i++) {
+	c = get_character(i)
+	if (c == "/") {
+	    if (i+1 >= $2)
+		return i
+	    if (get_character(i+1) == "*") {
+		for (i=i+1; ; i++) {
+		    if (i+1 >= $2)
+			return -1
+		    if (get_character(i) == "*" && get_character(i+1) == "/") {
+			i++
+			break
+		    }
+		}
+	    } else if (get_character(i+1) == "/") {
+		for (i=i+1; i<$2; i++) {
+		    if (get_character(i) == "\n") {
+			if (!$3)
+			    return i
+			break
+		    }
+		}
+	    }
+	} else if (c == "#" && $3) {
+	    for (i=i+1; ; i++) {
+		if (i >= $2) {
+		    if (get_character(i-1) == "\\")
+			return -1
+		    else
+			break
+		}
+		if (get_character(i) == "\n" && get_character(i-1) != "\\")
+		    break
+	    }
+	} else if (!(c == " " || c == "\t" || ($3 && c=="\n")))
+	    return i
+    }
+    return $2
+}
+
+#
+# Search backward for an anchor point: a line ending brace, or semicolon
+# or case statement, followed (ignoring blank lines and comments) by what we
+# assume is a properly indented line, a brace on a line by itself, or a case
+# statement.  Returns the position of the first non-white, non comment
+# character on the line.  returns -1 if an anchor position can't be found
+# before $cMaxSearchBackLines.
+#
+define cFindIndentAnchorPoint {
+
+    nLines = 0
+    anchorPos = $1
+    for (i=$1-1; i>0; i--) {
+	c = get_character(i)
+	if (c == ";" || c == "{" || c == "}" || c == ":") {
+
+	    # Verify that it's line ending
+	    lineEnd = cSkipBlankSpace(i+1, $1, 0)
+	    if (lineEnd == -1 || \
+	    	    (lineEnd != $text_length && get_character(lineEnd) != "\n"))
+   		continue
+
+	    # if it's a colon, it's only meaningful if "case" begins the line
+	    if (c == ":") {
+	    	lineStart = startOfLine(i)
+		caseStart = cSkipBlankSpace(lineStart, lineEnd, 0)
+		if (get_range(caseStart, caseStart+4) != "case")
+		    continue
+		delim = get_character(caseStart+4)
+		if (delim!=" " && delim!="\t" && delim!="(" && delim!=":")
+		    continue
+		isCase = 1
+	    } else
+	    	isCase = 0
+
+	    # Move forward past blank lines and comment lines to find
+	    #    non-blank, non-comment line-start
+	    anchorPos = cSkipBlankSpace(lineEnd, $1, 1)
+
+	    # Accept if it's before the requested position, otherwise
+	    #    continue further back in the file and try again
+	    if (anchorPos != -1 && anchorPos < $1)
+		break
+
+	    # A case statement by itself is an acceptable anchor
+	    if (isCase)
+	    	return caseStart
+
+	    # A brace on a line by itself is an acceptable anchor, even
+	    #    if it doesn't follow a semicolon or another brace
+	    if (c == "{" || c == "}") {
+		for (j = i-1; ; j--) {
+		    if (j == 0)
+			return i
+		    ch = get_character(j)
+		    if (ch == "\n")
+		       return i
+		    if (ch != "\t" && ch != " ")
+		       break
+		}
+	    }
+
+	} else if (c == "\n")
+	    if (++nLines > $cMaxSearchBackLines)
+		return -1
+    }
+    if (i <= 0)
+	return -1
+    return anchorPos
+}
+
+#
+# adjust the indent on a line about to recive either a right or left brace
+# or pound (#) character ($2) following position $1
+#
+define cBraceOrPound {
+
+    # Find start of the line, and make sure there's nothing but white-space
+    #   before the character.  If there's anything before it, do nothing
+    for (i=$1-1; ; i--) {
+	if (i < 0) {
+	    lineStart = 0
+	    break
+	}
+	c = get_character(i)
+	if (c == "\n") {
+	    lineStart = i + 1
+	    break
+	}
+	if (c != " " && c != "\t")
+	    return
+    }
+
+    # If the character was a pound, drag it all the way to the left margin
+    if ($2 == "#") {
+	replace_range(lineStart, $1, "")
+	return
+    }
+
+    # Find the position on which to base the indent
+    indent = cFindSmartIndentDist($1 - 1, "noContinue")
+    if (indent == -1)
+	return
+    
+    # Adjust the indent if it's a right brace (left needs no adjustment)
+    if ($2 == "}") {
+	indent -= defaultIndent($cIndentDist)
+        if (indent < 0)
+	    indent = 0
+    }
+
+    # Replace the current indent with the new indent string
+    insertStr = makeIndentString(indent)
+    replace_range(lineStart, $1, insertStr)
+}
+
+#
+# Find Smart Indent Distance for a newline character inserted at $1,
+# or return -1 to give up.  Adding the optional argument "noContinue"
+# will stop the routine from inserting line continuation indents
+#
+define cFindSmartIndentDist {
+
+    # Find a known good indent to base the new indent upon
+    anchorPos = cFindIndentAnchorPoint($1)
+    if (anchorPos == -1)
+	return -1
+
+    # Find the indentation of that line
+    anchorIndent = measureIndent(anchorPos)
+
+    # Look for special keywords which affect indent (for, if, else while, do)
+    #    and modify the continuation indent distance to the normal indent
+    #    distance when a completed statement of this type occupies the line.
+    if ($n_args >= 2 && $2 == "noContinue") {
+	continueIndent = 0
+	$allowSemi = 0
+    } else
+	continueIndent = cCalcContinueIndent(anchorPos, $1)
+
+    # Move forward from anchor point, ignoring comments and blank lines,
+    #   remembering the last non-white, non-comment character.  If $1 is
+    #   in the middle of a comment, give up
+    lastChar = get_character(anchorPos)
+    if (anchorPos < $1) {
+	for (i=anchorPos;;) {
+   	    i = cSkipBlankSpace(i, $1, 1)
+	    if (i == -1)
+		return -1
+ 	    if (i >= $1)
+ 		break
+ 	    lastChar = get_character(i++)
+	}
+    }
+
+    # Return the new indent based on the type of the last character.
+    #   In a for stmt, however, last character may be a semicolon and not
+    #   signal the end of the statement
+    if (lastChar == "{")
+	return anchorIndent + defaultIndent($cIndentDist)
+    else if (lastChar == "}")
+	return anchorIndent
+    else if (lastChar == ";") {
+	if ($allowSemi)
+	    return anchorIndent + continueIndent
+	else
+	    return anchorIndent
+    } else if (lastChar == ":" && get_range(anchorPos, anchorPos+4) == "case")
+    	return anchorIndent + defaultIndent($cIndentDist)
+    return anchorIndent + continueIndent
+}
+
+#
+# Calculate the continuation indent distance for statements not ending in
+# semicolons or braces.  This is not necessarily $continueIndent.  It may
+# be adjusted if the statement contains if, while, for, or else.
+#
+# As a side effect, also return $allowSemi to help distinguish statements
+# which might contain an embedded semicolon, which should not be interpreted
+# as an end of statement character.
+#
+define cCalcContinueIndent {
+
+    anchorPos = $1
+    maxPos = $2
+
+    # Figure out if the anchor is on a keyword which changes indent.  A special
+    #   case is made for elses nested in after braces
+    anchorIsFor = 0
+    $allowSemi = 0
+    if (get_character(anchorPos) == "}") {
+	for (i=anchorPos+1; i<maxPos; i++) {
+	    c = get_character(i)
+	    if (c != " " && c != "\t")
+		break
+	}
+	if (get_range(i, i+4) == "else") {
+	    keywordEnd = i + 4
+	    needsBalancedParens = 0
+	} else
+	    return defaultContIndent($cContinuationIndent)
+    } else if (get_range(anchorPos, anchorPos + 4) == "else") {
+	keywordEnd = anchorPos + 4
+	needsBalancedParens = 0
+    } else if (get_range(anchorPos, anchorPos + 2) == "do") {
+	keywordEnd = anchorPos + 2
+	needsBalancedParens = 0
+    } else if (get_range(anchorPos, anchorPos + 3) == "for") {
+	keywordEnd = anchorPos + 3
+	anchorIsFor = 1
+	needsBalancedParens = 1
+    } else if (get_range(anchorPos, anchorPos + 2) == "if") {
+	keywordEnd = anchorPos + 2
+	needsBalancedParens = 1
+    } else if (get_range(anchorPos, anchorPos + 5) == "while") {
+	keywordEnd = anchorPos + 5
+	needsBalancedParens = 1
+    } else
+	return defaultContIndent($cContinuationIndent)
+
+    # If the keyword must be followed balanced parenthesis, find the end of
+    # the statement by following balanced parens.  If the parens aren't
+    # balanced by maxPos, continue the condition.  In the special case of
+    # the for keyword, a semicolon can end the line and the caller should be
+    # signaled to allow that
+    if (needsBalancedParens) {
+	stmtEnd = findBalancingParen(keywordEnd, maxPos)
+	if (stmtEnd == -1) {
+	    $allowSemi = anchorIsFor
+	    return defaultContIndent($cContinuationIndent)
+	}
+    } else
+	stmtEnd = keywordEnd
+
+    # check if the statement ends the line
+    lineEnd = cSkipBlankSpace(stmtEnd, maxPos, 0)
+    if (lineEnd == -1)		    	    # ends in comment or preproc
+	return -1
+    if (lineEnd == maxPos)  	    	    # maxPos happens at stmt end
+	return defaultIndent($cIndentDist)
+    c = get_character(lineEnd)
+    if (c != "\n")   		    	    # something past last paren on line,
+	return defaultIndent($cIndentDist)  #   probably quoted or extra braces
+
+    # stmt contintinues beyond matching paren && newline, we're in
+    #   the conditional part, calculate the continue indent distance
+    #   recursively, based on the anchor point of the new line
+    newAnchor = cSkipBlankSpace(lineEnd+1, maxPos, 1)
+    if (newAnchor == -1)
+	return -1
+    if (newAnchor == maxPos)
+	return defaultIndent($cIndentDist)
+    return cCalcContinueIndent(newAnchor, maxPos) + defaultIndent($cIndentDist)
+}
+

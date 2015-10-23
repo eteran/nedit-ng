@@ -103,7 +103,6 @@ static int RemoveRedundantTextField = True;
 
 /* Text for help button help display */
 /* ... needs variant for VMS */
-#ifndef SGI_CUSTOM
 static const char *HelpExist = "The file open dialog shows a list of directories on the left, and a list \
 of files on the right.  Double clicking on a file name in the list on the \
 right, or selecting it and pressing the OK button, will open that file.  \
@@ -140,60 +139,6 @@ in the directory tree, double \
 click on the directory entry ending in \"..\".  You can also move directly \
 to a directory by typing the file specification of the path in the \"Filter\" \
 field and pressing the \"Filter\" button.";
-
-#else  /* SGI_CUSTOM */
-static const char *HelpExist = "The \"File to Edit:\" field shows a list of directories and files in the \
-current directory.\n\
-\n\
-Double clicking on a file name in the list, or selecting it and pressing \
-the OK button, will open that file.\n\
-\n\
-Double clicking on a directory name, or selecting it and pressing the OK \
-button will move into that directory.  To navigate upwards in the file \
-system hierarchy you can use the buttons above the \"Selection\" field  \
-(each of these buttons represent a directory level). \n\
-\n\
-You can also enter a file or directory name to open in the field \
-labeled \"Selection\".  Pressing the space bar will complete a partial file \
-name, or beep if no files match.  The drop pocket to the right of the field \
-will accept icons dragged from the desktop, and the button with the circular \
-arrows, to the right, of the field recalls previously selected \
-directories.\n\
-\n\
-The \"Filter\" button allows you to narrow down the list of files and \
-directories shown in the \"File to Edit:\" field.  The default filter of \
-\"*\" allows all files to be listed.";
-
-static const char *HelpNew = "This dialog allows you to create a new file or to save the current file \
-under a new name.\n\
-\n\
-To specify a file name in the current directory, complete the name displayed \
-in the \"Save File As:\" field.  If you delete or change the path shown \
-in the field, the file will be saved using whatever path you type, provided \
-that it is a valid Unix file specification.\n\
-\n\
-To replace an existing file, select it from the \"Files\" list and press \
-\"OK\", or simply double click on the name in the \"Files\" list.\n\
-\n\
-To save a file in another directory, use the \"Files\" list to move around \
-in the file system hierarchy.  Double clicking on a directory name, or \
-selecting it and pressing the OK button, will move into that directory. \
-To navigate upwards in the file system hierarchy you can use the buttons \
-above the \"Selection\" field (each of these buttons represent a directory \
-level).\n\
-\n\
-You can also move directly to a directory by typing the file specification \
-of the path in the \"Save File As:\" field.  Pressing the space bar will \
-complete a partial directory or file \
-name, or beep if nothing matches.  The drop pocket to the right of the field \
-will accept icons dragged from the desktop, and the button with the circular \
-arrows, to the right, of the field recalls previously selected \
-directories.\n\
-\n\
-The \"Filter\" button allows you to narrow down the list of files and \
-directories shown in the \"Files\" field.  The default filter of \
-\"*\" allows all files to be listed.";
-#endif /* SGI_CUSTOM */
 
 /*                    Local Callback Routines and variables                */
 
@@ -244,7 +189,7 @@ Widget getFilenameHelper(Widget parent, const char *promptString, const char *fi
 	n++;
 	fileSB = CreateFileSelectionDialog(parent, "FileSelect", args, n);
 	XmStringFree(titleString);
-#ifndef SGI_CUSTOM
+
 	if (existing && RemoveRedundantTextField)
 		XtUnmanageChild(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
 	XtUnmanageChild(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL));
@@ -255,7 +200,7 @@ Widget getFilenameHelper(Widget parent, const char *promptString, const char *fi
 	AddDialogMnemonicHandler(fileSB, FALSE);
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
-#endif
+
 	return fileSB;
 }
 
@@ -335,18 +280,18 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	help = createPanelHelp(existFileSB, HelpExist, "Selecting Files to Open");
 	createErrorDialog(existFileSB);
 	XtAddCallback(existFileSB, XmNhelpCallback, (XtCallbackProc)existHelpCB, (char *)help);
-	if (DefaultDirectory != NULL || DefaultPattern != NULL)
+	if (DefaultDirectory != NULL || DefaultPattern != NULL) {
 		XtVaSetValues(existFileSB, XmNdirectory, DefaultDirectory, XmNpattern, DefaultPattern, NULL);
-#ifndef SGI_CUSTOM
+	}
+
 	makeListTypeable(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST));
 	makeListTypeable(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST));
 #if XmVersion >= 1002
 	XtVaSetValues(existFileSB, XmNinitialFocus, XtParent(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST)), NULL);
 #endif
-#endif
+
 	ManageDialogCenteredOnPointer(existFileSB);
 
-#ifndef SGI_CUSTOM
 	/* Typing in the directory list is dependent on the list being in the
 	   same form of alphabetical order expected by the character processing
 	   routines.  As of about 1.2.3, some Motif libraries seem to have a
@@ -367,7 +312,6 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	for (i = 1; i < 30; i++)
 		XmProcessTraversal(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), XmTRAVERSE_CURRENT);
 #endif
-#endif /* SGI_CUSTOM */
 
 	while (!done_with_dialog)
 		XtAppProcessEvent(XtWidgetToApplicationContext(existFileSB), XtIMAll);
@@ -449,10 +393,10 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	XtAddCallback(newFileSB, XmNokCallback, (XtCallbackProc)newFileOKCB, &done_with_dialog);
 	XtAddCallback(newFileSB, XmNcancelCallback, (XtCallbackProc)newFileCancelCB, &done_with_dialog);
 
-#ifndef SGI_CUSTOM
+
 	makeListTypeable(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST));
 	makeListTypeable(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST));
-#endif
+
 	if (DefaultDirectory != NULL || DefaultPattern != NULL)
 		XtVaSetValues(newFileSB, XmNdirectory, DefaultDirectory, XmNpattern, DefaultPattern, NULL);
 	help = createPanelHelp(newFileSB, HelpNew, "Saving a File");
@@ -460,19 +404,10 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	createErrorDialog(newFileSB);
 	XtAddCallback(newFileSB, XmNhelpCallback, (XtCallbackProc)newHelpCB, (char *)help);
 #if XmVersion >= 1002
-#ifndef SGI_CUSTOM
 	XtVaSetValues(newFileSB, XmNinitialFocus, XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), NULL);
-#else /* SGI_CUSTOM */
-	{
-		Widget finder = XmFileSelectionBoxGetChild(newFileSB, SgDIALOG_FINDER);
-		if (finder != NULL)
-			XtVaSetValues(newFileSB, XmNinitialFocus, finder, NULL);
-	}
-#endif
 #endif
 	ManageDialogCenteredOnPointer(newFileSB);
 
-#ifndef SGI_CUSTOM
 #if XmVersion < 1002
 	/* To give filename text initial focus, revoke default button status for
 	   the "OK" button.  Dynamic defaulting will restore it as the default
@@ -494,7 +429,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	XtVaSetValues(newFileSB, XmNdirSearchProc, replacementDirSearchProc, XmNfileSearchProc, replacementFileSearchProc, NULL);
 	sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_DIR_LIST));
 	sortWidgetList(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_LIST));
-#endif /* SGI_CUSTOM */
+
 
 	/* Delay the setting of the default name till after the replacement of
 	   the search procedures. Otherwise the field is cleared again by certain

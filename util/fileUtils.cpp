@@ -192,25 +192,12 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 	char *pathEnd;
 	int rlResult, loops;
 
-#ifdef NO_READLINK
-	strncpy(pathResolved, pathIn, MAXPATHLEN);
-	/* If there are no links at all, it's a valid "resolved" path */
-	return TRUE;
-#else
 	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
 	for (loops = 0; loops < MAXSYMLINKS; loops++) {
-#ifdef UNICOS
-		rlResult = readlink((char *)pathIn, resolveBuf, MAXPATHLEN - 1);
-#else
 		rlResult = readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
-#endif
 		if (rlResult < 0) {
 
-#ifndef __Lynx__
 			if (errno == EINVAL)
-#else
-			if (errno == ENXIO)
-#endif
 			{
 				/* It's not a symlink - we are done */
 				strncpy(pathResolved, pathIn, MAXPATHLEN);
@@ -241,7 +228,6 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 	}
 
 	return FALSE;
-#endif /* NO_READLINK */
 }
 
 /*

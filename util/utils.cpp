@@ -168,10 +168,6 @@ char *PrependHome(const char *filename, char *buf, size_t buflen) {
 	return buf;
 }
 
-int Min(int i1, int i2) {
-	return i1 <= i2 ? i1 : i2;
-}
-
 /*
 **  Returns a pointer to the name of an rc file of the requested type.
 **
@@ -225,7 +221,6 @@ const char *GetRCFileName(int type) {
 			}
 		} else {
 /*  $NEDIT_HOME is set. */
-#ifndef VMS
 			/* FIXME: Is this required? Does VMS know stat(), mkdir()? */
 			if (!isDir(nedit_home)) {
 				/* Create $NEDIT_HOME */
@@ -235,7 +230,6 @@ const char *GetRCFileName(int type) {
 					return NULL;
 				}
 			}
-#endif /* #ifndef VMS */
 
 			/* All set for NEDIT_HOME, let's copy the names */
 			for (i = 0; i < N_FILE_TYPES; i++) {

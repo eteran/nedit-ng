@@ -622,10 +622,10 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 	posCOM = strrchr(line, ',');
 	if (*file && posDEL && (posSOH > posDEL) && (posCOM > posSOH)) {
 		/* exuberant ctags -e style  */
-		len = Min(MAXLINE - 1, posDEL - line);
+		len = std::min<int>(MAXLINE - 1, posDEL - line);
 		strncpy(searchString, line, len);
 		searchString[len] = 0;
-		len = Min(MAXLINE - 1, (posSOH - posDEL) - 1);
+		len = std::min<int>(MAXLINE - 1, (posSOH - posDEL) - 1);
 		strncpy(name, posDEL + 1, len);
 		name[len] = 0;
 		pos = atoi(posCOM + 1);
@@ -634,7 +634,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 	}
 	if (*file && posDEL && (posCOM > posDEL)) {
 		/* old etags style, part  name<soh>  is missing here! */
-		len = Min(MAXLINE - 1, posDEL - line);
+		len = std::min<int>(MAXLINE - 1, posDEL - line);
 		strncpy(searchString, line, len);
 		searchString[len] = 0;
 		/* guess name: take the last alnum (plus _) part of searchString */
@@ -654,7 +654,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 	}
 	/* check for destination file spec */
 	if (*line && posCOM) {
-		len = Min(MAXPATHLEN - 1, posCOM - line);
+		len = std::min<int>(MAXPATHLEN - 1, posCOM - line);
 		strncpy(file, line, len);
 		file[len] = 0;
 		/* check if that's an include file ... */

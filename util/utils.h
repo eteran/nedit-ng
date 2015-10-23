@@ -36,7 +36,6 @@ const char *GetHomeDir(void);
 char *PrependHome(const char *filename, char *buf, size_t buflen);
 const char *GetUserName(void);
 const char *GetNameOfHost(void);
-int Min(int i1, int i2);
 const char *GetRCFileName(int type);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */

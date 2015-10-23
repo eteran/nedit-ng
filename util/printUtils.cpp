@@ -593,11 +593,7 @@ static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCa
 */
 static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
 	int i, j, textInserted, nInserted;
-#ifndef VMS
 	static char prohibited[] = " \t,;|<>()[]{}!@?";
-#else
-	static char prohibited[] = " \t,;|@+";
-#endif
 
 	nInserted = call_data->text->length;
 	textInserted = (nInserted > 0);
@@ -749,7 +745,6 @@ static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data
 	CmdFieldModified = False;
 }
 
-#ifndef VMS
 /*
 ** Is the filename file in the directory dirpath
 ** and does it have at least some of the mode_flags enabled ?
@@ -883,4 +878,4 @@ static void getLpQueueDefault(char *defqueue) {
 		defqueue[0] = '\0';
 }
 #endif
-#endif
+

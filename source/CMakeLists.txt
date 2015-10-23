@@ -13,7 +13,6 @@ find_library(LibM m)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
-
 add_executable(nedit
 	calltips.cpp
 	file.cpp
@@ -47,6 +46,7 @@ add_executable(nedit
 	userCmds.cpp
 	window.cpp
 	windowTitle.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${BISON_parser_OUTPUT_SOURCE})
 
 add_definitions(-DUSE_DIRENT -DUSE_LPR_PRINT_CMD)
@@ -92,3 +92,10 @@ set_target_properties(nedit nc
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
+
+add_custom_command(
+	PRE_BUILD
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
+	COMMAND ${CMAKE_COMMAND} -DINFILE=${CMAKE_CURRENT_SOURCE_DIR}/DefaultCommonMacros.txt -DVARNAME=DefaultCommonMacros -DOUTFILE=${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc -P ${CMAKE_CURRENT_SOURCE_DIR}/File2C.cmake
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/DefaultCommonMacros.txt
+	)
