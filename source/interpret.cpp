@@ -118,12 +118,13 @@ static int deleteArrayElement(void);
 static void freeSymbolTable(Symbol *symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
+
+static SparseArrayEntry *allocateSparseArrayEntry(void);
 static rbTreeNode *arrayEmptyAllocator(void);
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
-static SparseArrayEntry *allocateSparseArrayEntry(void);
 
 /*#define DEBUG_ASSEMBLY*/
 /*#define DEBUG_STACK*/
@@ -160,7 +161,7 @@ struct SparseArrayEntryWrapper {
 	struct SparseArrayEntryWrapper *next;
 };
 
-static SparseArrayEntryWrapper *AllocatedSparseArrayEntries = nullptr;
+static std::list<SparseArrayEntryWrapper *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
@@ -795,9 +796,6 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 */
 
 //#define TRACK_GARBAGE_LEAKS
-#ifdef TRACK_GARBAGE_LEAKS
-static int numAllocatedSparseArrayElements = 0;
-#endif
 
 /* Allocate a new string buffer of length chars */
 char *AllocString(int length) {
@@ -874,15 +872,10 @@ int AllocNStringCpy(NString *string, const char *s) {
 }
 
 static SparseArrayEntry *allocateSparseArrayEntry(void) {
-	SparseArrayEntryWrapper *mem;
+	auto mem = new SparseArrayEntryWrapper;	
+	AllocatedSparseArrayEntries.push_back(mem);
 
-	mem = (SparseArrayEntryWrapper *)XtMalloc(sizeof(SparseArrayEntryWrapper));
-	mem->next = AllocatedSparseArrayEntries;
-	AllocatedSparseArrayEntries = mem;
-#ifdef TRACK_GARBAGE_LEAKS
-	++numAllocatedSparseArrayElements;
-#endif
-	return (&(mem->data));
+	return &(mem->data);
 }
 
 static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
@@ -916,15 +909,13 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
 */
 
 void GarbageCollectStrings(void) {
-	SparseArrayEntryWrapper *nextAP, *thisAP;
-	
 
 	/* mark all strings as unreferenced */
 	for(char *p : AllocatedStrings) {
 		*p = 0;
 	}
 
-	for (thisAP = AllocatedSparseArrayEntries; thisAP != nullptr; thisAP = thisAP->next) {
+	for(SparseArrayEntryWrapper *thisAP : AllocatedSparseArrayEntries) {
 		thisAP->inUse = 0;
 	}
 
@@ -933,8 +924,8 @@ void GarbageCollectStrings(void) {
 	for (Symbol *s: GlobalSymList) {
 		if (s->value.tag == STRING_TAG) {
 			/* test first because it may be read-only static string */
-			if (!(*(s->value.val.str.rep - 1))) {
-				*(s->value.val.str.rep - 1) = 1;
+			if (s->value.val.str.rep[-1] == 0) {
+				s->value.val.str.rep[-1] = 1;
 			}
 		} else if (s->value.tag == ARRAY_TAG) {
 			MarkArrayContentsAsUsed(s->value.val.arrayPtr);
@@ -943,9 +934,7 @@ void GarbageCollectStrings(void) {
 
 	/* Collect all of the strings which remain unreferenced */
 	for(auto it = AllocatedStrings.begin(); it != AllocatedStrings.end(); ) {
-		
 		char *p = *it;
-		
 		assert(p);
 		
 		if (*p == 0) {
@@ -955,25 +944,21 @@ void GarbageCollectStrings(void) {
 			++it;
 		}
 	}
-
-	nextAP = AllocatedSparseArrayEntries;
-	AllocatedSparseArrayEntries = nullptr;
-	while (nextAP != nullptr) {
-		thisAP = nextAP;
-		nextAP = nextAP->next;
-		if (thisAP->inUse != 0) {
-			thisAP->next = AllocatedSparseArrayEntries;
-			AllocatedSparseArrayEntries = thisAP;
+	
+	for(auto it = AllocatedSparseArrayEntries.begin(); it != AllocatedSparseArrayEntries.end(); ) {
+		SparseArrayEntryWrapper *thisAP = *it;
+		assert(thisAP);
+	
+		if (thisAP->inUse == 0) {
+			delete thisAP;
+			it = AllocatedSparseArrayEntries.erase(it);
 		} else {
-#ifdef TRACK_GARBAGE_LEAKS
-			--numAllocatedSparseArrayElements;
-#endif
-			XtFree((char *)thisAP);
+			++it;
 		}
 	}
 
 #ifdef TRACK_GARBAGE_LEAKS
-	printf("str count = %lu\nary count = %d\n", AllocatedStrings.size(), numAllocatedSparseArrayElements);
+	printf("str count = %lu\nary count = %lu\n", AllocatedStrings.size(), AllocatedSparseArrayEntries.size());
 #endif
 }
 
@@ -2118,7 +2103,7 @@ static rbTreeNode *arrayEmptyAllocator(void) {
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 	SparseArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-		newNode->key = ((SparseArrayEntry *)src)->key;
+		newNode->key   = ((SparseArrayEntry *)src)->key;
 		newNode->value = ((SparseArrayEntry *)src)->value;
 	}
 	return ((rbTreeNode *)newNode);
@@ -2129,7 +2114,7 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 ** modified, only replaced
 */
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
-	((SparseArrayEntry *)dst)->key = ((SparseArrayEntry *)src)->key;
+	((SparseArrayEntry *)dst)->key   = ((SparseArrayEntry *)src)->key;
 	((SparseArrayEntry *)dst)->value = ((SparseArrayEntry *)src)->value;
 	return (1);
 }
@@ -2147,10 +2132,10 @@ static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
 */
 static void arrayDisposeNode(rbTreeNode *src) {
 	/* Let garbage collection handle this but mark it so iterators can tell */
-	src->left = nullptr;
-	src->right = nullptr;
+	src->left   = nullptr;
+	src->right  = nullptr;
 	src->parent = nullptr;
-	src->color = -1;
+	src->color  = -1;
 }
 
 SparseArrayEntry *ArrayNew(void) {
@@ -2513,7 +2498,7 @@ static int arrayIter(void) {
 	}
 
 	thisEntry = iteratorValPtr->val.arrayPtr;
-	if (thisEntry && thisEntry->nodePtrs.color != -1) {
+	if (thisEntry && thisEntry->color != -1) {
 		itemValPtr->tag = STRING_TAG;
 		itemValPtr->val.str.rep = thisEntry->key;
 		itemValPtr->val.str.len = strlen(thisEntry->key);

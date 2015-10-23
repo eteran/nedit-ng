@@ -29,6 +29,7 @@
 
 #include "nedit.h"
 #include "rbTree.h"
+#include <map>
 
 #define STACK_SIZE 1024 /* Maximum stack size */
 #define MAX_SYM_LEN 100 /* Max. symbol name length */
@@ -109,22 +110,23 @@ struct NString {
 	size_t len;
 };
 
+
+// TODO(eteran): we can replace this with boost::variant
 struct DataValue {
 	enum typeTags tag;
 	union {
-		int n;
-		NString str;
-		BuiltInSubr subr;
-		struct Program *prog;
-		XtActionProc xtproc;
-		Inst *inst;
-		struct DataValue *dataval;
+		int                      n;
+		NString                  str;
+		BuiltInSubr              subr;
+		struct Program          *prog;
+		XtActionProc             xtproc;
+		Inst                    *inst;
+		struct DataValue        *dataval;
 		struct SparseArrayEntry *arrayPtr;
 	} val;
 };
 
-struct SparseArrayEntry {
-	rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
+struct SparseArrayEntry : public rbTreeNode{
 	char *key;
 	DataValue value;
 };
