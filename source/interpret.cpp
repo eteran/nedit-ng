@@ -40,6 +40,8 @@
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
+#include <list>
+#include <cassert>
 #include <sys/param.h>
 
 #include <X11/Intrinsic.h>
@@ -147,10 +149,10 @@ static void stackdump(int n, int extra);
 #endif /* #ifndef DEBUG_STACK */
 
 /* Global symbols and function definitions */
-static Symbol *GlobalSymList = nullptr;
+static std::list<Symbol *> GlobalSymList;
 
 /* List of all memory allocated for strings */
-static char *AllocatedStrings = nullptr;
+static std::list<char *> AllocatedStrings;
 
 struct SparseArrayEntryWrapper {
 	SparseArrayEntry data; /* LEAVE this as top entry */
@@ -656,14 +658,13 @@ Symbol *InstallIteratorSymbol(void) {
 ** constants and fixing a leak in the interpreter.
 */
 Symbol *LookupStringConstSymbol(const char *value) {
-	Symbol *s;
 
-	for (s = GlobalSymList; s != nullptr; s = s->next) {
+	for(Symbol *s: GlobalSymList) {
 		if (s->type == CONST_SYM && s->value.tag == STRING_TAG && !strcmp(s->value.val.str.rep, value)) {
-			return (s);
+			return s;
 		}
 	}
-	return (nullptr);
+	return nullptr;
 }
 
 /*
@@ -693,9 +694,13 @@ Symbol *LookupSymbol(const char *name) {
 	for (s = LocalSymList; s != nullptr; s = s->next)
 		if (strcmp(s->name, name) == 0)
 			return s;
-	for (s = GlobalSymList; s != nullptr; s = s->next)
-		if (strcmp(s->name, name) == 0)
+
+	for(Symbol *s: GlobalSymList) {
+		if (strcmp(s->name, name) == 0) {
 			return s;
+		}
+	}
+	
 	return nullptr;
 }
 
@@ -714,8 +719,7 @@ Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
 		s->next = LocalSymList;
 		LocalSymList = s;
 	} else {
-		s->next = GlobalSymList;
-		GlobalSymList = s;
+		GlobalSymList.push_back(s);
 	}
 	return s;
 }
@@ -774,9 +778,9 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	   but this symbol has no program attached and ProgramFree() is not nullptr
 	   pointer safe */
 	sym->type = GLOBAL_SYM;
-	sym->next = GlobalSymList;
-	GlobalSymList = sym;
-
+	
+	GlobalSymList.push_back(sym);
+	
 	return sym;
 }
 
@@ -789,23 +793,16 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 ** use AllocString(n+1).
 */
 
-/*#define TRACK_GARBAGE_LEAKS*/
+//#define TRACK_GARBAGE_LEAKS
 #ifdef TRACK_GARBAGE_LEAKS
-static int numAllocatedStrings = 0;
 static int numAllocatedSparseArrayElements = 0;
 #endif
 
 /* Allocate a new string buffer of length chars */
 char *AllocString(int length) {
-	char *mem;
-
-	mem = XtMalloc(length + sizeof(char *) + 1);
-	*((char **)mem) = AllocatedStrings;
-	AllocatedStrings = mem;
-#ifdef TRACK_GARBAGE_LEAKS
-	++numAllocatedStrings;
-#endif
-	return mem + sizeof(char *) + 1;
+	char *mem = XtMalloc(length + 1);	
+	AllocatedStrings.push_back(mem);
+	return mem + 1;
 }
 
 /*
@@ -814,21 +811,16 @@ char *AllocString(int length) {
  * filled in.
  */
 int AllocNString(NString *string, int length) {
-	char *mem;
-
-	mem = XtMalloc(length + sizeof(char *) + 1);
+	char *mem = XtMalloc(length + 1);
 	if (!mem) {
 		string->rep = 0;
 		string->len = 0;
 		return False;
 	}
 
-	*((char **)mem) = AllocatedStrings;
-	AllocatedStrings = mem;
-#ifdef TRACK_GARBAGE_LEAKS
-	++numAllocatedStrings;
-#endif
-	string->rep = mem + sizeof(char *) + 1;
+	AllocatedStrings.push_back(mem);
+
+	string->rep = mem + 1;
 	string->rep[length - 1] = '\0'; /* forced \0 */
 	string->len = length - 1;
 	return True;
@@ -924,12 +916,11 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
 
 void GarbageCollectStrings(void) {
 	SparseArrayEntryWrapper *nextAP, *thisAP;
-	char *p, *next;
-	Symbol *s;
+	
 
 	/* mark all strings as unreferenced */
-	for (p = AllocatedStrings; p != nullptr; p = *((char **)p)) {
-		*(p + sizeof(char *)) = 0;
+	for(char *p : AllocatedStrings) {
+		*p = 0;
 	}
 
 	for (thisAP = AllocatedSparseArrayEntries; thisAP != nullptr; thisAP = thisAP->next) {
@@ -938,7 +929,7 @@ void GarbageCollectStrings(void) {
 
 	/* Sweep the global symbol list, marking which strings are still
 	   referenced */
-	for (s = GlobalSymList; s != nullptr; s = s->next) {
+	for (Symbol *s: GlobalSymList) {
 		if (s->value.tag == STRING_TAG) {
 			/* test first because it may be read-only static string */
 			if (!(*(s->value.val.str.rep - 1))) {
@@ -950,19 +941,17 @@ void GarbageCollectStrings(void) {
 	}
 
 	/* Collect all of the strings which remain unreferenced */
-	next = AllocatedStrings;
-	AllocatedStrings = nullptr;
-	while (next != nullptr) {
-		p = next;
-		next = *((char **)p);
-		if (*(p + sizeof(char *)) != 0) {
-			*((char **)p) = AllocatedStrings;
-			AllocatedStrings = p;
-		} else {
-#ifdef TRACK_GARBAGE_LEAKS
-			--numAllocatedStrings;
-#endif
+	for(auto it = AllocatedStrings.begin(); it != AllocatedStrings.end(); ) {
+		
+		char *p = *it;
+		
+		assert(p);
+		
+		if (*p == 0) {
 			XtFree(p);
+			it = AllocatedStrings.erase(it);
+		} else {
+			++it;
 		}
 	}
 
@@ -983,7 +972,7 @@ void GarbageCollectStrings(void) {
 	}
 
 #ifdef TRACK_GARBAGE_LEAKS
-	printf("str count = %d\nary count = %d\n", numAllocatedStrings, numAllocatedSparseArrayElements);
+	printf("str count = %lu\nary count = %d\n", AllocatedStrings.size(), numAllocatedSparseArrayElements);
 #endif
 }
 
