@@ -30,29 +30,64 @@
 #include "nedit.h"
 #include "rbTree.h"
 
+#define STACK_SIZE 1024 /* Maximum stack size */
+#define MAX_SYM_LEN 100 /* Max. symbol name length */
+#define MACRO_EVENT_MARKER                                                                                                                                                                                                                     \
+	2 /* Special value for the send_event field of                                                                                                                                                                                             \
+	     events passed to action routines.  Tells                                                                                                                                                                                              \
+	     them that they were called from a macro */
 
-
-#define STACK_SIZE 1024		/* Maximum stack size */
-#define MAX_SYM_LEN 100 	/* Max. symbol name length */
-#define MACRO_EVENT_MARKER 2 	/* Special value for the send_event field of
-    	    	    	    	   events passed to action routines.  Tells
-    	    	    	    	   them that they were called from a macro */
-
-enum symTypes {CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM,
-    	C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM};
+enum symTypes { CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM, C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM };
 #define N_OPS 43
-enum operations {OP_RETURN_NO_VAL, OP_RETURN, OP_PUSH_SYM, OP_DUP, OP_ADD,
-    OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_NEGATE, OP_INCR, OP_DECR, OP_GT, OP_LT,
-    OP_GE, OP_LE, OP_EQ, OP_NE, OP_BIT_AND, OP_BIT_OR, OP_AND, OP_OR, OP_NOT,
-    OP_POWER, OP_CONCAT, OP_ASSIGN, OP_SUBR_CALL, OP_FETCH_RET_VAL, OP_BRANCH,
-    OP_BRANCH_TRUE, OP_BRANCH_FALSE, OP_BRANCH_NEVER, OP_ARRAY_REF,
-    OP_ARRAY_ASSIGN, OP_BEGIN_ARRAY_ITER, OP_ARRAY_ITER, OP_IN_ARRAY,
-    OP_ARRAY_DELETE, OP_PUSH_ARRAY_SYM, OP_ARRAY_REF_ASSIGN_SETUP, OP_PUSH_ARG,
-    OP_PUSH_ARG_COUNT, OP_PUSH_ARG_ARRAY};
+enum operations {
+	OP_RETURN_NO_VAL,
+	OP_RETURN,
+	OP_PUSH_SYM,
+	OP_DUP,
+	OP_ADD,
+	OP_SUB,
+	OP_MUL,
+	OP_DIV,
+	OP_MOD,
+	OP_NEGATE,
+	OP_INCR,
+	OP_DECR,
+	OP_GT,
+	OP_LT,
+	OP_GE,
+	OP_LE,
+	OP_EQ,
+	OP_NE,
+	OP_BIT_AND,
+	OP_BIT_OR,
+	OP_AND,
+	OP_OR,
+	OP_NOT,
+	OP_POWER,
+	OP_CONCAT,
+	OP_ASSIGN,
+	OP_SUBR_CALL,
+	OP_FETCH_RET_VAL,
+	OP_BRANCH,
+	OP_BRANCH_TRUE,
+	OP_BRANCH_FALSE,
+	OP_BRANCH_NEVER,
+	OP_ARRAY_REF,
+	OP_ARRAY_ASSIGN,
+	OP_BEGIN_ARRAY_ITER,
+	OP_ARRAY_ITER,
+	OP_IN_ARRAY,
+	OP_ARRAY_DELETE,
+	OP_PUSH_ARRAY_SYM,
+	OP_ARRAY_REF_ASSIGN_SETUP,
+	OP_PUSH_ARG,
+	OP_PUSH_ARG_COUNT,
+	OP_PUSH_ARG_ARRAY
+};
 
-enum typeTags {NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG};
+enum typeTags { NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG };
 
-enum execReturnCodes {MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR};
+enum execReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR };
 
 #define ARRAY_DIM_SEP "\034"
 
@@ -62,9 +97,9 @@ struct Program;
 struct Symbol;
 
 union Inst {
-    int (*func)(void);
-    int value;
-    struct Symbol *sym;
+	int (*func)(void);
+	int value;
+	struct Symbol *sym;
 };
 
 typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
@@ -75,58 +110,58 @@ struct NString {
 };
 
 struct DataValue {
-    enum typeTags tag;
-    union {
-        int n;
-        NString str;
-        BuiltInSubr subr;
-        struct Program* prog;
-        XtActionProc xtproc;
-        Inst* inst;
-        struct DataValue* dataval;
-        struct SparseArrayEntry *arrayPtr;
-    } val;
+	enum typeTags tag;
+	union {
+		int n;
+		NString str;
+		BuiltInSubr subr;
+		struct Program *prog;
+		XtActionProc xtproc;
+		Inst *inst;
+		struct DataValue *dataval;
+		struct SparseArrayEntry *arrayPtr;
+	} val;
 };
 
 struct SparseArrayEntry {
-    rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
-    char *key;
-    DataValue value;
+	rbTreeNode nodePtrs; /* MUST BE FIRST ENTRY */
+	char *key;
+	DataValue value;
 };
 
 /* symbol table entry */
 struct Symbol {
-    char *name;
-    enum symTypes type;
-    DataValue value;
-    struct Symbol *next;     /* to link to another */  
-} ;
+	char *name;
+	enum symTypes type;
+	DataValue value;
+	struct Symbol *next; /* to link to another */
+};
 
 struct Program {
-    Symbol *localSymList;
-    Inst *code;
+	Symbol *localSymList;
+	Inst *code;
 };
 
 /* Information needed to re-start a preempted macro */
 struct RestartData {
-    DataValue *stack;
-    DataValue *stackP;
-    DataValue *frameP;
-    Inst *pc;
-    WindowInfo *runWindow;
-    WindowInfo *focusWindow;
-} ;
+	DataValue *stack;
+	DataValue *stackP;
+	DataValue *frameP;
+	Inst *pc;
+	WindowInfo *runWindow;
+	WindowInfo *focusWindow;
+};
 
 void InitMacroGlobals(void);
 
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
 SparseArrayEntry *ArrayNew(void);
-Boolean ArrayInsert(DataValue* theArray, char* keyStr, DataValue* theValue);
+Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
 unsigned ArraySize(DataValue *theArray);
-Boolean ArrayGet(DataValue* theArray, char* keyStr, DataValue* theValue);
+Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
@@ -153,8 +188,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 #define PERM_ALLOC_STR(xStr) (((char *)("\001" xStr)) + 1)
 
 /* Routines for executing programs */
-int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args,
-    	DataValue *result, RestartData **continuation, const char **msg);
+int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
 int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro(void);
@@ -174,7 +208,5 @@ WindowInfo *MacroFocusWindow(void);
 void SetMacroFocusWindow(WindowInfo *window);
 /* function used for implicit conversion from string to number */
 int StringToNum(const char *string, int *number);
-
-
 
 #endif /* NEDIT_INTERPRET_H_INCLUDED */

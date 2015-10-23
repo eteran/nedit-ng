@@ -35,7 +35,7 @@
 #include <X11/Xlib.h>
 
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
-char * WriteStylesString(void);
+char *WriteStylesString(void);
 char *WriteHighlightString(void);
 const char *BgColorOfNamedStyle(const char *styleName);
 const char *ColorOfNamedStyle(const char *styleName);

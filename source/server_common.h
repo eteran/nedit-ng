@@ -36,18 +36,9 @@
 
 #define DEFAULTSERVERNAME ""
 
-
-
-void CreateServerPropertyAtoms(const char *serverName, 
-			       Atom *serverExistsAtomReturn, 
-			       Atom *serverRequestAtomReturn);
-Atom CreateServerFileOpenAtom(const char *serverName, 
-	                      const char *path);
-Atom CreateServerFileClosedAtom(const char *serverName, 
-	                        const char *path,
-                                Bool only_if_exists);
-void DeleteServerFileAtoms(const char* serverName, Window rootWindow);
-
-
+void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn);
+Atom CreateServerFileOpenAtom(const char *serverName, const char *path);
+Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exists);
+void DeleteServerFileAtoms(const char *serverName, Window rootWindow);
 
 #endif /* NEDIT_SERVER_COMMON_H_INCLUDED */

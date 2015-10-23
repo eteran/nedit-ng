@@ -4,7 +4,7 @@
 
 #include <Xm/Xm.h>
 
-inline XmString XmStringCreateSimpleEx(const char * text) {
+inline XmString XmStringCreateSimpleEx(const char *text) {
 	return XmStringCreateSimple((char *)text);
 }
 

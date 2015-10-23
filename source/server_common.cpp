@@ -37,28 +37,25 @@
 /*
  * Create the server property atoms for the server with serverName.
  * Atom names are generated as follows:
- * 
+ *
  * NEDIT_SERVER_EXISTS_<host_name>_<user>_<server_name>
  * NEDIT_SERVER_REQUEST_<host_name>_<user>_<server_name>
- * 
+ *
  * <server_name> is the name that can be set by the user to allow
  * for multiple servers to run on the same display. <server_name>
  * defaults to "" if not supplied by the user.
- * 
+ *
  * <user> is the user name of the current user.
  */
-void CreateServerPropertyAtoms(const char *serverName, 
-			       Atom *serverExistsAtomReturn, 
-			       Atom *serverRequestAtomReturn)
-{
-    char propName[20+1+MAXNODENAMELEN+1+MAXUSERNAMELEN+1+MAXSERVERNAMELEN];
-    const char *userName = GetUserName();
-    const char *hostName = GetNameOfHost();
+void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn) {
+	char propName[20 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN];
+	const char *userName = GetUserName();
+	const char *hostName = GetNameOfHost();
 
-    sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName, userName, serverName);
-    *serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
-    sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName, userName, serverName);
-    *serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
+	sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName, userName, serverName);
+	*serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
+	sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName, userName, serverName);
+	*serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
 }
 
 /*
@@ -67,67 +64,61 @@ void CreateServerPropertyAtoms(const char *serverName,
  * by nc to monitor if the file has been closed.
  *
  * Atom names are generated as follows:
- * 
+ *
  * NEDIT_FILE_<host_name>_<user>_<server_name>_<path>
- * 
+ *
  * <server_name> is the name that can be set by the user to allow
  * for multiple servers to run on the same display. <server_name>
  * defaults to "" if not supplied by the user.
- * 
+ *
  * <user> is the user name of the current user.
- * 
+ *
  * <path> is the path of the file being edited.
  */
-Atom CreateServerFileOpenAtom(const char *serverName, 
-	                      const char *path)
-{
-    char propName[10+1+MAXNODENAMELEN+1+MAXUSERNAMELEN+1+MAXSERVERNAMELEN+1+MAXPATHLEN+1+7];
-    const char *userName = GetUserName();
-    const char *hostName = GetNameOfHost();
-    Atom        atom;
+Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
+	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 7];
+	const char *userName = GetUserName();
+	const char *hostName = GetNameOfHost();
+	Atom atom;
 
-    sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName, userName, serverName, path);
-    atom = XInternAtom(TheDisplay, propName, False);
-    return(atom);
+	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName, userName, serverName, path);
+	atom = XInternAtom(TheDisplay, propName, False);
+	return (atom);
 }
 
-Atom CreateServerFileClosedAtom(const char *serverName, 
-	                        const char *path,
-                                Bool only_if_exist)
-{
-    char propName[10+1+MAXNODENAMELEN+1+MAXUSERNAMELEN+1+MAXSERVERNAMELEN+1+MAXPATHLEN+1+9];
-    const char *userName = GetUserName();
-    const char *hostName = GetNameOfHost();
-    Atom        atom;
+Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exist) {
+	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 9];
+	const char *userName = GetUserName();
+	const char *hostName = GetNameOfHost();
+	Atom atom;
 
-    sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName, userName, serverName, path);
-    atom = XInternAtom(TheDisplay, propName, only_if_exist);
-    return(atom);
+	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName, userName, serverName, path);
+	atom = XInternAtom(TheDisplay, propName, only_if_exist);
+	return (atom);
 }
 
 /*
  * Delete all File atoms that belong to this server (as specified by
  * <host_name>_<user>_<server_name>).
  */
-void DeleteServerFileAtoms(const char* serverName, Window rootWindow)
-{
-    char propNamePrefix[10+1+MAXNODENAMELEN+1+MAXUSERNAMELEN+1+MAXSERVERNAMELEN+1];
-    const char *userName = GetUserName();
-    const char *hostName = GetNameOfHost();
-    int length = sprintf(propNamePrefix, "NEDIT_FILE_%s_%s_%s_", hostName, userName, serverName);
+void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
+	char propNamePrefix[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1];
+	const char *userName = GetUserName();
+	const char *hostName = GetNameOfHost();
+	int length = sprintf(propNamePrefix, "NEDIT_FILE_%s_%s_%s_", hostName, userName, serverName);
 
-    int nProperties;
-    Atom* atoms = XListProperties(TheDisplay, rootWindow, &nProperties);
-    if (atoms != nullptr) {
-        int i;
-        for (i = 0; i < nProperties; i++) {
-            /* XGetAtomNames() is more efficient, but doesn't exist in X11R5. */
-            char *name = XGetAtomName(TheDisplay, atoms[i]);
-            if (name != nullptr && strncmp(propNamePrefix, name, length) == 0) {
-                XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
-            }
-            XFree(name);
-        }
-        XFree((char*)atoms);
-    }
-}    
+	int nProperties;
+	Atom *atoms = XListProperties(TheDisplay, rootWindow, &nProperties);
+	if (atoms != nullptr) {
+		int i;
+		for (i = 0; i < nProperties; i++) {
+			/* XGetAtomNames() is more efficient, but doesn't exist in X11R5. */
+			char *name = XGetAtomName(TheDisplay, atoms[i]);
+			if (name != nullptr && strncmp(propNamePrefix, name, length) == 0) {
+				XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
+			}
+			XFree(name);
+		}
+		XFree((char *)atoms);
+	}
+}

@@ -31,11 +31,9 @@
 
 #include <X11/Intrinsic.h>
 
-
-
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
-	
+
 void RegisterMacroSubroutines(void);
 void AddLastCommandActionHook(XtAppContext context);
 void BeginLearn(WindowInfo *window);
@@ -51,12 +49,9 @@ void RepeatDialog(WindowInfo *window);
 void RepeatMacro(WindowInfo *window, const char *command, int how);
 int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist);
 int ReadMacroString(WindowInfo *window, const char *string, const char *errIn);
-int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
-	const char **errPos);
+int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 std::string GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
-
-
 
 #endif /* NEDIT_MACRO_H_INCLUDED */

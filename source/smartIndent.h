@@ -31,8 +31,6 @@
 
 #include <X11/Intrinsic.h>
 
-
-
 void BeginSmartIndent(WindowInfo *window, int warn);
 void EndSmartIndent(WindowInfo *window);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -47,7 +45,5 @@ Boolean InSmartIndentMacros(WindowInfo *window);
 int LMHasSmartIndentMacros(const char *languageMode);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void UpdateLangModeMenuSmartIndent(void);
-
-
 
 #endif /* NEDIT_SMARTINDENT_H_INCLUDED */

@@ -36,30 +36,28 @@
 #define DEFER_PARSING 2
 #define COLOR_ONLY 4
 
-/* Don't use plain 'A' or 'B' for style indices, it causes problems 
+/* Don't use plain 'A' or 'B' for style indices, it causes problems
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
 #define ASCII_A ((char)65)
 
-
-
 /* Pattern specification structure */
 struct highlightPattern {
-    const char *name;
-    char *startRE;
-    char *endRE;
-    char *errorRE;
-    char *style;
-    char *subPatternOf;
-    int flags;
+	const char *name;
+	char *startRE;
+	char *endRE;
+	char *errorRE;
+	char *style;
+	char *subPatternOf;
+	int flags;
 };
 
 /* Header for a set of patterns */
 struct patternSet {
-    const char *languageMode;
-    int lineContext;
-    int charContext;
-    int nPatterns;
-    highlightPattern *patterns;
+	const char *languageMode;
+	int lineContext;
+	int charContext;
+	int nPatterns;
+	highlightPattern *patterns;
 };
 
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
@@ -72,7 +70,7 @@ void UpdateHighlightStyles(WindowInfo *window);
 int TestHighlightPatterns(patternSet *patSet);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
-void* GetHighlightInfo(WindowInfo *window, int pos);
+void *GetHighlightInfo(WindowInfo *window, int pos);
 highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
@@ -81,8 +79,5 @@ std::string HighlightNameOfCode(WindowInfo *window, int hCode);
 std::string HighlightStyleOfCode(WindowInfo *window, int hCode);
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
-
-
-
 
 #endif /* NEDIT_HIGHLIGHT_H_INCLUDED */

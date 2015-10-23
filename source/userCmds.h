@@ -24,38 +24,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_USERCMDS_H_INCLUDED
-#define NEDIT_USERCMDS_H_INCLUDED
+#ifndef USER_CMDS_H_
+#define USER_CMDS_H_
 
 #include "nedit.h"
 
-
-
-void EditShellMenu(WindowInfo *window);
-void EditMacroMenu(WindowInfo *window);
-void EditBGMenu(WindowInfo *window);
-void UpdateUserMenus(WindowInfo *window);
-char *WriteShellCmdsString(void);
-char *WriteMacroCmdsString(void);
-char *WriteBGMenuCmdsString(void);
-int LoadShellCmdsString(char *inString);
-int LoadMacroCmdsString(char *inString);
-int LoadBGMenuCmdsString(char *inString);
-int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro);
-int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName);
-int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName);
-void RebuildAllMenus(WindowInfo *window);
-void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive);
-void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive);
-void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
-void DimPasteReplayBtns(int sensitive);
 UserMenuCache *CreateUserMenuCache(void);
+char *WriteBGMenuCmdsString(void);
+char *WriteMacroCmdsString(void);
+char *WriteShellCmdsString(void);
+int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName);
+int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName);
+int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro);
+int LoadBGMenuCmdsString(char *inString);
+int LoadMacroCmdsString(char *inString);
+int LoadShellCmdsString(char *inString);
+void DimPasteReplayBtns(int sensitive);
+void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
+void EditBGMenu(WindowInfo *window);
+void EditMacroMenu(WindowInfo *window);
+void EditShellMenu(WindowInfo *window);
+void FreeUserBGMenuCache(UserBGMenuCache *cache);
 void FreeUserMenuCache(UserMenuCache *cache);
 void InitUserBGMenuCache(UserBGMenuCache *cache);
-void FreeUserBGMenuCache(UserBGMenuCache *cache);
+void RebuildAllMenus(WindowInfo *window);
+void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive);
+void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive);
 void SetupUserMenuInfo(void);
 void UpdateUserMenuInfo(void);
+void UpdateUserMenus(WindowInfo *window);
 
-
-
-#endif /* NEDIT_USERCMDS_H_INCLUDED */
+#endif

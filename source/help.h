@@ -37,25 +37,23 @@
 /*                          VARIABLE TYPE DEFINITIONS                         */
 /*============================================================================*/
 
-
-
-struct HelpMenu         /* Maintains help menu structure */
-{
-    struct HelpMenu * next;
-    int               level;    /* menu level, submenu > 1               */
-    enum HelpTopic    topic;    /* HELP_none for submenu & separator     */
-    const char            * wgtName;
-    int               hideIt;   /* value which determines displayability */
-    char              mnemonic; /* '-' for separator                     */
-    const char            * subTitle; /* title for sub menu, or NULL           */
+struct HelpMenu /* Maintains help menu structure */
+    {
+	struct HelpMenu *next;
+	int level;            /* menu level, submenu > 1               */
+	enum HelpTopic topic; /* HELP_none for submenu & separator     */
+	const char *wgtName;
+	int hideIt;           /* value which determines displayability */
+	char mnemonic;        /* '-' for separator                     */
+	const char *subTitle; /* title for sub menu, or NULL           */
 };
 
-struct Href             /* Source to topic internal hyperlinks */
-{
-    struct Href *  next;
-    int            location;    /* position to link in topic    */
-    enum HelpTopic topic;       /* target of link in this topic */
-    const char *         source;      /* hypertext link characters    */
+struct Href /* Source to topic internal hyperlinks */
+    {
+	struct Href *next;
+	int location;         /* position to link in topic    */
+	enum HelpTopic topic; /* target of link in this topic */
+	const char *source;   /* hypertext link characters    */
 };
 
 /*============================================================================*/
@@ -72,7 +70,5 @@ extern const char *HelpTitles[];
 void Help(enum HelpTopic topic);
 void PrintVersion(void);
 void InstallHelpLinkActions(XtAppContext context);
-
-
 
 #endif /* NEDIT_HELP_H_INCLUDED */

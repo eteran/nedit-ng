@@ -51,439 +51,364 @@
 #define APP_CLASS "NEditClient"
 
 #define PROPERTY_CHANGE_TIMEOUT (Preferences.timeOut * 1000) /* milliseconds */
-#define SERVER_START_TIMEOUT    (Preferences.timeOut * 3000) /* milliseconds */
-#define REQUEST_TIMEOUT         (Preferences.timeOut * 1000) /* milliseconds */
-#define FILE_OPEN_TIMEOUT       (Preferences.timeOut * 3000) /* milliseconds */
+#define SERVER_START_TIMEOUT (Preferences.timeOut * 3000)    /* milliseconds */
+#define REQUEST_TIMEOUT (Preferences.timeOut * 1000)         /* milliseconds */
+#define FILE_OPEN_TIMEOUT (Preferences.timeOut * 3000)       /* milliseconds */
 
-struct CommandLine
-{
-   char* shell;
-   char* serverRequest;
-} ;
+struct CommandLine {
+	char *shell;
+	char *serverRequest;
+};
 
 static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id);
 static int startServer(const char *message, const char *commandLine);
-static CommandLine processCommandLine(int argc, char** argv);
+static CommandLine processCommandLine(int argc, char **argv);
 static void parseCommandLine(int argc, char **arg, CommandLine *cmdLine);
 static void nextArg(int argc, char **argv, int *argIndex);
 static void copyCommandLineArg(CommandLine *cmdLine, const char *arg);
 static void printNcVersion(void);
-static Boolean findExistingServer(XtAppContext context,
-                                  Window rootWindow,
-                                  Atom serverExistsAtom);
-static void startNewServer(XtAppContext context,
-                           Window rootWindow,
-                           char* commandLine,
-                           Atom serverExistsAtom);
-static void waitUntilRequestProcessed(XtAppContext context,
-                                      Window rootWindow,
-                                      char* commandString,
-                                      Atom serverRequestAtom);
-static void waitUntilFilesOpenedOrClosed(XtAppContext context,
-                                         Window rootWindow);
+static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom);
+static void startNewServer(XtAppContext context, Window rootWindow, char *commandLine, Atom serverExistsAtom);
+static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, char *commandString, Atom serverRequestAtom);
+static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow);
 
 Display *TheDisplay;
 XtAppContext AppContext;
 static Atom currentWaitForAtom;
 static Atom noAtom = (Atom)(-1);
 
-static const char cmdLineHelp[] =
-"Usage:  nc [-read] [-create]\n"
-"           [-line n | +n] [-do command] [-lm languagemode]\n"
-"           [-svrname name] [-svrcmd command]\n"
-"           [-ask] [-noask] [-timeout seconds]\n"
-"           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-"           [-tabbed] [-untabbed] [-group] [-wait]\n"
-"           [-V | -version] [-h|-help]\n"
-"           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
-"           [--] [file...]\n";
-
+static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
+                                  "           [-line n | +n] [-do command] [-lm languagemode]\n"
+                                  "           [-svrname name] [-svrcmd command]\n"
+                                  "           [-ask] [-noask] [-timeout seconds]\n"
+                                  "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+                                  "           [-tabbed] [-untabbed] [-group] [-wait]\n"
+                                  "           [-V | -version] [-h|-help]\n"
+                                  "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
+                                  "           [--] [file...]\n";
 
 /* Structure to hold X Resource values */
 static struct {
-    int autoStart;
-    char serverCmd[2*MAXPATHLEN]; /* holds executable name + flags */
-    char serverName[MAXPATHLEN];
-    int waitForClose;
-    int timeOut;
+	int autoStart;
+	char serverCmd[2 * MAXPATHLEN]; /* holds executable name + flags */
+	char serverName[MAXPATHLEN];
+	int waitForClose;
+	int timeOut;
 } Preferences;
 
 /* Application resources */
-static PrefDescripRec PrefDescrip[] = {
-    {"autoStart", "AutoStart", PREF_BOOLEAN, "True",
-      &Preferences.autoStart, nullptr, True},
-    {"serverCommand", "ServerCommand", PREF_STRING, "nedit -server",
-      Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},
-    {"serverName", "serverName", PREF_STRING, "", Preferences.serverName,
-      (void *)sizeof(Preferences.serverName), False},
-    {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False",
-      &Preferences.waitForClose, nullptr, False},
-    {"timeOut", "TimeOut", PREF_INT, "10",
-      &Preferences.timeOut, nullptr, False}
-};
+static PrefDescripRec PrefDescrip[] = {{"autoStart", "AutoStart", PREF_BOOLEAN, "True", &Preferences.autoStart, nullptr, True},
+                                       {"serverCommand", "ServerCommand", PREF_STRING, "nedit -server", Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},
+                                       {"serverName", "serverName", PREF_STRING, "", Preferences.serverName, (void *)sizeof(Preferences.serverName), False},
+                                       {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False", &Preferences.waitForClose, nullptr, False},
+                                       {"timeOut", "TimeOut", PREF_INT, "10", &Preferences.timeOut, nullptr, False}};
 
 /* Resource related command line options */
-static XrmOptionDescRec OpTable[] = {
-    {(String)"-ask",     (String)".autoStart",     XrmoptionNoArg,  (caddr_t)"False"},
-    {(String)"-noask",   (String)".autoStart",     XrmoptionNoArg,  (caddr_t)"True"},
-    {(String)"-svrname", (String)".serverName",    XrmoptionSepArg, (caddr_t)nullptr},
-    {(String)"-svrcmd",  (String)".serverCommand", XrmoptionSepArg, (caddr_t)nullptr},
-    {(String)"-wait",    (String)".waitForClose",  XrmoptionNoArg,  (caddr_t)"True"},
-    {(String)"-timeout", (String)".timeOut",       XrmoptionSepArg, (caddr_t)nullptr}
-};
+static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", XrmoptionNoArg, (caddr_t) "False"},
+                                     {(String) "-noask", (String) ".autoStart", XrmoptionNoArg, (caddr_t) "True"},
+                                     {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, (caddr_t) nullptr},
+                                     {(String) "-svrcmd", (String) ".serverCommand", XrmoptionSepArg, (caddr_t) nullptr},
+                                     {(String) "-wait", (String) ".waitForClose", XrmoptionNoArg, (caddr_t) "True"},
+                                     {(String) "-timeout", (String) ".timeOut", XrmoptionSepArg, (caddr_t) nullptr}};
 
 /* Struct to hold info about files being opened and edited. */
 struct FileListEntry {
-    Atom                  waitForFileOpenAtom;
-    Atom                  waitForFileClosedAtom;
-    char*                 path;
-    struct FileListEntry *next;
+	Atom waitForFileOpenAtom;
+	Atom waitForFileClosedAtom;
+	char *path;
+	struct FileListEntry *next;
 };
 
 struct FileListHead {
-    int            waitForOpenCount;
-    int            waitForCloseCount;
-    FileListEntry* fileList;
-} ;
+	int waitForOpenCount;
+	int waitForCloseCount;
+	FileListEntry *fileList;
+};
 static FileListHead fileListHead;
 
 static void setPropertyValue(Atom atom) {
-    XChangeProperty(TheDisplay,
-	            RootWindow(TheDisplay, DefaultScreen(TheDisplay)),
-	            atom, XA_STRING,
-	            8, PropModeReplace,
-	            (unsigned char *)"True", 4);
+	XChangeProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), atom, XA_STRING, 8, PropModeReplace, (unsigned char *)"True", 4);
 }
 
 /* Add another entry to the file entry list, if it doesn't exist yet. */
-static void addToFileList(const char *path)
-{
-    FileListEntry *item;
-    
-    /* see if the file already exists in the list */
-    for (item = fileListHead.fileList; item; item = item->next) {
-        if (!strcmp(item->path, path))
-           break;
-    }
+static void addToFileList(const char *path) {
+	FileListEntry *item;
 
-    /* Add the atom to the head of the file list if it wasn't found. */
-    if (item == 0) {
-        item = (FileListEntry *)malloc(sizeof(item[0]));
-        item->waitForFileOpenAtom = None;
-        item->waitForFileClosedAtom = None;
-        item->path = (char*)malloc(strlen(path)+1);
-        strcpy(item->path, path);
-        item->next = fileListHead.fileList;
-        fileListHead.fileList = item;
-    }
+	/* see if the file already exists in the list */
+	for (item = fileListHead.fileList; item; item = item->next) {
+		if (!strcmp(item->path, path))
+			break;
+	}
+
+	/* Add the atom to the head of the file list if it wasn't found. */
+	if (item == 0) {
+		item = (FileListEntry *)malloc(sizeof(item[0]));
+		item->waitForFileOpenAtom = None;
+		item->waitForFileClosedAtom = None;
+		item->path = (char *)malloc(strlen(path) + 1);
+		strcpy(item->path, path);
+		item->next = fileListHead.fileList;
+		fileListHead.fileList = item;
+	}
 }
 
 /* Creates the properties for the various paths */
-static void createWaitProperties(void)
-{
-    FileListEntry *item;
+static void createWaitProperties(void) {
+	FileListEntry *item;
 
-    for (item = fileListHead.fileList; item; item = item->next) {
-        fileListHead.waitForOpenCount++;
-        item->waitForFileOpenAtom = 
-            CreateServerFileOpenAtom(Preferences.serverName, item->path);
-        setPropertyValue(item->waitForFileOpenAtom);
+	for (item = fileListHead.fileList; item; item = item->next) {
+		fileListHead.waitForOpenCount++;
+		item->waitForFileOpenAtom = CreateServerFileOpenAtom(Preferences.serverName, item->path);
+		setPropertyValue(item->waitForFileOpenAtom);
 
-        if (Preferences.waitForClose == True) {
-            fileListHead.waitForCloseCount++;
-            item->waitForFileClosedAtom =
-                      CreateServerFileClosedAtom(Preferences.serverName,
-                                                 item->path,
-                                                 False);
-            setPropertyValue(item->waitForFileClosedAtom);
-        }
-    }
+		if (Preferences.waitForClose == True) {
+			fileListHead.waitForCloseCount++;
+			item->waitForFileClosedAtom = CreateServerFileClosedAtom(Preferences.serverName, item->path, False);
+			setPropertyValue(item->waitForFileClosedAtom);
+		}
+	}
 }
 
-int main(int argc, char **argv)
-{
-    XtAppContext context;
-    Window rootWindow;
-    CommandLine commandLine;
-    Atom serverExistsAtom, serverRequestAtom;
-    XrmDatabase prefDB;
-    Boolean serverExists;
+int main(int argc, char **argv) {
+	XtAppContext context;
+	Window rootWindow;
+	CommandLine commandLine;
+	Atom serverExistsAtom, serverRequestAtom;
+	XrmDatabase prefDB;
+	Boolean serverExists;
 
-    /* Initialize toolkit and get an application context */
-    XtToolkitInitialize();
-    AppContext = context = XtCreateApplicationContext();
-    
+	/* Initialize toolkit and get an application context */
+	XtToolkitInitialize();
+	AppContext = context = XtCreateApplicationContext();
 
-    /* Read the preferences command line into a database (note that we
-       don't support the .nc file anymore) */
-    prefDB = CreatePreferencesDatabase(nullptr, APP_CLASS, 
-	    OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
-    
-    /* Process the command line before calling XtOpenDisplay, because the
-       latter consumes certain command line arguments that we still need
-       (-icon, -geometry ...) */
-    commandLine = processCommandLine(argc, argv);
-        
-    /* Open the display and find the root window */
-    TheDisplay = XtOpenDisplay (context, nullptr, APP_NAME, APP_CLASS, nullptr,
-    	    0, &argc, argv);
-    if (!TheDisplay) {
-	XtWarning ("nc: Can't open display\n");
-	exit(EXIT_FAILURE);
-    }
-    rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-    
-    /* Read the application resources into the Preferences data structure */
-    RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME,
-    	    APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-    
-    /* Make sure that the time out unit is at least 1 second and not too
-       large either (overflow!). */
-    if (Preferences.timeOut < 1) {
-	Preferences.timeOut = 1;
-    } else if (Preferences.timeOut > 1000) {
-	Preferences.timeOut = 1000;
-    }
-    
-    /* For Clearcase users who have not set a server name, use the clearcase
-       view name.  Clearcase views make files with the same absolute path names
-       but different contents (and therefore can't be edited in the same nedit
-       session). This should have no bad side-effects for non-clearcase users */
-    if (Preferences.serverName[0] == '\0') {
-        const char* viewTag = GetClearCaseViewTag();
-        if (viewTag != nullptr && strlen(viewTag) < MAXPATHLEN) {
-            strcpy(Preferences.serverName, viewTag);
-        }
-    }
-    
-    /* Create the wait properties for the various files. */
-    createWaitProperties();
-        
-    /* Monitor the properties on the root window */
-    XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
-	
-    /* Create the server property atoms on the current DISPLAY. */
-    CreateServerPropertyAtoms(Preferences.serverName,
-                              &serverExistsAtom,
-                              &serverRequestAtom);
+	/* Read the preferences command line into a database (note that we
+	   don't support the .nc file anymore) */
+	prefDB = CreatePreferencesDatabase(nullptr, APP_CLASS, OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
 
-    serverExists = findExistingServer(context,
-                                      rootWindow,
-                                      serverExistsAtom);
+	/* Process the command line before calling XtOpenDisplay, because the
+	   latter consumes certain command line arguments that we still need
+	   (-icon, -geometry ...) */
+	commandLine = processCommandLine(argc, argv);
 
-    if (serverExists == False)
-        startNewServer(context, rootWindow, commandLine.shell, serverExistsAtom);
+	/* Open the display and find the root window */
+	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
+	if (!TheDisplay) {
+		XtWarning("nc: Can't open display\n");
+		exit(EXIT_FAILURE);
+	}
+	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
-    waitUntilRequestProcessed(context,
-                              rootWindow,
-                              commandLine.serverRequest,
-                              serverRequestAtom);
+	/* Read the application resources into the Preferences data structure */
+	RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 
-    waitUntilFilesOpenedOrClosed(context, rootWindow);
+	/* Make sure that the time out unit is at least 1 second and not too
+	   large either (overflow!). */
+	if (Preferences.timeOut < 1) {
+		Preferences.timeOut = 1;
+	} else if (Preferences.timeOut > 1000) {
+		Preferences.timeOut = 1000;
+	}
 
-    XtCloseDisplay(TheDisplay);
-    XtFree(commandLine.shell);
-    XtFree(commandLine.serverRequest);
-    return 0;
+	/* For Clearcase users who have not set a server name, use the clearcase
+	   view name.  Clearcase views make files with the same absolute path names
+	   but different contents (and therefore can't be edited in the same nedit
+	   session). This should have no bad side-effects for non-clearcase users */
+	if (Preferences.serverName[0] == '\0') {
+		const char *viewTag = GetClearCaseViewTag();
+		if (viewTag != nullptr && strlen(viewTag) < MAXPATHLEN) {
+			strcpy(Preferences.serverName, viewTag);
+		}
+	}
+
+	/* Create the wait properties for the various files. */
+	createWaitProperties();
+
+	/* Monitor the properties on the root window */
+	XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
+
+	/* Create the server property atoms on the current DISPLAY. */
+	CreateServerPropertyAtoms(Preferences.serverName, &serverExistsAtom, &serverRequestAtom);
+
+	serverExists = findExistingServer(context, rootWindow, serverExistsAtom);
+
+	if (serverExists == False)
+		startNewServer(context, rootWindow, commandLine.shell, serverExistsAtom);
+
+	waitUntilRequestProcessed(context, rootWindow, commandLine.serverRequest, serverRequestAtom);
+
+	waitUntilFilesOpenedOrClosed(context, rootWindow);
+
+	XtCloseDisplay(TheDisplay);
+	XtFree(commandLine.shell);
+	XtFree(commandLine.serverRequest);
+	return 0;
 }
-
 
 /*
 ** Xt timer procedure for timeouts on NEdit server requests
 */
-static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id)
-{
+static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id) {
 
 	(void)id;
-   /* NOTE: XtAppNextEvent() does call this routine but
-   ** doesn't return unless there are more events.
-   ** Hence, we generate this (synthetic) event to break the deadlock
-   */
-    Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-    if (currentWaitForAtom != noAtom) {
-	XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 
-	    8, PropModeReplace, (unsigned char *)"", strlen(""));
-    }
+	/* NOTE: XtAppNextEvent() does call this routine but
+	** doesn't return unless there are more events.
+	** Hence, we generate this (synthetic) event to break the deadlock
+	*/
+	Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+	if (currentWaitForAtom != noAtom) {
+		XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)"", strlen(""));
+	}
 
-    /* Flag that the timeout has occurred. */
-    *timeOutReturn = True;
+	/* Flag that the timeout has occurred. */
+	*timeOutReturn = True;
 }
 
+static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom) {
+	Boolean serverExists = True;
+	unsigned char *propValue;
+	int getFmt;
+	Atom dummyAtom;
+	unsigned long dummyULong, nItems;
 
+	/* See if there might be a server (not a guaranty), by translating the
+	   root window property NEDIT_SERVER_EXISTS_<user>_<host> */
+	if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0, INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &propValue) != Success || nItems == 0) {
+		serverExists = False;
+	} else {
+		Boolean timeOut = False;
+		XtIntervalId timerId;
 
-static Boolean findExistingServer(XtAppContext context,
-                                  Window rootWindow,
-                                  Atom serverExistsAtom)
-{
-    Boolean serverExists = True;
-    unsigned char *propValue;
-    int getFmt;
-    Atom dummyAtom;
-    unsigned long dummyULong, nItems;
+		XFree(propValue);
 
-    /* See if there might be a server (not a guaranty), by translating the
-       root window property NEDIT_SERVER_EXISTS_<user>_<host> */
-    if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0,
-    	    INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems,
-    	    &dummyULong, &propValue) != Success || nItems == 0) {
-        serverExists = False;
-    } else {
-        Boolean timeOut = False;
-        XtIntervalId timerId;
+		/* Remove the server exists property to make sure the server is
+		** running. If it is running it will get recreated.
+		*/
+		XDeleteProperty(TheDisplay, rootWindow, serverExistsAtom);
+		XSync(TheDisplay, False);
+		timerId = XtAppAddTimeOut(context, PROPERTY_CHANGE_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
+		currentWaitForAtom = serverExistsAtom;
 
-        XFree(propValue);
+		while (!timeOut) {
+			/* NOTE: XtAppNextEvent() does call the timeout routine but
+			** doesn't return unless there are more events. */
+			XEvent event;
+			const XPropertyEvent *e = (const XPropertyEvent *)&event;
+			XtAppNextEvent(context, &event);
 
-        /* Remove the server exists property to make sure the server is
-        ** running. If it is running it will get recreated.
-        */
-        XDeleteProperty(TheDisplay, rootWindow, serverExistsAtom);
-        XSync(TheDisplay, False);
-        timerId = XtAppAddTimeOut(context,
-                                  PROPERTY_CHANGE_TIMEOUT,
-                                  (XtTimerCallbackProc)timeOutProc,
-                                  &timeOut);
-        currentWaitForAtom = serverExistsAtom;
+			/* We will get a PropertyNewValue when the server recreates
+			** the server exists atom. */
+			if (e->type == PropertyNotify && e->window == rootWindow && e->atom == serverExistsAtom) {
+				if (e->state == PropertyNewValue) {
+					break;
+				}
+			}
+			XtDispatchEvent(&event);
+		}
 
-        while (!timeOut) {
-            /* NOTE: XtAppNextEvent() does call the timeout routine but
-            ** doesn't return unless there are more events. */
-            XEvent event;
-            const XPropertyEvent *e = (const XPropertyEvent *)&event;
-            XtAppNextEvent(context, &event);
+		/* Start a new server if the timeout expired. The server exists
+		** property was not recreated. */
+		if (timeOut) {
+			serverExists = False;
+		} else {
+			XtRemoveTimeOut(timerId);
+		}
+	}
 
-            /* We will get a PropertyNewValue when the server recreates
-            ** the server exists atom. */
-            if (e->type == PropertyNotify &&
-                e->window == rootWindow &&
-                e->atom == serverExistsAtom) {
-                if (e->state == PropertyNewValue) {
-                    break;
-                }
-            }
-            XtDispatchEvent(&event);
-        }
+	return (serverExists);
+}
 
-        /* Start a new server if the timeout expired. The server exists
-        ** property was not recreated. */
-        if (timeOut) {
-            serverExists = False;
-        } else {
-            XtRemoveTimeOut(timerId);
-        }
-    }
-    
-    return(serverExists);
-} 
+static void startNewServer(XtAppContext context, Window rootWindow, char *commandLine, Atom serverExistsAtom) {
+	Boolean timeOut = False;
+	XtIntervalId timerId;
 
+	/* Add back the server name resource from the command line or resource
+	   database to the command line for starting the server.  If -svrcmd
+	   appeared on the original command line, it was removed by
+	   CreatePreferencesDatabase before the command line was recorded
+	   in commandLine.shell. Moreover, if no server name was specified, it
+	   may have defaulted to the ClearCase view tag. */
+	if (Preferences.serverName[0] != '\0') {
+		strcat(commandLine, " -svrname ");
+		strcat(commandLine, Preferences.serverName);
+	}
+	switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
+	case -1: /* Start failed */
+		XtCloseDisplay(TheDisplay);
+		exit(EXIT_FAILURE);
+		break;
+	case -2: /* Start canceled by user */
+		XtCloseDisplay(TheDisplay);
+		exit(EXIT_SUCCESS);
+		break;
+	}
 
+	/* Set up a timeout proc in case the server is dead.  The standard
+	   selection timeout is probably a good guess at how long to wait
+	   for this style of inter-client communication as well */
+	timerId = XtAppAddTimeOut(context, SERVER_START_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
+	currentWaitForAtom = serverExistsAtom;
 
+	/* Wait for the server to start */
+	while (!timeOut) {
+		XEvent event;
+		const XPropertyEvent *e = (const XPropertyEvent *)&event;
+		/* NOTE: XtAppNextEvent() does call the timeout routine but
+		** doesn't return unless there are more events. */
+		XtAppNextEvent(context, &event);
 
-static void startNewServer(XtAppContext context,
-                           Window rootWindow,
-                           char* commandLine,
-                           Atom serverExistsAtom)
-{
-    Boolean timeOut = False;
-    XtIntervalId timerId;
-
-    /* Add back the server name resource from the command line or resource
-       database to the command line for starting the server.  If -svrcmd
-       appeared on the original command line, it was removed by
-       CreatePreferencesDatabase before the command line was recorded
-       in commandLine.shell. Moreover, if no server name was specified, it
-       may have defaulted to the ClearCase view tag. */
-    if (Preferences.serverName[0] != '\0') {
-        strcat(commandLine, " -svrname ");
-        strcat(commandLine, Preferences.serverName);
-    }
-    switch (startServer("No servers available, start one? (y|n) [y]: ",
-                        commandLine))
-    {
-        case -1: /* Start failed */
-            XtCloseDisplay(TheDisplay);
-            exit(EXIT_FAILURE);
-            break;
-        case -2: /* Start canceled by user */
-            XtCloseDisplay(TheDisplay);
-            exit(EXIT_SUCCESS);
-            break;
-    }
-
-    /* Set up a timeout proc in case the server is dead.  The standard
-       selection timeout is probably a good guess at how long to wait
-       for this style of inter-client communication as well */
-    timerId = XtAppAddTimeOut(context,
-                              SERVER_START_TIMEOUT,
-                              (XtTimerCallbackProc)timeOutProc,
-                              &timeOut);
-    currentWaitForAtom = serverExistsAtom;
-
-    /* Wait for the server to start */
-    while (!timeOut) {
-        XEvent event;
-        const XPropertyEvent *e = (const XPropertyEvent *)&event;
-        /* NOTE: XtAppNextEvent() does call the timeout routine but
-        ** doesn't return unless there are more events. */
-        XtAppNextEvent(context, &event);
-
-        /* We will get a PropertyNewValue when the server updates
-        ** the server exists atom. If the property is deleted the
-        ** the server must have died. */
-        if (e->type == PropertyNotify &&
-            e->window == rootWindow &&
-            e->atom == serverExistsAtom) {
-            if (e->state == PropertyNewValue) {
-                break;
-            } else if (e->state == PropertyDelete) {
-                fprintf(stderr, "%s: The server failed to start.\n", APP_NAME);
-                XtCloseDisplay(TheDisplay);
-                exit(EXIT_FAILURE);
-            }
-        }
-        XtDispatchEvent(&event);
-    }
-    /* Exit if the timeout expired. */
-    if (timeOut) {
-        fprintf(stderr, "%s: The server failed to start (time-out).\n", APP_NAME);
-        XtCloseDisplay(TheDisplay);
-        exit(EXIT_FAILURE);
-    } else {
-        XtRemoveTimeOut(timerId);
-    }
+		/* We will get a PropertyNewValue when the server updates
+		** the server exists atom. If the property is deleted the
+		** the server must have died. */
+		if (e->type == PropertyNotify && e->window == rootWindow && e->atom == serverExistsAtom) {
+			if (e->state == PropertyNewValue) {
+				break;
+			} else if (e->state == PropertyDelete) {
+				fprintf(stderr, "%s: The server failed to start.\n", APP_NAME);
+				XtCloseDisplay(TheDisplay);
+				exit(EXIT_FAILURE);
+			}
+		}
+		XtDispatchEvent(&event);
+	}
+	/* Exit if the timeout expired. */
+	if (timeOut) {
+		fprintf(stderr, "%s: The server failed to start (time-out).\n", APP_NAME);
+		XtCloseDisplay(TheDisplay);
+		exit(EXIT_FAILURE);
+	} else {
+		XtRemoveTimeOut(timerId);
+	}
 }
 
 /*
 ** Prompt the user about starting a server, with "message", then start server
 */
-static int startServer(const char *message, const char *commandLineArgs)
-{
-    char c, *commandLine;
+static int startServer(const char *message, const char *commandLineArgs) {
+	char c, *commandLine;
 
-    int sysrc;
-    
-    /* prompt user whether to start server */
-    if (!Preferences.autoStart) {
-	printf("%s", message);
-	do {
-    	    c = getc(stdin);
-	} while (c == ' ' || c == '\t');
-	if (c != 'Y' && c != 'y' && c != '\n')
-    	    return (-2);
-    }
-    
-    /* start the server */
-    commandLine = XtMalloc(strlen(Preferences.serverCmd) +
-    	    strlen(commandLineArgs) + 3);
-    sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
+	int sysrc;
 
-    sysrc=system(commandLine);
-    XtFree(commandLine);
-    
-    if (sysrc==0)
-       return 0;
-    else
-       return (-1);
+	/* prompt user whether to start server */
+	if (!Preferences.autoStart) {
+		printf("%s", message);
+		do {
+			c = getc(stdin);
+		} while (c == ' ' || c == '\t');
+		if (c != 'Y' && c != 'y' && c != '\n')
+			return (-2);
+	}
 
+	/* start the server */
+	commandLine = XtMalloc(strlen(Preferences.serverCmd) + strlen(commandLineArgs) + 3);
+	sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
+
+	sysrc = system(commandLine);
+	XtFree(commandLine);
+
+	if (sysrc == 0)
+		return 0;
+	else
+		return (-1);
 }
 
 /* Reconstruct the command line in string commandLine in case we have to
@@ -491,369 +416,327 @@ static int startServer(const char *message, const char *commandLineArgs)
  * -svrname if nc wants a named server, so nedit will match. Special
  * characters are protected from the shell by escaping EVERYTHING with \
  */
-static CommandLine processCommandLine(int argc, char** argv)
-{
-    CommandLine commandLine;
-    int i;
-    int length = 0;
-   
-    for (i=1; i<argc; i++) {
-    	length += 1 + strlen(argv[i])*4 + 2;
-    }
-    commandLine.shell = XtMalloc(length+1 + 9 + MAXPATHLEN);
-    *commandLine.shell = '\0';
+static CommandLine processCommandLine(int argc, char **argv) {
+	CommandLine commandLine;
+	int i;
+	int length = 0;
 
-    /* Convert command line arguments into a command string for the server */
-    parseCommandLine(argc, argv, &commandLine);
-    if (commandLine.serverRequest == nullptr) {
-        fprintf(stderr, "nc: Invalid commandline argument\n");
-	exit(EXIT_FAILURE);
-    }
+	for (i = 1; i < argc; i++) {
+		length += 1 + strlen(argv[i]) * 4 + 2;
+	}
+	commandLine.shell = XtMalloc(length + 1 + 9 + MAXPATHLEN);
+	*commandLine.shell = '\0';
 
-    return(commandLine);
-} 
+	/* Convert command line arguments into a command string for the server */
+	parseCommandLine(argc, argv, &commandLine);
+	if (commandLine.serverRequest == nullptr) {
+		fprintf(stderr, "nc: Invalid commandline argument\n");
+		exit(EXIT_FAILURE);
+	}
 
+	return (commandLine);
+}
 
 /*
 ** Converts command line into a command string suitable for passing to
 ** the server
 */
-static void parseCommandLine(int argc, char **argv, CommandLine *commandLine)
-{
+static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 #define MAX_RECORD_HEADER_LENGTH 38
-    char name[MAXPATHLEN], path[MAXPATHLEN];
-    const char *toDoCommand = "", *langMode = "", *geometry = "";
-    char *commandString, *outPtr;
-    int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
-    int i, lineArg, nRead, charsWritten, opts = True;
-    int fileCount = 0, group = 0, isTabbed;
+	char name[MAXPATHLEN], path[MAXPATHLEN];
+	const char *toDoCommand = "", *langMode = "", *geometry = "";
+	char *commandString, *outPtr;
+	int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
+	int i, lineArg, nRead, charsWritten, opts = True;
+	int fileCount = 0, group = 0, isTabbed;
 
-    /* Allocate a string for output, for the maximum possible length.  The
-       maximum length is calculated by assuming every argument is a file,
-       and a complete record of maximum length is created for it */
-    for (i=1; i<argc; i++) {
-    	length += MAX_RECORD_HEADER_LENGTH + strlen(argv[i]) + MAXPATHLEN;
-    }
-    /* In case of no arguments, must still allocate space for one record header */
-    if (length < MAX_RECORD_HEADER_LENGTH)
-    {
-       length = MAX_RECORD_HEADER_LENGTH;
-    }
-    commandString = XtMalloc(length+1);
-    
-    /* Parse the arguments and write the output string */
-    outPtr = commandString;
-    for (i=1; i<argc; i++) {
-        if (opts && !strcmp(argv[i], "--")) { 
-    	    opts = False; /* treat all remaining arguments as filenames */
-	    continue;
-	} else if (opts && !strcmp(argv[i], "-do")) {
-    	    nextArg(argc, argv, &i);
-    	    toDoCommand = argv[i];
-    	} else if (opts && !strcmp(argv[i], "-lm")) {
-	    copyCommandLineArg(commandLine, argv[i]);
-    	    nextArg(argc, argv, &i);
-    	    langMode = argv[i];
-	    copyCommandLineArg(commandLine, argv[i]);
-    	} else if (opts && (!strcmp(argv[i], "-g")  || 
-	                    !strcmp(argv[i], "-geometry"))) {
-	    copyCommandLineArg(commandLine, argv[i]);
-    	    nextArg(argc, argv, &i);
-    	    geometry = argv[i];
-	    copyCommandLineArg(commandLine, argv[i]);
-    	} else if (opts && !strcmp(argv[i], "-read")) {
-    	    read = 1;
-    	} else if (opts && !strcmp(argv[i], "-create")) {
-    	    create = 1;
-    	} else if (opts && !strcmp(argv[i], "-tabbed")) {
-    	    tabbed = 1;
-    	    group = 0;	/* override -group option */
-    	} else if (opts && !strcmp(argv[i], "-untabbed")) {
-    	    tabbed = 0;
-    	    group = 0;  /* override -group option */
-    	} else if (opts && !strcmp(argv[i], "-group")) {
-    	    group = 2; /* 2: start new group, 1: in group */
-    	} else if (opts && (!strcmp(argv[i], "-iconic") || 
-	                    !strcmp(argv[i], "-icon"))) {
-    	    iconic = 1;
-	    copyCommandLineArg(commandLine, argv[i]);
-    	} else if (opts && !strcmp(argv[i], "-line")) {
-    	    nextArg(argc, argv, &i);
-	    nRead = sscanf(argv[i], "%d", &lineArg);
-	    if (nRead != 1)
-    		fprintf(stderr, "nc: argument to line should be a number\n");
-    	    else
-    	    	lineNum = lineArg;
-    	} else if (opts && (*argv[i] == '+')) {
-    	    nRead = sscanf((argv[i]+1), "%d", &lineArg);
-	    if (nRead != 1)
-    		fprintf(stderr, "nc: argument to + should be a number\n");
-    	    else
-    	    	lineNum = lineArg;
-    	} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noask"))) {
-    	    ; /* Ignore resource-based arguments which are processed later */
-    	} else if (opts && (!strcmp(argv[i], "-svrname") || 
-		            !strcmp(argv[i], "-svrcmd"))) {
-    	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
-    	} else if (opts && (!strcmp(argv[i], "-xrm") ||
-	                    !strcmp(argv[i], "-display"))) {
-	    copyCommandLineArg(commandLine, argv[i]);
-    	    nextArg(argc, argv, &i); /* Ignore rsrc args with data */
-	    copyCommandLineArg(commandLine, argv[i]);
-    	} else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
-    	    printNcVersion();
-	    exit(EXIT_SUCCESS);
-	} else if (opts && (!strcmp(argv[i], "-h") ||
-			    !strcmp(argv[i], "-help"))) {
-	    fprintf(stderr, "%s", cmdLineHelp);
-	    exit(EXIT_SUCCESS);
-    	} else if (opts && (*argv[i] == '-')) {
+	/* Allocate a string for output, for the maximum possible length.  The
+	   maximum length is calculated by assuming every argument is a file,
+	   and a complete record of maximum length is created for it */
+	for (i = 1; i < argc; i++) {
+		length += MAX_RECORD_HEADER_LENGTH + strlen(argv[i]) + MAXPATHLEN;
+	}
+	/* In case of no arguments, must still allocate space for one record header */
+	if (length < MAX_RECORD_HEADER_LENGTH) {
+		length = MAX_RECORD_HEADER_LENGTH;
+	}
+	commandString = XtMalloc(length + 1);
 
-    	    fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i],
-    	    	    cmdLineHelp);
-    	    exit(EXIT_FAILURE);
-    	} else {
-    	    if (ParseFilename(argv[i], name, path) != 0) {
-	       /* An Error, most likely too long paths/strings given */
-	       commandLine->serverRequest = nullptr;
-	       return;
-	    }
-    	    strcat(path, name);
-	    
-	    /* determine if file is to be openned in new tab, by
-	       factoring the options -group, -tabbed & -untabbed */
-    	    if (group == 2) {
-	        isTabbed = 0;  /* start a new window for new group */
-		group = 1;     /* next file will be within group */
-	    } 
-	    else if (group == 1) {
-	    	isTabbed = 1;  /* new tab for file in group */
-	    }
-	    else {
-	    	isTabbed = tabbed; /* not in group */
-	    }
-	    
-    	    /* SunOS 4 acc or acc and/or its runtime library has a bug
-    	       such that %n fails (segv) if it follows a string in a
-    	       printf or sprintf.  The silly code below avoids this.
-               
-               The "long" cast on strlen() is necessary because size_t
-               is 64 bit on Alphas, and 32-bit on most others.  There is
-               no printf format specifier for "size_t", thanx, ANSI. */
-    	    sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum,
-		    read, create, iconic, isTabbed, (long) strlen(path), 
-		    (long) strlen(toDoCommand), (long) strlen(langMode),
-		    (long) strlen(geometry), &charsWritten);
-    	    outPtr += charsWritten;
-    	    strcpy(outPtr, path);
-    	    outPtr += strlen(path);
-    	    *outPtr++ = '\n';
-    	    strcpy(outPtr, toDoCommand);
-    	    outPtr += strlen(toDoCommand);
-    	    *outPtr++ = '\n';
-    	    strcpy(outPtr, langMode);
-    	    outPtr += strlen(langMode);
-    	    *outPtr++ = '\n';
-    	    strcpy(outPtr, geometry);
-    	    outPtr += strlen(geometry);
-    	    *outPtr++ = '\n';
+	/* Parse the arguments and write the output string */
+	outPtr = commandString;
+	for (i = 1; i < argc; i++) {
+		if (opts && !strcmp(argv[i], "--")) {
+			opts = False; /* treat all remaining arguments as filenames */
+			continue;
+		} else if (opts && !strcmp(argv[i], "-do")) {
+			nextArg(argc, argv, &i);
+			toDoCommand = argv[i];
+		} else if (opts && !strcmp(argv[i], "-lm")) {
+			copyCommandLineArg(commandLine, argv[i]);
+			nextArg(argc, argv, &i);
+			langMode = argv[i];
+			copyCommandLineArg(commandLine, argv[i]);
+		} else if (opts && (!strcmp(argv[i], "-g") || !strcmp(argv[i], "-geometry"))) {
+			copyCommandLineArg(commandLine, argv[i]);
+			nextArg(argc, argv, &i);
+			geometry = argv[i];
+			copyCommandLineArg(commandLine, argv[i]);
+		} else if (opts && !strcmp(argv[i], "-read")) {
+			read = 1;
+		} else if (opts && !strcmp(argv[i], "-create")) {
+			create = 1;
+		} else if (opts && !strcmp(argv[i], "-tabbed")) {
+			tabbed = 1;
+			group = 0; /* override -group option */
+		} else if (opts && !strcmp(argv[i], "-untabbed")) {
+			tabbed = 0;
+			group = 0; /* override -group option */
+		} else if (opts && !strcmp(argv[i], "-group")) {
+			group = 2; /* 2: start new group, 1: in group */
+		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
+			iconic = 1;
+			copyCommandLineArg(commandLine, argv[i]);
+		} else if (opts && !strcmp(argv[i], "-line")) {
+			nextArg(argc, argv, &i);
+			nRead = sscanf(argv[i], "%d", &lineArg);
+			if (nRead != 1)
+				fprintf(stderr, "nc: argument to line should be a number\n");
+			else
+				lineNum = lineArg;
+		} else if (opts && (*argv[i] == '+')) {
+			nRead = sscanf((argv[i] + 1), "%d", &lineArg);
+			if (nRead != 1)
+				fprintf(stderr, "nc: argument to + should be a number\n");
+			else
+				lineNum = lineArg;
+		} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noask"))) {
+			; /* Ignore resource-based arguments which are processed later */
+		} else if (opts && (!strcmp(argv[i], "-svrname") || !strcmp(argv[i], "-svrcmd"))) {
+			nextArg(argc, argv, &i); /* Ignore rsrc args with data */
+		} else if (opts && (!strcmp(argv[i], "-xrm") || !strcmp(argv[i], "-display"))) {
+			copyCommandLineArg(commandLine, argv[i]);
+			nextArg(argc, argv, &i); /* Ignore rsrc args with data */
+			copyCommandLineArg(commandLine, argv[i]);
+		} else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
+			printNcVersion();
+			exit(EXIT_SUCCESS);
+		} else if (opts && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "-help"))) {
+			fprintf(stderr, "%s", cmdLineHelp);
+			exit(EXIT_SUCCESS);
+		} else if (opts && (*argv[i] == '-')) {
 
-            /* Create the file open atoms for the paths supplied */
-            addToFileList(path);
-	    fileCount++;
+			fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i], cmdLineHelp);
+			exit(EXIT_FAILURE);
+		} else {
+			if (ParseFilename(argv[i], name, path) != 0) {
+				/* An Error, most likely too long paths/strings given */
+				commandLine->serverRequest = nullptr;
+				return;
+			}
+			strcat(path, name);
 
+			/* determine if file is to be openned in new tab, by
+			   factoring the options -group, -tabbed & -untabbed */
+			if (group == 2) {
+				isTabbed = 0; /* start a new window for new group */
+				group = 1;    /* next file will be within group */
+			} else if (group == 1) {
+				isTabbed = 1; /* new tab for file in group */
+			} else {
+				isTabbed = tabbed; /* not in group */
+			}
 
-            /* These switches only affect the next filename argument, not all */
-            toDoCommand = "";
-            lineNum = 0;
-    	}
-    }
-    
-    /* If there's an un-written -do command, or we are to open a new window,
-     * or user has requested iconic state, but not provided a file name,
-     * create a server request with an empty file name and requested
-     * iconic state (and optional language mode and geometry).
-     */
-    if (toDoCommand[0] != '\0' || fileCount == 0) {
-	sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n%n", iconic, tabbed,
-		(long) strlen(toDoCommand),
-		(long) strlen(langMode), (long) strlen(geometry), &charsWritten);
-	outPtr += charsWritten;
-	strcpy(outPtr, toDoCommand);
-	outPtr += strlen(toDoCommand);
-	*outPtr++ = '\n';
-	strcpy(outPtr, langMode);
-	outPtr += strlen(langMode);
-	*outPtr++ = '\n';
-	strcpy(outPtr, geometry);
-	outPtr += strlen(geometry);
-	*outPtr++ = '\n';
-    }
-    
-    *outPtr = '\0';
-    commandLine->serverRequest = commandString;
+			/* SunOS 4 acc or acc and/or its runtime library has a bug
+			   such that %n fails (segv) if it follows a string in a
+			   printf or sprintf.  The silly code below avoids this.
+
+			   The "long" cast on strlen() is necessary because size_t
+			   is 64 bit on Alphas, and 32-bit on most others.  There is
+			   no printf format specifier for "size_t", thanx, ANSI. */
+			sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum, read, create, iconic, isTabbed, (long)strlen(path), (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry), &charsWritten);
+			outPtr += charsWritten;
+			strcpy(outPtr, path);
+			outPtr += strlen(path);
+			*outPtr++ = '\n';
+			strcpy(outPtr, toDoCommand);
+			outPtr += strlen(toDoCommand);
+			*outPtr++ = '\n';
+			strcpy(outPtr, langMode);
+			outPtr += strlen(langMode);
+			*outPtr++ = '\n';
+			strcpy(outPtr, geometry);
+			outPtr += strlen(geometry);
+			*outPtr++ = '\n';
+
+			/* Create the file open atoms for the paths supplied */
+			addToFileList(path);
+			fileCount++;
+
+			/* These switches only affect the next filename argument, not all */
+			toDoCommand = "";
+			lineNum = 0;
+		}
+	}
+
+	/* If there's an un-written -do command, or we are to open a new window,
+	 * or user has requested iconic state, but not provided a file name,
+	 * create a server request with an empty file name and requested
+	 * iconic state (and optional language mode and geometry).
+	 */
+	if (toDoCommand[0] != '\0' || fileCount == 0) {
+		sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n%n", iconic, tabbed, (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry), &charsWritten);
+		outPtr += charsWritten;
+		strcpy(outPtr, toDoCommand);
+		outPtr += strlen(toDoCommand);
+		*outPtr++ = '\n';
+		strcpy(outPtr, langMode);
+		outPtr += strlen(langMode);
+		*outPtr++ = '\n';
+		strcpy(outPtr, geometry);
+		outPtr += strlen(geometry);
+		*outPtr++ = '\n';
+	}
+
+	*outPtr = '\0';
+	commandLine->serverRequest = commandString;
 }
 
+static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, char *commandString, Atom serverRequestAtom) {
+	XtIntervalId timerId;
+	Boolean timeOut = False;
 
-static void waitUntilRequestProcessed(XtAppContext context,
-                                      Window rootWindow,
-                                      char* commandString,
-                                      Atom serverRequestAtom)
-{
-    XtIntervalId timerId;
-    Boolean timeOut = False;
+	/* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
+	   window to activate the server */
+	XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)commandString, strlen(commandString));
 
-    /* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
-       window to activate the server */
-    XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8,
-    	    PropModeReplace, (unsigned char *)commandString,
-    	    strlen(commandString));
-    
-    /* Set up a timeout proc in case the server is dead.  The standard
-       selection timeout is probably a good guess at how long to wait
-       for this style of inter-client communication as well */
-    timerId = XtAppAddTimeOut(context,
-                              REQUEST_TIMEOUT,
-                              (XtTimerCallbackProc)timeOutProc,
-                              &timeOut);
-    currentWaitForAtom = serverRequestAtom;
+	/* Set up a timeout proc in case the server is dead.  The standard
+	   selection timeout is probably a good guess at how long to wait
+	   for this style of inter-client communication as well */
+	timerId = XtAppAddTimeOut(context, REQUEST_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
+	currentWaitForAtom = serverRequestAtom;
 
-    /* Wait for the property to be deleted to know the request was processed */
-    while (!timeOut) {
-        XEvent event;
-        const XPropertyEvent *e = (const XPropertyEvent *)&event;
+	/* Wait for the property to be deleted to know the request was processed */
+	while (!timeOut) {
+		XEvent event;
+		const XPropertyEvent *e = (const XPropertyEvent *)&event;
 
-        XtAppNextEvent(context, &event);
-        if (e->window == rootWindow && 
-            e->atom == serverRequestAtom &&
-            e->state == PropertyDelete)
-            break;
-        XtDispatchEvent(&event);
-    }
+		XtAppNextEvent(context, &event);
+		if (e->window == rootWindow && e->atom == serverRequestAtom && e->state == PropertyDelete)
+			break;
+		XtDispatchEvent(&event);
+	}
 
-    /* Exit if the timeout expired. */
-    if (timeOut) {
-        fprintf(stderr, "%s: The server did not respond to the request.\n", APP_NAME);
-        XtCloseDisplay(TheDisplay);
-        exit(EXIT_FAILURE);
-    } else {
-        XtRemoveTimeOut(timerId);
-    }
-} 
+	/* Exit if the timeout expired. */
+	if (timeOut) {
+		fprintf(stderr, "%s: The server did not respond to the request.\n", APP_NAME);
+		XtCloseDisplay(TheDisplay);
+		exit(EXIT_FAILURE);
+	} else {
+		XtRemoveTimeOut(timerId);
+	}
+}
 
-static void waitUntilFilesOpenedOrClosed(XtAppContext context,
-        Window rootWindow)
-{
-    XtIntervalId timerId;
-    Boolean timeOut = False;
+static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow) {
+	XtIntervalId timerId;
+	Boolean timeOut = False;
 
-    /* Set up a timeout proc so we don't wait forever if the server is dead.
-       The standard selection timeout is probably a good guess at how
-       long to wait for this style of inter-client communication as
-       well */
-    timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, 
-                (XtTimerCallbackProc)timeOutProc, &timeOut);
-    currentWaitForAtom = noAtom;
+	/* Set up a timeout proc so we don't wait forever if the server is dead.
+	   The standard selection timeout is probably a good guess at how
+	   long to wait for this style of inter-client communication as
+	   well */
+	timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
+	currentWaitForAtom = noAtom;
 
-    /* Wait for all of the windows to be opened by server,
-     * and closed if -wait was supplied */
-    while (fileListHead.fileList) {
-        XEvent event;
-        const XPropertyEvent *e = (const XPropertyEvent *)&event;
+	/* Wait for all of the windows to be opened by server,
+	 * and closed if -wait was supplied */
+	while (fileListHead.fileList) {
+		XEvent event;
+		const XPropertyEvent *e = (const XPropertyEvent *)&event;
 
-        XtAppNextEvent(context, &event);
+		XtAppNextEvent(context, &event);
 
-        /* Update the fileList and check if all files have been closed. */
-        if (e->type == PropertyNotify && e->window == rootWindow) {
-            FileListEntry *item;
+		/* Update the fileList and check if all files have been closed. */
+		if (e->type == PropertyNotify && e->window == rootWindow) {
+			FileListEntry *item;
 
-            if (e->state == PropertyDelete) {
-                for (item = fileListHead.fileList; item; item = item->next) {
-                    if (e->atom == item->waitForFileOpenAtom) {
-                        /* The 'waitForFileOpen' property is deleted when the file is opened */
-                        fileListHead.waitForOpenCount--;
-                        item->waitForFileOpenAtom = None;
+			if (e->state == PropertyDelete) {
+				for (item = fileListHead.fileList; item; item = item->next) {
+					if (e->atom == item->waitForFileOpenAtom) {
+						/* The 'waitForFileOpen' property is deleted when the file is opened */
+						fileListHead.waitForOpenCount--;
+						item->waitForFileOpenAtom = None;
 
-                        /* Reset the timer while we wait for all files to be opened. */
-                        XtRemoveTimeOut(timerId);
-                        timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, 
-                                    (XtTimerCallbackProc)timeOutProc, &timeOut);
-                    } else if (e->atom == item->waitForFileClosedAtom) {
-                        /* When file is opened in -wait mode the property
-                         * is deleted when the file is closed.
-                         */
-                        fileListHead.waitForCloseCount--;
-                        item->waitForFileClosedAtom = None;
-                    }
-                }
-                
-                if (fileListHead.waitForOpenCount == 0 && !timeOut) {
-                    XtRemoveTimeOut(timerId);
-                }
+						/* Reset the timer while we wait for all files to be opened. */
+						XtRemoveTimeOut(timerId);
+						timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
+					} else if (e->atom == item->waitForFileClosedAtom) {
+						/* When file is opened in -wait mode the property
+						 * is deleted when the file is closed.
+						 */
+						fileListHead.waitForCloseCount--;
+						item->waitForFileClosedAtom = None;
+					}
+				}
 
-                if (fileListHead.waitForOpenCount == 0 &&
-                    fileListHead.waitForCloseCount == 0) {
-                    break;
-                }
-            }
-        }
+				if (fileListHead.waitForOpenCount == 0 && !timeOut) {
+					XtRemoveTimeOut(timerId);
+				}
 
-        /* We are finished if we are only waiting for files to open and
-        ** the file open timeout has expired. */
-        if (!Preferences.waitForClose && timeOut) {
-           break;
-        }
+				if (fileListHead.waitForOpenCount == 0 && fileListHead.waitForCloseCount == 0) {
+					break;
+				}
+			}
+		}
 
-        XtDispatchEvent(&event);
-    }
-} 
+		/* We are finished if we are only waiting for files to open and
+		** the file open timeout has expired. */
+		if (!Preferences.waitForClose && timeOut) {
+			break;
+		}
 
+		XtDispatchEvent(&event);
+	}
+}
 
-static void nextArg(int argc, char **argv, int *argIndex)
-{
-    if (*argIndex + 1 >= argc) {
-    	fprintf(stderr, "nc: %s requires an argument\n%s",
-	        argv[*argIndex], cmdLineHelp);
-    	exit(EXIT_FAILURE);
-    }
-    (*argIndex)++;
+static void nextArg(int argc, char **argv, int *argIndex) {
+	if (*argIndex + 1 >= argc) {
+		fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex], cmdLineHelp);
+		exit(EXIT_FAILURE);
+	}
+	(*argIndex)++;
 }
 
 /* Copies a given nc command line argument to the server startup command
 ** line (-icon, -geometry, -xrm, ...) Special characters are protected from
-** the shell by escaping EVERYTHING with \ 
+** the shell by escaping EVERYTHING with \
 ** Note that the .shell string in the command line structure is large enough
 ** to hold the escaped characters.
 */
-static void copyCommandLineArg(CommandLine *commandLine, const char *arg)
-{
-    const char *c;
-    char *outPtr = commandLine->shell + strlen(commandLine->shell);
+static void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
+	const char *c;
+	char *outPtr = commandLine->shell + strlen(commandLine->shell);
 
-    *outPtr++ = '\'';
-    for (c=arg; *c!='\0'; c++) {
-	if (*c == '\'') {
-	    *outPtr++ = '\'';
-	    *outPtr++ = '\\';
+	*outPtr++ = '\'';
+	for (c = arg; *c != '\0'; c++) {
+		if (*c == '\'') {
+			*outPtr++ = '\'';
+			*outPtr++ = '\\';
+		}
+		*outPtr++ = *c;
+		if (*c == '\'') {
+			*outPtr++ = '\'';
+		}
 	}
-	*outPtr++ = *c;
-	if (*c == '\'') {
-	    *outPtr++ = '\'';
-	}
-    }
-    *outPtr++ = '\'';
-    *outPtr++ = ' ';
-    *outPtr = '\0';
+	*outPtr++ = '\'';
+	*outPtr++ = ' ';
+	*outPtr = '\0';
 }
 
 /* Print version of 'nc' */
-static void printNcVersion(void ) {
-   static const char *const ncHelpText = \
-   "nc (NEdit) Version 5.6 (November 2009)\n\n\
+static void printNcVersion(void) {
+	static const char *const ncHelpText = "nc (NEdit) Version 5.6 (November 2009)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
-     
-    fprintf(stdout, ncHelpText,
-                  COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-                  __DATE__, __TIME__);
+
+	fprintf(stdout, ncHelpText, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__);
 }

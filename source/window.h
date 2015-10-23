@@ -24,88 +24,80 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_WINDOW_H_INCLUDED
-#define NEDIT_WINDOW_H_INCLUDED
+#ifndef WINDOW_H_
+#define WINDOW_H_
 
 #include "nedit.h"
 #include "textBuf.h"
 
 #include <X11/Intrinsic.h>
 
-
-
-void AttachSessionMgrHandler(Widget appShell);
-WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
-void CloseWindow(WindowInfo *window);
-int NWindows(void);
-void UpdateWindowTitle(const WindowInfo *window);
-void UpdateWindowReadOnly(WindowInfo *window);
-void UpdateStatsLine(WindowInfo *window);
-void UpdateWMSizeHints(WindowInfo *window);
-void UpdateMinPaneHeights(WindowInfo *window);
-void UpdateNewOppositeMenu(WindowInfo *window, int openInTab);
-void SetWindowModified(WindowInfo *window, int modified);
-void MakeSelectionVisible(WindowInfo *window, Widget textPane);
-int GetSimpleSelection(textBuffer *buf, int *left, int *right);
-WindowInfo *FindWindowWithFile(const char *name, const char *path);
-void SetAutoIndent(WindowInfo *window, int state);
-void SetShowMatching(WindowInfo *window, int state);
-void SetFonts(WindowInfo *window, const char *fontName, const char *italicName,
-	const char *boldName, const char *boldItalicName);
-void SetColors(WindowInfo *window, const char *textFg, const char *textBg,  
-        const char *selectFg, const char *selectBg, const char *hiliteFg, 
-        const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
-void SetOverstrike(WindowInfo *window, int overstrike);
-void SetAutoWrap(WindowInfo *window, int state);
-void SetAutoScroll(WindowInfo *window, int margin);
-void SplitPane(WindowInfo *window);
+Boolean IsTopDocument(const WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
-int WidgetToPaneIndex(WindowInfo *window, Widget w);
-void ClosePane(WindowInfo *window);
-int GetShowTabBar(WindowInfo *window);
-void ShowTabBar(WindowInfo *window, int state);
-void ShowStatsLine(WindowInfo *window, int state);
-void ShowISearchLine(WindowInfo *window, int state);
-void TempShowISearch(WindowInfo *window, int state);
-void ShowLineNumbers(WindowInfo *window, int state);
-void SetModeMessage(WindowInfo *window, const char *message);
-void ClearModeMessage(WindowInfo *window);
-WindowInfo *WidgetToWindow(Widget w);
-void AddSmallIcon(Widget shell);
-void SetTabDist(WindowInfo *window, int tabDist);
-void SetEmTabDist(WindowInfo *window, int emTabDist);
-int CloseAllDocumentInWindow(WindowInfo *window);
-WindowInfo* CreateDocument(WindowInfo* shellWindow, const char* name);
+WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name);
+WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
+WindowInfo *DetachDocument(WindowInfo *window);
+WindowInfo *FindWindowWithFile(const char *name, const char *path);
+WindowInfo *GetTopDocument(Widget w);
+WindowInfo *MarkActiveDocument(WindowInfo *window);
+WindowInfo *MarkLastDocument(WindowInfo *window);
+WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window);
 WindowInfo *TabToWindow(Widget tab);
+WindowInfo *WidgetToWindow(Widget w);
+int CloseAllDocumentInWindow(WindowInfo *window);
+int GetShowTabBar(WindowInfo *window);
+int GetSimpleSelection(textBuffer *buf, int *left, int *right);
+int IsIconic(WindowInfo *window);
+int IsValidWindow(WindowInfo *window);
+int NDocuments(WindowInfo *window);
+int NWindows(void);
+int WidgetToPaneIndex(WindowInfo *window, Widget w);
+void AddSmallIcon(Widget shell);
+void AllWindowsBusy(const char *message);
+void AllWindowsUnbusy(void);
+void AttachSessionMgrHandler(Widget appShell);
+void CleanUpTabBarExposeQueue(WindowInfo *window);
+void ClearModeMessage(WindowInfo *window);
+void ClosePane(WindowInfo *window);
+void CloseWindow(WindowInfo *window);
+void LastDocument(WindowInfo *window);
+void MakeSelectionVisible(WindowInfo *window, Widget textPane);
+void MoveDocumentDialog(WindowInfo *window);
+void NextDocument(WindowInfo *window);
+void PreviousDocument(WindowInfo *window);
 void RaiseDocument(WindowInfo *window);
 void RaiseDocumentWindow(WindowInfo *window);
 void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus);
-WindowInfo *MarkLastDocument(WindowInfo *window);
-WindowInfo *MarkActiveDocument(WindowInfo *window);
-void NextDocument(WindowInfo *window);
-void PreviousDocument(WindowInfo *window);
-void LastDocument(WindowInfo *window);
-int NDocuments(WindowInfo *window);
-WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window);
-WindowInfo *DetachDocument(WindowInfo *window);
-void MoveDocumentDialog(WindowInfo *window);
-WindowInfo* GetTopDocument(Widget w);
-Boolean IsTopDocument(const WindowInfo *window);
-int IsIconic(WindowInfo *window);
-int IsValidWindow(WindowInfo *window);
-void RefreshTabState(WindowInfo *window);
-void ShowWindowTabBar(WindowInfo *window);
 void RefreshMenuToggleStates(WindowInfo *window);
+void RefreshTabState(WindowInfo *window);
 void RefreshWindowStates(WindowInfo *window);
-void AllWindowsBusy(const char* message);
-void AllWindowsUnbusy(void);
-void SortTabBar(WindowInfo *window);
+void SetAutoIndent(WindowInfo *window, int state);
+void SetAutoScroll(WindowInfo *window, int margin);
+void SetAutoWrap(WindowInfo *window, int state);
 void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);
-void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, 
-        Boolean notify);
+void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
+void SetEmTabDist(WindowInfo *window, int emTabDist);
+void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
+void SetModeMessage(WindowInfo *window, const char *message);
+void SetOverstrike(WindowInfo *window, int overstrike);
 void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive);
-void CleanUpTabBarExposeQueue(WindowInfo *window);
+void SetShowMatching(WindowInfo *window, int state);
+void SetTabDist(WindowInfo *window, int tabDist);
+void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean notify);
+void SetWindowModified(WindowInfo *window, int modified);
+void ShowISearchLine(WindowInfo *window, int state);
+void ShowLineNumbers(WindowInfo *window, int state);
+void ShowStatsLine(WindowInfo *window, int state);
+void ShowTabBar(WindowInfo *window, int state);
+void ShowWindowTabBar(WindowInfo *window);
+void SortTabBar(WindowInfo *window);
+void SplitPane(WindowInfo *window);
+void TempShowISearch(WindowInfo *window, int state);
+void UpdateMinPaneHeights(WindowInfo *window);
+void UpdateNewOppositeMenu(WindowInfo *window, int openInTab);
+void UpdateStatsLine(WindowInfo *window);
+void UpdateWMSizeHints(WindowInfo *window);
+void UpdateWindowReadOnly(WindowInfo *window);
+void UpdateWindowTitle(const WindowInfo *window);
 
-
-
-#endif /* NEDIT_WINDOW_H_INCLUDED */
+#endif

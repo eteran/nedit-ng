@@ -34,8 +34,6 @@
 #include <Xm/Xm.h>
 #include <X11/Xlib.h>
 
-
-
 #define PLAIN_LANGUAGE_MODE -1
 
 /* maximum number of language modes allowed */
@@ -44,10 +42,20 @@
 #define MAX_TITLE_FORMAT_LEN 50
 
 /* Identifiers for individual fonts in the help fonts list */
-enum helpFonts {HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT,
-    BOLD_ITALIC_HELP_FONT, FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT,
-    ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT, HELP_LINK_FONT,
-    H1_HELP_FONT, H2_HELP_FONT, H3_HELP_FONT, NUM_HELP_FONTS
+enum helpFonts {
+	HELP_FONT,
+	BOLD_HELP_FONT,
+	ITALIC_HELP_FONT,
+	BOLD_ITALIC_HELP_FONT,
+	FIXED_HELP_FONT,
+	BOLD_FIXED_HELP_FONT,
+	ITALIC_FIXED_HELP_FONT,
+	BOLD_ITALIC_FIXED_HELP_FONT,
+	HELP_LINK_FONT,
+	H1_HELP_FONT,
+	H2_HELP_FONT,
+	H3_HELP_FONT,
+	NUM_HELP_FONTS
 };
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
@@ -149,7 +157,7 @@ char *GetPrefHelpLinkColor(void);
 char *GetPrefColorName(int colorIndex);
 void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefShell(const char *shell);
-const char* GetPrefShell(void);
+const char *GetPrefShell(void);
 char *GetPrefGeometry(void);
 char *GetPrefServerName(void);
 char *GetPrefBGMenuBtn(void);
@@ -161,7 +169,7 @@ int GetPrefStdOpenDialog(void);
 char *GetPrefDelimiters(void);
 int GetPrefMaxPrevOpenFiles(void);
 int GetPrefTypingHidesPointer(void);
-void SelectShellDialog(Widget parent, WindowInfo* forWindow);
+void SelectShellDialog(Widget parent, WindowInfo *forWindow);
 void EditLanguageModes(void);
 void ChooseFonts(WindowInfo *window, int forWindow);
 void ChooseColors(WindowInfo *window);
@@ -175,18 +183,15 @@ char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
-int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt,
-	const char *errorIn, const char *message);
+int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);
 int AllocatedStringsDiffer(const char *s1, const char *s2);
 void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults);
 int FindLanguageMode(const char *languageName);
 void UnloadLanguageModeTipsFile(WindowInfo *window);
 void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults);
-Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc,
-	void *cbArg);
+Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg);
 void SetLangModeMenu(Widget optMenu, const char *modeName);
-void CreateLanguageModeSubMenu(WindowInfo* window, const Widget parent,
-        const char* name, const char* label, const char mnemonic);
+void CreateLanguageModeSubMenu(WindowInfo *window, const Widget parent, const char *name, const char *label, const char mnemonic);
 void SetPrefFindReplaceUsesSelection(int state);
 int GetPrefFindReplaceUsesSelection(void);
 int GetPrefStickyCaseSenseBtn(void);
@@ -196,8 +201,8 @@ int GetPrefBeepOnSearchWrap(void);
 void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope(void);
 #endif
-void SetPrefTitleFormat(const char* format);
-const char* GetPrefTitleFormat(void);
+void SetPrefTitleFormat(const char *format);
+const char *GetPrefTitleFormat(void);
 int GetPrefOverrideVirtKeyBindings(void);
 int GetPrefTruncSubstitution(void);
 int GetPrefOpenInTab(void);
@@ -208,7 +213,5 @@ Boolean GetPrefFocusOnRaise(void);
 Boolean GetPrefHonorSymlinks(void);
 Boolean GetPrefForceOSConversion(void);
 void SetPrefFocusOnRaise(Boolean);
-
-
 
 #endif /* NEDIT_PREFERENCES_H_INCLUDED */

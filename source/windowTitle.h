@@ -26,27 +26,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_WINDOWTITLE_H_INCLUDED
-#define NEDIT_WINDOWTITLE_H_INCLUDED
+#ifndef WINDOW_TITLE_H_
+#define WINDOW_TITLE_H_
 
 #include "nedit.h"
 
 #include <X11/Intrinsic.h>
 
-
-
-char *FormatWindowTitle(const char* filename,
-                        const char* path,
-                        const char* clearCaseViewTag,
-                        const char* serverName,
-                        int isServer,
-                        int filenameSet,
-                        int lockReasons,
-                        int fileChanged,
-                        const char* titleFormat);
-                        
+char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const char *titleFormat);
 void EditCustomTitleFormat(WindowInfo *window);
 
-
-
-#endif /* NEDIT_WINDOWTITLE_H_INCLUDED */
+#endif

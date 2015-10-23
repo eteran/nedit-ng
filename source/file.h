@@ -40,13 +40,8 @@
 #define YES_SBC_DIALOG_RESPONSE 1
 #define NO_SBC_DIALOG_RESPONSE 2
 
-
-
-WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic,
-        const char *languageMode, const char *defaultPath);
-WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name,
-        const char *path, int flags, char *geometry, int iconic,
-	const char *languageMode, int tabbed, int bgOpen);
+WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath);
+WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
 void RevertToSaved(WindowInfo *window);
 int SaveWindow(WindowInfo *window);
 int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap);
@@ -57,13 +52,10 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 int WriteBackupFile(WindowInfo *window);
 int IncludeFile(WindowInfo *window, const char *name);
 int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname);
-int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname,
-    	int *fileFormat, int *addWrap);
+int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap);
 int CheckReadOnly(WindowInfo *window);
 void RemoveBackupFile(WindowInfo *window);
 void UniqueUntitledName(char *name);
 void CheckForChangesToFile(WindowInfo *window);
-
-
 
 #endif /* NEDIT_FILE_H_INCLUDED */

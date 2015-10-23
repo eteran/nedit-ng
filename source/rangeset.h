@@ -35,8 +35,6 @@
 
 #define N_RANGESETS 63
 
-
-
 struct Range;
 struct Rangeset;
 
@@ -53,19 +51,17 @@ int RangesetAddBetween(Rangeset *rangeset, int start, int end);
 int RangesetRemove(Rangeset *origSet, Rangeset *minusSet);
 int RangesetRemoveBetween(Rangeset *rangeset, int start, int end);
 int RangesetGetNRanges(Rangeset *rangeset);
-void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, 
-        int *count, const char **color, const char **name, const char **mode);
+void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, int *count, const char **color, const char **name, const char **mode);
 RangesetTable *RangesetTableAlloc(textBuffer *buf);
 RangesetTable *RangesetTableFree(RangesetTable *table);
-RangesetTable *RangesetTableClone(RangesetTable *srcTable,
-        textBuffer *destBuffer);
+RangesetTable *RangesetTableClone(RangesetTable *srcTable, textBuffer *destBuffer);
 int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
 int RangesetLabelOK(int label);
 int RangesetCreate(RangesetTable *table);
 int nRangesetsAvailable(RangesetTable *table);
 Rangeset *RangesetForget(RangesetTable *table, int label);
 Rangeset *RangesetFetch(RangesetTable *table, int label);
-unsigned char * RangesetGetList(RangesetTable *table);
+unsigned char *RangesetGetList(RangesetTable *table);
 void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
 void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
@@ -76,9 +72,6 @@ int RangesetAssignName(Rangeset *rangeset, char *name);
 int RangesetGetColorValid(Rangeset *rangeset, Pixel *color);
 char *RangesetTableGetColorName(RangesetTable *table, int index);
 int RangesetTableGetColorValid(RangesetTable *table, int index, Pixel *color);
-int RangesetTableAssignColorPixel(RangesetTable *table, int index, Pixel color,
-	int ok);
-
-
+int RangesetTableAssignColorPixel(RangesetTable *table, int index, Pixel color, int ok);
 
 #endif /* rangeset_h_DEFINED */

@@ -53,9 +53,8 @@
 #include <string.h>
 #include <sys/param.h>
 
-
 #include <Xm/Xm.h>
-#include <Xm/XmP.h>         /* These are for applying style info to help text */
+#include <Xm/XmP.h> /* These are for applying style info to help text */
 #include <Xm/Form.h>
 #include <Xm/PrimitiveP.h>
 #include <Xm/ScrolledW.h>
@@ -70,18 +69,18 @@
 /*                              SYMBOL DEFINITIONS                            */
 /*============================================================================*/
 
-#define EOS '\0'              /* end-of-string character                  */
+#define EOS '\0' /* end-of-string character                  */
 
-#define CLICK_THRESHOLD 5     /* number of pixels mouse may move from its */
-                              /* pressed location for mouse-up to be      */
-                              /* considered a valid click (as opposed to  */
-                              /* a drag or mouse-pick error)              */
+#define CLICK_THRESHOLD 5 /* number of pixels mouse may move from its */
+                          /* pressed location for mouse-up to be      */
+                          /* considered a valid click (as opposed to  */
+                          /* a drag or mouse-pick error)              */
 
 /*============================================================================*/
 /*                             VARIABLE DECLARATIONS                          */
 /*============================================================================*/
 
-static Widget HelpWindows[NUM_TOPICS] = {nullptr}; 
+static Widget HelpWindows[NUM_TOPICS] = {nullptr};
 static Widget HelpTextPanes[NUM_TOPICS] = {nullptr};
 static textBuffer *HelpStyleBuffers[NUM_TOPICS] = {nullptr};
 static int navHistForw[NUM_TOPICS];
@@ -97,53 +96,47 @@ static int LastSearchWasAllTopics = False;
    The NEdit text widget uses the first help style, 'A', to calculate window
    width, so making 'A' a fixed font will yield window widths calibrated to
    match width-dependent fixed font layouts in the help text. */
-static enum helpFonts StyleFonts[] =
-{
+static enum helpFonts StyleFonts[] = {
     /* Fixed fonts, styles: 'A', 'B', 'C', 'D' */
-    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT,
-    BOLD_ITALIC_FIXED_HELP_FONT,
+    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT,
 
     /* Underlined fixed fonts, styles: 'E', 'F', 'G', 'H' */
-    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT,
-    BOLD_ITALIC_FIXED_HELP_FONT,
+    FIXED_HELP_FONT, BOLD_FIXED_HELP_FONT, ITALIC_FIXED_HELP_FONT, BOLD_ITALIC_FIXED_HELP_FONT,
 
     /* Normal (proportional) fonts, styles: 'I', 'J', 'K', 'L' */
-    HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT, BOLD_ITALIC_HELP_FONT,
+    HELP_FONT,       BOLD_HELP_FONT,       ITALIC_HELP_FONT,       BOLD_ITALIC_HELP_FONT,
 
     /* Underlined fonts, styles: 'M', 'N', 'O', 'P' */
-    HELP_FONT, BOLD_HELP_FONT, ITALIC_HELP_FONT, BOLD_ITALIC_HELP_FONT,
+    HELP_FONT,       BOLD_HELP_FONT,       ITALIC_HELP_FONT,       BOLD_ITALIC_HELP_FONT,
 
     /* Link font, style: 'Q' */
     HELP_FONT,
 
     /* Heading fonts, styles: 'R', 'S', 'T' */
-    H1_HELP_FONT, H2_HELP_FONT,  H3_HELP_FONT
-};
+    H1_HELP_FONT,    H2_HELP_FONT,         H3_HELP_FONT};
 
-static int StyleUnderlines[] =
-{
+static int StyleUnderlines[] = {
     /* Fixed fonts, styles: 'A', 'B', 'C', 'D' */
     False, False, False, False,
 
     /* Underlined fixed fonts, styles: 'E', 'F', 'G', 'H' */
-    True, True, True, True,
+    True,  True,  True,  True,
 
     /* Normal (proportional) fonts, styles: 'I', 'J', 'K', 'L' */
     False, False, False, False,
 
     /* Underlined fonts, styles: 'M', 'N', 'O', 'P' */
-    True, True, True, True,
+    True,  True,  True,  True,
 
     /* Link font, style: 'Q' */
     True,
 
     /* Heading fonts, styles: 'R', 'S', 'T' */
-    False, False, False
-};
+    False, False, False};
 
 #define N_STYLES (XtNumber(StyleFonts))
 
-static styleTableEntry HelpStyleInfo[ N_STYLES ];
+static styleTableEntry HelpStyleInfo[N_STYLES];
 
 /* Translation table for style codes (A, B, C, ...) to their ASCII codes.
    For systems using ASCII, this is just a one-to-one mapping, but the
@@ -151,13 +144,11 @@ static styleTableEntry HelpStyleInfo[ N_STYLES ];
    */
 static unsigned char AlphabetToAsciiTable[256];
 
-/* Macro that calculates the zero-based index for a given style, taking 
-   into account that the character set may not use ASCII coding, but EBCDIC. 
+/* Macro that calculates the zero-based index for a given style, taking
+   into account that the character set may not use ASCII coding, but EBCDIC.
    The "style" argument must be one of the characters A - Z.
    In ASCII, this comes down to "style - STYLE_PLAIN". */
-#define STYLE_INDEX(style)                              \
-    (AlphabetToAsciiTable[(unsigned char)style] -       \
-     AlphabetToAsciiTable[(unsigned char)STYLE_PLAIN])
+#define STYLE_INDEX(style) (AlphabetToAsciiTable[(unsigned char)style] - AlphabetToAsciiTable[(unsigned char)STYLE_PLAIN])
 
 /*============================================================================*/
 /*                             PROGRAM PROTOTYPES                             */
@@ -170,12 +161,10 @@ static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData);
 static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData);
 static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData);
-static void searchHelpAgainCB(Widget w, XtPointer clientData,
-        XtPointer callData);
+static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData);
 static void printCB(Widget w, XtPointer clientData, XtPointer callData);
-static char *stitch(Widget  parent, const char **string_list, char **styleMap);
-static void searchHelpText(Widget parent, int parentTopic,
-        const char *searchFor, int allSections, int startPos, int startTopic);
+static char *stitch(Widget parent, const char **string_list, char **styleMap);
+static void searchHelpText(Widget parent, int parentTopic, const char *searchFor, int allSections, int startPos, int startTopic);
 static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic);
 static int findTopicFromShellWidget(Widget shellWidget);
 static void loadFontsAndColors(Widget parent, int style);
@@ -198,335 +187,281 @@ static char _XmVersionString[] = "unknown";
 
 static char *bldInfoString = nullptr;
 
-static void freeBuildInfo(void)
-{
-    /* This keeps memory leak detectors happy */
-    XtFree(bldInfoString);
+static void freeBuildInfo(void) {
+	/* This keeps memory leak detectors happy */
+	XtFree(bldInfoString);
 }
 
-static const char *const warning =
-    "\nThis NEdit was built with a known-bad version of Motif.  Please "
-    "do not report any bugs you encounter unless you can reproduce "
-    "them with a known-good binary from the www.nedit.org website. "
-    "If this binary was supplied with your Linux distribution please "
-    "file a bug report with them asking them to build NEdit with a "
-    "known-good version of Motif.\n";
+static const char *const warning = "\nThis NEdit was built with a known-bad version of Motif.  Please "
+                                   "do not report any bugs you encounter unless you can reproduce "
+                                   "them with a known-good binary from the www.nedit.org website. "
+                                   "If this binary was supplied with your Linux distribution please "
+                                   "file a bug report with them asking them to build NEdit with a "
+                                   "known-good version of Motif.\n";
 
+static const char *getBuildInfo(void) {
+	static const char *bldFormat = "%s\n"
+	                               "     Built on: %s, %s, %s\n"
+	                               "     Built at: %s, %s\n"
+	                               "   With Motif: %s%d.%d.%d [%s]\n"
+	                               "Running Motif: %d.%d [%s]\n"
+	                               "       Server: %s %d\n"
+	                               "       Visual: %s\n"
+	                               "       Locale: %s\n";
 
-static const char *getBuildInfo(void)
-{
-    static const char *bldFormat =
-        "%s\n"
-        "     Built on: %s, %s, %s\n"
-        "     Built at: %s, %s\n"
-        "   With Motif: %s%d.%d.%d [%s]\n"
-        "Running Motif: %d.%d [%s]\n"
-        "       Server: %s %d\n"
-        "       Visual: %s\n"
-        "       Locale: %s\n"
-       ;
+	static const char *visualClass[] = {"StaticGray", "GrayScale", "StaticColor", "PseudoColor", "TrueColor", "DirectColor"};
 
-    static const char *visualClass[] = {"StaticGray",  "GrayScale",
-                                        "StaticColor", "PseudoColor",
-                                        "TrueColor",   "DirectColor"};
+	static const char *const stabilities[] = {"", "(Untested) ", "(Known Bad) "};
 
-    static const char *const stabilities[] = {"", "(Untested) ", "(Known Bad) "};
+	if (bldInfoString == nullptr) {
+		const char *locale;
+		char visualStr[500] = "<unknown>";
+		const enum MotifStability stab = GetMotifStability();
 
-    if (bldInfoString == nullptr)
-    {
-        const char *locale;
-        char visualStr[500] = "<unknown>";
-        const enum MotifStability stab = GetMotifStability();
+		if (TheDisplay) {
+			Visual *visual;
+			int depth;
+			Colormap map;
+			Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
 
-        if (TheDisplay) {
-            Visual     *visual;
-            int         depth;
-            Colormap    map;
-            Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME,
-                                                        APP_CLASS, &visual,
-                                                        &depth, &map);
-														
-#if defined	(__cplusplus)
-            sprintf(visualStr,"%d-bit %s (ID %#lx%s)",
-                    depth,
-                    visualClass[visual->c_class],
-                    visual->visualid,
-                    usingDefaultVisual ? ", Default" : "");
+#if defined(__cplusplus)
+			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 #else
-            sprintf(visualStr,"%d-bit %s (ID %#lx%s)",
-                    depth,
-                    visualClass[visual->class],
-                    visual->visualid,
-                    usingDefaultVisual ? ", Default" : "");
+			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 #endif
-        }
+		}
 
-        bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
-        locale = setlocale(LC_MESSAGES, "");
+		bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
+		locale = setlocale(LC_MESSAGES, "");
 
-        sprintf(bldInfoString, bldFormat,
-             NEditVersion,
-             COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER,
-             linkdate, linktime,
-             stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL,
-             XmVERSION_STRING, 
-             xmUseVersion/1000, xmUseVersion%1000,
-             _XmVersionString,
-             (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)),
-             (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)),
-             visualStr,
-             locale ? locale : "None");
+		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, linkdate, linktime, stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
+		        _XmVersionString, (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)), (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)), visualStr, locale ? locale : "None");
 
-        if (stab == MotifKnownBad)
-            strcat(bldInfoString, warning);
+		if (stab == MotifKnownBad)
+			strcat(bldInfoString, warning);
 
-        atexit(freeBuildInfo);
-    }
-    
-    return bldInfoString;
+		atexit(freeBuildInfo);
+	}
+
+	return bldInfoString;
 }
 
 /*
 ** Initialization for help system data, needs to be done only once.
 */
-static void initHelpStyles (Widget parent) 
-{
-    static int styleTableInitialized = False;
-    
-    if (! styleTableInitialized) 
-    {
-        Pixel fg;
-        int   styleIndex;
-        const char ** line;
+static void initHelpStyles(Widget parent) {
+	static int styleTableInitialized = False;
 
-        XtVaGetValues(parent, XtNforeground, &fg, nullptr);
+	if (!styleTableInitialized) {
+		Pixel fg;
+		int styleIndex;
+		const char **line;
 
-        for (styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++) 
-        {
-            HelpStyleInfo[ styleIndex ].color     = fg;
-            HelpStyleInfo[ styleIndex ].underline = StyleUnderlines[styleIndex];
-            HelpStyleInfo[ styleIndex ].font      = nullptr;
-        }
+		XtVaGetValues(parent, XtNforeground, &fg, nullptr);
 
-        styleTableInitialized  = True;
+		for (styleIndex = 0; styleIndex < STL_HD + MAX_HEADING; styleIndex++) {
+			HelpStyleInfo[styleIndex].color = fg;
+			HelpStyleInfo[styleIndex].underline = StyleUnderlines[styleIndex];
+			HelpStyleInfo[styleIndex].font = nullptr;
+		}
 
-        /*-------------------------------------------------------
-        * Only attempt to add build information to version text
-        * when string formatting symbols are present in the text.
-        * This special case is needed to incorporate this 
-        * dynamically created information into the static help.
-        *-------------------------------------------------------*/
-        for (line = HelpText[ HELP_VERSION ]; *line != nullptr; line++) 
-        {
-            /*--------------------------------------------------
-            * If and when this printf format is found in the
-            * version help text, replace that line with the
-            * build information. Then stitching the help text
-            * will have the final count of characters to use.
-            *--------------------------------------------------*/
-            if (strstr (*line, "%s")  != nullptr) 
-            {
-                const char * bldInfo  = getBuildInfo();
-                char * text     = XtMalloc (strlen (*line)  + strlen (bldInfo));
-                sprintf (text, *line, bldInfo);
-                *line = text;
-                break;
-            }
-        }
+		styleTableInitialized = True;
 
-        /*---------------------------------------------------------
-         * Also initialize the alphabet-to-ASCII-code table (to 
-         * make the style mapping also work on EBCDIC). 
-         * DON'T use 'A' to initialize the table! 'A' != 65 in EBCDIC.
-         *--------------------------------------------------------*/
-        AlphabetToAsciiTable[(unsigned char)'A'] = ASCII_A +  0;
-        AlphabetToAsciiTable[(unsigned char)'B'] = ASCII_A +  1;
-        AlphabetToAsciiTable[(unsigned char)'C'] = ASCII_A +  2;
-        AlphabetToAsciiTable[(unsigned char)'D'] = ASCII_A +  3;
-        AlphabetToAsciiTable[(unsigned char)'E'] = ASCII_A +  4;
-        AlphabetToAsciiTable[(unsigned char)'F'] = ASCII_A +  5;
-        AlphabetToAsciiTable[(unsigned char)'G'] = ASCII_A +  6;
-        AlphabetToAsciiTable[(unsigned char)'H'] = ASCII_A +  7;
-        AlphabetToAsciiTable[(unsigned char)'I'] = ASCII_A +  8;
-        AlphabetToAsciiTable[(unsigned char)'J'] = ASCII_A +  9;
-        AlphabetToAsciiTable[(unsigned char)'K'] = ASCII_A + 10;
-        AlphabetToAsciiTable[(unsigned char)'L'] = ASCII_A + 11;
-        AlphabetToAsciiTable[(unsigned char)'M'] = ASCII_A + 12;
-        AlphabetToAsciiTable[(unsigned char)'N'] = ASCII_A + 13;
-        AlphabetToAsciiTable[(unsigned char)'O'] = ASCII_A + 14;
-        AlphabetToAsciiTable[(unsigned char)'P'] = ASCII_A + 15;
-        AlphabetToAsciiTable[(unsigned char)'Q'] = ASCII_A + 16;
-        AlphabetToAsciiTable[(unsigned char)'R'] = ASCII_A + 17;
-        AlphabetToAsciiTable[(unsigned char)'S'] = ASCII_A + 18;
-        AlphabetToAsciiTable[(unsigned char)'T'] = ASCII_A + 19;
-        AlphabetToAsciiTable[(unsigned char)'U'] = ASCII_A + 20;
-        AlphabetToAsciiTable[(unsigned char)'V'] = ASCII_A + 21;
-        AlphabetToAsciiTable[(unsigned char)'W'] = ASCII_A + 22;
-        AlphabetToAsciiTable[(unsigned char)'X'] = ASCII_A + 23;
-        AlphabetToAsciiTable[(unsigned char)'Y'] = ASCII_A + 24;
-        AlphabetToAsciiTable[(unsigned char)'Z'] = ASCII_A + 25;
-    }
+		/*-------------------------------------------------------
+		* Only attempt to add build information to version text
+		* when string formatting symbols are present in the text.
+		* This special case is needed to incorporate this
+		* dynamically created information into the static help.
+		*-------------------------------------------------------*/
+		for (line = HelpText[HELP_VERSION]; *line != nullptr; line++) {
+			/*--------------------------------------------------
+			* If and when this printf format is found in the
+			* version help text, replace that line with the
+			* build information. Then stitching the help text
+			* will have the final count of characters to use.
+			*--------------------------------------------------*/
+			if (strstr(*line, "%s") != nullptr) {
+				const char *bldInfo = getBuildInfo();
+				char *text = XtMalloc(strlen(*line) + strlen(bldInfo));
+				sprintf(text, *line, bldInfo);
+				*line = text;
+				break;
+			}
+		}
+
+		/*---------------------------------------------------------
+		 * Also initialize the alphabet-to-ASCII-code table (to
+		 * make the style mapping also work on EBCDIC).
+		 * DON'T use 'A' to initialize the table! 'A' != 65 in EBCDIC.
+		 *--------------------------------------------------------*/
+		AlphabetToAsciiTable[(unsigned char)'A'] = ASCII_A + 0;
+		AlphabetToAsciiTable[(unsigned char)'B'] = ASCII_A + 1;
+		AlphabetToAsciiTable[(unsigned char)'C'] = ASCII_A + 2;
+		AlphabetToAsciiTable[(unsigned char)'D'] = ASCII_A + 3;
+		AlphabetToAsciiTable[(unsigned char)'E'] = ASCII_A + 4;
+		AlphabetToAsciiTable[(unsigned char)'F'] = ASCII_A + 5;
+		AlphabetToAsciiTable[(unsigned char)'G'] = ASCII_A + 6;
+		AlphabetToAsciiTable[(unsigned char)'H'] = ASCII_A + 7;
+		AlphabetToAsciiTable[(unsigned char)'I'] = ASCII_A + 8;
+		AlphabetToAsciiTable[(unsigned char)'J'] = ASCII_A + 9;
+		AlphabetToAsciiTable[(unsigned char)'K'] = ASCII_A + 10;
+		AlphabetToAsciiTable[(unsigned char)'L'] = ASCII_A + 11;
+		AlphabetToAsciiTable[(unsigned char)'M'] = ASCII_A + 12;
+		AlphabetToAsciiTable[(unsigned char)'N'] = ASCII_A + 13;
+		AlphabetToAsciiTable[(unsigned char)'O'] = ASCII_A + 14;
+		AlphabetToAsciiTable[(unsigned char)'P'] = ASCII_A + 15;
+		AlphabetToAsciiTable[(unsigned char)'Q'] = ASCII_A + 16;
+		AlphabetToAsciiTable[(unsigned char)'R'] = ASCII_A + 17;
+		AlphabetToAsciiTable[(unsigned char)'S'] = ASCII_A + 18;
+		AlphabetToAsciiTable[(unsigned char)'T'] = ASCII_A + 19;
+		AlphabetToAsciiTable[(unsigned char)'U'] = ASCII_A + 20;
+		AlphabetToAsciiTable[(unsigned char)'V'] = ASCII_A + 21;
+		AlphabetToAsciiTable[(unsigned char)'W'] = ASCII_A + 22;
+		AlphabetToAsciiTable[(unsigned char)'X'] = ASCII_A + 23;
+		AlphabetToAsciiTable[(unsigned char)'Y'] = ASCII_A + 24;
+		AlphabetToAsciiTable[(unsigned char)'Z'] = ASCII_A + 25;
+	}
 }
 
 /*
 ** Help fonts are not loaded until they're actually needed.  This function
 ** checks if the style's font is loaded, and loads it if it's not.
 */
-static void loadFontsAndColors(Widget parent, int style)
-{
-    XFontStruct *font;
-    int r,g,b;
-    if (HelpStyleInfo[STYLE_INDEX(style)].font == nullptr)
-    {
-        font = XLoadQueryFont(XtDisplay(parent),
-                GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
-        if (font == nullptr)
-        {
-            fprintf(stderr, "NEdit: help font, %s, not available\n",
-                    GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
-            font = XLoadQueryFont(XtDisplay(parent), "fixed");
-            if (font == nullptr)
-            {
-                fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
-                        "available, cannot continue\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        HelpStyleInfo[STYLE_INDEX(style)].font = font;
+static void loadFontsAndColors(Widget parent, int style) {
+	XFontStruct *font;
+	int r, g, b;
+	if (HelpStyleInfo[STYLE_INDEX(style)].font == nullptr) {
+		font = XLoadQueryFont(XtDisplay(parent), GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
+		if (font == nullptr) {
+			fprintf(stderr, "NEdit: help font, %s, not available\n", GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
+			font = XLoadQueryFont(XtDisplay(parent), "fixed");
+			if (font == nullptr) {
+				fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
+				                "available, cannot continue\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+		HelpStyleInfo[STYLE_INDEX(style)].font = font;
 
-        if (style == STL_NM_LINK)
-            HelpStyleInfo[STYLE_INDEX(style)].color =
-                AllocColor(parent, GetPrefHelpLinkColor(), &r, &g, &b);
-    }
+		if (style == STL_NM_LINK)
+			HelpStyleInfo[STYLE_INDEX(style)].color = AllocColor(parent, GetPrefHelpLinkColor(), &r, &g, &b);
+	}
 }
 
 static void adaptNavigationButtons(int topic) {
-    Widget btn;
-    
-    if(HelpWindows[topic] == nullptr)
-        return; /* Shouldn't happen */
-    
-    btn=XtNameToWidget(HelpWindows[topic], "helpForm.prevTopic");
-    if(btn)
-    {
-        if(topic > 0)
-            XtSetSensitive(btn, True);
-        else
-            XtSetSensitive(btn, False);
-    }
+	Widget btn;
 
-    btn=XtNameToWidget(HelpWindows[topic], "helpForm.nextTopic");
-    if(btn)
-    {
-        if(topic < (NUM_TOPICS - 1))
-            XtSetSensitive(btn, True);
-        else
-            XtSetSensitive(btn, False);
-    }
+	if (HelpWindows[topic] == nullptr)
+		return; /* Shouldn't happen */
 
-    btn=XtNameToWidget(HelpWindows[topic], "helpForm.histBack");
-    if(btn)
-    {
-        if(navHistBack[topic] != -1)
-            XtSetSensitive(btn, True);
-        else
-            XtSetSensitive(btn, False);
-    }
+	btn = XtNameToWidget(HelpWindows[topic], "helpForm.prevTopic");
+	if (btn) {
+		if (topic > 0)
+			XtSetSensitive(btn, True);
+		else
+			XtSetSensitive(btn, False);
+	}
 
-    btn=XtNameToWidget(HelpWindows[topic], "helpForm.histForw");
-    if(btn)
-    {
-        if(navHistForw[topic] != -1)
-            XtSetSensitive(btn, True);
-        else
-            XtSetSensitive(btn, False);
-    }
+	btn = XtNameToWidget(HelpWindows[topic], "helpForm.nextTopic");
+	if (btn) {
+		if (topic < (NUM_TOPICS - 1))
+			XtSetSensitive(btn, True);
+		else
+			XtSetSensitive(btn, False);
+	}
 
+	btn = XtNameToWidget(HelpWindows[topic], "helpForm.histBack");
+	if (btn) {
+		if (navHistBack[topic] != -1)
+			XtSetSensitive(btn, True);
+		else
+			XtSetSensitive(btn, False);
+	}
+
+	btn = XtNameToWidget(HelpWindows[topic], "helpForm.histForw");
+	if (btn) {
+		if (navHistForw[topic] != -1)
+			XtSetSensitive(btn, True);
+		else
+			XtSetSensitive(btn, False);
+	}
 }
 
 /*
 ** Put together stored help strings to create the text and optionally the style
 ** information for a given help topic.
 */
-static char * stitch (
+static char *stitch(
 
-    Widget  parent,      /* used for dynamic font/color allocation */
-    const char ** string_list, /* given help strings to stitch together */
-    char ** styleMap     /* nullptr, or a place to store help styles */
-)
-{
-    const char  *  cp;
-    char  *  section, * sp;       /* resulting help text section            */
-    char  *  styleData, * sdp;    /* resulting style data for text          */
-    char     style = STYLE_PLAIN; /* start off each section with this style */
-    int      total_size = 0;      /* help text section size                 */
-    const char  ** crnt_line;
+    Widget parent,            /* used for dynamic font/color allocation */
+    const char **string_list, /* given help strings to stitch together */
+    char **styleMap           /* nullptr, or a place to store help styles */
+    ) {
+	const char *cp;
+	char *section, *sp;       /* resulting help text section            */
+	char *styleData, *sdp;    /* resulting style data for text          */
+	char style = STYLE_PLAIN; /* start off each section with this style */
+	int total_size = 0;       /* help text section size                 */
+	const char **crnt_line;
 
-    /*----------------------------------------------------
-    * How many characters are there going to be displayed?
-    *----------------------------------------------------*/
-    for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) 
-    {
-        for (cp = *crnt_line; *cp != EOS; cp++) 
-        {
-            /*---------------------------------------------
-            * The help text has embedded style information
-            * consisting of the style marker and a single
-            * character style, for a total of 2 characters.
-            * This style information is not to be included
-            * in the character counting below.
-            *---------------------------------------------*/
-            if (*cp != STYLE_MARKER)  {
-                total_size++;
-            }
-            else {
-                cp++;  /* skipping style marker, loop will handle style */
-            }
-        }
-    }
-    
-    /*--------------------------------------------------------
-    * Get the needed space, one area for the help text being
-    * stitched together, another for the styles to be applied.
-    *--------------------------------------------------------*/
-    sp  = section   = XtMalloc (total_size +1);
-    sdp = styleData = (styleMap) ? XtMalloc (total_size +1)  : nullptr;
-    *sp = EOS;
-    
-    /*--------------------------------------------
-    * Fill in the newly acquired contiguous space
-    * with help text and style information.
-    *--------------------------------------------*/
-    for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) 
-    {
-        for (cp = *crnt_line; *cp != EOS; cp++) 
-        {
-            if (*cp == STYLE_MARKER)
-            {
-                style = *(++cp);
-                loadFontsAndColors(parent, style);
-            } else
-            {
-                *(sp++)  = *cp;
+	/*----------------------------------------------------
+	* How many characters are there going to be displayed?
+	*----------------------------------------------------*/
+	for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) {
+		for (cp = *crnt_line; *cp != EOS; cp++) {
+			/*---------------------------------------------
+			* The help text has embedded style information
+			* consisting of the style marker and a single
+			* character style, for a total of 2 characters.
+			* This style information is not to be included
+			* in the character counting below.
+			*---------------------------------------------*/
+			if (*cp != STYLE_MARKER) {
+				total_size++;
+			} else {
+				cp++; /* skipping style marker, loop will handle style */
+			}
+		}
+	}
 
-                /* Beware of possible EBCDIC coding! Use the mapping table. */
-                if (styleMap)
-                    *(sdp++) = AlphabetToAsciiTable[(unsigned char)style];
-            }
-        }
-    }
+	/*--------------------------------------------------------
+	* Get the needed space, one area for the help text being
+	* stitched together, another for the styles to be applied.
+	*--------------------------------------------------------*/
+	sp = section = XtMalloc(total_size + 1);
+	sdp = styleData = (styleMap) ? XtMalloc(total_size + 1) : nullptr;
+	*sp = EOS;
 
-    *sp = EOS;
-    
-    /*-----------------------------------------
-    * Only deal with style map, when available.
-    *-----------------------------------------*/
-    if (styleMap)  {
-        *styleMap = styleData;
-        *sdp      = EOS;
-    }
+	/*--------------------------------------------
+	* Fill in the newly acquired contiguous space
+	* with help text and style information.
+	*--------------------------------------------*/
+	for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) {
+		for (cp = *crnt_line; *cp != EOS; cp++) {
+			if (*cp == STYLE_MARKER) {
+				style = *(++cp);
+				loadFontsAndColors(parent, style);
+			} else {
+				*(sp++) = *cp;
 
-    return section;
+				/* Beware of possible EBCDIC coding! Use the mapping table. */
+				if (styleMap)
+					*(sdp++) = AlphabetToAsciiTable[(unsigned char)style];
+			}
+		}
+	}
+
+	*sp = EOS;
+
+	/*-----------------------------------------
+	* Only deal with style map, when available.
+	*-----------------------------------------*/
+	if (styleMap) {
+		*styleMap = styleData;
+		*sdp = EOS;
+	}
+
+	return section;
 }
 
 /*
@@ -535,35 +470,32 @@ static char * stitch (
 ** user, and may appear posted over a previous parent, regardless of the parent
 ** argument.
 */
-void Help(enum HelpTopic topic)
-{
-    if (HelpWindows[topic] != nullptr)
-        RaiseShellWindow(HelpWindows[topic], True);
-    else
-        HelpWindows[topic] = createHelpPanel(topic);
-    adaptNavigationButtons(topic);
+void Help(enum HelpTopic topic) {
+	if (HelpWindows[topic] != nullptr)
+		RaiseShellWindow(HelpWindows[topic], True);
+	else
+		HelpWindows[topic] = createHelpPanel(topic);
+	adaptNavigationButtons(topic);
 }
 
-
 /* Setup Window/Icon title for the help window. */
-static void setHelpWinTitle(Widget win, enum HelpTopic topic) 
-{
+static void setHelpWinTitle(Widget win, enum HelpTopic topic) {
 
 	int topic_num = topic;
 
-    char * buf;
-	const char *topStr=HelpTitles[topic_num];
-    
-    buf=(char *)malloc(strlen(topStr) + 24);
-    topic_num++; 
-    
-    sprintf(buf, "NEdit Help (%d)", topic_num);
-    XtVaSetValues(win, XmNiconName, buf, nullptr);
-    
-    sprintf(buf, "NEdit Help: %s (%d)", topStr, topic_num);
-    XtVaSetValues(win, XmNtitle, buf, nullptr);
-  
-    free(buf);
+	char *buf;
+	const char *topStr = HelpTitles[topic_num];
+
+	buf = (char *)malloc(strlen(topStr) + 24);
+	topic_num++;
+
+	sprintf(buf, "NEdit Help (%d)", topic_num);
+	XtVaSetValues(win, XmNiconName, buf, nullptr);
+
+	sprintf(buf, "NEdit Help: %s (%d)", topStr, topic_num);
+	XtVaSetValues(win, XmNtitle, buf, nullptr);
+
+	free(buf);
 }
 
 /*
@@ -571,689 +503,538 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic)
 **
 ** Important hint: If this widget is restructured or the name of the text
 ** subwidget is changed don't forget to adapt the default translations of the
-** help text. They are located in nedit.c, look for 
-**   static char *fallbackResources 
+** help text. They are located in nedit.c, look for
+**   static char *fallbackResources
 **   (currently:  nedit.helpForm.sw.helpText*translations...)
 */
-static Widget createHelpPanel(enum HelpTopic topic)
-{
-    Arg al[50];
-    int ac;
-    Widget appShell, btn, closeBtn, form, btnFW;
-    Widget sw, hScrollBar, vScrollBar;
-    XmString st1;
-    char * helpText  = nullptr;
-    char * styleData = nullptr;
+static Widget createHelpPanel(enum HelpTopic topic) {
+	Arg al[50];
+	int ac;
+	Widget appShell, btn, closeBtn, form, btnFW;
+	Widget sw, hScrollBar, vScrollBar;
+	XmString st1;
+	char *helpText = nullptr;
+	char *styleData = nullptr;
 
-    ac = 0;
-    XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
-    appShell = CreateWidget(TheAppShell, "help",
-            topLevelShellWidgetClass, al, ac);
-    AddSmallIcon(appShell);
-    /* With openmotif 2.1.30, a crash may occur when the text widget of the
-       help window is (slowly) resized to a zero width. By imposing a 
-       minimum _window_ width, we can work around this problem. The minimum 
-       width should be larger than the width of the scrollbar. 50 is probably 
-       a safe value; this leaves room for a few characters */
-    XtVaSetValues(appShell, XtNminWidth, 50, nullptr);
-    form = XtVaCreateManagedWidget((String)"helpForm", xmFormWidgetClass, appShell,
-            nullptr);
-    XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
-    
-    /* Create the bottom row of buttons */
-    btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Find..."),
-            XmNmnemonic, 'F',
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 3,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 25,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, searchHelpCB, appShell);
-    XmStringFree(st1);
+	ac = 0;
+	XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING);
+	ac++;
+	appShell = CreateWidget(TheAppShell, "help", topLevelShellWidgetClass, al, ac);
+	AddSmallIcon(appShell);
+	/* With openmotif 2.1.30, a crash may occur when the text widget of the
+	   help window is (slowly) resized to a zero width. By imposing a
+	   minimum _window_ width, we can work around this problem. The minimum
+	   width should be larger than the width of the scrollbar. 50 is probably
+	   a safe value; this leaves room for a few characters */
+	XtVaSetValues(appShell, XtNminWidth, 50, nullptr);
+	form = XtVaCreateManagedWidget((String) "helpForm", xmFormWidgetClass, appShell, nullptr);
+	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 
-    btn = XtVaCreateManagedWidget("findAgain", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Find Again"),
-            XmNmnemonic, 'A',
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 27,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 49,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, searchHelpAgainCB, appShell);
-    XmStringFree(st1);
+	/* Create the bottom row of buttons */
+	btn = XtVaCreateManagedWidget("find", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Find..."), XmNmnemonic, 'F', XmNbottomAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition,
+	                              3, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 25, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, searchHelpCB, appShell);
+	XmStringFree(st1);
 
-    btn = XtVaCreateManagedWidget("print", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Print..."),
-            XmNmnemonic, 'P',
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 51,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 73,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, printCB, appShell);
-    XmStringFree(st1);
+	btn = XtVaCreateManagedWidget("findAgain", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Find Again"), XmNmnemonic, 'A', XmNbottomAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_POSITION,
+	                              XmNleftPosition, 27, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 49, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, searchHelpAgainCB, appShell);
+	XmStringFree(st1);
 
-    closeBtn = XtVaCreateManagedWidget("close",
-            xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Close"),
-            XmNbottomAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 75,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 97,
-            nullptr);
-    XtAddCallback(closeBtn, XmNactivateCallback, closeCB, appShell);
-    XmStringFree(st1);
-            
-    /* Create the next row of buttons (for navigation) */
-    btn = XtVaCreateManagedWidget("prevTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("<< Browse"),
-            XmNmnemonic, 'o', 
-            XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, closeBtn,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 51,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 73,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, prevTopicCB, appShell);
-    XmStringFree(st1);
+	btn = XtVaCreateManagedWidget("print", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Print..."), XmNmnemonic, 'P', XmNbottomAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition,
+	                              51, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 73, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, printCB, appShell);
+	XmStringFree(st1);
 
-    btn = XtVaCreateManagedWidget("nextTopic", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Browse >>"),
-            XmNmnemonic, 'e', 
-            XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, closeBtn,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 75, 
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 97,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, nextTopicCB, appShell);
-    XmStringFree(st1);
+	closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Close"), XmNbottomAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 75,
+	                                   XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 97, nullptr);
+	XtAddCallback(closeBtn, XmNactivateCallback, closeCB, appShell);
+	XmStringFree(st1);
 
-    btn = XtVaCreateManagedWidget("histBack", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Back"),
-            XmNmnemonic, 'B', 
-            XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, closeBtn,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 3,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 25,
-            nullptr);
-    XtAddCallback(btn, XmNactivateCallback, bwHistoryCB, appShell);
-    XmStringFree(st1);
+	/* Create the next row of buttons (for navigation) */
+	btn = XtVaCreateManagedWidget("prevTopic", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("<< Browse"), XmNmnemonic, 'o', XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, closeBtn, XmNleftAttachment,
+	                              XmATTACH_POSITION, XmNleftPosition, 51, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 73, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, prevTopicCB, appShell);
+	XmStringFree(st1);
 
-    btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form,
-            XmNlabelString, st1=XmStringCreateSimpleEx("Forward"),
-            XmNmnemonic, 'w', 
-            XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, closeBtn,
-            XmNleftAttachment, XmATTACH_POSITION,
-            XmNleftPosition, 27,
-            XmNrightAttachment, XmATTACH_POSITION,
-            XmNrightPosition, 49,
-            nullptr);
-    XtAddCallback(btnFW, XmNactivateCallback, fwHistoryCB, appShell);
-    XmStringFree(st1);
-    
-    /* Create a text widget inside of a scrolled window widget */
-    sw = XtVaCreateManagedWidget("sw", xmScrolledWindowWidgetClass, form,
-            XmNshadowThickness, 2,
-            XmNtopAttachment, XmATTACH_FORM,
-            XmNleftAttachment, XmATTACH_FORM,
-            XmNrightAttachment, XmATTACH_FORM,
-            XmNbottomAttachment, XmATTACH_WIDGET,
-            XmNbottomWidget, btnFW,
-            nullptr);
-    hScrollBar = XtVaCreateManagedWidget("hScrollBar",
-            xmScrollBarWidgetClass, sw,
-            XmNorientation, XmHORIZONTAL, 
-            XmNrepeatDelay, 10,
-            nullptr);
-    vScrollBar = XtVaCreateManagedWidget("vScrollBar",
-            xmScrollBarWidgetClass, sw,
-            XmNorientation, XmVERTICAL,
-            XmNrepeatDelay, 10,
-            nullptr);
-    /* Make sure the fixed size help font is loaded, such that we can base
-       our text widget size calculation on it. */
-    loadFontsAndColors(sw, 'A');
-    HelpTextPanes[topic] = XtVaCreateManagedWidget("helpText",
-            textWidgetClass, sw,
-            textNfont, HelpStyleInfo[0].font, /* MUST correspond to 'A' above */
-            textNrows, 30,
-            textNcolumns, 65,
-            textNbacklightCharTypes, nullptr,
-            textNhScrollBar, hScrollBar,
-            textNvScrollBar, vScrollBar,
-            textNreadOnly, True,
-            textNcontinuousWrap, True,
-            textNautoShowInsertPos, True,
-            nullptr);
-    XtVaSetValues(sw, XmNworkWindow, HelpTextPanes[topic],
-            XmNhorizontalScrollBar, hScrollBar,
-            XmNverticalScrollBar, vScrollBar,
-            nullptr);
-    
-    /* Initialize help style information, if it hasn't already been init'd */
-    initHelpStyles (HelpTextPanes[topic]);
-    
-    /* Put together the text to display and separate it into parallel text
-       and style data for display by the widget */
-    helpText = stitch (HelpTextPanes[topic], HelpText[topic], &styleData);
-    
-    /* Stuff the text into the widget's text buffer */
-    BufSetAll (TextGetBuffer (HelpTextPanes[topic]) , helpText);
-    XtFree (helpText);
-    
-    /* Create a style buffer for the text widget and fill it with the style
-       data which was generated along with the text content */
-    HelpStyleBuffers[topic] = new textBuffer;
-    BufSetAll(HelpStyleBuffers[topic], styleData);
-    XtFree (styleData);
-    TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD,
-            HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
-    
-    /* This shouldn't be necessary (what's wrong in text.c?) */
-    HandleXSelections(HelpTextPanes[topic]);
-    
-    /* Process dialog mnemonic keys */
-    AddDialogMnemonicHandler(form, FALSE);
-    
-    /* Set the default button */
-    XtVaSetValues(form, XmNdefaultButton, closeBtn, nullptr);
-    XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
-    
-    /* realize all of the widgets in the new window */
-    RealizeWithoutForcingPosition(appShell);
-    
-    /* Give the text pane the initial focus */
-    XmProcessTraversal(HelpTextPanes[topic], XmTRAVERSE_CURRENT);
+	btn = XtVaCreateManagedWidget("nextTopic", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Browse >>"), XmNmnemonic, 'e', XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, closeBtn, XmNleftAttachment,
+	                              XmATTACH_POSITION, XmNleftPosition, 75, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 97, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, nextTopicCB, appShell);
+	XmStringFree(st1);
 
-    /* Make close command in window menu gracefully prompt for close */
-    AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, appShell);
-    
-    /* Initialize navigation information, if it hasn't already been init'd */
-    initNavigationHistory();
-    
-    /* Set the window title */
-    setHelpWinTitle(appShell, topic);
-    
-    
+	btn = XtVaCreateManagedWidget("histBack", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Back"), XmNmnemonic, 'B', XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, closeBtn, XmNleftAttachment,
+	                              XmATTACH_POSITION, XmNleftPosition, 3, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 25, nullptr);
+	XtAddCallback(btn, XmNactivateCallback, bwHistoryCB, appShell);
+	XmStringFree(st1);
+
+	btnFW = XtVaCreateManagedWidget("histForw", xmPushButtonWidgetClass, form, XmNlabelString, st1 = XmStringCreateSimpleEx("Forward"), XmNmnemonic, 'w', XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, closeBtn, XmNleftAttachment,
+	                                XmATTACH_POSITION, XmNleftPosition, 27, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 49, nullptr);
+	XtAddCallback(btnFW, XmNactivateCallback, fwHistoryCB, appShell);
+	XmStringFree(st1);
+
+	/* Create a text widget inside of a scrolled window widget */
+	sw = XtVaCreateManagedWidget("sw", xmScrolledWindowWidgetClass, form, XmNshadowThickness, 2, XmNtopAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_WIDGET,
+	                             XmNbottomWidget, btnFW, nullptr);
+	hScrollBar = XtVaCreateManagedWidget("hScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
+	vScrollBar = XtVaCreateManagedWidget("vScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
+	/* Make sure the fixed size help font is loaded, such that we can base
+	   our text widget size calculation on it. */
+	loadFontsAndColors(sw, 'A');
+	HelpTextPanes[topic] = XtVaCreateManagedWidget("helpText", textWidgetClass, sw, textNfont, HelpStyleInfo[0].font, /* MUST correspond to 'A' above */
+	                                               textNrows, 30, textNcolumns, 65, textNbacklightCharTypes, nullptr, textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar, textNreadOnly, True, textNcontinuousWrap, True,
+	                                               textNautoShowInsertPos, True, nullptr);
+	XtVaSetValues(sw, XmNworkWindow, HelpTextPanes[topic], XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
+
+	/* Initialize help style information, if it hasn't already been init'd */
+	initHelpStyles(HelpTextPanes[topic]);
+
+	/* Put together the text to display and separate it into parallel text
+	   and style data for display by the widget */
+	helpText = stitch(HelpTextPanes[topic], HelpText[topic], &styleData);
+
+	/* Stuff the text into the widget's text buffer */
+	BufSetAll(TextGetBuffer(HelpTextPanes[topic]), helpText);
+	XtFree(helpText);
+
+	/* Create a style buffer for the text widget and fill it with the style
+	   data which was generated along with the text content */
+	HelpStyleBuffers[topic] = new textBuffer;
+	BufSetAll(HelpStyleBuffers[topic], styleData);
+	XtFree(styleData);
+	TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD, HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
+
+	/* This shouldn't be necessary (what's wrong in text.c?) */
+	HandleXSelections(HelpTextPanes[topic]);
+
+	/* Process dialog mnemonic keys */
+	AddDialogMnemonicHandler(form, FALSE);
+
+	/* Set the default button */
+	XtVaSetValues(form, XmNdefaultButton, closeBtn, nullptr);
+	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
+
+	/* realize all of the widgets in the new window */
+	RealizeWithoutForcingPosition(appShell);
+
+	/* Give the text pane the initial focus */
+	XmProcessTraversal(HelpTextPanes[topic], XmTRAVERSE_CURRENT);
+
+	/* Make close command in window menu gracefully prompt for close */
+	AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, appShell);
+
+	/* Initialize navigation information, if it hasn't already been init'd */
+	initNavigationHistory();
+
+	/* Set the window title */
+	setHelpWinTitle(appShell, topic);
+
 #ifdef EDITRES
-    XtAddEventHandler (appShell, (EventMask)0, True,
-            (XtEventHandler)_XEditResCheckMessages, nullptr);
+	XtAddEventHandler(appShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif /* EDITRES */
-    
-    return appShell;
+
+	return appShell;
 }
 
 static void changeTopicOrRaise(int existingTopic, int newTopic) {
-    if(HelpWindows[newTopic] == nullptr)
-    {
-        changeWindowTopic(existingTopic, (enum HelpTopic) newTopic);
-        adaptNavigationButtons(newTopic);
-    } else
-    {
-        RaiseShellWindow(HelpWindows[newTopic], True);
-        adaptNavigationButtons(existingTopic);
-        adaptNavigationButtons(newTopic);
-    }
-
+	if (HelpWindows[newTopic] == nullptr) {
+		changeWindowTopic(existingTopic, (enum HelpTopic)newTopic);
+		adaptNavigationButtons(newTopic);
+	} else {
+		RaiseShellWindow(HelpWindows[newTopic], True);
+		adaptNavigationButtons(existingTopic);
+		adaptNavigationButtons(newTopic);
+	}
 }
 
 /*
 ** Callbacks for window controls
 */
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData)
-{
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
-    int topic;
-    
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return;
-    
-    /* I don't understand the mechanism by which this can be called with
-       HelpWindows[topic] as nullptr, but it has happened */
-    XtDestroyWidget(HelpWindows[topic]);
-    HelpWindows[topic] = nullptr;
-    if (HelpStyleBuffers[topic] != nullptr)
-    {
-        delete HelpStyleBuffers[topic];
-        HelpStyleBuffers[topic] = nullptr;
-    }        
-}
 
-static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData) 
-{
-
-	(void)w;
-	(void)callData;
-	
 	int topic;
 
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-    
-    topic--;
-    if(topic >= 0)
-        changeTopicOrRaise(topic+1, topic);
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return;
+
+	/* I don't understand the mechanism by which this can be called with
+	   HelpWindows[topic] as nullptr, but it has happened */
+	XtDestroyWidget(HelpWindows[topic]);
+	HelpWindows[topic] = nullptr;
+	if (HelpStyleBuffers[topic] != nullptr) {
+		delete HelpStyleBuffers[topic];
+		HelpStyleBuffers[topic] = nullptr;
+	}
 }
 
-static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData) 
-{
+static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
+
 	int topic;
 
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-  
-    topic++;
-    if(topic < NUM_TOPICS)
-        changeTopicOrRaise(topic-1, topic);
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+
+	topic--;
+	if (topic >= 0)
+		changeTopicOrRaise(topic + 1, topic);
 }
 
-static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) 
-{
+static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData) {
+
 	(void)w;
 	(void)callData;
-	
+
+	int topic;
+
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+
+	topic++;
+	if (topic < NUM_TOPICS)
+		changeTopicOrRaise(topic - 1, topic);
+}
+
+static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) {
+	(void)w;
+	(void)callData;
+
 	int topic, goTo;
 
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-    
-    goTo=navHistBack[topic];
-    if(goTo >= 0 && goTo < NUM_TOPICS)
-    {
-        navHistForw[goTo]=topic;
-        changeTopicOrRaise(topic, goTo); 
-    }
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+
+	goTo = navHistBack[topic];
+	if (goTo >= 0 && goTo < NUM_TOPICS) {
+		navHistForw[goTo] = topic;
+		changeTopicOrRaise(topic, goTo);
+	}
 }
 
-static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData)
-{
+static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
-	
+
 	int topic, goTo;
 
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-      
-    goTo=navHistForw[topic];
-    if(goTo >= 0 && goTo < NUM_TOPICS)
-    {
-        navHistBack[goTo]=topic;
-        changeTopicOrRaise(topic, goTo); 
-    }
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+
+	goTo = navHistForw[topic];
+	if (goTo >= 0 && goTo < NUM_TOPICS) {
+		navHistBack[goTo] = topic;
+		changeTopicOrRaise(topic, goTo);
+	}
 }
 
-static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData)
-{
+static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
-	
-    char promptText[DF_MAX_PROMPT_LENGTH];
-    int response, topic;
-    static char **searchHistory = nullptr;
-    static int nHistoryStrings = 0;
-    
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-    SetDialogFPromptHistory(searchHistory, nHistoryStrings);
-    response = DialogF(DF_PROMPT, HelpWindows[topic], 3, "Find",
-            "Search for:    (use up arrow key to recall previous)", promptText,
-            "This Section", "All Sections", "Cancel");
-    if (response == 3)
-        return;
-    AddToHistoryList(promptText, &searchHistory, &nHistoryStrings);
-    searchHelpText(HelpWindows[topic], topic, promptText, response == 2, 0, 0);
+
+	char promptText[DF_MAX_PROMPT_LENGTH];
+	int response, topic;
+	static char **searchHistory = nullptr;
+	static int nHistoryStrings = 0;
+
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+	SetDialogFPromptHistory(searchHistory, nHistoryStrings);
+	response = DialogF(DF_PROMPT, HelpWindows[topic], 3, "Find", "Search for:    (use up arrow key to recall previous)", promptText, "This Section", "All Sections", "Cancel");
+	if (response == 3)
+		return;
+	AddToHistoryList(promptText, &searchHistory, &nHistoryStrings);
+	searchHelpText(HelpWindows[topic], topic, promptText, response == 2, 0, 0);
 }
 
-static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData)
-{
+static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
 
-    int topic;
-    
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
-    searchHelpText(HelpWindows[topic], topic, LastSearchString,
-            LastSearchWasAllTopics, LastSearchPos, LastSearchTopic);
+	int topic;
+
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+	searchHelpText(HelpWindows[topic], topic, LastSearchString, LastSearchWasAllTopics, LastSearchPos, LastSearchTopic);
 }
 
-static void printCB(Widget w, XtPointer clientData, XtPointer callData)
-{
+static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
-    int topic, helpStringLen;
-    char *helpString;
-    
-    if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
-        return; /* shouldn't happen */
 
-    helpString = TextGetWrapped(HelpTextPanes[topic], 0,
-            TextGetBuffer(HelpTextPanes[topic])->length, &helpStringLen);
-    PrintString(helpString, helpStringLen, HelpWindows[topic],
-            HelpTitles[topic]);
-    XtFree(helpString);
+	int topic, helpStringLen;
+	char *helpString;
+
+	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+		return; /* shouldn't happen */
+
+	helpString = TextGetWrapped(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->length, &helpStringLen);
+	PrintString(helpString, helpStringLen, HelpWindows[topic], HelpTitles[topic]);
+	XtFree(helpString);
 }
-
 
 /*
 ** Find the topic and text position within that topic targeted by a hyperlink
 ** with name "link_name". Returns true if the link was successfully interpreted.
 */
-static int is_known_link(const char *link_name, int *topic, int *textPosition)
-{
-    Href * hypertext;
-    
-    /*------------------------------
-    * Direct topic links found here.
-    *------------------------------*/
-    for (*topic=0; HelpTitles[*topic] != nullptr; (*topic)++) 
-    {
-        if (strcmp (link_name, HelpTitles[*topic])  == 0) 
-        {
-            *textPosition = 0;
-            return 1;
-        }
-    }
-    
-    /*------------------------------------
-    * Links internal to topics found here.
-    *------------------------------------*/
-    for (hypertext = &H_R[0]; hypertext != nullptr; hypertext = hypertext->next) 
-    {
-        if (strcmp (link_name, hypertext->source)  == 0) 
-        {
-            *topic  = hypertext->topic;
-            *textPosition = hypertext->location;
-            return 1;
-        }
-    }
+static int is_known_link(const char *link_name, int *topic, int *textPosition) {
+	Href *hypertext;
 
-   return 0;
+	/*------------------------------
+	* Direct topic links found here.
+	*------------------------------*/
+	for (*topic = 0; HelpTitles[*topic] != nullptr; (*topic)++) {
+		if (strcmp(link_name, HelpTitles[*topic]) == 0) {
+			*textPosition = 0;
+			return 1;
+		}
+	}
+
+	/*------------------------------------
+	* Links internal to topics found here.
+	*------------------------------------*/
+	for (hypertext = &H_R[0]; hypertext != nullptr; hypertext = hypertext->next) {
+		if (strcmp(link_name, hypertext->source) == 0) {
+			*topic = hypertext->topic;
+			*textPosition = hypertext->location;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 /*
 ** Find the text of a hyperlink from a clicked character position somewhere
 ** within the hyperlink text, and display the help that it links to.
 */
-static void followHyperlink(int topic, int charPosition, int newWindow)
-{
-    textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
-    std::string link_text;
-    int    link_topic;
-    int    link_pos;
-    int end        = charPosition;
-    int begin      = charPosition;
-    char whatStyle = BufGetCharacter(textD->styleBuffer, end);
-    
-    /*--------------------------------------------------
-    * Locate beginning and ending of current text style.
-    *--------------------------------------------------*/
-    while (whatStyle == BufGetCharacter(textD->styleBuffer, ++end));
-    while (whatStyle == BufGetCharacter(textD->styleBuffer, begin-1))  begin--;
+static void followHyperlink(int topic, int charPosition, int newWindow) {
+	textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
+	std::string link_text;
+	int link_topic;
+	int link_pos;
+	int end = charPosition;
+	int begin = charPosition;
+	char whatStyle = BufGetCharacter(textD->styleBuffer, end);
 
-    link_text = BufGetRangeEx(textD->buffer, begin, end);
-    
-    if (is_known_link (link_text.c_str(), &link_topic, &link_pos) ) 
-    {
-        if (HelpWindows[link_topic] != nullptr)
-        {
-            RaiseShellWindow(HelpWindows[link_topic], True);
-        } else
-        {
-            if (newWindow)
-            {
-                HelpWindows[link_topic]
-                        = createHelpPanel((enum HelpTopic) link_topic);
-            } else
-            {
-                changeWindowTopic(topic, (enum HelpTopic) link_topic);
-            }
-        }
-        navHistBack[link_topic] = topic;
-        navHistForw[topic] = link_topic;
-        TextSetCursorPos(HelpTextPanes[link_topic], link_pos);
-        adaptNavigationButtons(link_topic);
-        adaptNavigationButtons(topic);
-    }
+	/*--------------------------------------------------
+	* Locate beginning and ending of current text style.
+	*--------------------------------------------------*/
+	while (whatStyle == BufGetCharacter(textD->styleBuffer, ++end))
+		;
+	while (whatStyle == BufGetCharacter(textD->styleBuffer, begin - 1))
+		begin--;
+
+	link_text = BufGetRangeEx(textD->buffer, begin, end);
+
+	if (is_known_link(link_text.c_str(), &link_topic, &link_pos)) {
+		if (HelpWindows[link_topic] != nullptr) {
+			RaiseShellWindow(HelpWindows[link_topic], True);
+		} else {
+			if (newWindow) {
+				HelpWindows[link_topic] = createHelpPanel((enum HelpTopic)link_topic);
+			} else {
+				changeWindowTopic(topic, (enum HelpTopic)link_topic);
+			}
+		}
+		navHistBack[link_topic] = topic;
+		navHistForw[topic] = link_topic;
+		TextSetCursorPos(HelpTextPanes[link_topic], link_pos);
+		adaptNavigationButtons(link_topic);
+		adaptNavigationButtons(topic);
+	}
 }
 
-static void helpFocusButtonsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
-{
+static void helpFocusButtonsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 	(void)args;
 	(void)nArgs;
-	
-    XmProcessTraversal(w, XmTRAVERSE_NEXT_TAB_GROUP);
+
+	XmProcessTraversal(w, XmTRAVERSE_NEXT_TAB_GROUP);
 }
 
-/* 
+/*
  * handler for help-button-action(<button-name>)
  * Calls the activate callback for the named button widget of the help text win.
  */
-static void helpButtonActionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
-{
+static void helpButtonActionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	
-    char buf[80];
-    int topic;
-    Widget btn;
-    
-    if(*nArgs != 1)
-    {
-        fprintf(stderr, "help-button-action: requires exactly one argument.\n");
-        return;
-    }
-    
-    /* Find the topic being displayed by this widget */
-    for (topic = 0; topic < NUM_TOPICS; topic++)
-        if (HelpTextPanes[topic] == w)
-            break;
-    
-    if(topic == NUM_TOPICS || HelpWindows[topic] == nullptr)
-        return; /* Shouldn't happen */
 
-    /* Compose the button widget name */    
-    strcpy(&buf[0], "helpForm.");
-    if (strlen(args[0]) <= 70)
-    {
-        strcat(&buf[0], args[0]);
-    } else
-    {
-        fprintf(stderr, "help-button-action: argument too long");
-        return;
-    }
-    
-    btn=XtNameToWidget(HelpWindows[topic], buf);
-    if (btn)
-    {
-        XtCallCallbacks(btn, XmNactivateCallback, HelpWindows[topic]);
-    } else
-    {
-        fprintf(stderr, "help-button-action: invalid argument: %s\n", args[0]);
-    }
+	char buf[80];
+	int topic;
+	Widget btn;
+
+	if (*nArgs != 1) {
+		fprintf(stderr, "help-button-action: requires exactly one argument.\n");
+		return;
+	}
+
+	/* Find the topic being displayed by this widget */
+	for (topic = 0; topic < NUM_TOPICS; topic++)
+		if (HelpTextPanes[topic] == w)
+			break;
+
+	if (topic == NUM_TOPICS || HelpWindows[topic] == nullptr)
+		return; /* Shouldn't happen */
+
+	/* Compose the button widget name */
+	strcpy(&buf[0], "helpForm.");
+	if (strlen(args[0]) <= 70) {
+		strcat(&buf[0], args[0]);
+	} else {
+		fprintf(stderr, "help-button-action: argument too long");
+		return;
+	}
+
+	btn = XtNameToWidget(HelpWindows[topic], buf);
+	if (btn) {
+		XtCallCallbacks(btn, XmNactivateCallback, HelpWindows[topic]);
+	} else {
+		fprintf(stderr, "help-button-action: invalid argument: %s\n", args[0]);
+	}
 }
 
-/* 
+/*
  * Handler for action help-hyperlink()
- * Arguments: none - init: record event position 
+ * Arguments: none - init: record event position
  *            "current": if clicked on a link, follow link in same window
  *            "new":     if clicked on a link, follow link in new window
  *
  * With the 1st argument "current" or "new" this action can have two additional
- * arguments. These arguments must be valid names of XmText actions. 
+ * arguments. These arguments must be valid names of XmText actions.
  * In this case, the action named in argument #2 is called if the action
  * help-hyperlink is about to follow the hyperlink. The Action in argument #3
  * is called if no hyperlink has been recognized at the current event position.
  */
-static void helpHyperlinkAP(Widget w, XEvent *event, String *args,
-        Cardinal *nArgs)
-{
-    XButtonEvent *e = (XButtonEvent *)event;
-    int topic;
-    textDisp *textD = ((TextWidget)w)->text.textD;
-    int clickedPos, newWin;
-    static int pressX=0, pressY=0;
-    
-    /* called without arguments we just record coordinates */
-    if (*nArgs == 0)
-    {
-        pressX = e->x;
-        pressY = e->y;
-        return;
-    }
-    
-    newWin = !strcmp(args[0], "new");
-    
-    if(!newWin && strcmp(args[0], "current")) {
-        fprintf(stderr, "help-hyperlink: Unrecognized argument %s\n", args[0]);
-        return;
-    }
-    
-    /* 
-     * If for any reason (pointer moved - drag!, no hyperlink found) 
-     * this action can't follow a hyperlink then execute the the action 
-     * named in arg #3 (if provided)
-     */
-    if (abs(pressX - e->x) > CLICK_THRESHOLD
-            || abs(pressY - e->y) > CLICK_THRESHOLD)
-    {
-        if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, nullptr, 0);
-        return;
-    }
-    
-    clickedPos = TextDXYToCharPos(textD, e->x, e->y);
-    /* Beware of possible EBCDIC coding! Use the mapping table. */
-    if (BufGetCharacter(textD->styleBuffer, clickedPos) != 
-           (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK])
-    {
-        if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, nullptr, 0);
-        return;
-    }
+static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	XButtonEvent *e = (XButtonEvent *)event;
+	int topic;
+	textDisp *textD = ((TextWidget)w)->text.textD;
+	int clickedPos, newWin;
+	static int pressX = 0, pressY = 0;
 
-    /* Find the topic being displayed by this widget */
-    for (topic = 0; topic < NUM_TOPICS; topic++)
-        if (HelpTextPanes[topic] == w)
-            break;
-    
-    if (topic == NUM_TOPICS)
-    {
-        /* If we get here someone must have bound help-hyperlink to a non-help
-         * text widget (!) Or some other really strange thing happened.
-         */
-        if (*nArgs == 3)
-            XtCallActionProc(w, args[2], event, nullptr, 0);
-        return;
-    }
-    
-    /* If the action help-hyperlink had 3 arguments execute the action
-     * named in arg #2 before really following the link.
-     */
-    if (*nArgs == 3)
-        XtCallActionProc(w, args[1], event, nullptr, 0);
-    
-    followHyperlink(topic, clickedPos, newWin);
-}  
- 
+	/* called without arguments we just record coordinates */
+	if (*nArgs == 0) {
+		pressX = e->x;
+		pressY = e->y;
+		return;
+	}
+
+	newWin = !strcmp(args[0], "new");
+
+	if (!newWin && strcmp(args[0], "current")) {
+		fprintf(stderr, "help-hyperlink: Unrecognized argument %s\n", args[0]);
+		return;
+	}
+
+	/*
+	 * If for any reason (pointer moved - drag!, no hyperlink found)
+	 * this action can't follow a hyperlink then execute the the action
+	 * named in arg #3 (if provided)
+	 */
+	if (abs(pressX - e->x) > CLICK_THRESHOLD || abs(pressY - e->y) > CLICK_THRESHOLD) {
+		if (*nArgs == 3)
+			XtCallActionProc(w, args[2], event, nullptr, 0);
+		return;
+	}
+
+	clickedPos = TextDXYToCharPos(textD, e->x, e->y);
+	/* Beware of possible EBCDIC coding! Use the mapping table. */
+	if (BufGetCharacter(textD->styleBuffer, clickedPos) != (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
+		if (*nArgs == 3)
+			XtCallActionProc(w, args[2], event, nullptr, 0);
+		return;
+	}
+
+	/* Find the topic being displayed by this widget */
+	for (topic = 0; topic < NUM_TOPICS; topic++)
+		if (HelpTextPanes[topic] == w)
+			break;
+
+	if (topic == NUM_TOPICS) {
+		/* If we get here someone must have bound help-hyperlink to a non-help
+		 * text widget (!) Or some other really strange thing happened.
+		 */
+		if (*nArgs == 3)
+			XtCallActionProc(w, args[2], event, nullptr, 0);
+		return;
+	}
+
+	/* If the action help-hyperlink had 3 arguments execute the action
+	 * named in arg #2 before really following the link.
+	 */
+	if (*nArgs == 3)
+		XtCallActionProc(w, args[1], event, nullptr, 0);
+
+	followHyperlink(topic, clickedPos, newWin);
+}
+
 /*
 ** Install the action for following hyperlinks in the help window
 */
-void InstallHelpLinkActions(XtAppContext context)
-{   
-    static XtActionsRec Actions[] =
-    {
-        {(String)"help-hyperlink", helpHyperlinkAP},
-        {(String)"help-focus-buttons", helpFocusButtonsAP},
-        {(String)"help-button-action", helpButtonActionAP}
-    };
+void InstallHelpLinkActions(XtAppContext context) {
+	static XtActionsRec Actions[] = {{(String) "help-hyperlink", helpHyperlinkAP}, {(String) "help-focus-buttons", helpFocusButtonsAP}, {(String) "help-button-action", helpButtonActionAP}};
 
-    XtAppAddActions(context, Actions, XtNumber(Actions));
+	XtAppAddActions(context, Actions, XtNumber(Actions));
 }
 
 /*
 ** Search the help text.  If allSections is true, searches all of the help
 ** text, otherwise searches only in parentTopic.
 */
-static void searchHelpText(Widget parent, int parentTopic,
-        const char *searchFor, int allSections, int startPos, int startTopic)
-{    
-    int topic, beginMatch, endMatch;
-    int found = False;
-    char * helpText  = nullptr;
-    
-    /* Search for the string */
-    for (topic=startTopic; topic<NUM_TOPICS; topic++)
-    {
-        if (!allSections && topic != parentTopic)
-            continue;
-        helpText = stitch(parent, HelpText[topic], nullptr);
+static void searchHelpText(Widget parent, int parentTopic, const char *searchFor, int allSections, int startPos, int startTopic) {
+	int topic, beginMatch, endMatch;
+	int found = False;
+	char *helpText = nullptr;
 
-        if (SearchString(helpText, searchFor, SEARCH_FORWARD, SEARCH_LITERAL,
-                False, topic == startTopic ? startPos : 0, &beginMatch,
-                &endMatch, nullptr, nullptr, GetPrefDelimiters()))
-        {
-            found = True;
-            XtFree(helpText);
-            break;
-        }
-        XtFree(helpText);
-    }
+	/* Search for the string */
+	for (topic = startTopic; topic < NUM_TOPICS; topic++) {
+		if (!allSections && topic != parentTopic)
+			continue;
+		helpText = stitch(parent, HelpText[topic], nullptr);
 
-    if (!found)
-    {
-        if (startPos != 0 || (allSections && startTopic != 0))
-        {
-            /* Wrap search */
-            searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
-            return;
-        }
-        DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", "OK");
-        return;
-    }
-    
-    /* update navigation history */  
-    if (parentTopic != topic)
-    {
-        navHistForw[parentTopic]= topic;
-        navHistBack[topic]= parentTopic;
-    }
-    
-    /* If the appropriate window is already up, bring it to the top, if not,
-       make the parent window become this topic */
-    changeTopicOrRaise(parentTopic, topic);
-    BufSelect(TextGetBuffer(HelpTextPanes[topic]), beginMatch, endMatch);
-    TextSetCursorPos(HelpTextPanes[topic], endMatch);
-    
-    /* Save the search information for search-again */
-    strcpy(LastSearchString, searchFor);
-    LastSearchTopic = topic;
-    LastSearchPos = endMatch;
-    LastSearchWasAllTopics = allSections;
+		if (SearchString(helpText, searchFor, SEARCH_FORWARD, SEARCH_LITERAL, False, topic == startTopic ? startPos : 0, &beginMatch, &endMatch, nullptr, nullptr, GetPrefDelimiters())) {
+			found = True;
+			XtFree(helpText);
+			break;
+		}
+		XtFree(helpText);
+	}
+
+	if (!found) {
+		if (startPos != 0 || (allSections && startTopic != 0)) {
+			/* Wrap search */
+			searchHelpText(parent, parentTopic, searchFor, allSections, 0, 0);
+			return;
+		}
+		DialogF(DF_INF, parent, 1, "String Not Found", "String Not Found", "OK");
+		return;
+	}
+
+	/* update navigation history */
+	if (parentTopic != topic) {
+		navHistForw[parentTopic] = topic;
+		navHistBack[topic] = parentTopic;
+	}
+
+	/* If the appropriate window is already up, bring it to the top, if not,
+	   make the parent window become this topic */
+	changeTopicOrRaise(parentTopic, topic);
+	BufSelect(TextGetBuffer(HelpTextPanes[topic]), beginMatch, endMatch);
+	TextSetCursorPos(HelpTextPanes[topic], endMatch);
+
+	/* Save the search information for search-again */
+	strcpy(LastSearchString, searchFor);
+	LastSearchTopic = topic;
+	LastSearchPos = endMatch;
+	LastSearchWasAllTopics = allSections;
 }
 
 /*
@@ -1262,59 +1043,52 @@ static void searchHelpText(Widget parent, int parentTopic,
 ** positioned by the user, it can be found and popped back up in the same
 ** place.)  To change the topic displayed, the stored data has to be relocated.
 */
-static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic)
-{
-    char *helpText, *styleData;
-    
-    /* Relocate the window/widget/buffer information */
-    if (newTopic != existingTopic)
-    {
-        HelpWindows[newTopic] = HelpWindows[existingTopic];
-        HelpWindows[existingTopic] = nullptr;
-        HelpStyleBuffers[newTopic] = HelpStyleBuffers[existingTopic];
-        HelpStyleBuffers[existingTopic] = nullptr;
-        HelpTextPanes[newTopic] = HelpTextPanes[existingTopic];
-        HelpTextPanes[existingTopic] = nullptr;
-        setHelpWinTitle(HelpWindows[newTopic], newTopic);
-    } 
-    
-    /* Set the existing text widget to display the new text.  Because it's
-       highlighted, we have to turn off highlighting before changing the
-       displayed text to prevent the text widget from trying to apply the
-       old, mismatched, highlighting to the new text */
-    helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
-    TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
-            nullptr, nullptr, 0, '\0', nullptr, nullptr);
-    BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
-    XtFree(helpText);
-    BufSetAll(HelpStyleBuffers[newTopic], styleData);
-    XtFree(styleData);
-    TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD,
-            HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr,
-            nullptr);
+static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
+	char *helpText, *styleData;
+
+	/* Relocate the window/widget/buffer information */
+	if (newTopic != existingTopic) {
+		HelpWindows[newTopic] = HelpWindows[existingTopic];
+		HelpWindows[existingTopic] = nullptr;
+		HelpStyleBuffers[newTopic] = HelpStyleBuffers[existingTopic];
+		HelpStyleBuffers[existingTopic] = nullptr;
+		HelpTextPanes[newTopic] = HelpTextPanes[existingTopic];
+		HelpTextPanes[existingTopic] = nullptr;
+		setHelpWinTitle(HelpWindows[newTopic], newTopic);
+	}
+
+	/* Set the existing text widget to display the new text.  Because it's
+	   highlighted, we have to turn off highlighting before changing the
+	   displayed text to prevent the text widget from trying to apply the
+	   old, mismatched, highlighting to the new text */
+	helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
+	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, nullptr, nullptr, 0, '\0', nullptr, nullptr);
+	BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
+	XtFree(helpText);
+	BufSetAll(HelpStyleBuffers[newTopic], styleData);
+	XtFree(styleData);
+	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 }
 
-static int findTopicFromShellWidget(Widget shellWidget)
-{
-    int i;
-    
-    for (i=0; i<NUM_TOPICS; i++)
-        if (shellWidget == HelpWindows[i])
-            return i;
-    return -1;
+static int findTopicFromShellWidget(Widget shellWidget) {
+	int i;
+
+	for (i = 0; i < NUM_TOPICS; i++)
+		if (shellWidget == HelpWindows[i])
+			return i;
+	return -1;
 }
 
 static void initNavigationHistory(void) {
-    static int doInitNavigationHistory = True;
-    int i;
-    
-    if (doInitNavigationHistory)
-    {
-        for (i=0; i<NUM_TOPICS; i++)
-            navHistBack[i] = navHistForw[i] = -1;
+	static int doInitNavigationHistory = True;
+	int i;
 
-        doInitNavigationHistory = False;
-    }
+	if (doInitNavigationHistory) {
+		for (i = 0; i < NUM_TOPICS; i++)
+			navHistBack[i] = navHistForw[i] = -1;
+
+		doInitNavigationHistory = False;
+	}
 }
 
 #if XmVersion == 2000
@@ -1328,15 +1102,13 @@ static void initNavigationHistory(void) {
 extern void XmRegisterConverters(void);
 #endif
 
-
 /* Print version info to stdout */
-void PrintVersion(void)
-{
-    const char *text;
-  
+void PrintVersion(void) {
+	const char *text;
+
 #if XmVersion < 2001
-    XmRegisterConverters();  /* see comment above */
+	XmRegisterConverters(); /* see comment above */
 #endif
-    text = getBuildInfo();
-    puts (text);
+	text = getBuildInfo();
+	puts(text);
 }

@@ -24,23 +24,25 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_UNDO_H_INCLUDED
-#define NEDIT_UNDO_H_INCLUDED
+#ifndef UNDO_H_
+#define UNDO_H_
 
 #include "nedit.h"
 
-
-
-enum undoTypes {UNDO_NOOP, ONE_CHAR_INSERT, ONE_CHAR_REPLACE, ONE_CHAR_DELETE,
-		BLOCK_INSERT, BLOCK_REPLACE, BLOCK_DELETE};
+enum undoTypes {
+	UNDO_NOOP, 
+	ONE_CHAR_INSERT, 
+	ONE_CHAR_REPLACE, 
+	ONE_CHAR_DELETE, 
+	BLOCK_INSERT, 
+	BLOCK_REPLACE, 
+	BLOCK_DELETE
+};
 
 void Undo(WindowInfo *window);
 void Redo(WindowInfo *window);
-void SaveUndoInformation(WindowInfo *window, int pos, int nInserted,
-	int nDeleted, const char *deletedText);
+void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText);
 void ClearUndoList(WindowInfo *window);
 void ClearRedoList(WindowInfo *window);
 
-
-
-#endif /* NEDIT_UNDO_H_INCLUDED */
+#endif

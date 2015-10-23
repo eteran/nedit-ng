@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* text.h -- Nirvana Editor Text Widget Header File                            *
+* text.h -- Nirvana Editor Text Widget Header File                             *
 *                                                                              *
 * Copyright 2003 The NEdit Developers                                          *
 *                                                                              *
@@ -24,16 +24,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_TEXT_H_INCLUDED
-#define NEDIT_TEXT_H_INCLUDED
+#ifndef TEXT_H_
+#define TEXT_H_
 
 #include "textBuf.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
-
-
 
 /* Resource strings */
 #define textNfont (String)"font"
@@ -115,7 +113,6 @@
 #define textNbacklightCharTypes (String)"backlightCharTypes"
 #define textCBacklightCharTypes (String)"BacklightCharTypes"
 
-
 extern WidgetClass textWidgetClass;
 
 struct TextClassRec;
@@ -124,50 +121,49 @@ struct TextRec;
 typedef struct TextRec *TextWidget;
 
 struct dragEndCBStruct {
-    int startPos;
-    int nCharsDeleted;
-    int nCharsInserted;
-    char *deletedText;
+	int startPos;
+	int nCharsDeleted;
+	int nCharsInserted;
+	char *deletedText;
 };
 
-enum smartIndentCallbackReasons {NEWLINE_INDENT_NEEDED, CHAR_TYPED};
+enum smartIndentCallbackReasons { NEWLINE_INDENT_NEEDED, CHAR_TYPED };
 struct smartIndentCBStruct {
-    int reason;
-    int pos;
-    int indentRequest;
-    char *charsTyped;
+	int reason;
+	int pos;
+	int indentRequest;
+	char *charsTyped;
 };
 
 /* User callable routines */
-void TextSetBuffer(Widget w, textBuffer *buffer);
-textBuffer *TextGetBuffer(Widget w);
+
+XtActionsRec *TextGetActions(int *nActions);
+char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
+int TextFirstVisibleLine(Widget w);
+int TextFirstVisiblePos(Widget w);
+int TextGetCursorPos(Widget w);
+int TextGetMaxFontWidth(Widget w, Boolean considerStyles);
+int TextGetMinFontWidth(Widget w, Boolean considerStyles);
+int TextLastVisiblePos(Widget w);
 int TextLineAndColToPos(Widget w, int lineNum, int column);
+int TextNumVisibleLines(Widget w);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
-int TextGetCursorPos(Widget w);
-void TextSetCursorPos(Widget w, int pos);
-void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
-void TextSetScroll(Widget w, int topLineNum, int horizOffset);
-int TextGetMinFontWidth(Widget w, Boolean considerStyles);
-int TextGetMaxFontWidth(Widget w, Boolean considerStyles);
-void TextHandleXSelections(Widget w);
-void TextPasteClipboard(Widget w, Time time);
+int TextVisibleWidth(Widget w);
+std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen);
+textBuffer *TextGetBuffer(Widget w);
+void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
+void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
+void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void TextColPasteClipboard(Widget w, Time time);
 void TextCopyClipboard(Widget w, Time time);
 void TextCutClipboard(Widget w, Time time);
-int TextFirstVisibleLine(Widget w);
-int TextNumVisibleLines(Widget w);
-int TextVisibleWidth(Widget w);
+void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
+void TextHandleXSelections(Widget w);
 void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap);
-int TextFirstVisiblePos(Widget w);
-int TextLastVisiblePos(Widget w);
-char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
-XtActionsRec *TextGetActions(int *nActions);
-void ShowHidePointer(TextWidget w, Boolean hidePointer);
-void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
+void TextPasteClipboard(Widget w, Time time);
+void TextSetBuffer(Widget w, textBuffer *buffer);
+void TextSetCursorPos(Widget w, int pos);
+void TextSetScroll(Widget w, int topLineNum, int horizOffset);
 
-void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen);
-
-
-#endif /* NEDIT_TEXT_H_INCLUDED */
+#endif

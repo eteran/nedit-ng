@@ -33,72 +33,64 @@
 
 #define NSUBEXP 50
 
-
-
 /* Structure to contain the compiled form of a regular expression plus
    pointers to matched text.  `program' is the actual compiled regex code. */
 
 struct regexp {
-   char *startp [NSUBEXP];  /* Captured text starting locations. */
-   char *endp   [NSUBEXP];  /* Captured text ending locations. */
-   char *extentpBW;         /* Points to the maximum extent of text scanned by
-                               ExecRE in front of the string to achieve a match
-                               (needed because of positive look-behind.) */
-   char *extentpFW;         /* Points to the maximum extent of text scanned by
-                               ExecRE to achieve a match (needed because of
-                               positive look-ahead.) */
-   int   top_branch;        /* Zero-based index of the top branch that matches.
-                               Used by syntax highlighting only. */
-   char  match_start;       /* Internal use only. */
-   char  anchor;            /* Internal use only. */
-   char  program [1];       /* Unwarranted chumminess with compiler. */
+	char *startp[NSUBEXP]; /* Captured text starting locations. */
+	char *endp[NSUBEXP];   /* Captured text ending locations. */
+	char *extentpBW;       /* Points to the maximum extent of text scanned by
+	                          ExecRE in front of the string to achieve a match
+	                          (needed because of positive look-behind.) */
+	char *extentpFW;       /* Points to the maximum extent of text scanned by
+	                          ExecRE to achieve a match (needed because of
+	                          positive look-ahead.) */
+	int top_branch;        /* Zero-based index of the top branch that matches.
+	                          Used by syntax highlighting only. */
+	char match_start;      /* Internal use only. */
+	char anchor;           /* Internal use only. */
+	char program[1];       /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 
 enum RE_DEFAULT_FLAG {
-  REDFLT_STANDARD         = 0,
-  REDFLT_CASE_INSENSITIVE = 1
-  /* REDFLT_MATCH_NEWLINE = 2    Currently not used. */ 
+	REDFLT_STANDARD = 0,
+	REDFLT_CASE_INSENSITIVE = 1
+	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
 };
 
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 
-regexp * CompileRE (
-   const char  *exp,         /* String containing the regex specification. */
-   const char **errorText,   /* Text of any error message produced. */
-   int  defaultFlags); /* Flags for default RE-operation */
+regexp *CompileRE(const char *exp,        /* String containing the regex specification. */
+                  const char **errorText, /* Text of any error message produced. */
+                  int defaultFlags);      /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */
 
-int ExecRE (
-   regexp *prog,                /* Compiled regex. */
-   const char   *string,              /* Text to search within. */
-   const char   *end,                 /* Pointer to the end of `string'.  If NULL will
-                                   scan from `string' until '\0' is found. */
-   int     reverse,             /* Backward search. */
-   char    prev_char,           /* Character immediately prior to `string'.  Set
-                                   to '\n' or '\0' if true beginning of text. */
-   char    succ_char,           /* Character immediately after `end'.  Set
-                                   to '\n' or '\0' if true beginning of text. */
-   const char   *delimiters,    /* Word delimiters to use (NULL for default) */
-   const char   *look_behind_to,/* Boundary for look-behind; defaults to
-                                   "string" if NULL */
-   const char   *match_till);   /* Boundary to where match can extend.
-                                   \0 is assumed to be the boundary if not
-                                   set. Lookahead can cross the boundary. */
+int ExecRE(regexp *prog,               /* Compiled regex. */
+           const char *string,         /* Text to search within. */
+           const char *end,            /* Pointer to the end of `string'.  If NULL will
+                                    scan from `string' until '\0' is found. */
+           int reverse,                /* Backward search. */
+           char prev_char,             /* Character immediately prior to `string'.  Set
+                                          to '\n' or '\0' if true beginning of text. */
+           char succ_char,             /* Character immediately after `end'.  Set
+                                          to '\n' or '\0' if true beginning of text. */
+           const char *delimiters,     /* Word delimiters to use (NULL for default) */
+           const char *look_behind_to, /* Boundary for look-behind; defaults to
+                                          "string" if NULL */
+           const char *match_till);    /* Boundary to where match can extend.
+                                          \0 is assumed to be the boundary if not
+                                          set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
-Boolean SubstituteRE(const regexp* prog, const char* source, char* dest,
-        const int max);
+Boolean SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of
    delimiters. */
 
-void SetREDefaultWordDelimiters (
-   char *delimiters);
-
-
+void SetREDefaultWordDelimiters(char *delimiters);
 
 #endif /* NEDIT_REGULAREXP_H_INCLUDED */

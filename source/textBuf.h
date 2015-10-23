@@ -34,30 +34,27 @@
    of a single buffer character */
 #define MAX_EXP_CHAR_LEN 20
 
-
-
 struct RangesetTable;
 
 struct Selection {
-    char selected;          /* True if the selection is active */
-    char rectangular;       /* True if the selection is rectangular */
-    char zeroWidth;         /* Width 0 selections aren't "real" selections, but
-                                they can be useful when creating rectangular
-                                selections from the keyboard. */
-    int start;              /* Pos. of start of selection, or if rectangular
-                                 start of line containing it. */
-    int end;                /* Pos. of end of selection, or if rectangular
-                                 end of line containing it. */
-    int rectStart;          /* Indent of left edge of rect. selection */
-    int rectEnd;            /* Indent of right edge of rect. selection */
-} ;
+	char selected;    /* True if the selection is active */
+	char rectangular; /* True if the selection is rectangular */
+	char zeroWidth;   /* Width 0 selections aren't "real" selections, but
+	                      they can be useful when creating rectangular
+	                      selections from the keyboard. */
+	int start;        /* Pos. of start of selection, or if rectangular
+	                       start of line containing it. */
+	int end;          /* Pos. of end of selection, or if rectangular
+	                       end of line containing it. */
+	int rectStart;    /* Indent of left edge of rect. selection */
+	int rectEnd;      /* Indent of right edge of rect. selection */
+};
 
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
-template <class T>
-struct CallbackPair {
-	T     callback;
+template <class T> struct CallbackPair {
+	T callback;
 	void *argument;
 };
 
@@ -68,44 +65,45 @@ public:
 	~textBuffer();
 
 public:
-    int length; 	                          /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length) */ 
-    char *buf;                                /* allocated memory where the text is stored */																		 
-    int gapStart;  	                          /* points to the first character of the gap */ 																		 
-    int gapEnd;                               /* points to the first char after the gap */																			 
-    Selection primary;                        /* highlighted areas */																								 
-    Selection secondary;
-    Selection highlight;
-    int tabDist;		                      /* equiv. number of characters in a tab */ 																			 
-    int useTabs;		                      /* True if buffer routines are allowed to use tabs for padding in rectangular operations */							 
-    	
-	std::deque<CallbackPair<bufModifyCallbackProc>>    modifyProcs;    /* procedures to call when buffer is modified to redisplay contents */
+	int length;        /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd -
+	                      gapStart + length) */
+	char *buf;         /* allocated memory where the text is stored */
+	int gapStart;      /* points to the first character of the gap */
+	int gapEnd;        /* points to the first char after the gap */
+	Selection primary; /* highlighted areas */
+	Selection secondary;
+	Selection highlight;
+	int tabDist; /* equiv. number of characters in a tab */
+	int useTabs; /* True if buffer routines are allowed to use tabs for padding in rectangular operations */
+
+	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs;       /* procedures to call when buffer is modified to redisplay contents */
 	std::deque<CallbackPair<bufPreDeleteCallbackProc>> preDeleteProcs; /* procedure to call before text is deleted from the buffer; at most one is supported. */
-	
-    
-	int cursorPosHint;		                  /* hint for reasonable cursor position after a buffer modification operation */
-    char nullSubsChar;                        /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it */
-    RangesetTable *rangesetTable;             /* current range sets */
+
+	int cursorPosHint;            /* hint for reasonable cursor position after a buffer modification operation */
+	char nullSubsChar;            /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with
+	                                 something else.  This is the else, but of course, things get quite messy when you use it */
+	RangesetTable *rangesetTable; /* current range sets */
 };
 
 char *BufGetAll(textBuffer *buf);
-char *BufGetRange(const textBuffer* buf, int start, int end);
+char *BufGetRange(const textBuffer *buf, int start, int end);
 char *BufGetSecSelectText(textBuffer *buf);
 char *BufGetSelectionText(textBuffer *buf);
 char *BufGetTextInRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
-char BufGetCharacter(const textBuffer* buf, const int pos);
+char BufGetCharacter(const textBuffer *buf, const int pos);
 const char *BufAsString(textBuffer *buf);
 int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
-int BufCmp(textBuffer * buf, int pos, int len, const char *cmpText);
-int BufCmpEx(textBuffer * buf, int pos, int len, const std::string &cmpText);
+int BufCmp(textBuffer *buf, int pos, int len, const char *cmpText);
+int BufCmpEx(textBuffer *buf, int pos, int len, const std::string &cmpText);
 int BufCountBackwardNLines(textBuffer *buf, int startPos, int nLines);
-int BufCountDispChars(const textBuffer* buf, const int lineStartPos, const int targetPos);
+int BufCountDispChars(const textBuffer *buf, const int lineStartPos, const int targetPos);
 int BufCountForwardDispChars(textBuffer *buf, int lineStartPos, int nChars);
-int BufCountForwardNLines(const textBuffer* buf, const int startPos, const unsigned nLines);
+int BufCountForwardNLines(const textBuffer *buf, const int startPos, const unsigned nLines);
 int BufCountLines(textBuffer *buf, int startPos, int endPos);
 int BufEndOfLine(textBuffer *buf, int pos);
 int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 int BufGetEmptySelectionPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
-int BufGetExpandedChar(const textBuffer* buf, const int pos, const int indent, char *outStr);
+int BufGetExpandedChar(const textBuffer *buf, const int pos, const int indent, char *outStr);
 int BufGetHighlightPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 int BufGetSecSelectPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 int BufGetSelectionPos(textBuffer *buf, int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
@@ -118,7 +116,7 @@ int BufStartOfLine(textBuffer *buf, int pos);
 int BufSubstituteNullChars(char *string, int length, textBuffer *buf);
 int BufSubstituteNullCharsEx(std::string &string, int length, textBuffer *buf);
 std::string BufGetAllEx(textBuffer *buf);
-std::string BufGetRangeEx(const textBuffer* buf, int start, int end);
+std::string BufGetRangeEx(const textBuffer *buf, int start, int end);
 std::string BufGetSecSelectTextEx(textBuffer *buf);
 std::string BufGetSelectionTextEx(textBuffer *buf);
 std::string BufGetTextInRectEx(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
@@ -139,10 +137,11 @@ void BufRectHighlight(textBuffer *buf, int start, int end, int rectStart, int re
 void BufRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemove(textBuffer *buf, int start, int end);
 void BufRemoveModifyCB(textBuffer *buf, bufModifyCallbackProc bufModifiedCB, void *cbArg);
-void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc  bufPreDeleteCB, void *cbArg);
+void BufRemovePreDeleteCB(textBuffer *buf, bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
 void BufRemoveRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufRemoveSecSelect(textBuffer *buf);
-void BufRemoveSelected(textBuffer *buf);void BufSecRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
+void BufRemoveSelected(textBuffer *buf);
+void BufSecRectSelect(textBuffer *buf, int start, int end, int rectStart, int rectEnd);
 void BufReplace(textBuffer *buf, int start, int end, const char *text);
 void BufReplaceEx(textBuffer *buf, int start, int end, const std::string &text);
 void BufReplaceRect(textBuffer *buf, int start, int end, int rectStart, int rectEnd, const char *text);
@@ -161,6 +160,5 @@ void BufUnhighlight(textBuffer *buf);
 void BufUnselect(textBuffer *buf);
 void BufUnsubstituteNullChars(char *string, textBuffer *buf);
 void BufUnsubstituteNullCharsEx(std::string &string, textBuffer *buf);
-
 
 #endif /* NEDIT_TEXTBUF_H_INCLUDED */
