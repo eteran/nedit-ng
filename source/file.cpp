@@ -1237,7 +1237,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
 {
     textBuffer *buf = window->buffer;
     Selection *sel = &buf->primary;
-    char *fileString = nullptr;
+    std::string fileString;
     int fileLen;
     
     /* get the contents of the text buffer from the text area widget.  Add
@@ -1248,26 +1248,22 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
 	    return;
 	}
 	if (sel->rectangular) {
-    	    fileString = BufGetSelectionText(buf);
-    	    fileLen = strlen(fileString);
+    	    fileString = BufGetSelectionTextEx(buf);
+    	    fileLen = fileString.size();
     	} else
-    	    fileString = TextGetWrapped(window->textArea, sel->start, sel->end,
-    	    	    &fileLen);
+    	    fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end, &fileLen);
     } else
-    	fileString = TextGetWrapped(window->textArea, 0, buf->length, &fileLen);
+    	fileString = TextGetWrappedEx(window->textArea, 0, buf->length, &fileLen);
     
     /* If null characters are substituted for, put them back */
-    BufUnsubstituteNullChars(fileString, buf);
+    BufUnsubstituteNullCharsEx(fileString, buf);
 
         /* add a terminating newline if the file doesn't already have one */
-    if (fileLen != 0 && fileString[fileLen-1] != '\n')
-    	fileString[fileLen++] = '\n'; 	 /* null terminator no longer needed */
+    if (fileLen != 0 && fileString.back() != '\n')
+    	fileString.push_back('\n'); 	 /* null terminator no longer needed */
     
     /* Print the string */
-    PrintString(fileString, fileLen, window->shell, window->filename);
-
-    /* Free the text buffer copy returned from XmTextGetString */
-    XtFree(fileString);
+    PrintString(fileString.c_str(), fileString.size(), window->shell, window->filename);
 }
 
 /*

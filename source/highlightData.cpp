@@ -999,7 +999,7 @@ static const char *DefaultPatternSets[] = {
 ** styles information, parse it, and load it into the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-int LoadStylesString(char *inString)
+int LoadStylesString(const char *inString)
 {    
     const char *errMsg;
 	char *fontStr;

@@ -24,36 +24,32 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_HIGHLIGHTDATA_H_INCLUDED
-#define NEDIT_HIGHLIGHTDATA_H_INCLUDED
+#ifndef HIGHLIGHTDATA_H_
+#define HIGHLIGHTDATA_H_
 
-#include "nedit.h"
 #include "highlight.h"
+#include "nedit.h"
 #include <string>
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
-
-
-patternSet *FindPatternSet(const char *langModeName);
-int LoadHighlightString(char *inString, int convertOld);
-char *WriteHighlightString(void);
-int LoadStylesString(char *inString);
-char *WriteStylesString(void);
-void EditHighlightStyles(const char *initialStyle);
-void EditHighlightPatterns(WindowInfo *window);
-void UpdateLanguageModeMenu(void);
-int LMHasHighlightPatterns(const char *languageMode);
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
+char * WriteStylesString(void);
+char *WriteHighlightString(void);
+const char *BgColorOfNamedStyle(const char *styleName);
+const char *ColorOfNamedStyle(const char *styleName);
 int FontOfNamedStyleIsBold(const char *styleName);
 int FontOfNamedStyleIsItalic(const char *styleName);
-const char *ColorOfNamedStyle(const char *styleName);
-const char *BgColorOfNamedStyle(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
+int LMHasHighlightPatterns(const char *languageMode);
+int LoadHighlightString(char *inString, int convertOld);
+int LoadStylesString(const char *inString);
 int NamedStyleExists(const char *styleName);
+patternSet *FindPatternSet(const char *langModeName);
+void EditHighlightPatterns(WindowInfo *window);
+void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(const char *oldName, const char *newName);
+void UpdateLanguageModeMenu(void);
 
-
-
-#endif /* NEDIT_HIGHLIGHTDATA_H_INCLUDED */
+#endif

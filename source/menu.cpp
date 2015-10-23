@@ -1135,7 +1135,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window)
     window->replayItem = createMenuItem(menuPane, "replayKeystrokes",
     	    "Replay Keystrokes", 'K', replayCB, window, SHORT);
     XtVaSetValues(window->replayItem, XmNuserData, PERMANENT_MENU_ITEM,
-    	    XmNsensitive, GetReplayMacro() != nullptr, nullptr);
+    	    XmNsensitive, !GetReplayMacro().empty(), nullptr);
     window->repeatItem = createMenuItem(menuPane, "repeat",
     	    "Repeat...", 'R', doActionCB, "repeat_dialog", SHORT);
     XtVaSetValues(window->repeatItem, XmNuserData, PERMANENT_MENU_ITEM, nullptr);

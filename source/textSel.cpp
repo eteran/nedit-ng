@@ -139,34 +139,30 @@ void StopHandlingXSelections(Widget w)
 */
 void CopyToClipboard(Widget w, Time time)
 {
-    char *text;
     long itemID = 0;
     XmString s;
     int stat, length;
     
     /* Get the selected text, if there's no selection, do nothing */
-    text = BufGetSelectionText(((TextWidget)w)->text.textD->buffer);
-    if (*text == '\0') {
-    	XtFree(text);
+    std::string text = BufGetSelectionTextEx(((TextWidget)w)->text.textD->buffer);
+    if (text.empty()) {
     	return;
     }
 
     /* If the string contained ascii-nul characters, something else was
        substituted in the buffer.  Put the nulls back */
-    length = strlen(text);
-    BufUnsubstituteNullChars(text, ((TextWidget)w)->text.textD->buffer);
+    length = text.size();
+    BufUnsubstituteNullCharsEx(text, ((TextWidget)w)->text.textD->buffer);
     
     /* Shut up LessTif */
     if (SpinClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
-        XtFree(text);
         return;
     }
     
     /* Use the XmClipboard routines to copy the text to the clipboard.
        If errors occur, just give up.  */
     s = XmStringCreateSimpleEx("NEdit");
-    stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s,
-    	    time, w, nullptr, &itemID);
+    stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s, time, w, nullptr, &itemID);
     XmStringFree(s);
     if (stat != ClipboardSuccess) {
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
@@ -177,14 +173,12 @@ void CopyToClipboard(Widget w, Time time)
        that this was inconsistent with the somewhat ambiguous policy of
        including a terminating null but not mentioning it in the length */
 
-    if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String)"STRING",
-    	    text, length, 0, nullptr) != ClipboardSuccess) {
-    	XtFree(text);
+    if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String)"STRING", (char *)text.c_str(), length, 0, nullptr) != ClipboardSuccess) {
         SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
         SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
     	return;
     }
-    XtFree(text);
+
     SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
     SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 }
@@ -317,9 +311,9 @@ void InsertClipboard(Widget w, int isColumnar)
 
     /* Insert it in the text widget */
     if (isColumnar && !buf->primary.selected) {
-    	cursorPos = TextDGetInsertPosition(textD);
+    	cursorPos       = TextDGetInsertPosition(textD);
     	cursorLineStart = BufStartOfLine(buf, cursorPos);
-    	column = BufCountDispChars(buf, cursorLineStart, cursorPos);
+    	column          = BufCountDispChars(buf, cursorLineStart, cursorPos);
         if (((TextWidget)w)->text.overstrike) {
 	    BufOverlayRect(buf, cursorLineStart, column, -1, string, nullptr,
 			   nullptr);

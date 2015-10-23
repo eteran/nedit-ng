@@ -1,9 +1,9 @@
 /*******************************************************************************
-*									       *
-* userCmds.c -- Nirvana Editor shell and macro command dialogs 		       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* userCmds.c -- Nirvana Editor shell and macro command dialogs                 *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
@@ -13,17 +13,17 @@
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* April, 1997								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* April, 1997                                                                  *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #include "userCmds.h"
@@ -867,7 +867,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType)
     	    xmPushButtonWidgetClass, form,
     	    XmNlabelString, s1=MKSTRING((String)"Paste Learn/\nReplay Macro"),
     	    XmNmnemonic, 'P',
-    	    XmNsensitive, GetReplayMacro() != nullptr,
+    	    XmNsensitive, !GetReplayMacro().empty(),
      	    XmNleftAttachment, XmATTACH_POSITION,
    	    XmNleftPosition, RIGHT_MARGIN_POS-20,
     	    XmNrightAttachment, XmATTACH_POSITION,
@@ -2161,11 +2161,11 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)callData;
     userCmdDialog *ucd = (userCmdDialog *)clientData;
     
-    if (GetReplayMacro() == nullptr)
+    if (GetReplayMacro().empty())
     	return;
     
     XmTextInsert(ucd->cmdTextW, XmTextGetInsertionPosition(ucd->cmdTextW),
-    	    (String)GetReplayMacro());
+    	    (String)GetReplayMacro().c_str());
 }
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData)

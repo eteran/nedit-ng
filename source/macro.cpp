@@ -497,7 +497,7 @@ static const char* RedundantActions[] = {"open_dialog", "save_as_dialog",
 static char *LastCommand = nullptr;
 
 /* The current macro to execute on Replay command */
-static const char *ReplayMacro = nullptr;
+static std::string ReplayMacro;
 
 /* Buffer where macro commands are recorded in Learn mode */
 static textBuffer *MacroRecordBuf = nullptr;
@@ -642,11 +642,8 @@ void FinishLearn(void)
     XtRemoveActionHook(MacroRecordActionHook);
     MacroRecordActionHook = 0;
     
-    /* Free the old learn/replay sequence */
-    XtFree((char *)ReplayMacro);
-    
     /* Store the finished action for the replay menu item */
-    ReplayMacro = BufGetAll(MacroRecordBuf);
+    ReplayMacro = BufGetAllEx(MacroRecordBuf);
     
     /* Free the buffer used to accumulate the macro sequence */
     delete MacroRecordBuf;
@@ -726,12 +723,10 @@ void Replay(WindowInfo *window)
 
     /* Verify that a replay macro exists and it's not empty and that */
     /* we're not already running a macro */
-    if (ReplayMacro != nullptr &&
-            ReplayMacro[0] != 0 &&
-            window->macroCmdData == nullptr) {
+    if (!ReplayMacro.empty() && window->macroCmdData == nullptr) {
         /* Parse the replay macro (it's stored in text form) and compile it into
         an executable program "prog" */
-        prog = ParseMacro(ReplayMacro, &errMsg, &stoppedAt);
+        prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
         if (prog == nullptr) {
             fprintf(stderr,
                 "NEdit internal error, learn/replay macro syntax error: %s\n",
@@ -1214,7 +1209,7 @@ void DoMacro(WindowInfo *window, const char *macro, const char *errInName)
 ** pointer to the stored macro and should not be freed by the caller (and
 ** will cease to exist when the next replay macro is installed)
 */
-const char *GetReplayMacro(void)
+std::string GetReplayMacro(void)
 {
     return ReplayMacro;
 }
@@ -1288,7 +1283,7 @@ void RepeatDialog(WindowInfo *window)
 	    XmNlabelString,
 	    	s1=XmStringCreateSimpleEx("Learn/Replay"),
 	    XmNmnemonic, 'L',
-	    XmNsensitive, ReplayMacro != nullptr, nullptr);
+	    XmNsensitive, !ReplayMacro.empty(), nullptr);
     XmStringFree(s1);
 
     timesForm = XtVaCreateManagedWidget("form", xmFormWidgetClass, form,
@@ -1400,9 +1395,9 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event)
     if (XmToggleButtonGetState(rd->lastCmdToggle))
 	params[1] = XtNewString(rd->lastCommand);
     else {
-	if (ReplayMacro == nullptr)
+	if (ReplayMacro.empty())
 	    return False;
-	params[1] = XtNewString(ReplayMacro);
+	params[1] = XtNewString((String)ReplayMacro.c_str());
     }
 
     /* call the action routine repeat_macro to do the work */

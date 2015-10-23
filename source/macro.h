@@ -53,7 +53,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist);
 int ReadMacroString(WindowInfo *window, const char *string, const char *errIn);
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	const char **errPos);
-const char *GetReplayMacro(void);
+std::string GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
 

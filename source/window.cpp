@@ -2096,8 +2096,8 @@ int GetSimpleSelection(textBuffer *buf, int *left, int *right)
         return False;
     if (isRect) {
         lineStart = BufStartOfLine(buf, selStart);
-        selStart = BufCountForwardDispChars(buf, lineStart, rectStart);
-        selEnd = BufCountForwardDispChars(buf, lineStart, rectEnd);
+        selStart  = BufCountForwardDispChars(buf, lineStart, rectStart);
+        selEnd    = BufCountForwardDispChars(buf, lineStart, rectEnd);
     }
     *left = selStart;
     *right = selEnd;
@@ -4232,7 +4232,6 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin)
 */
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
 {
-    const char *orgDocument;
     char *params[4];
     int emTabDist;
     
@@ -4244,7 +4243,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin)
     window->ignoreModify = True;
 
     /* copy the text buffer */
-    orgDocument = BufAsString(orgWin->buffer);
+    const char *orgDocument = BufAsString(orgWin->buffer);
     BufSetAll(window->buffer, orgDocument);
 
     /* copy the tab preferences (here!) */
