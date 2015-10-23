@@ -24,13 +24,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_UTILS_H_INCLUDED
-#define NEDIT_UTILS_H_INCLUDED
-
-#include <sys/utsname.h>
-#include <sys/types.h>
+#ifndef UTILS_H_
+#define UTILS_H_
 
 #include <sys/param.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
 
 const char *GetCurrentDir(void);
 const char *GetHomeDir(void);
@@ -38,10 +37,10 @@ char *PrependHome(const char *filename, char *buf, size_t buflen);
 const char *GetUserName(void);
 const char *GetNameOfHost(void);
 int Min(int i1, int i2);
-const char* GetRCFileName(int type);
+const char *GetRCFileName(int type);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
-enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
+enum { NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES };
 
 /* If anyone knows where to get this from system include files (in a machine
    independent way), please change this (L_cuserid is apparently not ANSI) */
@@ -52,7 +51,7 @@ enum {NEDIT_RC, AUTOLOAD_NM, NEDIT_HISTORY, N_FILE_TYPES};
 #ifdef SYS_NMLN
 #define MAXNODENAMELEN SYS_NMLN
 #else
-#define MAXNODENAMELEN (MAXPATHLEN+2)
+#define MAXNODENAMELEN (MAXPATHLEN + 2)
 #endif
 
-#endif /* NEDIT_UTILS_H_INCLUDED */
+#endif

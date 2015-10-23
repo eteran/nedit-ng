@@ -23,16 +23,10 @@
 *                                                                              *
 *******************************************************************************/
 
-enum MotifStability
-{
-    MotifKnownGood,
-    MotifUnknown,
-    MotifKnownBad
-};
+enum MotifStability { MotifKnownGood, MotifUnknown, MotifKnownBad };
 
 /* Return the stability of the Motif compiled-in */
 enum MotifStability GetMotifStability(void);
 
 /* Acquire a list of good version for showing to the user. */
 const char *GetMotifStableVersions(void);
-

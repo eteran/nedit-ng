@@ -24,10 +24,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_CLEARCASE_H_INCLUDED
-#define NEDIT_CLEARCASE_H_INCLUDED
+#ifndef CLEARCASE_H_
+#define CLEARCASE_H_
 
-const char* GetClearCaseVersionExtendedPath(const char* fullname);
+const char *GetClearCaseVersionExtendedPath(const char *fullname);
 const char *GetClearCaseViewTag(void);
 
-#endif /* NEDIT_CLEARCASE_H_INCLUDED */
+#endif

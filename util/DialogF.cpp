@@ -27,8 +27,6 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Ex
 *                                                                               *
 *******************************************************************************/
 
-
-
 #include "DialogF.h"
 #include "misc.h"
 
@@ -48,42 +46,32 @@ static const char CVSID[] = "$Id: DialogF.c,v 1.32 2007/12/28 19:48:07 yooden Ex
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
 
-
-
 #define NUM_DIALOGS_SUPPORTED 6
-#define NUM_BUTTONS_SUPPORTED 3		/* except prompt dialog */
+#define NUM_BUTTONS_SUPPORTED 3 /* except prompt dialog */
 #define NUM_BUTTONS_MAXPROMPT 4
 #define MAX_TITLE_LEN 256
 
-enum dialogBtnIndecies {OK_BTN, APPLY_BTN, CANCEL_BTN, HELP_BTN};
+enum dialogBtnIndecies { OK_BTN, APPLY_BTN, CANCEL_BTN, HELP_BTN };
 
 struct dfcallbackstruct {
-    unsigned button;		/* button pressed by user		     */
-    Boolean done_with_dialog;	/* set by callbacks; dialog can be destroyed */
-    unsigned apply_up;		/* will = 1 when apply button managed	     */
-    Boolean destroyed;		/* set when dialog is destroyed unexpectedly */
+	unsigned button;          /* button pressed by user		     */
+	Boolean done_with_dialog; /* set by callbacks; dialog can be destroyed */
+	unsigned apply_up;        /* will = 1 when apply button managed	     */
+	Boolean destroyed;        /* set when dialog is destroyed unexpectedly */
 };
 
 static char **PromptHistory = NULL;
 static int NPromptHistoryItems = -1;
 
-static void apply_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data);
-static void help_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data);
-static void cancel_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data);
-static void ok_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data);
-static void destroy_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data);
+static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
+static void help_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
+static void cancel_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
+static void ok_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
+static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
 static void focusCB(Widget w, Widget dialog, caddr_t call_data);
-static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df,
-    	int whichBtn);
-static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event,
-    	Boolean *cont);
-static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
-    	Boolean *cont);
+static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whichBtn);
+static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont);
+static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont);
 static void createMnemonics(Widget w);
 
 /*******************************************************************************
@@ -140,340 +128,278 @@ static void createMnemonics(Widget w);
 * but_pressed = DialogF (DF_PROMPT, toplevel, 0, "New %s",                     *
 *             new_sub_category, categories[i]);                                *
 */
-unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
-        const char* msgstr, ...)                    /* variable # arguments */
+unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, const char *msgstr, ...) /* variable # arguments */
 {
-    va_list var;
+	va_list var;
 
-    Widget dialog, dialog_shell;
-    unsigned dialog_num, prompt;
-    XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
-    XmString msgstr_xms, input_string_xms, titstr_xms;
-    char msgstr_vsp[DF_MAX_MSG_LENGTH+1];
-    char *but_lbl, *input_string = NULL, *input_string_ptr;
-    int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
-    Arg args[256];
-    char titleCopy[MAX_TITLE_LEN];
-    
-    struct dfcallbackstruct df;
+	Widget dialog, dialog_shell;
+	unsigned dialog_num, prompt;
+	XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
+	XmString msgstr_xms, input_string_xms, titstr_xms;
+	char msgstr_vsp[DF_MAX_MSG_LENGTH + 1];
+	char *but_lbl, *input_string = NULL, *input_string_ptr;
+	int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
+	Arg args[256];
+	char titleCopy[MAX_TITLE_LEN];
 
-    static int dialog_types[] = {		/* Supported dialog types */
-		XmDIALOG_ERROR,
-		XmDIALOG_INFORMATION,
-		XmDIALOG_MESSAGE,
-		XmDIALOG_QUESTION,
-		XmDIALOG_WARNING,
-		XmDIALOG_PROMPT
-    };
-    static const char *dialog_name[] = {		/* Corresponding dialog names */
-		"Error",
-		"Information",
-		"Message",
-		"Question",
-		"Warning",
-		"Prompt"
-    };
+	struct dfcallbackstruct df;
 
-    static unsigned char selectionButton_id[] =
-    {
-        XmDIALOG_OK_BUTTON,
-        XmDIALOG_APPLY_BUTTON,
-        XmDIALOG_CANCEL_BUTTON,
-        XmDIALOG_HELP_BUTTON
-    };
-    Cardinal N_SELECTION_BUTTONS = XtNumber(selectionButton_id);
+	static int dialog_types[] = {/* Supported dialog types */
+	                             XmDIALOG_ERROR, XmDIALOG_INFORMATION, XmDIALOG_MESSAGE, XmDIALOG_QUESTION, XmDIALOG_WARNING, XmDIALOG_PROMPT};
+	static const char *dialog_name[] = {/* Corresponding dialog names */
+	                                    "Error", "Information", "Message", "Question", "Warning", "Prompt"};
 
-    static unsigned char messageButton_id[] =
-    {
-        XmDIALOG_OK_BUTTON,
-        XmDIALOG_CANCEL_BUTTON,
-        XmDIALOG_HELP_BUTTON
-    };
-    Cardinal N_MESSAGE_BUTTONS = XtNumber(messageButton_id);
+	static unsigned char selectionButton_id[] = {XmDIALOG_OK_BUTTON, XmDIALOG_APPLY_BUTTON, XmDIALOG_CANCEL_BUTTON, XmDIALOG_HELP_BUTTON};
+	Cardinal N_SELECTION_BUTTONS = XtNumber(selectionButton_id);
 
-    static char *button_name[] = {		/* Motif button names */
-		XmNokLabelString,
-		XmNapplyLabelString,		/* button #2, if managed */
-		XmNcancelLabelString,
-		XmNhelpLabelString
-    };
+	static unsigned char messageButton_id[] = {XmDIALOG_OK_BUTTON, XmDIALOG_CANCEL_BUTTON, XmDIALOG_HELP_BUTTON};
+	Cardinal N_MESSAGE_BUTTONS = XtNumber(messageButton_id);
 
-						/* Validate input parameters */
-    if ((dialog_type > NUM_DIALOGS_SUPPORTED) || (dialog_type <= 0)) {
-	printf ("\nError calling DialogF - Unsupported dialog type\n");
-	return (0);
-    }
-    dialog_num = dialog_type - 1;
-    prompt = (dialog_type == DF_PROMPT);
-    if  ((!prompt && (n > NUM_BUTTONS_SUPPORTED)) ||
-	  (prompt && (n > NUM_BUTTONS_MAXPROMPT))) {
-	printf ("\nError calling DialogF - Too many buttons specified\n");
-	return (0);
-    }
+	static char *button_name[] = {                                       /* Motif button names */
+	                              XmNokLabelString, XmNapplyLabelString, /* button #2, if managed */
+	                              XmNcancelLabelString, XmNhelpLabelString};
 
-    df.done_with_dialog = False;
-    df.destroyed = False;
-
-    va_start (var, msgstr);
-    if (prompt) {		      /* Get where to put dialog input string */
-	input_string = va_arg(var, char*);
-    }
-    if (n == NUM_BUTTONS_MAXPROMPT)
-	df.apply_up = 1;		/* Apply button will be managed */
-    else
-    	df.apply_up = 0;		/* Apply button will not be managed */
-    for (argcount = 0; argcount < (int)n; ++argcount) {   /* Set up button labels */
-	but_lbl = va_arg(var, char *);
-	but_lbl_xms[num_but_lbls] = XmStringCreateLtoR (but_lbl, 
-		XmSTRING_DEFAULT_CHARSET);
-	but_index = df.apply_up ? argcount : 
-	    	((argcount == 0) ? argcount : argcount+1);
-	XtSetArg (args[argcount], button_name[but_index], 
-		but_lbl_xms[num_but_lbls++]);
-	if (!strcmp(but_lbl, "Cancel") || !strcmp(but_lbl, "Dismiss"))
-	    cancel_index = but_index;
-    }
-    if (n == 1)
-       cancel_index = 0;
-
-    /* Get & translate msg string. NOTE: the use of vsprintf is inherently
-       dangerous because there is no way to control the length of the written
-       string. vnsprintf isn't available on all platforms, unfortunately.
-       Therefore we have to make sure that msgstr_vsp is large enough such
-       that it cannot overflow under any circumstances (within the context
-       of any DialogF call). A necessary condition is that it can at least
-       hold one file name (MAXPATHLEN). Therefore, DF_MAX_MSG_LENGTH must be
-       sufficiently larger than MAXPATHLEN.
-    */
-    vsprintf (msgstr_vsp, msgstr, var);
-    va_end(var);
-    
-    strncpy(&titleCopy[0], title, MAX_TITLE_LEN);
-    titleCopy[MAX_TITLE_LEN-1] = '\0';
-
-    msgstr_xms = XmStringCreateLtoR(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
-    titstr_xms = XmStringCreateLtoR(titleCopy, XmSTRING_DEFAULT_CHARSET);
-
-    if (prompt) {				/* Prompt dialog */
-	XtSetArg (args[argcount], XmNselectionLabelString, msgstr_xms);
-		argcount++;
-	XtSetArg (args[argcount], XmNdialogTitle, titstr_xms);
-		argcount++;
-	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-		argcount ++;
-
-	dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args,
-			argcount);
-	XtAddCallback (dialog, XmNokCallback, (XtCallbackProc)ok_callback,
-		(char *)&df);
-	XtAddCallback (dialog, XmNcancelCallback,
-		(XtCallbackProc)cancel_callback, (char *)&df);
-	XtAddCallback (dialog, XmNhelpCallback, (XtCallbackProc)help_callback,
-		(char *)&df);
-	XtAddCallback (dialog, XmNapplyCallback, (XtCallbackProc)apply_callback,
-		(char *)&df);
-	RemapDeleteKey(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
-
-	/* Text area in prompt dialog should get focus, not ok button
-	   since user enters text first.  To fix this, we need to turn
-	   off the default button for the dialog, until after keyboard
-	   focus has been established */
-	XtVaSetValues(dialog, XmNdefaultButton, NULL, NULL);
-    	XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT),
-    		XmNfocusCallback, (XtCallbackProc)focusCB, (char *)dialog);
-
-	/* Limit the length of the text that can be entered in text field */
-	XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT),
-		XmNmaxLength, DF_MAX_PROMPT_LENGTH-1, NULL);
-	
-	/* Turn on the requested number of buttons in the dialog by
-	   managing/unmanaging the button widgets */
-	switch (n) {		/* number of buttons requested */
-	case 0: case 3:
-	    break;		/* or default of 3 buttons */
-	case 1:
-	    XtUnmanageChild (XmSelectionBoxGetChild (dialog,
-		XmDIALOG_CANCEL_BUTTON) );
-	case 2:
-	    XtUnmanageChild (XmSelectionBoxGetChild (dialog,
-		XmDIALOG_HELP_BUTTON) );
-	    break;
-	case 4:
-	    XtManageChild (XmSelectionBoxGetChild (dialog,
-		XmDIALOG_APPLY_BUTTON) );
-	    df.apply_up = 1;		/* apply button managed */
-	default:
-	    break;
-	}				/* end switch */
-
-        /*  Set margin width to managed buttons.  */
-        for (i = 0; (unsigned) i < N_SELECTION_BUTTONS; i++)
-        {
-            Widget button = XmSelectionBoxGetChild(dialog, selectionButton_id[i]);
-
-            if (XtIsManaged(button))
-            {
-                XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
-            }
-        }
-
-    	/* If the button labeled cancel or dismiss is not the cancel button, or
-    	   if there is no button labeled cancel or dismiss, redirect escape key
-    	   events (this is necessary because the XmNcancelButton resource in
-    	   the bulletin board widget class is blocked from being reset) */
-    	if (cancel_index == -1)
-    	    addEscapeHandler(dialog, NULL, 0);
-    	else if (cancel_index != CANCEL_BTN)
-    	    addEscapeHandler(dialog, &df, cancel_index);
-
-    	/* Add a callback to the window manager close callback for the dialog */
-    	AddMotifCloseCallback(XtParent(dialog),
-    	    	(XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback :
-    	    	(cancel_index == CANCEL_BTN ? cancel_callback :
-    	    	(cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
- 
-        /* Also add a callback to detect unexpected destruction (eg, because
-           the parent window is destroyed) */
-        XtAddCallback(dialog, XmNdestroyCallback, 
-            (XtCallbackProc)destroy_callback, &df);
-
-	/* A previous call to SetDialogFPromptHistory can request that an
-	   up-arrow history-recall mechanism be attached.  If so, do it here */
-	if (NPromptHistoryItems != -1)
-	    AddHistoryToTextWidget(XmSelectionBoxGetChild(dialog,XmDIALOG_TEXT),
-		    &PromptHistory, &NPromptHistoryItems);
-	
-    	/* Pop up the dialog */
-	ManageDialogCenteredOnPointer(dialog);
-	
-	/* Get the focus to the input string.  There is some timing problem
-	   within Motif that requires this to be called several times */
-	for (i=0; i<20; i++)
-	    XmProcessTraversal(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT),
-		    XmTRAVERSE_CURRENT);
-	
-	/* Wait for a response to the dialog */
-	while (!df.done_with_dialog && !df.destroyed)
-	    XtAppProcessEvent (XtWidgetToApplicationContext(dialog), XtIMAll);
-        
-        if (!df.destroyed) {
-	    argcount = 0; /* Pass back string user entered */
-	    XtSetArg (args[argcount], XmNtextString, &input_string_xms); argcount++;
-	    XtGetValues (dialog, args, argcount);
-	    XmStringGetLtoR (input_string_xms, XmSTRING_DEFAULT_CHARSET,
-		&input_string_ptr);
-	    strcpy (input_string, input_string_ptr);  /* This step is necessary */
-	    XmStringFree(input_string_xms );
-            XtFree(input_string_ptr);
-             /* Important! Only intercept unexpected destroy events. */
-	    XtRemoveCallback(dialog, XmNdestroyCallback, 
-            	(XtCallbackProc)destroy_callback, &df);
-	    XtDestroyWidget(dialog);
+	/* Validate input parameters */
+	if ((dialog_type > NUM_DIALOGS_SUPPORTED) || (dialog_type <= 0)) {
+		printf("\nError calling DialogF - Unsupported dialog type\n");
+		return (0);
 	}
-	PromptHistory = NULL;
-    	NPromptHistoryItems = -1;
-    }						  /* End prompt dialog path */
-
-    else {				/* MessageBox dialogs */
-	XtSetArg (args[argcount], XmNmessageString, msgstr_xms); argcount++;
-
-	XtSetArg (args[argcount], XmNdialogType, dialog_types[dialog_num]);
-		argcount ++;
-	XtSetArg (args[argcount], XmNdialogTitle, titstr_xms);
-		argcount++;
-	XtSetArg (args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-		argcount ++;
-
-	dialog_shell = CreateDialogShell (parent, dialog_name[dialog_num],
-			0, 0);
-	dialog = XmCreateMessageBox (dialog_shell, (char *)"msg box", args, argcount);
-        
-	XtAddCallback (dialog, XmNokCallback, (XtCallbackProc)ok_callback,
-		(char *)&df);
-	XtAddCallback (dialog, XmNcancelCallback,
-		(XtCallbackProc)cancel_callback, (char *)&df);
-	XtAddCallback (dialog, XmNhelpCallback, (XtCallbackProc)help_callback,
-		(char *)&df);
-
-	/* Make extraneous buttons disappear */
-	switch (n) {		/* n = number of buttons requested */
-	case 0: case 3:
-	    break;		/* default (0) gets you 3 buttons */
-	case 1:
-	    XtUnmanageChild (XmMessageBoxGetChild (dialog,
-			XmDIALOG_CANCEL_BUTTON) );
-	case 2:
-	    XtUnmanageChild (XmMessageBoxGetChild (dialog,
-			XmDIALOG_HELP_BUTTON) );
-	    break;
-	default:
-	    break;
+	dialog_num = dialog_type - 1;
+	prompt = (dialog_type == DF_PROMPT);
+	if ((!prompt && (n > NUM_BUTTONS_SUPPORTED)) || (prompt && (n > NUM_BUTTONS_MAXPROMPT))) {
+		printf("\nError calling DialogF - Too many buttons specified\n");
+		return (0);
 	}
 
-        /*  Set margin width to managed buttons.  */
-        for (i = 0; (unsigned) i < N_MESSAGE_BUTTONS; i++)
-        {
-            Widget button = XmMessageBoxGetChild(dialog, messageButton_id[i]);
+	df.done_with_dialog = False;
+	df.destroyed = False;
 
-            if (XtIsManaged(button))
-            {
-                XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
-            }
-        }
+	va_start(var, msgstr);
+	if (prompt) { /* Get where to put dialog input string */
+		input_string = va_arg(var, char *);
+	}
+	if (n == NUM_BUTTONS_MAXPROMPT)
+		df.apply_up = 1; /* Apply button will be managed */
+	else
+		df.apply_up = 0;                                /* Apply button will not be managed */
+	for (argcount = 0; argcount < (int)n; ++argcount) { /* Set up button labels */
+		but_lbl = va_arg(var, char *);
+		but_lbl_xms[num_but_lbls] = XmStringCreateLtoR(but_lbl, XmSTRING_DEFAULT_CHARSET);
+		but_index = df.apply_up ? argcount : ((argcount == 0) ? argcount : argcount + 1);
+		XtSetArg(args[argcount], button_name[but_index], but_lbl_xms[num_but_lbls++]);
+		if (!strcmp(but_lbl, "Cancel") || !strcmp(but_lbl, "Dismiss"))
+			cancel_index = but_index;
+	}
+	if (n == 1)
+		cancel_index = 0;
 
-        /* Try to create some sensible default mnemonics */
-        createMnemonics(dialog_shell);
-        AddDialogMnemonicHandler(dialog_shell, TRUE);
+	/* Get & translate msg string. NOTE: the use of vsprintf is inherently
+	   dangerous because there is no way to control the length of the written
+	   string. vnsprintf isn't available on all platforms, unfortunately.
+	   Therefore we have to make sure that msgstr_vsp is large enough such
+	   that it cannot overflow under any circumstances (within the context
+	   of any DialogF call). A necessary condition is that it can at least
+	   hold one file name (MAXPATHLEN). Therefore, DF_MAX_MSG_LENGTH must be
+	   sufficiently larger than MAXPATHLEN.
+	*/
+	vsprintf(msgstr_vsp, msgstr, var);
+	va_end(var);
 
-    	/* If the button labeled cancel or dismiss is not the cancel button, or
-    	   if there is no button labeled cancel or dismiss, redirect escape key
-    	   events (this is necessary because the XmNcancelButton resource in
-    	   the bulletin board widget class is blocked from being reset) */
-    	if (cancel_index == -1)
-    	    addEscapeHandler(dialog, NULL, 0);
-    	else if (cancel_index != CANCEL_BTN)
-    	    addEscapeHandler(dialog, &df, cancel_index);
+	strncpy(&titleCopy[0], title, MAX_TITLE_LEN);
+	titleCopy[MAX_TITLE_LEN - 1] = '\0';
 
-    	/* Add a callback to the window manager close callback for the dialog */
-    	AddMotifCloseCallback(XtParent(dialog),
-    	    	(XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback :
-    	    	(cancel_index == CANCEL_BTN ? cancel_callback :
-    	    	(cancel_index == HELP_BTN ? help_callback : ok_callback))),&df);
-        
-        /* Also add a callback to detect unexpected destruction (eg, because
-           the parent window is destroyed) */
-        XtAddCallback(dialog_shell, XmNdestroyCallback, 
-	    (XtCallbackProc)destroy_callback, &df);
+	msgstr_xms = XmStringCreateLtoR(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
+	titstr_xms = XmStringCreateLtoR(titleCopy, XmSTRING_DEFAULT_CHARSET);
 
-	/* Pop up the dialog, wait for response*/
-	ManageDialogCenteredOnPointer(dialog);
-	while (!df.done_with_dialog && !df.destroyed)
-	    XtAppProcessEvent (XtWidgetToApplicationContext(dialog), XtIMAll);
-	
-	if (!df.destroyed) {
-             /* Important! Only intercept unexpected destroy events. */
-	    XtRemoveCallback(dialog_shell, XmNdestroyCallback, 
-            	(XtCallbackProc)destroy_callback, &df);
-	    XtDestroyWidget(dialog_shell);
-        }
-    }
+	if (prompt) { /* Prompt dialog */
+		XtSetArg(args[argcount], XmNselectionLabelString, msgstr_xms);
+		argcount++;
+		XtSetArg(args[argcount], XmNdialogTitle, titstr_xms);
+		argcount++;
+		XtSetArg(args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+		argcount++;
 
-    XmStringFree(msgstr_xms);
-    XmStringFree(titstr_xms);
-    for (i = 0; i < num_but_lbls; ++i)
-	XmStringFree(but_lbl_xms[i]);
-    
-    /* If the dialog was destroyed unexpectedly, the button was not set yet,
-       so we must set the index of the cancel button. */
-    if (df.destroyed) {
-	df.button = cancel_index == APPLY_BTN ? 2 :
-        	(cancel_index == CANCEL_BTN ? 2 + df.apply_up :
-                (cancel_index == HELP_BTN ? 3 + df.apply_up : 1));
-    }
-		
-    df.apply_up = 0;			/* default is apply button unmanaged */
+		dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args, argcount);
+		XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)ok_callback, (char *)&df);
+		XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)cancel_callback, (char *)&df);
+		XtAddCallback(dialog, XmNhelpCallback, (XtCallbackProc)help_callback, (char *)&df);
+		XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)apply_callback, (char *)&df);
+		RemapDeleteKey(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
 
-    return (df.button);
+		/* Text area in prompt dialog should get focus, not ok button
+		   since user enters text first.  To fix this, we need to turn
+		   off the default button for the dialog, until after keyboard
+		   focus has been established */
+		XtVaSetValues(dialog, XmNdefaultButton, NULL, NULL);
+		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, (XtCallbackProc)focusCB, (char *)dialog);
+
+		/* Limit the length of the text that can be entered in text field */
+		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNmaxLength, DF_MAX_PROMPT_LENGTH - 1, NULL);
+
+		/* Turn on the requested number of buttons in the dialog by
+		   managing/unmanaging the button widgets */
+		switch (n) { /* number of buttons requested */
+		case 0:
+		case 3:
+			break; /* or default of 3 buttons */
+		case 1:
+			XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
+		case 2:
+			XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+			break;
+		case 4:
+			XtManageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
+			df.apply_up = 1; /* apply button managed */
+		default:
+			break;
+		} /* end switch */
+
+		/*  Set margin width to managed buttons.  */
+		for (i = 0; (unsigned)i < N_SELECTION_BUTTONS; i++) {
+			Widget button = XmSelectionBoxGetChild(dialog, selectionButton_id[i]);
+
+			if (XtIsManaged(button)) {
+				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+			}
+		}
+
+		/* If the button labeled cancel or dismiss is not the cancel button, or
+		   if there is no button labeled cancel or dismiss, redirect escape key
+		   events (this is necessary because the XmNcancelButton resource in
+		   the bulletin board widget class is blocked from being reset) */
+		if (cancel_index == -1)
+			addEscapeHandler(dialog, NULL, 0);
+		else if (cancel_index != CANCEL_BTN)
+			addEscapeHandler(dialog, &df, cancel_index);
+
+		/* Add a callback to the window manager close callback for the dialog */
+		AddMotifCloseCallback(XtParent(dialog), (XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
+
+		/* Also add a callback to detect unexpected destruction (eg, because
+		   the parent window is destroyed) */
+		XtAddCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+
+		/* A previous call to SetDialogFPromptHistory can request that an
+		   up-arrow history-recall mechanism be attached.  If so, do it here */
+		if (NPromptHistoryItems != -1)
+			AddHistoryToTextWidget(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), &PromptHistory, &NPromptHistoryItems);
+
+		/* Pop up the dialog */
+		ManageDialogCenteredOnPointer(dialog);
+
+		/* Get the focus to the input string.  There is some timing problem
+		   within Motif that requires this to be called several times */
+		for (i = 0; i < 20; i++)
+			XmProcessTraversal(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmTRAVERSE_CURRENT);
+
+		/* Wait for a response to the dialog */
+		while (!df.done_with_dialog && !df.destroyed)
+			XtAppProcessEvent(XtWidgetToApplicationContext(dialog), XtIMAll);
+
+		if (!df.destroyed) {
+			argcount = 0; /* Pass back string user entered */
+			XtSetArg(args[argcount], XmNtextString, &input_string_xms);
+			argcount++;
+			XtGetValues(dialog, args, argcount);
+			XmStringGetLtoR(input_string_xms, XmSTRING_DEFAULT_CHARSET, &input_string_ptr);
+			strcpy(input_string, input_string_ptr); /* This step is necessary */
+			XmStringFree(input_string_xms);
+			XtFree(input_string_ptr);
+			/* Important! Only intercept unexpected destroy events. */
+			XtRemoveCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+			XtDestroyWidget(dialog);
+		}
+		PromptHistory = NULL;
+		NPromptHistoryItems = -1;
+	} /* End prompt dialog path */
+
+	else { /* MessageBox dialogs */
+		XtSetArg(args[argcount], XmNmessageString, msgstr_xms);
+		argcount++;
+
+		XtSetArg(args[argcount], XmNdialogType, dialog_types[dialog_num]);
+		argcount++;
+		XtSetArg(args[argcount], XmNdialogTitle, titstr_xms);
+		argcount++;
+		XtSetArg(args[argcount], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+		argcount++;
+
+		dialog_shell = CreateDialogShell(parent, dialog_name[dialog_num], 0, 0);
+		dialog = XmCreateMessageBox(dialog_shell, (char *)"msg box", args, argcount);
+
+		XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)ok_callback, (char *)&df);
+		XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)cancel_callback, (char *)&df);
+		XtAddCallback(dialog, XmNhelpCallback, (XtCallbackProc)help_callback, (char *)&df);
+
+		/* Make extraneous buttons disappear */
+		switch (n) { /* n = number of buttons requested */
+		case 0:
+		case 3:
+			break; /* default (0) gets you 3 buttons */
+		case 1:
+			XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
+		case 2:
+			XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+			break;
+		default:
+			break;
+		}
+
+		/*  Set margin width to managed buttons.  */
+		for (i = 0; (unsigned)i < N_MESSAGE_BUTTONS; i++) {
+			Widget button = XmMessageBoxGetChild(dialog, messageButton_id[i]);
+
+			if (XtIsManaged(button)) {
+				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+			}
+		}
+
+		/* Try to create some sensible default mnemonics */
+		createMnemonics(dialog_shell);
+		AddDialogMnemonicHandler(dialog_shell, TRUE);
+
+		/* If the button labeled cancel or dismiss is not the cancel button, or
+		   if there is no button labeled cancel or dismiss, redirect escape key
+		   events (this is necessary because the XmNcancelButton resource in
+		   the bulletin board widget class is blocked from being reset) */
+		if (cancel_index == -1)
+			addEscapeHandler(dialog, NULL, 0);
+		else if (cancel_index != CANCEL_BTN)
+			addEscapeHandler(dialog, &df, cancel_index);
+
+		/* Add a callback to the window manager close callback for the dialog */
+		AddMotifCloseCallback(XtParent(dialog), (XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
+
+		/* Also add a callback to detect unexpected destruction (eg, because
+		   the parent window is destroyed) */
+		XtAddCallback(dialog_shell, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+
+		/* Pop up the dialog, wait for response*/
+		ManageDialogCenteredOnPointer(dialog);
+		while (!df.done_with_dialog && !df.destroyed)
+			XtAppProcessEvent(XtWidgetToApplicationContext(dialog), XtIMAll);
+
+		if (!df.destroyed) {
+			/* Important! Only intercept unexpected destroy events. */
+			XtRemoveCallback(dialog_shell, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+			XtDestroyWidget(dialog_shell);
+		}
+	}
+
+	XmStringFree(msgstr_xms);
+	XmStringFree(titstr_xms);
+	for (i = 0; i < num_but_lbls; ++i)
+		XmStringFree(but_lbl_xms[i]);
+
+	/* If the dialog was destroyed unexpectedly, the button was not set yet,
+	   so we must set the index of the cancel button. */
+	if (df.destroyed) {
+		df.button = cancel_index == APPLY_BTN ? 2 : (cancel_index == CANCEL_BTN ? 2 + df.apply_up : (cancel_index == HELP_BTN ? 3 + df.apply_up : 1));
+	}
+
+	df.apply_up = 0; /* default is apply button unmanaged */
+
+	return (df.button);
 }
 
 /*
@@ -482,54 +408,41 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char* title,
 ** calling DialogF with a dialog type of DF_PROMPT automatically resets
 ** this mode back to no-history-recall.
 */
-void SetDialogFPromptHistory(char **historyList, int nItems)
-{
-    PromptHistory = historyList;
-    NPromptHistoryItems = nItems;
+void SetDialogFPromptHistory(char **historyList, int nItems) {
+	PromptHistory = historyList;
+	NPromptHistoryItems = nItems;
 }
 
-static void ok_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data)
-{
-    client_data->done_with_dialog = True;
-    client_data->button = 1;		/* Return Button number pressed */
+static void ok_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	client_data->done_with_dialog = True;
+	client_data->button = 1; /* Return Button number pressed */
 }
 
-static void cancel_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data)
-{
-    client_data->done_with_dialog = True;
-    client_data->button = 2 + client_data->apply_up; /* =3 if apply button managed */
+static void cancel_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	client_data->done_with_dialog = True;
+	client_data->button = 2 + client_data->apply_up; /* =3 if apply button managed */
 }
 
-static void help_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data)
-{
-    client_data->done_with_dialog = True;
-    client_data->button = 3 + client_data->apply_up; /* =4 if apply button managed */
+static void help_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	client_data->done_with_dialog = True;
+	client_data->button = 3 + client_data->apply_up; /* =4 if apply button managed */
 }
 
-static void apply_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data)
-{
-    client_data->done_with_dialog = True;
-    client_data->button = 2;		/* Motif puts between OK and cancel */
+static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	client_data->done_with_dialog = True;
+	client_data->button = 2; /* Motif puts between OK and cancel */
 }
 
-static void destroy_callback (Widget w, struct dfcallbackstruct *client_data,
-	caddr_t call_data)
-{
-    client_data->destroyed = True;
+static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	client_data->destroyed = True;
 }
 
 /*
 ** callback for returning default button status to the ok button once we're
 ** sure the text area in the prompt dialog has input focus.
 */
-static void focusCB(Widget w, Widget dialog, caddr_t call_data)
-{
-    XtVaSetValues(dialog, XmNdefaultButton,
-    	    XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), NULL);
+static void focusCB(Widget w, Widget dialog, caddr_t call_data) {
+	XtVaSetValues(dialog, XmNdefaultButton, XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), NULL);
 }
 
 /*
@@ -542,93 +455,73 @@ static void focusCB(Widget w, Widget dialog, caddr_t call_data)
 ** the button "whichBtn", passing it argument "df".  If "df" is NULL, simply
 ** block the event from reaching the dialog.
 */
-static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df,
-    	int whichBtn)
-{
-    XtAddEventHandler(dialog, KeyPressMask, False, whichBtn == APPLY_BTN ?
-    	    escapeApplyCB : escapeHelpCB, (XtPointer)df);
-    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog), XK_Escape), 0,
-	    True, GrabModeAsync, GrabModeAsync);
+static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whichBtn) {
+	XtAddEventHandler(dialog, KeyPressMask, False, whichBtn == APPLY_BTN ? escapeApplyCB : escapeHelpCB, (XtPointer)df);
+	XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog), XK_Escape), 0, True, GrabModeAsync, GrabModeAsync);
 }
 
 /*
 ** Event handler for escape key to redirect the event to the help button.
 ** Attached when cancel label appears on Help button.
 */
-static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event,
-    	Boolean *cont)
-{
-    if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
-    	return;
-    if (callData != NULL)
-    	help_callback(w, (struct dfcallbackstruct *)callData, NULL);
-    *cont = False;
+static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
+	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
+		return;
+	if (callData != NULL)
+		help_callback(w, (struct dfcallbackstruct *)callData, NULL);
+	*cont = False;
 }
 
 /*
 ** Event handler for escape key to redirect event to the apply button.
 ** Attached when cancel label appears on Apply button.
 */
-static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event,
-    	Boolean *cont)
-{
-    if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
-    	return;
-    if (callData != NULL)
-    	apply_callback(w, (struct dfcallbackstruct *)callData, NULL);
-    *cont = False;
+static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
+	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
+		return;
+	if (callData != NULL)
+		apply_callback(w, (struct dfcallbackstruct *)callData, NULL);
+	*cont = False;
 }
 
 /*
 ** Only used by createMnemonics(Widget w)
 */
-static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
-{
-    WidgetList children;
-    Cardinal   numChildren, i;
+static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
+	WidgetList children;
+	Cardinal numChildren, i;
 
-    XtVaGetValues(w,
-                  XmNchildren,    &children,
-                  XmNnumChildren, &numChildren,
-                  NULL);
+	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
 
-    for (i = 0; i < numChildren; i++)
-    {
-        Widget child = children[i];
-        
-        if (XtIsComposite(child))
-        {
-            recurseCreateMnemonics(child, mnemonicUsed);
-        }
-        else if (XtIsSubclass(child, xmPushButtonWidgetClass) ||
-                 XtIsSubclass(child, xmPushButtonGadgetClass))
-        {
-            XmString xmslabel;
-            char *label;
-            int c;
-            
-            XtVaGetValues(child, XmNlabelString, &xmslabel, NULL);
-            if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label))
-            {
-                /* Scan through the string to see if the label is already used */            
-                int labelLen = strlen(label);
-                for (c = 0; c < labelLen; c++)
-                {
-                    unsigned char lc = tolower((unsigned char)label[c]);
+	for (i = 0; i < numChildren; i++) {
+		Widget child = children[i];
 
-                    if (!mnemonicUsed[lc] && isalnum(lc))
-                    {
-                        mnemonicUsed[lc] = TRUE;
-                        XtVaSetValues(child, XmNmnemonic, label[c], NULL);
-                        break;
-                    }
-                }
+		if (XtIsComposite(child)) {
+			recurseCreateMnemonics(child, mnemonicUsed);
+		} else if (XtIsSubclass(child, xmPushButtonWidgetClass) || XtIsSubclass(child, xmPushButtonGadgetClass)) {
+			XmString xmslabel;
+			char *label;
+			int c;
 
-                XtFree(label);
-            }
-            XmStringFree(xmslabel);
-        }
-    }
+			XtVaGetValues(child, XmNlabelString, &xmslabel, NULL);
+			if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label)) {
+				/* Scan through the string to see if the label is already used */
+				int labelLen = strlen(label);
+				for (c = 0; c < labelLen; c++) {
+					unsigned char lc = tolower((unsigned char)label[c]);
+
+					if (!mnemonicUsed[lc] && isalnum(lc)) {
+						mnemonicUsed[lc] = TRUE;
+						XtVaSetValues(child, XmNmnemonic, label[c], NULL);
+						break;
+					}
+				}
+
+				XtFree(label);
+			}
+			XmStringFree(xmslabel);
+		}
+	}
 }
 
 /*
@@ -637,10 +530,9 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed)
 ** and make that the mnemonic.  This is useful for DialogF dialogs which
 ** can have arbitrary text in the buttons.
 */
-static void createMnemonics(Widget w)
-{
-    Boolean mnemonicUsed[UCHAR_MAX + 1];
-    
-    memset(mnemonicUsed, FALSE, sizeof mnemonicUsed / sizeof *mnemonicUsed);
-    recurseCreateMnemonics(w, mnemonicUsed);
+static void createMnemonics(Widget w) {
+	Boolean mnemonicUsed[UCHAR_MAX + 1];
+
+	memset(mnemonicUsed, FALSE, sizeof mnemonicUsed / sizeof *mnemonicUsed);
+	recurseCreateMnemonics(w, mnemonicUsed);
 }

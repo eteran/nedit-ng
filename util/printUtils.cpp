@@ -33,8 +33,6 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.25 2004/08/01 10:06:12 yooden
 *									       *
 *******************************************************************************/
 
-
-
 #include "printUtils.h"
 #include "DialogF.h"
 #include "misc.h"
@@ -65,10 +63,8 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.25 2004/08/01 10:06:12 yooden
 #include <Xm/SeparatoG.h>
 #include <Xm/Text.h>
 
-
-
 /* Separator between directory references in PATH environmental variable */
-#define SEPARATOR ':'  
+#define SEPARATOR ':'
 
 /* Number of extra pixels down to place a label even with a text widget */
 #define LABEL_TEXT_DIFF 6
@@ -85,21 +81,19 @@ static const char CVSID[] = "$Id: printUtils.c,v 1.25 2004/08/01 10:06:12 yooden
 
 #define N_PRINT_PREFS 7 /* must agree with number of preferences below */
 struct printPrefDescrip {
-    PrefDescripRec printCommand;
-    PrefDescripRec copiesOption;
-    PrefDescripRec queueOption;
-    PrefDescripRec nameOption;
-    PrefDescripRec hostOption;
-    PrefDescripRec defaultQueue;
-    PrefDescripRec defaultHost;
+	PrefDescripRec printCommand;
+	PrefDescripRec copiesOption;
+	PrefDescripRec queueOption;
+	PrefDescripRec nameOption;
+	PrefDescripRec hostOption;
+	PrefDescripRec defaultQueue;
+	PrefDescripRec defaultHost;
 };
 
 /* Function Prototypes */
 static Widget createForm(Widget parent);
-static void allowOnlyNumInput(Widget widget, caddr_t client_data,
-	XmTextVerifyCallbackStruct *call_data);
-static void noSpaceOrPunct(Widget widget, caddr_t client_data,
-	XmTextVerifyCallbackStruct *call_data);
+static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data);
+static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data);
 static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data);
 static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data);
 static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data);
@@ -119,53 +113,45 @@ static void setHostLabelText(void);
 static void getFlprHostDefault(char *defhost);
 static void getFlprQueueDefault(char *defqueue);
 
-
 /* Module Global Variables */
-static Boolean  DoneWithDialog;
-static Boolean	PreferencesLoaded = False;
-static Widget	Form;
-static Widget	Label2;
-static Widget	Label3;
-static Widget	Text1;
-static Widget	Text2;
-static Widget	Text3;
-static Widget	Text4;
-static const char *PrintFileName;
-static const char *PrintJobName;
-static char PrintCommand[MAX_PCMD_STR];	/* print command string */
-static char CopiesOption[MAX_OPT_STR];	/* # of copies argument string */
-static char QueueOption[MAX_OPT_STR];	/* queue name argument string */
-static char NameOption[MAX_OPT_STR];	/* print job name argument string */
-static char HostOption[MAX_OPT_STR];	/* host name argument string */
-static char DefaultQueue[MAX_QUEUE_STR];/* default print queue */
-static char DefaultHost[MAX_HOST_STR];	/* default host name */
-static char Copies[MAX_INT_STR] = "";	/* # of copies last entered by user */
-static char Queue[MAX_QUEUE_STR] = "";	/* queue name last entered by user */
-static char Host[MAX_HOST_STR] = "";	/* host name last entered by user */
-static char CmdText[MAX_CMD_STR] = "";	/* print command last entered by user */
-static int  CmdFieldModified = False;	/* user last changed the print command
-					   field, so don't trust the rest */
+static Boolean DoneWithDialog;
+static Boolean PreferencesLoaded = False;
+static Widget Form;
+static Widget Label2;
+static Widget Label3;
+static Widget Text1;
+static Widget Text2;
+static Widget Text3;
+static Widget Text4;
+static std::string PrintFileName;
+static std::string PrintJobName;
+static char PrintCommand[MAX_PCMD_STR];  /* print command string */
+static char CopiesOption[MAX_OPT_STR];   /* # of copies argument string */
+static char QueueOption[MAX_OPT_STR];    /* queue name argument string */
+static char NameOption[MAX_OPT_STR];     /* print job name argument string */
+static char HostOption[MAX_OPT_STR];     /* host name argument string */
+static char DefaultQueue[MAX_QUEUE_STR]; /* default print queue */
+static char DefaultHost[MAX_HOST_STR];   /* default host name */
+static char Copies[MAX_INT_STR] = "";    /* # of copies last entered by user */
+static char Queue[MAX_QUEUE_STR] = "";   /* queue name last entered by user */
+static char Host[MAX_HOST_STR] = "";     /* host name last entered by user */
+static char CmdText[MAX_CMD_STR] = "";   /* print command last entered by user */
+static int CmdFieldModified = False;     /* user last changed the print command
+                        field, so don't trust the rest */
 static struct printPrefDescrip PrintPrefDescrip = {
-    {"printCommand", "PrintCommand", PREF_STRING, NULL,
-    	PrintCommand, (void *)MAX_PCMD_STR, False},
-    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, NULL,
-    	CopiesOption, (void *)MAX_OPT_STR, False},
-    {"printQueueOption", "PrintQueueOption", PREF_STRING, NULL,
-    	QueueOption, (void *)MAX_OPT_STR, False},
-    {"printNameOption", "PrintNameOption", PREF_STRING, NULL,
-    	NameOption, (void *)MAX_OPT_STR, False},
-    {"printHostOption", "PrintHostOption", PREF_STRING, NULL,
-    	HostOption, (void *)MAX_OPT_STR, False},
-    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, NULL,
-    	DefaultQueue, (void *)MAX_QUEUE_STR, False},
-    {"printDefaultHost", "PrintDefaultHost", PREF_STRING, NULL,
-    	DefaultHost, (void *)MAX_HOST_STR, False},
+    {"printCommand", "PrintCommand", PREF_STRING, NULL, PrintCommand, (void *)MAX_PCMD_STR, False},
+    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, NULL, CopiesOption, (void *)MAX_OPT_STR, False},
+    {"printQueueOption", "PrintQueueOption", PREF_STRING, NULL, QueueOption, (void *)MAX_OPT_STR, False},
+    {"printNameOption", "PrintNameOption", PREF_STRING, NULL, NameOption, (void *)MAX_OPT_STR, False},
+    {"printHostOption", "PrintHostOption", PREF_STRING, NULL, HostOption, (void *)MAX_OPT_STR, False},
+    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, NULL, DefaultQueue, (void *)MAX_QUEUE_STR, False},
+    {"printDefaultHost", "PrintDefaultHost", PREF_STRING, NULL, DefaultHost, (void *)MAX_HOST_STR, False},
 };
 
 /*
 ** PrintFile(Widget parent, char *printFile, char *jobName);
 **
-** function to put up an application-modal style Print Panel dialog 
+** function to put up an application-modal style Print Panel dialog
 ** box.
 **
 **	parent		Parent widget for displaying dialog
@@ -173,30 +159,31 @@ static struct printPrefDescrip PrintPrefDescrip = {
 **			and not revealed to the user)
 **	jobName		Title for the print banner page
 */
-void PrintFile(Widget parent, const char *printFile, const char *jobName)
-{
-    /* In case the program hasn't called LoadPrintPreferences, set up the
-       default values for the print preferences */
-    if (!PreferencesLoaded)
-    	LoadPrintPreferences(NULL, "", "", True);
-    
-    /* Make the PrintFile information available to the callback routines */
-    PrintFileName = printFile;
-    PrintJobName = jobName;
+void PrintFile(Widget parent, const std::string &printFile, const std::string &jobName) {
 
-    /* Create and display the print dialog */
-    DoneWithDialog = False;
-    Form = createForm(parent);
-    ManageDialogCenteredOnPointer(Form);
+	/* In case the program hasn't called LoadPrintPreferences, set up the
+	   default values for the print preferences */
+	if (!PreferencesLoaded)
+		LoadPrintPreferences(NULL, "", "", True);
 
-    /* Process events until the user is done with the print dialog */
-    while (!DoneWithDialog)
-        XtAppProcessEvent(XtWidgetToApplicationContext(Form), XtIMAll);
-    
-    /* Destroy the dialog.  Print dialogs are not preserved across calls
-       to PrintFile so that it may be called with different parents and
-       to generally simplify the call (this, of course, makes it slower) */ 
-    XtDestroyWidget(Form);
+	/* Make the PrintFile information available to the callback routines */
+	PrintFileName = printFile;
+	PrintJobName = jobName;
+
+	/* Create and display the print dialog */
+	DoneWithDialog = False;
+	Form = createForm(parent);
+	ManageDialogCenteredOnPointer(Form);
+
+	/* Process events until the user is done with the print dialog */
+	while (!DoneWithDialog) {
+		XtAppProcessEvent(XtWidgetToApplicationContext(Form), XtIMAll);
+	}
+
+	/* Destroy the dialog.  Print dialogs are not preserved across calls
+	   to PrintFile so that it may be called with different parents and
+	   to generally simplify the call (this, of course, makes it slower) */
+	XtDestroyWidget(Form);
 }
 
 /*
@@ -205,503 +192,561 @@ void PrintFile(Widget parent, const char *printFile, const char *jobName)
 ** Read an X database to obtain print dialog preferences.
 **
 **	prefDB		X database potentially containing print preferences
-**	appName		Application name which can be used to qualify 
+**	appName		Application name which can be used to qualify
 **			resource names for database lookup.
-**	appClass	Application class which can be used to qualify 
+**	appClass	Application class which can be used to qualify
 **			resource names for database lookup.
 **	lookForFlpr	Check if the flpr print command is installed
 **			and use that for the default if it's found.
 **			(flpr is a Fermilab utility for printing on
 **			arbitrary systems that support the lpr protocol)
 */
-void LoadPrintPreferences(XrmDatabase prefDB, const char *appName,
-        const char *appClass, int lookForFlpr)
-{
-    static char defaultQueue[MAX_QUEUE_STR], defaultHost[MAX_HOST_STR];
+void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr) {
+	static char defaultQueue[MAX_QUEUE_STR], defaultHost[MAX_HOST_STR];
 
-
-    /* check if flpr is installed, and otherwise choose appropriate
-       printer per system type */
-    if (lookForFlpr && flprPresent()) {
-    	getFlprQueueDefault(defaultQueue);
-    	getFlprHostDefault(defaultHost);
-    	PrintPrefDescrip.printCommand.defaultString = "flpr";
-    	PrintPrefDescrip.copiesOption.defaultString = "";
-    	PrintPrefDescrip.queueOption.defaultString = "-q";
-    	PrintPrefDescrip.nameOption.defaultString = "-j ";
-    	PrintPrefDescrip.hostOption.defaultString = "-h";
-    	PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-    	PrintPrefDescrip.defaultHost.defaultString = defaultHost;
-    } else {
+	/* check if flpr is installed, and otherwise choose appropriate
+	   printer per system type */
+	if (lookForFlpr && flprPresent()) {
+		getFlprQueueDefault(defaultQueue);
+		getFlprHostDefault(defaultHost);
+		PrintPrefDescrip.printCommand.defaultString = "flpr";
+		PrintPrefDescrip.copiesOption.defaultString = "";
+		PrintPrefDescrip.queueOption.defaultString = "-q";
+		PrintPrefDescrip.nameOption.defaultString = "-j ";
+		PrintPrefDescrip.hostOption.defaultString = "-h";
+		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
+		PrintPrefDescrip.defaultHost.defaultString = defaultHost;
+	} else {
 #ifdef USE_LPR_PRINT_CMD
-	getLprQueueDefault(defaultQueue);
-     	PrintPrefDescrip.printCommand.defaultString = "lpr";
-    	PrintPrefDescrip.copiesOption.defaultString = "-# ";
-    	PrintPrefDescrip.queueOption.defaultString = "-P ";
-    	PrintPrefDescrip.nameOption.defaultString = "-J ";
-    	PrintPrefDescrip.hostOption.defaultString = "";
-    	PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-    	PrintPrefDescrip.defaultHost.defaultString = "";
+		getLprQueueDefault(defaultQueue);
+		PrintPrefDescrip.printCommand.defaultString = "lpr";
+		PrintPrefDescrip.copiesOption.defaultString = "-# ";
+		PrintPrefDescrip.queueOption.defaultString = "-P ";
+		PrintPrefDescrip.nameOption.defaultString = "-J ";
+		PrintPrefDescrip.hostOption.defaultString = "";
+		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
+		PrintPrefDescrip.defaultHost.defaultString = "";
 #else
-     	getLpQueueDefault(defaultQueue);
-     	PrintPrefDescrip.printCommand.defaultString = "lp"; /* was lp -c */
-    	PrintPrefDescrip.copiesOption.defaultString = "-n";
-    	PrintPrefDescrip.queueOption.defaultString = "-d";
-    	PrintPrefDescrip.nameOption.defaultString = "-t";
-    	PrintPrefDescrip.hostOption.defaultString = "";
-    	PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-    	PrintPrefDescrip.defaultHost.defaultString = "";
+		getLpQueueDefault(defaultQueue);
+		PrintPrefDescrip.printCommand.defaultString = "lp"; /* was lp -c */
+		PrintPrefDescrip.copiesOption.defaultString = "-n";
+		PrintPrefDescrip.queueOption.defaultString = "-d";
+		PrintPrefDescrip.nameOption.defaultString = "-t";
+		PrintPrefDescrip.hostOption.defaultString = "";
+		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
+		PrintPrefDescrip.defaultHost.defaultString = "";
 #endif
-    }
-    
-    /* Read in the preferences from the X database using the mechanism from
-       prefFile.c (this allows LoadPrintPreferences to work before any
-       widgets are created, which is more convenient than XtGetApplication-
-       Resources for applications which have no main window) */
-    RestorePreferences(NULL, prefDB, appName, appClass,
-    	    (PrefDescripRec *)&PrintPrefDescrip, N_PRINT_PREFS);
-    
-    PreferencesLoaded = True;
+	}
+
+	/* Read in the preferences from the X database using the mechanism from
+	   prefFile.c (this allows LoadPrintPreferences to work before any
+	   widgets are created, which is more convenient than XtGetApplication-
+	   Resources for applications which have no main window) */
+	RestorePreferences(NULL, prefDB, appName, appClass, (PrefDescripRec *)&PrintPrefDescrip, N_PRINT_PREFS);
+
+	PreferencesLoaded = True;
 }
 
-static Widget createForm(Widget parent)
-{
-    Widget form, printOk, printCancel, label1, separator;
-    Widget topWidget = NULL;
-    XmString st0;
-    Arg args[65];
-    int argcnt;
-    Widget bwidgetarray [30];
-    int bwidgetcnt = 0;
- 
-    /************************ FORM ***************************/
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-    argcnt++;
-    XtSetArg(args[argcnt], XmNdialogTitle, (st0=XmStringCreateLtoR(
-		(char *)"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-    XtSetArg(args[argcnt], XmNautoUnmanage, False); argcnt++;
-    form = CreateFormDialog(parent, "printForm", args, argcnt);
-    XtVaSetValues(form, XmNshadowThickness, 0, NULL);
-    
-    XmStringFree( st0 );
+static Widget createForm(Widget parent) {
+	Widget form, printOk, printCancel, label1, separator;
+	Widget topWidget = NULL;
+	XmString st0;
+	Arg args[65];
+	int argcnt;
+	Widget bwidgetarray[30];
+	int bwidgetcnt = 0;
 
-    /*********************** LABEL 1 and TEXT BOX 1 *********************/
-    if (CopiesOption[0] != '\0') {
+	/************************ FORM ***************************/
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		(char *)"Number of copies (1)", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-	XtSetArg(args[argcnt], XmNmnemonic, 'N'); argcnt++;
-	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+5); argcnt++;
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-	label1 = XmCreateLabelGadget(form, (char *)"label1", args, argcnt);
-	XmStringFree( st0 );
-	bwidgetarray[bwidgetcnt] = label1; bwidgetcnt++;
-    
-	argcnt = 0;
-	XtSetArg(args[argcnt], XmNshadowThickness, (short)2); argcnt++;
-	XtSetArg(args[argcnt], XmNcolumns, 3); argcnt++;
-	XtSetArg(args[argcnt], XmNrows, 1); argcnt++;
-	XtSetArg(args[argcnt], XmNvalue , Copies); argcnt++;
-	XtSetArg(args[argcnt], XmNmaxLength, 3); argcnt++;
-        XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM); argcnt++;  
-	XtSetArg(args[argcnt], XmNtopOffset, 5); argcnt++;
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET); argcnt++; 
-	XtSetArg(args[argcnt], XmNleftWidget, label1); argcnt++;
-	Text1 = XmCreateText(form, (char *)"text1", args, argcnt);
-	bwidgetarray[bwidgetcnt] = Text1; bwidgetcnt++; 
-	XtAddCallback(Text1, XmNmodifyVerifyCallback,
-		(XtCallbackProc)allowOnlyNumInput, NULL);
-	XtAddCallback(Text1, XmNvalueChangedCallback,
-		(XtCallbackProc)updatePrintCmd, NULL);
-	RemapDeleteKey(Text1);
-	topWidget = Text1;
-	XtVaSetValues(label1, XmNuserData, Text1, NULL); /* mnemonic procesing */
-    }
-    
-    /************************ LABEL 2 and TEXT 2 ************************/
-    if (QueueOption[0] != '\0') {
-	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-	XtSetArg(args[argcnt], XmNmnemonic, 'Q'); argcnt++;
-	XtSetArg(args[argcnt], XmNrecomputeSize, True); argcnt++;
-	XtSetArg(args[argcnt], XmNtopAttachment,
-		topWidget==NULL?XmATTACH_FORM:XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNtopWidget, topWidget); argcnt++;
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+4); argcnt++;
-	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-	Label2 = XmCreateLabelGadget(form, (char *)"label2", args, argcnt);
+	XtSetArg(args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNdialogTitle, (st0 = XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET)));
+	argcnt++;
+	XtSetArg(args[argcnt], XmNautoUnmanage, False);
+	argcnt++;
+	form = CreateFormDialog(parent, "printForm", args, argcnt);
+	XtVaSetValues(form, XmNshadowThickness, 0, NULL);
+
 	XmStringFree(st0);
-	bwidgetarray[bwidgetcnt] = Label2; bwidgetcnt++;
-	setQueueLabelText();
 
+	/*********************** LABEL 1 and TEXT BOX 1 *********************/
+	if (CopiesOption[0] != '\0') {
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Number of copies (1)", XmSTRING_DEFAULT_CHARSET)));
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmnemonic, 'N');
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF + 5);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftOffset, 8);
+		argcnt++;
+		label1 = XmCreateLabelGadget(form, (char *)"label1", args, argcnt);
+		XmStringFree(st0);
+		bwidgetarray[bwidgetcnt] = label1;
+		bwidgetcnt++;
+
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNshadowThickness, (short)2);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNcolumns, 3);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrows, 1);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNvalue, Copies);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmaxLength, 3);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, 5);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftWidget, label1);
+		argcnt++;
+		Text1 = XmCreateText(form, (char *)"text1", args, argcnt);
+		bwidgetarray[bwidgetcnt] = Text1;
+		bwidgetcnt++;
+		XtAddCallback(Text1, XmNmodifyVerifyCallback, (XtCallbackProc)allowOnlyNumInput, NULL);
+		XtAddCallback(Text1, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		RemapDeleteKey(Text1);
+		topWidget = Text1;
+		XtVaSetValues(label1, XmNuserData, Text1, NULL); /* mnemonic procesing */
+	}
+
+	/************************ LABEL 2 and TEXT 2 ************************/
+	if (QueueOption[0] != '\0') {
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET)));
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmnemonic, 'Q');
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrecomputeSize, True);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF + 4);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftOffset, 8);
+		argcnt++;
+		Label2 = XmCreateLabelGadget(form, (char *)"label2", args, argcnt);
+		XmStringFree(st0);
+		bwidgetarray[bwidgetcnt] = Label2;
+		bwidgetcnt++;
+		setQueueLabelText();
+
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNshadowThickness, (short)2);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNcolumns, (short)17);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmaxLength, MAX_QUEUE_STR);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNvalue, Queue);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftWidget, Label2);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrightOffset, 8);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, 4);
+		argcnt++;
+		Text2 = XmCreateText(form, (char *)"text2", args, argcnt);
+		XtAddCallback(Text2, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, NULL);
+		XtAddCallback(Text2, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		bwidgetarray[bwidgetcnt] = Text2;
+		bwidgetcnt++;
+		RemapDeleteKey(Text2);
+		XtVaSetValues(Label2, XmNuserData, Text2, NULL); /* mnemonic procesing */
+		topWidget = Text2;
+	}
+
+	/****************** LABEL 3 and TEXT 3 *********************/
+	if (HostOption[0] != '\0') {
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET)));
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmnemonic, 'H');
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrecomputeSize, True);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNvalue, "");
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftOffset, 8);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF + 4);
+		argcnt++;
+		Label3 = XmCreateLabelGadget(form, (char *)"label3", args, argcnt);
+		XmStringFree(st0);
+		bwidgetarray[bwidgetcnt] = Label3;
+		bwidgetcnt++;
+		setHostLabelText();
+
+		argcnt = 0;
+		XtSetArg(args[argcnt], XmNcolumns, 17);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrows, 1);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNvalue, Host);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNmaxLength, MAX_HOST_STR);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNleftWidget, Label3);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNrightOffset, 8);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNtopOffset, 4);
+		argcnt++;
+		Text3 = XmCreateText(form, (char *)"Text3", args, argcnt);
+		XtAddCallback(Text3, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, NULL);
+		XtAddCallback(Text3, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		bwidgetarray[bwidgetcnt] = Text3;
+		bwidgetcnt++;
+		RemapDeleteKey(Text3);
+		XtVaSetValues(Label3, XmNuserData, Text3, NULL); /* mnemonic procesing */
+		topWidget = Text3;
+	}
+
+	/************************** TEXT 4 ***************************/
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNshadowThickness, (short)2); argcnt++;
-	XtSetArg(args[argcnt], XmNcolumns, (short)17); argcnt++;
-	XtSetArg(args[argcnt], XmNmaxLength, MAX_QUEUE_STR); argcnt++;
-	XtSetArg(args[argcnt], XmNvalue, Queue); argcnt++;
-	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNleftWidget, Label2 ); argcnt++;
-	XtSetArg(args[argcnt], XmNtopAttachment,
-		topWidget==NULL?XmATTACH_FORM:XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
-	XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
-	XtSetArg(args[argcnt], XmNtopOffset, 4); argcnt++;
-	Text2 = XmCreateText(form, (char *)"text2", args, argcnt);
-	XtAddCallback(Text2, XmNmodifyVerifyCallback,
-		(XtCallbackProc)noSpaceOrPunct, NULL);
-	XtAddCallback(Text2, XmNvalueChangedCallback,
-		(XtCallbackProc)updatePrintCmd, NULL);
-	bwidgetarray[bwidgetcnt] = Text2; bwidgetcnt++;
-	RemapDeleteKey(Text2);
-	XtVaSetValues(Label2, XmNuserData, Text2, NULL); /* mnemonic procesing */
-	topWidget = Text2;
-    }
-    
-    /****************** LABEL 3 and TEXT 3 *********************/
-    if (HostOption[0] != '\0') {
+	XtSetArg(args[argcnt], XmNvalue, CmdText);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNcolumns, 50);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNleftOffset, 8);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopOffset, 8);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNrightOffset, 8);
+	argcnt++;
+	Text4 = XmCreateText(form, (char *)"Text4", args, argcnt);
+	XtAddCallback(Text4, XmNmodifyVerifyCallback, (XtCallbackProc)printCmdModified, NULL);
+	bwidgetarray[bwidgetcnt] = Text4;
+	bwidgetcnt++;
+	RemapDeleteKey(Text4);
+	topWidget = Text4;
+	if (!CmdFieldModified)
+		updatePrintCmd(NULL, NULL, NULL);
+
+	/*********************** SEPARATOR **************************/
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-	XtSetArg(args[argcnt], XmNmnemonic, 'H'); argcnt++;
-	XtSetArg(args[argcnt], XmNrecomputeSize, True); argcnt++;
-	XtSetArg(args[argcnt], XmNvalue , ""); argcnt++;
-	XtSetArg(args[argcnt], XmNtopAttachment,
-		topWidget==NULL?XmATTACH_FORM:XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-	XtSetArg(args[argcnt], XmNtopOffset, LABEL_TEXT_DIFF+4); argcnt++;
-	Label3 = XmCreateLabelGadget(form, (char *)"label3", args, argcnt);
+	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopOffset, 8);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+	argcnt++;
+	separator = XmCreateSeparatorGadget(form, (char *)"separator", args, argcnt);
+	bwidgetarray[bwidgetcnt] = separator;
+	bwidgetcnt++;
+	topWidget = separator;
+
+	/********************** CANCEL BUTTON *************************/
+	argcnt = 0;
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Cancel", XmSTRING_DEFAULT_CHARSET)));
+	argcnt++;
+	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNleftPosition, 60);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopOffset, 7);
+	argcnt++;
+	printCancel = XmCreatePushButton(form, (char *)"printCancel", args, argcnt);
 	XmStringFree(st0);
-	bwidgetarray[bwidgetcnt] = Label3; bwidgetcnt++;
-	setHostLabelText();      
+	bwidgetarray[bwidgetcnt] = printCancel;
+	bwidgetcnt++;
+	XtAddCallback(printCancel, XmNactivateCallback, (XtCallbackProc)cancelButtonCB, NULL);
+
+	/*********************** PRINT BUTTON **************************/
+	argcnt = 0;
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET)));
+	argcnt++;
+	XtSetArg(args[argcnt], XmNshowAsDefault, True);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNrightPosition, 40);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopWidget, topWidget);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNtopOffset, 7);
+	argcnt++;
+	printOk = XmCreatePushButton(form, (char *)"printOk", args, argcnt);
+	XmStringFree(st0);
+	bwidgetarray[bwidgetcnt] = printOk;
+	bwidgetcnt++;
+	XtAddCallback(printOk, XmNactivateCallback, (XtCallbackProc)printButtonCB, NULL);
 
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNcolumns, 17); argcnt++;
-	XtSetArg(args[argcnt], XmNrows, 1); argcnt++;
-	XtSetArg(args[argcnt], XmNvalue, Host); argcnt++;
-	XtSetArg(args[argcnt], XmNmaxLength, MAX_HOST_STR); argcnt++;
-	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
-	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNleftWidget, Label3 ); argcnt++;
-	XtSetArg(args[argcnt], XmNtopAttachment,
-		topWidget==NULL?XmATTACH_FORM:XmATTACH_WIDGET); argcnt++;
-	XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
-	XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
-    	XtSetArg(args[argcnt], XmNtopOffset, 4); argcnt++;
-	Text3 = XmCreateText(form, (char *)"Text3", args, argcnt);
-	XtAddCallback(Text3, XmNmodifyVerifyCallback,
-		(XtCallbackProc)noSpaceOrPunct, NULL);
-	XtAddCallback(Text3, XmNvalueChangedCallback,
-		(XtCallbackProc)updatePrintCmd, NULL);
-	bwidgetarray[bwidgetcnt] = Text3; bwidgetcnt++; 
-    	RemapDeleteKey(Text3);
-	XtVaSetValues(Label3, XmNuserData, Text3, NULL); /* mnemonic procesing */
-    	topWidget = Text3;
-    }
+	XtSetArg(args[argcnt], XmNcancelButton, printCancel);
+	argcnt++;
+	XtSetArg(args[argcnt], XmNdefaultButton, printOk);
+	argcnt++;
+	XtSetValues(form, args, argcnt);
 
-    /************************** TEXT 4 ***************************/
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNvalue, CmdText); argcnt++;
-    XtSetArg(args[argcnt], XmNcolumns, 50); argcnt++;
-    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
-    XtSetArg(args[argcnt], XmNleftOffset, 8); argcnt++;
-    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
-    XtSetArg(args[argcnt], XmNtopOffset, 8); argcnt++;
-    XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
-    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
-    XtSetArg(args[argcnt], XmNrightOffset, 8); argcnt++;
-    Text4 = XmCreateText(form, (char *)"Text4", args, argcnt);
-    XtAddCallback(Text4, XmNmodifyVerifyCallback,
-	    (XtCallbackProc)printCmdModified, NULL);
-    bwidgetarray[bwidgetcnt] = Text4; bwidgetcnt++; 
-    RemapDeleteKey(Text4);
-    topWidget = Text4;
-    if (!CmdFieldModified)
-    	updatePrintCmd(NULL, NULL, NULL);
-
-    /*********************** SEPARATOR **************************/
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_FORM); argcnt++;
-    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
-    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_FORM); argcnt++;
-    XtSetArg(args[argcnt], XmNtopOffset, 8); argcnt++;
-    XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;
-    separator = XmCreateSeparatorGadget(form, (char *)"separator", args, argcnt);
-    bwidgetarray[bwidgetcnt] = separator; bwidgetcnt++; 
-    topWidget = separator;
-
-    /********************** CANCEL BUTTON *************************/
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"Cancel", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-    XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION); argcnt++;
-    XtSetArg(args[argcnt], XmNleftPosition, 60); argcnt++;
-    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
-    XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
-    XtSetArg(args[argcnt], XmNtopOffset, 7); argcnt++;
-    printCancel = XmCreatePushButton(form, (char *)"printCancel", args, argcnt);
-    XmStringFree( st0 );
-    bwidgetarray[bwidgetcnt] = printCancel; bwidgetcnt++;
-    XtAddCallback (printCancel, XmNactivateCallback,
-    	    (XtCallbackProc)cancelButtonCB, NULL);
-
-    /*********************** PRINT BUTTON **************************/
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET))); argcnt++;
-    XtSetArg(args[argcnt], XmNshowAsDefault, True); argcnt++;
-    XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_POSITION); argcnt++;
-    XtSetArg(args[argcnt], XmNrightPosition, 40); argcnt++;
-    XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_WIDGET); argcnt++;
-    XtSetArg(args[argcnt], XmNtopWidget, topWidget ); argcnt++;  
-    XtSetArg(args[argcnt], XmNtopOffset, 7); argcnt++;
-    printOk = XmCreatePushButton(form, (char *)"printOk", args, argcnt);
-    XmStringFree( st0 );
-    bwidgetarray[bwidgetcnt] = printOk; bwidgetcnt++; 
-    XtAddCallback (printOk, XmNactivateCallback,
-    	    (XtCallbackProc)printButtonCB, NULL);
-
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNcancelButton, printCancel); argcnt++;
-    XtSetArg(args[argcnt], XmNdefaultButton, printOk); argcnt++;
-    XtSetValues(form, args, argcnt);
-
-    XtManageChildren(bwidgetarray, bwidgetcnt);
-    AddDialogMnemonicHandler(form, FALSE);
-    return form;
+	XtManageChildren(bwidgetarray, bwidgetcnt);
+	AddDialogMnemonicHandler(form, FALSE);
+	return form;
 }
 
-static void setQueueLabelText(void)
-{
-    Arg args[15];
-    int	argcnt;
-    XmString	st0;
-    char        tmp_buf[MAX_QUEUE_STR+8];
+static void setQueueLabelText(void) {
+	Arg args[15];
+	int argcnt;
+	XmString st0;
+	char tmp_buf[MAX_QUEUE_STR + 8];
 
-    if (DefaultQueue[0] != '\0')
-    	sprintf(tmp_buf, "Queue (%s)", DefaultQueue);
-    else
-    	sprintf(tmp_buf, "Queue");
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		tmp_buf, XmSTRING_DEFAULT_CHARSET))); argcnt++;
-    XtSetValues (Label2, args, argcnt);
-    XmStringFree( st0 );
+	if (DefaultQueue[0] != '\0')
+		sprintf(tmp_buf, "Queue (%s)", DefaultQueue);
+	else
+		sprintf(tmp_buf, "Queue");
+	argcnt = 0;
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
+	argcnt++;
+	XtSetValues(Label2, args, argcnt);
+	XmStringFree(st0);
 }
 
-static void setHostLabelText(void)
-{
-    Arg args[15];
-    int	argcnt;
-    XmString st0;
-    char tmp_buf[MAX_HOST_STR+7];
+static void setHostLabelText(void) {
+	Arg args[15];
+	int argcnt;
+	XmString st0;
+	char tmp_buf[MAX_HOST_STR + 7];
 
-    if (strcmp(DefaultHost, ""))
-    	sprintf(tmp_buf, "Host (%s)", DefaultHost);
-    else
-    	sprintf(tmp_buf, "Host");
-    argcnt = 0;
-    XtSetArg(args[argcnt], XmNlabelString, (st0=XmStringCreateLtoR(
-		tmp_buf, XmSTRING_DEFAULT_CHARSET))); argcnt++;
+	if (strcmp(DefaultHost, ""))
+		sprintf(tmp_buf, "Host (%s)", DefaultHost);
+	else
+		sprintf(tmp_buf, "Host");
+	argcnt = 0;
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
+	argcnt++;
 
-    XtSetValues (Label3, args, argcnt);
-    XmStringFree( st0 );
+	XtSetValues(Label3, args, argcnt);
+	XmStringFree(st0);
 }
 
-static void allowOnlyNumInput(Widget widget, caddr_t client_data,
-			      XmTextVerifyCallbackStruct *call_data)
-{
-    int i, textInserted, nInserted;
+static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+	int i, textInserted, nInserted;
 
-    nInserted = call_data->text->length;
-    textInserted = (nInserted > 0);
-    if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
-	for (i=0; i<nInserted; i++) {
-            if (!isdigit((unsigned char)call_data->text->ptr[i])) {
-            	call_data->doit = False;
-            	return;
-            }
-        }
-    }
-    call_data->doit = True;
+	nInserted = call_data->text->length;
+	textInserted = (nInserted > 0);
+	if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
+		for (i = 0; i < nInserted; i++) {
+			if (!isdigit((unsigned char)call_data->text->ptr[i])) {
+				call_data->doit = False;
+				return;
+			}
+		}
+	}
+	call_data->doit = True;
 }
 
 /*
 ** Prohibit a relatively random sampling of characters that will cause
 ** problems on command lines
 */
-static void noSpaceOrPunct(Widget widget, caddr_t client_data,
-			      XmTextVerifyCallbackStruct *call_data)
-{
-    int i, j, textInserted, nInserted;
+static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+	int i, j, textInserted, nInserted;
 #ifndef VMS
-    static char prohibited[] = " \t,;|<>()[]{}!@?";
+	static char prohibited[] = " \t,;|<>()[]{}!@?";
 #else
-    static char prohibited[] = " \t,;|@+";
+	static char prohibited[] = " \t,;|@+";
 #endif
 
-    nInserted = call_data->text->length;
-    textInserted = (nInserted > 0);
-    if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
-	for (i=0; i<nInserted; i++) {
-            for (j=0; j<(int)XtNumber(prohibited); j++) {
-        	if (call_data->text->ptr[i] == prohibited[j]) {
-            	    call_data->doit = False;
-            	    return;
-        	}
-            }
-        }
-    }
-    call_data->doit = True;
-}
-
-static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data)
-{
-    char command[MAX_CMD_STR], copiesArg[MAX_OPT_STR+MAX_INT_STR];
-    char jobArg[MAX_NAME_STR], hostArg[MAX_OPT_STR+MAX_HOST_STR];
-    char queueArg[MAX_OPT_STR+MAX_QUEUE_STR];
-    char *str;
-    int nCopies;
-
-
-    /* read each text field in the dialog and generate the corresponding
-       command argument */
-    if (CopiesOption[0] == '\0') {
-    	copiesArg[0] = '\0';
-    } else {
-	str = XmTextGetString(Text1);
-	if (str[0] == '\0') {
-	    copiesArg[0] = '\0';
-	} else {
-	    if (sscanf(str, "%d", &nCopies) != 1) {
-            	copiesArg[0] = '\0';
-            } else {
-            	sprintf(copiesArg, " %s%s", CopiesOption, str);
-            }
+	nInserted = call_data->text->length;
+	textInserted = (nInserted > 0);
+	if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
+		for (i = 0; i < nInserted; i++) {
+			for (j = 0; j < (int)XtNumber(prohibited); j++) {
+				if (call_data->text->ptr[i] == prohibited[j]) {
+					call_data->doit = False;
+					return;
+				}
+			}
+		}
 	}
-	XtFree(str);
-    }
-    if (QueueOption[0] == '\0') {
-    	queueArg[0] = '\0';
-    } else {
-	str = XmTextGetString(Text2);  
-	if (str[0] == '\0')
-	    queueArg[0] = '\0';
-	else 	
-	    sprintf(queueArg, " %s%s", QueueOption, str);	
-	XtFree(str);
-    }
-    if (HostOption[0] == '\0') {
-    	hostArg[0] = '\0';
-    } else {
-	str = XmTextGetString(Text3);  
-	if (str[0] == '\0')
-	    hostArg[0] = '\0';
-	else  	
-	    sprintf(hostArg, " %s%s", HostOption, str);
-	XtFree(str);
-    }
-    if (NameOption[0] == '\0')
-    	jobArg[0] = '\0';
-    else {
-        sprintf(jobArg, " %s\"%s\"", NameOption, PrintJobName);
-    }
-
-    /* Compose the command from the options determined above */
-    sprintf(command, "%s%s%s%s%s", PrintCommand, copiesArg,
-    	    queueArg, hostArg, jobArg);
-
-    /* display it in the command text area */
-    XmTextSetString(Text4, command);
-    
-    /* Indicate that the command field was synthesized from the other fields,
-       so future dialog invocations can safely re-generate the command without
-       overwriting commands specifically entered by the user */
-    CmdFieldModified = False;
+	call_data->doit = True;
 }
 
-static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data)
-{
-    /* Indicate that the user has specifically modified the print command
-       and that this field should be left as is in subsequent dialogs */
-    CmdFieldModified = True;
+static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data) {
+	char command[MAX_CMD_STR], copiesArg[MAX_OPT_STR + MAX_INT_STR];
+	char jobArg[MAX_NAME_STR], hostArg[MAX_OPT_STR + MAX_HOST_STR];
+	char queueArg[MAX_OPT_STR + MAX_QUEUE_STR];
+	char *str;
+	int nCopies;
+
+	/* read each text field in the dialog and generate the corresponding
+	   command argument */
+	if (CopiesOption[0] == '\0') {
+		copiesArg[0] = '\0';
+	} else {
+		str = XmTextGetString(Text1);
+		if (str[0] == '\0') {
+			copiesArg[0] = '\0';
+		} else {
+			if (sscanf(str, "%d", &nCopies) != 1) {
+				copiesArg[0] = '\0';
+			} else {
+				sprintf(copiesArg, " %s%s", CopiesOption, str);
+			}
+		}
+		XtFree(str);
+	}
+	if (QueueOption[0] == '\0') {
+		queueArg[0] = '\0';
+	} else {
+		str = XmTextGetString(Text2);
+		if (str[0] == '\0')
+			queueArg[0] = '\0';
+		else
+			sprintf(queueArg, " %s%s", QueueOption, str);
+		XtFree(str);
+	}
+	if (HostOption[0] == '\0') {
+		hostArg[0] = '\0';
+	} else {
+		str = XmTextGetString(Text3);
+		if (str[0] == '\0')
+			hostArg[0] = '\0';
+		else
+			sprintf(hostArg, " %s%s", HostOption, str);
+		XtFree(str);
+	}
+	if (NameOption[0] == '\0')
+		jobArg[0] = '\0';
+	else {
+		sprintf(jobArg, " %s\"%s\"", NameOption, PrintJobName.c_str());
+	}
+
+	/* Compose the command from the options determined above */
+	sprintf(command, "%s%s%s%s%s", PrintCommand, copiesArg, queueArg, hostArg, jobArg);
+
+	/* display it in the command text area */
+	XmTextSetString(Text4, command);
+
+	/* Indicate that the command field was synthesized from the other fields,
+	   so future dialog invocations can safely re-generate the command without
+	   overwriting commands specifically entered by the user */
+	CmdFieldModified = False;
 }
 
-static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
-{
-    char *str, command[MAX_CMD_STR];
-    int nRead;
-    FILE *pipe;
-    char errorString[MAX_PRINT_ERROR_LENGTH], discarded[1024];
-
-    /* get the print command from the command text area */
-    str = XmTextGetString(Text4);
-
-    /* add the file name and output redirection to the print command */
-    sprintf(command, "cat %s | %s 2>&1", PrintFileName, str);
-    XtFree(str);
-    
-    /* Issue the print command using a popen call and recover error messages
-       from the output stream of the command. */
-    pipe = popen(command,"r");
-    if (pipe == NULL)
-    {
-        DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
-                "OK", strerror(errno));
-        return;
-    }
-
-    errorString[0] = 0;
-    nRead = fread(errorString, sizeof(char), MAX_PRINT_ERROR_LENGTH-1, pipe);
-    /* Make sure that the print command doesn't get stuck when trying to 
-       write a lot of output on stderr (pipe may fill up). We discard 
-       the additional output, though. */
-    while (fread(discarded, sizeof(char), 1024, pipe) > 0);
-
-    if (!ferror(pipe))
-    {
-        errorString[nRead] = '\0';
-    }
-
-    if (pclose(pipe))
-    {
-        DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s",
-                "OK", errorString);
-        return;
-    }
-    
-    /* Print command succeeded, so retain the current print parameters */
-    if (CopiesOption[0] != '\0') {
-    	str = XmTextGetString(Text1);
-    	strcpy(Copies, str);
-    	XtFree(str);
-    }
-    if (QueueOption[0] != '\0') {
-    	str = XmTextGetString(Text2);
-    	strcpy(Queue, str);
-    	XtFree(str);
-    }
-    if (HostOption[0] != '\0') {
-    	str = XmTextGetString(Text3);
-    	strcpy(Host, str);
-    	XtFree(str);
-    }
-    str = XmTextGetString(Text4);
-    strcpy(CmdText, str);
-    XtFree(str);
-
-    
-    /* Pop down the dialog */
-    DoneWithDialog = True;
+static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data) {
+	/* Indicate that the user has specifically modified the print command
+	   and that this field should be left as is in subsequent dialogs */
+	CmdFieldModified = True;
 }
 
-static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
-{
-    DoneWithDialog = True;
-    CmdFieldModified = False;
+static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+	char *str, command[MAX_CMD_STR];
+	int nRead;
+	FILE *pipe;
+	char errorString[MAX_PRINT_ERROR_LENGTH], discarded[1024];
+
+	/* get the print command from the command text area */
+	str = XmTextGetString(Text4);
+
+	/* add the file name and output redirection to the print command */
+	sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str);
+	XtFree(str);
+
+	/* Issue the print command using a popen call and recover error messages
+	   from the output stream of the command. */
+	pipe = popen(command, "r");
+	if (pipe == NULL) {
+		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", strerror(errno));
+		return;
+	}
+
+	errorString[0] = 0;
+	nRead = fread(errorString, sizeof(char), MAX_PRINT_ERROR_LENGTH - 1, pipe);
+	/* Make sure that the print command doesn't get stuck when trying to
+	   write a lot of output on stderr (pipe may fill up). We discard
+	   the additional output, though. */
+	while (fread(discarded, sizeof(char), 1024, pipe) > 0)
+		;
+
+	if (!ferror(pipe)) {
+		errorString[nRead] = '\0';
+	}
+
+	if (pclose(pipe)) {
+		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", errorString);
+		return;
+	}
+
+	/* Print command succeeded, so retain the current print parameters */
+	if (CopiesOption[0] != '\0') {
+		str = XmTextGetString(Text1);
+		strcpy(Copies, str);
+		XtFree(str);
+	}
+	if (QueueOption[0] != '\0') {
+		str = XmTextGetString(Text2);
+		strcpy(Queue, str);
+		XtFree(str);
+	}
+	if (HostOption[0] != '\0') {
+		str = XmTextGetString(Text3);
+		strcpy(Host, str);
+		XtFree(str);
+	}
+	str = XmTextGetString(Text4);
+	strcpy(CmdText, str);
+	XtFree(str);
+
+	/* Pop down the dialog */
+	DoneWithDialog = True;
+}
+
+static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+	DoneWithDialog = True;
+	CmdFieldModified = False;
 }
 
 #ifndef VMS
@@ -709,142 +754,133 @@ static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data
 ** Is the filename file in the directory dirpath
 ** and does it have at least some of the mode_flags enabled ?
 */
-static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags)
-{
-    DIR           *dfile;
+static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags) {
+	DIR *dfile;
 #ifdef USE_DIRENT
-    struct dirent *DirEntryPtr;
+	struct dirent *DirEntryPtr;
 #else
-    struct direct *DirEntryPtr;
+	struct direct *DirEntryPtr;
 #endif
-    struct stat   statbuf;
-    char          fullname[MAXPATHLEN];
+	struct stat statbuf;
+	char fullname[MAXPATHLEN];
 
-    dfile = opendir(dirpath);
-    if (dfile != NULL) {
-	while ((DirEntryPtr=readdir(dfile)) != NULL) {
-            if (!strcmp(DirEntryPtr->d_name, filename)) {
-        	strcpy(fullname,dirpath);
-        	strcat(fullname,"/");
-		strcat(fullname,filename);
-        	stat(fullname,&statbuf);
-        	closedir(dfile);
-        	return statbuf.st_mode & mode_flags;
-            }    
-        }
-    	closedir(dfile);
-    }
-    return False;
+	dfile = opendir(dirpath);
+	if (dfile != NULL) {
+		while ((DirEntryPtr = readdir(dfile)) != NULL) {
+			if (!strcmp(DirEntryPtr->d_name, filename)) {
+				strcpy(fullname, dirpath);
+				strcat(fullname, "/");
+				strcat(fullname, filename);
+				stat(fullname, &statbuf);
+				closedir(dfile);
+				return statbuf.st_mode & mode_flags;
+			}
+		}
+		closedir(dfile);
+	}
+	return False;
 }
 
 /*
-** Is the filename file in the environment path directories 
+** Is the filename file in the environment path directories
 ** and does it have at least some of the mode_flags enabled ?
 */
-static int fileInPath(const char *filename, unsigned short mode_flags)
-{
-    char path[MAXPATHLEN];
-    char *pathstring,*lastchar;
+static int fileInPath(const char *filename, unsigned short mode_flags) {
+	char path[MAXPATHLEN];
+	char *pathstring, *lastchar;
 
-    /* Get environmental value of PATH */
-    pathstring = getenv("PATH");
-    if (pathstring == NULL)
-    	return False;
+	/* Get environmental value of PATH */
+	pathstring = getenv("PATH");
+	if (pathstring == NULL)
+		return False;
 
-    /* parse the pathstring and search on each directory found */
-    do {
-	/* if final path in list is empty, don't search it */
-	if (!strcmp(pathstring, ""))
-            return False;
-	/* locate address of next : character */
-	lastchar = strchr(pathstring, SEPARATOR);                             
-	if (lastchar != NULL) { 
-            /* if more directories remain in pathstring, copy up to : */
-            strncpy(path, pathstring, lastchar-pathstring);
-            path[lastchar-pathstring] = '\0';
-	} else {
-	    /* if it's the last directory, just copy it */
-            strcpy(path, pathstring);                                     
-	}
-	/* search for the file in this path */
-	if(fileInDir(filename, path, mode_flags))
-            return True; /* found it !! */
-	/* point pathstring to start of new dir string */
-	pathstring = lastchar + 1;                                       
-    } while( lastchar != NULL );
-    return False;
+	/* parse the pathstring and search on each directory found */
+	do {
+		/* if final path in list is empty, don't search it */
+		if (!strcmp(pathstring, ""))
+			return False;
+		/* locate address of next : character */
+		lastchar = strchr(pathstring, SEPARATOR);
+		if (lastchar != NULL) {
+			/* if more directories remain in pathstring, copy up to : */
+			strncpy(path, pathstring, lastchar - pathstring);
+			path[lastchar - pathstring] = '\0';
+		} else {
+			/* if it's the last directory, just copy it */
+			strcpy(path, pathstring);
+		}
+		/* search for the file in this path */
+		if (fileInDir(filename, path, mode_flags))
+			return True; /* found it !! */
+		/* point pathstring to start of new dir string */
+		pathstring = lastchar + 1;
+	} while (lastchar != NULL);
+	return False;
 }
 
 /*
 ** Is flpr present in the search path and is it executable ?
 */
-static int flprPresent(void)
-{
-    /* Is flpr present in the search path and is it executable ? */
-    return fileInPath("flpr",0111);
+static int flprPresent(void) {
+	/* Is flpr present in the search path and is it executable ? */
+	return fileInPath("flpr", 0111);
 }
 
-static int foundTag(const char *tagfilename, const char *tagname, char *result)
-{
-    FILE *tfile;
-    char tagformat[512],line[512];
+static int foundTag(const char *tagfilename, const char *tagname, char *result) {
+	FILE *tfile;
+	char tagformat[512], line[512];
 
-    strcpy(tagformat, tagname);
-    strcat(tagformat, " %s");
+	strcpy(tagformat, tagname);
+	strcat(tagformat, " %s");
 
-    tfile = fopen(tagfilename,"r");
-    if (tfile != NULL) {
-	while (!feof(tfile)) {
-            fgets(line,sizeof(line),tfile);
-            if (sscanf(line,tagformat,result) != 0) {
+	tfile = fopen(tagfilename, "r");
+	if (tfile != NULL) {
+		while (!feof(tfile)) {
+			fgets(line, sizeof(line), tfile);
+			if (sscanf(line, tagformat, result) != 0) {
+				fclose(tfile);
+				return True;
+			}
+		}
 		fclose(tfile);
-        	return True;
-	    }
 	}
-	fclose(tfile);
-    }
-    return False;
+	return False;
 }
 
-static int foundEnv(const char *EnvVarName, char *result)
-{
-    char *dqstr;
+static int foundEnv(const char *EnvVarName, char *result) {
+	char *dqstr;
 
-    dqstr = getenv(EnvVarName);
-    if (dqstr != NULL) {
-        strcpy(result,dqstr);
-        return True;
-    }
-    return False;
+	dqstr = getenv(EnvVarName);
+	if (dqstr != NULL) {
+		strcpy(result, dqstr);
+		return True;
+	}
+	return False;
 }
 
-static void getFlprHostDefault(char *defhost)
-{   
-    if (!foundEnv("FLPHOST",defhost))
-        if(!foundTag("/usr/local/etc/flp.defaults", "host", defhost)) 
-            strcpy(defhost,"");
+static void getFlprHostDefault(char *defhost) {
+	if (!foundEnv("FLPHOST", defhost))
+		if (!foundTag("/usr/local/etc/flp.defaults", "host", defhost))
+			strcpy(defhost, "");
 }
 
-static void getFlprQueueDefault(char *defqueue)
-{   
-    if (!foundEnv("FLPQUE",defqueue))
-	if (!foundTag("/usr/local/etc/flp.defaults", "queue", defqueue))
-            strcpy(defqueue,"");
+static void getFlprQueueDefault(char *defqueue) {
+	if (!foundEnv("FLPQUE", defqueue))
+		if (!foundTag("/usr/local/etc/flp.defaults", "queue", defqueue))
+			strcpy(defqueue, "");
 }
 
 #ifdef USE_LPR_PRINT_CMD
-static void getLprQueueDefault(char *defqueue)
-{
-    if (!foundEnv("PRINTER",defqueue))
-        strcpy(defqueue,"");
+static void getLprQueueDefault(char *defqueue) {
+	if (!foundEnv("PRINTER", defqueue))
+		strcpy(defqueue, "");
 }
 #endif
 
 #ifndef USE_LPR_PRINT_CMD
-static void getLpQueueDefault(char *defqueue)
-{
-    if (!foundEnv("LPDEST",defqueue))
-        defqueue[0] = '\0';
+static void getLpQueueDefault(char *defqueue) {
+	if (!foundEnv("LPDEST", defqueue))
+		defqueue[0] = '\0';
 }
 #endif
 #endif

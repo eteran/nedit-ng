@@ -24,19 +24,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_PRINTUTILS_H_INCLUDED
-#define NEDIT_PRINTUTILS_H_INCLUDED
+#ifndef PRINT_UTILS_H_
+#define PRINT_UTILS_H_
 
 #include <X11/Intrinsic.h>
+#include <string>
 
 /* Maximum length of an error returned by IssuePrintCommand() */
 #define MAX_PRINT_ERROR_LENGTH 1024
 
 #define DESTINATION_REMOTE 1
-#define DESTINATION_LOCAL  2
-
+#define DESTINATION_LOCAL 2
 
 void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr);
-void PrintFile(Widget parent, const char *PrintFileName, const char *jobName);
+void PrintFile(Widget parent, const std::string &PrintFileName, const std::string &jobName);
 
-#endif /* NEDIT_PRINTUTILS_H_INCLUDED */
+#endif

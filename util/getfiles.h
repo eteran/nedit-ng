@@ -29,8 +29,8 @@
 
 #include <X11/Intrinsic.h>
 
-#define GFN_OK		1               /* Get Filename OK constant     */
-#define GFN_CANCEL	2               /* Get Filename Cancel constant */
+#define GFN_OK 1     /* Get Filename OK constant     */
+#define GFN_CANCEL 2 /* Get Filename Cancel constant */
 
 int GetExistingFilename(Widget parent, const char *promptString, char *filename);
 int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);

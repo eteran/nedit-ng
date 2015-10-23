@@ -27,8 +27,6 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden E
 *									       *
 *******************************************************************************/
 
-
-
 #include "clearcase.h"
 
 #include <string.h>
@@ -36,17 +34,13 @@ static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden E
 
 #include <X11/Intrinsic.h>
 
-
-
 static int ClearCaseViewTagFound = 0;
 static char *ClearCaseViewRoot = NULL;
 static const char *ClearCaseViewTag = NULL;
 
-const char* GetClearCaseVersionExtendedPath(const char* fullname)
-{
-   return(strstr(fullname, "@@/"));
+const char *GetClearCaseVersionExtendedPath(const char *fullname) {
+	return (strstr(fullname, "@@/"));
 }
-
 
 /*
 ** Return a string showing the ClearCase view tag.  If ClearCase is not in
@@ -57,26 +51,25 @@ const char* GetClearCaseVersionExtendedPath(const char* fullname)
 ** that it doesn't impact non-clearcase users, so it is not conditionally
 ** compiled. (Thanks to Max Vohlken)
 */
-const char *GetClearCaseViewTag(void)
-{
-    if (!ClearCaseViewTagFound) {
-        /* Extract the view name from the CLEARCASE_ROOT environment variable */
-        const char *envPtr = getenv("CLEARCASE_ROOT");
-        if (envPtr != NULL) {
-            const char *tagPtr;
-            ClearCaseViewRoot = XtMalloc(strlen(envPtr) + 1);
-            strcpy(ClearCaseViewRoot, envPtr);
+const char *GetClearCaseViewTag(void) {
+	if (!ClearCaseViewTagFound) {
+		/* Extract the view name from the CLEARCASE_ROOT environment variable */
+		const char *envPtr = getenv("CLEARCASE_ROOT");
+		if (envPtr != NULL) {
+			const char *tagPtr;
+			ClearCaseViewRoot = XtMalloc(strlen(envPtr) + 1);
+			strcpy(ClearCaseViewRoot, envPtr);
 
-            tagPtr = strrchr(ClearCaseViewRoot, '/');
-            if (tagPtr != NULL) {
-                ClearCaseViewTag = ++tagPtr;
-            }
-        }
-    }
-    /* If we don't find it first time, we will never find it, so may just as
-     * well say that we have found it.
-     */
-    ClearCaseViewTagFound = 1;
+			tagPtr = strrchr(ClearCaseViewRoot, '/');
+			if (tagPtr != NULL) {
+				ClearCaseViewTag = ++tagPtr;
+			}
+		}
+	}
+	/* If we don't find it first time, we will never find it, so may just as
+	 * well say that we have found it.
+	 */
+	ClearCaseViewTagFound = 1;
 
-    return(ClearCaseViewTag);
+	return (ClearCaseViewTag);
 }

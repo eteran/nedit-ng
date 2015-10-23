@@ -46,7 +46,6 @@
 /*  button margin width to avoid cramped buttons  */
 #define BUTTON_WIDTH_MARGIN 12
 
-
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void SuppressPassiveGrabWarnings(void);
 void PopDownBugPatch(Widget w);
@@ -65,13 +64,11 @@ void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
 void UpdateAccelLockPatch(Widget topWidget, Widget newButton);
 char *GetXmStringText(XmString fromString);
 XFontStruct *GetDefaultFontStruct(XmFontList font);
-XmString* StringTable(int count, ...);
+XmString *StringTable(int count, ...);
 void FreeStringTable(XmString *table);
 void SimulateButtonPress(Widget widget);
-Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic,
-	char *acc, char *accText, XtCallbackProc callback, void *cbArg);
-Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic,
-	char *acc, char *accText, XtCallbackProc callback, void *cbArg,int set);
+Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg);
+Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg, int set);
 Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic);
 void SetIntText(Widget text, int value);
 int GetFloatText(Widget text, double *value);
@@ -86,36 +83,21 @@ void EndWait(Widget topCursorWidget);
 void PasswordText(Widget w, char *passTxt);
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddToHistoryList(char *newItem, char ***historyList, int *nItems);
-void CreateGeometryString(char *string, int x, int y,
-	int width, int height, int bitmask);
-Boolean FindBestVisual(Display *display, const char *appName, const char *appClass,
-	Visual **visual, int *depth, Colormap *colormap);
-Widget CreateDialogShell(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist,
-	Cardinal argcount);
-Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreatePromptDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist,
-    	Cardinal  argcount);
-Widget CreateFileSelectionDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateQuestionDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateMessageDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist,
-	Cardinal  argcount);
-Widget CreateShellWithBestVis(String appName, String appClass, 
-	WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
-Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz,
-    Widget parent, ArgList arglist, Cardinal argcount);
-Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz,
-	ArgList arglist, Cardinal  argcount);
+void CreateGeometryString(char *string, int x, int y, int width, int height, int bitmask);
+Boolean FindBestVisual(Display *display, const char *appName, const char *appClass, Visual **visual, int *depth, Colormap *colormap);
+Widget CreateDialogShell(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreatePromptDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateFileSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateQuestionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateMessageDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
+Widget CreateShellWithBestVis(String appName, String appClass, WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
+Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget parent, ArgList arglist, Cardinal argcount);
+Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount);
 Modifiers GetNumLockModMask(Display *display);
 void InstallMouseWheelActions(XtAppContext context);
 void AddMouseWheelSupport(Widget w);
@@ -123,23 +105,13 @@ void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify);
 void CloseAllPopupsFor(Widget shell);
 long QueryCurrentDesktop(Display *display, Window rootWindow);
 long QueryDesktop(Display *display, Widget shell);
-int SpinClipboardStartCopy(Display *display, Window window,
-        XmString clip_label, Time timestamp, Widget widget,
-        XmCutPasteProc callback, long *item_id);
-int SpinClipboardCopy(Display *display, Window window, long item_id,
-        char *format_name, XtPointer buffer, unsigned long length,
-        long private_id, long *data_id);
+int SpinClipboardStartCopy(Display *display, Window window, XmString clip_label, Time timestamp, Widget widget, XmCutPasteProc callback, long *item_id);
+int SpinClipboardCopy(Display *display, Window window, long item_id, char *format_name, XtPointer buffer, unsigned long length, long private_id, long *data_id);
 int SpinClipboardEndCopy(Display *display, Window window, long item_id);
-int SpinClipboardInquireLength(Display *display, Window window,
-        char *format_name, unsigned long *length);
-int SpinClipboardRetrieve(Display *display, Window window, char *format_name,
-        XtPointer buffer, unsigned long length, unsigned long *num_bytes,
-        long *private_id);
+int SpinClipboardInquireLength(Display *display, Window window, char *format_name, unsigned long *length);
+int SpinClipboardRetrieve(Display *display, Window window, char *format_name, XtPointer buffer, unsigned long length, unsigned long *num_bytes, long *private_id);
 int SpinClipboardLock(Display *display, Window window);
 int SpinClipboardUnlock(Display *display, Window window);
-void WmClientMsg(Display *disp, Window win, const char *msg,
-        unsigned long data0, unsigned long data1,
-        unsigned long data2, unsigned long data3,
-        unsigned long data4);
+void WmClientMsg(Display *disp, Window win, const char *msg, unsigned long data0, unsigned long data1, unsigned long data2, unsigned long data3, unsigned long data4);
 
 #endif /* NEDIT_MISC_H_INCLUDED */

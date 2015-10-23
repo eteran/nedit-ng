@@ -38,7 +38,7 @@
  *     #define XmUPDATE_LEVEL  30
  *     #define XmVersion       (XmVERSION * 1000 + XmREVISION)
  *     #define XmVERSION_STRING "@(#)Motif Version 2.1.30"
- * 
+ *
  * In addition, LessTif #defines several values as shown here for
  * version 0.93.0:
  *     #define LESSTIF_VERSION  0
@@ -47,7 +47,7 @@
  *     #define LesstifVERSION_STRING \
  *             "@(#)GNU/LessTif Version 2.1 Release 0.93.0"
  *
- * Also, in LessTif the XmVERSION_STRING is identical to the 
+ * Also, in LessTif the XmVERSION_STRING is identical to the
  * LesstifVERSION_STRING.  Unfortunately, the only way to find out the
  * "update level" of a LessTif release is to parse the LesstifVERSION_STRING.
  */
@@ -62,72 +62,58 @@ static enum MotifStability GetLessTifStability(void);
 static enum MotifStability GetOpenMotifStability(void);
 #endif
 
-/* 
+/*
  * These are versions of LessTif that are known to be stable with NEdit in
  * Motif 2.1 mode.
  */
-static const char *const knownGoodLesstif[] = {
-    "0.92.32",
-    "0.93.0",
-    "0.93.12",
-    "0.93.18",
+static const char *const knownGoodLesstif[] = {"0.92.32", "0.93.0", "0.93.12", "0.93.18",
 #ifndef __x86_64
-    "0.93.94",    /* 64-bit build .93.94 is broken */
+                                               "0.93.94", /* 64-bit build .93.94 is broken */
 #endif
-    NULL
-};
+                                               NULL};
 
-/* 
+/*
  * These are versions of LessTif that are known NOT to be stable with NEdit in
  * Motif 2.1 mode.
  */
-const char *const knownBadLessTif[] = {
-    "0.93.25",
-    "0.93.29",
-    "0.93.34"
-    "0.93.36",
-    "0.93.39",
-    "0.93.40",
-    "0.93.41",
-    "0.93.44",
+const char *const knownBadLessTif[] = {"0.93.25", "0.93.29", "0.93.34"
+                                                             "0.93.36",
+                                       "0.93.39", "0.93.40", "0.93.41", "0.93.44",
 #ifdef __x86_64
-    "0.93.94",    /* 64-bit build .93.94 is broken */
+                                       "0.93.94", /* 64-bit build .93.94 is broken */
 #endif
-    "0.93.95b",   /* SF bug 1087192 */
-    "0.94.4",     /* Alt-H, ESC => crash */
-    "0.95.0",     /* same as above */
-    NULL
-};
-
+                                       "0.93.95b", /* SF bug 1087192 */
+                                       "0.94.4",   /* Alt-H, ESC => crash */
+                                       "0.95.0",   /* same as above */
+                                       NULL};
 
 #ifdef LESSTIF_VERSION
 
-static enum MotifStability GetLessTifStability(void)
-{
-    int i;
-    const char *rev = NULL;
-    
-    /* We assume that the lesstif version is the string after the last
-        space. */
+static enum MotifStability GetLessTifStability(void) {
+	int i;
+	const char *rev = NULL;
 
-    rev = strrchr(LesstifVERSION_STRING, ' ');
+	/* We assume that the lesstif version is the string after the last
+	    space. */
 
-    if (rev == NULL)
-        return MotifUnknown;
+	rev = strrchr(LesstifVERSION_STRING, ' ');
 
-    rev += 1;
+	if (rev == NULL)
+		return MotifUnknown;
 
-    /* Check for known good LessTif versions */
-    for (i = 0; knownGoodLesstif[i]; i++)
-        if (!strcmp(rev, knownGoodLesstif[i]))
-            return MotifKnownGood;
+	rev += 1;
 
-    /* Check for known bad LessTif versions */
-    for (i = 0; knownBadLessTif[i]; i++) 
-        if (!strcmp(rev, knownBadLessTif[i]))
-            return MotifKnownBad;
-    
-    return MotifUnknown;
+	/* Check for known good LessTif versions */
+	for (i = 0; knownGoodLesstif[i]; i++)
+		if (!strcmp(rev, knownGoodLesstif[i]))
+			return MotifKnownGood;
+
+	/* Check for known bad LessTif versions */
+	for (i = 0; knownBadLessTif[i]; i++)
+		if (!strcmp(rev, knownBadLessTif[i]))
+			return MotifKnownBad;
+
+	return MotifUnknown;
 }
 
 #else
@@ -136,60 +122,50 @@ static enum MotifStability GetLessTifStability(void)
    usual XmVersion for easy comparison. */
 static const int XmFullVersion = (XmVersion * 100 + XmUPDATE_LEVEL);
 
-static enum MotifStability GetOpenMotifStability(void)
-{
-    enum MotifStability result = MotifUnknown;
+static enum MotifStability GetOpenMotifStability(void) {
+	enum MotifStability result = MotifUnknown;
 
-    const Boolean really222 = 
-        (strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0);
-    
-    if (XmFullVersion <= 200200)         /* 1.0 - 2.1 are fine */
-    {
-        result = MotifKnownGood;
-    }
-    else if ((XmFullVersion < 200202) || really222)  /* 2.2.0 - 2.2.2 are bad */
-    {
-        result = MotifKnownBad;
-    }
-    else if (XmFullVersion >= 200203 && XmFullVersion <= 200303) /* 2.2.3 - 2.3 is good */
-    {
-        result = MotifKnownGood;
-    }
-    else                            /* Anything else unknown */
-    {
-        result = MotifUnknown;
-    }
-        
-    return result;
+	const Boolean really222 = (strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0);
+
+	if (XmFullVersion <= 200200) /* 1.0 - 2.1 are fine */
+	{
+		result = MotifKnownGood;
+	} else if ((XmFullVersion < 200202) || really222) /* 2.2.0 - 2.2.2 are bad */
+	{
+		result = MotifKnownBad;
+	} else if (XmFullVersion >= 200203 && XmFullVersion <= 200303) /* 2.2.3 - 2.3 is good */
+	{
+		result = MotifKnownGood;
+	} else /* Anything else unknown */
+	{
+		result = MotifUnknown;
+	}
+
+	return result;
 }
 
 #endif
 
-
-enum MotifStability GetMotifStability(void)
-{
+enum MotifStability GetMotifStability(void) {
 #ifdef LESSTIF_VERSION
-    return GetLessTifStability();
-#else 
-    return GetOpenMotifStability();
+	return GetLessTifStability();
+#else
+	return GetOpenMotifStability();
 #endif
 }
 
+const char *GetMotifStableVersions(void) {
+	int i;
+	static char msg[sizeof knownGoodLesstif * 80];
 
-const char *GetMotifStableVersions(void)
-{
-    int i;
-    static char msg[sizeof knownGoodLesstif * 80];
-    
-    for (i = 0; knownGoodLesstif[i] != NULL; i++)
-    {
-        strcat(msg, knownGoodLesstif[i]);
-        strcat(msg, "\n");
-    }
+	for (i = 0; knownGoodLesstif[i] != NULL; i++) {
+		strcat(msg, knownGoodLesstif[i]);
+		strcat(msg, "\n");
+	}
 
-    strcat(msg, "OpenMotif 2.1.30\n");
-    strcat(msg, "OpenMotif 2.2.3\n");
-    strcat(msg, "OpenMotif 2.3\n");
+	strcat(msg, "OpenMotif 2.1.30\n");
+	strcat(msg, "OpenMotif 2.2.3\n");
+	strcat(msg, "OpenMotif 2.3\n");
 
-    return msg;
+	return msg;
 }

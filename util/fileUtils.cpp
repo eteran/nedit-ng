@@ -29,8 +29,6 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 *									       *
 *******************************************************************************/
 
-
-
 #include "fileUtils.h"
 #include "utils.h"
 
@@ -48,10 +46,7 @@ static const char CVSID[] = "$Id: fileUtils.c,v 1.35 2008/08/20 14:57:35 lebert 
 #include <unistd.h>
 #include <pwd.h>
 
-
-
-
-#ifndef MAXSYMLINKS  /* should be defined in <sys/param.h> */
+#ifndef MAXSYMLINKS /* should be defined in <sys/param.h> */
 #define MAXSYMLINKS 20
 #endif
 
@@ -78,58 +73,55 @@ static void copyThruSlash(char **toString, char **fromString);
 ** least MAXPATHLEN chars long.
 ** To skip setting filename or pathname pass NULL for that argument.
 */
-int
-ParseFilename(const char *fullname, char *filename, char *pathname)
-{
-    int fullLen = strlen(fullname);
-    int i, pathLen, fileLen;
-	    
+int ParseFilename(const char *fullname, char *filename, char *pathname) {
+	int fullLen = strlen(fullname);
+	int i, pathLen, fileLen;
 
-    const char *viewExtendPath;
-    int scanStart;
-    
-    /* For clearcase version extended paths, slash characters after the "@@/"
-       should be considered part of the file name, rather than the path */
-    if ((viewExtendPath = strstr(fullname, "@@/")) != NULL)
-      	scanStart = viewExtendPath - fullname - 1;
-    else
-      	scanStart = fullLen - 1;
-    
-    /* find the last slash */
-    for (i=scanStart; i>=0; i--) {
-        if (fullname[i] == '/')
-	    break;
-    }
+	const char *viewExtendPath;
+	int scanStart;
 
-    /* move chars before / (or ] or :) into pathname,& after into filename */
-    pathLen = i + 1;
-    fileLen = fullLen - pathLen;
-    if (pathname) {
-      	if (pathLen >= MAXPATHLEN) {
-            return 1;
+	/* For clearcase version extended paths, slash characters after the "@@/"
+	   should be considered part of the file name, rather than the path */
+	if ((viewExtendPath = strstr(fullname, "@@/")) != NULL)
+		scanStart = viewExtendPath - fullname - 1;
+	else
+		scanStart = fullLen - 1;
+
+	/* find the last slash */
+	for (i = scanStart; i >= 0; i--) {
+		if (fullname[i] == '/')
+			break;
 	}
-      	strncpy(pathname, fullname, pathLen);
-      	pathname[pathLen] = 0;
-    }
-    if (filename) {
-      	if (fileLen >= MAXPATHLEN) {
-      	    return 2;
-      	}
-      	strncpy(filename, &fullname[pathLen], fileLen);
-      	filename[fileLen] = 0;
-    }
 
-    if(pathname) {
-	if (NormalizePathname(pathname)) {
-	    return 1; /* pathname too long */
+	/* move chars before / (or ] or :) into pathname,& after into filename */
+	pathLen = i + 1;
+	fileLen = fullLen - pathLen;
+	if (pathname) {
+		if (pathLen >= MAXPATHLEN) {
+			return 1;
+		}
+		strncpy(pathname, fullname, pathLen);
+		pathname[pathLen] = 0;
 	}
-	pathLen = strlen(pathname);
-    }
-    
-    if (filename && pathname && ((pathLen + 1 + fileLen) >= MAXPATHLEN)) {
-	return 1; /* pathname + filename too long */
-    }
-    return 0;
+	if (filename) {
+		if (fileLen >= MAXPATHLEN) {
+			return 2;
+		}
+		strncpy(filename, &fullname[pathLen], fileLen);
+		filename[fileLen] = 0;
+	}
+
+	if (pathname) {
+		if (NormalizePathname(pathname)) {
+			return 1; /* pathname too long */
+		}
+		pathLen = strlen(pathname);
+	}
+
+	if (filename && pathname && ((pathLen + 1 + fileLen) >= MAXPATHLEN)) {
+		return 1; /* pathname + filename too long */
+	}
+	return 0;
 }
 
 /*
@@ -137,56 +129,53 @@ ParseFilename(const char *fullname, char *filename, char *pathname)
 ** If it doesn't work just out leave pathname unmodified.
 ** This implementation is neither fast, nor elegant, nor ...
 */
-int
-ExpandTilde(char *pathname)
-{
-    struct passwd *passwdEntry;
-    char username[MAXPATHLEN], temp[MAXPATHLEN];
-    char *nameEnd;
-    unsigned len_left;
-    
-    if (pathname[0] != '~')
-	return TRUE;
-    nameEnd = strchr(&pathname[1], '/');
-    if (nameEnd == NULL) {
-	nameEnd = pathname + strlen(pathname);
-    }
-    strncpy(username, &pathname[1], nameEnd - &pathname[1]);
-    username[nameEnd - &pathname[1]] = '\0';
-    /* We might consider to re-use the GetHomeDir() function,
-       but to keep the code more similar for both cases ... */
-    if (username[0] == '\0') {
-    	passwdEntry = getpwuid(getuid());
-	if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0')) {
-  	   /* This is really serious, so just exit. */
-           perror("NEdit/nc: getpwuid() failed ");
-           exit(EXIT_FAILURE);
-	}
-    }
-    else {
-    	passwdEntry = getpwnam(username);
-        if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir)== '\0')) {
-           /* username was just an input by the user, this is no
-	      indication for some (serious) problems */
-           return FALSE;
-	}
-    }
+int ExpandTilde(char *pathname) {
+	struct passwd *passwdEntry;
+	char username[MAXPATHLEN], temp[MAXPATHLEN];
+	char *nameEnd;
+	unsigned len_left;
 
-    strcpy(temp, passwdEntry->pw_dir);
-    strcat(temp, "/");
-    len_left= sizeof(temp)-strlen(temp)-1;
-    if (len_left < strlen(nameEnd)) {
-      /* It won't work out */
-       return FALSE;
-    }
-    strcat(temp, nameEnd);
-    strcpy(pathname, temp);
-    return TRUE;
+	if (pathname[0] != '~')
+		return TRUE;
+	nameEnd = strchr(&pathname[1], '/');
+	if (nameEnd == NULL) {
+		nameEnd = pathname + strlen(pathname);
+	}
+	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
+	username[nameEnd - &pathname[1]] = '\0';
+	/* We might consider to re-use the GetHomeDir() function,
+	   but to keep the code more similar for both cases ... */
+	if (username[0] == '\0') {
+		passwdEntry = getpwuid(getuid());
+		if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir) == '\0')) {
+			/* This is really serious, so just exit. */
+			perror("NEdit/nc: getpwuid() failed ");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		passwdEntry = getpwnam(username);
+		if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir) == '\0')) {
+			/* username was just an input by the user, this is no
+		   indication for some (serious) problems */
+			return FALSE;
+		}
+	}
+
+	strcpy(temp, passwdEntry->pw_dir);
+	strcat(temp, "/");
+	len_left = sizeof(temp) - strlen(temp) - 1;
+	if (len_left < strlen(nameEnd)) {
+		/* It won't work out */
+		return FALSE;
+	}
+	strcat(temp, nameEnd);
+	strcpy(pathname, temp);
+	return TRUE;
 }
 
 /*
- * Resolve symbolic links (if any) for the absolute path given in pathIn 
- * and place the resolved absolute path in pathResolved. 
+ * Resolve symbolic links (if any) for the absolute path given in pathIn
+ * and place the resolved absolute path in pathResolved.
  * -  pathIn must contain an absolute path spec.
  * -  pathResolved must point to a buffer of minimum size MAXPATHLEN.
  *
@@ -198,65 +187,62 @@ ExpandTilde(char *pathname)
  *   FALSE an error occured while trying to resolve the symlink, i.e.
  *         pathIn was no absolute path or the link is a loop.
  */
-int
-ResolvePath(const char * pathIn, char * pathResolved) 
-{
-    char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
-    char *pathEnd;
-    int rlResult, loops;
+int ResolvePath(const char *pathIn, char *pathResolved) {
+	char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
+	char *pathEnd;
+	int rlResult, loops;
 
 #ifdef NO_READLINK
-    strncpy(pathResolved, pathIn, MAXPATHLEN);
-    /* If there are no links at all, it's a valid "resolved" path */
-    return TRUE;
+	strncpy(pathResolved, pathIn, MAXPATHLEN);
+	/* If there are no links at all, it's a valid "resolved" path */
+	return TRUE;
 #else
-    /* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
-    for (loops=0; loops<MAXSYMLINKS; loops++) {
+	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
+	for (loops = 0; loops < MAXSYMLINKS; loops++) {
 #ifdef UNICOS
-	rlResult=readlink((char *)pathIn, resolveBuf, MAXPATHLEN-1);
+		rlResult = readlink((char *)pathIn, resolveBuf, MAXPATHLEN - 1);
 #else
-	rlResult=readlink(pathIn, resolveBuf, MAXPATHLEN-1);
+		rlResult = readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
 #endif
-        if (rlResult<0) {
+		if (rlResult < 0) {
 
 #ifndef __Lynx__
-  	    if (errno == EINVAL)
+			if (errno == EINVAL)
 #else
-	    if (errno == ENXIO)
+			if (errno == ENXIO)
 #endif
-            {
-                /* It's not a symlink - we are done */
-                strncpy(pathResolved, pathIn, MAXPATHLEN);
-                pathResolved[MAXPATHLEN-1] = '\0';
-                return TRUE;
-            } else {
-                return FALSE;
-            }
-        } else if (rlResult == 0) {
-	    return FALSE;
+			{
+				/* It's not a symlink - we are done */
+				strncpy(pathResolved, pathIn, MAXPATHLEN);
+				pathResolved[MAXPATHLEN - 1] = '\0';
+				return TRUE;
+			} else {
+				return FALSE;
+			}
+		} else if (rlResult == 0) {
+			return FALSE;
+		}
+
+		resolveBuf[rlResult] = 0;
+
+		if (resolveBuf[0] != '/') {
+			strncpy(pathBuf, pathIn, MAXPATHLEN);
+			pathBuf[MAXPATHLEN - 1] = '\0';
+			pathEnd = strrchr(pathBuf, '/');
+			if (!pathEnd) {
+				return FALSE;
+			}
+			strcpy(pathEnd + 1, resolveBuf);
+		} else {
+			strcpy(pathBuf, resolveBuf);
+		}
+		NormalizePathname(pathBuf);
+		pathIn = pathBuf;
 	}
 
-	resolveBuf[rlResult]=0;
-
-        if (resolveBuf[0]!='/') {
-	    strncpy(pathBuf, pathIn, MAXPATHLEN);
-	    pathBuf[MAXPATHLEN-1] = '\0';
-	    pathEnd=strrchr(pathBuf, '/');
-            if (!pathEnd) {
-	      	return FALSE;
-            }
-	    strcpy(pathEnd+1, resolveBuf);
-	} else {
-	    strcpy(pathBuf, resolveBuf);
-	}
-	NormalizePathname(pathBuf);
-	pathIn=pathBuf;
-    }
-
-    return FALSE;
+	return FALSE;
 #endif /* NO_READLINK */
 }
-
 
 /*
 ** Return 0 if everything's fine. In fact it always return 0... (No it doesn't)
@@ -265,40 +251,37 @@ ResolvePath(const char * pathIn, char * pathResolved)
 **  FIXME: Documentation
 **  FIXME: Change return value to False and True.
 */
-int NormalizePathname(char *pathname)
-{
-    /* if this is a relative pathname, prepend current directory */
-    if (pathname[0] != '/') {
-        char *oldPathname;
-        size_t len;
+int NormalizePathname(char *pathname) {
+	/* if this is a relative pathname, prepend current directory */
+	if (pathname[0] != '/') {
+		char *oldPathname;
+		size_t len;
 
-        /* make a copy of pathname to work from */
-	oldPathname=(char *)malloc(strlen(pathname)+1);
-	strcpy(oldPathname, pathname);
-	/* get the working directory and prepend to the path */
-	strcpy(pathname, GetCurrentDir());
+		/* make a copy of pathname to work from */
+		oldPathname = (char *)malloc(strlen(pathname) + 1);
+		strcpy(oldPathname, pathname);
+		/* get the working directory and prepend to the path */
+		strcpy(pathname, GetCurrentDir());
 
-	/* check for trailing slash, or pathname being root dir "/":
-	   don't add a second '/' character as this may break things
-	   on non-un*x systems */
-        len = strlen(pathname); /* GetCurrentDir() returns non-NULL value */
+		/* check for trailing slash, or pathname being root dir "/":
+		   don't add a second '/' character as this may break things
+		   on non-un*x systems */
+		len = strlen(pathname); /* GetCurrentDir() returns non-NULL value */
 
-        /*  Apart from the fact that people putting conditional expressions in
-            ifs should be caned: How should len ever become 0 if GetCurrentDir()
-            always returns a useful value?
-            FIXME: Check and document GetCurrentDir() return behaviour.  */
-        if (0 == len ? 1 : pathname[len-1] != '/')
-        {
-            strcat(pathname, "/");
-        }
-	strcat(pathname, oldPathname);
-	free(oldPathname);
-    }
+		/*  Apart from the fact that people putting conditional expressions in
+		    ifs should be caned: How should len ever become 0 if GetCurrentDir()
+		    always returns a useful value?
+		    FIXME: Check and document GetCurrentDir() return behaviour.  */
+		if (0 == len ? 1 : pathname[len - 1] != '/') {
+			strcat(pathname, "/");
+		}
+		strcat(pathname, oldPathname);
+		free(oldPathname);
+	}
 
-    /* compress out .. and . */
-    return CompressPathname(pathname);
+	/* compress out .. and . */
+	return CompressPathname(pathname);
 }
-
 
 /*
 ** Return 0 if everything's fine, 1 else.
@@ -306,157 +289,139 @@ int NormalizePathname(char *pathname)
 **  FIXME: Documentation
 **  FIXME: Change return value to False and True.
 */
-int CompressPathname(char *pathname)
-{
-    char *buf, *inPtr, *outPtr;
-    struct stat statbuf;
+int CompressPathname(char *pathname) {
+	char *buf, *inPtr, *outPtr;
+	struct stat statbuf;
 
-    /* (Added by schwarzenberg)
-    ** replace multiple slashes by a single slash 
-    **  (added by yooden)
-    **  Except for the first slash. From the Single UNIX Spec: "A pathname
-    **  that begins with two successive slashes may be interpreted in an
-    **  implementation-dependent manner"
-    */
-    inPtr = pathname;
-    buf = (char*) malloc(strlen(pathname) + 2);
-    outPtr = buf;
-    *outPtr++ = *inPtr++;
-    while (*inPtr)
-    {
-        *outPtr = *inPtr++;
-        if ('/' == *outPtr)
-        {
-            while ('/' == *inPtr)
-            {
-                inPtr++;
-            }
-        }
-        outPtr++;
-    }
-    *outPtr=0;
-    strcpy(pathname, buf);
-    
-    /* compress out . and .. */
-    inPtr = pathname;
-    outPtr = buf;
-    /* copy initial / */
-    copyThruSlash(&outPtr, &inPtr);
-    while (inPtr != NULL) {
-	/* if the next component is "../", remove previous component */
-	if (compareThruSlash(inPtr, "../")) {
-		*outPtr = 0;
-	    /* If the ../ is at the beginning, or if the previous component
-	       is a symbolic link, preserve the ../.  It is not valid to
-	       compress ../ when the previous component is a symbolic link
-	       because ../ is relative to where the link points.  If there's
-	       no S_ISLNK macro, assume system does not do symbolic links. */
+	/* (Added by schwarzenberg)
+	** replace multiple slashes by a single slash
+	**  (added by yooden)
+	**  Except for the first slash. From the Single UNIX Spec: "A pathname
+	**  that begins with two successive slashes may be interpreted in an
+	**  implementation-dependent manner"
+	*/
+	inPtr = pathname;
+	buf = (char *)malloc(strlen(pathname) + 2);
+	outPtr = buf;
+	*outPtr++ = *inPtr++;
+	while (*inPtr) {
+		*outPtr = *inPtr++;
+		if ('/' == *outPtr) {
+			while ('/' == *inPtr) {
+				inPtr++;
+			}
+		}
+		outPtr++;
+	}
+	*outPtr = 0;
+	strcpy(pathname, buf);
+
+	/* compress out . and .. */
+	inPtr = pathname;
+	outPtr = buf;
+	/* copy initial / */
+	copyThruSlash(&outPtr, &inPtr);
+	while (inPtr != NULL) {
+		/* if the next component is "../", remove previous component */
+		if (compareThruSlash(inPtr, "../")) {
+			*outPtr = 0;
+/* If the ../ is at the beginning, or if the previous component
+   is a symbolic link, preserve the ../.  It is not valid to
+   compress ../ when the previous component is a symbolic link
+   because ../ is relative to where the link points.  If there's
+   no S_ISLNK macro, assume system does not do symbolic links. */
 #ifdef S_ISLNK
-	    if(outPtr-1 == buf || (lstat(buf, &statbuf) == 0 &&
-		    S_ISLNK(statbuf.st_mode))) {
-		copyThruSlash(&outPtr, &inPtr);
-	    } else
-#endif	    
-	    {
-		/* back up outPtr to remove last path name component */
-		outPtr = prevSlash(outPtr);
-		inPtr = nextSlash(inPtr);
-	    }
-	} else if (compareThruSlash(inPtr, "./")) {
-	    /* don't copy the component if it's the redundant "./" */
-	    inPtr = nextSlash(inPtr);
+			if (outPtr - 1 == buf || (lstat(buf, &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
+				copyThruSlash(&outPtr, &inPtr);
+			} else
+#endif
+			{
+				/* back up outPtr to remove last path name component */
+				outPtr = prevSlash(outPtr);
+				inPtr = nextSlash(inPtr);
+			}
+		} else if (compareThruSlash(inPtr, "./")) {
+			/* don't copy the component if it's the redundant "./" */
+			inPtr = nextSlash(inPtr);
+		} else {
+			/* copy the component to outPtr */
+			copyThruSlash(&outPtr, &inPtr);
+		}
+	}
+	/* updated pathname with the new value */
+	if (strlen(buf) > MAXPATHLEN) {
+		fprintf(stderr, "nedit: CompressPathname(): file name too long %s\n", pathname);
+		free(buf);
+		return 1;
 	} else {
-	    /* copy the component to outPtr */
-	    copyThruSlash(&outPtr, &inPtr);
+		strcpy(pathname, buf);
+		free(buf);
+		return 0;
 	}
-    }
-    /* updated pathname with the new value */
-    if (strlen(buf)>MAXPATHLEN) {
-       fprintf(stderr, "nedit: CompressPathname(): file name too long %s\n",
-               pathname);
-       free(buf);
-       return 1;
-    }
-    else {
-       strcpy(pathname, buf);
-       free(buf);
-       return 0;
-    }
 }
 
-static char
-*nextSlash(char *ptr)
-{
-    for(; *ptr!='/'; ptr++) {
-    	if (*ptr == '\0')
-	    return NULL;
-    }
-    return ptr + 1;
-}
-
-static char
-*prevSlash(char *ptr)
-{
-    for(ptr -= 2; *ptr!='/'; ptr--);
-    return ptr + 1;
-}
-
-static int
-compareThruSlash(const char *string1, const char *string2)
-{
-    while (TRUE) {
-    	if (*string1 != *string2)
-	    return FALSE;
-	if (*string1 =='\0' || *string1=='/')
-	    return TRUE;
-	string1++;
-	string2++;
-    }
-}
-
-static void
-copyThruSlash(char **toString, char **fromString)
-{
-    char *to = *toString;
-    char *from = *fromString;
-    
-    while (TRUE) {
-        *to = *from;
-        if (*from =='\0') {
-            *fromString = NULL;
-            return;
-        }
-	if (*from=='/') {
-	    *toString = to + 1;
-	    *fromString = from + 1;
-	    return;
+static char *nextSlash(char *ptr) {
+	for (; *ptr != '/'; ptr++) {
+		if (*ptr == '\0')
+			return NULL;
 	}
-	from++;
-	to++;
-    }
+	return ptr + 1;
 }
 
+static char *prevSlash(char *ptr) {
+	for (ptr -= 2; *ptr != '/'; ptr--)
+		;
+	return ptr + 1;
+}
+
+static int compareThruSlash(const char *string1, const char *string2) {
+	while (TRUE) {
+		if (*string1 != *string2)
+			return FALSE;
+		if (*string1 == '\0' || *string1 == '/')
+			return TRUE;
+		string1++;
+		string2++;
+	}
+}
+
+static void copyThruSlash(char **toString, char **fromString) {
+	char *to = *toString;
+	char *from = *fromString;
+
+	while (TRUE) {
+		*to = *from;
+		if (*from == '\0') {
+			*fromString = NULL;
+			return;
+		}
+		if (*from == '/') {
+			*toString = to + 1;
+			*fromString = from + 1;
+			return;
+		}
+		from++;
+		to++;
+	}
+}
 
 /*
 ** Return the trailing 'n' no. of path components
 */
-const char
-*GetTrailingPathComponents(const char* path,
-                                      int noOfComponents)
-{
-    /* Start from the rear */
-    const char* ptr = path + strlen(path);
-    int count = 0;
+const char *GetTrailingPathComponents(const char *path, int noOfComponents) {
+	/* Start from the rear */
+	const char *ptr = path + strlen(path);
+	int count = 0;
 
-    while (--ptr > path) {
-        if (*ptr == '/') {
-            if (count++ == noOfComponents) {
-                break;
-            }
-        }
-    }
-    return(ptr);
-} 
+	while (--ptr > path) {
+		if (*ptr == '/') {
+			if (count++ == noOfComponents) {
+				break;
+			}
+		}
+	}
+	return (ptr);
+}
 
 /*
 ** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
@@ -466,26 +431,25 @@ const char
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-int FormatOfFile(const char *fileString)
-{
-    const char *p;
-    int nNewlines = 0, nReturns = 0;
-    
-    for (p=fileString; *p!='\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
-	if (*p == '\n') {
-	    nNewlines++;
-	    if (p == fileString || *(p-1) != '\r')
-		return UNIX_FILE_FORMAT;
-	    if (nNewlines >= FORMAT_SAMPLE_LINES)
+int FormatOfFile(const char *fileString) {
+	const char *p;
+	int nNewlines = 0, nReturns = 0;
+
+	for (p = fileString; *p != '\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
+		if (*p == '\n') {
+			nNewlines++;
+			if (p == fileString || *(p - 1) != '\r')
+				return UNIX_FILE_FORMAT;
+			if (nNewlines >= FORMAT_SAMPLE_LINES)
+				return DOS_FILE_FORMAT;
+		} else if (*p == '\r')
+			nReturns++;
+	}
+	if (nNewlines > 0)
 		return DOS_FILE_FORMAT;
-	} else if (*p == '\r')
-	    nReturns++;
-    }
-    if (nNewlines > 0)
-	return DOS_FILE_FORMAT;
-    if (nReturns > 0)
-	return MAC_FILE_FORMAT;
-    return UNIX_FILE_FORMAT;
+	if (nReturns > 0)
+		return MAC_FILE_FORMAT;
+	return UNIX_FILE_FORMAT;
 }
 
 /*
@@ -493,43 +457,41 @@ int FormatOfFile(const char *fileString)
 ** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
 ** In the DOS case, the length will be shorter, and passed length will be
 ** modified to reflect the new length. The routine has support for blockwise
-** file to string conversion: if the fileString has a trailing '\r' and 
+** file to string conversion: if the fileString has a trailing '\r' and
 ** 'pendingCR' is not zero, the '\r' is deposited in there and is not
 ** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
-** It's the caller's responsability to make sure that the pending character, 
+** It's the caller's responsability to make sure that the pending character,
 ** if present, is inserted at the beginning of the next block to convert.
 */
-void ConvertFromDosFileString(char *fileString, int *length, 
-    char* pendingCR)
-{
-    char *outPtr = fileString;
-    char *inPtr = fileString;
-    if (pendingCR) *pendingCR = 0;
-    while (inPtr < fileString + *length) {
-    	if (*inPtr == '\r') {
-	    if (inPtr < fileString + *length - 1) {
-		if (*(inPtr + 1) == '\n')
-		    inPtr++;
-	    } else {
-		if (pendingCR) {
-		    *pendingCR = *inPtr;
-		    break; /* Don't copy this trailing '\r' */
+void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
+	char *outPtr = fileString;
+	char *inPtr = fileString;
+	if (pendingCR)
+		*pendingCR = 0;
+	while (inPtr < fileString + *length) {
+		if (*inPtr == '\r') {
+			if (inPtr < fileString + *length - 1) {
+				if (*(inPtr + 1) == '\n')
+					inPtr++;
+			} else {
+				if (pendingCR) {
+					*pendingCR = *inPtr;
+					break; /* Don't copy this trailing '\r' */
+				}
+			}
 		}
-	    }
+		*outPtr++ = *inPtr++;
 	}
-	*outPtr++ = *inPtr++;
-    }
-    *outPtr = '\0';
-    *length = outPtr - fileString;
+	*outPtr = '\0';
+	*length = outPtr - fileString;
 }
-void ConvertFromMacFileString(char *fileString, int length)
-{
-    char *inPtr = fileString;
-    while (inPtr < fileString + length) {
-        if (*inPtr == '\r' )
-            *inPtr = '\n';
-        inPtr++;
-    }
+void ConvertFromMacFileString(char *fileString, int length) {
+	char *inPtr = fileString;
+	while (inPtr < fileString + length) {
+		if (*inPtr == '\r')
+			*inPtr = '\n';
+		inPtr++;
+	}
 }
 
 /*
@@ -543,82 +505,79 @@ void ConvertFromMacFileString(char *fileString, int length)
 ** anyone cares about the performance or the potential for running out of
 ** memory on a save, it should probably be redone.
 */
-int ConvertToDosFileString(char **fileString, int *length)
-{
-    char *outPtr, *outString;
-    char *inPtr = *fileString;
-    int inLength = *length;
-    int outLength = 0;
-
-    /* How long a string will we need? */
-    while (inPtr < *fileString + inLength) {
-    	if (*inPtr == '\n')
-	    outLength++;
-	inPtr++;
-	outLength++;
-    }
-    
-    /* Allocate the new string */
-    outString = XtMalloc(outLength + 1);
-    if (outString == NULL)
-	return FALSE;
-    
-    /* Do the conversion, free the old string */
-    inPtr = *fileString;
-    outPtr = outString;
-    while (inPtr < *fileString + inLength) {
-    	if (*inPtr == '\n')
-	    *outPtr++ = '\r';
-	*outPtr++ = *inPtr++;
-    }
-    *outPtr = '\0';
-    XtFree(*fileString);
-    *fileString = outString;
-    *length = outLength;
-    return TRUE;
-}
-
-
-/*
-** Converts a string (which may represent the entire contents of the file) from
-** Unix to DOS format.  String is re-allocated (with malloc), and length is
-** modified.  If allocation fails, which it may, because this can potentially
-** be a huge hunk of memory, returns FALSE and no conversion is done.
-**
-** This could be done more efficiently by asking doSave to allocate some
-** extra memory for this, and only re-allocating if it wasn't enough.  If
-** anyone cares about the performance or the potential for running out of
-** memory on a save, it should probably be redone.
-*/
-int ConvertToDosFileStringEx(std::string &fileString, int *length)
-{
-
-    /* How long a string will we need? */
+int ConvertToDosFileString(char **fileString, int *length) {
+	char *outPtr, *outString;
+	char *inPtr = *fileString;
+	int inLength = *length;
 	int outLength = 0;
-	for(char ch : fileString) {
-		if(ch == '\n') {
+
+	/* How long a string will we need? */
+	while (inPtr < *fileString + inLength) {
+		if (*inPtr == '\n')
+			outLength++;
+		inPtr++;
+		outLength++;
+	}
+
+	/* Allocate the new string */
+	outString = XtMalloc(outLength + 1);
+	if (outString == NULL)
+		return FALSE;
+
+	/* Do the conversion, free the old string */
+	inPtr = *fileString;
+	outPtr = outString;
+	while (inPtr < *fileString + inLength) {
+		if (*inPtr == '\n')
+			*outPtr++ = '\r';
+		*outPtr++ = *inPtr++;
+	}
+	*outPtr = '\0';
+	XtFree(*fileString);
+	*fileString = outString;
+	*length = outLength;
+	return TRUE;
+}
+
+/*
+** Converts a string (which may represent the entire contents of the file) from
+** Unix to DOS format.  String is re-allocated (with malloc), and length is
+** modified.  If allocation fails, which it may, because this can potentially
+** be a huge hunk of memory, returns FALSE and no conversion is done.
+**
+** This could be done more efficiently by asking doSave to allocate some
+** extra memory for this, and only re-allocating if it wasn't enough.  If
+** anyone cares about the performance or the potential for running out of
+** memory on a save, it should probably be redone.
+*/
+int ConvertToDosFileStringEx(std::string &fileString, int *length) {
+
+	/* How long a string will we need? */
+	int outLength = 0;
+	for (char ch : fileString) {
+		if (ch == '\n') {
 			outLength++;
 		}
 		outLength++;
 	}
-	
+
 	/* Allocate the new string */
 	std::string outString;
 	outString.reserve(outLength);
-	
+
 	auto outPtr = std::back_inserter(outString);
-	
+
 	/* Do the conversion, free the old string */
-	for(char ch : fileString) {
+	for (char ch : fileString) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';
 		}
-		*outPtr++ = ch;	
+		*outPtr++ = ch;
 	}
 
 	fileString = outString;
-	*length    = fileString.size();
-	
+	*length = fileString.size();
+
 	return TRUE;
 }
 
@@ -626,83 +585,80 @@ int ConvertToDosFileStringEx(std::string &fileString, int *length)
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
 */
-void ConvertToMacFileString(char *fileString, int length)
-{
-    char *inPtr = fileString;
-    
-    while (inPtr < fileString + length) {
-	if (*inPtr == '\n' )
-            *inPtr = '\r';
-	inPtr++;
-    }
+void ConvertToMacFileString(char *fileString, int length) {
+	char *inPtr = fileString;
+
+	while (inPtr < fileString + length) {
+		if (*inPtr == '\n')
+			*inPtr = '\r';
+		inPtr++;
+	}
 }
 
 /*
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
 */
-void ConvertToMacFileStringEx(std::string &fileString, int length)
-{
+void ConvertToMacFileStringEx(std::string &fileString, int length) {
 
 	std::transform(fileString.begin(), fileString.end(), fileString.begin(), [](char ch) {
 		if (ch == '\n') {
 			return '\r';
 		}
-		
+
 		return ch;
 	});
 }
 
 /*
-** Reads a text file into a string buffer, converting line breaks to 
-** unix-style if appropriate. 
+** Reads a text file into a string buffer, converting line breaks to
+** unix-style if appropriate.
 **
 ** Force a terminating \n, if this is requested
 */
-char *ReadAnyTextFile(const char *fileName, int forceNL)
-{
-    struct stat statbuf;
-    FILE *fp;
-    int fileLen, readLen;
-    char *fileString;
-    int format;
-            
-    /* Read the whole file into fileString */
-    if ((fp = fopen(fileName, "r")) == NULL) {
-      return NULL;
-    }
-    if (fstat(fileno(fp), &statbuf) != 0) {
-      fclose(fp);
-      return NULL;
-    }
-    fileLen = statbuf.st_size;
-    /* +1 = space for null
-    ** +1 = possible additional \n
-    */
-    fileString = XtMalloc(fileLen + 2);
-    readLen = fread(fileString, sizeof(char), fileLen, fp);
-    if (ferror(fp)) {
-      XtFree(fileString);
-      fclose(fp);
-      return NULL;
-    }
-    fclose(fp);
-    fileString[readLen] = 0;
+char *ReadAnyTextFile(const char *fileName, int forceNL) {
+	struct stat statbuf;
+	FILE *fp;
+	int fileLen, readLen;
+	char *fileString;
+	int format;
 
-    /* Convert linebreaks? */
-    format = FormatOfFile(fileString);
-    if (format == DOS_FILE_FORMAT){
-        char pendingCR;
-        ConvertFromDosFileString(fileString, &readLen, &pendingCR);
-    } else if (format == MAC_FILE_FORMAT){
-        ConvertFromMacFileString(fileString, readLen);
-    }
+	/* Read the whole file into fileString */
+	if ((fp = fopen(fileName, "r")) == NULL) {
+		return NULL;
+	}
+	if (fstat(fileno(fp), &statbuf) != 0) {
+		fclose(fp);
+		return NULL;
+	}
+	fileLen = statbuf.st_size;
+	/* +1 = space for null
+	** +1 = possible additional \n
+	*/
+	fileString = XtMalloc(fileLen + 2);
+	readLen = fread(fileString, sizeof(char), fileLen, fp);
+	if (ferror(fp)) {
+		XtFree(fileString);
+		fclose(fp);
+		return NULL;
+	}
+	fclose(fp);
+	fileString[readLen] = 0;
 
-    /* now, that the fileString is in Unix format, check for terminating \n */
-    if (forceNL && fileString[readLen - 1] != '\n') {
-        fileString[readLen]     = '\n';
-        fileString[readLen + 1] = '\0';
-    }
+	/* Convert linebreaks? */
+	format = FormatOfFile(fileString);
+	if (format == DOS_FILE_FORMAT) {
+		char pendingCR;
+		ConvertFromDosFileString(fileString, &readLen, &pendingCR);
+	} else if (format == MAC_FILE_FORMAT) {
+		ConvertFromMacFileString(fileString, readLen);
+	}
 
-    return fileString;
+	/* now, that the fileString is in Unix format, check for terminating \n */
+	if (forceNL && fileString[readLen - 1] != '\n') {
+		fileString[readLen] = '\n';
+		fileString[readLen + 1] = '\0';
+	}
+
+	return fileString;
 }

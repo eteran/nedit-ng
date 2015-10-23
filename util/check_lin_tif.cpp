@@ -37,106 +37,92 @@
 
 /* Print out a message listing the known-good versions */
 
-static void showGoodVersions(void) 
-{
-    fputs("\nNEdit is known to work with Motif versions:\n", stderr);
-    fputs(GetMotifStableVersions(), stderr);
-    
-    fputs(
-        "OpenMotif is available from:\n"
-        "\thttp://www.opengroup.org/openmotif/\n"
-        "\thttp://www.ist.co.uk/DOWNLOADS/motif_download.html\n"
-        "\nAlso, unless you need a customized NEdit you should STRONGLY\n"
-        "consider downloading a pre-built binary from http://www.nedit.org,\n"
-        "since these are the most stable versions.\n", stderr);
+static void showGoodVersions(void) {
+	fputs("\nNEdit is known to work with Motif versions:\n", stderr);
+	fputs(GetMotifStableVersions(), stderr);
+
+	fputs("OpenMotif is available from:\n"
+	      "\thttp://www.opengroup.org/openmotif/\n"
+	      "\thttp://www.ist.co.uk/DOWNLOADS/motif_download.html\n"
+	      "\nAlso, unless you need a customized NEdit you should STRONGLY\n"
+	      "consider downloading a pre-built binary from http://www.nedit.org,\n"
+	      "since these are the most stable versions.\n",
+	      stderr);
 }
 
 /*
-** Main test driver.  Check the stability, and allow overrides if needed. 
+** Main test driver.  Check the stability, and allow overrides if needed.
 */
-int main(int argc, const char *argv[])
-{
-    enum MotifStability stability = GetMotifStability();
+int main(int argc, const char *argv[]) {
+	enum MotifStability stability = GetMotifStability();
 
-    if (stability == MotifKnownGood)
-        return EXIT_SUCCESS;
+	if (stability == MotifKnownGood)
+		return EXIT_SUCCESS;
 
-    if (stability == MotifKnownBad)
-    {
-        fprintf(stderr,
-                "ERROR:  Bad Motif Version:\n\t%s\n", 
-                XmVERSION_STRING);
+	if (stability == MotifKnownBad) {
+		fprintf(stderr, "ERROR:  Bad Motif Version:\n\t%s\n", XmVERSION_STRING);
 
-        fprintf(stderr, 
-            "\nThis version of Motif is known to be broken and is\n"
-            "thus unsupported by the NEdit developers.  It will probably\n"
-            "cause NEdit to crash frequently.  Check these pages for a more\n"
-            "detailed description of the problems with this version:\n"
-            "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
-            "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
+		fprintf(stderr, "\nThis version of Motif is known to be broken and is\n"
+		                "thus unsupported by the NEdit developers.  It will probably\n"
+		                "cause NEdit to crash frequently.  Check these pages for a more\n"
+		                "detailed description of the problems with this version:\n"
+		                "\thttp://www.motifdeveloper.com/tips/tip22.html\n"
+		                "\thttp://www.motifdeveloper.com/tips/Motif22Review.pdf\n");
 
 #ifdef BUILD_BROKEN_NEDIT
-        {
-            char buf[2];
-            fprintf(stderr,
-                "\n========================== WARNING ===========================\n"
-                "You have chosen to build NEdit with a known-bad version of Motif,\n"
-                "risking instability and probable data loss.  You are very brave!\n"
-                "Please do not report bugs to the NEdit developers unless you can\n"
-                "reproduce them with a known-good NEdit binary downloaded from:\n"
-                "\thttp://www.nedit.org\n"
-                "\nHIT ENTER TO CONTINUE\n");
-            fgets(buf, 2, stdin);
-            return EXIT_SUCCESS;
-        }
+		{
+			char buf[2];
+			fprintf(stderr, "\n========================== WARNING ===========================\n"
+			                "You have chosen to build NEdit with a known-bad version of Motif,\n"
+			                "risking instability and probable data loss.  You are very brave!\n"
+			                "Please do not report bugs to the NEdit developers unless you can\n"
+			                "reproduce them with a known-good NEdit binary downloaded from:\n"
+			                "\thttp://www.nedit.org\n"
+			                "\nHIT ENTER TO CONTINUE\n");
+			fgets(buf, 2, stdin);
+			return EXIT_SUCCESS;
+		}
 #else
-        showGoodVersions();
-        
-        fprintf(stderr,
-            "\nIf you really want to build a known-bad version of NEdit you\n"
-            "can override this sanity check by adding -DBUILD_BROKEN_NEDIT\n"
-            "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
-            "makefiles/Makefile.linux)\n");
+		showGoodVersions();
+
+		fprintf(stderr, "\nIf you really want to build a known-bad version of NEdit you\n"
+		                "can override this sanity check by adding -DBUILD_BROKEN_NEDIT\n"
+		                "to the CFLAGS variable in your platform's Makefile (e.g.\n"
+		                "makefiles/Makefile.linux)\n");
 #endif
-    }
+	}
 
-    if (stability == MotifUnknown)
-    {
-        /* This version is neither known-good nor known-bad */
-        fprintf(stderr, 
-                "ERROR:  Untested Motif Version:\n\t%s\n",
-                XmVERSION_STRING);
+	if (stability == MotifUnknown) {
+		/* This version is neither known-good nor known-bad */
+		fprintf(stderr, "ERROR:  Untested Motif Version:\n\t%s\n", XmVERSION_STRING);
 
-        fprintf(stderr, 
-            "You are attempting to build NEdit with a version of Motif that\n"
-            "has not been verified to work well with NEdit.  This could be fine,\n"
-            "but it could also lead to crashes and instability.  Historically, \n"
-            "older versions of Motif have quite often been more stable\n"
-            "than newer versions when used with NEdit, so don't assume newer\n"
-            "is better.\n");
+		fprintf(stderr, "You are attempting to build NEdit with a version of Motif that\n"
+		                "has not been verified to work well with NEdit.  This could be fine,\n"
+		                "but it could also lead to crashes and instability.  Historically, \n"
+		                "older versions of Motif have quite often been more stable\n"
+		                "than newer versions when used with NEdit, so don't assume newer\n"
+		                "is better.\n");
 
 #ifdef BUILD_UNTESTED_NEDIT
-        {
-            char buf[2];
-            fprintf(stderr,
-                "\n========================== WARNING ===========================\n"
-                "You have chosen to build NEdit with an untested version of Motif.\n"
-                "Please report your success or failure with this version to:\n"
-                "\tdevelop@nedit.org\n"
-                "\nHIT ENTER TO CONTINUE\n");
-            fgets(buf, 2, stdin);
-            return EXIT_SUCCESS;
-        }
+		{
+			char buf[2];
+			fprintf(stderr, "\n========================== WARNING ===========================\n"
+			                "You have chosen to build NEdit with an untested version of Motif.\n"
+			                "Please report your success or failure with this version to:\n"
+			                "\tdevelop@nedit.org\n"
+			                "\nHIT ENTER TO CONTINUE\n");
+			fgets(buf, 2, stdin);
+			return EXIT_SUCCESS;
+		}
 #else
-        showGoodVersions();
+		showGoodVersions();
 
-        fprintf(stderr,
-            "\nIf you really want to build an untested version of NEdit you\n"
-            "can override this sanity check by adding -DBUILD_UNTESTED_NEDIT\n"
-            "to the CFLAGS variable in your platform's Makefile (e.g.\n"    
-            "makefiles/Makefile.linux)\n");
+		fprintf(stderr, "\nIf you really want to build an untested version of NEdit you\n"
+		                "can override this sanity check by adding -DBUILD_UNTESTED_NEDIT\n"
+		                "to the CFLAGS variable in your platform's Makefile (e.g.\n"
+		                "makefiles/Makefile.linux)\n");
 #endif
-    }
+	}
 
-    return EXIT_FAILURE;
+	return EXIT_FAILURE;
 }

@@ -72,14 +72,12 @@
 
 /* constant values for controlling the proportional font toggle */
 
-#define ONLY_FIXED	0
-#define PREF_FIXED	1
-#define PREF_PROP	2
-
+#define ONLY_FIXED 0
+#define PREF_FIXED 1
+#define PREF_PROP 2
 
 /* function prototype */
 
-char    *FontSel(Widget parent, int showPropFont, const char *currFont,
-        Pixel sampleFG, Pixel sampleBG);
+char *FontSel(Widget parent, int showPropFont, const char *currFont, Pixel sampleFG, Pixel sampleBG);
 
 #endif /* NEDIT_FONTSEL_H_INCLUDED */
