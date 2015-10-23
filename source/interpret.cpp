@@ -158,7 +158,6 @@ static std::list<char *> AllocatedStrings;
 struct SparseArrayEntryWrapper {
 	SparseArrayEntry data; /* LEAVE this as top entry */
 	int inUse;             /* we use pointers to the data to refer to the entire struct */
-	struct SparseArrayEntryWrapper *next;
 };
 
 static std::list<SparseArrayEntryWrapper *> AllocatedSparseArrayEntries;
