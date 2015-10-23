@@ -882,17 +882,19 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
 
 	if (arrayPtr) {
 		((SparseArrayEntryWrapper *)arrayPtr)->inUse = 1;
-		for (globalSEUse = (SparseArrayEntry *)rbTreeBegin((rbTreeNode *)arrayPtr); globalSEUse != nullptr; globalSEUse = (SparseArrayEntry *)rbTreeNext((rbTreeNode *)globalSEUse)) {
+		for (globalSEUse = (SparseArrayEntry *)rbTreeBegin(arrayPtr); globalSEUse != nullptr; globalSEUse = (SparseArrayEntry *)rbTreeNext(globalSEUse)) {
 
 			((SparseArrayEntryWrapper *)globalSEUse)->inUse = 1;
+			
 			/* test first because it may be read-only static string */
-			if (!(*(globalSEUse->key - 1))) {
-				*(globalSEUse->key - 1) = 1;
+			if (globalSEUse->key[-1] == 0) {
+				globalSEUse->key[-1] = 1;
 			}
+			
 			if (globalSEUse->value.tag == STRING_TAG) {
 				/* test first because it may be read-only static string */
-				if (!(*(globalSEUse->value.val.str.rep - 1))) {
-					*(globalSEUse->value.val.str.rep - 1) = 1;
+				if (globalSEUse->value.val.str.rep[-1] == 0) {
+					globalSEUse->value.val.str.rep[-1] = 1;
 				}
 			} else if (globalSEUse->value.tag == ARRAY_TAG) {
 				MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
@@ -1322,7 +1324,7 @@ static int add(void) {
 				Boolean insertResult = True;
 
 				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+					int compareResult = arrayEntryCompare(leftIter, rightIter);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
 						leftIter = arrayIterateNext(leftIter);
@@ -1387,7 +1389,7 @@ static int subtract(void) {
 				Boolean insertResult = True;
 
 				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+					int compareResult = arrayEntryCompare(leftIter, rightIter);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
 						leftIter = arrayIterateNext(leftIter);
@@ -1562,7 +1564,7 @@ static int bitAnd(void) {
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter && rightIter) {
 				Boolean insertResult = True;
-				int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+				int compareResult = arrayEntryCompare(leftIter, rightIter);
 
 				if (compareResult < 0) {
 					leftIter = arrayIterateNext(leftIter);
@@ -1619,7 +1621,7 @@ static int bitOr(void) {
 				Boolean insertResult = True;
 
 				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare((rbTreeNode *)leftIter, (rbTreeNode *)rightIter);
+					int compareResult = arrayEntryCompare(leftIter, rightIter);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
 						leftIter = arrayIterateNext(leftIter);
@@ -2092,7 +2094,7 @@ static rbTreeNode *arrayEmptyAllocator(void) {
 		newNode->key = nullptr;
 		newNode->value.tag = NO_TAG;
 	}
-	return ((rbTreeNode *)newNode);
+	return (newNode);
 }
 
 /*
@@ -2105,7 +2107,7 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 		newNode->key   = ((SparseArrayEntry *)src)->key;
 		newNode->value = ((SparseArrayEntry *)src)->value;
 	}
-	return ((rbTreeNode *)newNode);
+	return (newNode);
 }
 
 /*
@@ -2157,7 +2159,7 @@ Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 	}
 
 	if (theArray->val.arrayPtr != nullptr) {
-		insertedNode = rbTreeInsert((rbTreeNode *)(theArray->val.arrayPtr), (rbTreeNode *)&tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
+		insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
 		if (insertedNode) {
 			return True;
@@ -2177,7 +2179,7 @@ void ArrayDelete(DataValue *theArray, char *keyStr) {
 
 	if (theArray->val.arrayPtr) {
 		searchEntry.key = keyStr;
-		rbTreeDelete((rbTreeNode *)theArray->val.arrayPtr, (rbTreeNode *)&searchEntry, arrayEntryCompare, arrayDisposeNode);
+		rbTreeDelete(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare, arrayDisposeNode);
 	}
 }
 
@@ -2186,10 +2188,10 @@ void ArrayDelete(DataValue *theArray, char *keyStr) {
 */
 void ArrayDeleteAll(DataValue *theArray) {
 	if (theArray->val.arrayPtr) {
-		rbTreeNode *iter = rbTreeBegin((rbTreeNode *)theArray->val.arrayPtr);
+		rbTreeNode *iter = rbTreeBegin(theArray->val.arrayPtr);
 		while (iter) {
 			rbTreeNode *nextIter = rbTreeNext(iter);
-			rbTreeDeleteNode((rbTreeNode *)theArray->val.arrayPtr, iter, arrayDisposeNode);
+			rbTreeDeleteNode(theArray->val.arrayPtr, iter, arrayDisposeNode);
 
 			iter = nextIter;
 		}
@@ -2201,7 +2203,7 @@ void ArrayDeleteAll(DataValue *theArray) {
 */
 unsigned ArraySize(DataValue *theArray) {
 	if (theArray->val.arrayPtr) {
-		return rbTreeSize((rbTreeNode *)theArray->val.arrayPtr);
+		return rbTreeSize(theArray->val.arrayPtr);
 	} else {
 		return 0;
 	}
@@ -2217,7 +2219,7 @@ Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 
 	if (theArray->val.arrayPtr) {
 		searchEntry.key = keyStr;
-		foundNode = rbTreeFind((rbTreeNode *)theArray->val.arrayPtr, (rbTreeNode *)&searchEntry, arrayEntryCompare);
+		foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
 		if (foundNode) {
 			*theValue = ((SparseArrayEntry *)foundNode)->value;
 			return True;
@@ -2233,7 +2235,7 @@ Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 SparseArrayEntry *arrayIterateFirst(DataValue *theArray) {
 	SparseArrayEntry *startPos;
 	if (theArray->val.arrayPtr) {
-		startPos = (SparseArrayEntry *)rbTreeBegin((rbTreeNode *)theArray->val.arrayPtr);
+		startPos = (SparseArrayEntry *)rbTreeBegin(theArray->val.arrayPtr);
 	} else {
 		startPos = nullptr;
 	}
@@ -2246,7 +2248,7 @@ SparseArrayEntry *arrayIterateFirst(DataValue *theArray) {
 SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator) {
 	SparseArrayEntry *nextPos;
 	if (iterator) {
-		nextPos = (SparseArrayEntry *)rbTreeNext((rbTreeNode *)iterator);
+		nextPos = (SparseArrayEntry *)rbTreeNext(iterator);
 	} else {
 		nextPos = nullptr;
 	}
