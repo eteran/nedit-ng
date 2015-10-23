@@ -728,7 +728,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 		do {
 			pos = strstr(format, "%S");
 			if (pos) {
-				char *tmp = (char *)XtMalloc((strlen(format) + 2) * sizeof(char));
+				char *tmp = XtMalloc((strlen(format) + 2) * sizeof(char));
 				strncpy(tmp, format, (size_t)(pos - format + 1));
 				tmp[pos - format + 1] = 0;
 				strcat(tmp, "*");
@@ -831,7 +831,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 			found = False;
 			pos = strstr(format, "%d");
 			if (pos) {
-				char *tmp = (char *)XtMalloc((strlen(format) + 2) * sizeof(char));
+				char *tmp = XtMalloc((strlen(format) + 2) * sizeof(char));
 				strncpy(tmp, format, (size_t)(pos - format + 1));
 				tmp[pos - format + 1] = 0;
 				strcat(tmp, &insert[0]);

@@ -285,7 +285,7 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 		bufLen = strlen(text) + countLines(text) * nChars;
 	else
 		bufLen = strlen(text) + countLines(text) * tabDist;
-	shiftedText = (char *)XtMalloc(bufLen + 1);
+	shiftedText = XtMalloc(bufLen + 1);
 
 	/*
 	** break into lines and call shiftLine(Left/Right) on each

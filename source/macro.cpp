@@ -2013,7 +2013,7 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
 	XmStringFree(s);
 	if (stat != ClipboardSuccess)
 		return True;
-	if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea), itemID, (String) "STRING", (String)string, strlen(string), 0, nullptr) != ClipboardSuccess) {
+	if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea), itemID, (String) "STRING", string, strlen(string), 0, nullptr) != ClipboardSuccess) {
 		SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea), itemID);
 		return True;
 	}
@@ -2617,7 +2617,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, " ");
 	ac++;
-	XtSetArg(al[ac], XmNmessageString, s1 = MKSTRING((String)message));
+	XtSetArg(al[ac], XmNmessageString, s1 = MKSTRING(message));
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
@@ -2785,7 +2785,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, " ");
 	ac++;
-	XtSetArg(al[ac], XmNselectionLabelString, s1 = MKSTRING((String)message));
+	XtSetArg(al[ac], XmNselectionLabelString, s1 = MKSTRING(message));
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
@@ -3026,7 +3026,7 @@ static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	if (mode < 0)
 		lookup = False;
 	/* Look up (maybe) a calltip and display it */
-	result->val.n = ShowTipString(window, (String)tipText, anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
+	result->val.n = ShowTipString(window, tipText, anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
 
 	return True;
 
@@ -3293,7 +3293,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 				int l;
 
 				/* save the actual text line in text_lines[n] */
-				text_lines[n] = (char *)XtMalloc(strlen(old_p) + 1);
+				text_lines[n] = XtMalloc(strlen(old_p) + 1);
 				strcpy(text_lines[n], old_p);
 
 				/* work out the tabs expanded length */
@@ -3443,14 +3443,14 @@ static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) 
 		text = PERM_ALLOC_STR("");
 		length = 0;
 	} else {
-		length = strlen((char *)text_lines[sel_index]);
+		length = strlen(text_lines[sel_index]);
 		text = AllocString(length + 1);
 		strcpy(text, text_lines[sel_index]);
 	}
 
 	/* don't need text_lines anymore: free it */
 	for (sel_index = 0; text_lines[sel_index]; sel_index++)
-		XtFree((char *)text_lines[sel_index]);
+		XtFree(text_lines[sel_index]);
 	XtFree((char *)text_lines);
 
 	retVal.tag = STRING_TAG;
@@ -3499,7 +3499,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData
 	theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
 	XtVaGetValues(theList, XmNuserData, &text_lines, nullptr);
 	for (sel_index = 0; text_lines[sel_index]; sel_index++)
-		XtFree((char *)text_lines[sel_index]);
+		XtFree(text_lines[sel_index]);
 	XtFree((char *)text_lines);
 
 	/* Return an empty string */
