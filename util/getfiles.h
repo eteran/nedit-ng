@@ -1,4 +1,3 @@
-/* $Id: getfiles.h,v 1.11 2006/04/11 01:14:27 n8gray Exp $ */
 /*******************************************************************************
 *                                                                              *
 * getfiles.h -- Nirvana Editor File Handling Header File                       *

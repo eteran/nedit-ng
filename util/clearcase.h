@@ -1,4 +1,3 @@
-/* $Id: clearcase.h,v 1.5 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * clearcase.h -- Nirvana Editor Clearcase Header File                          *

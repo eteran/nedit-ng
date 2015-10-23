@@ -1292,9 +1292,7 @@ static char *actionToString(Widget w, const char *actionName, XEvent *event, Str
 	char chars[20], *charList[1], *outStr, *outPtr;
 	KeySym keysym;
 	int i, nChars, nParams, length, nameLength;
-#ifndef NO_XMIM
 	int status;
-#endif
 
 	if (isIgnoredAction(actionName) || isRedundantAction(actionName) || isMouseAction(actionName))
 		return nullptr;
@@ -1302,16 +1300,11 @@ static char *actionToString(Widget w, const char *actionName, XEvent *event, Str
 	/* Convert self_insert actions, to insert_string */
 	if (!strcmp(actionName, "self_insert") || !strcmp(actionName, "self-insert")) {
 		actionName = "insert_string";
-#ifdef NO_XMIM
-		nChars = XLookupString((XKeyEvent *)event, chars, 19, &keysym, nullptr);
-		if (nChars == 0)
-			return nullptr;
-#else
 
 		nChars = XmImMbLookupString(w, (XKeyEvent *)event, chars, 19, &keysym, &status);
 		if (nChars == 0 || status == XLookupNone || status == XLookupKeySym || status == XBufferOverflow)
 			return nullptr;
-#endif
+
 		chars[nChars] = '\0';
 		charList[0] = chars;
 		params = charList;

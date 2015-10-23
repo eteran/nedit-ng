@@ -201,7 +201,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	static Pixmap closeTabPixmap = 0;
 
 	/* Allocate some memory for the new window data structure */
-	window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+	window = new WindowInfo;
 
 	/* initialize window structure */
 	/* + Schwarzenberg: should a
@@ -912,7 +912,7 @@ void CloseWindow(WindowInfo *window) {
 	}
 
 	/* deallocate the window data structure */
-	XtFree((char *)window);
+	delete window;
 }
 
 /*
@@ -2788,11 +2788,10 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols) {
 */
 WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	Widget pane, text;
-	WindowInfo *window;
 	int nCols, nRows;
 
 	/* Allocate some memory for the new window data structure */
-	window = (WindowInfo *)XtMalloc(sizeof(WindowInfo));
+	auto window = new WindowInfo;
 
 	/* inherit settings and later reset those required */
 	memcpy(window, shellWindow, sizeof(WindowInfo));
@@ -3003,7 +3002,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 ** the next tab after a tab detaches/closes and you don't want to wrap around.
 */
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int crossWin, int wrap) {
-	WidgetList tabList, tabs;
+	WidgetList tabList;
 	WindowInfo *win;
 	int tabCount, tabTotalCount;
 	int tabPos, nextPos;
@@ -3014,7 +3013,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int cross
 		return nullptr;
 
 	/* get the list of tabs */
-	tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
+	auto tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
 	tabTotalCount = 0;
 	if (crossWin) {
 		int n, nItems;
@@ -3828,7 +3827,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList) {
 	UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
 
 	for (undo = orgList; undo; undo = undo->next) {
-		clone = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+		clone = new UndoInfo;
 		memcpy(clone, undo, sizeof(UndoInfo));
 
 		if (undo->oldText) {

@@ -216,7 +216,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	** The user has started a new operation, create a new undo record
 	** and save the new undo data.
 	*/
-	undo = (UndoInfo *)XtMalloc(sizeof(UndoInfo));
+	undo = new UndoInfo;
 	undo->oldLen = 0;
 	undo->oldText = nullptr;
 	undo->type = newType;
@@ -449,5 +449,5 @@ static void freeUndoRecord(UndoInfo *undo) {
 		return;
 
 	XtFree(undo->oldText);
-	XtFree((char *)undo);
+	delete undo;
 }

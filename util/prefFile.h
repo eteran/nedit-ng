@@ -1,4 +1,3 @@
-/* $Id: prefFile.h,v 1.8 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * prefFile.h -- Nirvana Editor Preference File Header File                     *

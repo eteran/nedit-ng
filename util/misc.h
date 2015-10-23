@@ -1,4 +1,3 @@
-/* $Id: misc.h,v 1.31 2010/07/05 06:23:59 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * misc.h -- Nirvana Editor Miscellaneous Header File                           *

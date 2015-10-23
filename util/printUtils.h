@@ -1,4 +1,3 @@
-/* $Id: printUtils.h,v 1.9 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * printUtils.h -- Nirvana Editor Print Utilities Header File                   *

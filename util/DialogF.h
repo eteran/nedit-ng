@@ -1,4 +1,3 @@
-/* $Id: DialogF.h,v 1.11 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * DialogF.h -- Nirvana Editor Dialog Header File                               *

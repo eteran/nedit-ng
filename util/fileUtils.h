@@ -1,4 +1,3 @@
-/* $Id: fileUtils.h,v 1.13 2008/08/20 14:57:36 lebert Exp $ */
 /*******************************************************************************
 *                                                                              *
 * fileUtils.h -- Nirvana Editor File Utilities Header File                     *

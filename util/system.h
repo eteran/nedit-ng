@@ -1,4 +1,3 @@
-/* $Id: system.h,v 1.18 2006/08/08 18:06:59 tringali Exp $ */
 /*******************************************************************************
 *                                                                              *
 * system.h -- Compile Time Configuration Header File                           *

@@ -56,12 +56,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef NO_XMIM
 #include <X11/Xlocale.h>
-#else
-#include <locale.h>
-#endif
-
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>

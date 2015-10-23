@@ -1,4 +1,3 @@
-/* $Id: fontsel.h,v 1.11 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * fontsel.h -- Nirvana Editor Font Selector Dialog Header File                 *

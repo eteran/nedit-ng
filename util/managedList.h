@@ -1,4 +1,3 @@
-/* $Id: managedList.h,v 1.7 2004/11/09 21:58:45 yooden Exp $ */
 /*******************************************************************************
 *                                                                              *
 * managedList.h -- Nirvana Editor Managed List Header File                     *

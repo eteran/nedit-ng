@@ -691,12 +691,10 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 	new_widget->text.motifDestOwner = False;
 	new_widget->text.emTabsBeforeCursor = 0;
 
-#ifndef NO_XMIM
 	/* Register the widget to the input manager */
 	XmImRegister((Widget)new_widget, 0);
 	/* In case some Resources for the IC need to be set, add them below */
 	XmImVaSetValues((Widget)new_widget, nullptr);
-#endif
 
 	XtAddEventHandler((Widget)new_widget, GraphicsExpose, True, (XtEventHandler)redisplayGE, (Opaque) nullptr);
 
@@ -790,10 +788,8 @@ static void destroy(TextWidget w) {
 	XtRemoveAllCallbacks((Widget)w, textNdragStartCallback);
 	XtRemoveAllCallbacks((Widget)w, textNdragEndCallback);
 
-#ifndef NO_XMIM
 	/* Unregister the widget from the input manager */
 	XmImUnregister((Widget)w);
-#endif
 }
 
 /*
@@ -2039,11 +2035,8 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	WindowInfo *window = WidgetToWindow(w);
 
-#ifdef NO_XMIM
-	static XComposeStatus compose = {nullptr, 0};
-#else
+
 	int status;
-#endif
 	XKeyEvent *e = &event->xkey;
 	char chars[20];
 	KeySym keysym;
@@ -2051,15 +2044,11 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	smartIndentCBStruct smartIndent;
 	textDisp *textD = ((TextWidget)w)->text.textD;
 
-#ifdef NO_XMIM
-	nChars = XLookupString(&event->xkey, chars, 19, &keysym, &compose);
-	if (nChars == 0)
-		return;
-#else
+
 	nChars = XmImMbLookupString(w, &event->xkey, chars, 19, &keysym, &status);
 	if (nChars == 0 || status == XLookupNone || status == XLookupKeySym || status == XBufferOverflow)
 		return;
-#endif
+
 	cancelDrag(w);
 	if (checkReadOnly(w))
 		return;
@@ -3118,10 +3107,8 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
 		TextDSetCursorStyle(textD, (textwidget->text.heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR));
 	TextDUnblankCursor(textD);
 
-#ifndef NO_XMIM
 	/* Notify Motif input manager that widget has focus */
 	XmImVaSetFocusValues(widget, nullptr);
-#endif
 
 	/* Call any registered focus-in callbacks */
 	XtCallCallbacks((Widget)widget, textNfocusCallback, (XtPointer)event);
