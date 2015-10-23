@@ -367,9 +367,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif /* EDITRES */
 
-#ifndef SGI_CUSTOM
 	addWindowIcon(winShell);
-#endif
 
 	/* Create a MainWindow to manage the menubar and text area, set the
 	   userData resource to be used by WidgetToWindow to recover the

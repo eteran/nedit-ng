@@ -61,7 +61,7 @@ template <class T> struct CallbackPair {
 struct textBuffer {
 public:
 	textBuffer();
-	textBuffer(int requestedSize);
+	explicit textBuffer(int requestedSize);
 	~textBuffer();
 
 public:

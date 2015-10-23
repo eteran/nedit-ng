@@ -320,29 +320,20 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	window->fileMissing = TRUE;
 
 	/* Get the full name of the file */
-	strcpy(fullname, path);
-	strcat(fullname, name);
+	snprintf(fullname, sizeof(fullname), "%s%s", path, name);
 
-/* Open the file */
-#ifndef DONT_USE_ACCESS
+	/* Open the file */
 	/* The only advantage of this is if you use clearcase,
 	   which messes up the mtime of files opened with r+,
-even if they're never actually written.
-To avoid requiring special builds for clearcase users,
-this is now the default. */
+	   even if they're never actually written.
+	   To avoid requiring special builds for clearcase users,
+	   this is now the default.
+	*/
 	{
 		if ((fp = fopen(fullname, "r")) != nullptr) {
 			if (access(fullname, W_OK) != 0)
 				SET_PERM_LOCKED(window->lockReasons, TRUE);
-#else
-	fp = fopen(fullname, "rb+");
-	if (fp == nullptr) {
-		/* Error opening file or file is not writeable */
-		fp = fopen(fullname, "rb");
-		if (fp != nullptr) {
-			/* File is read only */
-			SET_PERM_LOCKED(window->lockReasons, TRUE);
-#endif
+
 		} else if (flags & CREATE && errno == ENOENT) {
 			/* Give option to create (or to exit if this is the only window) */
 			if (!(flags & SUPPRESS_CREATE_WARN)) {

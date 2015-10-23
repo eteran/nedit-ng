@@ -798,11 +798,9 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window) {
 	createMenuSeparator(subPane, "sep", SHORT);
 	window->matchSyntaxBasedItem = createMenuToggle(subPane, "matchSyntax", "Syntax Based", 'S', matchSyntaxBasedCB, window, window->matchSyntaxBased, SHORT);
 
-#ifndef SGI_CUSTOM
 	createMenuSeparator(menuPane, "sep2", SHORT);
 	window->overtypeModeItem = createMenuToggle(menuPane, "overtype", "Overtype", 'O', doActionCB, "set_overtype_mode", False, SHORT);
 	window->readOnlyItem = createMenuToggle(menuPane, "readOnly", "Read Only", 'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons), FULL);
-#endif
 
 	/*
 	** Create the Shell menu
