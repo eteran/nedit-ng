@@ -270,11 +270,12 @@ void BeginCreatingProgram(void) {
 ** program must be freed with FreeProgram.
 */
 Program *FinishCreatingProgram(void) {
-	Program *newProg;
-	int progLen, fpOffset = 0;
+
+	int progLen;
+	int fpOffset = 0;
 	Symbol *s;
 
-	newProg = (Program *)XtMalloc(sizeof(Program));
+	auto newProg = new Program;
 	progLen = ((char *)ProgP) - ((char *)Prog);
 	newProg->code = (Inst *)XtMalloc(progLen);
 	memcpy(newProg->code, Prog, progLen);
@@ -294,7 +295,7 @@ Program *FinishCreatingProgram(void) {
 void FreeProgram(Program *prog) {
 	freeSymbolTable(prog->localSymList);
 	XtFree((char *)prog->code);
-	XtFree((char *)prog);
+	delete prog;
 }
 
 /*
