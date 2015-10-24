@@ -1405,11 +1405,9 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
 
 static void freeIndentSpec(smartIndentRec *is) {
 	XtFree((char *)is->lmName);
-	if (is->initMacro != nullptr)
-		XtFree((char *)is->initMacro);
+	XtFree((char *)is->initMacro);
 	XtFree((char *)is->newlineMacro);
-	if (is->modMacro != nullptr)
-		XtFree((char *)is->modMacro);
+	XtFree((char *)is->modMacro);
 }
 
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2) {

@@ -2527,11 +2527,11 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern 
 */
 static void freePatternSrc(highlightPattern *pat, int freeStruct) {
 	XtFree((char *)pat->name);
-	XtFree((char *)pat->startRE);
-	XtFree((char *)pat->endRE);
-	XtFree((char *)pat->errorRE);
-	XtFree((char *)pat->style);
-	XtFree((char *)pat->subPatternOf);
+	XtFree(pat->startRE);
+	XtFree(pat->endRE);
+	XtFree(pat->errorRE);
+	XtFree(pat->style);
+	XtFree(pat->subPatternOf);
 	if (freeStruct)
 		XtFree((char *)pat);
 }

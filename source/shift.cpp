@@ -50,6 +50,7 @@ static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChar
 static int atTabStop(int pos, int tabDist);
 static int nextTab(int pos, int tabDist);
 static int countLines(const char *text);
+static int countLinesEx(const std::string &text);
 static int findParagraphStart(textBuffer *buf, int startPos);
 static int findParagraphEnd(textBuffer *buf, int startPos);
 
@@ -59,9 +60,17 @@ static int findParagraphEnd(textBuffer *buf, int startPos);
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 void ShiftSelection(WindowInfo *window, int direction, int byTab) {
-	int selStart, selEnd, isRect, rectStart, rectEnd;
-	int shiftedLen, newEndPos, cursorPos, origLength, emTabDist, shiftDist;
-	char *shiftedText;
+	int selStart;
+	int selEnd;
+	int isRect;
+	int rectStart;
+	int rectEnd;
+	int shiftedLen;
+	int newEndPos;
+	int cursorPos;
+	int origLength;
+	int emTabDist;
+	int shiftDist;
 	textBuffer *buf = window->buffer;
 	std::string text;
 
@@ -98,10 +107,10 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 		shiftDist = emTabDist == 0 ? buf->tabDist : emTabDist;
 	} else
 		shiftDist = 1;
-	shiftedText = ShiftText(text.c_str(), direction, buf->useTabs, buf->tabDist, shiftDist, &shiftedLen);
 
-	BufReplaceSelected(buf, shiftedText);
-	XtFree(shiftedText);
+	std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs, buf->tabDist, shiftDist, &shiftedLen);
+
+	BufReplaceSelectedEx(buf, shiftedText);
 
 	newEndPos = selStart + shiftedLen;
 	BufSelect(buf, selStart, newEndPos);
@@ -114,7 +123,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 
 	/* Make sure selStart and SelEnd refer to whole lines */
 	selStart = BufStartOfLine(buf, selStart);
-	selEnd = BufEndOfLine(buf, selEnd);
+	selEnd   = BufEndOfLine(buf, selEnd);
 
 	/* Calculate the the left/right offset for the new rectangle */
 	if (byTab) {
@@ -221,9 +230,9 @@ void FillSelection(WindowInfo *window) {
 		}
 		text = BufGetRangeEx(buf, left, right);
 	} else if (isRect) {
-		left = BufStartOfLine(buf, left);
+		left  = BufStartOfLine(buf, left);
 		right = BufEndOfLine(buf, right);
-		text = BufGetTextInRectEx(buf, left, right, rectStart, INT_MAX);
+		text  = BufGetTextInRectEx(buf, left, right, rectStart, INT_MAX);
 	} else {
 		left = BufStartOfLine(buf, left);
 		if (right != 0 && BufGetCharacter(buf, right - 1) != '\n') {
@@ -313,6 +322,68 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 			textPtr++;
 	}
 	*newLen = shiftedPtr - shiftedText;
+	return shiftedText;
+}
+
+/*
+** shift lines left and right in a multi-line text string.  Returns the
+** shifted text in memory that must be freed by the caller with XtFree.
+*/
+std::string ShiftTextEx(const std::string &text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
+	int bufLen;
+
+	/*
+	** Allocate memory for shifted string.  Shift left adds a maximum of
+	** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
+	** Shift right adds a maximum of nChars character per line.
+	*/
+	if (direction == SHIFT_RIGHT)
+		bufLen = text.size() + countLinesEx(text) * nChars;
+	else
+		bufLen = text.size() + countLinesEx(text) * tabDist;
+		
+
+	std::string shiftedText;
+	shiftedText.reserve(bufLen);
+	
+	auto shiftedPtr = std::back_inserter(shiftedText);
+
+	/*
+	** break into lines and call shiftLine(Left/Right) on each
+	*/
+	auto lineStartPtr = text.begin();
+	auto textPtr      = text.begin();
+	
+	while (TRUE) {
+		if (textPtr == text.end() || *textPtr == '\n') {
+		
+			// TODO(eteran): avoid the string copy... wish we had string_view!
+			std::string segment(lineStartPtr, text.end());
+			
+			char *shiftedLine = (direction == SHIFT_RIGHT) ? 
+				shiftLineRight(segment.c_str(), textPtr - lineStartPtr, tabsAllowed, tabDist, nChars): 
+				shiftLineLeft (segment.c_str(), textPtr - lineStartPtr, 			 tabDist, nChars);
+				
+		
+			std::string shiftedLineString = shiftedLine;
+			
+			XtFree(shiftedLine);
+			
+			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
+
+			if (textPtr == text.end()) {
+				/* terminate string & exit loop at end of text */
+				break;
+			} else {
+				/* move the newline from text to shifted text */
+				*shiftedPtr++ = *textPtr++;
+			}
+			/* start line over */
+			lineStartPtr = textPtr;
+		} else
+			textPtr++;
+	}
+	*newLen = shiftedText.size();
 	return shiftedText;
 }
 
@@ -428,6 +499,17 @@ static int countLines(const char *text) {
 
 	while (*text != '\0') {
 		if (*text++ == '\n') {
+			count++;
+		}
+	}
+	return count;
+}
+
+static int countLinesEx(const std::string &text) {
+	int count = 1;
+
+	for(char ch: text) {
+		if (ch == '\n') {
 			count++;
 		}
 	}
