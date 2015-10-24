@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* textBuf.c - Manage source text for one or more text areas                    *
+* TextBuffer.c - Manage source text for one or more text areas                    *
 *                                                                              *
 * Copyright (C) 1999 Mark Edel						       *
 *									       *
@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "rangeset.h"
 
 #include <stdio.h>

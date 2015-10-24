@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 #include "macro.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
 #include "window.h"
@@ -1646,7 +1646,7 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 		to = temp;
 	}
 
-	/* Copy text from buffer (this extra copy could be avoided if textBuf.c
+	/* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
 	   provided a routine for writing into a pre-allocated string) */
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, to - from + 1);

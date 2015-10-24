@@ -28,7 +28,7 @@
 #define WINDOW_H_
 
 #include "nedit.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 
 #include <X11/Intrinsic.h>
 

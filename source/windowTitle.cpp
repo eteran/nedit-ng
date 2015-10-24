@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "windowTitle.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "preferences.h"
 #include "help.h"

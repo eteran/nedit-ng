@@ -38,7 +38,7 @@ add_executable(nedit
 	smartIndent.cpp
 	tags.cpp
 	text.cpp
-	textBuf.cpp
+	TextBuffer.cpp
 	textDisp.cpp
 	textDrag.cpp
 	textSel.cpp

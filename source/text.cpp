@@ -26,7 +26,7 @@
 
 #include "text.h"
 #include "textP.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "textDisp.h"
 #include "textSel.h"
 #include "textDrag.h"

@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "interpret.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"

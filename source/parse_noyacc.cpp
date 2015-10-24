@@ -14,7 +14,7 @@ static int yygrowstack();
 #define YYPREFIX "yy"
 #line 3 "parse.y"
 #include "parse.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "rbTree.h"
 #include "interpret.h"

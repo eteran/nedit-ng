@@ -27,7 +27,7 @@
 #ifndef NEDIT_H_
 #define NEDIT_H_
 
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include <sys/types.h>
 
 #include <X11/Intrinsic.h>

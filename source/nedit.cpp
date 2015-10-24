@@ -31,7 +31,7 @@
 *******************************************************************************/
 
 #include "nedit.h"
-/* #include "textBuf.h" */
+/* #include "TextBuffer.h" */
 #include "file.h"
 #include "preferences.h"
 #include "regularExp.h"

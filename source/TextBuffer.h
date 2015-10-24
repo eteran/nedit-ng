@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* textBuf.h -- Nirvana Editor Text Buffer Header File                          *
+* TextBuffer.h -- Nirvana Editor Text Buffer Header File                          *
 *                                                                              *
 * Copyright 2003 The NEdit Developers                                          *
 *                                                                              *

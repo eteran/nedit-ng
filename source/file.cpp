@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "file.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "window.h"
 #include "preferences.h"

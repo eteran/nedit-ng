@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "server.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "window.h"
 #include "file.h"

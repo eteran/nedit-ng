@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "textDisp.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "textP.h"
 #include "nedit.h"

@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 #include "highlightData.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "highlight.h"
 #include "regularExp.h"

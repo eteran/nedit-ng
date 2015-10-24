@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "window.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "textSel.h"
 #include "text.h"
 #include "textDisp.h"

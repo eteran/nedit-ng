@@ -1,7 +1,6 @@
 /* $Id: parse.y,v 1.29 2007/01/12 16:17:42 tringali Exp $ */
 %{
 #include "parse.h"
-#include "textBuf.h"
 #include "nedit.h"
 #include "rbTree.h"
 #include "interpret.h"

@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "tags.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
 #include "window.h"

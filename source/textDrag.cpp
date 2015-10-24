@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "textDrag.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "textDisp.h"
 #include "textP.h"
 

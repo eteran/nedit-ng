@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "undo.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
 #include "search.h"

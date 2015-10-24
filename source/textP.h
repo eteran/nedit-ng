@@ -27,7 +27,7 @@
 #ifndef TEXTP_H_
 #define TEXTP_H_
 
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "textDisp.h"
 
 #include <X11/Intrinsic.h>

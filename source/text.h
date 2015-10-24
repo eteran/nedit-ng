@@ -27,7 +27,7 @@
 #ifndef TEXT_H_
 #define TEXT_H_
 
-#include "textBuf.h"
+#include "TextBuffer.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>

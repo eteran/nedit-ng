@@ -30,7 +30,7 @@
 #include "textP.h"
 #include "text.h"
 #include "textDisp.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "MotifHelper.h"
 #include "../util/misc.h"
 

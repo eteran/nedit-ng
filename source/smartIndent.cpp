@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "smartIndent.h"
-#include "textBuf.h"
+#include "TextBuffer.h"
 #include "nedit.h"
 #include "text.h"
 #include "preferences.h"
