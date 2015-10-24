@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_NEDIT_H_INCLUDED
-#define NEDIT_NEDIT_H_INCLUDED
+#ifndef NEDIT_H_
+#define NEDIT_H_
 
 #include "textBuf.h"
 #include <sys/types.h>
@@ -538,4 +538,4 @@ extern Widget TheAppShell;
 extern char *ArgV0;
 extern Boolean IsServer;
 
-#endif /* NEDIT_NEDIT_H_INCLUDED */
+#endif

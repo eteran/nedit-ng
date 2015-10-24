@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_MACRO_H_INCLUDED
-#define NEDIT_MACRO_H_INCLUDED
+#ifndef MACRO_H_
+#define MACRO_H_
 
 #include "nedit.h"
 
@@ -41,7 +41,7 @@ void FinishLearn(void);
 void CancelMacroOrLearn(WindowInfo *window);
 void Replay(WindowInfo *window);
 void SafeGC(void);
-void DoMacro(WindowInfo *window, const char *macro, const char *errInName);
+void DoMacro(WindowInfo *window, const std::string &macro, const char *errInName);
 void ResumeMacroExecution(WindowInfo *window);
 void AbortMacroCommand(WindowInfo *window);
 int MacroWindowCloseActions(WindowInfo *window);

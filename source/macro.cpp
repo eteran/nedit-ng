@@ -99,6 +99,7 @@
 		if (1)                                                                                                                                                                                                                                 \
 			return False;                                                                                                                                                                                                                      \
 	} while (0)
+
 #define M_STR_ALLOC_ASSERT(xDV)                                                                                                                                                                                                                \
 	do {                                                                                                                                                                                                                                       \
 		if (xDV.tag == STRING_TAG && !xDV.val.str.rep) {                                                                                                                                                                                       \
@@ -106,6 +107,7 @@
 			return (False);                                                                                                                                                                                                                    \
 		}                                                                                                                                                                                                                                      \
 	} while (0)
+	
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
 
 /* Data attached to window during shell command execution with
@@ -964,30 +966,22 @@ void SafeGC(void) {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacro(WindowInfo *window, const char *macro, const char *errInName) {
-	Program *prog;
+void DoMacro(WindowInfo *window, const std::string &macro, const char *errInName) {
+
 	const char *errMsg;
 	const char *stoppedAt;
-	char *tMacro;
-	int macroLen;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	macroLen = strlen(macro);
-	tMacro = XtMalloc(strlen(macro) + 2);
-	strncpy(tMacro, macro, macroLen);
-	tMacro[macroLen] = '\n';
-	tMacro[macroLen + 1] = '\0';
+	std::string tMacro = macro + '\n';
 
 	/* Parse the macro and report errors if it fails */
-	prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
+	Program *const prog = ParseMacro(tMacro.c_str(), &errMsg, &stoppedAt);
 	if (prog == nullptr) {
-		ParseError(window->shell, tMacro, stoppedAt, errInName, errMsg);
-		XtFree(tMacro);
+		ParseError(window->shell, tMacro.c_str(), stoppedAt, errInName, errMsg);
 		return;
 	}
-	XtFree(tMacro);
-
+	
 	/* run the executable program (prog is freed upon completion) */
 	runMacro(window, prog);
 }

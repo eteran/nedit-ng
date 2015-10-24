@@ -40,7 +40,7 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-static char *expandAllTabs(char *text, int tab_width);
+static std::string expandAllTabsEx(const std::string &text, int tab_width);
 
 /*
 ** Pop-down a calltip if one exists, else do nothing
@@ -168,43 +168,48 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
 	XtVaSetValues(textD->calltipShell, XmNx, abs_x, XmNy, abs_y, nullptr);
 }
 
+
 /*
 ** Returns a new string with each \t replaced with tab_width spaces or
-** a pointer to text if there were no tabs.  Returns nullptr on malloc failure.
+** a pointer to text if there were no tabs.
 ** Note that this is dumb replacement, not smart tab-like behavior!  The goal
 ** is to prevent tabs from turning into squares in calltips, not to get the
 ** formatting just right.
 */
-static char *expandAllTabs(char *text, int tab_width) {
-	int i, nTabs = 0;
-	size_t len;
-	char *c, *cCpy, *textCpy;
+static std::string expandAllTabsEx(const std::string &text, int tab_width) {
+	int nTabs = 0;
 
-	/* First count 'em */
-	for (c = text; *c; ++c)
-		if (*c == '\t')
+	// First count 'em
+	for(char ch : text) {
+		if (ch == '\t') {
 			++nTabs;
-	if (nTabs == 0)
+		}
+	}
+	
+	if (nTabs == 0) {
 		return text;
-
-	/* Allocate the new string */
-	len = strlen(text) + (tab_width - 1) * nTabs;
-	textCpy = (char *)malloc(len + 1);
-	if (!textCpy) {
-		fprintf(stderr, "nedit: Out of heap memory in expandAllTabs!\n");
-		return nullptr;
 	}
 
-	/* Now replace 'em */
-	for (c = text, cCpy = textCpy; *c; ++c, ++cCpy) {
-		if (*c == '\t') {
-			for (i = 0; i < tab_width; ++i, ++cCpy)
-				*cCpy = ' ';
-			--cCpy; /* Will be incremented in outer for loop */
-		} else
-			*cCpy = *c;
+	// Allocate the new string
+	size_t len = text.size() + (tab_width - 1) * nTabs;
+	
+	std::string textCpy;
+	textCpy.reserve(len);
+	
+	auto cCpy = std::back_inserter(textCpy);
+	
+	// Now replace 'em
+	for(char ch : text) {
+		if (ch == '\t') {
+			for (int i = 0; i < tab_width; ++i) {
+				*cCpy++ = ' ';
+			}
+		} else {
+			*cCpy++ = ch;
+		}
 	}
-	*cCpy = '\0';
+	
+	
 	return textCpy;
 }
 
@@ -213,28 +218,20 @@ static char *expandAllTabs(char *text, int tab_width) {
 ** If a calltip is already being displayed it is destroyed and replaced with
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
-int ShowCalltip(WindowInfo *window, char *text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int ShowCalltip(WindowInfo *window, const std::string &text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
-	char *textCpy;
 	XmString str;
 
 	/* Destroy any previous calltip */
 	TextDKillCalltip(textD, 0);
 
-	/* Make sure the text isn't nullptr */
-	if (text == nullptr)
-		return 0;
-
 	/* Expand any tabs in the calltip and make it an XmString */
-	textCpy = expandAllTabs(text, BufGetTabDistance(textD->buffer));
-	if (textCpy == nullptr)
-		return 0; /* Out of memory */
-	str = XmStringCreateLtoR(textCpy, XmFONTLIST_DEFAULT_TAG);
-	if (textCpy != text)
-		free(textCpy);
+	std::string textCpy = expandAllTabsEx(text, BufGetTabDistance(textD->buffer));
+
+	str = XmStringCreateLtoR((char *)textCpy.c_str(), XmFONTLIST_DEFAULT_TAG);
 
 	/* Get the location/dimensions of the text area */
 	XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, nullptr);

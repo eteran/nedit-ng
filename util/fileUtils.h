@@ -24,31 +24,30 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_FILEUTILS_H_INCLUDED
-#define NEDIT_FILEUTILS_H_INCLUDED
+#ifndef FILEUTILS_H_
+#define FILEUTILS_H_
 
 #include <string>
 
-enum fileFormats { UNIX_FILE_FORMAT, DOS_FILE_FORMAT, MAC_FILE_FORMAT };
-
-int ParseFilename(const char *fullname, char *filename, char *pathname);
-int ExpandTilde(char *pathname);
-const char *GetTrailingPathComponents(const char *path, int noOfComponents);
-int NormalizePathname(char *pathname);
-int CompressPathname(char *pathname);
-int ResolvePath(const char *pathIn, char *pathResolved);
-
-int FormatOfFile(const char *fileString);
-
-void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
-void ConvertFromMacFileString(char *fileString, int length);
-
-int ConvertToDosFileString(char **fileString, int *length);
-void ConvertToMacFileString(char *fileString, int length);
-
-int ConvertToDosFileStringEx(std::string &fileString, int *length);
-void ConvertToMacFileStringEx(std::string &fileString, int length);
+enum fileFormats {
+	UNIX_FILE_FORMAT, 
+	DOS_FILE_FORMAT, 
+	MAC_FILE_FORMAT
+};
 
 char *ReadAnyTextFile(const char *fileName, int forceNL);
+const char *GetTrailingPathComponents(const char *path, int noOfComponents);
+int CompressPathname(char *pathname);
+int ConvertToDosFileString(char **fileString, int *length);
+int ConvertToDosFileStringEx(std::string &fileString, int *length);
+int ExpandTilde(char *pathname);
+int FormatOfFile(const char *fileString);
+int NormalizePathname(char *pathname);
+int ParseFilename(const char *fullname, char *filename, char *pathname);
+int ResolvePath(const char *pathIn, char *pathResolved);
+void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
+void ConvertFromMacFileString(char *fileString, int length);
+void ConvertToMacFileString(char *fileString, int length);
+void ConvertToMacFileStringEx(std::string &fileString, int length);
 
-#endif /* NEDIT_FILEUTILS_H_INCLUDED */
+#endif

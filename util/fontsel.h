@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_FONTSEL_H_INCLUDED
-#define NEDIT_FONTSEL_H_INCLUDED
+#ifndef FONTSEL_H_
+#define FONTSEL_H_
 
 #include <X11/Intrinsic.h>
 
@@ -40,7 +40,7 @@
 *                                                                              *
 *     Arguments:                                                               *
 *                                                                              *
-*            Widget	parent 		- parent widget ID                     *
+*            Widget	parent 		- parent widget ID                             *
 *                                                                              *
 *            int        showPropFont    - ONLY_FIXED : shows only fixed fonts  *
 *                                                      doesn't show prop font  *
@@ -54,7 +54,7 @@
 *                                                      but starting option is  *
 *                                                      proportional fonts.     *
 *                                                                              *
-*           char *	currFont        - ASCII string that contains the name  *
+*           char *	currFont        - ASCII string that contains the name      *
 *                                         of the currently selected font.      *
 *                                                                              *
 *     Returns:                                                                 *
@@ -80,4 +80,4 @@
 
 char *FontSel(Widget parent, int showPropFont, const char *currFont, Pixel sampleFG, Pixel sampleBG);
 
-#endif /* NEDIT_FONTSEL_H_INCLUDED */
+#endif

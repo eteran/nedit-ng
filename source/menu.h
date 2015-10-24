@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_MENU_H_INCLUDED
-#define NEDIT_MENU_H_INCLUDED
+#ifndef MENU_H_
+#define MENU_H_
 
 #include "nedit.h"
 
@@ -35,19 +35,20 @@
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
 
-Widget CreateMenuBar(Widget parent, WindowInfo *window);
-void InstallMenuActions(XtAppContext context);
-XtActionsRec *GetMenuActions(int *nActions);
-void InvalidateWindowMenus(void);
-void CheckCloseDim(void);
-void AddToPrevOpenMenu(const char *filename);
-void WriteNEditDB(void);
-void ReadNEditDB(void);
 Widget CreateBGMenu(WindowInfo *window);
-void AddBGMenuAction(Widget widget);
-void HidePointerOnKeyedEvent(Widget w, XEvent *event);
+Widget CreateMenuBar(Widget parent, WindowInfo *window);
 Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
+XtActionsRec *GetMenuActions(int *nActions);
+void AddBGMenuAction(Widget widget);
 void AddTabContextMenuAction(Widget widget);
+void AddToPrevOpenMenu(const char *filename);
+void CheckCloseDim(void);
+void HidePointerOnKeyedEvent(Widget w, XEvent *event);
+void InstallMenuActions(XtAppContext context);
+void InvalidateWindowMenus(void);
+void ReadNEditDB(void);
 void ShowHiddenTearOff(Widget menuPane);
+void WriteNEditDB(void);
 
-#endif /* NEDIT_MENU_H_INCLUDED */
+
+#endif

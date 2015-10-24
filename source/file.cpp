@@ -1184,13 +1184,12 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 ** (if set) as the default directory.
 */
 int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname) {
-	char *savedDefaultDir;
 	int retVal;
 
 	/* Temporarily set default directory to window->path, prompt for file,
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
-	savedDefaultDir = GetFileDialogDefaultDirectory();
+	char *savedDefaultDir = GetFileDialogDefaultDirectory();
 	if (*window->path != '\0')
 		SetFileDialogDefaultDirectory(window->path);
 	retVal = GetExistingFilename(window->shell, prompt, fullname);
