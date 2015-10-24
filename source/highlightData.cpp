@@ -45,6 +45,7 @@
 #include <string.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <memory>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -333,11 +334,10 @@ int LoadStylesString(const char *inString) {
 */
 char *WriteStylesString(void) {
 	int i;
-	char *outStr;
 	highlightStyleRec *style;
 
 	auto outBuf = new textBuffer;
-	;
+
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
 		BufInsert(outBuf, outBuf->length, "\t");
@@ -354,9 +354,39 @@ char *WriteStylesString(void) {
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	outStr = BufGetRange(outBuf, 0, outBuf->length - (i == 1 ? 0 : 4));
+	char *outStr = BufGetRange(outBuf, 0, outBuf->length - (i == 1 ? 0 : 4));
 	delete outBuf;
 	return outStr;
+}
+
+/*
+** Create a string in the correct format for the styles resource, containing
+** all of the highlight styles information from the stored highlight style
+** list (HighlightStyles) for this NEdit session.
+*/
+std::string WriteStylesStringEx(void) {
+	int i;
+	highlightStyleRec *style;
+
+	auto outBuf = std::unique_ptr<textBuffer>(new textBuffer);
+
+	for (i = 0; i < NHighlightStyles; i++) {
+		style = HighlightStyles[i];
+		BufInsert(outBuf.get(), outBuf->length, "\t");
+		BufInsert(outBuf.get(), outBuf->length, style->name);
+		BufInsert(outBuf.get(), outBuf->length, ":");
+		BufInsert(outBuf.get(), outBuf->length, style->color);
+		if (style->bgColor) {
+			BufInsert(outBuf.get(), outBuf->length, "/");
+			BufInsert(outBuf.get(), outBuf->length, style->bgColor);
+		}
+		BufInsert(outBuf.get(), outBuf->length, ":");
+		BufInsert(outBuf.get(), outBuf->length, FontTypeNames[style->font]);
+		BufInsert(outBuf.get(), outBuf->length, "\\n\\\n");
+	}
+
+	/* Get the output, and lop off the trailing newlines */
+	return BufGetRangeEx(outBuf.get(), 0, outBuf->length - (i == 1 ? 0 : 4));
 }
 
 /*
@@ -407,7 +437,7 @@ int LoadHighlightString(char *inString, int convertOld) {
 ** highlight pattern list (PatternSets) for this NEdit session.
 */
 char *WriteHighlightString(void) {
-	char *escapedStr;
+
 	int psn, written = False;
 	patternSet *patSet;
 
@@ -438,8 +468,47 @@ char *WriteHighlightString(void) {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	escapedStr = EscapeSensitiveChars(outStr.c_str());
-	return escapedStr;
+	return EscapeSensitiveChars(outStr.c_str());
+}
+
+/*
+** Create a string in the correct format for the highlightPatterns resource,
+** containing all of the highlight pattern information from the stored
+** highlight pattern list (PatternSets) for this NEdit session.
+*/
+std::string WriteHighlightStringEx(void) {
+
+	int psn, written = False;
+	patternSet *patSet;
+
+	auto outBuf = new textBuffer;
+	;
+	for (psn = 0; psn < NPatternSets; psn++) {
+		patSet = PatternSets[psn];
+		if (patSet->nPatterns == 0)
+			continue;
+		written = True;
+		BufInsert(outBuf, outBuf->length, patSet->languageMode);
+		BufInsert(outBuf, outBuf->length, ":");
+		if (isDefaultPatternSet(patSet))
+			BufInsert(outBuf, outBuf->length, "Default\n\t");
+		else {
+			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->lineContext));
+			BufInsert(outBuf, outBuf->length, ":");
+			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->charContext));
+			BufInsert(outBuf, outBuf->length, "{\n");
+			BufInsertEx(outBuf, outBuf->length, createPatternsString(patSet, "\t\t"));
+			BufInsert(outBuf, outBuf->length, "\t}\n\t");
+		}
+	}
+
+	/* Get the output string, and lop off the trailing newline and tab */
+	std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - (written ? 2 : 0));
+	delete outBuf;
+
+	/* Protect newlines and backslashes from translation by the resource
+	   reader */
+	return EscapeSensitiveCharsEx(outStr);
 }
 
 /*

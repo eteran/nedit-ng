@@ -37,6 +37,10 @@
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
 char *WriteStylesString(void);
 char *WriteHighlightString(void);
+
+std::string WriteStylesStringEx(void);
+std::string WriteHighlightStringEx(void);
+
 const char *BgColorOfNamedStyle(const char *styleName);
 const char *ColorOfNamedStyle(const char *styleName);
 int FontOfNamedStyleIsBold(const char *styleName);

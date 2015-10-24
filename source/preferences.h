@@ -181,6 +181,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
+std::string EscapeSensitiveCharsEx(const std::string &string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);

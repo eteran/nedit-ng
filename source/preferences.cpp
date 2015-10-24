@@ -4039,6 +4039,49 @@ char *EscapeSensitiveChars(const char *string) {
 	return outStr;
 }
 
+
+/*
+** Replace characters which the X resource file reader considers control
+** characters, such that a string will read back as it appears in "string".
+** (So far, newline characters are replaced with with \n\<newline> and
+** backslashes with \\.  This has not been tested exhaustively, and
+** probably should be.  It would certainly be more asthetic if other
+** control characters were replaced as well).
+**
+** Returns an allocated string which must be freed by the caller with XtFree.
+*/
+std::string EscapeSensitiveCharsEx(const std::string &string) {
+
+	int length = 0;
+
+	/* calculate length and allocate returned string */
+	for(char ch : string) {
+		if (ch == '\\')
+			length++;
+		else if (ch == '\n')
+			length += 3;
+		length++;
+	}
+	
+	std::string outStr;
+	outStr.reserve(length);
+	auto outPtr = std::back_inserter(outStr);
+
+	/* add backslashes */
+	for(char ch : string) {
+		if (ch == '\\')
+			*outPtr++ = '\\';
+		else if (ch == '\n') {
+			*outPtr++ = '\\';
+			*outPtr++ = 'n';
+			*outPtr++ = '\\';
+		}
+		*outPtr++ = ch;
+	}
+
+	return outStr;
+}
+
 /*
 ** Adds double quotes around a string and escape existing double quote
 ** characters with two double quotes.  Enables the string to be read back
