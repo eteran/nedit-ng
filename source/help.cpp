@@ -223,12 +223,7 @@ static const char *getBuildInfo(void) {
 			int depth;
 			Colormap map;
 			Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
-
-#if defined(__cplusplus)
 			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
-#else
-			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->class], visual->visualid, usingDefaultVisual ? ", Default" : "");
-#endif
 		}
 
 		bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);

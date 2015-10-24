@@ -426,7 +426,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 		free(fileString);
 		return FALSE;
 	}
-	fileString[readLen] = 0;
+	fileString[readLen] = '\0';
 
 	/* Close the file */
 	if (fclose(fp) != 0) {
@@ -438,12 +438,12 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	/* Any errors that happen after this point leave the window in a
 	    "broken" state, and thus RevertToSaved will abandon the window if
 	    window->fileMissing is FALSE and doOpen fails. */
-	window->fileMode = statbuf.st_mode;
-	window->fileUid = statbuf.st_uid;
-	window->fileGid = statbuf.st_gid;
+	window->fileMode    = statbuf.st_mode;
+	window->fileUid     = statbuf.st_uid;
+	window->fileGid     = statbuf.st_gid;
 	window->lastModTime = statbuf.st_mtime;
-	window->device = statbuf.st_dev;
-	window->inode = statbuf.st_ino;
+	window->device      = statbuf.st_dev;
+	window->inode       = statbuf.st_ino;
 	window->fileMissing = FALSE;
 
 	/* Detect and convert DOS and Macintosh format files */
@@ -999,11 +999,10 @@ static int writeBckVersion(WindowInfo *window) {
 	}
 
 	/* Get the full name of the file */
-	strcpy(fullname, window->path);
-	strcat(fullname, window->filename);
+	int r = snprintf(fullname, sizeof(fullname), "%s%s", window->path, window->filename);
 
 	/* Generate name for old version */
-	if ((strlen(fullname) + 5) > (size_t)MAXPATHLEN) {
+	if (r >= MAXPATHLEN) {
 		return bckError(window, "file name too long", window->filename);
 	}
 	sprintf(bckname, "%s.bck", fullname);
@@ -1140,7 +1139,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 ** Print a string (length is required).  parent is the dialog parent, for
 ** error dialogs, and jobName is the print title.
 */
-void PrintString(const char *string, int length, Widget parent, const char *jobName) {
+void PrintString(const std::string &string, int length, Widget parent, const char *jobName) {
 	// TODO(eteran): get the temp directory dynamically
 	char tmpFileName[L_tmpnam] = "/tmp/nedit-XXXXXX"; /* L_tmpnam defined in stdio.h */
 	int fd = mkstemp(tmpFileName);
@@ -1158,7 +1157,7 @@ void PrintString(const char *string, int length, Widget parent, const char *jobN
 	}
 
 	/* write to the file */
-	fwrite(string, sizeof(char), length, fp);
+	fwrite(string.c_str(), sizeof(char), length, fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName, strerror(errno));
 		fclose(fp); /* should call close(fd) in turn! */

@@ -48,7 +48,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap);
 int CloseAllFilesAndWindows(void);
 int CloseFileAndWindow(WindowInfo *window, int preResponse);
 void PrintWindow(WindowInfo *window, int selectedOnly);
-void PrintString(const char *string, int length, Widget parent, const char *jobName);
+void PrintString(const std::string &string, int length, Widget parent, const char *jobName);
 int WriteBackupFile(WindowInfo *window);
 int IncludeFile(WindowInfo *window, const char *name);
 int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname);

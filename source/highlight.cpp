@@ -68,7 +68,6 @@
 #define UNFINISHED_STYLE ASCII_A
 #define PLAIN_STYLE (ASCII_A + 1)
 #define IS_PLAIN(style) (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
-#define IS_STYLED(style) (style != PLAIN_STYLE && style != UNFINISHED_STYLE)
 
 /* Compare two styles where one of the styles may not yet have been processed
    with pass2 patterns */
