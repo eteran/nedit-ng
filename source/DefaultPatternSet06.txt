@@ -1,0 +1,10 @@
+Fortran:2:0{
+	Comment:"^[Cc*!]":"$"::Comment::
+	Bang Comment:"!":"$"::Comment::
+	Debug Line:"^D":"$"::Preprocessor::
+	String:"'":"'":"\n([^ \t]| [^ \t]|  [^ \t]|   [^ \t]|    [^ \t]|     [ \t0]| *\t[^1-9])":String::
+	Keywords:"<(?iaccept|automatic|backspace|block|call|close|common|continue|data|decode|delete|dimension|do|else|elseif|encode|enddo|end *file|endif|end|entry|equivalence|exit|external|format|function|go *to|if|implicit|include|inquire|intrinsic|logical|map|none|on|open|parameter|pause|pointer|print|program|read|record|return|rewind|save|static|stop|structure|subroutine|system|then|type|union|unlock|virtual|volatile|while|write)>":::Keyword::D
+	Data Types:"<(?ibyte|character|complex|double *complex|double *precision|double|integer|real)(\*[0-9]+)?>":::Keyword::D
+	F90 Keywords:"<(?iallocatable|allocate|case|case|cycle|deallocate|elsewhere|namelist|recursive|rewrite|select|where|intent|optional)>":::Keyword::D
+	Continuation:"^(     [^ \t0]|( |  |   |    )?\t[1-9])":::Flag::
+	Continuation in String:"\n(     [^ \t0]|( |  |   |    )?\t[1-9])":::Flag:String:}

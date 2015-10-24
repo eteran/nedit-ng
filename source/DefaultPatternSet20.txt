@@ -1,0 +1,7 @@
+SQL:1:0{
+	keywords:",|%|\<|\>|:=|=|<(SELECT|ON|FROM|ORDER BY|DESC|WHERE|AND|OR|NOT|nullptr|TRUE|FALSE)>":::Keyword::
+	comment:"--":"$"::Comment::
+	data types:"<(CHAR|VARCHAR2\([0-9]*\)|INT[0-9]*|POINT|BOX|TEXT|BOOLEAN|VARCHAR2|VARCHAR|NUMBER\([0-9]*\)|NUMBER)(?!\Y)":::Storage Type::
+	string:"'":"'"::String::
+	keywords2:"END IF;|(?<!\Y)(CREATE|REPLACE|BEGIN|END|FUNCTION|RETURN|FETCH|OPEN|CLOSE| IS|NOTFOUND|CURSOR|IF|ELSE|THEN|INTO|IS|IN|WHEN|OTHERS|GRANT|ON|TO|EXCEPTION|SHOW|SET|OUT|PRAGMA|AS|PACKAGE)>":::Preprocessor1::
+	comment2:"/\*":"\*/"::Comment::}

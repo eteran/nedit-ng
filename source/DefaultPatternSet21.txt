@@ -1,0 +1,42 @@
+Sh Ksh Bash:1:0{
+        README:"Shell syntax highlighting patterns, version 2.2, maintainer Thorsten Haude, nedit at thorstenhau.de":::Flag::D
+        escaped special characters:"\\[\\""$`']":::Keyword::
+        single quoted string:"'":"'"::String1::
+        double quoted string:"""":""""::String::
+        double quoted escape:"\\[\\""$`]":::String2:double quoted string:
+        dq command sub:"`":"`":"""":Subroutine:double quoted string:
+        dq arithmetic expansion:"\$\(\(":"\)\)":"""":String:double quoted string:
+        dq new command sub:"\$\(":"\)":"""":Subroutine:double quoted string:
+        dqncs single quoted string:"'":"'"::String1:dq new command sub:
+        dq variables:"\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)":::Identifier1:double quoted string:
+        dq variables2:"\$\{":"}":"\n":Identifier1:double quoted string:
+        arithmetic expansion:"\$\(\(":"\)\)"::String::
+        ae escapes:"\\[\\$`""']":::String2:arithmetic expansion:
+        ae single quoted string:"'":"'":"\)\)":String1:arithmetic expansion:
+        ae command sub:"`":"`":"\)\)":Subroutine:arithmetic expansion:
+        ae arithmetic expansion:"\$\(\(":"\)\)"::String:arithmetic expansion:
+        ae new command sub:"\$\(":"\)":"\)\)":Subroutine:arithmetic expansion:
+        ae variables:"\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)":::Identifier1:arithmetic expansion:
+        ae variables2:"\$\{":"}":"\)\)":Identifier1:arithmetic expansion:
+        comments:"^[ \t]*#":"$"::Comment::
+        command substitution:"`":"`"::Subroutine::
+        cs escapes:"\\[\\$`""']":::Subroutine1:command substitution:
+        cs single quoted string:"'":"'":"`":String1:command substitution:
+        cs variables:"\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)":::Identifier1:command substitution:
+        cs variables2:"\$\{":"}":"`":Identifier1:command substitution:
+        new command substitution:"\$\(":"\)"::Subroutine::
+        ncs new command substitution:"\$\(":"\)"::Subroutine:new command substitution:
+        ncs escapes:"\\[\\$`""']":::Subroutine1:new command substitution:
+        ncs single quoted string:"'":"'"::String1:new command substitution:
+        ncs variables:"\$([-*@#?$!0-9]|[a-zA-Z_][0-9a-zA-Z_]*)":::Identifier1:new command substitution:
+        ncs variables2:"\$\{":"}":"\)":Identifier1:new command substitution:
+        assignment:"[a-zA-Z_][0-9a-zA-Z_]*=":::Identifier1::
+        variables:"\$([-*@#?$!0-9_]|[a-zA-Z_][0-9a-zA-Z_]*)":::Identifier1::
+        variables2:"\$\{":"}"::Identifier1::
+        internal var:"\$\{":"}"::Identifier1:variables2:
+        comments in line:"#":"$"::Comment::
+        numbers:"<(?i0x[\da-f]+)|((\d*\.)?\d+([eE][-+]?\d+)?(?iul?|l|f)?)>":::Numeric Const::D
+        keywords:"(?<!\Y)(if|fi|then|else|elif|case|esac|while|for|do|done|in|select|time|until|function|\[\[|\]\])(?!\Y)[\s\n]":::Keyword::D
+        command options:"(?<=\s)-[^ \t{}[\],()'""~!@#$%^&*|\\<>?]+":::Identifier::
+        delimiters:"[{};<>&~=!|^%[\]+*|]":::Text Key::D
+        built ins:"(?<!\Y)(:|\.|source|alias|bg|bind|break|builtin|cd|chdir|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|jobs|kill|let|local|logout|popd|print|printf|pushd|pwd|read|readonly|return|set|shift|shopt|stop|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|wait|whence)(?!\Y)[\s\n;]":::Subroutine1::D}

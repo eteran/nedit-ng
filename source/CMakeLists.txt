@@ -47,6 +47,34 @@ add_executable(nedit
 	window.cpp
 	windowTitle.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet01.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet02.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet03.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet04.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet05.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet06.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet07.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet08.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet09.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet10.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet11.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet12.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet13.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet14.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet15.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet16.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet17.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet18.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet19.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet20.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet21.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet22.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet23.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet24.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet25.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet26.inc
+	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet27.inc
 	${BISON_parser_OUTPUT_SOURCE})
 
 add_definitions(-DUSE_DIRENT -DUSE_LPR_PRINT_CMD)
@@ -93,9 +121,45 @@ set_target_properties(nedit nc
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-add_custom_command(
-	PRE_BUILD
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
-	COMMAND ${CMAKE_COMMAND} -DINFILE=${CMAKE_CURRENT_SOURCE_DIR}/DefaultCommonMacros.txt -DVARNAME=DefaultCommonMacros -DOUTFILE=${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc -P ${CMAKE_CURRENT_SOURCE_DIR}/File2C.cmake
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/DefaultCommonMacros.txt
-	)
+macro(GenerateInclude arg)
+	add_custom_command(
+		PRE_BUILD
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${arg}.inc
+		COMMAND ${CMAKE_COMMAND} -DINFILE=${CMAKE_CURRENT_SOURCE_DIR}/${arg}.txt -DVARNAME=${arg} -DOUTFILE=${CMAKE_CURRENT_BINARY_DIR}/${arg}.inc -P ${CMAKE_CURRENT_SOURCE_DIR}/File2C.cmake
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${arg}.txt
+		)
+endmacro()
+
+
+GenerateInclude(DefaultCommonMacros)
+
+GenerateInclude(DefaultCommonMacros)
+GenerateInclude(DefaultPatternSet00)
+GenerateInclude(DefaultPatternSet01)
+GenerateInclude(DefaultPatternSet02)
+GenerateInclude(DefaultPatternSet03)
+GenerateInclude(DefaultPatternSet04)
+GenerateInclude(DefaultPatternSet05)
+GenerateInclude(DefaultPatternSet06)
+GenerateInclude(DefaultPatternSet07)
+GenerateInclude(DefaultPatternSet08)
+GenerateInclude(DefaultPatternSet09)
+GenerateInclude(DefaultPatternSet10)
+GenerateInclude(DefaultPatternSet11)
+GenerateInclude(DefaultPatternSet12)
+GenerateInclude(DefaultPatternSet13)
+GenerateInclude(DefaultPatternSet14)
+GenerateInclude(DefaultPatternSet15)
+GenerateInclude(DefaultPatternSet16)
+GenerateInclude(DefaultPatternSet17)
+GenerateInclude(DefaultPatternSet18)
+GenerateInclude(DefaultPatternSet19)
+GenerateInclude(DefaultPatternSet20)
+GenerateInclude(DefaultPatternSet21)
+GenerateInclude(DefaultPatternSet22)
+GenerateInclude(DefaultPatternSet23)
+GenerateInclude(DefaultPatternSet24)
+GenerateInclude(DefaultPatternSet25)
+GenerateInclude(DefaultPatternSet26)
+GenerateInclude(DefaultPatternSet27)
+

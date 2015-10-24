@@ -1,0 +1,23 @@
+Matlab:1:0{
+	Comment:"%":"$"::Comment::
+	Comment in Octave:"#":"$"::Comment::
+	Keyword:"<(break|clear|else|elseif|for|function|global|if|return|then|while|end(if|for|while|function))>":::Keyword::
+	Transpose:"[\w.]('+)":::Plain::
+	Paren transposed:"\)('+)":::Keyword::
+	Paren transp close:"\1":""::Plain:Paren transposed:C
+	Parentheses:"[\(\)]":::Keyword::
+	Brackets transposed:"\]('+)":::Text Key1::
+	Brack transp close:"\1":""::Plain:Brackets transposed:C
+	Brackets:"[\[\]]":::Text Key1::
+	Braces transposed:"\}('+)":::Text Arg::
+	Braces transp close:"\1":""::Plain:Braces transposed:C
+	Braces:"[\{\}]":::Text Arg::
+	String:"'":"'"::String::
+	Numeric const:"(?<!\Y)(((\d+\.?\d*)|(\.\d+))([eE][+\-]?\d+)?)(?!\Y)":::Numeric Const::
+	Three periods to end:"(\.\.\.)":"$"::Comment::
+	Three periods:"\1":""::Keyword:Three periods to end:C
+	Shell command:"!":"$"::String1::
+	Comment in shell cmd:"%":"$"::Comment:Shell command:
+	Relational operators:"==|~=|\<=|\>=|\<|\>":::Text Arg1::
+	Wrong logical ops:"&&|\|\|":::Plain::
+	Logical operators:"~|&|\|":::Text Arg2::}

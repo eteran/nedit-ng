@@ -1,0 +1,17 @@
+Awk:2:0{
+	Comment:"#":"$"::Comment::
+	Pattern:"/(\\.|([[][]]?[^]]+[]])|[^/])+/":::Preprocessor::
+	Keyword:"<(return|print|printf|if|else|while|for|in|do|break|continue|next|exit|close|system|getline)>":::Keyword::D
+	String:"""":"""":"\n":String1::
+	String escape:"\\(.|\n)":::String1:String:
+	Builtin functions:"<(atan2|cos|exp|int|log|rand|sin|sqrt|srand|gsub|index|length|match|split|sprintf|sub|substr)>":::Keyword::D
+	Gawk builtin functions:"<(fflush|gensub|tolower|toupper|systime|strftime)>":::Text Key1::D
+	Builtin variables:"<(ARGC|ARGV|FILENAME|FNR|FS|NF|NR|OFMT|OFS|ORS|RLENGTH|RS|RSTART|SUBSEP)>":::Storage Type::D
+	Gawk builtin variables:"""<(ARGIND|ERRNO|RT|IGNORECASE|FIELDWIDTHS)>""":::Storage Type::D
+	Field:"\$[0-9a-zA-Z_]+|\$[ \t]*\([^,;]*\)":::Storage Type::D
+	BeginEnd:"<(BEGIN|END)>":::Preprocessor1::D
+	Numeric constant:"(?<!\Y)((0(x|X)[0-9a-fA-F]*)|[0-9.]+((e|E)(\+|-)?)?[0-9]*)(L|l|UL|ul|u|U|F|f)?(?!\Y)":::Numeric Const::D
+	String pattern:"~[ \t]*""":"""":"\n":Preprocessor::
+	String pattern escape:"\\(.|\n)":::Preprocessor:String pattern:
+	newline escape:"\\$":::Preprocessor1::
+	Function:"function":::Preprocessor1::D}

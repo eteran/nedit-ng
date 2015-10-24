@@ -1,0 +1,28 @@
+Makefile:8:0{
+	Comment:"#":"$"::Comment::
+	Comment Continuation:"\\\n":::Keyword:Comment:
+	Assignment:"^( *| [ \t]*)[A-Za-z0-9_+][^ \t]*[ \t]*(\+|:)?=":"$"::Preprocessor::
+	Assignment Continuation:"\\\n":::Keyword:Assignment:
+	Assignment Comment:"#":"$"::Comment:Assignment:
+	Dependency Line:"^( *| [ \t]*)(.DEFAULT|.DELETE_ON_ERROR|.EXPORT_ALL_VARIABLES.IGNORE|.INTERMEDIATE|.PHONY|.POSIX|.PRECIOUS|.SECONDARY|.SILENT|.SUFFIXES)*(([A-Za-z0-9./$(){} _@^<*?%+-]*(\\\n)){,8}[A-Za-z0-9./$(){} _@^<*?%+-]*)::?":"$|;"::Text Key1::
+	Dep Target Special:"\2":""::Text Key1:Dependency Line:C
+	Dep Target:"\3":""::Text Key:Dependency Line:C
+	Dep Continuation:"\\\n":::Keyword:Dependency Line:
+	Dep Comment:"#":"$"::Comment:Dependency Line:
+	Dep Internal Macro:"\$([<@*?%]|\$@)":::Preprocessor1:Dependency Line:
+	Dep Macro:"\$([A-Za-z0-9_]|\([^)]*\)|\{[^}]*})":::Preprocessor:Dependency Line:
+	Continuation:"\\$":::Keyword::
+	Macro:"\$([A-Za-z0-9_]|\([^)]*\)|\{[^}]*})":::Preprocessor::
+	Internal Macro:"\$([<@*?%]|\$@)":::Preprocessor1::
+	Escaped Dollar:"\$\$":::Comment::
+	Include:"^( *| [ \t]*)include[ \t]":::Keyword::
+	Exports:"^( *| [ \t]*)<export|unexport>[ \t]":"$"::Keyword::
+	Exports var:".[A-Za-z0-9_+]*":"$"::Keyword:Exports:
+	Conditionals:"^( *| [ \t]*)<ifeq|ifneq>[ \t]":::Keyword::D
+	Conditionals ifdefs:"^( *| [ \t]*)<ifdef|ifndef>[ \t]":"$"::Keyword::D
+	Conditionals ifdefs var:".[A-Za-z0-9_+]*":"$"::Preprocessor:Conditionals ifdefs:D
+	Conditional Ends:"^( *| [ \t]*)<else|endif>":::Keyword::D
+	vpath:"^( *| [ \t]*)<vpath>[ \t]":::Keyword::D
+	define:"^( *| [ \t]*)<define>[ \t]":"$"::Keyword::D
+	define var:".[A-Za-z0-9_+]*":"$"::Preprocessor:define:D
+	define Ends:"^( *| [ \t]*)<endef>":::Keyword::D}

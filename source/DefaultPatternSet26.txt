@@ -1,0 +1,17 @@
+X Resources:2:0{
+	Preprocessor:"^\s*#":"$"::Preprocessor::
+	Preprocessor Wrap:"\\\n":::Preprocessor1:Preprocessor:
+	Comment:"^\s*!":"$"::Comment::
+	Comment Wrap:"\\\n":::Comment:Comment:
+	Resource Continued:"^(\s*[^:\s]+\s*:)(?:(\\.)|.)*(\\)\n":"$"::Plain::
+	RC Space Warning:"\\\s+$":::Flag:Resource Continued:
+	RC Esc Chars:"\\.":::Text Arg2:Resource Continued:
+	RC Esc Chars 2:"\2":""::Text Arg2:Resource Continued:C
+	RC Name:"\1":""::Identifier:Resource Continued:C
+	RC Wrap:"\\\n":::Text Arg1:Resource Continued:
+	RC Wrap2:"\3":""::Text Arg1:Resource Continued:C
+	Resource:"^\s*[^:\s]+\s*:":"$"::Plain::
+	Resource Space Warning:"\S+\s+$":::Flag:Resource:
+	Resource Esc Chars:"\\.":::Text Arg2:Resource:
+	Resource Name:"&":""::Identifier:Resource:C
+	Free Text:"^.*$":::Flag::}

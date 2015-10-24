@@ -1,0 +1,16 @@
+Verilog:1:0{
+	Comment:"/\*":"\*/"::Comment::
+	cplus comment:"//":"$"::Comment::
+	String Literals:"""":"""":"\n":String::
+	preprocessor line:"^[ ]*`":"$"::Preprocessor::
+	Reserved WordsA:"(?<!\Y)(module|endmodule|parameter|specify|endspecify|begin|end|initial|always|if|else|task|endtask|force|release|attribute|case|case[xz]|default|endattribute|endcase|endfunction|endprimitive|endtable|for|forever|function|primitive|table|while|;)(?!\Y)":::Keyword::
+	Predefined Types:"<(and|assign|buf|bufif[01]|cmos|deassign|defparam|disable|edge|event|force|fork|highz[01]|initial|inout|input|integer|join|large|macromodule|medium|nand|negedge|nmos|nor|not|notif[01]|or|output|parameter|pmos|posedge|pullup|rcmos|real|realtime|reg|release|repeat|rnmos|rpmos|rtran|rtranif[01]|scalered|signed|small|specparam|strength|strong[01]|supply[01]|time|tran|tranif[01]|tri[01]?|triand|trior|trireg|unsigned|vectored|wait|wand|weak[01]|wire|wor|xnor|xor)>":::Storage Type::D
+	System Functions:"\$[a-z_]+":::Subroutine::D
+	Numeric Literals:"(?<!\Y)([0-9]*'[dD][0-9xz\\?_]+|[0-9]*'[hH][0-9a-fxz\\?_]+|[0-9]*'[oO][0-7xz\\?_]+|[0-9]*'[bB][01xz\\?_]+|[0-9.]+((e|E)(\\+|-)?)?[0-9]*|[0-9]+)(?!\Y)":::Numeric Const::
+	Delay Word:"(?<!\Y)((#\(.*\))|(#[0-9]*))(?!\Y)":::Ada Attributes::D
+	Simple Word:"([a-zA-Z][a-zA-Z0-9]*)":::Plain::D
+	Instance Declaration:"([a-zA-Z][a-zA-Z0-9_]*)([ \t]+)([a-zA-Z][a-zA-Z0-9_$]*)([ \t]*)\(":::Plain::
+	Module name:"\1":""::Identifier:Instance Declaration:C
+	Instance Name:"\3":""::Identifier1:Instance Declaration:C
+	Pins Declaration:"(?<!\Y)(\.([a-zA-Z0-9_]+))>":::Storage Type1::
+	Special Chars:"(\{|\}|,|;|=|\.)":::Keyword::}

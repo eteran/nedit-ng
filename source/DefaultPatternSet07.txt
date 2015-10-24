@@ -1,0 +1,64 @@
+Java:3:0{
+	README:"Java highlighting patterns for NEdit 5.1. Version 1.5 Author/maintainer: Joachim Lous - jlous at users.sourceforge.net":::Flag::D
+	doccomment:"/\*\*":"\*/"::Text Comment::
+	doccomment tag:"@\l*":::Text Key1:doccomment:
+	comment:"/\*":"\*/"::Comment::
+	cplus comment:"//":"$"::Comment::
+	string:"""":"""":"\n":String::
+	string escape:"(?:\\u[\dA-Faf]{4}|\\[0-7]{1,3}|\\[btnfr'""\\])":::String1:string:
+	single quoted:"'":"'":"\n":String::
+	single quoted escape:"(?:\\u[\dA-Faf]{4}|\\[0-7]{1,3}|\\[btnfr'""\\])(?=')":::String1:single quoted:
+	single quoted char:".(?=')":::String:single quoted:
+	single quoted error:".":::Flag:single quoted:
+	hex const:"<(?i0[X][\dA-F]+)>":::Numeric Const::
+	long const:"<(?i[\d]+L)>":::Numeric Const::
+	decimal const:"(?<!\Y)(?i\d+(?:\.\d*)?(?:E[+\-]?\d+)?[FD]?|\.\d+(?:E[+\-]?\d+)?[FD]?)(?!\Y)":::Numeric Const::
+	include:"<(?:import|package)>":";":"\n":Preprocessor::
+	classdef:"<(?:class|interface)>\s*\n?\s*([\l_]\w*)":::Keyword::
+	classdef name:"\1":""::Storage Type:classdef:C
+	extends:"<(?:extends)>":"(?=(?:<implements>|[{;]))"::Keyword::
+	extends argument:"<[\l_][\w\.]*(?=\s*(?:/\*.*\*/)?(?://.*)?\n?\s*(?:[,;{]|<implements>))":::Storage Type:extends:
+	extends comma:",":::Keyword:extends:
+	extends comment:"/\*":"\*/"::Comment:extends:
+	extends cpluscomment:"//":"$"::Comment:extends:
+	extends error:".":::Flag:extends:
+	impl_throw:"<(?:implements|throws)>":"(?=[{;])"::Keyword::
+	impl_throw argument:"<[\l_][\w\.]*(?=\s*(?:/\*.*\*/)?(?://.*)?\n?\s*[,;{])":::Storage Type:impl_throw:
+	impl_throw comma:",":::Keyword:impl_throw:
+	impl_throw comment:"/\*":"\*/"::Comment:impl_throw:
+	impl_throw cpluscomment:"//":"$"::Comment:impl_throw:
+	impl_throw error:".":::Flag:impl_throw:
+	case:"<case>":":"::Label::
+	case single quoted:"'\\?[^']'":::Character Const:case:
+	case numeric const:"(?<!\Y)(?i0[X][\dA-F]+|\d+(:?\.\d*)?(?:E[+\-]?\d+)?F?|\.\d+(?:E[+\-]?\d+)?F?|\d+L)(?!\Y)":::Numeric Const:case:
+	case cast:"\(\s*([\l_][\w.]*)\s*\)":::Keyword:case:
+	case cast type:"\1":""::Storage Type:case cast:C
+	case variable:"[\l_][\w.]*":::Identifier1:case:
+	case signs:"[-+*/<>^&|%()]":::Keyword:case:
+	case error:".":::Flag:case:
+	label:"([;{}:])":"[\l_]\w*\s*:":"[^\s\n]":Label::
+	label qualifier:"\1":""::Keyword:label:C
+	labelref:"<(?:break|continue)>\s*\n?\s*([\l_]\w*)?(?=\s*\n?\s*;)":::Keyword::
+	labelref name:"\1":""::Label:labelref:C
+	instanceof:"<instanceof>\s*\n?\s*([\l_][\w.]*)":::Keyword::
+	instanceof class:"\1":""::Storage Type:instanceof:C
+	newarray:"new\s*[\n\s]\s*([\l_][\w\.]*)\s*\n?\s*(?=\[)":::Keyword::
+	newarray type:"\1":""::Storage Type:newarray:C
+	constructor def:"<(abstract|final|native|private|protected|public|static|synchronized)\s*[\n|\s]\s*[\l_]\w*\s*\n?\s*(?=\()":::Subroutine::
+	constructor def modifier:"\1":""::Keyword:constructor def:C
+	keyword - modifiers:"<(?:abstract|final|native|private|protected|public|static|transient|synchronized|volatile)>":::Keyword::
+	keyword - control flow:"<(?:catch|do|else|finally|for|if|return|switch|throw|try|while)>":::Keyword::
+	keyword - calc value:"<(?:new|super|this)>":::Keyword::
+	keyword - literal value:"<(?:false|null|true)>":::Numeric Const::
+	function def:"<([\l_][\w\.]*)>((?:\s*\[\s*\])*)\s*[\n|\s]\s*<[\l_]\w*>\s*\n?\s*(?=\()":::Plain::
+	function def type:"\1":""::Storage Type:function def:C
+	function def type brackets:"\2":""::Keyword:function def:C
+	function call:"<[\l_]\w*>\s*\n?\s*(?=\()":::Plain::
+	cast:"[^\w\s]\s*\n?\s*\(\s*([\l_][\w\.]*)\s*\)":::Keyword::
+	cast type:"\1":""::Storage Type:cast:C
+	declaration:"<[\l_][\w\.]*>((:?\s*\[\s*\]\s*)*)(?=\s*\n?\s*(?!instanceof)[\l_]\w*)":::Storage Type::
+	declaration brackets:"\1":""::Keyword:declaration:C
+	variable:"<[\l_]\w*>":::Identifier1::D
+	braces and parens:"[(){}[\]]":::Keyword::D
+	signs:"[-+*/%=,.;:<>!|&^?]":::Keyword::D
+	error:".":::Flag::D}

@@ -530,7 +530,8 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	int contextChars = patSet->charContext;
 	int i, nPass1Patterns, nPass2Patterns;
 	int noPass1, noPass2;
-	char *parentStyles, *parentStylesPtr;
+	char *parentStyles;
+	char *parentStylesPtr;
 	char *parentName;
 	highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
 	textBuffer *styleBuf;
@@ -758,7 +759,8 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns) {
 	int i, nSubExprs, patternNum, length, subPatIndex, subExprNum, charsRead;
 	int parentIndex;
-	char *ptr, *bigPattern;
+	char *ptr;
+	char *bigPattern;
 	const char *compileMsg;
 	highlightDataRec *compiledPats;
 
@@ -929,14 +931,10 @@ static void freePatterns(highlightDataRec *patterns) {
 	int i;
 
 	for (i = 0; patterns[i].style != 0; i++) {
-		if (patterns[i].startRE != nullptr)
-			free((char *)patterns[i].startRE);
-		if (patterns[i].endRE != nullptr)
-			free((char *)patterns[i].endRE);
-		if (patterns[i].errorRE != nullptr)
-			free((char *)patterns[i].errorRE);
-		if (patterns[i].subPatternRE != nullptr)
-			free((char *)patterns[i].subPatternRE);
+		free((char *)patterns[i].startRE);
+		free((char *)patterns[i].endRE);
+		free((char *)patterns[i].errorRE);
+		free((char *)patterns[i].subPatternRE);
 	}
 
 	for (i = 0; patterns[i].style != 0; i++) {

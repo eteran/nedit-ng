@@ -1,0 +1,29 @@
+Pascal:1:0{
+	TP Directives:"\{\$":"\}"::Comment::
+	Comment:"\(\*|\{":"\*\)|\}"::Comment::
+	String:"'":"'":"\n":String::D
+	Array delimitors:"\(\.|\.\)|\[|\]":::Character Const::D
+	Parentheses:"\(|\)":::Keyword::D
+	X Numeric Values:"<([2-9]|[12]\d|3[0-6])#[\d\l]+>":::Text Key::D
+	TP Numeric Values:"(?<!\Y)(#\d+|\$[\da-fA-F]+)>":::Text Key1::D
+	Numeric Values:"<\d+(\.\d+)?((e|E)(\+|-)?\d+)?>":::Numeric Const::D
+	Reserved Words 1:"<(?iBegin|Const|End|Program|Record|Type|Var)>":::Keyword::D
+	Reserved Words 2:"<(?iForward|Goto|Label|Of|Packed|With)>":::Identifier::D
+	X Reserved Words:"<(?iBindable|Export|Implementation|Import|Interface|Module|Only|Otherwise|Protected|Qualified|Restricted|Value)>":::Identifier1::D
+	TP Reserved Words:"<(?iAbsolute|Assembler|Exit|External|Far|Inline|Interrupt|Near|Private|Unit|Uses)>":::Text Comment::D
+	Data Types:"<(?iArray|Boolean|Char|File|Integer|Real|Set|Text)>":::Storage Type::D
+	X Data Types:"<(?iBindingType|Complex|String|TimeStamp)>":::Text Arg1::D
+	TP Data Types:"<(?iByte|Comp|Double|Extended|LongInt|ShortInt|Single|Word)>":::Text Arg2::D
+	Predefined Consts:"<(?iFalse|Input|MaxInt|Nil|Output|True)>":::String1::D
+	X Predefined Consts:"<(?iEpsReal|MaxChar|MaxReal|MinReal|StandardInput|StandardOutput)>":::String2::D
+	Conditionals:"<(?iCase|Do|DownTo|Else|For|If|Repeat|Then|To|Until|While)>":::Ada Attributes::D
+	Proc declaration:"<(?iProcedure)>":::Character Const::D
+	Predefined Proc:"<(?iDispose|Get|New|Pack|Page|Put|Read|ReadLn|Reset|Rewrite|Unpack|Write|WriteLn)>":::Subroutine::D
+	X Predefined Proc:"<(?iBind|Extend|GetTimeStamp|Halt|ReadStr|SeekRead|SeekUpdate|SeekWrite|Unbind|Update|WriteStr)>":::Subroutine1::D
+	Func declaration:"<(?iFunction)>":::Identifier::D
+	Predefined Func:"<(?iAbs|Arctan|Chr|Cos|Eof|Eoln|Exp|Ln|Odd|Ord|Pred|Round|Sin|Sqr|Sqrt|Succ|Trunc)>":::Preprocessor::D
+	X Predefined Func:"<(?iArg|Binding|Card|Cmplx|Date|Empty|Eq|Ge|Gt|Im|Index|LastPosition|Le|Length|Lt|Ne|Polar|Position|Re|SubStr|Time|Trim)>":::Preprocessor1::D
+	X Operators:"(\>\<|\*\*)|<(?iAnd_Then|Or_Else|Pow)>":::Text Arg1::D
+	Assignment:":=":::Plain::D
+	Operators:"(\<|\>|=|\^|@)|<(?iAnd|Div|In|Mod|Not|Or)>":::Text Arg::D
+	TP Operators:"<(?iShl|Shr|Xor)>":::Text Arg2::D}

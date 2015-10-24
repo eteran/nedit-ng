@@ -1,0 +1,15 @@
+VHDL:1:0{
+	Comments:"--":"$"::Comment::
+	String Literals:"""":"""":"\n":String::
+	Vhdl Attributes:"'[a-zA-Z][a-zA-Z_]+":::Ada Attributes::
+	Character Literals:"'":"'":"[^\\][^']":Character Const::
+	Numeric Literals:"(?<!\Y)(((2#|8#|10#|16#)[_0-9a-fA-F]*#)|[0-9.]+)(?!\Y)":::Numeric Const::
+	Predefined Types:"<(?ialias|constant|signal|variable|subtype|type|resolved|boolean|string|integer|natural|time)>":::Storage Type::D
+	Predefined SubTypes:"<(?istd_logic|std_logic_vector|std_ulogic|std_ulogic_vector|bit|bit_vector)>":::Storage Type::D
+	Reserved Words:"<(?iabs|access|after|all|and|architecture|array|assert|attribute|begin|block|body|buffer|bus|case|component|configuration|disconnect|downto|else|elsif|end|entity|error|exit|failure|file|for|function|generate|generic|guarded|if|in|inout|is|label|library|linkage|loop|map|mod|nand|new|next|nor|not|note|null|of|on|open|or|others|out|package|port|procedure|process|range|record|register|rem|report|return|select|severity|then|to|transport|units|until|use|wait|warning|when|while|with|xor|group|impure|inertial|literal|postponed|pure|reject|rol|ror|shared|sla|sll|sra|srl|unaffected|xnor)>":::Keyword::D
+	Identifiers:"<([a-zA-Z][a-zA-Z0-9_]*)>":::Plain::D
+	Flag Special Comments:"--\<[^a-zA-Z0-9]+\>":::Flag:Comments:
+	Instantiation:"([a-zA-Z][a-zA-Z0-9_]*)([ \t]+):([ \t]+)([a-zA-Z][a-zA-Z0-9_]*)([ \t]+)(port|generic|map)":::Keyword::
+	Instance Name:"\1":""::Identifier1:Instantiation:C
+	Component Name:"\4":""::Identifier:Instantiation:C
+	Syntax Character:"(\<=|=\>|:|=|:=|;|,|\(|\))":::Keyword::}
