@@ -1921,7 +1921,7 @@ int TextBuffer::BufEndOfLine(int pos) const {
 ** equal in length to MAX_EXP_CHAR_LEN
 */
 int TextBuffer::BufGetExpandedChar(int pos, const int indent, char *outStr) const {
-	return TextBuffer::BufExpandCharacter(BufGetCharacter(pos), indent, outStr, tabDist_, nullSubsChar_);
+	return BufExpandCharacter(BufGetCharacter(pos), indent, outStr, tabDist_, nullSubsChar_);
 }
 
 /*
@@ -1965,13 +1965,13 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 
 /*
 ** Return the length in displayed characters of character "c" expanded
-** for display (as discussed above in TextBuffer::BufGetExpandedChar).  If the
+** for display (as discussed above in BufGetExpandedChar).  If the
 ** buffer for which the character width is being measured is doing null
 ** substitution, nullSubsChar should be passed as that character (or nul
 ** to ignore).
 */
 int TextBuffer::BufCharWidth(char c, int indent, int tabDist, char nullSubsChar) {
-	/* Note, this code must parallel that in TextBuffer::BufExpandCharacter */
+	/* Note, this code must parallel that in BufExpandCharacter */
 	if (c == nullSubsChar)
 		return 5;
 	else if (c == '\t')
@@ -2708,7 +2708,7 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 		c = BufGetCharacter(pos);
 		if (c == '\n')
 			break;
-		width = TextBuffer::BufCharWidth(c, indent, tabDist_, nullSubsChar_);
+		width = BufCharWidth(c, indent, tabDist_, nullSubsChar_);
 		if (indent + width > rectStart) {
 			if (indent != rectStart && c != '\t') {
 				pos++;
@@ -2725,7 +2725,7 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 		c = BufGetCharacter(pos);
 		if (c == '\n')
 			break;
-		width = TextBuffer::BufCharWidth(c, indent, tabDist_, nullSubsChar_);
+		width = BufCharWidth(c, indent, tabDist_, nullSubsChar_);
 		indent += width;
 		if (indent > rectEnd) {
 			if (indent - width != rectEnd && c != '\t')

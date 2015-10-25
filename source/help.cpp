@@ -762,15 +762,14 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	int topic, helpStringLen;
-	char *helpString;
+	int topic;
+	int helpStringLen;
 
 	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
 		return; /* shouldn't happen */
 
-	helpString = TextGetWrapped(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->length_, &helpStringLen);
-	PrintString(helpString, helpStringLen, HelpWindows[topic], HelpTitles[topic]);
-	XtFree(helpString);
+	std::string helpString = TextGetWrappedEx(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->length_, &helpStringLen);
+	PrintString(helpString.c_str(), helpStringLen, HelpWindows[topic], HelpTitles[topic]);
 }
 
 /*

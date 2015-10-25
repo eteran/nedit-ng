@@ -1591,7 +1591,6 @@ static void addWrapNewlines(WindowInfo *window) {
 	int fileLen, i, insertPositions[MAX_PANES], topLines[MAX_PANES];
 	int horizOffset;
 	Widget text;
-	char *fileString;
 
 	/* save the insert and scroll positions of each pane */
 	for (i = 0; i <= window->nPanes; i++) {
@@ -1601,9 +1600,8 @@ static void addWrapNewlines(WindowInfo *window) {
 	}
 
 	/* Modify the buffer to add wrapping */
-	fileString = TextGetWrapped(window->textArea, 0, window->buffer->length_, &fileLen);
-	window->buffer->BufSetAll(fileString);
-	XtFree(fileString);
+	std::string fileString = TextGetWrappedEx(window->textArea, 0, window->buffer->length_, &fileLen);
+	window->buffer->BufSetAllEx(fileString);
 
 	/* restore the insert and scroll positions of each pane */
 	for (i = 0; i <= window->nPanes; i++) {

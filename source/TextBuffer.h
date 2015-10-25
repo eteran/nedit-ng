@@ -72,6 +72,8 @@ public:
 	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
+private:
+	
 public:
 	char *BufGetAll();
 	char *BufGetRange(int start, int end);

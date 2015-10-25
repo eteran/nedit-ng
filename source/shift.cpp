@@ -1,29 +1,29 @@
 /*******************************************************************************
-*									       *
-* shift.c -- Nirvana Editor built-in filter commands			       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* shift.c -- Nirvana Editor built-in filter commands                           *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
 * version. In addition, you may distribute version of this program linked to   *
 * Motif or Open Motif. See README for details.                                 *
-* 									       *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* June 18, 1991								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* June 18, 1991                                                                *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #include "shift.h"
@@ -39,20 +39,20 @@
 
 #include <Xm/Xm.h>
 
-static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
-static void changeCase(WindowInfo *window, int makeUpper);
-static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);
-static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
-static int findLeftMargin(char *text, int length, int tabDist);
-static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
-static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
+static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
+static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);
 static int atTabStop(int pos, int tabDist);
-static int nextTab(int pos, int tabDist);
 static int countLines(const char *text);
 static int countLinesEx(const std::string &text);
-static int findParagraphStart(TextBuffer *buf, int startPos);
+static int findLeftMargin(char *text, int length, int tabDist);
 static int findParagraphEnd(TextBuffer *buf, int startPos);
+static int findParagraphStart(TextBuffer *buf, int startPos);
+static int nextTab(int pos, int tabDist);
+static std::string fillParagraphEx(const std::string &text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
+static std::string fillParagraphsEx(const std::string &text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
+static void changeCase(WindowInfo *window, int makeUpper);
+static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
@@ -210,7 +210,6 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 
 void FillSelection(WindowInfo *window) {
 	TextBuffer *buf = window->buffer;
-	char *filledText;
 	int left, right, nCols, len, isRect, rectStart, rectEnd;
 	int rightMargin, wrapMargin;
 	int insertPos = TextGetCursorPos(window->lastFocus);
@@ -254,18 +253,17 @@ void FillSelection(WindowInfo *window) {
 	}
 
 	/* Fill the text */
-	filledText = fillParagraphs(text.c_str(), rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, &len, False);
+	std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, &len, False);
 
 	/* Replace the text in the window */
 	if (hasSelection && isRect) {
-		buf->BufReplaceRect(left, right, rectStart, INT_MAX, filledText);
-		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLines(filledText) - 1)), rectStart, rectEnd);
+		buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
+		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLinesEx(filledText) - 1)), rectStart, rectEnd);
 	} else {
-		buf->BufReplace(left, right, filledText);
+		buf->BufReplaceEx(left, right, filledText);
 		if (hasSelection)
 			buf->BufSelect(left, left + len);
 	}
-	XtFree(filledText);
 
 	/* Find a reasonable cursor position.  Usually insertPos is best, but
 	   if the text was indented, positions can shift */
@@ -365,6 +363,7 @@ std::string ShiftTextEx(const std::string &text, int direction, int tabsAllowed,
 				shiftLineLeft (segment.c_str(), textPtr - lineStartPtr, 			 tabDist, nChars);
 				
 		
+			// TODO(eteran): avoid the string copy... wish we had string_view!
 			std::string shiftedLineString = shiftedLine;
 			
 			XtFree(shiftedLine);
@@ -557,15 +556,21 @@ static int findLeftMargin(char *text, int length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
+static std::string fillParagraphsEx(const std::string &text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
 	int paraStart, paraEnd, fillEnd;
-	char *c, ch, *secondLineStart, *paraText, *filledText;
-	int firstLineLen, firstLineIndent, leftMargin, len;
+	char *c;
+	char ch;
+	char *secondLineStart;
+	char *paraText;
+	int firstLineLen;
+	int firstLineIndent;
+	int leftMargin;
+	int len;
 	TextBuffer *buf;
 
 	/* Create a buffer to accumulate the filled paragraphs */
 	buf = new TextBuffer;
-	buf->BufSetAll(text);
+	buf->BufSetAllEx(text);
 
 	/*
 	** Loop over paragraphs, filling each one, and accumulating the results
@@ -601,25 +606,24 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 		   the paragraph, and for rest of the remainder of the paragraph */
 		for (c = paraText; *c != '\0' && *c != '\n'; c++)
 			;
-		firstLineLen = c - paraText;
+
+		firstLineLen    = c - paraText;
 		secondLineStart = *c == '\0' ? paraText : c + 1;
 		firstLineIndent = findLeftMargin(paraText, firstLineLen, tabDist);
-		leftMargin = findLeftMargin(secondLineStart, paraEnd - paraStart - (secondLineStart - paraText), tabDist);
+		leftMargin      = findLeftMargin(secondLineStart, paraEnd - paraStart - (secondLineStart - paraText), tabDist);
 
 		/* Fill the paragraph */
-		filledText = fillParagraph(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar, &len);
-		XtFree(paraText);
+		std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar, &len);
 
 		/* Replace it in the buffer */
-		buf->BufReplace(paraStart, fillEnd, filledText);
-		XtFree(filledText);
+		buf->BufReplaceEx(paraStart, fillEnd, filledText);
 
 		/* move on to the next paragraph */
 		paraStart += len;
 	}
 
 	/* Free the buffer and return its contents */
-	filledText = buf->BufGetAll();
+	std::string filledText = buf->BufGetAllEx();
 	*filledLen = buf->length_;
 	delete buf;
 	return filledText;
@@ -632,20 +636,21 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 ** True) calculated using tabDist, and spaces.  Returns a newly allocated
 ** string as the function result, and the length of the new string in filledLen.
 */
-static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen) {
-	char *cleanedText, *outText, *indentString, *leadIndentStr, *outPtr, *c, *b;
+static std::string fillParagraphEx(const std::string &text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen) {
+	char *outText, *indentString, *leadIndentStr, *b;
 	int col, cleanedLen, indentLen, leadIndentLen, nLines = 1;
-	int inWhitespace, inMargin;
+	int inWhitespace;
 
 	/* remove leading spaces, convert newlines to spaces */
-	cleanedText = XtMalloc(strlen(text) + 1);
-	outPtr = cleanedText;
-	inMargin = True;
-	for (c = text; *c != '\0'; c++) {
-		if (*c == '\t' || *c == ' ') {
+	char *cleanedText = XtMalloc(text.size() + 1);
+	char *outPtr = cleanedText;
+	int inMargin = True;
+	
+	for(char ch : text) {
+		if (ch == '\t' || ch == ' ') {
 			if (!inMargin)
-				*outPtr++ = *c;
-		} else if (*c == '\n') {
+				*outPtr++ = ch;
+		} else if (ch == '\n') {
 			if (inMargin) {
 				/* a newline before any text separates paragraphs, so leave
 				   it in, back up, and convert the previous space back to \n */
@@ -657,10 +662,11 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int 
 				*outPtr++ = ' ';
 			inMargin = True;
 		} else {
-			*outPtr++ = *c;
+			*outPtr++ = ch;
 			inMargin = False;
 		}
 	}
+	
 	cleanedLen = outPtr - cleanedText;
 	*outPtr = '\0';
 
@@ -669,7 +675,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int 
 	   margin width is exceeded, search backward for beginning of the word
 	   and convert the last whitespace character into a newline */
 	col = firstLineIndent;
-	for (c = cleanedText; *c != '\0'; c++) {
+	for (char *c = cleanedText; *c != '\0'; c++) {
 		if (*c == '\n')
 			col = leftMargin;
 		else
@@ -703,7 +709,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int 
 	/* prepend the indent string to each line of the filled text */
 	strncpy(outPtr, leadIndentStr, leadIndentLen);
 	outPtr += leadIndentLen;
-	for (c = cleanedText; *c != '\0'; c++) {
+	for (char *c = cleanedText; *c != '\0'; c++) {
 		*outPtr++ = *c;
 		if (*c == '\n') {
 			strncpy(outPtr, indentString, indentLen);
@@ -721,7 +727,11 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int 
 	XtFree(leadIndentStr);
 	XtFree(indentString);
 	*filledLen = outPtr - outText;
-	return outText;
+	
+	std::string result = outText;
+	XtFree(outText);
+	
+	return result;
 }
 
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars) {
