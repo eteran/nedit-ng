@@ -94,8 +94,8 @@ void HandleXSelections(Widget w) {
 
 	/* Remove any existing selection handlers for other widgets */
 	for (const auto &pair : buf->modifyProcs_) {
-		if (pair.callback == modifiedCB) {
-			buf->BufRemoveModifyCB(pair.callback, pair.argument);
+		if (pair.first == modifiedCB) {
+			buf->BufRemoveModifyCB(pair.first, pair.second);
 			break;
 		}
 	}
@@ -111,9 +111,11 @@ void HandleXSelections(Widget w) {
 void StopHandlingXSelections(Widget w) {
 	TextBuffer *buf = ((TextWidget)w)->text.textD->buffer;
 
-	for (const auto &pair : buf->modifyProcs_) {
-		if (pair.callback == modifiedCB && pair.argument == w) {
-			buf->BufRemoveModifyCB(pair.callback, pair.argument);
+
+	for (auto it = buf->modifyProcs_.begin(); it != buf->modifyProcs_.end(); ++it) {
+		auto &pair = *it;
+		if (pair.first == modifiedCB && pair.second == w) {
+			buf->modifyProcs_.erase(it);
 			return;
 		}
 	}

@@ -28,6 +28,7 @@
 
 #include "TextBuffer.h"
 #include "rangeset.h"
+#include "RangesetTable.h"
 
 #include <algorithm>
 #include <cctype>
@@ -359,14 +360,12 @@ char chooseNullSubsChar(char hist[256]) {
 }
 
 void addPadding(char *string, int startIndent, int toIndent, int tabDist, int useTabs, char nullSubsChar, int *charsAdded) {
-	char *outPtr;
-	int len, indent;
 
-	indent = startIndent;
-	outPtr = string;
+	int indent = startIndent;
+	char *outPtr = string;
 	if (useTabs) {
 		while (indent < toIndent) {
-			len = TextBuffer::BufCharWidth('\t', indent, tabDist, nullSubsChar);
+			int len = TextBuffer::BufCharWidth('\t', indent, tabDist, nullSubsChar);
 			if (len > 1 && indent + len <= toIndent) {
 				*outPtr++ = '\t';
 				indent += len;
@@ -990,9 +989,7 @@ TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSi
 TextBuffer::~TextBuffer() {
 	XtFree(buf_);
 
-	if (rangesetTable_) {
-		RangesetTableFree(rangesetTable_);
-	}
+	delete rangesetTable_;
 }
 
 /*
@@ -1826,8 +1823,7 @@ int TextBuffer::BufGetHighlightPos(int *start, int *end, int *isRect, int *rectS
 ** Add a callback routine to be called when the buffer is modified
 */
 void TextBuffer::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
-	CallbackPair<bufModifyCallbackProc> pair{bufModifiedCB, cbArg};
-	modifyProcs_.push_back(pair);
+	modifyProcs_.emplace_back(bufModifiedCB, cbArg);
 }
 
 /*
@@ -1835,14 +1831,13 @@ void TextBuffer::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg
 ** normal priority callbacks.
 */
 void TextBuffer::BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
-	CallbackPair<bufModifyCallbackProc> pair{bufModifiedCB, cbArg};
-	modifyProcs_.push_front(pair);
+	modifyProcs_.emplace_front(bufModifiedCB, cbArg);
 }
 
 void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
 	for (auto it = modifyProcs_.begin(); it != modifyProcs_.end(); ++it) {
-		CallbackPair<bufModifyCallbackProc> &pair = *it;
-		if (pair.callback == bufModifiedCB && pair.argument == cbArg) {
+		auto &pair = *it;
+		if (pair.first == bufModifiedCB && pair.second == cbArg) {
 			modifyProcs_.erase(it);
 			return;
 		}
@@ -1856,15 +1851,14 @@ void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cb
 */
 void TextBuffer::BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg) {
 
-	CallbackPair<bufPreDeleteCallbackProc> pair{bufPreDeleteCB, cbArg};
-	preDeleteProcs_.push_back(pair);
+	preDeleteProcs_.emplace_back(bufPreDeleteCB, cbArg);
 }
 
 void TextBuffer::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg) {
 
 	for (auto it = preDeleteProcs_.begin(); it != preDeleteProcs_.end(); ++it) {
-		CallbackPair<bufPreDeleteCallbackProc> &pair = *it;
-		if (pair.callback == bufPreDeleteCB && pair.argument == cbArg) {
+		auto &pair = *it;
+		if (pair.first == bufPreDeleteCB && pair.second == cbArg) {
 			preDeleteProcs_.erase(it);
 			return;
 		}
@@ -1948,54 +1942,6 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 }
 
 /*
-** Expand a single character from the text buffer into it's screen
-** representation (which may be several characters for a tab or a
-** control code).  Returns the number of characters added to "outStr".
-** "indent" is the number of characters from the start of the line
-** for figuring tabs.  Output string is guranteed to be shorter or
-** equal in length to MAX_EXP_CHAR_LEN
-*/
-std::string TextBuffer::BufExpandCharacterEx(char c, int indent, int tabDist, char nullSubsChar) {
-
-	/* Convert tabs to spaces */
-	if (c == '\t') {
-
-		const int nSpaces = tabDist - (indent % tabDist);
-
-
-		std::string outStr;
-		outStr.reserve(nSpaces);
-
-		auto outPtr = std::back_inserter(outStr);
-
-		for (int i = 0; i < nSpaces; i++) {
-			*outPtr++ = ' ';
-		}
-
-		return outStr;
-	}
-
-	/* Convert ASCII control
-	   codes to readable character sequences */
-	if (c == nullSubsChar) {
-		return "<nul>";
-	}
-
-	if (((unsigned char)c) <= 31) {
-		char buf[MAX_EXP_CHAR_LEN];
-		snprintf(buf, sizeof(buf), "<%s>", ControlCodeTable[(unsigned char)c]);
-		return buf;
-	}
-
-	if (c == 127) {
-		return "<del>";
-	}
-
-	/* Otherwise, just return the character */
-	return std::string(1, c);
-}
-
-/*
 ** Return the length in displayed characters of character "c" expanded
 ** for display (as discussed above in BufGetExpandedChar).  If the
 ** buffer for which the character width is being measured is doing null
@@ -2026,8 +1972,10 @@ int TextBuffer::BufCountDispChars(int lineStartPos, int targetPos) const {
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
 	pos = lineStartPos;
-	while (pos < targetPos && pos < length_)
+	while (pos < targetPos && pos < length_) {
 		charCount += BufGetExpandedChar(pos++, charCount, expandedChar);
+	}
+	
 	return charCount;
 }
 
@@ -2369,14 +2317,18 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 ** a null-containing string.  There is no time penalty for calling this
 ** routine if no substitution has been done.
 */
-void TextBuffer::BufUnsubstituteNullChars(char *string) {
-	char *c, subsChar = nullSubsChar_;
+void TextBuffer::BufUnsubstituteNullChars(char *string) const {
+	const char subsChar = nullSubsChar_;
 
-	if (subsChar == '\0')
+	if (subsChar == '\0') {
 		return;
-	for (c = string; *c != '\0'; c++)
-		if (*c == subsChar)
+	}
+	
+	for (char *c = string; *c != '\0'; c++) {
+		if (*c == subsChar) {
 			*c = '\0';
+		}
+	}
 }
 
 /*
@@ -2385,19 +2337,18 @@ void TextBuffer::BufUnsubstituteNullChars(char *string) {
 ** a null-containing string.  There is no time penalty for calling this
 ** routine if no substitution has been done.
 */
-void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) {
-	char subsChar = nullSubsChar_;
+void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) const {
+	const char subsChar = nullSubsChar_;
 
-	if (subsChar == '\0')
+	if (subsChar == '\0') {
 		return;
+	}
 
-	std::transform(string.begin(), string.end(), string.begin(), [subsChar](char ch) {
+	for(char &ch : string) {
 		if (ch == subsChar) {
-			return '\0';
-		}
-
-		return ch;
-	});
+			ch = '\0';
+		}	
+	}
 }
 
 /*
@@ -2616,10 +2567,11 @@ std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 	}
 
 	/* If the selection is not rectangular, return the selected range */
-	if (isRect)
+	if (isRect) {
 		return BufGetTextInRectEx(start, end, rectStart, rectEnd);
-	else
+	} else {
 		return BufGetRangeEx(start, end);
+	}
 }
 
 /*
@@ -2629,7 +2581,7 @@ std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText) {
 
 	for (const auto &pair : modifyProcs_) {
-		(pair.callback)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.argument);
+		(pair.first)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.second);
 	}
 }
 
@@ -2640,7 +2592,7 @@ void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyl
 void TextBuffer::callPreDeleteCBs(int pos, int nDeleted) {
 
 	for (const auto &pair : preDeleteProcs_) {
-		(pair.callback)(pos, nDeleted, pair.argument);
+		(pair.first)(pos, nDeleted, pair.second);
 	}
 }
 

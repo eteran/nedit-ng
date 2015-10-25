@@ -34,6 +34,7 @@
 #include "calltips.h"
 #include "highlight.h"
 #include "rangeset.h"
+#include "RangesetTable.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2020,7 +2021,7 @@ static int styleOfPos(textDisp *textD, int lineStartPos, int lineLen, int lineIn
 		style |= SECONDARY_MASK;
 	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
 	if (buf->rangesetTable_) {
-		int rangesetIndex = RangesetIndex1ofPos(buf->rangesetTable_, pos, True);
+		int rangesetIndex = buf->rangesetTable_->RangesetIndex1ofPos(pos, True);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class
@@ -3369,12 +3370,12 @@ static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground) {
 		buf = textD->buffer;
 		tab = buf->rangesetTable_;
 
-		valid = RangesetTableGetColorValid(tab, ind, &color);
+		valid = tab->RangesetTableGetColorValid(ind, &color);
 		if (valid == 0) {
-			color_name = RangesetTableGetColorName(tab, ind);
+			color_name = tab->RangesetTableGetColorName(ind);
 			if (color_name)
 				color = allocBGColor(textD->w, color_name, &valid);
-			RangesetTableAssignColorPixel(tab, ind, color, valid);
+			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
 		if (valid > 0) {
 			return color;

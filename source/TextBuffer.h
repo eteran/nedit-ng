@@ -42,11 +42,6 @@ struct RangesetTable;
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
-template <class T> struct CallbackPair {
-	T callback;
-	void *argument;
-};
-
 struct TextBuffer {
 public:
 	TextBuffer();
@@ -58,7 +53,6 @@ public:
 public:
 	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
-	static std::string BufExpandCharacterEx(char c, int indent, int tabDist, char nullSubsChar);
 
 private:
 	
@@ -134,8 +128,8 @@ public:
 	void BufSetTabDistance(int tabDist);
 	void BufUnhighlight();
 	void BufUnselect();
-	void BufUnsubstituteNullChars(char *string);
-	void BufUnsubstituteNullCharsEx(std::string &string);
+	void BufUnsubstituteNullChars(char *string) const;
+	void BufUnsubstituteNullCharsEx(std::string &string) const;
 	int BufGetLength() const;
 
 private:
@@ -175,8 +169,8 @@ public:
 	TextSelection highlight_;	
 	int tabDist_; /* equiv. number of characters in a tab */
 	int useTabs_; /* True if buffer routines are allowed to use tabs for padding in rectangular operations */
-	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs_;       /* procedures to call when buffer is modified to redisplay contents */
-	std::deque<CallbackPair<bufPreDeleteCallbackProc>> preDeleteProcs_; /* procedure to call before text is deleted from the buffer; at most one is supported. */
+	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       /* procedures to call when buffer is modified to redisplay contents */
+	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; /* procedure to call before text is deleted from the buffer; at most one is supported. */
 	int cursorPosHint_;            /* hint for reasonable cursor position after a buffer modification operation */
 	char nullSubsChar_;            /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it */
 	RangesetTable *rangesetTable_; /* current range sets */

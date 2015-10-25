@@ -37,6 +37,7 @@
 #include "parse.h"
 #include "search.h"
 #include "server.h"
+#include "RangesetTable.h"
 #include "shell.h"
 #include "smartIndent.h"
 #include "userCmds.h"
@@ -3258,9 +3259,9 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	text_lines = (char **)XtMalloc(sizeof(char *) * (nlines + 1));
 	for (n = 0; n < nlines; n++) {
 		test_strings[n] = (XmString)0;
-		text_lines[n] = (char *)0;
+		text_lines[n] = nullptr;
 	}
-	text_lines[n] = (char *)0; /* make sure this is a null-terminated table */
+	text_lines[n] = nullptr; /* make sure this is a null-terminated table */
 
 	/* pick up the tabDist value */
 	tabDist = window->buffer->tabDist_;
@@ -4351,7 +4352,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		return True;
 	}
 
-	rangesetList = RangesetGetList(rangesetTable);
+	rangesetList = rangesetTable->RangesetGetList();
 	nRangesets = strlen((char *)rangesetList);
 	for (i = 0; i < nRangesets; i++) {
 		element.tag = INT_TAG;
@@ -4414,11 +4415,11 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 		return wrongNArgsErr(errMsg);
 
 	if (rangesetTable == nullptr) {
-		window->buffer->rangesetTable_ = rangesetTable = RangesetTableAlloc(window->buffer);
+		window->buffer->rangesetTable_ = rangesetTable = new RangesetTable(window->buffer);
 	}
 
 	if (nArgs == 0) {
-		label = RangesetCreate(rangesetTable);
+		label = rangesetTable->RangesetCreate();
 
 		result->tag = INT_TAG;
 		result->val.n = label;
@@ -4430,12 +4431,12 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 		result->tag = ARRAY_TAG;
 		result->val.arrayPtr = ArrayNew();
 
-		if (nRangesetsRequired > nRangesetsAvailable(rangesetTable))
+		if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
 			return True;
 
 		for (i = 0; i < nRangesetsRequired; i++) {
 			element.tag = INT_TAG;
-			element.val.n = RangesetCreate(rangesetTable);
+			element.val.n = rangesetTable->RangesetCreate();
 
 			sprintf(indexStr, "%d", i);
 			allocIndexStr = AllocString(strlen(indexStr) + 1);
@@ -4482,7 +4483,7 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, 
 				M_FAILURE("Invalid key in array in %s");
 			}
 
-			if (!readIntArg(element, &label, errMsg) || !RangesetLabelOK(label)) {
+			if (!readIntArg(element, &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 				M_FAILURE("Invalid rangeset label in array in %s");
 			}
 
@@ -4490,15 +4491,15 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		}
 
 		for (i = 0; i < arraySize; i++) {
-			RangesetForget(rangesetTable, deleteLabels[i]);
+			rangesetTable->RangesetForget(deleteLabels[i]);
 		}
 	} else {
-		if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+		if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 			M_FAILURE("Invalid rangeset label in %s");
 		}
 
 		if (rangesetTable != nullptr) {
-			RangesetForget(rangesetTable, label);
+			rangesetTable->RangesetForget(label);
 		}
 	}
 
@@ -4539,13 +4540,13 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 		return True;
 	}
 
-	rangesetList = RangesetGetList(rangesetTable);
+	rangesetList = rangesetTable->RangesetGetList();
 	nRangesets = strlen((char *)rangesetList);
 	for (i = 0; i < nRangesets; ++i) {
 		label = rangesetList[i];
-		rangeset = RangesetFetch(rangesetTable, label);
+		rangeset = rangesetTable->RangesetFetch(label);
 		if (rangeset) {
-			rangeset_name = RangesetGetName(rangeset);
+			rangeset_name = rangeset->RangesetGetName();
 			if (strcmp(name, rangeset_name ? rangeset_name : "") == 0) {
 				element.tag = INT_TAG;
 				element.val.n = label;
@@ -4585,7 +4586,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 	if (nArgs < 1 || nArgs > 3)
 		return wrongNArgsErr(errMsg);
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4593,7 +4594,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	targetRangeset = RangesetFetch(rangesetTable, label);
+	targetRangeset = rangesetTable->RangesetFetch(label);
 
 	if (targetRangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
@@ -4606,23 +4607,23 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			M_FAILURE("Selection missing or rectangular in call to %s");
 		}
-		if (!RangesetAddBetween(targetRangeset, start, end)) {
+		if (!targetRangeset->RangesetAddBetween(start, end)) {
 			M_FAILURE("Failure to add selection in %s");
 		}
 	}
 
 	if (nArgs == 2) {
 		/* add ranges taken from a second set */
-		if (!readIntArg(argList[1], &label, errMsg) || !RangesetLabelOK(label)) {
+		if (!readIntArg(argList[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 			M_FAILURE("Second parameter is an invalid rangeset label in %s");
 		}
 
-		sourceRangeset = RangesetFetch(rangesetTable, label);
+		sourceRangeset = rangesetTable->RangesetFetch(label);
 		if (sourceRangeset == nullptr) {
 			M_FAILURE("Second rangeset does not exist in %s");
 		}
 
-		RangesetAdd(targetRangeset, sourceRangeset);
+		targetRangeset->RangesetAdd(sourceRangeset);
 	}
 
 	if (nArgs == 3) {
@@ -4650,7 +4651,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 			end = temp;
 		}
 
-		if ((start != end) && !RangesetAddBetween(targetRangeset, start, end)) {
+		if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
 			M_FAILURE("Failed to add range in %s");
 		}
 	}
@@ -4658,7 +4659,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 	/* (to) which range did we just add? */
 	if (nArgs != 2 && start >= 0) {
 		start = (start + end) / 2; /* "middle" of added range */
-		index = 1 + RangesetFindRangeOfPos(targetRangeset, start, False);
+		index = 1 + targetRangeset->RangesetFindRangeOfPos(start, False);
 	} else {
 		index = 0;
 	}
@@ -4686,7 +4687,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4694,7 +4695,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	targetRangeset = RangesetFetch(rangesetTable, label);
+	targetRangeset = rangesetTable->RangesetFetch(label);
 	if (targetRangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -4704,20 +4705,20 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			M_FAILURE("Selection missing or rectangular in call to %s");
 		}
-		RangesetRemoveBetween(targetRangeset, start, end);
+		targetRangeset->RangesetRemoveBetween(start, end);
 	}
 
 	if (nArgs == 2) {
 		/* remove ranges taken from a second set */
-		if (!readIntArg(argList[1], &label, errMsg) || !RangesetLabelOK(label)) {
+		if (!readIntArg(argList[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 			M_FAILURE("Second parameter is an invalid rangeset label in %s");
 		}
 
-		sourceRangeset = RangesetFetch(rangesetTable, label);
+		sourceRangeset = rangesetTable->RangesetFetch(label);
 		if (sourceRangeset == nullptr) {
 			M_FAILURE("Second rangeset does not exist in %s");
 		}
-		RangesetRemove(targetRangeset, sourceRangeset);
+		targetRangeset->RangesetRemove(sourceRangeset);
 	}
 
 	if (nArgs == 3) {
@@ -4743,7 +4744,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 			end = temp;
 		}
 
-		RangesetRemoveBetween(targetRangeset, start, end);
+		targetRangeset->RangesetRemoveBetween(start, end);
 	}
 
 	/* set up result */
@@ -4765,7 +4766,7 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4773,12 +4774,12 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, D
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	if (RangesetInverse(rangeset) < 0) {
+	if (rangeset->RangesetInverse() < 0) {
 		M_FAILURE("Problem inverting rangeset in %s");
 	}
 
@@ -4805,15 +4806,15 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
 	if (rangesetTable != nullptr) {
-		rangeset = RangesetFetch(rangesetTable, label);
+		rangeset = rangesetTable->RangesetFetch(label);
 	}
 
-	RangesetGetInfo(rangeset, &defined, &label, &count, &color, &name, &mode);
+	rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
 
 	/* set up result */
 	result->tag = ARRAY_TAG;
@@ -4869,7 +4870,7 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4878,18 +4879,18 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 	}
 
 	ok = False;
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset != nullptr) {
 		if (nArgs == 1) {
-			rangeIndex = RangesetGetNRanges(rangeset) - 1;
-			ok = RangesetFindRangeNo(rangeset, 0, &start, &dummy);
-			ok &= RangesetFindRangeNo(rangeset, rangeIndex, &dummy, &end);
+			rangeIndex = rangeset->RangesetGetNRanges() - 1;
+			ok  = rangeset->RangesetFindRangeNo(0, &start, &dummy);
+			ok &= rangeset->RangesetFindRangeNo(rangeIndex, &dummy, &end);
 			rangeIndex = -1;
 		} else if (nArgs == 2) {
 			if (!readIntArg(argList[1], &rangeIndex, errMsg)) {
 				return False;
 			}
-			ok = RangesetFindRangeNo(rangeset, rangeIndex - 1, &start, &end);
+			ok = rangeset->RangesetFindRangeNo(rangeIndex - 1, &start, &end);
 		}
 	}
 
@@ -4930,7 +4931,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4938,7 +4939,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -4954,7 +4955,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
-		rangeIndex = RangesetFindRangeOfPos(rangeset, pos, False) + 1;
+		rangeIndex = rangeset->RangesetFindRangeOfPos(pos, False) + 1;
 	}
 
 	/* set up result */
@@ -4980,7 +4981,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4988,7 +4989,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -5000,7 +5001,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 		}
 	}
 
-	RangesetAssignColorName(rangeset, color_name);
+	rangeset->RangesetAssignColorName(color_name);
 
 	/* set up result */
 	result->tag = NO_TAG;
@@ -5023,7 +5024,7 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -5031,7 +5032,7 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -5043,7 +5044,7 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		}
 	}
 
-	RangesetAssignName(rangeset, name);
+	rangeset->RangesetAssignName(name);
 
 	/* set up result */
 	result->tag = NO_TAG;
@@ -5067,7 +5068,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readIntArg(argList[0], &label, errMsg) || !RangesetLabelOK(label)) {
+	if (!readIntArg(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -5075,7 +5076,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = RangesetFetch(rangesetTable, label);
+	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset == nullptr) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -5089,7 +5090,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		}
 	}
 
-	ok = RangesetChangeModifyResponse(rangeset, update_fn_name);
+	ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
 
 	if (!ok) {
 		M_FAILURE("Second parameter is not a valid mode in %s");

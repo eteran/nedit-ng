@@ -1,9 +1,9 @@
 /*******************************************************************************
-*									       *
-* rangeset.h	 -- Nirvana Editor rangest header			       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                                                                              *
+* rangeset.h         -- Nirvana Editor rangest header                          *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
@@ -11,67 +11,76 @@
 * Motif or Open Motif. See README for details.                                 *
 *                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or	       *
-* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License	       *
-* for more details.							       *
-*									       *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA	02111-1307 USA				       *
-*									       *
-* Nirvana Text Editor							       *
-* Sep 26, 2002								       *
-*									       *
-* Written by Tony Balinski with contributions from Andrew Hood		       *
-*									       *
-* Modifications:							       *
-*									       *
-*									       *
+* Place, Suite 330, Boston, MA        02111-1307 USA                           *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* Sep 26, 2002                                                                 *
+*                                                                              *
+* Written by Tony Balinski with contributions from Andrew Hood                 *
+*                                                                              *
+* Modifications:                                                               *
+*                                                                              *
+*                                                                              *
 *******************************************************************************/
-#ifndef rangeset_h_DEFINED
-#define rangeset_h_DEFINED
+#ifndef RANGESET_H_
+#define RANGESET_H_
 
 #include <Xm/Xm.h>
 
 #define N_RANGESETS 63
 
-struct Range;
 struct Rangeset;
+struct TextBuffer;
 
-void RangesetRefreshRange(Rangeset *rangeset, int start, int end);
-void RangesetEmpty(Rangeset *rangeset);
-void RangesetInit(Rangeset *rangeset, int label, TextBuffer *buf);
-int RangesetChangeModifyResponse(Rangeset *rangeset, const char *name);
-int RangesetFindRangeNo(Rangeset *rangeset, int index, int *start, int *end);
-int RangesetFindRangeOfPos(Rangeset *rangeset, int pos, int incl_end);
-int RangesetCheckRangeOfPos(Rangeset *rangeset, int pos);
-int RangesetInverse(Rangeset *p);
-int RangesetAdd(Rangeset *origSet, Rangeset *plusSet);
-int RangesetAddBetween(Rangeset *rangeset, int start, int end);
-int RangesetRemove(Rangeset *origSet, Rangeset *minusSet);
-int RangesetRemoveBetween(Rangeset *rangeset, int start, int end);
-int RangesetGetNRanges(Rangeset *rangeset);
-void RangesetGetInfo(Rangeset *rangeset, int *defined, int *label, int *count, const char **color, const char **name, const char **mode);
-RangesetTable *RangesetTableAlloc(TextBuffer *buf);
-RangesetTable *RangesetTableFree(RangesetTable *table);
-RangesetTable *RangesetTableClone(RangesetTable *srcTable, TextBuffer *destBuffer);
-int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
-int RangesetLabelOK(int label);
-int RangesetCreate(RangesetTable *table);
-int nRangesetsAvailable(RangesetTable *table);
-Rangeset *RangesetForget(RangesetTable *table, int label);
-Rangeset *RangesetFetch(RangesetTable *table, int label);
-unsigned char *RangesetGetList(RangesetTable *table);
-void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
-void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
-int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
-int RangesetAssignColorName(Rangeset *rangeset, char *color_name);
-int RangesetAssignColorPixel(Rangeset *rangeset, Pixel color, int ok);
-char *RangesetGetName(Rangeset *rangeset);
-int RangesetAssignName(Rangeset *rangeset, char *name);
-int RangesetGetColorValid(Rangeset *rangeset, Pixel *color);
-char *RangesetTableGetColorName(RangesetTable *table, int index);
-int RangesetTableGetColorValid(RangesetTable *table, int index, Pixel *color);
-int RangesetTableAssignColorPixel(RangesetTable *table, int index, Pixel color, int ok);
+struct Range {
+	int start;
+	int end; /* range from [start-]end */
+};
 
-#endif /* rangeset_h_DEFINED */
+typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
+
+struct Rangeset {
+public:
+	char *RangesetGetName();
+	int RangesetAdd(Rangeset *plusSet);
+	int RangesetAddBetween(int start, int end);
+	int RangesetAssignColorName(char *color_name);
+	int RangesetAssignColorPixel(Pixel color, int ok);
+	int RangesetAssignName(char *name);
+	int RangesetChangeModifyResponse(const char *name);
+	int RangesetCheckRangeOfPos(int pos);
+	int RangesetFindRangeNo(int index, int *start, int *end);
+	int RangesetFindRangeOfPos(int pos, int incl_end);
+	int RangesetGetColorValid(Pixel *color);
+	int RangesetGetNRanges();
+	int RangesetInverse();
+	int RangesetRemove(Rangeset *minusSet);
+	int RangesetRemoveBetween(int start, int end);
+	void RangesetEmpty();
+	void RangesetGetInfo(int *defined, int *label, int *count, const char **color, const char **name, const char **mode);
+	void RangesetRefreshRange(int start, int end);
+	void RangesetInit(int label, TextBuffer *buf);
+	
+public:
+	RangesetUpdateFn *update_fn; /* modification update function */
+	const char *update_name;     /* update function name */
+	int maxpos;                  /* text buffer maxpos */
+	int last_index;              /* a place to start looking */
+	int n_ranges;                /* how many ranges in ranges */
+	Range *ranges;               /* the ranges table */
+	unsigned char label;         /* a number 1-63 */
+
+	signed char color_set; /* 0: unset; 1: set; -1: invalid */
+	char *color_name;      /* the name of an assigned color */
+	Pixel color;           /* the value of a particular color */
+	TextBuffer *buf;       /* the text buffer of the rangeset */
+	char *name;            /* name of rangeset */
+};
+
+#endif

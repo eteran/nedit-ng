@@ -49,6 +49,7 @@
 #include "n.bm"
 #include "windowTitle.h"
 #include "interpret.h"
+#include "RangesetTable.h"
 #include "rangeset.h"
 #include "MotifHelper.h"
 #include "../util/clearcase.h"
@@ -3742,7 +3743,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	   else the rangesets do not be highlighted (colored) properly
 	   if syntax highlighting is on.
 	*/
-	window->buffer->rangesetTable_ = RangesetTableClone(orgWin->buffer->rangesetTable_, window->buffer);
+	window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *orgWin->buffer->rangesetTable_);
 
 	/* Syntax highlighting */
 	window->languageMode = orgWin->languageMode;
