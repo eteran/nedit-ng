@@ -14,6 +14,8 @@ find_library(LibM m)
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
 add_executable(nedit
+	TextBuffer.cpp
+	TextSelection.cpp
 	calltips.cpp
 	file.cpp
 	help.cpp
@@ -45,7 +47,6 @@ add_executable(nedit
 	userCmds.cpp
 	window.cpp
 	windowTitle.cpp
-	TextBuffer.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet01.inc

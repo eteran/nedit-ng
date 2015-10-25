@@ -27,6 +27,7 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
+#include "TextSelection.h"
 #include <string>
 #include <deque>
 
@@ -38,19 +39,6 @@
 
 struct RangesetTable;
 
-struct Selection {
-	char selected;    /* True if the selection is active */
-	char rectangular; /* True if the selection is rectangular */
-	char zeroWidth;   /* Width 0 selections aren't "real" selections, but
-	                      they can be useful when creating rectangular
-	                      selections from the keyboard. */
-	int start;        /* Pos. of start of selection, or if rectangular
-	                       start of line containing it. */
-	int end;          /* Pos. of end of selection, or if rectangular
-	                       end of line containing it. */
-	int rectStart;    /* Indent of left edge of rect. selection */
-	int rectEnd;      /* Indent of right edge of rect. selection */
-};
 
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
@@ -150,12 +138,12 @@ public:
 	void BufUnsubstituteNullCharsEx(std::string &string);
 
 private:
-	char *getSelectionText(Selection *sel);  
+	char *getSelectionText(TextSelection *sel);  
 	int insert(int pos, const char *text);
 	int insertEx(int pos, const std::string &text);
 	int searchBackward(int startPos, char searchChar, int *foundPos) const;
 	int searchForward(int startPos, char searchChar, int *foundPos) const;
-	std::string getSelectionTextEx(Selection *sel);
+	std::string getSelectionTextEx(TextSelection *sel);
 	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText);
 	void callPreDeleteCBs(int pos, int nDeleted);
 	void deleteRange(int start, int end);
@@ -167,10 +155,10 @@ private:
 	void overlayRect(int startPos, int rectStart, int rectEnd, const char *insText, int *nDeleted, int *nInserted, int *endPos);
 	void overlayRectEx(int startPos, int rectStart, int rectEnd, const std::string &insText, int *nDeleted, int *nInserted, int *endPos);
 	void reallocateBuf(int newGapStart, int newGapLen);
-	void redisplaySelection(Selection *oldSelection, Selection *newSelection);
-	void removeSelected(Selection *sel);
-	void replaceSelected(Selection *sel, const char *text);
-	void replaceSelectedEx(Selection *sel, const std::string &text); 
+	void redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection);
+	void removeSelected(TextSelection *sel);
+	void replaceSelected(TextSelection *sel, const char *text);
+	void replaceSelectedEx(TextSelection *sel, const std::string &text); 
 	void updateSelections(int pos, int nDeleted, int nInserted);
 		 	
 public:
@@ -180,9 +168,9 @@ public:
 	
 	// TODO(eteran): accessors
 	int length_;        /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length) */	
-	Selection primary_; /* highlighted areas */
-	Selection secondary_;
-	Selection highlight_;
+	TextSelection primary_; /* highlighted areas */
+	TextSelection secondary_;
+	TextSelection highlight_;
 	int tabDist_; /* equiv. number of characters in a tab */
 	int useTabs_; /* True if buffer routines are allowed to use tabs for padding in rectangular operations */
 	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs_;       /* procedures to call when buffer is modified to redisplay contents */

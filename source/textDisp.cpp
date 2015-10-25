@@ -104,7 +104,7 @@ static void clearRect(textDisp *textD, GC gc, int x, int y, int width, int heigh
 static void drawCursor(textDisp *textD, int x, int y);
 static int styleOfPos(textDisp *textD, int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
 static int stringWidth(const textDisp *textD, const char *string, const int length, const int style);
-static int inSelection(Selection *sel, int pos, int lineStartPos, int dispIndex);
+static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIndex);
 static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row, int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
@@ -132,7 +132,7 @@ static void wrappedLineCounter(const textDisp *textD, const TextBuffer *buf, con
 static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
 static int wrapUsesCharacter(textDisp *textD, int lineEndPos);
 static void hideOrShowHScrollBar(textDisp *textD);
-static int rangeTouchesRectSel(Selection *sel, int rangeStart, int rangeEnd);
+static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd);
 static void extendRangeForStyleMods(textDisp *textD, int *start, int *end);
 static int getAbsTopLineNum(textDisp *textD);
 static void offsetAbsLineNum(textDisp *textD, int oldFirstChar);
@@ -2048,7 +2048,7 @@ static int stringWidth(const textDisp *textD, const char *string, const int leng
 ** Return true if position "pos" with indentation "dispIndex" is in
 ** selection "sel"
 */
-static int inSelection(Selection *sel, int pos, int lineStartPos, int dispIndex) {
+static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIndex) {
 	return sel->selected && ((!sel->rectangular && pos >= sel->start && pos < sel->end) || (sel->rectangular && pos >= sel->start && lineStartPos <= sel->end && dispIndex >= sel->rectStart && dispIndex < sel->rectEnd));
 }
 
@@ -3303,7 +3303,7 @@ static void hideOrShowHScrollBar(textDisp *textD) {
 ** Return true if the selection "sel" is rectangular, and touches a
 ** buffer position withing "rangeStart" to "rangeEnd"
 */
-static int rangeTouchesRectSel(Selection *sel, int rangeStart, int rangeEnd) {
+static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd) {
 	return sel->selected && sel->rectangular && sel->end >= rangeStart && sel->start <= rangeEnd;
 }
 
@@ -3313,7 +3313,7 @@ static int rangeTouchesRectSel(Selection *sel, int rangeStart, int rangeEnd) {
 ** contains auxiliary information for coloring or styling text).
 */
 static void extendRangeForStyleMods(textDisp *textD, int *start, int *end) {
-	Selection *sel = &textD->styleBuffer->primary_;
+	TextSelection *sel = &textD->styleBuffer->primary_;
 	int extended = False;
 
 	/* The peculiar protocol used here is that modifications to the style

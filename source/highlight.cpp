@@ -1680,7 +1680,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style) {
 	char *c, bufChar;
 	int pos, modStart, modEnd, minPos = INT_MAX, maxPos = 0;
-	Selection *sel = &styleBuf->primary_;
+	TextSelection *sel = &styleBuf->primary_;
 
 	/* Skip the range already marked for redraw */
 	if (sel->selected) {

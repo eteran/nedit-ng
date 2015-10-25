@@ -3845,7 +3845,7 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, Da
 	(void)nArgs;
 	(void)argList;
 
-	Selection *sel = &window->buffer->primary_;
+	TextSelection *sel = &window->buffer->primary_;
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
@@ -3858,7 +3858,7 @@ static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	(void)nArgs;
 	(void)argList;
 
-	Selection *sel = &window->buffer->primary_;
+	TextSelection *sel = &window->buffer->primary_;
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;

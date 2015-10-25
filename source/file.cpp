@@ -1105,7 +1105,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
 
 void PrintWindow(WindowInfo *window, int selectedOnly) {
 	TextBuffer *buf = window->buffer;
-	Selection *sel = &buf->primary_;
+	TextSelection *sel = &buf->primary_;
 	std::string fileString;
 	int fileLen;
 

@@ -57,7 +57,7 @@ void BeginBlockDrag(TextWidget tw) {
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
 	int fontWidth = textD->fontStruct->max_bounds.width;
-	Selection *sel = &buf->primary_;
+	TextSelection *sel = &buf->primary_;
 	int nLines, mousePos, lineStart;
 	int x, y, lineEnd;
 
@@ -147,7 +147,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	TextBuffer *origBuf = tw->text.dragOrigBuf;
 	int dragXOffset = tw->text.dragXOffset;
 	TextBuffer *tempBuf;
-	Selection *origSel = &origBuf->primary_;
+	TextSelection *origSel = &origBuf->primary_;
 	int rectangular = origSel->rectangular;
 	int overlay, oldDragType = tw->text.dragType;
 	int nLines = tw->text.dragNLines;
@@ -380,7 +380,7 @@ void FinishBlockDrag(TextWidget tw) {
 void CancelBlockDrag(TextWidget tw) {
 	TextBuffer *buf = tw->text.textD->buffer;
 	TextBuffer *origBuf = tw->text.dragOrigBuf;
-	Selection *origSel = &origBuf->primary_;
+	TextSelection *origSel = &origBuf->primary_;
 	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
 
 	dragEndCBStruct endStruct;

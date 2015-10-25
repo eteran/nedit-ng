@@ -56,7 +56,7 @@ static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
-static void maintainSelection(Selection *sel, int pos, int nInserted, int nDeleted);
+static void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted);
 static void maintainPosition(int *position, int modPos, int nInserted, int nDeleted);
 
 /*
@@ -480,13 +480,13 @@ void AddMark(WindowInfo *window, Widget widget, char label) {
 
 	/* store the cursor location and selection position in the table */
 	window->markTable[index].label = label;
-	memcpy(&window->markTable[index].sel, &window->buffer->primary_, sizeof(Selection));
+	memcpy(&window->markTable[index].sel, &window->buffer->primary_, sizeof(TextSelection));
 	window->markTable[index].cursorPos = TextGetCursorPos(widget);
 }
 
 void GotoMark(WindowInfo *window, Widget w, char label, int extendSel) {
 	int index, oldStart, newStart, oldEnd, newEnd, cursorPos;
-	Selection *sel, *oldSel;
+	TextSelection *sel, *oldSel;
 
 	/* look up the mark in the mark table */
 	label = toupper(label);
@@ -548,7 +548,7 @@ void UpdateMarkTable(WindowInfo *window, int pos, int nInserted, int nDeleted) {
 ** Update a selection across buffer modifications specified by
 ** "pos", "nDeleted", and "nInserted".
 */
-static void maintainSelection(Selection *sel, int pos, int nInserted, int nDeleted) {
+static void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted) {
 	if (!sel->selected || pos > sel->end)
 		return;
 	maintainPosition(&sel->start, pos, nInserted, nDeleted);

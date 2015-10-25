@@ -615,7 +615,7 @@ static void loseSelectionCB(Widget w, Atom *selType) {
 	(void)selType;
 
 	TextWidget tw = (TextWidget)w;
-	Selection *sel = &tw->text.textD->buffer->primary_;
+	TextSelection *sel = &tw->text.textD->buffer->primary_;
 	char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
 
 	/* For zero width rect. sel. we give up the selection but keep the

@@ -3599,11 +3599,11 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 	int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight = 0;
 	char *delimiters;
 	Widget text;
-	Selection sel;
+	TextSelection sel;
 	textDisp *textD, *newTextD;
 
 	/* transfer the primary selection */
-	memcpy(&sel, &orgWin->buffer->primary_, sizeof(Selection));
+	memcpy(&sel, &orgWin->buffer->primary_, sizeof(TextSelection));
 
 	if (sel.selected) {
 		if (sel.rectangular)

@@ -812,7 +812,7 @@ void overlayRectInLineEx(const std::string &line, const std::string &insLine, in
 	*outLen = (outPtr - outStr) + temp.size();
 }
 
-void setSelection(Selection *sel, int start, int end) {
+void setSelection(TextSelection *sel, int start, int end) {
 	sel->selected = start != end;
 	sel->zeroWidth = (start == end) ? 1 : 0;
 	sel->rectangular = False;
@@ -820,7 +820,7 @@ void setSelection(Selection *sel, int start, int end) {
 	sel->end = std::max<int>(start, end);
 }
 
-void setRectSelect(Selection *sel, int start, int end, int rectStart, int rectEnd) {
+void setRectSelect(TextSelection *sel, int start, int end, int rectStart, int rectEnd) {
 	sel->selected = rectStart < rectEnd;
 	sel->zeroWidth = (rectStart == rectEnd) ? 1 : 0;
 	sel->rectangular = True;
@@ -830,7 +830,7 @@ void setRectSelect(Selection *sel, int start, int end, int rectStart, int rectEn
 	sel->rectEnd = rectEnd;
 }
 
-int getSelectionPos(Selection *sel, int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int getSelectionPos(TextSelection *sel, int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
 	/* Always fill in the parameters (zero-width can be requested too). */
 	*isRect = sel->rectangular;
 	*start = sel->start;
@@ -845,7 +845,7 @@ int getSelectionPos(Selection *sel, int *start, int *end, int *isRect, int *rect
 /*
 ** Update an individual selection for changes in the corresponding text
 */
-void updateSelection(Selection *sel, int pos, int nDeleted, int nInserted) {
+void updateSelection(TextSelection *sel, int pos, int nDeleted, int nInserted) {
 	if ((!sel->selected && !sel->zeroWidth) || pos > sel->end)
 		return;
 	if (pos + nDeleted <= sel->start) {
@@ -979,22 +979,6 @@ TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSi
 	buf_ = XtMalloc(requestedSize + PreferredGapSize + 1);
 	buf_[requestedSize + PreferredGapSize] = '\0';
 
-	primary_.selected = False;
-	primary_.zeroWidth = False;
-	primary_.rectangular = False;
-	primary_.start = 0;
-	primary_.end = 0;
-	secondary_.selected = False;
-	secondary_.zeroWidth = False;
-	secondary_.start = 0;
-	secondary_.end = 0;
-	secondary_.rectangular = False;
-	highlight_.selected = False;
-	highlight_.zeroWidth = False;
-	highlight_.start = 0;
-	highlight_.end = 0;
-	highlight_.rectangular = False;
-
 #ifdef PURIFY
 	std::fill(&buf_[gapStart_], &buf_[gapEnd_], '.');
 #endif
@@ -1006,8 +990,9 @@ TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSi
 TextBuffer::~TextBuffer() {
 	XtFree(buf_);
 
-	if (rangesetTable_)
+	if (rangesetTable_) {
 		RangesetTableFree(rangesetTable_);
+	}
 }
 
 /*
@@ -1715,14 +1700,14 @@ void TextBuffer::BufCheckDisplay(int start, int end) {
 }
 
 void TextBuffer::BufSelect(int start, int end) {
-	Selection oldSelection = primary_;
+	TextSelection oldSelection = primary_;
 
 	setSelection(&primary_, start, end);
 	redisplaySelection(&oldSelection, &primary_);
 }
 
 void TextBuffer::BufUnselect() {
-	Selection oldSelection = primary_;
+	TextSelection oldSelection = primary_;
 
 	primary_.selected = False;
 	primary_.zeroWidth = False;
@@ -1730,7 +1715,7 @@ void TextBuffer::BufUnselect() {
 }
 
 void TextBuffer::BufRectSelect(int start, int end, int rectStart, int rectEnd) {
-	Selection oldSelection = primary_;
+	TextSelection oldSelection = primary_;
 
 	setRectSelect(&primary_, start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &primary_);
@@ -1766,14 +1751,14 @@ void TextBuffer::BufReplaceSelectedEx(const std::string &text) {
 }
 
 void TextBuffer::BufSecondarySelect(int start, int end) {
-	Selection oldSelection = secondary_;
+	TextSelection oldSelection = secondary_;
 
 	setSelection(&secondary_, start, end);
 	redisplaySelection(&oldSelection, &secondary_);
 }
 
 void TextBuffer::BufSecondaryUnselect() {
-	Selection oldSelection = secondary_;
+	TextSelection oldSelection = secondary_;
 
 	secondary_.selected = False;
 	secondary_.zeroWidth = False;
@@ -1781,7 +1766,7 @@ void TextBuffer::BufSecondaryUnselect() {
 }
 
 void TextBuffer::BufSecRectSelect(int start, int end, int rectStart, int rectEnd) {
-	Selection oldSelection = secondary_;
+	TextSelection oldSelection = secondary_;
 
 	setRectSelect(&secondary_, start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &secondary_);
@@ -1812,14 +1797,14 @@ void TextBuffer::BufReplaceSecSelectEx(const std::string &text) {
 }
 
 void TextBuffer::BufHighlight(int start, int end) {
-	Selection oldSelection = highlight_;
+	TextSelection oldSelection = highlight_;
 
 	setSelection(&highlight_, start, end);
 	redisplaySelection(&oldSelection, &highlight_);
 }
 
 void TextBuffer::BufUnhighlight() {
-	Selection oldSelection = highlight_;
+	TextSelection oldSelection = highlight_;
 
 	highlight_.selected = False;
 	highlight_.zeroWidth = False;
@@ -1827,7 +1812,7 @@ void TextBuffer::BufUnhighlight() {
 }
 
 void TextBuffer::BufRectHighlight(int start, int end, int rectStart, int rectEnd) {
-	Selection oldSelection = highlight_;
+	TextSelection oldSelection = highlight_;
 
 	setRectSelect(&highlight_, start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &highlight_);
@@ -2434,7 +2419,7 @@ int TextBuffer::BufCmpEx(int pos, int len, const std::string &cmpText) {
 	}
 }
 
-char *TextBuffer::getSelectionText(Selection *sel) {
+char *TextBuffer::getSelectionText(TextSelection *sel) {
 	int start, end, isRect, rectStart, rectEnd;
 	char *text;
 
@@ -2574,7 +2559,7 @@ int TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) con
 	return False;
 }
 
-std::string TextBuffer::getSelectionTextEx(Selection *sel) {
+std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 	int start, end, isRect, rectStart, rectEnd;
 	std::string text;
 
@@ -3074,7 +3059,7 @@ void TextBuffer::reallocateBuf(int newGapStart, int newGapLen) {
 ** Call the stored redisplay procedure(s) for this buffer to update the
 ** screen for a change in a selection.
 */
-void TextBuffer::redisplaySelection(Selection *oldSelection, Selection *newSelection) {
+void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection) {
 	int oldStart, oldEnd, newStart, newEnd, ch1Start, ch1End, ch2Start, ch2End;
 
 	/* If either selection is rectangular, add an additional character to
@@ -3131,7 +3116,7 @@ void TextBuffer::redisplaySelection(Selection *oldSelection, Selection *newSelec
 		callModifyCBs(ch2Start, 0, 0, ch2End - ch2Start, std::string());
 }
 
-void TextBuffer::removeSelected(Selection *sel) {
+void TextBuffer::removeSelected(TextSelection *sel) {
 	int start, end;
 	int isRect, rectStart, rectEnd;
 
@@ -3143,9 +3128,9 @@ void TextBuffer::removeSelected(Selection *sel) {
 		BufRemove(start, end);
 }
 
-void TextBuffer::replaceSelected(Selection *sel, const char *text) {
+void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
 	int start, end, isRect, rectStart, rectEnd;
-	Selection oldSelection = *sel;
+	TextSelection oldSelection = *sel;
 
 	/* If there's no selection, return */
 	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
@@ -3163,9 +3148,9 @@ void TextBuffer::replaceSelected(Selection *sel, const char *text) {
 	redisplaySelection(&oldSelection, sel);
 }
 
-void TextBuffer::replaceSelectedEx(Selection *sel, const std::string &text) {
+void TextBuffer::replaceSelectedEx(TextSelection *sel, const std::string &text) {
 	int start, end, isRect, rectStart, rectEnd;
-	Selection oldSelection = *sel;
+	TextSelection oldSelection = *sel;
 
 	/* If there's no selection, return */
 	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
