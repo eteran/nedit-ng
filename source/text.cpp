@@ -1308,7 +1308,7 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
 
 	/* return the contents of the output buffer as a string */
 	outString = outBuf->BufGetAll();
-	*outLen = outBuf->length_;
+	*outLen = outBuf->BufGetLength();
 	delete outBuf;
 	return outString;
 }
@@ -1356,7 +1356,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen) {
 
 	/* return the contents of the output buffer as a string */
 	std::string outString = outBuf->BufGetAllEx();
-	*outLen = outBuf->length_;
+	*outLen = outBuf->BufGetLength();
 	delete outBuf;
 	return outString;
 }
@@ -1404,7 +1404,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 				callCursorMovementCBs(w, event);
 				return;
 			} else if (tw->text.multiClickState == THREE_CLICKS) {
-				textD->buffer->BufSelect(0, textD->buffer->length_);
+				textD->buffer->BufSelect(0, textD->buffer->BufGetLength());
 				return;
 			} else if (tw->text.multiClickState > THREE_CLICKS)
 				tw->text.multiClickState = NO_CLICKS;
@@ -2265,7 +2265,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	TakeMotifDestination(w, e->time);
 	if (deletePendingSelection(w, event))
 		return;
-	if (insertPos == textD->buffer->length_) {
+	if (insertPos == textD->buffer->BufGetLength()) {
 		ringIfNecessary(silent, w);
 		return;
 	}
@@ -2430,14 +2430,14 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
-	if (insertPos == buf->length_) {
+	if (insertPos == buf->BufGetLength()) {
 		ringIfNecessary(silent, w);
 		return;
 	}
 	pos = insertPos;
 
 	if (hasKey("tail", args, nArgs)) {
-		for (; pos < buf->length_; pos++) {
+		for (; pos < buf->BufGetLength(); pos++) {
 			if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
 				break;
 			}
@@ -2449,7 +2449,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
 			pos = endOfWord((TextWidget)w, pos);
 		}
-		for (; pos < buf->length_; pos++) {
+		for (; pos < buf->BufGetLength(); pos++) {
 			if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
 				break;
 			}
@@ -2494,21 +2494,21 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
-	if (insertPos == buf->length_) {
+	if (insertPos == buf->BufGetLength()) {
 		ringIfNecessary(silent, w);
 		return;
 	}
-	pos = std::min<int>(buf->BufEndOfLine(insertPos) + 1, buf->length_);
-	while (pos < buf->length_) {
+	pos = std::min<int>(buf->BufEndOfLine(insertPos) + 1, buf->BufGetLength());
+	while (pos < buf->BufGetLength()) {
 		c = buf->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
 		if (strchr(whiteChars, c) != nullptr)
 			pos++;
 		else
-			pos = std::min<int>(buf->BufEndOfLine(pos) + 1, buf->length_);
+			pos = std::min<int>(buf->BufEndOfLine(pos) + 1, buf->BufGetLength());
 	}
-	TextDSetInsertPosition(textD, std::min<int>(pos + 1, buf->length_));
+	TextDSetInsertPosition(textD, std::min<int>(pos + 1, buf->BufGetLength()));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
@@ -2684,7 +2684,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 			TextDSetScroll(textD, lastTopLine, textD->horizOffset);
 		}
 	} else {
-		TextDSetInsertPosition(textD, textD->buffer->length_);
+		TextDSetInsertPosition(textD, textD->buffer->BufGetLength());
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		checkAutoShowInsertPos(w);
 		callCursorMovementCBs(w, event);
@@ -2718,7 +2718,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		targetLine = std::max<int>(std::min<int>(textD->nVisibleLines - 1, textD->nBufferLines), 0);
 		column = TextDPreferredColumn(textD, &visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
-			if (insertPos >= buf->length_ || textD->topLineNum == lastTopLine) {
+			if (insertPos >= buf->BufGetLength() || textD->topLineNum == lastTopLine) {
 				ringIfNecessary(silent, w);
 				return;
 			}
@@ -2753,7 +2753,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			textD->cursorPreferredCol = -1;
 		}
 	} else { /* "standard" */
-		if (insertPos >= buf->length_ && textD->topLineNum == lastTopLine) {
+		if (insertPos >= buf->BufGetLength() && textD->topLineNum == lastTopLine) {
 			ringIfNecessary(silent, w);
 			return;
 		}
@@ -3058,7 +3058,7 @@ static void selectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	TextBuffer *buf = ((TextWidget)w)->text.textD->buffer;
 
 	cancelDrag(w);
-	buf->BufSelect(0, buf->length_);
+	buf->BufSelect(0, buf->BufGetLength());
 }
 
 static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3410,13 +3410,13 @@ static int endOfWord(TextWidget w, int pos) {
 
 	if (c == ' ' || c == '\t') {
 		if (!spanForward(buf, pos, " \t", False, &endPos))
-			return buf->length_;
+			return buf->BufGetLength();
 	} else if (strchr(delimiters, c)) {
 		if (!spanForward(buf, pos, delimiters, True, &endPos))
-			return buf->length_;
+			return buf->BufGetLength();
 	} else {
 		if (!buf->BufSearchForward(pos, delimiters, &endPos))
-			return buf->length_;
+			return buf->BufGetLength();
 	}
 	return endPos;
 }
@@ -3432,7 +3432,7 @@ static int spanForward(TextBuffer *buf, int startPos, const char *searchChars, i
 	const char *c;
 
 	pos = startPos;
-	while (pos < buf->length_) {
+	while (pos < buf->BufGetLength()) {
 		for (c = searchChars; *c != '\0'; c++)
 			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
 				if (buf->BufGetCharacter(pos) == *c)
@@ -3443,7 +3443,7 @@ static int spanForward(TextBuffer *buf, int startPos, const char *searchChars, i
 		}
 		pos++;
 	}
-	*foundPos = buf->length_;
+	*foundPos = buf->BufGetLength();
 	return False;
 }
 
@@ -3488,7 +3488,7 @@ static void selectLine(Widget w) {
 
 	endPos = textD->buffer->BufEndOfLine(insertPos);
 	startPos = textD->buffer->BufStartOfLine(insertPos);
-	textD->buffer->BufSelect(startPos, std::min<int>(endPos + 1, textD->buffer->length_));
+	textD->buffer->BufSelect(startPos, std::min<int>(endPos + 1, textD->buffer->BufGetLength()));
 	TextDSetInsertPosition(textD, endPos);
 }
 
@@ -3591,7 +3591,7 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	} else if (tw->text.multiClickState == TWO_CLICKS) {
 		startPos = buf->BufStartOfLine(std::min<int>(tw->text.anchor, newPos));
 		endPos = buf->BufEndOfLine(std::max<int>(tw->text.anchor, newPos));
-		buf->BufSelect(startPos, std::min<int>(endPos + 1, buf->length_));
+		buf->BufSelect(startPos, std::min<int>(endPos + 1, buf->BufGetLength()));
 		newPos = newPos < tw->text.anchor ? startPos : endPos;
 	} else
 		buf->BufSelect(tw->text.anchor, newPos);
@@ -3641,7 +3641,7 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
 	/* Create a temporary text buffer and load it with the strings */
 	wrapBuf = new TextBuffer;
 	wrapBuf->BufInsert(0, startLine);
-	wrapBuf->BufInsert(wrapBuf->length_, text);
+	wrapBuf->BufInsert(wrapBuf->BufGetLength(), text);
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
@@ -3651,7 +3651,7 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
 	pos = 0;
 	lineStartPos = 0;
 	limitPos = breakBefore == nullptr ? startLineLen : 0;
-	while (pos < wrapBuf->length_) {
+	while (pos < wrapBuf->BufGetLength()) {
 		c = wrapBuf->BufGetCharacter(pos);
 		if (c == '\n') {
 			lineStartPos = limitPos = pos + 1;
@@ -3675,10 +3675,10 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
 
 	/* Return the wrapped text, possibly including part of startLine */
 	if (breakBefore == nullptr)
-		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->length_);
+		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->BufGetLength());
 	else {
 		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
-		wrappedText = wrapBuf->BufGetRange(startLineLen - *breakBefore, wrapBuf->length_);
+		wrappedText = wrapBuf->BufGetRange(startLineLen - *breakBefore, wrapBuf->BufGetLength());
 	}
 	delete wrapBuf;
 	return wrappedText;

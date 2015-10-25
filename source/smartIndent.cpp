@@ -1427,11 +1427,11 @@ char *WriteSmartIndentString(void) {
 	outBuf = new TextBuffer;
 	for (i = 0; i < NSmartIndentSpecs; i++) {
 		sis = SmartIndentSpecs[i];
-		outBuf->BufInsert(outBuf->length_, "\t");
-		outBuf->BufInsert(outBuf->length_, sis->lmName);
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsert(outBuf->BufGetLength(), sis->lmName);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (isDefaultIndentSpec(sis))
-			outBuf->BufInsert(outBuf->length_, "Default\n");
+			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n");
 		else {
 			insertShiftedMacro(outBuf, (String)sis->initMacro);
 			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
@@ -1440,7 +1440,7 @@ char *WriteSmartIndentString(void) {
 	}
 
 	/* Get the output string, and lop off the trailing newline */
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ > 0 ? outBuf->length_ - 1 : 0);
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() > 0 ? outBuf->BufGetLength() - 1 : 0);
 	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -1484,12 +1484,12 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 
 	if (macro != nullptr) {
 		shiftedMacro = ShiftText(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
-		buf->BufInsert(buf->length_, shiftedMacro);
+		buf->BufInsert(buf->BufGetLength(), shiftedMacro);
 		XtFree(shiftedMacro);
 	}
-	buf->BufInsert(buf->length_, "\t");
-	buf->BufInsert(buf->length_, MacroEndBoundary);
-	buf->BufInsert(buf->length_, "\n");
+	buf->BufInsert(buf->BufGetLength(), "\t");
+	buf->BufInsert(buf->BufGetLength(), MacroEndBoundary);
+	buf->BufInsert(buf->BufGetLength(), "\n");
 }
 
 static int isDefaultIndentSpec(smartIndentRec *indentSpec) {

@@ -340,21 +340,21 @@ char *WriteStylesString(void) {
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		outBuf->BufInsert(outBuf->length_, "\t");
-		outBuf->BufInsert(outBuf->length_, style->name);
-		outBuf->BufInsert(outBuf->length_, ":");
-		outBuf->BufInsert(outBuf->length_, style->color);
+		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsert(outBuf->BufGetLength(), style->name);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), style->color);
 		if (style->bgColor) {
-			outBuf->BufInsert(outBuf->length_, "/");
-			outBuf->BufInsert(outBuf->length_, style->bgColor);
+			outBuf->BufInsert(outBuf->BufGetLength(), "/");
+			outBuf->BufInsert(outBuf->BufGetLength(), style->bgColor);
 		}
-		outBuf->BufInsert(outBuf->length_, ":");
-		outBuf->BufInsert(outBuf->length_, FontTypeNames[style->font]);
-		outBuf->BufInsert(outBuf->length_, "\\n\\\n");
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), FontTypeNames[style->font]);
+		outBuf->BufInsert(outBuf->BufGetLength(), "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	char *outStr = outBuf->BufGetRange(0, outBuf->length_ - (i == 1 ? 0 : 4));
+	char *outStr = outBuf->BufGetRange(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
 	delete outBuf;
 	return outStr;
 }
@@ -372,21 +372,21 @@ std::string WriteStylesStringEx(void) {
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		outBuf->BufInsert(outBuf->length_, "\t");
-		outBuf->BufInsert(outBuf->length_, style->name);
-		outBuf->BufInsert(outBuf->length_, ":");
-		outBuf->BufInsert(outBuf->length_, style->color);
+		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsert(outBuf->BufGetLength(), style->name);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), style->color);
 		if (style->bgColor) {
-			outBuf->BufInsert(outBuf->length_, "/");
-			outBuf->BufInsert(outBuf->length_, style->bgColor);
+			outBuf->BufInsert(outBuf->BufGetLength(), "/");
+			outBuf->BufInsert(outBuf->BufGetLength(), style->bgColor);
 		}
-		outBuf->BufInsert(outBuf->length_, ":");
-		outBuf->BufInsert(outBuf->length_, FontTypeNames[style->font]);
-		outBuf->BufInsert(outBuf->length_, "\\n\\\n");
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), FontTypeNames[style->font]);
+		outBuf->BufInsert(outBuf->BufGetLength(), "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	return outBuf->BufGetRangeEx(0, outBuf->length_ - (i == 1 ? 0 : 4));
+	return outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
 }
 
 /*
@@ -448,22 +448,22 @@ char *WriteHighlightString(void) {
 		if (patSet->nPatterns == 0)
 			continue;
 		written = True;
-		outBuf->BufInsert(outBuf->length_, patSet->languageMode);
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsert(outBuf->length_, "Default\n\t");
+			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n\t");
 		else {
-			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->lineContext));
-			outBuf->BufInsert(outBuf->length_, ":");
-			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->charContext));
-			outBuf->BufInsert(outBuf->length_, "{\n");
-			outBuf->BufInsertEx(outBuf->length_, createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsert(outBuf->length_, "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
+			outBuf->BufInsert(outBuf->BufGetLength(), ":");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
+			outBuf->BufInsert(outBuf->BufGetLength(), "{\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
+			outBuf->BufInsert(outBuf->BufGetLength(), "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ - (written ? 2 : 0));
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
 	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -488,22 +488,22 @@ std::string WriteHighlightStringEx(void) {
 		if (patSet->nPatterns == 0)
 			continue;
 		written = True;
-		outBuf->BufInsert(outBuf->length_, patSet->languageMode);
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsert(outBuf->length_, "Default\n\t");
+			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n\t");
 		else {
-			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->lineContext));
-			outBuf->BufInsert(outBuf->length_, ":");
-			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->charContext));
-			outBuf->BufInsert(outBuf->length_, "{\n");
-			outBuf->BufInsertEx(outBuf->length_, createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsert(outBuf->length_, "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
+			outBuf->BufInsert(outBuf->BufGetLength(), ":");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
+			outBuf->BufInsert(outBuf->BufGetLength(), "{\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
+			outBuf->BufInsert(outBuf->BufGetLength(), "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ - (written ? 2 : 0));
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
 	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -706,36 +706,36 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 
 	for (pn = 0; pn < patSet->nPatterns; pn++) {
 		pat = &patSet->patterns[pn];
-		outBuf->BufInsert(outBuf->length_, indentStr);
-		outBuf->BufInsert(outBuf->length_, pat->name);
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), indentStr);
+		outBuf->BufInsert(outBuf->BufGetLength(), pat->name);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->startRE != nullptr) {
-			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->startRE));
+			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->startRE));
 			XtFree(str);
 		}
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->endRE != nullptr) {
-			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->endRE));
+			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->endRE));
 			XtFree(str);
 		}
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->errorRE != nullptr) {
-			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->errorRE));
+			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->errorRE));
 			XtFree(str);
 		}
-		outBuf->BufInsert(outBuf->length_, ":");
-		outBuf->BufInsert(outBuf->length_, pat->style);
-		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf != nullptr)
-			outBuf->BufInsert(outBuf->length_, pat->subPatternOf);
-		outBuf->BufInsert(outBuf->length_, ":");
+			outBuf->BufInsert(outBuf->BufGetLength(), pat->subPatternOf);
+		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
-			outBuf->BufInsert(outBuf->length_, "D");
+			outBuf->BufInsert(outBuf->BufGetLength(), "D");
 		if (pat->flags & PARSE_SUBPATS_FROM_START)
-			outBuf->BufInsert(outBuf->length_, "R");
+			outBuf->BufInsert(outBuf->BufGetLength(), "R");
 		if (pat->flags & COLOR_ONLY)
-			outBuf->BufInsert(outBuf->length_, "C");
-		outBuf->BufInsert(outBuf->length_, "\n");
+			outBuf->BufInsert(outBuf->BufGetLength(), "C");
+		outBuf->BufInsert(outBuf->BufGetLength(), "\n");
 	}
 	std::string outStr = outBuf->BufGetAllEx();
 	delete outBuf;

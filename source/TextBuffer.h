@@ -39,7 +39,6 @@
 
 struct RangesetTable;
 
-
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
@@ -59,6 +58,7 @@ public:
 public:
 	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
+	static std::string BufExpandCharacterEx(char c, int indent, int tabDist, char nullSubsChar);
 
 private:
 	
@@ -136,6 +136,7 @@ public:
 	void BufUnselect();
 	void BufUnsubstituteNullChars(char *string);
 	void BufUnsubstituteNullCharsEx(std::string &string);
+	int BufGetLength() const;
 
 private:
 	char *getSelectionText(TextSelection *sel);  
@@ -161,16 +162,17 @@ private:
 	void replaceSelectedEx(TextSelection *sel, const std::string &text); 
 	void updateSelections(int pos, int nDeleted, int nInserted);
 		 	
-public:
+private:
 	char *buf_;         /* allocated memory where the text is stored */
 	int gapStart_;      /* points to the first character of the gap */
 	int gapEnd_;        /* points to the first char after the gap */
+	int length_;        /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length) */
 	
+public:
 	// TODO(eteran): accessors
-	int length_;        /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length) */	
 	TextSelection primary_; /* highlighted areas */
 	TextSelection secondary_;
-	TextSelection highlight_;
+	TextSelection highlight_;	
 	int tabDist_; /* equiv. number of characters in a tab */
 	int useTabs_; /* True if buffer routines are allowed to use tabs for padding in rectangular operations */
 	std::deque<CallbackPair<bufModifyCallbackProc>> modifyProcs_;       /* procedures to call when buffer is modified to redisplay contents */

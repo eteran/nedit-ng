@@ -2349,14 +2349,14 @@ void UpdateStatsLine(WindowInfo *window) {
 	string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
 	format = window->fileFormat == DOS_FILE_FORMAT ? (String) " DOS" : (window->fileFormat == MAC_FILE_FORMAT ? (String) " Mac" : (String) "");
 	if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
-		sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length_);
+		sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
 		sprintf(slinecol, "L: ---  C: ---");
 	} else {
 		sprintf(slinecol, "L: %d  C: %d", line, colNum);
 		if (window->showLineNumbers)
-			sprintf(string, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->length_);
+			sprintf(string, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->BufGetLength());
 		else
-			sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length_);
+			sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
 	}
 
 	/* Update the line/column number */

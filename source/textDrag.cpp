@@ -103,7 +103,7 @@ void BeginBlockDrag(TextWidget tw) {
 		testBuf->BufSetAllEx(testText);
 
 		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
-		tw->text.dragDeleted = testBuf->length_;
+		tw->text.dragDeleted = testBuf->BufGetLength();
 		delete testBuf;
 		tw->text.dragRectStart = sel->rectStart;
 	} else {
@@ -222,14 +222,14 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	   redo operation begun above */
 	if (dragType == DRAG_MOVE || dragType == DRAG_OVERLAY_MOVE) {
 		if (rectangular || overlay) {
-			int prevLen = tempBuf->length_;
+			int prevLen = tempBuf->BufGetLength();
 			origSelLen = origSelLineEnd - origSelLineStart;
 			if (overlay)
 				tempBuf->BufClearRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
 			else
 				tempBuf->BufRemoveRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
 			sourceDeletePos = origSelLineStart;
-			sourceInserted = origSelLen - prevLen + tempBuf->length_;
+			sourceInserted = origSelLen - prevLen + tempBuf->BufGetLength();
 			sourceDeleted = origSelLen;
 		} else {
 			tempBuf->BufRemove(origSel->start - tempStart, origSel->end - tempStart);
@@ -270,7 +270,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	/* find the position associated with the start of the new line in the
 	   temporary buffer */
 	insLineStart = findRelativeLineStart(tempBuf, referencePos - tempStart, referenceLine, insLineNum) + tempStart;
-	if (insLineStart - tempStart == tempBuf->length_)
+	if (insLineStart - tempStart == tempBuf->BufGetLength())
 		insLineStart = tempBuf->BufStartOfLine(insLineStart - tempStart) + tempStart;
 
 	/* Find the actual insert position */

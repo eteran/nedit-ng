@@ -3524,7 +3524,7 @@ void FlashMatching(WindowInfo *window, Widget textW) {
 		searchPos = endPos;
 	} else {
 		startPos = pos;
-		endPos = constrain ? TextLastVisiblePos(textW) : window->buffer->length_;
+		endPos = constrain ? TextLastVisiblePos(textW) : window->buffer->BufGetLength();
 		searchPos = startPos;
 	}
 
@@ -3573,7 +3573,7 @@ void SelectToMatchingCharacter(WindowInfo *window) {
 	}
 
 	/* Search for it in the buffer */
-	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->length_, &matchPos)) {
+	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -3616,7 +3616,7 @@ void GotoMatchingCharacter(WindowInfo *window) {
 	}
 
 	/* Search for it in the buffer */
-	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->length_, &matchPos)) {
+	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -4207,7 +4207,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos
 */
 int SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	const char *fileString;
-	int found, resp, fileEnd = window->buffer->length_ - 1, outsideBounds;
+	int found, resp, fileEnd = window->buffer->BufGetLength() - 1, outsideBounds;
 
 	/* reject empty string */
 	if (*searchString == '\0')

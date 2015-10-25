@@ -2949,7 +2949,7 @@ static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	WindowInfo *window = WidgetToWindow(w);
 
-	window->buffer->BufSelect(0, window->buffer->length_);
+	window->buffer->BufSelect(0, window->buffer->BufGetLength());
 }
 
 static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

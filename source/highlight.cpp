@@ -240,13 +240,13 @@ void StartHighlighting(WindowInfo *window, int warn) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	stylePtr = styleString = XtMalloc(window->buffer->length_ + 1);
+	stylePtr = styleString = XtMalloc(window->buffer->BufGetLength() + 1);
 	if (highlightData->pass1Patterns == nullptr) {
-		for (i = 0; i < window->buffer->length_; i++)
+		for (i = 0; i < window->buffer->BufGetLength(); i++)
 			*stylePtr++ = UNFINISHED_STYLE;
 	} else {
 		stringPtr = bufString = window->buffer->BufAsString();
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->length_, &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
+		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
 	}
 	*stylePtr = '\0';
 	highlightData->styleBuffer->BufSetAll(styleString);
@@ -1173,7 +1173,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 	   necessary to ensure that the changes at endParse are correct.  Stop at
 	   the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
 	   characters forward from the requested position */
-	endParse = std::min<int>(buf->length_, pos + PASS_2_REPARSE_CHUNK_SIZE);
+	endParse = std::min<int>(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
 	endSafety = forwardOneContext(buf, context, endParse);
 	for (p = pos; p < endSafety; p++) {
 		c = styleBuf->BufGetCharacter(p);
@@ -1286,7 +1286,7 @@ static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *b
 			   reparse until nothing changes */
 		} else {
 			lastMod = lastModified(styleBuf);
-			endParse = std::min<int>(buf->length_, forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+			endParse = std::min<int>(buf->BufGetLength(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
@@ -1341,10 +1341,10 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 		return 0;
 	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements))
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
-	else if (endParse >= buf->length_ || (buf->BufGetCharacter(endParse - 1) == '\n'))
+	else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n'))
 		endSafety = endParse;
 	else
-		endSafety = std::min<int>(buf->length_, buf->BufEndOfLine(endParse) + 1);
+		endSafety = std::min<int>(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
 
 	/* copy the buffer range into a string */
 	string = buf->BufGetRange(beginSafety, endSafety);
@@ -2091,11 +2091,11 @@ static int backwardOneContext(TextBuffer *buf, reparseContext *context, int from
 */
 static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos) {
 	if (context->nLines == 0)
-		return std::min<int>(buf->length_, fromPos + context->nChars);
+		return std::min<int>(buf->BufGetLength(), fromPos + context->nChars);
 	else if (context->nChars == 0)
-		return std::min<int>(buf->length_, buf->BufCountForwardNLines(fromPos, context->nLines));
+		return std::min<int>(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context->nLines));
 	else
-		return std::min<int>(buf->length_, std::max<int>(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
+		return std::min<int>(buf->BufGetLength(), std::max<int>(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
 }
 
 /*

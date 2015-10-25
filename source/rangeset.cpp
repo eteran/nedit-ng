@@ -234,7 +234,7 @@ void RangesetInit(Rangeset *rangeset, int label, TextBuffer *buf) {
 	rangeset->color_set = 0;
 	rangeset->buf = buf;
 
-	rangeset->maxpos = buf->length_;
+	rangeset->maxpos = buf->BufGetLength();
 
 	RangesetChangeModifyResponse(rangeset, DEFAULT_UPDATE_FN_NAME);
 }

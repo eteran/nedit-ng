@@ -360,7 +360,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
 				left = 0;
-				right = window->buffer->length_;
+				right = window->buffer->BufGetLength();
 			} else if (input == FROM_SELECTION) {
 				GetSimpleSelection(window->buffer, &left, &right);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
@@ -369,7 +369,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				else {
 					left = 0;
-					right = window->buffer->length_;
+					right = window->buffer->BufGetLength();
 				}
 			}
 		} else {
@@ -699,10 +699,10 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** and ending positions (part of the state of the command) are corrected.
 */
 static void safeBufReplace(TextBuffer *buf, int *start, int *end, const char *text) {
-	if (*start > buf->length_)
-		*start = buf->length_;
-	if (*end > buf->length_)
-		*end = buf->length_;
+	if (*start > buf->BufGetLength())
+		*start = buf->BufGetLength();
+	if (*end > buf->BufGetLength())
+		*end = buf->BufGetLength();
 	buf->BufReplace(*start, *end, text);
 }
 

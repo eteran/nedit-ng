@@ -1918,12 +1918,11 @@ int TextBuffer::BufGetExpandedChar(int pos, const int indent, char *outStr) cons
 ** equal in length to MAX_EXP_CHAR_LEN
 */
 int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar) {
-	int i, nSpaces;
 
 	/* Convert tabs to spaces */
 	if (c == '\t') {
-		nSpaces = tabDist - (indent % tabDist);
-		for (i = 0; i < nSpaces; i++)
+		int nSpaces = tabDist - (indent % tabDist);
+		for (int i = 0; i < nSpaces; i++)
 			outStr[i] = ' ';
 		return nSpaces;
 	}
@@ -1946,6 +1945,54 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 	/* Otherwise, just return the character */
 	*outStr = c;
 	return 1;
+}
+
+/*
+** Expand a single character from the text buffer into it's screen
+** representation (which may be several characters for a tab or a
+** control code).  Returns the number of characters added to "outStr".
+** "indent" is the number of characters from the start of the line
+** for figuring tabs.  Output string is guranteed to be shorter or
+** equal in length to MAX_EXP_CHAR_LEN
+*/
+std::string TextBuffer::BufExpandCharacterEx(char c, int indent, int tabDist, char nullSubsChar) {
+
+	/* Convert tabs to spaces */
+	if (c == '\t') {
+
+		const int nSpaces = tabDist - (indent % tabDist);
+
+
+		std::string outStr;
+		outStr.reserve(nSpaces);
+
+		auto outPtr = std::back_inserter(outStr);
+
+		for (int i = 0; i < nSpaces; i++) {
+			*outPtr++ = ' ';
+		}
+
+		return outStr;
+	}
+
+	/* Convert ASCII control
+	   codes to readable character sequences */
+	if (c == nullSubsChar) {
+		return "<nul>";
+	}
+
+	if (((unsigned char)c) <= 31) {
+		char buf[MAX_EXP_CHAR_LEN];
+		snprintf(buf, sizeof(buf), "<%s>", ControlCodeTable[(unsigned char)c]);
+		return buf;
+	}
+
+	if (c == 127) {
+		return "<del>";
+	}
+
+	/* Otherwise, just return the character */
+	return std::string(1, c);
 }
 
 /*
@@ -3175,4 +3222,9 @@ void TextBuffer::updateSelections(int pos, int nDeleted, int nInserted) {
 	updateSelection(&primary_, pos, nDeleted, nInserted);
 	updateSelection(&secondary_, pos, nDeleted, nInserted);
 	updateSelection(&highlight_, pos, nDeleted, nInserted);
+}
+
+
+int TextBuffer::BufGetLength() const {
+	return length_;
 }

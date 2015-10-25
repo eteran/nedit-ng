@@ -1236,7 +1236,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	/* Record the action and its parameters */
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString != nullptr) {
-		MacroRecordBuf->BufInsert(MacroRecordBuf->length_, actionString);
+		MacroRecordBuf->BufInsert(MacroRecordBuf->BufGetLength(), actionString);
 		XtFree(actionString);
 	}
 }
@@ -1634,12 +1634,12 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 		return False;
 	if (from < 0)
 		from = 0;
-	if (from > buf->length_)
-		from = buf->length_;
+	if (from > buf->BufGetLength())
+		from = buf->BufGetLength();
 	if (to < 0)
 		to = 0;
-	if (to > buf->length_)
-		to = buf->length_;
+	if (to > buf->BufGetLength())
+		to = buf->BufGetLength();
 	if (from > to) {
 		int temp = from;
 		from = to;
@@ -1678,8 +1678,8 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		return False;
 	if (pos < 0)
 		pos = 0;
-	if (pos > buf->length_)
-		pos = buf->length_;
+	if (pos > buf->BufGetLength())
+		pos = buf->BufGetLength();
 
 	/* Return the character in a pre-allocated string) */
 	result->tag = STRING_TAG;
@@ -1712,12 +1712,12 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		return False;
 	if (from < 0)
 		from = 0;
-	if (from > buf->length_)
-		from = buf->length_;
+	if (from > buf->BufGetLength())
+		from = buf->BufGetLength();
 	if (to < 0)
 		to = 0;
-	if (to > buf->length_)
-		to = buf->length_;
+	if (to > buf->BufGetLength())
+		to = buf->BufGetLength();
 	if (from > to) {
 		int temp = from;
 		from = to;
@@ -2197,7 +2197,7 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	   searchStringMS will not modify the result */
 	newArgList[0].tag = STRING_TAG;
 	newArgList[0].val.str.rep = (char *)window->buffer->BufAsString();
-	newArgList[0].val.str.len = window->buffer->length_;
+	newArgList[0].val.str.len = window->buffer->BufGetLength();
 
 	/* copy other arguments to the new argument list */
 	memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
@@ -2407,12 +2407,12 @@ static int selectMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	}
 	if (start < 0)
 		start = 0;
-	if (start > window->buffer->length_)
-		start = window->buffer->length_;
+	if (start > window->buffer->BufGetLength())
+		start = window->buffer->BufGetLength();
 	if (end < 0)
 		end = 0;
-	if (end > window->buffer->length_)
-		end = window->buffer->length_;
+	if (end > window->buffer->BufGetLength())
+		end = window->buffer->BufGetLength();
 
 	/* Make the selection */
 	window->buffer->BufSelect(start, end);
@@ -3813,7 +3813,7 @@ static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->length_;
+	result->val.n = window->buffer->BufGetLength();
 	return True;
 }
 
@@ -4635,7 +4635,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		}
 
 		/* make sure range is in order and fits buffer size */
-		maxpos = buffer->length_;
+		maxpos = buffer->BufGetLength();
 		if (start < 0)
 			start = 0;
 		if (start > maxpos)
@@ -4728,7 +4728,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 			return False;
 
 		/* make sure range is in order and fits buffer size */
-		maxpos = buffer->length_;
+		maxpos = buffer->BufGetLength();
 		if (start < 0)
 			start = 0;
 		if (start > maxpos)
@@ -4950,7 +4950,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 			return False;
 	}
 
-	maxpos = buffer->length_;
+	maxpos = buffer->BufGetLength();
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
@@ -5279,7 +5279,7 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 	}
 
 	/*  Verify sane buffer position */
-	if ((bufferPos < 0) || (bufferPos >= buf->length_)) {
+	if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the style, so we return an empty array. */
 		return True;
@@ -5416,7 +5416,7 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	/*  Verify sane buffer position
 	 *  You would expect that buffer->length would be among the sane
 	 *  positions, but we have n characters and n+1 buffer positions. */
-	if ((bufferPos < 0) || (bufferPos >= buffer->length_)) {
+	if ((bufferPos < 0) || (bufferPos >= buffer->BufGetLength())) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the highlighting pattern, so we return an empty array. */
 		return True;

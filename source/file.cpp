@@ -465,7 +465,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	   as what we gave it.  If not, there were probably nuls in the file.
 	   Substitute them with another character.  If that is impossible, warn
 	   the user, make the file read-only, and force a substitution */
-	if (window->buffer->length_ != readLen) {
+	if (window->buffer->BufGetLength() != readLen) {
 		if (!window->buffer->BufSubstituteNullChars(fileString, readLen)) {
 			resp = DialogF(DF_ERR, window->shell, 2, "Error while opening File", "Too much binary data in file.  You may view\n"
 			                                                                     "it, but not modify or re-save its contents.",
@@ -820,8 +820,8 @@ static int doSave(WindowInfo *window) {
 	         changes. If the file is created for the first time, it has
 	         zero size on disk, and the check would falsely conclude that the
 	         file has changed on disk, and would pop up a warning dialog */
-	if (window->buffer->BufGetCharacter(window->buffer->length_ - 1) != '\n' && window->buffer->length_ != 0 && GetPrefAppendLF()) {
-		window->buffer->BufInsert(window->buffer->length_, "\n");
+	if (window->buffer->BufGetCharacter(window->buffer->BufGetLength() - 1) != '\n' && window->buffer->BufGetLength() != 0 && GetPrefAppendLF()) {
+		window->buffer->BufInsert(window->buffer->BufGetLength(), "\n");
 	}
 
 	/* open the file */
@@ -837,7 +837,7 @@ static int doSave(WindowInfo *window) {
 
 	/* get the text buffer contents and its length */
 	std::string fileString = window->buffer->BufGetAllEx();
-	fileLen = window->buffer->length_;
+	fileLen = window->buffer->BufGetLength();
 
 	/* If null characters are substituted for, put them back */
 	window->buffer->BufUnsubstituteNullCharsEx(fileString);
@@ -922,7 +922,7 @@ int WriteBackupFile(WindowInfo *window) {
 
 	/* get the text buffer contents and its length */
 	std::string fileString = window->buffer->BufGetAllEx();
-	fileLen = window->buffer->length_;
+	fileLen = window->buffer->BufGetLength();
 
 	/* If null characters are substituted for, put them back */
 	window->buffer->BufUnsubstituteNullCharsEx(fileString);
@@ -1122,7 +1122,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 		} else
 			fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end, &fileLen);
 	} else
-		fileString = TextGetWrappedEx(window->textArea, 0, buf->length_, &fileLen);
+		fileString = TextGetWrappedEx(window->textArea, 0, buf->BufGetLength(), &fileLen);
 
 	/* If null characters are substituted for, put them back */
 	buf->BufUnsubstituteNullCharsEx(fileString);
@@ -1600,7 +1600,7 @@ static void addWrapNewlines(WindowInfo *window) {
 	}
 
 	/* Modify the buffer to add wrapping */
-	std::string fileString = TextGetWrappedEx(window->textArea, 0, window->buffer->length_, &fileLen);
+	std::string fileString = TextGetWrappedEx(window->textArea, 0, window->buffer->BufGetLength(), &fileLen);
 	window->buffer->BufSetAllEx(fileString);
 
 	/* restore the insert and scroll positions of each pane */
@@ -1650,13 +1650,13 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 	fileLen = statbuf.st_size;
 	/* For DOS files, we can't simply check the length */
 	if (fileFormat != DOS_FILE_FORMAT) {
-		if (fileLen != buf->length_) {
+		if (fileLen != buf->BufGetLength()) {
 			fclose(fp);
 			return (1);
 		}
 	} else {
 		/* If a DOS file is smaller on disk, it's certainly different */
-		if (fileLen < buf->length_) {
+		if (fileLen < buf->BufGetLength()) {
 			fclose(fp);
 			return (1);
 		}
@@ -1719,7 +1719,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 		}
 		bufPos += 1;
 	}
-	if (bufPos != buf->length_) {
+	if (bufPos != buf->BufGetLength()) {
 		return (1);
 	}
 	return (0);

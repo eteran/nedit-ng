@@ -317,7 +317,7 @@ void SelectNumberedLine(WindowInfo *window, int lineNum) {
 	if (lineNum < 1)
 		lineNum = 1;
 	lineEnd = -1;
-	for (i = 1; i <= lineNum && lineEnd < window->buffer->length_; i++) {
+	for (i = 1; i <= lineNum && lineEnd < window->buffer->BufGetLength(); i++) {
 		lineStart = lineEnd + 1;
 		lineEnd = window->buffer->BufEndOfLine( lineStart);
 	}
@@ -325,16 +325,16 @@ void SelectNumberedLine(WindowInfo *window, int lineNum) {
 	/* highlight the line */
 	if (i > lineNum) {
 		/* Line was found */
-		if (lineEnd < window->buffer->length_) {
+		if (lineEnd < window->buffer->BufGetLength()) {
 			window->buffer->BufSelect(lineStart, lineEnd + 1);
 		} else {
 			/* Don't select past the end of the buffer ! */
-			window->buffer->BufSelect(lineStart, window->buffer->length_);
+			window->buffer->BufSelect(lineStart, window->buffer->BufGetLength());
 		}
 	} else {
 		/* Line was not found -> position the selection & cursor at the end
 		   without making a real selection and beep */
-		lineStart = window->buffer->length_;
+		lineStart = window->buffer->BufGetLength();
 		window->buffer->BufSelect(lineStart, lineStart);
 		XBell(TheDisplay, 0);
 	}
