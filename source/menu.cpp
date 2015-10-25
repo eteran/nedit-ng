@@ -2938,7 +2938,7 @@ static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	if (CheckReadOnly(window))
 		return;
-	BufRemoveSelected(window->buffer);
+	window->buffer->BufRemoveSelected();
 }
 
 static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2949,7 +2949,7 @@ static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	WindowInfo *window = WidgetToWindow(w);
 
-	BufSelect(window->buffer, 0, window->buffer->length);
+	window->buffer->BufSelect(0, window->buffer->length_);
 }
 
 static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3471,7 +3471,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	charCodeString[1] = '\0';
 	params[0] = (char *)charCodeString;
 
-	if (!BufSubstituteNullChars((char *)charCodeString, 1, window->buffer)) {
+	if (!window->buffer->BufSubstituteNullChars((char *)charCodeString, 1)) {
 		DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data", "OK");
 		return;
 	}
@@ -3492,7 +3492,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	if (CheckReadOnly(window))
 		return;
-	if (!window->buffer->primary.selected) {
+	if (!window->buffer->primary_.selected) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -3631,15 +3631,15 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 	(void)args;
 	(void)event;
 
-	textBuffer *buf = TextGetBuffer(w);
+	TextBuffer *buf = TextGetBuffer(w);
 	int start, end, isRect, rectStart, rectEnd;
 
-	if (!BufGetSelectionPos(buf, &start, &end, &isRect, &rectStart, &rectEnd))
+	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
 		return;
 	if (!isRect)
 		TextSetCursorPos(w, start);
 	else
-		TextSetCursorPos(w, BufCountForwardDispChars(buf, BufStartOfLine(buf, start), rectStart));
+		TextSetCursorPos(w, buf->BufCountForwardDispChars(buf->BufStartOfLine(start), rectStart));
 }
 
 static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3648,15 +3648,15 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	(void)args;
 	(void)event;
 
-	textBuffer *buf = TextGetBuffer(w);
+	TextBuffer *buf = TextGetBuffer(w);
 	int start, end, isRect, rectStart, rectEnd;
 
-	if (!BufGetSelectionPos(buf, &start, &end, &isRect, &rectStart, &rectEnd))
+	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
 		return;
 	if (!isRect)
 		TextSetCursorPos(w, end);
 	else
-		TextSetCursorPos(w, BufCountForwardDispChars(buf, BufStartOfLine(buf, end), rectEnd));
+		TextSetCursorPos(w, buf->BufCountForwardDispChars(buf->BufStartOfLine(end), rectEnd));
 }
 
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4078,9 +4078,9 @@ static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	WindowInfo *window = WidgetToWindow(w);
 	Boolean newState;
 
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->buffer->useTabs, "set_use_tabs");
+	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->buffer->useTabs_, "set_use_tabs");
 
-	window->buffer->useTabs = newState;
+	window->buffer->useTabs_ = newState;
 }
 
 static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

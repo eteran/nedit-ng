@@ -346,7 +346,7 @@ static char *LastCommand = nullptr;
 static std::string ReplayMacro;
 
 /* Buffer where macro commands are recorded in Learn mode */
-static textBuffer *MacroRecordBuf = nullptr;
+static TextBuffer *MacroRecordBuf = nullptr;
 
 /* Action Hook id for recording actions for Learn mode */
 static XtActionHookId MacroRecordActionHook = 0;
@@ -412,7 +412,7 @@ void BeginLearn(WindowInfo *window) {
 	MacroRecordWindow = window;
 
 	/* Allocate a text buffer for accumulating the macro strings */
-	MacroRecordBuf = new textBuffer;
+	MacroRecordBuf = new TextBuffer;
 
 	/* Add the action hook for recording the actions */
 	MacroRecordActionHook = XtAppAddActionHook(XtWidgetToApplicationContext(window->shell), learnActionHook, window);
@@ -470,7 +470,7 @@ void FinishLearn(void) {
 	MacroRecordActionHook = 0;
 
 	/* Store the finished action for the replay menu item */
-	ReplayMacro = BufGetAllEx(MacroRecordBuf);
+	ReplayMacro = MacroRecordBuf->BufGetAllEx();
 
 	/* Free the buffer used to accumulate the macro sequence */
 	delete MacroRecordBuf;
@@ -1102,7 +1102,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
 
 	/* Find out from the dialog how to repeat the command */
 	if (XmToggleButtonGetState(rd->inSelToggle)) {
-		if (!rd->forWindow->buffer->primary.selected) {
+		if (!rd->forWindow->buffer->primary_.selected) {
 			DialogF(DF_WARN, rd->shell, 1, "Repeat Macro", "No selection in window to repeat within", "OK");
 			XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
 			return False;
@@ -1236,7 +1236,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	/* Record the action and its parameters */
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString != nullptr) {
-		BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
+		MacroRecordBuf->BufInsert(MacroRecordBuf->length_, actionString);
 		XtFree(actionString);
 	}
 }
@@ -1623,7 +1623,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 */
 static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int from, to;
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 
 	/* Validate arguments and convert to int */
 	if (nArgs != 2)
@@ -1634,12 +1634,12 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 		return False;
 	if (from < 0)
 		from = 0;
-	if (from > buf->length)
-		from = buf->length;
+	if (from > buf->length_)
+		from = buf->length_;
 	if (to < 0)
 		to = 0;
-	if (to > buf->length)
-		to = buf->length;
+	if (to > buf->length_)
+		to = buf->length_;
 	if (from > to) {
 		int temp = from;
 		from = to;
@@ -1651,8 +1651,8 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, to - from + 1);
 
-	std::string rangeText = BufGetRangeEx(buf, from, to);
-	BufUnsubstituteNullCharsEx(rangeText, buf);
+	std::string rangeText = buf->BufGetRangeEx(from, to);
+	buf->BufUnsubstituteNullCharsEx(rangeText);
 
 	// TODO(eteran): I think we can fix this to work with std::string
 	// and not care about the NULs
@@ -1669,7 +1669,7 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 */
 static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int pos;
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 
 	/* Validate argument and convert it to int */
 	if (nArgs != 1)
@@ -1678,14 +1678,14 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		return False;
 	if (pos < 0)
 		pos = 0;
-	if (pos > buf->length)
-		pos = buf->length;
+	if (pos > buf->length_)
+		pos = buf->length_;
 
 	/* Return the character in a pre-allocated string) */
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, 2);
-	result->val.str.rep[0] = BufGetCharacter(buf, pos);
-	BufUnsubstituteNullChars(result->val.str.rep, buf);
+	result->val.str.rep[0] = buf->BufGetCharacter(pos);
+	buf->BufUnsubstituteNullChars(result->val.str.rep);
 	/* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
 	return True;
@@ -1699,7 +1699,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	int from, to;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 
 	/* Validate arguments and convert to int */
 	if (nArgs != 3)
@@ -1712,12 +1712,12 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		return False;
 	if (from < 0)
 		from = 0;
-	if (from > buf->length)
-		from = buf->length;
+	if (from > buf->length_)
+		from = buf->length_;
 	if (to < 0)
 		to = 0;
-	if (to > buf->length)
-		to = buf->length;
+	if (to > buf->length_)
+		to = buf->length_;
 	if (from > to) {
 		int temp = from;
 		from = to;
@@ -1737,13 +1737,13 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	   theoretically become a null.  In the highly unlikely event that
 	   all of the possible substitution characters in the buffer are used
 	   up, stop the macro and tell the user of the failure */
-	if (!BufSubstituteNullChars(string, strlen(string), window->buffer)) {
+	if (!window->buffer->BufSubstituteNullChars(string, strlen(string))) {
 		*errMsg = "Too much binary data in file";
 		return False;
 	}
 
 	/* Do the replace */
-	BufReplace(buf, from, to, string);
+	buf->BufReplace(from, to, string);
 	result->tag = NO_TAG;
 	return True;
 }
@@ -1775,13 +1775,13 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 	   theoretically become a null.  In the highly unlikely event that
 	   all of the possible substitution characters in the buffer are used
 	   up, stop the macro and tell the user of the failure */
-	if (!BufSubstituteNullChars(string, strlen(string), window->buffer)) {
+	if (!window->buffer->BufSubstituteNullChars(string, strlen(string))) {
 		*errMsg = "Too much binary data in file";
 		return False;
 	}
 
 	/* Do the replace */
-	BufReplaceSelected(window->buffer, string);
+	window->buffer->BufReplaceSelected(string);
 	result->tag = NO_TAG;
 	return True;
 }
@@ -1807,8 +1807,8 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		if (selText == nullptr)
 			selText = XtNewString("");
 	} else {
-		selText = BufGetSelectionText(window->buffer);
-		BufUnsubstituteNullChars(selText, window->buffer);
+		selText = window->buffer->BufGetSelectionText();
+		window->buffer->BufUnsubstituteNullChars(selText);
 	}
 
 	/* Return the text as an allocated string */
@@ -2196,8 +2196,8 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	/* we remove constness from BufAsString() result since we know
 	   searchStringMS will not modify the result */
 	newArgList[0].tag = STRING_TAG;
-	newArgList[0].val.str.rep = (char *)BufAsString(window->buffer);
-	newArgList[0].val.str.len = window->buffer->length;
+	newArgList[0].val.str.rep = (char *)window->buffer->BufAsString();
+	newArgList[0].val.str.len = window->buffer->length_;
 
 	/* copy other arguments to the new argument list */
 	memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
@@ -2407,15 +2407,15 @@ static int selectMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	}
 	if (start < 0)
 		start = 0;
-	if (start > window->buffer->length)
-		start = window->buffer->length;
+	if (start > window->buffer->length_)
+		start = window->buffer->length_;
 	if (end < 0)
 		end = 0;
-	if (end > window->buffer->length)
-		end = window->buffer->length;
+	if (end > window->buffer->length_)
+		end = window->buffer->length_;
 
 	/* Make the selection */
-	BufSelect(window->buffer, start, end);
+	window->buffer->BufSelect(start, end);
 	result->tag = NO_TAG;
 	return True;
 }
@@ -2436,7 +2436,7 @@ static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		return False;
 
 	/* Make the selection */
-	BufRectSelect(window->buffer, start, end, left, right);
+	window->buffer->BufRectSelect(start, end, left, right);
 	result->tag = NO_TAG;
 	return True;
 }
@@ -3263,7 +3263,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	text_lines[n] = (char *)0; /* make sure this is a null-terminated table */
 
 	/* pick up the tabDist value */
-	tabDist = window->buffer->tabDist;
+	tabDist = window->buffer->tabDist_;
 
 	/* load the table */
 	n = 0;
@@ -3764,7 +3764,7 @@ static int lineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *
 	result->tag = INT_TAG;
 	cursorPos = TextGetCursorPos(window->lastFocus);
 	if (!TextPosToLineAndCol(window->lastFocus, cursorPos, &line, &colNum))
-		line = BufCountLines(window->buffer, 0, cursorPos) + 1;
+		line = window->buffer->BufCountLines(0, cursorPos) + 1;
 	result->val.n = line;
 	return True;
 }
@@ -3775,12 +3775,12 @@ static int columnMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	(void)nArgs;
 	(void)argList;
 
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 	int cursorPos;
 
 	result->tag = INT_TAG;
 	cursorPos = TextGetCursorPos(window->lastFocus);
-	result->val.n = BufCountDispChars(buf, BufStartOfLine(buf, cursorPos), cursorPos);
+	result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
 	return True;
 }
 
@@ -3813,7 +3813,7 @@ static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->length;
+	result->val.n = window->buffer->length_;
 	return True;
 }
 
@@ -3824,7 +3824,7 @@ static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->primary.selected ? window->buffer->primary.start : -1;
+	result->val.n = window->buffer->primary_.selected ? window->buffer->primary_.start : -1;
 	return True;
 }
 
@@ -3835,7 +3835,7 @@ static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->primary.selected ? window->buffer->primary.end : -1;
+	result->val.n = window->buffer->primary_.selected ? window->buffer->primary_.end : -1;
 	return True;
 }
 
@@ -3845,7 +3845,7 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, Da
 	(void)nArgs;
 	(void)argList;
 
-	Selection *sel = &window->buffer->primary;
+	Selection *sel = &window->buffer->primary_;
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
@@ -3858,7 +3858,7 @@ static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	(void)nArgs;
 	(void)argList;
 
-	Selection *sel = &window->buffer->primary;
+	Selection *sel = &window->buffer->primary_;
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;
@@ -4260,7 +4260,7 @@ static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	(void)errMsg;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->tabDist;
+	result->val.n = window->buffer->tabDist_;
 	return True;
 }
 
@@ -4284,7 +4284,7 @@ static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	(void)errMsg;
 
 	result->tag = INT_TAG;
-	result->val.n = window->buffer->useTabs;
+	result->val.n = window->buffer->useTabs_;
 	return True;
 }
 
@@ -4337,7 +4337,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	(void)nArgs;
 	(void)argList;
 
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	unsigned char *rangesetList;
 	char *allocIndexStr;
 	char indexStr[TYPE_INT_STR_SIZE(int)];
@@ -4408,13 +4408,13 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	DataValue element;
 	char indexStr[TYPE_INT_STR_SIZE(int)], *allocIndexStr;
 
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 
 	if (nArgs > 1)
 		return wrongNArgsErr(errMsg);
 
 	if (rangesetTable == nullptr) {
-		window->buffer->rangesetTable = rangesetTable = RangesetTableAlloc(window->buffer);
+		window->buffer->rangesetTable_ = rangesetTable = RangesetTableAlloc(window->buffer);
 	}
 
 	if (nArgs == 0) {
@@ -4455,7 +4455,7 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 ** Built-in macro subroutine for forgetting a range set.
 */
 static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	DataValue *array;
 	DataValue element;
 	char keyString[TYPE_INT_STR_SIZE(int)];
@@ -4517,7 +4517,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 	Rangeset *rangeset;
 	int label;
 	char *name, *rangeset_name;
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	unsigned char *rangesetList;
 	char *allocIndexStr;
 	char indexStr[TYPE_INT_STR_SIZE(int)];
@@ -4576,8 +4576,8 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
 static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
 	int start, end, isRect, rectStart, rectEnd, maxpos, index;
 	int label = 0;
@@ -4603,7 +4603,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 
 	if (nArgs == 1) {
 		/* pick up current selection in this window */
-		if (!BufGetSelectionPos(buffer, &start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
+		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			M_FAILURE("Selection missing or rectangular in call to %s");
 		}
 		if (!RangesetAddBetween(targetRangeset, start, end)) {
@@ -4635,7 +4635,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		}
 
 		/* make sure range is in order and fits buffer size */
-		maxpos = buffer->length;
+		maxpos = buffer->length_;
 		if (start < 0)
 			start = 0;
 		if (start > maxpos)
@@ -4676,8 +4676,8 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 ** undefined destination range, and that it returns no value.
 */
 static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
 	int start, end, isRect, rectStart, rectEnd, maxpos;
 	int label = 0;
@@ -4701,7 +4701,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 
 	if (nArgs == 1) {
 		/* remove current selection in this window */
-		if (!BufGetSelectionPos(buffer, &start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
+		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			M_FAILURE("Selection missing or rectangular in call to %s");
 		}
 		RangesetRemoveBetween(targetRangeset, start, end);
@@ -4728,7 +4728,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 			return False;
 
 		/* make sure range is in order and fits buffer size */
-		maxpos = buffer->length;
+		maxpos = buffer->length_;
 		if (start < 0)
 			start = 0;
 		if (start > maxpos)
@@ -4758,7 +4758,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 */
 static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	Rangeset *rangeset;
 	int label = 0;
 
@@ -4793,7 +4793,7 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, D
 **    defined, count, color, mode.
 */
 static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	RangesetTable *rangesetTable = window->buffer->rangesetTable;
+	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	Rangeset *rangeset = nullptr;
 	int count, defined;
 	const char *color;
@@ -4858,8 +4858,8 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** an array with the keys "start" and "end" and values
 */
 static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
 	int start, end, dummy, rangeIndex, ok;
 	DataValue element;
@@ -4920,8 +4920,8 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 ** fails if parameters were bad.
 */
 static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
 	int pos, rangeIndex, maxpos;
 	int label = 0;
@@ -4950,7 +4950,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 			return False;
 	}
 
-	maxpos = buffer->length;
+	maxpos = buffer->length_;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
@@ -4970,8 +4970,8 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 */
 static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
 	char *color_name;
 	int label = 0;
@@ -5013,8 +5013,8 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 */
 static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
 	char *name;
 	int label = 0;
@@ -5056,8 +5056,8 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 */
 static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
-	textBuffer *buffer = window->buffer;
-	RangesetTable *rangesetTable = buffer->rangesetTable;
+	TextBuffer *buffer = window->buffer;
+	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
 	char *update_fn_name;
 	int ok;
@@ -5263,7 +5263,7 @@ static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs, D
 static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int patCode;
 	int bufferPos;
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 
 	/* Validate number of arguments */
 	if (nArgs != 1) {
@@ -5279,7 +5279,7 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 	}
 
 	/*  Verify sane buffer position */
-	if ((bufferPos < 0) || (bufferPos >= buf->length)) {
+	if ((bufferPos < 0) || (bufferPos >= buf->length_)) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the style, so we return an empty array. */
 		return True;
@@ -5395,7 +5395,7 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
 */
 static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int bufferPos = -1;
-	textBuffer *buffer = window->buffer;
+	TextBuffer *buffer = window->buffer;
 	int patCode = 0;
 
 	/* Begin of building the result. */
@@ -5416,7 +5416,7 @@ static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	/*  Verify sane buffer position
 	 *  You would expect that buffer->length would be among the sane
 	 *  positions, but we have n characters and n+1 buffer positions. */
-	if ((bufferPos < 0) || (bufferPos >= buffer->length)) {
+	if ((bufferPos < 0) || (bufferPos >= buffer->length_)) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the highlighting pattern, so we return an empty array. */
 		return True;

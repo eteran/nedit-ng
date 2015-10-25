@@ -565,19 +565,19 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	   with the text area widget.  This is done so the syntax highlighting
 	   modify callback can be called to synchronize the style buffer BEFORE
 	   the text display's callback is called upon to display a modification */
-	window->buffer = new textBuffer;
-	BufAddModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
+	window->buffer = new TextBuffer;
+	window->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, window);
 
 	/* Attach the buffer to the text widget, and add callbacks for modify */
 	TextSetBuffer(text, window->buffer);
-	BufAddModifyCB(window->buffer, modifiedCB, window);
+	window->buffer->BufAddModifyCB(modifiedCB, window);
 
 	/* Designate the permanent text area as the owner for selections */
 	HandleXSelections(text);
 
 	/* Set the requested hardware tab distance and useTabs in the text buffer */
-	BufSetTabDistance(window->buffer, GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-	window->buffer->useTabs = GetPrefInsertTabs();
+	window->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+	window->buffer->useTabs_ = GetPrefInsertTabs();
 
 	/* add the window to the global window list, update the Windows menus */
 	addToWindowList(window);
@@ -802,7 +802,7 @@ void CloseWindow(WindowInfo *window) {
 		strcpy(window->filename, name);
 		strcpy(window->path, "");
 		window->ignoreModify = TRUE;
-		BufSetAll(window->buffer, "");
+		window->buffer->BufSetAll("");
 		window->ignoreModify = FALSE;
 		window->nMarks = 0;
 		window->filenameSet = FALSE;
@@ -836,8 +836,8 @@ void CloseWindow(WindowInfo *window) {
 
 	/* remove the buffer modification callbacks so the buffer will be
 	   deallocated when the last text widget is destroyed */
-	BufRemoveModifyCB(window->buffer, modifiedCB, window);
-	BufRemoveModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
+	window->buffer->BufRemoveModifyCB(modifiedCB, window);
+	window->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCB, window);
 
 #ifdef ROWCOLPATCH
 	patchRowCol(window->menuBar);
@@ -1211,7 +1211,7 @@ void ShowLineNumbers(WindowInfo *window, int state) {
 }
 
 void SetTabDist(WindowInfo *window, int tabDist) {
-	if (window->buffer->tabDist != tabDist) {
+	if (window->buffer->tabDist_ != tabDist) {
 		int saveCursorPositions[MAX_PANES + 1];
 		int saveVScrollPositions[MAX_PANES + 1];
 		int saveHScrollPositions[MAX_PANES + 1];
@@ -1228,7 +1228,7 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 			textD->modifyingTabDist = 1;
 		}
 
-		BufSetTabDistance(window->buffer, tabDist);
+		window->buffer->BufSetTabDistance(tabDist);
 
 		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
 			Widget w = GetPaneByIndex(window, paneIndex);
@@ -1799,18 +1799,18 @@ void UpdateWindowReadOnly(WindowInfo *window) {
 ** selection issues for older routines which use selections that won't
 ** span lines.
 */
-int GetSimpleSelection(textBuffer *buf, int *left, int *right) {
+int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 	int selStart, selEnd, isRect, rectStart, rectEnd, lineStart;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!BufGetSelectionPos(buf, &selStart, &selEnd, &isRect, &rectStart, &rectEnd))
+	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
 		return False;
 	if (isRect) {
-		lineStart = BufStartOfLine(buf, selStart);
-		selStart = BufCountForwardDispChars(buf, lineStart, rectStart);
-		selEnd = BufCountForwardDispChars(buf, lineStart, rectEnd);
+		lineStart = buf->BufStartOfLine(selStart);
+		selStart  = buf->BufCountForwardDispChars(lineStart, rectStart);
+		selEnd    = buf->BufCountForwardDispChars(lineStart, rectEnd);
 	}
 	*left = selStart;
 	*right = selEnd;
@@ -1835,7 +1835,7 @@ void MakeSelectionVisible(WindowInfo *window, Widget textPane) {
 	Dimension width;
 
 	/* find out where the selection is */
-	if (!BufGetSelectionPos(window->buffer, &left, &right, &isRect, &rectStart, &rectEnd)) {
+	if (!window->buffer->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
 		left = right = TextGetCursorPos(textPane);
 		isRect = False;
 	}
@@ -1975,7 +1975,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, cons
 	(void)nRestyled;
 
 	WindowInfo *window = (WindowInfo *)cbArg;
-	int selected = window->buffer->primary.selected;
+	int selected = window->buffer->primary_.selected;
 
 	/* update the table of bookmarks */
 	if (!window->ignoreModify) {
@@ -2349,14 +2349,14 @@ void UpdateStatsLine(WindowInfo *window) {
 	string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
 	format = window->fileFormat == DOS_FILE_FORMAT ? (String) " DOS" : (window->fileFormat == MAC_FILE_FORMAT ? (String) " Mac" : (String) "");
 	if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
-		sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length);
+		sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length_);
 		sprintf(slinecol, "L: ---  C: ---");
 	} else {
 		sprintf(slinecol, "L: %d  C: %d", line, colNum);
 		if (window->showLineNumbers)
-			sprintf(string, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->length);
+			sprintf(string, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->length_);
 		else
-			sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length);
+			sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->length_);
 	}
 
 	/* Update the line/column number */
@@ -2947,19 +2947,19 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	   with the text area widget.  This is done so the syntax highlighting
 	   modify callback can be called to synchronize the style buffer BEFORE
 	   the text display's callback is called upon to display a modification */
-	window->buffer = new textBuffer;
-	BufAddModifyCB(window->buffer, SyntaxHighlightModifyCB, window);
+	window->buffer = new TextBuffer;
+	window->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, window);
 
 	/* Attach the buffer to the text widget, and add callbacks for modify */
 	TextSetBuffer(text, window->buffer);
-	BufAddModifyCB(window->buffer, modifiedCB, window);
+	window->buffer->BufAddModifyCB(modifiedCB, window);
 
 	/* Designate the permanent text area as the owner for selections */
 	HandleXSelections(text);
 
 	/* Set the requested hardware tab distance and useTabs in the text buffer */
-	BufSetTabDistance(window->buffer, GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-	window->buffer->useTabs = GetPrefInsertTabs();
+	window->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+	window->buffer->useTabs_ = GetPrefInsertTabs();
 	window->tab = addTab(window->tabBar, name);
 
 	/* add the window to the global window list, update the Windows menus */
@@ -3603,15 +3603,15 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 	textDisp *textD, *newTextD;
 
 	/* transfer the primary selection */
-	memcpy(&sel, &orgWin->buffer->primary, sizeof(Selection));
+	memcpy(&sel, &orgWin->buffer->primary_, sizeof(Selection));
 
 	if (sel.selected) {
 		if (sel.rectangular)
-			BufRectSelect(window->buffer, sel.start, sel.end, sel.rectStart, sel.rectEnd);
+			window->buffer->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
 		else
-			BufSelect(window->buffer, sel.start, sel.end);
+			window->buffer->BufSelect(sel.start, sel.end);
 	} else
-		BufUnselect(window->buffer);
+		window->buffer->BufUnselect();
 
 	/* Record the current heights, scroll positions, and insert positions
 	   of the existing panes, keyboard focus */
@@ -3715,12 +3715,12 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	window->ignoreModify = True;
 
 	/* copy the text buffer */
-	const char *orgDocument = BufAsString(orgWin->buffer);
-	BufSetAll(window->buffer, orgDocument);
+	const char *orgDocument = orgWin->buffer->BufAsString();
+	window->buffer->BufSetAll(orgDocument);
 
 	/* copy the tab preferences (here!) */
-	BufSetTabDistance(window->buffer, orgWin->buffer->tabDist);
-	window->buffer->useTabs = orgWin->buffer->useTabs;
+	window->buffer->BufSetTabDistance(orgWin->buffer->tabDist_);
+	window->buffer->useTabs_ = orgWin->buffer->useTabs_;
 	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, nullptr);
 	SetEmTabDist(window, emTabDist);
 
@@ -3742,7 +3742,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	   else the rangesets do not be highlighted (colored) properly
 	   if syntax highlighting is on.
 	*/
-	window->buffer->rangesetTable = RangesetTableClone(orgWin->buffer->rangesetTable, window->buffer);
+	window->buffer->rangesetTable_ = RangesetTableClone(orgWin->buffer->rangesetTable_, window->buffer);
 
 	/* Syntax highlighting */
 	window->languageMode = orgWin->languageMode;

@@ -46,7 +46,7 @@ WindowInfo *TabToWindow(Widget tab);
 WindowInfo *WidgetToWindow(Widget w);
 int CloseAllDocumentInWindow(WindowInfo *window);
 int GetShowTabBar(WindowInfo *window);
-int GetSimpleSelection(textBuffer *buf, int *left, int *right);
+int GetSimpleSelection(TextBuffer *buf, int *left, int *right);
 int IsIconic(WindowInfo *window);
 int IsValidWindow(WindowInfo *window);
 int NDocuments(WindowInfo *window);

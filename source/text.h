@@ -151,7 +151,7 @@ int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
 int TextVisibleWidth(Widget w);
 std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen);
-textBuffer *TextGetBuffer(Widget w);
+TextBuffer *TextGetBuffer(Widget w);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
@@ -162,7 +162,7 @@ void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextHandleXSelections(Widget w);
 void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);
-void TextSetBuffer(Widget w, textBuffer *buffer);
+void TextSetBuffer(Widget w, TextBuffer *buffer);
 void TextSetCursorPos(Widget w, int pos);
 void TextSetScroll(Widget w, int topLineNum, int horizOffset);
 

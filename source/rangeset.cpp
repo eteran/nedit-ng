@@ -57,13 +57,13 @@ struct Rangeset {
 	signed char color_set; /* 0: unset; 1: set; -1: invalid */
 	char *color_name;      /* the name of an assigned color */
 	Pixel color;           /* the value of a particular color */
-	textBuffer *buf;       /* the text buffer of the rangeset */
+	TextBuffer *buf;       /* the text buffer of the rangeset */
 	char *name;            /* name of rangeset */
 };
 
 struct RangesetTable {
 	int n_set;                           /* how many sets are active */
-	textBuffer *buf;                     /* the text buffer of the rangeset */
+	TextBuffer *buf;                     /* the text buffer of the rangeset */
 	Rangeset set[N_RANGESETS];           /* the rangeset table */
 	unsigned char order[N_RANGESETS];    /* inds of set[]s ordered by depth */
 	unsigned char active[N_RANGESETS];   /* entry true if corresp. set active */
@@ -177,7 +177,7 @@ static Range *RangesFree(Range *ranges) {
 
 void RangesetRefreshRange(Rangeset *rangeset, int start, int end) {
 	if (rangeset->buf != nullptr)
-		BufCheckDisplay(rangeset->buf, start, end);
+		rangeset->buf->BufCheckDisplay(start, end);
 }
 
 static void rangesetRefreshAllRanges(Rangeset *rangeset) {
@@ -222,7 +222,7 @@ void RangesetEmpty(Rangeset *rangeset) {
 ** Initialise a new range set.
 */
 
-void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf) {
+void RangesetInit(Rangeset *rangeset, int label, TextBuffer *buf) {
 	rangeset->label = (unsigned char)label; /* a letter A-Z */
 	rangeset->maxpos = 0;                   /* text buffer maxpos */
 	rangeset->last_index = 0;               /* a place to start looking */
@@ -234,7 +234,7 @@ void RangesetInit(Rangeset *rangeset, int label, textBuffer *buf) {
 	rangeset->color_set = 0;
 	rangeset->buf = buf;
 
-	rangeset->maxpos = buf->length;
+	rangeset->maxpos = buf->length_;
 
 	RangesetChangeModifyResponse(rangeset, DEFAULT_UPDATE_FN_NAME);
 }
@@ -680,7 +680,7 @@ static Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
 ** Allocate and initialise, or empty and free a ranges set table.
 */
 
-RangesetTable *RangesetTableAlloc(textBuffer *buffer) {
+RangesetTable *RangesetTableAlloc(TextBuffer *buffer) {
 	int i;
 	RangesetTable *table = (RangesetTable *)XtMalloc(sizeof(RangesetTable));
 
@@ -700,7 +700,7 @@ RangesetTable *RangesetTableAlloc(textBuffer *buffer) {
 	table->list[0] = '\0';
 	/* Range sets must be updated before the text display callbacks are
 	   called to avoid highlighted ranges getting out of sync. */
-	BufAddHighPriorityModifyCB(buffer, RangesetBufModifiedCB, table);
+	buffer->BufAddHighPriorityModifyCB(RangesetBufModifiedCB, table);
 	return table;
 }
 
@@ -708,7 +708,7 @@ RangesetTable *RangesetTableFree(RangesetTable *table) {
 	int i;
 
 	if (table) {
-		BufRemoveModifyCB(table->buf, RangesetBufModifiedCB, table);
+		table->buf->BufRemoveModifyCB(RangesetBufModifiedCB, table);
 		for (i = 0; i < N_RANGESETS; i++)
 			RangesetEmpty(&table->set[i]);
 		XtFree((char *)table);
@@ -750,7 +750,7 @@ static void rangesetClone(Rangeset *destRangeset, Rangeset *srcRangeset) {
 **
 ** Returns the new table created.
 */
-RangesetTable *RangesetTableClone(RangesetTable *srcTable, textBuffer *destBuffer) {
+RangesetTable *RangesetTableClone(RangesetTable *srcTable, TextBuffer *destBuffer) {
 	RangesetTable *newTable = nullptr;
 	int i;
 
@@ -969,7 +969,7 @@ void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, 
 	(void)nRestyled;
 
 	RangesetTable *table = (RangesetTable *)cbArg;
-	if ((nInserted != nDeleted) || BufCmpEx(table->buf, pos, nInserted, deletedText) != 0) {
+	if ((nInserted != nDeleted) || table->buf->BufCmpEx(pos, nInserted, deletedText) != 0) {
 		RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
 	}
 }

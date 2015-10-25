@@ -78,7 +78,7 @@ struct calltipStruct {
 
 struct textDisp {
 public:
-	textDisp(Widget widget, Widget hScrollBar, Widget vScrollBar, Position left, Position top, Position width, Position height, Position lineNumLeft, Position lineNumWidth, textBuffer *buffer, XFontStruct *fontStruct,
+	textDisp(Widget widget, Widget hScrollBar, Widget vScrollBar, Position left, Position top, Position width, Position height, Position lineNumLeft, Position lineNumWidth, TextBuffer *buffer, XFontStruct *fontStruct,
                       Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel, int continuousWrap, int wrapMargin,
                       XmString bgClassString, Pixel calltipFGPixel, Pixel calltipBGPixel);
 					  
@@ -100,8 +100,8 @@ public:
 	int cursorPreferredCol;  /* Column for vert. cursor movement */
 	int nVisibleLines;       /* # of visible (displayed) lines */
 	int nBufferLines;        /* # of newlines in the buffer */
-	textBuffer *buffer;      /* Contains text to be displayed */
-	textBuffer *styleBuffer; /* Optional parallel buffer containing
+	TextBuffer *buffer;      /* Contains text to be displayed */
+	TextBuffer *styleBuffer; /* Optional parallel buffer containing
 	                            color and font information */
 	int firstChar, lastChar; /* Buffer positions of first and last
 	                displayed character (lastChar points
@@ -193,7 +193,7 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 int TextDStartOfLine(const textDisp *textD, const int pos);
 int TextDXYToCharPos(textDisp *textD, int x, int y);
 int TextDXYToPosition(textDisp *textD, int x, int y);
-void TextDAttachHighlightData(textDisp *textD, textBuffer *styleBuffer, styleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
+void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, styleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 void TextDBlankCursor(textDisp *textD);
 void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
@@ -203,7 +203,7 @@ void TextDMakeInsertPosVisible(textDisp *textD);
 void TextDOverstrike(textDisp *textD, const char *text);
 void TextDRedisplayRect(textDisp *textD, int left, int top, int width, int height);
 void TextDResize(textDisp *textD, int width, int height);
-void TextDSetBuffer(textDisp *textD, textBuffer *buffer);
+void TextDSetBuffer(textDisp *textD, TextBuffer *buffer);
 void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
 void TextDSetCursorStyle(textDisp *textD, int style);
 void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);

@@ -1,30 +1,30 @@
 /*******************************************************************************
-*									       *
+*                                                                              *
 * highlight.c -- Nirvana Editor syntax highlighting (text coloring and font    *
-*   	    	 selected by file content				       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                        selected by file content                              *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
 * version. In addition, you may distribute version of this program linked to   *
 * Motif or Open Motif. See README for details.                                 *
-* 									       *
+*                                                                              *
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* June 24, 1996								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* June 24, 1996                                                                *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #include "highlight.h"
@@ -111,7 +111,7 @@ struct windowHighlightData {
 	reparseContext contextRequirements;
 	styleTableEntry *styleTable;
 	int nStyles;
-	textBuffer *styleBuffer;
+	TextBuffer *styleBuffer;
 	patternSet *patternSetForWindow;
 };
 
@@ -120,22 +120,22 @@ static void freeHighlightData(windowHighlightData *hd);
 static patternSet *findPatternsForWindow(WindowInfo *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
-static void handleUnparsedRegion(const WindowInfo *win, textBuffer *styleBuf, const int pos);
+static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, const int pos);
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
-static void incrementalReparse(windowHighlightData *highlightData, textBuffer *buf, int pos, int nInserted, const char *delimiters);
-static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, textBuffer *buf, textBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
+static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
+static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
 static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, int anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void passTwoParseString(highlightDataRec *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
-static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
-static int lastModified(textBuffer *styleBuf);
-static char getPrevChar(textBuffer *buf, int pos);
+static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
+static int lastModified(TextBuffer *styleBuf);
+static char getPrevChar(TextBuffer *buf, int pos);
 static regexp *compileREAndWarn(Widget parent, const char *re);
 static int parentStyleOf(const char *parentStyles, int style);
 static int isParentStyle(const char *parentStyles, int style1, int style2);
-static int findSafeParseRestartPos(textBuffer *buf, windowHighlightData *highlightData, int *pos);
-static int backwardOneContext(textBuffer *buf, reparseContext *context, int fromPos);
-static int forwardOneContext(textBuffer *buf, reparseContext *context, int fromPos);
+static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlightData, int *pos);
+static int backwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
+static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName);
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index);
@@ -179,7 +179,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	   don't require any processing, but clear out the style buffer selection
 	   so the widget doesn't think it has to keep redrawing the old area */
 	if (nInserted == 0 && nDeleted == 0) {
-		BufUnselect(highlightData->styleBuffer);
+		highlightData->styleBuffer->BufUnselect();
 		return;
 	}
 
@@ -193,10 +193,10 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 		for (i = 0; i < nInserted; i++)
 			insStyle[i] = UNFINISHED_STYLE;
 		insStyle[i] = '\0';
-		BufReplace(highlightData->styleBuffer, pos, pos + nDeleted, insStyle);
+		highlightData->styleBuffer->BufReplace(pos, pos + nDeleted, insStyle);
 		XtFree(insStyle);
 	} else {
-		BufRemove(highlightData->styleBuffer, pos, pos + nDeleted);
+		highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
 	}
 
 	/* Mark the changed region in the style buffer as requiring redraw.  This
@@ -204,7 +204,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	   the text display callback, but it clears the previous selection and
 	   saves the modifyStyleBuf routine from unnecessary work in tracking
 	   changes that are already scheduled for redraw */
-	BufSelect(highlightData->styleBuffer, pos, pos + nInserted);
+	highlightData->styleBuffer->BufSelect(pos, pos + nInserted);
 
 	/* Re-parse around the changed region */
 	if (highlightData->pass1Patterns)
@@ -240,16 +240,16 @@ void StartHighlighting(WindowInfo *window, int warn) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	stylePtr = styleString = XtMalloc(window->buffer->length + 1);
+	stylePtr = styleString = XtMalloc(window->buffer->length_ + 1);
 	if (highlightData->pass1Patterns == nullptr) {
-		for (i = 0; i < window->buffer->length; i++)
+		for (i = 0; i < window->buffer->length_; i++)
 			*stylePtr++ = UNFINISHED_STYLE;
 	} else {
-		stringPtr = bufString = BufAsString(window->buffer);
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->length, &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
+		stringPtr = bufString = window->buffer->BufAsString();
+		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->length_, &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
 	}
 	*stylePtr = '\0';
-	BufSetAll(highlightData->styleBuffer, styleString);
+	highlightData->styleBuffer->BufSetAll(styleString);
 	XtFree(styleString);
 
 	/* install highlight pattern data in the window data structure */
@@ -357,7 +357,7 @@ void UpdateHighlightStyles(WindowInfo *window) {
 	patternSet *patterns;
 	windowHighlightData *highlightData;
 	windowHighlightData *oldHighlightData = (windowHighlightData *)window->highlightData;
-	textBuffer *styleBuffer;
+	TextBuffer *styleBuffer;
 	int i;
 
 	/* Do nothing if window not highlighted */
@@ -435,12 +435,12 @@ void *GetHighlightInfo(WindowInfo *window, int pos) {
 		return nullptr;
 
 	/* Be careful with signed/unsigned conversions. NO conversion here! */
-	style = (int)BufGetCharacter(highlightData->styleBuffer, pos);
+	style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
 
 	/* Beware of unparsed regions. */
 	if (style == UNFINISHED_STYLE) {
 		handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-		style = (int)BufGetCharacter(highlightData->styleBuffer, pos);
+		style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
 	}
 
 	if (highlightData->pass1Patterns) {
@@ -534,7 +534,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	char *parentStylesPtr;
 	char *parentName;
 	highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
-	textBuffer *styleBuf;
+	TextBuffer *styleBuf;
 	highlightDataRec *pass1Pats, *pass2Pats;
 	windowHighlightData *highlightData;
 
@@ -734,7 +734,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	delete[] pass2PatternSrc;
 
 	/* Create the style buffer */
-	styleBuf = new textBuffer;
+	styleBuf = new TextBuffer;
 
 	/* Collect all of the highlighting information in a single structure */
 	highlightData = new windowHighlightData;
@@ -966,15 +966,15 @@ highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
 */
 int HighlightCodeOfPos(WindowInfo *window, int pos) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
-	textBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 
 	if (styleBuf != nullptr) {
-		hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (hCode == UNFINISHED_STYLE) {
 			/* encountered "unfinished" style, trigger parsing */
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 	}
 	return hCode;
@@ -989,18 +989,18 @@ int HighlightCodeOfPos(WindowInfo *window, int pos) {
     for checkCode and never evaluates it after the call. */
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
-	textBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
 
 	if (styleBuf != nullptr) {
-		hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
 		if (hCode == UNFINISHED_STYLE) {
 			/* encountered "unfinished" style, trigger parsing */
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 		if (*checkCode == 0)
 			*checkCode = hCode;
@@ -1008,10 +1008,10 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 			if (hCode == UNFINISHED_STYLE) {
 				/* encountered "unfinished" style, trigger parsing, then loop */
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 			} else {
 				/* advance the position and get the new code */
-				hCode = (unsigned char)BufGetCharacter(styleBuf, ++pos);
+				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
 			}
 		}
 	}
@@ -1025,19 +1025,19 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 */
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
-	textBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
 	styleTableEntry *entry;
 
 	if (styleBuf != nullptr) {
-		hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
 		if (hCode == UNFINISHED_STYLE) {
 			/* encountered "unfinished" style, trigger parsing */
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 		entry = styleTableEntryOfCode(window, hCode);
 		if (entry == nullptr)
@@ -1048,10 +1048,10 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 			if (hCode == UNFINISHED_STYLE) {
 				/* encountered "unfinished" style, trigger parsing, then loop */
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (unsigned char)BufGetCharacter(styleBuf, pos);
+				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 			} else {
 				/* advance the position and get the new code */
-				hCode = (unsigned char)BufGetCharacter(styleBuf, ++pos);
+				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
 			}
 		}
 	}
@@ -1140,8 +1140,8 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, i
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-static void handleUnparsedRegion(const WindowInfo *window, textBuffer *styleBuf, const int pos) {
-	textBuffer *buf = window->buffer;
+static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf, const int pos) {
+	TextBuffer *buf = window->buffer;
 	int beginParse, endParse, beginSafety, endSafety, p;
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 
@@ -1162,7 +1162,7 @@ static void handleUnparsedRegion(const WindowInfo *window, textBuffer *styleBuf,
 	beginParse = pos;
 	beginSafety = backwardOneContext(buf, context, beginParse);
 	for (p = beginParse; p >= beginSafety; p--) {
-		c = BufGetCharacter(styleBuf, p);
+		c = styleBuf->BufGetCharacter(p);
 		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (unsigned char)c < firstPass2Style) {
 			beginSafety = p + 1;
 			break;
@@ -1173,10 +1173,10 @@ static void handleUnparsedRegion(const WindowInfo *window, textBuffer *styleBuf,
 	   necessary to ensure that the changes at endParse are correct.  Stop at
 	   the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
 	   characters forward from the requested position */
-	endParse = std::min<int>(buf->length, pos + PASS_2_REPARSE_CHUNK_SIZE);
+	endParse = std::min<int>(buf->length_, pos + PASS_2_REPARSE_CHUNK_SIZE);
 	endSafety = forwardOneContext(buf, context, endParse);
 	for (p = pos; p < endSafety; p++) {
-		c = BufGetCharacter(styleBuf, p);
+		c = styleBuf->BufGetCharacter(p);
 		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (unsigned char)c < firstPass2Style) {
 			endParse = std::min<int>(endParse, p);
 			endSafety = p;
@@ -1194,8 +1194,8 @@ static void handleUnparsedRegion(const WindowInfo *window, textBuffer *styleBuf,
 	/* Copy the buffer range into a string */
 	/* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
 	        beginParse, endParse, beginSafety, endSafety); */
-	stringPtr = string = BufGetRange(buf, beginSafety, endSafety);
-	styleString = stylePtr = BufGetRange(styleBuf, beginSafety, endSafety);
+	stringPtr = string = buf->BufGetRange(beginSafety, endSafety);
+	styleString = stylePtr = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	/* Parse it with pass 2 patterns */
 	prevChar = getPrevChar(buf, beginSafety);
@@ -1204,7 +1204,7 @@ static void handleUnparsedRegion(const WindowInfo *window, textBuffer *styleBuf,
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
 	styleString[endParse - beginSafety] = '\0';
-	BufReplace(styleBuf, beginParse, endParse, &styleString[beginParse - beginSafety]);
+	styleBuf->BufReplace(beginParse, endParse, &styleString[beginParse - beginSafety]);
 	XtFree(styleString);
 	XtFree(string);
 }
@@ -1222,9 +1222,9 @@ static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const v
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-static void incrementalReparse(windowHighlightData *highlightData, textBuffer *buf, int pos, int nInserted, const char *delimiters) {
+static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters) {
 	int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
-	textBuffer *styleBuf = highlightData->styleBuffer;
+	TextBuffer *styleBuf = highlightData->styleBuffer;
 	highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
 	highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
 	highlightDataRec *startPattern;
@@ -1286,7 +1286,7 @@ static void incrementalReparse(windowHighlightData *highlightData, textBuffer *b
 			   reparse until nothing changes */
 		} else {
 			lastMod = lastModified(styleBuf);
-			endParse = std::min<int>(buf->length, forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+			endParse = std::min<int>(buf->length_, forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
@@ -1306,7 +1306,7 @@ static void incrementalReparse(windowHighlightData *highlightData, textBuffer *b
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, textBuffer *buf, textBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
+static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
 	char *string, *styleString, *stylePtr, *temp, prevChar;
 	const char *stringPtr;
 	int endSafety, endPass2Safety, startPass2Safety, tempLen;
@@ -1318,7 +1318,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; p--) {
-			style = BufGetCharacter(styleBuf, p - 1);
+			style = styleBuf->BufGetCharacter(p - 1);
 			if (!EQUIVALENT_STYLE(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
 				break;
@@ -1326,8 +1326,8 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 		}
 	} else {
 		for (beginSafety = std::max<int>(0, beginParse - 1); beginSafety > 0; beginSafety--) {
-			style = BufGetCharacter(styleBuf, beginSafety);
-			if (!EQUIVALENT_STYLE(style, beginStyle, firstPass2Style) || BufGetCharacter(buf, beginSafety) == '\n') {
+			style = styleBuf->BufGetCharacter(beginSafety);
+			if (!EQUIVALENT_STYLE(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
 				beginSafety++;
 				break;
 			}
@@ -1341,14 +1341,14 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 		return 0;
 	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements))
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
-	else if (endParse >= buf->length || (BufGetCharacter(buf, endParse - 1) == '\n'))
+	else if (endParse >= buf->length_ || (buf->BufGetCharacter(endParse - 1) == '\n'))
 		endSafety = endParse;
 	else
-		endSafety = std::min<int>(buf->length, BufEndOfLine(buf, endParse) + 1);
+		endSafety = std::min<int>(buf->length_, buf->BufEndOfLine(endParse) + 1);
 
 	/* copy the buffer range into a string */
-	string = BufGetRange(buf, beginSafety, endSafety);
-	styleString = BufGetRange(styleBuf, beginSafety, endSafety);
+	string = buf->BufGetRange(beginSafety, endSafety);
+	styleString = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	/* Parse it with pass 1 patterns */
 	/* printf("parsing from %d thru %d\n", beginSafety, endSafety); */
@@ -1367,9 +1367,9 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	/* Parsing of pass 2 patterns is done only as necessary for determining
 	   where styles have changed.  Find the area to avoid, which is already
 	   marked as changed (all inserted text and previously modified areas) */
-	if (styleBuf->primary.selected) {
-		modStart = styleBuf->primary.start;
-		modEnd = styleBuf->primary.end;
+	if (styleBuf->primary_.selected) {
+		modStart = styleBuf->primary_.start;
+		modEnd = styleBuf->primary_.end;
 	} else
 		modStart = modEnd = 0;
 
@@ -1677,10 +1677,10 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 ** for distinguishing pass 2 styles which compare as equal to the unfinished
 ** style in the original buffer, from pass1 styles which signal a change.
 */
-static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style) {
+static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style) {
 	char *c, bufChar;
 	int pos, modStart, modEnd, minPos = INT_MAX, maxPos = 0;
-	Selection *sel = &styleBuf->primary;
+	Selection *sel = &styleBuf->primary_;
 
 	/* Skip the range already marked for redraw */
 	if (sel->selected) {
@@ -1694,7 +1694,7 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos
 	   the modifications.  Unfinished styles in the original match any
 	   pass 2 style */
 	for (c = styleString, pos = startPos; pos < modStart && pos < endPos; c++, pos++) {
-		bufChar = BufGetCharacter(styleBuf, pos);
+		bufChar = styleBuf->BufGetCharacter(pos);
 		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
 			if (pos < minPos)
 				minPos = pos;
@@ -1703,7 +1703,7 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos
 		}
 	}
 	for (c = &styleString[std::max<int>(0, modEnd - startPos)], pos = std::max<int>(modEnd, startPos); pos < endPos; c++, pos++) {
-		bufChar = BufGetCharacter(styleBuf, pos);
+		bufChar = styleBuf->BufGetCharacter(pos);
 		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
 			if (pos < minPos)
 				minPos = pos;
@@ -1713,12 +1713,12 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos
 	}
 
 	/* Make the modification */
-	BufReplace(styleBuf, startPos, endPos, styleString);
+	styleBuf->BufReplace(startPos, endPos, styleString);
 
 	/* Mark or extend the range that needs to be redrawn.  Even if no
 	   change was made, it's important to re-establish the selection,
 	   because it can get damaged by the BufReplace above */
-	BufSelect(styleBuf, std::min<int>(modStart, minPos), std::max<int>(modEnd, maxPos));
+	styleBuf->BufSelect(std::min<int>(modStart, minPos), std::max<int>(modEnd, maxPos));
 }
 
 /*
@@ -1726,9 +1726,9 @@ static void modifyStyleBuf(textBuffer *styleBuf, char *styleString, int startPos
 ** by the convention used for conveying modification information to the
 ** text widget, which is selecting the text)
 */
-static int lastModified(textBuffer *styleBuf) {
-	if (styleBuf->primary.selected)
-		return std::max<int>(0, styleBuf->primary.end);
+static int lastModified(TextBuffer *styleBuf) {
+	if (styleBuf->primary_.selected)
+		return std::max<int>(0, styleBuf->primary_.end);
 	return 0;
 }
 
@@ -1872,8 +1872,8 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 /*
 ** Get the character before position "pos" in buffer "buf"
 */
-static char getPrevChar(textBuffer *buf, int pos) {
-	return pos == 0 ? '\0' : BufGetCharacter(buf, pos - 1);
+static char getPrevChar(TextBuffer *buf, int pos) {
+	return pos == 0 ? '\0' : buf->BufGetCharacter(pos - 1);
 }
 
 /*
@@ -1939,7 +1939,7 @@ static int patternIsParsable(highlightDataRec *pattern) {
 ** result in an incorrect re-parse.  However this will happen very rarely,
 ** and, if it does, is unlikely to result in incorrect highlighting.
 */
-static int findSafeParseRestartPos(textBuffer *buf, windowHighlightData *highlightData, int *pos) {
+static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlightData, int *pos) {
 	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
 	char *parentStyles = highlightData->parentStyles;
 	highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
@@ -1952,7 +1952,7 @@ static int findSafeParseRestartPos(textBuffer *buf, windowHighlightData *highlig
 	   the buffer, this is a safe place to begin parsing, and we're done */
 	if (*pos == 0)
 		return PLAIN_STYLE;
-	startStyle = BufGetCharacter(highlightData->styleBuffer, *pos);
+	startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
 	if (IS_PLAIN(startStyle))
 		return PLAIN_STYLE;
 
@@ -1988,7 +1988,7 @@ static int findSafeParseRestartPos(textBuffer *buf, windowHighlightData *highlig
 
 		/* If the style is preceded by a parent style, it's safe to parse
 	   with the parent style, provided that the parent is parsable. */
-		style = BufGetCharacter(highlightData->styleBuffer, i);
+		style = highlightData->styleBuffer->BufGetCharacter(i);
 		if (isParentStyle(parentStyles, style, runningStyle)) {
 			if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;
@@ -2072,13 +2072,13 @@ static int findSafeParseRestartPos(textBuffer *buf, windowHighlightData *highlig
 ** only one extra character, but I'm not sure, and my brain hurts from
 ** thinking about it).
 */
-static int backwardOneContext(textBuffer *buf, reparseContext *context, int fromPos) {
+static int backwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos) {
 	if (context->nLines == 0)
 		return std::max<int>(0, fromPos - context->nChars);
 	else if (context->nChars == 0)
-		return std::max<int>(0, BufCountBackwardNLines(buf, fromPos, context->nLines - 1) - 1);
+		return std::max<int>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1);
 	else
-		return std::max<int>(0, std::min<int>(std::max<int>(0, BufCountBackwardNLines(buf, fromPos, context->nLines - 1) - 1), fromPos - context->nChars));
+		return std::max<int>(0, std::min<int>(std::max<int>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1), fromPos - context->nChars));
 }
 
 /*
@@ -2089,13 +2089,13 @@ static int backwardOneContext(textBuffer *buf, reparseContext *context, int from
 ** next line, rather than the newline character at the end (see notes in
 ** backwardOneContext).
 */
-static int forwardOneContext(textBuffer *buf, reparseContext *context, int fromPos) {
+static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos) {
 	if (context->nLines == 0)
-		return std::min<int>(buf->length, fromPos + context->nChars);
+		return std::min<int>(buf->length_, fromPos + context->nChars);
 	else if (context->nChars == 0)
-		return std::min<int>(buf->length, BufCountForwardNLines(buf, fromPos, context->nLines));
+		return std::min<int>(buf->length_, buf->BufCountForwardNLines(fromPos, context->nLines));
 	else
-		return std::min<int>(buf->length, std::max<int>(BufCountForwardNLines(buf, fromPos, context->nLines), fromPos + context->nChars));
+		return std::min<int>(buf->length_, std::max<int>(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
 }
 
 /*

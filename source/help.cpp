@@ -82,7 +82,7 @@
 
 static Widget HelpWindows[NUM_TOPICS] = {nullptr};
 static Widget HelpTextPanes[NUM_TOPICS] = {nullptr};
-static textBuffer *HelpStyleBuffers[NUM_TOPICS] = {nullptr};
+static TextBuffer *HelpStyleBuffers[NUM_TOPICS] = {nullptr};
 static int navHistForw[NUM_TOPICS];
 static int navHistBack[NUM_TOPICS];
 
@@ -588,13 +588,13 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 	helpText = stitch(HelpTextPanes[topic], HelpText[topic], &styleData);
 
 	/* Stuff the text into the widget's text buffer */
-	BufSetAll(TextGetBuffer(HelpTextPanes[topic]), helpText);
+	TextGetBuffer(HelpTextPanes[topic])->BufSetAll(helpText);
 	XtFree(helpText);
 
 	/* Create a style buffer for the text widget and fill it with the style
 	   data which was generated along with the text content */
-	HelpStyleBuffers[topic] = new textBuffer;
-	BufSetAll(HelpStyleBuffers[topic], styleData);
+	HelpStyleBuffers[topic] = new TextBuffer;
+	HelpStyleBuffers[topic]->BufSetAll(styleData);
 	XtFree(styleData);
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD, HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 
@@ -768,7 +768,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
 		return; /* shouldn't happen */
 
-	helpString = TextGetWrapped(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->length, &helpStringLen);
+	helpString = TextGetWrapped(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->length_, &helpStringLen);
 	PrintString(helpString, helpStringLen, HelpWindows[topic], HelpTitles[topic]);
 	XtFree(helpString);
 }
@@ -815,17 +815,17 @@ static void followHyperlink(int topic, int charPosition, int newWindow) {
 	int link_pos;
 	int end = charPosition;
 	int begin = charPosition;
-	char whatStyle = BufGetCharacter(textD->styleBuffer, end);
+	char whatStyle = textD->styleBuffer->BufGetCharacter(end);
 
 	/*--------------------------------------------------
 	* Locate beginning and ending of current text style.
 	*--------------------------------------------------*/
-	while (whatStyle == BufGetCharacter(textD->styleBuffer, ++end))
+	while (whatStyle == textD->styleBuffer->BufGetCharacter(++end))
 		;
-	while (whatStyle == BufGetCharacter(textD->styleBuffer, begin - 1))
+	while (whatStyle == textD->styleBuffer->BufGetCharacter(begin - 1))
 		begin--;
 
-	link_text = BufGetRangeEx(textD->buffer, begin, end);
+	link_text = textD->buffer->BufGetRangeEx(begin, end);
 
 	if (is_known_link(link_text.c_str(), &link_topic, &link_pos)) {
 		if (HelpWindows[link_topic] != nullptr) {
@@ -942,7 +942,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 	clickedPos = TextDXYToCharPos(textD, e->x, e->y);
 	/* Beware of possible EBCDIC coding! Use the mapping table. */
-	if (BufGetCharacter(textD->styleBuffer, clickedPos) != (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
+	if (textD->styleBuffer->BufGetCharacter(clickedPos) != (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
 		if (*nArgs == 3)
 			XtCallActionProc(w, args[2], event, nullptr, 0);
 		return;
@@ -1022,7 +1022,7 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
 	/* If the appropriate window is already up, bring it to the top, if not,
 	   make the parent window become this topic */
 	changeTopicOrRaise(parentTopic, topic);
-	BufSelect(TextGetBuffer(HelpTextPanes[topic]), beginMatch, endMatch);
+	TextGetBuffer(HelpTextPanes[topic])->BufSelect(beginMatch, endMatch);
 	TextSetCursorPos(HelpTextPanes[topic], endMatch);
 
 	/* Save the search information for search-again */
@@ -1058,9 +1058,9 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
 	   old, mismatched, highlighting to the new text */
 	helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, nullptr, nullptr, 0, '\0', nullptr, nullptr);
-	BufSetAll(TextGetBuffer(HelpTextPanes[newTopic]), helpText);
+	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAll(helpText);
 	XtFree(helpText);
-	BufSetAll(HelpStyleBuffers[newTopic], styleData);
+	HelpStyleBuffers[newTopic]->BufSetAll(styleData);
 	XtFree(styleData);
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 }

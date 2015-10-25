@@ -229,7 +229,7 @@ int ShowCalltip(WindowInfo *window, const std::string &text, Boolean anchored, i
 	TextDKillCalltip(textD, 0);
 
 	/* Expand any tabs in the calltip and make it an XmString */
-	std::string textCpy = expandAllTabsEx(text, BufGetTabDistance(textD->buffer));
+	std::string textCpy = expandAllTabsEx(text, textD->buffer->BufGetTabDistance());
 
 	str = XmStringCreateLtoR((char *)textCpy.c_str(), XmFONTLIST_DEFAULT_TAG);
 

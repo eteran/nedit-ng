@@ -124,7 +124,7 @@ struct TextPart {
 	                           so chars can be deleted as a unit */
 	XtIntervalId autoScrollProcID;  /* id of Xt timer proc for autoscroll */
 	XtIntervalId cursorBlinkProcID; /* id of timer proc for cursor blink */
-	textBuffer *dragOrigBuf;        /* backup buffer copy used during
+	TextBuffer *dragOrigBuf;        /* backup buffer copy used during
 	                                   block dragging of selections */
 	int dragXOffset, dragYOffset;   /* offsets between cursor location and
 	                                   actual insertion point in drag */

@@ -1,10 +1,10 @@
 /*******************************************************************************
-*									       *
+*                                                                              *
 * highlightData.c -- Maintain, and allow user to edit, highlight pattern list  *
-*		     used for syntax highlighting			       *
-*									       *
-* Copyright (C) 1999 Mark Edel						       *
-*									       *
+*                    used for syntax highlighting                              *
+*                                                                              *
+* Copyright (C) 1999 Mark Edel                                                 *
+*                                                                              *
 * This is free software; you can redistribute it and/or modify it under the    *
 * terms of the GNU General Public License as published by the Free Software    *
 * Foundation; either version 2 of the License, or (at your option) any later   *
@@ -14,17 +14,17 @@
 * This software is distributed in the hope that it will be useful, but WITHOUT *
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
 * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License        *
-* for more details.							       *
-* 									       *
+* for more details.                                                            *
+*                                                                              *
 * You should have received a copy of the GNU General Public License along with *
 * software; if not, write to the Free Software Foundation, Inc., 59 Temple     *
-* Place, Suite 330, Boston, MA  02111-1307 USA		                       *
-*									       *
-* Nirvana Text Editor	    						       *
-* April, 1997								       *
-*									       *
-* Written by Mark Edel							       *
-*									       *
+* Place, Suite 330, Boston, MA  02111-1307 USA                                 *
+*                                                                              *
+* Nirvana Text Editor                                                          *
+* April, 1997                                                                  *
+*                                                                              *
+* Written by Mark Edel                                                         *
+*                                                                              *
 *******************************************************************************/
 
 #include "highlightData.h"
@@ -336,25 +336,25 @@ char *WriteStylesString(void) {
 	int i;
 	highlightStyleRec *style;
 
-	auto outBuf = new textBuffer;
+	auto outBuf = new TextBuffer;
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		BufInsert(outBuf, outBuf->length, "\t");
-		BufInsert(outBuf, outBuf->length, style->name);
-		BufInsert(outBuf, outBuf->length, ":");
-		BufInsert(outBuf, outBuf->length, style->color);
+		outBuf->BufInsert(outBuf->length_, "\t");
+		outBuf->BufInsert(outBuf->length_, style->name);
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, style->color);
 		if (style->bgColor) {
-			BufInsert(outBuf, outBuf->length, "/");
-			BufInsert(outBuf, outBuf->length, style->bgColor);
+			outBuf->BufInsert(outBuf->length_, "/");
+			outBuf->BufInsert(outBuf->length_, style->bgColor);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
-		BufInsert(outBuf, outBuf->length, FontTypeNames[style->font]);
-		BufInsert(outBuf, outBuf->length, "\\n\\\n");
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, FontTypeNames[style->font]);
+		outBuf->BufInsert(outBuf->length_, "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	char *outStr = BufGetRange(outBuf, 0, outBuf->length - (i == 1 ? 0 : 4));
+	char *outStr = outBuf->BufGetRange(0, outBuf->length_ - (i == 1 ? 0 : 4));
 	delete outBuf;
 	return outStr;
 }
@@ -368,25 +368,25 @@ std::string WriteStylesStringEx(void) {
 	int i;
 	highlightStyleRec *style;
 
-	auto outBuf = std::unique_ptr<textBuffer>(new textBuffer);
+	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		BufInsert(outBuf.get(), outBuf->length, "\t");
-		BufInsert(outBuf.get(), outBuf->length, style->name);
-		BufInsert(outBuf.get(), outBuf->length, ":");
-		BufInsert(outBuf.get(), outBuf->length, style->color);
+		outBuf->BufInsert(outBuf->length_, "\t");
+		outBuf->BufInsert(outBuf->length_, style->name);
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, style->color);
 		if (style->bgColor) {
-			BufInsert(outBuf.get(), outBuf->length, "/");
-			BufInsert(outBuf.get(), outBuf->length, style->bgColor);
+			outBuf->BufInsert(outBuf->length_, "/");
+			outBuf->BufInsert(outBuf->length_, style->bgColor);
 		}
-		BufInsert(outBuf.get(), outBuf->length, ":");
-		BufInsert(outBuf.get(), outBuf->length, FontTypeNames[style->font]);
-		BufInsert(outBuf.get(), outBuf->length, "\\n\\\n");
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, FontTypeNames[style->font]);
+		outBuf->BufInsert(outBuf->length_, "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	return BufGetRangeEx(outBuf.get(), 0, outBuf->length - (i == 1 ? 0 : 4));
+	return outBuf->BufGetRangeEx(0, outBuf->length_ - (i == 1 ? 0 : 4));
 }
 
 /*
@@ -441,29 +441,29 @@ char *WriteHighlightString(void) {
 	int psn, written = False;
 	patternSet *patSet;
 
-	auto outBuf = new textBuffer;
+	auto outBuf = new TextBuffer;
 	;
 	for (psn = 0; psn < NPatternSets; psn++) {
 		patSet = PatternSets[psn];
 		if (patSet->nPatterns == 0)
 			continue;
 		written = True;
-		BufInsert(outBuf, outBuf->length, patSet->languageMode);
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, patSet->languageMode);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (isDefaultPatternSet(patSet))
-			BufInsert(outBuf, outBuf->length, "Default\n\t");
+			outBuf->BufInsert(outBuf->length_, "Default\n\t");
 		else {
-			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->lineContext));
-			BufInsert(outBuf, outBuf->length, ":");
-			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->charContext));
-			BufInsert(outBuf, outBuf->length, "{\n");
-			BufInsertEx(outBuf, outBuf->length, createPatternsString(patSet, "\t\t"));
-			BufInsert(outBuf, outBuf->length, "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->lineContext));
+			outBuf->BufInsert(outBuf->length_, ":");
+			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->charContext));
+			outBuf->BufInsert(outBuf->length_, "{\n");
+			outBuf->BufInsertEx(outBuf->length_, createPatternsString(patSet, "\t\t"));
+			outBuf->BufInsert(outBuf->length_, "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
-	std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - (written ? 2 : 0));
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ - (written ? 2 : 0));
 	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -481,29 +481,29 @@ std::string WriteHighlightStringEx(void) {
 	int psn, written = False;
 	patternSet *patSet;
 
-	auto outBuf = new textBuffer;
+	auto outBuf = new TextBuffer;
 	;
 	for (psn = 0; psn < NPatternSets; psn++) {
 		patSet = PatternSets[psn];
 		if (patSet->nPatterns == 0)
 			continue;
 		written = True;
-		BufInsert(outBuf, outBuf->length, patSet->languageMode);
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, patSet->languageMode);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (isDefaultPatternSet(patSet))
-			BufInsert(outBuf, outBuf->length, "Default\n\t");
+			outBuf->BufInsert(outBuf->length_, "Default\n\t");
 		else {
-			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->lineContext));
-			BufInsert(outBuf, outBuf->length, ":");
-			BufInsertEx(outBuf, outBuf->length, std::to_string(patSet->charContext));
-			BufInsert(outBuf, outBuf->length, "{\n");
-			BufInsertEx(outBuf, outBuf->length, createPatternsString(patSet, "\t\t"));
-			BufInsert(outBuf, outBuf->length, "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->lineContext));
+			outBuf->BufInsert(outBuf->length_, ":");
+			outBuf->BufInsertEx(outBuf->length_, std::to_string(patSet->charContext));
+			outBuf->BufInsert(outBuf->length_, "{\n");
+			outBuf->BufInsertEx(outBuf->length_, createPatternsString(patSet, "\t\t"));
+			outBuf->BufInsert(outBuf->length_, "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
-	std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - (written ? 2 : 0));
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ - (written ? 2 : 0));
 	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -702,42 +702,42 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 	int pn;
 	highlightPattern *pat;
 
-	auto outBuf = new textBuffer;
-	;
+	auto outBuf = new TextBuffer;
+
 	for (pn = 0; pn < patSet->nPatterns; pn++) {
 		pat = &patSet->patterns[pn];
-		BufInsert(outBuf, outBuf->length, indentStr);
-		BufInsert(outBuf, outBuf->length, pat->name);
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, indentStr);
+		outBuf->BufInsert(outBuf->length_, pat->name);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (pat->startRE != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(pat->startRE));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->startRE));
 			XtFree(str);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (pat->endRE != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(pat->endRE));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->endRE));
 			XtFree(str);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (pat->errorRE != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(pat->errorRE));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(pat->errorRE));
 			XtFree(str);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
-		BufInsert(outBuf, outBuf->length, pat->style);
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, pat->style);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (pat->subPatternOf != nullptr)
-			BufInsert(outBuf, outBuf->length, pat->subPatternOf);
-		BufInsert(outBuf, outBuf->length, ":");
+			outBuf->BufInsert(outBuf->length_, pat->subPatternOf);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (pat->flags & DEFER_PARSING)
-			BufInsert(outBuf, outBuf->length, "D");
+			outBuf->BufInsert(outBuf->length_, "D");
 		if (pat->flags & PARSE_SUBPATS_FROM_START)
-			BufInsert(outBuf, outBuf->length, "R");
+			outBuf->BufInsert(outBuf->length_, "R");
 		if (pat->flags & COLOR_ONLY)
-			BufInsert(outBuf, outBuf->length, "C");
-		BufInsert(outBuf, outBuf->length, "\n");
+			outBuf->BufInsert(outBuf->length_, "C");
+		outBuf->BufInsert(outBuf->length_, "\n");
 	}
-	std::string outStr = BufGetAllEx(outBuf);
+	std::string outStr = outBuf->BufGetAllEx();
 	delete outBuf;
 	return outStr;
 }

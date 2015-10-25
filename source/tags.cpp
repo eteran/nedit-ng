@@ -978,7 +978,7 @@ static int fakeRegExSearch(WindowInfo *window, char *in_buffer, const char *sear
 
 	if (in_buffer == nullptr) {
 		/* get the entire (sigh) text buffer from the text area widget */
-		fileString = BufAsString(window->buffer);
+		fileString = window->buffer->BufAsString();
 	} else {
 		fileString = in_buffer;
 	}
@@ -1397,12 +1397,12 @@ static void editTaggedLocation(Widget parent, int i) {
 	}
 
 	/* select the matched string */
-	BufSelect(windowToSearch->buffer, startPos, endPos);
+	windowToSearch->buffer->BufSelect(startPos, endPos);
 	RaiseFocusDocumentWindow(windowToSearch, True);
 
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */
-	lineNum = BufCountLines(windowToSearch->buffer, 0, startPos);
+	lineNum = windowToSearch->buffer->BufCountLines(0, startPos);
 	XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, nullptr);
 	TextSetScroll(windowToSearch->lastFocus, lineNum - rows / 4, 0);
 	TextSetCursorPos(windowToSearch->lastFocus, endPos);

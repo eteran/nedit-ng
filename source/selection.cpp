@@ -143,9 +143,9 @@ char *GetAnySelection(WindowInfo *window) {
 
 	/* If the selection is in the window's own buffer get it from there,
 	   but substitute null characters as if it were an external selection */
-	if (window->buffer->primary.selected) {
-		selText = BufGetSelectionText(window->buffer);
-		BufUnsubstituteNullChars(selText, window->buffer);
+	if (window->buffer->primary_.selected) {
+		selText = window->buffer->BufGetSelectionText();
+		window->buffer->BufUnsubstituteNullChars(selText);
 		return selText;
 	}
 
@@ -317,25 +317,25 @@ void SelectNumberedLine(WindowInfo *window, int lineNum) {
 	if (lineNum < 1)
 		lineNum = 1;
 	lineEnd = -1;
-	for (i = 1; i <= lineNum && lineEnd < window->buffer->length; i++) {
+	for (i = 1; i <= lineNum && lineEnd < window->buffer->length_; i++) {
 		lineStart = lineEnd + 1;
-		lineEnd = BufEndOfLine(window->buffer, lineStart);
+		lineEnd = window->buffer->BufEndOfLine( lineStart);
 	}
 
 	/* highlight the line */
 	if (i > lineNum) {
 		/* Line was found */
-		if (lineEnd < window->buffer->length) {
-			BufSelect(window->buffer, lineStart, lineEnd + 1);
+		if (lineEnd < window->buffer->length_) {
+			window->buffer->BufSelect(lineStart, lineEnd + 1);
 		} else {
 			/* Don't select past the end of the buffer ! */
-			BufSelect(window->buffer, lineStart, window->buffer->length);
+			window->buffer->BufSelect(lineStart, window->buffer->length_);
 		}
 	} else {
 		/* Line was not found -> position the selection & cursor at the end
 		   without making a real selection and beep */
-		lineStart = window->buffer->length;
-		BufSelect(window->buffer, lineStart, lineStart);
+		lineStart = window->buffer->length_;
+		window->buffer->BufSelect(lineStart, lineStart);
 		XBell(TheDisplay, 0);
 	}
 	MakeSelectionVisible(window, window->lastFocus);
@@ -480,7 +480,7 @@ void AddMark(WindowInfo *window, Widget widget, char label) {
 
 	/* store the cursor location and selection position in the table */
 	window->markTable[index].label = label;
-	memcpy(&window->markTable[index].sel, &window->buffer->primary, sizeof(Selection));
+	memcpy(&window->markTable[index].sel, &window->buffer->primary_, sizeof(Selection));
 	window->markTable[index].cursorPos = TextGetCursorPos(widget);
 }
 
@@ -501,22 +501,22 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel) {
 
 	/* reselect marked the selection, and move the cursor to the marked pos */
 	sel = &window->markTable[index].sel;
-	oldSel = &window->buffer->primary;
+	oldSel = &window->buffer->primary_;
 	cursorPos = window->markTable[index].cursorPos;
 	if (extendSel) {
 		oldStart = oldSel->selected ? oldSel->start : TextGetCursorPos(w);
 		oldEnd = oldSel->selected ? oldSel->end : TextGetCursorPos(w);
 		newStart = sel->selected ? sel->start : cursorPos;
 		newEnd = sel->selected ? sel->end : cursorPos;
-		BufSelect(window->buffer, oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
+		window->buffer->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
 		if (sel->selected) {
 			if (sel->rectangular)
-				BufRectSelect(window->buffer, sel->start, sel->end, sel->rectStart, sel->rectEnd);
+				window->buffer->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
 			else
-				BufSelect(window->buffer, sel->start, sel->end);
+				window->buffer->BufSelect(sel->start, sel->end);
 		} else
-			BufUnselect(window->buffer);
+			window->buffer->BufUnselect();
 	}
 
 	/* Move the window into a pleasing position relative to the selection

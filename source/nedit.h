@@ -437,7 +437,7 @@ struct WindowInfo {
 	ino_t inode;                 /*  file's inode  */
 	UndoInfo *undo;              /* info for undoing last operation */
 	UndoInfo *redo;              /* info for redoing last undone op */
-	textBuffer *buffer;          /* holds the text being edited */
+	TextBuffer *buffer;          /* holds the text being edited */
 	int nPanes;                  /* number of additional text editing
 	                            areas, created by splitWindow */
 	int autoSaveCharCount;       /* count of single characters typed

@@ -38,7 +38,6 @@ add_executable(nedit
 	smartIndent.cpp
 	tags.cpp
 	text.cpp
-	TextBuffer.cpp
 	textDisp.cpp
 	textDrag.cpp
 	textSel.cpp
@@ -46,6 +45,7 @@ add_executable(nedit
 	userCmds.cpp
 	window.cpp
 	windowTitle.cpp
+	TextBuffer.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet01.inc

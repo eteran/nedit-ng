@@ -458,15 +458,15 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 
 	/* Display the file contents in the text widget */
 	window->ignoreModify = True;
-	BufSetAll(window->buffer, fileString);
+	window->buffer->BufSetAll(fileString);
 	window->ignoreModify = False;
 
 	/* Check that the length that the buffer thinks it has is the same
 	   as what we gave it.  If not, there were probably nuls in the file.
 	   Substitute them with another character.  If that is impossible, warn
 	   the user, make the file read-only, and force a substitution */
-	if (window->buffer->length != readLen) {
-		if (!BufSubstituteNullChars(fileString, readLen, window->buffer)) {
+	if (window->buffer->length_ != readLen) {
+		if (!window->buffer->BufSubstituteNullChars(fileString, readLen)) {
 			resp = DialogF(DF_ERR, window->shell, 2, "Error while opening File", "Too much binary data in file.  You may view\n"
 			                                                                     "it, but not modify or re-save its contents.",
 			               "View", "Cancel");
@@ -480,10 +480,10 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 					*c = (char)0xfe;
 				}
 			}
-			window->buffer->nullSubsChar = (char)0xfe;
+			window->buffer->nullSubsChar_ = (char)0xfe;
 		}
 		window->ignoreModify = True;
-		BufSetAll(window->buffer, fileString);
+		window->buffer->BufSetAll(fileString);
 		window->ignoreModify = False;
 	}
 
@@ -567,7 +567,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	}
 
 	/* If the file contained ascii nulls, re-map them */
-	if (!BufSubstituteNullChars(fileString, readLen, window->buffer)) {
+	if (!window->buffer->BufSubstituteNullChars(fileString, readLen)) {
 		DialogF(DF_ERR, window->shell, 1, "Error opening File", "Too much binary data in file", "OK");
 	}
 
@@ -580,10 +580,10 @@ int IncludeFile(WindowInfo *window, const char *name) {
 
 	/* insert the contents of the file in the selection or at the insert
 	   position in the window if no selection exists */
-	if (window->buffer->primary.selected)
-		BufReplaceSelected(window->buffer, fileString);
+	if (window->buffer->primary_.selected)
+		window->buffer->BufReplaceSelected(fileString);
 	else
-		BufInsert(window->buffer, TextGetCursorPos(window->lastFocus), fileString);
+		window->buffer->BufInsert(TextGetCursorPos(window->lastFocus), fileString);
 
 	/* release the memory that holds fileString */
 	free(fileString);
@@ -820,8 +820,8 @@ static int doSave(WindowInfo *window) {
 	         changes. If the file is created for the first time, it has
 	         zero size on disk, and the check would falsely conclude that the
 	         file has changed on disk, and would pop up a warning dialog */
-	if (BufGetCharacter(window->buffer, window->buffer->length - 1) != '\n' && window->buffer->length != 0 && GetPrefAppendLF()) {
-		BufInsert(window->buffer, window->buffer->length, "\n");
+	if (window->buffer->BufGetCharacter(window->buffer->length_ - 1) != '\n' && window->buffer->length_ != 0 && GetPrefAppendLF()) {
+		window->buffer->BufInsert(window->buffer->length_, "\n");
 	}
 
 	/* open the file */
@@ -836,11 +836,11 @@ static int doSave(WindowInfo *window) {
 	}
 
 	/* get the text buffer contents and its length */
-	std::string fileString = BufGetAllEx(window->buffer);
-	fileLen = window->buffer->length;
+	std::string fileString = window->buffer->BufGetAllEx();
+	fileLen = window->buffer->length_;
 
 	/* If null characters are substituted for, put them back */
-	BufUnsubstituteNullCharsEx(fileString, window->buffer);
+	window->buffer->BufUnsubstituteNullCharsEx(fileString);
 
 	/* If the file is to be saved in DOS or Macintosh format, reconvert */
 	if (window->fileFormat == DOS_FILE_FORMAT) {
@@ -921,11 +921,11 @@ int WriteBackupFile(WindowInfo *window) {
 	}
 
 	/* get the text buffer contents and its length */
-	std::string fileString = BufGetAllEx(window->buffer);
-	fileLen = window->buffer->length;
+	std::string fileString = window->buffer->BufGetAllEx();
+	fileLen = window->buffer->length_;
 
 	/* If null characters are substituted for, put them back */
-	BufUnsubstituteNullCharsEx(fileString, window->buffer);
+	window->buffer->BufUnsubstituteNullCharsEx(fileString);
 
 	/* add a terminating newline if the file doesn't already have one */
 	if (fileLen != 0 && fileString[fileLen - 1] != '\n')
@@ -1104,8 +1104,8 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
 }
 
 void PrintWindow(WindowInfo *window, int selectedOnly) {
-	textBuffer *buf = window->buffer;
-	Selection *sel = &buf->primary;
+	TextBuffer *buf = window->buffer;
+	Selection *sel = &buf->primary_;
 	std::string fileString;
 	int fileLen;
 
@@ -1117,15 +1117,15 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 			return;
 		}
 		if (sel->rectangular) {
-			fileString = BufGetSelectionTextEx(buf);
+			fileString = buf->BufGetSelectionTextEx();
 			fileLen = fileString.size();
 		} else
 			fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end, &fileLen);
 	} else
-		fileString = TextGetWrappedEx(window->textArea, 0, buf->length, &fileLen);
+		fileString = TextGetWrappedEx(window->textArea, 0, buf->length_, &fileLen);
 
 	/* If null characters are substituted for, put them back */
-	BufUnsubstituteNullCharsEx(fileString, buf);
+	buf->BufUnsubstituteNullCharsEx(fileString);
 
 	/* add a terminating newline if the file doesn't already have one */
 	if (fileLen != 0 && fileString.back() != '\n')
@@ -1601,8 +1601,8 @@ static void addWrapNewlines(WindowInfo *window) {
 	}
 
 	/* Modify the buffer to add wrapping */
-	fileString = TextGetWrapped(window->textArea, 0, window->buffer->length, &fileLen);
-	BufSetAll(window->buffer, fileString);
+	fileString = TextGetWrapped(window->textArea, 0, window->buffer->length_, &fileLen);
+	window->buffer->BufSetAll(fileString);
 	XtFree(fileString);
 
 	/* restore the insert and scroll positions of each pane */
@@ -1623,7 +1623,7 @@ static void addWrapNewlines(WindowInfo *window) {
 #define PREFERRED_CMPBUF_LEN 32768
 
 /*
- * Check if the contens of the textBuffer *buf is equal
+ * Check if the contens of the TextBuffer *buf is equal
  * the contens of the file named fileName. The format of
  * the file (UNIX/DOS/MAC) is handled properly.
  *
@@ -1638,7 +1638,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 	char pendingCR = 0;
 	int fileFormat = window->fileFormat;
 	char message[MAXPATHLEN + 50];
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 	FILE *fp;
 
 	fp = fopen(fileName, "r");
@@ -1652,13 +1652,13 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 	fileLen = statbuf.st_size;
 	/* For DOS files, we can't simply check the length */
 	if (fileFormat != DOS_FILE_FORMAT) {
-		if (fileLen != buf->length) {
+		if (fileLen != buf->length_) {
 			fclose(fp);
 			return (1);
 		}
 	} else {
 		/* If a DOS file is smaller on disk, it's certainly different */
-		if (fileLen < buf->length) {
+		if (fileLen < buf->length_) {
 			fclose(fp);
 			return (1);
 		}
@@ -1702,8 +1702,8 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 			ConvertFromDosFileString(fileString, &nRead, &pendingCR);
 
 		/* Beware of 0 chars ! */
-		BufSubstituteNullChars(fileString, nRead, buf);
-		rv = BufCmp(buf, bufPos, nRead, fileString);
+		buf->BufSubstituteNullChars(fileString, nRead);
+		rv = buf->BufCmp(bufPos, nRead, fileString);
 		if (rv) {
 			fclose(fp);
 			AllWindowsUnbusy();
@@ -1715,13 +1715,13 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 	AllWindowsUnbusy();
 	fclose(fp);
 	if (pendingCR) {
-		rv = BufCmp(buf, bufPos, 1, &pendingCR);
+		rv = buf->BufCmp(bufPos, 1, &pendingCR);
 		if (rv) {
 			return (rv);
 		}
 		bufPos += 1;
 	}
-	if (bufPos != buf->length) {
+	if (bufPos != buf->length_) {
 		return (1);
 	}
 	return (0);

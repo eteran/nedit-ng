@@ -51,8 +51,8 @@ static int atTabStop(int pos, int tabDist);
 static int nextTab(int pos, int tabDist);
 static int countLines(const char *text);
 static int countLinesEx(const std::string &text);
-static int findParagraphStart(textBuffer *buf, int startPos);
-static int findParagraphEnd(textBuffer *buf, int startPos);
+static int findParagraphStart(TextBuffer *buf, int startPos);
+static int findParagraphEnd(TextBuffer *buf, int startPos);
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
@@ -71,64 +71,64 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 	int origLength;
 	int emTabDist;
 	int shiftDist;
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 	std::string text;
 
 	/* get selection, if no text selected, use current insert position */
-	if (!BufGetSelectionPos(buf, &selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		cursorPos = TextGetCursorPos(window->lastFocus);
-		selStart = BufStartOfLine(buf, cursorPos);
-		selEnd = BufEndOfLine(buf, cursorPos);
-		if (selEnd < buf->length)
+		selStart = buf->BufStartOfLine(cursorPos);
+		selEnd = buf->BufEndOfLine(cursorPos);
+		if (selEnd < buf->length_)
 			selEnd++;
-		BufSelect(buf, selStart, selEnd);
+		buf->BufSelect(selStart, selEnd);
 		isRect = False;
-		text = BufGetRangeEx(buf, selStart, selEnd);
+		text = buf->BufGetRangeEx(selStart, selEnd);
 	} else if (isRect) {
 		cursorPos = TextGetCursorPos(window->lastFocus);
-		origLength = buf->length;
+		origLength = buf->length_;
 		shiftRect(window, direction, byTab, selStart, selEnd, rectStart, rectEnd);
-		TextSetCursorPos(window->lastFocus, (cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->length - origLength));
+		TextSetCursorPos(window->lastFocus, (cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->length_ - origLength));
 		return;
 	} else {
-		selStart = BufStartOfLine(buf, selStart);
-		if (selEnd != 0 && BufGetCharacter(buf, selEnd - 1) != '\n') {
-			selEnd = BufEndOfLine(buf, selEnd);
-			if (selEnd < buf->length)
+		selStart = buf->BufStartOfLine(selStart);
+		if (selEnd != 0 && buf->BufGetCharacter(selEnd - 1) != '\n') {
+			selEnd = buf->BufEndOfLine(selEnd);
+			if (selEnd < buf->length_)
 				selEnd++;
 		}
-		BufSelect(buf, selStart, selEnd);
-		text = BufGetRangeEx(buf, selStart, selEnd);
+		buf->BufSelect(selStart, selEnd);
+		text = buf->BufGetRangeEx(selStart, selEnd);
 	}
 
 	/* shift the text by the appropriate distance */
 	if (byTab) {
 		XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
-		shiftDist = emTabDist == 0 ? buf->tabDist : emTabDist;
+		shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		shiftDist = 1;
 
-	std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs, buf->tabDist, shiftDist, &shiftedLen);
+	std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist, &shiftedLen);
 
-	BufReplaceSelectedEx(buf, shiftedText);
+	buf->BufReplaceSelectedEx(shiftedText);
 
 	newEndPos = selStart + shiftedLen;
-	BufSelect(buf, selStart, newEndPos);
+	buf->BufSelect(selStart, newEndPos);
 }
 
 static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
 	int offset, emTabDist;
-	textBuffer *tempBuf;
-	textBuffer *buf = window->buffer;
+	TextBuffer *tempBuf;
+	TextBuffer *buf = window->buffer;
 
 	/* Make sure selStart and SelEnd refer to whole lines */
-	selStart = BufStartOfLine(buf, selStart);
-	selEnd   = BufEndOfLine(buf, selEnd);
+	selStart = buf->BufStartOfLine(selStart);
+	selEnd   = buf->BufEndOfLine(selEnd);
 
 	/* Calculate the the left/right offset for the new rectangle */
 	if (byTab) {
 		XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
-		offset = emTabDist == 0 ? buf->tabDist : emTabDist;
+		offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		offset = 1;
 	offset *= direction == SHIFT_LEFT ? -1 : 1;
@@ -137,20 +137,20 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 
 	/* Create a temporary buffer for the lines containing the selection, to
 	   hide the intermediate steps from the display update routines */
-	tempBuf = new textBuffer;
-	tempBuf->tabDist = buf->tabDist;
-	tempBuf->useTabs = buf->useTabs;
-	std::string text = BufGetRangeEx(buf, selStart, selEnd);
-	BufSetAllEx(tempBuf, text);
+	tempBuf = new TextBuffer;
+	tempBuf->tabDist_ = buf->tabDist_;
+	tempBuf->useTabs_ = buf->useTabs_;
+	std::string text = buf->BufGetRangeEx(selStart, selEnd);
+	tempBuf->BufSetAllEx(text);
 
 	/* Do the shift in the temporary buffer */
-	text = BufGetTextInRectEx(buf, selStart, selEnd, rectStart, rectEnd);
-	BufRemoveRect(tempBuf, 0, selEnd - selStart, rectStart, rectEnd);
-	BufInsertColEx(tempBuf, rectStart + offset, 0, text, nullptr, nullptr);
+	text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
+	tempBuf->BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
+	tempBuf->BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
 
 	/* Make the change in the real buffer */
-	BufReplace(buf, selStart, selEnd, BufAsString(tempBuf));
-	BufRectSelect(buf, selStart, selStart + tempBuf->length, rectStart + offset, rectEnd + offset);
+	buf->BufReplace(selStart, selEnd, tempBuf->BufAsString());
+	buf->BufRectSelect(selStart, selStart + tempBuf->length_, rectStart + offset, rectEnd + offset);
 	delete tempBuf;
 }
 
@@ -168,26 +168,26 @@ void DowncaseSelection(WindowInfo *window) {
 ** change to upper case, otherwise, change to lower case.
 */
 static void changeCase(WindowInfo *window, int makeUpper) {
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 	char *text, *c;
 	char oldChar;
 	int cursorPos, start, end, isRect, rectStart, rectEnd;
 
 	/* Get the selection.  Use character before cursor if no selection */
-	if (!BufGetSelectionPos(buf, &start, &end, &isRect, &rectStart, &rectEnd)) {
+	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		char bufChar[2] = " ";
 		cursorPos = TextGetCursorPos(window->lastFocus);
 		if (cursorPos == 0) {
 			XBell(TheDisplay, 0);
 			return;
 		}
-		*bufChar = BufGetCharacter(buf, cursorPos - 1);
+		*bufChar = buf->BufGetCharacter(cursorPos - 1);
 		*bufChar = makeUpper ? toupper((unsigned char)*bufChar) : tolower((unsigned char)*bufChar);
-		BufReplace(buf, cursorPos - 1, cursorPos, bufChar);
+		buf->BufReplace(cursorPos - 1, cursorPos, bufChar);
 	} else {
 		Boolean modified = False;
 
-		text = BufGetSelectionText(buf);
+		text = buf->BufGetSelectionText();
 		for (c = text; *c != '\0'; c++) {
 			oldChar = *c;
 			*c = makeUpper ? toupper((unsigned char)*c) : tolower((unsigned char)*c);
@@ -197,51 +197,51 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 		}
 
 		if (modified) {
-			BufReplaceSelected(buf, text);
+			buf->BufReplaceSelected(text);
 		}
 
 		XtFree(text);
 		if (isRect)
-			BufRectSelect(buf, start, end, rectStart, rectEnd);
+			buf->BufRectSelect(start, end, rectStart, rectEnd);
 		else
-			BufSelect(buf, start, end);
+			buf->BufSelect(start, end);
 	}
 }
 
 void FillSelection(WindowInfo *window) {
-	textBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer;
 	char *filledText;
 	int left, right, nCols, len, isRect, rectStart, rectEnd;
 	int rightMargin, wrapMargin;
 	int insertPos = TextGetCursorPos(window->lastFocus);
-	int hasSelection = window->buffer->primary.selected;
+	int hasSelection = window->buffer->primary_.selected;
 	std::string text;
 
 	/* Find the range of characters and get the text to fill.  If there is a
 	   selection, use it but extend non-rectangular selections to encompass
 	   whole lines.  If there is no selection, find the paragraph containing
 	   the insertion cursor */
-	if (!BufGetSelectionPos(buf, &left, &right, &isRect, &rectStart, &rectEnd)) {
+	if (!buf->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
 		left = findParagraphStart(buf, insertPos);
 		right = findParagraphEnd(buf, insertPos);
 		if (left == right) {
 			XBell(TheDisplay, 0);
 			return;
 		}
-		text = BufGetRangeEx(buf, left, right);
+		text = buf->BufGetRangeEx(left, right);
 	} else if (isRect) {
-		left  = BufStartOfLine(buf, left);
-		right = BufEndOfLine(buf, right);
-		text  = BufGetTextInRectEx(buf, left, right, rectStart, INT_MAX);
+		left  = buf->BufStartOfLine(left);
+		right = buf->BufEndOfLine(right);
+		text  = buf->BufGetTextInRectEx(left, right, rectStart, INT_MAX);
 	} else {
-		left = BufStartOfLine(buf, left);
-		if (right != 0 && BufGetCharacter(buf, right - 1) != '\n') {
-			right = BufEndOfLine(buf, right);
-			if (right < buf->length)
+		left = buf->BufStartOfLine(left);
+		if (right != 0 && buf->BufGetCharacter(right - 1) != '\n') {
+			right = buf->BufEndOfLine(right);
+			if (right < buf->length_)
 				right++;
 		}
-		BufSelect(buf, left, right);
-		text = BufGetRangeEx(buf, left, right);
+		buf->BufSelect(left, right);
+		text = buf->BufGetRangeEx(left, right);
 	}
 
 	/* Find right margin either as specified in the rectangular selection, or
@@ -254,23 +254,23 @@ void FillSelection(WindowInfo *window) {
 	}
 
 	/* Fill the text */
-	filledText = fillParagraphs(text.c_str(), rightMargin, buf->tabDist, buf->useTabs, buf->nullSubsChar, &len, False);
+	filledText = fillParagraphs(text.c_str(), rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, &len, False);
 
 	/* Replace the text in the window */
 	if (hasSelection && isRect) {
-		BufReplaceRect(buf, left, right, rectStart, INT_MAX, filledText);
-		BufRectSelect(buf, left, BufEndOfLine(buf, BufCountForwardNLines(buf, left, countLines(filledText) - 1)), rectStart, rectEnd);
+		buf->BufReplaceRect(left, right, rectStart, INT_MAX, filledText);
+		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLines(filledText) - 1)), rectStart, rectEnd);
 	} else {
-		BufReplace(buf, left, right, filledText);
+		buf->BufReplace(left, right, filledText);
 		if (hasSelection)
-			BufSelect(buf, left, left + len);
+			buf->BufSelect(left, left + len);
 	}
 	XtFree(filledText);
 
 	/* Find a reasonable cursor position.  Usually insertPos is best, but
 	   if the text was indented, positions can shift */
 	if (hasSelection && isRect)
-		TextSetCursorPos(window->lastFocus, buf->cursorPosHint);
+		TextSetCursorPos(window->lastFocus, buf->cursorPosHint_);
 	else
 		TextSetCursorPos(window->lastFocus, insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
 }
@@ -529,7 +529,7 @@ static int findLeftMargin(char *text, int length, int tabDist) {
 
 	for (c = text; *c != '\0' && c - text < length; c++) {
 		if (*c == '\t') {
-			col += BufCharWidth('\t', col, tabDist, '\0');
+			col += TextBuffer::BufCharWidth('\t', col, tabDist, '\0');
 		} else if (*c == ' ') {
 			col++;
 		} else if (*c == '\n') {
@@ -561,11 +561,11 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 	int paraStart, paraEnd, fillEnd;
 	char *c, ch, *secondLineStart, *paraText, *filledText;
 	int firstLineLen, firstLineIndent, leftMargin, len;
-	textBuffer *buf;
+	TextBuffer *buf;
 
 	/* Create a buffer to accumulate the filled paragraphs */
-	buf = new textBuffer;
-	BufSetAll(buf, text);
+	buf = new TextBuffer;
+	buf->BufSetAll(text);
 
 	/*
 	** Loop over paragraphs, filling each one, and accumulating the results
@@ -575,15 +575,15 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 	for (;;) {
 
 		/* Skip over white space */
-		while (paraStart < buf->length) {
-			ch = BufGetCharacter(buf, paraStart);
+		while (paraStart < buf->length_) {
+			ch = buf->BufGetCharacter(paraStart);
 			if (ch != ' ' && ch != '\t' && ch != '\n')
 				break;
 			paraStart++;
 		}
-		if (paraStart >= buf->length)
+		if (paraStart >= buf->length_)
 			break;
-		paraStart = BufStartOfLine(buf, paraStart);
+		paraStart = buf->BufStartOfLine(paraStart);
 
 		/* Find the end of the paragraph */
 		paraEnd = findParagraphEnd(buf, paraStart);
@@ -591,11 +591,11 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-		fillEnd = alignWithFirst ? buf->length : paraEnd;
+		fillEnd = alignWithFirst ? buf->length_ : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
-		paraText = BufGetRange(buf, paraStart, fillEnd);
+		paraText = buf->BufGetRange(paraStart, fillEnd);
 
 		/* Find separate left margins for the first and for the first line of
 		   the paragraph, and for rest of the remainder of the paragraph */
@@ -611,7 +611,7 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 		XtFree(paraText);
 
 		/* Replace it in the buffer */
-		BufReplace(buf, paraStart, fillEnd, filledText);
+		buf->BufReplace(paraStart, fillEnd, filledText);
 		XtFree(filledText);
 
 		/* move on to the next paragraph */
@@ -619,8 +619,8 @@ static char *fillParagraphs(const char *text, int rightMargin, int tabDist, int 
 	}
 
 	/* Free the buffer and return its contents */
-	filledText = BufGetAll(buf);
-	*filledLen = buf->length;
+	filledText = buf->BufGetAll();
+	*filledLen = buf->length_;
 	delete buf;
 	return filledText;
 }
@@ -673,7 +673,7 @@ static char *fillParagraph(char *text, int leftMargin, int firstLineIndent, int 
 		if (*c == '\n')
 			col = leftMargin;
 		else
-			col += BufCharWidth(*c, col, tabDist, nullSubsChar);
+			col += TextBuffer::BufCharWidth(*c, col, tabDist, nullSubsChar);
 		if (col - 1 > rightMargin) {
 			inWhitespace = True;
 			for (b = c; b >= cleanedText && *b != '\n'; b--) {
@@ -746,40 +746,40 @@ static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChar
 /*
 ** Find the boundaries of the paragraph containing pos
 */
-static int findParagraphEnd(textBuffer *buf, int startPos) {
+static int findParagraphEnd(TextBuffer *buf, int startPos) {
 	char c;
 	int pos;
 	static char whiteChars[] = " \t";
 
-	pos = BufEndOfLine(buf, startPos) + 1;
-	while (pos < buf->length) {
-		c = BufGetCharacter(buf, pos);
+	pos = buf->BufEndOfLine(startPos) + 1;
+	while (pos < buf->length_) {
+		c = buf->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
 		if (strchr(whiteChars, c) != nullptr)
 			pos++;
 		else
-			pos = BufEndOfLine(buf, pos) + 1;
+			pos = buf->BufEndOfLine(pos) + 1;
 	}
-	return pos < buf->length ? pos : buf->length;
+	return pos < buf->length_ ? pos : buf->length_;
 }
-static int findParagraphStart(textBuffer *buf, int startPos) {
+static int findParagraphStart(TextBuffer *buf, int startPos) {
 	char c;
 	int pos, parStart;
 	static char whiteChars[] = " \t";
 
 	if (startPos == 0)
 		return 0;
-	parStart = BufStartOfLine(buf, startPos);
+	parStart = buf->BufStartOfLine(startPos);
 	pos = parStart - 2;
 	while (pos > 0) {
-		c = BufGetCharacter(buf, pos);
+		c = buf->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
 		if (strchr(whiteChars, c) != nullptr)
 			pos--;
 		else {
-			parStart = BufStartOfLine(buf, pos);
+			parStart = buf->BufStartOfLine(pos);
 			pos = parStart - 2;
 		}
 	}

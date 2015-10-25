@@ -2057,8 +2057,8 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow) {
 		tabDist = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
 		XtVaGetValues(forWindow->textArea, textNemulateTabs, &emTabDist, nullptr);
-		useTabs = forWindow->buffer->useTabs;
-		tabDist = BufGetTabDistance(forWindow->buffer);
+		useTabs = forWindow->buffer->useTabs_;
+		tabDist = forWindow->buffer->BufGetTabDistance();
 	}
 	emulate = emTabDist != 0;
 	SetIntText(TabDistText, tabDist);
@@ -3555,13 +3555,13 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	   parameter was set to its default value, set it to the new default,
 	   otherwise, leave it alone */
 	wrapModeIsDef = window->wrapMode == GetPrefWrap(oldMode);
-	tabDistIsDef = BufGetTabDistance(window->buffer) == GetPrefTabDist(oldMode);
+	tabDistIsDef = window->buffer->BufGetTabDistance() == GetPrefTabDist(oldMode);
 	XtVaGetValues(window->textArea, textNemulateTabs, &oldEmTabDist, nullptr);
 	emTabDistIsDef = oldEmTabDist == GetPrefEmTabDist(oldMode);
 	indentStyleIsDef = window->indentStyle == GetPrefAutoIndent(oldMode) || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
 	highlightIsDef = window->highlightSyntax == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(LanguageModeName(oldMode)) == nullptr);
 	wrapMode = wrapModeIsDef || forceDefaults ? GetPrefWrap(mode) : window->wrapMode;
-	tabDist = tabDistIsDef || forceDefaults ? GetPrefTabDist(mode) : BufGetTabDistance(window->buffer);
+	tabDist = tabDistIsDef || forceDefaults ? GetPrefTabDist(mode) : window->buffer->BufGetTabDistance();
 	emTabDist = emTabDistIsDef || forceDefaults ? GetPrefEmTabDist(mode) : oldEmTabDist;
 	indentStyle = indentStyleIsDef || forceDefaults ? GetPrefAutoIndent(mode) : window->indentStyle;
 	highlight = highlightIsDef || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax;
@@ -3623,7 +3623,7 @@ static int matchLanguageMode(WindowInfo *window) {
 	/*... look for an explicit mode statement first */
 
 	/* Do a regular expression search on for recognition pattern */
-	std::string first200 = BufGetRangeEx(window->buffer, 0, 200);
+	std::string first200 = window->buffer->BufGetRangeEx(0, 200);
 	for (i = 0; i < NLanguageModes; i++) {
 		if (LanguageModes[i]->recognitionExpr != nullptr) {
 			if (SearchString(first200.c_str(), LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
@@ -3791,51 +3791,51 @@ static char *writeLanguageModesString(void) {
 	int i;
 	char *escapedStr, *str, numBuf[25];
 
-	auto outBuf = new textBuffer;
+	auto outBuf = new TextBuffer;
 	;
 	for (i = 0; i < NLanguageModes; i++) {
-		BufInsert(outBuf, outBuf->length, "\t");
-		BufInsert(outBuf, outBuf->length, LanguageModes[i]->name);
-		BufInsert(outBuf, outBuf->length, ":");
-		BufInsert(outBuf, outBuf->length, str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
+		outBuf->BufInsert(outBuf->length_, "\t");
+		outBuf->BufInsert(outBuf->length_, LanguageModes[i]->name);
+		outBuf->BufInsert(outBuf->length_, ":");
+		outBuf->BufInsert(outBuf->length_, str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
 		XtFree(str);
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->recognitionExpr != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(LanguageModes[i]->recognitionExpr));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(LanguageModes[i]->recognitionExpr));
 			XtFree(str);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
-			BufInsert(outBuf, outBuf->length, AutoIndentTypes[LanguageModes[i]->indentStyle]);
-		BufInsert(outBuf, outBuf->length, ":");
+			outBuf->BufInsert(outBuf->length_, AutoIndentTypes[LanguageModes[i]->indentStyle]);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP)
-			BufInsert(outBuf, outBuf->length, AutoWrapTypes[LanguageModes[i]->wrapStyle]);
-		BufInsert(outBuf, outBuf->length, ":");
+			outBuf->BufInsert(outBuf->length_, AutoWrapTypes[LanguageModes[i]->wrapStyle]);
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->tabDist);
-			BufInsert(outBuf, outBuf->length, numBuf);
+			outBuf->BufInsert(outBuf->length_, numBuf);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->emTabDist);
-			BufInsert(outBuf, outBuf->length, numBuf);
+			outBuf->BufInsert(outBuf->length_, numBuf);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->delimiters != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(LanguageModes[i]->delimiters));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(LanguageModes[i]->delimiters));
 			XtFree(str);
 		}
-		BufInsert(outBuf, outBuf->length, ":");
+		outBuf->BufInsert(outBuf->length_, ":");
 		if (LanguageModes[i]->defTipsFile != nullptr) {
-			BufInsert(outBuf, outBuf->length, str = MakeQuotedString(LanguageModes[i]->defTipsFile));
+			outBuf->BufInsert(outBuf->length_, str = MakeQuotedString(LanguageModes[i]->defTipsFile));
 			XtFree(str);
 		}
 
-		BufInsert(outBuf, outBuf->length, "\n");
+		outBuf->BufInsert(outBuf->length_, "\n");
 	}
 
 	/* Get the output, and lop off the trailing newline */
-	std::string outStr = BufGetRangeEx(outBuf, 0, outBuf->length - 1);
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->length_ - 1);
 	delete outBuf;
 	escapedStr = EscapeSensitiveChars(outStr.c_str());
 	return escapedStr;

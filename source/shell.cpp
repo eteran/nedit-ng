@@ -124,7 +124,7 @@ static void measureText(char *text, int wrapWidth, int *rows, int *cols, int *wr
 static void truncateString(char *string, int length);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
-static void safeBufReplace(textBuffer *buf, int *start, int *end, const char *text);
+static void safeBufReplace(TextBuffer *buf, int *start, int *end, const char *text);
 static char *shellCommandSubstitutes(const char *inStr, const char *fileStr, const char *lineStr);
 static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr, const char *lineStr, int outLen, int predictOnly);
 
@@ -145,16 +145,16 @@ void FilterSelection(WindowInfo *window, const char *command, int fromMacro) {
 
 	/* Get the selection and the range in character positions that it
 	   occupies.  Beep and return if no selection */
-	text = BufGetSelectionText(window->buffer);
+	text = window->buffer->BufGetSelectionText();
 	if (*text == '\0') {
 		XtFree(text);
 		XBell(TheDisplay, 0);
 		return;
 	}
 	textLen = strlen(text);
-	BufUnsubstituteNullChars(text, window->buffer);
-	left = window->buffer->primary.start;
-	right = window->buffer->primary.end;
+	window->buffer->BufUnsubstituteNullChars(text);
+	left = window->buffer->primary_.start;
+	right = window->buffer->primary_.end;
 
 	/* Issue the command and collect its output */
 	issueCommand(window, command, text, textLen, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus, left, right, fromMacro);
@@ -240,16 +240,16 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 	pos = TextGetCursorPos(window->lastFocus);
 	if (!GetSimpleSelection(window->buffer, &left, &right)) {
 		left = right = pos;
-		left = BufStartOfLine(window->buffer, left);
-		right = BufEndOfLine(window->buffer, right);
+		left = window->buffer->BufStartOfLine(left);
+		right = window->buffer->BufEndOfLine( right);
 		insertPos = right;
 	} else
-		insertPos = BufEndOfLine(window->buffer, right);
-	std::string cmdText = BufGetRangeEx(window->buffer, left, right);
-	BufUnsubstituteNullCharsEx(cmdText, window->buffer);
+		insertPos = window->buffer->BufEndOfLine( right);
+	std::string cmdText = window->buffer->BufGetRangeEx(left, right);
+	window->buffer->BufUnsubstituteNullCharsEx(cmdText);
 
 	/* insert a newline after the entire line */
-	BufInsert(window->buffer, insertPos, "\n");
+	window->buffer->BufInsert(insertPos, "\n");
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -313,7 +313,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
 	if (input == FROM_SELECTION) {
-		text = BufGetSelectionText(window->buffer);
+		text = window->buffer->BufGetSelectionText();
 		if (*text == '\0') {
 			XtFree(text);
 			free(subsCommand);
@@ -322,13 +322,13 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_WINDOW) {
-		text = BufGetAll(window->buffer);
+		text = window->buffer->BufGetAll();
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_EITHER) {
-		text = BufGetSelectionText(window->buffer);
+		text = window->buffer->BufGetSelectionText();
 		if (*text == '\0') {
 			XtFree(text);
-			text = BufGetAll(window->buffer);
+			text = window->buffer->BufGetAll();
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else /* FROM_NONE */
@@ -338,7 +338,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 	   put the nuls back in before exporting the text */
 	if (text != nullptr) {
 		textLen = strlen(text);
-		BufUnsubstituteNullChars(text, window->buffer);
+		window->buffer->BufUnsubstituteNullChars(text);
 	} else
 		textLen = 0;
 
@@ -360,7 +360,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
 				left = 0;
-				right = window->buffer->length;
+				right = window->buffer->length_;
 			} else if (input == FROM_SELECTION) {
 				GetSimpleSelection(window->buffer, &left, &right);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
@@ -369,7 +369,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				else {
 					left = 0;
-					right = window->buffer->length;
+					right = window->buffer->length_;
 				}
 			}
 		} else {
@@ -698,12 +698,12 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** have been shrunken by the user (eg, by Undo). If necessary, the starting
 ** and ending positions (part of the state of the command) are corrected.
 */
-static void safeBufReplace(textBuffer *buf, int *start, int *end, const char *text) {
-	if (*start > buf->length)
-		*start = buf->length;
-	if (*end > buf->length)
-		*end = buf->length;
-	BufReplace(buf, *start, *end, text);
+static void safeBufReplace(TextBuffer *buf, int *start, int *end, const char *text) {
+	if (*start > buf->length_)
+		*start = buf->length_;
+	if (*end > buf->length_)
+		*end = buf->length_;
+	buf->BufReplace(*start, *end, text);
 }
 
 /*
@@ -716,7 +716,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	WindowInfo *window = (WindowInfo *)clientData;
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-	textBuffer *buf = TextGetBuffer(cmdData->textW);
+	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 	int len;
 	char *outText;
 
@@ -726,7 +726,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	outText = coalesceOutput(&cmdData->outBufs, &len);
 	if (len != 0) {
-		if (BufSubstituteNullChars(outText, len, buf)) {
+		if (buf->BufSubstituteNullChars(outText, len)) {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
 			TextSetCursorPos(cmdData->textW, cmdData->leftPos + strlen(outText));
 			cmdData->leftPos += len;
@@ -749,7 +749,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 */
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-	textBuffer *buf;
+	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart, outTextLen, errTextLen;
 	int resp, cancel = False, fromMacro = cmdData->fromMacro;
 	char *outText, *errText = nullptr;
@@ -846,16 +846,16 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 		ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
 	} else {
 		buf = TextGetBuffer(cmdData->textW);
-		if (!BufSubstituteNullChars(outText, outTextLen, buf)) {
+		if (!buf->BufSubstituteNullChars(outText, outTextLen)) {
 			fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
 			outText[0] = '\0';
 		}
 		if (cmdData->flags & REPLACE_SELECTION) {
-			reselectStart = buf->primary.rectangular ? -1 : buf->primary.start;
-			BufReplaceSelected(buf, outText);
-			TextSetCursorPos(cmdData->textW, buf->cursorPosHint);
+			reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+			buf->BufReplaceSelected(outText);
+			TextSetCursorPos(cmdData->textW, buf->cursorPosHint_);
 			if (reselectStart != -1)
-				BufSelect(buf, reselectStart, reselectStart + strlen(outText));
+				buf->BufSelect(reselectStart, reselectStart + strlen(outText));
 		} else {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
 			TextSetCursorPos(cmdData->textW, cmdData->leftPos + strlen(outText));

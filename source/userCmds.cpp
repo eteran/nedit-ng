@@ -1061,7 +1061,7 @@ static void updateMenu(WindowInfo *window, int menuType) {
 		SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
 	}
 
-	DimSelectionDepUserMenuItems(window, window->buffer->primary.selected);
+	DimSelectionDepUserMenuItems(window, window->buffer->primary_.selected);
 }
 
 /*
