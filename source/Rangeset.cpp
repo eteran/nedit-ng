@@ -71,10 +71,10 @@ struct {
 
 
 void rangesetRefreshAllRanges(Rangeset *rangeset) {
-	int i;
 
-	for (i = 0; i < rangeset->n_ranges; i++)
+	for (int i = 0; i < rangeset->n_ranges; i++) {
 		rangeset->RangesetRefreshRange(rangeset->ranges[i].start, rangeset->ranges[i].end);
+	}
 }
 
 
@@ -173,9 +173,11 @@ Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
 */
 
 int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
-	int i, last, n, *rangeTable = (int *)rangeset->ranges;
+	int i;
+	int last;
+	auto rangeTable = (int *)rangeset->ranges;
 
-	n = rangeset->n_ranges;
+	int n = rangeset->n_ranges;
 	if (n == 0)
 		return 0;
 
@@ -243,12 +245,13 @@ int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 */
 
 Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int i, j, n, *rangeTable = (int *)rangeset->ranges;
+	int j;	
+	auto rangeTable = (int *)rangeset->ranges;
 	int end_del, movement;
 
-	n = 2 * rangeset->n_ranges;
+	int n = 2 * rangeset->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
@@ -293,12 +296,13 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 */
 
 Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int i, j, n, *rangeTable = (int *)rangeset->ranges;
+	int j;
+	auto rangeTable = (int *)rangeset->ranges;
 	int end_del, movement;
 
-	n = 2 * rangeset->n_ranges;
+	int n = 2 * rangeset->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
@@ -350,12 +354,13 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 */
 
 Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int i, j, n, *rangeTable = (int *)rangeset->ranges;
+	int j;
+	auto rangeTable = (int *)rangeset->ranges;
 	int end_del, movement;
 
-	n = 2 * rangeset->n_ranges;
+	int n = 2 * rangeset->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
@@ -403,12 +408,13 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 */
 
 Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int i, j, n, *rangeTable = (int *)rangeset->ranges;
+	int j;
+	auto rangeTable = (int *)rangeset->ranges;
 	int end_del, movement;
 
-	n = 2 * rangeset->n_ranges;
+	int n = 2 * rangeset->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
@@ -460,12 +466,13 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 */
 
 Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int i, j, n, *rangeTable = (int *)rangeset->ranges;
+	int j;
+	auto rangeTable = (int *)rangeset->ranges;
 	int end_del, movement, need_gap;
 
-	n = 2 * rangeset->n_ranges;
+	int n = 2 * rangeset->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
@@ -566,16 +573,14 @@ int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
 */
 
 int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
-	int *ranges;
-	int len, ind;
 
 	if (!this || !this->n_ranges || !this->ranges)
 		return -1;
 
 	// TODO(eteran): BUGCHECK this seems very dangerous, I this this is well into UB
-	ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
-	len = this->n_ranges * 2;
-	ind = at_or_before(ranges, 0, len, pos);
+	auto ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
+	int len = this->n_ranges * 2;
+	int ind = at_or_before(ranges, 0, len, pos);
 
 	if (ind == len)
 		return -1; /* beyond end */
@@ -615,14 +620,13 @@ int Rangeset::RangesetGetNRanges() {
 */
 
 int Rangeset::RangesetInverse() {
-	int *rangeTable;
 	int n, has_zero, has_end;
 
 	if (!this)
 		return -1;
 
 	// TODO(eteran): BUGCHECK this seems very dangerous, I this this is well into UB
-	rangeTable = (int *)this->ranges;
+	auto rangeTable = (int *)this->ranges;
 
 	if (this->n_ranges == 0) {
 		if (!rangeTable) {
@@ -761,7 +765,8 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 */
 
 int Rangeset::RangesetAddBetween(int start, int end) {
-	int i, j, n, *rangeTable = (int *)this->ranges;
+	int i, j;
+	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
 		i = start; /* quietly sort the positions */
@@ -771,7 +776,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 		return this->n_ranges; /* no-op - empty range == no range */
 	}
 
-	n = 2 * this->n_ranges;
+	int n = 2 * this->n_ranges;
 
 	if (n == 0) { /* make sure we have space */
 		this->ranges = RangesetTable::RangesNew(1);
@@ -921,15 +926,15 @@ int Rangeset::RangesetChangeModifyResponse(const char *name) {
 */
 
 int Rangeset::RangesetCheckRangeOfPos(int pos) {
-	int *ranges;
-	int len, index, last;
 
-	len = this->n_ranges;
+	int index;
+
+	int len = this->n_ranges;
 	if (len == 0)
 		return -1; /* no ranges */
 
-	ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
-	last = this->last_index;
+	auto ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
+	int last = this->last_index;
 
 	/* try to profit from the last lookup by using its index */
 	if (last >= len || last < 0) {
@@ -1076,7 +1081,9 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 */
 
 int Rangeset::RangesetRemoveBetween(int start, int end) {
-	int i, j, n, *rangeTable = (int *)this->ranges;
+	int i, j;
+	
+	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
 		i = start; /* quietly sort the positions */
@@ -1086,7 +1093,7 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 		return this->n_ranges; /* no-op - empty range == no range */
 	}
 
-	n = 2 * this->n_ranges;
+	int n = 2 * this->n_ranges;
 
 	i = rangesetWeightedAtOrBefore(this, start);
 
