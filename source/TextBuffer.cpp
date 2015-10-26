@@ -292,13 +292,14 @@ std::string realignTabsEx(const std::string &text, int origIndent, int newIndent
 ** with a 1).  If init is true, initialize the histogram before acumulating.
 ** if not, add the new data to an existing histogram.
 */
-void histogramCharacters(const char *string, int length, char hist[256], int init) {
+void histogramCharacters(const char *string, int length, bool hist[256], bool init) {
 
-	if (init)
-		for (int i = 0; i < 256; i++)
-			hist[i] = 0;
+	if (init) {
+		std::fill_n(hist, 256, false);
+	}
+	
 	for (const char *c = string; c < &string[length]; c++)
-		hist[*((unsigned char *)c)] |= 1;
+		hist[*((unsigned char *)c)] = true;
 }
 
 /*
@@ -307,14 +308,14 @@ void histogramCharacters(const char *string, int length, char hist[256], int ini
 ** with a 1).  If init is true, initialize the histogram before acumulating.
 ** if not, add the new data to an existing histogram.
 */
-void histogramCharactersEx(const std::string &string, char hist[256], int init) {
+void histogramCharactersEx(const std::string &string, bool hist[256], bool init) {
 
-	if (init)
-		for (int i = 0; i < 256; i++)
-			hist[i] = 0;
+	if (init) {
+		std::fill_n(hist, 256, false);
+	}
 
 	for (char ch : string) {
-		hist[(unsigned char)ch] |= 1;
+		hist[(unsigned char)ch] |= true;
 	}
 }
 
@@ -346,7 +347,7 @@ void subsCharsEx(std::string &string, char fromChar, char toChar) {
 ** null.  If the character set is full (no available characters outside of
 ** the printable set, return the null character.
 */
-char chooseNullSubsChar(char hist[256]) {
+char chooseNullSubsChar(bool hist[256]) {
 
 	static const int N_REPLACEMENTS = 25;
 	static char replacements[N_REPLACEMENTS] = {1, 2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 11, 7};
@@ -2238,10 +2239,10 @@ int TextBuffer::BufSearchBackwardEx(int startPos, const std::string &searchChars
 ** because all non-printable characters are already in use.
 */
 int TextBuffer::BufSubstituteNullChars(char *string, int length) {
-	char histogram[256];
+	bool histogram[256];
 
 	/* Find out what characters the string contains */
-	histogramCharacters(string, length, histogram, True);
+	histogramCharacters(string, length, histogram, true);
 
 	/* Does the string contain the null-substitute character?  If so, re-
 	   histogram the buffer text to find a character which is ok in both the
@@ -2252,7 +2253,7 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
 		bufString = (char *)BufAsString();
-		histogramCharacters(bufString, length_, histogram, False);
+		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return False;
@@ -2279,10 +2280,10 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 ** because all non-printable characters are already in use.
 */
 int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
-	char histogram[256];
+	bool histogram[256];
 
 	/* Find out what characters the string contains */
-	histogramCharactersEx(string, histogram, True);
+	histogramCharactersEx(string, histogram, true);
 
 	/* Does the string contain the null-substitute character?  If so, re-
 	   histogram the buffer text to find a character which is ok in both the
@@ -2294,7 +2295,7 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
 		bufString = (char *)BufAsString();
-		histogramCharacters(bufString, length_, histogram, False);
+		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return False;
