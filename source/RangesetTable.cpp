@@ -345,7 +345,6 @@ int RangesetTable::RangesetCreate() {
 
 // TODO(eteran): does this really belong here?
 Range *RangesetTable::RangesNew(int n) {
-	Range *newRanges;
 
 	if (n != 0) {
 		/* We use a blocked allocation scheme here, with a block size of factor.
@@ -371,8 +370,25 @@ Range *RangesetTable::RangesNew(int n) {
 		    n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
 		 */
 		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		newRanges = (Range *)XtMalloc(n * sizeof(Range));
-		return newRanges;
+		return (Range *)malloc(n * sizeof(Range));
+	}
+
+	return nullptr;
+}
+
+Range *RangesetTable::RangesFree(Range *ranges) {
+	free(ranges);
+	return nullptr;
+}
+
+Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
+
+	if (n > 0) {
+		/* see RangesNew() for comments */
+		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+		return (Range *)realloc(ranges, n * sizeof(Range));
+	} else {
+		return RangesFree(ranges);
 	}
 
 	return nullptr;
@@ -384,27 +400,4 @@ Range *RangesetTable::RangesNew(int n) {
 
 int RangesetTable::RangesetLabelOK(int label) {
 	return strchr((char *)rangeset_labels, label) != nullptr;
-}
-
-Range *RangesetTable::RangesFree(Range *ranges) {
-	XtFree((char *)ranges);
-
-	return nullptr;
-}
-
-Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
-	int size;
-	Range *newRanges;
-
-	if (n > 0) {
-		/* see RangesNew() for comments */
-		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		size = n * sizeof(Range);
-		newRanges = (Range *)(ranges != nullptr ? XtRealloc((char *)ranges, size) : XtMalloc(size));
-		return newRanges;
-	} else {
-		XtFree((char *)ranges);
-	}
-
-	return nullptr;
 }

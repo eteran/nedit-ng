@@ -769,9 +769,8 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
-		i = start; /* quietly sort the positions */
-		start = end;
-		end = i;
+		/* quietly sort the positions */
+		std::swap(start, end);
 	} else if (start == end) {
 		return this->n_ranges; /* no-op - empty range == no range */
 	}
@@ -1081,21 +1080,20 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 */
 
 int Rangeset::RangesetRemoveBetween(int start, int end) {
-	int i, j;
+	int j;
 	
 	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
-		i = start; /* quietly sort the positions */
-		start = end;
-		end = i;
+		/* quietly sort the positions */
+		std::swap(start, end);
 	} else if (start == end) {
 		return this->n_ranges; /* no-op - empty range == no range */
 	}
 
 	int n = 2 * this->n_ranges;
 
-	i = rangesetWeightedAtOrBefore(this, start);
+	int i = rangesetWeightedAtOrBefore(this, start);
 
 	if (i == n)
 		return this->n_ranges; /* beyond last range */
