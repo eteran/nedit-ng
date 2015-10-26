@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 namespace {
 
@@ -997,9 +998,8 @@ TextBuffer::~TextBuffer() {
 ** the returned string, which the caller must free.
 */
 char *TextBuffer::BufGetAll() {
-	char *text;
 
-	text = XtMalloc(length_ + 1);
+	char *text = XtMalloc(length_ + 1);
 	memcpy(text, buf_, gapStart_);
 	memcpy(&text[gapStart_], &buf_[gapEnd_], length_ - gapStart_);
 	text[length_] = '\0';
@@ -1014,8 +1014,8 @@ std::string TextBuffer::BufGetAllEx() {
 	std::string text;
 	text.reserve(length_);
 
-	std::copy_n(buf_, gapStart_, std::back_inserter(text));
-	std::copy_n(&text[gapStart_], length_ - gapStart_, std::back_inserter(text));
+	std::copy_n(buf_,           gapStart_,           std::back_inserter(text));
+	std::copy_n(&buf_[gapEnd_], length_ - gapStart_, std::back_inserter(text));
 
 	return text;
 }
@@ -1052,14 +1052,14 @@ const char *TextBuffer::BufAsString() {
 ** Replace the entire contents of the text buffer
 */
 void TextBuffer::BufSetAll(const char *text) {
-	int length, deletedLength;
-	length = strlen(text);
+
+	const int length = strlen(text);
 
 	callPreDeleteCBs(0, length_);
 
 	/* Save information for redisplay, and get rid of the old buffer */
 	std::string deletedText = BufGetAllEx();
-	deletedLength = length_;
+	const int deletedLength = length_;
 	XtFree(buf_);
 
 	/* Start a new buffer with a gap of PreferredGapSize in the center */
@@ -1189,7 +1189,7 @@ std::string TextBuffer::BufGetRangeEx(int start, int end) {
 	} else {
 		part1Length = gapStart_ - start;
 
-		std::copy_n(&buf_[start], part1Length, std::back_inserter(text));
+		std::copy_n(&buf_[start],   part1Length,          std::back_inserter(text));
 		std::copy_n(&buf_[gapEnd_], length - part1Length, std::back_inserter(text));
 	}
 
@@ -1648,7 +1648,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
 		std::string textIn = BufGetRangeEx(selLeft, selRight);
 		len = selRight - selLeft;
-		std::copy_n(textIn.data(), len, outPtr);
+		std::copy_n(textIn.begin(), len, outPtr);
 		outPtr += len;
 		lineStart = BufEndOfLine(selRight) + 1;
 		*outPtr++ = '\n';
@@ -2502,10 +2502,13 @@ int TextBuffer::insertEx(int pos, const std::string &text) {
 ** count lines quickly, hence searching for a single character: newline)
 */
 int TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) const {
-	int pos, gapLen = gapEnd_ - gapStart_;
-
+	int pos;
+	int gapLen = gapEnd_ - gapStart_;
+	
 	pos = startPos;
 	while (pos < gapStart_) {
+	
+
 		if (buf_[pos] == searchChar) {
 			*foundPos = pos;
 			return True;
@@ -2533,6 +2536,8 @@ int TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) cons
 */
 int TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
+
+	assert(foundPos);
 
 	if (startPos == 0) {
 		*foundPos = 0;
