@@ -155,8 +155,7 @@ static std::list<Symbol *> GlobalSymList;
 /* List of all memory allocated for strings */
 static std::list<char *> AllocatedStrings;
 
-struct SparseArrayEntryWrapper {
-	SparseArrayEntry data; /* LEAVE this as top entry */
+struct SparseArrayEntryWrapper : public SparseArrayEntry {
 	int inUse;             /* we use pointers to the data to refer to the entire struct */
 };
 
@@ -866,17 +865,17 @@ static SparseArrayEntry *allocateSparseArrayEntry(void) {
 	auto mem = new SparseArrayEntryWrapper;	
 	AllocatedSparseArrayEntries.push_back(mem);
 
-	return &(mem->data);
+	return mem;
 }
 
 static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
 	SparseArrayEntry *globalSEUse;
 
 	if (arrayPtr) {
-		((SparseArrayEntryWrapper *)arrayPtr)->inUse = 1;
+		static_cast<SparseArrayEntryWrapper *>(arrayPtr)->inUse = 1;
 		for (globalSEUse = (SparseArrayEntry *)rbTreeBegin(arrayPtr); globalSEUse != nullptr; globalSEUse = (SparseArrayEntry *)rbTreeNext(globalSEUse)) {
 
-			((SparseArrayEntryWrapper *)globalSEUse)->inUse = 1;
+			static_cast<SparseArrayEntryWrapper *>(globalSEUse)->inUse = 1;
 			
 			/* test first because it may be read-only static string */
 			if (globalSEUse->key[-1] == 0) {
