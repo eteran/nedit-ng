@@ -54,4 +54,4 @@ std::string GetReplayMacro(void);
 void ReadMacroInitFile(WindowInfo *window);
 void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status);
 
-#endif /* NEDIT_MACRO_H_INCLUDED */
+#endif

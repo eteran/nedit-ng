@@ -33,15 +33,15 @@
 #include "text.h"
 #include "rbTree.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <limits.h>
-#include <ctype.h>
-#include <errno.h>
-#include <list>
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <climits>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/param.h>
 
 #include <X11/Intrinsic.h>
@@ -115,7 +115,7 @@ static int beginArrayIter(void);
 static int arrayIter(void);
 static int inArray(void);
 static int deleteArrayElement(void);
-static void freeSymbolTable(Symbol *symTab);
+static void freeSymbolTable(std::list<Symbol *> &symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
 
@@ -169,7 +169,7 @@ static const char *StackUnderflowMsg = "macro stack underflow";
 static const char *StringToNumberMsg = "string could not be converted to number";
 
 /* Temporary global data for use while accumulating programs */
-static Symbol *LocalSymList = nullptr;   /* symbols local to the program */
+static std::list<Symbol *> LocalSymList; /* symbols local to the program */
 static Inst Prog[PROGRAM_SIZE];          /* the program */
 static Inst *ProgP;                      /* next free spot for code gen. */
 static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */
@@ -259,7 +259,7 @@ void InitMacroGlobals(void) {
 ** and the symbol table.
 */
 void BeginCreatingProgram(void) {
-	LocalSymList = nullptr;
+	LocalSymList.clear();
 	ProgP = Prog;
 	LoopStackPtr = LoopStack;
 }
@@ -273,19 +273,21 @@ Program *FinishCreatingProgram(void) {
 
 	int progLen;
 	int fpOffset = 0;
-	Symbol *s;
 
 	auto newProg = new Program;
 	progLen = ((char *)ProgP) - ((char *)Prog);
 	newProg->code = (Inst *)XtMalloc(progLen);
 	memcpy(newProg->code, Prog, progLen);
-	newProg->localSymList = LocalSymList;
-	LocalSymList = nullptr;
+	
+	
+	newProg->localSymList = std::move(LocalSymList);
+	LocalSymList = std::list<Symbol *>();
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
-	for (s = newProg->localSymList; s != nullptr; s = s->next)
+	for(Symbol *s : newProg->localSymList) {
 		s->value.val.n = fpOffset++;
+	}
 
 	DISASM(newProg->code, ProgP - Prog);
 
@@ -453,7 +455,6 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
 	RestartData *context;
 	static DataValue noValue = {NO_TAG, {0}};
-	Symbol *s;
 	int i;
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
@@ -486,7 +487,7 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, 
 	context->frameP = context->stackP;
 
 	/* Initialize and make room on the stack for local variables */
-	for (s = prog->localSymList; s != nullptr; s = s->next) {
+	for(Symbol *s : prog->localSymList) {
 		FP_GET_SYM_VAL(context->frameP, s) = noValue;
 		context->stackP++;
 	}
@@ -561,7 +562,6 @@ int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg
 ** additional work.
 */
 void RunMacroAsSubrCall(Program *prog) {
-	Symbol *s;
 	static DataValue noValue = {NO_TAG, {0}};
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
@@ -582,7 +582,7 @@ void RunMacroAsSubrCall(Program *prog) {
 
 	FrameP = StackP;
 	PC = prog->code;
-	for (s = prog->localSymList; s != nullptr; s = s->next) {
+	for(Symbol *s : prog->localSymList) {
 		FP_GET_SYM_VAL(FrameP, s) = noValue;
 		StackP++;
 	}
@@ -690,11 +690,12 @@ Symbol *InstallStringConstSymbol(const char *str) {
 ** find a symbol in the symbol table
 */
 Symbol *LookupSymbol(const char *name) {
-	Symbol *s;
 
-	for (s = LocalSymList; s != nullptr; s = s->next)
-		if (strcmp(s->name, name) == 0)
+	for(Symbol *s : LocalSymList) {
+		if (strcmp(s->name, name) == 0) {
 			return s;
+		}
+	}
 
 	for(Symbol *s: GlobalSymList) {
 		if (strcmp(s->name, name) == 0) {
@@ -717,8 +718,7 @@ Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
 	s->type = type;
 	s->value = value;
 	if (type == LOCAL_SYM) {
-		s->next = LocalSymList;
-		LocalSymList = s;
+		LocalSymList.push_front(s);
 	} else {
 		GlobalSymList.push_back(s);
 	}
@@ -742,16 +742,8 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		return sym;
 
 	/* Remove sym from the local symbol list */
-	if (sym == LocalSymList)
-		LocalSymList = sym->next;
-	else {
-		for (s = LocalSymList; s != nullptr; s = s->next) {
-			if (s->next == sym) {
-				s->next = sym->next;
-				break;
-			}
-		}
-	}
+	LocalSymList.erase(std::remove(LocalSymList.begin(), LocalSymList.end(), sym), LocalSymList.end());
+
 
 	/* There are two scenarios which could make this check succeed:
 	   a) this sym is in the GlobalSymList as a LOCAL_SYM symbol
@@ -984,14 +976,11 @@ static void restoreContext(RestartData *context) {
 	FocusWindow = context->focusWindow;
 }
 
-static void freeSymbolTable(Symbol *symTab) {
-	Symbol *s;
+static void freeSymbolTable(std::list<Symbol *> &symTab) {
 
-	while (symTab != nullptr) {
-		s = symTab;
-		free(s->name);
-		symTab = s->next;
-		free((char *)s);
+
+	for(Symbol *s : symTab) {
+		free(s);	
 	}
 }
 
@@ -1749,7 +1738,7 @@ static int concat(void) {
 **         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
 static int callSubroutine(void) {
-	Symbol *sym, *s;
+	Symbol *sym;
 	int i, nArgs;
 	static DataValue noValue = {NO_TAG, {0}};
 	Program *prog;
@@ -1811,7 +1800,8 @@ static int callSubroutine(void) {
 		FrameP = StackP;
 		prog = sym->value.val.prog;
 		PC = prog->code;
-		for (s = prog->localSymList; s != nullptr; s = s->next) {
+		
+		for(Symbol *s : prog->localSymList) {
 			FP_GET_SYM_VAL(FrameP, s) = noValue;
 			StackP++;
 		}

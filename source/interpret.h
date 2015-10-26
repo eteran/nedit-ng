@@ -30,6 +30,7 @@
 #include "nedit.h"
 #include "rbTree.h"
 #include <map>
+#include <list>
 
 #define STACK_SIZE 1024 /* Maximum stack size */
 #define MAX_SYM_LEN 100 /* Max. symbol name length */
@@ -140,7 +141,7 @@ struct Symbol {
 };
 
 struct Program {
-	Symbol *localSymList;
+	std::list<Symbol *> localSymList;
 	Inst *code;
 };
 
