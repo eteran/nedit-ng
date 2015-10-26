@@ -836,15 +836,15 @@ static int doSave(WindowInfo *window) {
 	}
 
 	/* get the text buffer contents and its length */
-	char * fileString = window->buffer->BufGetAll();
+	std::string fileString = window->buffer->BufGetAllEx();
 	fileLen = window->buffer->BufGetLength();
 
 	/* If null characters are substituted for, put them back */
-	window->buffer->BufUnsubstituteNullChars(fileString);
+	window->buffer->BufUnsubstituteNullCharsEx(fileString);
 
 	/* If the file is to be saved in DOS or Macintosh format, reconvert */
 	if (window->fileFormat == DOS_FILE_FORMAT) {
-		if (!ConvertToDosFileString(&fileString, &fileLen)) {
+		if (!ConvertToDosFileStringEx(fileString, &fileLen)) {
 			DialogF(DF_ERR, window->shell, 1, "Out of Memory", "Out of memory!  Try\nsaving in Unix format", "OK");
 
 			// NOTE(eteran): fixes resource leak error
@@ -852,13 +852,12 @@ static int doSave(WindowInfo *window) {
 			return FALSE;
 		}
 	} else if (window->fileFormat == MAC_FILE_FORMAT) {
-		ConvertToMacFileString(fileString, fileLen);
+		ConvertToMacFileStringEx(fileString, fileLen);
 	}
 
 	/* write to the file */
-	fwrite(fileString, sizeof(char), fileLen, fp);
+	fwrite(fileString.c_str(), sizeof(char), fileLen, fp);
 	
-	XtFree(fileString);
 	
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell, 1, "Error saving File", "%s not saved:\n%s", "OK", window->filename, strerror(errno));
