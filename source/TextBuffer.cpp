@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include "TextBuffer.h"
-#include "rangeset.h"
+#include "Rangeset.h"
 #include "RangesetTable.h"
 
 #include <algorithm>

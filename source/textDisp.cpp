@@ -33,7 +33,7 @@
 #include "nedit.h"
 #include "calltips.h"
 #include "highlight.h"
-#include "rangeset.h"
+#include "Rangeset.h"
 #include "RangesetTable.h"
 
 #include <stdio.h>

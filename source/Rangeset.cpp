@@ -30,7 +30,7 @@
 *******************************************************************************/
 #include "TextBuffer.h"
 #include "textDisp.h"
-#include "rangeset.h"
+#include "Rangeset.h"
 #include "RangesetTable.h"
 
 #include <cstdio>

@@ -27,7 +27,7 @@ add_executable(nedit
 	menu.cpp
 	nedit.cpp
 	preferences.cpp
-	rangeset.cpp
+	Rangeset.cpp
 	RangesetTable.cpp
 	rbTree.cpp
 	regexConvert.cpp

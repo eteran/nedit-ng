@@ -53,7 +53,7 @@
 #include "../util/getfiles.h"
 #include "highlight.h"
 #include "highlightData.h"
-#include "rangeset.h"
+#include "Rangeset.h"
 
 #include <stdio.h>
 #include <stdlib.h>

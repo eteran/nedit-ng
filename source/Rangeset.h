@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* rangeset.h         -- Nirvana Editor rangest header                          *
+* Rangeset.h         -- Nirvana Editor rangest header                          *
 *                                                                              *
 * Copyright (C) 1999 Mark Edel                                                 *
 *                                                                              *

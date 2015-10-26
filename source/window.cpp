@@ -50,7 +50,7 @@
 #include "windowTitle.h"
 #include "interpret.h"
 #include "RangesetTable.h"
-#include "rangeset.h"
+#include "Rangeset.h"
 #include "MotifHelper.h"
 #include "../util/clearcase.h"
 #include "../util/misc.h"
