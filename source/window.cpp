@@ -32,6 +32,7 @@
 #include "text.h"
 #include "textDisp.h"
 #include "textP.h"
+#include "UndoInfo.h"
 #include "nedit.h"
 #include "menu.h"
 #include "file.h"

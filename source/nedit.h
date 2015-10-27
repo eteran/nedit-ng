@@ -145,23 +145,7 @@ enum truncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
-/* Record on undo list */
-struct UndoInfo {
-	struct UndoInfo *next; /* pointer to the next undo record */
-	int type;
-	int startPos;
-	int endPos;
-	int oldLen;
-	char *oldText;
-	char inUndo;          /* flag to indicate undo command on
-	                     this record in progress.  Redirects
-	                     SaveUndoInfo to save the next mod-
-	                     ifications on the redo list instead
-	                     of the undo list. */
-	char restoresToSaved; /* flag to indicate undoing this
-	                                 operation will restore file to
-	                                 last saved (unmodified) state */
-};
+struct UndoInfo;
 
 /* Element in bookmark table */
 struct Bookmark {

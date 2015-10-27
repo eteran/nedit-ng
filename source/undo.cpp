@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "undo.h"
+#include "UndoInfo.h"
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
@@ -51,7 +52,7 @@ static void removeUndoItem(WindowInfo *window);
 static void removeRedoItem(WindowInfo *window);
 static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction);
 static void trimUndoList(WindowInfo *window, int maxLength);
-static int determineUndoType(int nInserted, int nDeleted);
+static undoTypes determineUndoType(int nInserted, int nDeleted);
 
 void Undo(WindowInfo *window) {
 	UndoInfo *undo = window->undo;
@@ -154,7 +155,8 @@ void Redo(WindowInfo *window) {
 **       character typed.
 */
 void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText) {
-	int newType, oldType;
+	undoTypes newType;
+	undoTypes oldType;
 	UndoInfo *u, *undo = window->undo;
 	int isUndo = (undo != nullptr && undo->inUndo);
 	int isRedo = (window->redo != nullptr && window->redo->inUndo);
@@ -413,7 +415,7 @@ static void trimUndoList(WindowInfo *window, int maxLength) {
 	}
 }
 
-static int determineUndoType(int nInserted, int nDeleted) {
+static undoTypes determineUndoType(int nInserted, int nDeleted) {
 	int textDeleted, textInserted;
 
 	textDeleted = (nDeleted > 0);
