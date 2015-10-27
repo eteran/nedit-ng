@@ -18,6 +18,7 @@ add_executable(nedit
 	RangesetTable.cpp
 	TextBuffer.cpp
 	TextSelection.cpp
+	UndoInfo.cpp
 	calltips.cpp
 	file.cpp
 	help.cpp

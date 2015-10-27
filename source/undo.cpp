@@ -52,7 +52,6 @@ static void removeRedoItem(WindowInfo *window);
 static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction);
 static void trimUndoList(WindowInfo *window, int maxLength);
 static int determineUndoType(int nInserted, int nDeleted);
-static void freeUndoRecord(UndoInfo *undo);
 
 void Undo(WindowInfo *window) {
 	UndoInfo *undo = window->undo;
@@ -329,7 +328,7 @@ static void removeUndoItem(WindowInfo *window) {
 
 	/* Remove and free the item */
 	window->undo = undo->next;
-	freeUndoRecord(undo);
+	delete undo;
 
 	/* if there are no more undo records left, dim the Undo menu item */
 	if (window->undo == nullptr) {
@@ -346,7 +345,7 @@ static void removeRedoItem(WindowInfo *window) {
 
 	/* Remove and free the item */
 	window->redo = redo->next;
-	freeUndoRecord(redo);
+	delete redo;
 
 	/* if there are no more redo records left, dim the Redo menu item */
 	if (window->redo == nullptr) {
@@ -410,7 +409,7 @@ static void trimUndoList(WindowInfo *window, int maxLength) {
 		lastRec->next = u->next;
 		window->undoOpCount--;
 		window->undoMemUsed -= u->oldLen;
-		freeUndoRecord(u);
+		delete u;
 	}
 }
 
@@ -442,12 +441,4 @@ static int determineUndoType(int nInserted, int nDeleted) {
 		/* Nothing deleted or inserted */
 		return UNDO_NOOP;
 	}
-}
-
-static void freeUndoRecord(UndoInfo *undo) {
-	if (undo == nullptr)
-		return;
-
-	XtFree(undo->oldText);
-	delete undo;
 }
