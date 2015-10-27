@@ -305,7 +305,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	int fileLen, readLen;
-	char *fileString, *c;
+	char *c;
 	FILE *fp = nullptr;
 	int fd;
 	int resp;
@@ -407,7 +407,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	fileLen = statbuf.st_size;
 
 	/* Allocate space for the whole contents of the file (unfortunately) */
-	fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
+	auto fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
 	if (fileString == nullptr) {
 		fclose(fp);
 		window->filenameSet = FALSE; /* Temp. prevent check for changes. */

@@ -67,7 +67,7 @@ void AttachHighlightToWidget(Widget widget, WindowInfo *window);
 void FreeHighlightingData(WindowInfo *window);
 void RemoveWidgetHighlight(Widget widget);
 void UpdateHighlightStyles(WindowInfo *window);
-int TestHighlightPatterns(patternSet *patSet);
+bool TestHighlightPatterns(patternSet *patSet);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
 void *GetHighlightInfo(WindowInfo *window, int pos);

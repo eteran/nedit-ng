@@ -315,7 +315,7 @@ static struct {
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
 static PrefDescripRec PrefDescrip[] = {
-    {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, (void *)sizeof(PrefData.fileVersion), True},
+    {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, (void *)sizeof(PrefData.fileVersion), true},
 
 #ifdef linux
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
@@ -323,20 +323,20 @@ static PrefDescripRec PrefDescrip[] = {
     wc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, True},
+     &TempStringPrefs.shellCmds, nullptr, true},
 #elif __FreeBSD__
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
     cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
     wc::w:ED:\nwc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, True},
+     &TempStringPrefs.shellCmds, nullptr, true},
 #else
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:ED:\n\
     (cat;echo \"\") | spell\nwc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     \nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, True},
+     &TempStringPrefs.shellCmds, nullptr, true},
 #endif /* linux, __FreeBSD__ */
 
     {"macroCommands", "MacroCommands", PREF_ALLOC_STRING, "Complete Word:Alt+D::: {\n\
@@ -642,13 +642,13 @@ static PrefDescripRec PrefDescrip[] = {
 		focus_window(\"last\")\n\
 		replace_range(0, 0, prototypes staticPrototypes)\n\
 	}",
-     &TempStringPrefs.macroCmds, nullptr, True},
+     &TempStringPrefs.macroCmds, nullptr, true},
     {"bgMenuCommands", "BGMenuCommands", PREF_ALLOC_STRING, "Undo:::: {\nundo()\n}\n\
 	Redo:::: {\nredo()\n}\n\
 	Cut:::R: {\ncut_clipboard()\n}\n\
 	Copy:::R: {\ncopy_clipboard()\n}\n\
 	Paste:::: {\npaste_clipboard()\n}",
-     &TempStringPrefs.bgMenuCmds, nullptr, True},
+     &TempStringPrefs.bgMenuCmds, nullptr, true},
 
     {"highlightPatterns", "HighlightPatterns", PREF_ALLOC_STRING, "Ada:Default\n\
         Awk:Default\n\
@@ -678,7 +678,7 @@ static PrefDescripRec PrefDescrip[] = {
         XML:Default\n\
         X Resources:Default\n\
         Yacc:Default",
-     &TempStringPrefs.highlight, nullptr, True},
+     &TempStringPrefs.highlight, nullptr, true},
     {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
 
      "Ada:.ada .ad .ads .adb .a:::::::\n\
@@ -710,7 +710,7 @@ static PrefDescripRec PrefDescrip[] = {
         X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
         Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 
-     &TempStringPrefs.language, nullptr, True},
+     &TempStringPrefs.language, nullptr, true},
     {"styles", "Styles", PREF_ALLOC_STRING, "Plain:black:Plain\n\
     	Comment:gray20:Italic\n\
     	Keyword:black:Bold\n\
@@ -741,110 +741,110 @@ static PrefDescripRec PrefDescrip[] = {
 	Text Arg2:RoyalBlue4:Plain\n\
     	Text Escape:gray30:Bold\n\
 	LaTeX Math:darkGreen:Plain\n" ADD_5_2_STYLES,
-     &TempStringPrefs.styles, nullptr, True},
+     &TempStringPrefs.styles, nullptr, true},
     {"smartIndentInit", "SmartIndentInit", PREF_ALLOC_STRING, "C:Default\n\
 	C++:Default\n\
 	Python:Default\n\
 	Matlab:Default",
-     &TempStringPrefs.smartIndent, nullptr, True},
-    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_ALLOC_STRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, True},
-    {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous", &PrefData.wrapStyle, AutoWrapTypes, True},
-    {"wrapMargin", "WrapMargin", PREF_INT, "0", &PrefData.wrapMargin, nullptr, True},
-    {"autoIndent", "AutoIndent", PREF_ENUM, "Auto", &PrefData.autoIndent, AutoIndentTypes, True},
-    {"autoSave", "AutoSave", PREF_BOOLEAN, "True", &PrefData.autoSave, nullptr, True},
-    {"openInTab", "OpenInTab", PREF_BOOLEAN, "True", &PrefData.openInTab, nullptr, True},
-    {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False", &PrefData.saveOldVersion, nullptr, True},
-    {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter", &PrefData.showMatchingStyle, ShowMatchingTypes, True},
-    {"matchSyntaxBased", "MatchSyntaxBased", PREF_BOOLEAN, "True", &PrefData.matchSyntaxBased, nullptr, True},
-    {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True", &PrefData.highlightSyntax, nullptr, True},
-    {"backlightChars", "BacklightChars", PREF_BOOLEAN, "False", &PrefData.backlightChars, nullptr, True},
+     &TempStringPrefs.smartIndent, nullptr, true},
+    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_ALLOC_STRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
+    {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous", &PrefData.wrapStyle, AutoWrapTypes, true},
+    {"wrapMargin", "WrapMargin", PREF_INT, "0", &PrefData.wrapMargin, nullptr, true},
+    {"autoIndent", "AutoIndent", PREF_ENUM, "Auto", &PrefData.autoIndent, AutoIndentTypes, true},
+    {"autoSave", "AutoSave", PREF_BOOLEAN, "True", &PrefData.autoSave, nullptr, true},
+    {"openInTab", "OpenInTab", PREF_BOOLEAN, "True", &PrefData.openInTab, nullptr, true},
+    {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False", &PrefData.saveOldVersion, nullptr, true},
+    {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter", &PrefData.showMatchingStyle, ShowMatchingTypes, true},
+    {"matchSyntaxBased", "MatchSyntaxBased", PREF_BOOLEAN, "True", &PrefData.matchSyntaxBased, nullptr, true},
+    {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True", &PrefData.highlightSyntax, nullptr, true},
+    {"backlightChars", "BacklightChars", PREF_BOOLEAN, "False", &PrefData.backlightChars, nullptr, true},
     {"backlightCharTypes", "BacklightCharTypes", PREF_ALLOC_STRING, "0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange",
      /*                     gray87                 gray94                 */
-     &PrefData.backlightCharTypes, nullptr, False},
-    {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False", &PrefData.searchDlogs, nullptr, True},
-    {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False", &PrefData.searchWrapBeep, nullptr, True},
-    {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False", &PrefData.keepSearchDlogs, nullptr, True},
-    {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True", &PrefData.searchWraps, nullptr, True},
-    {"stickyCaseSenseButton", "StickyCaseSenseButton", PREF_BOOLEAN, "True", &PrefData.stickyCaseSenseBtn, nullptr, True},
+     &PrefData.backlightCharTypes, nullptr, false},
+    {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False", &PrefData.searchDlogs, nullptr, true},
+    {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False", &PrefData.searchWrapBeep, nullptr, true},
+    {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False", &PrefData.keepSearchDlogs, nullptr, true},
+    {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True", &PrefData.searchWraps, nullptr, true},
+    {"stickyCaseSenseButton", "StickyCaseSenseButton", PREF_BOOLEAN, "True", &PrefData.stickyCaseSenseBtn, nullptr, true},
 #if XmVersion < 1002 /* Flashing is annoying in 1.1 versions */
-    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "False", &PrefData.repositionDialogs, nullptr, True},
+    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "False", &PrefData.repositionDialogs, nullptr, true},
 #else
-    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True", &PrefData.repositionDialogs, nullptr, True},
+    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True", &PrefData.repositionDialogs, nullptr, true},
 #endif
-    {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False", &PrefData.autoScroll, nullptr, True},
-    {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4", &PrefData.autoScrollVPadding, nullptr, False},
-    {"appendLF", "AppendLF", PREF_BOOLEAN, "True", &PrefData.appendLF, nullptr, True},
-    {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True", &PrefData.sortOpenPrevMenu, nullptr, True},
-    {"statisticsLine", "StatisticsLine", PREF_BOOLEAN, "False", &PrefData.statsLine, nullptr, True},
-    {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False", &PrefData.iSearchLine, nullptr, True},
-    {"sortTabs", "SortTabs", PREF_BOOLEAN, "False", &PrefData.sortTabs, nullptr, True},
-    {"tabBar", "TabBar", PREF_BOOLEAN, "True", &PrefData.tabBar, nullptr, True},
-    {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True", &PrefData.tabBarHideOne, nullptr, True},
-    {"toolTips", "ToolTips", PREF_BOOLEAN, "True", &PrefData.toolTips, nullptr, True},
-    {"globalTabNavigate", "GlobalTabNavigate", PREF_BOOLEAN, "False", &PrefData.globalTabNavigate, nullptr, True},
-    {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False", &PrefData.lineNums, nullptr, True},
-    {"pathInWindowsMenu", "PathInWindowsMenu", PREF_BOOLEAN, "True", &PrefData.pathInWindowsMenu, nullptr, True},
-    {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True", &PrefData.warnFileMods, nullptr, True},
-    {"warnRealFileMods", "WarnRealFileMods", PREF_BOOLEAN, "True", &PrefData.warnRealFileMods, nullptr, True},
-    {"warnExit", "WarnExit", PREF_BOOLEAN, "True", &PrefData.warnExit, nullptr, True},
-    {"searchMethod", "SearchMethod", PREF_ENUM, "Literal", &PrefData.searchMethod, SearchMethodStrings, True},
+    {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False", &PrefData.autoScroll, nullptr, true},
+    {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4", &PrefData.autoScrollVPadding, nullptr, false},
+    {"appendLF", "AppendLF", PREF_BOOLEAN, "True", &PrefData.appendLF, nullptr, true},
+    {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True", &PrefData.sortOpenPrevMenu, nullptr, true},
+    {"statisticsLine", "StatisticsLine", PREF_BOOLEAN, "False", &PrefData.statsLine, nullptr, true},
+    {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False", &PrefData.iSearchLine, nullptr, true},
+    {"sortTabs", "SortTabs", PREF_BOOLEAN, "False", &PrefData.sortTabs, nullptr, true},
+    {"tabBar", "TabBar", PREF_BOOLEAN, "True", &PrefData.tabBar, nullptr, true},
+    {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True", &PrefData.tabBarHideOne, nullptr, true},
+    {"toolTips", "ToolTips", PREF_BOOLEAN, "True", &PrefData.toolTips, nullptr, true},
+    {"globalTabNavigate", "GlobalTabNavigate", PREF_BOOLEAN, "False", &PrefData.globalTabNavigate, nullptr, true},
+    {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False", &PrefData.lineNums, nullptr, true},
+    {"pathInWindowsMenu", "PathInWindowsMenu", PREF_BOOLEAN, "True", &PrefData.pathInWindowsMenu, nullptr, true},
+    {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True", &PrefData.warnFileMods, nullptr, true},
+    {"warnRealFileMods", "WarnRealFileMods", PREF_BOOLEAN, "True", &PrefData.warnRealFileMods, nullptr, true},
+    {"warnExit", "WarnExit", PREF_BOOLEAN, "True", &PrefData.warnExit, nullptr, true},
+    {"searchMethod", "SearchMethod", PREF_ENUM, "Literal", &PrefData.searchMethod, SearchMethodStrings, true},
 #ifdef REPLACE_SCOPE
-    {"replaceDefaultScope", "ReplaceDefaultScope", PREF_ENUM, "Smart", &PrefData.replaceDefScope, ReplaceDefScopeStrings, True},
+    {"replaceDefaultScope", "ReplaceDefaultScope", PREF_ENUM, "Smart", &PrefData.replaceDefScope, ReplaceDefScopeStrings, true},
 #endif
-    {"textRows", "TextRows", PREF_INT, "24", &PrefData.textRows, nullptr, True},
-    {"textCols", "TextCols", PREF_INT, "80", &PrefData.textCols, nullptr, True},
-    {"tabDistance", "TabDistance", PREF_INT, "8", &PrefData.tabDist, nullptr, True},
-    {"emulateTabs", "EmulateTabs", PREF_INT, "0", &PrefData.emTabDist, nullptr, True},
-    {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True", &PrefData.insertTabs, nullptr, True},
-    {"textFont", "TextFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.fontString, (void *)sizeof(PrefData.fontString), True},
-    {"boldHighlightFont", "BoldHighlightFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.boldFontString, (void *)sizeof(PrefData.boldFontString), True},
-    {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.italicFontString, (void *)sizeof(PrefData.italicFontString), True},
-    {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.boldItalicFontString, (void *)sizeof(PrefData.boldItalicFontString), True},
-    {"helpFont", "HelpFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_FONT]), False},
-    {"boldHelpFont", "BoldHelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), False},
-    {"italicHelpFont", "ItalicHelpFont", PREF_STRING, "-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), False},
-    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), False},
-    {"fixedHelpFont", "FixedHelpFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), False},
-    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), False},
-    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), False},
+    {"textRows", "TextRows", PREF_INT, "24", &PrefData.textRows, nullptr, true},
+    {"textCols", "TextCols", PREF_INT, "80", &PrefData.textCols, nullptr, true},
+    {"tabDistance", "TabDistance", PREF_INT, "8", &PrefData.tabDist, nullptr, true},
+    {"emulateTabs", "EmulateTabs", PREF_INT, "0", &PrefData.emTabDist, nullptr, true},
+    {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True", &PrefData.insertTabs, nullptr, true},
+    {"textFont", "TextFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.fontString, (void *)sizeof(PrefData.fontString), true},
+    {"boldHighlightFont", "BoldHighlightFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.boldFontString, (void *)sizeof(PrefData.boldFontString), true},
+    {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.italicFontString, (void *)sizeof(PrefData.italicFontString), true},
+    {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.boldItalicFontString, (void *)sizeof(PrefData.boldItalicFontString), true},
+    {"helpFont", "HelpFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_FONT]), false},
+    {"boldHelpFont", "BoldHelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), false},
+    {"italicHelpFont", "ItalicHelpFont", PREF_STRING, "-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), false},
+    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), false},
+    {"fixedHelpFont", "FixedHelpFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), false},
+    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), false},
+    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), false},
     {"boldItalicFixedHelpFont", "BoldItalicFixedHelpFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT],
-     (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), False},
-    {"helpLinkFont", "HelpLinkFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_LINK_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), False},
-    {"h1HelpFont", "H1HelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-140-*-*-*-iso8859-1", PrefData.helpFontNames[H1_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H1_HELP_FONT]), False},
-    {"h2HelpFont", "H2HelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H2_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H2_HELP_FONT]), False},
-    {"h3HelpFont", "H3HelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H3_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H3_HELP_FONT]), False},
-    {"helpLinkColor", "HelpLinkColor", PREF_STRING, "#009900", PrefData.helpLinkColor, (void *)sizeof(PrefData.helpLinkColor), False},
+     (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), false},
+    {"helpLinkFont", "HelpLinkFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_LINK_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), false},
+    {"h1HelpFont", "H1HelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-140-*-*-*-iso8859-1", PrefData.helpFontNames[H1_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H1_HELP_FONT]), false},
+    {"h2HelpFont", "H2HelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H2_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H2_HELP_FONT]), false},
+    {"h3HelpFont", "H3HelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H3_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H3_HELP_FONT]), false},
+    {"helpLinkColor", "HelpLinkColor", PREF_STRING, "#009900", PrefData.helpLinkColor, (void *)sizeof(PrefData.helpLinkColor), false},
 
-    {"textFgColor", "TextFgColor", PREF_STRING, NEDIT_DEFAULT_FG, PrefData.colorNames[TEXT_FG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), True},
-    {"textBgColor", "TextBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG, PrefData.colorNames[TEXT_BG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), True},
-    {"selectFgColor", "SelectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG, PrefData.colorNames[SELECT_FG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_FG_COLOR]), True},
-    {"selectBgColor", "SelectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG, PrefData.colorNames[SELECT_BG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_BG_COLOR]), True},
-    {"hiliteFgColor", "HiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG, PrefData.colorNames[HILITE_FG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_FG_COLOR]), True},
-    {"hiliteBgColor", "HiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG, PrefData.colorNames[HILITE_BG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_BG_COLOR]), True},
-    {"lineNoFgColor", "LineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[LINENO_FG_COLOR], (void *)sizeof(PrefData.colorNames[LINENO_FG_COLOR]), True},
-    {"cursorFgColor", "CursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG, PrefData.colorNames[CURSOR_FG_COLOR], (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), True},
-    {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1", PrefData.tooltipBgColor, (void *)sizeof(PrefData.tooltipBgColor), False},
-    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell, (void *)sizeof(PrefData.shell), True},
-    {"geometry", "Geometry", PREF_STRING, "", PrefData.geometry, (void *)sizeof(PrefData.geometry), False},
-    {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False", &PrefData.mapDelete, nullptr, False},
-    {"stdOpenDialog", "StdOpenDialog", PREF_BOOLEAN, "False", &PrefData.stdOpenDialog, nullptr, False},
-    {"tagFile", "TagFile", PREF_STRING, "", PrefData.tagFile, (void *)sizeof(PrefData.tagFile), False},
-    {"wordDelimiters", "WordDelimiters", PREF_STRING, ".,/\\`'!|@#%^&*()-=+{}[]\":;<>?", PrefData.delimiters, (void *)sizeof(PrefData.delimiters), False},
-    {"serverName", "ServerName", PREF_STRING, "", PrefData.serverName, (void *)sizeof(PrefData.serverName), False},
-    {"maxPrevOpenFiles", "MaxPrevOpenFiles", PREF_INT, "30", &PrefData.maxPrevOpenFiles, nullptr, False},
-    {"bgMenuButton", "BGMenuButton", PREF_STRING, "~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn, (void *)sizeof(PrefData.bgMenuBtn), False},
-    {"smartTags", "SmartTags", PREF_BOOLEAN, "True", &PrefData.smartTags, nullptr, True},
-    {"typingHidesPointer", "TypingHidesPointer", PREF_BOOLEAN, "False", &PrefData.typingHidesPointer, nullptr, False},
-    {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, False},
-    {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False", &PrefData.prefFileRead, nullptr, True},
-    {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False", &PrefData.findReplaceUsesSelection, nullptr, False},
-    {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, False},
-    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d", PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), True},
-    {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN, "True", &PrefData.undoModifiesSelection, nullptr, False},
-    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False", &PrefData.focusOnRaise, nullptr, False},
-    {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True", &PrefData.forceOSConversion, nullptr, False},
-    {"truncSubstitution", "TruncSubstitution", PREF_ENUM, "Fail", &PrefData.truncSubstitution, TruncSubstitutionModes, False},
-    {"honorSymlinks", "HonorSymlinks", PREF_BOOLEAN, "True", &PrefData.honorSymlinks, nullptr, False}};
+    {"textFgColor", "TextFgColor", PREF_STRING, NEDIT_DEFAULT_FG, PrefData.colorNames[TEXT_FG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), true},
+    {"textBgColor", "TextBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG, PrefData.colorNames[TEXT_BG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), true},
+    {"selectFgColor", "SelectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG, PrefData.colorNames[SELECT_FG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_FG_COLOR]), true},
+    {"selectBgColor", "SelectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG, PrefData.colorNames[SELECT_BG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_BG_COLOR]), true},
+    {"hiliteFgColor", "HiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG, PrefData.colorNames[HILITE_FG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_FG_COLOR]), true},
+    {"hiliteBgColor", "HiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG, PrefData.colorNames[HILITE_BG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_BG_COLOR]), true},
+    {"lineNoFgColor", "LineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[LINENO_FG_COLOR], (void *)sizeof(PrefData.colorNames[LINENO_FG_COLOR]), true},
+    {"cursorFgColor", "CursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG, PrefData.colorNames[CURSOR_FG_COLOR], (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), true},
+    {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1", PrefData.tooltipBgColor, (void *)sizeof(PrefData.tooltipBgColor), false},
+    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell, (void *)sizeof(PrefData.shell), true},
+    {"geometry", "Geometry", PREF_STRING, "", PrefData.geometry, (void *)sizeof(PrefData.geometry), false},
+    {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False", &PrefData.mapDelete, nullptr, false},
+    {"stdOpenDialog", "StdOpenDialog", PREF_BOOLEAN, "False", &PrefData.stdOpenDialog, nullptr, false},
+    {"tagFile", "TagFile", PREF_STRING, "", PrefData.tagFile, (void *)sizeof(PrefData.tagFile), false},
+    {"wordDelimiters", "WordDelimiters", PREF_STRING, ".,/\\`'!|@#%^&*()-=+{}[]\":;<>?", PrefData.delimiters, (void *)sizeof(PrefData.delimiters), false},
+    {"serverName", "ServerName", PREF_STRING, "", PrefData.serverName, (void *)sizeof(PrefData.serverName), false},
+    {"maxPrevOpenFiles", "MaxPrevOpenFiles", PREF_INT, "30", &PrefData.maxPrevOpenFiles, nullptr, false},
+    {"bgMenuButton", "BGMenuButton", PREF_STRING, "~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn, (void *)sizeof(PrefData.bgMenuBtn), false},
+    {"smartTags", "SmartTags", PREF_BOOLEAN, "True", &PrefData.smartTags, nullptr, true},
+    {"typingHidesPointer", "TypingHidesPointer", PREF_BOOLEAN, "False", &PrefData.typingHidesPointer, nullptr, false},
+    {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, false},
+    {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False", &PrefData.prefFileRead, nullptr, true},
+    {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False", &PrefData.findReplaceUsesSelection, nullptr, false},
+    {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, false},
+    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d", PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), true},
+    {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN, "True", &PrefData.undoModifiesSelection, nullptr, false},
+    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False", &PrefData.focusOnRaise, nullptr, false},
+    {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True", &PrefData.forceOSConversion, nullptr, false},
+    {"truncSubstitution", "TruncSubstitution", PREF_ENUM, "Fail", &PrefData.truncSubstitution, TruncSubstitutionModes, false},
+    {"honorSymlinks", "HonorSymlinks", PREF_BOOLEAN, "True", &PrefData.honorSymlinks, nullptr, false}};
 
 static XrmOptionDescRec OpTable[] = {
     {(String) "-wrap", (String) ".autoWrap", XrmoptionNoArg, (caddr_t) "Continuous"},

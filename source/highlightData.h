@@ -35,25 +35,24 @@
 #include <X11/Xlib.h>
 
 XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
-char *WriteStylesString(void);
+bool LoadHighlightString(const char *inString, int convertOld);
+bool LoadStylesString(const char *inString);
+bool NamedStyleExists(const char *styleName);
 char *WriteHighlightString(void);
-
-std::string WriteStylesStringEx(void);
-std::string WriteHighlightStringEx(void);
-
+char *WriteStylesString(void);
 const char *BgColorOfNamedStyle(const char *styleName);
 const char *ColorOfNamedStyle(const char *styleName);
 int FontOfNamedStyleIsBold(const char *styleName);
 int FontOfNamedStyleIsItalic(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
 int LMHasHighlightPatterns(const char *languageMode);
-int LoadHighlightString(char *inString, int convertOld);
-int LoadStylesString(const char *inString);
-int NamedStyleExists(const char *styleName);
 patternSet *FindPatternSet(const char *langModeName);
+std::string WriteHighlightStringEx(void);
+std::string WriteStylesStringEx(void);
 void EditHighlightPatterns(WindowInfo *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(const char *oldName, const char *newName);
 void UpdateLanguageModeMenu(void);
+
 
 #endif

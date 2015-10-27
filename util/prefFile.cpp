@@ -172,7 +172,8 @@ void OverlayPreferences(XrmDatabase prefDB, const char *appName, const char *app
 }
 
 static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay) {
-	char rsrcName[256], rsrcClass[256];
+	char rsrcName[256];
+	char rsrcClass[256];
 	const char *valueString;
 	char *type;
 	XrmValue rsrcValue;
@@ -181,8 +182,10 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName
 	/* read each resource, trying first the preferences file database, then
 	   the application database, then the default value if neither are found */
 	for (i = 0; i < nRsrc; i++) {
-		sprintf(rsrcName, "%s.%s", appName, rsrcDescrip[i].name);
-		sprintf(rsrcClass, "%s.%s", appClass, rsrcDescrip[i].clazz);
+		
+		snprintf(rsrcName,  sizeof(rsrcName),  "%s.%s", appName,  rsrcDescrip[i].name.c_str());
+		snprintf(rsrcClass, sizeof(rsrcClass), "%s.%s", appClass, rsrcDescrip[i].clazz.c_str());
+		
 		if (prefDB != NULL && XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
 			if (strcmp(type, XmRString)) {
 				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
@@ -240,7 +243,7 @@ int SavePreferences(Display *display, const char *fullName, const char *fileHead
 	for (i = 0; i < nRsrc; i++) {
 		if (rsrcDescrip[i].save) {
 			type = rsrcDescrip[i].dataType;
-			fprintf(fp, "%s.%s: ", appName, rsrcDescrip[i].name);
+			fprintf(fp, "%s.%s: ", appName, rsrcDescrip[i].name.c_str());
 			if (type == PREF_STRING)
 				fprintf(fp, "%s", (char *)rsrcDescrip[i].valueAddr);
 			if (type == PREF_ALLOC_STRING)

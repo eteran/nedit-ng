@@ -14,6 +14,8 @@ find_library(LibM m)
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
 add_executable(nedit
+	Rangeset.cpp
+	RangesetTable.cpp
 	TextBuffer.cpp
 	TextSelection.cpp
 	calltips.cpp
@@ -27,8 +29,6 @@ add_executable(nedit
 	menu.cpp
 	nedit.cpp
 	preferences.cpp
-	Rangeset.cpp
-	RangesetTable.cpp
 	rbTree.cpp
 	regexConvert.cpp
 	regularExp.cpp

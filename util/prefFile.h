@@ -24,22 +24,29 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_PREFFILE_H_INCLUDED
-#define NEDIT_PREFFILE_H_INCLUDED
+#ifndef PREFFILE_H_
+#define PREFFILE_H_
 
 #include <X11/Intrinsic.h>
+#include <string>
 
-enum PrefDataTypes { PREF_INT, PREF_BOOLEAN, PREF_ENUM, PREF_STRING, PREF_ALLOC_STRING };
+enum PrefDataTypes {
+	PREF_INT,
+	PREF_BOOLEAN, 
+	PREF_ENUM, 
+	PREF_STRING, 
+	PREF_ALLOC_STRING
+};
 
-typedef struct _PrefDescripRec {
-	const char *name;
-	const char *clazz;
-	int dataType;
-	const char *defaultString;
-	void *valueAddr;
-	const void *arg;
-	int save;
-} PrefDescripRec;
+struct PrefDescripRec {
+	std::string   name;
+	std::string   clazz;
+	PrefDataTypes dataType;
+	const char *  defaultString;
+	void *        valueAddr;
+	const void *  arg;
+	bool          save;
+};
 
 XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut);
 void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
@@ -47,4 +54,4 @@ void OverlayPreferences(XrmDatabase prefDB, const char *appName, const char *app
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
 int SavePreferences(Display *display, const char *fileName, const char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
 
-#endif /* NEDIT_PREFFILE_H_INCLUDED */
+#endif

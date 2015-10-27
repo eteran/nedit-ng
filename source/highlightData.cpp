@@ -77,7 +77,7 @@ struct highlightStyleRec {
 	int font;
 };
 
-static int styleError(const char *stringStart, const char *stoppedAt, const char *message);
+static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 #if 0
 static int lookupNamedPattern(patternSet *p, char *patternName);
 #endif
@@ -249,7 +249,7 @@ static const char *DefaultPatternSets[] = {
 ** styles information, parse it, and load it into the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-int LoadStylesString(const char *inString) {
+bool LoadStylesString(const char *inString) {
 	const char *errMsg;
 	char *fontStr;
 	const char *inPtr = inString;
@@ -323,7 +323,7 @@ int LoadStylesString(const char *inString) {
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0')
-			return True;
+			return true;
 	}
 }
 
@@ -398,7 +398,7 @@ std::string WriteStylesStringEx(void) {
 ** that they may contain regular expressions are of the older syntax where
 ** braces were not quoted, and \0 was a legal substitution character).
 */
-int LoadHighlightString(char *inString, int convertOld) {
+bool LoadHighlightString(const char *inString, int convertOld) {
 	const char *inPtr = inString;
 	patternSet *patSet;
 	int i;
@@ -408,7 +408,7 @@ int LoadHighlightString(char *inString, int convertOld) {
 		/* Read each pattern set, abort on error */
 		patSet = readPatternSet(&inPtr, convertOld);
 		if (patSet == nullptr)
-			return False;
+			return false;
 
 		/* Add/change the pattern set in the list */
 		for (i = 0; i < NPatternSets; i++) {
@@ -421,13 +421,13 @@ int LoadHighlightString(char *inString, int convertOld) {
 		if (i == NPatternSets) {
 			PatternSets[NPatternSets++] = patSet;
 			if (NPatternSets > MAX_LANGUAGE_MODES)
-				return False;
+				return false;
 		}
 
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0')
-			return True;
+			return true;
 	}
 }
 
@@ -628,7 +628,7 @@ const char *BgColorOfNamedStyle(const char *styleName) {
 /*
 ** Determine whether a named style exists
 */
-int NamedStyleExists(const char *styleName) {
+bool NamedStyleExists(const char *styleName) {
 	return lookupNamedStyle(styleName) != -1;
 }
 
@@ -639,12 +639,16 @@ int NamedStyleExists(const char *styleName) {
 patternSet *FindPatternSet(const char *langModeName) {
 	int i;
 
-	if (langModeName == nullptr)
+	if (langModeName == nullptr) {
 		return nullptr;
+	}
 
-	for (i = 0; i < NPatternSets; i++)
-		if (!strcmp(langModeName, PatternSets[i]->languageMode))
+	for (i = 0; i < NPatternSets; i++) {
+		if (!strcmp(langModeName, PatternSets[i]->languageMode)) {
 			return PatternSets[i];
+		}
+	}
+	
 	return nullptr;
 }
 
@@ -957,9 +961,9 @@ static patternSet *highlightError(const char *stringStart, const char *stoppedAt
 	return nullptr;
 }
 
-static int styleError(const char *stringStart, const char *stoppedAt, const char *message) {
+static bool styleError(const char *stringStart, const char *stoppedAt, const char *message) {
 	ParseError(nullptr, stringStart, stoppedAt, "style specification", message);
-	return False;
+	return false;
 }
 
 /*

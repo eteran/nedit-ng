@@ -48,9 +48,12 @@
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
 
+
+static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format);
+
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
-static void getAnySelectionCB(Widget widget, char **result, Atom *sel, Atom *type, char *value, int *length, int *format);
+
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
@@ -150,7 +153,7 @@ char *GetAnySelection(WindowInfo *window) {
 	}
 
 	/* Request the selection value to be delivered to getAnySelectionCB */
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea)));
+	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea)));
 
 	/* Wait for the value to appear */
 	while (selText == waitingMarker) {
@@ -158,6 +161,38 @@ char *GetAnySelection(WindowInfo *window) {
 		ServerDispatchEvent(&nextEvent);
 	}
 	return selText;
+}
+
+/*
+** Getting the current selection by making the request, and then blocking
+** (processing events) while waiting for a reply.  On failure (timeout or
+** bad format) returns nullptr, otherwise returns the contents of the selection.
+*/
+std::string GetAnySelectionEx(WindowInfo *window) {
+	static char waitingMarker[1] = "";
+	char *selText = waitingMarker;
+	XEvent nextEvent;
+
+	/* If the selection is in the window's own buffer get it from there,
+	   but substitute null characters as if it were an external selection */
+	if (window->buffer->primary_.selected) {
+		std::string selText = window->buffer->BufGetSelectionTextEx();
+		window->buffer->BufUnsubstituteNullCharsEx(selText);
+		return selText;
+	}
+
+	/* Request the selection value to be delivered to getAnySelectionCB */
+	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea)));
+
+	/* Wait for the value to appear */
+	while (selText == waitingMarker) {
+		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
+		ServerDispatchEvent(&nextEvent);
+	}
+	
+	std::string r = selText ? selText : "" ;
+	XtFree(selText);
+	return r;
 }
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
@@ -290,10 +325,12 @@ static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
 	CheckCloseDim();
 }
 
-static void getAnySelectionCB(Widget widget, char **result, Atom *sel, Atom *type, char *value, int *length, int *format) {
+static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format) {
 
 	(void)widget;
-	(void)sel;
+	(void)selection;
+
+	char **result = (char **)client_data;
 
 	/* Confirm that the returned value is of the correct type */
 	if (*type != XA_STRING || *format != 8) {
@@ -305,8 +342,8 @@ static void getAnySelectionCB(Widget widget, char **result, Atom *sel, Atom *typ
 
 	/* Append a null, and return the string */
 	*result = XtMalloc(*length + 1);
-	strncpy(*result, value, *length);
-	XtFree(value);
+	strncpy(*result, (char *)value, *length);
+	XtFree((char *)value);
 	(*result)[*length] = '\0';
 }
 

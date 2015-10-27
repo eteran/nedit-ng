@@ -218,7 +218,6 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 void StartHighlighting(WindowInfo *window, int warn) {
 	patternSet *patterns;
 	windowHighlightData *highlightData;
-	char *stylePtr, *styleString;
 	const char *stringPtr, *bufString;
 	char prevChar = '\0';
 	int i, oldFontHeight;
@@ -226,13 +225,15 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
 	patterns = findPatternsForWindow(window, warn);
-	if (patterns == nullptr)
+	if (patterns == nullptr) {
 		return;
+	}
 
 	/* Compile the patterns */
 	highlightData = createHighlightData(window, patterns);
-	if (highlightData == nullptr)
+	if (highlightData == nullptr) {
 		return;
+	}
 
 	/* Prepare for a long delay, refresh display and put up a watch cursor */
 	BeginWait(window->shell);
@@ -240,7 +241,8 @@ void StartHighlighting(WindowInfo *window, int warn) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	stylePtr = styleString = XtMalloc(window->buffer->BufGetLength() + 1);
+	auto styleString = new char [window->buffer->BufGetLength() + 1];
+	char *stylePtr = styleString;
 	if (highlightData->pass1Patterns == nullptr) {
 		for (i = 0; i < window->buffer->BufGetLength(); i++)
 			*stylePtr++ = UNFINISHED_STYLE;
@@ -250,7 +252,7 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	}
 	*stylePtr = '\0';
 	highlightData->styleBuffer->BufSetAll(styleString);
-	XtFree(styleString);
+	delete [] styleString;
 
 	/* install highlight pattern data in the window data structure */
 	window->highlightData = highlightData;
@@ -337,7 +339,7 @@ void FreeHighlightingData(WindowInfo *window) {
 ** text widget and redisplay.
 */
 void AttachHighlightToWidget(Widget widget, WindowInfo *window) {
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = (windowHighlightData *)window->highlightData;
 
 	TextDAttachHighlightData(((TextWidget)widget)->text.textD, highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
 }
@@ -354,25 +356,23 @@ void RemoveWidgetHighlight(Widget widget) {
 ** re-parsing.
 */
 void UpdateHighlightStyles(WindowInfo *window) {
-	patternSet *patterns;
-	windowHighlightData *highlightData;
-	windowHighlightData *oldHighlightData = (windowHighlightData *)window->highlightData;
-	TextBuffer *styleBuffer;
-	int i;
+
+	auto oldHighlightData = (windowHighlightData *)window->highlightData;
 
 	/* Do nothing if window not highlighted */
-	if (window->highlightData == nullptr)
+	if (window->highlightData == nullptr) {
 		return;
+	}
 
 	/* Find the pattern set for the window's current language mode */
-	patterns = findPatternsForWindow(window, False);
+	patternSet *patterns = findPatternsForWindow(window, False);
 	if (patterns == nullptr) {
 		StopHighlighting(window);
 		return;
 	}
 
 	/* Build new patterns */
-	highlightData = createHighlightData(window, patterns);
+	windowHighlightData *highlightData = createHighlightData(window, patterns);
 	if (highlightData == nullptr) {
 		StopHighlighting(window);
 		return;
@@ -382,7 +382,7 @@ void UpdateHighlightStyles(WindowInfo *window) {
 	   preserve all of the effort that went in to parsing the buffer
 	   by swapping it with the empty one in highlightData (which is then
 	   freed in freeHighlightData) */
-	styleBuffer = oldHighlightData->styleBuffer;
+	TextBuffer *styleBuffer = oldHighlightData->styleBuffer;
 	oldHighlightData->styleBuffer = highlightData->styleBuffer;
 	freeHighlightData(oldHighlightData);
 	highlightData->styleBuffer = styleBuffer;
@@ -391,8 +391,9 @@ void UpdateHighlightStyles(WindowInfo *window) {
 	/* Attach new highlight information to text widgets in each pane
 	   (and redraw) */
 	AttachHighlightToWidget(window->textArea, window);
-	for (i = 0; i < window->nPanes; i++)
+	for (int i = 0; i < window->nPanes; i++) {
 		AttachHighlightToWidget(window->textPanes[i], window);
+	}
 }
 
 /*
@@ -405,16 +406,15 @@ void UpdateHighlightStyles(WindowInfo *window) {
 ** dialog parent as well, in non-popups-under-pointer mode, these dialogs
 ** will appear in odd places on the screen.
 */
-int TestHighlightPatterns(patternSet *patSet) {
-	windowHighlightData *highlightData;
+bool TestHighlightPatterns(patternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-	highlightData = createHighlightData(WindowList, patSet);
+	windowHighlightData *highlightData = createHighlightData(WindowList, patSet);
 	if (highlightData == nullptr)
-		return False;
+		return false;
 	freeHighlightData(highlightData);
-	return True;
+	return true;
 }
 
 /*
@@ -428,14 +428,14 @@ int TestHighlightPatterns(patternSet *patSet) {
 ** the same highlight style.
 **/
 void *GetHighlightInfo(WindowInfo *window, int pos) {
-	int style;
+
 	highlightDataRec *pattern = nullptr;
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = (windowHighlightData *)window->highlightData;
 	if (!highlightData)
 		return nullptr;
 
 	/* Be careful with signed/unsigned conversions. NO conversion here! */
-	style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
+	int style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
 
 	/* Beware of unparsed regions. */
 	if (style == UNFINISHED_STYLE) {
@@ -473,7 +473,7 @@ static void freeHighlightData(windowHighlightData *hd) {
 		freePatterns(hd->pass2Patterns);
 	XtFree(hd->parentStyles);
 	delete hd->styleBuffer;
-	delete[] hd -> styleTable;
+	delete[] hd->styleTable;
 	delete hd;
 }
 
@@ -928,16 +928,15 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 ** Free a pattern list and all of its allocated components
 */
 static void freePatterns(highlightDataRec *patterns) {
-	int i;
 
-	for (i = 0; patterns[i].style != 0; i++) {
+	for (int i = 0; patterns[i].style != 0; i++) {
 		free((char *)patterns[i].startRE);
 		free((char *)patterns[i].endRE);
 		free((char *)patterns[i].errorRE);
 		free((char *)patterns[i].subPatternRE);
 	}
 
-	for (i = 0; patterns[i].style != 0; i++) {
+	for (int i = 0; patterns[i].style != 0; i++) {
 		XtFree((char *)patterns[i].subPatterns);
 	}
 
@@ -948,12 +947,11 @@ static void freePatterns(highlightDataRec *patterns) {
 ** Find the highlightPattern structure with a given name in the window.
 */
 highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
-	windowHighlightData *hData = (windowHighlightData *)window->highlightData;
+	auto hData = (windowHighlightData *)window->highlightData;
 	patternSet *set;
-	int i;
 
 	if (hData && (set = hData->patternSetForWindow)) {
-		for (i = 0; i < set->nPatterns; i++)
+		for (int i = 0; i < set->nPatterns; i++)
 			if (strcmp(set->patterns[i].name, name) == 0)
 				return &set->patterns[i];
 	}
@@ -1063,7 +1061,7 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 ** hCode (if any).
 */
 static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode) {
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = (windowHighlightData *)window->highlightData;
 
 	hCode -= UNFINISHED_STYLE; /* get the correct index value */
 	if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
@@ -1477,8 +1475,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		   to the matching sub-branch and must be ignored. */
 		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
 		/* Combination of all sub-patterns and end pattern matched */
-		/* printf("combined patterns RE matched at %d\n",
-		        pattern->subPatternRE->startp[0] - *string); */
+		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); */
 		startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before

@@ -38,6 +38,7 @@ void GotoLineNumber(WindowInfo *window);
 void SelectNumberedLine(WindowInfo *window, int lineNum);
 void OpenSelectedFile(WindowInfo *window, Time time);
 char *GetAnySelection(WindowInfo *window);
+std::string GetAnySelectionEx(WindowInfo *window);
 void BeginMarkCommand(WindowInfo *window);
 void BeginGotoMarkCommand(WindowInfo *window, int extend);
 void AddMark(WindowInfo *window, Widget widget, char label);
