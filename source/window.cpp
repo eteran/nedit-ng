@@ -242,7 +242,6 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	window->nPanes = 0;
 	window->autoSaveCharCount = 0;
 	window->autoSaveOpCount = 0;
-	window->undoOpCount = 0;
 	window->undoMemUsed = 0;
 	CLEAR_ALL_LOCKS(window->lockReasons);
 	window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
@@ -2841,7 +2840,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->nPanes = 0;
 	window->autoSaveCharCount = 0;
 	window->autoSaveOpCount = 0;
-	window->undoOpCount = 0;
 	window->undoMemUsed = 0;
 	CLEAR_ALL_LOCKS(window->lockReasons);
 	window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
@@ -3765,7 +3763,6 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	window->lockReasons = orgWin->lockReasons;
 	window->autoSaveCharCount = orgWin->autoSaveCharCount;
 	window->autoSaveOpCount = orgWin->autoSaveOpCount;
-	window->undoOpCount = orgWin->undoOpCount;
 	window->undoMemUsed = orgWin->undoMemUsed;
 	window->lockReasons = orgWin->lockReasons;
 	window->autoSave = orgWin->autoSave;

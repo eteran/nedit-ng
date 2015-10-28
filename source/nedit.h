@@ -407,7 +407,6 @@ struct WindowInfo {
 	int autoSaveCharCount;       /* count of single characters typed
 	                        since last backup file generated */
 	int autoSaveOpCount;         /* count of editing operations "" */
-	int undoOpCount;             /* count of stored undo operations */
 	int undoMemUsed;             /* amount of memory (in bytes)
 	                        dedicated to the undo list */
 	char fontName[MAX_FONT_LEN]; /* names of the text fonts in use */

@@ -296,11 +296,10 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 	window->undo.push_front(undo);
 
 	/* Increment the operation and memory counts */
-	window->undoOpCount++;
 	window->undoMemUsed += undo->oldLen;
 
 	/* Trim the list if it exceeds any of the limits */
-	if (window->undoOpCount > UNDO_OP_LIMIT)
+	if (window->undo.size() > UNDO_OP_LIMIT)
 		trimUndoList(window, UNDO_OP_TRIMTO);
 	if (window->undoMemUsed > UNDO_WORRY_LIMIT)
 		trimUndoList(window, UNDO_WORRY_TRIMTO);
@@ -335,7 +334,6 @@ static void removeUndoItem(WindowInfo *window) {
 
 
 	/* Decrement the operation and memory counts */
-	window->undoOpCount--;
 	window->undoMemUsed -= undo->oldLen;
 
 	/* Remove and free the item */
@@ -419,7 +417,6 @@ static void trimUndoList(WindowInfo *window, int maxLength) {
 	while(it != window->undo.end()) {
 		UndoInfo *u = *it;
 		
-		window->undoOpCount--;
 		window->undoMemUsed -= u->oldLen;
 		delete u;
 		
