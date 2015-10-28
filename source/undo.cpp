@@ -70,9 +70,9 @@ void Undo(WindowInfo *window) {
 	undo->inUndo = True;
 
 	/* use the saved undo information to reverse changes */
-	window->buffer->BufReplace(undo->startPos, undo->endPos, (undo->oldText != nullptr ? undo->oldText : ""));
+	window->buffer->BufReplace(undo->startPos, undo->endPos, undo->oldText.c_str());
 
-	restoredTextLength = undo->oldText != nullptr ? strlen(undo->oldText) : 0;
+	restoredTextLength = undo->oldText.size();
 	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
@@ -115,9 +115,9 @@ void Redo(WindowInfo *window) {
 	redo->inUndo = True;
 
 	/* use the saved redo information to reverse changes */
-	window->buffer->BufReplace(redo->startPos, redo->endPos, (redo->oldText != nullptr ? redo->oldText : ""));
+	window->buffer->BufReplace(redo->startPos, redo->endPos, redo->oldText.c_str());
 
-	restoredTextLength = redo->oldText != nullptr ? strlen(redo->oldText) : 0;
+	restoredTextLength = redo->oldText.size();
 	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
@@ -155,24 +155,28 @@ void Redo(WindowInfo *window) {
 **       character typed.
 */
 void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText) {
-	undoTypes newType;
-	undoTypes oldType;
-	UndoInfo *u, *undo = window->undo;
-	int isUndo = (undo != nullptr && undo->inUndo);
-	int isRedo = (window->redo != nullptr && window->redo->inUndo);
+	
+	const int isUndo = (window->undo != nullptr && window->undo->inUndo);
+	const int isRedo = (window->redo != nullptr && window->redo->inUndo);
 
 	/* redo operations become invalid once the user begins typing or does
 	   other editing.  If this is not a redo or undo operation and a redo
 	   list still exists, clear it and dim the redo menu item */
-	if (!(isUndo || isRedo) && window->redo != nullptr)
+	if (!(isUndo || isRedo) && window->redo != nullptr) {
 		ClearRedoList(window);
+	}
 
 	/* figure out what kind of editing operation this is, and recall
 	   what the last one was */
-	newType = determineUndoType(nInserted, nDeleted);
-	if (newType == UNDO_NOOP)
+	const undoTypes newType = determineUndoType(nInserted, nDeleted);
+	if (newType == UNDO_NOOP) {
 		return;
-	oldType = (undo == nullptr || isUndo) ? UNDO_NOOP : undo->type;
+	}
+		
+		
+	UndoInfo *const currentUndo = window->undo;
+	
+	const undoTypes oldType = (currentUndo == nullptr || isUndo) ? UNDO_NOOP : currentUndo->type;
 
 	/*
 	** Check for continuations of single character operations.  These are
@@ -184,31 +188,31 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	if (window->fileChanged) {
 
 		/* normal sequential character insertion */
-		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == undo->endPos)) {
-			undo->endPos++;
+		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
+			currentUndo->endPos++;
 			window->autoSaveCharCount++;
 			return;
 		}
 
 		/* overstrike mode replacement */
-		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == undo->endPos)) {
+		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
 			appendDeletedText(window, deletedText, nDeleted, FORWARD);
-			undo->endPos++;
+			currentUndo->endPos++;
 			window->autoSaveCharCount++;
 			return;
 		}
 
 		/* forward delete */
-		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == undo->startPos)) {
+		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
 			appendDeletedText(window, deletedText, nDeleted, FORWARD);
 			return;
 		}
 
 		/* reverse delete */
-		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == undo->startPos - 1)) {
+		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
 			appendDeletedText(window, deletedText, nDeleted, REVERSE);
-			undo->startPos--;
-			undo->endPos--;
+			currentUndo->startPos--;
+			currentUndo->endPos--;
 			return;
 		}
 	}
@@ -217,20 +221,12 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	** The user has started a new operation, create a new undo record
 	** and save the new undo data.
 	*/
-	undo = new UndoInfo;
-	undo->oldLen = 0;
-	undo->oldText = nullptr;
-	undo->type = newType;
-	undo->inUndo = False;
-	undo->restoresToSaved = False;
-	undo->startPos = pos;
-	undo->endPos = pos + nInserted;
+	auto undo = new UndoInfo(newType, pos, pos + nInserted);
 
 	/* if text was deleted, save it */
 	if (nDeleted > 0) {
 		undo->oldLen = nDeleted + 1; /* +1 is for null at end */
-		undo->oldText = XtMalloc(nDeleted + 1);
-		strcpy(undo->oldText, deletedText);
+		undo->oldText = deletedText;
 	}
 
 	/* increment the operation count for the autosave feature */
@@ -239,20 +235,24 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	/* if the window is currently unmodified, remove the previous
 	   restoresToSaved marker, and set it on this record */
 	if (!window->fileChanged) {
-		undo->restoresToSaved = True;
-		for (u = window->undo; u != nullptr; u = u->next)
-			u->restoresToSaved = False;
-		for (u = window->redo; u != nullptr; u = u->next)
-			u->restoresToSaved = False;
+		undo->restoresToSaved = true;
+		for (UndoInfo *u = window->undo; u != nullptr; u = u->next) {
+			u->restoresToSaved = false;
+		}
+		
+		for (UndoInfo *u = window->redo; u != nullptr; u = u->next) {
+			u->restoresToSaved = false;
+		}
 	}
 
 	/* Add the new record to the undo list  unless SaveUndoInfo is
 	   saving information generated by an Undo operation itself, in
 	   which case, add the new record to the redo list. */
-	if (isUndo)
+	if (isUndo) {
 		addRedoItem(window, undo);
-	else
+	} else {
 		addUndoItem(window, undo);
+	}
 }
 
 /*
@@ -262,12 +262,14 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 ** lists and adjusting the edit menu accordingly
 */
 void ClearUndoList(WindowInfo *window) {
-	while (window->undo != nullptr)
+	while (window->undo != nullptr) {
 		removeUndoItem(window);
+	}
 }
 void ClearRedoList(WindowInfo *window) {
-	while (window->redo != nullptr)
+	while (window->redo != nullptr) {
 		removeRedoItem(window);
+	}
 }
 
 /*
@@ -364,25 +366,24 @@ static void removeRedoItem(WindowInfo *window) {
 */
 static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction) {
 	UndoInfo *undo = window->undo;
-	char *comboText;
 
 	/* re-allocate, adding space for the new character(s) */
-	comboText = XtMalloc(undo->oldLen + deletedLen);
+	std::string comboText;
+	comboText.reserve(undo->oldLen + deletedLen);
 
 	/* copy the new character and the already deleted text to the new memory */
 	if (direction == FORWARD) {
-		strcpy(comboText, undo->oldText);
-		strcat(comboText, deletedText);
+		comboText.append(undo->oldText);
+		comboText.append(deletedText);
 	} else {
-		strcpy(comboText, deletedText);
-		strcat(comboText, undo->oldText);
+		comboText.append(deletedText);
+		comboText.append(undo->oldText);
 	}
 
 	/* keep track of the additional memory now used by the undo list */
 	window->undoMemUsed++;
 
 	/* free the old saved text and attach the new */
-	XtFree(undo->oldText);
 	undo->oldText = comboText;
 	undo->oldLen += deletedLen;
 }

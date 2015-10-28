@@ -3829,13 +3829,7 @@ static UndoInfo *cloneUndoItems(UndoInfo *orgList) {
 	UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
 
 	for (undo = orgList; undo; undo = undo->next) {
-		clone = new UndoInfo;
-		memcpy(clone, undo, sizeof(UndoInfo));
-
-		if (undo->oldText) {
-			clone->oldText = XtMalloc(strlen(undo->oldText) + 1);
-			strcpy(clone->oldText, undo->oldText);
-		}
+		clone = new UndoInfo(*undo);
 		clone->next = nullptr;
 
 		if (last)
