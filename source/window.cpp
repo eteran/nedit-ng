@@ -65,6 +65,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include <sys/stat.h>
 
 #include <sys/param.h>
@@ -135,7 +136,6 @@ static void hideTooltip(Widget tab);
 static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height);
 static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int crossWin, int wrap);
 static Widget addTab(Widget folder, const char *string);
-static int compareWindowNames(const void *windowA, const void *windowB);
 static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
 static void hideTearOffs(Widget menuPane);
@@ -680,51 +680,41 @@ static Widget addTab(Widget folder, const char *string) {
 }
 
 /*
-** Comparison function for sorting windows by title.
-** Windows are sorted by alphabetically by filename and then
-** alphabetically by path.
-*/
-static int compareWindowNames(const void *windowA, const void *windowB) {
-	int rc;
-	const WindowInfo *a = *((WindowInfo **)windowA);
-	const WindowInfo *b = *((WindowInfo **)windowB);
-
-	rc = strcmp(a->filename, b->filename);
-	if (rc != 0)
-		return rc;
-	rc = strcmp(a->path, b->path);
-	return rc;
-}
-
-/*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
 */
 void SortTabBar(WindowInfo *window) {
-	WindowInfo *w;
-	WindowInfo **windows;
-	WidgetList tabList;
-	int i, j, nDoc, tabCount;
 
 	if (!GetPrefSortTabs())
 		return;
 
 	/* need more than one tab to sort */
-	nDoc = NDocuments(window);
-	if (nDoc < 2)
+	const int nDoc = NDocuments(window);
+	if (nDoc < 2) {
 		return;
+	}
 
 	/* first sort the documents */
-	windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nDoc);
-	for (w = WindowList, i = 0; w != nullptr; w = w->next) {
+	std::vector<WindowInfo *> windows;
+	windows.reserve(nDoc);
+	
+	for (WindowInfo *w = WindowList; w != nullptr; w = w->next) {
 		if (window->shell == w->shell)
-			windows[i++] = w;
+			windows.push_back(w);
 	}
-	qsort(windows, nDoc, sizeof(WindowInfo *), compareWindowNames);
-
+	
+	std::sort(windows.begin(), windows.end(), [](const WindowInfo *a, const WindowInfo *b) {
+		if(strcmp(a->filename, b->filename) < 0) {
+			return true;
+		}
+		return strcmp(a->path, b->path) < 0;
+	});
+	
 	/* assign tabs to documents in sorted order */
+	WidgetList tabList;
+	int tabCount;	
 	XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
 
-	for (i = 0, j = 0; i < tabCount && j < nDoc; i++) {
+	for (int i = 0, j = 0; i < tabCount && j < nDoc; i++) {
 		if (tabList[i]->core.being_destroyed)
 			continue;
 
@@ -736,16 +726,13 @@ void SortTabBar(WindowInfo *window) {
 		RefreshTabState(windows[j]);
 		j++;
 	}
-
-	XtFree((char *)windows);
 }
 
 /*
 ** find which document a tab belongs to
 */
 WindowInfo *TabToWindow(Widget tab) {
-	WindowInfo *win;
-	for (win = WindowList; win; win = win->next) {
+	for (WindowInfo *win = WindowList; win; win = win->next) {
 		if (win->tab == tab)
 			return win;
 	}
@@ -2114,7 +2101,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData) {
 		nWindows++;
 	}
 	argv = (char **)XtMalloc(maxArgc * sizeof(char *));
-	revWindowList = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
+	revWindowList = new WindowInfo *[nWindows];
 	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--)
 		revWindowList[i] = win;
 
@@ -2164,7 +2151,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData) {
 		}
 	}
 
-	XtFree((char *)revWindowList);
+	delete [] revWindowList;
 
 	/* Set the window's WM_COMMAND property to the created command line */
 	XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
@@ -3017,7 +3004,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int cross
 		return nullptr;
 
 	/* get the list of tabs */
-	auto tabs = (WidgetList)XtMalloc(sizeof(Widget) * nBuf);
+	auto tabs = new Widget[nBuf];
 	tabTotalCount = 0;
 	if (crossWin) {
 		int n, nItems;
@@ -3071,7 +3058,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int cross
 
 	/* return the document where the next tab belongs to */
 	win = TabToWindow(tabs[nextPos]);
-	XtFree((char *)tabs);
+	delete [] tabs;
 	return win;
 }
 
@@ -3081,12 +3068,12 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int cross
 */
 static int getTabPosition(Widget tab) {
 	WidgetList tabList;
-	int i, tabCount;
+	int tabCount;
 	Widget tabBar = XtParent(tab);
 
 	XtVaGetValues(tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
 
-	for (i = 0; i < tabCount; i++) {
+	for (int i = 0; i < tabCount; i++) {
 		if (tab == tabList[i])
 			return i;
 	}
@@ -3746,7 +3733,11 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	   else the rangesets do not be highlighted (colored) properly
 	   if syntax highlighting is on.
 	*/
-	window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *orgWin->buffer->rangesetTable_);
+	if(orgWin->buffer->rangesetTable_) {
+		window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *orgWin->buffer->rangesetTable_);
+	} else {
+		window->buffer->rangesetTable_ = nullptr;
+	}
 
 	/* Syntax highlighting */
 	window->languageMode = orgWin->languageMode;
@@ -3954,26 +3945,26 @@ static void moveDocumentCB(Widget dialog, WindowInfo *window, XtPointer call_dat
 ** into. Do nothing if there is only one shell window opened.
 */
 void MoveDocumentDialog(WindowInfo *window) {
-	WindowInfo *win, *targetWin, **shellWinList;
-	int i, nList = 0, nWindows = 0, ac;
+	WindowInfo *win;
+	int i, nList = 0, ac;
 	char tmpStr[MAXPATHLEN + 50];
 	Widget parent, dialog, listBox, moveAllOption;
-	XmString *list = nullptr;
 	XmString popupTitle, s1;
 	Arg csdargs[20];
-	int *position_list, position_count;
+	int *position_list;
+	int position_count;
 
 	/* get the list of available shell windows, not counting
 	   the document to be moved */
-	nWindows = NWindows();
-	list = (XmStringTable)XtMalloc(nWindows * sizeof(XmString *));
-	shellWinList = (WindowInfo **)XtMalloc(nWindows * sizeof(WindowInfo *));
+	int nWindows = NWindows();
+	auto list         = new XmString[nWindows];
+	auto shellWinList = new WindowInfo *[nWindows];
 
 	for (win = WindowList; win; win = win->next) {
 		if (!IsTopDocument(win) || win->shell == window->shell)
 			continue;
 
-		sprintf(tmpStr, "%s%s", win->filenameSet ? win->path : "", win->filename);
+		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet ? win->path : "", win->filename);
 
 		list[nList] = XmStringCreateSimpleEx(tmpStr);
 		shellWinList[nList] = win;
@@ -3982,15 +3973,15 @@ void MoveDocumentDialog(WindowInfo *window) {
 
 	/* stop here if there's no other window to move to */
 	if (!nList) {
-		XtFree((char *)list);
-		XtFree((char *)shellWinList);
+		delete [] list;
+		delete [] shellWinList;
 		return;
 	}
 
 	/* create the dialog */
 	parent = window->shell;
 	popupTitle = XmStringCreateSimpleEx("Move Document");
-	sprintf(tmpStr, "Move %s into window of", window->filename);
+	snprintf(tmpStr, sizeof(tmpStr), "Move %s into window of", window->filename);
 	s1 = XmStringCreateSimpleEx(tmpStr);
 	ac = 0;
 	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
@@ -4020,7 +4011,7 @@ void MoveDocumentDialog(WindowInfo *window) {
 	/* free the window list */
 	for (i = 0; i < nList; i++)
 		XmStringFree(list[i]);
-	XtFree((char *)list);
+	delete [] list;
 
 	/* create the option box for moving all documents */
 	s1 = MKSTRING((String) "Move all documents in this window");
@@ -4049,7 +4040,7 @@ void MoveDocumentDialog(WindowInfo *window) {
 
 	/* get the window to move document into */
 	XmListGetSelectedPos(listBox, &position_list, &position_count);
-	targetWin = shellWinList[position_list[0] - 1];
+	auto targetWin = shellWinList[position_list[0] - 1];
 	XtFree((char *)position_list);
 
 	/* now move document(s) */
@@ -4073,7 +4064,7 @@ void MoveDocumentDialog(WindowInfo *window) {
 		}
 	}
 
-	XtFree((char *)shellWinList);
+	delete [] shellWinList;
 	XtDestroyWidget(dialog);
 }
 
