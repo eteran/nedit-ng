@@ -167,7 +167,7 @@ static void patchedRemoveChild(Widget child);
 static void refreshMenuBar(WindowInfo *window);
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
-static UndoInfo *cloneUndoItems(UndoInfo *orgList);
+static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
 
 static WindowInfo *inFocusDocument = nullptr;   /* where we are now */
@@ -237,8 +237,8 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	window->lastModTime = 0;
 	window->fileMissing = True;
 	strcpy(window->filename, name);
-	window->undo = nullptr;
-	window->redo = nullptr;
+	window->undo = std::list<UndoInfo *>();
+	window->redo = std::list<UndoInfo *>();
 	window->nPanes = 0;
 	window->autoSaveCharCount = 0;
 	window->autoSaveOpCount = 0;
@@ -2796,7 +2796,11 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	auto window = new WindowInfo;
 
 	/* inherit settings and later reset those required */
+#if 0
 	memcpy(window, shellWindow, sizeof(WindowInfo));
+#else
+	*window = *shellWindow;
+#endif
 
 #if 0
     /* share these dialog items with parent shell */
@@ -2832,8 +2836,8 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->fileFormat = UNIX_FILE_FORMAT;
 	window->lastModTime = 0;
 	strcpy(window->filename, name);
-	window->undo = nullptr;
-	window->redo = nullptr;
+	window->undo = std::list<UndoInfo *>();
+	window->redo = std::list<UndoInfo *>();
 	window->nPanes = 0;
 	window->autoSaveCharCount = 0;
 	window->autoSaveOpCount = 0;
@@ -3216,8 +3220,8 @@ void RefreshMenuToggleStates(WindowInfo *window) {
 	XtSetSensitive(window->printSelItem, window->wasSelected);
 
 	/* Edit menu */
-	XtSetSensitive(window->undoItem, window->undo != nullptr);
-	XtSetSensitive(window->redoItem, window->redo != nullptr);
+	XtSetSensitive(window->undoItem, !window->undo.empty());
+	XtSetSensitive(window->redoItem, !window->redo.empty());
 	XtSetSensitive(window->printSelItem, window->wasSelected);
 	XtSetSensitive(window->cutItem, window->wasSelected);
 	XtSetSensitive(window->copyItem, window->wasSelected);
@@ -3825,22 +3829,13 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	RefreshWindowStates(window);
 }
 
-static UndoInfo *cloneUndoItems(UndoInfo *orgList) {
-	UndoInfo *head = nullptr, *undo, *clone, *last = nullptr;
+static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
 
-	for (undo = orgList; undo; undo = undo->next) {
-		clone = new UndoInfo(*undo);
-		clone->next = nullptr;
-
-		if (last)
-			last->next = clone;
-		else
-			head = clone;
-
-		last = clone;
+	std::list<UndoInfo *> list;
+	for(UndoInfo *undo : orgList) {
+		list.push_back(new UndoInfo(*undo));
 	}
-
-	return head;
+	return list;
 }
 
 /*

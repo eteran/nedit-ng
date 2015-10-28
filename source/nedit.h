@@ -29,6 +29,7 @@
 
 #include "TextBuffer.h"
 #include <sys/types.h>
+#include <list>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
@@ -398,8 +399,8 @@ struct WindowInfo {
 	time_t lastModTime;          /* time of last modification to file */
 	dev_t device;                /*  device where the file resides */
 	ino_t inode;                 /*  file's inode  */
-	UndoInfo *undo;              /* info for undoing last operation */
-	UndoInfo *redo;              /* info for redoing last undone op */
+	std::list<UndoInfo *> undo;              /* info for undoing last operation */
+	std::list<UndoInfo *> redo;              /* info for redoing last undone op */
 	TextBuffer *buffer;          /* holds the text being edited */
 	int nPanes;                  /* number of additional text editing
 	                            areas, created by splitWindow */

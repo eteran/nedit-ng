@@ -41,7 +41,6 @@ public:
 	UndoInfo &operator=(UndoInfo &&) = default;
 	
 public:
-	UndoInfo *next; /* pointer to the next undo record */
 	undoTypes type;
 	int startPos;
 	int endPos;

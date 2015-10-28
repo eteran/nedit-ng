@@ -55,12 +55,15 @@ static void trimUndoList(WindowInfo *window, int maxLength);
 static undoTypes determineUndoType(int nInserted, int nDeleted);
 
 void Undo(WindowInfo *window) {
-	UndoInfo *undo = window->undo;
+
 	int restoredTextLength;
 
 	/* return if nothing to undo */
-	if (undo == nullptr)
+	if (window->undo.empty()) {
 		return;
+	}
+		
+	UndoInfo *undo = window->undo.front();
 
 	/* BufReplace will eventually call SaveUndoInformation.  This is mostly
 	   good because it makes accumulating redo operations easier, however
@@ -102,12 +105,15 @@ void Undo(WindowInfo *window) {
 }
 
 void Redo(WindowInfo *window) {
-	UndoInfo *redo = window->redo;
+	
 	int restoredTextLength;
 
 	/* return if nothing to redo */
-	if (window->redo == nullptr)
+	if (window->redo.empty()) {
 		return;
+	}
+	
+	UndoInfo *redo = window->redo.front();
 
 	/* BufReplace will eventually call SaveUndoInformation.  To indicate
 	   to SaveUndoInformation that this is the context of a redo operation,
@@ -156,13 +162,13 @@ void Redo(WindowInfo *window) {
 */
 void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText) {
 	
-	const int isUndo = (window->undo != nullptr && window->undo->inUndo);
-	const int isRedo = (window->redo != nullptr && window->redo->inUndo);
+	const int isUndo = (!window->undo.empty() && window->undo.front()->inUndo);
+	const int isRedo = (!window->redo.empty() && window->redo.front()->inUndo);
 
 	/* redo operations become invalid once the user begins typing or does
 	   other editing.  If this is not a redo or undo operation and a redo
 	   list still exists, clear it and dim the redo menu item */
-	if (!(isUndo || isRedo) && window->redo != nullptr) {
+	if (!(isUndo || isRedo) && !window->redo.empty()) {
 		ClearRedoList(window);
 	}
 
@@ -174,7 +180,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	}
 		
 		
-	UndoInfo *const currentUndo = window->undo;
+	UndoInfo *const currentUndo = window->undo.front();
 	
 	const undoTypes oldType = (currentUndo == nullptr || isUndo) ? UNDO_NOOP : currentUndo->type;
 
@@ -236,11 +242,12 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	   restoresToSaved marker, and set it on this record */
 	if (!window->fileChanged) {
 		undo->restoresToSaved = true;
-		for (UndoInfo *u = window->undo; u != nullptr; u = u->next) {
+		
+		for(UndoInfo *u : window->undo) {
 			u->restoresToSaved = false;
 		}
 		
-		for (UndoInfo *u = window->redo; u != nullptr; u = u->next) {
+		for(UndoInfo *u : window->redo) {
 			u->restoresToSaved = false;
 		}
 	}
@@ -262,12 +269,12 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 ** lists and adjusting the edit menu accordingly
 */
 void ClearUndoList(WindowInfo *window) {
-	while (window->undo != nullptr) {
+	while (!window->undo.empty()) {
 		removeUndoItem(window);
 	}
 }
 void ClearRedoList(WindowInfo *window) {
-	while (window->redo != nullptr) {
+	while (!window->redo.empty()) {
 		removeRedoItem(window);
 	}
 }
@@ -280,14 +287,13 @@ void ClearRedoList(WindowInfo *window) {
 static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 
 	/* Make the undo menu item sensitive now that there's something to undo */
-	if (window->undo == nullptr) {
+	if (window->undo.empty()) {
 		SetSensitive(window, window->undoItem, True);
 		SetBGMenuUndoSensitivity(window, True);
 	}
 
 	/* Add the item to the beginning of the list */
-	undo->next = window->undo;
-	window->undo = undo;
+	window->undo.push_front(undo);
 
 	/* Increment the operation and memory counts */
 	window->undoOpCount++;
@@ -307,35 +313,37 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 */
 static void addRedoItem(WindowInfo *window, UndoInfo *redo) {
 	/* Make the redo menu item sensitive now that there's something to redo */
-	if (window->redo == nullptr) {
+	if (window->redo.empty()) {	
 		SetSensitive(window, window->redoItem, True);
 		SetBGMenuRedoSensitivity(window, True);
 	}
 
 	/* Add the item to the beginning of the list */
-	redo->next = window->redo;
-	window->redo = redo;
+	window->redo.push_front(redo);
 }
 
 /*
 ** Pop (remove and free) the current (front) undo record from the undo list
 */
 static void removeUndoItem(WindowInfo *window) {
-	UndoInfo *undo = window->undo;
 
-	if (undo == nullptr)
+	if (window->undo.empty()) {
 		return;
+	}
+
+	UndoInfo *undo = window->undo.front();
+
 
 	/* Decrement the operation and memory counts */
 	window->undoOpCount--;
 	window->undoMemUsed -= undo->oldLen;
 
 	/* Remove and free the item */
-	window->undo = undo->next;
+	window->undo.pop_front();
 	delete undo;
 
 	/* if there are no more undo records left, dim the Undo menu item */
-	if (window->undo == nullptr) {
+	if (window->undo.empty()) {
 		SetSensitive(window, window->undoItem, False);
 		SetBGMenuUndoSensitivity(window, False);
 	}
@@ -345,14 +353,14 @@ static void removeUndoItem(WindowInfo *window) {
 ** Pop (remove and free) the current (front) redo record from the redo list
 */
 static void removeRedoItem(WindowInfo *window) {
-	UndoInfo *redo = window->redo;
+	UndoInfo *redo = window->redo.front();
 
 	/* Remove and free the item */
-	window->redo = redo->next;
+	window->redo.pop_front();
 	delete redo;
 
 	/* if there are no more redo records left, dim the Redo menu item */
-	if (window->redo == nullptr) {
+	if (window->redo.empty()) {
 		SetSensitive(window, window->redoItem, False);
 		SetBGMenuRedoSensitivity(window, False);
 	}
@@ -365,7 +373,7 @@ static void removeRedoItem(WindowInfo *window) {
 ** work with more than one character.
 */
 static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction) {
-	UndoInfo *undo = window->undo;
+	UndoInfo *undo = window->undo.front();
 
 	/* re-allocate, adding space for the new character(s) */
 	std::string comboText;
@@ -393,26 +401,29 @@ static void appendDeletedText(WindowInfo *window, const char *deletedText, int d
 ** maxLength
 */
 static void trimUndoList(WindowInfo *window, int maxLength) {
-	int i;
-	UndoInfo *u, *lastRec;
 
-	if (window->undo == nullptr)
+	if (window->undo.empty()) {
 		return;
-
+	}
+	
+	auto it = window->undo.begin();
+	int i   = 1;
+	
 	/* Find last item on the list to leave intact */
-	for (i = 1, u = window->undo; i < maxLength && u != nullptr; i++, u = u->next)
-		;
-	if (u == nullptr)
-		return;
+	while(it != window->undo.end() && i < maxLength) {
+		++it;
+		++i;
+	}
 
 	/* Trim off all subsequent entries */
-	lastRec = u;
-	while (lastRec->next != nullptr) {
-		u = lastRec->next;
-		lastRec->next = u->next;
+	while(it != window->undo.end()) {
+		UndoInfo *u = *it;
+		
 		window->undoOpCount--;
 		window->undoMemUsed -= u->oldLen;
 		delete u;
+		
+		it = window->undo.erase(it);		
 	}
 }
 
