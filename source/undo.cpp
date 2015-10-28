@@ -67,10 +67,10 @@ void Undo(WindowInfo *window) {
 	   SaveUndoInformation needs to know that it is being called in the context
 	   of an undo.  The inUndo field in the undo record indicates that this
 	   record is in the process of being undone. */
-	undo->inUndo = True;
+	undo->inUndo = true;
 
 	/* use the saved undo information to reverse changes */
-	window->buffer->BufReplace(undo->startPos, undo->endPos, undo->oldText.c_str());
+	window->buffer->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
 
 	restoredTextLength = undo->oldText.size();
 	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
@@ -112,10 +112,10 @@ void Redo(WindowInfo *window) {
 	/* BufReplace will eventually call SaveUndoInformation.  To indicate
 	   to SaveUndoInformation that this is the context of a redo operation,
 	   we set the inUndo indicator in the redo record */
-	redo->inUndo = True;
+	redo->inUndo = true;
 
 	/* use the saved redo information to reverse changes */
-	window->buffer->BufReplace(redo->startPos, redo->endPos, redo->oldText.c_str());
+	window->buffer->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
 
 	restoredTextLength = redo->oldText.size();
 	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
