@@ -13,7 +13,7 @@ static unsigned char rangeset_labels[N_RANGESETS + 1] = {58, 10, 15, 1,  27, 52,
 														 
 /* -------------------------------------------------------------------------- */
 
-static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) {
+static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 	(void)nRestyled;
 
 	RangesetTable *table = (RangesetTable *)cbArg;

@@ -50,7 +50,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo);
 static void addRedoItem(WindowInfo *window, UndoInfo *redo);
 static void removeUndoItem(WindowInfo *window);
 static void removeRedoItem(WindowInfo *window);
-static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction);
+static void appendDeletedText(WindowInfo *window, view::string_view deletedText, int deletedLen, int direction);
 static void trimUndoList(WindowInfo *window, int maxLength);
 static undoTypes determineUndoType(int nInserted, int nDeleted);
 
@@ -160,7 +160,7 @@ void Redo(WindowInfo *window) {
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText) {
+void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, view::string_view deletedText) {
 	
 	const int isUndo = (!window->undo.empty() && window->undo.front()->inUndo);
 	const int isRedo = (!window->redo.empty() && window->redo.front()->inUndo);
@@ -232,7 +232,7 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	/* if text was deleted, save it */
 	if (nDeleted > 0) {
 		undo->oldLen = nDeleted + 1; /* +1 is for null at end */
-		undo->oldText = deletedText;
+		undo->oldText = deletedText.to_string();
 	}
 
 	/* increment the operation count for the autosave feature */
@@ -370,7 +370,7 @@ static void removeRedoItem(WindowInfo *window) {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-static void appendDeletedText(WindowInfo *window, const char *deletedText, int deletedLen, int direction) {
+static void appendDeletedText(WindowInfo *window, view::string_view deletedText, int deletedLen, int direction) {
 	UndoInfo *undo = window->undo.front();
 
 	/* re-allocate, adding space for the new character(s) */
@@ -380,9 +380,9 @@ static void appendDeletedText(WindowInfo *window, const char *deletedText, int d
 	/* copy the new character and the already deleted text to the new memory */
 	if (direction == FORWARD) {
 		comboText.append(undo->oldText);
-		comboText.append(deletedText);
+		comboText.append(deletedText.begin(), deletedText.end());
 	} else {
-		comboText.append(deletedText);
+		comboText.append(deletedText.begin(), deletedText.end());
 		comboText.append(undo->oldText);
 	}
 

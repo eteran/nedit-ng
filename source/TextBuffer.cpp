@@ -89,7 +89,7 @@ char *unexpandTabs(const char *text, int startIndent, int tabDist, char nullSubs
 ** when 3 or more spaces can be converted into a single tab, this avoids
 ** converting double spaces after a period withing a block of text.
 */
-std::string unexpandTabsEx(const std::string &text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
+std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
 	std::string outStr;
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
@@ -175,7 +175,7 @@ char *expandTabs(const char *text, int startIndent, int tabDist, char nullSubsCh
 ** "startIndent" if nonzero, indicates that the text is a rectangular selection
 ** beginning at column "startIndent"
 */
-std::string expandTabsEx(const std::string &text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
+std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
 	int indent;
 	int len;
 	int outLen = 0;
@@ -265,7 +265,7 @@ char *realignTabs(const char *text, int origIndent, int newIndent, int tabDist, 
 ** "origIndent" to starting at "newIndent".  Returns an allocated string
 ** which must be freed by the caller with XtFree.
 */
-std::string realignTabsEx(const std::string &text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
+std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
 	int len;
 
 	/* If the tabs settings are the same, retain original tabs */
@@ -308,7 +308,7 @@ void histogramCharacters(const char *string, int length, bool hist[256], bool in
 ** with a 1).  If init is true, initialize the histogram before acumulating.
 ** if not, add the new data to an existing histogram.
 */
-void histogramCharactersEx(const std::string &string, bool hist[256], bool init) {
+void histogramCharactersEx(view::string_view string, bool hist[256], bool init) {
 
 	if (init) {
 		std::fill_n(hist, 256, false);
@@ -478,7 +478,7 @@ void insertColInLine(const char *line, const char *insLine, int column, int insW
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-void insertColInLineEx(const std::string &line, const std::string &insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	char *outPtr;
 	int indent, toIndent, len, postColIndent;
 
@@ -721,7 +721,7 @@ void overlayRectInLine(const char *line, const char *insLine, int rectStart, int
 **
 ** This code does not handle control characters very well, but oh well.
 */
-void overlayRectInLineEx(const std::string &line, const std::string &insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	char *outPtr;
 	std::string retabbedStr;
 	int inIndent, outIndent, len, postRectIndent;
@@ -891,7 +891,7 @@ char *copyLine(const char *text, int *lineLen) {
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-std::string copyLineEx(std::string::const_iterator first, std::string::const_iterator last, int *lineLen) {
+std::string copyLineEx(view::string_view::const_iterator first, view::string_view::const_iterator last, int *lineLen) {
 	int len = 0;
 
 	for (auto it = first; it != last && *it != '\n'; ++it) {
@@ -920,7 +920,7 @@ int countLines(const char *string) {
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
-int countLinesEx(const std::string &string) {
+int countLinesEx(view::string_view string) {
 	return std::count(string.begin(), string.end(), '\n');
 }
 
@@ -947,7 +947,7 @@ int textWidth(const char *text, int tabDist, char nullSubsChar) {
 /*
 ** Measure the width in displayed characters of string "text"
 */
-int textWidthEx(const std::string &text, int tabDist, char nullSubsChar) {
+int textWidthEx(view::string_view text, int tabDist, char nullSubsChar) {
 	int width = 0, maxWidth = 0;
 
 	for (char ch : text) {
@@ -1050,6 +1050,34 @@ const char *TextBuffer::BufAsString() {
 }
 
 /*
+** Get the entire contents of a text buffer as a single string.  The gap is
+** moved so that the buffer data can be accessed as a single contiguous
+** character array.
+** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
+** (we make an exception in TextBuffer::BufSubstituteNullChars() however)
+** This function is intended ONLY to provide a searchable string without copying
+** into a temporary buffer.
+*/
+view::string_view TextBuffer::BufAsStringEx() {
+	char *text;
+	int bufLen = length_;
+	int leftLen = gapStart_;
+	int rightLen = bufLen - leftLen;
+
+	/* find where best to put the gap to minimise memory movement */
+	if (leftLen != 0 && rightLen != 0) {
+		leftLen = (leftLen < rightLen) ? 0 : bufLen;
+		moveGap(leftLen);
+	}
+	/* get the start position of the actual data */
+	text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
+	/* make sure it's null-terminated */
+	text[bufLen] = 0;
+
+	return view::string_view(text, bufLen);
+}
+
+/*
 ** Replace the entire contents of the text buffer
 */
 void TextBuffer::BufSetAll(const char *text) {
@@ -1085,7 +1113,7 @@ void TextBuffer::BufSetAll(const char *text) {
 /*
 ** Replace the entire contents of the text buffer
 */
-void TextBuffer::BufSetAllEx(const std::string &text) {
+void TextBuffer::BufSetAllEx(view::string_view text) {
 	int length, deletedLength;
 	length = text.size();
 
@@ -1233,7 +1261,7 @@ void TextBuffer::BufInsert(int pos, const char *text) {
 /*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
-void TextBuffer::BufInsertEx(int pos, const std::string &text) {
+void TextBuffer::BufInsertEx(int pos, view::string_view text) {
 	int nInserted;
 
 	/* if pos is not contiguous to existing text, make it */
@@ -1270,7 +1298,7 @@ void TextBuffer::BufReplace(int start, int end, const char *text) {
 ** Delete the characters between "start" and "end", and insert the
 ** null-terminated string "text" in their place in in "buf"
 */
-void TextBuffer::BufReplaceEx(int start, int end, const std::string &text) {
+void TextBuffer::BufReplaceEx(int start, int end, view::string_view text) {
 	int nInserted = text.size();
 
 	callPreDeleteCBs(start, end - start);
@@ -1370,7 +1398,7 @@ void TextBuffer::BufInsertCol(int column, int startPos, const char *text, int *c
 ** number of characters inserted and deleted in the operation (beginning
 ** at startPos) are returned in these arguments
 */
-void TextBuffer::BufInsertColEx(int column, int startPos, const std::string &text, int *charsInserted, int *charsDeleted) {
+void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted) {
 	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
 
 	nLines = countLinesEx(text);
@@ -1426,7 +1454,7 @@ void TextBuffer::BufOverlayRect(int startPos, int rectStart, int rectEnd, const 
 ** in the operation (beginning at startPos) are returned in these arguments.
 ** If rectEnd equals -1, the width of the inserted text is measured first.
 */
-void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, const std::string &text, int *charsInserted, int *charsDeleted) {
+void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted) {
 	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
 
 	nLines = countLinesEx(text);
@@ -1515,7 +1543,7 @@ void TextBuffer::BufReplaceRect(int start, int end, int rectStart, int rectEnd, 
 ** and "rectEnd", with "text".  If "text" is vertically longer than the
 ** rectangle, add extra lines to make room for it.
 */
-void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, const std::string &text) {
+void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
 	char *deletedText;
 	char *insText = nullptr;
 	int i, nInsertedLines, nDeletedLines, insLen, hint;
@@ -1542,7 +1570,7 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 
 		insLen = text.size();
 		insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
-		strcpy(insText, text.c_str());
+		strcpy(insText, text.to_string().c_str());
 		insPtr = insText + insLen;
 		for (i = 0; i < nDeletedLines - nInsertedLines; i++)
 			*insPtr++ = '\n';
@@ -1744,7 +1772,7 @@ void TextBuffer::BufReplaceSelected(const char *text) {
 	replaceSelected(&primary_, text);
 }
 
-void TextBuffer::BufReplaceSelectedEx(const std::string &text) {
+void TextBuffer::BufReplaceSelectedEx(view::string_view text) {
 	replaceSelectedEx(&primary_, text);
 }
 
@@ -1790,7 +1818,7 @@ void TextBuffer::BufReplaceSecSelect(const char *text) {
 	replaceSelected(&secondary_, text);
 }
 
-void TextBuffer::BufReplaceSecSelectEx(const std::string &text) {
+void TextBuffer::BufReplaceSecSelectEx(view::string_view text) {
 	replaceSelectedEx(&secondary_, text);
 }
 
@@ -2121,7 +2149,7 @@ int TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *fou
 ** with the character "startPos", and returning the result in "foundPos"
 ** returns True if found, False if not.
 */
-int TextBuffer::BufSearchForwardEx(int startPos, const std::string &searchChars, int *foundPos) const {
+int TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
 	pos = startPos;
@@ -2188,7 +2216,7 @@ int TextBuffer::BufSearchBackward(int startPos, const char *searchChars, int *fo
 ** with the character BEFORE "startPos", returning the result in "foundPos"
 ** returns True if found, False if not.
 */
-int TextBuffer::BufSearchBackwardEx(int startPos, const std::string &searchChars, int *foundPos) const {
+int TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
 	if (startPos == 0) {
@@ -2391,7 +2419,7 @@ int TextBuffer::BufCmp(int pos, int len, const char *cmpText) {
 ** != 0 otherwise.
 **
 */
-int TextBuffer::BufCmpEx(int pos, int len, const std::string &cmpText) {
+int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 	int posEnd;
 	int part1Length;
 	int result;
@@ -2405,12 +2433,12 @@ int TextBuffer::BufCmpEx(int pos, int len, const std::string &cmpText) {
 	}
 
 	if (posEnd <= gapStart_) {
-		return (strncmp(&(buf_[pos]), cmpText.c_str(), len));
+		return (strncmp(&(buf_[pos]), cmpText.to_string().c_str(), len));
 	} else if (pos >= gapStart_) {
-		return (strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.c_str(), len));
+		return (strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.to_string().c_str(), len));
 	} else {
 		part1Length = gapStart_ - pos;
-		result = strncmp(&buf_[pos], cmpText.c_str(), part1Length);
+		result = strncmp(&buf_[pos], cmpText.to_string().c_str(), part1Length);
 		if (result) {
 			return (result);
 		}
@@ -2472,7 +2500,7 @@ int TextBuffer::insert(int pos, const char *text) {
 ** on to call redisplay).  pos must be contiguous with the existing text in
 ** the buffer (i.e. not past the end).
 */
-int TextBuffer::insertEx(int pos, const std::string &text) {
+int TextBuffer::insertEx(int pos, view::string_view text) {
 	int length = text.size();
 
 	/* Prepare the buffer to receive the new text.  If the new text fits in
@@ -2584,7 +2612,7 @@ std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 ** Call the stored modify callback procedure(s) for this buffer to update the
 ** changed area(s) on the screen and any other listeners.
 */
-void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText) {
+void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) {
 
 	for (const auto &pair : modifyProcs_) {
 		(pair.first)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.second);
@@ -2818,7 +2846,7 @@ void TextBuffer::insertCol(int column, int startPos, const char *insText, int *n
 ** position of the lower left edge of the inserted column (as a hint for
 ** routines which need to set a cursor position).
 */
-void TextBuffer::insertColEx(int column, int startPos, const std::string &insText, int *nDeleted, int *nInserted, int *endPos) {
+void TextBuffer::insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
 	int nLines, start, end, insWidth, lineStart, lineEnd;
 	int expReplLen, expInsLen, len, endOffset;
 	char *outStr, *outPtr;
@@ -2974,7 +3002,7 @@ void TextBuffer::overlayRect(int startPos, int rectStart, int rectEnd, const cha
 ** "endPos" returns buffer position of the lower left edge of the inserted
 ** column (as a hint for routines which need to set a cursor position).
 */
-void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, const std::string &insText, int *nDeleted, int *nInserted, int *endPos) {
+void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
 	int nLines, start, end, lineStart, lineEnd;
 	int expInsLen, len, endOffset;
 	char *c, *outStr, *outPtr;
@@ -3153,7 +3181,7 @@ void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
 	redisplaySelection(&oldSelection, sel);
 }
 
-void TextBuffer::replaceSelectedEx(TextSelection *sel, const std::string &text) {
+void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 	int start, end, isRect, rectStart, rectEnd;
 	TextSelection oldSelection = *sel;
 

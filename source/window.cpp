@@ -149,7 +149,7 @@ static void showStatsForm(WindowInfo *window);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
 static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void movedCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
 static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
@@ -1958,7 +1958,7 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData) {
 	}
 }
 
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) {
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
 	(void)nRestyled;
 
@@ -2005,7 +2005,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, cons
 
 	/* Save information for undoing this operation (this call also counts
 	   characters and editing operations for triggering autosave */
-	SaveUndoInformation(window, pos, nInserted, nDeleted, deletedText.c_str());
+	SaveUndoInformation(window, pos, nInserted, nDeleted, deletedText);
 
 	/* Trigger automatic backup if operation or character limits reached */
 	if (window->autoSave && (window->autoSaveCharCount > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount > AUTOSAVE_OP_LIMIT)) {

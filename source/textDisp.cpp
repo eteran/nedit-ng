@@ -109,7 +109,7 @@ static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIn
 static int xyToPos(textDisp *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(textDisp *textD, int x, int y, int *row, int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
-static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
+static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void setScroll(textDisp *textD, int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -117,7 +117,7 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *conti
 static void redrawLineNumbers(textDisp *textD, int clearAll);
 static void updateVScrollBarRange(textDisp *textD);
 static int updateHScrollBarRange(textDisp *textD);
-static int countLinesEx(const std::string &string);
+static int countLinesEx(view::string_view string);
 static int measureVisLine(textDisp *textD, int visLineNum);
 static int emptyLinesVisible(textDisp *textD);
 static void blankCursorProtrusions(textDisp *textD);
@@ -127,7 +127,7 @@ static void releaseGC(Widget w, GC gc);
 static void resetClipRectangles(textDisp *textD);
 static int visLineLength(textDisp *textD, int visLineNum);
 static void measureDeletedLines(textDisp *textD, int pos, int nDeleted);
-static void findWrapRange(textDisp *textD, const char *deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
+static void findWrapRangeEx(textDisp *textD, view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 static void wrappedLineCounter(const textDisp *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines,
                                int *retLineStart, int *retLineEnd);
 static void findLineEnd(textDisp *textD, int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
@@ -1363,7 +1363,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 /*
 ** Callback attached to the text buffer to receive modification information
 */
-static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) {
+static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 	int linesInserted, linesDeleted, startDispPos, endDispPos;
 	textDisp *textD = (textDisp *)cbArg;
 	TextBuffer *buf = textD->buffer;
@@ -1378,7 +1378,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, c
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
 	if (textD->continuousWrap) {
-		findWrapRange(textD, deletedText.c_str(), pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
+		findWrapRangeEx(textD, deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = nInserted == 0 ? 0 : buf->BufCountLines(pos, pos + nInserted);
 		linesDeleted = nDeleted == 0 ? 0 : countLinesEx(deletedText);
@@ -2691,7 +2691,7 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *conti
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
-static int countLinesEx(const std::string &string) {
+static int countLinesEx(view::string_view string) {
 	int lineCount = 0;
 
 	for (char ch : string) {
@@ -2849,8 +2849,7 @@ static int visLineLength(textDisp *textD, int visLineNum) {
 	return nextLineStart - lineStartPos;
 }
 
-/*
-** When continuous wrap is on, and the user inserts or deletes characters,
+/** When continuous wrap is on, and the user inserts or deletes characters,
 ** wrapping can happen before and beyond the changed position.  This routine
 ** finds the extent of the changes, and counts the deleted and inserted lines
 ** over that range.  It also attempts to minimize the size of the range to
@@ -2858,13 +2857,21 @@ static int visLineLength(textDisp *textD, int visLineNum) {
 ** both for delimiting where the line starts need to be recalculated, and
 ** for deciding what part of the text to redisplay.
 */
-static void findWrapRange(textDisp *textD, const char *deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted) {
-	int length, retPos, retLines, retLineStart, retLineEnd;
-	TextBuffer *deletedTextBuf, *buf = textD->buffer;
-	int nVisLines = textD->nVisibleLines;
+static void findWrapRangeEx(textDisp *textD, view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted) {
+	int length;
+	int retPos;
+	int retLines;
+	int retLineStart;
+	int retLineEnd;
+	TextBuffer *buf = textD->buffer;
+	int nVisLines   = textD->nVisibleLines;
 	int *lineStarts = textD->lineStarts;
-	int countFrom, countTo, lineStart, adjLineStart, i;
-	int visLineNum = 0, nLines = 0;
+	int countFrom;
+	int countTo;
+	int lineStart;
+	int adjLineStart, i;
+	int visLineNum = 0;
+	int nLines = 0;
 
 	/*
 	** Determine where to begin searching: either the previous newline, or
@@ -2916,8 +2923,9 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos, int
 		       If we're in that mode, the number of deleted lines is calculated in
 		       advance, without resynchronization, so we shouldn't resynchronize
 		       for the inserted lines either. */
-		if (textD->suppressResync)
+		if (textD->suppressResync) {
 			continue;
+		}
 
 		/* check for synchronization with the original line starts array
 		   before pos, if so, the modified range can begin later */
@@ -2977,11 +2985,11 @@ static void findWrapRange(textDisp *textD, const char *deletedText, int pos, int
 	}
 
 	length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
-	deletedTextBuf = new TextBuffer(length);
+	auto deletedTextBuf = new TextBuffer(length);
 	if (pos > countFrom)
 		deletedTextBuf->BufCopyFromBuf(textD->buffer, countFrom, pos, 0);
 	if (nDeleted != 0)
-		deletedTextBuf->BufInsert(pos - countFrom, deletedText);
+		deletedTextBuf->BufInsertEx(pos - countFrom, deletedText);
 	if (countTo > pos + nInserted)
 		deletedTextBuf->BufCopyFromBuf(textD->buffer, pos + nInserted, countTo, pos - countFrom + nDeleted);
 	/* Note that we need to take into account an offset for the style buffer:

@@ -164,7 +164,7 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode);
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
-void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) {
+void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
 	(void)nRestyled;
 	(void)deletedText;

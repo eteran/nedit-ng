@@ -29,11 +29,9 @@
 
 #include "nedit.h"
 
-
-
 void Undo(WindowInfo *window);
 void Redo(WindowInfo *window);
-void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, const char *deletedText);
+void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, view::string_view deletedText);
 void ClearUndoList(WindowInfo *window);
 void ClearRedoList(WindowInfo *window);
 

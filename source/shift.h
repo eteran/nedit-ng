@@ -24,12 +24,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_SHIFT_H_INCLUDED
-#define NEDIT_SHIFT_H_INCLUDED
+#ifndef SHIFT_H_
+#define SHIFT_H_
 
-#include "nedit.h"
+#include <string>
 
-enum ShiftDirection { SHIFT_LEFT, SHIFT_RIGHT };
+class WindowInfo;
+
+enum ShiftDirection {
+	SHIFT_LEFT, 
+	SHIFT_RIGHT
+};
 
 void ShiftSelection(WindowInfo *window, int direction, int byTab);
 void UpcaseSelection(WindowInfo *window);
@@ -38,4 +43,4 @@ void FillSelection(WindowInfo *window);
 char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 std::string ShiftTextEx(const std::string &text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 
-#endif /* NEDIT_SHIFT_H_INCLUDED */
+#endif

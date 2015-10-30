@@ -28,6 +28,7 @@
 #define TEXT_BUFFER_H_
 
 #include "TextSelection.h"
+#include "string_view.h"
 #include <string>
 #include <deque>
 
@@ -39,7 +40,7 @@
 
 struct RangesetTable;
 
-typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
+typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
 struct TextBuffer {
@@ -63,9 +64,10 @@ public:
 	char *BufGetSelectionText();
 	char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);
 	char BufGetCharacter(int pos) const;
-	const char *BufAsString();	
+	const char *BufAsString();
+	view::string_view BufAsStringEx();
 	int BufCmp(int pos, int len, const char *cmpText);
-	int BufCmpEx(int pos, int len, const std::string &cmpText);
+	int BufCmpEx(int pos, int len, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
 	int BufCountForwardDispChars(int lineStartPos, int nChars) const;
@@ -79,9 +81,9 @@ public:
 	int BufGetSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 	int BufGetTabDistance() const;
 	int BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
-	int BufSearchBackwardEx(int startPos, const std::string &searchChars, int *foundPos) const;
+	int BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
 	int BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
-	int BufSearchForwardEx(int startPos, const std::string &searchChars, int *foundPos) const;
+	int BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
 	int BufStartOfLine(int pos) const;
 	int BufSubstituteNullChars(char *string, int length);
 	int BufSubstituteNullCharsEx(std::string &string);
@@ -99,10 +101,10 @@ public:
 	void BufHighlight(int start, int end);
 	void BufInsert(int pos, const char *text);
 	void BufInsertCol(int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);
-	void BufInsertColEx(int column, int startPos, const std::string &text, int *charsInserted, int *charsDeleted);
-	void BufInsertEx(int pos, const std::string &text);
+	void BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted);
+	void BufInsertEx(int pos, view::string_view text);
 	void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);
-	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, const std::string &text, int *charsInserted, int *charsDeleted);
+	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufRectHighlight(int start, int end, int rectStart, int rectEnd);
 	void BufRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufRemove(int start, int end);
@@ -113,18 +115,18 @@ public:
 	void BufRemoveSelected();
 	void BufSecRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufReplace(int start, int end, const char *text);
-	void BufReplaceEx(int start, int end, const std::string &text);
+	void BufReplaceEx(int start, int end, view::string_view text);
 	void BufReplaceRect(int start, int end, int rectStart, int rectEnd, const char *text);
-	void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, const std::string &text);
+	void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text);
 	void BufReplaceSecSelect(const char *text);
-	void BufReplaceSecSelectEx(const std::string &text);
+	void BufReplaceSecSelectEx(view::string_view text);
 	void BufReplaceSelected(const char *text);
-	void BufReplaceSelectedEx(const std::string &text);
+	void BufReplaceSelectedEx(view::string_view text);
 	void BufSecondarySelect(int start, int end);
 	void BufSecondaryUnselect();
 	void BufSelect(int start, int end);
 	void BufSetAll(const char *text);
-	void BufSetAllEx(const std::string &text);
+	void BufSetAllEx(view::string_view text);
 	void BufSetTabDistance(int tabDist);
 	void BufUnhighlight();
 	void BufUnselect();
@@ -135,25 +137,25 @@ public:
 private:
 	char *getSelectionText(TextSelection *sel);  
 	int insert(int pos, const char *text);
-	int insertEx(int pos, const std::string &text);
+	int insertEx(int pos, view::string_view text);
 	int searchBackward(int startPos, char searchChar, int *foundPos) const;
 	int searchForward(int startPos, char searchChar, int *foundPos) const;
 	std::string getSelectionTextEx(TextSelection *sel);
-	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, const std::string &deletedText);
+	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText);
 	void callPreDeleteCBs(int pos, int nDeleted);
 	void deleteRange(int start, int end);
 	void deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos);
 	void findRectSelBoundariesForCopy(int lineStartPos, int rectStart, int rectEnd, int *selStart, int *selEnd);
 	void insertCol(int column, int startPos, const char *insText, int *nDeleted, int *nInserted, int *endPos);
-	void insertColEx(int column, int startPos, const std::string &insText, int *nDeleted, int *nInserted, int *endPos);
+	void insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
 	void moveGap(int pos);
 	void overlayRect(int startPos, int rectStart, int rectEnd, const char *insText, int *nDeleted, int *nInserted, int *endPos);
-	void overlayRectEx(int startPos, int rectStart, int rectEnd, const std::string &insText, int *nDeleted, int *nInserted, int *endPos);
+	void overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
 	void reallocateBuf(int newGapStart, int newGapLen);
 	void redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection);
 	void removeSelected(TextSelection *sel);
 	void replaceSelected(TextSelection *sel, const char *text);
-	void replaceSelectedEx(TextSelection *sel, const std::string &text); 
+	void replaceSelectedEx(TextSelection *sel, view::string_view text); 
 	void updateSelections(int pos, int nDeleted, int nInserted);
 		 	
 private:

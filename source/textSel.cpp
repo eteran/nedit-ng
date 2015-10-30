@@ -70,7 +70,7 @@ struct selectNotifyInfo {
 	int length;
 };
 
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg);
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actionText, int actionTextLen);
 static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
 static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
@@ -330,7 +330,7 @@ void TakeMotifDestination(Widget w, Time time) {
 ** (Being in the middle of a modify callback, this has a somewhat complicated
 ** result, since later callbacks will see the second modifications first).
 */
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, const std::string &deletedText, void *cbArg) {
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
 	(void)pos;
 	(void)nInserted;
