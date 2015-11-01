@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: printUtils.c,v 1.25 2004/08/01 10:06:12 yooden Exp $";
 /*******************************************************************************
 *									       *
 * printUtils.c -- Nirvana library Printer Menu	& Printing Routines   	       *

@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: managedList.c,v 1.15 2006/08/08 10:59:32 edg Exp $";
 /*******************************************************************************
 *									       *
 * managedList.c -- User interface for reorderable list of records	       *

@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: misc.c,v 1.89 2010/07/05 06:23:59 lebert Exp $";
 /*******************************************************************************
 *									       *
 * misc.c -- Miscelaneous Motif convenience functions			       *

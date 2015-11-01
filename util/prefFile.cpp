@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: prefFile.c,v 1.27 2008/08/20 14:57:36 lebert Exp $";
 /*******************************************************************************
 *									       *
 * prefFile.c -- Nirvana utilities for providing application preferences files  *

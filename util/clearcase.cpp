@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: clearcase.c,v 1.6 2004/11/09 21:58:45 yooden Exp $";
 /*******************************************************************************
 *									       *
 * clearcase.c -- Nirvana Editor ClearCase support utilities     	       *
