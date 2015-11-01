@@ -499,6 +499,6 @@ extern WindowInfo *WindowList;
 extern Display *TheDisplay;
 extern Widget TheAppShell;
 extern char *ArgV0;
-extern Boolean IsServer;
+extern bool IsServer;
 
 #endif

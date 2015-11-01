@@ -55,6 +55,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include <X11/Xlocale.h>
 #include <X11/Intrinsic.h>
@@ -77,7 +78,6 @@ static void patchResourcesForVisual(void);
 static void patchResourcesForKDEbug(void);
 static void patchLocaleForMotif(void);
 static unsigned char *sanitizeVirtualKeyBindings(void);
-static int sortAlphabetical(const void *k1, const void *k2);
 static int virtKeyBindingsAreInvalid(const unsigned char *bindings);
 static void restoreInsaneVirtualKeyBindings(unsigned char *bindings);
 static void noWarningFilter(String);
@@ -86,7 +86,7 @@ static void showWarningFilter(String);
 WindowInfo *WindowList = nullptr;
 Display *TheDisplay = nullptr;
 char *ArgV0 = nullptr;
-Boolean IsServer = False;
+bool IsServer = false;
 Widget TheAppShell;
 
 /* Reasons for choice of default font qualifications:
@@ -406,7 +406,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (strcmp(GetPrefServerName(), "") != 0) {
-		IsServer = True;
+		IsServer = true;
 	}
 
 	/* Process any command line arguments (-tags, -do, -read, -create,
@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
 			else
 				gotoLine = True;
 		} else if (opts && !strcmp(argv[i], "-server")) {
-			IsServer = True;
+			IsServer = true;
 		} else if (opts && !strcmp(argv[i], "-xwarn")) {
 			XtAppSetWarningHandler(context, showWarningFilter);
 		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
@@ -860,12 +860,6 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure) {
 	return setlocale(LC_ALL, nullptr); /* re-query in case overwritten */
 }
 
-static int sortAlphabetical(const void *k1, const void *k2) {
-	const char *key1 = *(const char **)k1;
-	const char *key2 = *(const char **)k2;
-	return strcmp(key1, key2);
-}
-
 /*
  * Checks whether a given virtual key binding string is invalid.
  * A binding is considered invalid if there are duplicate key entries.
@@ -875,7 +869,6 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	const char *pos = (const char *)bindings;
 	char *copy;
 	char *pos2, *pos3;
-	char **keys;
 
 	/* First count the number of bindings; bindings are separated by \n
 	   strings. The number of bindings equals the number of \n + 1.
@@ -889,7 +882,8 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	if (maxCount == 1)
 		return False; /* One binding is always ok */
 
-	keys = (char **)malloc(maxCount * sizeof(char *));
+	auto keys = new char *[maxCount];
+	
 	copy = XtNewString((const char *)bindings);
 	i = 0;
 	pos2 = copy;
@@ -918,13 +912,16 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	}
 
 	if (count <= 1) {
-		free(keys);
+		delete [] keys; 
 		XtFree(copy);
 		return False; /* No conflict */
 	}
 
 	/* Sort the keys and look for duplicates */
-	qsort((void *)keys, count, sizeof(const char *), sortAlphabetical);
+	std::sort(keys, keys + count, [](const char *key1, const char *key2) {
+		return strcmp(key1, key2) < 0;
+	});
+	
 	for (i = 1; i < count; ++i) {
 		if (!strcmp(keys[i - 1], keys[i])) {
 			/* Duplicate detected */
@@ -933,7 +930,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 			return True;
 		}
 	}
-	free(keys);
+	delete [] keys;
 	XtFree(copy);
 	return False;
 }
