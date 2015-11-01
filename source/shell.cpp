@@ -1152,16 +1152,7 @@ static void createOutputDialog(Widget parent, char *text) {
 	XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", nullptr);
 	ManageDialogCenteredOnPointer(form);
 
-#ifdef LESSTIF_VERSION
-	/*
-	 * The Lesstif text widget blocks activate() calls in multi-line mode,
-	 * so we put the original focus on the Ok button such that the user
-	 * can simply hit Return to dismiss the dialog.
-	 */
-	XmProcessTraversal(button, XmTRAVERSE_CURRENT);
-#else
 	XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
-#endif
 }
 
 /*

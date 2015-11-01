@@ -671,11 +671,6 @@ static Widget addTab(Widget folder, const char *string) {
 	   came without borders */
 	XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, nullptr);
 
-#ifdef LESSTIF_VERSION
-	/* If we don't do this, no popup when right-click on tabs */
-	AddTabContextMenuAction(tab);
-#endif /* LESSTIF_VERSION */
-
 	return tab;
 }
 
@@ -2956,24 +2951,6 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	/* add the window to the global window list, update the Windows menus */
 	InvalidateWindowMenus();
 	addToWindowList(window);
-
-#ifdef LESSTIF_VERSION
-	/* FIXME: Temporary workaround for disappearing-text-window bug
-	          when linking to Lesstif.
-
-	   After changes is made to statsAreaForm (parent of statsline,
-	   i-search line and tab bar) widget such as enabling/disabling
-	   the statsline, the XmForm widget enclosing the text widget
-	   somehow refused to resize to fit the text widget. Resizing
-	   the shell window or making changes [again] to the statsAreaForm
-	   appeared to bring out the text widget, though doesn't fix it for
-	   the subsequently added documents. Here we try to do the latter
-	   for all new documents created. */
-	if (XtIsManaged(XtParent(window->statsLineForm))) {
-		XtUnmanageChild(XtParent(window->statsLineForm));
-		XtManageChild(XtParent(window->statsLineForm));
-	}
-#endif /* LESSTIF_VERSION */
 
 	/* return the shell ownership to previous tabbed doc */
 	XtVaSetValues(window->mainWin, XmNworkWindow, shellWindow->splitPane, nullptr);

@@ -56,11 +56,7 @@
 #include <Xm/Xm.h>
 #include <string.h>
 
-#ifdef LESSTIF_VERSION
-static enum MotifStability GetLessTifStability(void);
-#else
-static enum MotifStability GetOpenMotifStability(void);
-#endif
+static MotifStability GetOpenMotifStability(void);
 
 /*
  * These are versions of LessTif that are known to be stable with NEdit in
@@ -87,36 +83,6 @@ const char *const knownBadLessTif[] = {"0.93.25", "0.93.29", "0.93.34"
                                        "0.95.0",   /* same as above */
                                        nullptr};
 
-#ifdef LESSTIF_VERSION
-
-static MotifStability GetLessTifStability(void) {
-	int i;
-	const char *rev = nullptr;
-
-	/* We assume that the lesstif version is the string after the last
-	    space. */
-
-	rev = strrchr(LesstifVERSION_STRING, ' ');
-
-	if (rev == nullptr)
-		return MotifUnknown;
-
-	rev += 1;
-
-	/* Check for known good LessTif versions */
-	for (i = 0; knownGoodLesstif[i]; i++)
-		if (!strcmp(rev, knownGoodLesstif[i]))
-			return MotifKnownGood;
-
-	/* Check for known bad LessTif versions */
-	for (i = 0; knownBadLessTif[i]; i++)
-		if (!strcmp(rev, knownBadLessTif[i]))
-			return MotifKnownBad;
-
-	return MotifUnknown;
-}
-
-#else
 
 /* The stability depends on the patch level, so fold it into the
    usual XmVersion for easy comparison. */
@@ -144,14 +110,9 @@ static MotifStability GetOpenMotifStability(void) {
 	return result;
 }
 
-#endif
 
-enum MotifStability GetMotifStability(void) {
-#ifdef LESSTIF_VERSION
-	return GetLessTifStability();
-#else
+MotifStability GetMotifStability(void) {
 	return GetOpenMotifStability();
-#endif
 }
 
 const char *GetMotifStableVersions(void) {

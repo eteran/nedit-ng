@@ -143,9 +143,6 @@ static const char *fallbackResources[] = {
     "*buttonRenderTable:        defaultRT",                            "*labelRenderTable:         defaultRT",                       "*textRenderTable:          fixedRT",
     "*defaultRT.fontType:       FONT_IS_XFT",                          "*defaultRT.fontName:       Sans",                            "*defaultRT.fontSize:       9",
     "*fixedRT.fontType:         FONT_IS_XFT",                          "*fixedRT.fontName:         Monospace",                       "*fixedRT.fontSize:         9",
-#elif LESSTIF_VERSION
-    "*FontList: " NEDIT_DEFAULT_FONT,                                  "*XmText.FontList: " NEDIT_FIXED_FONT,                        "*XmTextField.FontList: " NEDIT_FIXED_FONT,
-    "*XmList.FontList: " NEDIT_FIXED_FONT,                             "*XmFileSelectionBox*XmList.FontList: " NEDIT_FIXED_FONT,
 #else
     "*buttonFontList: " NEDIT_DEFAULT_FONT,                            "*labelFontList: " NEDIT_DEFAULT_FONT,                        "*textFontList: " NEDIT_FIXED_FONT,
 #endif
@@ -670,7 +667,6 @@ static void patchResourcesForVisual(void) {
 	usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
 
 	if (!usingDefaultVisual) {
-#ifndef LESSTIF_VERSION
 		/*
 		   For non-Lesstif versions, we have to put non-default visuals etc.
 		   in the resource data base to make sure that all (shell) widgets
@@ -705,7 +701,6 @@ static void patchResourcesForVisual(void) {
 
    XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
  */
-#endif
 
 		for (i = 1; i < XtNumber(fallbackResources); ++i) {
 			Cardinal resIndex = i - 1;
@@ -808,7 +803,7 @@ static void patchResourcesForKDEbug(void) {
 */
 
 static void patchLocaleForMotif(void) {
-#if !(defined(LESSTIF_VERSION) || XmVersion >= 2003)
+#if !(XmVersion >= 2003)
 	const char *ctype;
 	char ctypebuf[1024];
 	char *utf_start;
@@ -1006,9 +1001,6 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings
 */
 static void showWarningFilter(String message) {
 	const char *bogusMessages[] = {
-#ifdef LESSTIF_VERSION
-	    "XmFontListCreate() is an obsolete function!", "No type converter registered for 'String' to 'PathMode' conversion.", "XtRemoveGrab asked to remove a widget not on the list",
-#endif
 	    nullptr};
 	const char **bogusMessage = &bogusMessages[0];
 

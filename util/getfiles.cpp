@@ -436,18 +436,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	   *tif implementations */
 	if (defaultName != nullptr) {
 		Widget nameField = XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT);
-#ifdef LESSTIF_VERSION
-		/* Workaround for Lesstif bug (0.93.94 and possibly other versions):
-		   if a proportional font is used for the text field and text is
-		   inserted while the dialog is managed, Lesstif crashes because it
-		   tries to access a non-existing selection. By creating a temporary
-		   dummy selection, the crash is avoided. */
-		XmTextFieldSetSelection(nameField, 0, 1, CurrentTime);
-		XmTextInsert(nameField, XmTextGetLastPosition(nameField), defaultName);
-		XmTextFieldSetSelection(nameField, 0, 0, CurrentTime);
-#else
 		XmTextInsert(nameField, XmTextGetLastPosition(nameField), (String)defaultName);
-#endif
 	}
 
 	while (!done_with_dialog)

@@ -70,14 +70,13 @@
 #include <Xm/ScrolledW.h>
 #include <Xm/PrimitiveP.h>
 
-#ifndef LESSTIF_VERSION
+
 #ifdef __cplusplus
 extern "C" void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
 #else
 extern void _XmDismissTearOff(Widget w, XtPointer call, XtPointer x);
 #endif
 
-#endif
 
 /* structure for passing history-recall data to callbacks */
 typedef struct {
@@ -1839,7 +1838,7 @@ void RadioButtonChangeState(Widget widget, bool state, bool notify) {
   to detect OpenMotif reliably, we make a rough cut by excluding Lesstif
   and all Motif versions >= 2.1.x and < 2.2.3.
 */
-#ifndef LESSTIF_VERSION
+
 #if XmVersion == 2001 || (XmVersion == 2002 && XmUPDATE_LEVEL < 3)
 	/* save the widget with current focus in case it moves */
 	Widget focusW, shellW = widget;
@@ -1881,7 +1880,7 @@ void RadioButtonChangeState(Widget widget, bool state, bool notify) {
 		XtSetKeyboardFocus(shellW, focusW);
 	}
 #endif /* XmVersion == 2001 || ... */
-#endif /* LESSTIF_VERSION */
+
 
 	/* This is sufficient on non-OM platforms */
 	XmToggleButtonSetState(widget, state, notify);
@@ -1894,7 +1893,6 @@ void RadioButtonChangeState(Widget widget, bool state, bool notify) {
 ** before destroying the shell widget.
 */
 void CloseAllPopupsFor(Widget shell) {
-#ifndef LESSTIF_VERSION
 	/* Doesn't happen in LessTif.  The tear-off menus are popup-children of
 	 * of the TopLevelShell there, which just works.  Motif wants to make
 	 * them popup-children of the ApplicationShell, where it seems to get
@@ -1911,7 +1909,6 @@ void CloseAllPopupsFor(Widget shell) {
 		if (shell == shellFor)
 			_XmDismissTearOff(pop, nullptr, nullptr);
 	}
-#endif
 }
 
 static long queryDesktop(Display *display, Window window, Atom deskTopAtom) {
