@@ -90,7 +90,7 @@ enum searchDirection { FORWARD, BACKWARD };
 static int loadTagsFile(const char *tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
-static int fakeRegExSearch(WindowInfo *window, char *buffer, const char *searchString, int *startPos, int *endPos);
+static int fakeRegExSearch(WindowInfo *window, const char *buffer, const char *searchString, int *startPos, int *endPos);
 static unsigned hashAddr(const char *key);
 static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
@@ -971,10 +971,12 @@ static void setTag(tag *t, const char *name, const char *file, int language, con
 ** In this case in_buffer should be an XtMalloc allocated buffer and the
 ** caller is responsible for freeing it.
 */
-static int fakeRegExSearch(WindowInfo *window, char *in_buffer, const char *searchString, int *startPos, int *endPos) {
+static int fakeRegExSearch(WindowInfo *window, const char *in_buffer, const char *searchString, int *startPos, int *endPos) {
 	int found, searchStartPos, dir, ctagsMode;
-	char searchSubs[3 * MAXLINE + 3], *outPtr;
-	const char *fileString, *inPtr;
+	char searchSubs[3 * MAXLINE + 3];
+	char *outPtr;
+	const char *fileString;
+	const char *inPtr;
 
 	if (in_buffer == nullptr) {
 		/* get the entire (sigh) text buffer from the text area widget */

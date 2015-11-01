@@ -967,14 +967,18 @@ void SafeGC(void) {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacro(WindowInfo *window, const std::string &macro, const char *errInName) {
+void DoMacro(WindowInfo *window, view::string_view macro, const char *errInName) {
 
 	const char *errMsg;
 	const char *stoppedAt;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	std::string tMacro = macro + '\n';
+	   
+	std::string tMacro;
+	tMacro.reserve(macro.size() + 1);
+	tMacro.append(macro.begin(), macro.end());
+	tMacro.append("\n");
 
 	/* Parse the macro and report errors if it fails */
 	Program *const prog = ParseMacro(tMacro.c_str(), &errMsg, &stoppedAt);
@@ -2197,7 +2201,7 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	/* we remove constness from BufAsString() result since we know
 	   searchStringMS will not modify the result */
 	newArgList[0].tag = STRING_TAG;
-	newArgList[0].val.str.rep = (char *)window->buffer->BufAsString();
+	newArgList[0].val.str.rep = const_cast<char *>(window->buffer->BufAsString());
 	newArgList[0].val.str.len = window->buffer->BufGetLength();
 
 	/* copy other arguments to the new argument list */

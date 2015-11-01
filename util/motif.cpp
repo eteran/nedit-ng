@@ -125,7 +125,7 @@ static const int XmFullVersion = (XmVersion * 100 + XmUPDATE_LEVEL);
 static enum MotifStability GetOpenMotifStability(void) {
 	enum MotifStability result = MotifUnknown;
 
-	const Boolean really222 = (strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0);
+	const bool really222 = (strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0);
 
 	if (XmFullVersion <= 200200) /* 1.0 - 2.1 are fine */
 	{

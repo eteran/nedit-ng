@@ -122,7 +122,7 @@ static void removeWhiteSpace(char *string);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, Boolean *continueDispatch);
+static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch);
 static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine, Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -278,7 +278,7 @@ void RemovePPositionHint(Widget shell) {
 }
 
 void RealizeWithoutForcingPosition(Widget shell) {
-	Boolean mappedWhenManaged;
+	bool mappedWhenManaged;
 
 	/* Temporarily set value of XmNmappedWhenManaged
 	   to stop the window from popping up right away */
@@ -334,7 +334,7 @@ void RealizeWithoutForcingPosition(Widget shell) {
 **
 ** Returns True if the best visual is the default, False otherwise.
 */
-Boolean FindBestVisual(Display *display, const char *appName, const char *appClass, Visual **visual, int *depth, Colormap *colormap) {
+bool FindBestVisual(Display *display, const char *appName, const char *appClass, Visual **visual, int *depth, Colormap *colormap) {
 	char rsrcName[256], rsrcClass[256], *valueString, *type, *endPtr;
 	XrmValue value;
 	int screen = DefaultScreen(display);
@@ -672,7 +672,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 	unsigned int width, height, borderWidth, depth;
 	int x, y, winX, winY, maxX, maxY, maxWidth, maxHeight;
 	Dimension xtWidth, xtHeight;
-	Boolean mappedWhenManaged;
+	bool mappedWhenManaged;
 	static const int slop = 25;
 
 	/* Temporarily set value of XmNmappedWhenManaged
@@ -780,11 +780,11 @@ void RaiseDialogWindow(Widget shell) {
 	RaiseWindow(XtDisplay(shell), XtWindow(shell), True);
 }
 
-void RaiseShellWindow(Widget shell, Boolean focus) {
+void RaiseShellWindow(Widget shell, bool focus) {
 	RaiseWindow(XtDisplay(shell), XtWindow(shell), focus);
 }
 
-void RaiseWindow(Display *display, Window w, Boolean focus) {
+void RaiseWindow(Display *display, Window w, bool focus) {
 	if (focus) {
 		XWindowAttributes winAttr;
 
@@ -1186,7 +1186,7 @@ static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	XtFree((char *)clientData);
 }
 
-static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, Boolean *continueDispatch) {
+static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch) {
 	histInfo *histData = (histInfo *)callData;
 	KeySym keysym = XLookupKeysym((XKeyEvent *)event, 0);
 
@@ -1834,7 +1834,7 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 ** XmNvalueChangedCallbacks. In practice, this doesn't seem to be a problem.
 **
 */
-void RadioButtonChangeState(Widget widget, Boolean state, Boolean notify) {
+void RadioButtonChangeState(Widget widget, bool state, bool notify) {
 /*
   The bug only exists in OpenMotif 2.1.x/2.2.[0-2]. Since it's quite hard
   to detect OpenMotif reliably, we make a rough cut by excluding Lesstif

@@ -3706,8 +3706,8 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	window->ignoreModify = True;
 
 	/* copy the text buffer */
-	const char *orgDocument = orgWin->buffer->BufAsString();
-	window->buffer->BufSetAll(orgDocument);
+	auto orgDocument = orgWin->buffer->BufAsStringEx();
+	window->buffer->BufSetAllEx(orgDocument);
 
 	/* copy the tab preferences (here!) */
 	window->buffer->BufSetTabDistance(orgWin->buffer->tabDist_);

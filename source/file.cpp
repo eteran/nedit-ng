@@ -1141,7 +1141,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 ** Print a string (length is required).  parent is the dialog parent, for
 ** error dialogs, and jobName is the print title.
 */
-void PrintString(const std::string &string, int length, Widget parent, const char *jobName) {
+void PrintString(const std::string &string, int length, Widget parent, const std::string &jobName) {
 	// TODO(eteran): get the temp directory dynamically
 	char tmpFileName[L_tmpnam] = "/tmp/nedit-XXXXXX"; /* L_tmpnam defined in stdio.h */
 	int fd = mkstemp(tmpFileName);
@@ -1161,7 +1161,7 @@ void PrintString(const std::string &string, int length, Widget parent, const cha
 	/* write to the file */
 	fwrite(string.c_str(), sizeof(char), length, fp);
 	if (ferror(fp)) {
-		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName, strerror(errno));
+		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName.c_str(), strerror(errno));
 		fclose(fp); /* should call close(fd) in turn! */
 		remove(tmpFileName);
 		return;

@@ -25,7 +25,6 @@ add_executable(nedit
 	highlight.cpp
 	highlightData.cpp
 	interpret.cpp
-	linkdate.cpp
 	macro.cpp
 	menu.cpp
 	nedit.cpp

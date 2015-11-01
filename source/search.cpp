@@ -4021,7 +4021,7 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 			    user does not care and wants to have a faulty replacement.  */
 
 			/* replace the selected range in the real buffer */
-			window->buffer->BufReplace(selStart, selEnd, tempBuf->BufAsString());
+			window->buffer->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 
 			/* set the insert point at the end of the last replacement */
 			TextSetCursorPos(window->lastFocus, selStart + cursorPos + realOffset);
@@ -4055,7 +4055,6 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 ** Also adds the search and replace strings to the global search history.
 */
 int ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType) {
-	const char *fileString;
 	char *newFileString;
 	int copyStart, copyEnd, replacementLen;
 
@@ -4067,7 +4066,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
 
 	/* view the entire text buffer from the text area widget as a string */
-	fileString = window->buffer->BufAsString();
+	const char *fileString = window->buffer->BufAsString();
 
 	newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimiters(window));
 
@@ -4206,15 +4205,17 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos
 ** Search the text in "window", attempting to match "searchString"
 */
 int SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
-	const char *fileString;
-	int found, resp, fileEnd = window->buffer->BufGetLength() - 1, outsideBounds;
+	int found;
+	int resp;
+	int fileEnd = window->buffer->BufGetLength() - 1;
+	int outsideBounds;
 
 	/* reject empty string */
 	if (*searchString == '\0')
 		return FALSE;
 
 	/* get the entire text buffer from the text area widget */
-	fileString = window->buffer->BufAsString();
+	const char *fileString = window->buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider

@@ -28,6 +28,7 @@
 #define MACRO_H_
 
 #include "nedit.h"
+#include "string_view.h"
 
 #include <X11/Intrinsic.h>
 
@@ -41,7 +42,7 @@ void FinishLearn(void);
 void CancelMacroOrLearn(WindowInfo *window);
 void Replay(WindowInfo *window);
 void SafeGC(void);
-void DoMacro(WindowInfo *window, const std::string &macro, const char *errInName);
+void DoMacro(WindowInfo *window, view::string_view macro, const char *errInName);
 void ResumeMacroExecution(WindowInfo *window);
 void AbortMacroCommand(WindowInfo *window);
 int MacroWindowCloseActions(WindowInfo *window);

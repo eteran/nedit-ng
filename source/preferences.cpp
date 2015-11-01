@@ -4050,7 +4050,7 @@ char *EscapeSensitiveChars(const char *string) {
 **
 ** Returns an allocated string which must be freed by the caller with XtFree.
 */
-std::string EscapeSensitiveCharsEx(const std::string &string) {
+std::string EscapeSensitiveCharsEx(view::string_view string) {
 
 	int length = 0;
 

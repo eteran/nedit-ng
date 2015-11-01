@@ -40,7 +40,6 @@
 #include "help_data.h"
 #include "file.h"
 #include "highlight.h"
-#include "linkdate.h"
 #include "MotifHelper.h"
 #include "../util/motif.h"
 #include "../util/misc.h"
@@ -229,7 +228,7 @@ static const char *getBuildInfo(void) {
 		bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
 		locale = setlocale(LC_MESSAGES, "");
 
-		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, linkdate, linktime, stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
+		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__, stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
 		        _XmVersionString, (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)), (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)), visualStr, locale ? locale : "None");
 
 		if (stab == MotifKnownBad)

@@ -27,7 +27,7 @@
 #ifndef SHIFT_H_
 #define SHIFT_H_
 
-#include <string>
+#include "string_view.h"
 
 class WindowInfo;
 
@@ -41,6 +41,6 @@ void UpcaseSelection(WindowInfo *window);
 void DowncaseSelection(WindowInfo *window);
 void FillSelection(WindowInfo *window);
 char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
-std::string ShiftTextEx(const std::string &text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
+std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 
 #endif

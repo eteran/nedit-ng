@@ -1,4 +1,3 @@
-static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp $";
 /*******************************************************************************
 *                                                                              *
 * utils.c -- miscellaneous non-GUI routines                                    *
@@ -33,17 +32,14 @@ static const char CVSID[] = "$Id: utils.c,v 1.27 2008/01/04 22:11:05 yooden Exp 
 #include <sys/stat.h>
 #include <pwd.h>
 
-/* just to get 'Boolean' types defined: */
-#include <X11/Intrinsic.h>
-
 #define DEFAULT_NEDIT_HOME ".nedit"
 
 static const char *hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
 static const char *plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
 
 static void buildFilePath(char *fullPath, const char *dir, const char *file);
-static Boolean isDir(const char *file);
-static Boolean isRegFile(const char *file);
+static bool isDir(const char *file);
+static bool isRegFile(const char *file);
 
 /* return non-NULL value for the current working directory.
    If system call fails, provide a fallback value */
@@ -131,7 +127,7 @@ const char *GetUserName(void) {
 */
 const char *GetNameOfHost(void) {
 	static char hostname[MAXNODENAMELEN + 1];
-	static int hostnameFound = False;
+	static bool hostnameFound = false;
 
 	if (!hostnameFound) {
 		struct utsname nameStruct;
@@ -142,7 +138,7 @@ const char *GetNameOfHost(void) {
 			exit(EXIT_FAILURE);
 		}
 		strcpy(hostname, nameStruct.nodename);
-		hostnameFound = True;
+		hostnameFound = true;
 	}
 	return hostname;
 }
@@ -152,19 +148,15 @@ const char *GetNameOfHost(void) {
 ** Return "" if it doesn't fit into the buffer
 */
 char *PrependHome(const char *filename, char *buf, size_t buflen) {
-	const char *homedir;
-	size_t home_len, file_len;
 
-	homedir = GetHomeDir();
-	home_len = strlen(homedir);
-	file_len = strlen(filename);
-	if ((home_len + 1 + file_len) >= buflen) {
+	const char *const homedir = GetHomeDir();
+	
+	int n = snprintf(buf, buflen, "%s/%s", homedir, filename);
+	if(n >= buflen) {
 		buf[0] = '\0';
-	} else {
-		strcpy(buf, homedir);
-		strcat(buf, "/");
-		strcat(buf, filename);
 	}
+	
+
 	return buf;
 }
 
@@ -182,7 +174,7 @@ char *PrependHome(const char *filename, char *buf, size_t buflen) {
 */
 const char *GetRCFileName(int type) {
 	static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
-	static int namesDetermined = False;
+	static bool namesDetermined = false;
 
 	if (!namesDetermined) {
 		char *nedit_home;
@@ -237,7 +229,7 @@ const char *GetRCFileName(int type) {
 			}
 		}
 
-		namesDetermined = True;
+		namesDetermined = true;
 	}
 
 	return rcFiles[type];
@@ -256,16 +248,14 @@ const char *GetRCFileName(int type) {
 **      - Exits when the result would be greater than MAXPATHLEN
 */
 static void buildFilePath(char *fullPath, const char *dir, const char *file) {
-	if ((MAXPATHLEN) < strlen(dir) + strlen(file) + 2) {
+	if (MAXPATHLEN < strlen(dir) + strlen(file) + 2) {
 		/*  We have no way to build the path. */
 		fprintf(stderr, "nedit: rc file path too long for %s.\n", file);
 		exit(EXIT_FAILURE);
 	}
 
 	/*  The length is already checked */
-	strcpy(fullPath, dir);
-	strcat(fullPath, "/");
-	strcat(fullPath, file);
+	snprintf(fullPath, MAXPATHLEN, "%s/%s", dir, file);
 }
 
 /*
@@ -278,7 +268,7 @@ static void buildFilePath(char *fullPath, const char *dir, const char *file) {
 **  Returns:
 **      - True for directories, false otherwise
 */
-static Boolean isDir(const char *file) {
+static bool isDir(const char *file) {
 	struct stat attribute;
 
 	return ((stat(file, &attribute) == 0) && S_ISDIR(attribute.st_mode));
@@ -294,7 +284,7 @@ static Boolean isDir(const char *file) {
 **  Returns:
 **      - True for regular files, false otherwise
 */
-static Boolean isRegFile(const char *file) {
+static bool isRegFile(const char *file) {
 	struct stat attribute;
 
 	return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));

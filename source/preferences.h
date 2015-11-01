@@ -28,6 +28,7 @@
 #define NEDIT_PREFERENCES_H_INCLUDED
 
 #include "nedit.h"
+#include "string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xresource.h>
@@ -181,7 +182,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
-std::string EscapeSensitiveCharsEx(const std::string &string);
+std::string EscapeSensitiveCharsEx(view::string_view string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);

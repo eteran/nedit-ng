@@ -114,8 +114,8 @@ static void getFlprHostDefault(char *defhost);
 static void getFlprQueueDefault(char *defqueue);
 
 /* Module Global Variables */
-static Boolean DoneWithDialog;
-static Boolean PreferencesLoaded = False;
+static bool DoneWithDialog;
+static bool PreferencesLoaded = false;
 static Widget Form;
 static Widget Label2;
 static Widget Label3;

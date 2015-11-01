@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_GETFILES_H_INCLUDED
-#define NEDIT_GETFILES_H_INCLUDED
+#ifndef GETFILES_H_
+#define GETFILES_H_
 
 #include <X11/Intrinsic.h>
 
@@ -42,4 +42,4 @@ void SetFileDialogDefaultDirectory(const char *dir);
 void SetFileDialogDefaultPattern(const char *pattern);
 void SetGetEFTextFieldRemoval(int state);
 
-#endif /* NEDIT_GETFILES_H_INCLUDED */
+#endif

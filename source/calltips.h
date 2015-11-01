@@ -29,6 +29,7 @@
 
 #include "nedit.h"    /* For WindowInfo */
 #include "textDisp.h" /* for textDisp */
+#include "string_view.h"
 #include <string>
 
 #define NEDIT_DEFAULT_CALLTIP_FG "black"
@@ -39,7 +40,7 @@ enum TipVAlignMode { TIP_ABOVE, TIP_BELOW };
 enum TipAlignStrict { TIP_SLOPPY, TIP_STRICT };
 
 int GetCalltipID(WindowInfo *window, int calltipID);
-int ShowCalltip(WindowInfo *window, const std::string &text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode);
+int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode);
 void KillCalltip(WindowInfo *window, int calltipID);
 void TextDKillCalltip(textDisp *textD, int calltipID);
 void TextDRedrawCalltip(textDisp *textD, int calltipID);

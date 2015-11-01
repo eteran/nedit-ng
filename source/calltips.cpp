@@ -40,7 +40,7 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-static std::string expandAllTabsEx(const std::string &text, int tab_width);
+static std::string expandAllTabsEx(view::string_view text, int tab_width);
 
 /*
 ** Pop-down a calltip if one exists, else do nothing
@@ -176,7 +176,7 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
 ** is to prevent tabs from turning into squares in calltips, not to get the
 ** formatting just right.
 */
-static std::string expandAllTabsEx(const std::string &text, int tab_width) {
+static std::string expandAllTabsEx(view::string_view text, int tab_width) {
 	int nTabs = 0;
 
 	// First count 'em
@@ -187,7 +187,7 @@ static std::string expandAllTabsEx(const std::string &text, int tab_width) {
 	}
 	
 	if (nTabs == 0) {
-		return text;
+		return text.to_string();
 	}
 
 	// Allocate the new string
@@ -218,7 +218,7 @@ static std::string expandAllTabsEx(const std::string &text, int tab_width) {
 ** If a calltip is already being displayed it is destroyed and replaced with
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
-int ShowCalltip(WindowInfo *window, const std::string &text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	int rel_x, rel_y;

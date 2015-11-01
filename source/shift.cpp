@@ -44,13 +44,13 @@ static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChar
 static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);
 static int atTabStop(int pos, int tabDist);
 static int countLines(const char *text);
-static int countLinesEx(const std::string &text);
+static int countLinesEx(view::string_view text);
 static int findLeftMargin(char *text, int length, int tabDist);
 static int findParagraphEnd(TextBuffer *buf, int startPos);
 static int findParagraphStart(TextBuffer *buf, int startPos);
 static int nextTab(int pos, int tabDist);
-static std::string fillParagraphEx(const std::string &text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
-static std::string fillParagraphsEx(const std::string &text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
+static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
+static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
 static void changeCase(WindowInfo *window, int makeUpper);
 static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
 
@@ -149,7 +149,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 	tempBuf->BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
 
 	/* Make the change in the real buffer */
-	buf->BufReplace(selStart, selEnd, tempBuf->BufAsString());
+	buf->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 	buf->BufRectSelect(selStart, selStart + tempBuf->BufGetLength(), rectStart + offset, rectEnd + offset);
 	delete tempBuf;
 }
@@ -327,7 +327,7 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 ** shift lines left and right in a multi-line text string.  Returns the
 ** shifted text in memory that must be freed by the caller with XtFree.
 */
-std::string ShiftTextEx(const std::string &text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
+std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
 	int bufLen;
 
 	/*
@@ -504,7 +504,7 @@ static int countLines(const char *text) {
 	return count;
 }
 
-static int countLinesEx(const std::string &text) {
+static int countLinesEx(view::string_view text) {
 	int count = 1;
 
 	for(char ch: text) {
@@ -556,7 +556,7 @@ static int findLeftMargin(char *text, int length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-static std::string fillParagraphsEx(const std::string &text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
+static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
 	int paraStart, paraEnd, fillEnd;
 	char *c;
 	char ch;
@@ -636,7 +636,7 @@ static std::string fillParagraphsEx(const std::string &text, int rightMargin, in
 ** True) calculated using tabDist, and spaces.  Returns a newly allocated
 ** string as the function result, and the length of the new string in filledLen.
 */
-static std::string fillParagraphEx(const std::string &text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen) {
+static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen) {
 	char *outText, *indentString, *leadIndentStr, *b;
 	int col, cleanedLen, indentLen, leadIndentLen, nLines = 1;
 	int inWhitespace;

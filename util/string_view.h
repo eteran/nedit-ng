@@ -139,7 +139,12 @@ public:
 			throw std::out_of_range("out_of_range");
 		}
 		
+		if(count >= size_) {
+			count = size_ - pos;
+		}		
+		
 		Tr::copy(dest, data_ + pos, count);
+		return count;
 	}
 	
 	//--------------------------------------------------------------------------

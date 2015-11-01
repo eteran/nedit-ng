@@ -55,9 +55,9 @@ enum dialogBtnIndecies { OK_BTN, APPLY_BTN, CANCEL_BTN, HELP_BTN };
 
 struct dfcallbackstruct {
 	unsigned button;          /* button pressed by user		     */
-	Boolean done_with_dialog; /* set by callbacks; dialog can be destroyed */
+	bool done_with_dialog; /* set by callbacks; dialog can be destroyed */
 	unsigned apply_up;        /* will = 1 when apply button managed	     */
-	Boolean destroyed;        /* set when dialog is destroyed unexpectedly */
+	bool destroyed;        /* set when dialog is destroyed unexpectedly */
 };
 
 static char **PromptHistory = NULL;

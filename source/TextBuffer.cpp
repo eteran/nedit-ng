@@ -1546,7 +1546,7 @@ void TextBuffer::BufReplaceRect(int start, int end, int rectStart, int rectEnd, 
 void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
 	char *deletedText;
 	char *insText = nullptr;
-	int i, nInsertedLines, nDeletedLines, insLen, hint;
+	int i, nInsertedLines, nDeletedLines, hint;
 	int insertDeleted, insertInserted, deleteInserted;
 	int linesPadded = 0;
 
@@ -1568,9 +1568,9 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	if (nInsertedLines < nDeletedLines) {
 		char *insPtr;
 
-		insLen = text.size();
+		int insLen = text.size();
 		insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
-		strcpy(insText, text.to_string().c_str());
+		text.copy(insText, insLen, 0);
 		insPtr = insText + insLen;
 		for (i = 0; i < nDeletedLines - nInsertedLines; i++)
 			*insPtr++ = '\n';
@@ -1706,7 +1706,6 @@ int TextBuffer::BufGetTabDistance() const {
 ** and used in computing offsets for rectangular selection operations.
 */
 void TextBuffer::BufSetTabDistance(int tabDist) {
-	const char *deletedText;
 
 	/* First call the pre-delete callbacks with the previous tab setting
 	   still active. */
@@ -1716,7 +1715,7 @@ void TextBuffer::BufSetTabDistance(int tabDist) {
 	tabDist_ = tabDist;
 
 	/* Force any display routines to redisplay everything */
-	deletedText = BufAsString();
+	auto deletedText = BufAsStringEx();
 	callModifyCBs(0, length_, length_, 0, deletedText);
 }
 
@@ -2280,7 +2279,7 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		char *bufString, newSubsChar;
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
-		bufString = (char *)BufAsString();
+		bufString = const_cast<char *>(BufAsString());
 		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
@@ -2322,7 +2321,7 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 		char newSubsChar;
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
-		bufString = (char *)BufAsString();
+		bufString = const_cast<char *>(BufAsString());
 		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
