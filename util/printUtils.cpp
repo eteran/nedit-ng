@@ -138,13 +138,13 @@ static char CmdText[MAX_CMD_STR] = "";   /* print command last entered by user *
 static int CmdFieldModified = False;     /* user last changed the print command
                         field, so don't trust the rest */
 static struct printPrefDescrip PrintPrefDescrip = {
-    {"printCommand", "PrintCommand", PREF_STRING, NULL, PrintCommand, (void *)MAX_PCMD_STR, False},
-    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, NULL, CopiesOption, (void *)MAX_OPT_STR, False},
-    {"printQueueOption", "PrintQueueOption", PREF_STRING, NULL, QueueOption, (void *)MAX_OPT_STR, False},
-    {"printNameOption", "PrintNameOption", PREF_STRING, NULL, NameOption, (void *)MAX_OPT_STR, False},
-    {"printHostOption", "PrintHostOption", PREF_STRING, NULL, HostOption, (void *)MAX_OPT_STR, False},
-    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, NULL, DefaultQueue, (void *)MAX_QUEUE_STR, False},
-    {"printDefaultHost", "PrintDefaultHost", PREF_STRING, NULL, DefaultHost, (void *)MAX_HOST_STR, False},
+    {"printCommand", "PrintCommand", PREF_STRING, nullptr, PrintCommand, (void *)MAX_PCMD_STR, False},
+    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, nullptr, CopiesOption, (void *)MAX_OPT_STR, False},
+    {"printQueueOption", "PrintQueueOption", PREF_STRING, nullptr, QueueOption, (void *)MAX_OPT_STR, False},
+    {"printNameOption", "PrintNameOption", PREF_STRING, nullptr, NameOption, (void *)MAX_OPT_STR, False},
+    {"printHostOption", "PrintHostOption", PREF_STRING, nullptr, HostOption, (void *)MAX_OPT_STR, False},
+    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, nullptr, DefaultQueue, (void *)MAX_QUEUE_STR, False},
+    {"printDefaultHost", "PrintDefaultHost", PREF_STRING, nullptr, DefaultHost, (void *)MAX_HOST_STR, False},
 };
 
 /*
@@ -163,7 +163,7 @@ void PrintFile(Widget parent, const std::string &printFile, const std::string &j
 	/* In case the program hasn't called LoadPrintPreferences, set up the
 	   default values for the print preferences */
 	if (!PreferencesLoaded)
-		LoadPrintPreferences(NULL, "", "", True);
+		LoadPrintPreferences(nullptr, "", "", True);
 
 	/* Make the PrintFile information available to the callback routines */
 	PrintFileName = printFile;
@@ -241,14 +241,14 @@ void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *a
 	   prefFile.c (this allows LoadPrintPreferences to work before any
 	   widgets are created, which is more convenient than XtGetApplication-
 	   Resources for applications which have no main window) */
-	RestorePreferences(NULL, prefDB, appName, appClass, (PrefDescripRec *)&PrintPrefDescrip, N_PRINT_PREFS);
+	RestorePreferences(nullptr, prefDB, appName, appClass, (PrefDescripRec *)&PrintPrefDescrip, N_PRINT_PREFS);
 
 	PreferencesLoaded = True;
 }
 
 static Widget createForm(Widget parent) {
 	Widget form, printOk, printCancel, label1, separator;
-	Widget topWidget = NULL;
+	Widget topWidget = nullptr;
 	XmString st0;
 	Arg args[65];
 	int argcnt;
@@ -264,7 +264,7 @@ static Widget createForm(Widget parent) {
 	XtSetArg(args[argcnt], XmNautoUnmanage, False);
 	argcnt++;
 	form = CreateFormDialog(parent, "printForm", args, argcnt);
-	XtVaSetValues(form, XmNshadowThickness, 0, NULL);
+	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 
 	XmStringFree(st0);
 
@@ -310,11 +310,11 @@ static Widget createForm(Widget parent) {
 		Text1 = XmCreateText(form, (char *)"text1", args, argcnt);
 		bwidgetarray[bwidgetcnt] = Text1;
 		bwidgetcnt++;
-		XtAddCallback(Text1, XmNmodifyVerifyCallback, (XtCallbackProc)allowOnlyNumInput, NULL);
-		XtAddCallback(Text1, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		XtAddCallback(Text1, XmNmodifyVerifyCallback, (XtCallbackProc)allowOnlyNumInput, nullptr);
+		XtAddCallback(Text1, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
 		RemapDeleteKey(Text1);
 		topWidget = Text1;
-		XtVaSetValues(label1, XmNuserData, Text1, NULL); /* mnemonic procesing */
+		XtVaSetValues(label1, XmNuserData, Text1, nullptr); /* mnemonic procesing */
 	}
 
 	/************************ LABEL 2 and TEXT 2 ************************/
@@ -326,7 +326,7 @@ static Widget createForm(Widget parent) {
 		argcnt++;
 		XtSetArg(args[argcnt], XmNrecomputeSize, True);
 		argcnt++;
-		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == nullptr ? XmATTACH_FORM : XmATTACH_WIDGET);
 		argcnt++;
 		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
 		argcnt++;
@@ -357,7 +357,7 @@ static Widget createForm(Widget parent) {
 		argcnt++;
 		XtSetArg(args[argcnt], XmNleftWidget, Label2);
 		argcnt++;
-		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == nullptr ? XmATTACH_FORM : XmATTACH_WIDGET);
 		argcnt++;
 		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
 		argcnt++;
@@ -366,12 +366,12 @@ static Widget createForm(Widget parent) {
 		XtSetArg(args[argcnt], XmNtopOffset, 4);
 		argcnt++;
 		Text2 = XmCreateText(form, (char *)"text2", args, argcnt);
-		XtAddCallback(Text2, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, NULL);
-		XtAddCallback(Text2, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		XtAddCallback(Text2, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, nullptr);
+		XtAddCallback(Text2, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
 		bwidgetarray[bwidgetcnt] = Text2;
 		bwidgetcnt++;
 		RemapDeleteKey(Text2);
-		XtVaSetValues(Label2, XmNuserData, Text2, NULL); /* mnemonic procesing */
+		XtVaSetValues(Label2, XmNuserData, Text2, nullptr); /* mnemonic procesing */
 		topWidget = Text2;
 	}
 
@@ -386,7 +386,7 @@ static Widget createForm(Widget parent) {
 		argcnt++;
 		XtSetArg(args[argcnt], XmNvalue, "");
 		argcnt++;
-		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == nullptr ? XmATTACH_FORM : XmATTACH_WIDGET);
 		argcnt++;
 		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
 		argcnt++;
@@ -417,7 +417,7 @@ static Widget createForm(Widget parent) {
 		argcnt++;
 		XtSetArg(args[argcnt], XmNleftWidget, Label3);
 		argcnt++;
-		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == NULL ? XmATTACH_FORM : XmATTACH_WIDGET);
+		XtSetArg(args[argcnt], XmNtopAttachment, topWidget == nullptr ? XmATTACH_FORM : XmATTACH_WIDGET);
 		argcnt++;
 		XtSetArg(args[argcnt], XmNtopWidget, topWidget);
 		argcnt++;
@@ -426,12 +426,12 @@ static Widget createForm(Widget parent) {
 		XtSetArg(args[argcnt], XmNtopOffset, 4);
 		argcnt++;
 		Text3 = XmCreateText(form, (char *)"Text3", args, argcnt);
-		XtAddCallback(Text3, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, NULL);
-		XtAddCallback(Text3, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, NULL);
+		XtAddCallback(Text3, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, nullptr);
+		XtAddCallback(Text3, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
 		bwidgetarray[bwidgetcnt] = Text3;
 		bwidgetcnt++;
 		RemapDeleteKey(Text3);
-		XtVaSetValues(Label3, XmNuserData, Text3, NULL); /* mnemonic procesing */
+		XtVaSetValues(Label3, XmNuserData, Text3, nullptr); /* mnemonic procesing */
 		topWidget = Text3;
 	}
 
@@ -456,13 +456,13 @@ static Widget createForm(Widget parent) {
 	XtSetArg(args[argcnt], XmNrightOffset, 8);
 	argcnt++;
 	Text4 = XmCreateText(form, (char *)"Text4", args, argcnt);
-	XtAddCallback(Text4, XmNmodifyVerifyCallback, (XtCallbackProc)printCmdModified, NULL);
+	XtAddCallback(Text4, XmNmodifyVerifyCallback, (XtCallbackProc)printCmdModified, nullptr);
 	bwidgetarray[bwidgetcnt] = Text4;
 	bwidgetcnt++;
 	RemapDeleteKey(Text4);
 	topWidget = Text4;
 	if (!CmdFieldModified)
-		updatePrintCmd(NULL, NULL, NULL);
+		updatePrintCmd(nullptr, nullptr, nullptr);
 
 	/*********************** SEPARATOR **************************/
 	argcnt = 0;
@@ -499,7 +499,7 @@ static Widget createForm(Widget parent) {
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = printCancel;
 	bwidgetcnt++;
-	XtAddCallback(printCancel, XmNactivateCallback, (XtCallbackProc)cancelButtonCB, NULL);
+	XtAddCallback(printCancel, XmNactivateCallback, (XtCallbackProc)cancelButtonCB, nullptr);
 
 	/*********************** PRINT BUTTON **************************/
 	argcnt = 0;
@@ -521,7 +521,7 @@ static Widget createForm(Widget parent) {
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = printOk;
 	bwidgetcnt++;
-	XtAddCallback(printOk, XmNactivateCallback, (XtCallbackProc)printButtonCB, NULL);
+	XtAddCallback(printOk, XmNactivateCallback, (XtCallbackProc)printButtonCB, nullptr);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNcancelButton, printCancel);
@@ -693,7 +693,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
 	/* Issue the print command using a popen call and recover error messages
 	   from the output stream of the command. */
 	pipe = popen(command, "r");
-	if (pipe == NULL) {
+	if (pipe == nullptr) {
 		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", strerror(errno));
 		return;
 	}
@@ -759,8 +759,8 @@ static int fileInDir(const char *filename, const char *dirpath, unsigned short m
 	char fullname[MAXPATHLEN];
 
 	dfile = opendir(dirpath);
-	if (dfile != NULL) {
-		while ((DirEntryPtr = readdir(dfile)) != NULL) {
+	if (dfile != nullptr) {
+		while ((DirEntryPtr = readdir(dfile)) != nullptr) {
 			if (!strcmp(DirEntryPtr->d_name, filename)) {
 				strcpy(fullname, dirpath);
 				strcat(fullname, "/");
@@ -785,7 +785,7 @@ static int fileInPath(const char *filename, unsigned short mode_flags) {
 
 	/* Get environmental value of PATH */
 	pathstring = getenv("PATH");
-	if (pathstring == NULL)
+	if (pathstring == nullptr)
 		return False;
 
 	/* parse the pathstring and search on each directory found */
@@ -795,7 +795,7 @@ static int fileInPath(const char *filename, unsigned short mode_flags) {
 			return False;
 		/* locate address of next : character */
 		lastchar = strchr(pathstring, SEPARATOR);
-		if (lastchar != NULL) {
+		if (lastchar != nullptr) {
 			/* if more directories remain in pathstring, copy up to : */
 			strncpy(path, pathstring, lastchar - pathstring);
 			path[lastchar - pathstring] = '\0';
@@ -808,7 +808,7 @@ static int fileInPath(const char *filename, unsigned short mode_flags) {
 			return True; /* found it !! */
 		/* point pathstring to start of new dir string */
 		pathstring = lastchar + 1;
-	} while (lastchar != NULL);
+	} while (lastchar != nullptr);
 	return False;
 }
 
@@ -828,7 +828,7 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 	strcat(tagformat, " %s");
 
 	tfile = fopen(tagfilename, "r");
-	if (tfile != NULL) {
+	if (tfile != nullptr) {
 		while (!feof(tfile)) {
 			fgets(line, sizeof(line), tfile);
 			if (sscanf(line, tagformat, result) != 0) {
@@ -845,7 +845,7 @@ static int foundEnv(const char *EnvVarName, char *result) {
 	char *dqstr;
 
 	dqstr = getenv(EnvVarName);
-	if (dqstr != NULL) {
+	if (dqstr != nullptr) {
 		strcpy(result, dqstr);
 		return True;
 	}

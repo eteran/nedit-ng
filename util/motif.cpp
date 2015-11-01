@@ -70,7 +70,7 @@ static const char *const knownGoodLesstif[] = {"0.92.32", "0.93.0", "0.93.12", "
 #ifndef __x86_64
                                                "0.93.94", /* 64-bit build .93.94 is broken */
 #endif
-                                               NULL};
+                                               nullptr};
 
 /*
  * These are versions of LessTif that are known NOT to be stable with NEdit in
@@ -85,20 +85,20 @@ const char *const knownBadLessTif[] = {"0.93.25", "0.93.29", "0.93.34"
                                        "0.93.95b", /* SF bug 1087192 */
                                        "0.94.4",   /* Alt-H, ESC => crash */
                                        "0.95.0",   /* same as above */
-                                       NULL};
+                                       nullptr};
 
 #ifdef LESSTIF_VERSION
 
-static enum MotifStability GetLessTifStability(void) {
+static MotifStability GetLessTifStability(void) {
 	int i;
-	const char *rev = NULL;
+	const char *rev = nullptr;
 
 	/* We assume that the lesstif version is the string after the last
 	    space. */
 
 	rev = strrchr(LesstifVERSION_STRING, ' ');
 
-	if (rev == NULL)
+	if (rev == nullptr)
 		return MotifUnknown;
 
 	rev += 1;
@@ -122,8 +122,8 @@ static enum MotifStability GetLessTifStability(void) {
    usual XmVersion for easy comparison. */
 static const int XmFullVersion = (XmVersion * 100 + XmUPDATE_LEVEL);
 
-static enum MotifStability GetOpenMotifStability(void) {
-	enum MotifStability result = MotifUnknown;
+static MotifStability GetOpenMotifStability(void) {
+	MotifStability result = MotifUnknown;
 
 	const bool really222 = (strcmp("@(#)Motif Version 2.2.2", XmVERSION_STRING) == 0);
 
@@ -158,7 +158,7 @@ const char *GetMotifStableVersions(void) {
 	int i;
 	static char msg[sizeof knownGoodLesstif * 80];
 
-	for (i = 0; knownGoodLesstif[i] != NULL; i++) {
+	for (i = 0; knownGoodLesstif[i] != nullptr; i++) {
 		strcat(msg, knownGoodLesstif[i]);
 		strcat(msg, "\n");
 	}

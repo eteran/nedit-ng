@@ -59,7 +59,7 @@ struct dfcallbackstruct {
 	bool destroyed;        /* set when dialog is destroyed unexpectedly */
 };
 
-static char **PromptHistory = NULL;
+static char **PromptHistory = nullptr;
 static int NPromptHistoryItems = -1;
 
 static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
@@ -136,7 +136,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 	XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
 	XmString msgstr_xms, input_string_xms, titstr_xms;
 	char msgstr_vsp[DF_MAX_MSG_LENGTH + 1];
-	char *but_lbl, *input_string = NULL, *input_string_ptr;
+	char *but_lbl, *input_string = nullptr, *input_string_ptr;
 	int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
 	Arg args[256];
 	char titleCopy[MAX_TITLE_LEN];
@@ -229,11 +229,11 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		   since user enters text first.  To fix this, we need to turn
 		   off the default button for the dialog, until after keyboard
 		   focus has been established */
-		XtVaSetValues(dialog, XmNdefaultButton, NULL, NULL);
+		XtVaSetValues(dialog, XmNdefaultButton, nullptr, nullptr);
 		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, (XtCallbackProc)focusCB, (char *)dialog);
 
 		/* Limit the length of the text that can be entered in text field */
-		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNmaxLength, DF_MAX_PROMPT_LENGTH - 1, NULL);
+		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNmaxLength, DF_MAX_PROMPT_LENGTH - 1, nullptr);
 
 		/* Turn on the requested number of buttons in the dialog by
 		   managing/unmanaging the button widgets */
@@ -258,7 +258,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			Widget button = XmSelectionBoxGetChild(dialog, selectionButton_id[i]);
 
 			if (XtIsManaged(button)) {
-				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 			}
 		}
 
@@ -267,7 +267,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		   events (this is necessary because the XmNcancelButton resource in
 		   the bulletin board widget class is blocked from being reset) */
 		if (cancel_index == -1)
-			addEscapeHandler(dialog, NULL, 0);
+			addEscapeHandler(dialog, nullptr, 0);
 		else if (cancel_index != CANCEL_BTN)
 			addEscapeHandler(dialog, &df, cancel_index);
 
@@ -308,7 +308,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			XtRemoveCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
 			XtDestroyWidget(dialog);
 		}
-		PromptHistory = NULL;
+		PromptHistory = nullptr;
 		NPromptHistoryItems = -1;
 	} /* End prompt dialog path */
 
@@ -349,7 +349,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			Widget button = XmMessageBoxGetChild(dialog, messageButton_id[i]);
 
 			if (XtIsManaged(button)) {
-				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, NULL);
+				XtVaSetValues(button, XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 			}
 		}
 
@@ -362,7 +362,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		   events (this is necessary because the XmNcancelButton resource in
 		   the bulletin board widget class is blocked from being reset) */
 		if (cancel_index == -1)
-			addEscapeHandler(dialog, NULL, 0);
+			addEscapeHandler(dialog, nullptr, 0);
 		else if (cancel_index != CANCEL_BTN)
 			addEscapeHandler(dialog, &df, cancel_index);
 
@@ -441,7 +441,7 @@ static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, cad
 ** sure the text area in the prompt dialog has input focus.
 */
 static void focusCB(Widget w, Widget dialog, caddr_t call_data) {
-	XtVaSetValues(dialog, XmNdefaultButton, XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), NULL);
+	XtVaSetValues(dialog, XmNdefaultButton, XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), nullptr);
 }
 
 /*
@@ -451,7 +451,7 @@ static void focusCB(Widget w, Widget dialog, caddr_t call_data) {
 ** way to make the accelerator for Cancel and Dismiss (the escape key) work
 ** correctly in this situation is to brutally catch and redirect the event.
 ** This routine redirects escape key events in the dialog to the callback for
-** the button "whichBtn", passing it argument "df".  If "df" is NULL, simply
+** the button "whichBtn", passing it argument "df".  If "df" is nullptr, simply
 ** block the event from reaching the dialog.
 */
 static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whichBtn) {
@@ -466,8 +466,8 @@ static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whi
 static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
 	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
 		return;
-	if (callData != NULL)
-		help_callback(w, (struct dfcallbackstruct *)callData, NULL);
+	if (callData != nullptr)
+		help_callback(w, (struct dfcallbackstruct *)callData, nullptr);
 	*cont = False;
 }
 
@@ -478,8 +478,8 @@ static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *c
 static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
 	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
 		return;
-	if (callData != NULL)
-		apply_callback(w, (struct dfcallbackstruct *)callData, NULL);
+	if (callData != nullptr)
+		apply_callback(w, (struct dfcallbackstruct *)callData, nullptr);
 	*cont = False;
 }
 
@@ -490,7 +490,7 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 	WidgetList children;
 	Cardinal numChildren, i;
 
-	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
+	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 
 	for (i = 0; i < numChildren; i++) {
 		Widget child = children[i];
@@ -502,7 +502,7 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 			char *label;
 			int c;
 
-			XtVaGetValues(child, XmNlabelString, &xmslabel, NULL);
+			XtVaGetValues(child, XmNlabelString, &xmslabel, nullptr);
 			if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label)) {
 				/* Scan through the string to see if the label is already used */
 				int labelLen = strlen(label);
@@ -511,7 +511,7 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 
 					if (!mnemonicUsed[lc] && isalnum(lc)) {
 						mnemonicUsed[lc] = TRUE;
-						XtVaSetValues(child, XmNmnemonic, label[c], NULL);
+						XtVaSetValues(child, XmNmnemonic, label[c], nullptr);
 						break;
 					}
 				}

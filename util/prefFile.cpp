@@ -41,7 +41,7 @@
 static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t", "Yes", "yes", "YES", "y", "Y", "on", "On", "ON"};
 static const char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f", "No", "no", "NO", "n", "N", "off", "Off", "OFF"};
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
 static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
 static char *removeWhiteSpace(const char *string);
 
@@ -74,7 +74,7 @@ static char *removeWhiteSpace(const char *string);
 ** a character string, and the address where the parameter value is
 ** be stored.  Strings and enumerations take an additional argument.
 ** For strings, it is the maximum length string that can safely be
-** stored or NULL to indicate that new space should be allocated and a
+** stored or nullptr to indicate that new space should be allocated and a
 ** pointer to it stored in the value address.  For enums, it is an array
 ** of string pointers to the names of each of its possible values. The
 ** last value in a preference record is a flag for determining whether
@@ -109,29 +109,27 @@ static char *removeWhiteSpace(const char *string);
 XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut) {
 	XrmDatabase db;
 	int argcCopy;
-	char **argvCopy;
 	char *fileString;
-	static XrmOptionDescRec xrmOnlyTable[] = {{(char *)"-xrm", NULL, XrmoptionResArg, (caddr_t)NULL}};
+	static XrmOptionDescRec xrmOnlyTable[] = {{(char *)"-xrm", nullptr, XrmoptionResArg, (caddr_t)nullptr}};
 
 	/* read the preferences file into an X database.
-	   On failure prefDB will be NULL. */
-	if (NULL == fullName) {
-		db = NULL;
+	   On failure prefDB will be nullptr. */
+	if (nullptr == fullName) {
+		db = nullptr;
 	} else {
 		fileString = ReadAnyTextFile(fullName, False);
-		if (NULL == fileString) {
-			db = NULL;
+		if (nullptr == fileString) {
+			db = nullptr;
 		} else {
-			char *rsrcName;
 			db = XrmGetStringDatabase(fileString);
 			XtFree(fileString);
 
 			/*  Add a resource to the database which remembers that
 			    the file is read, so that NEdit will know it.  */
-			rsrcName = (char *)XtMalloc(strlen(appName) + 14);
+			auto rsrcName = new char[strlen(appName) + 14];
 			sprintf(rsrcName, "%s.prefFileRead", appName);
 			XrmPutStringResource(&db, rsrcName, "True");
-			XtFree(rsrcName);
+			delete [] rsrcName;
 		}
 	}
 
@@ -142,11 +140,11 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 	   pertaining to preference resources will be included in the database.
 	   Don't remove -xrm arguments from the argument vector, however, so
 	   XtDisplayInitialize can still read the non-preference resources */
-	argvCopy = (char **)XtMalloc(sizeof(char *) * *argcInOut);
+	auto argvCopy = new char *[*argcInOut];
 	memcpy(argvCopy, argvInOut, sizeof(char *) * *argcInOut);
 	argcCopy = *argcInOut;
 	XrmParseCommand(&db, xrmOnlyTable, XtNumber(xrmOnlyTable), appName, &argcCopy, argvCopy);
-	XtFree((char *)argvCopy);
+	delete [] argvCopy;
 	return db;
 }
 
@@ -156,7 +154,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 ** Fill in preferences data from two X databases, values in prefDB taking
 ** precidence over those in appDB.
 */
-void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
+void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
 	readPrefs(prefDB, appDB, appName, appClass, rsrcDescrip, nRsrc, False);
 }
 
@@ -166,26 +164,27 @@ void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const char *appNa
 ** Incorporate preference specified in database "prefDB", preserving (not
 ** restoring to default) existing preferences, not mentioned in "prefDB"
 */
-void OverlayPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
-	readPrefs(NULL, prefDB, appName, appClass, rsrcDescrip, nRsrc, True);
+void OverlayPreferences(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
+	readPrefs(nullptr, prefDB, appName, appClass, rsrcDescrip, nRsrc, True);
 }
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay) {
-	char rsrcName[256];
-	char rsrcClass[256];
-	const char *valueString;
-	char *type;
-	XrmValue rsrcValue;
-	int i;
+static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay) {
+
 
 	/* read each resource, trying first the preferences file database, then
 	   the application database, then the default value if neither are found */
-	for (i = 0; i < nRsrc; i++) {
+	for (int i = 0; i < nRsrc; i++) {
+
+		char rsrcName[256];
+		char rsrcClass[256];
+		const char *valueString;
+		char *type;
+		XrmValue rsrcValue;
+
+		snprintf(rsrcName,  sizeof(rsrcName),  "%s.%s", appName.c_str(),  rsrcDescrip[i].name.c_str());
+		snprintf(rsrcClass, sizeof(rsrcClass), "%s.%s", appClass.c_str(), rsrcDescrip[i].clazz.c_str());
 		
-		snprintf(rsrcName,  sizeof(rsrcName),  "%s.%s", appName,  rsrcDescrip[i].name.c_str());
-		snprintf(rsrcClass, sizeof(rsrcClass), "%s.%s", appClass, rsrcDescrip[i].clazz.c_str());
-		
-		if (prefDB != NULL && XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
+		if (prefDB != nullptr && XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
 			if (strcmp(type, XmRString)) {
 				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
 				return;
@@ -197,12 +196,17 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const char *appName
 				return;
 			}
 			valueString = rsrcValue.addr;
-		} else
+		} else {
 			valueString = rsrcDescrip[i].defaultString;
-		if (overlay && valueString == rsrcDescrip[i].defaultString)
+		}
+		
+		if (overlay && valueString == rsrcDescrip[i].defaultString) {
 			continue;
-		if (!stringToPref(valueString, &rsrcDescrip[i]))
+		}
+		
+		if (!stringToPref(valueString, &rsrcDescrip[i])) {
 			fprintf(stderr, "nedit: Could not read value of resource %s\n", rsrcName);
+		}
 	}
 }
 
@@ -231,7 +235,7 @@ int SavePreferences(Display *display, const char *fullName, const char *fileHead
 	int i;
 
 	/* open the file */
-	if ((fp = fopen(fullName, "w")) == NULL)
+	if ((fp = fopen(fullName, "w")) == nullptr)
 		return False;
 
 	/* write the file header text out to the file */
@@ -304,7 +308,7 @@ static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
 	case PREF_ENUM:
 		cleanStr = removeWhiteSpace(string);
 		enumStrings = (char **)rsrcDescrip->arg;
-		for (i = 0; enumStrings[i] != NULL; i++) {
+		for (i = 0; enumStrings[i] != nullptr; i++) {
 			if (!strcmp(enumStrings[i], cleanStr)) {
 				*(int *)rsrcDescrip->valueAddr = i;
 				XtFree(cleanStr);

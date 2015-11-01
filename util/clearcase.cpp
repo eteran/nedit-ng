@@ -34,8 +34,8 @@
 #include <X11/Intrinsic.h>
 
 static int ClearCaseViewTagFound = 0;
-static char *ClearCaseViewRoot = NULL;
-static const char *ClearCaseViewTag = NULL;
+static char *ClearCaseViewRoot = nullptr;
+static const char *ClearCaseViewTag = nullptr;
 
 const char *GetClearCaseVersionExtendedPath(const char *fullname) {
 	return (strstr(fullname, "@@/"));
@@ -43,7 +43,7 @@ const char *GetClearCaseVersionExtendedPath(const char *fullname) {
 
 /*
 ** Return a string showing the ClearCase view tag.  If ClearCase is not in
-** use, or a view is not set, NULL is returned.
+** use, or a view is not set, nullptr is returned.
 **
 ** If user has ClearCase and is in a view, CLEARCASE_ROOT will be set and
 ** the view tag can be extracted.  This check is safe and efficient enough
@@ -54,13 +54,13 @@ const char *GetClearCaseViewTag(void) {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
 		const char *envPtr = getenv("CLEARCASE_ROOT");
-		if (envPtr != NULL) {
+		if (envPtr != nullptr) {
 			const char *tagPtr;
 			ClearCaseViewRoot = XtMalloc(strlen(envPtr) + 1);
 			strcpy(ClearCaseViewRoot, envPtr);
 
 			tagPtr = strrchr(ClearCaseViewRoot, '/');
-			if (tagPtr != NULL) {
+			if (tagPtr != nullptr) {
 				ClearCaseViewTag = ++tagPtr;
 			}
 		}

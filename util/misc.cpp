@@ -142,7 +142,7 @@ void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg) {
 	Display *display = XtDisplay(shell);
 
 	/* deactivate the built in delete response of killing the application */
-	XtVaSetValues(shell, XmNdeleteResponse, XmDO_NOTHING, NULL);
+	XtVaSetValues(shell, XmNdeleteResponse, XmDO_NOTHING, nullptr);
 
 	/* add a delete window protocol callback instead */
 	if (dwAtom == 0) {
@@ -189,11 +189,11 @@ void SuppressPassiveGrabWarnings(void) {
 ** their forward delete functionality back.
 */
 void RemapDeleteKey(Widget w) {
-	static XtTranslations table = NULL;
+	static XtTranslations table = nullptr;
 	static const char *translations = "~Shift~Ctrl~Meta~Alt<Key>osfDelete: delete-previous-character()\n";
 
 	if (RemapDeleteEnabled) {
-		if (table == NULL)
+		if (table == nullptr)
 			table = XtParseTranslationTable(translations);
 		XtOverrideTranslations(w, table);
 	}
@@ -281,8 +281,8 @@ void RealizeWithoutForcingPosition(Widget shell) {
 
 	/* Temporarily set value of XmNmappedWhenManaged
 	   to stop the window from popping up right away */
-	XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
-	XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
+	XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, nullptr);
+	XtVaSetValues(shell, XmNmappedWhenManaged, False, nullptr);
 
 	/* Realize the widget in unmapped state */
 	XtRealizeWidget(shell);
@@ -298,7 +298,7 @@ void RealizeWithoutForcingPosition(Widget shell) {
 	XtMapWidget(shell);
 
 	/* Restore the value of XmNmappedWhenManaged */
-	XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
+	XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, nullptr);
 }
 
 /*
@@ -342,14 +342,14 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	int reqClass = -1;
 	int installColormap = FALSE;
 	int maxDepth, bestClass, bestVisual, nVis, i, j;
-	XVisualInfo visTemplate, *visList = NULL;
-	static Visual *cachedVisual = NULL;
+	XVisualInfo visTemplate, *visList = nullptr;
+	static Visual *cachedVisual = nullptr;
 	static Colormap cachedColormap;
 	static int cachedDepth = 0;
 	int bestClasses[] = {StaticGray, GrayScale, StaticColor, PseudoColor, DirectColor, TrueColor};
 
 	/* If results have already been computed, just return them */
-	if (cachedVisual != NULL) {
+	if (cachedVisual != nullptr) {
 		*visual = cachedVisual;
 		*depth = cachedDepth;
 		*colormap = cachedColormap;
@@ -399,10 +399,10 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	if (reqID != -1) {
 		visTemplate.visualid = reqID;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &visTemplate, &nVis);
-		if (visList == NULL)
+		if (visList == nullptr)
 			fprintf(stderr, "VisualID resource value not valid\n");
 	}
-	if (visList == NULL && reqClass != -1 && reqDepth != -1) {
+	if (visList == nullptr && reqClass != -1 && reqDepth != -1) {
 #if defined(__cplusplus)
 		visTemplate.c_class = reqClass;
 #else
@@ -411,28 +411,28 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 
 		visTemplate.depth = reqDepth;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualClassMask | VisualDepthMask, &visTemplate, &nVis);
-		if (visList == NULL)
+		if (visList == nullptr)
 			fprintf(stderr, "Visual class/depth combination not available\n");
 	}
-	if (visList == NULL && reqClass != -1) {
+	if (visList == nullptr && reqClass != -1) {
 #if defined(__cplusplus)
 		visTemplate.c_class = reqClass;
 #else
 		visTemplate.class = reqClass;
 #endif
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualClassMask, &visTemplate, &nVis);
-		if (visList == NULL)
+		if (visList == nullptr)
 			fprintf(stderr, "Visual Class from resource \"visualID\" not available\n");
 	}
-	if (visList == NULL && reqDepth != -1) {
+	if (visList == nullptr && reqDepth != -1) {
 		visTemplate.depth = reqDepth;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualDepthMask, &visTemplate, &nVis);
-		if (visList == NULL)
+		if (visList == nullptr)
 			fprintf(stderr, "Requested visual depth not available\n");
 	}
-	if (visList == NULL) {
+	if (visList == nullptr) {
 		visList = XGetVisualInfo(display, VisualScreenMask, &visTemplate, &nVis);
-		if (visList == NULL) {
+		if (visList == nullptr) {
 			fprintf(stderr, "Internal Error: no visuals available?\n");
 			*visual = DefaultVisual(display, screen);
 			*depth = DefaultDepth(display, screen);
@@ -498,7 +498,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	    visList[bestVisual].depth, visList[bestVisual].clazz,
 	    *colormap, cachedVisual->visualid); */
 	/* Fix memory leak */
-	if (visList != NULL) {
+	if (visList != nullptr) {
 		XFree(visList);
 	}
 
@@ -614,7 +614,7 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcou
 	while (True) {
 		if (XtIsShell(parentShell))
 			break;
-		if (parentShell == NULL) {
+		if (parentShell == nullptr) {
 			fprintf(stderr, "failed to find shell\n");
 			exit(EXIT_FAILURE);
 		}
@@ -622,7 +622,7 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcou
 	}
 
 	/* Add the visual, depth, and colormap resources to the argument list */
-	XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth, XtNcolormap, &colormap, NULL);
+	XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth, XtNcolormap, &colormap, nullptr);
 	al = (ArgList)XtMalloc(sizeof(Arg) * ((*argcount) + 3));
 	if ((*argcount) != 0)
 		memcpy(al, arglist, sizeof(Arg) * (*argcount));
@@ -676,8 +676,8 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 
 	/* Temporarily set value of XmNmappedWhenManaged
 	   to stop the dialog from popping up right away */
-	XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
-	XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
+	XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, nullptr);
+	XtVaSetValues(shell, XmNmappedWhenManaged, False, nullptr);
 
 	/* Ensure that the dialog doesn't get wider/taller than the screen.
 	   We use a hard-coded "slop" size because we don't know the border
@@ -688,7 +688,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 	maxWidth = XtScreen(shell)->width - slop;
 	maxHeight = XtScreen(shell)->height - slop;
 
-	XtVaSetValues(shell, XmNmaxWidth, maxWidth, XmNmaxHeight, maxHeight, NULL);
+	XtVaSetValues(shell, XmNmaxWidth, maxWidth, XmNmaxHeight, maxHeight, nullptr);
 
 	/* Manage the dialog */
 	XtManageChild(dialogChild);
@@ -697,11 +697,11 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 	   and XmNmaxHeight on the first geometry pass (sawfish, twm, fvwm).
 	   For this to work XmNresizePolicy must be XmRESIZE_NONE, otherwise
 	   the dialog will try to expand anyway. */
-	XtVaGetValues(shell, XmNwidth, &xtWidth, XmNheight, &xtHeight, NULL);
+	XtVaGetValues(shell, XmNwidth, &xtWidth, XmNheight, &xtHeight, nullptr);
 	if (xtWidth > maxWidth)
-		XtVaSetValues(shell, XmNwidth, (Dimension)maxWidth, NULL);
+		XtVaSetValues(shell, XmNwidth, (Dimension)maxWidth, nullptr);
 	if (xtHeight > maxHeight)
-		XtVaSetValues(shell, XmNheight, (Dimension)maxHeight, NULL);
+		XtVaSetValues(shell, XmNheight, (Dimension)maxHeight, nullptr);
 
 	/* Only set the x/y position if the centering option is enabled.
 	   Avoid getting the coordinates if not so, to save a few round-trips
@@ -736,17 +736,17 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 		   the window to delay XmNwmTimeout (default 5 seconds) before
 		   posting, and it is very annoying.  See "man VendorShell" for
 		   more info. */
-		XtVaSetValues(shell, XmNuseAsyncGeometry, True, NULL);
+		XtVaSetValues(shell, XmNuseAsyncGeometry, True, nullptr);
 
 		/* Set desired window position in the DialogShell */
-		XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
+		XtVaSetValues(shell, XmNx, x, XmNy, y, nullptr);
 	}
 
 	/* Map the widget */
 	XtMapWidget(shell);
 
 	/* Restore the value of XmNmappedWhenManaged */
-	XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
+	XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, nullptr);
 }
 
 /*
@@ -863,8 +863,8 @@ void UpdateAccelLockPatch(Widget topWidget, Widget newButton) {
 void PopDownBugPatch(Widget w) {
 	time_t stopTime;
 
-	stopTime = time(NULL) + 1;
-	while (time(NULL) <= stopTime) {
+	stopTime = time(nullptr) + 1;
+	while (time(nullptr) <= stopTime) {
 		XEvent event;
 		XtAppContext context = XtWidgetToApplicationContext(w);
 		XtAppPeekEvent(context, &event);
@@ -976,12 +976,12 @@ void SimulateButtonPress(Widget widget) {
 		keyEvent.xkey.display = XtDisplay(parent);
 		keyEvent.xkey.window = XtWindow(parent);
 
-		XtCallActionProc(parent, "ManagerGadgetSelect", &keyEvent, NULL, 0);
+		XtCallActionProc(parent, "ManagerGadgetSelect", &keyEvent, nullptr, 0);
 	} else {
 		keyEvent.xkey.display = XtDisplay(widget);
 		keyEvent.xkey.window = XtWindow(widget);
 
-		XtCallActionProc(widget, "ArmAndActivate", &keyEvent, NULL, 0);
+		XtCallActionProc(widget, "ArmAndActivate", &keyEvent, nullptr, 0);
 	}
 }
 
@@ -993,7 +993,7 @@ Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic, char *
 	Widget button;
 	XmString st1, st2;
 
-	button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimple(label), XmNmnemonic, mnemonic, XmNacceleratorText, st2 = XmStringCreateSimple(accText), XmNaccelerator, acc, NULL);
+	button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimple(label), XmNmnemonic, mnemonic, XmNacceleratorText, st2 = XmStringCreateSimple(accText), XmNaccelerator, acc, nullptr);
 	XtAddCallback(button, XmNactivateCallback, callback, cbArg);
 	XmStringFree(st1);
 	XmStringFree(st2);
@@ -1009,7 +1009,7 @@ Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic, char
 	XmString st1, st2;
 
 	button = XtVaCreateManagedWidget(name, xmToggleButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimple(label), XmNmnemonic, mnemonic, XmNacceleratorText, st2 = XmStringCreateSimple(accText), XmNaccelerator, acc, XmNset,
-	                                 set, NULL);
+	                                 set, nullptr);
 	XtAddCallback(button, XmNvalueChangedCallback, callback, cbArg);
 	XmStringFree(st1);
 	XmStringFree(st2);
@@ -1025,8 +1025,8 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic) {
 	Widget menu;
 	XmString st1;
 
-	menu = CreatePulldownMenu(parent, name, NULL, 0);
-	XtVaCreateManagedWidget(name, xmCascadeButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimple(label), XmNmnemonic, mnemonic, XmNsubMenuId, menu, NULL);
+	menu = CreatePulldownMenu(parent, name, nullptr, 0);
+	XtVaCreateManagedWidget(name, xmCascadeButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimple(label), XmNmnemonic, mnemonic, XmNsubMenuId, menu, nullptr);
 	XmStringFree(st1);
 	return menu;
 }
@@ -1147,10 +1147,10 @@ int TextWidgetIsBlank(Widget textW) {
 ** the widget to be one line high).
 */
 void MakeSingleLineTextW(Widget textW) {
-	static XtTranslations noReturnTable = NULL;
+	static XtTranslations noReturnTable = nullptr;
 	static const char *noReturnTranslations = "<Key>Return: activate()\n";
 
-	if (noReturnTable == NULL)
+	if (noReturnTable == nullptr)
 		noReturnTable = XtParseTranslationTable(noReturnTranslations);
 	XtOverrideTranslations(textW, noReturnTable);
 }
@@ -1233,7 +1233,7 @@ void AddToHistoryList(char *newItem, char ***historyList, int *nItems) {
 	newList = (char **)XtMalloc(sizeof(char *) * (*nItems + 1));
 	for (i = 0; i < *nItems; i++)
 		newList[i + 1] = (*historyList)[i];
-	if (*nItems != 0 && *historyList != NULL)
+	if (*nItems != 0 && *historyList != nullptr)
 		XtFree((char *)*historyList);
 	(*nItems)++;
 	newList[0] = XtNewString(newItem);
@@ -1276,7 +1276,7 @@ void BusyWait(Widget widget) {
 	static const int timeout = 100000; /* 1/10 sec = 100 ms = 100,000 us */
 	static struct timeval last = {0, 0};
 	struct timeval current;
-	gettimeofday(&current, NULL);
+	gettimeofday(&current, nullptr);
 
 	if ((current.tv_sec != last.tv_sec) || (current.tv_usec - last.tv_usec > timeout)) {
 		XmUpdateDisplay(widget);
@@ -1382,9 +1382,9 @@ static void warnHandlerCB(String message) {
 }
 
 static XModifierKeymap *getKeyboardMapping(Display *display) {
-	static XModifierKeymap *keyboardMap = NULL;
+	static XModifierKeymap *keyboardMap = nullptr;
 
-	if (keyboardMap == NULL) {
+	if (keyboardMap == nullptr) {
 		keyboardMap = XGetModifierMapping(display);
 	}
 	return (keyboardMap);
@@ -1400,7 +1400,7 @@ static Modifiers findModifierMapping(Display *display, KeyCode keyCode) {
 	KeyCode *mapentry;
 	XModifierKeymap *modMap = getKeyboardMapping(display);
 
-	if (modMap == NULL || keyCode == 0) {
+	if (modMap == nullptr || keyCode == 0) {
 		return (0);
 	}
 
@@ -1461,17 +1461,17 @@ static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo) {
 
 	if (XtIsComposite(w)) {
 		if (XtClass(w) == xmRowColumnWidgetClass) {
-			XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
+			XtVaGetValues(w, XmNrowColumnType, &rowColType, nullptr);
 			isMenu = rowColType != XmWORK_AREA;
 		} else
 			isMenu = False;
 		if (!isMenu) {
-			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
+			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 			for (i = 0; i < (int)numChildren; i++)
 				addMnemonicGrabs(dialog, children[i], unmodifiedToo);
 		}
 	} else {
-		XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
+		XtVaGetValues(w, XmNmnemonic, &mnemonic, nullptr);
 		if (mnemonic != XK_VoidSymbol && mnemonic != '\0') {
 			mneString[0] = mnemonic;
 			mneString[1] = '\0';
@@ -1510,24 +1510,24 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode) {
 
 	if (XtIsComposite(w)) {
 		if (XtClass(w) == xmRowColumnWidgetClass) {
-			XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
+			XtVaGetValues(w, XmNrowColumnType, &rowColType, nullptr);
 			isMenu = rowColType != XmWORK_AREA;
 		} else
 			isMenu = False;
 		if (!isMenu) {
-			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
+			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 			for (i = 0; i < (int)numChildren; i++)
 				findAndActivateMnemonic(children[i], keycode);
 		}
 	} else {
-		XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
+		XtVaGetValues(w, XmNmnemonic, &mnemonic, nullptr);
 		if (mnemonic != '\0') {
 			mneString[0] = mnemonic;
 			mneString[1] = '\0';
 			if (XKeysymToKeycode(XtDisplay(XtParent(w)), XStringToKeysym(mneString)) == keycode) {
 				if (XtClass(w) == xmLabelWidgetClass || XtClass(w) == xmLabelGadgetClass) {
-					XtVaGetValues(w, XmNuserData, &userData, NULL);
-					if (userData != NULL && XtIsWidget(userData) && XmIsTraversable(userData))
+					XtVaGetValues(w, XmNuserData, &userData, nullptr);
+					if (userData != nullptr && XtIsWidget(userData) && XmIsTraversable(userData))
 						XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
 				} else if (XmIsTraversable(w)) {
 					XmProcessTraversal(w, XmTRAVERSE_CURRENT);
@@ -1552,12 +1552,12 @@ static void addAccelGrabs(Widget topWidget, Widget w) {
 	int i;
 
 	if (XtIsComposite(w)) {
-		XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
+		XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 		for (i = 0; i < (int)numChildren; i++)
 			addAccelGrabs(topWidget, children[i]);
 	} else if (XtClass(w) == xmCascadeButtonWidgetClass) {
-		XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
-		if (menu != NULL)
+		XtVaGetValues(w, XmNsubMenuId, &menu, nullptr);
+		if (menu != nullptr)
 			addAccelGrabs(topWidget, menu);
 	} else
 		addAccelGrab(topWidget, w);
@@ -1568,14 +1568,14 @@ static void addAccelGrabs(Widget topWidget, Widget w) {
 ** in combination with the Caps Lock and Num Lock accelerators.
 */
 static void addAccelGrab(Widget topWidget, Widget w) {
-	char *accelString = NULL;
+	char *accelString = nullptr;
 	KeySym keysym;
 	unsigned int modifiers;
 	KeyCode code;
 	Modifiers numLockMask = GetNumLockModMask(XtDisplay(topWidget));
 
-	XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
-	if (accelString == NULL || *accelString == '\0') {
+	XtVaGetValues(w, XmNaccelerator, &accelString, nullptr);
+	if (accelString == nullptr || *accelString == '\0') {
 		XtFree(accelString);
 		return;
 	}
@@ -1699,28 +1699,28 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int mod
 	Widget menu;
 	Cardinal numChildren;
 	int i;
-	char *accelString = NULL;
+	char *accelString = nullptr;
 	KeySym keysym;
 	unsigned int mods;
 
 	if (XtIsComposite(w)) {
-		XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, NULL);
+		XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 		for (i = 0; i < (int)numChildren; i++)
 			if (findAndActivateAccel(children[i], keyCode, modifiers, event))
 				return TRUE;
 	} else if (XtClass(w) == xmCascadeButtonWidgetClass) {
-		XtVaGetValues(w, XmNsubMenuId, &menu, NULL);
-		if (menu != NULL)
+		XtVaGetValues(w, XmNsubMenuId, &menu, nullptr);
+		if (menu != nullptr)
 			if (findAndActivateAccel(menu, keyCode, modifiers, event))
 				return TRUE;
 	} else {
-		XtVaGetValues(w, XmNaccelerator, &accelString, NULL);
-		if (accelString != NULL && *accelString != '\0') {
+		XtVaGetValues(w, XmNaccelerator, &accelString, nullptr);
+		if (accelString != nullptr && *accelString != '\0') {
 			if (!parseAccelString(XtDisplay(w), accelString, &keysym, &mods))
 				return FALSE;
 			if (keyCode == XKeysymToKeycode(XtDisplay(w), keysym) && modifiers == mods) {
 				if (XtIsSensitive(w)) {
-					XtCallActionProc(w, "ArmAndActivate", event, NULL, 0);
+					XtCallActionProc(w, "ArmAndActivate", event, nullptr, 0);
 					return TRUE;
 				}
 			}
@@ -1751,9 +1751,9 @@ void AddMouseWheelSupport(Widget w) {
 		                                         "Ctrl<Btn5Down>,<Btn5Up>:  scrolled-window-page-down()\n"
 		                                         "<Btn4Down>,<Btn4Up>:      scrolled-window-scroll-up(3)\n"
 		                                         "<Btn5Down>,<Btn5Up>:      scrolled-window-scroll-down(3)\n";
-		static XtTranslations trans_table = NULL;
+		static XtTranslations trans_table = nullptr;
 
-		if (trans_table == NULL) {
+		if (trans_table == nullptr) {
 			trans_table = XtParseTranslationTable(scrollTranslations);
 		}
 		XtOverrideTranslations(w, trans_table);
@@ -1871,10 +1871,10 @@ void RadioButtonChangeState(Widget widget, bool state, bool notify) {
 		      ~c<Btn1Down>: Arm()
 		      ~c<Btn1Up>: Select() Disarm() */
 		ev.xany.type = ButtonPress;
-		XtCallActionProc(widget, "Arm", &ev, NULL, 0);
+		XtCallActionProc(widget, "Arm", &ev, nullptr, 0);
 		ev.xany.type = ButtonRelease;
-		XtCallActionProc(widget, "Select", &ev, NULL, 0);
-		XtCallActionProc(widget, "Disarm", &ev, NULL, 0);
+		XtCallActionProc(widget, "Select", &ev, nullptr, 0);
+		XtCallActionProc(widget, "Disarm", &ev, nullptr, 0);
 	}
 	/* restore focus to the originator */
 	if (focusW) {
@@ -1907,9 +1907,9 @@ void CloseAllPopupsFor(Widget shell) {
 		Widget pop = app->core.popup_list[i];
 		Widget shellFor;
 
-		XtVaGetValues(pop, XtNtransientFor, &shellFor, NULL);
+		XtVaGetValues(pop, XtNtransientFor, &shellFor, nullptr);
 		if (shell == shellFor)
-			_XmDismissTearOff(pop, NULL, NULL);
+			_XmDismissTearOff(pop, nullptr, nullptr);
 	}
 #endif
 }
@@ -1995,7 +1995,7 @@ static void microsleep(long usecs) {
 	static struct timeval timeoutVal;
 	timeoutVal.tv_sec = usecs / 1000000;
 	timeoutVal.tv_usec = usecs - timeoutVal.tv_sec * 1000000;
-	select(0, NULL, NULL, NULL, &timeoutVal);
+	select(0, nullptr, nullptr, nullptr, &timeoutVal);
 }
 
 /*

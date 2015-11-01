@@ -41,7 +41,7 @@ static void buildFilePath(char *fullPath, const char *dir, const char *file);
 static bool isDir(const char *file);
 static bool isRegFile(const char *file);
 
-/* return non-NULL value for the current working directory.
+/* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
 const char *GetCurrentDir(void) {
 	static char curdir[MAXPATHLEN];
@@ -53,7 +53,7 @@ const char *GetCurrentDir(void) {
 	return (curdir);
 }
 
-/* return a non-NULL value for the user's home directory,
+/* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
 const char *GetHomeDir(void) {
@@ -99,7 +99,7 @@ const char *GetUserName(void) {
 	   not correct when the user uses the su command.  Now, getpwuid only: */
 
 	const struct passwd *passwdEntry;
-	static char *userName = NULL;
+	static char *userName = nullptr;
 
 	if (userName)
 		return userName;
@@ -168,7 +168,7 @@ char *PrependHome(const char *filename, char *buf, size_t buflen) {
 **      - fullPath points to a buffer of at least MAXPATHLEN
 **
 **  Returns:
-**      - NULL if an error occurs while creating a directory
+**      - nullptr if an error occurs while creating a directory
 **      - Pointer to a static array containing the file name
 **
 */
@@ -180,7 +180,7 @@ const char *GetRCFileName(int type) {
 		char *nedit_home;
 		int i;
 
-		if ((nedit_home = getenv("NEDIT_HOME")) == NULL) {
+		if ((nedit_home = getenv("NEDIT_HOME")) == nullptr) {
 			/*  No NEDIT_HOME */
 
 			/* Let's try if ~/.nedit is a regular file or not. */
@@ -202,7 +202,7 @@ const char *GetRCFileName(int type) {
 						perror("nedit: Error while creating rc file directory"
 						       " $HOME/" DEFAULT_NEDIT_HOME "\n"
 						       " (Make sure all parent directories exist.)");
-						return NULL;
+						return nullptr;
 					}
 				}
 
@@ -219,7 +219,7 @@ const char *GetRCFileName(int type) {
 				if (mkdir(nedit_home, 0777) != 0) {
 					perror("nedit: Error while creating rc file directory $NEDIT_HOME\n"
 					       "nedit: (Make sure all parent directories exist.)");
-					return NULL;
+					return nullptr;
 				}
 			}
 

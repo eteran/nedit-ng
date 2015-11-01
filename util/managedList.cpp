@@ -100,14 +100,14 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args, int argC, void **
 
 	form = XmCreateForm(parent, name, args, argC);
 	XtManageChild(form);
-	rowCol = XtVaCreateManagedWidget("mlRowCol", xmRowColumnWidgetClass, form, XmNpacking, XmPACK_COLUMN, XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, NULL);
-	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Delete"), NULL);
+	rowCol = XtVaCreateManagedWidget("mlRowCol", xmRowColumnWidgetClass, form, XmNpacking, XmPACK_COLUMN, XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, nullptr);
+	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Delete"), nullptr);
 	XmStringFree(s1);
-	copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Copy"), NULL);
+	copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Copy"), nullptr);
 	XmStringFree(s1);
-	moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move ^"), NULL);
+	moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move ^"), nullptr);
 	XmStringFree(s1);
-	moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move v"), NULL);
+	moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move v"), nullptr);
 	XmStringFree(s1);
 
 	/* AFAIK the only way to make a list widget n-columns wide is to make up
@@ -188,7 +188,7 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args, int argC, void **
 **  	      void *cbArg)
 **
 **	 oldItem: a pointer to the existing record being modified in the
-**	    dialog, or NULL, if the user is modifying the "New" item.
+**	    dialog, or nullptr, if the user is modifying the "New" item.
 **
 **	 explicitRequest: True if the user directly asked for the records
 **	    to be changed (as with an OK or Apply button).  If a less direct
@@ -233,13 +233,13 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn, Widg
 	ml->copyBtn = copyBtn;
 	ml->moveUpBtn = moveUpBtn;
 	ml->moveDownBtn = moveDownBtn;
-	ml->getDialogDataCB = NULL;
+	ml->getDialogDataCB = nullptr;
 	ml->getDialogDataArg = getDialogDataArg;
-	ml->setDialogDataCB = NULL;
+	ml->setDialogDataCB = nullptr;
 	ml->setDialogDataArg = setDialogDataArg;
 	ml->freeItemCB = freeItemCB;
-	ml->deleteConfirmCB = NULL;
-	ml->deleteConfirmArg = NULL;
+	ml->deleteConfirmCB = nullptr;
+	ml->deleteConfirmArg = nullptr;
 	ml->nItems = nItems;
 	ml->maxItems = maxItems;
 	ml->itemList = itemList;
@@ -247,7 +247,7 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn, Widg
 
 	/* Make the managed list data structure accessible from the list widget
 	   pointer, and make sure it gets freed when the list is destroyed */
-	XtVaSetValues(ml->listW, XmNuserData, ml, NULL);
+	XtVaSetValues(ml->listW, XmNuserData, ml, nullptr);
 	XtAddCallback(ml->listW, XmNdestroyCallback, destroyCB, ml);
 
 	/* Add callbacks for button and list actions */
@@ -278,7 +278,7 @@ int UpdateManagedList(Widget listW, int explicitRequest) {
 
 	/* Recover the pointer to the managed list structure from the widget's
 	   userData pointer */
-	XtVaGetValues(listW, XmNuserData, &ml, NULL);
+	XtVaGetValues(listW, XmNuserData, &ml, nullptr);
 
 	/* Make the update */
 	return incorporateDialogData(ml, selectedListPosition(ml), explicitRequest);
@@ -293,7 +293,7 @@ void ChangeManagedListData(Widget listW) {
 
 	/* Recover the pointer to the managed list structure from the widget's
 	   userData pointer */
-	XtVaGetValues(listW, XmNuserData, &ml, NULL);
+	XtVaGetValues(listW, XmNuserData, &ml, nullptr);
 
 	updateDialogFromList(ml, -1);
 }
@@ -312,7 +312,7 @@ void SelectManagedListItem(Widget listW, int itemIndex) {
 int ManagedListSelectedIndex(Widget listW) {
 	managedListData *ml;
 
-	XtVaGetValues(listW, XmNuserData, &ml, NULL);
+	XtVaGetValues(listW, XmNuserData, &ml, nullptr);
 	return selectedListPosition(ml) - 2;
 }
 
@@ -324,7 +324,7 @@ int ManagedListSelectedIndex(Widget listW) {
 void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *), void *deleteConfirmArg) {
 	managedListData *ml;
 
-	XtVaGetValues(listW, XmNuserData, &ml, NULL);
+	XtVaGetValues(listW, XmNuserData, &ml, nullptr);
 	ml->deleteConfirmCB = deleteConfirmCB;
 	ml->deleteConfirmArg = deleteConfirmArg;
 }
@@ -350,7 +350,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* if there's a delete confirmation callback, call it first, and allow
 	   it to request that the operation be aborted */
-	if (ml->deleteConfirmCB != NULL)
+	if (ml->deleteConfirmCB != nullptr)
 		if (!(*ml->deleteConfirmCB)(ind, ml->deleteConfirmArg))
 			return;
 
@@ -384,7 +384,7 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	item = (*ml->getDialogDataCB)(ml->itemList[listPos - 2], False, &abort, ml->getDialogDataArg);
 	if (abort)
 		return;
-	if (item != NULL) {
+	if (item != nullptr) {
 		(*ml->freeItemCB)(ml->itemList[listPos - 2]);
 		ml->itemList[listPos - 2] = item;
 	}
@@ -466,7 +466,7 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData) 
 	/* Save the current dialog fields before overwriting them.  If there's an
 	   error, force the user to go back to the old selection and fix it
 	   before proceeding */
-	if (ml->getDialogDataCB != NULL && ml->lastSelection != 0) {
+	if (ml->getDialogDataCB != nullptr && ml->lastSelection != 0) {
 		if (!incorporateDialogData(ml, ml->lastSelection, False)) {
 			XmListDeselectAllItems(ml->listW);
 			XmListSelectPos(ml->listW, ml->lastSelection, False);
@@ -495,8 +495,8 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData) 
 	ind = listPos - 2;
 
 	/* tell the caller to show the new item */
-	if (ml->setDialogDataCB != NULL)
-		(*ml->setDialogDataCB)(listPos == 1 ? NULL : ml->itemList[ind], ml->setDialogDataArg);
+	if (ml->setDialogDataCB != nullptr)
+		(*ml->setDialogDataCB)(listPos == 1 ? nullptr : ml->itemList[ind], ml->setDialogDataArg);
 }
 
 /*
@@ -512,10 +512,10 @@ static int incorporateDialogData(managedListData *ml, int listPos, int is_explic
 
 	/* Get the current contents of the dialog fields.  Callback will set
 	   abort to True if canceled */
-	item = (*ml->getDialogDataCB)(listPos == 1 ? NULL : ml->itemList[listPos - 2], is_explicit, &abort, ml->getDialogDataArg);
+	item = (*ml->getDialogDataCB)(listPos == 1 ? nullptr : ml->itemList[listPos - 2], is_explicit, &abort, ml->getDialogDataArg);
 	if (abort)
 		return False;
-	if (item == NULL) /* don't modify if fields are empty */
+	if (item == nullptr) /* don't modify if fields are empty */
 		return True;
 
 	/* If the item is "new" add a new entry to the list, otherwise,
@@ -553,7 +553,7 @@ static void updateDialogFromList(managedListData *ml, int selection) {
 	stringTable[0] = XmStringCreateSimple((char *)"New");
 	for (i = 0; i < *ml->nItems; i++)
 		stringTable[i + 1] = XmStringCreateSimple(*(char **)ml->itemList[i]);
-	XtVaSetValues(ml->listW, XmNitems, stringTable, XmNitemCount, *ml->nItems + 1, NULL);
+	XtVaSetValues(ml->listW, XmNitems, stringTable, XmNitemCount, *ml->nItems + 1, nullptr);
 	for (i = 0; i < *ml->nItems + 1; i++)
 		XmStringFree(stringTable[i]);
 	XtFree((char *)stringTable);
@@ -593,7 +593,7 @@ static void updateListWidgetItem(managedListData *ml, int listPos) {
 */
 static int selectedListPosition(managedListData *ml) {
 	int listPos;
-	int *posList = NULL, posCount = 0;
+	int *posList = nullptr, posCount = 0;
 
 	if (!XmListGetSelectedPos(ml->listW, &posList, &posCount)) {
 		fprintf(stderr, "Internal error (nothing selected)");
@@ -621,7 +621,7 @@ static void selectItem(Widget listW, int itemIndex, int updateDialog) {
 	XmListSelectPos(listW, selection, updateDialog);
 
 	/* If the selected item is not visible, scroll the list */
-	XtVaGetValues(listW, XmNtopItemPosition, &topPos, XmNvisibleItemCount, &nVisible, NULL);
+	XtVaGetValues(listW, XmNtopItemPosition, &topPos, XmNvisibleItemCount, &nVisible, nullptr);
 	if (selection < topPos)
 		XmListSetPos(listW, selection);
 	else if (selection >= topPos + nVisible)

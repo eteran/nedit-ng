@@ -49,8 +49,8 @@ struct PrefDescripRec {
 };
 
 XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut);
-void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
-void OverlayPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
+void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
+void OverlayPreferences(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
 int SavePreferences(Display *display, const char *fileName, const char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
 

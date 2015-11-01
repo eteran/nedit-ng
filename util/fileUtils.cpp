@@ -70,7 +70,7 @@ static void copyThruSlash(char **toString, char **fromString);
 ** Return non-zero value if it fails, zero else.
 ** For now we assume that filename and pathname are at
 ** least MAXPATHLEN chars long.
-** To skip setting filename or pathname pass NULL for that argument.
+** To skip setting filename or pathname pass nullptr for that argument.
 */
 int ParseFilename(const char *fullname, char *filename, char *pathname) {
 	int fullLen = strlen(fullname);
@@ -81,7 +81,7 @@ int ParseFilename(const char *fullname, char *filename, char *pathname) {
 
 	/* For clearcase version extended paths, slash characters after the "@@/"
 	   should be considered part of the file name, rather than the path */
-	if ((viewExtendPath = strstr(fullname, "@@/")) != NULL)
+	if ((viewExtendPath = strstr(fullname, "@@/")) != nullptr)
 		scanStart = viewExtendPath - fullname - 1;
 	else
 		scanStart = fullLen - 1;
@@ -137,7 +137,7 @@ int ExpandTilde(char *pathname) {
 	if (pathname[0] != '~')
 		return TRUE;
 	nameEnd = strchr(&pathname[1], '/');
-	if (nameEnd == NULL) {
+	if (nameEnd == nullptr) {
 		nameEnd = pathname + strlen(pathname);
 	}
 	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
@@ -146,14 +146,14 @@ int ExpandTilde(char *pathname) {
 	   but to keep the code more similar for both cases ... */
 	if (username[0] == '\0') {
 		passwdEntry = getpwuid(getuid());
-		if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir) == '\0')) {
+		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
 			/* This is really serious, so just exit. */
 			perror("NEdit/nc: getpwuid() failed ");
 			exit(EXIT_FAILURE);
 		}
 	} else {
 		passwdEntry = getpwnam(username);
-		if ((passwdEntry == NULL) || (*(passwdEntry->pw_dir) == '\0')) {
+		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
 			/* username was just an input by the user, this is no
 		   indication for some (serious) problems */
 			return FALSE;
@@ -251,7 +251,7 @@ int NormalizePathname(char *pathname) {
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things
 		   on non-un*x systems */
-		len = strlen(pathname); /* GetCurrentDir() returns non-NULL value */
+		len = strlen(pathname); /* GetCurrentDir() returns non-nullptr value */
 
 		/*  Apart from the fact that people putting conditional expressions in
 		    ifs should be caned: How should len ever become 0 if GetCurrentDir()
@@ -306,7 +306,7 @@ int CompressPathname(char *pathname) {
 	outPtr = buf;
 	/* copy initial / */
 	copyThruSlash(&outPtr, &inPtr);
-	while (inPtr != NULL) {
+	while (inPtr != nullptr) {
 		/* if the next component is "../", remove previous component */
 		if (compareThruSlash(inPtr, "../")) {
 			*outPtr = 0;
@@ -348,7 +348,7 @@ int CompressPathname(char *pathname) {
 static char *nextSlash(char *ptr) {
 	for (; *ptr != '/'; ptr++) {
 		if (*ptr == '\0')
-			return NULL;
+			return nullptr;
 	}
 	return ptr + 1;
 }
@@ -377,7 +377,7 @@ static void copyThruSlash(char **toString, char **fromString) {
 	while (TRUE) {
 		*to = *from;
 		if (*from == '\0') {
-			*fromString = NULL;
+			*fromString = nullptr;
 			return;
 		}
 		if (*from == '/') {
@@ -491,7 +491,7 @@ void ConvertFromMacFileString(char *fileString, int length) {
 ** memory on a save, it should probably be redone.
 */
 int ConvertToDosFileString(char **fileString, int *length) {
-	char *outPtr, *outString;
+	char *outPtr;
 	char *inPtr = *fileString;
 	int inLength = *length;
 	int outLength = 0;
@@ -505,8 +505,8 @@ int ConvertToDosFileString(char **fileString, int *length) {
 	}
 
 	/* Allocate the new string */
-	outString = XtMalloc(outLength + 1);
-	if (outString == NULL)
+	auto outString = XtMalloc(outLength + 1);
+	if (outString == nullptr)
 		return FALSE;
 
 	/* Do the conversion, free the old string */
@@ -605,27 +605,26 @@ char *ReadAnyTextFile(const char *fileName, int forceNL) {
 	struct stat statbuf;
 	FILE *fp;
 	int fileLen, readLen;
-	char *fileString;
 	int format;
 
 	/* Read the whole file into fileString */
-	if ((fp = fopen(fileName, "r")) == NULL) {
-		return NULL;
+	if ((fp = fopen(fileName, "r")) == nullptr) {
+		return nullptr;
 	}
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 	fileLen = statbuf.st_size;
 	/* +1 = space for null
 	** +1 = possible additional \n
 	*/
-	fileString = XtMalloc(fileLen + 2);
+	auto fileString = XtMalloc(fileLen + 2);
 	readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		XtFree(fileString);
 		fclose(fp);
-		return NULL;
+		return nullptr;
 	}
 	fclose(fp);
 	fileString[readLen] = 0;
