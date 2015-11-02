@@ -39,24 +39,19 @@
 #include "../util/misc.h"
 #include "menu.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/types.h>
+#include <algorithm>
+#include <cctype>
+#include <cerrno>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fcntl.h>
+#include <list>
 #include <sys/param.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <errno.h>
-#ifdef notdef
-#ifdef IBM
-#define NBBY 8
-#include <sys/select.h>
-#endif
-#include <time.h>
-#endif
 
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
@@ -68,12 +63,8 @@
 #define IO_BUF_SIZE 4096       /* size of buffers for collecting cmd output */
 #define MAX_OUT_DIALOG_ROWS 30 /* max height of dialog for command output */
 #define MAX_OUT_DIALOG_COLS 80 /* max width of dialog for command output */
-#define OUTPUT_FLUSH_FREQ                                                                                                                                                                                                                      \
-	1000 /* how often (msec) to flush output buffers                                                                                                                                                                                           \
-	        when process is taking too long */
-#define BANNER_WAIT_TIME                                                                                                                                                                                                                       \
-	6000 /* how long to wait (msec) before putting up                                                                                                                                                                                          \
-	        Shell Command Executing... banner */
+#define OUTPUT_FLUSH_FREQ	1000 /* how often (msec) to flush output buffers when process is taking too long */
+#define BANNER_WAIT_TIME	6000 /* how long to wait (msec) before putting up Shell Command Executing... banner */
 
 /* flags for issueCommand */
 #define ACCUMULATE 1
@@ -85,7 +76,6 @@
 
 /* element of a buffer list for collecting output from shell processes */
 struct bufElem {
-	struct bufElem *next;
 	int length;
 	char contents[IO_BUF_SIZE];
 };
@@ -97,7 +87,8 @@ struct shellCmdInfo {
 	int stdinFD, stdoutFD, stderrFD;
 	pid_t childPid;
 	XtInputId stdinInputID, stdoutInputID, stderrInputID;
-	bufElem *outBufs, *errBufs;
+	std::list<bufElem *> outBufs;
+	std::list<bufElem *> errBufs;
 	char *input;
 	char *inPtr;
 	Widget textW;
@@ -114,9 +105,8 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError);
 static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD);
-static void addOutput(bufElem **bufList, bufElem *buf);
-static char *coalesceOutput(bufElem **bufList, int *length);
-static void freeBufList(bufElem **bufList);
+static char *coalesceOutputEx(std::list<bufElem *> &bufList, int *outLength);
+static void freeBufListEx(std::list<bufElem *> &bufList);
 static void removeTrailingNewlines(char *string);
 static void createOutputDialog(Widget parent, char *text);
 static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure);
@@ -404,12 +394,10 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 ** Cancel the shell command in progress
 */
 void AbortShellCommand(WindowInfo *window) {
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-
-	if (cmdData == nullptr)
-		return;
-	kill(-cmdData->childPid, SIGTERM);
-	finishCmdExecution(window, True);
+	if(shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData) {
+		kill(-cmdData->childPid, SIGTERM);
+		finishCmdExecution(window, True);
+	}
 }
 
 /*
@@ -438,7 +426,6 @@ void AbortShellCommand(WindowInfo *window) {
 static void issueCommand(WindowInfo *window, const char *command, char *input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
 	int stdinFD, stdoutFD, stderrFD = 0;
 	XtAppContext context = XtWidgetToApplicationContext(window->shell);
-	shellCmdInfo *cmdData;
 	pid_t childPid;
 
 	/* verify consistency of input parameters */
@@ -478,23 +465,21 @@ static void issueCommand(WindowInfo *window, const char *command, char *input, i
 
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */
-	cmdData = (shellCmdInfo *)XtMalloc(sizeof(shellCmdInfo));
+	auto cmdData = new shellCmdInfo;
 	window->shellCmdData = cmdData;
-	cmdData->flags = flags;
-	cmdData->stdinFD = stdinFD;
-	cmdData->stdoutFD = stdoutFD;
-	cmdData->stderrFD = stderrFD;
-	cmdData->childPid = childPid;
-	cmdData->outBufs = nullptr;
-	cmdData->errBufs = nullptr;
-	cmdData->input = input;
-	cmdData->inPtr = input;
-	cmdData->textW = textW;
-	cmdData->bannerIsUp = False;
-	cmdData->fromMacro = fromMacro;
-	cmdData->leftPos = replaceLeft;
-	cmdData->rightPos = replaceRight;
-	cmdData->inLength = inputLen;
+	cmdData->flags       = flags;
+	cmdData->stdinFD     = stdinFD;
+	cmdData->stdoutFD    = stdoutFD;
+	cmdData->stderrFD    = stderrFD;
+	cmdData->childPid    = childPid;
+	cmdData->input       = input;
+	cmdData->inPtr       = input;
+	cmdData->textW       = textW;
+	cmdData->bannerIsUp  = False;
+	cmdData->fromMacro   = fromMacro;
+	cmdData->leftPos     = replaceLeft;
+	cmdData->rightPos    = replaceRight;
+	cmdData->inLength    = inputLen;
 
 	/* Set up timer proc for putting up banner when process takes too long */
 	if (fromMacro)
@@ -536,18 +521,17 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
 	WindowInfo *window = (WindowInfo *)clientData;
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-	bufElem *buf;
 	int nRead;
 
 	/* read from the process' stdout stream */
-	buf = (bufElem *)XtMalloc(sizeof(bufElem));
+	auto buf = new bufElem;
 	nRead = read(cmdData->stdoutFD, buf->contents, IO_BUF_SIZE);
 
 	/* error in read */
 	if (nRead == -1) { /* error */
 		if (errno != EWOULDBLOCK && errno != EAGAIN) {
 			perror("nedit: Error reading shell command output");
-			XtFree((char *)buf);
+			delete buf;
 			finishCmdExecution(window, True);
 		}
 		return;
@@ -556,7 +540,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	/* end of data.  If the stderr stream is done too, execution of the
 	   shell process is complete, and we can display the results */
 	if (nRead == 0) {
-		XtFree((char *)buf);
+		delete buf;
 		XtRemoveInput(cmdData->stdoutInputID);
 		cmdData->stdoutInputID = 0;
 		if (cmdData->stderrInputID == 0)
@@ -566,7 +550,8 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
 	/* characters were read successfully, add buf to linked list of buffers */
 	buf->length = nRead;
-	addOutput(&cmdData->outBufs, buf);
+	
+	cmdData->outBufs.push_front(buf);
 }
 
 /*
@@ -580,18 +565,17 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
 	WindowInfo *window = (WindowInfo *)clientData;
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-	bufElem *buf;
 	int nRead;
 
 	/* read from the process' stderr stream */
-	buf = (bufElem *)XtMalloc(sizeof(bufElem));
+	auto buf = new bufElem;
 	nRead = read(cmdData->stderrFD, buf->contents, IO_BUF_SIZE);
 
 	/* error in read */
 	if (nRead == -1) {
 		if (errno != EWOULDBLOCK && errno != EAGAIN) {
 			perror("nedit: Error reading shell command error stream");
-			XtFree((char *)buf);
+			delete buf;
 			finishCmdExecution(window, True);
 		}
 		return;
@@ -600,7 +584,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	/* end of data.  If the stdout stream is done too, execution of the
 	   shell process is complete, and we can display the results */
 	if (nRead == 0) {
-		XtFree((char *)buf);
+		delete buf;
 		XtRemoveInput(cmdData->stderrInputID);
 		cmdData->stderrInputID = 0;
 		if (cmdData->stdoutInputID == 0)
@@ -610,7 +594,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
 	/* characters were read successfully, add buf to linked list of buffers */
 	buf->length = nRead;
-	addOutput(&cmdData->errBufs, buf);
+	cmdData->errBufs.push_front(buf);
 }
 
 /*
@@ -724,7 +708,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	if (cmdData->textW == nullptr)
 		return;
 
-	outText = coalesceOutput(&cmdData->outBufs, &len);
+	outText = coalesceOutputEx(cmdData->outBufs, &len);
 	if (len != 0) {
 		if (buf->BufSubstituteNullChars(outText, len)) {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
@@ -788,17 +772,17 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 
 	/* If the process was killed or became inaccessable, give up */
 	if (terminatedOnError) {
-		freeBufList(&cmdData->outBufs);
-		freeBufList(&cmdData->errBufs);
+		freeBufListEx(cmdData->outBufs);
+		freeBufListEx(cmdData->errBufs);
 		waitpid(cmdData->childPid, &status, 0);
 		goto cmdDone;
 	}
 
 	/* Assemble the output from the process' stderr and stdout streams into
 	   null terminated strings, and free the buffer lists used to collect it */
-	outText = coalesceOutput(&cmdData->outBufs, &outTextLen);
+	outText = coalesceOutputEx(cmdData->outBufs, &outTextLen);
 	if (cmdData->flags & ERROR_DIALOGS)
-		errText = coalesceOutput(&cmdData->errBufs, &errTextLen);
+		errText = coalesceOutputEx(cmdData->errBufs, &errTextLen);
 
 	/* Wait for the child process to complete and get its return status */
 	waitpid(cmdData->childPid, &status, 0);
@@ -869,7 +853,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	/* Command is complete, free data structure and continue macro execution */
 	XtFree(outText);
 cmdDone:
-	XtFree((char *)cmdData);
+	delete cmdData;
 	window->shellCmdData = nullptr;
 	if (fromMacro)
 		ResumeMacroExecution(window);
@@ -991,64 +975,46 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 }
 
 /*
-** Add a buffer full of output to a buffer list
-*/
-static void addOutput(bufElem **bufList, bufElem *buf) {
-	buf->next = *bufList;
-	*bufList = buf;
-}
-
-/*
 ** coalesce the contents of a list of buffers into a contiguous memory block,
 ** freeing the memory occupied by the buffer list.  Returns the memory block
 ** as the function result, and its length as parameter "length".
 */
-static char *coalesceOutput(bufElem **bufList, int *outLength) {
-	bufElem *buf, *rBufList = nullptr;
-	char *outBuf, *outPtr, *p;
-	int i, length = 0;
+static char *coalesceOutputEx(std::list<bufElem *> &bufList, int *outLength) {
+
+	int length = 0;
 
 	/* find the total length of data read */
-	for (buf = *bufList; buf != nullptr; buf = buf->next)
+	for(bufElem *buf : bufList) {
 		length += buf->length;
-
-	/* allocate contiguous memory for returning data */
-	outBuf = XtMalloc(length + 1);
-
-	/* reverse the buffer list */
-	while (*bufList != nullptr) {
-		buf = *bufList;
-		*bufList = buf->next;
-		buf->next = rBufList;
-		rBufList = buf;
 	}
 
+	/* allocate contiguous memory for returning data */
+	auto outBuf = XtMalloc(length + 1);
+
 	/* copy the buffers into the output bufElem */
-	outPtr = outBuf;
-	for (buf = rBufList; buf != nullptr; buf = buf->next) {
-		p = buf->contents;
-		for (i = 0; i < buf->length; i++)
+	char *outPtr = outBuf;
+	for(auto it = bufList.rbegin(); it != bufList.rend(); ++it) {
+		bufElem *buf = *it;
+		char *p = buf->contents;
+		for (int i = 0; i < buf->length; i++) {
 			*outPtr++ = *p++;
+		}
 	}
 
 	/* terminate with a null */
 	*outPtr = '\0';
 
-	/* free the buffer list */
-	freeBufList(&rBufList);
-
 	*outLength = outPtr - outBuf;
 	return outBuf;
 }
 
-static void freeBufList(bufElem **bufList) {
-	bufElem *buf;
+static void freeBufListEx(std::list<bufElem *> &bufList) {
 
-	while (*bufList != nullptr) {
-		buf = *bufList;
-		*bufList = buf->next;
-		XtFree((char *)buf);
+	for(bufElem *buf : bufList) {
+		delete buf;
 	}
+	
+	bufList.clear();
 }
 
 /*
