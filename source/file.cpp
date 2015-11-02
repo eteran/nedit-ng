@@ -70,19 +70,19 @@
    system which is slow to process stat requests (which I'm not sure exists) */
 #define MOD_CHECK_INTERVAL 3000
 
-static int doSave(WindowInfo *window);
-static void safeClose(WindowInfo *window);
-static int doOpen(WindowInfo *window, const char *name, const char *path, int flags);
-static void backupFileName(WindowInfo *window, char *name, size_t len);
-static int writeBckVersion(WindowInfo *window);
+static bool writeBckVersion(WindowInfo *window);
 static int bckError(WindowInfo *window, const char *errString, const char *file);
-static int fileWasModifiedExternally(WindowInfo *window);
-static void addWrapNewlines(WindowInfo *window);
-static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
-static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
-static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
+static int doOpen(WindowInfo *window, const char *name, const char *path, int flags);
+static int doSave(WindowInfo *window);
+static int fileWasModifiedExternally(WindowInfo *window);
+static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
+static void addWrapNewlines(WindowInfo *window);
+static void backupFileName(WindowInfo *window, char *name, size_t len);
 static void forceShowLineNumbers(WindowInfo *window);
+static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
+static void safeClose(WindowInfo *window);
+static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 
 WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
 	char name[MAXPATHLEN];
@@ -972,13 +972,13 @@ void RemoveBackupFile(WindowInfo *window) {
 ** and path in the window data structure & write into name
 */
 static void backupFileName(WindowInfo *window, char *name, size_t len) {
-	char bckname[MAXPATHLEN];
+	
 
 	if (window->filenameSet) {
-		sprintf(name, "%s~%s", window->path, window->filename);
+		snprintf(name, len, "%s~%s", window->path, window->filename);
 	} else {
-		strcpy(bckname, "~");
-		strncat(bckname, window->filename, MAXPATHLEN - 1);
+		char bckname[MAXPATHLEN];
+		snprintf(bckname, sizeof(bckname), "~%s", window->filename);
 		PrependHome(bckname, name, len);
 	}
 }
@@ -988,16 +988,18 @@ static void backupFileName(WindowInfo *window, char *name, size_t len) {
 ** <filename>.bck in anticipation of a new version being saved.  Returns
 ** True if backup fails and user requests that the new file not be written.
 */
-static int writeBckVersion(WindowInfo *window) {
-	char fullname[MAXPATHLEN], bckname[MAXPATHLEN];
+static bool writeBckVersion(WindowInfo *window) {
+	char fullname[MAXPATHLEN];
+	char bckname[MAXPATHLEN];
 	struct stat statbuf;
-	int in_fd, out_fd;
-	char *io_buffer;
-#define IO_BUFFER_SIZE ((size_t)(1024 * 1024))
+	int in_fd;
+	int out_fd;
+	
+	static const size_t IO_BUFFER_SIZE = (1024 * 1024);
 
 	/* Do only if version backups are turned on */
 	if (!window->saveOldVersion) {
-		return False;
+		return false;
 	}
 
 	/* Get the full name of the file */
@@ -1007,7 +1009,7 @@ static int writeBckVersion(WindowInfo *window) {
 	if (r >= MAXPATHLEN) {
 		return bckError(window, "file name too long", window->filename);
 	}
-	sprintf(bckname, "%s.bck", fullname);
+	snprintf(bckname, sizeof(bckname), "%s.bck", fullname);
 
 	/* Delete the old backup file */
 	/* Errors are ignored; we'll notice them later. */
@@ -1017,14 +1019,14 @@ static int writeBckVersion(WindowInfo *window) {
 	   old file, don't bother the user, just skip the backup */
 	in_fd = open(fullname, O_RDONLY);
 	if (in_fd < 0) {
-		return FALSE;
+		return false;
 	}
 
 	/* Get permissions of the file.
 	   We preserve the normal permissions but not ownership, extended
 	   attributes, et cetera. */
 	if (fstat(in_fd, &statbuf) != 0) {
-		return FALSE;
+		return false;
 	}
 
 	/* open the destination file exclusive and with restrictive permissions. */
@@ -1042,13 +1044,7 @@ static int writeBckVersion(WindowInfo *window) {
 	}
 
 	/* Allocate I/O buffer */
-	io_buffer = (char *)malloc(IO_BUFFER_SIZE);
-	if (nullptr == io_buffer) {
-		close(in_fd);
-		close(out_fd);
-		remove(bckname);
-		return bckError(window, "out of memory", bckname);
-	}
+	auto io_buffer = new char[IO_BUFFER_SIZE];
 
 	/* copy loop */
 	for (;;) {
@@ -1060,7 +1056,7 @@ static int writeBckVersion(WindowInfo *window) {
 			close(in_fd);
 			close(out_fd);
 			remove(bckname);
-			free(io_buffer);
+			delete [] io_buffer;
 			return bckError(window, "read() error", window->filename);
 		}
 
@@ -1074,7 +1070,7 @@ static int writeBckVersion(WindowInfo *window) {
 			close(in_fd);
 			close(out_fd);
 			remove(bckname);
-			free(io_buffer);
+			delete [] io_buffer;
 			return bckError(window, strerror(errno), bckname);
 		}
 	}
@@ -1083,9 +1079,9 @@ static int writeBckVersion(WindowInfo *window) {
 	close(in_fd);
 	close(out_fd);
 
-	free(io_buffer);
+	delete [] io_buffer;
 
-	return FALSE;
+	return false;
 }
 
 /*

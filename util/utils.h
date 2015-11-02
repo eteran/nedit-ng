@@ -31,12 +31,12 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 
-const char *GetCurrentDir(void);
-const char *GetHomeDir(void);
-char *PrependHome(const char *filename, char *buf, size_t buflen);
-const char *GetUserName(void);
-const char *GetNameOfHost(void);
+const char *GetCurrentDir();
+const char *GetHomeDir();
+const char *GetNameOfHost();
 const char *GetRCFileName(int type);
+const char *GetUserName();
+void PrependHome(const char *filename, char *buf, size_t buflen);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
 enum {

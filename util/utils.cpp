@@ -147,7 +147,7 @@ const char *GetNameOfHost(void) {
 ** Create a path: $HOME/filename
 ** Return "" if it doesn't fit into the buffer
 */
-char *PrependHome(const char *filename, char *buf, size_t buflen) {
+void PrependHome(const char *filename, char *buf, size_t buflen) {
 
 	const char *const homedir = GetHomeDir();
 	
@@ -155,9 +155,6 @@ char *PrependHome(const char *filename, char *buf, size_t buflen) {
 	if(n >= buflen) {
 		buf[0] = '\0';
 	}
-	
-
-	return buf;
 }
 
 /*
@@ -173,6 +170,7 @@ char *PrependHome(const char *filename, char *buf, size_t buflen) {
 **
 */
 const char *GetRCFileName(int type) {
+
 	static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
 	static bool namesDetermined = false;
 
