@@ -3893,7 +3893,7 @@ static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *displa
 		confirmResult = DialogF(DF_WARN, parent, 2, "Substitution Failed", "The result length of the substitution exceeded an internal limit.\n"
 		                                                                   "Executing the substitution will result in loss of data.",
 		                        "Lose Data", "Cancel");
-		cancel = (1 != confirmResult);
+		cancel = (confirmResult != 1);
 		break;
 
 	case TRUNCSUBST_IGNORE:

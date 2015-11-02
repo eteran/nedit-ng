@@ -1147,7 +1147,7 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	**  (or whatever is implemented in getDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
-	if (0 == strcmp(PrefData.shell, "DEFAULT")) {
+	if (strcmp(PrefData.shell, "DEFAULT") == 0) {
 		strncpy(PrefData.shell, getDefaultShell(), MAXPATHLEN);
 		PrefData.shell[MAXPATHLEN] = '\0';
 	}
@@ -2357,9 +2357,9 @@ static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData
 	/*  Get the string that the user entered and make sure it's ok.  */
 	shellName = XmTextGetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT));
 
-	if (-1 == stat(shellName, &attribute)) {
+	if (stat(shellName, &attribute) == -1) {
 		dlgResult = DialogF(DF_WARN, shellSelDialog, 2, "Command Shell", "The selected shell is not available.\nDo you want to use it anyway?", "OK", "Cancel");
-		if (1 != dlgResult) {
+		if (dlgResult != 1) {
 			return;
 		}
 	}

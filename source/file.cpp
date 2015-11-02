@@ -74,7 +74,7 @@ static bool writeBckVersion(WindowInfo *window);
 static int bckError(WindowInfo *window, const char *errString, const char *file);
 static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
 static int doOpen(WindowInfo *window, const char *name, const char *path, int flags);
-static int doSave(WindowInfo *window);
+static bool doSave(WindowInfo *window);
 static int fileWasModifiedExternally(WindowInfo *window);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapNewlines(WindowInfo *window);
@@ -666,7 +666,6 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse) {
 }
 
 int SaveWindow(WindowInfo *window) {
-	int stat;
 
 	/* Try to ensure our information is up-to-date */
 	CheckForChangesToFile(window);
@@ -681,7 +680,7 @@ int SaveWindow(WindowInfo *window) {
 
 	/* Check for external modifications and warn the user */
 	if (GetPrefWarnFileMods() && fileWasModifiedExternally(window)) {
-		stat = DialogF(DF_WARN, window->shell, 2, "Save File", "%s has been modified by another program.\n\n"
+		int stat = DialogF(DF_WARN, window->shell, 2, "Save File", "%s has been modified by another program.\n\n"
 		                                                       "Continuing this operation will overwrite any external\n"
 		                                                       "modifications to the file since it was opened in NEdit,\n"
 		                                                       "and your work or someone else's may potentially be lost.\n\n"
@@ -699,7 +698,8 @@ int SaveWindow(WindowInfo *window) {
 
 	if (writeBckVersion(window))
 		return FALSE;
-	stat = doSave(window);
+	
+	bool stat = doSave(window);
 	if (stat)
 		RemoveBackupFile(window);
 
@@ -721,7 +721,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 		strcpy(fullname, newName);
 	}
 
-	if (1 == NormalizePathname(fullname)) {
+	if (NormalizePathname(fullname) == 1) {
 		return False;
 	}
 
@@ -792,7 +792,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	return retVal;
 }
 
-static int doSave(WindowInfo *window) {
+static bool doSave(WindowInfo *window) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	FILE *fp;
@@ -804,11 +804,11 @@ static int doSave(WindowInfo *window) {
 
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
-	if ((0 == getuid()) && (0 == stat(fullname, &statbuf)) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+	if ((getuid() == 0) && (stat(fullname, &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
 		result = DialogF(DF_WARN, window->shell, 2, "Writing Read-only File", "File '%s' is marked as read-only.\n"
 		                                                                      "Do you want to save anyway?",
 		                 "Save", "Cancel", window->filename);
-		if (1 != result) {
+		if (result != 1) {
 			return True;
 		}
 	}
@@ -1060,7 +1060,7 @@ static bool writeBckVersion(WindowInfo *window) {
 			return bckError(window, "read() error", window->filename);
 		}
 
-		if (0 == bytes_read) {
+		if (bytes_read == 0) {
 			break; /* EOF */
 		}
 

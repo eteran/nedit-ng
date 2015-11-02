@@ -2537,7 +2537,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: open action requires file argument\n");
 		return;
 	}
-	if (0 != ParseFilename(args[0], filename, pathname) || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
+	if (ParseFilename(args[0], filename, pathname) != 0 || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
 		fprintf(stderr, "nedit: invalid file name for open action: %s\n", args[0]);
 		return;
 	}
@@ -4665,7 +4665,7 @@ void ReadNEditDB(void) {
 
 	/*  Stat history file to see whether someone touched it after this
 	    session last changed it.  */
-	if (0 == stat(fullName, &attribute)) {
+	if (stat(fullName, &attribute) == 0) {
 		if (lastNeditdbModTime >= attribute.st_mtime) {
 			/*  Do nothing, history file is unchanged.  */
 			return;
@@ -4687,7 +4687,7 @@ void ReadNEditDB(void) {
 	}
 
 	/*  Clear previous list.  */
-	while (0 != NPrevOpen) {
+	while (NPrevOpen != 0) {
 		XtFree(PrevOpen[--NPrevOpen]);
 	}
 

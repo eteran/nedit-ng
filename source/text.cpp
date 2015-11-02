@@ -3885,8 +3885,8 @@ static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 **  This could be used by other modules to modify the caret's blinking.
 */
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked) {
-	if (0 != textWidget->text.cursorBlinkRate) {
-		if (0 != textWidget->text.cursorBlinkProcID) {
+	if (textWidget->text.cursorBlinkRate != 0) {
+		if (textWidget->text.cursorBlinkProcID != 0) {
 			XtRemoveTimeOut(textWidget->text.cursorBlinkProcID);
 		}
 

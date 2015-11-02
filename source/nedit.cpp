@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
 	if (!TheDisplay) {
 		/* Respond to -V or -version even if there is no display */
 		for (i = 1; i < argc && strcmp(argv[i], "--"); i++) {
-			if (0 == strcmp(argv[i], "-V") || 0 == strcmp(argv[i], "-version")) {
+			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
 				PrintVersion();
 				exit(EXIT_SUCCESS);
 			}

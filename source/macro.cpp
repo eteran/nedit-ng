@@ -1581,7 +1581,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		if (w == nullptr) {
 			strncpy(normalizedString, string, MAXPATHLEN);
 			normalizedString[MAXPATHLEN - 1] = '\0';
-			if (1 == NormalizePathname(normalizedString)) {
+			if (NormalizePathname(normalizedString) == 1) {
 				/*  Something is broken with the input pathname. */
 				*errMsg = "Pathname too long in focus_window()";
 				return False;
@@ -2608,7 +2608,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
 	dialog = CreateMessageDialog(window->shell, (String) "macroDialog", al, ac);
-	if (1 == nArgs) {
+	if (nArgs == 1) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 	}
@@ -2757,7 +2757,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
 	dialog = CreatePromptDialog(window->shell, (String) "macroStringDialog", al, ac);
-	if (1 == nArgs) {
+	if (nArgs == 1) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 	}
@@ -3073,7 +3073,7 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	if (nArgs > 1 && !readStringArg(argList[1], &mode, stringStorage[1], errMsg)) {
 		return False;
 	}
-	if (0 != strcmp(mode, "exist") && 0 != strcmp(mode, "new")) {
+	if (strcmp(mode, "exist") != 0 && strcmp(mode, "new") != 0) {
 		M_FAILURE("Invalid value for mode in %s");
 	}
 
@@ -3109,7 +3109,7 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 
 	/*  Fork to one of the worker methods from util/getfiles.c.
 	    (This should obviously be refactored.)  */
-	if (0 == strcmp(mode, "exist")) {
+	if (strcmp(mode, "exist") == 0) {
 		gfnResult = GetExistingFilename(window->shell, title, filename);
 	} else {
 		gfnResult = GetNewFilename(window->shell, title, filename, defaultName);
@@ -3298,7 +3298,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
 	dialog = CreateSelectionDialog(window->shell, (String) "macroListDialog", al, ac);
-	if (2 == nArgs) {
+	if (nArgs == 2) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 	}

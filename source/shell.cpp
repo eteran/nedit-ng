@@ -925,7 +925,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	** Child process context (fork returned 0), clean up the
 	** child ends of the pipes and execute the command
 	*/
-	if (0 == childPid) {
+	if (childPid == 0) {
 		/* close the parent end of the pipes in the child process   */
 		close(*stdinFD);
 		close(*stdoutFD);

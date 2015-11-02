@@ -2392,7 +2392,7 @@ static int updatePatternSet(void) {
 	   re-do the highlighting */
 	for (window = WindowList; window != nullptr; window = window->next) {
 		if (patSet->nPatterns > 0) {
-			if (window->languageMode != PLAIN_LANGUAGE_MODE && 0 == strcmp(LanguageModeName(window->languageMode), patSet->languageMode)) {
+			if (window->languageMode != PLAIN_LANGUAGE_MODE && strcmp(LanguageModeName(window->languageMode), patSet->languageMode) == 0) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */

@@ -936,7 +936,7 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path) {
 		strncat(fullname, name, MAXPATHLEN);
 		fullname[MAXPATHLEN] = '\0';
 
-		if (0 == stat(fullname, &attribute)) {
+		if (stat(fullname, &attribute) == 0) {
 			for (window = WindowList; window != nullptr; window = window->next) {
 				if (attribute.st_dev == window->device && attribute.st_ino == window->inode) {
 					return window;
@@ -1947,7 +1947,7 @@ static void movedCB(Widget w, WindowInfo *window, XtPointer callData) {
 	    for unfocussed panes.
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
-	if (0 != textWidget->text.cursorBlinkProcID) {
+	if (textWidget->text.cursorBlinkProcID != 0) {
 		/*  Start blinking the caret again.  */
 		ResetCursorBlink(textWidget, False);
 	}
@@ -2287,7 +2287,7 @@ static int updateGutterWidth(WindowInfo *window) {
 
 			/*  Update all panes of this document.  */
 			for (i = 0; i <= document->nPanes; i++) {
-				text = 0 == i ? document->textArea : document->textPanes[i - 1];
+				text = (i == 0) ? document->textArea : document->textPanes[i - 1];
 				XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
 			}
 		}

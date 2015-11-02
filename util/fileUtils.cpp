@@ -257,7 +257,7 @@ int NormalizePathname(char *pathname) {
 		    ifs should be caned: How should len ever become 0 if GetCurrentDir()
 		    always returns a useful value?
 		    FIXME: Check and document GetCurrentDir() return behaviour.  */
-		if (0 == len ? 1 : pathname[len - 1] != '/') {
+		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
 			strcat(pathname, "/");
 		}
 		strcat(pathname, oldPathname);
