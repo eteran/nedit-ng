@@ -337,15 +337,16 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
 	strcpy(tmptagSpec, tagSpec);
 	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
-		if (*filename == '/' || *filename == '~')
+		if (*filename == '/' || *filename == '~') {
 			continue;
-		if (windowPath && *windowPath) {
-			strcpy(pathName, windowPath);
-		} else {
-			strcpy(pathName, GetCurrentDir());
 		}
-		strcat(pathName, "/");
-		strcat(pathName, filename);
+		
+		if (windowPath && *windowPath) {
+			snprintf(pathName, sizeof(pathName), "%s/%s", windowPath, filename);
+		} else {
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDir(), filename);
+		}
+
 		NormalizePathname(pathName);
 
 		for (t = FileList; t && strcmp(t->filename, pathName); t = t->next)

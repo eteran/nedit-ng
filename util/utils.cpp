@@ -53,6 +53,12 @@ const char *GetCurrentDir(void) {
 	return (curdir);
 }
 
+/* return non-nullptr value for the current working directory.
+   If system call fails, provide a fallback value */
+std::string GetCurrentDirEx(void) {
+	return GetCurrentDir();
+}
+
 /* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
@@ -86,6 +92,13 @@ const char *GetHomeDir(void) {
 	return homedir;
 }
 
+/* return a non-nullptr value for the user's home directory,
+   without trailing slash.
+   We try the  environment var and the system user database. */
+std::string GetHomeDirEx(void) {
+	return GetHomeDir();
+}
+
 /*
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
@@ -112,10 +125,22 @@ const char *GetUserName(void) {
 		perror("nedit: getpwuid() failed - reverting to $USER");
 		return getenv("USER");
 	} else {
+	
+		// NOTE(eteran): so, this is effecively a one time memory leak
+		//               it is tollerable, but probably should be 
+		//               improved in the future.
 		userName = (char *)malloc(strlen(passwdEntry->pw_name) + 1);
 		strcpy(userName, passwdEntry->pw_name);
 		return userName;
 	}
+}
+
+/*
+** Return a pointer to the username of the current user in a statically
+** allocated string.
+*/
+std::string GetUserNameEx(void) {
+	std::string str(GetUserName());
 }
 
 /*
@@ -155,6 +180,20 @@ void PrependHome(const char *filename, char *buf, size_t buflen) {
 	if(n >= buflen) {
 		buf[0] = '\0';
 	}
+}
+
+/*
+** Create a path: $HOME/filename
+** Return "" if it doesn't fit into the buffer
+*/
+std::string PrependHomeEx(view::string_view filename) {
+
+	// TODO(eteran): there is likely a way to make this more efficient
+	//               and make less copies
+	std::string path = GetHomeDirEx();
+	path.append("/");
+	path.append(filename.to_string());
+	return path;
 }
 
 /*
@@ -231,6 +270,27 @@ const char *GetRCFileName(int type) {
 	}
 
 	return rcFiles[type];
+}
+
+/*
+**  Returns a pointer to the name of an rc file of the requested type.
+**
+**  Preconditions:
+**      - MAXPATHLEN is set to the max. allowed path length
+**      - fullPath points to a buffer of at least MAXPATHLEN
+**
+**  Returns:
+**      - nullptr if an error occurs while creating a directory
+**      - Pointer to a static array containing the file name
+**
+*/
+std::string GetRCFileNameEx(int type) {
+	
+	if(const char *r = GetRCFileName(type)) {
+		return r;
+	}
+	
+	return std::string();
 }
 
 /*
