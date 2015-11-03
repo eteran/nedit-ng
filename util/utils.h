@@ -62,10 +62,6 @@ enum {
 
 /* Ditto for the maximum length for a node name.  SYS_NMLN is not available
    on most systems, and I don't know what the portable alternative is. */
-#ifdef SYS_NMLN
-#define MAXNODENAMELEN SYS_NMLN
-#else
 #define MAXNODENAMELEN (MAXPATHLEN + 2)
-#endif
 
 #endif
