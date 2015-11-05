@@ -535,6 +535,9 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 		if (!t)
 			removed = 0;
 	}
+	
+	free(tmptagSpec);
+	
 	if (removed)
 		return TRUE;
 	else

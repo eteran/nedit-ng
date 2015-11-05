@@ -552,7 +552,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 		free(fileString);
 		return FALSE;
 	}
-	fileString[readLen] = 0;
+	fileString[readLen] = '\0';
 
 	/* Detect and convert DOS and Macintosh format files */
 	switch (FormatOfFile(fileString)) {
@@ -581,10 +581,11 @@ int IncludeFile(WindowInfo *window, const char *name) {
 
 	/* insert the contents of the file in the selection or at the insert
 	   position in the window if no selection exists */
-	if (window->buffer->primary_.selected)
+	if (window->buffer->primary_.selected) {
 		window->buffer->BufReplaceSelected(fileString);
-	else
+	} else {
 		window->buffer->BufInsert(TextGetCursorPos(window->lastFocus), fileString);
+	}
 
 	/* release the memory that holds fileString */
 	free(fileString);

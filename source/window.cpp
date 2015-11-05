@@ -3174,7 +3174,6 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
 ** top document.
 */
 void RefreshMenuToggleStates(WindowInfo *window) {
-	WindowInfo *win;
 
 	if (!IsTopDocument(window))
 		return;
@@ -3216,6 +3215,7 @@ void RefreshMenuToggleStates(WindowInfo *window) {
 	XtSetSensitive(window->detachDocumentItem, NDocuments(window) > 1);
 	XtSetSensitive(window->contextDetachDocumentItem, NDocuments(window) > 1);
 
+	WindowInfo *win;
 	for (win = WindowList; win; win = win->next)
 		if (win->shell != window->shell)
 			break;

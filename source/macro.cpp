@@ -4868,7 +4868,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
-	int pos, rangeIndex, maxpos;
+	int rangeIndex, maxpos;
 	int label = 0;
 
 	if (nArgs < 1 || nArgs > 2) {
@@ -4888,6 +4888,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
+	int pos = 0;
 	if (nArgs == 1) {
 		pos = TextGetCursorPos(window->lastFocus);
 	} else if (nArgs == 2) {

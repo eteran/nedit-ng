@@ -2655,7 +2655,7 @@ static void dumpVal(DataValue dv) {
 		if (!src) {
 			printf("s=<nullptr>");
 		} else {
-			for (k = 0; src[k] && k < sizeof s - 1; k++) {
+			for (k = 0; k < sizeof(s) - 1 && src[k]; k++) {
 				s[k] = isprint(src[k]) ? src[k] : '?';
 			}
 			s[k] = 0;
