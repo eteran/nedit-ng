@@ -444,7 +444,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 	const char *toDoCommand = "", *langMode = "", *geometry = "";
 	char *commandString, *outPtr;
 	int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
-	int i, lineArg, nRead, charsWritten, opts = True;
+	int i, lineArg, nRead, opts = True;
 	int fileCount = 0, group = 0, isTabbed;
 
 	/* Allocate a string for output, for the maximum possible length.  The
@@ -550,8 +550,9 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 			   The "long" cast on strlen() is necessary because size_t
 			   is 64 bit on Alphas, and 32-bit on most others.  There is
 			   no printf format specifier for "size_t", thanx, ANSI. */
-			sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum, read, create, iconic, isTabbed, (long)strlen(path), (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry), &charsWritten);
+			int charsWritten = sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n", lineNum, read, create, iconic, isTabbed, (long)strlen(path), (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry));
 			outPtr += charsWritten;
+			
 			strcpy(outPtr, path);
 			outPtr += strlen(path);
 			*outPtr++ = '\n';
@@ -581,7 +582,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 	 * iconic state (and optional language mode and geometry).
 	 */
 	if (toDoCommand[0] != '\0' || fileCount == 0) {
-		sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n%n", iconic, tabbed, (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry), &charsWritten);
+		int charsWritten = sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n", iconic, tabbed, (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry));
 		outPtr += charsWritten;
 		strcpy(outPtr, toDoCommand);
 		outPtr += strlen(toDoCommand);
