@@ -56,7 +56,7 @@ int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname
 int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap);
 int CheckReadOnly(WindowInfo *window);
 void RemoveBackupFile(WindowInfo *window);
-void UniqueUntitledName(char *name);
+void UniqueUntitledName(char *name, size_t size);
 void CheckForChangesToFile(WindowInfo *window);
 
 #endif /* NEDIT_FILE_H_INCLUDED */

@@ -777,7 +777,7 @@ void CloseWindow(WindowInfo *window) {
 	   it's running the macro calling us, don't close it, make it Untitled */
 	if (keepWindow || (WindowList == window && window->next == nullptr)) {
 		window->filename[0] = '\0';
-		UniqueUntitledName(name);
+		UniqueUntitledName(name, sizeof(name));
 		CLEAR_ALL_LOCKS(window->lockReasons);
 		window->fileMode = 0;
 		window->fileUid = 0;

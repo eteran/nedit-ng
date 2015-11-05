@@ -93,7 +93,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	/*... test for creatability? */
 
 	/* Find a (relatively) unique name for the new file */
-	UniqueUntitledName(name);
+	UniqueUntitledName(name, sizeof(name));
 
 	/* create new window/document */
 	if (inWindow)
@@ -1278,20 +1278,26 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int
 ** files in this session, i.e. Untitled or Untitled_nn, and write it into
 ** the string "name".
 */
-void UniqueUntitledName(char *name) {
-	WindowInfo *w;
-	int i;
-
-	for (i = 0; i < INT_MAX; i++) {
-		if (i == 0)
-			sprintf(name, "Untitled");
-		else
-			sprintf(name, "Untitled_%d", i);
-		for (w = WindowList; w != nullptr; w = w->next)
-			if (!strcmp(w->filename, name))
+void UniqueUntitledName(char *name, size_t size) {
+	
+	for (int i = 0; i < INT_MAX; i++) {
+	
+		if (i == 0) {
+			snprintf(name, size, "Untitled");
+		} else {
+			snprintf(name, size, "Untitled_%d", i);
+		}
+		
+		WindowInfo *w;
+		for (w = WindowList; w != nullptr; w = w->next) {
+			if (!strcmp(w->filename, name)) {
 				break;
-		if (w == nullptr)
+			}
+		}
+			
+		if (w == nullptr) {
 			break;
+		}
 	}
 }
 
