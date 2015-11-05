@@ -41,7 +41,6 @@
 #include "file.h"
 #include "highlight.h"
 #include "MotifHelper.h"
-#include "../util/motif.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"

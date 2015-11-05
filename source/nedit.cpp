@@ -47,7 +47,6 @@
 #include "../util/printUtils.h"
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
-#include "../util/motif.h"
 
 #include <ctype.h>
 #include <limits.h>
