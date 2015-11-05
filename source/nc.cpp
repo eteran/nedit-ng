@@ -32,10 +32,12 @@
 #include "../util/prefFile.h"
 #include "../util/system.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <climits>
+#include <cstring>
+#include <list>
+#include <algorithm>
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -51,9 +53,9 @@
 #define APP_CLASS "NEditClient"
 
 #define PROPERTY_CHANGE_TIMEOUT (Preferences.timeOut * 1000) /* milliseconds */
-#define SERVER_START_TIMEOUT (Preferences.timeOut * 3000)    /* milliseconds */
-#define REQUEST_TIMEOUT (Preferences.timeOut * 1000)         /* milliseconds */
-#define FILE_OPEN_TIMEOUT (Preferences.timeOut * 3000)       /* milliseconds */
+#define SERVER_START_TIMEOUT    (Preferences.timeOut * 3000) /* milliseconds */
+#define REQUEST_TIMEOUT         (Preferences.timeOut * 1000) /* milliseconds */
+#define FILE_OPEN_TIMEOUT       (Preferences.timeOut * 3000) /* milliseconds */
 
 struct CommandLine {
 	char *shell;
@@ -92,7 +94,7 @@ static struct {
 	int autoStart;
 	char serverCmd[2 * MAXPATHLEN]; /* holds executable name + flags */
 	char serverName[MAXPATHLEN];
-	int waitForClose;
+	bool waitForClose;
 	int timeOut;
 } Preferences;
 
@@ -115,14 +117,13 @@ static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", Xr
 struct FileListEntry {
 	Atom waitForFileOpenAtom;
 	Atom waitForFileClosedAtom;
-	char *path;
-	struct FileListEntry *next;
+	std::string path;
 };
 
 struct FileListHead {
 	int waitForOpenCount;
 	int waitForCloseCount;
-	FileListEntry *fileList;
+	std::list<FileListEntry *> fileList;
 };
 static FileListHead fileListHead;
 
@@ -132,38 +133,34 @@ static void setPropertyValue(Atom atom) {
 
 /* Add another entry to the file entry list, if it doesn't exist yet. */
 static void addToFileList(const char *path) {
-	FileListEntry *item;
 
 	/* see if the file already exists in the list */
-	for (item = fileListHead.fileList; item; item = item->next) {
-		if (!strcmp(item->path, path))
-			break;
-	}
+	auto it = std::find_if(fileListHead.fileList.begin(), fileListHead.fileList.end(), [path](FileListEntry *item) {
+		return item->path == path;
+	});
 
 	/* Add the atom to the head of the file list if it wasn't found. */
-	if (item == 0) {
-		item = (FileListEntry *)malloc(sizeof(item[0]));
-		item->waitForFileOpenAtom = None;
+	if (it == fileListHead.fileList.end()) {
+		FileListEntry *item = new FileListEntry;
+		item->waitForFileOpenAtom   = None;
 		item->waitForFileClosedAtom = None;
-		item->path = (char *)malloc(strlen(path) + 1);
-		strcpy(item->path, path);
-		item->next = fileListHead.fileList;
-		fileListHead.fileList = item;
+		item->path                  = path;
+		
+		fileListHead.fileList.push_front(item);
 	}
 }
 
 /* Creates the properties for the various paths */
 static void createWaitProperties(void) {
-	FileListEntry *item;
 
-	for (item = fileListHead.fileList; item; item = item->next) {
+	for(FileListEntry *item : fileListHead.fileList) {
 		fileListHead.waitForOpenCount++;
-		item->waitForFileOpenAtom = CreateServerFileOpenAtom(Preferences.serverName, item->path);
+		item->waitForFileOpenAtom = CreateServerFileOpenAtom(Preferences.serverName, item->path.c_str());
 		setPropertyValue(item->waitForFileOpenAtom);
 
-		if (Preferences.waitForClose == True) {
+		if (Preferences.waitForClose) {
 			fileListHead.waitForCloseCount++;
-			item->waitForFileClosedAtom = CreateServerFileClosedAtom(Preferences.serverName, item->path, False);
+			item->waitForFileClosedAtom = CreateServerFileClosedAtom(Preferences.serverName, item->path.c_str(), False);
 			setPropertyValue(item->waitForFileClosedAtom);
 		}
 	}
@@ -649,7 +646,8 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow
 
 	/* Wait for all of the windows to be opened by server,
 	 * and closed if -wait was supplied */
-	while (fileListHead.fileList) {
+	while (!fileListHead.fileList.empty()) {
+
 		XEvent event;
 		const XPropertyEvent *e = (const XPropertyEvent *)&event;
 
@@ -657,10 +655,10 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow
 
 		/* Update the fileList and check if all files have been closed. */
 		if (e->type == PropertyNotify && e->window == rootWindow) {
-			FileListEntry *item;
 
 			if (e->state == PropertyDelete) {
-				for (item = fileListHead.fileList; item; item = item->next) {
+			
+				for(FileListEntry *item : fileListHead.fileList) {
 					if (e->atom == item->waitForFileOpenAtom) {
 						/* The 'waitForFileOpen' property is deleted when the file is opened */
 						fileListHead.waitForOpenCount--;
