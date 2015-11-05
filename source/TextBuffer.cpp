@@ -479,11 +479,10 @@ void insertColInLine(const char *line, const char *insLine, int column, int insW
 ** to position the cursor).
 */
 void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-	char *outPtr;
 	int indent, toIndent, len, postColIndent;
 
 	/* copy the line up to "column" */
-	outPtr = outStr;
+	char *outPtr = outStr;
 	indent = 0;
 
 	auto linePtr = line.begin();
@@ -549,8 +548,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	indent = toIndent;
 
 	/* realign tabs for text beyond "column" and write it out */
-	// TODO(eteran): fix this std::string copy inefficiency!
-	std::string retabbedStr = realignTabsEx(std::string(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	std::string retabbedStr = realignTabsEx(view::string_view(&*linePtr, std::distance(linePtr, line.end())), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
 	strcpy(outPtr, retabbedStr.c_str());
 
 	*endOffset = outPtr - outStr;
@@ -816,7 +814,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 void setSelection(TextSelection *sel, int start, int end) {
 	sel->selected = start != end;
 	sel->zeroWidth = (start == end) ? 1 : 0;
-	sel->rectangular = False;
+	sel->rectangular = false;
 	sel->start = std::min<int>(start, end);
 	sel->end = std::max<int>(start, end);
 }
@@ -824,7 +822,7 @@ void setSelection(TextSelection *sel, int start, int end) {
 void setRectSelect(TextSelection *sel, int start, int end, int rectStart, int rectEnd) {
 	sel->selected = rectStart < rectEnd;
 	sel->zeroWidth = (rectStart == rectEnd) ? 1 : 0;
-	sel->rectangular = True;
+	sel->rectangular = true;
 	sel->start = start;
 	sel->end = end;
 	sel->rectStart = rectStart;
@@ -855,15 +853,15 @@ void updateSelection(TextSelection *sel, int pos, int nDeleted, int nInserted) {
 	} else if (pos <= sel->start && pos + nDeleted >= sel->end) {
 		sel->start = pos;
 		sel->end = pos;
-		sel->selected = False;
-		sel->zeroWidth = False;
+		sel->selected = false;
+		sel->zeroWidth = false;
 	} else if (pos <= sel->start && pos + nDeleted < sel->end) {
 		sel->start = pos;
 		sel->end = nInserted + sel->end - nDeleted;
 	} else if (pos < sel->end) {
 		sel->end += nInserted - nDeleted;
 		if (sel->end <= sel->start)
-			sel->selected = False;
+			sel->selected = false;
 	}
 }
 
@@ -975,7 +973,7 @@ TextBuffer::TextBuffer() : TextBuffer(0) {
 ** avoid unnecessary re-allocation if you know exactly how much the buffer
 ** will need to hold
 */
-TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(True), nullSubsChar_('\0'), rangesetTable_(nullptr) {
+TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), nullSubsChar_('\0'), rangesetTable_(nullptr) {
 
 	buf_ = XtMalloc(requestedSize + PreferredGapSize + 1);
 	buf_[requestedSize + PreferredGapSize] = '\0';
@@ -1734,8 +1732,8 @@ void TextBuffer::BufSelect(int start, int end) {
 void TextBuffer::BufUnselect() {
 	TextSelection oldSelection = primary_;
 
-	primary_.selected = False;
-	primary_.zeroWidth = False;
+	primary_.selected = false;
+	primary_.zeroWidth = false;
 	redisplaySelection(&oldSelection, &primary_);
 }
 
@@ -1785,8 +1783,8 @@ void TextBuffer::BufSecondarySelect(int start, int end) {
 void TextBuffer::BufSecondaryUnselect() {
 	TextSelection oldSelection = secondary_;
 
-	secondary_.selected = False;
-	secondary_.zeroWidth = False;
+	secondary_.selected = false;
+	secondary_.zeroWidth = false;
 	redisplaySelection(&oldSelection, &secondary_);
 }
 
@@ -1831,8 +1829,8 @@ void TextBuffer::BufHighlight(int start, int end) {
 void TextBuffer::BufUnhighlight() {
 	TextSelection oldSelection = highlight_;
 
-	highlight_.selected = False;
-	highlight_.zeroWidth = False;
+	highlight_.selected = false;
+	highlight_.zeroWidth = false;
 	redisplaySelection(&oldSelection, &highlight_);
 }
 
@@ -2114,9 +2112,9 @@ int TextBuffer::BufCountBackwardNLines(int startPos, int nLines) const {
 /*
 ** Search forwards in buffer "buf" for characters in "searchChars", starting
 ** with the character "startPos", and returning the result in "foundPos"
-** returns True if found, False if not.
+** returns true if found, false if not.
 */
-int TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *foundPos) const {
+bool TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 	const char *c;
 
@@ -2125,7 +2123,7 @@ int TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *fou
 		for (c = searchChars; *c != '\0'; c++) {
 			if (buf_[pos] == *c) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos++;
@@ -2134,21 +2132,21 @@ int TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *fou
 		for (c = searchChars; *c != '\0'; c++) {
 			if (buf_[pos + gapLen] == *c) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos++;
 	}
 	*foundPos = length_;
-	return False;
+	return false;
 }
 
 /*
 ** Search forwards in buffer "buf" for characters in "searchChars", starting
 ** with the character "startPos", and returning the result in "foundPos"
-** returns True if found, False if not.
+** returns true if found, false if not.
 */
-int TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
+bool TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
 	pos = startPos;
@@ -2156,7 +2154,7 @@ int TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, 
 		for (char ch : searchChars) {
 			if (buf_[pos] == ch) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos++;
@@ -2165,34 +2163,34 @@ int TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, 
 		for (char ch : searchChars) {
 			if (buf_[pos + gapLen] == ch) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos++;
 	}
 	*foundPos = length_;
-	return False;
+	return false;
 }
 
 /*
 ** Search backwards in buffer "buf" for characters in "searchChars", starting
 ** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns True if found, False if not.
+** returns true if found, false if not.
 */
-int TextBuffer::BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const {
+bool TextBuffer::BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 	const char *c;
 
 	if (startPos == 0) {
 		*foundPos = 0;
-		return False;
+		return false;
 	}
 	pos = startPos == 0 ? 0 : startPos - 1;
 	while (pos >= gapStart_) {
 		for (c = searchChars; *c != '\0'; c++) {
 			if (buf_[pos + gapLen] == *c) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos--;
@@ -2201,33 +2199,33 @@ int TextBuffer::BufSearchBackward(int startPos, const char *searchChars, int *fo
 		for (c = searchChars; *c != '\0'; c++) {
 			if (buf_[pos] == *c) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos--;
 	}
 	*foundPos = 0;
-	return False;
+	return false;
 }
 
 /*
 ** Search backwards in buffer "buf" for characters in "searchChars", starting
 ** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns True if found, False if not.
+** returns true if found, false if not.
 */
-int TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
+bool TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
 	if (startPos == 0) {
 		*foundPos = 0;
-		return False;
+		return false;
 	}
 	pos = startPos == 0 ? 0 : startPos - 1;
 	while (pos >= gapStart_) {
 		for (char ch : searchChars) {
 			if (buf_[pos + gapLen] == ch) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos--;
@@ -2236,13 +2234,13 @@ int TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars,
 		for (char ch : searchChars) {
 			if (buf_[pos] == ch) {
 				*foundPos = pos;
-				return True;
+				return true;
 			}
 		}
 		pos--;
 	}
 	*foundPos = 0;
-	return False;
+	return false;
 }
 
 /*
@@ -2262,10 +2260,10 @@ int TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars,
 ** characters in the string in preparation for being copied or replaced
 ** into the buffer, and if neccessary, adjusts the buffer as well, in the
 ** event that the string contains the character it is currently using for
-** substitution.  Returns False, if substitution is no longer possible
+** substitution.  Returns false, if substitution is no longer possible
 ** because all non-printable characters are already in use.
 */
-int TextBuffer::BufSubstituteNullChars(char *string, int length) {
+bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	bool histogram[256];
 
 	/* Find out what characters the string contains */
@@ -2274,7 +2272,7 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	/* Does the string contain the null-substitute character?  If so, re-
 	   histogram the buffer text to find a character which is ok in both the
 	   string and the buffer, and change the buffer's null-substitution
-	   character.  If none can be found, give up and return False */
+	   character.  If none can be found, give up and return false */
 	if (histogram[(unsigned char)nullSubsChar_] != 0) {
 		char *bufString, newSubsChar;
 		/* here we know we can modify the file buffer directly,
@@ -2283,7 +2281,7 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
-			return False;
+			return false;
 		}
 		/* bufString points to the buffer's data, so we substitute in situ */
 		subsChars(bufString, length_, nullSubsChar_, newSubsChar);
@@ -2294,7 +2292,7 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	   buffer's null substitution character */
 	if (histogram[0] != 0)
 		subsChars(string, length, '\0', nullSubsChar_);
-	return True;
+	return true;
 }
 
 /*
@@ -2303,10 +2301,10 @@ int TextBuffer::BufSubstituteNullChars(char *string, int length) {
 ** characters in the string in preparation for being copied or replaced
 ** into the buffer, and if neccessary, adjusts the buffer as well, in the
 ** event that the string contains the character it is currently using for
-** substitution.  Returns False, if substitution is no longer possible
+** substitution.  Returns false, if substitution is no longer possible
 ** because all non-printable characters are already in use.
 */
-int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
+bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	bool histogram[256];
 
 	/* Find out what characters the string contains */
@@ -2315,7 +2313,7 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	/* Does the string contain the null-substitute character?  If so, re-
 	   histogram the buffer text to find a character which is ok in both the
 	   string and the buffer, and change the buffer's null-substitution
-	   character.  If none can be found, give up and return False */
+	   character.  If none can be found, give up and return false */
 	if (histogram[(unsigned char)nullSubsChar_] != 0) {
 		char *bufString;
 		char newSubsChar;
@@ -2325,7 +2323,7 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 		histogramCharacters(bufString, length_, histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
-			return False;
+			return false;
 		}
 		/* bufString points to the buffer's data, so we substitute in situ */
 		subsChars(bufString, length_, nullSubsChar_, newSubsChar);
@@ -2336,7 +2334,7 @@ int TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	   buffer's null substitution character */
 	if (histogram[0] != 0)
 		subsCharsEx(string, '\0', nullSubsChar_);
-	return True;
+	return true;
 }
 
 /*
@@ -2524,12 +2522,12 @@ int TextBuffer::insertEx(int pos, view::string_view text) {
 /*
 ** Search forwards in buffer "buf" for character "searchChar", starting
 ** with the character "startPos", and returning the result in "foundPos"
-** returns True if found, False if not.  (The difference between this and
+** returns true if found, false if not.  (The difference between this and
 ** BufSearchForward is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
-int TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) const {
+bool TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) const {
 	int pos;
 	int gapLen = gapEnd_ - gapStart_;
 	
@@ -2539,55 +2537,55 @@ int TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) cons
 
 		if (buf_[pos] == searchChar) {
 			*foundPos = pos;
-			return True;
+			return true;
 		}
 		pos++;
 	}
 	while (pos < length_) {
 		if (buf_[pos + gapLen] == searchChar) {
 			*foundPos = pos;
-			return True;
+			return true;
 		}
 		pos++;
 	}
 	*foundPos = length_;
-	return False;
+	return false;
 }
 
 /*
 ** Search backwards in buffer "buf" for character "searchChar", starting
 ** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns True if found, False if not.  (The difference between this and
+** returns true if found, false if not.  (The difference between this and
 ** BufSearchBackward is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
-int TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) const {
+bool TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
 	assert(foundPos);
 
 	if (startPos == 0) {
 		*foundPos = 0;
-		return False;
+		return false;
 	}
 	pos = startPos == 0 ? 0 : startPos - 1;
 	while (pos >= gapStart_) {
 		if (buf_[pos + gapLen] == searchChar) {
 			*foundPos = pos;
-			return True;
+			return true;
 		}
 		pos--;
 	}
 	while (pos >= 0) {
 		if (buf_[pos] == searchChar) {
 			*foundPos = pos;
-			return True;
+			return true;
 		}
 		pos--;
 	}
 	*foundPos = 0;
-	return False;
+	return false;
 }
 
 std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
@@ -2798,7 +2796,7 @@ void TextBuffer::insertCol(int column, int startPos, const char *insText, int *n
 	outPtr = outStr;
 	lineStart = start;
 	insPtr = insText;
-	while (True) {
+	while (true) {
 		lineEnd = BufEndOfLine(lineStart);
 		line = BufGetRange(lineStart, lineEnd);
 		insLine = copyLine(insPtr, &len);
@@ -2846,9 +2844,9 @@ void TextBuffer::insertCol(int column, int startPos, const char *insText, int *n
 ** routines which need to set a cursor position).
 */
 void TextBuffer::insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
-	int nLines, start, end, insWidth, lineStart, lineEnd;
+	int nLines, start, end, insWidth, lineEnd;
 	int expReplLen, expInsLen, len, endOffset;
-	char *outStr, *outPtr;
+	char *outStr;
 
 	if (column < 0)
 		column = 0;
@@ -2877,10 +2875,10 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
 	/* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */
-	outPtr = outStr;
-	lineStart = start;
+	char *outPtr = outStr;
+	int lineStart = start;
 	auto insPtr = insText.begin();
-	while (True) {
+	while (true) {
 		lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
 		std::string insLine = copyLineEx(insPtr, insText.end(), &len);
@@ -2964,7 +2962,7 @@ void TextBuffer::overlayRect(int startPos, int rectStart, int rectEnd, const cha
 	outPtr = outStr;
 	lineStart = start;
 	insPtr = insText;
-	while (True) {
+	while (true) {
 		lineEnd = BufEndOfLine(lineStart);
 		line = BufGetRange(lineStart, lineEnd);
 		insLine = copyLine(insPtr, &len);
@@ -3029,7 +3027,7 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	outPtr = outStr;
 	lineStart = start;
 	auto insPtr = insText.begin();
-	while (True) {
+	while (true) {
 		lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
 		std::string insLine = copyLineEx(insPtr, insText.end(), &len);
@@ -3176,7 +3174,7 @@ void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
 
 	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
 	   can't detect when the contents of a selection goes away) */
-	sel->selected = False;
+	sel->selected = false;
 	redisplaySelection(&oldSelection, sel);
 }
 
@@ -3196,7 +3194,7 @@ void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 
 	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
 	   can't detect when the contents of a selection goes away) */
-	sel->selected = False;
+	sel->selected = false;
 	redisplaySelection(&oldSelection, sel);
 }
 

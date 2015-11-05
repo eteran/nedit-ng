@@ -58,6 +58,12 @@ public:
 private:
 	
 public:
+	bool BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
+	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
+	bool BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
+	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
+	bool BufSubstituteNullChars(char *string, int length);
+	bool BufSubstituteNullCharsEx(std::string &string);
 	char *BufGetAll();
 	char *BufGetRange(int start, int end);
 	char *BufGetSecSelectText();
@@ -65,7 +71,6 @@ public:
 	char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);
 	char BufGetCharacter(int pos) const;
 	const char *BufAsString();
-	view::string_view BufAsStringEx();
 	int BufCmp(int pos, int len, const char *cmpText);
 	int BufCmpEx(int pos, int len, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
@@ -77,21 +82,17 @@ public:
 	int BufGetEmptySelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 	int BufGetExpandedChar(int pos, int indent, char *outStr) const;
 	int BufGetHighlightPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	int BufGetLength() const;
 	int BufGetSecSelectPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 	int BufGetSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
 	int BufGetTabDistance() const;
-	int BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
-	int BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
-	int BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
-	int BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
 	int BufStartOfLine(int pos) const;
-	int BufSubstituteNullChars(char *string, int length);
-	int BufSubstituteNullCharsEx(std::string &string);
 	std::string BufGetAllEx();
 	std::string BufGetRangeEx(int start, int end);
 	std::string BufGetSecSelectTextEx();
 	std::string BufGetSelectionTextEx();
 	std::string BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd);
+	view::string_view BufAsStringEx();
 	void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
@@ -113,7 +114,6 @@ public:
 	void BufRemoveRect(int start, int end, int rectStart, int rectEnd);
 	void BufRemoveSecSelect();
 	void BufRemoveSelected();
-	void BufSecRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufReplace(int start, int end, const char *text);
 	void BufReplaceEx(int start, int end, view::string_view text);
 	void BufReplaceRect(int start, int end, int rectStart, int rectEnd, const char *text);
@@ -122,6 +122,7 @@ public:
 	void BufReplaceSecSelectEx(view::string_view text);
 	void BufReplaceSelected(const char *text);
 	void BufReplaceSelectedEx(view::string_view text);
+	void BufSecRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufSecondarySelect(int start, int end);
 	void BufSecondaryUnselect();
 	void BufSelect(int start, int end);
@@ -132,14 +133,13 @@ public:
 	void BufUnselect();
 	void BufUnsubstituteNullChars(char *string) const;
 	void BufUnsubstituteNullCharsEx(std::string &string) const;
-	int BufGetLength() const;
 
 private:
+	bool searchBackward(int startPos, char searchChar, int *foundPos) const;
+	bool searchForward(int startPos, char searchChar, int *foundPos) const;
 	char *getSelectionText(TextSelection *sel);  
 	int insert(int pos, const char *text);
 	int insertEx(int pos, view::string_view text);
-	int searchBackward(int startPos, char searchChar, int *foundPos) const;
-	int searchForward(int startPos, char searchChar, int *foundPos) const;
 	std::string getSelectionTextEx(TextSelection *sel);
 	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText);
 	void callPreDeleteCBs(int pos, int nDeleted);

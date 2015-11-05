@@ -26,20 +26,79 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <pwd.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
+#include <unistd.h>
 
 #define DEFAULT_NEDIT_HOME ".nedit"
 
-static const char *hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
-static const char *plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
+namespace {
 
-static void buildFilePath(char *fullPath, const char *dir, const char *file);
-static bool isDir(const char *file);
-static bool isRegFile(const char *file);
+const char *hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
+const char *plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
+
+/*
+**  Builds a file path from 'dir' and 'file', watching for buffer overruns.
+**
+**  Preconditions:
+**      - MAXPATHLEN is set to the max. allowed path length
+**      - 'fullPath' points to a buffer of at least MAXPATHLEN
+**      - 'dir' and 'file' are valid strings
+**
+**  Postcondition:
+**      - 'fullpath' will contain 'dir/file'
+**      - Exits when the result would be greater than MAXPATHLEN
+*/
+void buildFilePath(char *fullPath, const char *dir, const char *file) {
+	if (MAXPATHLEN < strlen(dir) + strlen(file) + 2) {
+		/*  We have no way to build the path. */
+		fprintf(stderr, "nedit: rc file path too long for %s.\n", file);
+		exit(EXIT_FAILURE);
+	}
+
+	/*  The length is already checked */
+	snprintf(fullPath, MAXPATHLEN, "%s/%s", dir, file);
+}
+
+/*
+**  Returns true if 'file' is a directory, false otherwise.
+**  Links are followed.
+**
+**  Preconditions:
+**      - None
+**
+**  Returns:
+**      - True for directories, false otherwise
+*/
+bool isDir(const char *file) {
+	struct stat attribute;
+
+	return ((stat(file, &attribute) == 0) && S_ISDIR(attribute.st_mode));
+}
+
+/*
+**  Returns true if 'file' is a regular file, false otherwise.
+**  Links are followed.
+**
+**  Preconditions:
+**      - None
+**
+**  Returns:
+**      - True for regular files, false otherwise
+*/
+bool isRegFile(const char *file) {
+	struct stat attribute;
+
+	return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));
+}
+
+
+}
 
 /* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
@@ -291,59 +350,4 @@ std::string GetRCFileNameEx(int type) {
 	}
 	
 	return std::string();
-}
-
-/*
-**  Builds a file path from 'dir' and 'file', watching for buffer overruns.
-**
-**  Preconditions:
-**      - MAXPATHLEN is set to the max. allowed path length
-**      - 'fullPath' points to a buffer of at least MAXPATHLEN
-**      - 'dir' and 'file' are valid strings
-**
-**  Postcondition:
-**      - 'fullpath' will contain 'dir/file'
-**      - Exits when the result would be greater than MAXPATHLEN
-*/
-static void buildFilePath(char *fullPath, const char *dir, const char *file) {
-	if (MAXPATHLEN < strlen(dir) + strlen(file) + 2) {
-		/*  We have no way to build the path. */
-		fprintf(stderr, "nedit: rc file path too long for %s.\n", file);
-		exit(EXIT_FAILURE);
-	}
-
-	/*  The length is already checked */
-	snprintf(fullPath, MAXPATHLEN, "%s/%s", dir, file);
-}
-
-/*
-**  Returns true if 'file' is a directory, false otherwise.
-**  Links are followed.
-**
-**  Preconditions:
-**      - None
-**
-**  Returns:
-**      - True for directories, false otherwise
-*/
-static bool isDir(const char *file) {
-	struct stat attribute;
-
-	return ((stat(file, &attribute) == 0) && S_ISDIR(attribute.st_mode));
-}
-
-/*
-**  Returns true if 'file' is a regular file, false otherwise.
-**  Links are followed.
-**
-**  Preconditions:
-**      - None
-**
-**  Returns:
-**      - True for regular files, false otherwise
-*/
-static bool isRegFile(const char *file) {
-	struct stat attribute;
-
-	return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));
 }
