@@ -28,6 +28,7 @@
 #define NEDIT_TAGS_H_INCLUDED
 
 #include "nedit.h"
+#include <unordered_set>
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
@@ -37,7 +38,7 @@ struct tagFile {
 	struct tagFile *next;
 	char *filename;
 	time_t date;
-	Boolean loaded;
+	bool loaded;
 	short index;
 	short refcount; /* Only tips files are refcounted, not tags files */
 };

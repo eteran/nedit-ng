@@ -2,8 +2,8 @@
 *                                                                              *
 * help_topic.h --  Nirvana Editor help display                                 *
 *                                                                              *
-                 Generated on Jul 5, 2010 (Do NOT edit!)
-                 Source of content from file help.etx
+*                Generated on Jul 5, 2010 (Do NOT edit!)                       *
+*                Source of content from file help.etx                          *
 *                                                                              *
 * Copyright (c) 1999-2010 Mark Edel                                            *
 *                                                                              *

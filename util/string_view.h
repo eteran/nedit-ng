@@ -46,7 +46,7 @@ public:
 	
 	basic_string_view &operator=(const basic_string_view &rhs) noexcept = default;
 	
-#if 1
+#if 0
 	template <class A>
 	basic_string_view(const std::basic_string<Ch, Tr, A> &str, size_type pos, size_type count = npos)  : data_(nullptr), size_(0) {
 		basic_string_view(str).substr(pos, count).swap(*this);
@@ -454,7 +454,38 @@ typedef basic_string_view<wchar_t>  wstring_view;
 typedef basic_string_view<char16_t> u16string_view;
 typedef basic_string_view<char32_t> u32string_view;
 
+//--------------------------------------------------------------------------
 
+// some utility functions for convienience, not part of the standard proposal
+template <class Ch, class Tr, class A>
+basic_string_view<Ch, Tr> substr(const std::basic_string<Ch, Tr, A> &str, typename basic_string_view<Ch, Tr>::size_type pos, typename basic_string_view<Ch, Tr>::size_type count = basic_string_view<Ch, Tr>::npos) {
+	return basic_string_view<Ch, Tr>(str).substr(pos, count);
+}
+
+template <class Ch, class Tr>
+basic_string_view<Ch, Tr> substr(const basic_string_view<Ch, Tr> &str, typename basic_string_view<Ch, Tr>::size_type pos, typename basic_string_view<Ch, Tr>::size_type count = basic_string_view<Ch, Tr>::npos) {
+	return str.substr(pos, count);
+}
+
+template <class Ch, class Tr, class A>
+basic_string_view<Ch, Tr> substr(typename std::basic_string<Ch, Tr, A>::const_iterator first, typename std::basic_string<Ch, Tr, A>::const_iterator last) {
+
+	Ch *data = &*first;
+	typename basic_string_view<Ch, Tr>::size_type size = std::distance(first, last);
+
+	return basic_string_view<Ch, Tr>(data, size);
+	
+}
+
+template <class Ch, class Tr = std::char_traits<Ch>>
+basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
+
+	const Ch *data = first;
+	typename basic_string_view<Ch, Tr>::size_type size = std::distance(first, last);
+
+	return basic_string_view<Ch, Tr>(data, size);
+	
+}
 
 }
 

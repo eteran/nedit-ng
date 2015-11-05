@@ -91,7 +91,7 @@ static int loadTagsFile(const char *tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
 static int fakeRegExSearch(WindowInfo *window, const char *buffer, const char *searchString, int *startPos, int *endPos);
-static unsigned hashAddr(const char *key);
+static size_t hashAddr(const char *key);
 static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static int delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
@@ -114,6 +114,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel);
     nullptr-terminated linked list of parsed tags */
 static tag **Tags = nullptr;
 static int DefTagHashSize = 10000;
+
 /* list of loaded tags files */
 tagFile *TagsFileList = nullptr;
 
@@ -144,43 +145,43 @@ static int tagsShowCalltip(WindowInfo *window, char *text) {
 
 /* Set the head of the proper file list (Tags or Tips) to t */
 static tagFile *setFileListHead(tagFile *t, int file_type) {
-	if (file_type == TAG)
+	if (file_type == TAG) {
 		TagsFileList = t;
-	else
+	} else {
 		TipsFileList = t;
+	}
+	
 	return t;
 }
 
 /*      Compute hash address from a string key */
-static unsigned hashAddr(const char *key) {
-	unsigned s = strlen(key);
-	unsigned a = 0, x = 0, i;
+static size_t hashAddr(const char *key) {
+	size_t s = strlen(key);
+	size_t a = 0;
+	size_t x = 0;
+	size_t i;
 
 	for (i = 0; (i + 3) < s; i += 4) {
-		strncpy((char *)&a, &key[i], 4);
+		memcpy(&a, &key[i], sizeof(a));
 		x += a;
 	}
 
-	for (a = 1; i < (s + 1); i++, a *= 256)
+	for (a = 1; i < (s + 1); i++, a *= 256) {
 		x += key[i] * a;
+	}
 
 	return x;
 }
 
-/*      Retrieve a tag structure from the hash table */
-static tag *getTag(const char *name, int search_type) {
+static tag *getTagFromTable(tag **table, const char *name) {
+
 	static char lastName[MAXLINE];
 	static tag *t;
 	static int addr;
-	tag **table;
-
-	if (search_type == TIP)
-		table = Tips;
-	else
-		table = Tags;
-
-	if (table == nullptr)
+	
+	if (table == nullptr) {
 		return nullptr;
+	}
 
 	if (name) {
 		addr = hashAddr(name) % DefTagHashSize;
@@ -192,10 +193,23 @@ static tag *getTag(const char *name, int search_type) {
 	} else
 		return nullptr;
 
-	for (; t; t = t->next)
-		if (!strcmp(name, t->name))
+	for (; t; t = t->next) {
+		if (!strcmp(name, t->name)) {
 			return t;
+		}
+	}
+	
 	return nullptr;
+}
+
+/*      Retrieve a tag structure from the hash table */
+static tag *getTag(const char *name, int search_type) {
+
+	if (search_type == TIP) {
+		return getTagFromTable(Tips, name);
+	} else {
+		return getTagFromTable(Tags, name);
+	}	
 }
 
 /* Add a tag specification to the hash table
@@ -212,18 +226,19 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
 	if (searchMode == TIP) {
 		if (Tips == nullptr)
-			Tips = (tag **)calloc(DefTagHashSize, sizeof(tag *));
+			Tips = new tag*[DefTagHashSize];
 		table = Tips;
 	} else {
 		if (Tags == nullptr)
-			Tags = (tag **)calloc(DefTagHashSize, sizeof(tag *));
+			Tags = new tag*[DefTagHashSize];
 		table = Tags;
 	}
 
-	if (*file == '/')
+	if (*file == '/') {
 		strcpy(newfile, file);
-	else
+	} else {
 		sprintf(newfile, "%s%s", path, file);
+	}
 
 	NormalizePathname(newfile);
 
@@ -240,7 +255,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 			continue;
 		if (*t->file != '/') {
 			char tmpfile[MAXPATHLEN];
-			sprintf(tmpfile, "%s%s", t->path, t->file);
+			snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path, t->file);
 			NormalizePathname(tmpfile);
 			if (strcmp(newfile, tmpfile))
 				continue;
@@ -248,7 +263,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 		return 0;
 	}
 
-	t = (tag *)malloc(sizeof(tag));
+	t = new tag;
 	setTag(t, name, file, lang, search, posInf, path);
 	t->index = index;
 	t->next = table[addr];
@@ -321,7 +336,7 @@ static int tagFileIndex = 0;
 */
 int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 	tagFile *t;
-	int added = 0;
+	bool added = false;
 	struct stat statbuf;
 	char *filename;
 	char pathName[MAXPATHLEN];
@@ -329,13 +344,15 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 	tagFile *FileList;
 
 	searchMode = file_type;
-	if (searchMode == TAG)
+	if (searchMode == TAG) {
 		FileList = TagsFileList;
-	else
+	} else {
 		FileList = TipsFileList;
+	}
 
 	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
 	strcpy(tmptagSpec, tagSpec);
+	
 	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename == '/' || *filename == '~') {
 			continue;
@@ -349,22 +366,28 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 
 		NormalizePathname(pathName);
 
-		for (t = FileList; t && strcmp(t->filename, pathName); t = t->next)
+		for (t = FileList; t && strcmp(t->filename, pathName); t = t->next) {
 			;
+		}
+		
 		if (t) {
-			added = 1;
+			added = true;
 			continue;
 		}
-		if (stat(pathName, &statbuf) != 0)
+		if (stat(pathName, &statbuf) != 0) {
 			continue;
-		t = (tagFile *)malloc(sizeof(tagFile));
+		}
+		
+		t = new tagFile;
 		t->filename = STRSAVE(pathName);
-		t->loaded = 0;
-		t->date = statbuf.st_mtime;
-		t->index = ++tagFileIndex;
-		t->next = FileList;
-		FileList = setFileListHead(t, file_type);
-		added = 1;
+		t->loaded   = false;
+		t->date     = statbuf.st_mtime;
+		t->index    = ++tagFileIndex;
+		
+		t->next     = FileList;
+		FileList    = setFileListHead(t, file_type);
+		
+		added = true;
 	}
 	free(tmptagSpec);
 	updateMenuItems();
@@ -400,10 +423,11 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	}
 
 	searchMode = file_type;
-	if (searchMode == TAG)
+	if (searchMode == TAG) {
 		FileList = TagsFileList;
-	else
+	} else {
 		FileList = TipsFileList;
+	}
 
 	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
 	strcpy(tmptagSpec, tagSpec);
@@ -432,14 +456,15 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 			added = 0;
 			continue;
 		}
-		t = (tagFile *)malloc(sizeof(tagFile));
+		t = new tagFile;
 		t->filename = STRSAVE(pathName);
-		t->loaded = 0;
-		t->date = statbuf.st_mtime;
-		t->index = ++tagFileIndex;
-		t->next = FileList;
+		t->loaded   = false;
+		t->date     = statbuf.st_mtime;
+		t->index    = ++tagFileIndex;
+		t->next     = FileList;
 		t->refcount = 1;
-		FileList = setFileListHead(t, file_type);
+		
+		FileList    = setFileListHead(t, file_type);
 	}
 	free(tmptagSpec);
 	updateMenuItems();
@@ -501,7 +526,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 			else
 				FileList = setFileListHead(t->next, file_type);
 			free(t->filename);
-			free(t);
+			delete t;
 			updateMenuItems();
 			break;
 		}
@@ -741,6 +766,74 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel) {
 	return nTagsAdded;
 }
 
+#define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
+static bool LookupTagFromList(tagFile *FileList, const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
+
+	/*
+	** Go through the list of all tags Files:
+	**   - load them (if not already loaded)
+	**   - check for update of the tags file and reload it in that case
+	**   - save the modification date of the tags file
+	**
+	** Do this only as long as name != nullptr, not for sucessive calls
+	** to find multiple tags specs.
+	**
+	*/
+	if (name != nullptr) {
+		for (tagFile *tf = FileList; tf; tf = tf->next) {
+		
+			struct stat statbuf;
+			int load_status;		
+		
+			if (tf->loaded) {
+				if (stat(tf->filename, &statbuf) != 0) { /*  */
+					fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+				} else {
+					if (tf->date == statbuf.st_mtime) {
+						/* current tags file tf is already loaded and up to date */
+						continue;
+					}
+				}
+				/* tags file has been modified, delete it's entries and reload it */
+				delTag(nullptr, nullptr, -2, nullptr, -2, tf->index);
+			}
+
+			/* If we get here we have to try to (re-) load the tags file */
+			if (FileList == TipsFileList) {
+				load_status = loadTipsFile(tf->filename, tf->index, 0);
+			} else {
+				load_status = loadTagsFile(tf->filename, tf->index, 0);
+			}
+
+			if (load_status) {
+				if (stat(tf->filename, &statbuf) != 0) {
+					if (!tf->loaded) {
+						/* if tf->loaded == true we already have seen the error msg */
+						fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+					}
+				} else {
+					tf->date = statbuf.st_mtime;
+				}
+				tf->loaded = true;
+			} else {
+				tf->loaded = false;
+			}
+		}
+	}
+
+	if(tag *t = getTag(name, search_type)) {
+		*file         = t->file;
+		*language     = t->language;
+		*searchString = t->searchString;
+		*pos          = t->posInf;
+		*path         = t->path;
+		return true;	
+	}
+	
+	return false;
+
+}
+
 /*
 ** Given a tag name, lookup the file and path of the definition
 ** and the proper search string. Returned strings are pointers
@@ -754,74 +847,13 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel) {
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-#define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
 int LookupTag(const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
-	tag *t;
-	tagFile *tf;
-	struct stat statbuf;
-	tagFile *FileList;
-	int load_status;
 
 	searchMode = search_type;
-	if (searchMode == TIP)
-		FileList = TipsFileList;
-	else
-		FileList = TagsFileList;
-
-	/*
-	** Go through the list of all tags Files:
-	**   - load them (if not already loaded)
-	**   - check for update of the tags file and reload it in that case
-	**   - save the modification date of the tags file
-	**
-	** Do this only as long as name != nullptr, not for sucessive calls
-	** to find multiple tags specs.
-	**
-	*/
-	for (tf = FileList; tf && name; tf = tf->next) {
-		if (tf->loaded) {
-			if (stat(tf->filename, &statbuf) != 0) { /*  */
-				fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
-			} else {
-				if (tf->date == statbuf.st_mtime) {
-					/* current tags file tf is already loaded and up to date */
-					continue;
-				}
-			}
-			/* tags file has been modified, delete it's entries and reload it */
-			delTag(nullptr, nullptr, -2, nullptr, -2, tf->index);
-		}
-		/* If we get here we have to try to (re-) load the tags file */
-		if (FileList == TipsFileList)
-			load_status = loadTipsFile(tf->filename, tf->index, 0);
-		else
-			load_status = loadTagsFile(tf->filename, tf->index, 0);
-		if (load_status) {
-			if (stat(tf->filename, &statbuf) != 0) {
-				if (!tf->loaded) {
-					/* if tf->loaded == 1 we already have seen the error msg */
-					fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
-				}
-			} else {
-				tf->date = statbuf.st_mtime;
-			}
-			tf->loaded = 1;
-		} else {
-			tf->loaded = 0;
-		}
-	}
-
-	t = getTag(name, search_type);
-
-	if (!t) {
-		return FALSE;
+	if (searchMode == TIP) {
+		return LookupTagFromList(TipsFileList, name, file, language, searchString, pos, path, search_type);
 	} else {
-		*file = t->file;
-		*language = t->language;
-		*searchString = t->searchString;
-		*pos = t->posInf;
-		*path = t->path;
-		return TRUE;
+		return LookupTagFromList(TagsFileList, name, file, language, searchString, pos, path, search_type);
 	}
 }
 
@@ -954,12 +986,12 @@ int ShowTipString(WindowInfo *window, char *text, Boolean anchored, int pos, Boo
 
 /* store all of the info into a pre-allocated tags struct */
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
-	t->name = rcs_strdup(name);
-	t->file = rcs_strdup(file);
-	t->language = language;
+	t->name         = rcs_strdup(name);
+	t->file         = rcs_strdup(file);
+	t->language     = language;
 	t->searchString = rcs_strdup(searchString);
-	t->posInf = posInf;
-	t->path = rcs_strdup(path);
+	t->posInf       = posInf;
+	t->path         = rcs_strdup(path);
 }
 
 /*

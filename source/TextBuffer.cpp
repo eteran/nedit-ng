@@ -548,11 +548,11 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	indent = toIndent;
 
 	/* realign tabs for text beyond "column" and write it out */
-	std::string retabbedStr = realignTabsEx(view::string_view(&*linePtr, std::distance(linePtr, line.end())), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
 	strcpy(outPtr, retabbedStr.c_str());
 
-	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + len;
+	*endOffset = (outPtr - outStr);
+	*outLen    = (outPtr - outStr) + len;
 }
 
 /*
