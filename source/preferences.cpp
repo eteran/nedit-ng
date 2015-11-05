@@ -32,6 +32,7 @@
 #include "menu.h"
 #include "text.h"
 #include "search.h"
+#include "WindowInfo.h"
 #include "window.h"
 #include "userCmds.h"
 #include "highlight.h"

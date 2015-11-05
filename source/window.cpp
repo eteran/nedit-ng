@@ -31,6 +31,7 @@
 #include "textSel.h"
 #include "text.h"
 #include "textDisp.h"
+#include "WindowInfo.h"
 #include "textP.h"
 #include "UndoInfo.h"
 #include "nedit.h"

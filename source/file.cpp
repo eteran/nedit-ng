@@ -36,6 +36,7 @@
 #include "tags.h"
 #include "server.h"
 #include "interpret.h"
+#include "WindowInfo.h"
 #include "MotifHelper.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"

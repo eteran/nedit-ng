@@ -32,6 +32,7 @@
 #include "window.h"
 #include "menu.h"
 #include "preferences.h"
+#include "WindowInfo.h"
 #include "server.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"

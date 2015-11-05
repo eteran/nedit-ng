@@ -48,6 +48,7 @@
 #include "smartIndent.h"
 #include "windowTitle.h"
 #include "MotifHelper.h"
+#include "WindowInfo.h"
 #include "../util/getfiles.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"

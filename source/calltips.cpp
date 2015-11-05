@@ -29,6 +29,7 @@
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"
+#include "WindowInfo.h"
 #include "../util/misc.h"
 
 #include <stdio.h>

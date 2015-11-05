@@ -31,7 +31,6 @@
 *******************************************************************************/
 
 #include "nedit.h"
-/* #include "TextBuffer.h" */
 #include "file.h"
 #include "preferences.h"
 #include "regularExp.h"
@@ -41,6 +40,7 @@
 #include "macro.h"
 #include "server.h"
 #include "interpret.h"
+#include "WindowInfo.h"
 #include "parse.h"
 #include "help.h"
 #include "../util/misc.h"

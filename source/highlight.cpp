@@ -36,6 +36,7 @@
 #include "regularExp.h"
 #include "highlightData.h"
 #include "preferences.h"
+#include "WindowInfo.h"
 #include "window.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"

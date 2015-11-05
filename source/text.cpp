@@ -31,6 +31,7 @@
 #include "textSel.h"
 #include "textDrag.h"
 #include "nedit.h"
+#include "WindowInfo.h"
 #include "calltips.h"
 #include "../util/DialogF.h"
 #include "window.h"

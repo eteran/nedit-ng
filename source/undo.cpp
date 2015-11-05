@@ -31,6 +31,7 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
+#include "WindowInfo.h"
 #include "search.h"
 #include "window.h"
 #include "file.h"

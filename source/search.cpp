@@ -32,6 +32,7 @@
 #include "text.h"
 #include "nedit.h"
 #include "server.h"
+#include "WindowInfo.h"
 #include "window.h"
 #include "userCmds.h"
 #include "preferences.h"

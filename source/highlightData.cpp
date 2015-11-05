@@ -35,6 +35,7 @@
 #include "preferences.h"
 #include "help.h"
 #include "window.h"
+#include "WindowInfo.h"
 #include "regexConvert.h"
 #include "MotifHelper.h"
 #include "../util/misc.h"

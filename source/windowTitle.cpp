@@ -31,6 +31,7 @@
 #include "nedit.h"
 #include "preferences.h"
 #include "help.h"
+#include "WindowInfo.h"
 #include "MotifHelper.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"

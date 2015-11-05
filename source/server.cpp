@@ -32,6 +32,7 @@
 #include "window.h"
 #include "file.h"
 #include "selection.h"
+#include "WindowInfo.h"
 #include "macro.h"
 #include "menu.h"
 #include "preferences.h"

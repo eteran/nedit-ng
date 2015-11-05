@@ -31,6 +31,7 @@
 #include "nedit.h"
 #include "text.h"
 #include "preferences.h"
+#include "WindowInfo.h"
 #include "interpret.h"
 #include "macro.h"
 #include "window.h"
