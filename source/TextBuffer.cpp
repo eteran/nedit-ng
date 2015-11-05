@@ -811,60 +811,6 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	*outLen = (outPtr - outStr) + temp.size();
 }
 
-void setSelection(TextSelection *sel, int start, int end) {
-	sel->selected = start != end;
-	sel->zeroWidth = (start == end) ? 1 : 0;
-	sel->rectangular = false;
-	sel->start = std::min<int>(start, end);
-	sel->end = std::max<int>(start, end);
-}
-
-void setRectSelect(TextSelection *sel, int start, int end, int rectStart, int rectEnd) {
-	sel->selected = rectStart < rectEnd;
-	sel->zeroWidth = (rectStart == rectEnd) ? 1 : 0;
-	sel->rectangular = true;
-	sel->start = start;
-	sel->end = end;
-	sel->rectStart = rectStart;
-	sel->rectEnd = rectEnd;
-}
-
-int getSelectionPos(TextSelection *sel, int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
-	/* Always fill in the parameters (zero-width can be requested too). */
-	*isRect = sel->rectangular;
-	*start = sel->start;
-	*end = sel->end;
-	if (sel->rectangular) {
-		*rectStart = sel->rectStart;
-		*rectEnd = sel->rectEnd;
-	}
-	return sel->selected;
-}
-
-/*
-** Update an individual selection for changes in the corresponding text
-*/
-void updateSelection(TextSelection *sel, int pos, int nDeleted, int nInserted) {
-	if ((!sel->selected && !sel->zeroWidth) || pos > sel->end)
-		return;
-	if (pos + nDeleted <= sel->start) {
-		sel->start += nInserted - nDeleted;
-		sel->end += nInserted - nDeleted;
-	} else if (pos <= sel->start && pos + nDeleted >= sel->end) {
-		sel->start = pos;
-		sel->end = pos;
-		sel->selected = false;
-		sel->zeroWidth = false;
-	} else if (pos <= sel->start && pos + nDeleted < sel->end) {
-		sel->start = pos;
-		sel->end = nInserted + sel->end - nDeleted;
-	} else if (pos < sel->end) {
-		sel->end += nInserted - nDeleted;
-		if (sel->end <= sel->start)
-			sel->selected = false;
-	}
-}
-
 /*
 ** Copy from "text" to end up to but not including newline (or end of "text")
 ** and return the copy as the function value, and the length of the line in
@@ -1725,7 +1671,7 @@ void TextBuffer::BufCheckDisplay(int start, int end) {
 void TextBuffer::BufSelect(int start, int end) {
 	TextSelection oldSelection = primary_;
 
-	setSelection(&primary_, start, end);
+	primary_.setSelection(start, end);
 	redisplaySelection(&oldSelection, &primary_);
 }
 
@@ -1740,17 +1686,17 @@ void TextBuffer::BufUnselect() {
 void TextBuffer::BufRectSelect(int start, int end, int rectStart, int rectEnd) {
 	TextSelection oldSelection = primary_;
 
-	setRectSelect(&primary_, start, end, rectStart, rectEnd);
+	primary_.setRectSelect(start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &primary_);
 }
 
 int TextBuffer::BufGetSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
-	return getSelectionPos(&primary_, start, end, isRect, rectStart, rectEnd);
+	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 /* Same as above, but also returns TRUE for empty selections */
 int TextBuffer::BufGetEmptySelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
-	return getSelectionPos(&primary_, start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
+	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
 }
 
 char *TextBuffer::BufGetSelectionText() {
@@ -1776,7 +1722,7 @@ void TextBuffer::BufReplaceSelectedEx(view::string_view text) {
 void TextBuffer::BufSecondarySelect(int start, int end) {
 	TextSelection oldSelection = secondary_;
 
-	setSelection(&secondary_, start, end);
+	secondary_.setSelection(start, end);
 	redisplaySelection(&oldSelection, &secondary_);
 }
 
@@ -1791,12 +1737,12 @@ void TextBuffer::BufSecondaryUnselect() {
 void TextBuffer::BufSecRectSelect(int start, int end, int rectStart, int rectEnd) {
 	TextSelection oldSelection = secondary_;
 
-	setRectSelect(&secondary_, start, end, rectStart, rectEnd);
+	secondary_.setRectSelect(start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &secondary_);
 }
 
 int TextBuffer::BufGetSecSelectPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
-	return getSelectionPos(&secondary_, start, end, isRect, rectStart, rectEnd);
+	return secondary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 char *TextBuffer::BufGetSecSelectText() {
@@ -1822,7 +1768,7 @@ void TextBuffer::BufReplaceSecSelectEx(view::string_view text) {
 void TextBuffer::BufHighlight(int start, int end) {
 	TextSelection oldSelection = highlight_;
 
-	setSelection(&highlight_, start, end);
+	highlight_.setSelection(start, end);
 	redisplaySelection(&oldSelection, &highlight_);
 }
 
@@ -1837,12 +1783,12 @@ void TextBuffer::BufUnhighlight() {
 void TextBuffer::BufRectHighlight(int start, int end, int rectStart, int rectEnd) {
 	TextSelection oldSelection = highlight_;
 
-	setRectSelect(&highlight_, start, end, rectStart, rectEnd);
+	highlight_.setRectSelect(start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &highlight_);
 }
 
 int TextBuffer::BufGetHighlightPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
-	return getSelectionPos(&highlight_, start, end, isRect, rectStart, rectEnd);
+	return highlight_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 /*
@@ -2444,21 +2390,20 @@ int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 }
 
 char *TextBuffer::getSelectionText(TextSelection *sel) {
-	int start, end, isRect, rectStart, rectEnd;
-	char *text;
 
 	/* If there's no selection, return an allocated empty string */
-	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd)) {
-		text = XtMalloc(1);
+	if(!*sel) {
+		char *text = XtMalloc(1);
 		*text = '\0';
-		return text;
+		return text;	
 	}
-
+	
 	/* If the selection is not rectangular, return the selected range */
-	if (isRect)
-		return BufGetTextInRect(start, end, rectStart, rectEnd);
-	else
-		return BufGetRange(start, end);
+	if (sel->rectangular) {
+		return BufGetTextInRect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+	} else {
+		return BufGetRange(sel->start, sel->end);	
+	}
 }
 
 /*
@@ -2589,19 +2534,17 @@ bool TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) co
 }
 
 std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
-	int start, end, isRect, rectStart, rectEnd;
-	std::string text;
 
 	/* If there's no selection, return an allocated empty string */
-	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd)) {
-		return text;
+	if (!*sel) {
+		return std::string();
 	}
 
 	/* If the selection is not rectangular, return the selected range */
-	if (isRect) {
-		return BufGetTextInRectEx(start, end, rectStart, rectEnd);
+	if (sel->rectangular) {
+		return BufGetTextInRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd);
 	} else {
-		return BufGetRangeEx(start, end);
+		return BufGetRangeEx(sel->start, sel->end);
 	}
 }
 
@@ -3147,30 +3090,32 @@ void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *
 }
 
 void TextBuffer::removeSelected(TextSelection *sel) {
-	int start, end;
-	int isRect, rectStart, rectEnd;
 
-	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
+	if(!*sel) {
 		return;
-	if (isRect)
-		BufRemoveRect(start, end, rectStart, rectEnd);
-	else
-		BufRemove(start, end);
+	}
+	
+	if (sel->rectangular) {
+		BufRemoveRect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+	} else {
+		BufRemove(sel->start, sel->end);
+	}	
 }
 
 void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
-	int start, end, isRect, rectStart, rectEnd;
+
 	TextSelection oldSelection = *sel;
 
 	/* If there's no selection, return */
-	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
+	if (!*sel)
 		return;
 
 	/* Do the appropriate type of replace */
-	if (isRect)
-		BufReplaceRect(start, end, rectStart, rectEnd, text);
-	else
-		BufReplace(start, end, text);
+	if (sel->rectangular) {
+		BufReplaceRect(sel->start, sel->end, sel->rectStart, sel->rectEnd, text);
+	} else {
+		BufReplace(sel->start, sel->end, text);
+	}
 
 	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
 	   can't detect when the contents of a selection goes away) */
@@ -3179,18 +3124,21 @@ void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
 }
 
 void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
-	int start, end, isRect, rectStart, rectEnd;
-	TextSelection oldSelection = *sel;
 
+	TextSelection oldSelection = *sel;
+	
 	/* If there's no selection, return */
-	if (!getSelectionPos(sel, &start, &end, &isRect, &rectStart, &rectEnd))
+	if (!*sel) {
 		return;
+	}
 
 	/* Do the appropriate type of replace */
-	if (isRect)
-		BufReplaceRectEx(start, end, rectStart, rectEnd, text);
-	else
-		BufReplaceEx(start, end, text);
+	if (sel->rectangular) {
+		BufReplaceRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd, text);
+	} else {
+		BufReplaceEx(sel->start, sel->end, text);	
+	}
+	
 
 	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
 	   can't detect when the contents of a selection goes away) */
@@ -3202,9 +3150,9 @@ void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 ** Update all of the selections in "buf" for changes in the buffer's text
 */
 void TextBuffer::updateSelections(int pos, int nDeleted, int nInserted) {
-	updateSelection(&primary_, pos, nDeleted, nInserted);
-	updateSelection(&secondary_, pos, nDeleted, nInserted);
-	updateSelection(&highlight_, pos, nDeleted, nInserted);
+	primary_  .updateSelection(pos, nDeleted, nInserted);
+	secondary_.updateSelection(pos, nDeleted, nInserted);
+	highlight_.updateSelection(pos, nDeleted, nInserted);
 }
 
 

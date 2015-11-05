@@ -8,7 +8,16 @@ public:
 	TextSelection(const TextSelection &) = default;
 	TextSelection &operator=(const TextSelection &) = default;
 	~TextSelection() = default;
+
+public:
+	int getSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	void setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd);
+	void setSelection(int newStart, int newEnd);
+	void updateSelection(int pos, int nDeleted, int nInserted);
 	
+public:
+	explicit operator bool() const { return selected; }
+
 public:
 	bool selected;    /* True if the selection is active */
 	bool rectangular; /* True if the selection is rectangular */
@@ -20,3 +29,5 @@ public:
 };
 
 #endif
+
+
