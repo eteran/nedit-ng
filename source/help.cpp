@@ -186,7 +186,7 @@ static char _XmVersionString[] = "unknown";
 static char *bldInfoString = nullptr;
 
 static const char *getBuildInfo(void) {
-	static const char *bldFormat = "%s\n"
+	static const char bldFormat[] = "%s\n"
 	                               "     Built on: %s, %s, %s\n"
 	                               "     Built at: %s, %s\n"
 	                               "   With Motif: %s%d.%d.%d [%s]\n"
@@ -206,10 +206,10 @@ static const char *getBuildInfo(void) {
 			int depth;
 			Colormap map;
 			Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
-			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
+			snprintf(visualStr, sizeof(visualStr), "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 		}
 
-		bldInfoString = XtMalloc(strlen(bldFormat) + 1024);
+		bldInfoString = XtMalloc(sizeof(bldFormat) + 1024);
 		locale = setlocale(LC_MESSAGES, "");
 
 		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__, "", XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
