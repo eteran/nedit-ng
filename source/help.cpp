@@ -186,18 +186,6 @@ static char _XmVersionString[] = "unknown";
 
 static char *bldInfoString = nullptr;
 
-static void freeBuildInfo(void) {
-	/* This keeps memory leak detectors happy */
-	XtFree(bldInfoString);
-}
-
-static const char *const warning = "\nThis NEdit was built with a known-bad version of Motif.  Please "
-                                   "do not report any bugs you encounter unless you can reproduce "
-                                   "them with a known-good binary from the www.nedit.org website. "
-                                   "If this binary was supplied with your Linux distribution please "
-                                   "file a bug report with them asking them to build NEdit with a "
-                                   "known-good version of Motif.\n";
-
 static const char *getBuildInfo(void) {
 	static const char *bldFormat = "%s\n"
 	                               "     Built on: %s, %s, %s\n"
@@ -210,12 +198,9 @@ static const char *getBuildInfo(void) {
 
 	static const char *visualClass[] = {"StaticGray", "GrayScale", "StaticColor", "PseudoColor", "TrueColor", "DirectColor"};
 
-	static const char *const stabilities[] = {"", "(Untested) ", "(Known Bad) "};
-
 	if (bldInfoString == nullptr) {
 		const char *locale;
 		char visualStr[500] = "<unknown>";
-		const enum MotifStability stab = GetMotifStability();
 
 		if (TheDisplay) {
 			Visual *visual;
@@ -225,16 +210,17 @@ static const char *getBuildInfo(void) {
 			sprintf(visualStr, "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 		}
 
-		bldInfoString = XtMalloc(strlen(bldFormat) + strlen(warning) + 1024);
+		bldInfoString = XtMalloc(strlen(bldFormat) + 1024);
 		locale = setlocale(LC_MESSAGES, "");
 
-		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__, stabilities[stab], XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
+		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__, "", XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
 		        _XmVersionString, (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)), (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)), visualStr, locale ? locale : "None");
 
-		if (stab == MotifKnownBad)
-			strcat(bldInfoString, warning);
 
-		atexit(freeBuildInfo);
+		atexit([](){
+			/* This keeps memory leak detectors happy */
+			XtFree(bldInfoString);		
+		});
 	}
 
 	return bldInfoString;

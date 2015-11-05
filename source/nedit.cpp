@@ -259,14 +259,6 @@ int main(int argc, char **argv) {
 	static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
 	unsigned char *invalidBindings = nullptr;
 
-	/* Warn user if this has been compiled wrong. */
-	enum MotifStability stability = GetMotifStability();
-	if (stability == MotifKnownBad) {
-		fputs("nedit: WARNING: This version of NEdit is built incorrectly, and will be unstable.\n"
-		      "nedit: Please get a stable version of NEdit from http://www.nedit.org.\n",
-		      stderr);
-	}
-
 	/* Save the command which was used to invoke nedit for restart command */
 	ArgV0 = argv[0];
 
