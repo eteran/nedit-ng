@@ -209,16 +209,34 @@ static const char *getBuildInfo(void) {
 			snprintf(visualStr, sizeof(visualStr), "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 		}
 
-		bldInfoString = XtMalloc(sizeof(bldFormat) + 1024);
+		bldInfoString = (char *)malloc(sizeof(bldFormat) + 1024);
 		locale = setlocale(LC_MESSAGES, "");
 
-		sprintf(bldInfoString, bldFormat, NEditVersion, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__, "", XmVERSION, XmREVISION, XmUPDATE_LEVEL, XmVERSION_STRING, xmUseVersion / 1000, xmUseVersion % 1000,
-		        _XmVersionString, (nullptr == TheDisplay ? "<unknown>" : ServerVendor(TheDisplay)), (nullptr == TheDisplay ? 0 : VendorRelease(TheDisplay)), visualStr, locale ? locale : "None");
+		sprintf(bldInfoString,
+			bldFormat, 
+			NEditVersion, 
+			COMPILE_OS, 
+			COMPILE_MACHINE, 
+			COMPILE_COMPILER, 
+			__DATE__, 
+			__TIME__, 
+			"", 
+			XmVERSION, 
+			XmREVISION, 
+			XmUPDATE_LEVEL, 
+			XmVERSION_STRING, 
+			xmUseVersion / 1000, 
+			xmUseVersion % 1000,
+			_XmVersionString, 
+			(TheDisplay == nullptr ? "<unknown>" : ServerVendor(TheDisplay)),
+			(TheDisplay == nullptr ? 0 : VendorRelease(TheDisplay)), 
+			visualStr, 
+			locale ? locale : "None");
 
 
 		atexit([](){
 			/* This keeps memory leak detectors happy */
-			XtFree(bldInfoString);		
+			free(bldInfoString);		
 		});
 	}
 
