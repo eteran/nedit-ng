@@ -249,8 +249,6 @@ bool SavePreferences(Display *display, const char *fullName, const char *fileHea
 			const int type = rsrcDescrip[i].dataType;
 			fprintf(fp, "%s.%s: ", appName, rsrcDescrip[i].name.c_str());
 						
-			const char **enumStrings;
-			
 			switch(type) {
 			case PREF_STRING:
 				fprintf(fp, "%s", rsrcDescrip[i].valueAddr.str);

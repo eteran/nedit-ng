@@ -886,6 +886,9 @@ static void getSizePart(const char *font, char *buff1, int inPixels) {
     is for the callback function for the corresponding widget */
 
 static void propFontToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data) {
+
+	(void)widget;
+
 	if (call_data->reason == XmCR_VALUE_CHANGED) {
 		if (ctrlBlk->showPropFonts == PREF_FIXED)
 			ctrlBlk->showPropFonts = PREF_PROP;
@@ -909,6 +912,9 @@ static void propFontToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, Xm
 }
 
 static void sizeToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data) {
+
+	(void)widget;
+
 	int i, makeSelection;
 	char newSize[10];
 	XmString str;
@@ -1111,6 +1117,10 @@ static void destroyCB(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbac
 }
 
 static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+
+	(void)widget;
+	(void)call_data;
+	
 	XtFree(ctrlBlk->sel1);
 	XtFree(ctrlBlk->sel2);
 	XtFree(ctrlBlk->sel3);
@@ -1123,6 +1133,10 @@ static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCall
 }
 
 static void okAction(Widget widget, xfselControlBlkType *ctrlBlk, XmPushButtonCallbackStruct *call_data) {
+
+	(void)widget;
+	(void)call_data;
+	
 	char *fontPattern;
 	char **fontName;
 	int i;
@@ -1185,6 +1199,10 @@ static void startupFont(xfselControlBlkType *ctrlBlk, const char *font) {
     same time have the OK button as the default button */
 
 static void setFocus(Widget w, xfselControlBlkType *ctrlBlk, XEvent *event, Boolean *continueToDispatch) {
+
+	(void)w;
+	(void)event;
+
 	int n;
 	Arg args[2];
 

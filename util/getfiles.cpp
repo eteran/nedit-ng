@@ -176,6 +176,9 @@ static void (*OrigFileSearchProc)(Widget, XtPointer); /* Built in Motif file sea
  * Do the hard work of setting up a file selection dialog
  */
 Widget getFilenameHelper(Widget parent, const char *promptString, const char *filename, int existing) {
+
+	(void)filename;
+
 	int n;                /* number of arguments               */
 	Arg args[MAX_ARGS];   /* arg list	                   */
 	Widget fileSB;        /* widget file select box 	   */
@@ -647,9 +650,10 @@ static void doErrorDialog(const char *errorString, const char *filename) {
 	XtUnmanageChild(ErrorDialog);
 }
 
-static void newFileOKCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallbackStruct *call_data)
+static void newFileOKCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallbackStruct *call_data) {
 
-{
+	(void)w;
+	
 	char *filename;  /* name of chosen file             */
 	int fd;          /* file descriptor                 */
 	int length;      /* length of file name		 */
@@ -694,15 +698,26 @@ static void newFileOKCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallba
 }
 
 static void newFileCancelCB(Widget w, Boolean *client_data, caddr_t call_data) {
+
+	(void)w;
+	(void)call_data;
+
 	SelectResult = GFN_CANCEL;
 	*client_data = True;
 }
 
 static void newHelpCB(Widget w, Widget helpPanel, caddr_t call_data) {
+
+	(void)w;
+	(void)call_data;
+
 	ManageDialogCenteredOnPointer(helpPanel);
 }
 
 static void existOkCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallbackStruct *call_data) {
+
+	(void)w;
+	
 	char *filename; /* name of chosen file             */
 	int fd;         /* file descriptor                 */
 	int length;     /* length of file name		 */
@@ -726,23 +741,45 @@ static void existOkCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallback
 }
 
 static void existCancelCB(Widget w, Boolean *client_data, caddr_t call_data) {
+
+	(void)w;
+	(void)call_data;
+
 	SelectResult = GFN_CANCEL;
 	*client_data = True; /* done with dialog		*/
 }
 
 static void yesNoOKCB(Widget w, caddr_t client_data, caddr_t call_data) {
+
+	(void)w;
+	(void)client_data;
+	(void)call_data;
+	
 	YesNoResult = ynYes;
 }
 
 static void existHelpCB(Widget w, Widget helpPanel, caddr_t call_data) {
+
+	(void)w;
+	(void)call_data;
+	
 	ManageDialogCenteredOnPointer(helpPanel);
 }
 
 static void errorOKCB(Widget w, caddr_t client_data, caddr_t call_data) {
+	(void)w;
+	(void)client_data;
+	(void)call_data;
+	
 	ErrorDone = True;
 }
 
 static void yesNoCancelCB(Widget w, caddr_t client_data, caddr_t call_data) {
+	
+	(void)w;
+	(void)client_data;
+	(void)call_data;
+	
 	YesNoResult = ynNo;
 }
 
@@ -809,6 +846,10 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 }
 
 static void helpDismissCB(Widget w, Widget helpPanel, caddr_t call_data) {
+
+	(void)w;
+	(void)call_data;
+
 	XtUnmanageChild(helpPanel);
 }
 
@@ -825,6 +866,9 @@ static void makeListTypeable(Widget listW) {
 */
 static int nKeystrokes = 0; /* Global key stroke history counter */
 static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *continueDispatch) {
+
+	(void)callData;
+
 	char charString[5], c, *itemString;
 	int nChars, nItems, i, cmp, selectPos, topPos, nVisible;
 	XmString *items;

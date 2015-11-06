@@ -570,6 +570,10 @@ static void setHostLabelText(void) {
 }
 
 static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+
+	(void)widget;
+	(void)client_data;
+	
 	int i, textInserted, nInserted;
 
 	nInserted = call_data->text->length;
@@ -590,6 +594,10 @@ static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCa
 ** problems on command lines
 */
 static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+
+	(void)widget;
+	(void)client_data;
+	
 	int i, j, textInserted, nInserted;
 	static char prohibited[] = " \t,;|<>()[]{}!@?";
 
@@ -609,6 +617,11 @@ static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallb
 }
 
 static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data) {
+
+	(void)w;
+	(void)client_data;
+	(void)call_data;
+	
 	char command[MAX_CMD_STR], copiesArg[MAX_OPT_STR + MAX_INT_STR];
 	char jobArg[MAX_NAME_STR], hostArg[MAX_OPT_STR + MAX_HOST_STR];
 	char queueArg[MAX_OPT_STR + MAX_QUEUE_STR];
@@ -671,12 +684,21 @@ static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data) {
 }
 
 static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data) {
+	(void)w;
+	(void)client_data;
+	(void)call_data;
+	
 	/* Indicate that the user has specifically modified the print command
 	   and that this field should be left as is in subsequent dialogs */
 	CmdFieldModified = True;
 }
 
 static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+
+	(void)widget;
+	(void)client_data;
+	(void)call_data;
+	
 	char *str, command[MAX_CMD_STR];
 	int nRead;
 	FILE *pipe;
@@ -739,6 +761,11 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
 }
 
 static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+
+	(void)widget;
+	(void)client_data;
+	(void)call_data;
+	
 	DoneWithDialog = True;
 	CmdFieldModified = False;
 }

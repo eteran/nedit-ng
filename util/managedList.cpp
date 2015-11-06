@@ -337,6 +337,10 @@ void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *), void 
 ** Called on destruction of the list widget
 */
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+
 	/* Free the managed list data structure */
 	XtFree((char *)clientData);
 }
@@ -345,6 +349,10 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** Button callbacks: deleteCB, copyCB, moveUpCB, moveDownCB
 */
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+
 	managedListData *ml = (managedListData *)clientData;
 	int i, ind, listPos;
 
@@ -370,6 +378,10 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+	
 	managedListData *ml = (managedListData *)clientData;
 	int i, listPos, abort = False;
 	void *item;
@@ -414,6 +426,10 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+
 	managedListData *ml = (managedListData *)clientData;
 	int ind, listPos;
 	void *temp;
@@ -438,6 +454,10 @@ static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+	
 	managedListData *ml = (managedListData *)clientData;
 	int ind, listPos;
 	void *temp;
@@ -464,6 +484,9 @@ static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** Called when the user clicks on an item in the list widget
 */
 static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+
 	managedListData *ml = (managedListData *)clientData;
 	int ind, listPos = ((XmListCallbackStruct *)callData)->item_position;
 

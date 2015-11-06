@@ -532,7 +532,7 @@ int ConvertToDosFileString(char **fileString, int *length) {
 ** anyone cares about the performance or the potential for running out of
 ** memory on a save, it should probably be redone.
 */
-int ConvertToDosFileStringEx(std::string &fileString, int *length) {
+bool ConvertToDosFileStringEx(std::string &fileString) {
 
 	/* How long a string will we need? */
 	int outLength = 0;
@@ -558,9 +558,8 @@ int ConvertToDosFileStringEx(std::string &fileString, int *length) {
 	}
 
 	fileString = outString;
-	*length = fileString.size();
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -581,7 +580,7 @@ void ConvertToMacFileString(char *fileString, int length) {
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
 */
-void ConvertToMacFileStringEx(std::string &fileString, int length) {
+void ConvertToMacFileStringEx(std::string &fileString) {
 
 	std::transform(fileString.begin(), fileString.end(), fileString.begin(), [](char ch) {
 		if (ch == '\n') {

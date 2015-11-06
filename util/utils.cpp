@@ -200,6 +200,7 @@ const char *GetUserName(void) {
 */
 std::string GetUserNameEx(void) {
 	std::string str(GetUserName());
+	return str;
 }
 
 /*
@@ -236,7 +237,13 @@ void PrependHome(const char *filename, char *buf, size_t buflen) {
 	const char *const homedir = GetHomeDir();
 	
 	int n = snprintf(buf, buflen, "%s/%s", homedir, filename);
-	if(n >= buflen) {
+	
+	if(n < 0) {
+		buf[0] = '\0';
+		return;
+	}
+	
+	if((size_t)n >= buflen) {
 		buf[0] = '\0';
 	}
 }

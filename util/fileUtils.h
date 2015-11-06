@@ -39,7 +39,7 @@ char *ReadAnyTextFile(const char *fileName, int forceNL);
 const char *GetTrailingPathComponents(const char *path, int noOfComponents);
 int CompressPathname(char *pathname);
 int ConvertToDosFileString(char **fileString, int *length);
-int ConvertToDosFileStringEx(std::string &fileString, int *length);
+bool ConvertToDosFileStringEx(std::string &fileString);
 int ExpandTilde(char *pathname);
 int FormatOfFile(const char *fileString);
 int NormalizePathname(char *pathname);
@@ -48,6 +48,6 @@ int ResolvePath(const char *pathIn, char *pathResolved);
 void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);
 void ConvertToMacFileString(char *fileString, int length);
-void ConvertToMacFileStringEx(std::string &fileString, int length);
+void ConvertToMacFileStringEx(std::string &fileString);
 
 #endif

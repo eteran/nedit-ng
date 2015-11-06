@@ -798,7 +798,7 @@ static bool doSave(WindowInfo *window) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	FILE *fp;
-	int fileLen, result;
+	int result;
 
 	/* Get the full name of the file */
 	strcpy(fullname, window->path);
@@ -839,14 +839,13 @@ static bool doSave(WindowInfo *window) {
 
 	/* get the text buffer contents and its length */
 	std::string fileString = window->buffer->BufGetAllEx();
-	fileLen = window->buffer->BufGetLength();
 
 	/* If null characters are substituted for, put them back */
 	window->buffer->BufUnsubstituteNullCharsEx(fileString);
 
 	/* If the file is to be saved in DOS or Macintosh format, reconvert */
 	if (window->fileFormat == DOS_FILE_FORMAT) {
-		if (!ConvertToDosFileStringEx(fileString, &fileLen)) {
+		if (!ConvertToDosFileStringEx(fileString)) {
 			DialogF(DF_ERR, window->shell, 1, "Out of Memory", "Out of memory!  Try\nsaving in Unix format", "OK");
 
 			// NOTE(eteran): fixes resource leak error
@@ -854,11 +853,11 @@ static bool doSave(WindowInfo *window) {
 			return FALSE;
 		}
 	} else if (window->fileFormat == MAC_FILE_FORMAT) {
-		ConvertToMacFileStringEx(fileString, fileLen);
+		ConvertToMacFileStringEx(fileString);
 	}
 
 	/* write to the file */
-	fwrite(fileString.c_str(), sizeof(char), fileLen, fp);
+	fwrite(fileString.c_str(), sizeof(char), fileString.size(), fp);
 	
 	
 	if (ferror(fp)) {
@@ -884,8 +883,7 @@ static bool doSave(WindowInfo *window) {
 		window->device = statbuf.st_dev;
 		window->inode = statbuf.st_ino;
 	} else {
-		/* This needs to produce an error message -- the file can't be
-		    accessed! */
+		/* This needs to produce an error message -- the file can't be accessed! */
 		window->lastModTime = 0;
 		window->fileMissing = TRUE;
 		window->device = 0;
@@ -903,7 +901,7 @@ static bool doSave(WindowInfo *window) {
 int WriteBackupFile(WindowInfo *window) {
 	char name[MAXPATHLEN];
 	FILE *fp;
-	int fd, fileLen;
+	int fd;
 
 	/* Generate a name for the autoSave file */
 	backupFileName(window, name, sizeof(name));
@@ -926,17 +924,17 @@ int WriteBackupFile(WindowInfo *window) {
 
 	/* get the text buffer contents and its length */
 	std::string fileString = window->buffer->BufGetAllEx();
-	fileLen = window->buffer->BufGetLength();
 
 	/* If null characters are substituted for, put them back */
 	window->buffer->BufUnsubstituteNullCharsEx(fileString);
 
 	/* add a terminating newline if the file doesn't already have one */
-	if (fileLen != 0 && fileString[fileLen - 1] != '\n')
-		fileString[fileLen++] = '\n'; /* null terminator no longer needed */
+	if (!fileString.empty() && fileString.back() != '\n') {
+		fileString.append("\n"); /* null terminator no longer needed */
+	}
 
 	/* write out the file */
-	fwrite(fileString.c_str(), sizeof(char), fileLen, fp);
+	fwrite(fileString.c_str(), sizeof(char), fileString.size(), fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell, 1, "Error saving Backup", "Error while saving backup for %s:\n%s\n"
 		                                                         "Automatic backup is now off",
@@ -1119,10 +1117,12 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 		if (sel->rectangular) {
 			fileString = buf->BufGetSelectionTextEx();
 			fileLen = fileString.size();
-		} else
+		} else {
 			fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end, &fileLen);
-	} else
+		}
+	} else {
 		fileString = TextGetWrappedEx(window->textArea, 0, buf->BufGetLength(), &fileLen);
+	}
 
 	/* If null characters are substituted for, put them back */
 	buf->BufUnsubstituteNullCharsEx(fileString);

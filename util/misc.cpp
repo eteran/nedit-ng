@@ -1173,10 +1173,17 @@ void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems) {
 }
 
 static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)w;
+	(void)callData;
+	
 	XtFree((char *)clientData);
 }
 
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch) {
+
+	(void)continueDispatch;
+	
 	histInfo *histData = (histInfo *)callData;
 	KeySym keysym = XLookupKeysym((XKeyEvent *)event, 0);
 
@@ -1478,6 +1485,9 @@ static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo) {
 ** Callback routine for dialog mnemonic processing.
 */
 static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event) {
+
+	(void)callData;
+	
 	findAndActivateMnemonic(w, event->keycode);
 }
 
@@ -1752,6 +1762,11 @@ void AddMouseWheelSupport(Widget w) {
 }
 
 static void pageUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+
+	(void)w;
+	(void)args;
+	(void)nArgs;
+	
 	Widget scrolledWindow, scrollBar;
 	String al[1];
 
@@ -1764,6 +1779,10 @@ static void pageUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void pageDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+
+	(void)args;
+	(void)nArgs;
+	
 	Widget scrolledWindow, scrollBar;
 	String al[1];
 
@@ -1891,9 +1910,8 @@ void CloseAllPopupsFor(Widget shell) {
 	 * into trouble. */
 
 	Widget app = XtParent(shell);
-	int i;
 
-	for (i = 0; i < app->core.num_popups; i++) {
+	for (size_t i = 0; i < app->core.num_popups; i++) {
 		Widget pop = app->core.popup_list[i];
 		Widget shellFor;
 
