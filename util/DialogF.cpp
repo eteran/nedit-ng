@@ -62,12 +62,12 @@ struct dfcallbackstruct {
 static char **PromptHistory = nullptr;
 static int NPromptHistoryItems = -1;
 
-static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
-static void help_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
-static void cancel_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
-static void ok_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
-static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data);
-static void focusCB(Widget w, Widget dialog, caddr_t call_data);
+static void apply_callback(Widget w, XtPointer clientData, XtPointer callData);
+static void help_callback(Widget w, XtPointer clientData, XtPointer callData);
+static void cancel_callback(Widget w, XtPointer clientData, XtPointer callData);
+static void ok_callback(Widget w, XtPointer clientData, XtPointer callData);
+static void destroy_callback(Widget w, XtPointer clientData, XtPointer callData);
+static void focusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whichBtn);
 static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont);
 static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont);
@@ -219,10 +219,10 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		argcount++;
 
 		dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args, argcount);
-		XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)ok_callback, (char *)&df);
-		XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)cancel_callback, (char *)&df);
-		XtAddCallback(dialog, XmNhelpCallback, (XtCallbackProc)help_callback, (char *)&df);
-		XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)apply_callback, (char *)&df);
+		XtAddCallback(dialog, XmNokCallback, ok_callback, (char *)&df);
+		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (char *)&df);
+		XtAddCallback(dialog, XmNhelpCallback, help_callback, (char *)&df);
+		XtAddCallback(dialog, XmNapplyCallback, apply_callback, (char *)&df);
 		RemapDeleteKey(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
 
 		/* Text area in prompt dialog should get focus, not ok button
@@ -230,7 +230,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		   off the default button for the dialog, until after keyboard
 		   focus has been established */
 		XtVaSetValues(dialog, XmNdefaultButton, nullptr, nullptr);
-		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, (XtCallbackProc)focusCB, (char *)dialog);
+		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, focusCB, (char *)dialog);
 
 		/* Limit the length of the text that can be entered in text field */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNmaxLength, DF_MAX_PROMPT_LENGTH - 1, nullptr);
@@ -272,11 +272,11 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			addEscapeHandler(dialog, &df, cancel_index);
 
 		/* Add a callback to the window manager close callback for the dialog */
-		AddMotifCloseCallback(XtParent(dialog), (XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
+		AddMotifCloseCallback(XtParent(dialog), (cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
 
 		/* Also add a callback to detect unexpected destruction (eg, because
 		   the parent window is destroyed) */
-		XtAddCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+		XtAddCallback(dialog, XmNdestroyCallback, destroy_callback, &df);
 
 		/* A previous call to SetDialogFPromptHistory can request that an
 		   up-arrow history-recall mechanism be attached.  If so, do it here */
@@ -305,7 +305,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			XmStringFree(input_string_xms);
 			XtFree(input_string_ptr);
 			/* Important! Only intercept unexpected destroy events. */
-			XtRemoveCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+			XtRemoveCallback(dialog, XmNdestroyCallback, destroy_callback, &df);
 			XtDestroyWidget(dialog);
 		}
 		PromptHistory = nullptr;
@@ -326,9 +326,9 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		dialog_shell = CreateDialogShell(parent, dialog_name[dialog_num], 0, 0);
 		dialog = XmCreateMessageBox(dialog_shell, (char *)"msg box", args, argcount);
 
-		XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)ok_callback, (char *)&df);
-		XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)cancel_callback, (char *)&df);
-		XtAddCallback(dialog, XmNhelpCallback, (XtCallbackProc)help_callback, (char *)&df);
+		XtAddCallback(dialog, XmNokCallback, ok_callback, (char *)&df);
+		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (char *)&df);
+		XtAddCallback(dialog, XmNhelpCallback, help_callback, (char *)&df);
 
 		/* Make extraneous buttons disappear */
 		switch (n) { /* n = number of buttons requested */
@@ -367,11 +367,11 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			addEscapeHandler(dialog, &df, cancel_index);
 
 		/* Add a callback to the window manager close callback for the dialog */
-		AddMotifCloseCallback(XtParent(dialog), (XtCallbackProc)(cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
+		AddMotifCloseCallback(XtParent(dialog), (cancel_index == APPLY_BTN ? apply_callback : (cancel_index == CANCEL_BTN ? cancel_callback : (cancel_index == HELP_BTN ? help_callback : ok_callback))), &df);
 
 		/* Also add a callback to detect unexpected destruction (eg, because
 		   the parent window is destroyed) */
-		XtAddCallback(dialog_shell, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+		XtAddCallback(dialog_shell, XmNdestroyCallback, destroy_callback, &df);
 
 		/* Pop up the dialog, wait for response*/
 		ManageDialogCenteredOnPointer(dialog);
@@ -380,7 +380,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 
 		if (!df.destroyed) {
 			/* Important! Only intercept unexpected destroy events. */
-			XtRemoveCallback(dialog_shell, XmNdestroyCallback, (XtCallbackProc)destroy_callback, &df);
+			XtRemoveCallback(dialog_shell, XmNdestroyCallback, destroy_callback, &df);
 			XtDestroyWidget(dialog_shell);
 		}
 	}
@@ -412,37 +412,52 @@ void SetDialogFPromptHistory(char **historyList, int nItems) {
 	NPromptHistoryItems = nItems;
 }
 
-static void ok_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+static void ok_callback(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+	
+	auto client_data = (struct dfcallbackstruct *)clientData;
+	
 	client_data->done_with_dialog = True;
 	client_data->button = 1; /* Return Button number pressed */
 }
 
-static void cancel_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+static void cancel_callback(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+	
+	auto client_data = (struct dfcallbackstruct *)clientData;
+	
 	client_data->done_with_dialog = True;
 	client_data->button = 2 + client_data->apply_up; /* =3 if apply button managed */
 }
 
-static void help_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+static void help_callback(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+
+	auto client_data = (struct dfcallbackstruct *)clientData;
+
 	client_data->done_with_dialog = True;
 	client_data->button = 3 + client_data->apply_up; /* =4 if apply button managed */
 }
 
-static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+static void apply_callback(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+	
+	auto client_data = (struct dfcallbackstruct *)clientData;	
+	
 	client_data->done_with_dialog = True;
 	client_data->button = 2; /* Motif puts between OK and cancel */
 }
 
-static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+static void destroy_callback(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+	
+	auto client_data = (struct dfcallbackstruct *)clientData;
+	
 	client_data->destroyed = True;
 }
 
@@ -450,9 +465,12 @@ static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, cad
 ** callback for returning default button status to the ok button once we're
 ** sure the text area in the prompt dialog has input focus.
 */
-static void focusCB(Widget w, Widget dialog, caddr_t call_data) {
+static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
-	(void)call_data;
+	(void)callData;
+	
+	auto dialog = (Widget)clientData;
+	
 	XtVaSetValues(dialog, XmNdefaultButton, XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), nullptr);
 }
 

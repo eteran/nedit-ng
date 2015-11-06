@@ -90,12 +90,12 @@ struct printPrefDescrip {
 
 /* Function Prototypes */
 static Widget createForm(Widget parent);
-static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data);
-static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data);
-static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data);
-static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data);
-static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data);
-static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data);
+static void allowOnlyNumInput(Widget widget, XtPointer client_data, XtPointer call_data);
+static void noSpaceOrPunct(Widget widget, XtPointer client_data, XtPointer call_data);
+static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data);
+static void printCmdModified(Widget w, XtPointer client_data, XtPointer call_data);
+static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_data);
+static void cancelButtonCB(Widget widget, XtPointer client_data, XtPointer call_data);
 static void setQueueLabelText(void);
 static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags);
 static int fileInPath(const char *filename, unsigned short mode_flags);
@@ -309,8 +309,8 @@ static Widget createForm(Widget parent) {
 		Text1 = XmCreateText(form, (char *)"text1", args, argcnt);
 		bwidgetarray[bwidgetcnt] = Text1;
 		bwidgetcnt++;
-		XtAddCallback(Text1, XmNmodifyVerifyCallback, (XtCallbackProc)allowOnlyNumInput, nullptr);
-		XtAddCallback(Text1, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
+		XtAddCallback(Text1, XmNmodifyVerifyCallback, allowOnlyNumInput, nullptr);
+		XtAddCallback(Text1, XmNvalueChangedCallback, updatePrintCmd, nullptr);
 		RemapDeleteKey(Text1);
 		topWidget = Text1;
 		XtVaSetValues(label1, XmNuserData, Text1, nullptr); /* mnemonic procesing */
@@ -365,8 +365,8 @@ static Widget createForm(Widget parent) {
 		XtSetArg(args[argcnt], XmNtopOffset, 4);
 		argcnt++;
 		Text2 = XmCreateText(form, (char *)"text2", args, argcnt);
-		XtAddCallback(Text2, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, nullptr);
-		XtAddCallback(Text2, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
+		XtAddCallback(Text2, XmNmodifyVerifyCallback, noSpaceOrPunct, nullptr);
+		XtAddCallback(Text2, XmNvalueChangedCallback, updatePrintCmd, nullptr);
 		bwidgetarray[bwidgetcnt] = Text2;
 		bwidgetcnt++;
 		RemapDeleteKey(Text2);
@@ -425,8 +425,8 @@ static Widget createForm(Widget parent) {
 		XtSetArg(args[argcnt], XmNtopOffset, 4);
 		argcnt++;
 		Text3 = XmCreateText(form, (char *)"Text3", args, argcnt);
-		XtAddCallback(Text3, XmNmodifyVerifyCallback, (XtCallbackProc)noSpaceOrPunct, nullptr);
-		XtAddCallback(Text3, XmNvalueChangedCallback, (XtCallbackProc)updatePrintCmd, nullptr);
+		XtAddCallback(Text3, XmNmodifyVerifyCallback, noSpaceOrPunct, nullptr);
+		XtAddCallback(Text3, XmNvalueChangedCallback, updatePrintCmd, nullptr);
 		bwidgetarray[bwidgetcnt] = Text3;
 		bwidgetcnt++;
 		RemapDeleteKey(Text3);
@@ -455,7 +455,7 @@ static Widget createForm(Widget parent) {
 	XtSetArg(args[argcnt], XmNrightOffset, 8);
 	argcnt++;
 	Text4 = XmCreateText(form, (char *)"Text4", args, argcnt);
-	XtAddCallback(Text4, XmNmodifyVerifyCallback, (XtCallbackProc)printCmdModified, nullptr);
+	XtAddCallback(Text4, XmNmodifyVerifyCallback, printCmdModified, nullptr);
 	bwidgetarray[bwidgetcnt] = Text4;
 	bwidgetcnt++;
 	RemapDeleteKey(Text4);
@@ -498,7 +498,7 @@ static Widget createForm(Widget parent) {
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = printCancel;
 	bwidgetcnt++;
-	XtAddCallback(printCancel, XmNactivateCallback, (XtCallbackProc)cancelButtonCB, nullptr);
+	XtAddCallback(printCancel, XmNactivateCallback, cancelButtonCB, nullptr);
 
 	/*********************** PRINT BUTTON **************************/
 	argcnt = 0;
@@ -520,7 +520,7 @@ static Widget createForm(Widget parent) {
 	XmStringFree(st0);
 	bwidgetarray[bwidgetcnt] = printOk;
 	bwidgetcnt++;
-	XtAddCallback(printOk, XmNactivateCallback, (XtCallbackProc)printButtonCB, nullptr);
+	XtAddCallback(printOk, XmNactivateCallback, printButtonCB, nullptr);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNcancelButton, printCancel);
@@ -569,10 +569,12 @@ static void setHostLabelText(void) {
 	XmStringFree(st0);
 }
 
-static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+static void allowOnlyNumInput(Widget widget, XtPointer client_data, XtPointer callData) {
 
 	(void)widget;
 	(void)client_data;
+	
+	XmTextVerifyCallbackStruct *call_data = (XmTextVerifyCallbackStruct *)callData;
 	
 	int i, textInserted, nInserted;
 
@@ -593,10 +595,12 @@ static void allowOnlyNumInput(Widget widget, caddr_t client_data, XmTextVerifyCa
 ** Prohibit a relatively random sampling of characters that will cause
 ** problems on command lines
 */
-static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallbackStruct *call_data) {
+static void noSpaceOrPunct(Widget widget, XtPointer client_data, XtPointer callData) {
 
 	(void)widget;
 	(void)client_data;
+	
+	XmTextVerifyCallbackStruct *call_data = (XmTextVerifyCallbackStruct *)callData;
 	
 	int i, j, textInserted, nInserted;
 	static char prohibited[] = " \t,;|<>()[]{}!@?";
@@ -616,7 +620,7 @@ static void noSpaceOrPunct(Widget widget, caddr_t client_data, XmTextVerifyCallb
 	call_data->doit = True;
 }
 
-static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data) {
+static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data) {
 
 	(void)w;
 	(void)client_data;
@@ -683,7 +687,7 @@ static void updatePrintCmd(Widget w, caddr_t client_data, caddr_t call_data) {
 	CmdFieldModified = False;
 }
 
-static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data) {
+static void printCmdModified(Widget w, XtPointer client_data, XtPointer call_data) {
 	(void)w;
 	(void)client_data;
 	(void)call_data;
@@ -693,7 +697,7 @@ static void printCmdModified(Widget w, caddr_t client_data, caddr_t call_data) {
 	CmdFieldModified = True;
 }
 
-static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_data) {
 
 	(void)widget;
 	(void)client_data;
@@ -760,7 +764,7 @@ static void printButtonCB(Widget widget, caddr_t client_data, caddr_t call_data)
 	DoneWithDialog = True;
 }
 
-static void cancelButtonCB(Widget widget, caddr_t client_data, caddr_t call_data) {
+static void cancelButtonCB(Widget widget, XtPointer client_data, XtPointer call_data) {
 
 	(void)widget;
 	(void)client_data;

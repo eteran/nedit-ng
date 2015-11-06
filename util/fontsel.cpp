@@ -100,16 +100,16 @@ static void addItemToList(char **buf, const char *item, int *count);
 static void getFontPart(const char *font, char *buff1);
 static void getStylePart(const char *font, char *buff1);
 static void getSizePart(const char *font, char *buff1, int inPixels);
-static void propFontToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data);
-static void sizeToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data);
-static void fontAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data);
-static void styleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data);
-static void sizeAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data);
+static void propFontToggleAction(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData);
 static void choiceMade(xfselControlBlkType *ctrlBlk);
 static void dispSample(xfselControlBlkType *ctrlBlk);
-static void destroyCB(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data);
-static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data);
-static void okAction(Widget widget, xfselControlBlkType *ctrlBlk, XmPushButtonCallbackStruct *call_data);
+static void destroyCB(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void cancelAction(Widget widget, XtPointer controlBlock, XtPointer callData);
+static void okAction(Widget widget, XtPointer ctrlBlk, XtPointer call_data);
 static void startupFont(xfselControlBlkType *ctrlBlk, const char *font);
 static void setFocus(Widget w, xfselControlBlkType *ctrlBlk, XEvent *event, Boolean *continueToDispatch);
 static void FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont);
@@ -538,13 +538,13 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	/*  Register callback functions */
 
 	if (showPropFonts != ONLY_FIXED)
-		XtAddCallback(propFontToggle, XmNvalueChangedCallback, (XtCallbackProc)propFontToggleAction, (char *)&ctrlBlk);
-	XtAddCallback(sizeToggle, XmNvalueChangedCallback, (XtCallbackProc)sizeToggleAction, (char *)&ctrlBlk);
-	XtAddCallback(fontList, XmNbrowseSelectionCallback, (XtCallbackProc)fontAction, (char *)&ctrlBlk);
-	XtAddCallback(styleList, XmNbrowseSelectionCallback, (XtCallbackProc)styleAction, (char *)&ctrlBlk);
-	XtAddCallback(sizeList, XmNbrowseSelectionCallback, (XtCallbackProc)sizeAction, (char *)&ctrlBlk);
-	XtAddCallback(okButton, XmNactivateCallback, (XtCallbackProc)okAction, (char *)&ctrlBlk);
-	XtAddCallback(cancelButton, XmNactivateCallback, (XtCallbackProc)cancelAction, (char *)&ctrlBlk);
+		XtAddCallback(propFontToggle, XmNvalueChangedCallback, propFontToggleAction, (char *)&ctrlBlk);
+	XtAddCallback(sizeToggle, XmNvalueChangedCallback, sizeToggleAction, (char *)&ctrlBlk);
+	XtAddCallback(fontList, XmNbrowseSelectionCallback, fontAction, (char *)&ctrlBlk);
+	XtAddCallback(styleList, XmNbrowseSelectionCallback, styleAction, (char *)&ctrlBlk);
+	XtAddCallback(sizeList, XmNbrowseSelectionCallback, sizeAction, (char *)&ctrlBlk);
+	XtAddCallback(okButton, XmNactivateCallback, okAction, (char *)&ctrlBlk);
+	XtAddCallback(cancelButton, XmNactivateCallback, cancelAction, (char *)&ctrlBlk);
 
 	/* add event handler to setup input focus at start to scroll list */
 
@@ -565,11 +565,11 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	/* Make sure that we don't try to access the dialog if the user
 	   destroyed it (possibly indirectly, by destroying the parent). */
-	XtAddCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroyCB, (char *)&ctrlBlk);
+	XtAddCallback(dialog, XmNdestroyCallback, destroyCB, (char *)&ctrlBlk);
 
 	/*  Link Motif Close option to cancel action */
 
-	AddMotifCloseCallback(dialog, (XtCallbackProc)cancelAction, &ctrlBlk);
+	AddMotifCloseCallback(dialog, cancelAction, &ctrlBlk);
 
 	/*  Handle dialog mnemonics  */
 
@@ -595,7 +595,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	if (!ctrlBlk.destroyedFlag) {
 		/* Don't let the callback destroy the font name */
-		XtRemoveCallback(dialog, XmNdestroyCallback, (XtCallbackProc)destroyCB, (char *)&ctrlBlk);
+		XtRemoveCallback(dialog, XmNdestroyCallback, destroyCB, (char *)&ctrlBlk);
 		XtDestroyWidget(dialog);
 	}
 
@@ -885,9 +885,12 @@ static void getSizePart(const char *font, char *buff1, int inPixels) {
 /*  Call back functions start from here - suffix Action in the function name
     is for the callback function for the corresponding widget */
 
-static void propFontToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data) {
+static void propFontToggleAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
 	(void)widget;
+	
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmToggleButtonCallbackStruct *)callData;
 
 	if (call_data->reason == XmCR_VALUE_CHANGED) {
 		if (ctrlBlk->showPropFonts == PREF_FIXED)
@@ -911,9 +914,12 @@ static void propFontToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, Xm
 	}
 }
 
-static void sizeToggleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmToggleButtonCallbackStruct *call_data) {
+static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
 	(void)widget;
+	
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmToggleButtonCallbackStruct *)callData;	
 
 	int i, makeSelection;
 	char newSize[10];
@@ -974,8 +980,11 @@ static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on, XmFontList 
 	XtManageChild(ctrlBlk->dispField);
 }
 
-static void fontAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 	char *sel;
+
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmListCallbackStruct *)callData;
 
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
@@ -1004,8 +1013,11 @@ static void fontAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallba
 	}
 }
 
-static void styleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 	char *sel;
+
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmListCallbackStruct *)callData;
 
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
@@ -1034,8 +1046,11 @@ static void styleAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallb
 	}
 }
 
-static void sizeAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 	char *sel;
+
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmListCallbackStruct *)callData;
 
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
@@ -1110,16 +1125,23 @@ static void dispSample(xfselControlBlkType *ctrlBlk) {
 	ctrlBlk->oldFontList = fontList;
 }
 
-static void destroyCB(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+static void destroyCB(Widget widget, XtPointer controlBlock, XtPointer callData) {
+
+
+	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
+	auto call_data = (XmListCallbackStruct *)callData;
+	
 	/* Prevent double destruction of the font selection dialog */
 	ctrlBlk->destroyedFlag = TRUE;
 	cancelAction(widget, ctrlBlk, call_data);
 }
 
-static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCallbackStruct *call_data) {
+static void cancelAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
 	(void)widget;
-	(void)call_data;
+	(void)callData;
+	
+	auto ctrlBlk = (xfselControlBlkType *)controlBlock;
 	
 	XtFree(ctrlBlk->sel1);
 	XtFree(ctrlBlk->sel2);
@@ -1132,10 +1154,12 @@ static void cancelAction(Widget widget, xfselControlBlkType *ctrlBlk, XmListCall
 	ctrlBlk->exitFlag = TRUE;
 }
 
-static void okAction(Widget widget, xfselControlBlkType *ctrlBlk, XmPushButtonCallbackStruct *call_data) {
+static void okAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
 	(void)widget;
-	(void)call_data;
+	(void)callData;
+	
+	auto ctrlBlk = (xfselControlBlkType *)controlBlock;
 	
 	char *fontPattern;
 	char **fontName;
