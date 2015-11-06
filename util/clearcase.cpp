@@ -33,8 +33,8 @@
 
 #include <X11/Intrinsic.h>
 
-static int ClearCaseViewTagFound = 0;
-static char *ClearCaseViewRoot = nullptr;
+static bool ClearCaseViewTagFound   = false;
+static char *ClearCaseViewRoot      = nullptr;
 static const char *ClearCaseViewTag = nullptr;
 
 const char *GetClearCaseVersionExtendedPath(const char *fullname) {
@@ -68,7 +68,7 @@ const char *GetClearCaseViewTag(void) {
 	/* If we don't find it first time, we will never find it, so may just as
 	 * well say that we have found it.
 	 */
-	ClearCaseViewTagFound = 1;
+	ClearCaseViewTagFound = true;
 
-	return (ClearCaseViewTag);
+	return ClearCaseViewTag;
 }

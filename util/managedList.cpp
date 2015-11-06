@@ -40,8 +40,12 @@
 #include <Xm/RowColumn.h>
 
 /* Common data between the managed list callback functions */
-typedef struct {
-	Widget listW, deleteBtn, copyBtn, moveUpBtn, moveDownBtn;
+struct managedListData {
+	Widget listW;
+	Widget deleteBtn;
+	Widget copyBtn;
+	Widget moveUpBtn;
+	Widget moveDownBtn;
 	void *(*getDialogDataCB)(void *, int, int *, void *);
 	void *getDialogDataArg;
 	void (*setDialogDataCB)(void *, void *);
@@ -54,7 +58,7 @@ typedef struct {
 	int *nItems;
 	void **itemList;
 	int lastSelection;
-} managedListData;
+};
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);

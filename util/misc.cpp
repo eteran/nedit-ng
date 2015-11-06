@@ -36,16 +36,8 @@
 #include <stdio.h>
 #include <time.h>
 
-#ifdef __unix__
 #include <sys/time.h>
 #include <sys/select.h>
-#endif
-
-#ifdef __APPLE__
-#ifdef __MACH__
-#include <sys/select.h>
-#endif
-#endif
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>

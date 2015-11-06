@@ -49,9 +49,6 @@
 #define MAXSYMLINKS 20
 #endif
 
-#define TRUE 1
-#define FALSE 0
-
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
    characters of the beginning of the file, checking that all newlines are
