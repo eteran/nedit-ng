@@ -768,7 +768,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
 		return; /* shouldn't happen */
 
-	std::string helpString = TextGetWrappedEx(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->BufGetLength(), &helpStringLen);
+	std::string helpString = TextGetWrappedEx(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->BufGetLength());
 	PrintString(helpString.c_str(), helpStringLen, HelpWindows[topic], HelpTitles[topic]);
 }
 

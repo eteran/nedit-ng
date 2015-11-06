@@ -720,11 +720,11 @@ static void existOkCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallback
 	
 	char *filename; /* name of chosen file             */
 	int fd;         /* file descriptor                 */
-	int length;     /* length of file name		 */
 
 	XmStringGetLtoR(call_data->value, XmSTRING_DEFAULT_CHARSET, &filename);
 	SelectResult = GFN_OK;
-	length = strlen(filename);
+	size_t length = strlen(filename);
+	
 	if (length == 0 || filename[length - 1] == '/') {
 		doErrorDialog("Please select a file to open", nullptr);
 		XtFree(filename);
@@ -733,8 +733,10 @@ static void existOkCB(Widget w, Boolean *client_data, XmFileSelectionBoxCallback
 		doErrorDialog("Error: can't open %s ", filename);
 		XtFree(filename);
 		return;
-	} else
+	} else {
 		close(fd);
+	}
+	
 	XtFree(filename);
 
 	*client_data = True; /* done with dialog		*/
@@ -787,20 +789,19 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 	Arg al[20];
 	int ac;
 	Widget form, text, button;
-	XmString st1;
 
 	ac = 0;
 	form = CreateFormDialog(parent, "helpForm", al, ac);
 
+
+	XmString st1 = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET);
+
 	ac = 0;
-	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);
-	ac++;
-	XtSetArg(al[ac], XmNlabelString, st1 = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET));
-	ac++;
-	XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN);
-	ac++;
+	XtSetArg(al[ac++], XmNbottomAttachment, XmATTACH_FORM);
+	XtSetArg(al[ac++], XmNtopAttachment,    XmATTACH_NONE);
+	XtSetArg(al[ac++], XmNlabelString,      st1);
+	XtSetArg(al[ac++], XmNmarginWidth,      BUTTON_WIDTH_MARGIN);
+
 	button = XmCreatePushButtonGadget(form, (char *)"ok", al, ac);
 	XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)helpDismissCB, (char *)form);
 	XmStringFree(st1);
@@ -808,34 +809,21 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 	SET_ONE_RSRC(form, XmNdefaultButton, button);
 
 	ac = 0;
-	XtSetArg(al[ac], XmNrows, 15);
-	ac++;
-	XtSetArg(al[ac], XmNcolumns, 60);
-	ac++;
-	XtSetArg(al[ac], XmNresizeHeight, False);
-	ac++;
-	XtSetArg(al[ac], XmNtraversalOn, False);
-	ac++;
-	XtSetArg(al[ac], XmNwordWrap, True);
-	ac++;
-	XtSetArg(al[ac], XmNscrollHorizontal, False);
-	ac++;
-	XtSetArg(al[ac], XmNeditMode, XmMULTI_LINE_EDIT);
-	ac++;
-	XtSetArg(al[ac], XmNeditable, False);
-	ac++;
-	XtSetArg(al[ac], XmNvalue, helpText);
-	ac++;
-	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);
-	ac++;
-	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNbottomWidget, button);
-	ac++;
+	XtSetArg(al[ac++], XmNrows,             15);
+	XtSetArg(al[ac++], XmNcolumns,          60);
+	XtSetArg(al[ac++], XmNresizeHeight,     False);
+	XtSetArg(al[ac++], XmNtraversalOn,      False);
+	XtSetArg(al[ac++], XmNwordWrap,         True);
+	XtSetArg(al[ac++], XmNscrollHorizontal, False);
+	XtSetArg(al[ac++], XmNeditMode,         XmMULTI_LINE_EDIT);
+	XtSetArg(al[ac++], XmNeditable,         False);
+	XtSetArg(al[ac++], XmNvalue,            helpText);
+	XtSetArg(al[ac++], XmNtopAttachment,    XmATTACH_FORM);
+	XtSetArg(al[ac++], XmNleftAttachment,   XmATTACH_FORM);
+	XtSetArg(al[ac++], XmNbottomAttachment, XmATTACH_WIDGET);
+	XtSetArg(al[ac++], XmNrightAttachment,  XmATTACH_FORM);
+	XtSetArg(al[ac++], XmNbottomWidget,     button);
+
 	text = XmCreateScrolledText(form, (char *)"helpText", al, ac);
 	AddMouseWheelSupport(text);
 	XtManageChild(text);

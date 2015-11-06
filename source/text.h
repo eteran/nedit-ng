@@ -150,7 +150,7 @@ int TextNumVisibleLines(Widget w);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
 int TextVisibleWidth(Widget w);
-std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen);
+std::string TextGetWrappedEx(Widget w, int startPos, int endPos);
 TextBuffer *TextGetBuffer(Widget w);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);

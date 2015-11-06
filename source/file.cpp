@@ -1105,7 +1105,6 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 	TextBuffer *buf = window->buffer;
 	TextSelection *sel = &buf->primary_;
 	std::string fileString;
-	int fileLen;
 
 	/* get the contents of the text buffer from the text area widget.  Add
 	   wrapping newlines if necessary to make it match the displayed text */
@@ -1116,20 +1115,20 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 		}
 		if (sel->rectangular) {
 			fileString = buf->BufGetSelectionTextEx();
-			fileLen = fileString.size();
 		} else {
-			fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end, &fileLen);
+			fileString = TextGetWrappedEx(window->textArea, sel->start, sel->end);
 		}
 	} else {
-		fileString = TextGetWrappedEx(window->textArea, 0, buf->BufGetLength(), &fileLen);
+		fileString = TextGetWrappedEx(window->textArea, 0, buf->BufGetLength());
 	}
 
 	/* If null characters are substituted for, put them back */
 	buf->BufUnsubstituteNullCharsEx(fileString);
 
 	/* add a terminating newline if the file doesn't already have one */
-	if (fileLen != 0 && fileString.back() != '\n')
+	if (!fileString.empty() && fileString.back() != '\n') {
 		fileString.push_back('\n'); /* null terminator no longer needed */
+	}
 
 	/* Print the string */
 	PrintString(fileString.c_str(), fileString.size(), window->shell, window->filename);
@@ -1594,7 +1593,7 @@ static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** by turning off Continuous Wrap mode.
 */
 static void addWrapNewlines(WindowInfo *window) {
-	int fileLen, i, insertPositions[MAX_PANES], topLines[MAX_PANES];
+	int i, insertPositions[MAX_PANES], topLines[MAX_PANES];
 	int horizOffset;
 	Widget text;
 
@@ -1606,7 +1605,7 @@ static void addWrapNewlines(WindowInfo *window) {
 	}
 
 	/* Modify the buffer to add wrapping */
-	std::string fileString = TextGetWrappedEx(window->textArea, 0, window->buffer->BufGetLength(), &fileLen);
+	std::string fileString = TextGetWrappedEx(window->textArea, 0, window->buffer->BufGetLength());
 	window->buffer->BufSetAllEx(fileString);
 
 	/* restore the insert and scroll positions of each pane */

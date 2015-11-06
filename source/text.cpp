@@ -1318,32 +1318,28 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
 ** Fetch text from the widget's buffer, adding wrapping newlines to emulate
 ** effect acheived by wrapping in the text display in continuous wrap mode.
 */
-std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen) {
+std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
 	textDisp *textD = ((TextWidget)w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	TextBuffer *outBuf;
-	int fromPos, toPos, outPos;
-	char c;
 
 	if (!((TextWidget)w)->text.continuousWrap || startPos == endPos) {
-		*outLen = endPos - startPos;
-		return buf->BufGetRange(startPos, endPos);
+		return buf->BufGetRangeEx(startPos, endPos);
 	}
 
 	/* Create a text buffer with a good estimate of the size that adding
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
-	outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
-	outPos = 0;
+	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
+	int outPos = 0;
 
 	/* Go (displayed) line by line through the buffer, adding newlines where
 	   the text is wrapped at some character other than an existing newline */
-	fromPos = startPos;
-	toPos = TextDCountForwardNLines(textD, startPos, 1, False);
+	int fromPos = startPos;
+	int toPos = TextDCountForwardNLines(textD, startPos, 1, False);
 	while (toPos < endPos) {
 		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
 		outPos += toPos - fromPos;
-		c = outBuf->BufGetCharacter(outPos - 1);
+		char c = outBuf->BufGetCharacter(outPos - 1);
 		if (c == ' ' || c == '\t')
 			outBuf->BufReplace(outPos - 1, outPos, "\n");
 		else if (c != '\n') {
@@ -1357,7 +1353,6 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos, int *outLen) {
 
 	/* return the contents of the output buffer as a string */
 	std::string outString = outBuf->BufGetAllEx();
-	*outLen = outBuf->BufGetLength();
 	delete outBuf;
 	return outString;
 }
