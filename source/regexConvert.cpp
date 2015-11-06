@@ -44,11 +44,11 @@
 
 #include "regexConvert.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <climits>
 
 #include <X11/Intrinsic.h>
 

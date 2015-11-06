@@ -33,9 +33,9 @@
 #include "WindowInfo.h"
 #include "window.h"
 
-#include <string.h>
-#include <limits.h>
-#include <ctype.h>
+#include <cstring>
+#include <climits>
+#include <cctype>
 #include <sys/param.h>
 
 #include <Xm/Xm.h>

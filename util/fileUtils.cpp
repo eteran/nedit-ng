@@ -31,10 +31,10 @@
 #include "fileUtils.h"
 #include "utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
 #include <algorithm>
 
 #include <X11/Intrinsic.h>

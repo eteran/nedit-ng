@@ -48,11 +48,11 @@
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
 
-#include <ctype.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 #include <algorithm>
 

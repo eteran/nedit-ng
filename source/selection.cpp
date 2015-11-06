@@ -37,11 +37,11 @@
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <limits.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cctype>
+#include <cstring>
+#include <climits>
 #include <sys/param.h>
 
 #include <glob.h>

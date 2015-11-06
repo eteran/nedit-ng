@@ -38,7 +38,7 @@
 #include "userCmds.h"
 #include "preferences.h"
 
-#include <string.h>
+#include <cstring>
 #include <sys/param.h>
 
 #include <Xm/Xm.h>

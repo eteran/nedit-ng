@@ -42,9 +42,9 @@
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstring>
+#include <climits>
 
 #include <Xm/Xm.h>
 #include <sys/param.h>

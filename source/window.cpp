@@ -63,19 +63,19 @@
 #include "../Xlt/BubbleButtonP.h"
 #include "../Microline/XmL/Folder.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <algorithm>
 #include <sys/stat.h>
 
 #include <sys/param.h>
 #include "../util/clearcase.h"
 
-#include <limits.h>
-#include <math.h>
-#include <ctype.h>
-#include <time.h>
+#include <climits>
+#include <cmath>
+#include <cctype>
+#include <ctime>
 #ifdef __unix__
 #include <sys/time.h>
 #endif

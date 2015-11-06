@@ -36,10 +36,10 @@
 #include "Rangeset.h"
 #include "RangesetTable.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
 #include <sys/param.h>
 #include <algorithm>
 

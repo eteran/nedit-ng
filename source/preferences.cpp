@@ -52,11 +52,11 @@
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 
-#include <ctype.h>
+#include <cctype>
 #include <pwd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 #include <unistd.h>
 #include <sys/stat.h>
 

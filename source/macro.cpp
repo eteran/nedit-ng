@@ -57,12 +57,12 @@
 #include "window.h"
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cerrno>
+#include <cassert>
 #include <stack>
 
 #include <sys/types.h>

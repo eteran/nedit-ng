@@ -29,11 +29,11 @@
 #include "DialogF.h"
 #include "misc.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include <cctype>
+#include <climits>
 
 #include <Xm/Xm.h>
 #include <Xm/MessageB.h>
@@ -84,7 +84,7 @@ static void createMnemonics(Widget w);
 * DialogF displays the dialog in application-modal style, blocking the         *
 * application and keeping the modal dialog as the top window until the user    *
 * responds. DialogF accepts a variable number of arguments, so the calling     *
-* routine needs to #include <stdarg.h>. The first button is automatically      *
+* routine needs to #include <cstdarg>. The first button is automatically      *
 * marked as the default button (activated when the user types Return,          *
 * surrounded by a special outline), and any button named either Cancel, or     *
 * Dismiss is marked as the cancel button (activated by the ESC key). Buttons   *

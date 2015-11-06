@@ -33,11 +33,11 @@
 
 #include "rbTree.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 /*#define RBTREE_TEST_CODE*/
 #ifdef RBTREE_TEST_CODE
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #define rbTreeNodeRed 0

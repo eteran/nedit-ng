@@ -45,10 +45,10 @@
 #include "../util/DialogF.h"
 #include "../util/system.h"
 
-#include <locale.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <clocale>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include <sys/param.h>
 
 #include <Xm/Xm.h>
@@ -66,8 +66,6 @@
 /*============================================================================*/
 /*                              SYMBOL DEFINITIONS                            */
 /*============================================================================*/
-
-#define EOS '\0' /* end-of-string character                  */
 
 #define CLICK_THRESHOLD 5 /* number of pixels mouse may move from its */
                           /* pressed location for mouse-up to be      */
@@ -405,7 +403,7 @@ static char *stitch(
 	* How many characters are there going to be displayed?
 	*----------------------------------------------------*/
 	for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) {
-		for (cp = *crnt_line; *cp != EOS; cp++) {
+		for (cp = *crnt_line; *cp != '\0'; cp++) {
 			/*---------------------------------------------
 			* The help text has embedded style information
 			* consisting of the style marker and a single
@@ -427,14 +425,14 @@ static char *stitch(
 	*--------------------------------------------------------*/
 	sp = section = XtMalloc(total_size + 1);
 	sdp = styleData = (styleMap) ? XtMalloc(total_size + 1) : nullptr;
-	*sp = EOS;
+	*sp = '\0';
 
 	/*--------------------------------------------
 	* Fill in the newly acquired contiguous space
 	* with help text and style information.
 	*--------------------------------------------*/
 	for (crnt_line = string_list; *crnt_line != nullptr; crnt_line++) {
-		for (cp = *crnt_line; *cp != EOS; cp++) {
+		for (cp = *crnt_line; *cp != '\0'; cp++) {
 			if (*cp == STYLE_MARKER) {
 				style = *(++cp);
 				loadFontsAndColors(parent, style);
@@ -448,14 +446,14 @@ static char *stitch(
 		}
 	}
 
-	*sp = EOS;
+	*sp = '\0';
 
 	/*-----------------------------------------
 	* Only deal with style map, when available.
 	*-----------------------------------------*/
 	if (styleMap) {
 		*styleMap = styleData;
-		*sdp = EOS;
+		*sdp = '\0';
 	}
 
 	return section;

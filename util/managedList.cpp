@@ -30,8 +30,8 @@
 #include "misc.h"
 #include "DialogF.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Form.h>

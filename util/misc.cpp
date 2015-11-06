@@ -29,12 +29,12 @@
 #include "misc.h"
 #include "DialogF.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <time.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdarg>
+#include <cctype>
+#include <cstdio>
+#include <ctime>
 
 #include <sys/time.h>
 #include <sys/select.h>

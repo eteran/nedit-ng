@@ -25,7 +25,7 @@
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
-#include <stdio.h>
+#include <cstdio>
 #include <Xm/Xm.h>
 #include <sys/types.h>
 #include <sys/param.h>

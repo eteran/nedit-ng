@@ -30,9 +30,9 @@
 #include "fileUtils.h"
 #include "utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 
 #include <sys/param.h>
 #include <Xm/Xm.h>

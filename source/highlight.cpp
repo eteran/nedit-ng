@@ -41,11 +41,11 @@
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 
-#include <stdio.h>
-#include <limits.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <climits>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <sys/param.h>
 #include <algorithm>
 

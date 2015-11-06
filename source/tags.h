@@ -32,7 +32,7 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
-#include <time.h>
+#include <ctime>
 
 struct tagFile {
 	struct tagFile *next;

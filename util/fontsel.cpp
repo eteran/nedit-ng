@@ -30,10 +30,10 @@
 #include "misc.h"
 #include "DialogF.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>

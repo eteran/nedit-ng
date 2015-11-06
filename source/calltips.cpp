@@ -32,10 +32,10 @@
 #include "WindowInfo.h"
 #include "../util/misc.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
 
 #include <Xm/Xm.h>
 #include <Xm/Label.h>

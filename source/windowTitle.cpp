@@ -39,10 +39,10 @@
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cctype>
+#include <cstring>
 #include <sys/param.h>
 #include "../util/clearcase.h"
 

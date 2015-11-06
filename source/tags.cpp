@@ -43,10 +43,10 @@
 #include "../util/misc.h"
 #include "../util/utils.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

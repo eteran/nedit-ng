@@ -37,11 +37,11 @@
 #include "misc.h"
 #include "prefFile.h"
 
-#include <string.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cstring>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
 #include <sys/types.h>
 
 #ifdef USE_DIRENT

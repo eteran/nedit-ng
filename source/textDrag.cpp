@@ -31,7 +31,7 @@
 #include "textDisp.h"
 #include "textP.h"
 
-#include <limits.h>
+#include <climits>
 
 #include <X11/Intrinsic.h>
 #include <X11/IntrinsicP.h>

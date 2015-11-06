@@ -1,7 +1,7 @@
 #ifndef lint
 static char const yyrcsid[] = "$FreeBSD: src/usr.bin/yacc/skeleton.c,v 1.28 2000/01/17 02:04:06 bde Exp $";
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 #define YYBYACC 1
 #define YYMAJOR 1
 #define YYMINOR 9
@@ -19,10 +19,10 @@ static int yygrowstack();
 #include "rbTree.h"
 #include "interpret.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <cctype>
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <sys/param.h>
@@ -268,7 +268,7 @@ const char *const yyrule[] = {
 };
 #endif
 #if YYDEBUG
-#include <stdio.h>
+#include <cstdio>
 #endif
 #ifdef YYSTACKSIZE
 #undef YYMAXDEPTH

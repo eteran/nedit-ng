@@ -56,11 +56,11 @@
 #include "../util/utils.h"
 #include "../Xlt/BubbleButton.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
