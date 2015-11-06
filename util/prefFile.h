@@ -31,11 +31,11 @@
 #include <string>
 
 enum PrefDataTypes {
-	PREF_INT,
-	PREF_BOOLEAN, 
-	PREF_ENUM, 
-	PREF_STRING, 
-	PREF_ALLOC_STRING
+	PREF_INT,          
+	PREF_BOOLEAN,      
+	PREF_ENUM,         
+	PREF_STRING,       
+	PREF_ALLOC_STRING  
 };
 
 struct PrefDescripRec {
@@ -43,15 +43,53 @@ struct PrefDescripRec {
 	std::string   clazz;
 	PrefDataTypes dataType;
 	const char *  defaultString;
-	void *        valueAddr;
-	const void *  arg;
+	
+	// where shall we write the value?
+	union Value {
+	
+		Value(char *s)   : str(s)      {} // reading will read into this string
+		Value(char **sp) : str_ptr(sp) {} // reading will allocate a new string and assign it to *sp
+		Value(int  *n)   : number(n)   {} // reading will read into this int
+		Value(bool *b)   : boolean(b)  {} // reading will read into this bool
+	
+		char * str;
+		char **str_ptr;
+		int  * number;
+		bool * boolean;
+	} valueAddr;
+	
+	// a parameter for the value
+	// so far:
+	// nullptr      = None
+	// size_t       = size of the buffer supplies as the value
+	// const char** = null-terminated array of strings representing an enum
+	union Arg {
+		Arg(size_t n)        : size(n) {}
+		Arg(const char **sp) : str_ptr(sp) {}
+		Arg(std::nullptr_t) {}
+		
+		const size_t size;
+		const char **str_ptr;
+	} arg;
+
 	bool          save;
 };
+
+
+// name		"fileVersion", 
+// class	"FileVersion", 
+// type		PREF_STRING, 
+// default	"", 
+// addr		PrefData.fileVersion, 
+// arg		(void *)sizeof(PrefData.fileVersion), 
+// save		true
+
+
 
 XrmDatabase CreatePreferencesDatabase(const char *fileName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut);
 void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
 void OverlayPreferences(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc);
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc);
-int SavePreferences(Display *display, const char *fileName, const char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc);
+bool SavePreferences(Display *display, const char *fileName, const char *fileHeader, const PrefDescripRec *rsrcDescrip, int nRsrc);
 
 #endif

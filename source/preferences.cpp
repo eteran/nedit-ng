@@ -316,7 +316,7 @@ static struct {
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
 static PrefDescripRec PrefDescrip[] = {
-    {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, (void *)sizeof(PrefData.fileVersion), true},
+    {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, sizeof(PrefData.fileVersion), true},
 
 #ifdef linux
     {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
@@ -797,50 +797,49 @@ static PrefDescripRec PrefDescrip[] = {
     {"tabDistance", "TabDistance", PREF_INT, "8", &PrefData.tabDist, nullptr, true},
     {"emulateTabs", "EmulateTabs", PREF_INT, "0", &PrefData.emTabDist, nullptr, true},
     {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True", &PrefData.insertTabs, nullptr, true},
-    {"textFont", "TextFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.fontString, (void *)sizeof(PrefData.fontString), true},
-    {"boldHighlightFont", "BoldHighlightFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.boldFontString, (void *)sizeof(PrefData.boldFontString), true},
-    {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.italicFontString, (void *)sizeof(PrefData.italicFontString), true},
-    {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.boldItalicFontString, (void *)sizeof(PrefData.boldItalicFontString), true},
-    {"helpFont", "HelpFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_FONT]), false},
-    {"boldHelpFont", "BoldHelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), false},
-    {"italicHelpFont", "ItalicHelpFont", PREF_STRING, "-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), false},
-    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), false},
-    {"fixedHelpFont", "FixedHelpFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), false},
-    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), false},
-    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), false},
-    {"boldItalicFixedHelpFont", "BoldItalicFixedHelpFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT],
-     (void *)sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), false},
-    {"helpLinkFont", "HelpLinkFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_LINK_FONT], (void *)sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), false},
-    {"h1HelpFont", "H1HelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-140-*-*-*-iso8859-1", PrefData.helpFontNames[H1_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H1_HELP_FONT]), false},
-    {"h2HelpFont", "H2HelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H2_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H2_HELP_FONT]), false},
-    {"h3HelpFont", "H3HelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H3_HELP_FONT], (void *)sizeof(PrefData.helpFontNames[H3_HELP_FONT]), false},
-    {"helpLinkColor", "HelpLinkColor", PREF_STRING, "#009900", PrefData.helpLinkColor, (void *)sizeof(PrefData.helpLinkColor), false},
+    {"textFont", "TextFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.fontString, sizeof(PrefData.fontString), true},
+    {"boldHighlightFont", "BoldHighlightFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.boldFontString, sizeof(PrefData.boldFontString), true},
+    {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.italicFontString, sizeof(PrefData.italicFontString), true},
+    {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.boldItalicFontString, sizeof(PrefData.boldItalicFontString), true},
+    {"helpFont", "HelpFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_FONT], sizeof(PrefData.helpFontNames[HELP_FONT]), false},
+    {"boldHelpFont", "BoldHelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), false},
+    {"italicHelpFont", "ItalicHelpFont", PREF_STRING, "-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_HELP_FONT], sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), false},
+    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), false},
+    {"fixedHelpFont", "FixedHelpFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), false},
+    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), false},
+    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), false},
+    {"boldItalicFixedHelpFont", "BoldItalicFixedHelpFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), false},
+    {"helpLinkFont", "HelpLinkFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_LINK_FONT], sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), false},
+    {"h1HelpFont", "H1HelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-140-*-*-*-iso8859-1", PrefData.helpFontNames[H1_HELP_FONT], sizeof(PrefData.helpFontNames[H1_HELP_FONT]), false},
+    {"h2HelpFont", "H2HelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H2_HELP_FONT], sizeof(PrefData.helpFontNames[H2_HELP_FONT]), false},
+    {"h3HelpFont", "H3HelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H3_HELP_FONT], sizeof(PrefData.helpFontNames[H3_HELP_FONT]), false},
+    {"helpLinkColor", "HelpLinkColor", PREF_STRING, "#009900", PrefData.helpLinkColor, sizeof(PrefData.helpLinkColor), false},
 
-    {"textFgColor", "TextFgColor", PREF_STRING, NEDIT_DEFAULT_FG, PrefData.colorNames[TEXT_FG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_FG_COLOR]), true},
-    {"textBgColor", "TextBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG, PrefData.colorNames[TEXT_BG_COLOR], (void *)sizeof(PrefData.colorNames[TEXT_BG_COLOR]), true},
-    {"selectFgColor", "SelectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG, PrefData.colorNames[SELECT_FG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_FG_COLOR]), true},
-    {"selectBgColor", "SelectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG, PrefData.colorNames[SELECT_BG_COLOR], (void *)sizeof(PrefData.colorNames[SELECT_BG_COLOR]), true},
-    {"hiliteFgColor", "HiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG, PrefData.colorNames[HILITE_FG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_FG_COLOR]), true},
-    {"hiliteBgColor", "HiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG, PrefData.colorNames[HILITE_BG_COLOR], (void *)sizeof(PrefData.colorNames[HILITE_BG_COLOR]), true},
-    {"lineNoFgColor", "LineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[LINENO_FG_COLOR], (void *)sizeof(PrefData.colorNames[LINENO_FG_COLOR]), true},
-    {"cursorFgColor", "CursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG, PrefData.colorNames[CURSOR_FG_COLOR], (void *)sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), true},
-    {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1", PrefData.tooltipBgColor, (void *)sizeof(PrefData.tooltipBgColor), false},
-    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell, (void *)sizeof(PrefData.shell), true},
-    {"geometry", "Geometry", PREF_STRING, "", PrefData.geometry, (void *)sizeof(PrefData.geometry), false},
+    {"textFgColor", "TextFgColor", PREF_STRING, NEDIT_DEFAULT_FG, PrefData.colorNames[TEXT_FG_COLOR], sizeof(PrefData.colorNames[TEXT_FG_COLOR]), true},
+    {"textBgColor", "TextBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG, PrefData.colorNames[TEXT_BG_COLOR], sizeof(PrefData.colorNames[TEXT_BG_COLOR]), true},
+    {"selectFgColor", "SelectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG, PrefData.colorNames[SELECT_FG_COLOR], sizeof(PrefData.colorNames[SELECT_FG_COLOR]), true},
+    {"selectBgColor", "SelectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG, PrefData.colorNames[SELECT_BG_COLOR], sizeof(PrefData.colorNames[SELECT_BG_COLOR]), true},
+    {"hiliteFgColor", "HiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG, PrefData.colorNames[HILITE_FG_COLOR], sizeof(PrefData.colorNames[HILITE_FG_COLOR]), true},
+    {"hiliteBgColor", "HiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG, PrefData.colorNames[HILITE_BG_COLOR], sizeof(PrefData.colorNames[HILITE_BG_COLOR]), true},
+    {"lineNoFgColor", "LineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[LINENO_FG_COLOR], sizeof(PrefData.colorNames[LINENO_FG_COLOR]), true},
+    {"cursorFgColor", "CursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG, PrefData.colorNames[CURSOR_FG_COLOR], sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), true},
+    {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1", PrefData.tooltipBgColor, sizeof(PrefData.tooltipBgColor), false},
+    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell, sizeof(PrefData.shell), true},
+    {"geometry", "Geometry", PREF_STRING, "", PrefData.geometry, sizeof(PrefData.geometry), false},
     {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False", &PrefData.mapDelete, nullptr, false},
     {"stdOpenDialog", "StdOpenDialog", PREF_BOOLEAN, "False", &PrefData.stdOpenDialog, nullptr, false},
-    {"tagFile", "TagFile", PREF_STRING, "", PrefData.tagFile, (void *)sizeof(PrefData.tagFile), false},
-    {"wordDelimiters", "WordDelimiters", PREF_STRING, ".,/\\`'!|@#%^&*()-=+{}[]\":;<>?", PrefData.delimiters, (void *)sizeof(PrefData.delimiters), false},
-    {"serverName", "ServerName", PREF_STRING, "", PrefData.serverName, (void *)sizeof(PrefData.serverName), false},
+    {"tagFile", "TagFile", PREF_STRING, "", PrefData.tagFile, sizeof(PrefData.tagFile), false},
+    {"wordDelimiters", "WordDelimiters", PREF_STRING, ".,/\\`'!|@#%^&*()-=+{}[]\":;<>?", PrefData.delimiters, sizeof(PrefData.delimiters), false},
+    {"serverName", "ServerName", PREF_STRING, "", PrefData.serverName, sizeof(PrefData.serverName), false},
     {"maxPrevOpenFiles", "MaxPrevOpenFiles", PREF_INT, "30", &PrefData.maxPrevOpenFiles, nullptr, false},
-    {"bgMenuButton", "BGMenuButton", PREF_STRING, "~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn, (void *)sizeof(PrefData.bgMenuBtn), false},
+    {"bgMenuButton", "BGMenuButton", PREF_STRING, "~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn, sizeof(PrefData.bgMenuBtn), false},
     {"smartTags", "SmartTags", PREF_BOOLEAN, "True", &PrefData.smartTags, nullptr, true},
     {"typingHidesPointer", "TypingHidesPointer", PREF_BOOLEAN, "False", &PrefData.typingHidesPointer, nullptr, false},
     {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, false},
     {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False", &PrefData.prefFileRead, nullptr, true},
     {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False", &PrefData.findReplaceUsesSelection, nullptr, false},
     {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, false},
-    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d", PrefData.titleFormat, (void *)sizeof(PrefData.titleFormat), true},
+    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d", PrefData.titleFormat, sizeof(PrefData.titleFormat), true},
     {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN, "True", &PrefData.undoModifiesSelection, nullptr, false},
     {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False", &PrefData.focusOnRaise, nullptr, false},
     {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True", &PrefData.forceOSConversion, nullptr, false},
@@ -1198,13 +1197,13 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 	    These locations are set in PrefDescrip, so this is where
 	    SavePreferences() will look for them.  */
 
-	TempStringPrefs.shellCmds = WriteShellCmdsString();
-	TempStringPrefs.macroCmds = WriteMacroCmdsString();
-	TempStringPrefs.bgMenuCmds = WriteBGMenuCmdsString();
-	TempStringPrefs.highlight = WriteHighlightString();
-	TempStringPrefs.language = writeLanguageModesString();
-	TempStringPrefs.styles = WriteStylesString();
-	TempStringPrefs.smartIndent = WriteSmartIndentString();
+	TempStringPrefs.shellCmds         = WriteShellCmdsString();
+	TempStringPrefs.macroCmds         = WriteMacroCmdsString();
+	TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsString();
+	TempStringPrefs.highlight         = WriteHighlightString();
+	TempStringPrefs.language          = writeLanguageModesString();
+	TempStringPrefs.styles            = WriteStylesString();
+	TempStringPrefs.smartIndent       = WriteSmartIndentString();
 	TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
 	strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
 

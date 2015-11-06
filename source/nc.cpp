@@ -99,11 +99,13 @@ static struct {
 } Preferences;
 
 /* Application resources */
-static PrefDescripRec PrefDescrip[] = {{"autoStart", "AutoStart", PREF_BOOLEAN, "True", &Preferences.autoStart, nullptr, True},
-                                       {"serverCommand", "ServerCommand", PREF_STRING, "nedit -server", Preferences.serverCmd, (void *)sizeof(Preferences.serverCmd), False},
-                                       {"serverName", "serverName", PREF_STRING, "", Preferences.serverName, (void *)sizeof(Preferences.serverName), False},
-                                       {"waitForClose", "WaitForClose", PREF_BOOLEAN, "False", &Preferences.waitForClose, nullptr, False},
-                                       {"timeOut", "TimeOut", PREF_INT, "10", &Preferences.timeOut, nullptr, False}};
+static PrefDescripRec PrefDescrip[] = {
+	{"autoStart",     "AutoStart",     PREF_BOOLEAN, "True",          &Preferences.autoStart,    nullptr,                        true},
+	{"serverCommand", "ServerCommand", PREF_STRING,  "nedit -server",  Preferences.serverCmd,    sizeof(Preferences.serverCmd),  false},
+	{"serverName",    "serverName",    PREF_STRING,  "",               Preferences.serverName,   sizeof(Preferences.serverName), false},
+	{"waitForClose",  "WaitForClose",  PREF_BOOLEAN, "False",         &Preferences.waitForClose, nullptr,                        false},
+	{"timeOut",       "TimeOut",       PREF_INT,     "10",            &Preferences.timeOut,      nullptr,                        false}
+};
 
 /* Resource related command line options */
 static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", XrmoptionNoArg, (caddr_t) "False"},

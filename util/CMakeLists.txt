@@ -14,6 +14,9 @@ add_library (NUtil
 	
 target_include_directories (NUtil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")
+set(CMAKE_CXX_FLAGS "-W -Wall -pedantic") #-Wuseless-cast
+
 set_property(TARGET NUtil PROPERTY CXX_STANDARD 11)
 
 

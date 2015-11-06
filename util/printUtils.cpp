@@ -69,14 +69,13 @@
 #define LABEL_TEXT_DIFF 6
 
 /* Maximum text string lengths */
-#define MAX_OPT_STR 20
-#define MAX_QUEUE_STR 60
-#define MAX_INT_STR 13
-#define MAX_HOST_STR 100
-#define MAX_PCMD_STR 100
-#define MAX_NAME_STR 100
-#define MAX_CMD_STR 256
-#define VMS_MAX_JOB_NAME_STR 39
+#define MAX_OPT_STR 20u
+#define MAX_QUEUE_STR 60u
+#define MAX_INT_STR 13u
+#define MAX_HOST_STR 100u
+#define MAX_PCMD_STR 100u
+#define MAX_NAME_STR 100u
+#define MAX_CMD_STR 256u
 
 #define N_PRINT_PREFS 7 /* must agree with number of preferences below */
 struct printPrefDescrip {
@@ -138,13 +137,13 @@ static char CmdText[MAX_CMD_STR] = "";   /* print command last entered by user *
 static int CmdFieldModified = False;     /* user last changed the print command
                         field, so don't trust the rest */
 static struct printPrefDescrip PrintPrefDescrip = {
-    {"printCommand", "PrintCommand", PREF_STRING, nullptr, PrintCommand, (void *)MAX_PCMD_STR, False},
-    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, nullptr, CopiesOption, (void *)MAX_OPT_STR, False},
-    {"printQueueOption", "PrintQueueOption", PREF_STRING, nullptr, QueueOption, (void *)MAX_OPT_STR, False},
-    {"printNameOption", "PrintNameOption", PREF_STRING, nullptr, NameOption, (void *)MAX_OPT_STR, False},
-    {"printHostOption", "PrintHostOption", PREF_STRING, nullptr, HostOption, (void *)MAX_OPT_STR, False},
-    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, nullptr, DefaultQueue, (void *)MAX_QUEUE_STR, False},
-    {"printDefaultHost", "PrintDefaultHost", PREF_STRING, nullptr, DefaultHost, (void *)MAX_HOST_STR, False},
+    {"printCommand",      "PrintCommand",      PREF_STRING, nullptr, PrintCommand, MAX_PCMD_STR,  false},
+    {"printCopiesOption", "PrintCopiesOption", PREF_STRING, nullptr, CopiesOption, MAX_OPT_STR,   false},
+    {"printQueueOption",  "PrintQueueOption",  PREF_STRING, nullptr, QueueOption,  MAX_OPT_STR,   false},
+    {"printNameOption",   "PrintNameOption",   PREF_STRING, nullptr, NameOption,   MAX_OPT_STR,   false},
+    {"printHostOption",   "PrintHostOption",   PREF_STRING, nullptr, HostOption,   MAX_OPT_STR,   false},
+    {"printDefaultQueue", "PrintDefaultQueue", PREF_STRING, nullptr, DefaultQueue, MAX_QUEUE_STR, false},
+    {"printDefaultHost",  "PrintDefaultHost",  PREF_STRING, nullptr, DefaultHost,  MAX_HOST_STR,  false},
 };
 
 /*

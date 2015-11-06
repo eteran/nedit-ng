@@ -112,7 +112,7 @@ public:
 		size_ -= n;
 	}
 	
-	constexpr void remove_suffix(size_type n) {
+	/* constexpr */ void remove_suffix(size_type n) {
 		size_ -= n;
 	}
 	

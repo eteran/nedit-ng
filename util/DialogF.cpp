@@ -413,26 +413,36 @@ void SetDialogFPromptHistory(char **historyList, int nItems) {
 }
 
 static void ok_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	client_data->done_with_dialog = True;
 	client_data->button = 1; /* Return Button number pressed */
 }
 
 static void cancel_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	client_data->done_with_dialog = True;
 	client_data->button = 2 + client_data->apply_up; /* =3 if apply button managed */
 }
 
 static void help_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	client_data->done_with_dialog = True;
 	client_data->button = 3 + client_data->apply_up; /* =4 if apply button managed */
 }
 
 static void apply_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	client_data->done_with_dialog = True;
 	client_data->button = 2; /* Motif puts between OK and cancel */
 }
 
 static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	client_data->destroyed = True;
 }
 
@@ -441,6 +451,8 @@ static void destroy_callback(Widget w, struct dfcallbackstruct *client_data, cad
 ** sure the text area in the prompt dialog has input focus.
 */
 static void focusCB(Widget w, Widget dialog, caddr_t call_data) {
+	(void)w;
+	(void)call_data;
 	XtVaSetValues(dialog, XmNdefaultButton, XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), nullptr);
 }
 

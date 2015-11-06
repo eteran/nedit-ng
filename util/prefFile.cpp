@@ -38,12 +38,12 @@
 #include <Xm/Xm.h>
 
 #define N_BOOLEAN_STRINGS 13
-static const char *TrueStrings[N_BOOLEAN_STRINGS] = {"True", "true", "TRUE", "T", "t", "Yes", "yes", "YES", "y", "Y", "on", "On", "ON"};
-static const char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f", "No", "no", "NO", "n", "N", "off", "Off", "OFF"};
+static const char *TrueStrings[N_BOOLEAN_STRINGS]  = {"True",  "true",  "TRUE",  "T", "t", "Yes", "yes", "YES", "y", "Y", "on",  "On",  "ON" };
+static const char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f", "No",  "no",  "NO",  "n", "N", "off", "Off", "OFF"};
 
 static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
-static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
-static char *removeWhiteSpace(const char *string);
+static bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
+static std::string removeWhiteSpaceEx(view::string_view string);
 
 /*
 ** Preferences File
@@ -216,10 +216,10 @@ static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &
 ** Restore preferences to their default values as stored in rsrcDesrcip
 */
 void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc) {
-	int i;
 
-	for (i = 0; i < nRsrc; i++)
+	for (int i = 0; i < nRsrc; i++) {
 		stringToPref(rsrcDescrip[i].defaultString, &rsrcDescrip[i]);
+	}
 }
 
 /*
@@ -228,127 +228,158 @@ void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc) {
 ** Create or replace an application preference file according to
 ** the resource descriptions in rsrcDesrcip.
 */
-int SavePreferences(Display *display, const char *fullName, const char *fileHeader, PrefDescripRec *rsrcDescrip, int nRsrc) {
-	char *appName, *appClass, **enumStrings;
+bool SavePreferences(Display *display, const char *fullName, const char *fileHeader, const PrefDescripRec *rsrcDescrip, int nRsrc) {
+	char *appName;
+	char *appClass;
 	FILE *fp;
-	int type;
-	int i;
 
 	/* open the file */
-	if ((fp = fopen(fullName, "w")) == nullptr)
-		return False;
+	if ((fp = fopen(fullName, "w")) == nullptr) {
+		return false;
+	}
 
 	/* write the file header text out to the file */
 	fprintf(fp, "%s\n", fileHeader);
 
 	/* write out the resources so they can be read by XrmGetFileDatabase */
 	XtGetApplicationNameAndClass(display, &appName, &appClass);
-	for (i = 0; i < nRsrc; i++) {
+	
+	for (int i = 0; i < nRsrc; i++) {
 		if (rsrcDescrip[i].save) {
-			type = rsrcDescrip[i].dataType;
+			const int type = rsrcDescrip[i].dataType;
 			fprintf(fp, "%s.%s: ", appName, rsrcDescrip[i].name.c_str());
-			if (type == PREF_STRING)
-				fprintf(fp, "%s", (char *)rsrcDescrip[i].valueAddr);
-			if (type == PREF_ALLOC_STRING)
-				fprintf(fp, "%s", *(char **)rsrcDescrip[i].valueAddr);
-			else if (type == PREF_ENUM) {
-				enumStrings = (char **)rsrcDescrip[i].arg;
-				fprintf(fp, "%s", enumStrings[*(int *)rsrcDescrip[i].valueAddr]);
-			} else if (type == PREF_INT)
-				fprintf(fp, "%d", *(int *)rsrcDescrip[i].valueAddr);
-			else if (type == PREF_BOOLEAN) {
-				if (*(int *)rsrcDescrip[i].valueAddr)
+						
+			const char **enumStrings;
+			
+			switch(type) {
+			case PREF_STRING:
+				fprintf(fp, "%s", rsrcDescrip[i].valueAddr.str);
+				break;
+			case PREF_ALLOC_STRING:
+				fprintf(fp, "%s", *rsrcDescrip[i].valueAddr.str_ptr);
+				break;
+			case PREF_ENUM:
+				{
+					const char **enumStrings = rsrcDescrip[i].arg.str_ptr;
+					fprintf(fp, "%s", enumStrings[*rsrcDescrip[i].valueAddr.number]);
+				}
+				break;
+			case PREF_INT:
+				fprintf(fp, "%d", *rsrcDescrip[i].valueAddr.number);
+				break;
+			case PREF_BOOLEAN:
+				if (*rsrcDescrip[i].valueAddr.boolean) {
 					fprintf(fp, "True");
-				else
+				} else {
 					fprintf(fp, "False");
+				}
+				break;
+			default:
+				assert(0 && "writing setting of unknown type");
 			}
+			
+
 			fprintf(fp, "\n");
 		}
 	}
+	
 	fclose(fp);
-	return True;
+	return true;
 }
 
-static int stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
-	int i;
-	char *cleanStr, *endPtr, **enumStrings;
-
+static bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
+	
 	switch (rsrcDescrip->dataType) {
 	case PREF_INT:
-		cleanStr = removeWhiteSpace(string);
-		*(int *)rsrcDescrip->valueAddr = strtol(cleanStr, &endPtr, 10);
-		if (strlen(cleanStr) == 0) { /* String is empty */
-			*(int *)rsrcDescrip->valueAddr = 0;
-			XtFree(cleanStr);
-			return False;
-		} else if (*endPtr != '\0') { /* Whole string not parsed */
-			*(int *)rsrcDescrip->valueAddr = 0;
-			XtFree(cleanStr);
-			return False;
+		{
+			char *endPtr;
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			*rsrcDescrip->valueAddr.number = std::strtol(cleanStr.c_str(), &endPtr, 10);
+
+			if (cleanStr.empty()) { /* String is empty */
+				*rsrcDescrip->valueAddr.number = 0;
+				return false;
+			} else if (*endPtr != '\0') { /* Whole string not parsed */
+				*rsrcDescrip->valueAddr.number = 0;
+				return false;
+			}
+			return true;
 		}
-		XtFree(cleanStr);
-		return True;
 	case PREF_BOOLEAN:
-		cleanStr = removeWhiteSpace(string);
-		for (i = 0; i < N_BOOLEAN_STRINGS; i++) {
-			if (!strcmp(TrueStrings[i], cleanStr)) {
-				*(int *)rsrcDescrip->valueAddr = True;
-				XtFree(cleanStr);
-				return True;
+		{
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			for (int i = 0; i < N_BOOLEAN_STRINGS; i++) {
+				if (cleanStr == TrueStrings[i]) {
+					*rsrcDescrip->valueAddr.boolean = true;
+					return true;
+				}
+
+				if (cleanStr == FalseStrings[i]) {
+					*rsrcDescrip->valueAddr.boolean = false;
+					return true;
+				}
 			}
-			if (!strcmp(FalseStrings[i], cleanStr)) {
-				*(int *)rsrcDescrip->valueAddr = False;
-				XtFree(cleanStr);
-				return True;
-			}
+			*rsrcDescrip->valueAddr.boolean = false;
+			return false;
 		}
-		XtFree(cleanStr);
-		*(int *)rsrcDescrip->valueAddr = False;
-		return False;
 	case PREF_ENUM:
-		cleanStr = removeWhiteSpace(string);
-		enumStrings = (char **)rsrcDescrip->arg;
-		for (i = 0; enumStrings[i] != nullptr; i++) {
-			if (!strcmp(enumStrings[i], cleanStr)) {
-				*(int *)rsrcDescrip->valueAddr = i;
-				XtFree(cleanStr);
-				return True;
+		{
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			const char **enumStrings = rsrcDescrip->arg.str_ptr;
+			
+			for (int i = 0; enumStrings[i] != nullptr; i++) {
+				if (cleanStr == enumStrings[i]) {
+					*rsrcDescrip->valueAddr.number = i;
+					return true;
+				}
 			}
+			*rsrcDescrip->valueAddr.number = 0;
+			return false;
 		}
-		XtFree(cleanStr);
-		*(int *)rsrcDescrip->valueAddr = 0;
-		return False;
+		
 	case PREF_STRING:
-		if ((int)strlen(string) >= (long)rsrcDescrip->arg)
-			return False;
-		strncpy((char *)rsrcDescrip->valueAddr, string, (long)rsrcDescrip->arg);
-		return True;
+		{
+			if (strlen(string) >= rsrcDescrip->arg.size) {
+				return false;
+			}
+			
+			strncpy(rsrcDescrip->valueAddr.str, string, rsrcDescrip->arg.size);
+			return true;
+		}
+		
 	case PREF_ALLOC_STRING:
-		*(char **)rsrcDescrip->valueAddr = XtMalloc(strlen(string) + 1);
-		strcpy(*(char **)rsrcDescrip->valueAddr, string);
-		return True;
+		{
+			char *s = XtMalloc(strlen(string) + 1);
+			strcpy(s, string);
+			*rsrcDescrip->valueAddr.str_ptr = s;
+			
+			return true;
+		}
+	default:
+		assert(0 && "reading setting of unknown type");		
 	}
-	return False;
+	
+	return false;
 }
 
 /*
 ** Remove the white space (blanks and tabs) from a string and return
 ** the result in a newly allocated string as the function value
 */
-static char *removeWhiteSpace(const char *string) {
-	char *outPtr, *outString;
+static std::string removeWhiteSpaceEx(view::string_view string) {
 
-	outPtr = outString = XtMalloc(strlen(string) + 1);
-	while (TRUE) {
-		if (*string != ' ' && *string != '\t')
-			*(outPtr++) = *(string++);
-		else
-			string++;
-		if (*string == 0) {
-			*outPtr = 0;
-			return outString;
+	std::string outString;
+	outString.reserve(string.size());
+	
+	auto outPtr = std::back_inserter(outString);
+
+	for (char ch : string) {
+		if (ch != ' ' && ch != '\t') {
+			*outPtr++ = ch;
 		}
 	}
+	
+	return outString;
 }
 
 /*******************
