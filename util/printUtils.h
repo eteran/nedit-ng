@@ -36,7 +36,7 @@
 #define DESTINATION_REMOTE 1
 #define DESTINATION_LOCAL 2
 
-void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr);
+void LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, bool lookForFlpr);
 void PrintFile(Widget parent, const std::string &PrintFileName, const std::string &jobName);
 
 #endif

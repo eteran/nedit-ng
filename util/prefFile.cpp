@@ -37,13 +37,150 @@
 #include <sys/param.h>
 #include <Xm/Xm.h>
 
-#define N_BOOLEAN_STRINGS 13
-static const char *TrueStrings[N_BOOLEAN_STRINGS]  = {"True",  "true",  "TRUE",  "T", "t", "Yes", "yes", "YES", "y", "Y", "on",  "On",  "ON" };
-static const char *FalseStrings[N_BOOLEAN_STRINGS] = {"False", "false", "FALSE", "F", "f", "No",  "no",  "NO",  "n", "N", "off", "Off", "OFF"};
+namespace {
 
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay);
-static bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip);
-static std::string removeWhiteSpaceEx(view::string_view string);
+const int BooleanStringCount = 13;
+const char *TrueStrings[BooleanStringCount]  = {"True",  "true",  "TRUE",  "T", "t", "Yes", "yes", "YES", "y", "Y", "on",  "On",  "ON" };
+const char *FalseStrings[BooleanStringCount] = {"False", "false", "FALSE", "F", "f", "No",  "no",  "NO",  "n", "N", "off", "Off", "OFF"};
+
+/*
+** Remove the white space (blanks and tabs) from a string and return
+** the result in a newly allocated string as the function value
+*/
+std::string removeWhiteSpaceEx(view::string_view string) {
+
+	std::string outString;
+	outString.reserve(string.size());
+	
+	auto outPtr = std::back_inserter(outString);
+
+	for (char ch : string) {
+		if (ch != ' ' && ch != '\t') {
+			*outPtr++ = ch;
+		}
+	}
+	
+	return outString;
+}
+
+bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
+	
+	switch (rsrcDescrip->dataType) {
+	case PREF_INT:
+		{
+			char *endPtr;
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			*rsrcDescrip->valueAddr.number = std::strtol(cleanStr.c_str(), &endPtr, 10);
+
+			if (cleanStr.empty()) { /* String is empty */
+				*rsrcDescrip->valueAddr.number = 0;
+				return false;
+			} else if (*endPtr != '\0') { /* Whole string not parsed */
+				*rsrcDescrip->valueAddr.number = 0;
+				return false;
+			}
+			return true;
+		}
+	case PREF_BOOLEAN:
+		{
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			for (int i = 0; i < BooleanStringCount; i++) {
+				if (cleanStr == TrueStrings[i]) {
+					*rsrcDescrip->valueAddr.boolean = true;
+					return true;
+				}
+
+				if (cleanStr == FalseStrings[i]) {
+					*rsrcDescrip->valueAddr.boolean = false;
+					return true;
+				}
+			}
+			*rsrcDescrip->valueAddr.boolean = false;
+			return false;
+		}
+	case PREF_ENUM:
+		{
+			const std::string cleanStr = removeWhiteSpaceEx(string);
+			const char **enumStrings = rsrcDescrip->arg.str_ptr;
+			
+			for (int i = 0; enumStrings[i] != nullptr; i++) {
+				if (cleanStr == enumStrings[i]) {
+					*rsrcDescrip->valueAddr.number = i;
+					return true;
+				}
+			}
+			*rsrcDescrip->valueAddr.number = 0;
+			return false;
+		}
+		
+	case PREF_STRING:
+		{
+			if (strlen(string) >= rsrcDescrip->arg.size) {
+				return false;
+			}
+			
+			strncpy(rsrcDescrip->valueAddr.str, string, rsrcDescrip->arg.size);
+			return true;
+		}
+		
+	case PREF_ALLOC_STRING:
+		{
+			char *s = XtMalloc(strlen(string) + 1);
+			strcpy(s, string);
+			*rsrcDescrip->valueAddr.str_ptr = s;
+			
+			return true;
+		}
+	default:
+		assert(0 && "reading setting of unknown type");		
+	}
+	
+	return false;
+}
+
+void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, bool overlay) {
+
+
+	/* read each resource, trying first the preferences file database, then
+	   the application database, then the default value if neither are found */
+	for (int i = 0; i < nRsrc; i++) {
+
+		char rsrcName[256];
+		char rsrcClass[256];
+		const char *valueString;
+		char *type;
+		XrmValue rsrcValue;
+
+		snprintf(rsrcName,  sizeof(rsrcName),  "%s.%s", appName.c_str(),  rsrcDescrip[i].name.c_str());
+		snprintf(rsrcClass, sizeof(rsrcClass), "%s.%s", appClass.c_str(), rsrcDescrip[i].clazz.c_str());
+		
+		if (prefDB != nullptr && XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
+			if (strcmp(type, XmRString)) {
+				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
+				return;
+			}
+			valueString = rsrcValue.addr;
+		} else if (XrmGetResource(appDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
+			if (strcmp(type, XmRString)) {
+				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
+				return;
+			}
+			valueString = rsrcValue.addr;
+		} else {
+			valueString = rsrcDescrip[i].defaultString;
+		}
+		
+		if (overlay && valueString == rsrcDescrip[i].defaultString) {
+			continue;
+		}
+		
+		if (!stringToPref(valueString, &rsrcDescrip[i])) {
+			fprintf(stderr, "nedit: Could not read value of resource %s\n", rsrcName);
+		}
+	}
+}
+
+}
 
 /*
 ** Preferences File
@@ -155,7 +292,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 ** precidence over those in appDB.
 */
 void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
-	readPrefs(prefDB, appDB, appName, appClass, rsrcDescrip, nRsrc, False);
+	readPrefs(prefDB, appDB, appName, appClass, rsrcDescrip, nRsrc, false);
 }
 
 /*
@@ -165,49 +302,7 @@ void RestorePreferences(XrmDatabase prefDB, XrmDatabase appDB, const std::string
 ** restoring to default) existing preferences, not mentioned in "prefDB"
 */
 void OverlayPreferences(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc) {
-	readPrefs(nullptr, prefDB, appName, appClass, rsrcDescrip, nRsrc, True);
-}
-
-static void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName, const std::string &appClass, PrefDescripRec *rsrcDescrip, int nRsrc, int overlay) {
-
-
-	/* read each resource, trying first the preferences file database, then
-	   the application database, then the default value if neither are found */
-	for (int i = 0; i < nRsrc; i++) {
-
-		char rsrcName[256];
-		char rsrcClass[256];
-		const char *valueString;
-		char *type;
-		XrmValue rsrcValue;
-
-		snprintf(rsrcName,  sizeof(rsrcName),  "%s.%s", appName.c_str(),  rsrcDescrip[i].name.c_str());
-		snprintf(rsrcClass, sizeof(rsrcClass), "%s.%s", appClass.c_str(), rsrcDescrip[i].clazz.c_str());
-		
-		if (prefDB != nullptr && XrmGetResource(prefDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
-			if (strcmp(type, XmRString)) {
-				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
-				return;
-			}
-			valueString = rsrcValue.addr;
-		} else if (XrmGetResource(appDB, rsrcName, rsrcClass, &type, &rsrcValue)) {
-			if (strcmp(type, XmRString)) {
-				fprintf(stderr, "nedit: Internal Error: Unexpected resource type, %s\n", type);
-				return;
-			}
-			valueString = rsrcValue.addr;
-		} else {
-			valueString = rsrcDescrip[i].defaultString;
-		}
-		
-		if (overlay && valueString == rsrcDescrip[i].defaultString) {
-			continue;
-		}
-		
-		if (!stringToPref(valueString, &rsrcDescrip[i])) {
-			fprintf(stderr, "nedit: Could not read value of resource %s\n", rsrcName);
-		}
-	}
+	readPrefs(nullptr, prefDB, appName, appClass, rsrcDescrip, nRsrc, true);
 }
 
 /*
@@ -283,101 +378,6 @@ bool SavePreferences(Display *display, const char *fullName, const char *fileHea
 	
 	fclose(fp);
 	return true;
-}
-
-static bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
-	
-	switch (rsrcDescrip->dataType) {
-	case PREF_INT:
-		{
-			char *endPtr;
-			const std::string cleanStr = removeWhiteSpaceEx(string);
-			*rsrcDescrip->valueAddr.number = std::strtol(cleanStr.c_str(), &endPtr, 10);
-
-			if (cleanStr.empty()) { /* String is empty */
-				*rsrcDescrip->valueAddr.number = 0;
-				return false;
-			} else if (*endPtr != '\0') { /* Whole string not parsed */
-				*rsrcDescrip->valueAddr.number = 0;
-				return false;
-			}
-			return true;
-		}
-	case PREF_BOOLEAN:
-		{
-			const std::string cleanStr = removeWhiteSpaceEx(string);
-			for (int i = 0; i < N_BOOLEAN_STRINGS; i++) {
-				if (cleanStr == TrueStrings[i]) {
-					*rsrcDescrip->valueAddr.boolean = true;
-					return true;
-				}
-
-				if (cleanStr == FalseStrings[i]) {
-					*rsrcDescrip->valueAddr.boolean = false;
-					return true;
-				}
-			}
-			*rsrcDescrip->valueAddr.boolean = false;
-			return false;
-		}
-	case PREF_ENUM:
-		{
-			const std::string cleanStr = removeWhiteSpaceEx(string);
-			const char **enumStrings = rsrcDescrip->arg.str_ptr;
-			
-			for (int i = 0; enumStrings[i] != nullptr; i++) {
-				if (cleanStr == enumStrings[i]) {
-					*rsrcDescrip->valueAddr.number = i;
-					return true;
-				}
-			}
-			*rsrcDescrip->valueAddr.number = 0;
-			return false;
-		}
-		
-	case PREF_STRING:
-		{
-			if (strlen(string) >= rsrcDescrip->arg.size) {
-				return false;
-			}
-			
-			strncpy(rsrcDescrip->valueAddr.str, string, rsrcDescrip->arg.size);
-			return true;
-		}
-		
-	case PREF_ALLOC_STRING:
-		{
-			char *s = XtMalloc(strlen(string) + 1);
-			strcpy(s, string);
-			*rsrcDescrip->valueAddr.str_ptr = s;
-			
-			return true;
-		}
-	default:
-		assert(0 && "reading setting of unknown type");		
-	}
-	
-	return false;
-}
-
-/*
-** Remove the white space (blanks and tabs) from a string and return
-** the result in a newly allocated string as the function value
-*/
-static std::string removeWhiteSpaceEx(view::string_view string) {
-
-	std::string outString;
-	outString.reserve(string.size());
-	
-	auto outPtr = std::back_inserter(outString);
-
-	for (char ch : string) {
-		if (ch != ' ' && ch != '\t') {
-			*outPtr++ = ch;
-		}
-	}
-	
-	return outString;
 }
 
 /*******************

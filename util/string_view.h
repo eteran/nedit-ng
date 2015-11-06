@@ -457,10 +457,6 @@ typedef basic_string_view<char32_t> u32string_view;
 //--------------------------------------------------------------------------
 
 // some utility functions for convienience, not part of the standard proposal
-template <class Ch, class Tr, class A>
-basic_string_view<Ch, Tr> substr(const std::basic_string<Ch, Tr, A> &str, typename basic_string_view<Ch, Tr>::size_type pos, typename basic_string_view<Ch, Tr>::size_type count = basic_string_view<Ch, Tr>::npos) {
-	return basic_string_view<Ch, Tr>(str).substr(pos, count);
-}
 
 template <class Ch, class Tr>
 basic_string_view<Ch, Tr> substr(const basic_string_view<Ch, Tr> &str, typename basic_string_view<Ch, Tr>::size_type pos, typename basic_string_view<Ch, Tr>::size_type count = basic_string_view<Ch, Tr>::npos) {

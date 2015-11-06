@@ -353,7 +353,7 @@ int main(int argc, char **argv) {
 #endif
 
 	/* More preference stuff */
-	LoadPrintPreferences(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, True);
+	LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
 	SetDeleteRemap(GetPrefMapDelete());
 	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());

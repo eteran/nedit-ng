@@ -69,24 +69,25 @@
 #define LABEL_TEXT_DIFF 6
 
 /* Maximum text string lengths */
-#define MAX_OPT_STR 20u
+#define MAX_OPT_STR   20u
 #define MAX_QUEUE_STR 60u
-#define MAX_INT_STR 13u
-#define MAX_HOST_STR 100u
-#define MAX_PCMD_STR 100u
-#define MAX_NAME_STR 100u
-#define MAX_CMD_STR 256u
+#define MAX_INT_STR   13u
+#define MAX_HOST_STR  100u
+#define MAX_PCMD_STR  100u
+#define MAX_NAME_STR  100u
+#define MAX_CMD_STR   256u
 
 #define N_PRINT_PREFS 7 /* must agree with number of preferences below */
-struct printPrefDescrip {
-	PrefDescripRec printCommand;
-	PrefDescripRec copiesOption;
-	PrefDescripRec queueOption;
-	PrefDescripRec nameOption;
-	PrefDescripRec hostOption;
-	PrefDescripRec defaultQueue;
-	PrefDescripRec defaultHost;
-};
+
+
+#define PRINT_COMMAND_INDEX 0
+#define COPIES_OPTION_INDEX 1
+#define QUEUE_OPTION_INDEX  2
+#define NAME_OPTION_INDEX   3
+#define HOST_OPTION_INDEX   4
+#define DEFAULT_QUEUE_INDEX 5
+#define DEFAULT_HOST_INDEX  6
+
 
 /* Function Prototypes */
 static Widget createForm(Widget parent);
@@ -134,9 +135,9 @@ static char Copies[MAX_INT_STR] = "";    /* # of copies last entered by user */
 static char Queue[MAX_QUEUE_STR] = "";   /* queue name last entered by user */
 static char Host[MAX_HOST_STR] = "";     /* host name last entered by user */
 static char CmdText[MAX_CMD_STR] = "";   /* print command last entered by user */
-static int CmdFieldModified = False;     /* user last changed the print command
-                        field, so don't trust the rest */
-static struct printPrefDescrip PrintPrefDescrip = {
+static int CmdFieldModified = False;     /* user last changed the print command field, so don't trust the rest */
+						
+static PrefDescripRec PrintPrefDescrip[N_PRINT_PREFS] = {
     {"printCommand",      "PrintCommand",      PREF_STRING, nullptr, PrintCommand, MAX_PCMD_STR,  false},
     {"printCopiesOption", "PrintCopiesOption", PREF_STRING, nullptr, CopiesOption, MAX_OPT_STR,   false},
     {"printQueueOption",  "PrintQueueOption",  PREF_STRING, nullptr, QueueOption,  MAX_OPT_STR,   false},
@@ -162,7 +163,7 @@ void PrintFile(Widget parent, const std::string &printFile, const std::string &j
 	/* In case the program hasn't called LoadPrintPreferences, set up the
 	   default values for the print preferences */
 	if (!PreferencesLoaded)
-		LoadPrintPreferences(nullptr, "", "", True);
+		LoadPrintPreferencesEx(nullptr, "", "", true);
 
 	/* Make the PrintFile information available to the callback routines */
 	PrintFileName = printFile;
@@ -199,7 +200,7 @@ void PrintFile(Widget parent, const std::string &printFile, const std::string &j
 **			(flpr is a Fermilab utility for printing on
 **			arbitrary systems that support the lpr protocol)
 */
-void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *appClass, int lookForFlpr) {
+void LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, bool lookForFlpr) {
 	static char defaultQueue[MAX_QUEUE_STR], defaultHost[MAX_HOST_STR];
 
 	/* check if flpr is installed, and otherwise choose appropriate
@@ -207,32 +208,32 @@ void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *a
 	if (lookForFlpr && flprPresent()) {
 		getFlprQueueDefault(defaultQueue);
 		getFlprHostDefault(defaultHost);
-		PrintPrefDescrip.printCommand.defaultString = "flpr";
-		PrintPrefDescrip.copiesOption.defaultString = "";
-		PrintPrefDescrip.queueOption.defaultString = "-q";
-		PrintPrefDescrip.nameOption.defaultString = "-j ";
-		PrintPrefDescrip.hostOption.defaultString = "-h";
-		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-		PrintPrefDescrip.defaultHost.defaultString = defaultHost;
+		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "flpr";
+		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "";
+		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-q";
+		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-j ";
+		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "-h";
+		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
+		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = defaultHost;
 	} else {
 #ifdef USE_LPR_PRINT_CMD
 		getLprQueueDefault(defaultQueue);
-		PrintPrefDescrip.printCommand.defaultString = "lpr";
-		PrintPrefDescrip.copiesOption.defaultString = "-# ";
-		PrintPrefDescrip.queueOption.defaultString = "-P ";
-		PrintPrefDescrip.nameOption.defaultString = "-J ";
-		PrintPrefDescrip.hostOption.defaultString = "";
-		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-		PrintPrefDescrip.defaultHost.defaultString = "";
+		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "lpr";
+		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "-# ";
+		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-P ";
+		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-J ";
+		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "";
+		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
+		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = "";
 #else
 		getLpQueueDefault(defaultQueue);
-		PrintPrefDescrip.printCommand.defaultString = "lp"; /* was lp -c */
-		PrintPrefDescrip.copiesOption.defaultString = "-n";
-		PrintPrefDescrip.queueOption.defaultString = "-d";
-		PrintPrefDescrip.nameOption.defaultString = "-t";
-		PrintPrefDescrip.hostOption.defaultString = "";
-		PrintPrefDescrip.defaultQueue.defaultString = defaultQueue;
-		PrintPrefDescrip.defaultHost.defaultString = "";
+		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "lp"; /* was lp -c */
+		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "-n";
+		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-d";
+		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-t";
+		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "";
+		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
+		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = "";
 #endif
 	}
 
@@ -240,9 +241,9 @@ void LoadPrintPreferences(XrmDatabase prefDB, const char *appName, const char *a
 	   prefFile.c (this allows LoadPrintPreferences to work before any
 	   widgets are created, which is more convenient than XtGetApplication-
 	   Resources for applications which have no main window) */
-	RestorePreferences(nullptr, prefDB, appName, appClass, (PrefDescripRec *)&PrintPrefDescrip, N_PRINT_PREFS);
+	RestorePreferences(nullptr, prefDB, appName, appClass, PrintPrefDescrip, N_PRINT_PREFS);
 
-	PreferencesLoaded = True;
+	PreferencesLoaded = true;
 }
 
 static Widget createForm(Widget parent) {

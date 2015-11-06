@@ -60,7 +60,6 @@ struct managedListData {
 	int lastSelection;
 };
 
-static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
 static void copyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -227,32 +226,36 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args, int argC, void **
 */
 Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn, Widget moveUpBtn, Widget moveDownBtn, void **itemList, int *nItems, int maxItems, void *(*getDialogDataCB)(void *, int, int *, void *), void *getDialogDataArg,
                             void (*setDialogDataCB)(void *, void *), void *setDialogDataArg, void (*freeItemCB)(void *)) {
-	managedListData *ml;
 
 	/* Create a managedList data structure to hold information about the
 	   widgets, callbacks, and current state of the list */
-	ml = (managedListData *)XtMalloc(sizeof(managedListData));
-	ml->listW = listW;
-	ml->deleteBtn = deleteBtn;
-	ml->copyBtn = copyBtn;
-	ml->moveUpBtn = moveUpBtn;
-	ml->moveDownBtn = moveDownBtn;
-	ml->getDialogDataCB = nullptr;
+	auto ml = new managedListData;
+	ml->listW            = listW;
+	ml->deleteBtn        = deleteBtn;
+	ml->copyBtn          = copyBtn;
+	ml->moveUpBtn        = moveUpBtn;
+	ml->moveDownBtn      = moveDownBtn;
+	ml->getDialogDataCB  = nullptr;
 	ml->getDialogDataArg = getDialogDataArg;
-	ml->setDialogDataCB = nullptr;
+	ml->setDialogDataCB  = nullptr;
 	ml->setDialogDataArg = setDialogDataArg;
-	ml->freeItemCB = freeItemCB;
-	ml->deleteConfirmCB = nullptr;
+	ml->freeItemCB       = freeItemCB;
+	ml->deleteConfirmCB  = nullptr;
 	ml->deleteConfirmArg = nullptr;
-	ml->nItems = nItems;
-	ml->maxItems = maxItems;
-	ml->itemList = itemList;
-	ml->lastSelection = 1;
+	ml->nItems           = nItems;
+	ml->maxItems         = maxItems;
+	ml->itemList         = itemList;
+	ml->lastSelection    = 1;
 
 	/* Make the managed list data structure accessible from the list widget
 	   pointer, and make sure it gets freed when the list is destroyed */
 	XtVaSetValues(ml->listW, XmNuserData, ml, nullptr);
-	XtAddCallback(ml->listW, XmNdestroyCallback, destroyCB, ml);
+	
+	XtAddCallback(ml->listW, XmNdestroyCallback, [](Widget, XtPointer clientData, XtPointer) {
+		/* Free the managed list data structure */
+		auto p = static_cast<managedListData *>(clientData);
+		delete p;
+	}, ml);
 
 	/* Add callbacks for button and list actions */
 	XtAddCallback(ml->deleteBtn, XmNactivateCallback, deleteCB, ml);
@@ -331,18 +334,6 @@ void AddDeleteConfirmCB(Widget listW, int (*deleteConfirmCB)(int, void *), void 
 	XtVaGetValues(listW, XmNuserData, &ml, nullptr);
 	ml->deleteConfirmCB = deleteConfirmCB;
 	ml->deleteConfirmArg = deleteConfirmArg;
-}
-
-/*
-** Called on destruction of the list widget
-*/
-static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-
-	/* Free the managed list data structure */
-	XtFree((char *)clientData);
 }
 
 /*

@@ -111,7 +111,6 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int mod
 static void removeWhiteSpace(char *string);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
-static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch);
 static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine, Widget parent, const char *name, ArgList arglist, Cardinal argcount);
@@ -1157,27 +1156,21 @@ void MakeSingleLineTextW(Widget textW) {
 ** items, which are expected to change periodically.
 */
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems) {
-	histInfo *histData;
 
 	/* create a data structure for passing history info to the callbacks */
-	histData = (histInfo *)XtMalloc(sizeof(histInfo));
-	histData->list = historyList;
+	auto histData = new histInfo;
+	histData->list   = historyList;
 	histData->nItems = nItems;
-	histData->index = -1;
+	histData->index  = -1;
 
 	/* Add an event handler for handling up/down arrow events */
 	XtAddEventHandler(textW, KeyPressMask, False, (XtEventHandler)histArrowKeyEH, histData);
 
 	/* Add a destroy callback for freeing history data structure */
-	XtAddCallback(textW, XmNdestroyCallback, histDestroyCB, histData);
-}
-
-static void histDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	
-	XtFree((char *)clientData);
+	XtAddCallback(textW, XmNdestroyCallback, [](Widget, XtPointer clientData, XtPointer) {
+		auto p = static_cast<histInfo *>(clientData);
+		delete p;
+	}, histData);
 }
 
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch) {
