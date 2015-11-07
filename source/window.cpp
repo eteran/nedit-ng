@@ -2165,6 +2165,7 @@ void AttachSessionMgrHandler(Widget appShell) {
 		wmpAtom = XmInternAtom(TheDisplay, (String) "WM_PROTOCOLS", FALSE);
 		syAtom = XmInternAtom(TheDisplay, (String) "WM_SAVE_YOURSELF", FALSE);
 	}
+	
 	XmAddProtocolCallback(appShell, wmpAtom, syAtom, (XtCallbackProc)saveYourselfCB, (XtPointer)appShell);
 }
 #endif /* NO_SESSION_RESTART */
@@ -2181,14 +2182,16 @@ int IsIconic(WindowInfo *window) {
 	static Atom wmStateAtom = 0;
 	Atom actualType;
 	int actualFormat;
-	int result;
-
-	if (wmStateAtom == 0)
+	
+	if (wmStateAtom == 0) {
 		wmStateAtom = XInternAtom(XtDisplay(window->shell), "WM_STATE", False);
-	if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 ||
-	    property == nullptr)
+	}
+		
+	if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
 		return FALSE;
-	result = *property == IconicState;
+	}
+
+	int result = (*property == IconicState);
 	XtFree((char *)property);
 	return result;
 }
@@ -2197,9 +2200,8 @@ int IsIconic(WindowInfo *window) {
 ** Add a window to the the window list.
 */
 static void addToWindowList(WindowInfo *window) {
-	WindowInfo *temp;
 
-	temp = WindowList;
+	WindowInfo *temp = WindowList;
 	WindowList = window;
 	window->next = temp;
 }
@@ -2210,9 +2212,9 @@ static void addToWindowList(WindowInfo *window) {
 static void removeFromWindowList(WindowInfo *window) {
 	WindowInfo *temp;
 
-	if (WindowList == window)
+	if (WindowList == window) {
 		WindowList = window->next;
-	else {
+	} else {
 		for (temp = WindowList; temp != nullptr; temp = temp->next) {
 			if (temp->next == window) {
 				temp->next = window->next;
@@ -2315,32 +2317,38 @@ static int updateLineNumDisp(WindowInfo *window) {
 ** Update the optional statistics line.
 */
 void UpdateStatsLine(WindowInfo *window) {
-	int line, pos, colNum;
-	char *string, *format, slinecol[32];
+	int line;
+	int colNum;	
 	Widget statW = window->statsLine;
 	XmString xmslinecol;
 
-	if (!IsTopDocument(window))
+	if (!IsTopDocument(window)) {
 		return;
+	}
 
 	/* This routine is called for each character typed, so its performance
 	   affects overall editor perfomance.  Only update if the line is on. */
-	if (!window->showStats)
+	if (!window->showStats) {
 		return;
+	}
 
 	/* Compose the string to display. If line # isn't available, leave it off */
-	pos = TextGetCursorPos(window->lastFocus);
-	string = XtMalloc(strlen(window->filename) + strlen(window->path) + 45);
-	format = window->fileFormat == DOS_FILE_FORMAT ? (String) " DOS" : (window->fileFormat == MAC_FILE_FORMAT ? (String) " Mac" : (String) "");
+	int pos            = TextGetCursorPos(window->lastFocus);
+	size_t string_size = strlen(window->filename) + strlen(window->path) + 45;
+	char *string       = new char[string_size];
+	const char *format = (window->fileFormat == DOS_FILE_FORMAT) ? " DOS" : (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
+	char slinecol[32];
+	
 	if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
-		sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
-		sprintf(slinecol, "L: ---  C: ---");
+		snprintf(string, string_size, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
+		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
-		sprintf(slinecol, "L: %d  C: %d", line, colNum);
-		if (window->showLineNumbers)
-			sprintf(string, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->BufGetLength());
-		else
-			sprintf(string, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
+		snprintf(slinecol, sizeof(slinecol), "L: %d  C: %d", line, colNum);
+		if (window->showLineNumbers) {
+			snprintf(string, string_size, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->BufGetLength());
+		} else {
+			snprintf(string, string_size, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
+		}
 	}
 
 	/* Update the line/column number */
@@ -2353,7 +2361,7 @@ void UpdateStatsLine(WindowInfo *window) {
 		/* Change the text in the stats line */
 		XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 	}
-	XtFree(string);
+	delete [] string;
 
 	/* Update the line/col display */
 	xmslinecol = XmStringCreateSimpleEx(slinecol);
@@ -2361,23 +2369,17 @@ void UpdateStatsLine(WindowInfo *window) {
 	XmStringFree(xmslinecol);
 }
 
-static Boolean currentlyBusy = False;
+static bool currentlyBusy = false;
 static long busyStartTime = 0;
-static Boolean modeMessageSet = False;
+static bool modeMessageSet = false;
 
 /*
  * Auxiliary function for measuring elapsed time during busy waits.
  */
 static long getRelTimeInTenthsOfSeconds() {
-#ifdef __unix__
 	struct timeval current;
 	gettimeofday(&current, nullptr);
 	return (current.tv_sec * 10 + current.tv_usec / 100000) & 0xFFFFFFFL;
-#else
-	time_t current;
-	time(&current);
-	return (current * 10) & 0xFFFFFFFL;
-#endif
 }
 
 void AllWindowsBusy(const char *message) {

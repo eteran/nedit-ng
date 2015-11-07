@@ -157,7 +157,6 @@ static void errorOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void yesNoOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void yesNoCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createPanelHelp(Widget parent, const char *text, const char *title);
-static void helpDismissCB(Widget w, XtPointer clientData, XtPointer callData);
 static void makeListTypeable(Widget listW);
 static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *continueDispatch);
 static void replacementDirSearchProc(Widget w, XtPointer searchData);
@@ -801,7 +800,9 @@ static void yesNoCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 static Widget createPanelHelp(Widget parent, const char *helpText, const char *title) {
 	Arg al[20];
 	int ac;
-	Widget form, text, button;
+	Widget form;
+	Widget text;
+	Widget button;
 
 	ac = 0;
 	form = CreateFormDialog(parent, "helpForm", al, ac);
@@ -810,32 +811,37 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 	XmString st1 = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET);
 
 	ac = 0;
-	XtSetArg(al[ac++], XmNbottomAttachment, XmATTACH_FORM);
-	XtSetArg(al[ac++], XmNtopAttachment,    XmATTACH_NONE);
-	XtSetArg(al[ac++], XmNlabelString,      st1);
-	XtSetArg(al[ac++], XmNmarginWidth,      BUTTON_WIDTH_MARGIN);
+	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);		++ac;
+	XtSetArg(al[ac], XmNtopAttachment,    XmATTACH_NONE);		++ac;
+	XtSetArg(al[ac], XmNlabelString,	  st1); 				++ac;
+	XtSetArg(al[ac], XmNmarginWidth,	  BUTTON_WIDTH_MARGIN); ++ac;
 
 	button = XmCreatePushButtonGadget(form, (char *)"ok", al, ac);
-	XtAddCallback(button, XmNactivateCallback, helpDismissCB, (char *)form);
+
+	XtAddCallback(button, XmNactivateCallback, [](Widget, XtPointer clientData, XtPointer) {
+		XtUnmanageChild(static_cast<Widget>(clientData));
+	}, form);
+
+
 	XmStringFree(st1);
 	XtManageChild(button);
 	SET_ONE_RSRC(form, XmNdefaultButton, button);
 
 	ac = 0;
-	XtSetArg(al[ac++], XmNrows,             15);
-	XtSetArg(al[ac++], XmNcolumns,          60);
-	XtSetArg(al[ac++], XmNresizeHeight,     False);
-	XtSetArg(al[ac++], XmNtraversalOn,      False);
-	XtSetArg(al[ac++], XmNwordWrap,         True);
-	XtSetArg(al[ac++], XmNscrollHorizontal, False);
-	XtSetArg(al[ac++], XmNeditMode,         XmMULTI_LINE_EDIT);
-	XtSetArg(al[ac++], XmNeditable,         False);
-	XtSetArg(al[ac++], XmNvalue,            helpText);
-	XtSetArg(al[ac++], XmNtopAttachment,    XmATTACH_FORM);
-	XtSetArg(al[ac++], XmNleftAttachment,   XmATTACH_FORM);
-	XtSetArg(al[ac++], XmNbottomAttachment, XmATTACH_WIDGET);
-	XtSetArg(al[ac++], XmNrightAttachment,  XmATTACH_FORM);
-	XtSetArg(al[ac++], XmNbottomWidget,     button);
+	XtSetArg(al[ac], XmNrows,			  15);  			  ++ac;
+	XtSetArg(al[ac], XmNcolumns,		  60);  			  ++ac;
+	XtSetArg(al[ac], XmNresizeHeight,	  False);			  ++ac;
+	XtSetArg(al[ac], XmNtraversalOn,	  False);			  ++ac;
+	XtSetArg(al[ac], XmNwordWrap,		  True);			  ++ac;
+	XtSetArg(al[ac], XmNscrollHorizontal, False);			  ++ac;
+	XtSetArg(al[ac], XmNeditMode,		  XmMULTI_LINE_EDIT); ++ac;
+	XtSetArg(al[ac], XmNeditable,		  False);			  ++ac;
+	XtSetArg(al[ac], XmNvalue,  		  helpText);          ++ac;
+	XtSetArg(al[ac], XmNtopAttachment,    XmATTACH_FORM);     ++ac;
+	XtSetArg(al[ac], XmNleftAttachment,   XmATTACH_FORM);     ++ac;
+	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);   ++ac;
+	XtSetArg(al[ac], XmNrightAttachment,  XmATTACH_FORM);     ++ac;
+	XtSetArg(al[ac], XmNbottomWidget,	  button);            ++ac;
 
 	text = XmCreateScrolledText(form, (char *)"helpText", al, ac);
 	AddMouseWheelSupport(text);
@@ -844,16 +850,6 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 	SET_ONE_RSRC(XtParent(form), XmNtitle, title);
 
 	return form;
-}
-
-static void helpDismissCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	
-	auto helpPanel = (Widget)clientData;
-
-	XtUnmanageChild(helpPanel);
 }
 
 /*
