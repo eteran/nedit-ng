@@ -3,6 +3,7 @@
 #define MOTIF_HELPER_H_
 
 #include <Xm/Xm.h>
+#include <Xm/Text.h>
 #include <string>
 
 //------------------------------------------------------------------------------
@@ -28,5 +29,18 @@ inline XmString XmStringCreateLtoREx(const std::string &text) {
 }
 
 //------------------------------------------------------------------------------
+inline XmString XmStringCreateLocalizedEx(const char *text) {
+	return XmStringCreateLocalized(const_cast<char *>(text));
+}
+
+//------------------------------------------------------------------------------
+inline void XmTextSetStringEx(Widget widget, const char *value) {
+	return XmTextSetString(widget, const_cast<char *>(value));
+}
+
+//------------------------------------------------------------------------------
+inline String XtNewStringEx(const std::string &string) {
+	return XtNewString((String)string.c_str());
+}
 
 #endif

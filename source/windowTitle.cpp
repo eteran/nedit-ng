@@ -411,7 +411,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 					SetIntText(etDialog.ndirW, noOfComponents);
 				XtFree(value);
 			} else {
-				XmTextSetString(etDialog.ndirW, (String) "");
+				XmTextSetStringEx(etDialog.ndirW, "");
 			}
 		}
 
@@ -554,7 +554,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	XmTextSetString(etDialog.formatW, (String) "{%c} [%s] %f (%S) - %d");
+	XmTextSetStringEx(etDialog.formatW, "{%c} [%s] %f (%S) - %d");
 }
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -588,7 +588,7 @@ static void appendToFormat(const char *string) {
 	char *buf = XtMalloc(strlen(string) + strlen(format) + 1);
 	strcpy(buf, format);
 	strcat(buf, string);
-	XmTextSetString(etDialog.formatW, buf);
+	XmTextSetStringEx(etDialog.formatW, buf);
 	XtFree(format);
 	XtFree(buf);
 }
@@ -645,7 +645,7 @@ static void removeFromFormat(const char *string) {
 	}
 	*(pos + 1) = (char)0;
 
-	XmTextSetString(etDialog.formatW, format);
+	XmTextSetStringEx(etDialog.formatW, format);
 	XtFree(format);
 }
 
@@ -748,7 +748,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 		} while (pos);
 	}
 
-	XmTextSetString(etDialog.formatW, format);
+	XmTextSetStringEx(etDialog.formatW, format);
 	XtFree(format);
 }
 
@@ -815,7 +815,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 		if (sscanf(value, "%d", &maxComp) <= 0) {
 			/* Don't allow non-digits to be entered */
 			XBell(XtDisplay(w), 0);
-			XmTextSetString(etDialog.ndirW, (String) "");
+			XmTextSetStringEx(etDialog.ndirW, "");
 		}
 	}
 
@@ -874,7 +874,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 		} while (found);
 	}
 
-	XmTextSetString(etDialog.formatW, format);
+	XmTextSetStringEx(etDialog.formatW, format);
 	XtFree(format);
 	XtFree(value);
 }
@@ -902,7 +902,7 @@ static void createEditTitleDialog(Widget parent) {
 	ac++;
 	XtSetArg(args[ac], XmNtitle, "Customize Window Title");
 	ac++;
-	etDialog.form = CreateFormDialog(parent, (String) "customizeTitle", args, ac);
+	etDialog.form = CreateFormDialog(parent, "customizeTitle", args, ac);
 
 	/*
 	 * Destroy the dialog every time it is unmapped (otherwise it 'sticks'
@@ -1146,7 +1146,7 @@ void EditCustomTitleFormat(WindowInfo *window) {
 	}
 
 	/* set initial value of format field */
-	XmTextSetString(etDialog.formatW, (char *)GetPrefTitleFormat());
+	XmTextSetStringEx(etDialog.formatW, (char *)GetPrefTitleFormat());
 
 	/* force update of the dialog */
 	setToggleButtons();

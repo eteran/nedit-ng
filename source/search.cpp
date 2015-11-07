@@ -377,7 +377,7 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs, int s
 	}
 
 	/* Blank the Replace with field */
-	XmTextSetString(window->replaceWithText, (String) "");
+	XmTextSetStringEx(window->replaceWithText, "");
 
 	/* Set the initial search type */
 	initToggleButtons(searchType, window->replaceRegexToggle, window->replaceCaseToggle, &window->replaceWordToggle, &window->replaceLastLiteralCase, &window->replaceLastRegexCase);
@@ -460,7 +460,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 	}
 
 	/* Update the field */
-	XmTextSetString(textField, primary_selection);
+	XmTextSetStringEx(textField, primary_selection);
 
 	XtFree(primary_selection);
 	XtFree((char *)selectionInfo);
@@ -606,7 +606,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNautoUnmanage, False);
 	argcnt++;
-	form = CreateFormDialog(parent, (String) "replaceDialog", args, argcnt);
+	form = CreateFormDialog(parent, "replaceDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
 		sprintf(title, "Replace/Find (in %s)", window->filename);
@@ -1308,7 +1308,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNautoUnmanage, False);
 	argcnt++;
-	form = CreateFormDialog(parent, (String) "findDialog", args, argcnt);
+	form = CreateFormDialog(parent, "findDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
 		sprintf(title, "Find (in %s)", window->filename);
@@ -2747,8 +2747,8 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	/* Set the buttons and fields with the selected search type */
 	initToggleButtons(searchType, window->replaceRegexToggle, window->replaceCaseToggle, &window->replaceWordToggle, &window->replaceLastLiteralCase, &window->replaceLastRegexCase);
 
-	XmTextSetString(window->replaceText, (String)searchStr);
-	XmTextSetString(window->replaceWithText, (String)replaceStr);
+	XmTextSetStringEx(window->replaceText, (String)searchStr);
+	XmTextSetStringEx(window->replaceWithText, (String)replaceStr);
 
 	/* Set the state of the Replace, Find ... buttons */
 	UpdateReplaceActionButtons(window);
@@ -2786,9 +2786,9 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 
 	/* change only the replace field information */
 	if (index == 0)
-		XmTextSetString(window->replaceWithText, (String) "");
+		XmTextSetStringEx(window->replaceWithText, (String) "");
 	else
-		XmTextSetString(window->replaceWithText, ReplaceHistory[historyIndex(index)]);
+		XmTextSetStringEx(window->replaceWithText, ReplaceHistory[historyIndex(index)]);
 	window->rHistIndex = index;
 }
 
@@ -2847,7 +2847,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 
 	/* Set the buttons and fields with the selected search type */
 	initToggleButtons(searchType, window->findRegexToggle, window->findCaseToggle, &window->findWordToggle, &window->findLastLiteralCase, &window->findLastRegexCase);
-	XmTextSetString(window->findText, (String)searchStr);
+	XmTextSetStringEx(window->findText, (String)searchStr);
 
 	/* Set the state of the Find ... button */
 	fUpdateActionButtons(window);
@@ -3178,7 +3178,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 */
 void BeginISearch(WindowInfo *window, int direction) {
 	window->iSearchStartPos = -1;
-	XmTextSetString(window->iSearchText, (String) "");
+	XmTextSetStringEx(window->iSearchText, (String) "");
 	XmToggleButtonSetState(window->iSearchRevToggle, direction == SEARCH_BACKWARD, FALSE);
 	/* Note: in contrast to the replace and find dialogs, the regex and
 	   case toggles are not reset to their default state when the incremental
@@ -3350,7 +3350,7 @@ static void iSearchTextSetString(Widget w, WindowInfo *window, char *str) {
 	XtRemoveAllCallbacks(window->iSearchText, XmNvalueChangedCallback);
 	XtRemoveAllCallbacks(window->iSearchText, XmNactivateCallback);
 	/* empty the text */
-	XmTextSetString(window->iSearchText, str ? str : (String) "");
+	XmTextSetStringEx(window->iSearchText, str ? str : (String) "");
 	/* put back the callbacks */
 	XtAddCallback(window->iSearchText, XmNactivateCallback, iSearchTextActivateCB, window);
 	XtAddCallback(window->iSearchText, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
@@ -3558,12 +3558,12 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 	}
 
 	/* Set the info used in the value changed callback before calling
-	  XmTextSetString(). */
+	  XmTextSetStringEx(). */
 	window->iSearchHistIndex = index;
 	initToggleButtons(searchType, window->iSearchRegexToggle, window->iSearchCaseToggle, nullptr, &window->iSearchLastLiteralCase, &window->iSearchLastRegexCase);
 
 	/* Beware the value changed callback is processed as part of this call */
-	XmTextSetString(window->iSearchText, (String)searchStr);
+	XmTextSetStringEx(window->iSearchText, searchStr);
 	XmTextSetInsertionPosition(window->iSearchText, XmTextGetLastPosition(window->iSearchText));
 }
 

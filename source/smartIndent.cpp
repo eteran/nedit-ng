@@ -951,19 +951,19 @@ static smartIndentRec *getSmartIndentDialogData(void) {
 
 static void setSmartIndentDialogData(smartIndentRec *is) {
 	if (is == nullptr) {
-		XmTextSetString(SmartIndentDialog.initMacro, (String) "");
-		XmTextSetString(SmartIndentDialog.newlineMacro, (String) "");
-		XmTextSetString(SmartIndentDialog.modMacro, (String) "");
+		XmTextSetStringEx(SmartIndentDialog.initMacro, "");
+		XmTextSetStringEx(SmartIndentDialog.newlineMacro, "");
+		XmTextSetStringEx(SmartIndentDialog.modMacro, "");
 	} else {
 		if (is->initMacro == nullptr)
-			XmTextSetString(SmartIndentDialog.initMacro, (String) "");
+			XmTextSetStringEx(SmartIndentDialog.initMacro, "");
 		else
-			XmTextSetString(SmartIndentDialog.initMacro, (String)is->initMacro);
-		XmTextSetString(SmartIndentDialog.newlineMacro, (String)is->newlineMacro);
+			XmTextSetStringEx(SmartIndentDialog.initMacro, is->initMacro);
+		XmTextSetStringEx(SmartIndentDialog.newlineMacro, is->newlineMacro);
 		if (is->modMacro == nullptr)
-			XmTextSetString(SmartIndentDialog.modMacro, (String) "");
+			XmTextSetStringEx(SmartIndentDialog.modMacro, "");
 		else
-			XmTextSetString(SmartIndentDialog.modMacro, (String)is->modMacro);
+			XmTextSetStringEx(SmartIndentDialog.modMacro, is->modMacro);
 	}
 }
 
@@ -1128,7 +1128,7 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	CommonMacros = XtNewString(DefaultCommonMacros);
 
 	/* Update the dialog */
-	XmTextSetString(CommonDialog.text, CommonMacros);
+	XmTextSetStringEx(CommonDialog.text, CommonMacros);
 }
 
 static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {

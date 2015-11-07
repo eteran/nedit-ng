@@ -1057,7 +1057,7 @@ static void createOutputDialog(Widget parent, char *text) {
 	if (wrapped)
 		hasScrollBar = True;
 	ac = 0;
-	form = CreateFormDialog(parent, (String) "shellOutForm", al, ac);
+	form = CreateFormDialog(parent, "shellOutForm", al, ac);
 
 	ac = 0;
 	XtSetArg(al[ac], XmNlabelString, st1 = XmStringCreateLtoREx("OK"));

@@ -1940,7 +1940,7 @@ void RowColumnPrefDialog(Widget parent) {
 
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, (String) "customSize", selBoxArgs, 2);
+	selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
 	XtAddCallback(selBox, XmNokCallback, sizeOKCB, nullptr);
 	XtAddCallback(selBox, XmNcancelCallback, sizeCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
@@ -2318,12 +2318,12 @@ void SelectShellDialog(Widget parent, WindowInfo *forWindow) {
 	XtAddCallback(shellSelDialog, XmNokCallback, shellSelOKCB, shellSelDialog);
 	XtAddCallback(shellSelDialog, XmNcancelCallback, shellSelCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_HELP_BUTTON));
-	label = XmStringCreateLocalized((String) "Enter shell path:");
+	label = XmStringCreateLocalizedEx("Enter shell path:");
 	XtVaSetValues(shellSelDialog, XmNselectionLabelString, label, nullptr);
 	XmStringFree(label);
 
 	/*  Set dialog's text to the current setting.  */
-	XmTextSetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT), (char *)GetPrefShell());
+	XmTextSetStringEx(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT), GetPrefShell());
 
 	DoneWithShellSelDialog = False;
 
@@ -2803,29 +2803,29 @@ static void lmSetDisplayedCB(void *item, void *cbArg) {
 	char *extStr;
 
 	if (item == nullptr) {
-		XmTextSetString(LMDialog.nameW, (String) "");
-		XmTextSetString(LMDialog.extW, (String) "");
-		XmTextSetString(LMDialog.recogW, (String) "");
-		XmTextSetString(LMDialog.defTipsW, (String) "");
-		XmTextSetString(LMDialog.delimitW, (String) "");
-		XmTextSetString(LMDialog.tabW, (String) "");
-		XmTextSetString(LMDialog.emTabW, (String) "");
+		XmTextSetStringEx(LMDialog.nameW, "");
+		XmTextSetStringEx(LMDialog.extW, "");
+		XmTextSetStringEx(LMDialog.recogW, "");
+		XmTextSetStringEx(LMDialog.defTipsW,  "");
+		XmTextSetStringEx(LMDialog.delimitW, "");
+		XmTextSetStringEx(LMDialog.tabW, "");
+		XmTextSetStringEx(LMDialog.emTabW, "");
 		RadioButtonChangeState(LMDialog.defaultIndentW, True, True);
 		RadioButtonChangeState(LMDialog.defaultWrapW, True, True);
 	} else {
-		XmTextSetString(LMDialog.nameW, strchr(lm->name, ':') == nullptr ? lm->name : strchr(lm->name, ':') + 1);
+		XmTextSetStringEx(LMDialog.nameW, strchr(lm->name, ':') == nullptr ? lm->name : strchr(lm->name, ':') + 1);
 		extStr = createExtString(lm->extensions, lm->nExtensions);
-		XmTextSetString(LMDialog.extW, extStr);
+		XmTextSetStringEx(LMDialog.extW, extStr);
 		XtFree(extStr);
-		XmTextSetString(LMDialog.recogW, lm->recognitionExpr);
-		XmTextSetString(LMDialog.defTipsW, lm->defTipsFile);
-		XmTextSetString(LMDialog.delimitW, lm->delimiters);
+		XmTextSetStringEx(LMDialog.recogW, lm->recognitionExpr);
+		XmTextSetStringEx(LMDialog.defTipsW, lm->defTipsFile);
+		XmTextSetStringEx(LMDialog.delimitW, lm->delimiters);
 		if (lm->tabDist == DEFAULT_TAB_DIST)
-			XmTextSetString(LMDialog.tabW, (String) "");
+			XmTextSetStringEx(LMDialog.tabW, "");
 		else
 			SetIntText(LMDialog.tabW, lm->tabDist);
 		if (lm->emTabDist == DEFAULT_EM_TAB_DIST)
-			XmTextSetString(LMDialog.emTabW, (String) "");
+			XmTextSetStringEx(LMDialog.emTabW, "");
 		else
 			SetIntText(LMDialog.emTabW, lm->emTabDist);
 		RadioButtonChangeState(LMDialog.defaultIndentW, lm->indentStyle == DEFAULT_INDENT, False);
@@ -3209,15 +3209,15 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 
 	/* Set initial values */
 	if (forWindow) {
-		XmTextSetString(fd->primaryW, window->fontName);
-		XmTextSetString(fd->boldW, window->boldFontName);
-		XmTextSetString(fd->italicW, window->italicFontName);
-		XmTextSetString(fd->boldItalicW, window->boldItalicFontName);
+		XmTextSetStringEx(fd->primaryW, window->fontName);
+		XmTextSetStringEx(fd->boldW, window->boldFontName);
+		XmTextSetStringEx(fd->italicW, window->italicFontName);
+		XmTextSetStringEx(fd->boldItalicW, window->boldItalicFontName);
 	} else {
-		XmTextSetString(fd->primaryW, GetPrefFontName());
-		XmTextSetString(fd->boldW, GetPrefBoldFontName());
-		XmTextSetString(fd->italicW, GetPrefItalicFontName());
-		XmTextSetString(fd->boldItalicW, GetPrefBoldItalicFontName());
+		XmTextSetStringEx(fd->primaryW, GetPrefFontName());
+		XmTextSetStringEx(fd->boldW, GetPrefBoldFontName());
+		XmTextSetStringEx(fd->italicW, GetPrefItalicFontName());
+		XmTextSetStringEx(fd->boldItalicW, GetPrefBoldItalicFontName());
 	}
 
 	/* Handle mnemonic selection of buttons and focus to dialog */
@@ -3255,11 +3255,11 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 
 	/* Make up names for new fonts based on RE replace patterns */
 	SubstituteRE(compiledRE, italicReplaceString, modifiedFontName, MAX_FONT_LEN);
-	XmTextSetString(fd->italicW, modifiedFontName);
+	XmTextSetStringEx(fd->italicW, modifiedFontName);
 	SubstituteRE(compiledRE, boldReplaceString, modifiedFontName, MAX_FONT_LEN);
-	XmTextSetString(fd->boldW, modifiedFontName);
+	XmTextSetStringEx(fd->boldW, modifiedFontName);
 	SubstituteRE(compiledRE, boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
-	XmTextSetString(fd->boldItalicW, modifiedFontName);
+	XmTextSetStringEx(fd->boldItalicW, modifiedFontName);
 	XtFree(primaryName);
 	free(compiledRE);
 }
@@ -3481,7 +3481,7 @@ static void browseFont(Widget parent, Widget fontTextW) {
 	XtFree(origFontName);
 	if (newFontName == nullptr)
 		return;
-	XmTextSetString(fontTextW, newFontName);
+	XmTextSetStringEx(fontTextW, newFontName);
 	XtFree(newFontName);
 }
 
@@ -5259,14 +5259,14 @@ void ChooseColors(WindowInfo *window) {
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
 	/* Set initial values */
-	XmTextSetString(cd->textFgW, GetPrefColorName(TEXT_FG_COLOR));
-	XmTextSetString(cd->textBgW, GetPrefColorName(TEXT_BG_COLOR));
-	XmTextSetString(cd->selectFgW, GetPrefColorName(SELECT_FG_COLOR));
-	XmTextSetString(cd->selectBgW, GetPrefColorName(SELECT_BG_COLOR));
-	XmTextSetString(cd->hiliteFgW, GetPrefColorName(HILITE_FG_COLOR));
-	XmTextSetString(cd->hiliteBgW, GetPrefColorName(HILITE_BG_COLOR));
-	XmTextSetString(cd->lineNoFgW, GetPrefColorName(LINENO_FG_COLOR));
-	XmTextSetString(cd->cursorFgW, GetPrefColorName(CURSOR_FG_COLOR));
+	XmTextSetStringEx(cd->textFgW, GetPrefColorName(TEXT_FG_COLOR));
+	XmTextSetStringEx(cd->textBgW, GetPrefColorName(TEXT_BG_COLOR));
+	XmTextSetStringEx(cd->selectFgW, GetPrefColorName(SELECT_FG_COLOR));
+	XmTextSetStringEx(cd->selectBgW, GetPrefColorName(SELECT_BG_COLOR));
+	XmTextSetStringEx(cd->hiliteFgW, GetPrefColorName(HILITE_FG_COLOR));
+	XmTextSetStringEx(cd->hiliteBgW, GetPrefColorName(HILITE_BG_COLOR));
+	XmTextSetStringEx(cd->lineNoFgW, GetPrefColorName(LINENO_FG_COLOR));
+	XmTextSetStringEx(cd->cursorFgW, GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Handle mnemonic selection of buttons and focus to dialog */
 	AddDialogMnemonicHandler(form, FALSE);

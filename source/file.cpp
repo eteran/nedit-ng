@@ -715,7 +715,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 
 	/* Get the new name for the file */
 	if (newName == nullptr) {
-		response = PromptForNewFile(window, (String) "Save File As", fullname, &fileFormat, &addWrap);
+		response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
 		if (response != GFN_OK)
 			return FALSE;
 		window->fileFormat = fileFormat;
@@ -1224,13 +1224,13 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int
 	/* Present a file selection dialog with an added field for requesting
 	   long line wrapping to become permanent via inserted newlines */
 	n = 0;
-	XtSetArg(args[n], XmNselectionLabelString, s1 = XmStringCreateLocalized((String) "New File Name:"));
+	XtSetArg(args[n], XmNselectionLabelString, s1 = XmStringCreateLocalizedEx("New File Name:"));
 	n++;
 	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	n++;
 	XtSetArg(args[n], XmNdialogTitle, s2 = XmStringCreateSimpleEx(prompt));
 	n++;
-	fileSB = CreateFileSelectionDialog(window->shell, (String) "FileSelect", args, n);
+	fileSB = CreateFileSelectionDialog(window->shell, "FileSelect", args, n);
 	XmStringFree(s1);
 	XmStringFree(s2);
 	formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass, fileSB, nullptr);

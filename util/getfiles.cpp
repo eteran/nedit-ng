@@ -185,7 +185,7 @@ Widget getFilenameHelper(Widget parent, const char *promptString, const char *fi
 	XmString titleString; /* compound string for dialog title  */
 
 	n = 0;
-	titleString = XmStringCreateSimple((String)promptString);
+	titleString = XmStringCreateSimpleEx(promptString);
 	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	n++;
 	XtSetArg(args[n], XmNdialogTitle, titleString);
@@ -521,7 +521,7 @@ void SetFileDialogDefaultDirectory(const char *dir) {
 		XmStringFree(DefaultDirectory);
 	}
 	
-	DefaultDirectory = (dir == nullptr) ? nullptr : XmStringCreateSimple((String)dir);
+	DefaultDirectory = (dir == nullptr) ? nullptr : XmStringCreateSimpleEx(dir);
 }
 
 /*
@@ -534,7 +534,7 @@ void SetFileDialogDefaultPattern(const char *pattern) {
 		XmStringFree(DefaultPattern);
 	}
 	
-	DefaultPattern = (pattern == nullptr) ? nullptr : XmStringCreateSimple((String)pattern);
+	DefaultPattern = (pattern == nullptr) ? nullptr : XmStringCreateSimpleEx(pattern);
 }
 
 /*

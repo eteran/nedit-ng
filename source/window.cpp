@@ -1339,7 +1339,7 @@ void CloseWindow(WindowInfo *window) {
 		XmToggleButtonSetState(window->readOnlyItem, FALSE, FALSE);
 		ClearUndoList(window);
 		ClearRedoList(window);
-		XmTextSetString(window->statsLine, (String) ""); /* resets scroll pos of stats
+		XmTextSetStringEx(window->statsLine, ""); /* resets scroll pos of stats
 		                                            line from long file names */
 		UpdateStatsLine(window);
 		DetermineLanguageMode(window, True);
@@ -1915,7 +1915,7 @@ void SetModeMessage(WindowInfo *window, const char *message) {
 	if (!window->IsTopDocument())
 		return;
 
-	XmTextSetString(window->statsLine, (char *)message);
+	XmTextSetStringEx(window->statsLine, (char *)message);
 	/*
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
@@ -3688,7 +3688,7 @@ void RefreshWindowStates(WindowInfo *window) {
 		return;
 
 	if (window->modeMessageDisplayed)
-		XmTextSetString(window->statsLine, window->modeMessage);
+		XmTextSetStringEx(window->statsLine, window->modeMessage);
 	else
 		UpdateStatsLine(window);
 	UpdateWindowReadOnly(window);

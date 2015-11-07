@@ -100,7 +100,7 @@ static tag *getTag(const char *name, int search_type);
 static int findDef(WindowInfo *window, const char *value, int search_type);
 static int findAllMatches(WindowInfo *window, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static Widget createSelectMenu(Widget parent, char *label, int nArgs, char *args[]);
+static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char *args[]);
 static void editTaggedLocation(Widget parent, int i);
 static void showMatchingCalltip(Widget parent, int i);
 
@@ -1217,7 +1217,7 @@ static int findAllMatches(WindowInfo *window, const char *string) {
 
 			strcpy(dupTagsList[i], temp);
 		}
-		createSelectMenu(dialogParent, (String) "Duplicate Tags", nMatches, dupTagsList);
+		createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
 		for (i = 0; i < nMatches; i++)
 			free(dupTagsList[i]);
 		free(dupTagsList);
@@ -1448,7 +1448,7 @@ static void editTaggedLocation(Widget parent, int i) {
 }
 
 /*      Create a Menu for user to select from the collided tags */
-static Widget createSelectMenu(Widget parent, char *label, int nArgs, char *args[]) {
+static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char *args[]) {
 	int i;
 	char tmpStr[100];
 	Widget menu;

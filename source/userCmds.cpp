@@ -1840,7 +1840,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 
 	/* Delete or backspace clears field */
 	if (keysym == XK_Delete || keysym == XK_BackSpace) {
-		XmTextSetString(ucd->accTextW, (String) "");
+		XmTextSetStringEx(ucd->accTextW, "");
 		return;
 	}
 
@@ -1857,7 +1857,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 	}
 
 	/* fill in the accelerator field in the dialog */
-	XmTextSetString(ucd->accTextW, outStr);
+	XmTextSetStringEx(ucd->accTextW, outStr);
 }
 
 static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1953,10 +1953,10 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 	/* fill in the name, accelerator, mnemonic, and command fields of the
 	   dialog for the newly selected item, or blank them if "New" is selected */
 	if (f == nullptr) {
-		XmTextSetString(ucd->nameTextW, (String) "");
-		XmTextSetString(ucd->cmdTextW, (String) "");
-		XmTextSetString(ucd->accTextW, (String) "");
-		XmTextSetString(ucd->mneTextW, (String) "");
+		XmTextSetStringEx(ucd->nameTextW, "");
+		XmTextSetStringEx(ucd->cmdTextW, "");
+		XmTextSetStringEx(ucd->accTextW, "");
+		XmTextSetStringEx(ucd->mneTextW, "");
 		if (ucd->dialogType == SHELL_CMDS) {
 			RadioButtonChangeState(ucd->selInpBtn, True, True);
 			RadioButtonChangeState(ucd->sameOutBtn, True, True);
@@ -1969,10 +1969,10 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 		mneString[0] = f->mnemonic;
 		mneString[1] = '\0';
 		generateAcceleratorString(accString, f->modifiers, f->keysym);
-		XmTextSetString(ucd->nameTextW, f->name);
-		XmTextSetString(ucd->cmdTextW, f->cmd);
-		XmTextSetString(ucd->accTextW, accString);
-		XmTextSetString(ucd->mneTextW, mneString);
+		XmTextSetStringEx(ucd->nameTextW, f->name);
+		XmTextSetStringEx(ucd->cmdTextW, f->cmd);
+		XmTextSetStringEx(ucd->accTextW, accString);
+		XmTextSetStringEx(ucd->mneTextW, mneString);
 		RadioButtonChangeState(ucd->selInpBtn, f->input == FROM_SELECTION, False);
 		if (ucd->dialogType == SHELL_CMDS) {
 			RadioButtonChangeState(ucd->winInpBtn, f->input == FROM_WINDOW, False);

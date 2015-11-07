@@ -1029,7 +1029,7 @@ void RepeatDialog(WindowInfo *window) {
 	strcpy(&lastCmdLabel[14 + cmdNameLen], ")");
 
 	XtSetArg(selBoxArgs[0], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(window->shell, (String) "repeat", selBoxArgs, 1);
+	selBox = CreatePromptDialog(window->shell, "repeat", selBoxArgs, 1);
 	rd->shell = XtParent(selBox);
 	XtAddCallback(rd->shell, XmNdestroyCallback, repeatDestroyCB, rd);
 	XtAddCallback(selBox, XmNokCallback, repeatOKCB, rd);
@@ -1126,7 +1126,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
 	else {
 		if (ReplayMacro.empty())
 			return False;
-		params[1] = XtNewString((String)ReplayMacro.c_str());
+		params[1] = XtNewStringEx(ReplayMacro);
 	}
 
 	/* call the action routine repeat_macro to do the work */
@@ -2609,7 +2609,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
-	dialog = CreateMessageDialog(window->shell, (String) "macroDialog", al, ac);
+	dialog = CreateMessageDialog(window->shell, "macroDialog", al, ac);
 	if (nArgs == 1) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
@@ -2758,7 +2758,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
-	dialog = CreatePromptDialog(window->shell, (String) "macroStringDialog", al, ac);
+	dialog = CreatePromptDialog(window->shell, "macroStringDialog", al, ac);
 	if (nArgs == 1) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
@@ -3299,7 +3299,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
-	dialog = CreateSelectionDialog(window->shell, (String) "macroListDialog", al, ac);
+	dialog = CreateSelectionDialog(window->shell, "macroListDialog", al, ac);
 	if (nArgs == 2) {
 		/*  Only set margin width for the default OK button  */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);

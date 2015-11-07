@@ -694,7 +694,7 @@ static Widget createHighlightStylesMenu(Widget parent) {
 	int i;
 	XmString s1;
 
-	menu = CreatePulldownMenu(parent, (String) "highlightStyles", nullptr, 0);
+	menu = CreatePulldownMenu(parent, "highlightStyles", nullptr, 0);
 	for (i = 0; i < NHighlightStyles; i++) {
 		XtVaCreateManagedWidget("highlightStyles", xmPushButtonWidgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(HighlightStyles[i]->name), XmNuserData, (void *)HighlightStyles[i]->name, nullptr);
 		XmStringFree(s1);
@@ -1196,9 +1196,9 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 	highlightStyleRec *hs = (highlightStyleRec *)item;
 
 	if (item == nullptr) {
-		XmTextSetString(HSDialog.nameW, (String) "");
-		XmTextSetString(HSDialog.colorW, (String) "");
-		XmTextSetString(HSDialog.bgColorW, (String) "");
+		XmTextSetStringEx(HSDialog.nameW, "");
+		XmTextSetStringEx(HSDialog.colorW, "");
+		XmTextSetStringEx(HSDialog.bgColorW, "");
 		RadioButtonChangeState(HSDialog.plainW, True, False);
 		RadioButtonChangeState(HSDialog.boldW, False, False);
 		RadioButtonChangeState(HSDialog.italicW, False, False);
@@ -1225,9 +1225,9 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 				}
 			}
 		}
-		XmTextSetString(HSDialog.nameW, hs->name);
-		XmTextSetString(HSDialog.colorW, hs->color);
-		XmTextSetString(HSDialog.bgColorW, (String)hs->bgColor ? (String)hs->bgColor : (String) "");
+		XmTextSetStringEx(HSDialog.nameW, hs->name);
+		XmTextSetStringEx(HSDialog.colorW, hs->color);
+		XmTextSetStringEx(HSDialog.bgColorW, hs->bgColor ? hs->bgColor : "");
 		RadioButtonChangeState(HSDialog.plainW, hs->font == PLAIN_FONT, False);
 		RadioButtonChangeState(HSDialog.boldW, hs->font == BOLD_FONT, False);
 		RadioButtonChangeState(HSDialog.italicW, hs->font == ITALIC_FONT, False);
@@ -2090,11 +2090,11 @@ static void setDisplayedCB(void *item, void *cbArg) {
 	int isSubpat, isDeferred, isColorOnly, isRange;
 
 	if (item == nullptr) {
-		XmTextSetString(HighlightDialog.nameW, (String) "");
-		XmTextSetString(HighlightDialog.parentW, (String) "");
-		XmTextSetString(HighlightDialog.startW, (String) "");
-		XmTextSetString(HighlightDialog.endW, (String) "");
-		XmTextSetString(HighlightDialog.errorW, (String) "");
+		XmTextSetStringEx(HighlightDialog.nameW, "");
+		XmTextSetStringEx(HighlightDialog.parentW, "");
+		XmTextSetStringEx(HighlightDialog.startW, "");
+		XmTextSetStringEx(HighlightDialog.endW, "");
+		XmTextSetStringEx(HighlightDialog.errorW, "");
 		RadioButtonChangeState(HighlightDialog.topLevelW, True, False);
 		RadioButtonChangeState(HighlightDialog.deferredW, False, False);
 		RadioButtonChangeState(HighlightDialog.subPatW, False, False);
@@ -2107,11 +2107,11 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isDeferred = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = pat->endRE != nullptr;
-		XmTextSetString(HighlightDialog.nameW, (String)pat->name);
-		XmTextSetString(HighlightDialog.parentW, (String)pat->subPatternOf);
-		XmTextSetString(HighlightDialog.startW, (String)pat->startRE);
-		XmTextSetString(HighlightDialog.endW, (String)pat->endRE);
-		XmTextSetString(HighlightDialog.errorW, (String)pat->errorRE);
+		XmTextSetStringEx(HighlightDialog.nameW, pat->name);
+		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
+		XmTextSetStringEx(HighlightDialog.startW, pat->startRE);
+		XmTextSetStringEx(HighlightDialog.endW, pat->endRE);
+		XmTextSetStringEx(HighlightDialog.errorW, pat->errorRE);
 		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred, False);
 		RadioButtonChangeState(HighlightDialog.deferredW, !isSubpat && isDeferred, False);
 		RadioButtonChangeState(HighlightDialog.subPatW, isSubpat && !isColorOnly, False);
