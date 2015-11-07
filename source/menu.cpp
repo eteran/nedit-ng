@@ -299,9 +299,9 @@ static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
-static void openPrevCB(Widget w, const char *name, caddr_t callData);
-static void unloadTagsFileCB(Widget w, const char *name, caddr_t callData);
-static void unloadTipsFileCB(Widget w, const char *name, caddr_t callData);
+static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
+static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData);
+static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData);
 static int cmpStrPtr(const void *strA, const void *strB);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
@@ -545,7 +545,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window) {
 	if (GetPrefMaxPrevOpenFiles() > 0) {
 		window->prevOpenMenuPane = createMenu(menuPane, "openPrevious", "Open Previous", 'v', &window->prevOpenMenuItem, SHORT);
 		XtSetSensitive(window->prevOpenMenuItem, NPrevOpen != 0);
-		XtAddCallback(window->prevOpenMenuItem, XmNcascadingCallback, (XtCallbackProc)prevOpenMenuCB, window);
+		XtAddCallback(window->prevOpenMenuItem, XmNcascadingCallback, prevOpenMenuCB, window);
 	}
 	createMenuSeparator(menuPane, "sep1", SHORT);
 	window->closeItem = createMenuItem(menuPane, "close", "Close", 'C', doActionCB, "close", SHORT);
@@ -558,11 +558,11 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window) {
 	createMenuItem(menuPane, "loadTagsFile", "Load Tags File...", 'g', doActionCB, "load_tags_file_dialog", FULL);
 	window->unloadTagsMenuPane = createMenu(menuPane, "unloadTagsFiles", "Unload Tags File", 'U', &window->unloadTagsMenuItem, FULL);
 	XtSetSensitive(window->unloadTagsMenuItem, TagsFileList != nullptr);
-	XtAddCallback(window->unloadTagsMenuItem, XmNcascadingCallback, (XtCallbackProc)unloadTagsFileMenuCB, window);
+	XtAddCallback(window->unloadTagsMenuItem, XmNcascadingCallback, unloadTagsFileMenuCB, window);
 	createMenuItem(menuPane, "loadTipsFile", "Load Calltips File...", 'F', doActionCB, "load_tips_file_dialog", FULL);
 	window->unloadTipsMenuPane = createMenu(menuPane, "unloadTipsFiles", "Unload Calltips File", 'e', &window->unloadTipsMenuItem, FULL);
 	XtSetSensitive(window->unloadTipsMenuItem, TipsFileList != nullptr);
-	XtAddCallback(window->unloadTipsMenuItem, XmNcascadingCallback, (XtCallbackProc)unloadTipsFileMenuCB, window);
+	XtAddCallback(window->unloadTipsMenuItem, XmNcascadingCallback, unloadTipsFileMenuCB, window);
 	createMenuSeparator(menuPane, "sep3", SHORT);
 	createMenuItem(menuPane, "print", "Print...", 'P', doActionCB, "print", SHORT);
 	window->printSelItem = createMenuItem(menuPane, "printSelection", "Print Selection...", 'l', doActionCB, "print_selection", SHORT);
@@ -839,7 +839,7 @@ Widget CreateMenuBar(Widget parent, WindowInfo *window) {
 	** Create the Windows menu
 	*/
 	menuPane = window->windowMenuPane = createMenu(menuBar, "windowsMenu", "Windows", 0, &cascade, FULL);
-	XtAddCallback(cascade, XmNcascadingCallback, (XtCallbackProc)windowMenuCB, window);
+	XtAddCallback(cascade, XmNcascadingCallback, windowMenuCB, window);
 	window->splitPaneItem = createMenuItem(menuPane, "splitPane", "Split Pane", 'S', doActionCB, "split_pane", SHORT);
 	XtVaSetValues(window->splitPaneItem, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 	window->closePaneItem = createMenuItem(menuPane, "closePane", "Close Pane", 'C', doActionCB, "close_pane", SHORT);
@@ -4147,7 +4147,7 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
 	XmString st1;
 
 	button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNmnemonic, mnemonic, nullptr);
-	XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
+	XtAddCallback(button, XmNactivateCallback, callback, (void *)cbArg);
 	XmStringFree(st1);
 
 	XtManageChild(button);
@@ -4165,7 +4165,7 @@ static Widget createFakeMenuItem(Widget parent, const char *name, menuCallbackPr
 	XmString st1;
 
 	button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(""), XmNshadowThickness, 0, XmNmarginHeight, 0, XmNheight, 0, nullptr);
-	XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)callback, (void *)cbArg);
+	XtAddCallback(button, XmNactivateCallback, callback, (void *)cbArg);
 	XmStringFree(st1);
 	XtVaSetValues(button, XmNtraversalOn, False, nullptr);
 
@@ -4184,7 +4184,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
 	XmString st1;
 
 	button = XtVaCreateWidget(name, xmToggleButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNmnemonic, mnemonic, XmNset, set, nullptr);
-	XtAddCallback(button, XmNvalueChangedCallback, (XtCallbackProc)callback, (void *)cbArg);
+	XtAddCallback(button, XmNvalueChangedCallback, callback, (void *)cbArg);
 	XmStringFree(st1);
 
 	XtManageChild(button);
@@ -4403,7 +4403,7 @@ static void updateWindowMenu(const WindowInfo *window) {
 				char *title = getWindowsMenuEntry(windows[windowIndex]);
 				XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(title), nullptr);
 				XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-				XtAddCallback(items[n], XmNactivateCallback, (XtCallbackProc)raiseCB, windows[windowIndex]);
+				XtAddCallback(items[n], XmNactivateCallback, raiseCB, windows[windowIndex]);
 				XmStringFree(st1);
 				windowIndex++;
 			}
@@ -4415,7 +4415,7 @@ static void updateWindowMenu(const WindowInfo *window) {
 		XmString st1;
 		char *title = getWindowsMenuEntry(windows[windowIndex]);
 		Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->windowMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(title), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)raiseCB, windows[windowIndex]);
+		XtAddCallback(btn, XmNactivateCallback, raiseCB, windows[windowIndex]);
 		XmStringFree(st1);
 	}
 	XtFree((char *)windows);
@@ -4470,7 +4470,7 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 		} else {
 			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(prevOpenSorted[index]), nullptr);
 			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, (XtCallbackProc)openPrevCB, prevOpenSorted[index]);
+			XtAddCallback(items[n], XmNactivateCallback, openPrevCB, prevOpenSorted[index]);
 			XmStringFree(st1);
 			index++;
 		}
@@ -4479,7 +4479,7 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 	/* Add new items for the remaining file names to the menu */
 	for (; index < NPrevOpen; index++) {
 		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->prevOpenMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(prevOpenSorted[index]), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)openPrevCB, prevOpenSorted[index]);
+		XtAddCallback(btn, XmNactivateCallback, openPrevCB, prevOpenSorted[index]);
 		XmStringFree(st1);
 	}
 
@@ -4513,7 +4513,7 @@ static void updateTagsFileMenu(WindowInfo *window) {
 		} else {
 			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
 			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, (XtCallbackProc)unloadTagsFileCB, tf->filename);
+			XtAddCallback(items[n], XmNactivateCallback, unloadTagsFileCB, tf->filename);
 			XmStringFree(st1);
 			tf = tf->next;
 		}
@@ -4522,7 +4522,7 @@ static void updateTagsFileMenu(WindowInfo *window) {
 	/* Add new items for the remaining file names to the menu */
 	while (tf) {
 		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTagsMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)unloadTagsFileCB, tf->filename);
+		XtAddCallback(btn, XmNactivateCallback, unloadTagsFileCB, tf->filename);
 		XmStringFree(st1);
 		tf = tf->next;
 	}
@@ -4555,7 +4555,7 @@ static void updateTipsFileMenu(WindowInfo *window) {
 		} else {
 			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
 			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, (XtCallbackProc)unloadTipsFileCB, tf->filename);
+			XtAddCallback(items[n], XmNactivateCallback, unloadTipsFileCB, tf->filename);
 			XmStringFree(st1);
 			tf = tf->next;
 		}
@@ -4564,7 +4564,7 @@ static void updateTipsFileMenu(WindowInfo *window) {
 	/* Add new items for the remaining file names to the menu */
 	while (tf) {
 		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTipsMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc)unloadTipsFileCB, tf->filename);
+		XtAddCallback(btn, XmNactivateCallback, unloadTipsFileCB, tf->filename);
 		XmStringFree(st1);
 		tf = tf->next;
 	}
@@ -4866,7 +4866,10 @@ static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	RaiseFocusDocumentWindow((WindowInfo *)clientData, True /* always focus */);
 }
 
-static void openPrevCB(Widget w, const char *name, caddr_t callData) {
+static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto name = (const char *)clientData;
+
 	const char *params[1];
 	Widget menu = MENU_WIDGET(w);
 
@@ -4876,7 +4879,10 @@ static void openPrevCB(Widget w, const char *name, caddr_t callData) {
 	CheckCloseDim();
 }
 
-static void unloadTagsFileCB(Widget w, const char *name, caddr_t callData) {
+static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto name = (const char *)clientData;
+	
 	const char *params[1];
 	Widget menu = MENU_WIDGET(w);
 
@@ -4885,7 +4891,10 @@ static void unloadTagsFileCB(Widget w, const char *name, caddr_t callData) {
 	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tags_file", ((XmAnyCallbackStruct *)callData)->event, (char **)params, 1);
 }
 
-static void unloadTipsFileCB(Widget w, const char *name, caddr_t callData) {
+static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto name = (const char *)clientData;
+
 	const char *params[1];
 #if XmVersion >= 1002
 	Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */

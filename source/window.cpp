@@ -140,8 +140,8 @@ static Widget addTab(Widget folder, const char *string);
 static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
 static void hideTearOffs(Widget menuPane);
-static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData);
-static void closeTabCB(Widget w, Widget mainWin, caddr_t callData);
+static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData);
+static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
 static void showStats(WindowInfo *window, int state);
@@ -149,13 +149,13 @@ static void showISearch(WindowInfo *window, int state);
 static void showStatsForm(WindowInfo *window);
 static void addToWindowList(WindowInfo *window);
 static void removeFromWindowList(WindowInfo *window);
-static void focusCB(Widget w, WindowInfo *window, XtPointer callData);
+static void focusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-static void movedCB(Widget w, WindowInfo *window, XtPointer callData);
-static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData);
-static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData);
-static void closeCB(Widget w, WindowInfo *window, XtPointer callData);
-static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData);
+static void movedCB(Widget w, XtPointer clientData, XtPointer callData);
+static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData);
+static void dragEndCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
@@ -182,10 +182,10 @@ static void cancelTimeOut(XtIntervalId *timer);
 /* From Xt, Shell.c, "BIGSIZE" */
 static const Dimension XT_IGNORE_PPOSITION = 32767;
 
-static void moveDocumentCB(Widget dialog, WindowInfo *window, XtPointer call_data) {
+static void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
 
-	(void)window;
 	(void)dialog;
+	(void)clientData;
 
 	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
 	DoneWithMoveDocumentDialog = cbs->reason;
@@ -496,7 +496,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	}
 	closeTabBtn = XtVaCreateManagedWidget("closeTabBtn", xmPushButtonWidgetClass, tabForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNhighlightThickness, 0, XmNlabelType, XmPIXMAP, XmNlabelPixmap, closeTabPixmap, XmNshadowThickness, 1,
 	                                      XmNtraversalOn, False, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
-	XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, mainWin);
+	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin);
 
 	/* create the tab bar */
 	this->tabBar = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
@@ -635,7 +635,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	XmProcessTraversal(text, XmTRAVERSE_CURRENT);
 
 	/* Make close command in window menu gracefully prompt for close */
-	AddMotifCloseCallback(winShell, (XtCallbackProc)closeCB, this);
+	AddMotifCloseCallback(winShell, closeCB, this);
 
 	/* Make window resizing work in nice character heights */
 	UpdateWMSizeHints(this);
@@ -954,9 +954,9 @@ void WindowInfo::MoveDocumentDialog() {
 	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
 	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
 	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)moveDocumentCB, this);
-	XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)moveDocumentCB, this);
-	XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)moveDocumentCB, this);
+	XtAddCallback(dialog, XmNokCallback, moveDocumentCB, this);
+	XtAddCallback(dialog, XmNapplyCallback, moveDocumentCB, this);
+	XtAddCallback(dialog, XmNcancelCallback, moveDocumentCB, this);
 	XmStringFree(s1);
 	XmStringFree(popupTitle);
 
@@ -2332,10 +2332,10 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
 	/* add focus, drag, cursor tracking, and smart indent callbacks */
-	XtAddCallback(text, textNfocusCallback, (XtCallbackProc)focusCB, window);
-	XtAddCallback(text, textNcursorMovementCallback, (XtCallbackProc)movedCB, window);
-	XtAddCallback(text, textNdragStartCallback, (XtCallbackProc)dragStartCB, window);
-	XtAddCallback(text, textNdragEndCallback, (XtCallbackProc)dragEndCB, window);
+	XtAddCallback(text, textNfocusCallback, focusCB, window);
+	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
+	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
+	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
 	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
 
 	/* This makes sure the text area initially has a the insert point shown
@@ -2356,7 +2356,9 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 	return text;
 }
 
-static void movedCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
 
 	(void)callData;
 
@@ -2451,7 +2453,9 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	CheckForChangesToFile(window);
 }
 
-static void focusCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
 
 	(void)callData;
 
@@ -2468,7 +2472,9 @@ static void focusCB(Widget w, WindowInfo *window, XtPointer callData) {
 	CheckForChangesToFile(window);
 }
 
-static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
 
 	(void)callData;
 	(void)w;
@@ -2477,9 +2483,12 @@ static void dragStartCB(Widget w, WindowInfo *window, XtPointer callData) {
 	window->ignoreModify = True;
 }
 
-static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData) {
+static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	(void)w;
+	
+	auto window = (WindowInfo *)clientData;
+	auto callData = (dragEndCBStruct *)call_data;
 
 	/* restore recording of undo information */
 	window->ignoreModify = False;
@@ -2493,7 +2502,10 @@ static void dragEndCB(Widget w, WindowInfo *window, dragEndCBStruct *callData) {
 	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
 }
 
-static void closeCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
+	
 	window = WidgetToWindow(w);
 	if (!WindowCanBeClosed(window)) {
 		return;
@@ -2503,8 +2515,10 @@ static void closeCB(Widget w, WindowInfo *window, XtPointer callData) {
 }
 
 #ifndef NO_SESSION_RESTART
-static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData) {
+static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
+	auto appShell = (Widget)clientData;
+	
 	(void)w;
 	(void)callData;
 
@@ -2597,7 +2611,7 @@ void AttachSessionMgrHandler(Widget appShell) {
 		syAtom = XmInternAtom(TheDisplay, (String) "WM_SAVE_YOURSELF", FALSE);
 	}
 	
-	XmAddProtocolCallback(appShell, wmpAtom, syAtom, (XtCallbackProc)saveYourselfCB, (XtPointer)appShell);
+	XmAddProtocolCallback(appShell, wmpAtom, syAtom, saveYourselfCB, (XtPointer)appShell);
 }
 #endif /* NO_SESSION_RESTART */
 
@@ -3496,9 +3510,11 @@ void RefreshTabState(WindowInfo *win) {
 	XmStringFree(tipString);
 }
 
-static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData) {
+static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
+	
+	auto window = (WindowInfo *)clientData;
 
 	int nDocuments = window->NDocuments();
 
@@ -4071,7 +4087,9 @@ static void closeTabProc(XtPointer clientData, XtIntervalId *id) {
 /*
 ** callback to close-tab button.
 */
-static void closeTabCB(Widget w, Widget mainWin, caddr_t callData) {
+static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto mainWin = (Widget)clientData;
 
 	(void)callData;
 

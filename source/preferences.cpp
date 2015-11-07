@@ -1941,8 +1941,8 @@ void RowColumnPrefDialog(Widget parent) {
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
 	selBox = CreatePromptDialog(parent, (String) "customSize", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)sizeOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)sizeCancelCB, nullptr);
+	XtAddCallback(selBox, XmNokCallback, sizeOKCB, nullptr);
+	XtAddCallback(selBox, XmNcancelCallback, sizeCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
@@ -2022,9 +2022,9 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow) {
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
 	selBox = CreatePromptDialog(parent, (String) "customSize", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)tabsOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)tabsCancelCB, nullptr);
-	XtAddCallback(selBox, XmNhelpCallback, (XtCallbackProc)tabsHelpCB, nullptr);
+	XtAddCallback(selBox, XmNokCallback, tabsOKCB, nullptr);
+	XtAddCallback(selBox, XmNcancelCallback, tabsCancelCB, nullptr);
+	XtAddCallback(selBox, XmNhelpCallback, tabsHelpCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
 	XtVaSetValues(XtParent(selBox), XmNtitle, "Tabs", nullptr);
@@ -2192,8 +2192,8 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow) {
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
 	selBox = CreatePromptDialog(parent, (String) "wrapMargin", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, (XtCallbackProc)wrapOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, (XtCallbackProc)wrapCancelCB, nullptr);
+	XtAddCallback(selBox, XmNokCallback, wrapOKCB, nullptr);
+	XtAddCallback(selBox, XmNcancelCallback, wrapCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
@@ -2315,8 +2315,8 @@ void SelectShellDialog(Widget parent, WindowInfo *forWindow) {
 
 	/*  Fix dialog to our liking.  */
 	XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Command Shell", nullptr);
-	XtAddCallback(shellSelDialog, XmNokCallback, (XtCallbackProc)shellSelOKCB, shellSelDialog);
-	XtAddCallback(shellSelDialog, XmNcancelCallback, (XtCallbackProc)shellSelCancelCB, nullptr);
+	XtAddCallback(shellSelDialog, XmNokCallback, shellSelOKCB, shellSelDialog);
+	XtAddCallback(shellSelDialog, XmNcancelCallback, shellSelCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_HELP_BUTTON));
 	label = XmStringCreateLocalized((String) "Enter shell path:");
 	XtVaSetValues(shellSelDialog, XmNselectionLabelString, label, nullptr);
