@@ -558,7 +558,7 @@ static void updateMenuItems(void) {
 		tagStat = TRUE;
 
 	for (w = WindowList; w != nullptr; w = w->next) {
-		if (!IsTopDocument(w))
+		if (!w->IsTopDocument())
 			continue;
 		XtSetSensitive(w->showTipItem, tipStat || tagStat);
 		XtSetSensitive(w->unloadTipsMenuItem, tipStat);

@@ -2401,7 +2401,7 @@ static int updatePatternSet(void) {
 					/*  Highlighting (including menu entry) was deactivated in
 					    this function or in preferences.c::reapplyLanguageMode()
 					    if the old set had no patterns, so reactivate menu entry. */
-					if (IsTopDocument(window)) {
+					if (window->IsTopDocument()) {
 						XtSetSensitive(window->highlightItem, True);
 					}
 
@@ -2411,7 +2411,7 @@ static int updatePatternSet(void) {
 
 				if (window->highlightSyntax) {
 					StopHighlighting(window);
-					if (IsTopDocument(window)) {
+					if (window->IsTopDocument()) {
 						XtSetSensitive(window->highlightItem, True);
 						SetToggleButtonState(window, window->highlightItem, True, False);
 					}
@@ -2424,7 +2424,7 @@ static int updatePatternSet(void) {
 			StopHighlighting(window);
 			window->highlightSyntax = False;
 
-			if (IsTopDocument(window)) {
+			if (window->IsTopDocument()) {
 				XtSetSensitive(window->highlightItem, False);
 				SetToggleButtonState(window, window->highlightItem, False, False);
 			}

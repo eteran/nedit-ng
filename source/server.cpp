@@ -271,7 +271,7 @@ static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		/* Find a window on the current desktop to hold the new document */
 		for (window = WindowList; window != nullptr; window = window->next) {
 			/* Avoid unnecessary property access (server round-trip) */
-			if (!IsTopDocument(window)) {
+			if (!window->IsTopDocument()) {
 				continue;
 			}
 			if (isLocatedOnDesktop(window, currentDesktop)) {
@@ -302,7 +302,7 @@ static void processServerCommandString(char *string) {
 			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
 			CheckCloseDim();
 		} else {
-			RaiseDocument(window);
+			window->RaiseDocument();
 			WmClientMsg(TheDisplay, XtWindow(window->shell), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
 			XMapRaised(TheDisplay, XtWindow(window->shell));
 		}
@@ -362,9 +362,9 @@ static void processServerCommandString(char *string) {
 					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
 				} else {
 					if (iconicFlag)
-						RaiseDocument(window);
+						window->RaiseDocument();
 					else
-						RaiseDocumentWindow(window);
+						window->RaiseDocumentWindow();
 				}
 			} else {
 				WindowInfo *win = WindowList;
@@ -379,9 +379,9 @@ static void processServerCommandString(char *string) {
 				} else {
 					/* Raise before -do (macro could close window). */
 					if (iconicFlag)
-						RaiseDocument(win);
+						win->RaiseDocument();
 					else
-						RaiseDocumentWindow(win);
+						win->RaiseDocumentWindow();
 					DoMacro(win, doCommand, "-do macro");
 				}
 			}
@@ -412,7 +412,7 @@ static void processServerCommandString(char *string) {
 				CleanUpTabBarExposeQueue(window);
 				if (lastFile && window->shell != lastFile->shell) {
 					CleanUpTabBarExposeQueue(lastFile);
-					RaiseDocument(lastFile);
+					lastFile->RaiseDocument();
 				}
 			}
 		}
@@ -427,7 +427,7 @@ static void processServerCommandString(char *string) {
 				SelectNumberedLine(window, lineNum);
 
 			if (*doCommand != '\0') {
-				RaiseDocument(window);
+				window->RaiseDocument();
 
 				if (!iconicFlag) {
 					WmClientMsg(TheDisplay, XtWindow(window->shell), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
@@ -442,9 +442,9 @@ static void processServerCommandString(char *string) {
 					DoMacro(window, doCommand, "-do macro");
 					/* in case window is closed by macro functions
 					   such as close() or detach_document() */
-					if (!IsValidWindow(window))
+					if (!window->IsValidWindow())
 						window = nullptr;
-					if (lastFile && !IsValidWindow(lastFile))
+					if (lastFile && !lastFile->IsValidWindow())
 						lastFile = nullptr;
 				}
 			}
@@ -464,9 +464,9 @@ static void processServerCommandString(char *string) {
 	if (lastFile) {
 		CleanUpTabBarExposeQueue(lastFile);
 		if (lastIconic)
-			RaiseDocument(lastFile);
+			lastFile->RaiseDocument();
 		else
-			RaiseDocumentWindow(lastFile);
+			lastFile->RaiseDocumentWindow();
 		CheckCloseDim();
 	}
 	return;

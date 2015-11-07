@@ -376,7 +376,7 @@ void SelectNumberedLine(WindowInfo *window, int lineNum) {
 		window->buffer->BufSelect(lineStart, lineStart);
 		XBell(TheDisplay, 0);
 	}
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	TextSetCursorPos(window->lastFocus, lineStart);
 }
 
@@ -565,7 +565,7 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel) {
 	   first turn it off, set the position, then turn it back on. */
 	XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
 	TextSetCursorPos(w, cursorPos);
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	XtVaSetValues(w, textNautoShowInsertPos, True, nullptr);
 }
 

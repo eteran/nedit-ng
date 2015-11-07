@@ -1867,7 +1867,7 @@ void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults) {
 	reapplyLanguageMode(window, mode, forceNewDefaults);
 
 	/* Select the correct language mode in the sub-menu */
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, nullptr);
 		XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
 		for (n = 0; n < (int)nItems; n++) {
@@ -3570,7 +3570,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	   whether patterns/macros are available */
 	haveHighlightPatterns = FindPatternSet(LanguageModeName(mode)) != nullptr;
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XtSetSensitive(window->highlightItem, haveHighlightPatterns);
 		XtSetSensitive(window->smartIndentItem, haveSmartIndentMacros);
 	}
@@ -3586,7 +3586,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	StopHighlighting(window);
 
 	/* we defer highlighting to RaiseDocument() if doc is hidden */
-	if (IsTopDocument(window) && highlight)
+	if (window->IsTopDocument() && highlight)
 		StartHighlighting(window, False);
 
 	/* Force a change of smart indent macros (SetAutoIndent will re-start) */

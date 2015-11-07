@@ -3018,7 +3018,7 @@ int SearchAndSelect(WindowInfo *window, int direction, const char *searchString,
 
 	/* select the text found string */
 	window->buffer->BufSelect(startPos, endPos);
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	TextSetCursorPos(window->lastFocus, endPos);
 
 	return TRUE;
@@ -3202,7 +3202,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *se
 
 	/* select the text found string */
 	window->buffer->BufSelect(startPos, endPos);
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	TextSetCursorPos(window->lastFocus, endPos);
 
 	return TRUE;
@@ -3589,7 +3589,7 @@ void SelectToMatchingCharacter(WindowInfo *window) {
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
 	/* select the text between the matching characters */
 	buf->BufSelect(startPos, endPos + 1);
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 }
 
@@ -3629,7 +3629,7 @@ void GotoMatchingCharacter(WindowInfo *window) {
 	   nothing) */
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
 	TextSetCursorPos(window->lastFocus, matchPos + 1);
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 }
 
@@ -3848,7 +3848,7 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 	   nothing) */
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
 	TextSetCursorPos(window->lastFocus, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 
 	return TRUE;
@@ -4788,7 +4788,7 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 
 	if (NHist == 0) {
 		for (w = WindowList; w != nullptr; w = w->next) {
-			if (!IsTopDocument(w))
+			if (!w->IsTopDocument())
 				continue;
 			XtSetSensitive(w->findAgainItem, True);
 			XtSetSensitive(w->replaceFindAgainItem, True);

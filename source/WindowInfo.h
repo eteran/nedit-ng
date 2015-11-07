@@ -37,6 +37,23 @@ public:
 	WindowInfo& operator=(const WindowInfo &) = default;
 	
 public:
+	bool IsTopDocument() const;
+	Widget GetPaneByIndex(int paneIndex) const;	
+	int CloseAllDocumentInWindow();
+	int GetShowTabBar();
+	int IsIconic();
+	int IsValidWindow();
+	int NDocuments();
+	
+	void LastDocument();
+	void MakeSelectionVisible(Widget textPane);
+	void MoveDocumentDialog();
+	void NextDocument();
+	void PreviousDocument();
+	void RaiseDocument();
+	void RaiseDocumentWindow();
+
+public:
 	WindowInfo *next;
 
 public:

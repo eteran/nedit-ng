@@ -729,7 +729,7 @@ Select \"New\" to add a new command to the menu."),
 ** "window" from the currently loaded command descriptions.
 */
 void UpdateUserMenus(WindowInfo *window) {
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	/* update user menus, which are shared over all documents, only
@@ -767,7 +767,7 @@ void DimPasteReplayBtns(int sensitive) {
 ** a selection in their associated window.
 */
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive) {
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	dimSelDepItemsInMenu(window->shellMenuPane, ShellMenuItems, NShellMenuItems, sensitive);
@@ -971,7 +971,7 @@ static void rebuildMenu(WindowInfo *window, int menuType) {
 	/* Background menu is always rebuild (exists once per document).
 	   Shell, macro (user) menu cache is rebuild only, if given window is
 	   currently displayed on top. */
-	if (menuType != BG_MENU_CMDS && !IsTopDocument(window))
+	if (menuType != BG_MENU_CMDS && !window->IsTopDocument())
 		return;
 
 	/* Fetch the appropriate menu data */

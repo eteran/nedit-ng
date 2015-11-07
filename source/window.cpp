@@ -182,6 +182,37 @@ static void cancelTimeOut(XtIntervalId *timer);
 /* From Xt, Shell.c, "BIGSIZE" */
 static const Dimension XT_IGNORE_PPOSITION = 32767;
 
+static void moveDocumentCB(Widget dialog, WindowInfo *window, XtPointer call_data) {
+
+	(void)window;
+	(void)dialog;
+
+	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
+	DoneWithMoveDocumentDialog = cbs->reason;
+}
+
+/*
+** Redisplay menu tearoffs previously hid by hideTearOffs()
+*/
+static void redisplayTearOffs(Widget menuPane) {
+	WidgetList itemList;
+	Widget subMenuID;
+	Cardinal nItems;
+	int n;
+
+	/* redisplay all submenu tearoffs */
+	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
+	for (n = 0; n < (int)nItems; n++) {
+		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
+			XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
+			redisplayTearOffs(subMenuID);
+		}
+	}
+
+	/* redisplay tearoff for this menu */
+	if (!XmIsMenuShell(XtParent(menuPane)))
+		ShowHiddenTearOff(menuPane);
+}
 
 /*
 ** Create a new editor window
@@ -590,7 +621,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	addToWindowList(this);
 	InvalidateWindowMenus();
 
-	showTabBar = GetShowTabBar(this);
+	showTabBar = this->GetShowTabBar();
 	if (showTabBar)
 		XtManageChild(tabForm);
 
@@ -618,13 +649,509 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	CreateReplaceMultiFileDlog(this);
 
 	/* dim/undim Attach_Tab menu items */
-	state = NDocuments(this) < NWindows();
+	state = this->NDocuments() < NWindows();
 	for (win = WindowList; win; win = win->next) {
-		if (IsTopDocument(win)) {
+		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem, state);
 			XtSetSensitive(win->contextMoveDocumentItem, state);
 		}
 	}
+}
+
+bool WindowInfo::IsTopDocument() const {
+	return this == GetTopDocument(this->shell);
+}
+
+Widget WindowInfo::GetPaneByIndex(int paneIndex) const {
+	Widget text = nullptr;
+	if (paneIndex >= 0 && paneIndex <= this->nPanes) {
+		text = (paneIndex == 0) ? this->textArea : this->textPanes[paneIndex - 1];
+	}
+	return text;
+}
+
+/*
+** make sure window is alive is kicking
+*/
+int WindowInfo::IsValidWindow() {
+
+	for (WindowInfo *win = WindowList; win; win = win->next) {
+		if (this == win) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/*
+** return the number of documents owned by this shell window
+*/
+int WindowInfo::NDocuments() {
+	WindowInfo *win;
+	int nDocument = 0;
+
+	for (win = WindowList; win; win = win->next) {
+		if (win->shell == this->shell)
+			nDocument++;
+	}
+
+	return nDocument;
+}
+
+/*
+** check if tab bar is to be shown on this window
+*/
+int WindowInfo::GetShowTabBar() {
+	if (!GetPrefTabBar())
+		return False;
+	else if (this->NDocuments() == 1)
+		return !GetPrefTabBarHideOne();
+	else
+		return True;
+}
+
+/*
+** Returns true if window is iconic (as determined by the WM_STATE property
+** on the shell window.  I think this is the most reliable way to tell,
+** but if someone has a better idea please send me a note).
+*/
+int WindowInfo::IsIconic() {
+	unsigned long *property = nullptr;
+	unsigned long nItems;
+	unsigned long leftover;
+	static Atom wmStateAtom = 0;
+	Atom actualType;
+	int actualFormat;
+	
+	if (wmStateAtom == 0) {
+		wmStateAtom = XInternAtom(XtDisplay(this->shell), "WM_STATE", False);
+	}
+		
+	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
+		return FALSE;
+	}
+
+	int result = (*property == IconicState);
+	XtFree((char *)property);
+	return result;
+}
+
+/*
+** close all the documents in a window
+*/
+int WindowInfo::CloseAllDocumentInWindow() {
+	WindowInfo *win;
+
+	if (this->NDocuments() == 1) {
+		/* only one document in the window */
+		return CloseFileAndWindow(this, PROMPT_SBC_DIALOG_RESPONSE);
+	} else {
+		Widget winShell = this->shell;
+		WindowInfo *topDocument;
+
+		/* close all _modified_ documents belong to this window */
+		for (win = WindowList; win;) {
+			if (win->shell == winShell && win->fileChanged) {
+				WindowInfo *next = win->next;
+				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+					return False;
+				win = next;
+			} else
+				win = win->next;
+		}
+
+		/* see there's still documents left in the window */
+		for (win = WindowList; win; win = win->next)
+			if (win->shell == winShell)
+				break;
+
+		if (win) {
+			topDocument = GetTopDocument(winShell);
+
+			/* close all non-top documents belong to this window */
+			for (win = WindowList; win;) {
+				if (win->shell == winShell && win != topDocument) {
+					WindowInfo *next = win->next;
+					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+						return False;
+					win = next;
+				} else
+					win = win->next;
+			}
+
+			/* close the last document and its window */
+			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
+				return False;
+		}
+	}
+
+	return True;
+}
+
+/*
+** Bring up the last active window
+*/
+void WindowInfo::LastDocument() {
+	WindowInfo *win;
+
+	for (win = WindowList; win; win = win->next)
+		if (lastFocusDocument == win)
+			break;
+
+	if (!win)
+		return;
+
+	if (this->shell == win->shell)
+		win->RaiseDocument();
+	else
+		RaiseFocusDocumentWindow(win, True);
+}
+
+/*
+** If the selection (or cursor position if there's no selection) is not
+** fully shown, scroll to bring it in to view.  Note that as written,
+** this won't work well with multi-line selections.  Modest re-write
+** of the horizontal scrolling part would be quite easy to make it work
+** well with rectangular selections.
+*/
+void WindowInfo::MakeSelectionVisible(Widget textPane) {
+	int left, right, isRect, rectStart, rectEnd, horizOffset;
+	int scrollOffset, leftX, rightX, y, rows, margin;
+	int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
+	textDisp *textD = ((TextWidget)textPane)->text.textD;
+	int topChar = TextFirstVisiblePos(textPane);
+	int lastChar = TextLastVisiblePos(textPane);
+	int targetLineNum;
+	Dimension width;
+
+	/* find out where the selection is */
+	if (!this->buffer->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
+		left = right = TextGetCursorPos(textPane);
+		isRect = False;
+	}
+
+	/* Check vertical positioning unless the selection is already shown or
+	   already covers the display.  If the end of the selection is below
+	   bottom, scroll it in to view until the end selection is scrollOffset
+	   lines from the bottom of the display or the start of the selection
+	   scrollOffset lines from the top.  Calculate a pleasing distance from the
+	   top or bottom of the window, to scroll the selection to (if scrolling is
+	   necessary), around 1/3 of the height of the window */
+	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
+		XtVaGetValues(textPane, textNrows, &rows, nullptr);
+		scrollOffset = rows / 3;
+		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		if (right > lastChar) {
+			/* End of sel. is below bottom of screen */
+			leftLineNum = topLineNum + TextDCountLines(textD, topChar, left, False);
+			targetLineNum = topLineNum + scrollOffset;
+			if (leftLineNum >= targetLineNum) {
+				/* Start of sel. is not between top & target */
+				linesToScroll = TextDCountLines(textD, lastChar, right, False) + scrollOffset;
+				if (leftLineNum - linesToScroll < targetLineNum)
+					linesToScroll = leftLineNum - targetLineNum;
+				/* Scroll start of selection to the target line */
+				TextSetScroll(textPane, topLineNum + linesToScroll, horizOffset);
+			}
+		} else if (left < topChar) {
+			/* Start of sel. is above top of screen */
+			lastLineNum = topLineNum + rows;
+			rightLineNum = lastLineNum - TextDCountLines(textD, right, lastChar, False);
+			targetLineNum = lastLineNum - scrollOffset;
+			if (rightLineNum <= targetLineNum) {
+				/* End of sel. is not between bottom & target */
+				linesToScroll = TextDCountLines(textD, left, topChar, False) + scrollOffset;
+				if (rightLineNum + linesToScroll > targetLineNum)
+					linesToScroll = targetLineNum - rightLineNum;
+				/* Scroll end of selection to the target line */
+				TextSetScroll(textPane, topLineNum - linesToScroll, horizOffset);
+			}
+		}
+	}
+
+	/* If either end of the selection off screen horizontally, try to bring it
+	   in view, by making sure both end-points are visible.  Using only end
+	   points of a multi-line selection is not a great idea, and disaster for
+	   rectangular selections, so this part of the routine should be re-written
+	   if it is to be used much with either.  Note also that this is a second
+	   scrolling operation, causing the display to jump twice.  It's done after
+	   vertical scrolling to take advantage of TextPosToXY which requires it's
+	   reqested position to be vertically on screen) */
+	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
+		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
+		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
+			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
+		else if (rightX > width - margin)
+			horizOffset += rightX - (width - margin);
+		TextSetScroll(textPane, topLineNum, horizOffset);
+	}
+
+	/* make sure that the statistics line is up to date */
+	UpdateStatsLine(this);
+}
+
+/*
+** present dialog for selecting a target window to move this document
+** into. Do nothing if there is only one shell window opened.
+*/
+void WindowInfo::MoveDocumentDialog() {
+	WindowInfo *win;
+	int i, nList = 0, ac;
+	char tmpStr[MAXPATHLEN + 50];
+	Widget parent, dialog, listBox, moveAllOption;
+	XmString popupTitle, s1;
+	Arg csdargs[20];
+	int *position_list;
+	int position_count;
+
+	/* get the list of available shell windows, not counting
+	   the document to be moved */
+	int nWindows = NWindows();
+	auto list         = new XmString[nWindows];
+	auto shellWinList = new WindowInfo *[nWindows];
+
+	for (win = WindowList; win; win = win->next) {
+		if (!win->IsTopDocument() || win->shell == this->shell)
+			continue;
+
+		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet ? win->path : "", win->filename);
+
+		list[nList] = XmStringCreateSimpleEx(tmpStr);
+		shellWinList[nList] = win;
+		nList++;
+	}
+
+	/* stop here if there's no other this to move to */
+	if (!nList) {
+		delete [] list;
+		delete [] shellWinList;
+		return;
+	}
+
+	/* create the dialog */
+	parent = this->shell;
+	popupTitle = XmStringCreateSimpleEx("Move Document");
+	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", this->filename);
+	s1 = XmStringCreateSimpleEx(tmpStr);
+	ac = 0;
+	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+	ac++;
+	XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistLabelString, s1);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistItems, list);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistItemCount, nList);
+	ac++;
+	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
+	ac++;
+	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
+	ac++;
+	dialog = CreateSelectionDialog(parent, (String) "moveDocument", csdargs, ac);
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
+	XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)moveDocumentCB, this);
+	XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)moveDocumentCB, this);
+	XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)moveDocumentCB, this);
+	XmStringFree(s1);
+	XmStringFree(popupTitle);
+
+	/* free the this list */
+	for (i = 0; i < nList; i++)
+		XmStringFree(list[i]);
+	delete [] list;
+
+	/* create the option box for moving all documents */
+	s1 = MKSTRING((String) "Move all documents in this this");
+	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
+	XmStringFree(s1);
+
+	if (this->NDocuments() > 1)
+		XtManageChild(moveAllOption);
+
+	/* disable option if only one document in the this */
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
+
+	s1 = MKSTRING((String) "Move");
+	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
+	XmStringFree(s1);
+
+	/* default to the first this on the list */
+	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
+	XmListSelectPos(listBox, 1, True);
+
+	/* show the dialog */
+	DoneWithMoveDocumentDialog = 0;
+	ManageDialogCenteredOnPointer(dialog);
+	while (!DoneWithMoveDocumentDialog)
+		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
+
+	/* get the this to move document into */
+	XmListGetSelectedPos(listBox, &position_list, &position_count);
+	auto targetWin = shellWinList[position_list[0] - 1];
+	XtFree((char *)position_list);
+
+	/* now move document(s) */
+	if (DoneWithMoveDocumentDialog == XmCR_OK) {
+		/* move top document */
+		if (XmToggleButtonGetState(moveAllOption)) {
+			/* move all documents */
+			for (win = WindowList; win;) {
+				if (win != this && win->shell == this->shell) {
+					WindowInfo *next = win->next;
+					MoveDocument(targetWin, win);
+					win = next;
+				} else
+					win = win->next;
+			}
+
+			/* invoking document is the last to move */
+			MoveDocument(targetWin, this);
+		} else {
+			MoveDocument(targetWin, this);
+		}
+	}
+
+	delete [] shellWinList;
+	XtDestroyWidget(dialog);
+}
+
+/*
+** Bring up the next window by tab order
+*/
+void WindowInfo::NextDocument() {
+	WindowInfo *win;
+
+	if (WindowList->next == nullptr)
+		return;
+
+	win = getNextTabWindow(this, 1, GetPrefGlobalTabNavigate(), 1);
+	if (win == nullptr)
+		return;
+
+	if (this->shell == win->shell)
+		win->RaiseDocument();
+	else
+		RaiseFocusDocumentWindow(win, True);
+}
+
+/*
+** Bring up the previous window by tab order
+*/
+void WindowInfo::PreviousDocument() {
+
+	if (WindowList->next == nullptr) {
+		return;
+	}
+
+	WindowInfo *win = getNextTabWindow(this, -1, GetPrefGlobalTabNavigate(), 1);
+	if (win == nullptr)
+		return;
+
+	if (this->shell == win->shell)
+		win->RaiseDocument();
+	else
+		RaiseFocusDocumentWindow(win, True);
+}
+
+/*
+** raise the document and its shell window and focus depending on pref.
+*/
+void WindowInfo::RaiseDocumentWindow() {
+	if (!this)
+		return;
+
+	this->RaiseDocument();
+	RaiseShellWindow(this->shell, GetPrefFocusOnRaise());
+}
+
+/*
+** Raise a tabbed document within its shell window.
+**
+** NB: use RaiseDocumentWindow() to raise the doc and
+**     its shell window.
+*/
+void WindowInfo::RaiseDocument() {
+	WindowInfo *win, *lastwin;
+
+	if (!this || !WindowList)
+		return;
+
+	lastwin = MarkActiveDocument(this);
+	if (lastwin != this && lastwin->IsValidWindow())
+		MarkLastDocument(lastwin);
+
+	/* document already on top? */
+	XtVaGetValues(this->mainWin, XmNuserData, &win, nullptr);
+	if (win == this)
+		return;
+
+	/* set the document as top document */
+	XtVaSetValues(this->mainWin, XmNuserData, this, nullptr);
+
+	/* show the new top document */
+	XtVaSetValues(this->mainWin, XmNworkWindow, this->splitPane, nullptr);
+	XtManageChild(this->splitPane);
+	XRaiseWindow(TheDisplay, XtWindow(this->splitPane));
+
+	/* Turn on syntax highlight that might have been deferred.
+	   NB: this must be done after setting the document as
+	       XmNworkWindow and managed, else the parent shell
+	   this may shrink on some this-managers such as
+	   metacity, due to changes made in UpdateWMSizeHints().*/
+	if (this->highlightSyntax && this->highlightData == nullptr)
+		StartHighlighting(this, False);
+
+	/* put away the bg menu tearoffs of last active document */
+	hideTearOffs(win->bgMenuPane);
+
+	/* restore the bg menu tearoffs of active document */
+	redisplayTearOffs(this->bgMenuPane);
+
+	/* set tab as active */
+	XmLFolderSetActiveTab(this->tabBar, getTabPosition(this->tab), False);
+
+	/* set keyboard focus. Must be done before unmanaging previous
+	   top document, else lastFocus will be reset to textArea */
+	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
+
+	/* we only manage the top document, else the next time a document
+	   is raised again, it's textpane might not resize properly.
+	   Also, somehow (bug?) XtUnmanageChild() doesn't hide the
+	   splitPane, which obscure lower part of the statsform when
+	   we toggle its components, so we need to put the document at
+	   the back */
+	XLowerWindow(TheDisplay, XtWindow(win->splitPane));
+	XtUnmanageChild(win->splitPane);
+	RefreshTabState(win);
+
+	/* now refresh this state/info. RefreshWindowStates()
+	   has a lot of work to do, so we update the screen first so
+	   the document appears to switch swiftly. */
+	XmUpdateDisplay(this->splitPane);
+	RefreshWindowStates(this);
+	RefreshTabState(this);
+
+	/* put away the bg menu tearoffs of last active document */
+	hideTearOffs(win->bgMenuPane);
+
+	/* restore the bg menu tearoffs of active document */
+	redisplayTearOffs(this->bgMenuPane);
+
+	/* Make sure that the "In Selection" button tracks the presence of a
+	   selection and that the this inherits the proper search scope. */
+	if (this->replaceDlog != nullptr && XtIsManaged(this->replaceDlog)) {
+#ifdef REPLACE_SCOPE
+		this->replaceScope = win->replaceScope;
+#endif
+		UpdateReplaceActionButtons(this);
+	}
+
+	UpdateWMSizeHints(this);
 }
 
 
@@ -688,7 +1215,7 @@ void SortTabBar(WindowInfo *window) {
 		return;
 
 	/* need more than one tab to sort */
-	const int nDoc = NDocuments(window);
+	const int nDoc = window->NDocuments();
 	if (nDoc < 2) {
 		return;
 	}
@@ -719,7 +1246,7 @@ void SortTabBar(WindowInfo *window) {
 			continue;
 
 		/* set tab as active */
-		if (IsTopDocument(windows[j]))
+		if (windows[j]->IsTopDocument())
 			XmLFolderSetActiveTab(window->tabBar, i, False);
 
 		windows[j]->tab = tabList[i];
@@ -838,14 +1365,14 @@ void CloseWindow(WindowInfo *window) {
 	ClearRedoList(window);
 
 	/* close the document/window */
-	if (NDocuments(window) > 1) {
+	if (window->NDocuments() > 1) {
 		if (MacroRunWindow() && MacroRunWindow() != window && MacroRunWindow()->shell == window->shell) {
 			nextBuf = MacroRunWindow();
-			RaiseDocument(nextBuf);
-		} else if (IsTopDocument(window)) {
+			nextBuf->RaiseDocument();
+		} else if (window->IsTopDocument()) {
 			/* need to find a successor before closing a top document */
 			nextBuf = getNextTabWindow(window, 1, 0, 0);
-			RaiseDocument(nextBuf);
+			nextBuf->RaiseDocument();
 		} else {
 			topBuf = GetTopDocument(window->shell);
 		}
@@ -871,15 +1398,15 @@ void CloseWindow(WindowInfo *window) {
 	/* dim/undim Detach_Tab menu items */
 	win = nextBuf ? nextBuf : topBuf;
 	if (win) {
-		state = NDocuments(win) > 1;
+		state = win->NDocuments() > 1;
 		XtSetSensitive(win->detachDocumentItem, state);
 		XtSetSensitive(win->contextDetachDocumentItem, state);
 	}
 
 	/* dim/undim Attach_Tab menu items */
-	state = NDocuments(WindowList) < NWindows();
+	state = WindowList->NDocuments() < NWindows();
 	for (win = WindowList; win; win = win->next) {
-		if (IsTopDocument(win)) {
+		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem, state);
 			XtSetSensitive(win->contextMoveDocumentItem, state);
 		}
@@ -905,22 +1432,10 @@ void CloseWindow(WindowInfo *window) {
 	delete window;
 }
 
-/*
-** check if tab bar is to be shown on this window
-*/
-int GetShowTabBar(WindowInfo *window) {
-	if (!GetPrefTabBar())
-		return False;
-	else if (NDocuments(window) == 1)
-		return !GetPrefTabBarHideOne();
-	else
-		return True;
-}
-
 void ShowWindowTabBar(WindowInfo *window) {
 	if (GetPrefTabBar()) {
 		if (GetPrefTabBarHideOne())
-			ShowTabBar(window, NDocuments(window) > 1);
+			ShowTabBar(window, window->NDocuments() > 1);
 		else
 			ShowTabBar(window, True);
 	} else
@@ -1033,7 +1548,7 @@ void SplitPane(WindowInfo *window) {
 	}
 
 	/* Re-manage panedWindow to recalculate pane heights & reset selection */
-	if (IsTopDocument(window))
+	if (window->IsTopDocument())
 		XtManageChild(window->splitPane);
 
 	/* Reset all of the heights, scroll positions, etc. */
@@ -1049,14 +1564,6 @@ void SplitPane(WindowInfo *window) {
 	   been set (the widget heights are not yet readable here, but they will
 	   be by the time the event loop gets around to running this timer proc) */
 	XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0, wmSizeUpdateProc, window);
-}
-
-Widget GetPaneByIndex(WindowInfo *window, int paneIndex) {
-	Widget text = nullptr;
-	if (paneIndex >= 0 && paneIndex <= window->nPanes) {
-		text = (paneIndex == 0) ? window->textArea : window->textPanes[paneIndex - 1];
-	}
-	return (text);
 }
 
 int WidgetToPaneIndex(WindowInfo *window, Widget w) {
@@ -1132,7 +1639,7 @@ void ClosePane(WindowInfo *window) {
 		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 	}
 
-	if (IsTopDocument(window))
+	if (window->IsTopDocument())
 		XtManageChild(window->splitPane);
 
 	/* Reset all of the scroll positions, insert positions, etc. */
@@ -1210,7 +1717,7 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 		window->ignoreModify = True;
 
 		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-			Widget w = GetPaneByIndex(window, paneIndex);
+			Widget w = window->GetPaneByIndex(paneIndex);
 			textDisp *textD = ((TextWidget)w)->text.textD;
 
 			TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
@@ -1221,7 +1728,7 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 		window->buffer->BufSetTabDistance(tabDist);
 
 		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-			Widget w = GetPaneByIndex(window, paneIndex);
+			Widget w = window->GetPaneByIndex(paneIndex);
 			textDisp *textD = ((TextWidget)w)->text.textD;
 
 			textD->modifyingTabDist = 0;
@@ -1405,7 +1912,7 @@ void SetModeMessage(WindowInfo *window, const char *message) {
 	XtFree(window->modeMessage);
 	window->modeMessage = XtNewString(message);
 
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	XmTextSetString(window->statsLine, (char *)message);
@@ -1428,7 +1935,7 @@ void ClearModeMessage(WindowInfo *window) {
 	XtFree(window->modeMessage);
 	window->modeMessage = nullptr;
 
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	/*
@@ -1466,7 +1973,7 @@ void SetAutoIndent(WindowInfo *window, int state) {
 	XtVaSetValues(window->textArea, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
 	for (i = 0; i < window->nPanes; i++)
 		XtVaSetValues(window->textPanes[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XmToggleButtonSetState(window->smartIndentItem, smartIndent, False);
 		XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
 		XmToggleButtonSetState(window->autoIndentOffItem, state == NO_AUTO_INDENT, False);
@@ -1479,7 +1986,7 @@ void SetAutoIndent(WindowInfo *window, int state) {
 */
 void SetShowMatching(WindowInfo *window, int state) {
 	window->showMatchingStyle = state;
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XmToggleButtonSetState(window->showMatchingOffItem, state == NO_FLASH, False);
 		XmToggleButtonSetState(window->showMatchingDelimitItem, state == FLASH_DELIMIT, False);
 		XmToggleButtonSetState(window->showMatchingRangeItem, state == FLASH_RANGE, False);
@@ -1590,7 +2097,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 	/* Use the information from the old window to re-size the window to a
 	   size appropriate for the new font, but only do so if there's only
 	   _one_ document in the window, in order to avoid growing-window bug */
-	if (NDocuments(window) == 1) {
+	if (window->NDocuments() == 1) {
 		fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
 		fontHeight = textD->ascent + textD->descent;
 		newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
@@ -1650,7 +2157,7 @@ void SetAutoWrap(WindowInfo *window, int state) {
 		XtVaSetValues(window->textPanes[i], textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
 	window->wrapMode = state;
 
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
 		XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
 		XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
@@ -1737,7 +2244,7 @@ void SetWindowModified(WindowInfo *window, int modified) {
 void UpdateWindowTitle(const WindowInfo *window) {
 	char *iconTitle, *title;
 
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	title = FormatWindowTitle(window->filename, window->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, window->filenameSet, window->lockReasons, window->fileChanged, GetPrefTitleFormat());
@@ -1773,7 +2280,7 @@ void UpdateWindowTitle(const WindowInfo *window) {
 void UpdateWindowReadOnly(WindowInfo *window) {
 	int i, state;
 
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	state = IS_ANY_LOCKED(window->lockReasons);
@@ -1807,89 +2314,7 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 	return True;
 }
 
-/*
-** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.  Note that as written,
-** this won't work well with multi-line selections.  Modest re-write
-** of the horizontal scrolling part would be quite easy to make it work
-** well with rectangular selections.
-*/
-void MakeSelectionVisible(WindowInfo *window, Widget textPane) {
-	int left, right, isRect, rectStart, rectEnd, horizOffset;
-	int scrollOffset, leftX, rightX, y, rows, margin;
-	int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
-	textDisp *textD = ((TextWidget)textPane)->text.textD;
-	int topChar = TextFirstVisiblePos(textPane);
-	int lastChar = TextLastVisiblePos(textPane);
-	int targetLineNum;
-	Dimension width;
 
-	/* find out where the selection is */
-	if (!window->buffer->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
-		left = right = TextGetCursorPos(textPane);
-		isRect = False;
-	}
-
-	/* Check vertical positioning unless the selection is already shown or
-	   already covers the display.  If the end of the selection is below
-	   bottom, scroll it in to view until the end selection is scrollOffset
-	   lines from the bottom of the display or the start of the selection
-	   scrollOffset lines from the top.  Calculate a pleasing distance from the
-	   top or bottom of the window, to scroll the selection to (if scrolling is
-	   necessary), around 1/3 of the height of the window */
-	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
-		XtVaGetValues(textPane, textNrows, &rows, nullptr);
-		scrollOffset = rows / 3;
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
-		if (right > lastChar) {
-			/* End of sel. is below bottom of screen */
-			leftLineNum = topLineNum + TextDCountLines(textD, topChar, left, False);
-			targetLineNum = topLineNum + scrollOffset;
-			if (leftLineNum >= targetLineNum) {
-				/* Start of sel. is not between top & target */
-				linesToScroll = TextDCountLines(textD, lastChar, right, False) + scrollOffset;
-				if (leftLineNum - linesToScroll < targetLineNum)
-					linesToScroll = leftLineNum - targetLineNum;
-				/* Scroll start of selection to the target line */
-				TextSetScroll(textPane, topLineNum + linesToScroll, horizOffset);
-			}
-		} else if (left < topChar) {
-			/* Start of sel. is above top of screen */
-			lastLineNum = topLineNum + rows;
-			rightLineNum = lastLineNum - TextDCountLines(textD, right, lastChar, False);
-			targetLineNum = lastLineNum - scrollOffset;
-			if (rightLineNum <= targetLineNum) {
-				/* End of sel. is not between bottom & target */
-				linesToScroll = TextDCountLines(textD, left, topChar, False) + scrollOffset;
-				if (rightLineNum + linesToScroll > targetLineNum)
-					linesToScroll = targetLineNum - rightLineNum;
-				/* Scroll end of selection to the target line */
-				TextSetScroll(textPane, topLineNum - linesToScroll, horizOffset);
-			}
-		}
-	}
-
-	/* If either end of the selection off screen horizontally, try to bring it
-	   in view, by making sure both end-points are visible.  Using only end
-	   points of a multi-line selection is not a great idea, and disaster for
-	   rectangular selections, so this part of the routine should be re-written
-	   if it is to be used much with either.  Note also that this is a second
-	   scrolling operation, causing the display to jump twice.  It's done after
-	   vertical scrolling to take advantage of TextPosToXY which requires it's
-	   reqested position to be vertically on screen) */
-	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
-		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
-		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
-			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
-		else if (rightX > width - margin)
-			horizOffset += rightX - (width - margin);
-		TextSetScroll(textPane, topLineNum, horizOffset);
-	}
-
-	/* make sure that the statistics line is up to date */
-	UpdateStatsLine(window);
-}
 
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
 	Widget text, sw, hScrollBar, vScrollBar, frame;
@@ -1978,7 +2403,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 		/* do not refresh shell-level items (window, menu-bar etc)
 		   when motifying non-top document */
-		if (IsTopDocument(window)) {
+		if (window->IsTopDocument()) {
 			XtSetSensitive(window->printSelItem, selected);
 			XtSetSensitive(window->cutItem, selected);
 			XtSetSensitive(window->copyItem, selected);
@@ -2132,7 +2557,7 @@ static void saveYourselfCB(Widget w, Widget appShell, XtPointer callData) {
 		argv[argc++] = XtNewString("-group");
 		argv[argc++] = XtNewString("-geometry");
 		argv[argc++] = XtNewString(geometry);
-		if (IsIconic(topWin)) {
+		if (topWin->IsIconic()) {
 			argv[argc++] = XtNewString("-iconic");
 			wasIconic = True;
 		} else if (wasIconic) {
@@ -2176,31 +2601,7 @@ void AttachSessionMgrHandler(Widget appShell) {
 }
 #endif /* NO_SESSION_RESTART */
 
-/*
-** Returns true if window is iconic (as determined by the WM_STATE property
-** on the shell window.  I think this is the most reliable way to tell,
-** but if someone has a better idea please send me a note).
-*/
-int IsIconic(WindowInfo *window) {
-	unsigned long *property = nullptr;
-	unsigned long nItems;
-	unsigned long leftover;
-	static Atom wmStateAtom = 0;
-	Atom actualType;
-	int actualFormat;
-	
-	if (wmStateAtom == 0) {
-		wmStateAtom = XInternAtom(XtDisplay(window->shell), "WM_STATE", False);
-	}
-		
-	if (XGetWindowProperty(XtDisplay(window->shell), XtWindow(window->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
-		return FALSE;
-	}
 
-	int result = (*property == IconicState);
-	XtFree((char *)property);
-	return result;
-}
 
 /*
 ** Add a window to the the window list.
@@ -2328,7 +2729,7 @@ void UpdateStatsLine(WindowInfo *window) {
 	Widget statW = window->statsLine;
 	XmString xmslinecol;
 
-	if (!IsTopDocument(window)) {
+	if (!window->IsTopDocument()) {
 		return;
 	}
 
@@ -2977,7 +3378,7 @@ static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int cross
 	int tabCount, tabTotalCount;
 	int tabPos, nextPos;
 	int i, n;
-	int nBuf = crossWin ? NWindows() : NDocuments(window);
+	int nBuf = crossWin ? NWindows() : window->NDocuments();
 
 	if (nBuf <= 1)
 		return nullptr;
@@ -3079,7 +3480,7 @@ void RefreshTabState(WindowInfo *win) {
 	}
 
 	/* Make the top document stand out a little more */
-	if (IsTopDocument(win))
+	if (win->IsTopDocument())
 		tag = (String) "BOLD";
 
 	s1 = XmStringCreateLtoR(labelString, tag);
@@ -3095,63 +3496,11 @@ void RefreshTabState(WindowInfo *win) {
 	XmStringFree(tipString);
 }
 
-/*
-** close all the documents in a window
-*/
-int CloseAllDocumentInWindow(WindowInfo *window) {
-	WindowInfo *win;
-
-	if (NDocuments(window) == 1) {
-		/* only one document in the window */
-		return CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
-	} else {
-		Widget winShell = window->shell;
-		WindowInfo *topDocument;
-
-		/* close all _modified_ documents belong to this window */
-		for (win = WindowList; win;) {
-			if (win->shell == winShell && win->fileChanged) {
-				WindowInfo *next = win->next;
-				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
-					return False;
-				win = next;
-			} else
-				win = win->next;
-		}
-
-		/* see there's still documents left in the window */
-		for (win = WindowList; win; win = win->next)
-			if (win->shell == winShell)
-				break;
-
-		if (win) {
-			topDocument = GetTopDocument(winShell);
-
-			/* close all non-top documents belong to this window */
-			for (win = WindowList; win;) {
-				if (win->shell == winShell && win != topDocument) {
-					WindowInfo *next = win->next;
-					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
-						return False;
-					win = next;
-				} else
-					win = win->next;
-			}
-
-			/* close the last document and its window */
-			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
-				return False;
-		}
-	}
-
-	return True;
-}
-
 static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData) {
 
 	(void)w;
 
-	int nDocuments = NDocuments(window);
+	int nDocuments = window->NDocuments();
 
 	if (nDocuments == NWindows()) {
 		/* this is only window, then exit */
@@ -3165,7 +3514,7 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
 				resp = DialogF(DF_QUES, window->shell, 2, "Close Window", "Close ALL documents in this window?", "Close", "Cancel");
 
 			if (resp == 1)
-				CloseAllDocumentInWindow(window);
+				window->CloseAllDocumentInWindow();
 		}
 	}
 }
@@ -3176,7 +3525,7 @@ static void CloseDocumentWindow(Widget w, WindowInfo *window, XtPointer callData
 */
 void RefreshMenuToggleStates(WindowInfo *window) {
 
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	/* File menu */
@@ -3213,8 +3562,8 @@ void RefreshMenuToggleStates(WindowInfo *window) {
 	/* Windows Menu */
 	XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
 	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
-	XtSetSensitive(window->detachDocumentItem, NDocuments(window) > 1);
-	XtSetSensitive(window->contextDetachDocumentItem, NDocuments(window) > 1);
+	XtSetSensitive(window->detachDocumentItem, window->NDocuments() > 1);
+	XtSetSensitive(window->contextDetachDocumentItem, window->NDocuments() > 1);
 
 	WindowInfo *win;
 	for (win = WindowList; win; win = win->next)
@@ -3261,86 +3610,8 @@ WindowInfo *MarkActiveDocument(WindowInfo *window) {
 	return prev;
 }
 
-/*
-** Bring up the next window by tab order
-*/
-void NextDocument(WindowInfo *window) {
-	WindowInfo *win;
 
-	if (WindowList->next == nullptr)
-		return;
 
-	win = getNextTabWindow(window, 1, GetPrefGlobalTabNavigate(), 1);
-	if (win == nullptr)
-		return;
-
-	if (window->shell == win->shell)
-		RaiseDocument(win);
-	else
-		RaiseFocusDocumentWindow(win, True);
-}
-
-/*
-** Bring up the previous window by tab order
-*/
-void PreviousDocument(WindowInfo *window) {
-	WindowInfo *win;
-
-	if (WindowList->next == nullptr)
-		return;
-
-	win = getNextTabWindow(window, -1, GetPrefGlobalTabNavigate(), 1);
-	if (win == nullptr)
-		return;
-
-	if (window->shell == win->shell)
-		RaiseDocument(win);
-	else
-		RaiseFocusDocumentWindow(win, True);
-}
-
-/*
-** Bring up the last active window
-*/
-void LastDocument(WindowInfo *window) {
-	WindowInfo *win;
-
-	for (win = WindowList; win; win = win->next)
-		if (lastFocusDocument == win)
-			break;
-
-	if (!win)
-		return;
-
-	if (window->shell == win->shell)
-		RaiseDocument(win);
-	else
-		RaiseFocusDocumentWindow(win, True);
-}
-
-/*
-** make sure window is alive is kicking
-*/
-int IsValidWindow(WindowInfo *window) {
-	WindowInfo *win;
-
-	for (win = WindowList; win; win = win->next)
-		if (window == win)
-			return True;
-
-	return False;
-}
-
-/*
-** raise the document and its shell window and focus depending on pref.
-*/
-void RaiseDocumentWindow(WindowInfo *window) {
-	if (!window)
-		return;
-
-	RaiseDocument(window);
-	RaiseShellWindow(window->shell, GetPrefFocusOnRaise());
-}
 
 /*
 ** raise the document and its shell window and optionally focus.
@@ -3349,32 +3620,11 @@ void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus) {
 	if (!window)
 		return;
 
-	RaiseDocument(window);
+	window->RaiseDocument();
 	RaiseShellWindow(window->shell, focus);
 }
 
-/*
-** Redisplay menu tearoffs previously hid by hideTearOffs()
-*/
-static void redisplayTearOffs(Widget menuPane) {
-	WidgetList itemList;
-	Widget subMenuID;
-	Cardinal nItems;
-	int n;
 
-	/* redisplay all submenu tearoffs */
-	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
-	for (n = 0; n < (int)nItems; n++) {
-		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
-			XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
-			redisplayTearOffs(subMenuID);
-		}
-	}
-
-	/* redisplay tearoff for this menu */
-	if (!XmIsMenuShell(XtParent(menuPane)))
-		ShowHiddenTearOff(menuPane);
-}
 
 /*
 ** hide all the tearoffs spawned from this menu.
@@ -3400,99 +3650,10 @@ static void hideTearOffs(Widget menuPane) {
 		XtUnmapWidget(XtParent(menuPane));
 }
 
-/*
-** Raise a tabbed document within its shell window.
-**
-** NB: use RaiseDocumentWindow() to raise the doc and
-**     its shell window.
-*/
-void RaiseDocument(WindowInfo *window) {
-	WindowInfo *win, *lastwin;
-
-	if (!window || !WindowList)
-		return;
-
-	lastwin = MarkActiveDocument(window);
-	if (lastwin != window && IsValidWindow(lastwin))
-		MarkLastDocument(lastwin);
-
-	/* document already on top? */
-	XtVaGetValues(window->mainWin, XmNuserData, &win, nullptr);
-	if (win == window)
-		return;
-
-	/* set the document as top document */
-	XtVaSetValues(window->mainWin, XmNuserData, window, nullptr);
-
-	/* show the new top document */
-	XtVaSetValues(window->mainWin, XmNworkWindow, window->splitPane, nullptr);
-	XtManageChild(window->splitPane);
-	XRaiseWindow(TheDisplay, XtWindow(window->splitPane));
-
-	/* Turn on syntax highlight that might have been deferred.
-	   NB: this must be done after setting the document as
-	       XmNworkWindow and managed, else the parent shell
-	   window may shrink on some window-managers such as
-	   metacity, due to changes made in UpdateWMSizeHints().*/
-	if (window->highlightSyntax && window->highlightData == nullptr)
-		StartHighlighting(window, False);
-
-	/* put away the bg menu tearoffs of last active document */
-	hideTearOffs(win->bgMenuPane);
-
-	/* restore the bg menu tearoffs of active document */
-	redisplayTearOffs(window->bgMenuPane);
-
-	/* set tab as active */
-	XmLFolderSetActiveTab(window->tabBar, getTabPosition(window->tab), False);
-
-	/* set keyboard focus. Must be done before unmanaging previous
-	   top document, else lastFocus will be reset to textArea */
-	XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
-
-	/* we only manage the top document, else the next time a document
-	   is raised again, it's textpane might not resize properly.
-	   Also, somehow (bug?) XtUnmanageChild() doesn't hide the
-	   splitPane, which obscure lower part of the statsform when
-	   we toggle its components, so we need to put the document at
-	   the back */
-	XLowerWindow(TheDisplay, XtWindow(win->splitPane));
-	XtUnmanageChild(win->splitPane);
-	RefreshTabState(win);
-
-	/* now refresh window state/info. RefreshWindowStates()
-	   has a lot of work to do, so we update the screen first so
-	   the document appears to switch swiftly. */
-	XmUpdateDisplay(window->splitPane);
-	RefreshWindowStates(window);
-	RefreshTabState(window);
-
-	/* put away the bg menu tearoffs of last active document */
-	hideTearOffs(win->bgMenuPane);
-
-	/* restore the bg menu tearoffs of active document */
-	redisplayTearOffs(window->bgMenuPane);
-
-	/* Make sure that the "In Selection" button tracks the presence of a
-	   selection and that the window inherits the proper search scope. */
-	if (window->replaceDlog != nullptr && XtIsManaged(window->replaceDlog)) {
-#ifdef REPLACE_SCOPE
-		window->replaceScope = win->replaceScope;
-#endif
-		UpdateReplaceActionButtons(window);
-	}
-
-	UpdateWMSizeHints(window);
-}
-
 WindowInfo *GetTopDocument(Widget w) {
 	WindowInfo *window = WidgetToWindow(w);
 
 	return WidgetToWindow(window->shell);
-}
-
-Boolean IsTopDocument(const WindowInfo *window) {
-	return window == GetTopDocument(window->shell) ? True : False;
 }
 
 static void deleteDocument(WindowInfo *window) {
@@ -3504,25 +3665,10 @@ static void deleteDocument(WindowInfo *window) {
 }
 
 /*
-** return the number of documents owned by this shell window
-*/
-int NDocuments(WindowInfo *window) {
-	WindowInfo *win;
-	int nDocument = 0;
-
-	for (win = WindowList; win; win = win->next) {
-		if (win->shell == window->shell)
-			nDocument++;
-	}
-
-	return nDocument;
-}
-
-/*
 ** refresh window state for this document
 */
 void RefreshWindowStates(WindowInfo *window) {
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		return;
 
 	if (window->modeMessageDisplayed)
@@ -3811,14 +3957,14 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 WindowInfo *DetachDocument(WindowInfo *window) {
 	WindowInfo *win = nullptr, *cloneWin;
 
-	if (NDocuments(window) < 2)
+	if (window->NDocuments() < 2)
 		return nullptr;
 
 	/* raise another document in the same shell window if the window
 	   being detached is the top document */
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		win = getNextTabWindow(window, 1, 0, 0);
-		RaiseDocument(win);
+		win->RaiseDocument();
 	}
 
 	/* Create a new window */
@@ -3870,18 +4016,18 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
 	WindowInfo *win = nullptr, *cloneWin;
 
 	/* prepare to move document */
-	if (NDocuments(window) < 2) {
+	if (window->NDocuments() < 2) {
 		/* hide the window to make it look like we are moving */
 		XtUnmapWidget(window->shell);
-	} else if (IsTopDocument(window)) {
+	} else if (window->IsTopDocument()) {
 		/* raise another document to replace the document being moved */
 		win = getNextTabWindow(window, 1, 0, 0);
-		RaiseDocument(win);
+		win->RaiseDocument();
 	}
 
 	/* relocate the document to target window */
 	cloneWin = CreateDocument(toWindow, window->filename);
-	ShowTabBar(cloneWin, GetShowTabBar(cloneWin));
+	ShowTabBar(cloneWin, cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin, window);
 
 	/* CreateDocument() simply adds the new window's pointer to the
@@ -3903,148 +4049,11 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
 		RefreshWindowStates(win);
 
 	/* this should keep the new document window fresh */
-	RaiseDocumentWindow(cloneWin);
+	cloneWin->RaiseDocumentWindow();
 	RefreshTabState(cloneWin);
 	SortTabBar(cloneWin);
 
 	return cloneWin;
-}
-
-static void moveDocumentCB(Widget dialog, WindowInfo *window, XtPointer call_data) {
-
-	(void)window;
-	(void)dialog;
-
-	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
-	DoneWithMoveDocumentDialog = cbs->reason;
-}
-
-/*
-** present dialog for selecting a target window to move this document
-** into. Do nothing if there is only one shell window opened.
-*/
-void MoveDocumentDialog(WindowInfo *window) {
-	WindowInfo *win;
-	int i, nList = 0, ac;
-	char tmpStr[MAXPATHLEN + 50];
-	Widget parent, dialog, listBox, moveAllOption;
-	XmString popupTitle, s1;
-	Arg csdargs[20];
-	int *position_list;
-	int position_count;
-
-	/* get the list of available shell windows, not counting
-	   the document to be moved */
-	int nWindows = NWindows();
-	auto list         = new XmString[nWindows];
-	auto shellWinList = new WindowInfo *[nWindows];
-
-	for (win = WindowList; win; win = win->next) {
-		if (!IsTopDocument(win) || win->shell == window->shell)
-			continue;
-
-		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet ? win->path : "", win->filename);
-
-		list[nList] = XmStringCreateSimpleEx(tmpStr);
-		shellWinList[nList] = win;
-		nList++;
-	}
-
-	/* stop here if there's no other window to move to */
-	if (!nList) {
-		delete [] list;
-		delete [] shellWinList;
-		return;
-	}
-
-	/* create the dialog */
-	parent = window->shell;
-	popupTitle = XmStringCreateSimpleEx("Move Document");
-	snprintf(tmpStr, sizeof(tmpStr), "Move %s into window of", window->filename);
-	s1 = XmStringCreateSimpleEx(tmpStr);
-	ac = 0;
-	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	ac++;
-	XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistLabelString, s1);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItems, list);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItemCount, nList);
-	ac++;
-	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
-	ac++;
-	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
-	ac++;
-	dialog = CreateSelectionDialog(parent, (String) "moveDocument", csdargs, ac);
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(dialog, XmNokCallback, (XtCallbackProc)moveDocumentCB, window);
-	XtAddCallback(dialog, XmNapplyCallback, (XtCallbackProc)moveDocumentCB, window);
-	XtAddCallback(dialog, XmNcancelCallback, (XtCallbackProc)moveDocumentCB, window);
-	XmStringFree(s1);
-	XmStringFree(popupTitle);
-
-	/* free the window list */
-	for (i = 0; i < nList; i++)
-		XmStringFree(list[i]);
-	delete [] list;
-
-	/* create the option box for moving all documents */
-	s1 = MKSTRING((String) "Move all documents in this window");
-	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
-	XmStringFree(s1);
-
-	if (NDocuments(window) > 1)
-		XtManageChild(moveAllOption);
-
-	/* disable option if only one document in the window */
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
-
-	s1 = MKSTRING((String) "Move");
-	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
-	XmStringFree(s1);
-
-	/* default to the first window on the list */
-	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
-	XmListSelectPos(listBox, 1, True);
-
-	/* show the dialog */
-	DoneWithMoveDocumentDialog = 0;
-	ManageDialogCenteredOnPointer(dialog);
-	while (!DoneWithMoveDocumentDialog)
-		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
-
-	/* get the window to move document into */
-	XmListGetSelectedPos(listBox, &position_list, &position_count);
-	auto targetWin = shellWinList[position_list[0] - 1];
-	XtFree((char *)position_list);
-
-	/* now move document(s) */
-	if (DoneWithMoveDocumentDialog == XmCR_OK) {
-		/* move top document */
-		if (XmToggleButtonGetState(moveAllOption)) {
-			/* move all documents */
-			for (win = WindowList; win;) {
-				if (win != window && win->shell == window->shell) {
-					WindowInfo *next = win->next;
-					MoveDocument(targetWin, win);
-					win = next;
-				} else
-					win = win->next;
-			}
-
-			/* invoking document is the last to move */
-			MoveDocument(targetWin, window);
-		} else {
-			MoveDocument(targetWin, window);
-		}
-	}
-
-	delete [] shellWinList;
-	XtDestroyWidget(dialog);
 }
 
 static void hideTooltip(Widget tab) {
@@ -4099,7 +4108,7 @@ static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
 	tab = tabList[cbs->pos];
-	RaiseDocument(TabToWindow(tab));
+	TabToWindow(tab)->RaiseDocument();
 }
 
 static Widget containingPane(Widget w) {
@@ -4119,7 +4128,7 @@ static void cancelTimeOut(XtIntervalId *timer) {
 ** set/clear toggle menu state if the calling document is on top.
 */
 void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean notify) {
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XmToggleButtonSetState(w, state, notify);
 	}
 }
@@ -4128,7 +4137,7 @@ void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean n
 ** set/clear menu sensitivity if the calling document is on top.
 */
 void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive) {
-	if (IsTopDocument(window)) {
+	if (window->IsTopDocument()) {
 		XtSetSensitive(w, sensitive);
 	}
 }

@@ -2160,7 +2160,7 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight) {
 
 	/* resize if there's only _one_ document in the window, to avoid
 	   the growing-window bug */
-	if (NDocuments(window) > 1)
+	if (window->NDocuments() > 1)
 		return;
 
 	/* Decompose the window height into the part devoted to displaying

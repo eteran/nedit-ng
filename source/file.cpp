@@ -124,12 +124,12 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	else
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
 
-	ShowTabBar(window, GetShowTabBar(window));
+	ShowTabBar(window, window->GetShowTabBar());
 
-	if (iconic && IsIconic(window))
-		RaiseDocument(window);
+	if (iconic && window->IsIconic())
+		window->RaiseDocument();
 	else
-		RaiseDocumentWindow(window);
+		window->RaiseDocumentWindow();
 
 	SortTabBar(window);
 	return window;
@@ -163,9 +163,9 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	if (window != nullptr) {
 		if (!bgOpen) {
 			if (iconic)
-				RaiseDocument(window);
+				window->RaiseDocument();
 			else
-				RaiseDocumentWindow(window);
+				window->RaiseDocumentWindow();
 		}
 		return window;
 	}
@@ -187,7 +187,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 		strcpy(window->path, path);
 		strcpy(window->filename, name);
 		if (!iconic && !bgOpen) {
-			RaiseDocumentWindow(window);
+			window->RaiseDocumentWindow();
 		}
 	}
 
@@ -210,10 +210,10 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	/* update tab label and tooltip */
 	RefreshTabState(window);
 	SortTabBar(window);
-	ShowTabBar(window, GetShowTabBar(window));
+	ShowTabBar(window, window->GetShowTabBar());
 
 	if (!bgOpen)
-		RaiseDocument(window);
+		window->RaiseDocument();
 
 	/* Bring the title bar and statistics line up to date, doOpen does
 	   not necessarily set the window title or read-only status */
@@ -608,11 +608,11 @@ int CloseAllFilesAndWindows(void) {
 		 * Untitled.)
 		 */
 		if (WindowList == MacroRunWindow() && WindowList->next != nullptr) {
-			if (!CloseAllDocumentInWindow(WindowList->next)) {
+			if (!WindowList->next->CloseAllDocumentInWindow()) {
 				return False;
 			}
 		} else {
-			if (!CloseAllDocumentInWindow(WindowList)) {
+			if (!WindowList->CloseAllDocumentInWindow()) {
 				return False;
 			}
 		}
@@ -626,7 +626,7 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse) {
 
 	/* Make sure that the window is not in iconified state */
 	if (window->fileChanged)
-		RaiseDocumentWindow(window);
+		window->RaiseDocumentWindow();
 
 	/* If the window is a normal & unmodified file or an empty new file,
 	   or if the user wants to ignore external modifications then
@@ -1349,7 +1349,7 @@ void CheckForChangesToFile(WindowInfo *window) {
 	   and we don't even need to contact the server to find out. By
 	   performing this check first, we avoid a server round-trip for
 	   most files in practice. */
-	if (!IsTopDocument(window))
+	if (!window->IsTopDocument())
 		silent = 1;
 	else {
 		XGetWindowAttributes(XtDisplay(window->shell), XtWindow(window->shell), &winAttr);

@@ -90,7 +90,7 @@ void Undo(WindowInfo *window) {
 			window->buffer->BufUnselect();
 		}
 	}
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 
 	/* restore the file's unmodified status if the file was unmodified
 	   when the change being undone was originally made.  Also, remove
@@ -138,7 +138,7 @@ void Redo(WindowInfo *window) {
 			window->buffer->BufUnselect();
 		}
 	}
-	MakeSelectionVisible(window, window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus);
 
 	/* restore the file's unmodified status if the file was unmodified
 	   when the change being redone was originally made. Also, remove

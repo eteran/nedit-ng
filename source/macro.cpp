@@ -396,7 +396,7 @@ void BeginLearn(WindowInfo *window) {
 
 	/* dim the inappropriate menus and items, and undim finish and cancel */
 	for (win = WindowList; win != nullptr; win = win->next) {
-		if (!IsTopDocument(win))
+		if (!win->IsTopDocument())
 			continue;
 		XtSetSensitive(win->learnItem, False);
 	}
@@ -474,18 +474,18 @@ void FinishLearn(void) {
 
 	/* Undim the menu items dimmed during learn */
 	for (win = WindowList; win != nullptr; win = win->next) {
-		if (!IsTopDocument(win))
+		if (!win->IsTopDocument())
 			continue;
 		XtSetSensitive(win->learnItem, True);
 	}
-	if (IsTopDocument(MacroRecordWindow)) {
+	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
 		XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
 	}
 
 	/* Undim the replay and paste-macro buttons */
 	for (win = WindowList; win != nullptr; win = win->next) {
-		if (!IsTopDocument(win))
+		if (!win->IsTopDocument())
 			continue;
 		XtSetSensitive(win->replayItem, True);
 	}
@@ -521,11 +521,11 @@ static void cancelLearn(void) {
 
 	/* Undim the menu items dimmed during learn */
 	for (win = WindowList; win != nullptr; win = win->next) {
-		if (!IsTopDocument(win))
+		if (!win->IsTopDocument())
 			continue;
 		XtSetSensitive(win->learnItem, True);
 	}
-	if (IsTopDocument(MacroRecordWindow)) {
+	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem, False);
 		XtSetSensitive(MacroRecordWindow->cancelMacroItem, False);
 	}

@@ -495,7 +495,7 @@ int main(int argc, char **argv) {
 					/* raise the last tab of previous window */
 					if (lastFile && window->shell != lastFile->shell) {
 						CleanUpTabBarExposeQueue(lastFile);
-						RaiseDocument(lastFile);
+						lastFile->RaiseDocument();
 					}
 
 					if (!macroFileRead) {
@@ -507,9 +507,9 @@ int main(int argc, char **argv) {
 					if (toDoCommand != nullptr) {
 						DoMacro(window, toDoCommand, "-do macro");
 						toDoCommand = nullptr;
-						if (!IsValidWindow(window))
+						if (!window->IsValidWindow())
 							window = nullptr; /* window closed by macro */
-						if (lastFile && !IsValidWindow(lastFile))
+						if (lastFile && !lastFile->IsValidWindow())
 							lastFile = nullptr; /* window closed by macro */
 					}
 				}
@@ -529,7 +529,7 @@ int main(int argc, char **argv) {
 	/* Raise the last file opened */
 	if (lastFile) {
 		CleanUpTabBarExposeQueue(lastFile);
-		RaiseDocument(lastFile);
+		lastFile->RaiseDocument();
 	}
 	CheckCloseDim();
 

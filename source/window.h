@@ -32,8 +32,6 @@
 
 #include <X11/Intrinsic.h>
 
-Boolean IsTopDocument(const WindowInfo *window);
-Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name);
 WindowInfo *DetachDocument(WindowInfo *window);
 WindowInfo *FindWindowWithFile(const char *name, const char *path);
@@ -43,12 +41,7 @@ WindowInfo *MarkLastDocument(WindowInfo *window);
 WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window);
 WindowInfo *TabToWindow(Widget tab);
 WindowInfo *WidgetToWindow(Widget w);
-int CloseAllDocumentInWindow(WindowInfo *window);
-int GetShowTabBar(WindowInfo *window);
 int GetSimpleSelection(TextBuffer *buf, int *left, int *right);
-int IsIconic(WindowInfo *window);
-int IsValidWindow(WindowInfo *window);
-int NDocuments(WindowInfo *window);
 int NWindows(void);
 int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void AddSmallIcon(Widget shell);
@@ -59,13 +52,6 @@ void CleanUpTabBarExposeQueue(WindowInfo *window);
 void ClearModeMessage(WindowInfo *window);
 void ClosePane(WindowInfo *window);
 void CloseWindow(WindowInfo *window);
-void LastDocument(WindowInfo *window);
-void MakeSelectionVisible(WindowInfo *window, Widget textPane);
-void MoveDocumentDialog(WindowInfo *window);
-void NextDocument(WindowInfo *window);
-void PreviousDocument(WindowInfo *window);
-void RaiseDocument(WindowInfo *window);
-void RaiseDocumentWindow(WindowInfo *window);
 void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus);
 void RefreshMenuToggleStates(WindowInfo *window);
 void RefreshTabState(WindowInfo *window);
