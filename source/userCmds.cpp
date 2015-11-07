@@ -261,9 +261,9 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event);
 static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData);
-static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData);
-static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData);
-static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData);
+static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData);
+static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData);
+static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd);
@@ -1464,7 +1464,15 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 		for (;;) {
 			subSep = strchr(namePtr, '>');
 			if (subSep == nullptr) {
-				btn = createUserMenuItem(subPane, namePtr, item, n, (XtCallbackProc)(menuType == SHELL_CMDS ? shellMenuCB : (menuType == MACRO_CMDS ? macroMenuCB : bgMenuCB)), (XtPointer)window);
+				
+				if(menuType == SHELL_CMDS) {
+					btn = createUserMenuItem(subPane, namePtr, item, n, shellMenuCB, (XtPointer)window);
+				} else if(menuType == MACRO_CMDS) {
+					btn = createUserMenuItem(subPane, namePtr, item, n, macroMenuCB, (XtPointer)window);
+				} else {
+					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
+				}
+				
 				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n"))
 					window->bgMenuUndoItem = btn;
 				else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n"))
@@ -1857,7 +1865,10 @@ static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData) {
 	XtSetSensitive(((userCmdDialog *)clientData)->repInpBtn, XmToggleButtonGetState(w));
 }
 
-static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
+
 	XtArgVal userData;
 	int index;
 	char *params[1];
@@ -1874,7 +1885,10 @@ static void shellMenuCB(Widget w, WindowInfo *window, XtPointer callData) {
 	XtCallActionProc(window->lastFocus, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
-static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
+
 	XtArgVal userData;
 	int index;
 	char *params[1];
@@ -1904,7 +1918,10 @@ static void macroMenuCB(Widget w, WindowInfo *window, XtPointer callData) {
 	XtCallActionProc(window->lastFocus, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
-static void bgMenuCB(Widget w, WindowInfo *window, XtPointer callData) {
+static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = (WindowInfo *)clientData;
+
 	XtArgVal userData;
 	int index;
 	char *params[1];

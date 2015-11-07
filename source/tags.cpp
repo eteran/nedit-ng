@@ -1477,9 +1477,9 @@ static Widget createSelectMenu(Widget parent, char *label, int nArgs, char *args
 	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_TEXT));
 	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_HELP_BUTTON));
 	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(menu, XmNokCallback, (XtCallbackProc)findAllCB, menu);
-	XtAddCallback(menu, XmNapplyCallback, (XtCallbackProc)findAllCB, menu);
-	XtAddCallback(menu, XmNcancelCallback, (XtCallbackProc)findAllCB, menu);
+	XtAddCallback(menu, XmNokCallback, findAllCB, menu);
+	XtAddCallback(menu, XmNapplyCallback, findAllCB, menu);
+	XtAddCallback(menu, XmNcancelCallback, findAllCB, menu);
 	AddMotifCloseCallback(XtParent(menu), findAllCloseCB, nullptr);
 	for (i = 0; i < nArgs; i++)
 		XmStringFree(list[i]);

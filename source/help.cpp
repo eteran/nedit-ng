@@ -615,7 +615,7 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 	XmProcessTraversal(HelpTextPanes[topic], XmTRAVERSE_CURRENT);
 
 	/* Make close command in window menu gracefully prompt for close */
-	AddMotifCloseCallback(appShell, (XtCallbackProc)closeCB, appShell);
+	AddMotifCloseCallback(appShell, closeCB, appShell);
 
 	/* Initialize navigation information, if it hasn't already been init'd */
 	initNavigationHistory();
