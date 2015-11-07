@@ -966,7 +966,7 @@ void WindowInfo::MoveDocumentDialog() {
 	delete [] list;
 
 	/* create the option box for moving all documents */
-	s1 = MKSTRING((String) "Move all documents in this this");
+	s1 = XmStringCreateLtoREx("Move all documents in this this");
 	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
 	XmStringFree(s1);
 
@@ -976,7 +976,7 @@ void WindowInfo::MoveDocumentDialog() {
 	/* disable option if only one document in the this */
 	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
-	s1 = MKSTRING((String) "Move");
+	s1 = XmStringCreateLtoREx("Move");
 	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
 	XmStringFree(s1);
 
@@ -3497,7 +3497,7 @@ void RefreshTabState(WindowInfo *win) {
 	if (win->IsTopDocument())
 		tag = (String) "BOLD";
 
-	s1 = XmStringCreateLtoR(labelString, tag);
+	s1 = XmStringCreateLtoREx(labelString, tag);
 
 	if (GetPrefShowPathInWindowsMenu() && win->filenameSet) {
 		strcat(labelString, " - ");

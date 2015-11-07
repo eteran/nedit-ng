@@ -30,6 +30,7 @@
 #include "textP.h"
 #include "calltips.h"
 #include "WindowInfo.h"
+#include "../util/MotifHelper.h"
 #include "../util/misc.h"
 
 #include <cstdio>
@@ -224,7 +225,6 @@ int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, in
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
-	XmString str;
 
 	/* Destroy any previous calltip */
 	TextDKillCalltip(textD, 0);
@@ -232,7 +232,7 @@ int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, in
 	/* Expand any tabs in the calltip and make it an XmString */
 	std::string textCpy = expandAllTabsEx(text, textD->buffer->BufGetTabDistance());
 
-	str = XmStringCreateLtoR((char *)textCpy.c_str(), XmFONTLIST_DEFAULT_TAG);
+	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
 
 	/* Get the location/dimensions of the text area */
 	XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, nullptr);

@@ -528,12 +528,12 @@ void EditSmartIndentMacros(WindowInfo *window) {
 	                        XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 50, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, lmOptMenu, nullptr);
 	XmStringFree(s1);
 
-	lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = MKSTRING((String) "Add / Modify\nLanguage Mode..."), XmNmnemonic, 'A', XmNrightAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM,
+	lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = XmStringCreateLtoREx("Add / Modify\nLanguage Mode..."), XmNmnemonic, 'A', XmNrightAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM,
 	                                nullptr);
 	XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, nullptr);
 	XmStringFree(s1);
 
-	commonBtn = XtVaCreateManagedWidget("commonBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = MKSTRING((String) "Common / Shared\nInitialization..."), XmNmnemonic, 'C', XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment,
+	commonBtn = XtVaCreateManagedWidget("commonBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = XmStringCreateLtoREx("Common / Shared\nInitialization..."), XmNmnemonic, 'C', XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment,
 	                                    XmATTACH_FORM, nullptr);
 	XtAddCallback(commonBtn, XmNactivateCallback, commonDialogCB, nullptr);
 	XmStringFree(s1);

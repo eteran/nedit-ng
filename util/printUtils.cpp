@@ -36,6 +36,7 @@
 #include "DialogF.h"
 #include "misc.h"
 #include "prefFile.h"
+#include "MotifHelper.h"
 
 #include <cstring>
 #include <cerrno>
@@ -259,7 +260,7 @@ static Widget createForm(Widget parent) {
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNdialogTitle, (st0 = XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET)));
+	XtSetArg(args[argcnt], XmNdialogTitle, (st0 = XmStringCreateLtoREx("Print", XmSTRING_DEFAULT_CHARSET)));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNautoUnmanage, False);
 	argcnt++;
@@ -271,7 +272,7 @@ static Widget createForm(Widget parent) {
 	/*********************** LABEL 1 and TEXT BOX 1 *********************/
 	if (CopiesOption[0] != '\0') {
 		argcnt = 0;
-		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Number of copies (1)", XmSTRING_DEFAULT_CHARSET)));
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx("Number of copies (1)", XmSTRING_DEFAULT_CHARSET)));
 		argcnt++;
 		XtSetArg(args[argcnt], XmNmnemonic, 'N');
 		argcnt++;
@@ -320,7 +321,7 @@ static Widget createForm(Widget parent) {
 	/************************ LABEL 2 and TEXT 2 ************************/
 	if (QueueOption[0] != '\0') {
 		argcnt = 0;
-		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET)));
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx("  ", XmSTRING_DEFAULT_CHARSET)));
 		argcnt++;
 		XtSetArg(args[argcnt], XmNmnemonic, 'Q');
 		argcnt++;
@@ -378,7 +379,7 @@ static Widget createForm(Widget parent) {
 	/****************** LABEL 3 and TEXT 3 *********************/
 	if (HostOption[0] != '\0') {
 		argcnt = 0;
-		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"  ", XmSTRING_DEFAULT_CHARSET)));
+		XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx("  ", XmSTRING_DEFAULT_CHARSET)));
 		argcnt++;
 		XtSetArg(args[argcnt], XmNmnemonic, 'H');
 		argcnt++;
@@ -483,7 +484,7 @@ static Widget createForm(Widget parent) {
 
 	/********************** CANCEL BUTTON *************************/
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Cancel", XmSTRING_DEFAULT_CHARSET)));
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx("Cancel", XmSTRING_DEFAULT_CHARSET)));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNleftAttachment, XmATTACH_POSITION);
 	argcnt++;
@@ -503,7 +504,7 @@ static Widget createForm(Widget parent) {
 
 	/*********************** PRINT BUTTON **************************/
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR((char *)"Print", XmSTRING_DEFAULT_CHARSET)));
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx("Print", XmSTRING_DEFAULT_CHARSET)));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNshowAsDefault, True);
 	argcnt++;
@@ -546,7 +547,7 @@ static void setQueueLabelText(void) {
 	else
 		sprintf(tmp_buf, "Queue");
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
 	argcnt++;
 	XtSetValues(Label2, args, argcnt);
 	XmStringFree(st0);
@@ -563,7 +564,7 @@ static void setHostLabelText(void) {
 	else
 		sprintf(tmp_buf, "Host");
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoR(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
+	XtSetArg(args[argcnt], XmNlabelString, (st0 = XmStringCreateLtoREx(tmp_buf, XmSTRING_DEFAULT_CHARSET)));
 	argcnt++;
 
 	XtSetValues(Label3, args, argcnt);

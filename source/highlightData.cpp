@@ -1010,7 +1010,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	XtAddCallback(form, XmNdestroyCallback, hsDestroyCB, nullptr);
 	AddMotifCloseCallback(HSDialog.shell, hsCloseCB, nullptr);
 
-	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "To modify the properties of an existing highlight style, select the name\n\
+	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("To modify the properties of an existing highlight style, select the name\n\
 from the list on the left.  Select \"New\" to add a new style to the list."),
 	                                 XmNmnemonic, 'N', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, HS_LEFT_MARGIN_POS, XmNrightAttachment, XmATTACH_POSITION,
 	                                 XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
@@ -1501,7 +1501,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	                        XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 50, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, lmOptMenu, nullptr);
 	XmStringFree(s1);
 
-	lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = MKSTRING((String) "Add / Modify\nLanguage Mode..."), XmNmnemonic, 'A', XmNrightAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM,
+	lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = XmStringCreateLtoREx("Add / Modify\nLanguage Mode..."), XmNmnemonic, 'A', XmNrightAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM,
 	                                nullptr);
 	XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, nullptr);
 	XmStringFree(s1);
@@ -1680,7 +1680,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	RemapDeleteKey(HighlightDialog.startW);
 	XtVaSetValues(HighlightDialog.startLbl, XmNuserData, HighlightDialog.startW, nullptr);
 
-	styleBtn = XtVaCreateManagedWidget("styleLbl", xmPushButtonWidgetClass, patternsForm, XmNlabelString, s1 = MKSTRING((String) "Add / Modify\nStyle..."), XmNmnemonic, 'i', XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition,
+	styleBtn = XtVaCreateManagedWidget("styleLbl", xmPushButtonWidgetClass, patternsForm, XmNlabelString, s1 = XmStringCreateLtoREx("Add / Modify\nStyle..."), XmNmnemonic, 'i', XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition,
 	                                   LIST_RIGHT - 1, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, HighlightDialog.parentW, nullptr);
 	XmStringFree(s1);
 	XtAddCallback(styleBtn, XmNactivateCallback, styleDialogCB, nullptr);

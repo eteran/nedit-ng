@@ -46,6 +46,7 @@
 #include "getfiles.h"
 #include "fileUtils.h"
 #include "misc.h"
+#include "MotifHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -594,7 +595,7 @@ static void createErrorDialog(Widget parent) {
 	XtAddCallback(ErrorDialog, XmNcancelCallback, errorOKCB, nullptr);
 	XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_OK_BUTTON));
 	XtUnmanageChild(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_HELP_BUTTON));
-	buttonString = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET);
+	buttonString = XmStringCreateLtoREx("OK", XmSTRING_DEFAULT_CHARSET);
 	XtVaSetValues(ErrorDialog, XmNcancelLabelString, buttonString, nullptr);
 	XtVaSetValues(XmMessageBoxGetChild(ErrorDialog, XmDIALOG_CANCEL_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
 	XmStringFree(buttonString);
@@ -607,7 +608,7 @@ static int doYesNoDialog(const char *filename) {
 	YesNoResult = ynNone;
 
 	sprintf(string, "File %s already exists,\nOk to overwrite?", filename);
-	mString = XmStringCreateLtoR(string, XmSTRING_DEFAULT_CHARSET);
+	mString = XmStringCreateLtoREx(string, XmSTRING_DEFAULT_CHARSET);
 
 	SET_ONE_RSRC(YesNoDialog, XmNmessageString, mString);
 	XmStringFree(mString);
@@ -636,8 +637,8 @@ static void doErrorDialog(const char *errorString, const char *filename) {
 
 	ErrorDone = False;
 
-	sprintf(string, errorString, filename);
-	mString = XmStringCreateLtoR(string, XmSTRING_DEFAULT_CHARSET);
+	snprintf(string, sizeof(string), errorString, filename);
+	mString = XmStringCreateLtoREx(string, XmSTRING_DEFAULT_CHARSET);
 
 	SET_ONE_RSRC(ErrorDialog, XmNmessageString, mString);
 	XmStringFree(mString);
@@ -808,7 +809,7 @@ static Widget createPanelHelp(Widget parent, const char *helpText, const char *t
 	form = CreateFormDialog(parent, "helpForm", al, ac);
 
 
-	XmString st1 = XmStringCreateLtoR((char *)"OK", XmSTRING_DEFAULT_CHARSET);
+	XmString st1 = XmStringCreateLtoREx("OK", XmSTRING_DEFAULT_CHARSET);
 
 	ac = 0;
 	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);		++ac;

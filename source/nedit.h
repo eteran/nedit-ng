@@ -86,8 +86,6 @@ enum truncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 
 #define CHARSET (XmStringCharSet) XmSTRING_DEFAULT_CHARSET
 
-#define MKSTRING(string) XmStringCreateLtoR(string, XmSTRING_DEFAULT_CHARSET)
-
 #define SET_ONE_RSRC(widget, name, newValue)                                                                                                                                                                                                   \
 	{                                                                                                                                                                                                                                          \
 		static Arg args[1] = {{name, (XtArgVal)0}};                                                                                                                                                                                            \

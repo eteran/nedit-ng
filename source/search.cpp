@@ -629,7 +629,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "String to Find:"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("String to Find:"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 't');
 	argcnt++;
@@ -652,7 +652,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_END);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "(use up arrow key to recall previous)"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("(use up arrow key to recall previous)"));
 	argcnt++;
 	label2 = XmCreateLabel(form, (String) "label2", args, argcnt);
 	XmStringFree(st1);
@@ -705,7 +705,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace With:"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace With:"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'W');
 	argcnt++;
@@ -769,7 +769,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Regular Expression"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Regular Expression"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'R');
 	argcnt++;
@@ -783,7 +783,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Case Sensitive"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Case Sensitive"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'C');
 	argcnt++;
@@ -797,7 +797,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Whole Word"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Whole Word"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'h');
 	argcnt++;
@@ -829,7 +829,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	XmAddTabGroup(searchDirBox);
 
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Search Backward"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Search Backward"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'B');
 	argcnt++;
@@ -838,7 +838,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	XtManageChild(reverseBtn);
 
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Keep Dialog"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Keep Dialog"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'K');
 	argcnt++;
@@ -893,7 +893,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "In Window"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("In Window"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'i');
 	argcnt++;
@@ -915,7 +915,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "In Selection"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("In Selection"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'S');
 	argcnt++;
@@ -939,7 +939,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "In Multiple Documents"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("In Multiple Documents"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'M');
 	argcnt++;
@@ -992,7 +992,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace all in:"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace all in:"));
 	argcnt++;
 	label3 = XmCreateLabel(allForm, (String) "label3", args, argcnt);
 	XmStringFree(st1);
@@ -1003,7 +1003,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Window"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Window"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'i');
 	argcnt++;
@@ -1027,7 +1027,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Selection"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Selection"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'S');
 	argcnt++;
@@ -1051,7 +1051,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Multiple Documents..."));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Multiple Documents..."));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'M');
 	argcnt++;
@@ -1101,7 +1101,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNshowAsDefault, (short)1);
 	argcnt++;
@@ -1136,7 +1136,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Find"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Find"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'F');
 	argcnt++;
@@ -1173,7 +1173,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace & Find"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace & Find"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'n');
 	argcnt++;
@@ -1211,7 +1211,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace All"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace All"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'A');
 	argcnt++;
@@ -1240,7 +1240,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Cancel"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Cancel"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM);
 	argcnt++;
@@ -1331,7 +1331,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "String to Find:"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("String to Find:"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'S');
 	argcnt++;
@@ -1354,7 +1354,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_END);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "(use up arrow key to recall previous)"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("(use up arrow key to recall previous)"));
 	argcnt++;
 	label2 = XmCreateLabel(form, (String) "label2", args, argcnt);
 	XmStringFree(st1);
@@ -1419,7 +1419,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Regular Expression"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Regular Expression"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'R');
 	argcnt++;
@@ -1433,7 +1433,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Case Sensitive"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Case Sensitive"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'C');
 	argcnt++;
@@ -1447,7 +1447,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Whole Word"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Whole Word"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'h');
 	argcnt++;
@@ -1479,7 +1479,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	XmAddTabGroup(searchDirBox);
 
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Search Backward"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Search Backward"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'B');
 	argcnt++;
@@ -1488,7 +1488,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	XtManageChild(reverseBtn);
 
 	argcnt = 0;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Keep Dialog"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Keep Dialog"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'K');
 	argcnt++;
@@ -1532,7 +1532,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Find"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Find"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNshowAsDefault, (short)1);
 	argcnt++;
@@ -1560,7 +1560,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Cancel"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Cancel"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNtopAttachment, XmATTACH_FORM);
 	argcnt++;
@@ -1638,7 +1638,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_BEGINNING);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Files in which to Replace All:"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Files in which to Replace All:"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'F');
 	argcnt++;
@@ -1668,7 +1668,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNalignment, XmALIGNMENT_END);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Show Path Names"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Show Path Names"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'P');
 	argcnt++;
@@ -1710,7 +1710,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Replace"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Replace"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNshowAsDefault, (short)1);
 	argcnt++;
@@ -1752,7 +1752,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Select All"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Select All"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'S');
 	argcnt++;
@@ -1781,7 +1781,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Deselect All"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Deselect All"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'D');
 	argcnt++;
@@ -1810,7 +1810,7 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNhighlightThickness, 2);
 	argcnt++;
-	XtSetArg(args[argcnt], XmNlabelString, st1 = MKSTRING((String) "Cancel"));
+	XtSetArg(args[argcnt], XmNlabelString, st1 = XmStringCreateLtoREx("Cancel"));
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'C');
 	argcnt++;

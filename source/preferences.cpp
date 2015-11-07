@@ -43,7 +43,7 @@
 #include "windowTitle.h"
 #include "server.h"
 #include "tags.h"
-#include "MotifHelper.h"
+#include "../util/MotifHelper.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
@@ -1950,14 +1950,14 @@ void RowColumnPrefDialog(Widget parent) {
 
 	form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
 
-	topLabel = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "Enter desired size in rows\nand columns of characters:"), nullptr);
+	topLabel = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Enter desired size in rows\nand columns of characters:"), nullptr);
 	XmStringFree(s1);
 
 	RowText = XtVaCreateManagedWidget("rows", xmTextWidgetClass, form, XmNcolumns, 3, XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION, XmNtopWidget, topLabel, XmNleftPosition,
 	                                  5, XmNrightPosition, 45, nullptr);
 	RemapDeleteKey(RowText);
 
-	XtVaCreateManagedWidget("xLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "x"), XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION,
+	XtVaCreateManagedWidget("xLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("x"), XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION,
 	                        XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNtopWidget, topLabel, XmNbottomWidget, RowText, XmNleftPosition, 45, XmNrightPosition, 55, nullptr);
 	XmStringFree(s1);
 
@@ -2420,7 +2420,7 @@ void EditLanguageModes(void) {
 	XtAddCallback(form, XmNdestroyCallback, lmDestroyCB, nullptr);
 	AddMotifCloseCallback(LMDialog.shell, lmCloseCB, nullptr);
 
-	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "To modify the properties of an existing language mode, select the name from\n\
+	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("To modify the properties of an existing language mode, select the name from\n\
 the list on the left.  To add a new language, select \"New\" from the list."),
 	                                 XmNmnemonic, 'N', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LEFT_MARGIN_POS, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition,
 	                                 RIGHT_MARGIN_POS, nullptr);
@@ -2444,7 +2444,7 @@ the list on the left.  To add a new language, select \"New\" from the list."),
 	RemapDeleteKey(LMDialog.extW);
 	XtVaSetValues(extLbl, XmNuserData, LMDialog.extW, nullptr);
 
-	recogLbl = XtVaCreateManagedWidget("recogLbl", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "Recognition regular expression (applied to first 200\n\
+	recogLbl = XtVaCreateManagedWidget("recogLbl", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Recognition regular expression (applied to first 200\n\
 characters of file to determine type from content)"),
 	                                   XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'R', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNtopAttachment, XmATTACH_WIDGET, XmNtopOffset, H_MARGIN, XmNtopWidget,
 	                                   LMDialog.extW, nullptr);
@@ -2455,7 +2455,7 @@ characters of file to determine type from content)"),
 	RemapDeleteKey(LMDialog.recogW);
 	XtVaSetValues(recogLbl, XmNuserData, LMDialog.recogW, nullptr);
 
-	defTipsLbl = XtVaCreateManagedWidget("defTipsLbl", xmLabelGadgetClass, form, XmNlabelString, s1 = MKSTRING((String) "Default calltips file(s) (separate w/colons)"), XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'c',
+	defTipsLbl = XtVaCreateManagedWidget("defTipsLbl", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Default calltips file(s) (separate w/colons)"), XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'c',
 	                                     XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNtopAttachment, XmATTACH_WIDGET, XmNtopOffset, H_MARGIN, XmNtopWidget, LMDialog.recogW, nullptr);
 	XmStringFree(s1);
 
@@ -5208,7 +5208,7 @@ void ChooseColors(WindowInfo *window) {
 
 	/* Information label */
 	infoLbl = XtVaCreateManagedWidget("infoLbl", xmLabelGadgetClass, form, XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment, XmATTACH_POSITION,
-	                                  XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoR((String) "Colors can be entered as names (e.g. red, blue) or "
+	                                  XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("Colors can be entered as names (e.g. red, blue) or "
 	                                                                                                                                           "as RGB triples\nin the format #RRGGBB, where each digit "
 	                                                                                                                                           "is in the range 0-f.",
 	                                                                                                                                  XmFONTLIST_DEFAULT_TAG),
@@ -5230,7 +5230,7 @@ void ChooseColors(WindowInfo *window) {
 	tmpW = addColorGroup(form, "cursorFg", 'C', "Cursor Color", &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 51, 99, cursorFgModifiedCB, cd);
 
 	tmpW = XtVaCreateManagedWidget("infoLbl", xmLabelGadgetClass, form, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, tmpW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment,
-	                               XmATTACH_POSITION, XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoR((String) "NOTE: Foreground colors only apply when syntax highlighting "
+	                               XmATTACH_POSITION, XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("NOTE: Foreground colors only apply when syntax highlighting "
 	                                                                                                                                                           "is DISABLED.\n",
 	                                                                                                                                                  XmFONTLIST_DEFAULT_TAG),
 	                               nullptr);

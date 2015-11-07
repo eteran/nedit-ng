@@ -38,6 +38,7 @@
 #include "interpret.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "../util/MotifHelper.h"
 #include "menu.h"
 
 #include <algorithm>
@@ -1059,7 +1060,7 @@ static void createOutputDialog(Widget parent, char *text) {
 	form = CreateFormDialog(parent, (String) "shellOutForm", al, ac);
 
 	ac = 0;
-	XtSetArg(al[ac], XmNlabelString, st1 = MKSTRING((String) "OK"));
+	XtSetArg(al[ac], XmNlabelString, st1 = XmStringCreateLtoREx("OK"));
 	ac++;
 	XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN);
 	ac++;

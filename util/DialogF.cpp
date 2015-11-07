@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "DialogF.h"
+#include "MotifHelper.h"
 #include "misc.h"
 
 #include <cstdio>
@@ -183,7 +184,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		df.apply_up = 0;                                /* Apply button will not be managed */
 	for (argcount = 0; argcount < (int)n; ++argcount) { /* Set up button labels */
 		but_lbl = va_arg(var, char *);
-		but_lbl_xms[num_but_lbls] = XmStringCreateLtoR(but_lbl, XmSTRING_DEFAULT_CHARSET);
+		but_lbl_xms[num_but_lbls] = XmStringCreateLtoREx(but_lbl, XmSTRING_DEFAULT_CHARSET);
 		but_index = df.apply_up ? argcount : ((argcount == 0) ? argcount : argcount + 1);
 		XtSetArg(args[argcount], button_name[but_index], but_lbl_xms[num_but_lbls++]);
 		if (!strcmp(but_lbl, "Cancel") || !strcmp(but_lbl, "Dismiss"))
@@ -207,8 +208,8 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 	strncpy(&titleCopy[0], title, MAX_TITLE_LEN);
 	titleCopy[MAX_TITLE_LEN - 1] = '\0';
 
-	msgstr_xms = XmStringCreateLtoR(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
-	titstr_xms = XmStringCreateLtoR(titleCopy, XmSTRING_DEFAULT_CHARSET);
+	msgstr_xms = XmStringCreateLtoREx(msgstr_vsp, XmSTRING_DEFAULT_CHARSET);
+	titstr_xms = XmStringCreateLtoREx(titleCopy, XmSTRING_DEFAULT_CHARSET);
 
 	if (prompt) { /* Prompt dialog */
 		XtSetArg(args[argcount], XmNselectionLabelString, msgstr_xms);

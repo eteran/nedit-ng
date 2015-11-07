@@ -2605,7 +2605,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, " ");
 	ac++;
-	XtSetArg(al[ac], XmNmessageString, s1 = MKSTRING(message));
+	XtSetArg(al[ac], XmNmessageString, s1 = XmStringCreateLtoREx(message));
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
@@ -2754,7 +2754,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, " ");
 	ac++;
-	XtSetArg(al[ac], XmNselectionLabelString, s1 = MKSTRING(message));
+	XtSetArg(al[ac], XmNselectionLabelString, s1 = XmStringCreateLtoREx(message));
 	ac++;
 	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
 	ac++;
@@ -3268,7 +3268,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 				}
 				*t = '\0';
 				/* that's it: tmp is the tab-expanded version of old_p */
-				test_strings[n] = MKSTRING(tmp);
+				test_strings[n] = XmStringCreateLtoREx(tmp);
 				n++;
 			}
 			old_p = p + 1;
@@ -3281,7 +3281,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	free(tmp); /* don't need this anymore */
 	nlines = n;
 	if (nlines == 0) {
-		test_strings[0] = MKSTRING((String) "");
+		test_strings[0] = XmStringCreateLtoREx("");
 		nlines = 1;
 	}
 
@@ -3289,7 +3289,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, " ");
 	ac++;
-	XtSetArg(al[ac], XmNlistLabelString, s1 = MKSTRING(message));
+	XtSetArg(al[ac], XmNlistLabelString, s1 = XmStringCreateLtoREx(message));
 	ac++;
 	XtSetArg(al[ac], XmNlistItems, test_strings);
 	ac++;
