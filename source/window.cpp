@@ -182,13 +182,21 @@ static void cancelTimeOut(XtIntervalId *timer);
 /* From Xt, Shell.c, "BIGSIZE" */
 static const Dimension XT_IGNORE_PPOSITION = 32767;
 
+
 /*
 ** Create a new editor window
 */
-WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
-	Widget winShell, mainWin, menuBar, pane, text, stats, statsAreaForm;
-	Widget closeTabBtn, tabForm;
-	WindowInfo *window;
+WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
+	
+	Widget winShell;
+	Widget mainWin;
+	Widget menuBar;
+	Widget pane;
+	Widget text;
+	Widget stats;
+	Widget statsAreaForm;
+	Widget closeTabBtn;
+	Widget tabForm;
 	Pixel bgpix, fgpix;
 	Arg al[20];
 	int ac;
@@ -203,104 +211,101 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	static Pixmap isrcClear = 0;
 	static Pixmap closeTabPixmap = 0;
 
-	/* Allocate some memory for the new window data structure */
-	window = new WindowInfo;
-
 	/* initialize window structure */
 	/* + Schwarzenberg: should a
 	  memset(window, 0, sizeof(WindowInfo));
 	     be added here ?
 	*/
-	window->replaceDlog = nullptr;
-	window->replaceText = nullptr;
-	window->replaceWithText = nullptr;
-	window->replaceWordToggle = nullptr;
-	window->replaceCaseToggle = nullptr;
-	window->replaceRegexToggle = nullptr;
-	window->findDlog = nullptr;
-	window->findText = nullptr;
-	window->findWordToggle = nullptr;
-	window->findCaseToggle = nullptr;
-	window->findRegexToggle = nullptr;
-	window->replaceMultiFileDlog = nullptr;
-	window->replaceMultiFilePathBtn = nullptr;
-	window->replaceMultiFileList = nullptr;
-	window->multiFileReplSelected = FALSE;
-	window->multiFileBusy = FALSE;
-	window->writableWindows = nullptr;
-	window->nWritableWindows = 0;
-	window->fileChanged = FALSE;
-	window->fileMode = 0;
-	window->fileUid = 0;
-	window->fileGid = 0;
-	window->filenameSet = FALSE;
-	window->fileFormat = UNIX_FILE_FORMAT;
-	window->lastModTime = 0;
-	window->fileMissing = True;
-	strcpy(window->filename, name);
-	window->undo = std::list<UndoInfo *>();
-	window->redo = std::list<UndoInfo *>();
-	window->nPanes = 0;
-	window->autoSaveCharCount = 0;
-	window->autoSaveOpCount = 0;
-	window->undoMemUsed = 0;
-	CLEAR_ALL_LOCKS(window->lockReasons);
-	window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	window->autoSave = GetPrefAutoSave();
-	window->saveOldVersion = GetPrefSaveOldVersion();
-	window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	window->overstrike = False;
-	window->showMatchingStyle = GetPrefShowMatching();
-	window->matchSyntaxBased = GetPrefMatchSyntaxBased();
-	window->showStats = GetPrefStatsLine();
-	window->showISearchLine = GetPrefISearchLine();
-	window->showLineNumbers = GetPrefLineNums();
-	window->highlightSyntax = GetPrefHighlightSyntax();
-	window->backlightCharTypes = nullptr;
-	window->backlightChars = GetPrefBacklightChars();
-	if (window->backlightChars) {
+	this->replaceDlog = nullptr;
+	this->replaceText = nullptr;
+	this->replaceWithText = nullptr;
+	this->replaceWordToggle = nullptr;
+	this->replaceCaseToggle = nullptr;
+	this->replaceRegexToggle = nullptr;
+	this->findDlog = nullptr;
+	this->findText = nullptr;
+	this->findWordToggle = nullptr;
+	this->findCaseToggle = nullptr;
+	this->findRegexToggle = nullptr;
+	this->replaceMultiFileDlog = nullptr;
+	this->replaceMultiFilePathBtn = nullptr;
+	this->replaceMultiFileList = nullptr;
+	this->multiFileReplSelected = FALSE;
+	this->multiFileBusy = FALSE;
+	this->writableWindows = nullptr;
+	this->nWritableWindows = 0;
+	this->fileChanged = FALSE;
+	this->fileMode = 0;
+	this->fileUid = 0;
+	this->fileGid = 0;
+	this->filenameSet = FALSE;
+	this->fileFormat = UNIX_FILE_FORMAT;
+	this->lastModTime = 0;
+	this->fileMissing = True;
+	strcpy(this->filename, name);
+	this->undo = std::list<UndoInfo *>();
+	this->redo = std::list<UndoInfo *>();
+	this->nPanes = 0;
+	this->autoSaveCharCount = 0;
+	this->autoSaveOpCount = 0;
+	this->undoMemUsed = 0;
+	CLEAR_ALL_LOCKS(this->lockReasons);
+	this->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+	this->autoSave = GetPrefAutoSave();
+	this->saveOldVersion = GetPrefSaveOldVersion();
+	this->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
+	this->overstrike = False;
+	this->showMatchingStyle = GetPrefShowMatching();
+	this->matchSyntaxBased = GetPrefMatchSyntaxBased();
+	this->showStats = GetPrefStatsLine();
+	this->showISearchLine = GetPrefISearchLine();
+	this->showLineNumbers = GetPrefLineNums();
+	this->highlightSyntax = GetPrefHighlightSyntax();
+	this->backlightCharTypes = nullptr;
+	this->backlightChars = GetPrefBacklightChars();
+	if (this->backlightChars) {
 		char *cTypes = GetPrefBacklightCharTypes();
-		if (cTypes && window->backlightChars) {
-			if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
-				strcpy(window->backlightCharTypes, cTypes);
+		if (cTypes && this->backlightChars) {
+			if ((this->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
+				strcpy(this->backlightCharTypes, cTypes);
 		}
 	}
-	window->modeMessageDisplayed = FALSE;
-	window->modeMessage = nullptr;
-	window->ignoreModify = FALSE;
-	window->windowMenuValid = FALSE;
-	window->flashTimeoutID = 0;
-	window->fileClosedAtom = None;
-	window->wasSelected = FALSE;
+	this->modeMessageDisplayed = FALSE;
+	this->modeMessage = nullptr;
+	this->ignoreModify = FALSE;
+	this->windowMenuValid = FALSE;
+	this->flashTimeoutID = 0;
+	this->fileClosedAtom = None;
+	this->wasSelected = FALSE;
 
-	strcpy(window->fontName, GetPrefFontName());
-	strcpy(window->italicFontName, GetPrefItalicFontName());
-	strcpy(window->boldFontName, GetPrefBoldFontName());
-	strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
-	window->colorDialog = nullptr;
-	window->fontList = GetPrefFontList();
-	window->italicFontStruct = GetPrefItalicFont();
-	window->boldFontStruct = GetPrefBoldFont();
-	window->boldItalicFontStruct = GetPrefBoldItalicFont();
-	window->fontDialog = nullptr;
-	window->nMarks = 0;
-	window->markTimeoutID = 0;
-	window->highlightData = nullptr;
-	window->shellCmdData = nullptr;
-	window->macroCmdData = nullptr;
-	window->smartIndentData = nullptr;
-	window->languageMode = PLAIN_LANGUAGE_MODE;
-	window->iSearchHistIndex = 0;
-	window->iSearchStartPos = -1;
-	window->replaceLastRegexCase = TRUE;
-	window->replaceLastLiteralCase = FALSE;
-	window->iSearchLastRegexCase = TRUE;
-	window->iSearchLastLiteralCase = FALSE;
-	window->findLastRegexCase = TRUE;
-	window->findLastLiteralCase = FALSE;
-	window->tab = nullptr;
-	window->device = 0;
-	window->inode = 0;
+	strcpy(this->fontName, GetPrefFontName());
+	strcpy(this->italicFontName, GetPrefItalicFontName());
+	strcpy(this->boldFontName, GetPrefBoldFontName());
+	strcpy(this->boldItalicFontName, GetPrefBoldItalicFontName());
+	this->colorDialog = nullptr;
+	this->fontList = GetPrefFontList();
+	this->italicFontStruct = GetPrefItalicFont();
+	this->boldFontStruct = GetPrefBoldFont();
+	this->boldItalicFontStruct = GetPrefBoldItalicFont();
+	this->fontDialog = nullptr;
+	this->nMarks = 0;
+	this->markTimeoutID = 0;
+	this->highlightData = nullptr;
+	this->shellCmdData = nullptr;
+	this->macroCmdData = nullptr;
+	this->smartIndentData = nullptr;
+	this->languageMode = PLAIN_LANGUAGE_MODE;
+	this->iSearchHistIndex = 0;
+	this->iSearchStartPos = -1;
+	this->replaceLastRegexCase = TRUE;
+	this->replaceLastLiteralCase = FALSE;
+	this->iSearchLastRegexCase = TRUE;
+	this->iSearchLastLiteralCase = FALSE;
+	this->findLastRegexCase = TRUE;
+	this->findLastLiteralCase = FALSE;
+	this->tab = nullptr;
+	this->device = 0;
+	this->inode = 0;
 
 	/* If window geometry was specified, split it apart into a window position
 	   component and a window size component.  Create a new geometry string
@@ -363,7 +368,7 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	}
 
 	winShell = CreateWidget(TheAppShell, "textShell", topLevelShellWidgetClass, al, ac);
-	window->shell = winShell;
+	this->shell = winShell;
 
 #ifdef EDITRES
 	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
@@ -374,10 +379,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	/* Create a MainWindow to manage the menubar and text area, set the
 	   userData resource to be used by WidgetToWindow to recover the
 	   window pointer from the widget id of any of the window's widgets */
-	XtSetArg(al[ac], XmNuserData, window);
+	XtSetArg(al[ac], XmNuserData, this);
 	ac++;
 	mainWin = XmCreateMainWindow(winShell, (String) "main", al, ac);
-	window->mainWin = mainWin;
+	this->mainWin = mainWin;
 	XtManageChild(mainWin);
 
 	/* The statsAreaForm holds the stats line and the I-Search line. */
@@ -395,10 +400,10 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	   the i-search bar, while keeping the the top offset of the text widget
 	   to 0 seems to avoid avoid the crash. */
 
-	window->iSearchForm = XtVaCreateWidget("iSearchForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset,
+	this->iSearchForm = XtVaCreateWidget("iSearchForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset,
 	                                       STAT_SHADOW_THICKNESS, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, STAT_SHADOW_THICKNESS, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-	if (window->showISearchLine)
-		XtManageChild(window->iSearchForm);
+	if (this->showISearchLine)
+		XtManageChild(this->iSearchForm);
 
 	/* Disable keyboard traversal of the find, clear and toggle buttons.  We
 	   were doing this previously by forcing the keyboard focus back to the
@@ -408,47 +413,47 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	   can be enabled without too much pain and suffering. */
 
 	if (isrcFind == 0) {
-		isrcFind = createBitmapWithDepth(window->iSearchForm, (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
+		isrcFind = createBitmapWithDepth(this->iSearchForm, (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
 	}
-	window->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, window->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
+	this->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
 	                                                    XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
 	                                                    /* XmNleftOffset, 3, */
 	                                                    XmNleftOffset, 0, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
 
-	window->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, window->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
+	this->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
 	                                                    GetPrefSearch() == SEARCH_CASE_SENSE || GetPrefSearch() == SEARCH_REGEX || GetPrefSearch() == SEARCH_CASE_SENSE_WORD, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment,
 	                                                    XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
 	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
-	window->iSearchRegexToggle =
-	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, window->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
+	this->iSearchRegexToggle =
+	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
 	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
-	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, window->iSearchCaseToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
+	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchCaseToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
-	window->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, window->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, False, XmNtopAttachment, XmATTACH_FORM,
+	this->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, False, XmNtopAttachment, XmATTACH_FORM,
 	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
-	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, window->iSearchRegexToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
+	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchRegexToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
 	if (isrcClear == 0) {
-		isrcClear = createBitmapWithDepth(window->iSearchForm, (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
+		isrcClear = createBitmapWithDepth(this->iSearchForm, (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
 	}
-	window->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, window->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("<x"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
-	                                                     XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, window->iSearchRevToggle, XmNrightOffset, 2, XmNtopAttachment,
+	this->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("<x"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
+	                                                     XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchRevToggle, XmNrightOffset, 2, XmNtopAttachment,
 	                                                     XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
 
-	window->iSearchText = XtVaCreateManagedWidget("iSearchText", xmTextWidgetClass, window->iSearchForm, XmNmarginHeight, 1, XmNnavigationType, XmEXCLUSIVE_TAB_GROUP, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget,
-	                                              window->iSearchFindButton, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, window->iSearchClearButton,
+	this->iSearchText = XtVaCreateManagedWidget("iSearchText", xmTextWidgetClass, this->iSearchForm, XmNmarginHeight, 1, XmNnavigationType, XmEXCLUSIVE_TAB_GROUP, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget,
+	                                              this->iSearchFindButton, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchClearButton,
 	                                              /* XmNrightOffset, 5, */
 	                                              XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 0, /* see openmotif note above */
 	                                              XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, nullptr);
-	RemapDeleteKey(window->iSearchText);
+	RemapDeleteKey(this->iSearchText);
 
-	SetISearchTextCallbacks(window);
+	SetISearchTextCallbacks(this);
 
 	/* create the a form to house the tab bar and close-tab button */
 	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, False, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
@@ -463,30 +468,30 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	XtAddCallback(closeTabBtn, XmNactivateCallback, (XtCallbackProc)closeTabCB, mainWin);
 
 	/* create the tab bar */
-	window->tabBar = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
+	this->tabBar = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
 	                                         XmNrightOffset, 5, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, XmNtopAttachment, XmATTACH_FORM, nullptr);
 
-	window->tabMenuPane = CreateTabContextMenu(window->tabBar, window);
-	AddTabContextMenuAction(window->tabBar);
+	this->tabMenuPane = CreateTabContextMenu(this->tabBar, this);
+	AddTabContextMenuAction(this->tabBar);
 
 	/* create an unmanaged composite widget to get the folder
 	   widget to hide the 3D shadow for the manager area.
 	   Note: this works only on the patched XmLFolder widget */
-	Widget form = XtVaCreateWidget("form", xmFormWidgetClass, window->tabBar, XmNheight, 1, XmNresizable, False, nullptr);
+	Widget form = XtVaCreateWidget("form", xmFormWidgetClass, this->tabBar, XmNheight, 1, XmNresizable, False, nullptr);
 
 	(void)form;
 
-	XtAddCallback(window->tabBar, XmNactivateCallback, raiseTabCB, nullptr);
+	XtAddCallback(this->tabBar, XmNactivateCallback, raiseTabCB, nullptr);
 
-	window->tab = addTab(window->tabBar, name);
+	this->tab = addTab(this->tabBar, name);
 
 	/* A form to hold the stats line text and line/col widgets */
-	window->statsLineForm = XtVaCreateWidget("statsLineForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNtopAttachment, window->showISearchLine ? XmATTACH_WIDGET : XmATTACH_FORM, XmNtopWidget, window->iSearchForm,
+	this->statsLineForm = XtVaCreateWidget("statsLineForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNtopAttachment, this->showISearchLine ? XmATTACH_WIDGET : XmATTACH_FORM, XmNtopWidget, this->iSearchForm,
 	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, False, /*  */
 	                                         nullptr);
 
 	/* A separate display of the line/column number */
-	window->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, window->statsLineForm, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
+	this->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, this->statsLineForm, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
 	                                                 False, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, /*  */
 	                                                 nullptr);
 	XmStringFree(s1);
@@ -498,100 +503,100 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	   file names and line numbers.  Colors are copied from parent
 	   widget, because many users and some system defaults color text
 	   backgrounds differently from other widgets. */
-	XtVaGetValues(window->statsLineForm, XmNbackground, &bgpix, nullptr);
-	XtVaGetValues(window->statsLineForm, XmNforeground, &fgpix, nullptr);
-	stats = XtVaCreateManagedWidget("statsLine", xmTextWidgetClass, window->statsLineForm, XmNbackground, bgpix, XmNforeground, fgpix, XmNshadowThickness, 0, XmNhighlightColor, bgpix, XmNhighlightThickness,
+	XtVaGetValues(this->statsLineForm, XmNbackground, &bgpix, nullptr);
+	XtVaGetValues(this->statsLineForm, XmNforeground, &fgpix, nullptr);
+	stats = XtVaCreateManagedWidget("statsLine", xmTextWidgetClass, this->statsLineForm, XmNbackground, bgpix, XmNforeground, fgpix, XmNshadowThickness, 0, XmNhighlightColor, bgpix, XmNhighlightThickness,
 	                                0,                  /* must be zero, for OM (2.1.30) to
 	                                                   aligns tatsLineColNo & statsLine */
 	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1,
 	                                                   to align with statsLineColNo */
 	                                XmNscrollHorizontal, False, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, False, XmNtraversalOn, False, XmNcursorPositionVisible, False, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                /*  */
-	                                XmNtopWidget, window->statsLineColNo, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, window->statsLineColNo, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
-	                                XmNbottomWidget, window->statsLineColNo, XmNrightOffset, 3, nullptr);
-	window->statsLine = stats;
+	                                XmNtopWidget, this->statsLineColNo, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->statsLineColNo, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
+	                                XmNbottomWidget, this->statsLineColNo, XmNrightOffset, 3, nullptr);
+	this->statsLine = stats;
 
 	/* Give the statsLine the same font as the statsLineColNo */
-	XtVaGetValues(window->statsLineColNo, XmNfontList, &statsFontList, nullptr);
-	XtVaSetValues(window->statsLine, XmNfontList, statsFontList, nullptr);
+	XtVaGetValues(this->statsLineColNo, XmNfontList, &statsFontList, nullptr);
+	XtVaSetValues(this->statsLine, XmNfontList, statsFontList, nullptr);
 
 	/* Manage the statsLineForm */
-	if (window->showStats)
-		XtManageChild(window->statsLineForm);
+	if (this->showStats)
+		XtManageChild(this->statsLineForm);
 
 	/* If the fontList was nullptr, use the magical default provided by Motif,
 	   since it must have worked if we've gotten this far */
-	if (window->fontList == nullptr)
-		XtVaGetValues(stats, XmNfontList, &window->fontList, nullptr);
+	if (this->fontList == nullptr)
+		XtVaGetValues(stats, XmNfontList, &this->fontList, nullptr);
 
 	/* Create the menu bar */
-	menuBar = CreateMenuBar(mainWin, window);
-	window->menuBar = menuBar;
+	menuBar = CreateMenuBar(mainWin, this);
+	this->menuBar = menuBar;
 	XtManageChild(menuBar);
 
 	/* Create paned window to manage split pane behavior */
 	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, nullptr);
-	window->splitPane = pane;
+	this->splitPane = pane;
 	XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
 
 	/* Store a copy of document/window pointer in text pane to support
 	   action procedures. See also WidgetToWindow() for info. */
-	XtVaSetValues(pane, XmNuserData, window, nullptr);
+	XtVaSetValues(pane, XmNuserData, this, nullptr);
 
 	/* Patch around Motif's most idiotic "feature", that its menu accelerators
 	   recognize Caps Lock and Num Lock as modifiers, and don't trigger if
 	   they are engaged */
-	AccelLockBugPatch(pane, window->menuBar);
+	AccelLockBugPatch(pane, this->menuBar);
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	text = createTextArea(pane, window, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), window->showLineNumbers ? MIN_LINE_NUM_COLS : 0);
+	text = createTextArea(pane, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), this->showLineNumbers ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(text);
-	window->textArea = text;
-	window->lastFocus = text;
+	this->textArea = text;
+	this->lastFocus = text;
 
 	/* Set the initial colors from the globals. */
-	SetColors(window, GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
+	SetColors(this, GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
 	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Create the right button popup menu (note: order is important here,
 	   since the translation for popping up this menu was probably already
-	   added in createTextArea, but CreateBGMenu requires window->textArea
+	   added in createTextArea, but CreateBGMenu requires this->textArea
 	   to be set so it can attach the menu to it (because menu shells are
 	   finicky about the kinds of widgets they are attached to)) */
-	window->bgMenuPane = CreateBGMenu(window);
+	this->bgMenuPane = CreateBGMenu(this);
 
 	/* cache user menus: init. user background menu cache */
-	InitUserBGMenuCache(&window->userBGMenuCache);
+	InitUserBGMenuCache(&this->userBGMenuCache);
 
 	/* Create the text buffer rather than using the one created automatically
 	   with the text area widget.  This is done so the syntax highlighting
 	   modify callback can be called to synchronize the style buffer BEFORE
 	   the text display's callback is called upon to display a modification */
-	window->buffer = new TextBuffer;
-	window->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, window);
+	this->buffer = new TextBuffer;
+	this->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, this);
 
 	/* Attach the buffer to the text widget, and add callbacks for modify */
-	TextSetBuffer(text, window->buffer);
-	window->buffer->BufAddModifyCB(modifiedCB, window);
+	TextSetBuffer(text, this->buffer);
+	this->buffer->BufAddModifyCB(modifiedCB, this);
 
 	/* Designate the permanent text area as the owner for selections */
 	HandleXSelections(text);
 
 	/* Set the requested hardware tab distance and useTabs in the text buffer */
-	window->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-	window->buffer->useTabs_ = GetPrefInsertTabs();
+	this->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+	this->buffer->useTabs_ = GetPrefInsertTabs();
 
 	/* add the window to the global window list, update the Windows menus */
-	addToWindowList(window);
+	addToWindowList(this);
 	InvalidateWindowMenus();
 
-	showTabBar = GetShowTabBar(window);
+	showTabBar = GetShowTabBar(this);
 	if (showTabBar)
 		XtManageChild(tabForm);
 
 	manageToolBars(statsAreaForm);
 
-	if (showTabBar || window->showISearchLine || window->showStats)
+	if (showTabBar || this->showISearchLine || this->showStats)
 		XtManageChild(statsAreaForm);
 
 	/* realize all of the widgets in the new window */
@@ -599,30 +604,29 @@ WindowInfo *CreateWindow(const char *name, char *geometry, int iconic) {
 	XmProcessTraversal(text, XmTRAVERSE_CURRENT);
 
 	/* Make close command in window menu gracefully prompt for close */
-	AddMotifCloseCallback(winShell, (XtCallbackProc)closeCB, window);
+	AddMotifCloseCallback(winShell, (XtCallbackProc)closeCB, this);
 
 	/* Make window resizing work in nice character heights */
-	UpdateWMSizeHints(window);
+	UpdateWMSizeHints(this);
 
 	/* Set the minimum pane height for the initial text pane */
-	UpdateMinPaneHeights(window);
+	UpdateMinPaneHeights(this);
 
 	/* create dialogs shared by all documents in a window */
-	CreateFindDlog(window->shell, window);
-	CreateReplaceDlog(window->shell, window);
-	CreateReplaceMultiFileDlog(window);
+	CreateFindDlog(this->shell, this);
+	CreateReplaceDlog(this->shell, this);
+	CreateReplaceMultiFileDlog(this);
 
 	/* dim/undim Attach_Tab menu items */
-	state = NDocuments(window) < NWindows();
+	state = NDocuments(this) < NWindows();
 	for (win = WindowList; win; win = win->next) {
 		if (IsTopDocument(win)) {
 			XtSetSensitive(win->moveDocumentItem, state);
 			XtSetSensitive(win->contextMoveDocumentItem, state);
 		}
 	}
-
-	return window;
 }
+
 
 /*
 ** ButtonPress event handler for tabs.
@@ -742,7 +746,9 @@ WindowInfo *TabToWindow(Widget tab) {
 void CloseWindow(WindowInfo *window) {
 	int keepWindow, state;
 	char name[MAXPATHLEN];
-	WindowInfo *win, *topBuf = nullptr, *nextBuf = nullptr;
+	WindowInfo *win;
+	WindowInfo *topBuf = nullptr;
+	WindowInfo *nextBuf = nullptr;
 
 	/* Free smart indent macro programs */
 	EndSmartIndent(window);
@@ -2777,14 +2783,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	int nCols, nRows;
 
 	/* Allocate some memory for the new window data structure */
-	auto window = new WindowInfo;
-
-	/* inherit settings and later reset those required */
-#if 0
-	memcpy(window, shellWindow, sizeof(WindowInfo));
-#else
-	*window = *shellWindow;
-#endif
+	auto window = new WindowInfo(*shellWindow);
 
 #if 0
     /* share these dialog items with parent shell */
@@ -3823,7 +3822,7 @@ WindowInfo *DetachDocument(WindowInfo *window) {
 	}
 
 	/* Create a new window */
-	cloneWin = CreateWindow(window->filename, nullptr, False);
+	cloneWin = new WindowInfo(window->filename, nullptr, false);
 
 	/* CreateWindow() simply adds the new window's pointer to the
 	   head of WindowList. We need to adjust the detached window's

@@ -100,7 +100,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	if (inWindow)
 		window = CreateDocument(inWindow, name);
 	else
-		window = CreateWindow(name, geometry, iconic);
+		window = new WindowInfo(name, geometry, iconic);
 
 	path = window->path;
 	strcpy(window->filename, name);
@@ -174,12 +174,12 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	   in use (not Untitled or Untitled and modified), or is currently
 	   busy running a macro; create the window */
 	if (inWindow == nullptr) {
-		window = CreateWindow(name, geometry, iconic);
+		window = new WindowInfo(name, geometry, iconic);
 	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData != nullptr) {
 		if (tabbed) {
 			window = CreateDocument(inWindow, name);
 		} else {
-			window = CreateWindow(name, geometry, iconic);
+			window = new WindowInfo(name, geometry, iconic);
 		}
 	} else {
 		/* open file in untitled document */

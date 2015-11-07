@@ -35,7 +35,6 @@
 Boolean IsTopDocument(const WindowInfo *window);
 Widget GetPaneByIndex(WindowInfo *window, int paneIndex);
 WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name);
-WindowInfo *CreateWindow(const char *title, char *geometry, int iconic);
 WindowInfo *DetachDocument(WindowInfo *window);
 WindowInfo *FindWindowWithFile(const char *name, const char *path);
 WindowInfo *GetTopDocument(Widget w);

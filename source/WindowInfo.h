@@ -2,6 +2,17 @@
 #ifndef WINDOW_INFO_H_
 #define WINDOW_INFO_H_
 
+#include "nedit.h"
+#include "preferences.h"
+#include "../util/misc.h"
+#include "../util/fileUtils.h"
+#include <X11/Intrinsic.h>
+#include <list>
+
+
+class TextBuffer;
+class UndoInfo;
+
 /* The WindowInfo structure holds the information on a Document. A number
    of 'tabbed' documents may reside within a shell window, hence some of
    its members are of 'shell-level'; namely the find/replace dialogs, the
@@ -20,7 +31,15 @@
    when tabbed mode was introduced after NEdit 5.4.
 */
 struct WindowInfo {
-	struct WindowInfo *next;
+public:
+	WindowInfo(const char *name, char *geometry, bool iconic);
+	WindowInfo(const WindowInfo &) = default;
+	WindowInfo& operator=(const WindowInfo &) = default;
+	
+public:
+	WindowInfo *next;
+
+public:
 	Widget shell;                /* application shell of window */
 	Widget mainWin;              /* main window of shell */
 	Widget splitPane;            /* paned win. for splitting text area */
@@ -228,32 +247,32 @@ struct WindowInfo {
 	                              paren highlight (if one is drawn) */
 	int wasSelected;               /* last selection state (for dim/undim
 	                          of selection related menu items */
-	Boolean filenameSet;           /* is the window still "Untitled"? */
-	Boolean fileChanged;           /* has window been modified? */
-	Boolean fileMissing;           /* is the window's file gone? */
+	bool filenameSet;           /* is the window still "Untitled"? */
+	bool fileChanged;           /* has window been modified? */
+	bool fileMissing;           /* is the window's file gone? */
 	int lockReasons;               /* all ways a file can be locked */
-	Boolean autoSave;              /* is autosave turned on? */
-	Boolean saveOldVersion;        /* keep old version in filename.bck */
+	bool autoSave;              /* is autosave turned on? */
+	bool saveOldVersion;        /* keep old version in filename.bck */
 	char indentStyle;              /* whether/how to auto indent */
 	char wrapMode;                 /* line wrap style: NO_WRAP,
 	                                              NEWLINE_WRAP or CONTINUOUS_WRAP */
-	Boolean overstrike;            /* is overstrike mode turned on ? */
+	bool overstrike;            /* is overstrike mode turned on ? */
 	char showMatchingStyle;        /* How to show matching parens:
 	                      NO_FLASH, FLASH_DELIMIT, or
 	                      FLASH_RANGE */
 	char matchSyntaxBased;         /* Use syntax info to show matching */
-	Boolean showStats;             /* is stats line supposed to be shown */
-	Boolean showISearchLine;       /* is incr. search line to be shown */
-	Boolean showLineNumbers;       /* is the line number display shown */
-	Boolean highlightSyntax;       /* is syntax highlighting turned on? */
-	Boolean backlightChars;        /* is char backlighting turned on? */
+	bool showStats;             /* is stats line supposed to be shown */
+	bool showISearchLine;       /* is incr. search line to be shown */
+	bool showLineNumbers;       /* is the line number display shown */
+	bool highlightSyntax;       /* is syntax highlighting turned on? */
+	bool backlightChars;        /* is char backlighting turned on? */
 	char *backlightCharTypes;      /* what backlighting to use */
-	Boolean modeMessageDisplayed;  /* special stats line banner for learn
+	bool modeMessageDisplayed;  /* special stats line banner for learn
 	                      and shell command executing modes */
 	char *modeMessage;             /* stats line banner content for learn
 	                          and shell command executing modes */
-	Boolean ignoreModify;          /* ignore modifications to text area */
-	Boolean windowMenuValid;       /* is window menu up to date? */
+	bool ignoreModify;          /* ignore modifications to text area */
+	bool windowMenuValid;       /* is window menu up to date? */
 	int rHistIndex, fHistIndex;    /* history placeholders for */
 	int iSearchHistIndex;          /*   find and replace dialogs */
 	int iSearchStartPos;           /* start pos. of current incr. search */
@@ -269,7 +288,7 @@ struct WindowInfo {
 	Atom fileClosedAtom;           /* Atom used to tell nc that the file is closed */
 	int languageMode;              /* identifies language mode currently
 	                                      selected in the window */
-	Boolean multiFileReplSelected; /* selected during last multi-window
+	bool multiFileReplSelected; /* selected during last multi-window
 	                  replacement operation (history) */
 	struct WindowInfo **           /* temporary list of writable windows */
 	    writableWindows;           /* used during multi-file replacements */
@@ -294,9 +313,7 @@ struct WindowInfo {
 	Widget replaceScopeMultiToggle; /* Scope for replace = multiple files */
 #endif
 	UserMenuCache *userMenuCache;    /* cache user menus: */
-	UserBGMenuCache userBGMenuCache; /* shell & macro menu are shared over all
-	                                    "tabbed" documents, while each document
-	                                    has its own background menu. */
+	UserBGMenuCache userBGMenuCache; /* shell & macro menu are shared over all "tabbed" documents, while each document has its own background menu. */
 };
 
 #endif
