@@ -40,7 +40,11 @@ inline void XmTextSetStringEx(Widget widget, const char *value) {
 
 //------------------------------------------------------------------------------
 inline String XtNewStringEx(const std::string &string) {
-	return XtNewString((String)string.c_str());
+	return XtNewString(const_cast<char *>(string.c_str()));
+}
+
+inline String XtNewStringEx(const char *string) {
+	return XtNewString(const_cast<char *>(string));
 }
 
 #endif

@@ -91,7 +91,7 @@ static Widget shellOfWidget(Widget w);
 **
 ** See ManageListAndButtons for a description of the remaining arguments.
 */
-Widget CreateManagedList(Widget parent, char *name, Arg *args, int argC, void **itemList, int *nItems, int maxItems, int nColumns, void *(*getDialogDataCB)(void *, int, int *, void *), void *getDialogDataArg,
+Widget CreateManagedList(Widget parent, const char *name, Arg *args, int argC, void **itemList, int *nItems, int maxItems, int nColumns, void *(*getDialogDataCB)(void *, int, int *, void *), void *getDialogDataArg,
                          void (*setDialogDataCB)(void *, void *), void *setDialogDataArg, void (*freeItemCB)(void *)) {
 	int ac;
 	Arg al[20];
@@ -101,7 +101,7 @@ Widget CreateManagedList(Widget parent, char *name, Arg *args, int argC, void **
 	XmString *placeholderTable;
 	char *placeholderStr;
 
-	form = XmCreateForm(parent, name, args, argC);
+	form = XmCreateForm(parent, const_cast<char *>(name), args, argC);
 	XtManageChild(form);
 	rowCol = XtVaCreateManagedWidget("mlRowCol", xmRowColumnWidgetClass, form, XmNpacking, XmPACK_COLUMN, XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, nullptr);
 	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Delete"), nullptr);

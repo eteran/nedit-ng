@@ -28,6 +28,7 @@
 
 #include "misc.h"
 #include "DialogF.h"
+#include "MotifHelper.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -1227,7 +1228,7 @@ void AddToHistoryList(char *newItem, char ***historyList, int *nItems) {
 	if (*nItems != 0 && *historyList != nullptr)
 		XtFree((char *)*historyList);
 	(*nItems)++;
-	newList[0] = XtNewString(newItem);
+	newList[0] = XtNewStringEx(newItem);
 	*historyList = newList;
 }
 

@@ -363,7 +363,7 @@ void EditShellMenu(WindowInfo *window) {
 	ac++;
 	XtSetArg(args[ac], XmNbottomPosition, SHELL_CMD_TOP);
 	ac++;
-	ucd->managedList = CreateManagedList(form, (String) "list", args, ac, (void **)ucd->menuItemsList, &ucd->nMenuItems, MAX_ITEMS_PER_MENU, 20, getDialogDataCB, ucd, setDialogDataCB, ucd, freeItemCB);
+	ucd->managedList = CreateManagedList(form, "list", args, ac, (void **)ucd->menuItemsList, &ucd->nMenuItems, MAX_ITEMS_PER_MENU, 20, getDialogDataCB, ucd, setDialogDataCB, ucd, freeItemCB);
 
 	ucd->loadAfterBtn = XtVaCreateManagedWidget("loadAfterBtn", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Re-load file after executing command"), XmNmnemonic, 'R', XmNalignment, XmALIGNMENT_BEGINNING, XmNset,
 	                                            False, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, XmNbottomAttachment, XmATTACH_POSITION,
@@ -596,7 +596,7 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
 	ac++;
 	XtSetArg(args[ac], XmNbottomPosition, MACRO_CMD_TOP);
 	ac++;
-	ucd->managedList = CreateManagedList(form, (String) "list", args, ac, (void **)ucd->menuItemsList, &ucd->nMenuItems, MAX_ITEMS_PER_MENU, 20, getDialogDataCB, ucd, setDialogDataCB, ucd, freeItemCB);
+	ucd->managedList = CreateManagedList(form, "list", args, ac, (void **)ucd->menuItemsList, &ucd->nMenuItems, MAX_ITEMS_PER_MENU, 20, getDialogDataCB, ucd, setDialogDataCB, ucd, freeItemCB);
 
 	ucd->selInpBtn = XtVaCreateManagedWidget("selInpBtn", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Requires Selection"), XmNmnemonic, 'R', XmNalignment, XmALIGNMENT_BEGINNING, XmNmarginHeight, 0, XmNset,
 	                                         False, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, MACRO_CMD_TOP, nullptr);
@@ -1479,7 +1479,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 					window->bgMenuRedoItem = btn;
 				/* generate accelerator keys */
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
-				accKeys = item->keysym == NoSymbol ? nullptr : XtNewString(accKeysBuf);
+				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
 				/* create corresponding menu list item */
 				menuList->umlItems[menuList->umlNbrItems++] = allocUserMenuListElement(btn, accKeys);
 				break;
@@ -2917,7 +2917,7 @@ static char *stripLanguageMode(const char *menuItemName) {
 
 	firstAtPtr = strchr(menuItemName, '@');
 	if (firstAtPtr == nullptr)
-		return XtNewString(menuItemName);
+		return XtNewStringEx(menuItemName);
 	else
 		return copySubstring(menuItemName, firstAtPtr - menuItemName);
 }

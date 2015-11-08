@@ -487,7 +487,7 @@ void EditSmartIndentMacros(WindowInfo *window) {
 
 	/* Decide on an initial language mode */
 	lmName = LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode);
-	SmartIndentDialog.langModeName = XtNewString(lmName);
+	SmartIndentDialog.langModeName = XtNewStringEx(lmName);
 
 	/* Create a form widget in an application shell */
 	n = 0;
@@ -737,7 +737,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	freeIndentSpec(newMacros);
 
 	/* Fill the dialog with the new language mode information */
-	SmartIndentDialog.langModeName = XtNewString(modeName);
+	SmartIndentDialog.langModeName = XtNewStringEx(modeName);
 	setSmartIndentDialogData(findIndentSpec(modeName));
 }
 
@@ -942,7 +942,7 @@ static smartIndentRec *getSmartIndentDialogData(void) {
 	smartIndentRec *is;
 
 	is = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-	is->lmName = XtNewString(SmartIndentDialog.langModeName);
+	is->lmName = XtNewStringEx(SmartIndentDialog.langModeName);
 	is->initMacro = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
 	is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
 	is->modMacro = TextWidgetIsBlank(SmartIndentDialog.modMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
@@ -1125,7 +1125,7 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* replace common macros with default */
 	XtFree(CommonMacros);
-	CommonMacros = XtNewString(DefaultCommonMacros);
+	CommonMacros = XtNewStringEx(DefaultCommonMacros);
 
 	/* Update the dialog */
 	XmTextSetStringEx(CommonDialog.text, CommonMacros);
@@ -1353,7 +1353,7 @@ int LoadSmartIndentCommonString(char *inString) {
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
 	if (!strncmp(inPtr, "Default", 7)) {
-		CommonMacros = XtNewString(DefaultCommonMacros);
+		CommonMacros = XtNewStringEx(DefaultCommonMacros);
 		return True;
 	}
 
@@ -1397,10 +1397,10 @@ static char *readSIMacro(const char **inPtr) {
 
 static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
 	smartIndentRec *ris = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-	ris->lmName = XtNewString(is->lmName);
-	ris->initMacro = XtNewString(is->initMacro);
-	ris->newlineMacro = XtNewString(is->newlineMacro);
-	ris->modMacro = XtNewString(is->modMacro);
+	ris->lmName = XtNewStringEx(is->lmName);
+	ris->initMacro = XtNewStringEx(is->initMacro);
+	ris->newlineMacro = XtNewStringEx(is->newlineMacro);
+	ris->modMacro = XtNewStringEx(is->modMacro);
 	return ris;
 }
 
@@ -1455,9 +1455,9 @@ char *WriteSmartIndentCommonString(void) {
 	char *outStr, *escapedStr;
 
 	if (!strcmp(CommonMacros, DefaultCommonMacros))
-		return XtNewString("Default");
+		return XtNewStringEx("Default");
 	if (CommonMacros == nullptr)
-		return XtNewString("");
+		return XtNewStringEx("");
 
 	/* Shift the macro over by a tab to keep .nedit file bright and clean */
 	outStr = ShiftText(CommonMacros, SHIFT_RIGHT, True, 8, 8, &len);
@@ -1559,13 +1559,13 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 	for (i = 0; i < NSmartIndentSpecs; i++) {
 		if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
 			XtFree((char *)SmartIndentSpecs[i]->lmName);
-			SmartIndentSpecs[i]->lmName = XtNewString(newName);
+			SmartIndentSpecs[i]->lmName = XtNewStringEx(newName);
 		}
 	}
 	if (SmartIndentDialog.shell != nullptr) {
 		if (!strcmp(SmartIndentDialog.langModeName, oldName)) {
 			XtFree(SmartIndentDialog.langModeName);
-			SmartIndentDialog.langModeName = XtNewString(newName);
+			SmartIndentDialog.langModeName = XtNewStringEx(newName);
 		}
 	}
 }

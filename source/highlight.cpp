@@ -40,6 +40,7 @@
 #include "window.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
+#include "../util/MotifHelper.h"
 
 #include <cstdio>
 #include <climits>
@@ -1883,7 +1884,7 @@ static regexp *compileREAndWarn(Widget parent, const char *re) {
 
 	compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
 	if (compiledRE == nullptr) {
-		char *boundedRe = XtNewString(re);
+		char *boundedRe = XtNewStringEx(re);
 		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
 
 		/* Prevent buffer overflow in DialogF. If the re is too long,

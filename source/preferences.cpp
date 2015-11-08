@@ -1237,7 +1237,7 @@ void ImportPrefFile(const char *filename, int convertOld) {
 		XtFree(fileString);
 		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 		translatePrefFormats(convertOld, -1);
-		ImportedFile = XtNewString(filename);
+		ImportedFile = XtNewStringEx(filename);
 	} else {
 		fprintf(stderr, "Could not read additional preferences file: %s\n", filename);
 	}
@@ -2021,7 +2021,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow) {
 
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, (String) "customSize", selBoxArgs, 2);
+	selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
 	XtAddCallback(selBox, XmNokCallback, tabsOKCB, nullptr);
 	XtAddCallback(selBox, XmNcancelCallback, tabsCancelCB, nullptr);
 	XtAddCallback(selBox, XmNhelpCallback, tabsHelpCB, nullptr);
@@ -2191,7 +2191,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow) {
 
 	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, (String) "wrapMargin", selBoxArgs, 2);
+	selBox = CreatePromptDialog(parent, "wrapMargin", selBoxArgs, 2);
 	XtAddCallback(selBox, XmNokCallback, wrapOKCB, nullptr);
 	XtAddCallback(selBox, XmNcancelCallback, wrapCancelCB, nullptr);
 	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
@@ -2311,7 +2311,7 @@ void SelectShellDialog(Widget parent, WindowInfo *forWindow) {
 	/*  Set up the dialog.  */
 	XtSetArg(shellSelDialogArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
 	XtSetArg(shellSelDialogArgs[1], XmNautoUnmanage, False);
-	shellSelDialog = CreatePromptDialog(parent, (String) "shellSelDialog", shellSelDialogArgs, 2);
+	shellSelDialog = CreatePromptDialog(parent, "shellSelDialog", shellSelDialogArgs, 2);
 
 	/*  Fix dialog to our liking.  */
 	XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Command Shell", nullptr);
@@ -2556,7 +2556,7 @@ characters of file to determine type from content)"),
 	ac++;
 	XtSetArg(args[ac], XmNbottomOffset, H_MARGIN * 2);
 	ac++;
-	LMDialog.managedListW = CreateManagedList(form, (String) "list", args, ac, (void **)LMDialog.languageModeList, &LMDialog.nLanguageModes, MAX_LANGUAGE_MODES, 15, lmGetDisplayedCB, nullptr, lmSetDisplayedCB, nullptr, lmFreeItemCB);
+	LMDialog.managedListW = CreateManagedList(form, "list", args, ac, (void **)LMDialog.languageModeList, &LMDialog.nLanguageModes, MAX_LANGUAGE_MODES, 15, lmGetDisplayedCB, nullptr, lmSetDisplayedCB, nullptr, lmFreeItemCB);
 	AddDeleteConfirmCB(LMDialog.managedListW, lmDeleteConfirmCB, nullptr);
 	XtVaSetValues(topLbl, XmNuserData, LMDialog.managedListW, nullptr);
 
@@ -3091,7 +3091,7 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	ac++;
 	XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE);
 	ac++;
-	form = CreateFormDialog(window->shell, (String) "choose Fonts", args, ac);
+	form = CreateFormDialog(window->shell, "choose Fonts", args, ac);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	fd->shell = XtParent(form);
 	XtVaSetValues(fd->shell, XmNtitle, "Text Fonts", nullptr);
@@ -4169,7 +4169,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
 	int i;
 	XmString s1;
 
-	menu = CreatePulldownMenu(parent, (String) "languageModes", nullptr, 0);
+	menu = CreatePulldownMenu(parent, "languageModes", nullptr, 0);
 	for (i = 0; i < NLanguageModes; i++) {
 		btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, (void *)LanguageModes[i]->name, nullptr);
 		XmStringFree(s1);
@@ -4230,7 +4230,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window) {
 	XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, nullptr);
 	if (menu != nullptr)
 		XtDestroyWidget(menu);
-	menu = CreatePulldownMenu(XtParent(window->langModeCascade), (String) "languageModes", args, 1);
+	menu = CreatePulldownMenu(XtParent(window->langModeCascade), "languageModes", args, 1);
 	btn =
 	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, (void *)PLAIN_LANGUAGE_MODE, XmNset, window->languageMode == PLAIN_LANGUAGE_MODE, nullptr);
 	XmStringFree(s1);
@@ -5198,7 +5198,7 @@ void ChooseColors(WindowInfo *window) {
 	ac++;
 	XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE);
 	ac++;
-	form = CreateFormDialog(window->shell, (String) "choose colors", args, ac);
+	form = CreateFormDialog(window->shell, "choose colors", args, ac);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	cd->shell = XtParent(form);
 	cd->window = window;

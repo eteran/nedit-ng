@@ -206,7 +206,7 @@ void ShellCmdToMacroString(WindowInfo *window, const char *command, const char *
 
 	/* Make a copy of the input string for issueCommand to hold and free
 	   upon completion */
-	inputCopy = *input == '\0' ? nullptr : XtNewString(input);
+	inputCopy = *input == '\0' ? nullptr : XtNewStringEx(input);
 
 	/* fork the command and begin processing input/output */
 	issueCommand(window, command, inputCopy, strlen(input), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);

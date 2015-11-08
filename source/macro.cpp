@@ -1015,7 +1015,7 @@ void RepeatDialog(WindowInfo *window) {
 	/* Remeber the last command, since the user is allowed to work in the
 	   window while the dialog is up */
 	rd = (repeatDialog *)XtMalloc(sizeof(repeatDialog));
-	rd->lastCommand = XtNewString(LastCommand);
+	rd->lastCommand = XtNewStringEx(LastCommand);
 
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
@@ -1122,7 +1122,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
 
 	/* Figure out which command user wants to repeat */
 	if (XmToggleButtonGetState(rd->lastCmdToggle))
-		params[1] = XtNewString(rd->lastCommand);
+		params[1] = XtNewStringEx(rd->lastCommand);
 	else {
 		if (ReplayMacro.empty())
 			return False;
@@ -1806,7 +1806,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		}
 		selText = GetAnySelection(window);
 		if (selText == nullptr)
-			selText = XtNewString("");
+			selText = XtNewStringEx("");
 	} else {
 		selText = window->buffer->BufGetSelectionText();
 		window->buffer->BufUnsubstituteNullChars(selText);

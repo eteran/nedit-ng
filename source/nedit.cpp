@@ -47,6 +47,7 @@
 #include "../util/printUtils.h"
 #include "../util/fileUtils.h"
 #include "../util/getfiles.h"
+#include "../util/MotifHelper.h"
 
 #include <cctype>
 #include <climits>
@@ -875,7 +876,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 
 	auto keys = new char *[maxCount];
 	
-	copy = XtNewString((const char *)bindings);
+	copy = XtNewStringEx((const char *)bindings);
 	i = 0;
 	pos2 = copy;
 

@@ -456,7 +456,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 		primary_selection = selectionInfo->selection;
 	}
 	if (primary_selection == 0) {
-		primary_selection = XtNewString("");
+		primary_selection = XtNewStringEx("");
 	}
 
 	/* Update the field */
@@ -2555,7 +2555,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	   subsequent replaces, even though no actual replacement was done. */
 	if (historyIndex(1) != -1 && !strcmp(SearchHistory[historyIndex(1)], searchString)) {
 		XtFree(ReplaceHistory[historyIndex(1)]);
-		ReplaceHistory[historyIndex(1)] = XtNewString(replaceString);
+		ReplaceHistory[historyIndex(1)] = XtNewStringEx(replaceString);
 	}
 
 	/* Pop down the dialog */
@@ -4876,7 +4876,7 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 	   new one is also incremental, just update the entry */
 	if (currentItemIsIncremental && isIncremental) {
 		XtFree(SearchHistory[historyIndex(1)]);
-		SearchHistory[historyIndex(1)] = XtNewString(searchString);
+		SearchHistory[historyIndex(1)] = XtNewStringEx(searchString);
 		SearchTypeHistory[historyIndex(1)] = searchType;
 		return;
 	}

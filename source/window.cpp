@@ -1910,7 +1910,7 @@ void SetModeMessage(WindowInfo *window, const char *message) {
 	   statsline when the document is raised to top again */
 	window->modeMessageDisplayed = True;
 	XtFree(window->modeMessage);
-	window->modeMessage = XtNewString(message);
+	window->modeMessage = XtNewStringEx(message);
 
 	if (!window->IsTopDocument())
 		return;
@@ -2547,12 +2547,12 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		revWindowList[i] = win;
 
 	/* Create command line arguments for restoring each window in the list */
-	argv[argc++] = XtNewString(ArgV0);
+	argv[argc++] = XtNewStringEx(ArgV0);
 	if (IsServer) {
-		argv[argc++] = XtNewString("-server");
+		argv[argc++] = XtNewStringEx("-server");
 		if (GetPrefServerName()[0] != '\0') {
-			argv[argc++] = XtNewString("-svrname");
-			argv[argc++] = XtNewString(GetPrefServerName());
+			argv[argc++] = XtNewStringEx("-svrname");
+			argv[argc++] = XtNewStringEx(GetPrefServerName());
 		}
 	}
 
@@ -2568,14 +2568,14 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 		/* create a group for each window */
 		getGeometryString(topWin, geometry);
-		argv[argc++] = XtNewString("-group");
-		argv[argc++] = XtNewString("-geometry");
-		argv[argc++] = XtNewString(geometry);
+		argv[argc++] = XtNewStringEx("-group");
+		argv[argc++] = XtNewStringEx("-geometry");
+		argv[argc++] = XtNewStringEx(geometry);
 		if (topWin->IsIconic()) {
-			argv[argc++] = XtNewString("-iconic");
+			argv[argc++] = XtNewStringEx("-iconic");
 			wasIconic = True;
 		} else if (wasIconic) {
-			argv[argc++] = XtNewString("-noiconic");
+			argv[argc++] = XtNewStringEx("-noiconic");
 			wasIconic = False;
 		}
 
