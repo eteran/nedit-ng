@@ -3243,8 +3243,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 				int l;
 
 				/* save the actual text line in text_lines[n] */
-				text_lines[n] = XtMalloc(strlen(old_p) + 1);
-				strcpy(text_lines[n], old_p);
+				text_lines[n] = XtStringDup(old_p);
 
 				/* work out the tabs expanded length */
 				for (s = old_p, l = 0; *s; s++)

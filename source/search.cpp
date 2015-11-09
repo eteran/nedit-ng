@@ -4905,10 +4905,9 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 
 	/* Allocate and copy the search and replace strings and add them to the
 	   circular buffers at HistStart, bump the buffer pointer to next pos. */
-	sStr = XtMalloc(strlen(searchString) + 1);
-	rStr = XtMalloc(strlen(replaceString) + 1);
-	strcpy(sStr, searchString);
-	strcpy(rStr, replaceString);
+	sStr = XtStringDup(searchString);
+	rStr = XtStringDup(replaceString);
+
 	SearchHistory[HistStart] = sStr;
 	ReplaceHistory[HistStart] = rStr;
 	SearchTypeHistory[HistStart] = searchType;

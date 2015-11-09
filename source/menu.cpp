@@ -4314,8 +4314,7 @@ void AddToPrevOpenMenu(const char *filename) {
 	}
 
 	/* Add it to the list */
-	nameCopy = XtMalloc(strlen(filename) + 1);
-	strcpy(nameCopy, filename);
+	nameCopy = XtStringDup(filename);
 	memmove(&PrevOpen[1], &PrevOpen[0], sizeof(char *) * NPrevOpen);
 	PrevOpen[0] = nameCopy;
 	NPrevOpen++;

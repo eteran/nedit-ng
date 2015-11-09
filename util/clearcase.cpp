@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "clearcase.h"
+#include "MotifHelper.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -56,8 +57,7 @@ const char *GetClearCaseViewTag(void) {
 		const char *envPtr = getenv("CLEARCASE_ROOT");
 		if (envPtr != nullptr) {
 			const char *tagPtr;
-			ClearCaseViewRoot = XtMalloc(strlen(envPtr) + 1);
-			strcpy(ClearCaseViewRoot, envPtr);
+			ClearCaseViewRoot = XtStringDup(envPtr);
 
 			tagPtr = strrchr(ClearCaseViewRoot, '/');
 			if (tagPtr != nullptr) {

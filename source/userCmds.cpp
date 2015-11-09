@@ -2085,10 +2085,8 @@ static menuItemRec *copyMenuItemRec(menuItemRec *item) {
 
 	newItem = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
 	*newItem = *item;
-	newItem->name = XtMalloc(strlen(item->name) + 1);
-	strcpy(newItem->name, item->name);
-	newItem->cmd = XtMalloc(strlen(item->cmd) + 1);
-	strcpy(newItem->cmd, item->cmd);
+	newItem->name = XtStringDup(item->name);
+	newItem->cmd  = XtStringDup(item->cmd);
 	return newItem;
 }
 

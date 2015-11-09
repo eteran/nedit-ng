@@ -1,6 +1,7 @@
 
 #include "RangesetTable.h"
 #include "TextBuffer.h"
+#include "MotifHelper.h"
 #include <string>
 
 namespace {
@@ -35,13 +36,11 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 	destRangeset->color = srcRangeset->color;
 
 	if (srcRangeset->color_name) {
-		destRangeset->color_name = XtMalloc(strlen(srcRangeset->color_name) + 1);
-		strcpy(destRangeset->color_name, srcRangeset->color_name);
+		destRangeset->color_name = XtStringDup(srcRangeset->color_name);
 	}
 
 	if (srcRangeset->name) {
-		destRangeset->name = XtMalloc(strlen(srcRangeset->name) + 1);
-		strcpy(destRangeset->name, srcRangeset->name);
+		destRangeset->name = XtStringDup(srcRangeset->name);
 	}
 
 	if (srcRangeset->ranges) {

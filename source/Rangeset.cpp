@@ -32,6 +32,7 @@
 #include "textDisp.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
+#include "MotifHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -838,10 +839,10 @@ int Rangeset::RangesetAssignColorName(char *color_name) {
 
 	/* store new color name value */
 	if (color_name) {
-		cp = XtMalloc(strlen(color_name) + 1);
-		strcpy(cp, color_name);
-	} else
-		cp = color_name;
+		cp = XtStringDup(color_name);
+	} else {
+		cp = nullptr;
+	}
 
 	/* free old color name value */
 	XtFree(this->color_name);
@@ -872,15 +873,15 @@ int Rangeset::RangesetAssignColorPixel(Pixel color, int ok) {
 int Rangeset::RangesetAssignName(char *name) {
 	char *cp;
 
-	if (name && name[0] == '\0')
+	if (name && name[0] == '\0') {
 		name = nullptr;
+	}
 
 	/* store new name value */
 	if (name) {
-		cp = XtMalloc(strlen(name) + 1);
-		strcpy(cp, name);
+		cp = XtStringDup(name);
 	} else {
-		cp = name;
+		cp = nullptr;
 	}
 
 	/* free old name value */

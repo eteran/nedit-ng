@@ -29,6 +29,7 @@
 #include "prefFile.h"
 #include "fileUtils.h"
 #include "utils.h"
+#include "MotifHelper.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -125,10 +126,7 @@ bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
 		
 	case PREF_ALLOC_STRING:
 		{
-			char *s = XtMalloc(strlen(string) + 1);
-			strcpy(s, string);
-			*rsrcDescrip->valueAddr.str_ptr = s;
-			
+			*rsrcDescrip->valueAddr.str_ptr = XtStringDup(string);
 			return true;
 		}
 	default:

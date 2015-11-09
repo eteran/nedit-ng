@@ -5,6 +5,16 @@
 #include <Xm/Xm.h>
 #include <Xm/Text.h>
 #include <string>
+#include <cassert>
+
+
+inline char *XtStringDup(const char *text) {
+	assert(text);
+	
+	char *s = XtMalloc(strlen(text) + 1);
+	strcpy(s, text);
+	return s;
+}
 
 //------------------------------------------------------------------------------
 inline XmString XmStringCreateSimpleEx(const char *text) {

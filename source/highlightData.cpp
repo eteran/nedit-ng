@@ -1339,19 +1339,17 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs) {
 	highlightStyleRec *newHS;
 
 	newHS = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
-	newHS->name = XtMalloc(strlen(hs->name) + 1);
-	strcpy(newHS->name, hs->name);
+	newHS->name = XtStringDup(hs->name);
+
 	if (hs->color == nullptr)
 		newHS->color = nullptr;
 	else {
-		newHS->color = XtMalloc(strlen(hs->color) + 1);
-		strcpy(newHS->color, hs->color);
+		newHS->color = XtStringDup(hs->color);
 	}
 	if (hs->bgColor == nullptr)
 		newHS->bgColor = nullptr;
 	else {
-		newHS->bgColor = XtMalloc(strlen(hs->bgColor) + 1);
-		strcpy(newHS->bgColor, hs->bgColor);
+		newHS->bgColor = XtStringDup(hs->bgColor);
 	}
 	newHS->font = hs->font;
 	return newHS;
@@ -2318,8 +2316,7 @@ static highlightPattern *readDialogFields(int silent) {
 	/* read the styles option menu */
 	XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, nullptr);
 	XtVaGetValues(selectedItem, XmNuserData, &style, nullptr);
-	pat->style = XtMalloc(strlen(style) + 1);
-	strcpy(pat->style, style);
+	pat->style = XtStringDup(style);
 
 	/* read the endRE field */
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
@@ -2459,10 +2456,11 @@ static patternSet *getDialogPatternSet(void) {
 	   dialog, including the modified pattern list into it */
 	patSet = (patternSet *)XtMalloc(sizeof(patternSet));
 	patSet->languageMode = XtNewStringEx(HighlightDialog.langModeName);
-	patSet->lineContext = lineContext;
-	patSet->charContext = charContext;
-	patSet->nPatterns = HighlightDialog.nPatterns;
-	patSet->patterns = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * HighlightDialog.nPatterns);
+	patSet->lineContext  = lineContext;
+	patSet->charContext  = charContext;
+	patSet->nPatterns    = HighlightDialog.nPatterns;
+	patSet->patterns     = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * HighlightDialog.nPatterns);
+	
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		copyPatternSrc(HighlightDialog.patterns[i], &patSet->patterns[i]);
 	return patSet;

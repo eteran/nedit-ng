@@ -801,8 +801,7 @@ static void addItemToList(char **buf, const char *item, int *count) {
 
 	for (j = *count; j > i; j--)
 		buf[j] = buf[j - 1];
-	buf[i] = XtMalloc(strlen(item) + 1);
-	strcpy(buf[i], item);
+	buf[i] = XtStringDup(item);
 	(*count)++;
 }
 
@@ -992,8 +991,7 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
 	if (ctrlBlk->sel1 == nullptr) {
-		ctrlBlk->sel1 = XtMalloc(strlen(sel) + 1);
-		strcpy(ctrlBlk->sel1, sel);
+		ctrlBlk->sel1 = XtStringDup(sel);
 	} else {
 		if (strcmp(ctrlBlk->sel1, sel) == 0) { /* Unselecting current selection */
 			XtFree(ctrlBlk->sel1);
@@ -1001,8 +999,7 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 			XmListDeselectItem(widget, call_data->item);
 		} else {
 			XtFree(ctrlBlk->sel1);
-			ctrlBlk->sel1 = XtMalloc(strlen(sel) + 1);
-			strcpy(ctrlBlk->sel1, sel);
+			ctrlBlk->sel1 = XtStringDup(sel);
 		}
 	}
 
@@ -1025,8 +1022,7 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
 	if (ctrlBlk->sel2 == nullptr) {
-		ctrlBlk->sel2 = XtMalloc(strlen(sel) + 1);
-		strcpy(ctrlBlk->sel2, sel);
+		ctrlBlk->sel2 = XtStringDup(sel);
 	} else {
 		if (strcmp(ctrlBlk->sel2, sel) == 0) { /* unselecting current selection */
 			XtFree(ctrlBlk->sel2);
@@ -1034,8 +1030,7 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 			XmListDeselectItem(widget, call_data->item);
 		} else {
 			XtFree(ctrlBlk->sel2);
-			ctrlBlk->sel2 = XtMalloc(strlen(sel) + 1);
-			strcpy(ctrlBlk->sel2, sel);
+			ctrlBlk->sel2 = XtStringDup(sel);
 		}
 	}
 
@@ -1058,8 +1053,7 @@ static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData
 	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
 
 	if (ctrlBlk->sel3 == nullptr) {
-		ctrlBlk->sel3 = XtMalloc(strlen(sel) + 1);
-		strcpy(ctrlBlk->sel3, sel);
+		ctrlBlk->sel3 = XtStringDup(sel);
 	} else {
 		if (strcmp(ctrlBlk->sel3, sel) == 0) { /* unselecting current selection */
 			XtFree(ctrlBlk->sel3);
@@ -1067,8 +1061,7 @@ static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData
 			XmListDeselectItem(widget, call_data->item);
 		} else {
 			XtFree(ctrlBlk->sel3);
-			ctrlBlk->sel3 = XtMalloc(strlen(sel) + 1);
-			strcpy(ctrlBlk->sel3, sel);
+			ctrlBlk->sel3 = XtStringDup(sel);
 		}
 	}
 
@@ -1093,8 +1086,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk) {
 
 	for (i = 0; i < ctrlBlk->numFonts; i++) {
 		if ((fontMatch(ctrlBlk, ctrlBlk->fontData[i])) && (styleMatch(ctrlBlk, ctrlBlk->fontData[i])) && (sizeMatch(ctrlBlk, ctrlBlk->fontData[i]))) {
-			ctrlBlk->fontName = XtMalloc(strlen(ctrlBlk->fontData[i]) + 1);
-			strcpy(ctrlBlk->fontName, ctrlBlk->fontData[i]);
+			ctrlBlk->fontName = XtStringDup(ctrlBlk->fontData[i]);
 			break;
 		}
 	}
@@ -1177,8 +1169,7 @@ static void okAction(Widget widget, XtPointer controlBlock, XtPointer callData) 
 		XFreeFontNames(fontName);
 	} else {
 		XtFree(ctrlBlk->fontName);
-		ctrlBlk->fontName = XtMalloc(strlen(fontName[0]) + 1);
-		strcpy(ctrlBlk->fontName, fontName[0]);
+		ctrlBlk->fontName = XtStringDup(fontName[0]);
 
 		XtFree(ctrlBlk->sel1);
 		XtFree(ctrlBlk->sel2);
@@ -1207,7 +1198,7 @@ static void startupFont(xfselControlBlkType *ctrlBlk, const char *font) {
 		return;
 	}
 
-	ctrlBlk->fontName = XtMalloc(strlen(fontName[0]) + 1);
+	ctrlBlk->fontName = XtStringDup(fontName[0]);
 	strcpy(ctrlBlk->fontName, fontName[0]);
 
 	getFontPart(fontName[0], part);

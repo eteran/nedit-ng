@@ -191,7 +191,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 		char *insStyle;
 		int i;
 
-		insStyle = XtMalloc(sizeof(char) * (nInserted + 1));
+		insStyle = XtMalloc(nInserted + 1);
 		for (i = 0; i < nInserted; i++)
 			insStyle[i] = UNFINISHED_STYLE;
 		insStyle[i] = '\0';
@@ -875,7 +875,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 			compiledPats[patternNum].subPatternRE = nullptr;
 			continue;
 		}
-		bigPattern = XtMalloc(sizeof(char) * (length + 1));
+		bigPattern = XtMalloc(length + 1);
 		ptr = bigPattern;
 		if (patternSrc[patternNum].endRE != nullptr) {
 			*ptr++ = '(';

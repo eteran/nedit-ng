@@ -879,7 +879,7 @@ static const char HeaderText[] = "\
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
-static int PrefsHaveChanged = False;
+static bool PrefsHaveChanged = false;
 
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
@@ -1220,7 +1220,7 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 	XtFree(TempStringPrefs.smartIndent);
 	XtFree(TempStringPrefs.smartIndentCommon);
 
-	PrefsHaveChanged = False;
+	PrefsHaveChanged = false;
 }
 
 /*
@@ -1776,7 +1776,7 @@ int GetPrefTruncSubstitution(void) {
 ** If preferences don't get saved, ask the user on exit whether to save
 */
 void MarkPrefsChanged(void) {
-	PrefsHaveChanged = True;
+	PrefsHaveChanged = true;
 }
 
 /*
@@ -1810,13 +1810,13 @@ int CheckPrefsChangesSaved(Widget dialogParent) {
 */
 static void setIntPref(int *prefDataField, int newValue) {
 	if (newValue != *prefDataField)
-		PrefsHaveChanged = True;
+		PrefsHaveChanged = true;
 	*prefDataField = newValue;
 }
 
 static void setStringPref(char *prefDataField, const char *newValue) {
 	if (strcmp(prefDataField, newValue))
-		PrefsHaveChanged = True;
+		PrefsHaveChanged = true;
 	strcpy(prefDataField, newValue);
 }
 
@@ -1824,29 +1824,41 @@ static void setStringAllocPref(char **pprefDataField, char *newValue) {
 	char *p_newField;
 
 	/* treat empty strings as nulls */
-	if (newValue && *newValue == '\0')
+	if (newValue && *newValue == '\0') {
 		newValue = nullptr;
-	if (*pprefDataField && **pprefDataField == '\0')
+	}
+	
+	if (*pprefDataField && **pprefDataField == '\0') {
 		*pprefDataField = nullptr; /* assume statically alloc'ed "" */
+	}
 
 	/* check changes */
-	if (!*pprefDataField && !newValue)
+	if (!*pprefDataField && !newValue) {
 		return;
-	else if (!*pprefDataField && newValue)
-		PrefsHaveChanged = True;
-	else if (*pprefDataField && !newValue)
-		PrefsHaveChanged = True;
-	else if (strcmp(*pprefDataField, newValue))
-		PrefsHaveChanged = True;
+	} else if (!*pprefDataField && newValue) {
+		PrefsHaveChanged = true;
+	} else if (*pprefDataField && !newValue) {
+		PrefsHaveChanged = true;
+	} else if (strcmp(*pprefDataField, newValue)) {
+		PrefsHaveChanged = true;
+	}
 
 	/* get rid of old preference */
 	XtFree(*pprefDataField);
 
 	/* store new preference */
 	if (newValue) {
-		p_newField = XtMalloc(strlen(newValue) + 1);
-		strcpy(p_newField, newValue);
+		p_newField = XtStringDup(newValue);
+		// TODO(eteran): this is what the original code did (copy but then just
+		//               leak the new string... this can't possibly be what was
+		//               intended. I bet they wanted to put something like this
+		//               here (so we store a copy of the input string):
+		//               newValue = p_newField;
 	}
+	
+	// NOTE(eteran): hush a warning for now
+	(void)p_newField;
+	
 	*pprefDataField = newValue;
 }
 
@@ -2401,9 +2413,12 @@ void EditLanguageModes(void) {
 		return;
 	}
 
-	LMDialog.languageModeList = (languageModeRec **)XtMalloc(sizeof(languageModeRec *) * MAX_LANGUAGE_MODES);
-	for (i = 0; i < NLanguageModes; i++)
+	LMDialog.languageModeList = new languageModeRec *[MAX_LANGUAGE_MODES];
+	
+	for (i = 0; i < NLanguageModes; i++) {
 		LMDialog.languageModeList[i] = copyLanguageModeRec(LanguageModes[i]);
+	}
+	
 	LMDialog.nLanguageModes = NLanguageModes;
 
 	/* Create a form widget in an application shell */
@@ -2581,7 +2596,7 @@ static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	for (i = 0; i < LMDialog.nLanguageModes; i++)
 		freeLanguageModeRec(LMDialog.languageModeList[i]);
-	XtFree((char *)LMDialog.languageModeList);
+	delete [] LMDialog.languageModeList;
 }
 
 static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2770,8 +2785,10 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 		if (nCopies <= 1) {
 			oldLen = strchr(oldLM->name, ':') == nullptr ? strlen(oldLM->name) : strchr(oldLM->name, ':') - oldLM->name;
 			tempName = XtMalloc(oldLen + strlen(lm->name) + 2);
+			
 			strncpy(tempName, oldLM->name, oldLen);
 			sprintf(&tempName[oldLen], ":%s", lm->name);
+			
 			XtFree(lm->name);
 			lm->name = tempName;
 		}
@@ -2844,56 +2861,57 @@ static void lmFreeItemCB(void *item) {
 }
 
 static void freeLanguageModeRec(languageModeRec *lm) {
-	int i;
 
 	XtFree(lm->name);
 	XtFree(lm->recognitionExpr);
 	XtFree(lm->defTipsFile);
 	XtFree(lm->delimiters);
-	for (i = 0; i < lm->nExtensions; i++)
+	for (int i = 0; i < lm->nExtensions; i++)
 		XtFree(lm->extensions[i]);
 	XtFree((char *)lm->extensions);
-	XtFree((char *)lm);
+	
+	delete lm;
 }
 
 /*
 ** Copy a languageModeRec data structure and all of the allocated data it contains
 */
 static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
-	languageModeRec *newLM;
+
 	int i;
 
-	newLM = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
-	newLM->name = XtMalloc(strlen(lm->name) + 1);
-	strcpy(newLM->name, lm->name);
+	auto newLM = new languageModeRec;
+	
+	newLM->name        = XtStringDup(lm->name);
 	newLM->nExtensions = lm->nExtensions;
-	newLM->extensions = (char **)XtMalloc(sizeof(char *) * lm->nExtensions);
+	newLM->extensions  = (char **)XtMalloc(sizeof(char *) * lm->nExtensions);
+	
 	for (i = 0; i < lm->nExtensions; i++) {
-		newLM->extensions[i] = XtMalloc(strlen(lm->extensions[i]) + 1);
-		strcpy(newLM->extensions[i], lm->extensions[i]);
+		newLM->extensions[i] = XtStringDup(lm->extensions[i]);
 	}
+	
 	if (lm->recognitionExpr == nullptr)
 		newLM->recognitionExpr = nullptr;
 	else {
-		newLM->recognitionExpr = XtMalloc(strlen(lm->recognitionExpr) + 1);
-		strcpy(newLM->recognitionExpr, lm->recognitionExpr);
+		newLM->recognitionExpr = XtStringDup(lm->recognitionExpr);
 	}
+	
 	if (lm->defTipsFile == nullptr)
 		newLM->defTipsFile = nullptr;
 	else {
-		newLM->defTipsFile = XtMalloc(strlen(lm->defTipsFile) + 1);
-		strcpy(newLM->defTipsFile, lm->defTipsFile);
+		newLM->defTipsFile = XtStringDup(lm->defTipsFile);
 	}
+	
 	if (lm->delimiters == nullptr)
 		newLM->delimiters = nullptr;
 	else {
-		newLM->delimiters = XtMalloc(strlen(lm->delimiters) + 1);
-		strcpy(newLM->delimiters, lm->delimiters);
+		newLM->delimiters = XtStringDup(lm->delimiters);
 	}
-	newLM->wrapStyle = lm->wrapStyle;
+	
+	newLM->wrapStyle   = lm->wrapStyle;
 	newLM->indentStyle = lm->indentStyle;
-	newLM->tabDist = lm->tabDist;
-	newLM->emTabDist = lm->emTabDist;
+	newLM->tabDist     = lm->tabDist;
+	newLM->emTabDist   = lm->emTabDist;
 	return newLM;
 }
 
@@ -2912,11 +2930,12 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
-	lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
-	lm->nExtensions = 0;
+	lm = new languageModeRec;
+	
+	lm->nExtensions     = 0;
 	lm->recognitionExpr = nullptr;
-	lm->defTipsFile = nullptr;
-	lm->delimiters = nullptr;
+	lm->defTipsFile     = nullptr;
+	lm->delimiters      = nullptr;
 
 	/* read the name field */
 	lm->name = ReadSymbolicFieldTextWidget(LMDialog.nameW, "language mode name", silent);
@@ -3669,11 +3688,12 @@ static int loadLanguageModesString(char *inString, int fileVer) {
 
 		/* Allocate a language mode structure to return, set unread fields to
 		   empty so everything can be freed on errors by freeLanguageModeRec */
-		lm = (languageModeRec *)XtMalloc(sizeof(languageModeRec));
-		lm->nExtensions = 0;
+		lm = new languageModeRec;
+		
+		lm->nExtensions     = 0;
 		lm->recognitionExpr = nullptr;
-		lm->defTipsFile = nullptr;
-		lm->delimiters = nullptr;
+		lm->defTipsFile     = nullptr;
+		lm->delimiters      = nullptr;
 
 		/* read language mode name */
 		lm->name = ReadSymbolicField(&inPtr);
@@ -4154,8 +4174,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 	}
 	XtFree(string);
 	if (parsedString == nullptr) {
-		parsedString = XtMalloc(1);
-		*parsedString = '\0';
+		parsedString = XtStringDup("");
 	}
 	return parsedString;
 }
