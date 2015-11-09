@@ -29,6 +29,7 @@
 #include "fontsel.h"
 #include "misc.h"
 #include "DialogF.h"
+#include "MotifHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -259,7 +260,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	RemapDeleteKey(fontName); /* kludge to handle delete and BS */
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Font Name:", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Font Name:", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNlabelString, tempStr);
 	n++;
 	XtSetArg(args[n], XmNmnemonic, 'N');
@@ -305,7 +306,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	dispField = XtCreateManagedWidget(" ", xmTextFieldWidgetClass, form, args, n);
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Sample:", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Sample:", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNlabelString, tempStr);
 	n++;
 	XtSetArg(args[n], XmNmnemonic, 'S');
@@ -326,7 +327,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	/*  create toggle buttons */
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Show Size in Points", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Show Size in Points", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNlabelString, tempStr);
 	n++;
 	XtSetArg(args[n], XmNmnemonic, 'P');
@@ -346,7 +347,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	if (showPropFonts != ONLY_FIXED) {
 		n = 0;
-		tempStr = XmStringCreate((char *)"Show Proportional Width Fonts", XmSTRING_DEFAULT_CHARSET);
+		tempStr = XmStringCreateEx("Show Proportional Width Fonts", XmSTRING_DEFAULT_CHARSET);
 		XtSetArg(args[n], XmNlabelString, tempStr);
 		n++;
 		XtSetArg(args[n], XmNmnemonic, 'W');
@@ -373,7 +374,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	/*  "Font" list */
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Font:", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Font:", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNlabelString, tempStr);
 	n++;
 	XtSetArg(args[n], XmNmnemonic, 'F');
@@ -439,7 +440,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	XtManageChild(styleList);
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Style:", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Style:", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNmnemonic, 'y');
 	n++;
 	XtSetArg(args[n], XmNuserData, styleList);
@@ -483,7 +484,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 	XtManageChild(sizeList);
 
 	n = 0;
-	tempStr = XmStringCreate((char *)"Size:", XmSTRING_DEFAULT_CHARSET);
+	tempStr = XmStringCreateEx("Size:", XmSTRING_DEFAULT_CHARSET);
 	XtSetArg(args[n], XmNlabelString, tempStr);
 	n++;
 	XtSetArg(args[n], XmNmnemonic, 'z');
@@ -537,18 +538,20 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	/*  Register callback functions */
 
-	if (showPropFonts != ONLY_FIXED)
-		XtAddCallback(propFontToggle, XmNvalueChangedCallback, propFontToggleAction, (char *)&ctrlBlk);
-	XtAddCallback(sizeToggle, XmNvalueChangedCallback, sizeToggleAction, (char *)&ctrlBlk);
-	XtAddCallback(fontList, XmNbrowseSelectionCallback, fontAction, (char *)&ctrlBlk);
-	XtAddCallback(styleList, XmNbrowseSelectionCallback, styleAction, (char *)&ctrlBlk);
-	XtAddCallback(sizeList, XmNbrowseSelectionCallback, sizeAction, (char *)&ctrlBlk);
-	XtAddCallback(okButton, XmNactivateCallback, okAction, (char *)&ctrlBlk);
-	XtAddCallback(cancelButton, XmNactivateCallback, cancelAction, (char *)&ctrlBlk);
+	if (showPropFonts != ONLY_FIXED) {
+		XtAddCallback(propFontToggle, XmNvalueChangedCallback, propFontToggleAction, (XtPointer)&ctrlBlk);
+	}
+	
+	XtAddCallback(sizeToggle,   XmNvalueChangedCallback,    sizeToggleAction, (XtPointer)&ctrlBlk);
+	XtAddCallback(fontList,     XmNbrowseSelectionCallback, fontAction,       (XtPointer)&ctrlBlk);
+	XtAddCallback(styleList,    XmNbrowseSelectionCallback, styleAction,      (XtPointer)&ctrlBlk);
+	XtAddCallback(sizeList,     XmNbrowseSelectionCallback, sizeAction,       (XtPointer)&ctrlBlk);
+	XtAddCallback(okButton,     XmNactivateCallback,        okAction,         (XtPointer)&ctrlBlk);
+	XtAddCallback(cancelButton, XmNactivateCallback,        cancelAction,     (XtPointer)&ctrlBlk);
 
 	/* add event handler to setup input focus at start to scroll list */
 
-	XtAddEventHandler(fontList, FocusChangeMask, FALSE, (XtEventHandler)setFocus, (char *)&ctrlBlk);
+	XtAddEventHandler(fontList, FocusChangeMask, FALSE, (XtEventHandler)setFocus, (XtPointer)&ctrlBlk);
 	XmProcessTraversal(fontList, XmTRAVERSE_CURRENT);
 
 	/*  setup tabgroups */
@@ -565,7 +568,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	/* Make sure that we don't try to access the dialog if the user
 	   destroyed it (possibly indirectly, by destroying the parent). */
-	XtAddCallback(dialog, XmNdestroyCallback, destroyCB, (char *)&ctrlBlk);
+	XtAddCallback(dialog, XmNdestroyCallback, destroyCB, (XtPointer)&ctrlBlk);
 
 	/*  Link Motif Close option to cancel action */
 
@@ -595,7 +598,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 
 	if (!ctrlBlk.destroyedFlag) {
 		/* Don't let the callback destroy the font name */
-		XtRemoveCallback(dialog, XmNdestroyCallback, destroyCB, (char *)&ctrlBlk);
+		XtRemoveCallback(dialog, XmNdestroyCallback, destroyCB, (XtPointer)&ctrlBlk);
 		XtDestroyWidget(dialog);
 	}
 
@@ -909,7 +912,7 @@ static void propFontToggleAction(Widget widget, XtPointer controlBlock, XtPointe
 
 		setupScrollLists(NONE, *ctrlBlk);
 
-		XmTextSetString(ctrlBlk->fontNameField, (char *)"");
+		XmTextSetStringEx(ctrlBlk->fontNameField, "");
 		enableSample(ctrlBlk, False, nullptr);
 	}
 }
@@ -1009,7 +1012,7 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
-		XmTextSetString(ctrlBlk->fontNameField, (char *)"");
+		XmTextSetStringEx(ctrlBlk->fontNameField, "");
 	}
 }
 
@@ -1042,7 +1045,7 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
-		XmTextSetString(ctrlBlk->fontNameField, (char *)"");
+		XmTextSetStringEx(ctrlBlk->fontNameField, "");
 	}
 }
 
@@ -1075,7 +1078,7 @@ static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
-		XmTextSetString(ctrlBlk->fontNameField, (char *)"");
+		XmTextSetStringEx(ctrlBlk->fontNameField, "");
 	}
 }
 
@@ -1097,7 +1100,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk) {
 	}
 
 	if (ctrlBlk->fontName != nullptr) {
-		XmTextSetString(ctrlBlk->fontNameField, ctrlBlk->fontName);
+		XmTextSetStringEx(ctrlBlk->fontNameField, ctrlBlk->fontName);
 		dispSample(ctrlBlk);
 	} else {
 		DialogF(DF_ERR, ctrlBlk->form, 1, "Font Specification", "Invalid Font Specification", "OK");
@@ -1216,7 +1219,7 @@ static void startupFont(xfselControlBlkType *ctrlBlk, const char *font) {
 	XmStringFree(str);
 
 	dispSample(ctrlBlk);
-	XmTextSetString(ctrlBlk->fontNameField, ctrlBlk->fontName);
+	XmTextSetStringEx(ctrlBlk->fontNameField, ctrlBlk->fontName);
 }
 
 /*  hacked code to move initial input focus to first scroll list and at the

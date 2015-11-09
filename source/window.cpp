@@ -1915,7 +1915,7 @@ void SetModeMessage(WindowInfo *window, const char *message) {
 	if (!window->IsTopDocument())
 		return;
 
-	XmTextSetStringEx(window->statsLine, (char *)message);
+	XmTextSetStringEx(window->statsLine, message);
 	/*
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */

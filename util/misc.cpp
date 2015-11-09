@@ -954,7 +954,7 @@ void FreeStringTable(XmString *table) {
 void SimulateButtonPress(Widget widget) {
 	XEvent keyEvent;
 
-	memset((char *)&keyEvent, 0, sizeof(XKeyPressedEvent));
+	memset(&keyEvent, 0, sizeof(XKeyPressedEvent));
 	keyEvent.type = KeyPress;
 	keyEvent.xkey.serial = 1;
 	keyEvent.xkey.send_event = True;
@@ -1201,7 +1201,7 @@ static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *co
 	}
 
 	/* Change the text field contents */
-	XmTextSetString(w, histData->index == -1 ? (char *)"" : (*histData->list)[histData->index]);
+	XmTextSetStringEx(w, histData->index == -1 ? "" : (*histData->list)[histData->index]);
 }
 
 /*

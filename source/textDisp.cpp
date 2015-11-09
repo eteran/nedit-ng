@@ -3454,7 +3454,7 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsign
 		class_no++; /* simple class alloc scheme */
 		was_semicol = 0;
 		is_good = True;
-		if ((semicol = (char *)strchr(s, ';'))) {
+		if ((semicol = strchr(s, ';'))) {
 			*semicol = '\0'; /* null-terminate low[-high]:color clause */
 			was_semicol = 1;
 		}

@@ -441,20 +441,23 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs, int s
 
 static void setTextField(WindowInfo *window, Time time, Widget textField) {
 	XEvent nextEvent;
-	char *primary_selection = 0;
-	SelectionInfo *selectionInfo = XtNew(SelectionInfo);
+	char *primary_selection = nullptr;
+	SelectionInfo *selectionInfo = new SelectionInfo;
 
 	if (GetPrefFindReplaceUsesSelection()) {
-		selectionInfo->done = 0;
-		selectionInfo->window = window;
+		selectionInfo->done      = 0;
+		selectionInfo->window    = window;
 		selectionInfo->selection = 0;
 		XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
+		
 		while (selectionInfo->done == 0) {
 			XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
 			ServerDispatchEvent(&nextEvent);
 		}
+		
 		primary_selection = selectionInfo->selection;
 	}
+	
 	if (primary_selection == 0) {
 		primary_selection = XtNewStringEx("");
 	}
@@ -463,7 +466,8 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 	XmTextSetStringEx(textField, primary_selection);
 
 	XtFree(primary_selection);
-	XtFree((char *)selectionInfo);
+
+	delete selectionInfo;
 }
 
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Atom *type, char *value, int *length, int *format) {
@@ -2896,14 +2900,13 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 ** value.  Otherwise, return FALSE.
 */
 static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType) {
-	char *replaceText, *replaceWithText;
 	regexp *compiledRE = nullptr;
 	const char *compileMsg;
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
-	replaceText = XmTextGetString(window->replaceText);
-	replaceWithText = XmTextGetString(window->replaceWithText);
+	char *replaceText     = XmTextGetString(window->replaceText);
+	char *replaceWithText = XmTextGetString(window->replaceWithText);
 
 	if (XmToggleButtonGetState(window->replaceRegexToggle)) {
 		int regexDefault;
@@ -2969,12 +2972,12 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 ** return FALSE.
 */
 static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType) {
-	char *findText;
+
 	regexp *compiledRE = nullptr;
 	const char *compileMsg;
 
 	/* Get the search string, search type, and direction from the dialog */
-	findText = XmTextGetString(window->findText);
+	char *findText = XmTextGetString(window->findText);
 
 	if (XmToggleButtonGetState(window->findRegexToggle)) {
 		int regexDefault;

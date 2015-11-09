@@ -333,12 +333,10 @@ void EditShellMenu(WindowInfo *window) {
 	ucd->dialogType = SHELL_CMDS;
 
 	ac = 0;
-	XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING);
-	ac++;
-	XtSetArg(args[ac], XmNiconName, "NEdit Shell Menu");
-	ac++;
-	XtSetArg(args[ac], XmNtitle, "Shell Menu");
-	ac++;
+	XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING); ac++;
+	XtSetArg(args[ac], XmNiconName, "NEdit Shell Menu"); ac++;
+	XtSetArg(args[ac], XmNtitle, "Shell Menu");          ac++;
+	
 	ucd->dlogShell = CreateWidget(TheAppShell, "shellCommands", topLevelShellWidgetClass, args, ac);
 	AddSmallIcon(ucd->dlogShell);
 	form = XtVaCreateManagedWidget("editShellCommands", xmFormWidgetClass, ucd->dlogShell, XmNautoUnmanage, False, XmNresizePolicy, XmRESIZE_NONE, nullptr);

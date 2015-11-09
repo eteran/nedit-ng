@@ -29,6 +29,7 @@
 #include "managedList.h"
 #include "misc.h"
 #include "DialogF.h"
+#include "MotifHelper.h"
 
 #include <cstdio>
 #include <cstring>
@@ -104,13 +105,13 @@ Widget CreateManagedList(Widget parent, const char *name, Arg *args, int argC, v
 	form = XmCreateForm(parent, const_cast<char *>(name), args, argC);
 	XtManageChild(form);
 	rowCol = XtVaCreateManagedWidget("mlRowCol", xmRowColumnWidgetClass, form, XmNpacking, XmPACK_COLUMN, XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, nullptr);
-	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Delete"), nullptr);
+	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimpleEx("Delete"), nullptr);
 	XmStringFree(s1);
-	copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Copy"), nullptr);
+	copyBtn = XtVaCreateManagedWidget("copy", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimpleEx("Copy"), nullptr);
 	XmStringFree(s1);
-	moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move ^"), nullptr);
+	moveUpBtn = XtVaCreateManagedWidget("moveUp", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimpleEx("Move ^"), nullptr);
 	XmStringFree(s1);
-	moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimple((char *)"Move v"), nullptr);
+	moveDownBtn = XtVaCreateManagedWidget("moveDown", xmPushButtonWidgetClass, rowCol, XmNlabelString, s1 = XmStringCreateSimpleEx("Move v"), nullptr);
 	XmStringFree(s1);
 
 	/* AFAIK the only way to make a list widget n-columns wide is to make up
@@ -568,9 +569,9 @@ static void updateDialogFromList(managedListData *ml, int selection) {
 
 	/* Fill in the list widget with the names from the item list */
 	stringTable = (XmString *)XtMalloc(sizeof(XmString) * (*ml->nItems + 1));
-	stringTable[0] = XmStringCreateSimple((char *)"New");
+	stringTable[0] = XmStringCreateSimpleEx("New");
 	for (i = 0; i < *ml->nItems; i++)
-		stringTable[i + 1] = XmStringCreateSimple(*(char **)ml->itemList[i]);
+		stringTable[i + 1] = XmStringCreateSimpleEx(*(char **)ml->itemList[i]);
 	XtVaSetValues(ml->listW, XmNitems, stringTable, XmNitemCount, *ml->nItems + 1, nullptr);
 	for (i = 0; i < *ml->nItems + 1; i++)
 		XmStringFree(stringTable[i]);
@@ -598,7 +599,7 @@ static void updateListWidgetItem(managedListData *ml, int listPos) {
 	XmListDeselectAllItems(ml->listW);
 
 	/* update the list */
-	newString[0] = XmStringCreateSimple(*(char **)ml->itemList[listPos - 2]);
+	newString[0] = XmStringCreateSimpleEx(*(char **)ml->itemList[listPos - 2]);
 	XmListReplaceItemsPos(ml->listW, newString, 1, listPos);
 	XmStringFree(newString[0]);
 

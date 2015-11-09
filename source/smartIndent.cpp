@@ -1397,10 +1397,10 @@ static char *readSIMacro(const char **inPtr) {
 
 static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
 	smartIndentRec *ris = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-	ris->lmName = XtNewStringEx(is->lmName);
-	ris->initMacro = XtNewStringEx(is->initMacro);
+	ris->lmName       = XtNewStringEx(is->lmName);
+	ris->initMacro    = XtNewStringEx(is->initMacro);
 	ris->newlineMacro = XtNewStringEx(is->newlineMacro);
-	ris->modMacro = XtNewStringEx(is->modMacro);
+	ris->modMacro     = XtNewStringEx(is->modMacro);
 	return ris;
 }
 

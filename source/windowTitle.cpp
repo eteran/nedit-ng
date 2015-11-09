@@ -1146,7 +1146,7 @@ void EditCustomTitleFormat(WindowInfo *window) {
 	}
 
 	/* set initial value of format field */
-	XmTextSetStringEx(etDialog.formatW, (char *)GetPrefTitleFormat());
+	XmTextSetStringEx(etDialog.formatW, GetPrefTitleFormat());
 
 	/* force update of the dialog */
 	setToggleButtons();

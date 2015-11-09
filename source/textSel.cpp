@@ -425,7 +425,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	   not be necessary, XLib documentation claims a nullptr is already added,
 	   but the Xt documentation for this routine makes no such claim) */
 	string = XtMalloc(*length + 1);
-	memcpy(string, (char *)value, *length);
+	memcpy(string, value, *length);
 	string[*length] = '\0';
 
 	/* If the string contains ascii-nul characters, substitute something
@@ -477,7 +477,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 
 	/* Copy the string just to make space for the null character */
 	string = XtMalloc(*length + 1);
-	memcpy(string, (char *)value, *length);
+	memcpy(string, value, *length);
 	string[*length] = '\0';
 
 	/* If the string contains ascii-nul characters, substitute something
@@ -762,7 +762,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 		XBell(XtDisplay(w), 0);
 		buf->BufSecondaryUnselect();
 		XtDisownSelection(w, XA_SECONDARY, e->time);
-		XtFree((char *)cbInfo->actionText);
+		XtFree(cbInfo->actionText);
 		XtFree((char *)cbInfo);
 		return;
 	}
@@ -793,7 +793,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 	}
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(w, XA_SECONDARY, e->time);
-	XtFree((char *)cbInfo->actionText);
+	XtFree(cbInfo->actionText);
 	XtFree((char *)cbInfo);
 }
 
@@ -813,7 +813,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 	XtRemoveEventHandler(cbInfo->widget, 0, True, selectNotifyEH, cbInfo);
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
-	XtFree((char *)cbInfo->actionText);
+	XtFree(cbInfo->actionText);
 	XtFree((char *)cbInfo);
 }
 

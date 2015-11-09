@@ -220,10 +220,10 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		argcount++;
 
 		dialog = CreatePromptDialog(parent, dialog_name[dialog_num], args, argcount);
-		XtAddCallback(dialog, XmNokCallback, ok_callback, (char *)&df);
-		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (char *)&df);
-		XtAddCallback(dialog, XmNhelpCallback, help_callback, (char *)&df);
-		XtAddCallback(dialog, XmNapplyCallback, apply_callback, (char *)&df);
+		XtAddCallback(dialog, XmNokCallback,     ok_callback,     (XtPointer)&df);
+		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (XtPointer)&df);
+		XtAddCallback(dialog, XmNhelpCallback,   help_callback,   (XtPointer)&df);
+		XtAddCallback(dialog, XmNapplyCallback,  apply_callback,  (XtPointer)&df);
 		RemapDeleteKey(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
 
 		/* Text area in prompt dialog should get focus, not ok button
@@ -231,7 +231,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		   off the default button for the dialog, until after keyboard
 		   focus has been established */
 		XtVaSetValues(dialog, XmNdefaultButton, nullptr, nullptr);
-		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, focusCB, (char *)dialog);
+		XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNfocusCallback, focusCB, (XtPointer)dialog);
 
 		/* Limit the length of the text that can be entered in text field */
 		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT), XmNmaxLength, DF_MAX_PROMPT_LENGTH - 1, nullptr);
@@ -327,9 +327,9 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 		dialog_shell = CreateDialogShell(parent, dialog_name[dialog_num], 0, 0);
 		dialog = XmCreateMessageBox(dialog_shell, (char *)"msg box", args, argcount);
 
-		XtAddCallback(dialog, XmNokCallback, ok_callback, (char *)&df);
-		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (char *)&df);
-		XtAddCallback(dialog, XmNhelpCallback, help_callback, (char *)&df);
+		XtAddCallback(dialog, XmNokCallback, ok_callback, (XtPointer)&df);
+		XtAddCallback(dialog, XmNcancelCallback, cancel_callback, (XtPointer)&df);
+		XtAddCallback(dialog, XmNhelpCallback, help_callback, (XtPointer)&df);
 
 		/* Make extraneous buttons disappear */
 		switch (n) { /* n = number of buttons requested */

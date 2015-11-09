@@ -573,10 +573,10 @@ static void createYesNoDialog(Widget parent) {
 	XtAddCallback(YesNoDialog, XmNokCallback, yesNoOKCB, nullptr);
 	XtAddCallback(YesNoDialog, XmNcancelCallback, yesNoCancelCB, nullptr);
 	XtUnmanageChild(XmMessageBoxGetChild(YesNoDialog, XmDIALOG_HELP_BUTTON));
-	buttonString = XmStringCreateSimple((char *)"Yes");
+	buttonString = XmStringCreateSimpleEx("Yes");
 	SET_ONE_RSRC(YesNoDialog, XmNokLabelString, buttonString);
 	XmStringFree(buttonString);
-	buttonString = XmStringCreateSimple((char *)"No");
+	buttonString = XmStringCreateSimpleEx("No");
 	SET_ONE_RSRC(YesNoDialog, XmNcancelLabelString, buttonString);
 	XmStringFree(buttonString);
 }

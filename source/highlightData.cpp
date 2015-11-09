@@ -132,7 +132,7 @@ static patternSet *getDialogPatternSet(void);
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
 static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo);
 static void freeItemCB(void *item);
-static void freePatternSrc(highlightPattern *pat, int freeStruct);
+static void freePatternSrc(highlightPattern *pat, bool freeStruct);
 static void freePatternSet(patternSet *p);
 
 /* list of available highlight styles */
@@ -1800,7 +1800,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtFree((char *)HighlightDialog.langModeName);
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
-		freePatternSrc(HighlightDialog.patterns[i], True);
+		freePatternSrc(HighlightDialog.patterns[i], true);
 	HighlightDialog.shell = nullptr;
 }
 
@@ -1854,7 +1854,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* Free the old dialog information */
 	XtFree((char *)HighlightDialog.langModeName);
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
-		freePatternSrc(HighlightDialog.patterns[i], True);
+		freePatternSrc(HighlightDialog.patterns[i], true);
 
 	/* Fill the dialog with the new language mode information */
 	HighlightDialog.langModeName = XtNewStringEx(modeName);
@@ -1967,7 +1967,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Free the old dialog information */
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
-		freePatternSrc(HighlightDialog.patterns[i], True);
+		freePatternSrc(HighlightDialog.patterns[i], true);
 
 	/* Update the dialog */
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
@@ -2005,7 +2005,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Free the old dialog information */
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
-		freePatternSrc(HighlightDialog.patterns[i], True);
+		freePatternSrc(HighlightDialog.patterns[i], true);
 
 	/* Clear out the dialog */
 	HighlightDialog.nPatterns = 0;
@@ -2124,7 +2124,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 }
 
 static void freeItemCB(void *item) {
-	freePatternSrc((highlightPattern *)item, True);
+	freePatternSrc((highlightPattern *)item, true);
 }
 
 /*
@@ -2219,7 +2219,7 @@ static void setStyleMenu(const char *styleName) {
 			break;
 		}
 	}
-	XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem, (char *)0);
+	XtVaSetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, selectedItem, nullptr);
 }
 
 /*
@@ -2274,7 +2274,7 @@ static highlightPattern *readDialogFields(int silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex", "Please specify a regular\nexpression to match", "OK");
 			XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 		}
-		freePatternSrc(pat, True);
+		freePatternSrc(pat, true);
 		return nullptr;
 	}
 
@@ -2297,7 +2297,7 @@ static highlightPattern *readDialogFields(int silent) {
 				        "OK");
 				XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, True);
+			freePatternSrc(pat, true);
 			return nullptr;
 		}
 	}
@@ -2309,7 +2309,7 @@ static highlightPattern *readDialogFields(int silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Parent Pattern", "Please specify a parent pattern", "OK");
 				XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, True);
+			freePatternSrc(pat, true);
 			return nullptr;
 		}
 		pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
@@ -2329,7 +2329,7 @@ static highlightPattern *readDialogFields(int silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex", "Please specify an ending\nregular expression", "OK");
 				XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, True);
+			freePatternSrc(pat, true);
 			return nullptr;
 		}
 	}
@@ -2530,15 +2530,16 @@ static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern 
 ** Free the allocated memory contained in a highlightPattern data structure
 ** If "freeStruct" is true, free the structure itself as well.
 */
-static void freePatternSrc(highlightPattern *pat, int freeStruct) {
+static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 	XtFree((char *)pat->name);
 	XtFree(pat->startRE);
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
 	XtFree(pat->style);
 	XtFree(pat->subPatternOf);
-	if (freeStruct)
+	if(freeStruct) {
 		XtFree((char *)pat);
+	}
 }
 
 /*
@@ -2546,10 +2547,9 @@ static void freePatternSrc(highlightPattern *pat, int freeStruct) {
 ** If "freeStruct" is true, free the structure itself as well.
 */
 static void freePatternSet(patternSet *p) {
-	int i;
 
-	for (i = 0; i < p->nPatterns; i++)
-		freePatternSrc(&p->patterns[i], False);
+	for (int i = 0; i < p->nPatterns; i++)
+		freePatternSrc(&p->patterns[i], false);
 	XtFree((char *)p->languageMode);
 	XtFree((char *)p->patterns);
 	XtFree((char *)p);

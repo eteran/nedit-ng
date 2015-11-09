@@ -47,4 +47,13 @@ inline String XtNewStringEx(const char *string) {
 	return XtNewString(const_cast<char *>(string));
 }
 
+//------------------------------------------------------------------------------
+inline XmString XmStringCreateEx(const char *text, char *tag) {
+	return XmStringCreate(const_cast<char *>(text), tag);
+}
+
+inline XmString XmStringCreateEx(const std::string &text, char *tag) {
+	return XmStringCreateEx(text.c_str(), tag);
+}
+
 #endif
