@@ -1131,7 +1131,7 @@ void PrintWindow(WindowInfo *window, int selectedOnly) {
 	}
 
 	/* Print the string */
-	PrintString(fileString.c_str(), fileString.size(), window->shell, window->filename);
+	PrintString(fileString, fileString.size(), window->shell, window->filename);
 }
 
 /*
