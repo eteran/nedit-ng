@@ -21,6 +21,10 @@ inline XmString XmStringCreateSimpleEx(const char *text) {
 	return XmStringCreateSimple(const_cast<char *>(text));
 }
 
+inline XmString XmStringCreateSimpleEx(const std::string &text) {
+	return XmStringCreateSimpleEx(text);
+}
+
 //------------------------------------------------------------------------------
 inline XmString XmStringCreateLtoREx(const char *text, char *tag) {
 	return XmStringCreateLtoR(const_cast<char *>(text), tag);
@@ -46,6 +50,10 @@ inline XmString XmStringCreateLocalizedEx(const char *text) {
 //------------------------------------------------------------------------------
 inline void XmTextSetStringEx(Widget widget, const char *value) {
 	return XmTextSetString(widget, const_cast<char *>(value));
+}
+
+inline void XmTextSetStringEx(Widget widget, const std::string &value) {
+	return XmTextSetStringEx(widget, value);
 }
 
 //------------------------------------------------------------------------------

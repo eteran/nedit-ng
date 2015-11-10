@@ -768,7 +768,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
-	compiledPats = (highlightDataRec *)XtMalloc(sizeof(highlightDataRec) * (nPatterns + 1));
+	compiledPats = new highlightDataRec[nPatterns + 1];
 	compiledPats[nPatterns].style = 0;
 
 	/* Build the tree of parse expressions */
@@ -782,7 +782,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		else
 			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
 	for (i = 0; i < nPatterns; i++)
-		compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ? nullptr : (highlightDataRec **)XtMalloc(sizeof(highlightDataRec *) * compiledPats[i].nSubPatterns);
+		compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ? nullptr : new highlightDataRec *[compiledPats[i].nSubPatterns];
 	for (i = 0; i < nPatterns; i++)
 		compiledPats[i].nSubPatterns = 0;
 	for (i = 1; i < nPatterns; i++) {
@@ -939,10 +939,10 @@ static void freePatterns(highlightDataRec *patterns) {
 	}
 
 	for (int i = 0; patterns[i].style != 0; i++) {
-		XtFree((char *)patterns[i].subPatterns);
+		delete [] patterns[i].subPatterns;
 	}
 
-	XtFree((char *)patterns);
+	delete [] patterns;
 }
 
 /*
@@ -1829,7 +1829,7 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 
 	/* Get the entire colormap so we can find the closest one. */
 	ncolors = (1 << depth);
-	allColorDefs = (XColor *)malloc(ncolors * sizeof(XColor));
+	allColorDefs = new XColor[ncolors];
 	memset(allColorDefs, 0, ncolors * sizeof(XColor));
 
 	for (i = 0; i < ncolors; i++)
@@ -1864,7 +1864,7 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 	*r = allColorDefs[best].red;
 	*g = allColorDefs[best].green;
 	*b = allColorDefs[best].blue;
-	free(allColorDefs);
+	delete [] allColorDefs;
 	return bestPixel;
 }
 
@@ -1879,10 +1879,9 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 ** compile a regular expression and present a user friendly dialog on failure.
 */
 static regexp *compileREAndWarn(Widget parent, const char *re) {
-	regexp *compiledRE;
 	const char *compileMsg;
 
-	compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
+	regexp *compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
 	if (compiledRE == nullptr) {
 		char *boundedRe = XtNewStringEx(re);
 		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;

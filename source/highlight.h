@@ -28,6 +28,7 @@
 #define NEDIT_HIGHLIGHT_H_INCLUDED
 
 #include "nedit.h"
+#include "highlightPattern.h"
 
 #include <X11/Intrinsic.h>
 
@@ -40,16 +41,6 @@
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
 #define ASCII_A ((char)65)
 
-/* Pattern specification structure */
-struct highlightPattern {
-	const char *name;
-	char *startRE;
-	char *endRE;
-	char *errorRE;
-	char *style;
-	char *subPatternOf;
-	int flags;
-};
 
 /* Header for a set of patterns */
 struct patternSet {

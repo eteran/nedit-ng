@@ -48,6 +48,8 @@ add_executable(nedit
 	userCmds.cpp
 	window.cpp
 	windowTitle.cpp
+	highlightPattern.cpp
+	highlightStyleRec.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet01.inc

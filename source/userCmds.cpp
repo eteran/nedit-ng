@@ -2036,7 +2036,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 			return nullptr;
 		}
 	}
-	f = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
+	f = new menuItemRec;
 	f->name = nameText;
 	f->cmd = cmdText;
 	if ((mneText = XmTextGetString(ucd->mneTextW)) != nullptr) {
@@ -2081,10 +2081,8 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 ** Copy a menu item record, and its associated memory
 */
 static menuItemRec *copyMenuItemRec(menuItemRec *item) {
-	menuItemRec *newItem;
 
-	newItem = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
-	*newItem = *item;
+	auto newItem = new menuItemRec(*item);
 	newItem->name = XtStringDup(item->name);
 	newItem->cmd  = XtStringDup(item->cmd);
 	return newItem;
@@ -2096,7 +2094,7 @@ static menuItemRec *copyMenuItemRec(menuItemRec *item) {
 static void freeMenuItemRec(menuItemRec *item) {
 	XtFree(item->name);
 	XtFree(item->cmd);
-	XtFree((char *)item);
+	delete item;
 }
 
 /*
@@ -2389,17 +2387,17 @@ static int loadMenuItemString(char *inString, menuItemRec **menuItems, int *nIte
 			return parseError("couldn't read accelerator field");
 
 		/* create a menu item record */
-		f = (menuItemRec *)XtMalloc(sizeof(menuItemRec));
-		f->name = nameStr;
-		f->cmd = cmdStr;
-		f->mnemonic = mneChar;
+		f = new menuItemRec;
+		f->name      = nameStr;
+		f->cmd       = cmdStr;
+		f->mnemonic  = mneChar;
 		f->modifiers = modifiers;
-		f->input = input;
-		f->output = output;
-		f->repInput = repInput;
+		f->input     = input;
+		f->output    = output;
+		f->repInput  = repInput;
 		f->saveFirst = saveFirst;
 		f->loadAfter = loadAfter;
-		f->keysym = keysym;
+		f->keysym    = keysym;
 
 		/* add/replace menu record in the list */
 		for (i = 0; i < *nItems; i++) {

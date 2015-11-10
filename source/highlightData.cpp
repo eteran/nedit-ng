@@ -38,6 +38,7 @@
 #include "WindowInfo.h"
 #include "regexConvert.h"
 #include "MotifHelper.h"
+#include "highlightStyleRec.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
@@ -70,13 +71,6 @@
 #define N_FONT_TYPES 4
 enum fontTypes { PLAIN_FONT, ITALIC_FONT, BOLD_FONT, BOLD_ITALIC_FONT };
 static const char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bold Italic"};
-
-struct highlightStyleRec {
-	char *name;
-	char *color;
-	char *bgColor;
-	int font;
-};
 
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 #if 0
@@ -254,7 +248,6 @@ bool LoadStylesString(const char *inString) {
 	const char *errMsg;
 	char *fontStr;
 	const char *inPtr = inString;
-	highlightStyleRec *hs;
 	int i;
 
 	for (;;) {
@@ -263,23 +256,26 @@ bool LoadStylesString(const char *inString) {
 		inPtr += strspn(inPtr, " \t");
 
 		/* Allocate a language mode structure in which to store the info. */
-		hs = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
+		auto hs = new highlightStyleRec;
 
 		/* read style name */
-		hs->name = ReadSymbolicField(&inPtr);
-		if (hs->name == nullptr)
+		char *name = ReadSymbolicField(&inPtr);
+		if (name == nullptr) {
 			return styleError(inString, inPtr, "style name required");
+		}
+		
+		hs->name = name;
+		XtFree(name);
+		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			XtFree(hs->name);
-			XtFree((char *)hs);
+			delete hs;
 			return styleError(inString, inPtr, errMsg);
 		}
 
 		/* read color */
 		hs->color = ReadSymbolicField(&inPtr);
 		if (hs->color == nullptr) {
-			XtFree(hs->name);
-			XtFree((char *)hs);
+			delete hs;
 			return styleError(inString, inPtr, "color name required");
 		}
 		hs->bgColor = nullptr;
@@ -309,7 +305,7 @@ bool LoadStylesString(const char *inString) {
 
 		/* pattern set was read correctly, add/change it in the list */
 		for (i = 0; i < NHighlightStyles; i++) {
-			if (!strcmp(HighlightStyles[i]->name, hs->name)) {
+			if (hs->name == HighlightStyles[i]->name) {
 				freeHighlightStyleRec(HighlightStyles[i]);
 				HighlightStyles[i] = hs;
 				break;
@@ -337,27 +333,25 @@ char *WriteStylesString(void) {
 	int i;
 	highlightStyleRec *style;
 
-	auto outBuf = new TextBuffer;
+	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsert(outBuf->BufGetLength(), style->name);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		outBuf->BufInsert(outBuf->BufGetLength(), style->color);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
 		if (style->bgColor) {
-			outBuf->BufInsert(outBuf->BufGetLength(), "/");
-			outBuf->BufInsert(outBuf->BufGetLength(), style->bgColor);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
 		}
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		outBuf->BufInsert(outBuf->BufGetLength(), FontTypeNames[style->font]);
-		outBuf->BufInsert(outBuf->BufGetLength(), "\\n\\\n");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
-	char *outStr = outBuf->BufGetRange(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
-	delete outBuf;
-	return outStr;
+	return outBuf->BufGetRange(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
 }
 
 /*
@@ -373,17 +367,17 @@ std::string WriteStylesStringEx(void) {
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
-		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsert(outBuf->BufGetLength(), style->name);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		outBuf->BufInsert(outBuf->BufGetLength(), style->color);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
 		if (style->bgColor) {
-			outBuf->BufInsert(outBuf->BufGetLength(), "/");
-			outBuf->BufInsert(outBuf->BufGetLength(), style->bgColor);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
 		}
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		outBuf->BufInsert(outBuf->BufGetLength(), FontTypeNames[style->font]);
-		outBuf->BufInsert(outBuf->BufGetLength(), "\\n\\\n");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\\n\\\n");
 	}
 
 	/* Get the output, and lop off the trailing newlines */
@@ -401,13 +395,12 @@ std::string WriteStylesStringEx(void) {
 */
 bool LoadHighlightString(const char *inString, int convertOld) {
 	const char *inPtr = inString;
-	patternSet *patSet;
 	int i;
 
 	for (;;) {
 
 		/* Read each pattern set, abort on error */
-		patSet = readPatternSet(&inPtr, convertOld);
+		patternSet *patSet = readPatternSet(&inPtr, convertOld);
 		if (patSet == nullptr)
 			return false;
 
@@ -439,33 +432,32 @@ bool LoadHighlightString(const char *inString, int convertOld) {
 */
 char *WriteHighlightString(void) {
 
-	int psn, written = False;
-	patternSet *patSet;
+	bool written = false;
+	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
-	auto outBuf = new TextBuffer;
-	;
-	for (psn = 0; psn < NPatternSets; psn++) {
-		patSet = PatternSets[psn];
-		if (patSet->nPatterns == 0)
+	for (int psn = 0; psn < NPatternSets; psn++) {
+		patternSet *patSet = PatternSets[psn];
+		if (patSet->nPatterns == 0) {
 			continue;
-		written = True;
-		outBuf->BufInsert(outBuf->BufGetLength(), patSet->languageMode);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		}
+		
+		written = true;
+		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
 		else {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
-			outBuf->BufInsert(outBuf->BufGetLength(), ":");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
-			outBuf->BufInsert(outBuf->BufGetLength(), "{\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "{\n");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsert(outBuf->BufGetLength(), "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
-	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
@@ -479,33 +471,33 @@ char *WriteHighlightString(void) {
 */
 std::string WriteHighlightStringEx(void) {
 
-	int psn, written = False;
-	patternSet *patSet;
+	bool written = false;
+	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
-	auto outBuf = new TextBuffer;
-	;
-	for (psn = 0; psn < NPatternSets; psn++) {
-		patSet = PatternSets[psn];
-		if (patSet->nPatterns == 0)
+	for (int psn = 0; psn < NPatternSets; psn++) {
+		patternSet *patSet = PatternSets[psn];
+		if (patSet->nPatterns == 0) {
 			continue;
-		written = True;
-		outBuf->BufInsert(outBuf->BufGetLength(), patSet->languageMode);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		}
+		
+		written = true;
+		
+		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
 		else {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
-			outBuf->BufInsert(outBuf->BufGetLength(), ":");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
-			outBuf->BufInsert(outBuf->BufGetLength(), "{\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "{\n");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsert(outBuf->BufGetLength(), "\t}\n\t");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "\t}\n\t");
 		}
 	}
 
 	/* Get the output string, and lop off the trailing newline and tab */
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
-	delete outBuf;
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
@@ -517,11 +509,9 @@ std::string WriteHighlightStringEx(void) {
 ** expression syntax, in which braces and \0 have different meanings
 */
 static void convertOldPatternSet(patternSet *patSet) {
-	int p;
-	highlightPattern *pattern;
 
-	for (p = 0; p < patSet->nPatterns; p++) {
-		pattern = &patSet->patterns[p];
+	for (int p = 0; p < patSet->nPatterns; p++) {
+		highlightPattern *pattern = &patSet->patterns[p];
 		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->endRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
@@ -690,13 +680,22 @@ void RenameHighlightPattern(const char *oldName, const char *newName) {
 ** XmNuserData for each item contains a pointer to the name.
 */
 static Widget createHighlightStylesMenu(Widget parent) {
-	Widget menu;
-	int i;
-	XmString s1;
 
-	menu = CreatePulldownMenu(parent, "highlightStyles", nullptr, 0);
-	for (i = 0; i < NHighlightStyles; i++) {
-		XtVaCreateManagedWidget("highlightStyles", xmPushButtonWidgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(HighlightStyles[i]->name), XmNuserData, (void *)HighlightStyles[i]->name, nullptr);
+	Widget menu = CreatePulldownMenu(parent, "highlightStyles", nullptr, 0);
+	for (int i = 0; i < NHighlightStyles; i++) {
+	
+		XmString s1 = XmStringCreateSimpleEx(HighlightStyles[i]->name);
+	
+		XtVaCreateManagedWidget(
+			"highlightStyles", 
+			xmPushButtonWidgetClass, 
+			menu, 
+			XmNlabelString, 
+			s1,
+			XmNuserData, 
+			HighlightStyles[i]->name.data(), // NOTE(eteran): is this safe? will it be invalidated at some point?
+			nullptr);
+			
 		XmStringFree(s1);
 	}
 	return menu;
@@ -704,13 +703,11 @@ static Widget createHighlightStylesMenu(Widget parent) {
 
 static std::string createPatternsString(patternSet *patSet, const char *indentStr) {
 	char *str;
-	int pn;
-	highlightPattern *pat;
 
-	auto outBuf = new TextBuffer;
+	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
-	for (pn = 0; pn < patSet->nPatterns; pn++) {
-		pat = &patSet->patterns[pn];
+	for (int pn = 0; pn < patSet->nPatterns; pn++) {
+		highlightPattern *pat = &patSet->patterns[pn];
 		outBuf->BufInsert(outBuf->BufGetLength(), indentStr);
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
@@ -742,9 +739,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 			outBuf->BufInsert(outBuf->BufGetLength(), "C");
 		outBuf->BufInsert(outBuf->BufGetLength(), "\n");
 	}
-	std::string outStr = outBuf->BufGetAllEx();
-	delete outBuf;
-	return outStr;
+	return outBuf->BufGetAllEx();
 }
 
 /*
@@ -754,7 +749,8 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 	const char *errMsg;
 	const char *stringStart = *inPtr;
-	patternSet patSet, *retPatSet;
+	patternSet patSet;
+	patternSet *retPatSet;
 
 	/* remove leading whitespace */
 	*inPtr += strspn(*inPtr, " \t\n");
@@ -794,7 +790,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 
 	/* pattern set was read correctly, make an allocated copy to return */
 	retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
-	memcpy(retPatSet, &patSet, sizeof(patternSet));
+	*retPatSet = patSet;
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
 	   syntax to quote braces and use & rather than \0 */
@@ -850,7 +846,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 
 	/* allocate a more appropriately sized list to return patterns */
 	*nPatterns = pat - patternList;
-	returnedList = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * *nPatterns);
+	returnedList = new highlightPattern[*nPatterns];
 	memcpy(returnedList, patternList, sizeof(highlightPattern) * *nPatterns);
 	return returnedList;
 }
@@ -1204,14 +1200,15 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HSDialog.italicW, False, False);
 		RadioButtonChangeState(HSDialog.boldItalicW, False, False);
 	} else {
-		if (strcmp(hs->name, "Plain") == 0) {
+		if (hs->name == "Plain") {
 			/* you should not be able to delete the reserved style "Plain" */
-			int i, others = 0;
+			int i;
+			int others = 0;
 			int nList = HSDialog.nHighlightStyles;
 			highlightStyleRec **list = HSDialog.highlightStyleList;
 			/* do we have other styles called Plain? */
 			for (i = 0; i < nList; i++) {
-				if (list[i] != hs && strcmp(list[i]->name, "Plain") == 0) {
+				if (list[i] != hs && (list[i]->name == "Plain")) {
 					others++;
 				}
 			}
@@ -1246,30 +1243,29 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	XColor rgb;
 
 	/* Allocate a language mode structure to return */
-	hs = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
+	hs = new highlightStyleRec;
 
 	/* read the name field */
-	hs->name = ReadSymbolicFieldTextWidget(HSDialog.nameW, "highlight style name", silent);
-	if (hs->name == nullptr) {
-		XtFree((char *)hs);
+	char *name = ReadSymbolicFieldTextWidget(HSDialog.nameW, "highlight style name", silent);
+	if (name == nullptr) {
+		delete hs;
 		return nullptr;
 	}
+	hs->name = name;
 
-	if (*hs->name == '\0') {
+	if (hs->name.empty()) {
 		if (!silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
 			XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(hs->name);
-		XtFree((char *)hs);
+		delete hs;
 		return nullptr;
 	}
 
 	/* read the color field */
 	hs->color = ReadSymbolicFieldTextWidget(HSDialog.colorW, "color", silent);
 	if (hs->color == nullptr) {
-		XtFree(hs->name);
-		XtFree((char *)hs);
+		delete hs;
 		return nullptr;
 	}
 
@@ -1278,9 +1274,7 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
 			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(hs->name);
-		XtFree(hs->color);
-		XtFree((char *)hs);
+		delete hs;
 		return nullptr;
 	}
 
@@ -1290,17 +1284,13 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color);
 			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(hs->name);
-		XtFree(hs->color);
-		XtFree((char *)hs);
+		delete hs;
 		return nullptr;
-		;
 	}
 
 	/* read the background color field - this may be empty */
 	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW, "bgColor", silent);
 	if (hs->bgColor && *hs->bgColor == '\0') {
-		XtFree(hs->bgColor);
 		hs->bgColor = nullptr;
 	}
 
@@ -1310,12 +1300,8 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor);
 			XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(hs->name);
-		XtFree(hs->color);
-		XtFree(hs->bgColor);
-		XtFree((char *)hs);
+		delete hs;
 		return nullptr;
-		;
 	}
 
 	/* read the font buttons */
@@ -1338,17 +1324,18 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs) {
 	highlightStyleRec *newHS;
 
-	newHS = (highlightStyleRec *)XtMalloc(sizeof(highlightStyleRec));
-	newHS->name = XtStringDup(hs->name);
+	newHS = new highlightStyleRec;
+	newHS->name = hs->name;
 
-	if (hs->color == nullptr)
+	if (hs->color == nullptr) {
 		newHS->color = nullptr;
-	else {
+	} else {
 		newHS->color = XtStringDup(hs->color);
 	}
-	if (hs->bgColor == nullptr)
+	
+	if (hs->bgColor == nullptr) {
 		newHS->bgColor = nullptr;
-	else {
+	} else {
 		newHS->bgColor = XtStringDup(hs->bgColor);
 	}
 	newHS->font = hs->font;
@@ -1360,19 +1347,16 @@ static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs) {
 ** structure itself.
 */
 static void freeHighlightStyleRec(highlightStyleRec *hs) {
-	XtFree(hs->name);
-	XtFree(hs->color);
-	XtFree((char *)hs);
+	delete hs;
 }
 
 /*
 ** Select a particular style in the highlight styles dialog
 */
 static void setStyleByName(const char *style) {
-	int i;
 
-	for (i = 0; i < HSDialog.nHighlightStyles; i++) {
-		if (!strcmp(HSDialog.highlightStyleList[i]->name, style)) {
+	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
+		if (HSDialog.highlightStyleList[i]->name == style) {
 			SelectManagedListItem(HSDialog.managedListW, i);
 			break;
 		}
@@ -1393,16 +1377,15 @@ static int hsDialogEmpty(void) {
 */
 static int updateHSList(void) {
 	WindowInfo *window;
-	int i;
 
 	/* Get the current contents of the dialog fields */
 	if (!UpdateManagedList(HSDialog.managedListW, True))
 		return False;
 
 	/* Replace the old highlight styles list with the new one from the dialog */
-	for (i = 0; i < NHighlightStyles; i++)
+	for (int i = 0; i < NHighlightStyles; i++)
 		freeHighlightStyleRec(HighlightStyles[i]);
-	for (i = 0; i < HSDialog.nHighlightStyles; i++)
+	for (int i = 0; i < HSDialog.nHighlightStyles; i++)
 		HighlightStyles[i] = copyHighlightStyleRec(HSDialog.highlightStyleList[i]);
 	NHighlightStyles = HSDialog.nHighlightStyles;
 
@@ -1454,7 +1437,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	patSet = FindPatternSet(HighlightDialog.langModeName);
 
 	/* Copy the list of patterns to one that the user can freely edit */
-	HighlightDialog.patterns = (highlightPattern **)XtMalloc(sizeof(highlightPattern *) * MAX_PATTERNS);
+	HighlightDialog.patterns = new highlightPattern *[MAX_PATTERNS];
 	nPatterns = patSet == nullptr ? 0 : patSet->nPatterns;
 	for (i = 0; i < nPatterns; i++)
 		HighlightDialog.patterns[i] = copyPatternSrc(&patSet->patterns[i], nullptr);
@@ -2234,10 +2217,10 @@ static highlightPattern *readDialogFields(int silent) {
 
 	/* Allocate a pattern source structure to return, zero out fields
 	   so that the whole pattern can be freed on error with freePatternSrc */
-	pat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
-	pat->endRE = nullptr;
-	pat->errorRE = nullptr;
-	pat->style = nullptr;
+	pat = new highlightPattern;
+	pat->endRE        = nullptr;
+	pat->errorRE      = nullptr;
+	pat->style        = nullptr;
 	pat->subPatternOf = nullptr;
 
 	/* read the type buttons */
@@ -2251,7 +2234,7 @@ static highlightPattern *readDialogFields(int silent) {
 	/* read the name field */
 	pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW, "highlight pattern name", silent);
 	if (pat->name == nullptr) {
-		XtFree((char *)pat);
+		delete pat;
 		return nullptr;
 	}
 
@@ -2261,7 +2244,7 @@ static highlightPattern *readDialogFields(int silent) {
 			XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
 		}
 		XtFree((char *)pat->name);
-		XtFree((char *)pat);
+		delete pat;
 		return nullptr;
 	}
 
@@ -2509,10 +2492,11 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo) {
 	highlightPattern *newPat;
 
-	if (copyTo == nullptr)
-		newPat = (highlightPattern *)XtMalloc(sizeof(highlightPattern));
-	else
+	if (copyTo == nullptr) {
+		newPat = new highlightPattern;
+	} else {
 		newPat = copyTo;
+	}
 
 	newPat->name         = XtNewStringEx(pat->name);
 	newPat->startRE      = XtNewStringEx(pat->startRE);
@@ -2536,7 +2520,7 @@ static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 	XtFree(pat->style);
 	XtFree(pat->subPatternOf);
 	if(freeStruct) {
-		XtFree((char *)pat);
+		delete pat;
 	}
 }
 
@@ -2574,10 +2558,9 @@ static int lookupNamedPattern(patternSet *p, char *patternName)
 ** If styleName is not found, return -1.
 */
 static int lookupNamedStyle(const char *styleName) {
-	int i;
 
-	for (i = 0; i < NHighlightStyles; i++) {
-		if (!strcmp(styleName, HighlightStyles[i]->name)) {
+	for (int i = 0; i < NHighlightStyles; i++) {
+		if (styleName == HighlightStyles[i]->name) {
 			return i;
 		}
 	}
