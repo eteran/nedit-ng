@@ -1190,8 +1190,9 @@ void Rangeset::RangesetGetInfo(int *defined, int *label, int *count, const char 
 */
 
 void Rangeset::RangesetRefreshRange(int start, int end) {
-	if (this->buf != nullptr)
+	if (this->buf != nullptr) {
 		this->buf->BufCheckDisplay(start, end);
+	}
 }
 
 
