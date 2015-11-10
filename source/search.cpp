@@ -4833,11 +4833,10 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
 	regexp *compiledRE;
 	const char *compileMsg;
-	Boolean substResult = False;
 
 	compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
 	ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
-	substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
+	Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
 	free((char *)compiledRE);
 
 	return substResult;
