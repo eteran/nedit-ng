@@ -768,7 +768,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return; /* shouldn't happen */
 
 	std::string helpString = TextGetWrappedEx(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->BufGetLength());
-	PrintString(helpString.c_str(), helpString.size(), HelpWindows[topic], HelpTitles[topic]);
+	PrintString(helpString, helpString.size(), HelpWindows[topic], HelpTitles[topic]);
 }
 
 /*
