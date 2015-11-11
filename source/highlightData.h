@@ -40,20 +40,20 @@ bool LoadStylesString(const char *inString);
 bool NamedStyleExists(const char *styleName);
 char *WriteHighlightString(void);
 char *WriteStylesString(void);
-std::string BgColorOfNamedStyleEx(const char *styleName);
-std::string ColorOfNamedStyleEx(const char *styleName);
-
 int FontOfNamedStyleIsBold(const char *styleName);
 int FontOfNamedStyleIsItalic(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
 int LMHasHighlightPatterns(const char *languageMode);
 patternSet *FindPatternSet(const char *langModeName);
+std::string BgColorOfNamedStyleEx(const char *styleName);
+std::string ColorOfNamedStyleEx(const char *styleName);
 std::string WriteHighlightStringEx(void);
 std::string WriteStylesStringEx(void);
 void EditHighlightPatterns(WindowInfo *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(const char *oldName, const char *newName);
 void UpdateLanguageModeMenu(void);
+
 
 
 #endif

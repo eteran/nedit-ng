@@ -40,7 +40,7 @@ enum cursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY
 struct styleTableEntry {
 	std::string highlightName;
 	const char *styleName;
-	const char *colorName;
+	std::string colorName;
 	char isBold;
 	char isItalic;
 	unsigned short red;
@@ -49,7 +49,7 @@ struct styleTableEntry {
 	Pixel color;
 	Boolean underline;
 	XFontStruct *font;
-	const char *bgColorName; /* background style coloring (name may be NULL) */
+	std::string bgColorName; /* background style coloring (name may be "empty") */
 	unsigned short bgRed;
 	unsigned short bgGreen;
 	unsigned short bgBlue;

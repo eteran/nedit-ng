@@ -1799,7 +1799,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX, char *
 		   5 Backlight (if NOT fill), 6 DefaultBackground */
 		bground = style & PRIMARY_MASK ? textD->selectBGPixel : style & HIGHLIGHT_MASK ? textD->highlightBGPixel : style & RANGESET_MASK
 		                                                                                                               ? getRangesetColor(textD, (style & RANGESET_MASK) >> RANGESET_SHIFT, bground)
-		                                                                                                               : (styleRec && styleRec->bgColorName && strcmp(styleRec->bgColorName, "") != 0) ? styleRec->bgColor : (style & BACKLIGHT_MASK) && !(style & FILL_MASK)
+		                                                                                                               : (styleRec && !styleRec->bgColorName.empty()) ? styleRec->bgColor : (style & BACKLIGHT_MASK) && !(style & FILL_MASK)
 		                                                                                                                                                                             ? textD->bgClassPixel[(style >> BACKLIGHT_SHIFT) & 0xff]
 		                                                                                                                                                                             : textD->bgPixel;
 		if (fground == bground) /* B&W kludge */

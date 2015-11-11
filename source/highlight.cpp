@@ -684,19 +684,19 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 		p->highlightName = pat->name;
 		p->styleName     = pat->style;
-		p->colorName     = XtStringDup(ColorOfNamedStyleEx(pat->style));   // TODO(eteran): FIX memory leak!
-		p->bgColorName   = XtStringDup(BgColorOfNamedStyleEx(pat->style)); // TODO(eteran): FIX memory leak!
+		p->colorName     = ColorOfNamedStyleEx(pat->style);
+		p->bgColorName   = BgColorOfNamedStyleEx(pat->style);
 		p->isBold        = FontOfNamedStyleIsBold(pat->style);
 		p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
 
 		/* And now for the more physical stuff */
-		p->color = AllocColor(window->textArea, p->colorName, &r, &g, &b);
+		p->color = AllocColor(window->textArea, p->colorName.c_str(), &r, &g, &b);
 		p->red   = r;
 		p->green = g;
 		p->blue  = b;
 		
-		if (p->bgColorName && strcmp(p->bgColorName, "") != 0) {
-			p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b);
+		if (!p->bgColorName.empty()) {
+			p->bgColor = AllocColor(window->textArea, p->bgColorName.c_str(), &r, &g, &b);
 			p->bgRed   = r;
 			p->bgGreen = g;
 			p->bgBlue  = b;
@@ -1109,9 +1109,7 @@ Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, i
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	
-	printf("[GetHighlightBGColorOfCode]\n");
-	
-	if (entry && entry->bgColorName && strcmp(entry->bgColorName, "") != 0) {
+	if (entry && !entry->bgColorName.empty()) {
 		*r = entry->bgRed;
 		*g = entry->bgGreen;
 		*b = entry->bgBlue;
