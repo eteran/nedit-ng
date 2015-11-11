@@ -5,15 +5,10 @@
 #include <string>
 
 struct highlightStyleRec {
-public:
-	highlightStyleRec();	
-	~highlightStyleRec();
-
-public:
 	std::string name;
-	char        *color;
-	char        *bgColor;
-	int          font;
+	std::string color;
+	std::string bgColor;
+	int         font;
 };
 
 #endif

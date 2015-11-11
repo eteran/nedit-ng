@@ -40,8 +40,6 @@ bool LoadStylesString(const char *inString);
 bool NamedStyleExists(const char *styleName);
 char *WriteHighlightString(void);
 char *WriteStylesString(void);
-const char *BgColorOfNamedStyle(const char *styleName);
-const char *ColorOfNamedStyle(const char *styleName);
 std::string BgColorOfNamedStyleEx(const char *styleName);
 std::string ColorOfNamedStyleEx(const char *styleName);
 

@@ -89,12 +89,10 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
-static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void hsSetDisplayedCB(void *item, void *cbArg);
 static highlightStyleRec *readHSDialogFields(int silent);
 static void hsFreeItemCB(void *item);
-static void freeHighlightStyleRec(highlightStyleRec *hs);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
@@ -246,7 +244,6 @@ static const char *DefaultPatternSets[] = {
 */
 bool LoadStylesString(const char *inString) {
 	const char *errMsg;
-	char *fontStr;
 	const char *inPtr = inString;
 	int i;
 
@@ -259,13 +256,10 @@ bool LoadStylesString(const char *inString) {
 		auto hs = new highlightStyleRec;
 
 		/* read style name */
-		char *name = ReadSymbolicField(&inPtr);
-		if (name == nullptr) {
+		hs->name = ReadSymbolicFieldEx(&inPtr);
+		if (hs->name.empty()) {
 			return styleError(inString, inPtr, "style name required");
 		}
-		
-		hs->name = name;
-		XtFree(name);
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
@@ -273,40 +267,38 @@ bool LoadStylesString(const char *inString) {
 		}
 
 		/* read color */
-		hs->color = ReadSymbolicField(&inPtr);
-		if (hs->color == nullptr) {
+		hs->color = ReadSymbolicFieldEx(&inPtr);
+		if (hs->color.empty()) {
 			delete hs;
 			return styleError(inString, inPtr, "color name required");
 		}
-		hs->bgColor = nullptr;
+		hs->bgColor = std::string();
 		if (SkipOptSeparator('/', &inPtr)) {
 			/* read bgColor */
-			hs->bgColor = ReadSymbolicField(&inPtr); /* no error if fails */
+			hs->bgColor = ReadSymbolicFieldEx(&inPtr); /* no error if fails */
 		}
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			freeHighlightStyleRec(hs);
+			delete hs;
 			return styleError(inString, inPtr, errMsg);
 		}
 
 		/* read the font type */
-		fontStr = ReadSymbolicField(&inPtr);
+		std::string fontStr = ReadSymbolicFieldEx(&inPtr);
 		for (i = 0; i < N_FONT_TYPES; i++) {
-			if (!strcmp(FontTypeNames[i], fontStr)) {
+			if (fontStr == FontTypeNames[i]) {
 				hs->font = i;
 				break;
 			}
 		}
 		if (i == N_FONT_TYPES) {
-			XtFree(fontStr);
-			freeHighlightStyleRec(hs);
+			delete hs;
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
-		XtFree(fontStr);
 
 		/* pattern set was read correctly, add/change it in the list */
 		for (i = 0; i < NHighlightStyles; i++) {
 			if (hs->name == HighlightStyles[i]->name) {
-				freeHighlightStyleRec(HighlightStyles[i]);
+				delete HighlightStyles[i];
 				HighlightStyles[i] = hs;
 				break;
 			}
@@ -341,7 +333,7 @@ char *WriteStylesString(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
-		if (style->bgColor) {
+		if (!style->bgColor.empty()) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
 		}
@@ -371,7 +363,7 @@ std::string WriteStylesStringEx(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
-		if (style->bgColor) {
+		if (!style->bgColor.empty()) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
 		}
@@ -604,11 +596,6 @@ std::string ColorOfNamedStyleEx(const char *styleName) {
 		return "black";
 	}
 		
-
-	if(!HighlightStyles[styleNo]->color) {
-		return std::string();
-	}	
-
 	return HighlightStyles[styleNo]->color;
 }
 
@@ -622,34 +609,6 @@ std::string BgColorOfNamedStyleEx(const char *styleName) {
 		return "";
 	}
 	
-	if(!HighlightStyles[styleNo]->bgColor) {
-		return std::string();
-	}	
-		
-	return HighlightStyles[styleNo]->bgColor;
-}
-
-/*
-** Find the color associated with a named style.  This routine must only be
-** called with a valid styleName (call NamedStyleExists to find out whether
-** styleName is valid).
-*/
-const char *ColorOfNamedStyle(const char *styleName) {
-	int styleNo = lookupNamedStyle(styleName);
-
-	if (styleNo < 0)
-		return "black";
-	return HighlightStyles[styleNo]->color;
-}
-
-/*
-** Find the background color associated with a named style.
-*/
-const char *BgColorOfNamedStyle(const char *styleName) {
-	int styleNo = lookupNamedStyle(styleName);
-
-	if (styleNo < 0)
-		return "";
 	return HighlightStyles[styleNo]->bgColor;
 }
 
@@ -1026,7 +985,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	   can freely edit (via the dialog and managed-list code) */
 	HSDialog.highlightStyleList = (highlightStyleRec **)XtMalloc(sizeof(highlightStyleRec *) * MAX_HIGHLIGHT_STYLES);
 	for (i = 0; i < NHighlightStyles; i++)
-		HSDialog.highlightStyleList[i] = copyHighlightStyleRec(HighlightStyles[i]);
+		HSDialog.highlightStyleList[i] = new highlightStyleRec(*HighlightStyles[i]);
 	HSDialog.nHighlightStyles = NHighlightStyles;
 
 	/* Create a form widget in an application shell */
@@ -1154,10 +1113,10 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	int i;
-
-	for (i = 0; i < HSDialog.nHighlightStyles; i++)
-		freeHighlightStyleRec(HSDialog.highlightStyleList[i]);
+	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
+		delete HSDialog.highlightStyleList[i];
+	}
+	
 	XtFree((char *)HSDialog.highlightStyleList);
 }
 
@@ -1215,7 +1174,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	   read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, HSDialog.shell, 2, "Incomplete Style", "Discard incomplete entry\nfor current highlight style?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : (void *)copyHighlightStyleRec((highlightStyleRec *)oldItem);
+			return oldItem == nullptr ? nullptr : (void *)new highlightStyleRec(*(highlightStyleRec *)oldItem);
 		}
 	}
 
@@ -1261,7 +1220,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		}
 		XmTextSetStringEx(HSDialog.nameW, hs->name);
 		XmTextSetStringEx(HSDialog.colorW, hs->color);
-		XmTextSetStringEx(HSDialog.bgColorW, hs->bgColor ? hs->bgColor : "");
+		XmTextSetStringEx(HSDialog.bgColorW, hs->bgColor);
 		RadioButtonChangeState(HSDialog.plainW, hs->font == PLAIN_FONT, False);
 		RadioButtonChangeState(HSDialog.boldW, hs->font == BOLD_FONT, False);
 		RadioButtonChangeState(HSDialog.italicW, hs->font == ITALIC_FONT, False);
@@ -1270,7 +1229,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 }
 
 static void hsFreeItemCB(void *item) {
-	freeHighlightStyleRec((highlightStyleRec *)item);
+	delete static_cast<highlightStyleRec *>(item);
 }
 
 static highlightStyleRec *readHSDialogFields(int silent) {
@@ -1283,12 +1242,13 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	hs = new highlightStyleRec;
 
 	/* read the name field */
-	char *name = ReadSymbolicFieldTextWidget(HSDialog.nameW, "highlight style name", silent);
+	hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
+#if 0 // can't actually be null	
 	if (name == nullptr) {
 		delete hs;
 		return nullptr;
 	}
-	hs->name = name;
+#endif
 
 	if (hs->name.empty()) {
 		if (!silent) {
@@ -1300,13 +1260,15 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	}
 
 	/* read the color field */
-	hs->color = ReadSymbolicFieldTextWidget(HSDialog.colorW, "color", silent);
+	hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
+#if 0 // can't actually be null
 	if (hs->color == nullptr) {
 		delete hs;
 		return nullptr;
 	}
+#endif
 
-	if (*hs->color == '\0') {
+	if (hs->color.empty()) {
 		if (!silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
 			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
@@ -1316,9 +1278,9 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	}
 
 	/* Verify that the color is a valid X color spec */
-	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color, &rgb)) {
+	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
 		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color);
+			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color.c_str());
 			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
 		}
 		delete hs;
@@ -1326,15 +1288,12 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	}
 
 	/* read the background color field - this may be empty */
-	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW, "bgColor", silent);
-	if (hs->bgColor && *hs->bgColor == '\0') {
-		hs->bgColor = nullptr;
-	}
+	hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent);
 
 	/* Verify that the background color (if present) is a valid X color spec */
-	if (hs->bgColor && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor, &rgb)) {
+	if (!hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
 		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor);
+			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.c_str());
 			XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
 		}
 		delete hs;
@@ -1352,39 +1311,6 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 		hs->font = PLAIN_FONT;
 
 	return hs;
-}
-
-/*
-** Copy a highlightStyleRec data structure, and all of the allocated memory
-** it contains.
-*/
-static highlightStyleRec *copyHighlightStyleRec(highlightStyleRec *hs) {
-	highlightStyleRec *newHS;
-
-	newHS = new highlightStyleRec;
-	newHS->name = hs->name;
-
-	if (hs->color == nullptr) {
-		newHS->color = nullptr;
-	} else {
-		newHS->color = XtStringDup(hs->color);
-	}
-	
-	if (hs->bgColor == nullptr) {
-		newHS->bgColor = nullptr;
-	} else {
-		newHS->bgColor = XtStringDup(hs->bgColor);
-	}
-	newHS->font = hs->font;
-	return newHS;
-}
-
-/*
-** Free all of the allocated data in a highlightStyleRec, including the
-** structure itself.
-*/
-static void freeHighlightStyleRec(highlightStyleRec *hs) {
-	delete hs;
 }
 
 /*
@@ -1420,10 +1346,13 @@ static int updateHSList(void) {
 		return False;
 
 	/* Replace the old highlight styles list with the new one from the dialog */
-	for (int i = 0; i < NHighlightStyles; i++)
-		freeHighlightStyleRec(HighlightStyles[i]);
-	for (int i = 0; i < HSDialog.nHighlightStyles; i++)
-		HighlightStyles[i] = copyHighlightStyleRec(HSDialog.highlightStyleList[i]);
+	for (int i = 0; i < NHighlightStyles; i++) {
+		delete HighlightStyles[i];
+	}
+	
+	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
+		HighlightStyles[i] = new highlightStyleRec(*HSDialog.highlightStyleList[i]);
+	}
 	NHighlightStyles = HSDialog.nHighlightStyles;
 
 	/* If a syntax highlighting dialog is up, update its menu */
@@ -2247,14 +2176,14 @@ static void setStyleMenu(const char *styleName) {
 ** dialogs).  Returns nullptr on error.
 */
 static highlightPattern *readDialogFields(int silent) {
-	highlightPattern *pat;
+
 	char *inPtr, *outPtr, *style;
 	Widget selectedItem;
 	int colorOnly;
 
 	/* Allocate a pattern source structure to return, zero out fields
 	   so that the whole pattern can be freed on error with freePatternSrc */
-	pat = new highlightPattern;
+	auto pat = new highlightPattern;
 	pat->endRE        = nullptr;
 	pat->errorRE      = nullptr;
 	pat->style        = nullptr;
