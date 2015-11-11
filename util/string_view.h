@@ -198,21 +198,25 @@ public:
 	//--------------------------------------------------------------------------
 	
 	/* constexpr */size_type find(basic_string_view v, size_type pos = 0) const noexcept {
-		if(v.empty() || empty()) {
+		try {
+			if(v.empty() || empty()) {
+				return npos;
+			}
+			
+			if(pos == npos) {
+				pos = size_;
+			}
+			
+			for(size_type i = pos; i < size_; ++i) {
+				if(compare(i, v.size(), v) == 0) {
+					return i;
+				}
+			}
+	
+			return npos;
+		} catch(const std::exception &) {
 			return npos;
 		}
-		
-		if(pos == npos) {
-			pos = size_;
-		}
-		
-		for(size_type i = pos; i < size_; ++i) {
-			if(compare(i, v.size(), v) == 0) {
-				return i;
-			}
-		}
-
-		return npos;
 	}
 	
 	constexpr size_type find(Ch ch, size_type pos = 0) const noexcept {
@@ -230,21 +234,26 @@ public:
 	//--------------------------------------------------------------------------
 	
 	/* constexpr */size_type rfind(basic_string_view v, size_type pos = npos) const noexcept {
-		if(v.empty() || empty()) {
-			return npos;
-		}
-		
-		if(pos == npos) {
-			pos = size_;
-		}
-		
-		for(int i = pos - 1; i >= 0; --i) {
-			if(compare(i, v.size(), v) == 0) {
-				return i;
+	
+		try {
+			if(v.empty() || empty()) {
+				return npos;
 			}
-		}
 
-		return npos;	
+			if(pos == npos) {
+				pos = size_;
+			}
+
+			for(int i = pos - 1; i >= 0; --i) {
+				if(compare(i, v.size(), v) == 0) {
+					return i;
+				}
+			}
+
+			return npos;
+		} catch(const std::exception &) {
+			return npos;
+		}	
 	}
 	
 	constexpr size_type rfind(Ch ch, size_type pos = npos) const noexcept {
