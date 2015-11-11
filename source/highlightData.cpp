@@ -597,6 +597,43 @@ int FontOfNamedStyleIsItalic(const char *styleName) {
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
+std::string ColorOfNamedStyleEx(const char *styleName) {
+	int styleNo = lookupNamedStyle(styleName);
+
+	if (styleNo < 0) {
+		return "black";
+	}
+		
+
+	if(!HighlightStyles[styleNo]->color) {
+		return std::string();
+	}	
+
+	return HighlightStyles[styleNo]->color;
+}
+
+/*
+** Find the background color associated with a named style.
+*/
+std::string BgColorOfNamedStyleEx(const char *styleName) {
+	int styleNo = lookupNamedStyle(styleName);
+
+	if (styleNo < 0) {
+		return "";
+	}
+	
+	if(!HighlightStyles[styleNo]->bgColor) {
+		return std::string();
+	}	
+		
+	return HighlightStyles[styleNo]->bgColor;
+}
+
+/*
+** Find the color associated with a named style.  This routine must only be
+** called with a valid styleName (call NamedStyleExists to find out whether
+** styleName is valid).
+*/
 const char *ColorOfNamedStyle(const char *styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 

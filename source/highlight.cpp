@@ -679,34 +679,32 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 	styleTableEntry *styleTablePtr = styleTable;
 
-	auto setStyleTablePtr = [window](styleTableEntry *styleTablePtr, highlightPattern *patternSrc) {
-		styleTableEntry *p = styleTablePtr;
-		highlightPattern *pat = patternSrc;
+	auto setStyleTablePtr = [window](styleTableEntry *p, highlightPattern *pat) {
 		int r, g, b;
 
 		p->highlightName = pat->name;
-		p->styleName = pat->style;
-		p->colorName = ColorOfNamedStyle(pat->style);
-		p->bgColorName = BgColorOfNamedStyle(pat->style);
-		p->isBold = FontOfNamedStyleIsBold(pat->style);
-		p->isItalic = FontOfNamedStyleIsItalic(pat->style);
+		p->styleName     = pat->style;
+		p->colorName     = XtStringDup(ColorOfNamedStyleEx(pat->style));   // TODO(eteran): FIX memory leak!
+		p->bgColorName   = XtStringDup(BgColorOfNamedStyleEx(pat->style)); // TODO(eteran): FIX memory leak!
+		p->isBold        = FontOfNamedStyleIsBold(pat->style);
+		p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
 
 		/* And now for the more physical stuff */
 		p->color = AllocColor(window->textArea, p->colorName, &r, &g, &b);
-		p->red = r;
+		p->red   = r;
 		p->green = g;
-		p->blue = b;
-
-		if (p->bgColorName) {
+		p->blue  = b;
+		
+		if (p->bgColorName && strcmp(p->bgColorName, "") != 0) {
 			p->bgColor = AllocColor(window->textArea, p->bgColorName, &r, &g, &b);
-			p->bgRed = r;
+			p->bgRed   = r;
 			p->bgGreen = g;
-			p->bgBlue = b;
+			p->bgBlue  = b;
 		} else {
 			p->bgColor = p->color;
-			p->bgRed = r;
+			p->bgRed   = r;
 			p->bgGreen = g;
-			p->bgBlue = b;
+			p->bgBlue  = b;
 		}
 
 		p->font = FontOfNamedStyle(window, pat->style);
@@ -1110,7 +1108,10 @@ Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, i
 
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	if (entry && entry->bgColorName) {
+	
+	printf("[GetHighlightBGColorOfCode]\n");
+	
+	if (entry && entry->bgColorName && strcmp(entry->bgColorName, "") != 0) {
 		*r = entry->bgRed;
 		*g = entry->bgGreen;
 		*b = entry->bgBlue;

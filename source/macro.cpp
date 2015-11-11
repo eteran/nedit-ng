@@ -5095,7 +5095,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *w
 	}
 
 	/* insert color name */
-	AllocNStringCpy(&DV.val.str, ColorOfNamedStyle(styleName));
+	AllocNStringCpy(&DV.val.str, ColorOfNamedStyleEx(styleName).c_str());
 	M_STR_ALLOC_ASSERT(DV);
 	if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
 		M_ARRAY_INSERT_FAILURE();
@@ -5115,7 +5115,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *w
 	}
 
 	/* Prepare array element for background color name */
-	AllocNStringCpy(&DV.val.str, BgColorOfNamedStyle(styleName));
+	AllocNStringCpy(&DV.val.str, BgColorOfNamedStyleEx(styleName).c_str());
 	M_STR_ALLOC_ASSERT(DV);
 	if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
 		M_ARRAY_INSERT_FAILURE();

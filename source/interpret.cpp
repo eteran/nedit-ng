@@ -855,10 +855,14 @@ char *AllocStringCpy(const char *s) {
  */
 int AllocNStringCpy(NString *string, const char *s) {
 	size_t length = s ? strlen(s) : 0;
-	if (!AllocNString(string, length + 1))
+	
+	if (!AllocNString(string, length + 1)) {
 		return False;
-	if (s)
+	}
+	
+	if (s) {
 		strncpy(string->rep, s, length);
+	}
 	return True;
 }
 

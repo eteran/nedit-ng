@@ -42,6 +42,9 @@ char *WriteHighlightString(void);
 char *WriteStylesString(void);
 const char *BgColorOfNamedStyle(const char *styleName);
 const char *ColorOfNamedStyle(const char *styleName);
+std::string BgColorOfNamedStyleEx(const char *styleName);
+std::string ColorOfNamedStyleEx(const char *styleName);
+
 int FontOfNamedStyleIsBold(const char *styleName);
 int FontOfNamedStyleIsItalic(const char *styleName);
 int IndexOfNamedStyle(const char *styleName);
