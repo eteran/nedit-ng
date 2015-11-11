@@ -3966,6 +3966,53 @@ char *ReadSymbolicField(const char **inPtr) {
 }
 
 /*
+** Parse a symbolic field, skipping initial and trailing whitespace,
+** stops on first invalid character or end of string.  Valid characters
+** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
+** whitespace is compressed to single space characters.
+*/
+std::string ReadSymbolicFieldEx(const char **inPtr) {
+
+	/* skip over initial blank space */
+	*inPtr += strspn(*inPtr, " \t");
+
+	/* Find the first invalid character or end of string to know how
+	   much memory to allocate for the returned string */
+	const char *strStart = *inPtr;
+	while (isalnum((unsigned char)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
+		(*inPtr)++;
+	}
+	
+	int len = *inPtr - strStart;
+	if (len == 0) {
+		return std::string();
+	}
+	
+	std::string outStr;
+	outStr.reserve(len);
+	
+	auto outPtr = std::back_inserter(outStr);
+
+	/* Copy the string, compressing internal whitespace to a single space */
+	const char *strPtr = strStart;
+	while (strPtr - strStart < len) {
+		if (*strPtr == ' ' || *strPtr == '\t') {
+			strPtr += strspn(strPtr, " \t");
+			*outPtr++ = ' ';
+		} else {
+			*outPtr++ = *strPtr++;
+		}
+	}
+
+	/* If there's space on the end, take it back off */
+	if(!outStr.empty() && outStr.back() == ' ') {
+		outStr.pop_back();	
+	}
+	
+	return outStr;
+}
+
+/*
 ** parse an individual quoted string.  Anything between
 ** double quotes is acceptable, quote characters can be escaped by "".
 ** Returns allocated string "string" containing
@@ -4176,6 +4223,40 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 	if (parsedString == nullptr) {
 		parsedString = XtStringDup("");
 	}
+	return parsedString;
+}
+
+/*
+** Read a dialog text field containing a symbolic name (language mode names,
+** style names, highlight pattern names, colors, and fonts), clean the
+** entered text of leading and trailing whitespace, compress all
+** internal whitespace to one space character, and check it over for
+** colons, which interfere with the preferences file reader/writer syntax.
+** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
+** an empty string if the text field is blank.
+*/
+std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
+
+	/* read from the text widget */
+	char *string    = XmTextGetString(textW);
+	char *stringPtr = string;
+	const char *str = string;
+
+	/* parse it with the same routine used to read symbolic fields from
+	   files.  If the string is not read entirely, there are invalid
+	   characters, so warn the user if not in silent mode. */
+	std::string parsedString = ReadSymbolicFieldEx(&str);
+	if (*stringPtr != '\0') {
+		if (!silent) {
+			*(stringPtr + 1) = '\0';
+			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %s", "OK", stringPtr, fieldName);
+			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
+		}
+		XtFree(string);
+		return std::string();
+	}
+	XtFree(string);
+
 	return parsedString;
 }
 

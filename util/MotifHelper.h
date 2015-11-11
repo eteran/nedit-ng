@@ -16,6 +16,12 @@ inline char *XtStringDup(const char *text) {
 	return s;
 }
 
+inline char *XtStringDup(const std::string &text) {
+	char *s = XtMalloc(text.size() + 1);
+	strcpy(s, text.c_str());
+	return s;
+}
+
 //------------------------------------------------------------------------------
 inline XmString XmStringCreateSimpleEx(const char *text) {
 	return XmStringCreateSimple(const_cast<char *>(text));
