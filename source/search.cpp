@@ -4637,12 +4637,12 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 
 	/* search from beginPos to end of string */
 	if (ExecRE(compiledRE, string + beginPos, nullptr, FALSE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
+		*startPos = compiledRE->startp_[0] - string;
+		*endPos = compiledRE->endp_[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW - string;
+			*searchExtentFW = compiledRE->extentpFW_ - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW - string;
+			*searchExtentBW = compiledRE->extentpBW_ - string;
 		delete compiledRE;
 		return TRUE;
 	}
@@ -4655,12 +4655,12 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 
 	/* search from the beginning of the string to beginPos */
 	if (ExecRE(compiledRE, string, string + beginPos, FALSE, '\0', string[beginPos], delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
+		*startPos = compiledRE->startp_[0] - string;
+		*endPos = compiledRE->endp_[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW - string;
+			*searchExtentFW = compiledRE->extentpFW_ - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW - string;
+			*searchExtentBW = compiledRE->extentpBW_ - string;
 		delete compiledRE;
 		return TRUE;
 	}
@@ -4684,12 +4684,12 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	/* says begin searching from the far end of the file.		*/
 	if (beginPos >= 0) {
 		if (ExecRE(compiledRE, string, string + beginPos, TRUE, '\0', '\0', delimiters, string, nullptr)) {
-			*startPos = compiledRE->startp[0] - string;
-			*endPos = compiledRE->endp[0] - string;
+			*startPos = compiledRE->startp_[0] - string;
+			*endPos = compiledRE->endp_[0] - string;
 			if (searchExtentFW != nullptr)
-				*searchExtentFW = compiledRE->extentpFW - string;
+				*searchExtentFW = compiledRE->extentpFW_ - string;
 			if (searchExtentBW != nullptr)
-				*searchExtentBW = compiledRE->extentpBW - string;
+				*searchExtentBW = compiledRE->extentpBW_ - string;
 			delete compiledRE;
 			return TRUE;
 		}
@@ -4697,7 +4697,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 
 	/* if wrap turned off, we're done */
 	if (!wrap) {
-		free((char *)compiledRE);
+		delete compiledRE;
 		return FALSE;
 	}
 
@@ -4706,16 +4706,16 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 		beginPos = 0;
 	length = strlen(string); /* sadly, this means scanning entire string */
 	if (ExecRE(compiledRE, string + beginPos, string + length, TRUE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
+		*startPos = compiledRE->startp_[0] - string;
+		*endPos = compiledRE->endp_[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW - string;
+			*searchExtentFW = compiledRE->extentpFW_ - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW - string;
-		free((char *)compiledRE);
+			*searchExtentBW = compiledRE->extentpBW_ - string;
+		delete compiledRE;
 		return TRUE;
 	}
-	free((char *)compiledRE);
+	delete compiledRE;
 	return FALSE;
 }
 

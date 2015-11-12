@@ -203,9 +203,7 @@
 
 #define LAST_PAREN (CLOSE + NSUBEXP)
 
-#if (LAST_PAREN > UINT8_MAX)
-#error "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)"
-#endif
+static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)");
 
 /* The next_ptr () function can consume up to 30% of the time during matching
    because it is called an immense number of times (an average of 25
@@ -452,9 +450,7 @@ uint16_t GET_OFFSET(uint8_t *p) {
 
 #define REGEX_START_OFFSET 3
 
-#define MAX_COMPILED_SIZE                                                                                                                                                                                                                      \
-	32767UL /* Largest size a compiled regex can be.                                                                                                                                                                                           \
-	           Probably could be 65535UL. */
+#define MAX_COMPILED_SIZE  32767UL /* Largest size a compiled regex can be. Probably could be 65535UL. */
 
 /* Global work variables for 'CompileRE'. */
 
@@ -498,7 +494,6 @@ struct len_range {
 };
 
 /* Forward declarations for functions used by 'CompileRE'. */
-
 static uint8_t *alternative(int *flag_param, len_range *range_param);
 static uint8_t *back_ref(const char *c, int *flag_param, int emit);
 static uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
@@ -534,7 +529,6 @@ static int init_ansi_classes(void);
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
-
 regexp::regexp(const char *exp, int defaultFlags) {
 
 	uint8_t *scan;
@@ -589,10 +583,10 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Match_Newline = false; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
 		                      Currently not used. Uncomment if needed. */
 
-		Reg_Parse = exp;
-		Total_Paren = 1;
-		Num_Braces = 0;
-		Closed_Parens = 0;
+		Reg_Parse       = exp;
+		Total_Paren     = 1;
+		Num_Braces      = 0;
+		Closed_Parens   = 0;
 		Paren_Has_Width = 0;
 
 		emit_byte(MAGIC);
@@ -609,25 +603,25 @@ regexp::regexp(const char *exp, int defaultFlags) {
 				throw regex_error("regexp > %lu bytes", MAX_COMPILED_SIZE);
 			}
 			
-			this->program = new uint8_t[Reg_Size];
+			program_ = new uint8_t[Reg_Size];
 
-			Code_Emit_Ptr = this->program;
+			Code_Emit_Ptr = program_;
 		}
 	}
 
-	this->program[1] = (uint8_t)Total_Paren - 1;
-	this->program[2] = (uint8_t)Num_Braces;
+	program_[1] = (uint8_t)Total_Paren - 1;
+	program_[2] = (uint8_t)Num_Braces;
 
 	/*----------------------------------------*
 	 * Dig out information for optimizations. *
 	 *----------------------------------------*/
 
-	this->match_start = '\0'; /* Worst-case defaults. */
-	this->anchor = 0;
+	match_start_ = '\0'; /* Worst-case defaults. */
+	anchor_      = 0;
 
 	/* First BRANCH. */
 
-	scan = (this->program + REGEX_START_OFFSET);
+	scan = (program_ + REGEX_START_OFFSET);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
 		scan = OPERAND(scan);
@@ -635,7 +629,7 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		/* Starting-point info. */
 
 		if (GET_OP_CODE(scan) == EXACTLY) {
-			this->match_start = *OPERAND(scan);
+			match_start_ = *OPERAND(scan);
 
 		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
 
@@ -643,16 +637,16 @@ regexp::regexp(const char *exp, int defaultFlags) {
 			   optimized. */
 
 			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				this->match_start = *OPERAND(scan + NODE_SIZE);
+				match_start_ = *OPERAND(scan + NODE_SIZE);
 			}
 		} else if (GET_OP_CODE(scan) == BOL) {
-			this->anchor++;
+			anchor_++;
 		}
 	}
 }
 
 regexp::~regexp() {
-	delete [] this->program;
+	delete [] program_;
 }
 
 /*----------------------------------------------------------------------*
@@ -828,18 +822,18 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		/* Determine if a parenthesized expression is modified by a quantifier
 		   that can have zero width. */
 
-		if (*(Reg_Parse) == '?' || *(Reg_Parse) == '*') {
+		if (*Reg_Parse == '?' || *Reg_Parse == '*') {
 			zero_width++;
-		} else if (*(Reg_Parse) == '{' && Brace_Char == '{') {
-			if (*(Reg_Parse + 1) == ',' || *(Reg_Parse + 1) == '}') {
+		} else if (*Reg_Parse == '{' && Brace_Char == '{') {
+			if (Reg_Parse[1] == ',' || Reg_Parse[1] == '}') {
 				zero_width++;
-			} else if (*(Reg_Parse + 1) == '0') {
+			} else if (Reg_Parse[1] == '0') {
 				i = 2;
 
-				while (*(Reg_Parse + i) == '0')
+				while (Reg_Parse[i] == '0')
 					i++;
 
-				if (*(Reg_Parse + i) == ',')
+				if (Reg_Parse[i] == ',')
 					zero_width++;
 			}
 		}
@@ -1477,7 +1471,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	   string)... period.  Handles multiple sequential comments,
 	   e.g. '(?# one)(?# two)...'  */
 
-	while (*Reg_Parse == '(' && *(Reg_Parse + 1) == '?' && *(Reg_Parse + 2) == '#') {
+	while (Reg_Parse[0] == '(' && Reg_Parse[1] == '?' && Reg_Parse[2] == '#') {
 
 		Reg_Parse += 3;
 
@@ -1592,7 +1586,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	case '?':
 	case '+':
 	case '*':
-		throw regex_error("%c follows nothing", *(Reg_Parse - 1));
+		throw regex_error("%c follows nothing", Reg_Parse[-1]);
 
 	case '{':
 		if (Enable_Counting_Quantifier) {
@@ -1722,7 +1716,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 					last_emit = test;
 				} else if (shortcut_escape(*Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
 
-					if (*(Reg_Parse + 1) == '-') {
+					if (Reg_Parse[1] == '-') {
 						/* Specifically disallow shortcut escapes as the start
 						   of a character class range (see comment above.) */
 
@@ -2607,13 +2601,13 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 
 	/* Check validity of program. */
 
-	if (U_CHAR_AT(prog->program) != MAGIC) {
+	if (U_CHAR_AT(prog->program_) != MAGIC) {
 		reg_error("corrupted program");
 		goto SINGLE_RETURN;
 	}
 
-	s_ptr = prog->startp;
-	e_ptr = prog->endp;
+	s_ptr = prog->startp_;
+	e_ptr = prog->endp_;
 
 	/* If caller has supplied delimiters, make a delimiter table */
 
@@ -2651,8 +2645,8 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	Prev_Is_Delim = (Current_Delimiters[static_cast<int>(prev_char)] ? 1 : 0);
 	Succ_Is_Delim = (Current_Delimiters[static_cast<int>(succ_char)] ? 1 : 0);
 
-	Total_Paren = (int)(prog->program[1]);
-	Num_Braces  = (int)(prog->program[2]);
+	Total_Paren = (int)(prog->program_[1]);
+	Num_Braces  = (int)(prog->program_[2]);
 
 	/* Reset the recursion detection flag */
 	Recursion_Limit_Exceeded = false;
@@ -2682,7 +2676,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	}
 
 	if (!reverse) { /* Forward Search */
-		if (prog->anchor) {
+		if (prog->anchor_) {
 			/* Search is anchored at BOL */
 
 			if (attempt(prog, string)) {
@@ -2702,12 +2696,12 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 
 			goto SINGLE_RETURN;
 
-		} else if (prog->match_start != '\0') {
+		} else if (prog->match_start_ != '\0') {
 			/* We know what char match must start with. */
 
 			for (str = string; !AT_END_OF_STRING(str) && str != end && !Recursion_Limit_Exceeded; str++) {
 
-				if (*str == (uint8_t)prog->match_start) {
+				if (*str == (uint8_t)prog->match_start_) {
 					if (attempt(prog, str)) {
 						ret_val = 1;
 						break;
@@ -2743,7 +2737,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 			end = End_Of_String;
 		}
 
-		if (prog->anchor) {
+		if (prog->anchor_) {
 			/* Search is anchored at BOL */
 
 			for (str = (end - 1); str >= string && !Recursion_Limit_Exceeded; str--) {
@@ -2762,12 +2756,12 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 			}
 
 			goto SINGLE_RETURN;
-		} else if (prog->match_start != '\0') {
+		} else if (prog->match_start_ != '\0') {
 			/* We know what char match must start with. */
 
 			for (str = end; str >= string && !Recursion_Limit_Exceeded; str--) {
 
-				if (*str == (uint8_t)prog->match_start) {
+				if (*str == (uint8_t)prog->match_start_) {
 					if (attempt(prog, str)) {
 						ret_val = 1;
 						break;
@@ -2862,10 +2856,10 @@ static int attempt(regexp *prog, const char *string) {
 	int branch_index = 0; /* Must be set to zero ! */
 
 	Reg_Input          = string;
-	Start_Ptr_Ptr      = prog->startp;
-	End_Ptr_Ptr        = prog->endp;
-	const char **s_ptr = prog->startp;
-	const char **e_ptr = prog->endp;
+	Start_Ptr_Ptr      = prog->startp_;
+	End_Ptr_Ptr        = prog->endp_;
+	const char **s_ptr = prog->startp_;
+	const char **e_ptr = prog->endp_;
 
 	/* Reset the recursion counter. */
 	Recursion_Count = 0;
@@ -2880,12 +2874,12 @@ static int attempt(regexp *prog, const char *string) {
 		*e_ptr++ = nullptr;
 	}
 
-	if (match((prog->program + REGEX_START_OFFSET), &branch_index)) {
-		prog->startp[0]  = string;
-		prog->endp[0]    = Reg_Input;     /* <-- One char AFTER  */
-		prog->extentpBW  = Extent_Ptr_BW; /*     matched string! */
-		prog->extentpFW  = Extent_Ptr_FW;
-		prog->top_branch = branch_index;
+	if (match((prog->program_ + REGEX_START_OFFSET), &branch_index)) {
+		prog->startp_[0]  = string;
+		prog->endp_[0]    = Reg_Input;     /* <-- One char AFTER  */
+		prog->extentpBW_  = Extent_Ptr_BW; /*     matched string! */
+		prog->extentpFW_  = Extent_Ptr_FW;
+		prog->top_branch_ = branch_index;
 
 		return 1;
 	} else {
@@ -3859,7 +3853,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 		return false;
 	}
 
-	if (U_CHAR_AT(prog->program) != MAGIC) {
+	if (U_CHAR_AT(prog->program_) != MAGIC) {
 		reg_error("damaged regexp passed to 'SubstituteRE'");
 
 		return false;
@@ -3925,9 +3919,9 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			} else {
 				*dst++ = c;
 			}
-		} else if (prog->startp[paren_no] != nullptr && prog->endp[paren_no] != nullptr) {
+		} else if (prog->startp_[paren_no] != nullptr && prog->endp_[paren_no] != nullptr) {
 
-			len = prog->endp[paren_no] - prog->startp[paren_no];
+			len = prog->endp_[paren_no] - prog->startp_[paren_no];
 
 			if (((char *)dst + len - dest) >= max - 1) {
 				reg_error("replacing expression in 'SubstituteRE' too long; "
@@ -3936,7 +3930,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 				len = max - ((char *)dst - dest) - 1;
 			}
 
-			strncpy((char *)dst, prog->startp[paren_no], len);
+			strncpy((char *)dst, prog->startp_[paren_no], len);
 
 			if (chgcase != '\0')
 				adjustcase(dst, len, chgcase);

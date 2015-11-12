@@ -67,19 +67,14 @@ public:
 	~regexp();
 		   
 public:
-	const char *startp[NSUBEXP]; /* Captured text starting locations. */
-	const char *endp[NSUBEXP];   /* Captured text ending locations. */
-	const char *extentpBW;       /* Points to the maximum extent of text scanned by
-	                          ExecRE in front of the string to achieve a match
-	                          (needed because of positive look-behind.) */
-	const char *extentpFW;       /* Points to the maximum extent of text scanned by
-	                          ExecRE to achieve a match (needed because of
-	                          positive look-ahead.) */
-	int top_branch;        /* Zero-based index of the top branch that matches.
-	                          Used by syntax highlighting only. */
-	char match_start;      /* Internal use only. */
-	char anchor;           /* Internal use only. */
-	uint8_t *program;       /* Unwarranted chumminess with compiler. */
+	const char *startp_[NSUBEXP]; /* Captured text starting locations. */
+	const char *endp_[NSUBEXP];   /* Captured text ending locations. */
+	const char *extentpBW_;       /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
+	const char *extentpFW_;       /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
+	int top_branch_;              /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+	char match_start_;            /* Internal use only. */
+	char anchor_;                 /* Internal use only. */
+	uint8_t *program_;            /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */

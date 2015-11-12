@@ -1498,14 +1498,14 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
-		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
+		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch_ : 0;
 		/* Combination of all sub-patterns and end pattern matched */
-		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); */
+		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp_[0] - *string); */
 		startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
 		   the match, and advance the pointers to the start of the pattern */
-		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
+		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp_[0], pattern->style, prevChar);
 
 		/* If the combined pattern matched this pattern's end pattern, we're
 		   done.  Fill in the style string, update the pointers, color the
@@ -1514,7 +1514,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		savedPrevChar = *prevChar;
 		if (pattern->endRE != nullptr) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], pattern->style, prevChar);
 				subExecuted = False;
 				for (i = 0; i < pattern->nSubPatterns; i++) {
 					subPat = pattern->subPatterns[i];
@@ -1542,7 +1542,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		   done.  Fill in the style string, update the pointers, and return */
 		if (pattern->errorRE != nullptr) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp_[0], pattern->style, prevChar);
 				*string = stringPtr;
 				*styleString = stylePtr;
 				return False;
@@ -1565,7 +1565,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 
 		/* the sub-pattern is a simple match, just color it */
 		if (subPat->subPatternRE == nullptr) {
-			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
+			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], /* subPat->startRE->endp_[0],*/
 			                subPat->style, prevChar);
 
 			/* Parse the remainder of the sub-pattern */
@@ -1576,7 +1576,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 			/* If parsing should start after the start pattern, advance
 			   to that point (this is currently always the case) */
 			if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], /* subPat->startRE->endp_[0],*/
 				                subPat->style, prevChar);
 
 			/* Parse to the end of the subPattern */
@@ -1589,7 +1589,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 			   Without that restriction, matching becomes unstable. */
 
 			/* Parse to the end of the subPattern */
-			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
+			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp_[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp_[0]);
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -2127,9 +2127,9 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, const char *strin
 	const char *stringPtr;
 	char *stylePtr;
 
-	stringPtr = re->startp[subexpr];
+	stringPtr = re->startp_[subexpr];
 	stylePtr = &styleString[stringPtr - string];
-	fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, nullptr);
+	fillStyleString(&stringPtr, &stylePtr, re->endp_[subexpr], style, nullptr);
 }
 
 /*
