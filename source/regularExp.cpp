@@ -79,11 +79,14 @@
 
 #include "regularExp.h"
 
+#include <cstdarg>
 #include <cctype>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <stdexcept>
 
 /* The first byte of the regexp internal 'program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the
@@ -202,7 +205,7 @@
 
 #define LAST_PAREN (CLOSE + NSUBEXP)
 
-#if (LAST_PAREN > UCHAR_MAX)
+#if (LAST_PAREN > UINT8_MAX)
 #error "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)"
 #endif
 
@@ -395,7 +398,10 @@ uint8_t *OPERAND(uint8_t *p) {
 	return p + NODE_SIZE;
 }
 
-#define GET_OFFSET(p)   (((*((p)+1) & 0xff) << 8) + ((*((p)+2)) & 0xff))
+uint16_t GET_OFFSET(uint8_t *p) {
+	return (((p[1] & 0xff) << 8) + (p[2] & 0xff));
+}
+
 #define PUT_OFFSET_L(v) (uint8_t)(((v) >> 8) & 0xff)
 #define PUT_OFFSET_R(v) (uint8_t)((v)&0xff)
 #define GET_LOWER(p)    (((*((p)+NODE_SIZE) & 0xff) << 8) + ((*((p)+NODE_SIZE + 1)) & 0xff))
@@ -524,6 +530,26 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit);
 
 static int init_ansi_classes(void);
 
+class regex_error : public std::exception {
+public:
+	regex_error(const char *fmt, ...) {
+		char buf[1024];
+		va_list ap;
+		va_start(ap, fmt);
+		vsnprintf(buf, sizeof(buf), fmt, ap);
+		va_end(ap);
+		error_ = buf;
+	}
+	
+public:
+	virtual const char *what() const noexcept override {
+		return error_.c_str();
+	}
+private:
+	std::string error_;
+};
+
+
 /*----------------------------------------------------------------------*
  * CompileRE
  *
@@ -541,131 +567,138 @@ static int init_ansi_classes(void);
 
 regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
 
-	regexp *comp_regex = nullptr;
-	uint8_t *scan;
-	int flags_local;
-	len_range range_local;
+	try {
+		regexp *comp_regex = nullptr;
+		uint8_t *scan;
+		int flags_local;
+		len_range range_local;
 
-	if (Enable_Counting_Quantifier) {
-		Brace_Char = '{';
-		Meta_Char = &Default_Meta_Char[0];
-	} else {
-		Brace_Char = '*';                  /* Bypass the '{' in */
-		Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
-	}
-
-	/* Set up errorText to receive failure reports. */
-
-	Error_Ptr = errorText;
-	*Error_Ptr = "";
-
-	if (exp == nullptr) {
-		REG_FAIL("nullptr argument, 'CompileRE'");
-	}
-
-	/* Initialize arrays used by function 'shortcut_escape'. */
-
-	if (!init_ansi_classes())
-		REG_FAIL("internal error #1, 'CompileRE'");
-
-	Code_Emit_Ptr = &Compute_Size;
-	Reg_Size = 0UL;
-
-	/* We can't allocate space until we know how big the compiled form will be,
-	   but we can't compile it (and thus know how big it is) until we've got a
-	   place to put the code.  So we cheat: we compile it twice, once with code
-	   generation turned off and size counting turned on, and once "for real".
-	   This also means that we don't allocate space until we are sure that the
-	   thing really will compile successfully, and we never have to move the
-	   code and thus invalidate pointers into it.  (Note that it has to be in
-	   one piece because free() must be able to free it all.) */
-
-	for (int pass = 1; pass <= 2; pass++) {
-		/*-------------------------------------------*
-		 * FIRST  PASS: Determine size and legality. *
-		 * SECOND PASS: Emit code.                   *
-		 *-------------------------------------------*/
-
-		/*  Schwarzenberg:
-		 *  If defaultFlags = 0 use standard defaults:
-		 *    Is_Case_Insensitive: Case sensitive is the default
-		 *    Match_Newline:       Newlines are NOT matched by default
-		 *                         in character classes
-		 */
-		Is_Case_Insensitive =     ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
-		Match_Newline = false; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
-		                      Currently not used. Uncomment if needed. */
-
-		Reg_Parse = exp;
-		Total_Paren = 1;
-		Num_Braces = 0;
-		Closed_Parens = 0;
-		Paren_Has_Width = 0;
-
-		emit_byte(MAGIC);
-		emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
-		emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
-
-		if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
-			return nullptr; /* Something went wrong */
-		if (pass == 1) {
-			if (Reg_Size >= MAX_COMPILED_SIZE) {
-				/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
-				   This is a real issue since the first BRANCH node usually points
-				   to the end of the compiled regex code. */
-
-				sprintf(Error_Text, "regexp > %lu bytes", MAX_COMPILED_SIZE);
-				REG_FAIL(Error_Text);
-			}
-
-			/* Allocate memory. */
-
-			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
-
-			if (comp_regex == nullptr) {
-				REG_FAIL("out of memory in 'CompileRE'");
-			}
-
-			Code_Emit_Ptr = comp_regex->program;
+		if (Enable_Counting_Quantifier) {
+			Brace_Char = '{';
+			Meta_Char = &Default_Meta_Char[0];
+		} else {
+			Brace_Char = '*';                  /* Bypass the '{' in */
+			Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
 		}
-	}
 
-	comp_regex->program[1] = (uint8_t)Total_Paren - 1;
-	comp_regex->program[2] = (uint8_t)Num_Braces;
+		/* Set up errorText to receive failure reports. */
 
-	/*----------------------------------------*
-	 * Dig out information for optimizations. *
-	 *----------------------------------------*/
+		Error_Ptr = errorText;
+		*Error_Ptr = "";
 
-	comp_regex->match_start = '\0'; /* Worst-case defaults. */
-	comp_regex->anchor = 0;
-
-	/* First BRANCH. */
-
-	scan = (comp_regex->program + REGEX_START_OFFSET);
-
-	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
-		scan = OPERAND(scan);
-
-		/* Starting-point info. */
-
-		if (GET_OP_CODE(scan) == EXACTLY) {
-			comp_regex->match_start = *OPERAND(scan);
-
-		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
-
-			/* Allow x+ or x+? at the start of the regex to be
-			   optimized. */
-
-			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
-			}
-		} else if (GET_OP_CODE(scan) == BOL) {
-			comp_regex->anchor++;
+		if (exp == nullptr) {
+			throw regex_error("nullptr argument, 'CompileRE'");
 		}
-	}
 
-	return (comp_regex);
+		/* Initialize arrays used by function 'shortcut_escape'. */
+
+		if (!init_ansi_classes()) {
+			throw regex_error("internal error #1, 'CompileRE'");
+		}
+
+		Code_Emit_Ptr = &Compute_Size;
+		Reg_Size = 0UL;
+
+		/* We can't allocate space until we know how big the compiled form will be,
+		   but we can't compile it (and thus know how big it is) until we've got a
+		   place to put the code.  So we cheat: we compile it twice, once with code
+		   generation turned off and size counting turned on, and once "for real".
+		   This also means that we don't allocate space until we are sure that the
+		   thing really will compile successfully, and we never have to move the
+		   code and thus invalidate pointers into it.  (Note that it has to be in
+		   one piece because free() must be able to free it all.) */
+
+		for (int pass = 1; pass <= 2; pass++) {
+			/*-------------------------------------------*
+			 * FIRST  PASS: Determine size and legality. *
+			 * SECOND PASS: Emit code.                   *
+			 *-------------------------------------------*/
+
+			/*  Schwarzenberg:
+			 *  If defaultFlags = 0 use standard defaults:
+			 *    Is_Case_Insensitive: Case sensitive is the default
+			 *    Match_Newline:       Newlines are NOT matched by default
+			 *                         in character classes
+			 */
+			Is_Case_Insensitive =     ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
+			Match_Newline = false; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
+		                    	  Currently not used. Uncomment if needed. */
+
+			Reg_Parse = exp;
+			Total_Paren = 1;
+			Num_Braces = 0;
+			Closed_Parens = 0;
+			Paren_Has_Width = 0;
+
+			emit_byte(MAGIC);
+			emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
+			emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
+
+			if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
+				return nullptr; /* Something went wrong */
+			if (pass == 1) {
+				if (Reg_Size >= MAX_COMPILED_SIZE) {
+					/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
+					   This is a real issue since the first BRANCH node usually points
+					   to the end of the compiled regex code. */
+					throw regex_error("regexp > %lu bytes", MAX_COMPILED_SIZE);
+				}
+
+				/* Allocate memory. */
+
+				comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
+
+				if (comp_regex == nullptr) {
+					throw regex_error("out of memory in 'CompileRE'");
+				}
+
+				Code_Emit_Ptr = comp_regex->program;
+			}
+		}
+
+		comp_regex->program[1] = (uint8_t)Total_Paren - 1;
+		comp_regex->program[2] = (uint8_t)Num_Braces;
+
+		/*----------------------------------------*
+		 * Dig out information for optimizations. *
+		 *----------------------------------------*/
+
+		comp_regex->match_start = '\0'; /* Worst-case defaults. */
+		comp_regex->anchor = 0;
+
+		/* First BRANCH. */
+
+		scan = (comp_regex->program + REGEX_START_OFFSET);
+
+		if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
+			scan = OPERAND(scan);
+
+			/* Starting-point info. */
+
+			if (GET_OP_CODE(scan) == EXACTLY) {
+				comp_regex->match_start = *OPERAND(scan);
+
+			} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
+
+				/* Allow x+ or x+? at the start of the regex to be
+				   optimized. */
+
+				if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
+					comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
+				}
+			} else if (GET_OP_CODE(scan) == BOL) {
+				comp_regex->anchor++;
+			}
+		}
+
+		return comp_regex;
+	} catch(const regex_error &e) {
+		// TODO(eteran): just let the exception propagate instead of copying the message
+		//               this is just inefficient :-(
+		snprintf(Error_Text, sizeof(Error_Text), "%s", e.what());
+		*Error_Ptr = Error_Text; 
+		return nullptr;
+	}
 }
 
 /*----------------------------------------------------------------------*
@@ -1071,8 +1104,8 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			*flag_param = flags_local;
 			*range_param = range_local;
 			return (ret_val);
-		} else if (Num_Braces > (int)UCHAR_MAX) {
-			sprintf(Error_Text, "number of {m,n} constructs > %d", UCHAR_MAX);
+		} else if (Num_Braces > (int)UINT8_MAX) {
+			sprintf(Error_Text, "number of {m,n} constructs > %d", UINT8_MAX);
 			REG_FAIL(Error_Text);
 		}
 	}
@@ -2606,7 +2639,7 @@ static struct brace_counts *Brace;
 
 /* Default table for determining whether a character is a word delimiter. */
 
-static uint8_t Default_Delimiters[UCHAR_MAX + 1] = {0};
+static uint8_t Default_Delimiters[UINT8_MAX + 1] = {0};
 
 static uint8_t *Current_Delimiters; /* Current delimiter table */
 
@@ -2871,7 +2904,7 @@ static int init_ansi_classes(void) {
 		letter_count = 0;
 		space_count  = 0;
 
-		for (int i = 1; i < (int)UCHAR_MAX; i++) {
+		for (int i = 1; i < (int)UINT8_MAX; i++) {
 			if (isalnum(i) || i == underscore) {
 				Word_Char[word_count++] = (uint8_t)i;
 			}
@@ -3285,7 +3318,8 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		case LAZY_QUESTION:
 		case LAZY_BRACE: {
 			unsigned long num_matched = REG_ZERO;
-			unsigned long min = ULONG_MAX, max = REG_ZERO;
+			unsigned long min = ULONG_MAX;
+			unsigned long max = REG_ZERO;
 			const char *save;
 			uint8_t next_char;
 			uint8_t *next_op;
@@ -3327,9 +3361,9 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			case LAZY_BRACE:
 				lazy = 1;
 			case BRACE:
-				min = (unsigned long)GET_OFFSET(scan + NEXT_PTR_SIZE);
+				min = GET_OFFSET(scan + NEXT_PTR_SIZE);
 
-				max = (unsigned long)GET_OFFSET(scan + (2 * NEXT_PTR_SIZE));
+				max = GET_OFFSET(scan + (2 * NEXT_PTR_SIZE));
 
 				if (max <= REG_INFINITY)
 					max = ULONG_MAX;
@@ -3395,7 +3429,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			break;
 
 		case TEST_COUNT:
-			if (Brace->count[*OPERAND(scan)] < (unsigned long)GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE)) {
+			if (Brace->count[*OPERAND(scan)] < GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE)) {
 
 				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
 			}
@@ -3873,12 +3907,10 @@ static unsigned long greedy(uint8_t *p, long max) {
 
 static uint8_t *next_ptr(uint8_t *ptr) {
 
-	int offset;
-
 	if (ptr == &Compute_Size)
 		return nullptr;
 
-	offset = GET_OFFSET(ptr);
+	uint16_t offset = GET_OFFSET(ptr);
 
 	if (offset == 0)
 		return nullptr;

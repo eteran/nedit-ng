@@ -504,7 +504,7 @@ static void convertOldPatternSet(patternSet *patSet) {
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
 		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 	}
 }
@@ -779,7 +779,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
+	retPatSet = new patternSet;
 	*retPatSet = patSet;
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
@@ -2394,7 +2394,8 @@ static patternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	patSet = (patternSet *)XtMalloc(sizeof(patternSet));
+	patSet = new patternSet;
+	
 	patSet->languageMode = XtNewStringEx(HighlightDialog.langModeName);
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
@@ -2491,7 +2492,7 @@ static void freePatternSet(patternSet *p) {
 		freePatternSrc(&p->patterns[i], false);
 	XtFree((char *)p->languageMode);
 	XtFree((char *)p->patterns);
-	XtFree((char *)p);
+	delete p;
 }
 
 #if 0
