@@ -92,7 +92,6 @@ static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void hsSetDisplayedCB(void *item, void *cbArg);
 static highlightStyleRec *readHSDialogFields(int silent);
-static void hsFreeItemCB(void *item);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
@@ -1084,7 +1083,11 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	ac++;
 	XtSetArg(args[ac], XmNbottomOffset, HS_H_MARGIN);
 	ac++;
-	HSDialog.managedListW = CreateManagedList(form, (String) "list", args, ac, (void **)HSDialog.highlightStyleList, &HSDialog.nHighlightStyles, MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, nullptr, hsSetDisplayedCB, form, hsFreeItemCB);
+	
+	HSDialog.managedListW = CreateManagedList(form, (String) "list", args, ac, (void **)HSDialog.highlightStyleList, &HSDialog.nHighlightStyles, MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, nullptr, hsSetDisplayedCB, form, [](void *item) {
+		delete static_cast<highlightStyleRec *>(item);
+	});
+	
 	XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, nullptr);
 
 	/* Set initial default button */
@@ -1221,10 +1224,6 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HSDialog.italicW, hs->font == ITALIC_FONT, False);
 		RadioButtonChangeState(HSDialog.boldItalicW, hs->font == BOLD_ITALIC_FONT, False);
 	}
-}
-
-static void hsFreeItemCB(void *item) {
-	delete static_cast<highlightStyleRec *>(item);
 }
 
 static highlightStyleRec *readHSDialogFields(int silent) {
