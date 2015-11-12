@@ -517,23 +517,23 @@ static void convertOldPatternSet(patternSet *patSet) {
 ** pattern set name and pattern name as passed in patSetName and patName.
 */
 static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr) {
-	char *newRE;
+
 	const char *errorText;
 
-	if (*patternRE == nullptr)
+	if (*patternRE == nullptr) {
 		return;
+	}
+	
 	if (isSubsExpr) {
-		newRE = XtMalloc(strlen(*patternRE) + 5000);
+		char *newRE = XtMalloc(strlen(*patternRE) + 5000);
 		ConvertSubstituteRE(*patternRE, newRE, strlen(*patternRE) + 5000);
 		XtFree(*patternRE);
 		*patternRE = XtNewStringEx(newRE);
 		XtFree(newRE);
 	} else {
-		newRE = ConvertRE(*patternRE, &errorText);
+		char *newRE = ConvertRE(*patternRE, &errorText);
 		if (newRE == nullptr) {
-			fprintf(stderr, "NEdit error converting old format regular "
-			                "expression in pattern set %s, pattern %s: %s\n",
-			        patSetName, patName, errorText);
+			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, errorText);
 		}
 		XtFree(*patternRE);
 		*patternRE = newRE;

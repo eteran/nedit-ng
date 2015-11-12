@@ -757,33 +757,40 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 ** containing compiled regular expressions and style information.
 */
 static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns) {
-	int i, nSubExprs, patternNum, length, subPatIndex, subExprNum, charsRead;
+	int length;
+	int subPatIndex;
+	int subExprNum;
+	int charsRead;
 	int parentIndex;
-	char *ptr;
-	char *bigPattern;
-	const char *compileMsg;
-	highlightDataRec *compiledPats;
-
+	
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
-	compiledPats = new highlightDataRec[nPatterns + 1];
+	auto compiledPats = new highlightDataRec[nPatterns + 1];
 	compiledPats[nPatterns].style = 0;
 
 	/* Build the tree of parse expressions */
-	for (i = 0; i < nPatterns; i++) {
+	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].nSubPatterns = 0;
 		compiledPats[i].nSubBranches = 0;
 	}
-	for (i = 1; i < nPatterns; i++)
-		if (patternSrc[i].subPatternOf == nullptr)
+	
+	for (int i = 1; i < nPatterns; i++) {
+		if (patternSrc[i].subPatternOf == nullptr) {
 			compiledPats[0].nSubPatterns++;
-		else
+		} else {
 			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
-	for (i = 0; i < nPatterns; i++)
+		}
+	}
+
+	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ? nullptr : new highlightDataRec *[compiledPats[i].nSubPatterns];
-	for (i = 0; i < nPatterns; i++)
+	}
+
+	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].nSubPatterns = 0;
-	for (i = 1; i < nPatterns; i++) {
+	}
+
+	for (int i = 1; i < nPatterns; i++) {
 		if (patternSrc[i].subPatternOf == nullptr) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
@@ -794,17 +801,18 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 
 	/* Process color-only sub patterns (no regular expressions to match,
 	   just colors and fonts for sub-expressions of the parent pattern */
-	for (i = 0; i < nPatterns; i++) {
-		compiledPats[i].colorOnly = patternSrc[i].flags & COLOR_ONLY;
+	for (int i = 0; i < nPatterns; i++) {
+		compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
 		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
+		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
 			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name);
 			return nullptr;
 		}
-		nSubExprs = 0;
+		int nSubExprs = 0;
 		if (patternSrc[i].startRE != nullptr) {
-			ptr = patternSrc[i].startRE;
-			while (TRUE) {
+			char *ptr = patternSrc[i].startRE;
+			while (true) {
 				if (*ptr == '&') {
 					compiledPats[i].startSubexprs[nSubExprs++] = 0;
 					ptr++;
@@ -818,8 +826,8 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
 		nSubExprs = 0;
 		if (patternSrc[i].endRE != nullptr) {
-			ptr = patternSrc[i].endRE;
-			while (TRUE) {
+			char *ptr = patternSrc[i].endRE;
+			while (true) {
 				if (*ptr == '&') {
 					compiledPats[i].endSubexprs[nSubExprs++] = 0;
 					ptr++;
@@ -834,92 +842,108 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 	}
 
 	/* Compile regular expressions for all highlight patterns */
-	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].startRE == nullptr || compiledPats[i].colorOnly)
+	for (int i = 0; i < nPatterns; i++) {
+
+		if (patternSrc[i].startRE == nullptr || compiledPats[i].colorOnly) {
 			compiledPats[i].startRE = nullptr;
-		else {
-			if ((compiledPats[i].startRE = compileREAndWarn(dialogParent, patternSrc[i].startRE)) == nullptr)
+		} else {
+			if ((compiledPats[i].startRE = compileREAndWarn(dialogParent, patternSrc[i].startRE)) == nullptr) {
 				return nullptr;
+			}
 		}
-		if (patternSrc[i].endRE == nullptr || compiledPats[i].colorOnly)
+		
+		if (patternSrc[i].endRE == nullptr || compiledPats[i].colorOnly) {
 			compiledPats[i].endRE = nullptr;
-		else {
-			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE)) == nullptr)
+		} else {
+			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE)) == nullptr) {
 				return nullptr;
+			}
 		}
-		if (patternSrc[i].errorRE == nullptr)
+		
+		if (patternSrc[i].errorRE == nullptr) {
 			compiledPats[i].errorRE = nullptr;
-		else {
-			if ((compiledPats[i].errorRE = compileREAndWarn(dialogParent, patternSrc[i].errorRE)) == nullptr)
+		} else {
+			if ((compiledPats[i].errorRE = compileREAndWarn(dialogParent, patternSrc[i].errorRE)) == nullptr) {
 				return nullptr;
+			}
 		}
 	}
 
 	/* Construct and compile the great hairy pattern to match the OR of the
 	   end pattern, the error pattern, and all of the start patterns of the
 	   sub-patterns */
-	for (patternNum = 0; patternNum < nPatterns; patternNum++) {
+	for (int patternNum = 0; patternNum < nPatterns; patternNum++) {
 		if (patternSrc[patternNum].endRE == nullptr && patternSrc[patternNum].errorRE == nullptr && compiledPats[patternNum].nSubPatterns == 0) {
 			compiledPats[patternNum].subPatternRE = nullptr;
 			continue;
 		}
+		
 		length = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE == nullptr) ? 0 : strlen(patternSrc[patternNum].endRE) + 5;
 		length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE == nullptr) ? 0 : strlen(patternSrc[patternNum].errorRE) + 5;
-		for (i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+		
+		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
 			subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
 			length += compiledPats[subPatIndex].colorOnly ? 0 : strlen(patternSrc[subPatIndex].startRE) + 5;
 		}
+		
 		if (length == 0) {
 			compiledPats[patternNum].subPatternRE = nullptr;
 			continue;
 		}
-		bigPattern = XtMalloc(length + 1);
-		ptr = bigPattern;
+		
+		std::string bigPattern;
+		bigPattern.reserve(length);
+		
 		if (patternSrc[patternNum].endRE != nullptr) {
-			*ptr++ = '(';
-			*ptr++ = '?';
-			*ptr++ = ':';
-			strcpy(ptr, patternSrc[patternNum].endRE);
-			ptr += strlen(patternSrc[patternNum].endRE);
-			*ptr++ = ')';
-			*ptr++ = '|';
+			bigPattern += '(';
+			bigPattern += '?';
+			bigPattern += ':';
+			bigPattern += patternSrc[patternNum].endRE;
+			bigPattern += ')';
+			bigPattern += '|';
 			compiledPats[patternNum].nSubBranches++;
 		}
+		
 		if (patternSrc[patternNum].errorRE != nullptr) {
-			*ptr++ = '(';
-			*ptr++ = '?';
-			*ptr++ = ':';
-			strcpy(ptr, patternSrc[patternNum].errorRE);
-			ptr += strlen(patternSrc[patternNum].errorRE);
-			*ptr++ = ')';
-			*ptr++ = '|';
+			bigPattern += '(';
+			bigPattern += '?';
+			bigPattern += ':';
+			bigPattern += patternSrc[patternNum].errorRE;
+			bigPattern += ')';
+			bigPattern += '|';
 			compiledPats[patternNum].nSubBranches++;
 		}
-		for (i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+		
+		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
 			subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
-			if (compiledPats[subPatIndex].colorOnly)
+			
+			if (compiledPats[subPatIndex].colorOnly) {
 				continue;
-			*ptr++ = '(';
-			*ptr++ = '?';
-			*ptr++ = ':';
-			strcpy(ptr, patternSrc[subPatIndex].startRE);
-			ptr += strlen(patternSrc[subPatIndex].startRE);
-			*ptr++ = ')';
-			*ptr++ = '|';
+			}
+			
+			bigPattern += '(';
+			bigPattern += '?';
+			bigPattern += ':';
+			bigPattern += patternSrc[subPatIndex].startRE;
+			bigPattern += ')';
+			bigPattern += '|';
 			compiledPats[patternNum].nSubBranches++;
 		}
-		*(ptr - 1) = '\0';
-		compiledPats[patternNum].subPatternRE = CompileRE(bigPattern, &compileMsg, REDFLT_STANDARD);
+		
+		bigPattern.pop_back(); // remove last '|' character
+
+		const char *compileMsg;
+		compiledPats[patternNum].subPatternRE = CompileRE(bigPattern.c_str(), &compileMsg, REDFLT_STANDARD);
 		if (compiledPats[patternNum].subPatternRE == nullptr) {
 			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", compileMsg);
 			return nullptr;
 		}
-		XtFree(bigPattern);
 	}
 
 	/* Copy remaining parameters from pattern template to compiled tree */
-	for (i = 0; i < nPatterns; i++)
+	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].flags = patternSrc[i].flags;
+	}
 
 	return compiledPats;
 }
