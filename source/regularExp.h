@@ -24,10 +24,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <X11/Intrinsic.h>
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
+
+#include <cstdint>
 
 /* Number of text capturing parentheses allowed. */
 
@@ -37,19 +38,19 @@
    pointers to matched text.  `program' is the actual compiled regex code. */
 
 struct regexp {
-	char *startp[NSUBEXP]; /* Captured text starting locations. */
-	char *endp[NSUBEXP];   /* Captured text ending locations. */
-	char *extentpBW;       /* Points to the maximum extent of text scanned by
+	const char *startp[NSUBEXP]; /* Captured text starting locations. */
+	const char *endp[NSUBEXP];   /* Captured text ending locations. */
+	const char *extentpBW;       /* Points to the maximum extent of text scanned by
 	                          ExecRE in front of the string to achieve a match
 	                          (needed because of positive look-behind.) */
-	char *extentpFW;       /* Points to the maximum extent of text scanned by
+	const char *extentpFW;       /* Points to the maximum extent of text scanned by
 	                          ExecRE to achieve a match (needed because of
 	                          positive look-ahead.) */
 	int top_branch;        /* Zero-based index of the top branch that matches.
 	                          Used by syntax highlighting only. */
 	char match_start;      /* Internal use only. */
 	char anchor;           /* Internal use only. */
-	char program[1];       /* Unwarranted chumminess with compiler. */
+	uint8_t program[1];       /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -85,7 +86,7 @@ int ExecRE(regexp *prog,               /* Compiled regex. */
                                           set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
-Boolean SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
+bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of
