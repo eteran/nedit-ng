@@ -74,9 +74,9 @@ static const char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bo
 
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 #if 0
-static int lookupNamedPattern(patternSet *p, char *patternName);
+static int lookupNamedPattern(patternSet *p, const char *patternName);
 #endif
-static int lookupNamedStyle(const char *styleName);
+static int lookupNamedStyle(view::string_view styleName);
 static highlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, highlightPattern *pattern);
 static patternSet *readDefaultPatternSet(const char *langModeName);
@@ -546,7 +546,7 @@ static void convertPatternExpr(char **patternRE, const char *patSetName, const c
 ** This routine must only be called with a valid styleName (call
 ** NamedStyleExists to find out whether styleName is valid).
 */
-XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName) {
+XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName), fontNum;
 	XFontStruct *font;
 
@@ -566,7 +566,7 @@ XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName) {
 	return font == nullptr ? GetDefaultFontStruct(window->fontList) : font;
 }
 
-int FontOfNamedStyleIsBold(const char *styleName) {
+int FontOfNamedStyleIsBold(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName), fontNum;
 
 	if (styleNo < 0)
@@ -575,7 +575,7 @@ int FontOfNamedStyleIsBold(const char *styleName) {
 	return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
-int FontOfNamedStyleIsItalic(const char *styleName) {
+int FontOfNamedStyleIsItalic(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName), fontNum;
 
 	if (styleNo < 0)
@@ -589,7 +589,7 @@ int FontOfNamedStyleIsItalic(const char *styleName) {
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
-std::string ColorOfNamedStyleEx(const char *styleName) {
+std::string ColorOfNamedStyleEx(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
@@ -602,7 +602,7 @@ std::string ColorOfNamedStyleEx(const char *styleName) {
 /*
 ** Find the background color associated with a named style.
 */
-std::string BgColorOfNamedStyleEx(const char *styleName) {
+std::string BgColorOfNamedStyleEx(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
@@ -615,7 +615,7 @@ std::string BgColorOfNamedStyleEx(const char *styleName) {
 /*
 ** Determine whether a named style exists
 */
-bool NamedStyleExists(const char *styleName) {
+bool NamedStyleExists(view::string_view styleName) {
 	return lookupNamedStyle(styleName) != -1;
 }
 
@@ -623,15 +623,10 @@ bool NamedStyleExists(const char *styleName) {
 ** Look through the list of pattern sets, and find the one for a particular
 ** language.  Returns nullptr if not found.
 */
-patternSet *FindPatternSet(const char *langModeName) {
-	int i;
+patternSet *FindPatternSet(view::string_view langModeName) {
 
-	if (langModeName == nullptr) {
-		return nullptr;
-	}
-
-	for (i = 0; i < NPatternSets; i++) {
-		if (!strcmp(langModeName, PatternSets[i]->languageMode)) {
+	for (int i = 0; i < NPatternSets; i++) {
+		if (langModeName == view::string_view(PatternSets[i]->languageMode)) {
 			return PatternSets[i];
 		}
 	}
@@ -643,10 +638,10 @@ patternSet *FindPatternSet(const char *langModeName) {
 ** Returns True if there are highlight patterns, or potential patterns
 ** not yet committed in the syntax highlighting dialog for a language mode,
 */
-int LMHasHighlightPatterns(const char *languageMode) {
+int LMHasHighlightPatterns(view::string_view languageMode) {
 	if (FindPatternSet(languageMode) != nullptr)
 		return True;
-	return HighlightDialog.shell != nullptr && !strcmp(HighlightDialog.langModeName, languageMode) && HighlightDialog.nPatterns != 0;
+	return HighlightDialog.shell != nullptr && languageMode == view::string_view(HighlightDialog.langModeName) && HighlightDialog.nPatterns != 0;
 }
 
 /*
@@ -1242,13 +1237,12 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	hs = new highlightStyleRec;
 
 	/* read the name field */
-	hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
-#if 0 // can't actually be null	
-	if (name == nullptr) {
+	bool ok;
+	hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent, &ok);
+	if (!ok) {
 		delete hs;
 		return nullptr;
 	}
-#endif
 
 	if (hs->name.empty()) {
 		if (!silent) {
@@ -1260,13 +1254,11 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	}
 
 	/* read the color field */
-	hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
-#if 0 // can't actually be null
-	if (hs->color == nullptr) {
+	hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent, &ok);
+	if (!ok) {
 		delete hs;
 		return nullptr;
 	}
-#endif
 
 	if (hs->color.empty()) {
 		if (!silent) {
@@ -1288,10 +1280,10 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	}
 
 	/* read the background color field - this may be empty */
-	hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent);
+	hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent, &ok);
 
 	/* Verify that the background color (if present) is a valid X color spec */
-	if (!hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
+	if (ok && !hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
 		if (!silent) {
 			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.c_str());
 			XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
@@ -2508,7 +2500,7 @@ static void freePatternSet(patternSet *p) {
 ** Free the allocated memory contained in a patternSet data structure
 ** If "freeStruct" is true, free the structure itself as well.
 */
-static int lookupNamedPattern(patternSet *p, char *patternName)
+static int lookupNamedPattern(patternSet *p, const char *patternName)
 {
     int i;
     
@@ -2523,10 +2515,10 @@ static int lookupNamedPattern(patternSet *p, char *patternName)
 ** Find the index into the HighlightStyles array corresponding to "styleName".
 ** If styleName is not found, return -1.
 */
-static int lookupNamedStyle(const char *styleName) {
+static int lookupNamedStyle(view::string_view styleName) {
 
 	for (int i = 0; i < NHighlightStyles; i++) {
-		if (styleName == HighlightStyles[i]->name) {
+		if (styleName == view::string_view(HighlightStyles[i]->name)) {
 			return i;
 		}
 	}
@@ -2537,6 +2529,6 @@ static int lookupNamedStyle(const char *styleName) {
 /*
 ** Returns a unique number of a given style name
 */
-int IndexOfNamedStyle(const char *styleName) {
+int IndexOfNamedStyle(view::string_view styleName) {
 	return lookupNamedStyle(styleName);
 }

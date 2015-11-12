@@ -3587,7 +3587,8 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
-	haveHighlightPatterns = FindPatternSet(LanguageModeName(mode)) != nullptr;
+	const char *languageModeName = LanguageModeName(mode);
+	haveHighlightPatterns = FindPatternSet(languageModeName ? languageModeName : "") != nullptr;
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->highlightItem, haveHighlightPatterns);
@@ -4196,23 +4197,19 @@ char *MakeQuotedString(const char *string) {
 ** an empty string if the text field is blank.
 */
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent) {
-	char *string;
-	char *stringPtr;
 	char *parsedString;
-	const char *str;
 
 	/* read from the text widget */
-	string = stringPtr = XmTextGetString(textW);
-	str = string;
+	char *string = XmTextGetString(textW);
+	const char *stringPtr = string;
 
 	/* parse it with the same routine used to read symbolic fields from
 	   files.  If the string is not read entirely, there are invalid
 	   characters, so warn the user if not in silent mode. */
-	parsedString = ReadSymbolicField(&str);
+	parsedString = ReadSymbolicField(&stringPtr);
 	if (*stringPtr != '\0') {
-		if (!silent) {
-			*(stringPtr + 1) = '\0';
-			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %s", "OK", stringPtr, fieldName);
+		if (!silent) {		
+			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
 		XtFree(string);
@@ -4235,28 +4232,32 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 ** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
 ** an empty string if the text field is blank.
 */
-std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
+std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent, bool *ok) {
 
 	/* read from the text widget */
 	char *string    = XmTextGetString(textW);
-	char *stringPtr = string;
-	const char *str = string;
+	const char *stringPtr = string;
 
 	/* parse it with the same routine used to read symbolic fields from
 	   files.  If the string is not read entirely, there are invalid
 	   characters, so warn the user if not in silent mode. */
-	std::string parsedString = ReadSymbolicFieldEx(&str);
+	std::string parsedString = ReadSymbolicFieldEx(&stringPtr);
+	
 	if (*stringPtr != '\0') {
 		if (!silent) {
-			*(stringPtr + 1) = '\0';
-			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %s", "OK", stringPtr, fieldName);
+			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%c\" in %s", "OK", stringPtr[1], fieldName);
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
 		XtFree(string);
+		if(ok) {
+			*ok = false;
+		}
 		return std::string();
 	}
 	XtFree(string);
-
+	if(ok) {
+		*ok = true;
+	}
 	return parsedString;
 }
 

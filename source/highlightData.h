@@ -29,24 +29,25 @@
 
 #include "highlight.h"
 #include "nedit.h"
+#include "string_view.h"
 #include <string>
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
-XFontStruct *FontOfNamedStyle(WindowInfo *window, const char *styleName);
+XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName);
 bool LoadHighlightString(const char *inString, int convertOld);
 bool LoadStylesString(const char *inString);
-bool NamedStyleExists(const char *styleName);
+bool NamedStyleExists(view::string_view styleName);
 char *WriteHighlightString(void);
 char *WriteStylesString(void);
-int FontOfNamedStyleIsBold(const char *styleName);
-int FontOfNamedStyleIsItalic(const char *styleName);
-int IndexOfNamedStyle(const char *styleName);
-int LMHasHighlightPatterns(const char *languageMode);
-patternSet *FindPatternSet(const char *langModeName);
-std::string BgColorOfNamedStyleEx(const char *styleName);
-std::string ColorOfNamedStyleEx(const char *styleName);
+int FontOfNamedStyleIsBold(view::string_view styleName);
+int FontOfNamedStyleIsItalic(view::string_view styleName);
+int IndexOfNamedStyle(view::string_view styleName);
+int LMHasHighlightPatterns(view::string_view languageMode);
+patternSet *FindPatternSet(view::string_view langModeName);
+std::string BgColorOfNamedStyleEx(view::string_view styleName);
+std::string ColorOfNamedStyleEx(view::string_view styleName);
 std::string WriteHighlightStringEx(void);
 std::string WriteStylesStringEx(void);
 void EditHighlightPatterns(WindowInfo *window);

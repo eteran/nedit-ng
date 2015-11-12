@@ -59,7 +59,7 @@ inline void XmTextSetStringEx(Widget widget, const char *value) {
 }
 
 inline void XmTextSetStringEx(Widget widget, const std::string &value) {
-	return XmTextSetStringEx(widget, value);
+	return XmTextSetStringEx(widget, value.c_str());
 }
 
 //------------------------------------------------------------------------------

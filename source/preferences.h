@@ -180,7 +180,7 @@ int ReadNumericField(const char **inPtr, int *value);
 char *ReadSymbolicField(const char **inPtr);
 std::string ReadSymbolicFieldEx(const char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
-std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
+std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent, bool *ok);
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
