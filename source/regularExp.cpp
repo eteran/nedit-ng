@@ -2634,8 +2634,9 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	End_Of_String = match_to;
 
 	if (end == nullptr && reverse) {
-		for (end = string; !AT_END_OF_STRING(end); end++)
+		for (end = string; !AT_END_OF_STRING(end); end++) {
 			;
+		}
 		succ_char = '\n';
 	} else if (end == nullptr) {
 		succ_char = '\n';

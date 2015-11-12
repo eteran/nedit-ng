@@ -518,8 +518,6 @@ static void convertOldPatternSet(patternSet *patSet) {
 */
 static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr) {
 
-	const char *errorText;
-
 	if (*patternRE == nullptr) {
 		return;
 	}
@@ -531,12 +529,13 @@ static void convertPatternExpr(char **patternRE, const char *patSetName, const c
 		*patternRE = XtNewStringEx(newRE);
 		XtFree(newRE);
 	} else {
-		char *newRE = ConvertRE(*patternRE, &errorText);
-		if (newRE == nullptr) {
-			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, errorText);
+		try {
+			char *newRE = ConvertRE(*patternRE);
+			XtFree(*patternRE);
+			*patternRE = newRE;
+		} catch(const regex_error &e) {
+			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
 		}
-		XtFree(*patternRE);
-		*patternRE = newRE;
 	}
 }
 
