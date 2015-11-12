@@ -535,9 +535,8 @@ static int init_ansi_classes(void);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-regexp *CompileRE(const char *exp, int defaultFlags) {
+regexp::regexp(const char *exp, int defaultFlags) {
 
-	regexp *comp_regex = nullptr;
 	uint8_t *scan;
 	int flags_local;
 	len_range range_local;
@@ -600,8 +599,8 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 		emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
 		emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
 
-		if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
-			return nullptr; /* Something went wrong */
+		chunk(NO_PAREN, &flags_local, &range_local);
+
 		if (pass == 1) {
 			if (Reg_Size >= MAX_COMPILED_SIZE) {
 				/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
@@ -609,32 +608,26 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 				   to the end of the compiled regex code. */
 				throw regex_error("regexp > %lu bytes", MAX_COMPILED_SIZE);
 			}
+			
+			this->program = new uint8_t[Reg_Size];
 
-			/* Allocate memory. */
-
-			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
-
-			if (comp_regex == nullptr) {
-				throw regex_error("out of memory in 'CompileRE'");
-			}
-
-			Code_Emit_Ptr = comp_regex->program;
+			Code_Emit_Ptr = this->program;
 		}
 	}
 
-	comp_regex->program[1] = (uint8_t)Total_Paren - 1;
-	comp_regex->program[2] = (uint8_t)Num_Braces;
+	this->program[1] = (uint8_t)Total_Paren - 1;
+	this->program[2] = (uint8_t)Num_Braces;
 
 	/*----------------------------------------*
 	 * Dig out information for optimizations. *
 	 *----------------------------------------*/
 
-	comp_regex->match_start = '\0'; /* Worst-case defaults. */
-	comp_regex->anchor = 0;
+	this->match_start = '\0'; /* Worst-case defaults. */
+	this->anchor = 0;
 
 	/* First BRANCH. */
 
-	scan = (comp_regex->program + REGEX_START_OFFSET);
+	scan = (this->program + REGEX_START_OFFSET);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
 		scan = OPERAND(scan);
@@ -642,7 +635,7 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 		/* Starting-point info. */
 
 		if (GET_OP_CODE(scan) == EXACTLY) {
-			comp_regex->match_start = *OPERAND(scan);
+			this->match_start = *OPERAND(scan);
 
 		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
 
@@ -650,14 +643,16 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 			   optimized. */
 
 			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
+				this->match_start = *OPERAND(scan + NODE_SIZE);
 			}
 		} else if (GET_OP_CODE(scan) == BOL) {
-			comp_regex->anchor++;
+			this->anchor++;
 		}
 	}
+}
 
-	return comp_regex;
+regexp::~regexp() {
+	delete [] this->program;
 }
 
 /*----------------------------------------------------------------------*
@@ -2600,7 +2595,6 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	const char *str;
 	int ret_val = 0;
 	uint8_t tempDelimitTable[256];
-	int i;
 	const char **s_ptr;
 	const char **e_ptr;	
 
@@ -2682,7 +2676,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	   in the compiled regex.  We only need to do the first nine since users
 	   can only specify \1, \2, ... \9. */
 
-	for (i = 9; i > 0; i--) {
+	for (int i = 0; i < 9; ++i) {
 		*s_ptr++ = string;
 		*e_ptr++ = string;
 	}

@@ -2964,8 +2964,8 @@ static languageModeRec *readLMDialogFields(int silent) {
 		lm->recognitionExpr = nullptr;
 	} else {
 		try {
-			compiledRE = CompileRE(lm->recognitionExpr, REDFLT_STANDARD);
-			XtFree((char *)compiledRE);
+			compiledRE = new regexp(lm->recognitionExpr, REDFLT_STANDARD);
+			delete compiledRE;
 		} catch(const regex_error &e) {
 			if (!silent) {
 				DialogF(DF_WARN, LMDialog.shell, 1, "Regex", "Recognition expression:\n%s", "OK", e.what());
@@ -3258,11 +3258,11 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 
 	/* Match the primary font agains RE pattern for font names.  If it
 	   doesn't match, we can't generate highlight font names, so return */
-	regexp *compiledRE = CompileRE(searchString, REDFLT_STANDARD);
+	regexp *compiledRE = new regexp(searchString, REDFLT_STANDARD);
 	primaryName = XmTextGetString(fd->primaryW);
 	if (!ExecRE(compiledRE, primaryName, nullptr, False, '\0', '\0', nullptr, nullptr, nullptr)) {
 		XBell(XtDisplay(fd->shell), 0);
-		free(compiledRE);
+		delete compiledRE;
 		XtFree(primaryName);
 		return;
 	}
@@ -3275,7 +3275,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	SubstituteRE(compiledRE, boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
 	XmTextSetStringEx(fd->boldItalicW, modifiedFontName);
 	XtFree(primaryName);
-	free(compiledRE);
+	delete compiledRE;
 }
 
 static void primaryModifiedCB(Widget w, XtPointer clientData, XtPointer callData) {
