@@ -2,6 +2,8 @@
 #ifndef HIGHLIGHT_PATTERN_H_
 #define HIGHLIGHT_PATTERN_H_
 
+#include <string>
+
 /* Pattern specification structure */
 struct highlightPattern {
 	const char *name;

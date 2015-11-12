@@ -738,15 +738,15 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 	/* Collect all of the highlighting information in a single structure */
 	highlightData = new windowHighlightData;
-	highlightData->pass1Patterns = pass1Pats;
-	highlightData->pass2Patterns = pass2Pats;
-	highlightData->parentStyles = parentStyles;
-	highlightData->styleTable = styleTable;
-	highlightData->nStyles = styleTablePtr - styleTable;
-	highlightData->styleBuffer = styleBuf;
+	highlightData->pass1Patterns              = pass1Pats;
+	highlightData->pass2Patterns              = pass2Pats;
+	highlightData->parentStyles               = parentStyles;
+	highlightData->styleTable                 = styleTable;
+	highlightData->nStyles                    = styleTablePtr - styleTable;
+	highlightData->styleBuffer                = styleBuf;
 	highlightData->contextRequirements.nLines = contextLines;
 	highlightData->contextRequirements.nChars = contextChars;
-	highlightData->patternSetForWindow = patSet;
+	highlightData->patternSetForWindow        = patSet;
 
 	return highlightData;
 }
