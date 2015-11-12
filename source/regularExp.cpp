@@ -3719,7 +3719,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case ANY_OF: /* [...] character class. */
-		while (count < max_cmp && strchr((char *)operand, (int)*input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr((char *)operand, *input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3731,7 +3731,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 	                 match newline (\n added usually to operand at compile
 	                 time.) */
 
-		while (count < max_cmp && strchr((char *)operand, (int)*input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr((char *)operand, *input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3760,7 +3760,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case WORD_CHAR: /* \w (word character, alpha-numeric or underscore) */
-		while (count < max_cmp && (isalnum((int)*input_str) || *input_str == '_') && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && (isalnum(*input_str) || *input_str == '_') && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3769,7 +3769,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_WORD_CHAR: /* \W (NOT a word character) */
-		while (count < max_cmp && !isalnum((int)*input_str) && *input_str != '_' && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isalnum(*input_str) && *input_str != '_' && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3778,7 +3778,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case DIGIT: /* same as [0123456789] */
-		while (count < max_cmp && isdigit((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isdigit(*input_str) && !AT_END_OF_STRING(input_str)) {
 			count++;
 			input_str++;
 		}
@@ -3786,7 +3786,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_DIGIT: /* same as [^0123456789] */
-		while (count < max_cmp && !isdigit((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isdigit(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3795,7 +3795,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case SPACE: /* same as [ \t\r\f\v]-- doesn't match newline. */
-		while (count < max_cmp && isspace((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isspace(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3804,7 +3804,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case SPACE_NL: /* same as [\n \t\r\f\v]-- matches newline. */
-		while (count < max_cmp && isspace((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isspace(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3813,7 +3813,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_SPACE: /* same as [^\n \t\r\f\v]-- doesn't match newline. */
-		while (count < max_cmp && !isspace((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isspace(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3822,7 +3822,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_SPACE_NL: /* same as [^ \t\r\f\v]-- matches newline. */
-		while (count < max_cmp && (!isspace((int)*input_str) || *input_str == '\n') && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && (!isspace(*input_str) || *input_str == '\n') && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3831,7 +3831,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case LETTER: /* same as [a-zA-Z] */
-		while (count < max_cmp && isalpha((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isalpha(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3840,7 +3840,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_LETTER: /* same as [^a-zA-Z] */
-		while (count < max_cmp && !isalpha((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isalpha(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
