@@ -1,8 +1,8 @@
 /*------------------------------------------------------------------------*
- * `CompileRE', `ExecRE', and `substituteRE' -- regular expression parsing
+ * 'CompileRE', 'ExecRE', and 'substituteRE' -- regular expression parsing
  *
- * This is a HIGHLY ALTERED VERSION of Henry Spencer's `regcomp' and
- * `regexec' code adapted for NEdit.
+ * This is a HIGHLY ALTERED VERSION of Henry Spencer's 'regcomp' and
+ * 'regexec' code adapted for NEdit.
  *
  * .-------------------------------------------------------------------.
  * | ORIGINAL COPYRIGHT NOTICE:                                        |
@@ -23,7 +23,7 @@
  * |                                                                   |
  * | 3. Altered versions must be plainly marked as such, and must not  |
  * |      be misrepresented as being the original software.            |
- * `-------------------------------------------------------------------'
+ * '-------------------------------------------------------------------'
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -85,26 +85,26 @@
 #include <cstdlib>
 #include <cstring>
 
-/* The first byte of the regexp internal `program' is a magic number to help
+/* The first byte of the regexp internal 'program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the
    second byte. */
 
 #define MAGIC static_cast<uint8_t>(0234)
 
-/* The "internal use only" fields in `regexp.h' are present to pass info from
- * `CompileRE' to `ExecRE' which permits the execute phase to run lots faster on
+/* The "internal use only" fields in 'regexp.h' are present to pass info from
+ * 'CompileRE' to 'ExecRE' which permits the execute phase to run lots faster on
  * simple cases.  They are:
  *
  *   match_start     Character that must begin a match; '\0' if none obvious.
  *   anchor          Is the match anchored (at beginning-of-line only)?
  *
- * `match_start' and `anchor' permit very fast decisions on suitable starting
+ * 'match_start' and 'anchor' permit very fast decisions on suitable starting
  * points for a match, considerably reducing the work done by ExecRE. */
 
-/* STRUCTURE FOR A REGULAR EXPRESSION (regex) `PROGRAM'.
+/* STRUCTURE FOR A REGULAR EXPRESSION (regex) 'PROGRAM'.
  *
  * This is essentially a linear encoding of a nondeterministic finite-state
- * machine or NFA (aka syntax charts or `railroad normal form' in parsing
+ * machine or NFA (aka syntax charts or 'railroad normal form' in parsing
  * technology).  Each node is an opcode plus a NEXT pointer, possibly
  * followed by operands.  NEXT pointers of all nodes except BRANCH implement
  * concatenation; a NEXT pointer with a BRANCH on both ends of it is
@@ -457,7 +457,7 @@ uint8_t *OPERAND(uint8_t *p) {
 	32767UL /* Largest size a compiled regex can be.                                                                                                                                                                                           \
 	           Probably could be 65535UL. */
 
-/* Global work variables for `CompileRE'. */
+/* Global work variables for 'CompileRE'. */
 
 static const char *Reg_Parse;        /* Input scan ptr (scans user's regex) */
 static int Total_Paren;              /* Parentheses, (),  counter. */
@@ -477,7 +477,7 @@ static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         to be written. */
 static size_t Reg_Size;       /* Size of compiled regex code. */
 static const char **Error_Ptr;       /* Place to store error messages so
-                                  they can be returned by `CompileRE' */
+                                  they can be returned by 'CompileRE' */
 static char Error_Text[128];         /* Sting to build error messages in. */
 
 static char White_Space[WHITE_SPACE_SIZE]; /* Arrays used by       */
@@ -501,7 +501,7 @@ struct len_range {
 	long upper;
 };
 
-/* Forward declarations for functions used by `CompileRE'. */
+/* Forward declarations for functions used by 'CompileRE'. */
 
 static uint8_t *alternative(int *flag_param, len_range *range_param);
 static uint8_t *back_ref(const char *c, int *flag_param, int emit);
@@ -528,7 +528,7 @@ static int init_ansi_classes(void);
  * CompileRE
  *
  * Compiles a regular expression into the internal format used by
- * `ExecRE'.
+ * 'ExecRE'.
  *
  * The default behaviour wrt. case sensitivity and newline matching can
  * be controlled through the defaultFlags argument (Markus Schwarzenberg).
@@ -560,13 +560,13 @@ regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
 	*Error_Ptr = "";
 
 	if (exp == nullptr) {
-		REG_FAIL("nullptr argument, `CompileRE\'");
+		REG_FAIL("nullptr argument, 'CompileRE\'");
 	}
 
-	/* Initialize arrays used by function `shortcut_escape'. */
+	/* Initialize arrays used by function 'shortcut_escape'. */
 
 	if (!init_ansi_classes())
-		REG_FAIL("internal error #1, `CompileRE\'");
+		REG_FAIL("internal error #1, 'CompileRE\'");
 
 	Code_Emit_Ptr = &Compute_Size;
 	Reg_Size = 0UL;
@@ -623,7 +623,7 @@ regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
 			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
 
 			if (comp_regex == nullptr) {
-				REG_FAIL("out of memory in `CompileRE\'");
+				REG_FAIL("out of memory in 'CompileRE\'");
 			}
 
 			Code_Emit_Ptr = comp_regex->program;
@@ -833,7 +833,7 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	zero_width = 0;
 
-	/* Set a bit in Closed_Parens to let future calls to function `back_ref'
+	/* Set a bit in Closed_Parens to let future calls to function 'back_ref'
 	   know that we have closed this set of parentheses. */
 
 	if (paren == PAREN && this_paren <= (int)sizeof(Closed_Parens) * CHAR_BIT) {
@@ -1013,9 +1013,9 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 		}
 
 		/* A max of zero can not be specified directly in the regex since it would
-		   signal a max of infinity.  This code specifically disallows `{0,0}',
-		   `{,0}', and `{0}' which really means nothing to humans but would be
-		   interpreted as `{0,infinity}' or `*' if we didn't make this check. */
+		   signal a max of infinity.  This code specifically disallows '{0,0}',
+		   '{,0}', and '{0}' which really means nothing to humans but would be
+		   interpreted as '{0,infinity}' or '*' if we didn't make this check. */
 
 		if (digit_present[0] && (min_max[0] == REG_ZERO) && !comma_present) {
 
@@ -1457,7 +1457,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 		/* We get here if the IS_QUANTIFIER macro is not coordinated properly
 		   with this function. */
 
-		REG_FAIL("internal error #2, `piece\'");
+		REG_FAIL("internal error #2, 'piece\'");
 	}
 
 	if (IS_QUANTIFIER(*Reg_Parse)) {
@@ -1494,11 +1494,11 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	range_param->lower = 0; /* Idem */
 	range_param->upper = 0;
 
-	/* Process any regex comments, e.g. `(?# match next token->)'.  The
+	/* Process any regex comments, e.g. '(?# match next token->)'.  The
 	   terminating right parenthesis can not be escaped.  The comment stops at
 	   the first right parenthesis encountered (or the end of the regex
 	   string)... period.  Handles multiple sequential comments,
-	   e.g. `(?# one)(?# two)...'  */
+	   e.g. '(?# one)(?# two)...'  */
 
 	while (*Reg_Parse == '(' && *(Reg_Parse + 1) == '?' && *(Reg_Parse + 2) == '#') {
 
@@ -1614,7 +1614,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	case '\0':
 	case '|':
 	case ')':
-		REG_FAIL("internal error #3, `atom\'"); /* Supposed to be  */
+		REG_FAIL("internal error #3, 'atom\'"); /* Supposed to be  */
 	                                            /* caught earlier. */
 	case '?':
 	case '+':
@@ -1672,7 +1672,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 
 				if (*Reg_Parse == ']' || *Reg_Parse == '\0') {
 					/* If '-' is the last character in a class it is a literal
-					   character.  If `Reg_Parse' points to the end of the
+					   character.  If 'Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
 
 					emit_byte('-');
@@ -1680,9 +1680,9 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 				} else {
 					/* We must get the range starting character value from the
 					   emitted code since it may have been an escaped
-					   character.  `second_value' is set one larger than the
+					   character.  'second_value' is set one larger than the
 					   just emitted character value.  This is done since
-					   `second_value' is used as the start value for the loop
+					   'second_value' is used as the start value for the loop
 					   that emits the values in the range.  Since we have
 					   already emitted the first character of the class, we do
 					   not want to emit it again. */
@@ -1876,12 +1876,12 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 					} else if ((test = literal_escape(*Reg_Parse))) {
 						emit_byte(test);
 					} else if (back_ref(Reg_Parse, nullptr, CHECK_ESCAPE)) {
-						/* Leave back reference for next `atom' call */
+						/* Leave back reference for next 'atom' call */
 
 						Reg_Parse--;
 						break;
 					} else if (shortcut_escape(*Reg_Parse, nullptr, CHECK_ESCAPE)) {
-						/* Leave shortcut escape for next `atom' call */
+						/* Leave shortcut escape for next 'atom' call */
 
 						Reg_Parse--;
 						break;
@@ -1930,7 +1930,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 			}
 
 			if (len <= 0)
-				REG_FAIL("internal error #4, `atom\'");
+				REG_FAIL("internal error #4, 'atom\'");
 
 			*flag_param |= HAS_WIDTH;
 
@@ -2074,7 +2074,7 @@ static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index)
  *
  * Insert a node in front of already emitted node(s).  Means relocating
  * the operand.  Code_Emit_Ptr points one byte past the just emitted
- * node and operand.  The parameter `insert_pos' points to the location
+ * node and operand.  The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
 
@@ -2182,7 +2182,7 @@ static void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 /*--------------------------------------------------------------------*
  * branch_tail
  *
- * Perform a tail operation on (ptr + offset) but only if `ptr' is a
+ * Perform a tail operation on (ptr + offset) but only if 'ptr' is a
  * BRANCH node.
  *--------------------------------------------------------------------*/
 
@@ -2310,7 +2310,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
-			REG_FAIL("internal error #5 `shortcut_escape\'");
+			REG_FAIL("internal error #5 'shortcut_escape\'");
 		}
 
 		break;
@@ -2320,7 +2320,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
-			REG_FAIL("internal error #6 `shortcut_escape\'");
+			REG_FAIL("internal error #6 'shortcut_escape\'");
 		}
 
 		break;
@@ -2330,7 +2330,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
-			REG_FAIL("internal error #7 `shortcut_escape\'");
+			REG_FAIL("internal error #7 'shortcut_escape\'");
 		}
 
 		break;
@@ -2339,7 +2339,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		/* We get here if there isn't a case for every character in
 		   the string "codes" */
 
-		REG_FAIL("internal error #8 `shortcut_escape\'");
+		REG_FAIL("internal error #8 'shortcut_escape\'");
 	}
 
 	if (emit == EMIT_NODE && c != 'B') {
@@ -2558,7 +2558,7 @@ static uint8_t *back_ref(const char *c, int *flag_param, int emit) {
  *  Regex execution related code
  *======================================================================*/
 
-/* Global work variables for `ExecRE'. */
+/* Global work variables for 'ExecRE'. */
 
 static const char *Reg_Input;          /* String-input pointer.         */
 static const char *Start_Of_String;    /* Beginning of input, for ^     */
@@ -2567,8 +2567,8 @@ static const char *End_Of_String;      /* Logical end of input (if
                                           supplied, till \0 otherwise)  */
 static const char *Look_Behind_To;     /* Position till were look behind
                                           can safely check back         */
-static const char **Start_Ptr_Ptr;     /* Pointer to `startp' array.    */
-static const char **End_Ptr_Ptr;       /* Ditto for `endp'.             */
+static const char **Start_Ptr_Ptr;     /* Pointer to 'startp' array.    */
+static const char **End_Ptr_Ptr;       /* Ditto for 'endp'.             */
 static const char *Extent_Ptr_FW;      /* Forward extent pointer        */
 static const char *Extent_Ptr_BW;      /* Backward extent pointer       */
 static const char *Back_Ref_Start[10]; /* Back_Ref_Start [0] and        */
@@ -2610,7 +2610,7 @@ static uint8_t Default_Delimiters[UCHAR_MAX + 1] = {0};
 
 static uint8_t *Current_Delimiters; /* Current delimiter table */
 
-/* Forward declarations of functions used by `ExecRE' */
+/* Forward declarations of functions used by 'ExecRE' */
 
 static int attempt(regexp *, const char *);
 static int match(uint8_t *, int *);
@@ -2619,12 +2619,12 @@ static void adjustcase(uint8_t *, int, uint8_t);
 static uint8_t *makeDelimiterTable(uint8_t *, uint8_t *);
 
 /*
- * ExecRE - match a `regexp' structure against a string
+ * ExecRE - match a 'regexp' structure against a string
  *
- * If `end' is non-nullptr, matches may not BEGIN past end, but may extend past
- * it.  If reverse is true, `end' must be specified, and searching begins at
- * `end'.  "isbol" should be set to true if the beginning of the string is the
- * actual beginning of a line (since `ExecRE' can't look backwards from the
+ * If 'end' is non-nullptr, matches may not BEGIN past end, but may extend past
+ * it.  If reverse is true, 'end' must be specified, and searching begins at
+ * 'end'.  "isbol" should be set to true if the beginning of the string is the
+ * actual beginning of a line (since 'ExecRE' can't look backwards from the
  * beginning to find whether there was a newline before).  Likewise, "isbow"
  * asks whether the string is preceded by a word delimiter.  End of string is
  * always treated as a word and line boundary (there may be cases where it
@@ -2655,7 +2655,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	/* Check for valid parameters. */
 
 	if (prog == nullptr || string == nullptr) {
-		reg_error("nullptr parameter to `ExecRE\'");
+		reg_error("nullptr parameter to 'ExecRE\'");
 		goto SINGLE_RETURN;
 	}
 
@@ -2716,7 +2716,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 		Brace = (brace_counts *)malloc(sizeof(brace_counts) * (size_t)Num_Braces);
 
 		if (Brace == nullptr) {
-			reg_error("out of memory in `ExecRE\'");
+			reg_error("out of memory in 'ExecRE\'");
 			goto SINGLE_RETURN;
 		}
 	} else {
@@ -2893,7 +2893,7 @@ static int init_ansi_classes(void) {
 
 			if (word_count > (ALNUM_CHAR_SIZE - 2) || space_count > (WHITE_SPACE_SIZE - 2) || letter_count > (ALNUM_CHAR_SIZE - 2)) {
 
-				reg_error("internal error #9 `init_ansi_classes\'");
+				reg_error("internal error #9 'init_ansi_classes\'");
 				return (0);
 			}
 		}
@@ -3058,7 +3058,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 		break;
 
-		case BOL: /* `^' (beginning of line anchor) */
+		case BOL: /* '^' (beginning of line anchor) */
 			if (Reg_Input == Start_Of_String) {
 				if (Prev_Is_BOL)
 					break;
@@ -3068,14 +3068,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			MATCH_RETURN(0);
 
-		case EOL: /* `$' anchor matches end of line and end of string */
+		case EOL: /* '$' anchor matches end of line and end of string */
 			if (*Reg_Input == '\n' || (AT_END_OF_STRING(Reg_Input) && Succ_Is_EOL)) {
 				break;
 			}
 
 			MATCH_RETURN(0);
 
-		case BOWORD: /* `<' (beginning of word anchor) */
+		case BOWORD: /* '<' (beginning of word anchor) */
 			         /* Check to see if the current character is not a delimiter
 			            and the preceding character is. */
 			{
@@ -3099,7 +3099,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			MATCH_RETURN(0);
 
-		case EOWORD: /* `>' (end of word anchor) */
+		case EOWORD: /* '>' (end of word anchor) */
 			         /* Check to see if the current character is a delimiter
 			        and the preceding character is not. */
 			{
@@ -3174,14 +3174,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			Reg_Input++;
 			break;
 
-		case ANY: /* `.' (matches any character EXCEPT newline) */
+		case ANY: /* '.' (matches any character EXCEPT newline) */
 			if (AT_END_OF_STRING(Reg_Input) || *Reg_Input == '\n')
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
-		case EVERY: /* `.' (matches any character INCLUDING newline) */
+		case EVERY: /* '.' (matches any character INCLUDING newline) */
 			if (AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
@@ -3603,7 +3603,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				}
 
 				if (match(next, nullptr)) {
-					/* Do not set `Start_Ptr_Ptr' if some later invocation (think
+					/* Do not set 'Start_Ptr_Ptr' if some later invocation (think
 					   recursion) of the same parentheses already has. */
 
 					if (Start_Ptr_Ptr[no] == nullptr)
@@ -3625,7 +3625,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 					Back_Ref_End[no] = save;
 
 				if (match(next, nullptr)) {
-					/* Do not set `End_Ptr_Ptr' if some later invocation of the
+					/* Do not set 'End_Ptr_Ptr' if some later invocation of the
 					   same parentheses already has. */
 
 					if (End_Ptr_Ptr[no] == nullptr)
@@ -3636,7 +3636,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 					MATCH_RETURN(0);
 				}
 			} else {
-				reg_error("memory corruption, `match\'");
+				reg_error("memory corruption, 'match\'");
 
 				MATCH_RETURN(0);
 			}
@@ -3650,7 +3650,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 	/* We get here only if there's trouble -- normally "case END" is
 	   the terminating point. */
 
-	reg_error("corrupted pointers, `match\'");
+	reg_error("corrupted pointers, 'match\'");
 
 	MATCH_RETURN(0);
 }
@@ -3853,7 +3853,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		   generate a call to greedy.  The above cases should cover
 		   all the atoms that are SIMPLE. */
 
-		reg_error("internal error #10 `greedy\'");
+		reg_error("internal error #10 'greedy\'");
 		count = 0U; /* Best we can do. */
 	}
 
@@ -3891,7 +3891,7 @@ static uint8_t *next_ptr(uint8_t *ptr) {
 }
 
 /*
-**  SubstituteRE - Perform substitutions after a `regexp' match.
+**  SubstituteRE - Perform substitutions after a 'regexp' match.
 **
 **  This function cleanly shortens results of more than max length to max.
 **  To give the caller a chance to react to this the function returns False
@@ -3908,13 +3908,13 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	bool anyWarnings = true;
 
 	if (prog == nullptr || source == nullptr || dest == nullptr) {
-		reg_error("nullptr parm to `SubstituteRE\'");
+		reg_error("nullptr parm to 'SubstituteRE\'");
 
 		return false;
 	}
 
 	if (U_CHAR_AT(prog->program) != MAGIC) {
-		reg_error("damaged regexp passed to `SubstituteRE\'");
+		reg_error("damaged regexp passed to 'SubstituteRE\'");
 
 		return false;
 	}
@@ -3942,7 +3942,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 		if (c == '&') {
 			paren_no = 0;
 		} else if (c == '\\') {
-			/* Can not pass register variable `&src' to function `numeric_escape'
+			/* Can not pass register variable '&src' to function 'numeric_escape'
 			   so make a non-register copy that we can take the address of. */
 
 			src_alias = src;
@@ -3968,12 +3968,12 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 				c = '\\';
 			} else {
 				c = *src++; /* Allow any escape sequence (This is  */
-			}               /* INCONSISTENT with the `CompileRE'   */
+			}               /* INCONSISTENT with the 'CompileRE'   */
 		}                   /* mind set of issuing an error!       */
 
 		if (paren_no < 0) { /* Ordinary character. */
 			if (((char *)dst - dest) >= (max - 1)) {
-				reg_error("replacing expression in `SubstituteRE\' too long; truncating");
+				reg_error("replacing expression in 'SubstituteRE\' too long; truncating");
 				anyWarnings = true;
 				break;
 			} else {
@@ -3984,7 +3984,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			len = prog->endp[paren_no] - prog->startp[paren_no];
 
 			if (((char *)dst + len - dest) >= max - 1) {
-				reg_error("replacing expression in `SubstituteRE\' too long; "
+				reg_error("replacing expression in 'SubstituteRE\' too long; "
 				          "truncating");
 				anyWarnings = true;
 				len = max - ((char *)dst - dest) - 1;
@@ -3998,7 +3998,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			dst += len;
 
 			if (len != 0 && *(dst - 1) == '\0') { /* strncpy hit NUL. */
-				reg_error("damaged match string in `SubstituteRE\'");
+				reg_error("damaged match string in 'SubstituteRE\'");
 				anyWarnings = true;
 			}
 		}
@@ -4079,7 +4079,7 @@ static uint8_t *makeDelimiterTable(uint8_t *delimiters, uint8_t *table) {
 /*----------------------------------------------------------------------*
  * SetREDefaultWordDelimiters
  *
- * Builds a default delimiter table that persists across `ExecRE' calls.
+ * Builds a default delimiter table that persists across 'ExecRE' calls.
  *----------------------------------------------------------------------*/
 
 void SetREDefaultWordDelimiters(char *delimiters) {
