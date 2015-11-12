@@ -181,7 +181,7 @@ char *ConvertRE(const char *exp, const char **errorText) {
 
 static int chunk(int paren, int *flag_param) {
 
-	register int this_branch;
+	int this_branch;
 	int flags_local;
 
 	*flag_param = HAS_WIDTH; /* Tentatively. */
@@ -273,8 +273,8 @@ static int alternative(int *flag_param) {
 
 static int piece(int *flag_param) {
 
-	register int ret_val;
-	register unsigned char op_code;
+	int ret_val;
+	unsigned char op_code;
 	unsigned long min_val = REG_ZERO;
 	int flags_local;
 
@@ -391,7 +391,7 @@ static int atom(int *flag_param) {
 		break;
 
 	case '[': {
-		register unsigned int last_value;
+		unsigned int last_value;
 		unsigned char last_emit = 0;
 		unsigned char buffer[500];
 		int head = 0;
@@ -843,10 +843,10 @@ static unsigned char literal_escape(unsigned char c, int action) {
 
 void ConvertSubstituteRE(const char *source, char *dest, int max) {
 
-	register unsigned char *src;
-	register unsigned char *dst;
-	register unsigned char c;
-	register unsigned char test;
+	unsigned char *src;
+	unsigned char *dst;
+	unsigned char c;
+	unsigned char test;
 
 	if (source == nullptr || dest == nullptr) {
 		reg_error("nullptr parm to `ConvertSubstituteRE\'");
