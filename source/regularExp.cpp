@@ -79,14 +79,12 @@
 
 #include "regularExp.h"
 
-#include <cstdarg>
 #include <cctype>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
-#include <stdexcept>
+
 
 /* The first byte of the regexp internal 'program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the
@@ -409,11 +407,6 @@ uint16_t GET_OFFSET(uint8_t *p) {
 
 /* Utility definitions. */
 
-#define REG_FAIL(m)                                                                                                                                                                                                                            \
-	{                                                                                                                                                                                                                                          \
-		*Error_Ptr = (m);                                                                                                                                                                                                                      \
-		return nullptr;                                                                                                                                                                                                                      \
-	}
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?' || (c) == Brace_Char)
 #define SET_BIT(i, n) ((i) |= (1 << ((n)-1)))
 #define TEST_BIT(i, n) ((i) & (1 << ((n)-1)))
@@ -482,8 +475,6 @@ static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         points to where compiled regex code is
                                         to be written. */
 static size_t Reg_Size;       /* Size of compiled regex code. */
-static const char **Error_Ptr;       /* Place to store error messages so
-                                  they can be returned by 'CompileRE' */
 static char Error_Text[128];         /* Sting to build error messages in. */
 
 static char White_Space[WHITE_SPACE_SIZE]; /* Arrays used by       */
@@ -530,26 +521,6 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit);
 
 static int init_ansi_classes(void);
 
-class regex_error : public std::exception {
-public:
-	regex_error(const char *fmt, ...) {
-		char buf[1024];
-		va_list ap;
-		va_start(ap, fmt);
-		vsnprintf(buf, sizeof(buf), fmt, ap);
-		va_end(ap);
-		error_ = buf;
-	}
-	
-public:
-	virtual const char *what() const noexcept override {
-		return error_.c_str();
-	}
-private:
-	std::string error_;
-};
-
-
 /*----------------------------------------------------------------------*
  * CompileRE
  *
@@ -565,140 +536,129 @@ private:
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
+regexp *CompileRE(const char *exp, int defaultFlags) {
 
-	try {
-		regexp *comp_regex = nullptr;
-		uint8_t *scan;
-		int flags_local;
-		len_range range_local;
+	regexp *comp_regex = nullptr;
+	uint8_t *scan;
+	int flags_local;
+	len_range range_local;
 
-		if (Enable_Counting_Quantifier) {
-			Brace_Char = '{';
-			Meta_Char = &Default_Meta_Char[0];
-		} else {
-			Brace_Char = '*';                  /* Bypass the '{' in */
-			Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
-		}
-
-		/* Set up errorText to receive failure reports. */
-
-		Error_Ptr = errorText;
-		*Error_Ptr = "";
-
-		if (exp == nullptr) {
-			throw regex_error("nullptr argument, 'CompileRE'");
-		}
-
-		/* Initialize arrays used by function 'shortcut_escape'. */
-
-		if (!init_ansi_classes()) {
-			throw regex_error("internal error #1, 'CompileRE'");
-		}
-
-		Code_Emit_Ptr = &Compute_Size;
-		Reg_Size = 0UL;
-
-		/* We can't allocate space until we know how big the compiled form will be,
-		   but we can't compile it (and thus know how big it is) until we've got a
-		   place to put the code.  So we cheat: we compile it twice, once with code
-		   generation turned off and size counting turned on, and once "for real".
-		   This also means that we don't allocate space until we are sure that the
-		   thing really will compile successfully, and we never have to move the
-		   code and thus invalidate pointers into it.  (Note that it has to be in
-		   one piece because free() must be able to free it all.) */
-
-		for (int pass = 1; pass <= 2; pass++) {
-			/*-------------------------------------------*
-			 * FIRST  PASS: Determine size and legality. *
-			 * SECOND PASS: Emit code.                   *
-			 *-------------------------------------------*/
-
-			/*  Schwarzenberg:
-			 *  If defaultFlags = 0 use standard defaults:
-			 *    Is_Case_Insensitive: Case sensitive is the default
-			 *    Match_Newline:       Newlines are NOT matched by default
-			 *                         in character classes
-			 */
-			Is_Case_Insensitive =     ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
-			Match_Newline = false; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
-		                    	  Currently not used. Uncomment if needed. */
-
-			Reg_Parse = exp;
-			Total_Paren = 1;
-			Num_Braces = 0;
-			Closed_Parens = 0;
-			Paren_Has_Width = 0;
-
-			emit_byte(MAGIC);
-			emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
-			emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
-
-			if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
-				return nullptr; /* Something went wrong */
-			if (pass == 1) {
-				if (Reg_Size >= MAX_COMPILED_SIZE) {
-					/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
-					   This is a real issue since the first BRANCH node usually points
-					   to the end of the compiled regex code. */
-					throw regex_error("regexp > %lu bytes", MAX_COMPILED_SIZE);
-				}
-
-				/* Allocate memory. */
-
-				comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
-
-				if (comp_regex == nullptr) {
-					throw regex_error("out of memory in 'CompileRE'");
-				}
-
-				Code_Emit_Ptr = comp_regex->program;
-			}
-		}
-
-		comp_regex->program[1] = (uint8_t)Total_Paren - 1;
-		comp_regex->program[2] = (uint8_t)Num_Braces;
-
-		/*----------------------------------------*
-		 * Dig out information for optimizations. *
-		 *----------------------------------------*/
-
-		comp_regex->match_start = '\0'; /* Worst-case defaults. */
-		comp_regex->anchor = 0;
-
-		/* First BRANCH. */
-
-		scan = (comp_regex->program + REGEX_START_OFFSET);
-
-		if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
-			scan = OPERAND(scan);
-
-			/* Starting-point info. */
-
-			if (GET_OP_CODE(scan) == EXACTLY) {
-				comp_regex->match_start = *OPERAND(scan);
-
-			} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
-
-				/* Allow x+ or x+? at the start of the regex to be
-				   optimized. */
-
-				if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-					comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
-				}
-			} else if (GET_OP_CODE(scan) == BOL) {
-				comp_regex->anchor++;
-			}
-		}
-
-		return comp_regex;
-	} catch(const regex_error &e) {
-		// TODO(eteran): just let the exception propagate instead of copying the message
-		//               this is just inefficient :-(
-		snprintf(Error_Text, sizeof(Error_Text), "%s", e.what());
-		*Error_Ptr = Error_Text; 
-		return nullptr;
+	if (Enable_Counting_Quantifier) {
+		Brace_Char = '{';
+		Meta_Char = &Default_Meta_Char[0];
+	} else {
+		Brace_Char = '*';                  /* Bypass the '{' in */
+		Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
 	}
+
+	/* Set up errorText to receive failure reports. */
+
+	if (exp == nullptr) {
+		throw regex_error("nullptr argument, 'CompileRE'");
+	}
+
+	/* Initialize arrays used by function 'shortcut_escape'. */
+
+	if (!init_ansi_classes()) {
+		throw regex_error("internal error #1, 'CompileRE'");
+	}
+
+	Code_Emit_Ptr = &Compute_Size;
+	Reg_Size = 0UL;
+
+	/* We can't allocate space until we know how big the compiled form will be,
+	   but we can't compile it (and thus know how big it is) until we've got a
+	   place to put the code.  So we cheat: we compile it twice, once with code
+	   generation turned off and size counting turned on, and once "for real".
+	   This also means that we don't allocate space until we are sure that the
+	   thing really will compile successfully, and we never have to move the
+	   code and thus invalidate pointers into it.  (Note that it has to be in
+	   one piece because free() must be able to free it all.) */
+
+	for (int pass = 1; pass <= 2; pass++) {
+		/*-------------------------------------------*
+		 * FIRST  PASS: Determine size and legality. *
+		 * SECOND PASS: Emit code.                   *
+		 *-------------------------------------------*/
+
+		/*  Schwarzenberg:
+		 *  If defaultFlags = 0 use standard defaults:
+		 *    Is_Case_Insensitive: Case sensitive is the default
+		 *    Match_Newline:       Newlines are NOT matched by default
+		 *                         in character classes
+		 */
+		Is_Case_Insensitive =     ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
+		Match_Newline = false; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
+		                      Currently not used. Uncomment if needed. */
+
+		Reg_Parse = exp;
+		Total_Paren = 1;
+		Num_Braces = 0;
+		Closed_Parens = 0;
+		Paren_Has_Width = 0;
+
+		emit_byte(MAGIC);
+		emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
+		emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
+
+		if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
+			return nullptr; /* Something went wrong */
+		if (pass == 1) {
+			if (Reg_Size >= MAX_COMPILED_SIZE) {
+				/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
+				   This is a real issue since the first BRANCH node usually points
+				   to the end of the compiled regex code. */
+				throw regex_error("regexp > %lu bytes", MAX_COMPILED_SIZE);
+			}
+
+			/* Allocate memory. */
+
+			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
+
+			if (comp_regex == nullptr) {
+				throw regex_error("out of memory in 'CompileRE'");
+			}
+
+			Code_Emit_Ptr = comp_regex->program;
+		}
+	}
+
+	comp_regex->program[1] = (uint8_t)Total_Paren - 1;
+	comp_regex->program[2] = (uint8_t)Num_Braces;
+
+	/*----------------------------------------*
+	 * Dig out information for optimizations. *
+	 *----------------------------------------*/
+
+	comp_regex->match_start = '\0'; /* Worst-case defaults. */
+	comp_regex->anchor = 0;
+
+	/* First BRANCH. */
+
+	scan = (comp_regex->program + REGEX_START_OFFSET);
+
+	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
+		scan = OPERAND(scan);
+
+		/* Starting-point info. */
+
+		if (GET_OP_CODE(scan) == EXACTLY) {
+			comp_regex->match_start = *OPERAND(scan);
+
+		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
+
+			/* Allow x+ or x+? at the start of the regex to be
+			   optimized. */
+
+			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
+				comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
+			}
+		} else if (GET_OP_CODE(scan) == BOL) {
+			comp_regex->anchor++;
+		}
+	}
+
+	return comp_regex;
 }
 
 /*----------------------------------------------------------------------*
@@ -735,7 +695,7 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	if (paren == PAREN) {
 		if (Total_Paren >= NSUBEXP) {
 			sprintf(Error_Text, "number of ()'s > %d", NSUBEXP);
-			REG_FAIL(Error_Text);
+			throw regex_error(Error_Text);
 		}
 
 		this_paren = Total_Paren;
@@ -832,12 +792,12 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	/* Check for proper termination. */
 
 	if (paren != NO_PAREN && *Reg_Parse++ != ')') {
-		REG_FAIL("missing right parenthesis ')'");
+		throw regex_error("missing right parenthesis ')'");
 	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
 		if (*Reg_Parse == ')') {
-			REG_FAIL("missing left parenthesis '('");
+			throw regex_error("missing left parenthesis '('");
 		} else {
-			REG_FAIL("junk on end"); /* "Can't happen" - NOTREACHED */
+			throw regex_error("junk on end"); /* "Can't happen" - NOTREACHED */
 		}
 	}
 
@@ -845,10 +805,10 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	if (emit_look_behind_bounds) {
 		if (range_param->lower < 0) {
-			REG_FAIL("look-behind does not have a bounded size");
+			throw regex_error("look-behind does not have a bounded size");
 		}
 		if (range_param->upper > 65535L) {
-			REG_FAIL("max. look-behind size is too large (>65535)")
+			throw regex_error("max. look-behind size is too large (>65535)");
 		}
 		if (Code_Emit_Ptr != &Compute_Size) {
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param->lower);
@@ -1035,7 +995,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 						sprintf(Error_Text, "max operand of {%lu,%lu%c} > 65535", min_max[0], min_max[1], *Reg_Parse);
 					}
 
-					REG_FAIL(Error_Text);
+					throw regex_error(Error_Text);
 				}
 			}
 
@@ -1052,16 +1012,16 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 
 		if (digit_present[0] && (min_max[0] == REG_ZERO) && !comma_present) {
 
-			REG_FAIL("{0} is an invalid range");
+			throw regex_error("{0} is an invalid range");
 		} else if (digit_present[0] && (min_max[0] == REG_ZERO) && digit_present[1] && (min_max[1] == REG_ZERO)) {
 
-			REG_FAIL("{0,0} is an invalid range");
+			throw regex_error("{0,0} is an invalid range");
 		} else if (digit_present[1] && (min_max[1] == REG_ZERO)) {
 			if (digit_present[0]) {
 				sprintf(Error_Text, "{%lu,0} is an invalid range", min_max[0]);
-				REG_FAIL(Error_Text);
+				throw regex_error(Error_Text);
 			} else {
-				REG_FAIL("{,0} is an invalid range");
+				throw regex_error("{,0} is an invalid range");
 			}
 		}
 
@@ -1069,13 +1029,13 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			min_max[1] = min_max[0]; /* {x} means {x,x} */
 
 		if (*Reg_Parse != '}') {
-			REG_FAIL("{m,n} specification missing right '}'");
+			throw regex_error("{m,n} specification missing right '}'");
 
 		} else if (min_max[1] != REG_INFINITY && min_max[0] > min_max[1]) {
 			/* Disallow a backward range. */
 
 			sprintf(Error_Text, "{%lu,%lu} is an invalid range", min_max[0], min_max[1]);
-			REG_FAIL(Error_Text);
+			throw regex_error(Error_Text);
 		}
 	}
 
@@ -1106,7 +1066,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			return (ret_val);
 		} else if (Num_Braces > (int)UINT8_MAX) {
 			sprintf(Error_Text, "number of {m,n} constructs > %d", UINT8_MAX);
-			REG_FAIL(Error_Text);
+			throw regex_error(Error_Text);
 		}
 	}
 
@@ -1125,7 +1085,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			sprintf(Error_Text, "%c operand could be empty", op_code);
 		}
 
-		REG_FAIL(Error_Text);
+		throw regex_error(Error_Text);
 	}
 
 	*flag_param = (min_max[0] > REG_ZERO) ? (WORST | HAS_WIDTH) : WORST;
@@ -1490,7 +1450,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 		/* We get here if the IS_QUANTIFIER macro is not coordinated properly
 		   with this function. */
 
-		REG_FAIL("internal error #2, 'piece'");
+		throw regex_error("internal error #2, 'piece'");
 	}
 
 	if (IS_QUANTIFIER(*Reg_Parse)) {
@@ -1500,7 +1460,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			sprintf(Error_Text, "nested quantifiers, %c%c", op_code, *Reg_Parse);
 		}
 
-		REG_FAIL(Error_Text);
+		throw regex_error(Error_Text);
 	}
 
 	return (ret_val);
@@ -1623,12 +1583,12 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 				} else {
 					sprintf(Error_Text, "invalid look-behind syntax, \"(?<%c...)\"", *Reg_Parse);
 
-					REG_FAIL(Error_Text);
+					throw regex_error(Error_Text);
 				}
 			} else {
 				sprintf(Error_Text, "invalid grouping syntax, \"(?%c...)\"", *Reg_Parse);
 
-				REG_FAIL(Error_Text);
+				throw regex_error(Error_Text);
 			}
 		} else { /* Normal capturing parentheses */
 			ret_val = chunk(PAREN, &flags_local, &range_local);
@@ -1647,17 +1607,17 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	case '\0':
 	case '|':
 	case ')':
-		REG_FAIL("internal error #3, 'atom'"); /* Supposed to be  */
+		throw regex_error("internal error #3, 'atom'"); /* Supposed to be  */
 	                                            /* caught earlier. */
 	case '?':
 	case '+':
 	case '*':
 		sprintf(Error_Text, "%c follows nothing", *(Reg_Parse - 1));
-		REG_FAIL(Error_Text);
+		throw regex_error(Error_Text);
 
 	case '{':
 		if (Enable_Counting_Quantifier) {
-			REG_FAIL("{m,n} follows nothing");
+			throw regex_error("{m,n} follows nothing");
 		} else {
 			ret_val = emit_node(EXACTLY); /* Treat braces as literals. */
 			emit_byte('{');
@@ -1739,11 +1699,11 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 						} else if (shortcut_escape(*Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
 							sprintf(Error_Text, "\\%c is not allowed as range operand", *Reg_Parse);
 
-							REG_FAIL(Error_Text);
+							throw regex_error(Error_Text);
 						} else {
 							sprintf(Error_Text, "\\%c is an invalid char class escape sequence", *Reg_Parse);
 
-							REG_FAIL(Error_Text);
+							throw regex_error(Error_Text);
 						}
 					} else {
 						last_value = U_CHAR_AT(Reg_Parse);
@@ -1759,7 +1719,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 					   lower case. */
 
 					if (second_value - 1 > last_value) {
-						REG_FAIL("invalid [] range");
+						throw regex_error("invalid [] range");
 					}
 
 					/* If only one character in range (e.g [a-a]) then this
@@ -1793,7 +1753,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 
 						sprintf(Error_Text, "\\%c not allowed as range operand", *Reg_Parse);
 
-						REG_FAIL(Error_Text);
+						throw regex_error(Error_Text);
 					} else {
 						/* Emit the bytes that are part of the shortcut
 						   escape sequence's range (e.g. \d = 0123456789) */
@@ -1803,7 +1763,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 				} else {
 					sprintf(Error_Text, "\\%c is an invalid char class escape sequence", *Reg_Parse);
 
-					REG_FAIL(Error_Text);
+					throw regex_error(Error_Text);
 				}
 
 				Reg_Parse++;
@@ -1818,7 +1778,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
-			REG_FAIL("missing right ']'");
+			throw regex_error("missing right ']'");
 
 		emit_byte('\0');
 
@@ -1863,7 +1823,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 		}
 
 		if (strlen(Error_Text) > 0)
-			REG_FAIL(Error_Text);
+			throw regex_error(Error_Text);
 
 	/* At this point it is apparent that the escaped character is not a
 	   shortcut escape or back-reference.  Back up one character to allow
@@ -1926,7 +1886,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 							sprintf(Error_Text, "\\%c is an invalid escape sequence", *Reg_Parse);
 						}
 
-						REG_FAIL(Error_Text);
+						throw regex_error(Error_Text);
 					}
 
 					Reg_Parse++;
@@ -1963,7 +1923,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 			}
 
 			if (len <= 0)
-				REG_FAIL("internal error #4, 'atom'");
+				throw regex_error("internal error #4, 'atom'");
 
 			*flag_param |= HAS_WIDTH;
 
@@ -2343,7 +2303,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
-			REG_FAIL("internal error #5 'shortcut_escape'");
+			throw regex_error("internal error #5 'shortcut_escape'");
 		}
 
 		break;
@@ -2353,7 +2313,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
-			REG_FAIL("internal error #6 'shortcut_escape'");
+			throw regex_error("internal error #6 'shortcut_escape'");
 		}
 
 		break;
@@ -2363,7 +2323,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
-			REG_FAIL("internal error #7 'shortcut_escape'");
+			throw regex_error("internal error #7 'shortcut_escape'");
 		}
 
 		break;
@@ -2372,7 +2332,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		/* We get here if there isn't a case for every character in
 		   the string "codes" */
 
-		REG_FAIL("internal error #8 'shortcut_escape'");
+		throw regex_error("internal error #8 'shortcut_escape'");
 	}
 
 	if (emit == EMIT_NODE && c != 'B') {
@@ -2400,7 +2360,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
  *                             than 377 octal.  Must have leading zero.
  *
  * Returns the actual character value or nullptr if not a valid hex or
- * octal escape.  REG_FAIL is called if \x0, \x00, \0, \00, \000, or
+ * octal escape.  throws regex_error if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 

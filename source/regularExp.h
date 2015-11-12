@@ -29,6 +29,28 @@
 #define NEDIT_REGULAREXP_H_INCLUDED
 
 #include <cstdint>
+#include <exception>
+#include <stdexcept>
+#include <cstdarg>
+
+class regex_error : public std::exception {
+public:
+	regex_error(const char *fmt, ...) {
+		char buf[1024];
+		va_list ap;
+		va_start(ap, fmt);
+		vsnprintf(buf, sizeof(buf), fmt, ap);
+		va_end(ap);
+		error_ = buf;
+	}
+	
+public:
+	virtual const char *what() const noexcept override {
+		return error_.c_str();
+	}
+private:
+	std::string error_;
+};
 
 /* Number of text capturing parentheses allowed. */
 
@@ -64,7 +86,6 @@ enum RE_DEFAULT_FLAG {
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 
 regexp *CompileRE(const char *exp,        /* String containing the regex specification. */
-                  const char **errorText, /* Text of any error message produced. */
                   int defaultFlags);      /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */

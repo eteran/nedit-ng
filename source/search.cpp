@@ -2901,7 +2901,6 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 */
 static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType) {
 	regexp *compiledRE = nullptr;
-	const char *compileMsg;
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
@@ -2919,12 +2918,13 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
-		compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
-		if (compiledRE == nullptr) {
-			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", compileMsg);
+		try {
+			compiledRE = CompileRE(replaceText, regexDefault);
+		} catch(const regex_error &e) {
+			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", e.what());
 			XtFree(replaceText);
 			XtFree(replaceWithText);
-			return FALSE;
+			return FALSE;		
 		}
 		free((char *)compiledRE);
 	} else {
@@ -2974,7 +2974,6 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType) {
 
 	regexp *compiledRE = nullptr;
-	const char *compileMsg;
 
 	/* Get the search string, search type, and direction from the dialog */
 	char *findText = XmTextGetString(window->findText);
@@ -2990,9 +2989,10 @@ static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchStrin
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
-		compiledRE = CompileRE(findText, &compileMsg, regexDefault);
-		if (compiledRE == nullptr) {
-			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", compileMsg);
+		try {
+			compiledRE = CompileRE(findText, regexDefault);
+		} catch(const regex_error &e) {
+			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
 			return FALSE;
 		}
 		free((char *)compiledRE);
@@ -3484,14 +3484,14 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   in peace when they have unfinished syntax, but still get beeps when
 	   correct syntax doesn't match) */
 	if (isRegexType(searchType)) {
-		regexp *compiledRE = nullptr;
-		const char *compileMsg;
-		compiledRE = CompileRE(searchString, &compileMsg, defaultRegexFlags(searchType));
-		if (compiledRE == nullptr) {
+		try {
+			regexp *compiledRE = CompileRE(searchString, defaultRegexFlags(searchType));
+			free(compiledRE);
+		} catch(const regex_error &e) {
 			XtFree(searchString);
-			return;
+			return;		
 		}
-		free((char *)compiledRE);
+		
 	}
 
 	/* Call the incremental search action proc to do the searching and
@@ -4625,14 +4625,15 @@ static int searchRegex(const char *string, const char *searchString, int directi
 
 static int forwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	regexp *compiledRE = nullptr;
-	const char *compileMsg;
 
 	/* compile the search string for searching with ExecRE.  Note that
 	   this does not process errors from compiling the expression.  It
 	   assumes that the expression was checked earlier. */
-	compiledRE = CompileRE(searchString, &compileMsg, defaultFlags);
-	if (compiledRE == nullptr)
+	try {
+		compiledRE = CompileRE(searchString, defaultFlags);
+	} catch(const regex_error &e) {
 		return FALSE;
+	}
 
 	/* search from beginPos to end of string */
 	if (ExecRE(compiledRE, string + beginPos, nullptr, FALSE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
@@ -4670,13 +4671,14 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 
 static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	regexp *compiledRE = nullptr;
-	const char *compileMsg;
 	int length;
 
 	/* compile the search string for searching with ExecRE */
-	compiledRE = CompileRE(searchString, &compileMsg, defaultFlags);
-	if (compiledRE == nullptr)
+	try {
+		compiledRE = CompileRE(searchString, defaultFlags);
+	} catch(const regex_error &e) {
 		return FALSE;
+	}
 
 	/* search from beginPos to start of file.  A negative begin pos	*/
 	/* says begin searching from the far end of the file.		*/
@@ -4831,15 +4833,16 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 ** items.
 */
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
-	regexp *compiledRE;
-	const char *compileMsg;
 
-	compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
-	ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
-	Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-	free((char *)compiledRE);
-
-	return substResult;
+	try {
+		regexp *compiledRE = CompileRE(searchStr, defaultFlags);
+		ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
+		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
+		free((char *)compiledRE);
+		return substResult;
+	} catch(const regex_error &e) {
+		return false;
+	}
 }
 
 /*
