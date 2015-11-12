@@ -560,13 +560,13 @@ regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
 	*Error_Ptr = "";
 
 	if (exp == nullptr) {
-		REG_FAIL("nullptr argument, 'CompileRE\'");
+		REG_FAIL("nullptr argument, 'CompileRE'");
 	}
 
 	/* Initialize arrays used by function 'shortcut_escape'. */
 
 	if (!init_ansi_classes())
-		REG_FAIL("internal error #1, 'CompileRE\'");
+		REG_FAIL("internal error #1, 'CompileRE'");
 
 	Code_Emit_Ptr = &Compute_Size;
 	Reg_Size = 0UL;
@@ -623,7 +623,7 @@ regexp *CompileRE(const char *exp, const char **errorText, int defaultFlags) {
 			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
 
 			if (comp_regex == nullptr) {
-				REG_FAIL("out of memory in 'CompileRE\'");
+				REG_FAIL("out of memory in 'CompileRE'");
 			}
 
 			Code_Emit_Ptr = comp_regex->program;
@@ -799,10 +799,10 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	/* Check for proper termination. */
 
 	if (paren != NO_PAREN && *Reg_Parse++ != ')') {
-		REG_FAIL("missing right parenthesis \')\'");
+		REG_FAIL("missing right parenthesis ')'");
 	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
 		if (*Reg_Parse == ')') {
-			REG_FAIL("missing left parenthesis \'(\'");
+			REG_FAIL("missing left parenthesis '('");
 		} else {
 			REG_FAIL("junk on end"); /* "Can't happen" - NOTREACHED */
 		}
@@ -1036,7 +1036,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			min_max[1] = min_max[0]; /* {x} means {x,x} */
 
 		if (*Reg_Parse != '}') {
-			REG_FAIL("{m,n} specification missing right \'}\'");
+			REG_FAIL("{m,n} specification missing right '}'");
 
 		} else if (min_max[1] != REG_INFINITY && min_max[0] > min_max[1]) {
 			/* Disallow a backward range. */
@@ -1457,7 +1457,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 		/* We get here if the IS_QUANTIFIER macro is not coordinated properly
 		   with this function. */
 
-		REG_FAIL("internal error #2, 'piece\'");
+		REG_FAIL("internal error #2, 'piece'");
 	}
 
 	if (IS_QUANTIFIER(*Reg_Parse)) {
@@ -1614,7 +1614,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 	case '\0':
 	case '|':
 	case ')':
-		REG_FAIL("internal error #3, 'atom\'"); /* Supposed to be  */
+		REG_FAIL("internal error #3, 'atom'"); /* Supposed to be  */
 	                                            /* caught earlier. */
 	case '?':
 	case '+':
@@ -1785,7 +1785,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
-			REG_FAIL("missing right \']\'");
+			REG_FAIL("missing right ']'");
 
 		emit_byte('\0');
 
@@ -1930,7 +1930,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 			}
 
 			if (len <= 0)
-				REG_FAIL("internal error #4, 'atom\'");
+				REG_FAIL("internal error #4, 'atom'");
 
 			*flag_param |= HAS_WIDTH;
 
@@ -2310,7 +2310,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
-			REG_FAIL("internal error #5 'shortcut_escape\'");
+			REG_FAIL("internal error #5 'shortcut_escape'");
 		}
 
 		break;
@@ -2320,7 +2320,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
-			REG_FAIL("internal error #6 'shortcut_escape\'");
+			REG_FAIL("internal error #6 'shortcut_escape'");
 		}
 
 		break;
@@ -2330,7 +2330,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		if (emit == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
-			REG_FAIL("internal error #7 'shortcut_escape\'");
+			REG_FAIL("internal error #7 'shortcut_escape'");
 		}
 
 		break;
@@ -2339,7 +2339,7 @@ static uint8_t *shortcut_escape(char c, int *flag_param, int emit) {
 		/* We get here if there isn't a case for every character in
 		   the string "codes" */
 
-		REG_FAIL("internal error #8 'shortcut_escape\'");
+		REG_FAIL("internal error #8 'shortcut_escape'");
 	}
 
 	if (emit == EMIT_NODE && c != 'B') {
@@ -2655,7 +2655,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	/* Check for valid parameters. */
 
 	if (prog == nullptr || string == nullptr) {
-		reg_error("nullptr parameter to 'ExecRE\'");
+		reg_error("nullptr parameter to 'ExecRE'");
 		goto SINGLE_RETURN;
 	}
 
@@ -2716,7 +2716,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 		Brace = (brace_counts *)malloc(sizeof(brace_counts) * (size_t)Num_Braces);
 
 		if (Brace == nullptr) {
-			reg_error("out of memory in 'ExecRE\'");
+			reg_error("out of memory in 'ExecRE'");
 			goto SINGLE_RETURN;
 		}
 	} else {
@@ -2893,7 +2893,7 @@ static int init_ansi_classes(void) {
 
 			if (word_count > (ALNUM_CHAR_SIZE - 2) || space_count > (WHITE_SPACE_SIZE - 2) || letter_count > (ALNUM_CHAR_SIZE - 2)) {
 
-				reg_error("internal error #9 'init_ansi_classes\'");
+				reg_error("internal error #9 'init_ansi_classes'");
 				return (0);
 			}
 		}
@@ -3636,7 +3636,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 					MATCH_RETURN(0);
 				}
 			} else {
-				reg_error("memory corruption, 'match\'");
+				reg_error("memory corruption, 'match'");
 
 				MATCH_RETURN(0);
 			}
@@ -3650,7 +3650,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 	/* We get here only if there's trouble -- normally "case END" is
 	   the terminating point. */
 
-	reg_error("corrupted pointers, 'match\'");
+	reg_error("corrupted pointers, 'match'");
 
 	MATCH_RETURN(0);
 }
@@ -3853,7 +3853,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		   generate a call to greedy.  The above cases should cover
 		   all the atoms that are SIMPLE. */
 
-		reg_error("internal error #10 'greedy\'");
+		reg_error("internal error #10 'greedy'");
 		count = 0U; /* Best we can do. */
 	}
 
@@ -3908,13 +3908,13 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	bool anyWarnings = true;
 
 	if (prog == nullptr || source == nullptr || dest == nullptr) {
-		reg_error("nullptr parm to 'SubstituteRE\'");
+		reg_error("nullptr parm to 'SubstituteRE'");
 
 		return false;
 	}
 
 	if (U_CHAR_AT(prog->program) != MAGIC) {
-		reg_error("damaged regexp passed to 'SubstituteRE\'");
+		reg_error("damaged regexp passed to 'SubstituteRE'");
 
 		return false;
 	}
@@ -3973,7 +3973,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 
 		if (paren_no < 0) { /* Ordinary character. */
 			if (((char *)dst - dest) >= (max - 1)) {
-				reg_error("replacing expression in 'SubstituteRE\' too long; truncating");
+				reg_error("replacing expression in 'SubstituteRE' too long; truncating");
 				anyWarnings = true;
 				break;
 			} else {
@@ -3984,7 +3984,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			len = prog->endp[paren_no] - prog->startp[paren_no];
 
 			if (((char *)dst + len - dest) >= max - 1) {
-				reg_error("replacing expression in 'SubstituteRE\' too long; "
+				reg_error("replacing expression in 'SubstituteRE' too long; "
 				          "truncating");
 				anyWarnings = true;
 				len = max - ((char *)dst - dest) - 1;
@@ -3998,7 +3998,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			dst += len;
 
 			if (len != 0 && *(dst - 1) == '\0') { /* strncpy hit NUL. */
-				reg_error("damaged match string in 'SubstituteRE\'");
+				reg_error("damaged match string in 'SubstituteRE'");
 				anyWarnings = true;
 			}
 		}
