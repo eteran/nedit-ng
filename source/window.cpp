@@ -1527,7 +1527,7 @@ void SplitPane(WindowInfo *window) {
 	textD = ((TextWidget)window->textArea)->text.textD;
 	newTextD = ((TextWidget)text)->text.textD;
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-	TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
 	/* Set the minimum pane height in the new pane */
 	UpdateMinPaneHeights(window);
@@ -2120,12 +2120,12 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const
 	/* Update the main pane */
 	XtVaSetValues(window->textArea, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 	textD = ((TextWidget)window->textArea)->text.textD;
-	TextDSetColors(textD, textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+	textD->	TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	/* Update any additional panes */
 	for (i = 0; i < window->nPanes; i++) {
 		XtVaSetValues(window->textPanes[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 		textD = ((TextWidget)window->textPanes[i])->text.textD;
-		TextDSetColors(textD, textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+		textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	}
 
 	/* Redo any syntax highlighting */
@@ -3768,8 +3768,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 	/* clone split panes, if any */
 	textD = ((TextWidget)window->textArea)->text.textD;
 	if (window->nPanes) {
-		/* Unmanage & remanage the panedWindow so it recalculates pane
-		       heights */
+		/* Unmanage & remanage the panedWindow so it recalculates pane heights */
 		XtUnmanageChild(window->splitPane);
 
 		/* Create a text widget to add to the pane and set its buffer and
@@ -3787,7 +3786,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 			/* Fix up the colors */
 			newTextD = ((TextWidget)text)->text.textD;
 			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-			TextDSetColors(newTextD, textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}
 
 		/* Set the minimum pane height in the new pane */
@@ -3806,17 +3805,20 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 	for (i = 0; i <= window->nPanes; i++) {
 		textDisp *textD;
 
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
 		TextSetScroll(text, topLines[i], horizOffsets[i]);
 
 		/* dim the cursor */
 		textD = ((TextWidget)text)->text.textD;
-		TextDSetCursorStyle(textD, DIM_CURSOR);
-		TextDUnblankCursor(textD);
+		textD->TextDSetCursorStyle(DIM_CURSOR);
+		textD->TextDUnblankCursor();
 	}
 
 	/* set the focus pane */
+	// NOTE(eteran): are we sure we want "<=" here? It's of course possible that
+	//               it's correct, but it is certainly unconventional.
+	//               Notice that is is used in the above loops as well
 	for (i = 0; i <= window->nPanes; i++) {
 		text = i == 0 ? window->textArea : window->textPanes[i - 1];
 		if (i == focusPane) {
@@ -3839,7 +3841,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	char *params[4];
 	int emTabDist;
 
-	strcpy(window->path, orgWin->path);
+	strcpy(window->path,     orgWin->path);
 	strcpy(window->filename, orgWin->filename);
 
 	ShowLineNumbers(window, orgWin->showLineNumbers);
@@ -3883,8 +3885,9 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	/* Syntax highlighting */
 	window->languageMode = orgWin->languageMode;
 	window->highlightSyntax = orgWin->highlightSyntax;
-	if (window->highlightSyntax)
+	if (window->highlightSyntax) {
 		StartHighlighting(window, False);
+	}
 
 	/* copy states of original document */
 	window->filenameSet = orgWin->filenameSet;

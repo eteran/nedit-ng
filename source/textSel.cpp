@@ -294,7 +294,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 		} else {
 			buf->BufInsertCol(column, cursorLineStart, string, nullptr, nullptr);
 		}
-		TextDSetInsertPosition(textD, buf->BufCountForwardDispChars(cursorLineStart, column));
+		textD->TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
 		if (((TextWidget)w)->text.autoShowInsertPos)
 			TextDMakeInsertPosVisible(textD);
 	} else
@@ -441,9 +441,9 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	if (isColumnar) {
 		cursorPos = TextDGetInsertPosition(textD);
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
-		TextDXYToUnconstrainedPosition(textD, ((TextWidget)w)->text.btnDownX, ((TextWidget)w)->text.btnDownY, &row, &column);
+		textD->TextDXYToUnconstrainedPosition(((TextWidget)w)->text.btnDownX, ((TextWidget)w)->text.btnDownY, &row, &column);
 		textD->buffer->BufInsertCol(column, cursorLineStart, string, nullptr, nullptr);
-		TextDSetInsertPosition(textD, textD->buffer->cursorPosHint_);
+		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else
 		TextInsertAtCursor(w, string, nullptr, False, ((TextWidget)w)->text.autoWrapPastedText);
 	XtFree(string);
@@ -723,7 +723,7 @@ static void loseMotifDestCB(Widget w, Atom *selType) {
 
 	((TextWidget)w)->text.motifDestOwner = False;
 	if (((TextWidget)w)->text.textD->cursorStyle == CARET_CURSOR)
-		TextDSetCursorStyle(((TextWidget)w)->text.textD, DIM_CURSOR);
+		((TextWidget)w)->text.textD->TextDSetCursorStyle(DIM_CURSOR);
 }
 
 /*
@@ -781,11 +781,11 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 			buf->BufReplaceSecSelect(string);
 			if (buf->secondary_.rectangular) {
 				/*... it would be nice to re-select, but probably impossible */
-				TextDSetInsertPosition(((TextWidget)w)->text.textD, buf->cursorPosHint_);
+				((TextWidget)w)->text.textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else {
 				selEnd = selStart + cbInfo->length;
 				buf->BufSelect(selStart, selEnd);
-				TextDSetInsertPosition(((TextWidget)w)->text.textD, selEnd);
+				((TextWidget)w)->text.textD->TextDSetInsertPosition(selEnd);
 			}
 		} else
 			fprintf(stderr, "Too much binary data\n");

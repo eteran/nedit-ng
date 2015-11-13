@@ -252,7 +252,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	/* Find the line number and column of the insert position.  Note that in
 	   continuous wrap mode, these must be calculated as if the text were
 	   not wrapped */
-	TextDXYToUnconstrainedPosition(textD, std::max<int>(0, x - dragXOffset), std::max<int>(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
+	textD->TextDXYToUnconstrainedPosition(std::max<int>(0, x - dragXOffset), std::max<int>(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
 	column = TextDOffsetWrappedColumn(textD, row, column);
 	row = TextDOffsetWrappedRow(textD, row);
 	insLineNum = row + textD->topLineNum - tw->text.dragYOffset / fontHeight;
@@ -327,12 +327,12 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	if (rectangular || overlay) {
 		insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
 		buf->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
-		TextDSetInsertPosition(textD, buf->BufCountForwardDispChars(buf->BufCountForwardNLines(insStart, tw->text.dragNLines), insRectEnd));
+		textD->TextDSetInsertPosition(buf->BufCountForwardDispChars(buf->BufCountForwardNLines(insStart, tw->text.dragNLines), insRectEnd));
 	} else {
 		buf->BufSelect(insStart, insStart + origSel->end - origSel->start);
-		TextDSetInsertPosition(textD, insStart + origSel->end - origSel->start);
+		textD->TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
-	TextDUnblankCursor(textD);
+	textD->TextDUnblankCursor();
 	XtCallCallbacks((Widget)tw, textNcursorMovementCallback, (XtPointer) nullptr);
 	tw->text.emTabsBeforeCursor = 0;
 }
@@ -403,7 +403,7 @@ void CancelBlockDrag(TextWidget tw) {
 		buf->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
 	else
 		buf->BufSelect(origSel->start, origSel->end);
-	TextDSetInsertPosition(tw->text.textD, buf->cursorPosHint_);
+	tw->text.textD->TextDSetInsertPosition(buf->cursorPosHint_);
 	XtCallCallbacks((Widget)tw, textNcursorMovementCallback, nullptr);
 	tw->text.emTabsBeforeCursor = 0;
 

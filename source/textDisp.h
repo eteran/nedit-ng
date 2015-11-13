@@ -83,6 +83,21 @@ public:
                       XmString bgClassString, Pixel calltipFGPixel, Pixel calltipBGPixel);
 					  
 	~textDisp();
+
+public:
+	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry);
+	void TextDUnblankCursor();
+	void TextDXYToUnconstrainedPosition(int x, int y, int *row, int *column);
+	void TextDSetInsertPosition(int newPos);
+	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
+	void TextDSetScroll(int topLineNum, int horizOffset);
+	void TextDSetWrapMode(int wrap, int wrapMargin);
+	
+	void TextDSetBuffer(TextBuffer *buffer);
+	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
+	void TextDSetCursorStyle(int style);
+	void TextDSetFont(XFontStruct *fontStruct);	
+	
 public:
 	Widget w;
 	int top, left, width, height, lineNumLeft, lineNumWidth;
@@ -131,10 +146,8 @@ public:
 	    unfinishedHighlightCB;   /*     regions */
 	void *highlightCBArg;        /* Arg to unfinishedHighlightCB */
 	XFontStruct *fontStruct;     /* Font structure for primary font */
-	int ascent, descent;         /* Composite ascent and descent for
-	                        primary font + all-highlight fonts */
-	int fixedFontWidth;          /* Font width if all current fonts are
-	                        fixed and match in width, else -1 */
+	int ascent, descent;         /* Composite ascent and descent for primary font + all-highlight fonts */
+	int fixedFontWidth;          /* Font width if all current fonts are fixed and match in width, else -1 */
 	Widget hScrollBar, vScrollBar;
 	GC gc, selectGC, highlightGC; /* GCs for drawing text */
 	GC selectBGGC, highlightBGGC; /* GCs for erasing text */
@@ -157,12 +170,8 @@ public:
 	calltipStruct calltip; /* The info for the calltip itself */
 	Pixel calltipFGPixel;
 	Pixel calltipBGPixel;
-	int suppressResync;    /* Suppress resynchronization of line
-	                                  starts during buffer updates */
-	int nLinesDeleted;     /* Number of lines deleted during
-	              buffer modification (only used
-	                  when resynchronization is
-	                                  suppressed) */
+	int suppressResync;    /* Suppress resynchronization of line starts during buffer updates */
+	int nLinesDeleted;     /* Number of lines deleted during buffer modification (only used when resynchronization is suppressed) */
 	int modifyingTabDist;  /* Whether tab distance is being
 	                  modified */
 	Boolean pointerHidden; /* true if the mouse pointer is
@@ -203,17 +212,6 @@ void TextDMakeInsertPosVisible(textDisp *textD);
 void TextDOverstrike(textDisp *textD, const char *text);
 void TextDRedisplayRect(textDisp *textD, int left, int top, int width, int height);
 void TextDResize(textDisp *textD, int width, int height);
-void TextDSetBuffer(textDisp *textD, TextBuffer *buffer);
-void TextDSetColors(textDisp *textD, Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
-void TextDSetCursorStyle(textDisp *textD, int style);
-void TextDSetFont(textDisp *textD, XFontStruct *fontStruct);
-void TextDSetInsertPosition(textDisp *textD, int newPos);
-void TextDSetLineNumberArea(textDisp *textD, int lineNumLeft, int lineNumWidth, int textLeft);
-void TextDSetScroll(textDisp *textD, int topLineNum, int horizOffset);
-void TextDSetWrapMode(textDisp *textD, int wrap, int wrapMargin);
 void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
-void TextDTranlateGraphicExposeQueue(textDisp *textD, int xOffset, int yOffset, Boolean appendEntry);
-void TextDUnblankCursor(textDisp *textD);
-void TextDXYToUnconstrainedPosition(textDisp *textD, int x, int y, int *row, int *column);
 
 #endif
