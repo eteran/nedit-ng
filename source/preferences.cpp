@@ -2924,7 +2924,6 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 static languageModeRec *readLMDialogFields(int silent) {
 	languageModeRec *lm;
 	regexp *compiledRE;
-	const char *compileMsg;
 	const char *extStr;
 	const char *extPtr;
 
@@ -2964,14 +2963,14 @@ static languageModeRec *readLMDialogFields(int silent) {
 		XtFree(lm->recognitionExpr);
 		lm->recognitionExpr = nullptr;
 	} else {
-		compiledRE = CompileRE(lm->recognitionExpr, &compileMsg, REDFLT_STANDARD);
+		try {
+			compiledRE = CompileRE(lm->recognitionExpr, REDFLT_STANDARD);
 
-		if (compiledRE == nullptr) {
+		} catch(const regex_error &e) {
 			if (!silent) {
-				DialogF(DF_WARN, LMDialog.shell, 1, "Regex", "Recognition expression:\n%s", "OK", compileMsg);
+				DialogF(DF_WARN, LMDialog.shell, 1, "Regex", "Recognition expression:\n%s", "OK", e.what());
 				XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
 			}
-			XtFree((char *)compiledRE);
 			freeLanguageModeRec(lm);
 			return nullptr;
 		}
@@ -3253,7 +3252,6 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 
 	fontDialog *fd = (fontDialog *)clientData;
 	char *primaryName;
-	const char *errMsg;
 	char modifiedFontName[MAX_FONT_LEN];
 	const char *searchString = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
 	const char *italicReplaceString = "\\1-\\2-o-\\4";
@@ -3263,7 +3261,11 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 
 	/* Match the primary font agains RE pattern for font names.  If it
 	   doesn't match, we can't generate highlight font names, so return */
-	compiledRE = CompileRE(searchString, &errMsg, REDFLT_STANDARD);
+	try {
+		compiledRE = CompileRE(searchString, REDFLT_STANDARD);
+	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error?!
+	}
 	primaryName = XmTextGetString(fd->primaryW);
 	if (!ExecRE(compiledRE, primaryName, nullptr, False, '\0', '\0', nullptr, nullptr, nullptr)) {
 		XBell(XtDisplay(fd->shell), 0);

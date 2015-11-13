@@ -932,10 +932,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		
 		bigPattern.pop_back(); // remove last '|' character
 
-		const char *compileMsg;
-		compiledPats[patternNum].subPatternRE = CompileRE(bigPattern.c_str(), &compileMsg, REDFLT_STANDARD);
-		if (compiledPats[patternNum].subPatternRE == nullptr) {
-			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", compileMsg);
+		try {
+			compiledPats[patternNum].subPatternRE = CompileRE(bigPattern.c_str(), REDFLT_STANDARD);
+		} catch(const regex_error &e) {
+			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
 			return nullptr;
 		}
 	}
@@ -1902,12 +1902,13 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 ** compile a regular expression and present a user friendly dialog on failure.
 */
 static regexp *compileREAndWarn(Widget parent, const char *re) {
-	const char *compileMsg;
 
-	regexp *compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
-	if (compiledRE == nullptr) {
+	try {
+		regexp *compiledRE = CompileRE(re, REDFLT_STANDARD);
+		return compiledRE;
+	} catch(const regex_error &e) {
 		char *boundedRe = XtNewStringEx(re);
-		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
+		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(e.what()) - 60;
 
 		/* Prevent buffer overflow in DialogF. If the re is too long,
 		truncate it and append ... */
@@ -1915,11 +1916,11 @@ static regexp *compileREAndWarn(Widget parent, const char *re) {
 			strcpy(&boundedRe[maxLength - 3], "...");
 		}
 
-		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe, compileMsg);
+		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe, e.what());
 		XtFree(boundedRe);
 		return nullptr;
 	}
-	return compiledRE;
+	
 }
 
 static int parentStyleOf(const char *parentStyles, int style) {

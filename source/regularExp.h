@@ -26,6 +26,7 @@
 
 #include <X11/Intrinsic.h>
 #include <cstdint>
+#include "regex_error.h"
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
@@ -64,7 +65,6 @@ enum RE_DEFAULT_FLAG {
 /* Compiles a regular expression into the internal format used by `ExecRE'. */
 
 regexp *CompileRE(const char *exp,        /* String containing the regex specification. */
-                  const char **errorText, /* Text of any error message produced. */
                   int defaultFlags);      /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */
