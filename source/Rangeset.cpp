@@ -1205,7 +1205,7 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 	this->maxpos = 0;                   /* text buffer maxpos */
 	this->last_index = 0;               /* a place to start looking */
 	this->n_ranges = 0;                 /* how many ranges in ranges */
-	this->ranges = (Range *)0;          /* the ranges table */
+	this->ranges = nullptr;          /* the ranges table */
 
 	this->color_name = nullptr;
 	this->name = nullptr;

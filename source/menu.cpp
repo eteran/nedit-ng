@@ -2037,7 +2037,7 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   the next pointers underneath us, which is scary, but SortTabBar never
 	   touches windows that are earlier in the WindowList so it's ok. */
 	if (state) {
-		Widget shell = (Widget)0;
+		Widget shell = nullptr;
 		for (win = WindowList; win != nullptr; win = win->next) {
 			if (win->shell != shell) {
 				SortTabBar(win);

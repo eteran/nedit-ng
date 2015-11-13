@@ -1191,7 +1191,7 @@ static Widget addTab(Widget folder, const char *string) {
 	XmStringFree(s1);
 
 	/* there's things to do as user click on the tab */
-	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, (XtPointer)0);
+	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, nullptr);
 
 	/* BubbleButton simply use reversed video for tooltips,
 	   we try to use the 'standard' color */

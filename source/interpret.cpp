@@ -803,7 +803,7 @@ char *AllocString(int length) {
 int AllocNString(NString *string, int length) {
 	char *mem = XtMalloc(length + 1);
 	if (!mem) {
-		string->rep = 0;
+		string->rep = nullptr;
 		string->len = 0;
 		return False;
 	}

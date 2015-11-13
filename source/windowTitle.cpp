@@ -1140,7 +1140,7 @@ void EditCustomTitleFormat(WindowInfo *window) {
 
 			/* force update of the dialog */
 			setToggleButtons();
-			formatChangedCB(0, 0, 0);
+			formatChangedCB(nullptr, nullptr, nullptr);
 			return;
 		}
 	}
@@ -1150,7 +1150,7 @@ void EditCustomTitleFormat(WindowInfo *window) {
 
 	/* force update of the dialog */
 	setToggleButtons();
-	formatChangedCB(0, 0, 0);
+	formatChangedCB(nullptr, nullptr, nullptr);
 
 	/* put up dialog and wait for user to press ok or cancel */
 	ManageDialogCenteredOnPointer(etDialog.form);

@@ -447,7 +447,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 	if (GetPrefFindReplaceUsesSelection()) {
 		selectionInfo->done      = 0;
 		selectionInfo->window    = window;
-		selectionInfo->selection = 0;
+		selectionInfo->selection = nullptr;
 		XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
 		
 		while (selectionInfo->done == 0) {
@@ -458,7 +458,7 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 		primary_selection = selectionInfo->selection;
 	}
 	
-	if (primary_selection == 0) {
+	if (primary_selection == nullptr) {
 		primary_selection = XtNewStringEx("");
 	}
 
@@ -480,7 +480,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	/* return an empty string if we can't get the selection data */
 	if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == nullptr || *length == 0) {
 		XtFree(value);
-		selectionInfo->selection = 0;
+		selectionInfo->selection = nullptr;
 		selectionInfo->done = 1;
 		return;
 	}
@@ -488,7 +488,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	if (*format != 8) {
 		DialogF(DF_WARN, window->shell, 1, "Invalid Format", "NEdit can't handle non 8-bit text", "OK");
 		XtFree(value);
-		selectionInfo->selection = 0;
+		selectionInfo->selection = nullptr;
 		selectionInfo->done = 1;
 		return;
 	}

@@ -198,7 +198,7 @@ Rangeset *RangesetTable::RangesetForget(int label) {
 	int set_ind = RangesetFindIndex(label, 1);
 
 	if (set_ind < 0)
-		return (Rangeset *)0;
+		return nullptr;
 
 	if (deactivateRangeset(this, set_ind))
 		this->set[set_ind].RangesetEmpty();

@@ -533,7 +533,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 ** procdeure is registered
 */
 static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
-	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, 0);
+	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
 	TextBuffer *buf = ((TextWidget)w)->text.textD->buffer;
 	Display *display = XtDisplay(w);
 	Atom *targets, dummyAtom;
@@ -666,7 +666,7 @@ static void loseSecondaryCB(Widget w, Atom *selType) {
 ** destination, to handle INSERT_SELECTION requests.
 */
 static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
-	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, 0);
+	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
 	Display *display = XtDisplay(w);
 	Atom *targets, dummyAtom;
 	unsigned long nItems, dummyULong;

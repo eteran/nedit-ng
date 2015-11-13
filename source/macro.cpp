@@ -346,7 +346,7 @@ static std::string ReplayMacro;
 static TextBuffer *MacroRecordBuf = nullptr;
 
 /* Action Hook id for recording actions for Learn mode */
-static XtActionHookId MacroRecordActionHook = 0;
+static XtActionHookId MacroRecordActionHook = nullptr;
 
 /* Window where macro recording is taking place */
 static WindowInfo *MacroRecordWindow = nullptr;
@@ -391,7 +391,7 @@ void BeginLearn(WindowInfo *window) {
 	char message[MAX_LEARN_MSG_LEN];
 
 	/* If we're already in learn mode, return */
-	if (MacroRecordActionHook != 0)
+	if (MacroRecordActionHook != nullptr)
 		return;
 
 	/* dim the inappropriate menus and items, and undim finish and cancel */
@@ -459,12 +459,12 @@ void FinishLearn(void) {
 	WindowInfo *win;
 
 	/* If we're not in learn mode, return */
-	if (MacroRecordActionHook == 0)
+	if (MacroRecordActionHook == nullptr)
 		return;
 
 	/* Remove the action hook */
 	XtRemoveActionHook(MacroRecordActionHook);
-	MacroRecordActionHook = 0;
+	MacroRecordActionHook = nullptr;
 
 	/* Store the finished action for the replay menu item */
 	ReplayMacro = MacroRecordBuf->BufGetAllEx();
@@ -499,7 +499,7 @@ void FinishLearn(void) {
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
 void CancelMacroOrLearn(WindowInfo *window) {
-	if (MacroRecordActionHook != 0)
+	if (MacroRecordActionHook != nullptr)
 		cancelLearn();
 	else if (window->macroCmdData != nullptr)
 		AbortMacroCommand(window);
@@ -509,12 +509,12 @@ static void cancelLearn(void) {
 	WindowInfo *win;
 
 	/* If we're not in learn mode, return */
-	if (MacroRecordActionHook == 0)
+	if (MacroRecordActionHook == nullptr)
 		return;
 
 	/* Remove the action hook */
 	XtRemoveActionHook(MacroRecordActionHook);
-	MacroRecordActionHook = 0;
+	MacroRecordActionHook = nullptr;
 
 	/* Free the macro under construction */
 	delete MacroRecordBuf;
@@ -852,7 +852,7 @@ int MacroWindowCloseActions(WindowInfo *window) {
 	macroCmdInfo *mcd, *cmdData = (macroCmdInfo *)window->macroCmdData;
 	WindowInfo *w;
 
-	if (MacroRecordActionHook != 0 && MacroRecordWindow == window) {
+	if (MacroRecordActionHook != nullptr && MacroRecordWindow == window) {
 		FinishLearn();
 	}
 
@@ -3220,7 +3220,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	test_strings = (XmString *)XtMalloc(sizeof(XmString) * nlines);
 	text_lines = (char **)XtMalloc(sizeof(char *) * (nlines + 1));
 	for (n = 0; n < nlines; n++) {
-		test_strings[n] = (XmString)0;
+		test_strings[n] = nullptr;
 		text_lines[n] = nullptr;
 	}
 	text_lines[n] = nullptr; /* make sure this is a null-terminated table */
