@@ -3578,14 +3578,17 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	wrapModeIsDef = window->wrapMode == GetPrefWrap(oldMode);
 	tabDistIsDef = window->buffer->BufGetTabDistance() == GetPrefTabDist(oldMode);
 	XtVaGetValues(window->textArea, textNemulateTabs, &oldEmTabDist, nullptr);
-	emTabDistIsDef = oldEmTabDist == GetPrefEmTabDist(oldMode);
-	indentStyleIsDef = window->indentStyle == GetPrefAutoIndent(oldMode) || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-	highlightIsDef = window->highlightSyntax == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(LanguageModeName(oldMode)) == nullptr);
-	wrapMode = wrapModeIsDef || forceDefaults ? GetPrefWrap(mode) : window->wrapMode;
-	tabDist = tabDistIsDef || forceDefaults ? GetPrefTabDist(mode) : window->buffer->BufGetTabDistance();
-	emTabDist = emTabDistIsDef || forceDefaults ? GetPrefEmTabDist(mode) : oldEmTabDist;
-	indentStyle = indentStyleIsDef || forceDefaults ? GetPrefAutoIndent(mode) : window->indentStyle;
-	highlight = highlightIsDef || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax;
+	
+	const char *oldlanguageModeName = LanguageModeName(oldMode);
+	
+	emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
+	indentStyleIsDef = window->indentStyle == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
+	highlightIsDef   = window->highlightSyntax == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? oldlanguageModeName : "") == nullptr);
+	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode;
+	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer->BufGetTabDistance();
+	emTabDist        = emTabDistIsDef                                      || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
+	indentStyle      = indentStyleIsDef                                    || forceDefaults ? GetPrefAutoIndent(mode)  : window->indentStyle;
+	highlight        = highlightIsDef                                      || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax;
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */

@@ -2410,8 +2410,6 @@ static patternSet *getDialogPatternSet(void) {
 ** Return True if "patSet1" and "patSet2" differ
 */
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
-	int i;
-	highlightPattern *pat1, *pat2;
 
 	if (patSet1->lineContext != patSet2->lineContext)
 		return True;
@@ -2419,9 +2417,11 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 		return True;
 	if (patSet1->nPatterns != patSet2->nPatterns)
 		return True;
-	for (i = 0; i < patSet2->nPatterns; i++) {
-		pat1 = &patSet1->patterns[i];
-		pat2 = &patSet2->patterns[i];
+		
+	for (int i = 0; i < patSet2->nPatterns; i++) {
+		highlightPattern *pat1 = &patSet1->patterns[i];
+		highlightPattern *pat2 = &patSet2->patterns[i];
+		
 		if (pat1->flags != pat2->flags)
 			return True;
 		if (AllocatedStringsDiffer(pat1->name, pat2->name))

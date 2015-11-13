@@ -467,16 +467,15 @@ void *GetHighlightInfo(WindowInfo *window, int pos) {
 ** widgets, this data can be referenced even AFTER destroying the widget.
 */
 static void freeHighlightData(windowHighlightData *hd) {
-	if (hd == nullptr)
-		return;
-	if (hd->pass1Patterns != nullptr)
+
+	if(hd) {
 		freePatterns(hd->pass1Patterns);
-	if (hd->pass2Patterns != nullptr)
 		freePatterns(hd->pass2Patterns);
-	XtFree(hd->parentStyles);
-	delete hd->styleBuffer;
-	delete[] hd->styleTable;
-	delete hd;
+		XtFree(hd->parentStyles);
+		delete hd->styleBuffer;
+		delete[] hd->styleTable;
+		delete hd;
+	}
 }
 
 /*
@@ -527,17 +526,20 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 */
 static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *patSet) {
 	highlightPattern *patternSrc = patSet->patterns;
-	int nPatterns = patSet->nPatterns;
+	int nPatterns    = patSet->nPatterns;
 	int contextLines = patSet->lineContext;
 	int contextChars = patSet->charContext;
-	int i, nPass1Patterns, nPass2Patterns;
-	int noPass1, noPass2;
+	int i;
+	int nPass1Patterns;
+	int nPass2Patterns;
+	int noPass1;
+	int noPass2;
 	char *parentStyles;
 	char *parentStylesPtr;
 	char *parentName;
-	highlightPattern *pass1PatternSrc, *pass2PatternSrc, *p1Ptr, *p2Ptr;
 	TextBuffer *styleBuf;
-	highlightDataRec *pass1Pats, *pass2Pats;
+	highlightDataRec *pass1Pats;
+	highlightDataRec *pass2Pats;
 	windowHighlightData *highlightData;
 
 	/* The highlighting code can't handle empty pattern sets, quietly say no */
@@ -600,46 +602,59 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 		else
 			nPass1Patterns++;
 
-	p1Ptr = pass1PatternSrc = new highlightPattern[nPass1Patterns];
-	p2Ptr = pass2PatternSrc = new highlightPattern[nPass2Patterns];
+	auto pass1PatternSrc = new highlightPattern[nPass1Patterns];
+	auto pass2PatternSrc = new highlightPattern[nPass2Patterns];
 
-	p1Ptr->name = p2Ptr->name = "";
-	p1Ptr->startRE = p2Ptr->startRE = nullptr;
-	p1Ptr->endRE = p2Ptr->endRE = nullptr;
-	p1Ptr->errorRE = p2Ptr->errorRE = nullptr;
-	p1Ptr->style = p2Ptr->style = (String) "Plain";
+
+	highlightPattern *p1Ptr = pass1PatternSrc;
+	highlightPattern *p2Ptr = pass2PatternSrc;
+
+	p1Ptr->name         = p2Ptr->name         = "";
+	p1Ptr->startRE      = p2Ptr->startRE      = nullptr;
+	p1Ptr->endRE        = p2Ptr->endRE        = nullptr;
+	p1Ptr->errorRE      = p2Ptr->errorRE      = nullptr;
+	p1Ptr->style        = p2Ptr->style        = (String) "Plain";
 	p1Ptr->subPatternOf = p2Ptr->subPatternOf = nullptr;
-	p1Ptr->flags = p2Ptr->flags = 0;
+	p1Ptr->flags        = p2Ptr->flags        = 0;
+	
 	p1Ptr++;
 	p2Ptr++;
-	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].flags & DEFER_PARSING)
+	
+	for (int i = 0; i < nPatterns; i++) {
+		if (patternSrc[i].flags & DEFER_PARSING) {
 			*p2Ptr++ = patternSrc[i];
-		else
+		} else {
 			*p1Ptr++ = patternSrc[i];
+		}
 	}
 
 	/* If a particular pass is empty except for the default pattern, don't
 	   bother compiling it or setting up styles */
-	if (nPass1Patterns == 1)
+	if (nPass1Patterns == 1) {
 		nPass1Patterns = 0;
-	if (nPass2Patterns == 1)
+	}
+	
+	if (nPass2Patterns == 1) {
 		nPass2Patterns = 0;
+	}
 
 	/* Compile patterns */
-	if (nPass1Patterns == 0)
+	if (nPass1Patterns == 0) {
 		pass1Pats = nullptr;
-	else {
+	} else {
 		pass1Pats = compilePatterns(window->shell, pass1PatternSrc, nPass1Patterns);
-		if (pass1Pats == nullptr)
+		if (pass1Pats == nullptr) {
 			return nullptr;
+		}
 	}
-	if (nPass2Patterns == 0)
+	
+	if (nPass2Patterns == 0) {
 		pass2Pats = nullptr;
-	else {
+	} else {
 		pass2Pats = compilePatterns(window->shell, pass2PatternSrc, nPass2Patterns);
-		if (pass2Pats == nullptr)
+		if (pass2Pats == nullptr) {
 			return nullptr;
+		}
 	}
 
 	/* Set pattern styles.  If there are pass 2 patterns, pass 1 pattern
@@ -953,18 +968,20 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 */
 static void freePatterns(highlightDataRec *patterns) {
 
-	for (int i = 0; patterns[i].style != 0; i++) {
-		delete patterns[i].startRE;
-		delete patterns[i].endRE;
-		delete patterns[i].errorRE;
-		delete patterns[i].subPatternRE;
+	if(patterns) {
+		for (int i = 0; patterns[i].style != 0; i++) {
+			delete patterns[i].startRE;
+			delete patterns[i].endRE;
+			delete patterns[i].errorRE;
+			delete patterns[i].subPatternRE;
+		}
+	
+		for (int i = 0; patterns[i].style != 0; i++) {
+			delete [] patterns[i].subPatterns;
+		}
+	
+		delete [] patterns;
 	}
-
-	for (int i = 0; patterns[i].style != 0; i++) {
-		delete [] patterns[i].subPatterns;
-	}
-
-	delete [] patterns;
 }
 
 /*
