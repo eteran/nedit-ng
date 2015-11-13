@@ -38,7 +38,12 @@
 /* Structure to contain the compiled form of a regular expression plus
    pointers to matched text.  `program' is the actual compiled regex code. */
 
-struct regexp {
+class regexp {
+public:
+	regexp(const char *exp, int defaultFlags);
+	~regexp();
+
+public:
 	char *startp[NSUBEXP]; /* Captured text starting locations. */
 	char *endp[NSUBEXP];   /* Captured text ending locations. */
 	char *extentpBW;       /* Points to the maximum extent of text scanned by
@@ -51,7 +56,7 @@ struct regexp {
 	                          Used by syntax highlighting only. */
 	char match_start;      /* Internal use only. */
 	char anchor;           /* Internal use only. */
-	char program[1];       /* Unwarranted chumminess with compiler. */
+	char *program;         /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -61,11 +66,6 @@ enum RE_DEFAULT_FLAG {
 	REDFLT_CASE_INSENSITIVE = 1
 	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
 };
-
-/* Compiles a regular expression into the internal format used by `ExecRE'. */
-
-regexp *CompileRE(const char *exp,        /* String containing the regex specification. */
-                  int defaultFlags);      /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */
 

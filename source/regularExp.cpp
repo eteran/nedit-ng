@@ -84,6 +84,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 /* The first byte of the regexp internal `program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the
@@ -509,6 +510,7 @@ static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit);
 
 static int init_ansi_classes(void);
 
+
 /*----------------------------------------------------------------------*
  * CompileRE
  *
@@ -523,10 +525,8 @@ static int init_ansi_classes(void);
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
+regexp::regexp(const char *exp, int defaultFlags) {
 
-regexp *CompileRE(const char *exp, int defaultFlags) {
-
-	regexp *comp_regex = nullptr;
 	uint8_t *scan;
 	int flags_local, pass;
 	len_range range_local;
@@ -588,8 +588,10 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 		emit_byte('%'); /* Placeholder for num of capturing parentheses.    */
 		emit_byte('%'); /* Placeholder for num of general {m,n} constructs. */
 
-		if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr)
-			return (nullptr); /* Something went wrong */
+		if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr) {
+			assert(false); /* Something went wrong */
+		}
+		
 		if (pass == 1) {
 			if (Reg_Size >= MAX_COMPILED_SIZE) {
 				/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
@@ -601,28 +603,25 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 
 			/* Allocate memory. */
 
-			comp_regex = (regexp *)malloc(sizeof(regexp) + Reg_Size);
+			program = new char[Reg_Size];
 
-			if (comp_regex == nullptr)
-				throw regex_error("out of memory in `CompileRE\'");
-
-			Code_Emit_Ptr = (uint8_t *)comp_regex->program;
+			Code_Emit_Ptr = (uint8_t *)this->program;
 		}
 	}
 
-	comp_regex->program[1] = (uint8_t)Total_Paren - 1;
-	comp_regex->program[2] = (uint8_t)Num_Braces;
+	this->program[1] = (uint8_t)Total_Paren - 1;
+	this->program[2] = (uint8_t)Num_Braces;
 
 	/*----------------------------------------*
 	 * Dig out information for optimizations. *
 	 *----------------------------------------*/
 
-	comp_regex->match_start = '\0'; /* Worst-case defaults. */
-	comp_regex->anchor = 0;
+	this->match_start = '\0'; /* Worst-case defaults. */
+	this->anchor = 0;
 
 	/* First BRANCH. */
 
-	scan = (uint8_t *)(comp_regex->program + REGEX_START_OFFSET);
+	scan = (uint8_t *)(this->program + REGEX_START_OFFSET);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
 		scan = OPERAND(scan);
@@ -630,7 +629,7 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 		/* Starting-point info. */
 
 		if (GET_OP_CODE(scan) == EXACTLY) {
-			comp_regex->match_start = *OPERAND(scan);
+			this->match_start = *OPERAND(scan);
 
 		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
 
@@ -638,14 +637,19 @@ regexp *CompileRE(const char *exp, int defaultFlags) {
 			   optimized. */
 
 			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				comp_regex->match_start = *OPERAND(scan + NODE_SIZE);
+				this->match_start = *OPERAND(scan + NODE_SIZE);
 			}
 		} else if (GET_OP_CODE(scan) == BOL) {
-			comp_regex->anchor++;
+			this->anchor++;
 		}
 	}
+}
 
-	return (comp_regex);
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+regexp::~regexp() {
+	delete [] program;
 }
 
 /*----------------------------------------------------------------------*

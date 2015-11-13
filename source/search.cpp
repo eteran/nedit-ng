@@ -2919,14 +2919,14 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			compiledRE = CompileRE(replaceText, regexDefault);
+			compiledRE = new regexp(replaceText, regexDefault);
 		} catch(const regex_error &e) {
 			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", e.what());
 			XtFree(replaceText);
 			XtFree(replaceWithText);
 			return FALSE;
 		}
-		free((char *)compiledRE);
+		delete compiledRE;
 	} else {
 		if (XmToggleButtonGetState(window->replaceCaseToggle)) {
 			if (XmToggleButtonGetState(window->replaceWordToggle))
@@ -2990,12 +2990,12 @@ static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchStrin
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			compiledRE = CompileRE(findText, regexDefault);
+			compiledRE = new regexp(findText, regexDefault);
 		} catch(const regex_error &e) {
 			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
 			return FALSE;
 		}
-		free((char *)compiledRE);
+		delete compiledRE;
 	} else {
 		if (XmToggleButtonGetState(window->findCaseToggle)) {
 			if (XmToggleButtonGetState(window->findWordToggle))
@@ -3486,12 +3486,12 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	if (isRegexType(searchType)) {
 		regexp *compiledRE = nullptr;
 		try {
-			compiledRE = CompileRE(searchString, defaultRegexFlags(searchType));
+			compiledRE = new regexp(searchString, defaultRegexFlags(searchType));
 		} catch(const regex_error &e) {
 			XtFree(searchString);
 			return;
 		}
-		free((char *)compiledRE);
+		delete compiledRE;
 	}
 
 	/* Call the incremental search action proc to do the searching and
@@ -4630,8 +4630,9 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	   this does not process errors from compiling the expression.  It
 	   assumes that the expression was checked earlier. */
 	try {
-		compiledRE = CompileRE(searchString, defaultFlags);
+		compiledRE = new regexp(searchString, defaultFlags);
 	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error!
 		return FALSE;
 	}
 
@@ -4643,13 +4644,13 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
 			*searchExtentBW = compiledRE->extentpBW - string;
-		free((char *)compiledRE);
+		delete compiledRE;
 		return TRUE;
 	}
 
 	/* if wrap turned off, we're done */
 	if (!wrap) {
-		free((char *)compiledRE);
+		delete compiledRE;
 		return FALSE;
 	}
 
@@ -4661,11 +4662,11 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
 			*searchExtentBW = compiledRE->extentpBW - string;
-		free((char *)compiledRE);
+		delete compiledRE;
 		return TRUE;
 	}
 
-	free((char *)compiledRE);
+	delete compiledRE;
 	return FALSE;
 }
 
@@ -4675,8 +4676,9 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 
 	/* compile the search string for searching with ExecRE */
 	try {
-		compiledRE = CompileRE(searchString, defaultFlags);
+		compiledRE = new regexp(searchString, defaultFlags);
 	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error!
 		return FALSE;
 	}
 
@@ -4690,14 +4692,14 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 				*searchExtentFW = compiledRE->extentpFW - string;
 			if (searchExtentBW != nullptr)
 				*searchExtentBW = compiledRE->extentpBW - string;
-			free((char *)compiledRE);
+			delete compiledRE;
 			return TRUE;
 		}
 	}
 
 	/* if wrap turned off, we're done */
 	if (!wrap) {
-		free((char *)compiledRE);
+		delete compiledRE;
 		return FALSE;
 	}
 
@@ -4712,10 +4714,10 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
 			*searchExtentBW = compiledRE->extentpBW - string;
-		free((char *)compiledRE);
+		delete compiledRE;
 		return TRUE;
 	}
-	free((char *)compiledRE);
+	delete compiledRE;
 	return FALSE;
 }
 
@@ -4833,16 +4835,16 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 ** items.
 */
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
-	regexp *compiledRE;
 
 	try {
-		compiledRE = CompileRE(searchStr, defaultFlags);
+		auto compiledRE = new regexp(searchStr, defaultFlags);
 		ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
 		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-		free((char *)compiledRE);
+		delete compiledRE;
 	
 		return substResult;
 	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error!
 		return false;
 	}
 }

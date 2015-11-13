@@ -933,7 +933,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		bigPattern.pop_back(); // remove last '|' character
 
 		try {
-			compiledPats[patternNum].subPatternRE = CompileRE(bigPattern.c_str(), REDFLT_STANDARD);
+			compiledPats[patternNum].subPatternRE = new regexp(bigPattern.c_str(), REDFLT_STANDARD);
 		} catch(const regex_error &e) {
 			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
 			return nullptr;
@@ -954,10 +954,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 static void freePatterns(highlightDataRec *patterns) {
 
 	for (int i = 0; patterns[i].style != 0; i++) {
-		free((char *)patterns[i].startRE);
-		free((char *)patterns[i].endRE);
-		free((char *)patterns[i].errorRE);
-		free((char *)patterns[i].subPatternRE);
+		delete patterns[i].startRE;
+		delete patterns[i].endRE;
+		delete patterns[i].errorRE;
+		delete patterns[i].subPatternRE;
 	}
 
 	for (int i = 0; patterns[i].style != 0; i++) {
@@ -1904,8 +1904,7 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 static regexp *compileREAndWarn(Widget parent, const char *re) {
 
 	try {
-		regexp *compiledRE = CompileRE(re, REDFLT_STANDARD);
-		return compiledRE;
+		return new regexp(re, REDFLT_STANDARD);
 	} catch(const regex_error &e) {
 		char *boundedRe = XtNewStringEx(re);
 		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(e.what()) - 60;
