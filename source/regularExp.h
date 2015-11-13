@@ -25,6 +25,7 @@
 *******************************************************************************/
 
 #include <X11/Intrinsic.h>
+#include <cstdint>
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
@@ -85,7 +86,7 @@ int ExecRE(regexp *prog,               /* Compiled regex. */
                                           set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
-Boolean SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
+bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of
