@@ -386,8 +386,14 @@
 #define LENGTH_SIZE 4
 #define NODE_SIZE (NEXT_PTR_SIZE + OP_CODE_SIZE)
 
-#define GET_OP_CODE(p) (*(uint8_t *)(p))
-#define OPERAND(p) ((p)+NODE_SIZE)
+uint8_t GET_OP_CODE(uint8_t *p) {
+	return *p;
+}
+
+uint8_t *OPERAND(uint8_t *p) {
+	return p + NODE_SIZE;
+}
+
 #define GET_OFFSET(p) (((*((p)+1) & 0377) << 8) + ((*((p)+2)) & 0377))
 #define PUT_OFFSET_L(v) (uint8_t)(((v) >> 8) & 0377)
 #define PUT_OFFSET_R(v) (uint8_t)((v)&0377)
@@ -399,7 +405,11 @@
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?' || (c) == Brace_Char)
 #define SET_BIT(i, n) ((i) |= (1 << ((n)-1)))
 #define TEST_BIT(i, n) ((i) & (1 << ((n)-1)))
-#define U_CHAR_AT(p) ((unsigned int)*(uint8_t *)(p))
+
+unsigned int U_CHAR_AT(uint8_t *p) {
+	return (unsigned int)*p;
+}
+
 
 /* Flags to be passed up and down via function parameters during compile. */
 
@@ -448,8 +458,8 @@
 /* Global work variables for `CompileRE'. */
 
 static uint8_t *Reg_Parse;     /* Input scan ptr (scans user's regex) */
-static int Total_Paren;              /* Parentheses, (),  counter. */
-static int Num_Braces;               /* Number of general {m,n} constructs.
+static size_t Total_Paren;              /* Parentheses, (),  counter. */
+static size_t Num_Braces;               /* Number of general {m,n} constructs.
                                         {m,n} quantifiers of SIMPLE atoms are
                                         not included in this count. */
 static int Closed_Parens;            /* Bit flags indicating () closure. */
@@ -603,9 +613,9 @@ regexp::regexp(const char *exp, int defaultFlags) {
 
 			/* Allocate memory. */
 
-			program = new char[Reg_Size];
+			program = new uint8_t[Reg_Size];
 
-			Code_Emit_Ptr = (uint8_t *)this->program;
+			Code_Emit_Ptr = this->program;
 		}
 	}
 
@@ -621,7 +631,7 @@ regexp::regexp(const char *exp, int defaultFlags) {
 
 	/* First BRANCH. */
 
-	scan = (uint8_t *)(this->program + REGEX_START_OFFSET);
+	scan = (this->program + REGEX_START_OFFSET);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { /* Only one top-level choice. */
 		scan = OPERAND(scan);
@@ -2457,7 +2467,7 @@ static uint8_t *back_ref(uint8_t *c, int *flag_param, int emit) {
 	   is_cross_regex++;
 	} */
 
-	paren_no = (int)(*(c + c_offset) - (uint8_t)('0'));
+	paren_no = (*(c + c_offset) - '0');
 
 	if (!isdigit(*(c + c_offset)) || /* Only \1, \2, ... \9 are supported.  */
 	    paren_no == 0) {             /* Should be caught by numeric_escape. */
@@ -2663,7 +2673,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	/* Allocate memory for {m,n} construct counting variables if need be. */
 
 	if (Num_Braces > 0) {
-		Brace = (brace_counts *)malloc(sizeof(brace_counts) * (size_t)Num_Braces);
+		Brace = (brace_counts *)malloc(sizeof(brace_counts) * Num_Braces);
 
 		if (Brace == nullptr) {
 			reg_error("out of memory in `ExecRE\'");
@@ -2886,7 +2896,7 @@ static int attempt(regexp *prog, uint8_t *string) {
 		*e_ptr++ = nullptr;
 	}
 
-	if (match((uint8_t *)(prog->program + REGEX_START_OFFSET), &branch_index)) {
+	if (match((prog->program + REGEX_START_OFFSET), &branch_index)) {
 		prog->startp[0] = (char *)string;
 		prog->endp[0] = (char *)Reg_Input;       /* <-- One char AFTER  */
 		prog->extentpBW = (char *)Extent_Ptr_BW; /*     matched string! */
@@ -3928,7 +3938,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 		}                   /* mind set of issuing an error!       */
 
 		if (paren_no < 0) { /* Ordinary character. */
-			if (((char *)dst - (char *)dest) >= (max - 1)) {
+			if (((char *)dst - dest) >= (max - 1)) {
 				reg_error("replacing expression in `SubstituteRE\' too long; "
 				          "truncating");
 				anyWarnings = true;
@@ -3940,14 +3950,14 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 
 			len = prog->endp[paren_no] - prog->startp[paren_no];
 
-			if (((char *)dst + len - (char *)dest) >= max - 1) {
+			if (((char *)dst + len - dest) >= max - 1) {
 				reg_error("replacing expression in `SubstituteRE\' too long; "
 				          "truncating");
 				anyWarnings = true;
-				len = max - ((char *)dst - (char *)dest) - 1;
+				len = max - ((char *)dst - dest) - 1;
 			}
 
-			(void)strncpy((char *)dst, (char *)prog->startp[paren_no], len);
+			(void)strncpy((char *)dst, prog->startp[paren_no], len);
 
 			if (chgcase != '\0')
 				adjustcase(dst, len, chgcase);
@@ -4019,11 +4029,9 @@ static void reg_error(const char *str) {
 
 static uint8_t *makeDelimiterTable(uint8_t *delimiters, uint8_t *table) {
 
-	uint8_t *c;
-
 	memset(table, 0, 256);
 
-	for (c = (uint8_t *)delimiters; *c != '\0'; c++) {
+	for (uint8_t *c = delimiters; *c != '\0'; c++) {
 		table[*c] = 1;
 	}
 

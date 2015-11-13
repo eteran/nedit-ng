@@ -33,7 +33,7 @@
 
 /* Number of text capturing parentheses allowed. */
 
-#define NSUBEXP 50
+#define NSUBEXP 50u
 
 /* Structure to contain the compiled form of a regular expression plus
    pointers to matched text.  `program' is the actual compiled regex code. */
@@ -56,7 +56,7 @@ public:
 	                          Used by syntax highlighting only. */
 	char match_start;      /* Internal use only. */
 	char anchor;           /* Internal use only. */
-	char *program;         /* Unwarranted chumminess with compiler. */
+	uint8_t *program;         /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
