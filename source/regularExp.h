@@ -46,10 +46,10 @@ public:
 public:
 	const char *startp[NSUBEXP]; /* Captured text starting locations. */
 	const char *endp[NSUBEXP];   /* Captured text ending locations. */
-	char *extentpBW;       /* Points to the maximum extent of text scanned by
+	const char *extentpBW;       /* Points to the maximum extent of text scanned by
 	                          ExecRE in front of the string to achieve a match
 	                          (needed because of positive look-behind.) */
-	char *extentpFW;       /* Points to the maximum extent of text scanned by
+	const char *extentpFW;       /* Points to the maximum extent of text scanned by
 	                          ExecRE to achieve a match (needed because of
 	                          positive look-ahead.) */
 	int top_branch;        /* Zero-based index of the top branch that matches.

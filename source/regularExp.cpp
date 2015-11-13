@@ -480,21 +480,21 @@ static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
 static size_t Reg_Size;       /* Size of compiled regex code. */
 
 
-static uint8_t White_Space[WHITE_SPACE_SIZE]; /* Arrays used by       */
-static uint8_t Word_Char[ALNUM_CHAR_SIZE];    /* functions            */
-static uint8_t Letter_Char[ALNUM_CHAR_SIZE];  /* init_ansi_classes () */
+static char White_Space[WHITE_SPACE_SIZE]; /* Arrays used by       */
+static char Word_Char[ALNUM_CHAR_SIZE];    /* functions            */
+static char Letter_Char[ALNUM_CHAR_SIZE];  /* init_ansi_classes () */
                                                     /* and
                                                        shortcut_escape ().  */
 
-static uint8_t ASCII_Digits[] = "0123456789"; /* Same for all */
+static char ASCII_Digits[] = "0123456789"; /* Same for all */
                                                     /* locales.     */
 static int Is_Case_Insensitive;
 static int Match_Newline;
 
 static int Enable_Counting_Quantifier = 1;
-static uint8_t Brace_Char;
-static uint8_t Default_Meta_Char[] = "{.*+?[(|)^<>$";
-static uint8_t *Meta_Char;
+static char Brace_Char;
+static char Default_Meta_Char[] = "{.*+?[(|)^<>$";
+static char *Meta_Char;
 
 struct len_range {
 	long lower;
@@ -1821,7 +1821,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 			/* Loop until we find a meta character, shortcut escape, back
 			   reference, or end of regex string. */
 
-			for (; *Reg_Parse != '\0' && !strchr((char *)Meta_Char, (int)*Reg_Parse); len++) {
+			for (; *Reg_Parse != '\0' && !strchr(Meta_Char, (int)*Reg_Parse); len++) {
 
 				/* Save where we are in case we have to back
 				   this character out. */
@@ -2198,10 +2198,10 @@ static void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 
-	uint8_t *clazz = nullptr;
-	static uint8_t *codes = (uint8_t *)"ByYdDlLsSwW";
+	char *clazz = nullptr;
+	static const char codes[] = "ByYdDlLsSwW";
 	uint8_t *ret_val = (uint8_t *)1; /* Assume success. */
-	uint8_t *valid_codes;
+	const char *valid_codes;
 
 	if (emit == EMIT_CLASS_BYTES || emit == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; /* \B, \y and \Y are not allowed in classes */
@@ -2209,7 +2209,7 @@ static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 		valid_codes = codes;
 	}
 
-	if (!strchr((char *)valid_codes, (int)c)) {
+	if (!strchr(valid_codes, (int)c)) {
 		return nullptr; /* Not a valid shortcut escape sequence */
 	} else if (emit == CHECK_ESCAPE || emit == CHECK_CLASS_ESCAPE) {
 		return ret_val; /* Just checking if this is a valid shortcut escape. */
@@ -2638,7 +2638,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	if (delimiters == nullptr) {
 		Current_Delimiters = Default_Delimiters;
 	} else {
-		Current_Delimiters = makeDelimiterTable((uint8_t *)delimiters, (uint8_t *)tempDelimitTable);
+		Current_Delimiters = makeDelimiterTable((uint8_t *)delimiters, tempDelimitTable);
 	}
 
 	/* Remember the logical end of the string. */
@@ -2901,10 +2901,10 @@ static int attempt(regexp *prog, const char *string) {
 	}
 
 	if (match((prog->program + REGEX_START_OFFSET), &branch_index)) {
-		prog->startp[0] = (char *)string;
-		prog->endp[0] = (char *)Reg_Input;       /* <-- One char AFTER  */
-		prog->extentpBW = (char *)Extent_Ptr_BW; /*     matched string! */
-		prog->extentpFW = (char *)Extent_Ptr_FW;
+		prog->startp[0]  = string;
+		prog->endp[0]    = Reg_Input;       /* <-- One char AFTER  */
+		prog->extentpBW  = Extent_Ptr_BW; /*     matched string! */
+		prog->extentpFW  = Extent_Ptr_FW;
 		prog->top_branch = branch_index;
 
 		return (1);
@@ -2998,7 +2998,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				MATCH_RETURN(0);
 			}
 
-			if (len > 1 && strncmp((char *)opnd, (char *)Reg_Input, len) != 0) {
+			if (len > 1 && strncmp((char *)opnd, Reg_Input, len) != 0) {
 
 				MATCH_RETURN(0);
 			}
@@ -3382,16 +3382,12 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 				paren_no = (int)*OPERAND(scan);
 
-				/* if (GET_OP_CODE (scan) == X_REGEX_BR ||
-				    GET_OP_CODE (scan) == X_REGEX_BR_CI) {
+				/* if (GET_OP_CODE (scan) == X_REGEX_BR || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
 
 				   if (Cross_Regex_Backref == nullptr) MATCH_RETURN (0);
 
-				   captured =
-				      (uint8_t *) Cross_Regex_Backref->startp [paren_no];
-
-				   finish =
-				      (uint8_t *) Cross_Regex_Backref->endp   [paren_no];
+				   captured = Cross_Regex_Backref->startp [paren_no];
+				   finish   = Cross_Regex_Backref->endp   [paren_no];
 				} else { */
 				captured = Back_Ref_Start[paren_no];
 				finish = Back_Ref_End[paren_no];
