@@ -1736,7 +1736,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int i;
 
-	XtFree((char *)HighlightDialog.langModeName);
+	XtFree(HighlightDialog.langModeName);
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
 	HighlightDialog.shell = nullptr;
@@ -1790,7 +1790,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		freePatternSet(newPatSet);
 
 	/* Free the old dialog information */
-	XtFree((char *)HighlightDialog.langModeName);
+	XtFree(HighlightDialog.langModeName);
 	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
 
@@ -2275,7 +2275,7 @@ static highlightPattern *readDialogFields(int silent) {
 	if (XmToggleButtonGetState(HighlightDialog.rangeW)) {
 		pat->errorRE = XmTextGetString(HighlightDialog.errorW);
 		if (*pat->errorRE == '\0') {
-			XtFree((char *)pat->errorRE);
+			XtFree(pat->errorRE);
 			pat->errorRE = nullptr;
 		}
 	}

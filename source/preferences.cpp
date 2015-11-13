@@ -1757,7 +1757,7 @@ Boolean GetPrefFocusOnRaise(void) {
 }
 
 Boolean GetPrefForceOSConversion(void) {
-	return (Boolean)PrefData.forceOSConversion;
+	return PrefData.forceOSConversion;
 }
 
 Boolean GetPrefHonorSymlinks(void) {

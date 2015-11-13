@@ -436,12 +436,8 @@ unsigned int U_CHAR_AT(const char *p) {
 /* Flags for function shortcut_escape() */
 
 #define CHECK_ESCAPE 0 /* Check an escape sequence for validity only. */
-#define CHECK_CLASS_ESCAPE                                                                                                                                                                                                                     \
-	1 /* Check the validity of an escape within a                                                                                                                                                                                              \
-	     character class */
-#define EMIT_CLASS_BYTES                                                                                                                                                                                                                       \
-	2               /* Emit equivalent character class bytes,                                                                                                                                                                                  \
-	                   e.g \d=0123456789 */
+#define CHECK_CLASS_ESCAPE	1 /* Check the validity of an escape within a character class */
+#define EMIT_CLASS_BYTES	2 /* Emit equivalent character class bytes, e.g \d=0123456789 */
 #define EMIT_NODE 3 /* Emit the appropriate node. */
 
 /* Array sizes for arrays used by function init_ansi_classes. */
@@ -455,9 +451,7 @@ unsigned int U_CHAR_AT(const char *p) {
 
 #define REGEX_START_OFFSET 3
 
-#define MAX_COMPILED_SIZE                                                                                                                                                                                                                      \
-	32767UL /* Largest size a compiled regex can be.                                                                                                                                                                                           \
-	           Probably could be 65535UL. */
+#define MAX_COMPILED_SIZE 32767UL /* Largest size a compiled regex can be. Probably could be 65535UL. */
 
 /* Global work variables for `CompileRE'. */
 
@@ -2825,23 +2819,25 @@ SINGLE_RETURN:
 
 static int init_ansi_classes(void) {
 
-	static int initialized = 0;
-	static int underscore = (int)'_';
-	int i, word_count, letter_count, space_count;
+	static bool initialized = false;
+	static const int underscore = (int)'_';
+	int word_count;
+	int letter_count;
+	int space_count;
 
 	if (!initialized) {
-		initialized = 1; /* Only need to generate character sets once. */
+		initialized = true; /* Only need to generate character sets once. */
 		word_count = 0;
 		letter_count = 0;
 		space_count = 0;
 
-		for (i = 1; i < (int)UINT8_MAX; i++) {
+		for (int i = 1; i < (int)UINT8_MAX; i++) {
 			if (isalnum(i) || i == underscore) {
-				Word_Char[word_count++] = (uint8_t)i;
+				Word_Char[word_count++] = (char)i;
 			}
 
 			if (isalpha(i)) {
-				Letter_Char[letter_count++] = (uint8_t)i;
+				Letter_Char[letter_count++] = (char)i;
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
@@ -2849,7 +2845,7 @@ static int init_ansi_classes(void) {
 			   here. */
 
 			if (isspace(i) && (i != (int)'\n')) {
-				White_Space[space_count++] = (uint8_t)i;
+				White_Space[space_count++] = (char)i;
 			}
 
 			/* Make sure arrays are big enough.  ("- 2" because of zero array
@@ -2862,8 +2858,8 @@ static int init_ansi_classes(void) {
 			}
 		}
 
-		Word_Char[word_count] = '\0';
-		Letter_Char[word_count] = '\0';
+		Word_Char[word_count]    = '\0';
+		Letter_Char[word_count]  = '\0';
 		White_Space[space_count] = '\0';
 	}
 
@@ -3129,7 +3125,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			MATCH_RETURN(0);
 
 		case WORD_CHAR: /* \w (word character; alpha-numeric or underscore) */
-			if ((isalnum((int)*Reg_Input) || *Reg_Input == '_') && !AT_END_OF_STRING(Reg_Input)) {
+			if ((isalnum(*Reg_Input) || *Reg_Input == '_') && !AT_END_OF_STRING(Reg_Input)) {
 				Reg_Input++;
 				break;
 			}
@@ -3137,7 +3133,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			MATCH_RETURN(0);
 
 		case NOT_WORD_CHAR: /* \W (NOT a word character) */
-			if (isalnum((int)*Reg_Input) || *Reg_Input == '_' || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
+			if (isalnum(*Reg_Input) || *Reg_Input == '_' || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
@@ -3158,56 +3154,56 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			break;
 
 		case DIGIT: /* \d, same as [0123456789] */
-			if (!isdigit((int)*Reg_Input) || AT_END_OF_STRING(Reg_Input))
+			if (!isdigit(*Reg_Input) || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case NOT_DIGIT: /* \D, same as [^0123456789] */
-			if (isdigit((int)*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
+			if (isdigit(*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case LETTER: /* \l, same as [a-zA-Z] */
-			if (!isalpha((int)*Reg_Input) || AT_END_OF_STRING(Reg_Input))
+			if (!isalpha(*Reg_Input) || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case NOT_LETTER: /* \L, same as [^0123456789] */
-			if (isalpha((int)*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
+			if (isalpha(*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case SPACE: /* \s, same as [ \t\r\f\v] */
-			if (!isspace((int)*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
+			if (!isspace(*Reg_Input) || *Reg_Input == '\n' || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case SPACE_NL: /* \s, same as [\n \t\r\f\v] */
-			if (!isspace((int)*Reg_Input) || AT_END_OF_STRING(Reg_Input))
+			if (!isspace(*Reg_Input) || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case NOT_SPACE: /* \S, same as [^\n \t\r\f\v] */
-			if (isspace((int)*Reg_Input) || AT_END_OF_STRING(Reg_Input))
+			if (isspace(*Reg_Input) || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
 			break;
 
 		case NOT_SPACE_NL: /* \S, same as [^ \t\r\f\v] */
-			if ((isspace((int)*Reg_Input) && *Reg_Input != '\n') || AT_END_OF_STRING(Reg_Input))
+			if ((isspace(*Reg_Input) && *Reg_Input != '\n') || AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0);
 
 			Reg_Input++;
@@ -3219,7 +3215,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				                    considers \0 as a member
 				                    of the character set. */
 
-			if (strchr((char *)OPERAND(scan), (int)*Reg_Input) == nullptr) {
+			if (strchr((char *)OPERAND(scan), *Reg_Input) == nullptr) {
 				MATCH_RETURN(0);
 			}
 
@@ -3233,7 +3229,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			if (AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0); /* See comment for ANY_OF. */
 
-			if (strchr((char *)OPERAND(scan), (int)*Reg_Input) != nullptr) {
+			if (strchr((char *)OPERAND(scan), *Reg_Input) != nullptr) {
 				MATCH_RETURN(0);
 			}
 
@@ -3254,7 +3250,8 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		case LAZY_QUESTION:
 		case LAZY_BRACE: {
 			unsigned long num_matched = REG_ZERO;
-			unsigned long min = ULONG_MAX, max = REG_ZERO;
+			unsigned long min = ULONG_MAX;
+			unsigned long max = REG_ZERO;
 			const char *save;
 			uint8_t next_char;
 			uint8_t *next_op;
@@ -3685,7 +3682,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case ANY_OF: /* [...] character class. */
-		while (count < max_cmp && strchr((char *)operand, (int)*input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr((char *)operand, *input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3697,7 +3694,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 	                 match newline (\n added usually to operand at compile
 	                 time.) */
 
-		while (count < max_cmp && strchr((char *)operand, (int)*input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr((char *)operand, *input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3726,7 +3723,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case WORD_CHAR: /* \w (word character, alpha-numeric or underscore) */
-		while (count < max_cmp && (isalnum((int)*input_str) || *input_str == (uint8_t)'_') && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && (isalnum(*input_str) || *input_str == (uint8_t)'_') && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3735,7 +3732,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_WORD_CHAR: /* \W (NOT a word character) */
-		while (count < max_cmp && !isalnum((int)*input_str) && *input_str != (uint8_t)'_' && *input_str != (uint8_t)'\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isalnum(*input_str) && *input_str != (uint8_t)'_' && *input_str != (uint8_t)'\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3744,7 +3741,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case DIGIT: /* same as [0123456789] */
-		while (count < max_cmp && isdigit((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isdigit(*input_str) && !AT_END_OF_STRING(input_str)) {
 			count++;
 			input_str++;
 		}
@@ -3752,7 +3749,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_DIGIT: /* same as [^0123456789] */
-		while (count < max_cmp && !isdigit((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isdigit(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3761,7 +3758,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case SPACE: /* same as [ \t\r\f\v]-- doesn't match newline. */
-		while (count < max_cmp && isspace((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isspace(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3770,7 +3767,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case SPACE_NL: /* same as [\n \t\r\f\v]-- matches newline. */
-		while (count < max_cmp && isspace((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isspace(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3779,7 +3776,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_SPACE: /* same as [^\n \t\r\f\v]-- doesn't match newline. */
-		while (count < max_cmp && !isspace((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isspace(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3788,7 +3785,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_SPACE_NL: /* same as [^ \t\r\f\v]-- matches newline. */
-		while (count < max_cmp && (!isspace((int)*input_str) || *input_str == '\n') && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && (!isspace(*input_str) || *input_str == '\n') && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3797,7 +3794,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case LETTER: /* same as [a-zA-Z] */
-		while (count < max_cmp && isalpha((int)*input_str) && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isalpha(*input_str) && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3806,7 +3803,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case NOT_LETTER: /* same as [^a-zA-Z] */
-		while (count < max_cmp && !isalpha((int)*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isalpha(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
