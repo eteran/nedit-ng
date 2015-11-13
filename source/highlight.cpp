@@ -679,7 +679,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 	styleTableEntry *styleTablePtr = styleTable;
 
-	auto setStyleTablePtr = [window](styleTableEntry *p, const highlightPattern *pat) {
+	auto setStyleTablePtr = [window](styleTableEntry *p, highlightPattern *pat) {
 		int r, g, b;
 
 		p->highlightName = pat->name;
@@ -932,11 +932,11 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		
 		bigPattern.pop_back(); // remove last '|' character
 
-		try {
-			compiledPats[patternNum].subPatternRE = new regexp(bigPattern.c_str(), REDFLT_STANDARD);
-		} catch(const regex_error &e) {
-			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
-			return nullptr;	
+		const char *compileMsg;
+		compiledPats[patternNum].subPatternRE = CompileRE(bigPattern.c_str(), &compileMsg, REDFLT_STANDARD);
+		if (compiledPats[patternNum].subPatternRE == nullptr) {
+			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", compileMsg);
+			return nullptr;
 		}
 	}
 
@@ -954,10 +954,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 static void freePatterns(highlightDataRec *patterns) {
 
 	for (int i = 0; patterns[i].style != 0; i++) {
-		delete patterns[i].startRE;
-		delete patterns[i].endRE;
-		delete patterns[i].errorRE;
-		delete patterns[i].subPatternRE;
+		free((char *)patterns[i].startRE);
+		free((char *)patterns[i].endRE);
+		free((char *)patterns[i].errorRE);
+		free((char *)patterns[i].subPatternRE);
 	}
 
 	for (int i = 0; patterns[i].style != 0; i++) {
@@ -1045,7 +1045,7 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
+int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
@@ -1064,10 +1064,9 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
 		entry = styleTableEntryOfCode(window, hCode);
 		if (entry == nullptr)
 			return 0;
-			
-		const char *checkStyleName = entry->styleName;
-		
-		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && strcmp(entry->styleName, checkStyleName) == 0)) {
+		if ((*checkStyleName) == nullptr)
+			(*checkStyleName) = entry->styleName;
+		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && strcmp(entry->styleName, (*checkStyleName)) == 0)) {
 			if (hCode == UNFINISHED_STYLE) {
 				/* encountered "unfinished" style, trigger parsing, then loop */
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
@@ -1499,14 +1498,14 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
-		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch_ : 0;
+		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
 		/* Combination of all sub-patterns and end pattern matched */
-		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp_[0] - *string); */
+		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); */
 		startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
 		   the match, and advance the pointers to the start of the pattern */
-		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp_[0], pattern->style, prevChar);
+		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
 
 		/* If the combined pattern matched this pattern's end pattern, we're
 		   done.  Fill in the style string, update the pointers, color the
@@ -1515,7 +1514,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		savedPrevChar = *prevChar;
 		if (pattern->endRE != nullptr) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], pattern->style, prevChar);
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
 				subExecuted = False;
 				for (i = 0; i < pattern->nSubPatterns; i++) {
 					subPat = pattern->subPatterns[i];
@@ -1543,7 +1542,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		   done.  Fill in the style string, update the pointers, and return */
 		if (pattern->errorRE != nullptr) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp_[0], pattern->style, prevChar);
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
 				*string = stringPtr;
 				*styleString = stylePtr;
 				return False;
@@ -1566,7 +1565,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 
 		/* the sub-pattern is a simple match, just color it */
 		if (subPat->subPatternRE == nullptr) {
-			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], /* subPat->startRE->endp_[0],*/
+			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
 			                subPat->style, prevChar);
 
 			/* Parse the remainder of the sub-pattern */
@@ -1577,7 +1576,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 			/* If parsing should start after the start pattern, advance
 			   to that point (this is currently always the case) */
 			if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp_[0], /* subPat->startRE->endp_[0],*/
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
 				                subPat->style, prevChar);
 
 			/* Parse to the end of the subPattern */
@@ -1590,7 +1589,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 			   Without that restriction, matching becomes unstable. */
 
 			/* Parse to the end of the subPattern */
-			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp_[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp_[0]);
+			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -1875,9 +1874,8 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 	   the shortest distances here.  We could sort the map in order
 	   of decreasing distances and loop through it until one works. */
 
-	if (XAllocColor(display, cMap, &allColorDefs[best])) {
+	if (XAllocColor(display, cMap, &allColorDefs[best]))
 		bestPixel = allColorDefs[best].pixel;
-	}
 
 #if 0
     printf("Got %d %d %d, ", allColorDefs[best].red,
@@ -1904,12 +1902,12 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 ** compile a regular expression and present a user friendly dialog on failure.
 */
 static regexp *compileREAndWarn(Widget parent, const char *re) {
+	const char *compileMsg;
 
-	try {
-		return new regexp(re, REDFLT_STANDARD);
-	} catch(const regex_error &e) {
+	regexp *compiledRE = CompileRE(re, &compileMsg, REDFLT_STANDARD);
+	if (compiledRE == nullptr) {
 		char *boundedRe = XtNewStringEx(re);
-		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(e.what()) - 60;
+		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(compileMsg) - 60;
 
 		/* Prevent buffer overflow in DialogF. If the re is too long,
 		truncate it and append ... */
@@ -1917,10 +1915,11 @@ static regexp *compileREAndWarn(Widget parent, const char *re) {
 			strcpy(&boundedRe[maxLength - 3], "...");
 		}
 
-		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe, e.what());
+		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe, compileMsg);
 		XtFree(boundedRe);
 		return nullptr;
 	}
+	return compiledRE;
 }
 
 static int parentStyleOf(const char *parentStyles, int style) {
@@ -1928,12 +1927,11 @@ static int parentStyleOf(const char *parentStyles, int style) {
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2) {
+	int p;
 
-	for (int p = parentStyleOf(parentStyles, style2); p != '\0'; p = parentStyleOf(parentStyles, p)) {
-		if (style1 == p) {
+	for (p = parentStyleOf(parentStyles, style2); p != '\0'; p = parentStyleOf(parentStyles, p))
+		if (style1 == p)
 			return TRUE;
-		}
-	}
 	return FALSE;
 }
 
@@ -2127,10 +2125,12 @@ static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromP
 ** corresponding portion of "string".
 */
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString) {
+	const char *stringPtr;
+	char *stylePtr;
 
-	const char *stringPtr = re->startp_[subexpr];
-	char *stylePtr        = &styleString[stringPtr - string];
-	fillStyleString(&stringPtr, &stylePtr, re->endp_[subexpr], style, nullptr);
+	stringPtr = re->startp[subexpr];
+	stylePtr = &styleString[stringPtr - string];
+	fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, nullptr);
 }
 
 /*
@@ -2147,23 +2147,20 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 }
 
 static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName) {
+	int i;
 
-	if (patName == nullptr) {
+	if (patName == nullptr)
 		return -1;
-	}
-	
-	for (int i = 0; i < nPats; i++) {
-		if (!strcmp(patList[i].name, patName)) {
+	for (i = 0; i < nPats; i++)
+		if (!strcmp(patList[i].name, patName))
 			return i;
-		}
-	}
-	
 	return -1;
 }
 
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index) {
+	int topIndex;
 
-	int topIndex = index;
+	topIndex = index;
 	while (patList[topIndex].subPatternOf != nullptr) {
 		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
 		if (index == topIndex)

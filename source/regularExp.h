@@ -24,33 +24,10 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <X11/Intrinsic.h>
 
 #ifndef NEDIT_REGULAREXP_H_INCLUDED
 #define NEDIT_REGULAREXP_H_INCLUDED
-
-#include <cstdint>
-#include <exception>
-#include <stdexcept>
-#include <cstdarg>
-
-class regex_error : public std::exception {
-public:
-	regex_error(const char *fmt, ...) {
-		char buf[1024];
-		va_list ap;
-		va_start(ap, fmt);
-		vsnprintf(buf, sizeof(buf), fmt, ap);
-		va_end(ap);
-		error_ = buf;
-	}
-	
-public:
-	virtual const char *what() const noexcept override {
-		return error_.c_str();
-	}
-private:
-	std::string error_;
-};
 
 /* Number of text capturing parentheses allowed. */
 
@@ -60,21 +37,19 @@ private:
    pointers to matched text.  `program' is the actual compiled regex code. */
 
 struct regexp {
-public:
-	regexp(const char *exp, int defaultFlags);
-	regexp(const regexp &) = delete;
-	regexp &operator=(const regexp &) = delete;
-	~regexp();
-		   
-public:
-	const char *startp_[NSUBEXP]; /* Captured text starting locations. */
-	const char *endp_[NSUBEXP];   /* Captured text ending locations. */
-	const char *extentpBW_;       /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
-	const char *extentpFW_;       /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-	int top_branch_;              /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
-	char match_start_;            /* Internal use only. */
-	char anchor_;                 /* Internal use only. */
-	uint8_t *program_;            /* Unwarranted chumminess with compiler. */
+	char *startp[NSUBEXP]; /* Captured text starting locations. */
+	char *endp[NSUBEXP];   /* Captured text ending locations. */
+	char *extentpBW;       /* Points to the maximum extent of text scanned by
+	                          ExecRE in front of the string to achieve a match
+	                          (needed because of positive look-behind.) */
+	char *extentpFW;       /* Points to the maximum extent of text scanned by
+	                          ExecRE to achieve a match (needed because of
+	                          positive look-ahead.) */
+	int top_branch;        /* Zero-based index of the top branch that matches.
+	                          Used by syntax highlighting only. */
+	char match_start;      /* Internal use only. */
+	char anchor;           /* Internal use only. */
+	char program[1];       /* Unwarranted chumminess with compiler. */
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -85,7 +60,11 @@ enum RE_DEFAULT_FLAG {
 	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
 };
 
+/* Compiles a regular expression into the internal format used by `ExecRE'. */
 
+regexp *CompileRE(const char *exp,        /* String containing the regex specification. */
+                  const char **errorText, /* Text of any error message produced. */
+                  int defaultFlags);      /* Flags for default RE-operation */
 
 /* Match a `regexp' structure against a string. */
 
@@ -106,7 +85,7 @@ int ExecRE(regexp *prog,               /* Compiled regex. */
                                           set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
-bool SubstituteRE(const regexp *prog, const char *source, char *dest, int max);
+Boolean SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
 /* Builds a default delimiter table that persists across `ExecRE' calls that
    is identical to `delimiters'.  Pass NULL for "default default" set of

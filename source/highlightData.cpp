@@ -121,7 +121,7 @@ static int dialogEmpty(void);
 static int updatePatternSet(void);
 static patternSet *getDialogPatternSet(void);
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
-static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo);
+static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo);
 static void freeItemCB(void *item);
 static void freePatternSrc(highlightPattern *pat, bool freeStruct);
 static void freePatternSet(patternSet *p);
@@ -504,7 +504,7 @@ static void convertOldPatternSet(patternSet *patSet) {
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
 		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 	}
 }
@@ -518,6 +518,8 @@ static void convertOldPatternSet(patternSet *patSet) {
 */
 static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr) {
 
+	const char *errorText;
+
 	if (*patternRE == nullptr) {
 		return;
 	}
@@ -529,13 +531,12 @@ static void convertPatternExpr(char **patternRE, const char *patSetName, const c
 		*patternRE = XtNewStringEx(newRE);
 		XtFree(newRE);
 	} else {
-		try {
-			char *newRE = ConvertRE(*patternRE);
-			XtFree(*patternRE);
-			*patternRE = newRE;
-		} catch(const regex_error &e) {
-			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
+		char *newRE = ConvertRE(*patternRE, &errorText);
+		if (newRE == nullptr) {
+			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, errorText);
 		}
+		XtFree(*patternRE);
+		*patternRE = newRE;
 	}
 }
 
@@ -648,8 +649,9 @@ int LMHasHighlightPatterns(view::string_view languageMode) {
 ** edited in the dialog.
 */
 void RenameHighlightPattern(const char *oldName, const char *newName) {
+	int i;
 
-	for (int i = 0; i < NPatternSets; i++) {
+	for (i = 0; i < NPatternSets; i++) {
 		if (!strcmp(oldName, PatternSets[i]->languageMode)) {
 			XtFree((char *)PatternSets[i]->languageMode);
 			PatternSets[i]->languageMode = XtNewStringEx(newName);
@@ -777,7 +779,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	retPatSet = new patternSet;
+	retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
 	*retPatSet = patSet;
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
@@ -1735,9 +1737,8 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int i;
 
 	XtFree((char *)HighlightDialog.langModeName);
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
-	}
 	HighlightDialog.shell = nullptr;
 }
 
@@ -1790,9 +1791,8 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Free the old dialog information */
 	XtFree((char *)HighlightDialog.langModeName);
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
-	}
 
 	/* Fill the dialog with the new language mode information */
 	HighlightDialog.langModeName = XtNewStringEx(modeName);
@@ -1904,9 +1904,8 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 		PatternSets[NPatternSets++] = defaultPatSet;
 
 	/* Free the old dialog information */
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
-	}
 
 	/* Update the dialog */
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
@@ -1943,9 +1942,8 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	/* Free the old dialog information */
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		freePatternSrc(HighlightDialog.patterns[i], true);
-	}
 
 	/* Clear out the dialog */
 	HighlightDialog.nPatterns = 0;
@@ -2098,8 +2096,10 @@ static void updateLabels(void) {
 	XmString s1;
 
 	if (XmToggleButtonGetState(HighlightDialog.colorPatW)) {
-		startLbl = "Sub-expressions to Highlight in Parent's Starting Regular Expression (\\1, &, etc.)";
-		endLbl = "Sub-expressions to Highlight in Parent Pattern's Ending Regular Expression";
+		startLbl = "Sub-expressions to Highlight in Parent's Starting \
+Regular Expression (\\1, &, etc.)";
+		endLbl = "Sub-expressions to Highlight in Parent Pattern's Ending \
+Regular Expression";
 		endSense = True;
 		errSense = False;
 		matchSense = False;
@@ -2175,7 +2175,13 @@ static highlightPattern *readDialogFields(int silent) {
 	/* Allocate a pattern source structure to return, zero out fields
 	   so that the whole pattern can be freed on error with freePatternSrc */
 	auto pat = new highlightPattern;
-	
+	pat->endRE        = nullptr;
+	pat->errorRE      = nullptr;
+	pat->style        = nullptr;
+	pat->subPatternOf = nullptr;
+
+	/* read the type buttons */
+	pat->flags = 0;
 	colorOnly = XmToggleButtonGetState(HighlightDialog.colorPatW);
 	if (XmToggleButtonGetState(HighlightDialog.deferredW))
 		pat->flags |= DEFER_PARSING;
@@ -2388,18 +2394,15 @@ static patternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	patSet = new patternSet;
-	
+	patSet = (patternSet *)XtMalloc(sizeof(patternSet));
 	patSet->languageMode = XtNewStringEx(HighlightDialog.langModeName);
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	patSet->nPatterns    = HighlightDialog.nPatterns;
 	patSet->patterns     = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * HighlightDialog.nPatterns);
 	
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (i = 0; i < HighlightDialog.nPatterns; i++)
 		copyPatternSrc(HighlightDialog.patterns[i], &patSet->patterns[i]);
-	}
-	
 	return patSet;
 }
 
@@ -2443,21 +2446,23 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 ** otherwise allocate a new highlightPattern structure and return it as the
 ** function value.
 */
-static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo) {
-	
+static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo) {
+	highlightPattern *newPat;
 
 	if (copyTo == nullptr) {
-		return new highlightPattern(*pat);
+		newPat = new highlightPattern;
+	} else {
+		newPat = copyTo;
 	}
 
-	copyTo->name         = XtNewStringEx(pat->name);
-	copyTo->startRE      = XtNewStringEx(pat->startRE);
-	copyTo->endRE        = XtNewStringEx(pat->endRE);
-	copyTo->errorRE      = XtNewStringEx(pat->errorRE);
-	copyTo->style        = XtNewStringEx(pat->style);
-	copyTo->subPatternOf = XtNewStringEx(pat->subPatternOf);
-	copyTo->flags        = pat->flags;
-	return copyTo;
+	newPat->name         = XtNewStringEx(pat->name);
+	newPat->startRE      = XtNewStringEx(pat->startRE);
+	newPat->endRE        = XtNewStringEx(pat->endRE);
+	newPat->errorRE      = XtNewStringEx(pat->errorRE);
+	newPat->style        = XtNewStringEx(pat->style);
+	newPat->subPatternOf = XtNewStringEx(pat->subPatternOf);
+	newPat->flags        = pat->flags;
+	return newPat;
 }
 
 /*
@@ -2465,14 +2470,12 @@ static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPa
 ** If "freeStruct" is true, free the structure itself as well.
 */
 static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
-#if 1
 	XtFree((char *)pat->name);
 	XtFree(pat->startRE);
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
 	XtFree(pat->style);
 	XtFree(pat->subPatternOf);
-#endif
 	if(freeStruct) {
 		delete pat;
 	}
@@ -2484,13 +2487,11 @@ static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 */
 static void freePatternSet(patternSet *p) {
 
-	for (int i = 0; i < p->nPatterns; i++) {
+	for (int i = 0; i < p->nPatterns; i++)
 		freePatternSrc(&p->patterns[i], false);
-	}
-	
 	XtFree((char *)p->languageMode);
 	XtFree((char *)p->patterns);
-	delete p;
+	XtFree((char *)p);
 }
 
 #if 0

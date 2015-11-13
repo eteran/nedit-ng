@@ -32,7 +32,6 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 #include <Xm/Xm.h>
-#include <string>
 
 enum cursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY_CURSOR };
 
@@ -44,16 +43,16 @@ struct styleTableEntry {
 	std::string colorName;
 	char isBold;
 	char isItalic;
-	uint16_t red;
-	uint16_t green;
-	uint16_t blue;
+	unsigned short red;
+	unsigned short green;
+	unsigned short blue;
 	Pixel color;
 	Boolean underline;
 	XFontStruct *font;
 	std::string bgColorName; /* background style coloring (name may be "empty") */
-	uint16_t bgRed;
-	uint16_t bgGreen;
-	uint16_t bgBlue;
+	unsigned short bgRed;
+	unsigned short bgGreen;
+	unsigned short bgBlue;
 	Pixel bgColor;
 };
 

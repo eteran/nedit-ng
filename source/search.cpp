@@ -2901,6 +2901,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 */
 static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType) {
 	regexp *compiledRE = nullptr;
+	const char *compileMsg;
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
@@ -2918,15 +2919,14 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
-		try {
-			compiledRE = new regexp(replaceText, regexDefault);
-		} catch(const regex_error &e) {
-			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", e.what());
+		compiledRE = CompileRE(replaceText, &compileMsg, regexDefault);
+		if (compiledRE == nullptr) {
+			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", compileMsg);
 			XtFree(replaceText);
 			XtFree(replaceWithText);
-			return FALSE;		
+			return FALSE;
 		}
-		delete compiledRE;
+		free((char *)compiledRE);
 	} else {
 		if (XmToggleButtonGetState(window->replaceCaseToggle)) {
 			if (XmToggleButtonGetState(window->replaceWordToggle))
@@ -2974,6 +2974,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType) {
 
 	regexp *compiledRE = nullptr;
+	const char *compileMsg;
 
 	/* Get the search string, search type, and direction from the dialog */
 	char *findText = XmTextGetString(window->findText);
@@ -2989,13 +2990,12 @@ static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchStrin
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
-		try {
-			compiledRE = new regexp(findText, regexDefault);
-		} catch(const regex_error &e) {
-			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
+		compiledRE = CompileRE(findText, &compileMsg, regexDefault);
+		if (compiledRE == nullptr) {
+			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", compileMsg);
 			return FALSE;
 		}
-		delete compiledRE;
+		free((char *)compiledRE);
 	} else {
 		if (XmToggleButtonGetState(window->findCaseToggle)) {
 			if (XmToggleButtonGetState(window->findWordToggle))
@@ -3484,14 +3484,14 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   in peace when they have unfinished syntax, but still get beeps when
 	   correct syntax doesn't match) */
 	if (isRegexType(searchType)) {
-		try {
-			regexp *compiledRE = new regexp(searchString, defaultRegexFlags(searchType));
-			delete compiledRE;
-		} catch(const regex_error &e) {
+		regexp *compiledRE = nullptr;
+		const char *compileMsg;
+		compiledRE = CompileRE(searchString, &compileMsg, defaultRegexFlags(searchType));
+		if (compiledRE == nullptr) {
 			XtFree(searchString);
-			return;		
+			return;
 		}
-		
+		free((char *)compiledRE);
 	}
 
 	/* Call the incremental search action proc to do the searching and
@@ -4625,79 +4625,77 @@ static int searchRegex(const char *string, const char *searchString, int directi
 
 static int forwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	regexp *compiledRE = nullptr;
+	const char *compileMsg;
 
 	/* compile the search string for searching with ExecRE.  Note that
 	   this does not process errors from compiling the expression.  It
 	   assumes that the expression was checked earlier. */
-	try {
-		compiledRE = new regexp(searchString, defaultFlags);
-	} catch(const regex_error &e) {
+	compiledRE = CompileRE(searchString, &compileMsg, defaultFlags);
+	if (compiledRE == nullptr)
 		return FALSE;
-	}
 
 	/* search from beginPos to end of string */
 	if (ExecRE(compiledRE, string + beginPos, nullptr, FALSE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp_[0] - string;
-		*endPos = compiledRE->endp_[0] - string;
+		*startPos = compiledRE->startp[0] - string;
+		*endPos = compiledRE->endp[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW_ - string;
+			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW_ - string;
-		delete compiledRE;
+			*searchExtentBW = compiledRE->extentpBW - string;
+		free((char *)compiledRE);
 		return TRUE;
 	}
 
 	/* if wrap turned off, we're done */
 	if (!wrap) {
-		delete compiledRE;
+		free((char *)compiledRE);
 		return FALSE;
 	}
 
 	/* search from the beginning of the string to beginPos */
 	if (ExecRE(compiledRE, string, string + beginPos, FALSE, '\0', string[beginPos], delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp_[0] - string;
-		*endPos = compiledRE->endp_[0] - string;
+		*startPos = compiledRE->startp[0] - string;
+		*endPos = compiledRE->endp[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW_ - string;
+			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW_ - string;
-		delete compiledRE;
+			*searchExtentBW = compiledRE->extentpBW - string;
+		free((char *)compiledRE);
 		return TRUE;
 	}
 
-	delete compiledRE;
+	free((char *)compiledRE);
 	return FALSE;
 }
 
 static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	regexp *compiledRE = nullptr;
+	const char *compileMsg;
 	int length;
 
 	/* compile the search string for searching with ExecRE */
-	try {
-		compiledRE = new regexp(searchString, defaultFlags);
-	} catch(const regex_error &e) {
+	compiledRE = CompileRE(searchString, &compileMsg, defaultFlags);
+	if (compiledRE == nullptr)
 		return FALSE;
-	}
 
 	/* search from beginPos to start of file.  A negative begin pos	*/
 	/* says begin searching from the far end of the file.		*/
 	if (beginPos >= 0) {
 		if (ExecRE(compiledRE, string, string + beginPos, TRUE, '\0', '\0', delimiters, string, nullptr)) {
-			*startPos = compiledRE->startp_[0] - string;
-			*endPos = compiledRE->endp_[0] - string;
+			*startPos = compiledRE->startp[0] - string;
+			*endPos = compiledRE->endp[0] - string;
 			if (searchExtentFW != nullptr)
-				*searchExtentFW = compiledRE->extentpFW_ - string;
+				*searchExtentFW = compiledRE->extentpFW - string;
 			if (searchExtentBW != nullptr)
-				*searchExtentBW = compiledRE->extentpBW_ - string;
-			delete compiledRE;
+				*searchExtentBW = compiledRE->extentpBW - string;
+			free((char *)compiledRE);
 			return TRUE;
 		}
 	}
 
 	/* if wrap turned off, we're done */
 	if (!wrap) {
-		delete compiledRE;
+		free((char *)compiledRE);
 		return FALSE;
 	}
 
@@ -4706,16 +4704,16 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 		beginPos = 0;
 	length = strlen(string); /* sadly, this means scanning entire string */
 	if (ExecRE(compiledRE, string + beginPos, string + length, TRUE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp_[0] - string;
-		*endPos = compiledRE->endp_[0] - string;
+		*startPos = compiledRE->startp[0] - string;
+		*endPos = compiledRE->endp[0] - string;
 		if (searchExtentFW != nullptr)
-			*searchExtentFW = compiledRE->extentpFW_ - string;
+			*searchExtentFW = compiledRE->extentpFW - string;
 		if (searchExtentBW != nullptr)
-			*searchExtentBW = compiledRE->extentpBW_ - string;
-		delete compiledRE;
+			*searchExtentBW = compiledRE->extentpBW - string;
+		free((char *)compiledRE);
 		return TRUE;
 	}
-	delete compiledRE;
+	free((char *)compiledRE);
 	return FALSE;
 }
 
@@ -4833,19 +4831,15 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 ** items.
 */
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
+	regexp *compiledRE;
+	const char *compileMsg;
 
-	try {
-		auto compiledRE = new regexp(searchStr, defaultFlags);
-		ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
-		
-		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-		delete compiledRE;
-		
-		return substResult;
-	} catch(const regex_error &e) {
-		fprintf(stderr, "error: %s\n", e.what());
-		return false;
-	}
+	compiledRE = CompileRE(searchStr, &compileMsg, defaultFlags);
+	ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
+	Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
+	free((char *)compiledRE);
+
+	return substResult;
 }
 
 /*

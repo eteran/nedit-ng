@@ -49,16 +49,20 @@
 #include <cstring>
 #include <cctype>
 #include <climits>
-#include <cstdint>
-#include <X11/Intrinsic.h>
 
+#include <X11/Intrinsic.h>
 
 /* Utility definitions. */
 
 #define NSUBEXP 50
 
+#define CONVERT_FAIL(m)                                                                                                                                                                                                                        \
+	{                                                                                                                                                                                                                                          \
+		*Error_Ptr = (m);                                                                                                                                                                                                                      \
+		return 0;                                                                                                                                                                                                                              \
+	}
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?')
-#define U_CHAR_AT(p) ((unsigned int)*(uint8_t *)(p))
+#define U_CHAR_AT(p) ((unsigned int)*(unsigned char *)(p))
 
 /* Flags to be passed up and down via function parameters during compile. */
 
@@ -74,27 +78,31 @@
 
 /* Global work variables for `ConvertRE'. */
 
-static const char *Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static unsigned char *Reg_Parse;     /* Input scan ptr (scans user's regex) */
 static int Total_Paren;              /* Parentheses, (),  counter. */
-static size_t Convert_Size;   /* Address of this used as flag. */
-static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
+static unsigned long Convert_Size;   /* Address of this used as flag. */
+static unsigned char *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         &Compute_Size no code is emitted.
                                         Instead, the size of code that WOULD
                                         have been generated is accumulated in
                                         Convert_Size.  Otherwise,
                                         Code_Emit_Ptr points to where compiled
                                         regex code is to be written. */
-static uint8_t Compute_Size;
-static uint8_t Meta_Char[] = ".*+?[(|)^<>$";
+static unsigned char Compute_Size;
+static const char **Error_Ptr; /* Place to store error messages so
+                            they can be returned by `ConvertRE' */
+static char Error_Text[128];   /* Sting to build error messages in. */
 
-static uint8_t *Convert_Str;
+static unsigned char Meta_Char[] = ".*+?[(|)^<>$";
+
+static unsigned char *Convert_Str;
 
 /* Forward declarations for functions used by `ConvertRE'. */
 
 static int alternative(int *flag_param);
 static int chunk(int paren, int *flag_param);
-static void emit_convert_byte(uint8_t c);
-static uint8_t literal_escape(uint8_t c, int);
+static void emit_convert_byte(unsigned char c);
+static unsigned char literal_escape(unsigned char c, int);
 static int atom(int *flag_param);
 static void reg_error(const char *str);
 static int piece(int *flag_param);
@@ -109,14 +117,17 @@ static int piece(int *flag_param);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-char *ConvertRE(const char *exp) {
+char *ConvertRE(const char *exp, const char **errorText) {
 
-	int flags_local;
+	int flags_local, pass;
 
 	/* Set up `errorText' to receive failure reports. */
 
+	Error_Ptr = errorText;
+	*Error_Ptr = "";
+
 	if (exp == nullptr)
-		throw regex_error("nullptr argument to `ConvertRE\'");
+		CONVERT_FAIL("nullptr argument to `ConvertRE\'");
 
 	Code_Emit_Ptr = &Compute_Size;
 	Convert_Size = 0UL;
@@ -130,13 +141,13 @@ char *ConvertRE(const char *exp) {
 	   code and thus invalidate pointers into it.  (Note that it has to be in
 	   one piece because free() must be able to free it all.) */
 
-	for (int pass = 1; pass <= 2; pass++) {
+	for (pass = 1; pass <= 2; pass++) {
 		/*-------------------------------------------*
 		 * FIRST  PASS: Determine size and legality. *
 		 * SECOND PASS: Emit converted code.         *
 		 *-------------------------------------------*/
 
-		Reg_Parse = exp;
+		Reg_Parse = (unsigned char *)exp;
 		Total_Paren = 1;
 
 		if (chunk(NO_PAREN, &flags_local) == 0)
@@ -147,10 +158,10 @@ char *ConvertRE(const char *exp) {
 		if (pass == 1) {
 			/* Allocate memory. */
 
-			Convert_Str = (uint8_t *)XtMalloc(sizeof(uint8_t) * Convert_Size);
+			Convert_Str = (unsigned char *)XtMalloc(sizeof(unsigned char) * Convert_Size);
 
 			if (Convert_Str == nullptr) {
-				throw regex_error("out of memory in `ConvertRE\'");
+				CONVERT_FAIL("out of memory in `ConvertRE\'");
 			}
 
 			Code_Emit_Ptr = Convert_Str;
@@ -179,7 +190,8 @@ static int chunk(int paren, int *flag_param) {
 
 	if (paren == PAREN) {
 		if (Total_Paren >= NSUBEXP) {
-			throw regex_error("number of ()'s > %d", (int)NSUBEXP);
+			sprintf(Error_Text, "number of ()'s > %d", (int)NSUBEXP);
+			CONVERT_FAIL(Error_Text);
 		}
 
 		Total_Paren++;
@@ -212,7 +224,7 @@ static int chunk(int paren, int *flag_param) {
 	/* Check for proper termination. */
 
 	if (paren != NO_PAREN && *Reg_Parse != ')') {
-		throw regex_error("missing right parenthesis \')\'");
+		CONVERT_FAIL("missing right parenthesis \')\'");
 
 	} else if (paren != NO_PAREN) {
 		emit_convert_byte(')');
@@ -220,9 +232,9 @@ static int chunk(int paren, int *flag_param) {
 
 	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
 		if (*Reg_Parse == ')') {
-			throw regex_error("missing left parenthesis \'(\'");
+			CONVERT_FAIL("missing left parenthesis \'(\'");
 		} else {
-			throw regex_error("junk on end"); /* "Can't happen" - NOTREACHED */
+			CONVERT_FAIL("junk on end"); /* "Can't happen" - NOTREACHED */
 		}
 	}
 
@@ -262,7 +274,7 @@ static int alternative(int *flag_param) {
 static int piece(int *flag_param) {
 
 	int ret_val;
-	uint8_t op_code;
+	unsigned char op_code;
 	unsigned long min_val = REG_ZERO;
 	int flags_local;
 
@@ -288,7 +300,9 @@ static int piece(int *flag_param) {
 	   item. */
 
 	if (!(flags_local & HAS_WIDTH) && min_val > REG_ZERO) {
-		throw regex_error("%c operand could be empty", op_code);
+		sprintf(Error_Text, "%c operand could be empty", op_code);
+
+		CONVERT_FAIL(Error_Text);
 	}
 
 	*flag_param = (min_val > REG_ZERO) ? (WORST | HAS_WIDTH) : WORST;
@@ -297,11 +311,13 @@ static int piece(int *flag_param) {
 		/* We get here if the IS_QUANTIFIER macro is not coordinated properly
 		   with this function. */
 
-		throw regex_error("internal error #2, `piece\'");
+		CONVERT_FAIL("internal error #2, `piece\'");
 	}
 
 	if (IS_QUANTIFIER(*Reg_Parse)) {
-		throw regex_error("nested quantifiers, %c%c", op_code, *Reg_Parse);
+		sprintf(Error_Text, "nested quantifiers, %c%c", op_code, *Reg_Parse);
+
+		CONVERT_FAIL(Error_Text);
 	}
 
 	emit_convert_byte(op_code);
@@ -315,7 +331,7 @@ static int piece(int *flag_param) {
 
 static int atom(int *flag_param) {
 	int ret_val = 1;
-	uint8_t test;
+	unsigned char test;
 	int flags_local;
 
 	*flag_param = WORST; /* Tentatively. */
@@ -360,12 +376,13 @@ static int atom(int *flag_param) {
 	case '\0':
 	case '|':
 	case ')':
-		throw regex_error("internal error #3, `atom\'"); /* Supposed to be  */
+		CONVERT_FAIL("internal error #3, `atom\'"); /* Supposed to be  */
 	                                                /* caught earlier. */
 	case '?':
 	case '+':
 	case '*':
-		throw regex_error("%c follows nothing", *(Reg_Parse - 1));
+		sprintf(Error_Text, "%c follows nothing", *(Reg_Parse - 1));
+		CONVERT_FAIL(Error_Text);
 
 	case '{':
 		emit_convert_byte('\\'); /* Quote braces. */
@@ -375,8 +392,8 @@ static int atom(int *flag_param) {
 
 	case '[': {
 		unsigned int last_value;
-		uint8_t last_emit = 0;
-		uint8_t buffer[500];
+		unsigned char last_emit = 0;
+		unsigned char buffer[500];
 		int head = 0;
 		int negated = 0;
 		int do_brackets = 1;
@@ -402,7 +419,7 @@ static int atom(int *flag_param) {
 			last_emit = *Reg_Parse;
 
 			if (head >= 498) {
-				throw regex_error("too much data in [] to convert.");
+				CONVERT_FAIL("too much data in [] to convert.");
 			}
 
 			buffer[head++] = '\\'; /* Escape `]' and '-' for clarity. */
@@ -425,7 +442,7 @@ static int atom(int *flag_param) {
 					last_emit = '-';
 
 					if (head >= 498) {
-						throw regex_error("too much data in [] to convert.");
+						CONVERT_FAIL("too much data in [] to convert.");
 					}
 
 					buffer[head++] = '\\'; /* Escape '-' for clarity. */
@@ -448,7 +465,9 @@ static int atom(int *flag_param) {
 							buffer[head++] = *Reg_Parse;
 							last_value = (unsigned int)test;
 						} else {
-							throw regex_error("\\%c is an invalid escape sequence(3)", *Reg_Parse);
+							sprintf(Error_Text, "\\%c is an invalid escape sequence(3)", *Reg_Parse);
+
+							CONVERT_FAIL(Error_Text);
 						}
 					} else {
 						last_value = U_CHAR_AT(Reg_Parse);
@@ -470,7 +489,7 @@ static int atom(int *flag_param) {
 								   convert it to the escape sequence. */
 
 								if (head >= 495) {
-									throw regex_error("too much data in [] to convert.");
+									CONVERT_FAIL("too much data in [] to convert.");
 								}
 
 								buffer[head++] = '\\';
@@ -493,10 +512,10 @@ static int atom(int *flag_param) {
 					}
 
 					if (last_emit > last_value) {
-						throw regex_error("invalid [] range");
+						CONVERT_FAIL("invalid [] range");
 					}
 
-					last_emit = (uint8_t)last_value;
+					last_emit = (unsigned char)last_value;
 
 					Reg_Parse++;
 
@@ -508,7 +527,7 @@ static int atom(int *flag_param) {
 					last_emit = test;
 
 					if (head >= 498) {
-						throw regex_error("too much data in [] to convert.");
+						CONVERT_FAIL("too much data in [] to convert.");
 					}
 
 					if (*Reg_Parse != '\"') {
@@ -518,7 +537,9 @@ static int atom(int *flag_param) {
 					buffer[head++] = *Reg_Parse;
 
 				} else {
-					throw regex_error("\\%c is an invalid escape sequence(1)", *Reg_Parse);
+					sprintf(Error_Text, "\\%c is an invalid escape sequence(1)", *Reg_Parse);
+
+					CONVERT_FAIL(Error_Text);
 				}
 
 				Reg_Parse++;
@@ -535,7 +556,7 @@ static int atom(int *flag_param) {
 					   convert it to the escape sequence. */
 
 					if (head >= 495) {
-						throw regex_error("too much data in [] to convert.");
+						CONVERT_FAIL("too much data in [] to convert.");
 					}
 
 					buffer[head++] = '\\';
@@ -550,14 +571,14 @@ static int atom(int *flag_param) {
 						buffer[head++] = ('0' + test);
 					} else {
 						if (head >= 499) {
-							throw regex_error("too much data in [] to convert.");
+							CONVERT_FAIL("too much data in [] to convert.");
 						}
 
 						buffer[head++] = test;
 					}
 				} else {
 					if (head >= 499) {
-						throw regex_error("too much data in [] to convert.");
+						CONVERT_FAIL("too much data in [] to convert.");
 					}
 
 					buffer[head++] = *Reg_Parse;
@@ -568,7 +589,7 @@ static int atom(int *flag_param) {
 		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
-			throw regex_error("missing right \']\'");
+			CONVERT_FAIL("missing right \']\'");
 
 		buffer[head] = '\0';
 
@@ -665,8 +686,7 @@ static int atom(int *flag_param) {
 		Reg_Parse--; /* If we fell through from the above code, we are now
 		                pointing at the back slash (\) character. */
 		{
-			const char *parse_save;
-			uint8_t *emit_save;
+			unsigned char *parse_save, *emit_save;
 			int emit_diff, len = 0;
 
 			/* Loop until we find a meta character or end of regex string. */
@@ -689,7 +709,9 @@ static int atom(int *flag_param) {
 						emit_convert_byte(*Reg_Parse);
 
 					} else {
-						throw regex_error("\\%c is an invalid escape sequence(2)", *(Reg_Parse + 1));
+						sprintf(Error_Text, "\\%c is an invalid escape sequence(2)", *(Reg_Parse + 1));
+
+						CONVERT_FAIL(Error_Text);
 					}
 
 					Reg_Parse++;
@@ -742,7 +764,7 @@ static int atom(int *flag_param) {
 			}
 
 			if (len <= 0)
-				throw regex_error("internal error #4, `atom\'");
+				CONVERT_FAIL("internal error #4, `atom\'");
 
 			*flag_param |= HAS_WIDTH;
 
@@ -760,7 +782,7 @@ static int atom(int *flag_param) {
  * Emit (if appropriate) a byte of converted code.
  *----------------------------------------------------------------------*/
 
-static void emit_convert_byte(uint8_t c) {
+static void emit_convert_byte(unsigned char c) {
 
 	if (Code_Emit_Ptr == &Compute_Size) {
 		Convert_Size++;
@@ -779,16 +801,16 @@ static void emit_convert_byte(uint8_t c) {
  * escape.
  *--------------------------------------------------------------------*/
 
-static uint8_t literal_escape(uint8_t c, int action) {
+static unsigned char literal_escape(unsigned char c, int action) {
 
-	static uint8_t control_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '\0'};
+	static unsigned char control_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '\0'};
 
-	static uint8_t control_actual[] = {'\a', '\b', 0x1B, /* Escape character in ASCII character set. */
+	static unsigned char control_actual[] = {'\a', '\b', 0x1B, /* Escape character in ASCII character set. */
 	                                         '\f', '\n', '\r', '\t', '\v', '\0'};
 
-	static uint8_t valid_escape[] = {'a', 'b', 'f', 'n', 'r', 't', 'v', '(', ')', '[', ']', '<', '>', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\"', '\0'};
+	static unsigned char valid_escape[] = {'a', 'b', 'f', 'n', 'r', 't', 'v', '(', ')', '[', ']', '<', '>', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\"', '\0'};
 
-	static uint8_t value[] = {'\a', '\b', '\f', '\n', '\r', '\t', '\v', '(', ')', '[', ']', '<', '>', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\"', '\0'};
+	static unsigned char value[] = {'\a', '\b', '\f', '\n', '\r', '\t', '\v', '(', ')', '[', ']', '<', '>', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\"', '\0'};
 
 	int i;
 
@@ -821,10 +843,10 @@ static uint8_t literal_escape(uint8_t c, int action) {
 
 void ConvertSubstituteRE(const char *source, char *dest, int max) {
 
-	uint8_t *src;
-	uint8_t *dst;
-	uint8_t c;
-	uint8_t test;
+	unsigned char *src;
+	unsigned char *dst;
+	unsigned char c;
+	unsigned char test;
 
 	if (source == nullptr || dest == nullptr) {
 		reg_error("nullptr parm to `ConvertSubstituteRE\'");
@@ -832,8 +854,8 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 		return;
 	}
 
-	src = (uint8_t *)source;
-	dst = (uint8_t *)dest;
+	src = (unsigned char *)source;
+	dst = (unsigned char *)dest;
 
 	while ((c = *src++) != '\0') {
 
