@@ -410,6 +410,10 @@ unsigned int U_CHAR_AT(uint8_t *p) {
 	return (unsigned int)*p;
 }
 
+unsigned int U_CHAR_AT(const char *p) {
+	return (unsigned int)*p;
+}
+
 
 /* Flags to be passed up and down via function parameters during compile. */
 
@@ -457,7 +461,7 @@ unsigned int U_CHAR_AT(uint8_t *p) {
 
 /* Global work variables for `CompileRE'. */
 
-static uint8_t *Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static const char *Reg_Parse;     /* Input scan ptr (scans user's regex) */
 static size_t Total_Paren;              /* Parentheses, (),  counter. */
 static size_t Num_Braces;               /* Number of general {m,n} constructs.
                                         {m,n} quantifiers of SIMPLE atoms are
@@ -500,14 +504,14 @@ struct len_range {
 /* Forward declarations for functions used by `CompileRE'. */
 
 static uint8_t *alternative(int *flag_param, len_range *range_param);
-static uint8_t *back_ref(uint8_t *c, int *flag_param, int emit);
+static uint8_t *back_ref(const char *c, int *flag_param, int emit);
 static uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
 static void emit_byte(uint8_t c);
 static void emit_class_byte(uint8_t c);
 static uint8_t *emit_node(int op_code);
 static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index);
-static uint8_t literal_escape(uint8_t c);
-static uint8_t numeric_escape(uint8_t c, uint8_t **parse);
+static char literal_escape(char c);
+static char numeric_escape(char c, const char **parse);
 static uint8_t *atom(int *flag_param, len_range *range_param);
 static void reg_error(const char *str);
 static uint8_t *insert(uint8_t op, uint8_t *opnd, long min, long max, int index);
@@ -588,10 +592,10 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Match_Newline = 0; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)   ? 1 : 0);
 		                      Currently not used. Uncomment if needed. */
 
-		Reg_Parse = (uint8_t *)exp;
-		Total_Paren = 1;
-		Num_Braces = 0;
-		Closed_Parens = 0;
+		Reg_Parse       = exp;
+		Total_Paren     = 1;
+		Num_Braces      = 0;
+		Closed_Parens   = 0;
 		Paren_Has_Width = 0;
 
 		emit_byte(MAGIC);
@@ -1805,7 +1809,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
 		Reg_Parse--; /* If we fell through from the above code, we are now
 		                pointing at the back slash (\) character. */
 		{
-			uint8_t *parse_save;
+			const char *parse_save;
 			int len = 0;
 
 			if (Is_Case_Insensitive) {
@@ -2329,7 +2333,7 @@ static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 
-static uint8_t numeric_escape(uint8_t c, uint8_t **parse) {
+static char numeric_escape(char c, const char **parse) {
 
 	static uint8_t digits[] = "fedcbaFEDCBA9876543210";
 
@@ -2337,7 +2341,7 @@ static uint8_t numeric_escape(uint8_t c, uint8_t **parse) {
 	                                   15, 14, 13, 12, 11, 10,              /* Upper case Hex digits */
 	                                   9,  8,  7,  6,  5,  4,  3, 2, 1, 0}; /* Decimal Digits */
 
-	uint8_t *scan;
+	const char *scan;
 	uint8_t *pos_ptr;
 	uint8_t *digit_str;
 	unsigned int value = 0;
@@ -2423,7 +2427,7 @@ static uint8_t numeric_escape(uint8_t c, uint8_t **parse) {
  * escape.
  *--------------------------------------------------------------------*/
 
-static uint8_t literal_escape(uint8_t c) {
+static char literal_escape(char c) {
 
 	static uint8_t valid_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
 
@@ -2454,7 +2458,7 @@ static uint8_t literal_escape(uint8_t c) {
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
 
-static uint8_t *back_ref(uint8_t *c, int *flag_param, int emit) {
+static uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 	int paren_no, c_offset = 0, is_cross_regex = 0;
 
@@ -2575,7 +2579,7 @@ static uint8_t *Current_Delimiters; /* Current delimiter table */
 static int attempt(regexp *, uint8_t *);
 static int match(uint8_t *, int *);
 static unsigned long greedy(uint8_t *, long);
-static void adjustcase(uint8_t *, int, uint8_t);
+static void adjustcase(char *str, int len, char chgcase);
 static uint8_t *makeDelimiterTable(uint8_t *, uint8_t *);
 
 /*
@@ -3863,14 +3867,14 @@ static uint8_t *next_ptr(uint8_t *ptr) {
 */
 bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max) {
 
-	uint8_t *src;
-	uint8_t *src_alias;
-	uint8_t *dst;
-	uint8_t c;
-	uint8_t test;
+	const char *src;
+	const char *src_alias;
+	char *dst;
+	char c;
+	char test;
 	int paren_no;
 	int len;
-	uint8_t chgcase;
+	char chgcase;
 	bool anyWarnings = false;
 
 	if (prog == nullptr || source == nullptr || dest == nullptr) {
@@ -3885,8 +3889,8 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 		return false;
 	}
 
-	src = (uint8_t *)source;
-	dst = (uint8_t *)dest;
+	src = source;
+	dst = dest;
 
 	while ((c = *src++) != '\0') {
 		chgcase = '\0';
@@ -3938,7 +3942,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 		}                   /* mind set of issuing an error!       */
 
 		if (paren_no < 0) { /* Ordinary character. */
-			if (((char *)dst - dest) >= (max - 1)) {
+			if ((dst - dest) >= (max - 1)) {
 				reg_error("replacing expression in `SubstituteRE\' too long; "
 				          "truncating");
 				anyWarnings = true;
@@ -3950,17 +3954,18 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 
 			len = prog->endp[paren_no] - prog->startp[paren_no];
 
-			if (((char *)dst + len - dest) >= max - 1) {
+			if ((dst + len - dest) >= max - 1) {
 				reg_error("replacing expression in `SubstituteRE\' too long; "
 				          "truncating");
 				anyWarnings = true;
-				len = max - ((char *)dst - dest) - 1;
+				len = max - (dst - dest) - 1;
 			}
 
-			(void)strncpy((char *)dst, prog->startp[paren_no], len);
+			strncpy(dst, prog->startp[paren_no], len);
 
-			if (chgcase != '\0')
+			if (chgcase != '\0') {
 				adjustcase(dst, len, chgcase);
+			}
 
 			dst += len;
 
@@ -3976,9 +3981,9 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	return !anyWarnings;
 }
 
-static void adjustcase(uint8_t *str, int len, uint8_t chgcase) {
+static void adjustcase(char *str, int len, char chgcase) {
 
-	uint8_t *string = str;
+	char *string = str;
 	int i;
 
 	/* The tokens \u and \l only modify the first character while the tokens
