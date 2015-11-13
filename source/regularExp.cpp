@@ -463,7 +463,7 @@ static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         Reg_Size.  Otherwise, Code_Emit_Ptr
                                         points to where compiled regex code is
                                         to be written. */
-static unsigned long Reg_Size;       /* Size of compiled regex code. */
+static size_t Reg_Size;       /* Size of compiled regex code. */
 
 
 static uint8_t White_Space[WHITE_SPACE_SIZE]; /* Arrays used by       */
