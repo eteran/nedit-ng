@@ -89,8 +89,8 @@ struct highlightDataRec {
 	regexp *subPatternRE;
 	char style;
 	int colorOnly;
-	signed char startSubexprs[NSUBEXP + 1];
-	signed char endSubexprs[NSUBEXP + 1];
+	int startSubexprs[NSUBEXP + 1];
+	int endSubexprs[NSUBEXP + 1];
 	int flags;
 	int nSubPatterns;
 	int nSubBranches; /* Number of top-level branches of subPatternRE */
@@ -1483,10 +1483,11 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 	int i, subExecuted, subIndex;
 	char *stylePtr;
 	const char *stringPtr, *savedStartPtr, *startingStringPtr;
-	signed char *subExpr;
+	int *subExpr;
 	char savedPrevChar;
 	char succChar = match_till ? (*match_till) : '\0';
-	highlightDataRec *subPat = nullptr, *subSubPat;
+	highlightDataRec *subPat = nullptr;
+	highlightDataRec *subSubPat;
 
 	if (length <= 0)
 		return False;

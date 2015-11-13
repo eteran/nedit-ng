@@ -121,7 +121,7 @@ static int dialogEmpty(void);
 static int updatePatternSet(void);
 static patternSet *getDialogPatternSet(void);
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
-static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo);
+static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo);
 static void freeItemCB(void *item);
 static void freePatternSrc(highlightPattern *pat, bool freeStruct);
 static void freePatternSet(patternSet *p);
@@ -2446,7 +2446,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 ** otherwise allocate a new highlightPattern structure and return it as the
 ** function value.
 */
-static highlightPattern *copyPatternSrc(highlightPattern *pat, highlightPattern *copyTo) {
+static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo) {
 	highlightPattern *newPat;
 
 	if (copyTo == nullptr) {
