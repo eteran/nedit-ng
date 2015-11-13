@@ -202,7 +202,7 @@
 
 #define LAST_PAREN (CLOSE + NSUBEXP)
 
-#if (LAST_PAREN > UCHAR_MAX)
+#if (LAST_PAREN > UINT8_MAX)
 #error "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)"
 #endif
 
@@ -1046,8 +1046,8 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
 			*flag_param = flags_local;
 			*range_param = range_local;
 			return (ret_val);
-		} else if (Num_Braces > (int)UCHAR_MAX) {
-			throw regex_error("number of {m,n} constructs > %d", UCHAR_MAX);
+		} else if (Num_Braces > (int)UINT8_MAX) {
+			throw regex_error("number of {m,n} constructs > %d", UINT8_MAX);
 		}
 	}
 
@@ -2552,7 +2552,7 @@ static struct brace_counts *Brace;
 
 /* Default table for determining whether a character is a word delimiter. */
 
-static uint8_t Default_Delimiters[UCHAR_MAX + 1] = {0};
+static uint8_t Default_Delimiters[UINT8_MAX + 1] = {0};
 
 static uint8_t *Current_Delimiters; /* Current delimiter table */
 
@@ -2817,7 +2817,7 @@ static int init_ansi_classes(void) {
 		letter_count = 0;
 		space_count = 0;
 
-		for (i = 1; i < (int)UCHAR_MAX; i++) {
+		for (i = 1; i < (int)UINT8_MAX; i++) {
 			if (isalnum(i) || i == underscore) {
 				Word_Char[word_count++] = (uint8_t)i;
 			}
