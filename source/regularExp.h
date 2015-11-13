@@ -44,8 +44,8 @@ public:
 	~regexp();
 
 public:
-	char *startp[NSUBEXP]; /* Captured text starting locations. */
-	char *endp[NSUBEXP];   /* Captured text ending locations. */
+	const char *startp[NSUBEXP]; /* Captured text starting locations. */
+	const char *endp[NSUBEXP];   /* Captured text ending locations. */
 	char *extentpBW;       /* Points to the maximum extent of text scanned by
 	                          ExecRE in front of the string to achieve a match
 	                          (needed because of positive look-behind.) */
