@@ -679,7 +679,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 	styleTableEntry *styleTablePtr = styleTable;
 
-	auto setStyleTablePtr = [window](styleTableEntry *p, highlightPattern *pat) {
+	auto setStyleTablePtr = [window](styleTableEntry *p, const highlightPattern *pat) {
 		int r, g, b;
 
 		p->highlightName = pat->name;
@@ -1874,8 +1874,9 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 	   the shortest distances here.  We could sort the map in order
 	   of decreasing distances and loop through it until one works. */
 
-	if (XAllocColor(display, cMap, &allColorDefs[best]))
+	if (XAllocColor(display, cMap, &allColorDefs[best])) {
 		bestPixel = allColorDefs[best].pixel;
+	}
 
 #if 0
     printf("Got %d %d %d, ", allColorDefs[best].red,
@@ -1926,11 +1927,12 @@ static int parentStyleOf(const char *parentStyles, int style) {
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2) {
-	int p;
 
-	for (p = parentStyleOf(parentStyles, style2); p != '\0'; p = parentStyleOf(parentStyles, p))
-		if (style1 == p)
+	for (int p = parentStyleOf(parentStyles, style2); p != '\0'; p = parentStyleOf(parentStyles, p)) {
+		if (style1 == p) {
 			return TRUE;
+		}
+	}
 	return FALSE;
 }
 
@@ -2124,11 +2126,9 @@ static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromP
 ** corresponding portion of "string".
 */
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString) {
-	const char *stringPtr;
-	char *stylePtr;
 
-	stringPtr = re->startp_[subexpr];
-	stylePtr = &styleString[stringPtr - string];
+	const char *stringPtr = re->startp_[subexpr];
+	char *stylePtr        = &styleString[stringPtr - string];
 	fillStyleString(&stringPtr, &stylePtr, re->endp_[subexpr], style, nullptr);
 }
 
@@ -2146,20 +2146,23 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 }
 
 static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName) {
-	int i;
 
-	if (patName == nullptr)
+	if (patName == nullptr) {
 		return -1;
-	for (i = 0; i < nPats; i++)
-		if (!strcmp(patList[i].name, patName))
+	}
+	
+	for (int i = 0; i < nPats; i++) {
+		if (!strcmp(patList[i].name, patName)) {
 			return i;
+		}
+	}
+	
 	return -1;
 }
 
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index) {
-	int topIndex;
 
-	topIndex = index;
+	int topIndex = index;
 	while (patList[topIndex].subPatternOf != nullptr) {
 		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
 		if (index == topIndex)

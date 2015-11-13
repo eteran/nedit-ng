@@ -28,7 +28,7 @@ inline XmString XmStringCreateSimpleEx(const char *text) {
 }
 
 inline XmString XmStringCreateSimpleEx(const std::string &text) {
-	return XmStringCreateSimpleEx(text);
+	return XmStringCreateSimpleEx(text.c_str());
 }
 
 //------------------------------------------------------------------------------
