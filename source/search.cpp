@@ -4835,12 +4835,15 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
 
 	try {
-		regexp *compiledRE = new regexp(searchStr, defaultFlags);
+		auto compiledRE = new regexp(searchStr, defaultFlags);
 		ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
+		
 		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
 		delete compiledRE;
+		
 		return substResult;
 	} catch(const regex_error &e) {
+		fprintf(stderr, "error: %s\n", e.what());
 		return false;
 	}
 }

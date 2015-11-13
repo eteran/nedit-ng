@@ -5151,8 +5151,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *w
 
 	if (bufferPos >= 0) {
 		/* insert extent */
-		const char *styleNameNotUsed = nullptr;
-		DV.val.n = StyleLengthOfCodeFromPos(window, bufferPos, &styleNameNotUsed);
+		DV.val.n = StyleLengthOfCodeFromPos(window, bufferPos);
 		if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
 			M_ARRAY_INSERT_FAILURE();
 		}

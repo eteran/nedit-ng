@@ -1045,7 +1045,7 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName) {
+int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
@@ -1064,9 +1064,10 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 		entry = styleTableEntryOfCode(window, hCode);
 		if (entry == nullptr)
 			return 0;
-		if ((*checkStyleName) == nullptr)
-			(*checkStyleName) = entry->styleName;
-		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && strcmp(entry->styleName, (*checkStyleName)) == 0)) {
+			
+		const char *checkStyleName = entry->styleName;
+		
+		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && strcmp(entry->styleName, checkStyleName) == 0)) {
 			if (hCode == UNFINISHED_STYLE) {
 				/* encountered "unfinished" style, trigger parsing, then loop */
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
