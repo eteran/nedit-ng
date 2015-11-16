@@ -56,11 +56,6 @@
 
 #define NSUBEXP 50
 
-#define CONVERT_FAIL(m)                                                                                                                                                                                                                        \
-	{                                                                                                                                                                                                                                          \
-		*Error_Ptr = (m);                                                                                                                                                                                                                      \
-		return 0;                                                                                                                                                                                                                              \
-	}
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?')
 #define U_CHAR_AT(p) ((unsigned int)*(unsigned char *)(p))
 
@@ -89,9 +84,6 @@ static unsigned char *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         Code_Emit_Ptr points to where compiled
                                         regex code is to be written. */
 static unsigned char Compute_Size;
-static const char **Error_Ptr; /* Place to store error messages so
-                            they can be returned by `ConvertRE' */
-static char Error_Text[128];   /* Sting to build error messages in. */
 
 static unsigned char Meta_Char[] = ".*+?[(|)^<>$";
 
@@ -117,17 +109,14 @@ static int piece(int *flag_param);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-char *ConvertRE(const char *exp, const char **errorText) {
+char *ConvertRE(const char *exp) {
 
 	int flags_local, pass;
 
 	/* Set up `errorText' to receive failure reports. */
 
-	Error_Ptr = errorText;
-	*Error_Ptr = "";
-
 	if (exp == nullptr)
-		CONVERT_FAIL("nullptr argument to `ConvertRE\'");
+		throw regex_error("nullptr argument to `ConvertRE\'");
 
 	Code_Emit_Ptr = &Compute_Size;
 	Convert_Size = 0UL;
@@ -161,7 +150,7 @@ char *ConvertRE(const char *exp, const char **errorText) {
 			Convert_Str = (unsigned char *)XtMalloc(sizeof(unsigned char) * Convert_Size);
 
 			if (Convert_Str == nullptr) {
-				CONVERT_FAIL("out of memory in `ConvertRE\'");
+				throw regex_error("out of memory in `ConvertRE\'");
 			}
 
 			Code_Emit_Ptr = Convert_Str;
@@ -190,8 +179,7 @@ static int chunk(int paren, int *flag_param) {
 
 	if (paren == PAREN) {
 		if (Total_Paren >= NSUBEXP) {
-			sprintf(Error_Text, "number of ()'s > %d", (int)NSUBEXP);
-			CONVERT_FAIL(Error_Text);
+			throw regex_error("number of ()'s > %d", (int)NSUBEXP);
 		}
 
 		Total_Paren++;
@@ -224,7 +212,7 @@ static int chunk(int paren, int *flag_param) {
 	/* Check for proper termination. */
 
 	if (paren != NO_PAREN && *Reg_Parse != ')') {
-		CONVERT_FAIL("missing right parenthesis \')\'");
+		throw regex_error("missing right parenthesis \')\'");
 
 	} else if (paren != NO_PAREN) {
 		emit_convert_byte(')');
@@ -232,9 +220,9 @@ static int chunk(int paren, int *flag_param) {
 
 	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
 		if (*Reg_Parse == ')') {
-			CONVERT_FAIL("missing left parenthesis \'(\'");
+			throw regex_error("missing left parenthesis \'(\'");
 		} else {
-			CONVERT_FAIL("junk on end"); /* "Can't happen" - NOTREACHED */
+			throw regex_error("junk on end"); /* "Can't happen" - NOTREACHED */
 		}
 	}
 
@@ -300,9 +288,7 @@ static int piece(int *flag_param) {
 	   item. */
 
 	if (!(flags_local & HAS_WIDTH) && min_val > REG_ZERO) {
-		sprintf(Error_Text, "%c operand could be empty", op_code);
-
-		CONVERT_FAIL(Error_Text);
+		throw regex_error("%c operand could be empty", op_code);
 	}
 
 	*flag_param = (min_val > REG_ZERO) ? (WORST | HAS_WIDTH) : WORST;
@@ -311,13 +297,11 @@ static int piece(int *flag_param) {
 		/* We get here if the IS_QUANTIFIER macro is not coordinated properly
 		   with this function. */
 
-		CONVERT_FAIL("internal error #2, `piece\'");
+		throw regex_error("internal error #2, `piece\'");
 	}
 
 	if (IS_QUANTIFIER(*Reg_Parse)) {
-		sprintf(Error_Text, "nested quantifiers, %c%c", op_code, *Reg_Parse);
-
-		CONVERT_FAIL(Error_Text);
+		throw regex_error("nested quantifiers, %c%c", op_code, *Reg_Parse);
 	}
 
 	emit_convert_byte(op_code);
@@ -376,13 +360,12 @@ static int atom(int *flag_param) {
 	case '\0':
 	case '|':
 	case ')':
-		CONVERT_FAIL("internal error #3, `atom\'"); /* Supposed to be  */
+		throw regex_error("internal error #3, `atom\'"); /* Supposed to be  */
 	                                                /* caught earlier. */
 	case '?':
 	case '+':
 	case '*':
-		sprintf(Error_Text, "%c follows nothing", *(Reg_Parse - 1));
-		CONVERT_FAIL(Error_Text);
+		throw regex_error("%c follows nothing", *(Reg_Parse - 1));
 
 	case '{':
 		emit_convert_byte('\\'); /* Quote braces. */
@@ -419,7 +402,7 @@ static int atom(int *flag_param) {
 			last_emit = *Reg_Parse;
 
 			if (head >= 498) {
-				CONVERT_FAIL("too much data in [] to convert.");
+				throw regex_error("too much data in [] to convert.");
 			}
 
 			buffer[head++] = '\\'; /* Escape `]' and '-' for clarity. */
@@ -442,7 +425,7 @@ static int atom(int *flag_param) {
 					last_emit = '-';
 
 					if (head >= 498) {
-						CONVERT_FAIL("too much data in [] to convert.");
+						throw regex_error("too much data in [] to convert.");
 					}
 
 					buffer[head++] = '\\'; /* Escape '-' for clarity. */
@@ -465,9 +448,7 @@ static int atom(int *flag_param) {
 							buffer[head++] = *Reg_Parse;
 							last_value = (unsigned int)test;
 						} else {
-							sprintf(Error_Text, "\\%c is an invalid escape sequence(3)", *Reg_Parse);
-
-							CONVERT_FAIL(Error_Text);
+							throw regex_error("\\%c is an invalid escape sequence(3)", *Reg_Parse);
 						}
 					} else {
 						last_value = U_CHAR_AT(Reg_Parse);
@@ -489,7 +470,7 @@ static int atom(int *flag_param) {
 								   convert it to the escape sequence. */
 
 								if (head >= 495) {
-									CONVERT_FAIL("too much data in [] to convert.");
+									throw regex_error("too much data in [] to convert.");
 								}
 
 								buffer[head++] = '\\';
@@ -512,7 +493,7 @@ static int atom(int *flag_param) {
 					}
 
 					if (last_emit > last_value) {
-						CONVERT_FAIL("invalid [] range");
+						throw regex_error("invalid [] range");
 					}
 
 					last_emit = (unsigned char)last_value;
@@ -527,7 +508,7 @@ static int atom(int *flag_param) {
 					last_emit = test;
 
 					if (head >= 498) {
-						CONVERT_FAIL("too much data in [] to convert.");
+						throw regex_error("too much data in [] to convert.");
 					}
 
 					if (*Reg_Parse != '\"') {
@@ -537,9 +518,7 @@ static int atom(int *flag_param) {
 					buffer[head++] = *Reg_Parse;
 
 				} else {
-					sprintf(Error_Text, "\\%c is an invalid escape sequence(1)", *Reg_Parse);
-
-					CONVERT_FAIL(Error_Text);
+					throw regex_error("\\%c is an invalid escape sequence(1)", *Reg_Parse);
 				}
 
 				Reg_Parse++;
@@ -556,7 +535,7 @@ static int atom(int *flag_param) {
 					   convert it to the escape sequence. */
 
 					if (head >= 495) {
-						CONVERT_FAIL("too much data in [] to convert.");
+						throw regex_error("too much data in [] to convert.");
 					}
 
 					buffer[head++] = '\\';
@@ -571,14 +550,14 @@ static int atom(int *flag_param) {
 						buffer[head++] = ('0' + test);
 					} else {
 						if (head >= 499) {
-							CONVERT_FAIL("too much data in [] to convert.");
+							throw regex_error("too much data in [] to convert.");
 						}
 
 						buffer[head++] = test;
 					}
 				} else {
 					if (head >= 499) {
-						CONVERT_FAIL("too much data in [] to convert.");
+						throw regex_error("too much data in [] to convert.");
 					}
 
 					buffer[head++] = *Reg_Parse;
@@ -589,7 +568,7 @@ static int atom(int *flag_param) {
 		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
-			CONVERT_FAIL("missing right \']\'");
+			throw regex_error("missing right \']\'");
 
 		buffer[head] = '\0';
 
@@ -709,9 +688,7 @@ static int atom(int *flag_param) {
 						emit_convert_byte(*Reg_Parse);
 
 					} else {
-						sprintf(Error_Text, "\\%c is an invalid escape sequence(2)", *(Reg_Parse + 1));
-
-						CONVERT_FAIL(Error_Text);
+						throw regex_error("\\%c is an invalid escape sequence(2)", *(Reg_Parse + 1));
 					}
 
 					Reg_Parse++;
@@ -764,7 +741,7 @@ static int atom(int *flag_param) {
 			}
 
 			if (len <= 0)
-				CONVERT_FAIL("internal error #4, `atom\'");
+				throw regex_error("internal error #4, `atom\'");
 
 			*flag_param |= HAS_WIDTH;
 

@@ -1762,8 +1762,8 @@ void ShowStatsLine(WindowInfo *window, int state) {
 	   be a costly calculation, and is only needed for displaying line
 	   numbers, either in the stats line, or along the left margin */
 	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
-		TextDMaintainAbsLineNum(((TextWidget)text)->text.textD, state);
+		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
+		((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(state);
 	}
 	window->showStats = state;
 	showStats(window, state);
@@ -2351,7 +2351,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 	/* If absolute line numbers will be needed for display in the statistics
 	   line, tell the widget to maintain them (otherwise, it's a costly
 	   operation and performance will be better without it) */
-	TextDMaintainAbsLineNum(((TextWidget)text)->text.textD, window->showStats);
+	((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(window->showStats);
 
 	return text;
 }

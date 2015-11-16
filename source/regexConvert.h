@@ -27,7 +27,9 @@
 #ifndef REGEX_CONVERT_H_
 #define REGEX_CONVERT_H_
 
-char *ConvertRE(const char *exp, const char **errorText);
+#include "regex_error.h"
+
+char *ConvertRE(const char *exp);
 void ConvertSubstituteRE(const char *source, char *dest, int max);
 
 #endif

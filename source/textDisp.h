@@ -92,11 +92,17 @@ public:
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
 	void TextDSetScroll(int topLineNum, int horizOffset);
 	void TextDSetWrapMode(int wrap, int wrapMargin);
-	
 	void TextDSetBuffer(TextBuffer *buffer);
 	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
 	void TextDSetCursorStyle(int style);
-	void TextDSetFont(XFontStruct *fontStruct);	
+	void TextDSetFont(XFontStruct *fontStruct);
+
+	void TextDInsert(const char *text);
+	void TextDMaintainAbsLineNum(int state);
+	void TextDMakeInsertPosVisible();
+	void TextDOverstrike(const char *text);
+	void TextDRedisplayRect(int left, int top, int width, int height);
+	void TextDResize(int width, int height);
 	
 public:
 	Widget w;
@@ -206,12 +212,6 @@ void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, styleTab
 void TextDBlankCursor(textDisp *textD);
 void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
-void TextDInsert(textDisp *textD, const char *text);
-void TextDMaintainAbsLineNum(textDisp *textD, int state);
-void TextDMakeInsertPosVisible(textDisp *textD);
-void TextDOverstrike(textDisp *textD, const char *text);
-void TextDRedisplayRect(textDisp *textD, int left, int top, int width, int height);
-void TextDResize(textDisp *textD, int width, int height);
 void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 
 #endif

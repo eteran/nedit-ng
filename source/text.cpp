@@ -822,7 +822,7 @@ static void resize(TextWidget w) {
 	}
 
 	/* Resize the text display that the widget uses to render text */
-	TextDResize(w->text.textD, width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
+	w->text.textD->TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
 
 	/* if the window became shorter or narrower, there may be text left
 	   in the bottom or right margin area, which must be cleaned up */
@@ -841,7 +841,7 @@ static void redisplay(TextWidget w, XEvent *event, Region region) {
 
 	XExposeEvent *e = &event->xexpose;
 
-	TextDRedisplayRect(w->text.textD, e->x, e->y, e->width, e->height);
+	w->text.textD->TextDRedisplayRect(e->x, e->y, e->width, e->height);
 }
 
 static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg) {
@@ -912,7 +912,7 @@ void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event) {
 		adjustRectForGraphicsExposeOrNoExposeEvent(w, &foundEvent, &invalidRect, &left, &top, &width, &height);
 	}
 	if (!invalidRect) {
-		TextDRedisplayRect(w->text.textD, left, top, width, height);
+		w->text.textD->TextDRedisplayRect(left, top, width, height);
 	}
 }
 
@@ -1248,14 +1248,14 @@ void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPen
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
 	} else if (tw->text.overstrike) {
 		if (breakAt == 0 && singleLine)
-			TextDOverstrike(textD, wrappedText);
+			textD->TextDOverstrike(wrappedText);
 		else {
 			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
 			textD->TextDSetInsertPosition(buf->cursorPosHint_);
 		}
 	} else {
 		if (breakAt == 0) {
-			TextDInsert(textD, wrappedText);
+			textD->TextDInsert(wrappedText);
 		} else {
 			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
 			textD->TextDSetInsertPosition(buf->cursorPosHint_);
@@ -3219,7 +3219,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 
 static void checkAutoShowInsertPos(Widget w) {
 	if (((TextWidget)w)->text.autoShowInsertPos)
-		TextDMakeInsertPosVisible(((TextWidget)w)->text.textD);
+		((TextWidget)w)->text.textD->TextDMakeInsertPosVisible();
 }
 
 static int checkReadOnly(Widget w) {
@@ -3244,14 +3244,19 @@ static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int
 		buf->BufReplaceSelected(chars);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
 	} else if (((TextWidget)w)->text.overstrike) {
-		for (c = chars; *c != '\0' && *c != '\n'; c++)
+		for (c = chars; *c != '\0' && *c != '\n'; c++) {
 			;
-		if (*c == '\n')
-			TextDInsert(textD, chars);
-		else
-			TextDOverstrike(textD, chars);
-	} else
-		TextDInsert(textD, chars);
+		}
+
+		if (*c == '\n') {
+			textD->TextDInsert(chars);
+		} else {
+			textD->TextDOverstrike(chars);
+		}
+	} else {
+		textD->TextDInsert(chars);
+	}
+	
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
 }

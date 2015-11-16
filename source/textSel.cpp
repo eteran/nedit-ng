@@ -296,7 +296,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 		}
 		textD->TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
 		if (((TextWidget)w)->text.autoShowInsertPos)
-			TextDMakeInsertPosVisible(textD);
+			textD->TextDMakeInsertPosVisible();
 	} else
 		TextInsertAtCursor(w, string, nullptr, True, ((TextWidget)w)->text.autoWrapPastedText);
 	XtFree(string);
