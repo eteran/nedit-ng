@@ -922,15 +922,16 @@ static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer ca
 	
 	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
 	auto call_data = (XmToggleButtonCallbackStruct *)callData;	
-
-	int i, makeSelection;
-	char newSize[10];
+	
 	XmString str;
 
 	if (call_data->reason == XmCR_VALUE_CHANGED) {
-		makeSelection = (ctrlBlk->sel3 != nullptr);
+		
+		char newSize[10];
+		
+		int makeSelection = (ctrlBlk->sel3 != nullptr);
 
-		for (i = 0; (makeSelection) && (i < ctrlBlk->numFonts); i++)
+		for (int i = 0; (makeSelection) && (i < ctrlBlk->numFonts); i++)
 			if ((fontMatch(ctrlBlk, ctrlBlk->fontData[i])) && (styleMatch(ctrlBlk, ctrlBlk->fontData[i])) && (sizeMatch(ctrlBlk, ctrlBlk->fontData[i]))) {
 				getSizePart(ctrlBlk->fontData[i], newSize, !ctrlBlk->showSizeInPixels);
 				break;
@@ -1237,12 +1238,12 @@ static void setFocus(Widget w, xfselControlBlkType *ctrlBlk, XEvent *event, Bool
 */
 
 static void FindBigFont(xfselControlBlkType *ctrlBlk, char *bigFont) {
-	int i, maxSize, ind = -1, size;
+	int i, maxSize, ind = -1;
 	char sizeStr[10];
 
 	for (i = 0, maxSize = 0; i < ctrlBlk->numFonts; i++) {
 		getStringComponent(ctrlBlk->fontData[i], 7, sizeStr);
-		size = atoi(sizeStr);
+		int size = atoi(sizeStr);
 		if ((size > maxSize) && (size < MAX_DISPLAY_SIZE)) {
 			ind = i;
 			maxSize = size;

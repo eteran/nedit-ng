@@ -186,11 +186,11 @@ int ExpandTilde(char *pathname) {
 int ResolvePath(const char *pathIn, char *pathResolved) {
 	char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
 	char *pathEnd;
-	int rlResult, loops;
+	int loops;
 
 	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
 	for (loops = 0; loops < MAXSYMLINKS; loops++) {
-		rlResult = readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
+		int rlResult = readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
 		if (rlResult < 0) {
 
 			if (errno == EINVAL)

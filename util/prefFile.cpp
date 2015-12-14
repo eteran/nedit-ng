@@ -244,7 +244,6 @@ void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName
 XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut) {
 	XrmDatabase db;
 	int argcCopy;
-	char *fileString;
 	static XrmOptionDescRec xrmOnlyTable[] = {{(char *)"-xrm", nullptr, XrmoptionResArg, (caddr_t)nullptr}};
 
 	/* read the preferences file into an X database.
@@ -252,8 +251,8 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 	if (nullptr == fullName) {
 		db = nullptr;
 	} else {
-		fileString = ReadAnyTextFile(fullName, False);
-		if (nullptr == fileString) {
+		char *fileString = ReadAnyTextFile(fullName, False);
+		if (fileString == nullptr) {
 			db = nullptr;
 		} else {
 			db = XrmGetStringDatabase(fileString);

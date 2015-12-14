@@ -660,7 +660,6 @@ static void newFileOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	char *filename;  /* name of chosen file             */
 	int fd;          /* file descriptor                 */
 	int length;      /* length of file name		 */
-	int response;    /* response to dialog		 */
 	struct stat buf; /* status from fstat		 */
 
 	XmStringGetLtoR(call_data->value, XmSTRING_DEFAULT_CHARSET, &filename);
@@ -681,7 +680,8 @@ static void newFileOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 			XtFree(filename);
 			return;
 		}
-		response = doYesNoDialog(filename);
+		
+		int response = doYesNoDialog(filename);
 
 		if (!response) {
 			return;
@@ -870,7 +870,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *con
 	(void)callData;
 
 	char charString[5], c, *itemString;
-	int nChars, nItems, i, cmp, selectPos, topPos, nVisible;
+	int nChars, nItems, i, selectPos, topPos, nVisible;
 	XmString *items;
 	KeySym kSym;
 	char name[MAXPATHLEN], path[MAXPATHLEN];
@@ -920,7 +920,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *con
 			return;
 		}
 		XtFree(itemString);
-		cmp = strncmp(name, keystrokes, nKeystrokes);
+		int cmp = strncmp(name, keystrokes, nKeystrokes);
 		if (cmp == 0) {
 			selectPos = i + 1;
 			break;

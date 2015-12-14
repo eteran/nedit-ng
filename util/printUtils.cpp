@@ -578,12 +578,12 @@ static void allowOnlyNumInput(Widget widget, XtPointer client_data, XtPointer ca
 	
 	XmTextVerifyCallbackStruct *call_data = (XmTextVerifyCallbackStruct *)callData;
 	
-	int i, textInserted, nInserted;
+	int textInserted, nInserted;
 
 	nInserted = call_data->text->length;
 	textInserted = (nInserted > 0);
 	if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
-		for (i = 0; i < nInserted; i++) {
+		for (int i = 0; i < nInserted; i++) {
 			if (!isdigit((unsigned char)call_data->text->ptr[i])) {
 				call_data->doit = False;
 				return;
@@ -604,14 +604,16 @@ static void noSpaceOrPunct(Widget widget, XtPointer client_data, XtPointer callD
 	
 	XmTextVerifyCallbackStruct *call_data = (XmTextVerifyCallbackStruct *)callData;
 	
-	int i, j, textInserted, nInserted;
-	static char prohibited[] = " \t,;|<>()[]{}!@?";
-
+	int textInserted, nInserted;
+	
 	nInserted = call_data->text->length;
 	textInserted = (nInserted > 0);
 	if ((call_data->reason == XmCR_MODIFYING_TEXT_VALUE) && textInserted) {
-		for (i = 0; i < nInserted; i++) {
-			for (j = 0; j < (int)XtNumber(prohibited); j++) {
+		for (int i = 0; i < nInserted; i++) {
+			
+			static const char prohibited[] = " \t,;|<>()[]{}!@?";
+			
+			for (int j = 0; j < (int)XtNumber(prohibited); j++) {
 				if (call_data->text->ptr[i] == prohibited[j]) {
 					call_data->doit = False;
 					return;
@@ -781,22 +783,24 @@ static void cancelButtonCB(Widget widget, XtPointer client_data, XtPointer call_
 ** and does it have at least some of the mode_flags enabled ?
 */
 static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags) {
-	DIR *dfile;
-#ifdef USE_DIRENT
-	struct dirent *DirEntryPtr;
-#else
-	struct direct *DirEntryPtr;
-#endif
+	
 	struct stat statbuf;
-	char fullname[MAXPATHLEN];
-
-	dfile = opendir(dirpath);
+	
+	DIR *dfile = opendir(dirpath);
 	if (dfile != nullptr) {
+		
+	#ifdef USE_DIRENT
+		struct dirent *DirEntryPtr;
+	#else
+		struct direct *DirEntryPtr;
+	#endif		
+		
 		while ((DirEntryPtr = readdir(dfile)) != nullptr) {
 			if (!strcmp(DirEntryPtr->d_name, filename)) {
-				strcpy(fullname, dirpath);
-				strcat(fullname, "/");
-				strcat(fullname, filename);
+				char fullname[MAXPATHLEN];
+				
+				snprintf(fullname, sizeof(fullname), "%s/%s", dirpath, filename);
+
 				stat(fullname, &statbuf);
 				closedir(dfile);
 				return statbuf.st_mode & mode_flags;
@@ -854,7 +858,7 @@ static int flprPresent(void) {
 
 static int foundTag(const char *tagfilename, const char *tagname, char *result) {
 	FILE *tfile;
-	char tagformat[512], line[512];
+	char tagformat[512];
 
 	strcpy(tagformat, tagname);
 	strcat(tagformat, " %s");
@@ -862,6 +866,9 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 	tfile = fopen(tagfilename, "r");
 	if (tfile != nullptr) {
 		while (!feof(tfile)) {
+			
+			char line[512];
+			
 			fgets(line, sizeof(line), tfile);
 			if (sscanf(line, tagformat, result) != 0) {
 				fclose(tfile);

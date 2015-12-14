@@ -531,13 +531,12 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 		} else if (XtIsSubclass(child, xmPushButtonWidgetClass) || XtIsSubclass(child, xmPushButtonGadgetClass)) {
 			XmString xmslabel;
 			char *label;
-			int c;
 
 			XtVaGetValues(child, XmNlabelString, &xmslabel, nullptr);
 			if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label)) {
 				/* Scan through the string to see if the label is already used */
 				int labelLen = strlen(label);
-				for (c = 0; c < labelLen; c++) {
+				for (int c = 0; c < labelLen; c++) {
 					unsigned char lc = tolower((unsigned char)label[c]);
 
 					if (!mnemonicUsed[lc] && isalnum(lc)) {
@@ -562,7 +561,6 @@ static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 */
 static void createMnemonics(Widget w) {
 	Boolean mnemonicUsed[UCHAR_MAX + 1];
-
-	memset(mnemonicUsed, FALSE, sizeof mnemonicUsed / sizeof *mnemonicUsed);
+	std::fill(std::begin(mnemonicUsed), std::end(mnemonicUsed), FALSE);
 	recurseCreateMnemonics(w, mnemonicUsed);
 }
