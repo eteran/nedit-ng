@@ -193,13 +193,16 @@ static const char *getBuildInfo(void) {
 	                               "       Visual: %s\n"
 	                               "       Locale: %s\n";
 
-	static const char *visualClass[] = {"StaticGray", "GrayScale", "StaticColor", "PseudoColor", "TrueColor", "DirectColor"};
+	
 
 	if (bldInfoString == nullptr) {
 		const char *locale;
 		char visualStr[500] = "<unknown>";
 
 		if (TheDisplay) {
+			
+			static const char *visualClass[] = {"StaticGray", "GrayScale", "StaticColor", "PseudoColor", "TrueColor", "DirectColor"};
+			
 			Visual *visual;
 			int depth;
 			Colormap map;
