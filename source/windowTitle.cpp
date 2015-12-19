@@ -585,9 +585,8 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void appendToFormat(const char *string) {
 	char *format = XmTextGetString(etDialog.formatW);
-	char *buf = XtMalloc(strlen(string) + strlen(format) + 1);
-	strcpy(buf, format);
-	strcat(buf, string);
+	char *buf    = XtMalloc(strlen(string) + strlen(format) + 1);
+	sprintf(buf, "%s%s", format, string);
 	XmTextSetStringEx(etDialog.formatW, buf);
 	XtFree(format);
 	XtFree(buf);

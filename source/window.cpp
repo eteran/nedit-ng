@@ -295,10 +295,9 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	this->backlightCharTypes = nullptr;
 	this->backlightChars = GetPrefBacklightChars();
 	if (this->backlightChars) {
-		char *cTypes = GetPrefBacklightCharTypes();
+		const char *cTypes = GetPrefBacklightCharTypes();
 		if (cTypes && this->backlightChars) {
-			if ((this->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
-				strcpy(this->backlightCharTypes, cTypes);
+			this->backlightCharTypes = XtStringDup(cTypes);
 		}
 	}
 	this->modeMessageDisplayed = FALSE;
@@ -3252,10 +3251,9 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->backlightCharTypes = nullptr;
 	window->backlightChars = GetPrefBacklightChars();
 	if (window->backlightChars) {
-		char *cTypes = GetPrefBacklightCharTypes();
-		if (cTypes && window->backlightChars) {
-			if ((window->backlightCharTypes = XtMalloc(strlen(cTypes) + 1)))
-				strcpy(window->backlightCharTypes, cTypes);
+		const char *cTypes = GetPrefBacklightCharTypes();
+		if (cTypes && window->backlightChars) {			
+			window->backlightCharTypes = XtStringDup(cTypes);
 		}
 	}
 	window->modeMessageDisplayed = FALSE;

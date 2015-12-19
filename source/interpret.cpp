@@ -710,12 +710,10 @@ Symbol *LookupSymbol(const char *name) {
 ** install symbol name in symbol table
 */
 Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
-	Symbol *s;
 
-	s = (Symbol *)malloc(sizeof(Symbol));
-	s->name = (char *)malloc(strlen(name) + 1); /* +1 for '\0' */
-	strcpy(s->name, name);
-	s->type = type;
+	auto s = (Symbol *)malloc(sizeof(Symbol));
+	s->name  = strdup(name);
+	s->type  = type;
 	s->value = value;
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
