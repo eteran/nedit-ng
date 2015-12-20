@@ -159,10 +159,6 @@ static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
 static void getGeometryString(WindowInfo *window, char *geomString);
-#ifdef ROWCOLPATCH
-static void patchRowCol(Widget w);
-static void patchedRemoveChild(Widget child);
-#endif
 static void refreshMenuBar(WindowInfo *window);
 static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
 static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
@@ -1353,9 +1349,6 @@ void CloseWindow(WindowInfo *window) {
 	window->buffer->BufRemoveModifyCB(modifiedCB, window);
 	window->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCB, window);
 
-#ifdef ROWCOLPATCH
-	patchRowCol(window->menuBar);
-#endif
 
 	/* free the undo and redo lists */
 	ClearUndoList(window);
@@ -3042,28 +3035,6 @@ static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 	UpdateWMSizeHints((WindowInfo *)clientData);
 }
 
-#ifdef ROWCOLPATCH
-/*
-** There is a bad memory reference in the delete_child method of the
-** RowColumn widget in some Motif versions (so far, just Solaris with Motif
-** 1.2.3) which appears durring the phase 2 destroy of the widget. This
-** patch replaces the method with a call to the Composite widget's
-** delete_child method.  The composite delete_child method handles part,
-** but not all of what would have been done by the original method, meaning
-** that this is dangerous and should be used sparingly.  Note that
-** patchRowCol is called only in CloseWindow, before the widget is about to
-** be destroyed, and only on systems where the bug has been observed
-*/
-static void patchRowCol(Widget w) {
-	((XmRowColumnClassRec *)XtClass(w))->composite_class.delete_child = patchedRemoveChild;
-}
-static void patchedRemoveChild(Widget child) {
-	/* Call composite class method instead of broken row col delete_child
-	   method */
-	(*((CompositeWidgetClass)compositeWidgetClass)->composite_class.delete_child)(child);
-}
-#endif /* ROWCOLPATCH */
-
 /*
 ** Set the backlight character class string
 */
@@ -3075,10 +3046,13 @@ void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes) {
 	window->backlightChars = do_apply;
 
 	XtFree(window->backlightCharTypes);
-	if (window->backlightChars && (window->backlightCharTypes = XtMalloc(strlen(applyBacklightTypes) + 1)))
-		strcpy(window->backlightCharTypes, applyBacklightTypes);
-	else
+	
+	
+	if(window->backlightChars) {
+		window->backlightCharTypes = XtStringDup(applyBacklightTypes);
+	} else {
 		window->backlightCharTypes = nullptr;
+	}
 
 	XtVaSetValues(window->textArea, textNbacklightCharTypes, window->backlightCharTypes, nullptr);
 	for (i = 0; i < window->nPanes; i++)

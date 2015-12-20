@@ -12,13 +12,17 @@ inline char *XtStringDup(const char *text) {
 	assert(text);
 	
 	char *s = XtMalloc(strlen(text) + 1);
-	strcpy(s, text);
+	if(s) {
+		strcpy(s, text);
+	}
 	return s;
 }
 
 inline char *XtStringDup(const std::string &text) {
 	char *s = XtMalloc(text.size() + 1);
-	strcpy(s, text.c_str());
+	if(s) {
+		strcpy(s, text.c_str());
+	}	
 	return s;
 }
 
