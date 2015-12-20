@@ -387,29 +387,6 @@
 #define LENGTH_SIZE 4
 #define NODE_SIZE (NEXT_PTR_SIZE + OP_CODE_SIZE)
 
-uint8_t GET_OP_CODE(uint8_t *p) {
-	return *p;
-}
-
-uint8_t *OPERAND(uint8_t *p) {
-	return p + NODE_SIZE;
-}
-
-#define GET_OFFSET(p) (((*((p)+1) & 0xff) << 8) + ((*((p)+2)) & 0xff))
-#define PUT_OFFSET_L(v) (uint8_t)(((v) >> 8) & 0xff)
-#define PUT_OFFSET_R(v) (uint8_t)((v)&0xff)
-#define GET_LOWER(p) (((*((p)+NODE_SIZE) & 0xff) << 8) + ((*((p)+NODE_SIZE + 1)) & 0xff))
-#define GET_UPPER(p) (((*((p)+NODE_SIZE + 2) & 0xff) << 8) + ((*((p)+NODE_SIZE + 3)) & 0xff))
-
-/* Utility definitions. */
-
-#define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?' || (c) == Brace_Char)
-
-template <class T>
-unsigned int U_CHAR_AT(T *p) {
-	return (unsigned int)*p;
-}
-
 /* Flags to be passed up and down via function parameters during compile. */
 
 #define WORST 0     /* Worst case. No assumptions can be made.*/
@@ -491,27 +468,68 @@ struct len_range {
 };
 
 /* Forward declarations for functions used by `CompileRE'. */
-
-static uint8_t *alternative(int *flag_param, len_range *range_param);
-static uint8_t *back_ref(const char *c, int *flag_param, int emit);
-static uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
-static void emit_byte(uint8_t c);
-static void emit_class_byte(uint8_t c);
-static uint8_t *emit_node(int op_code);
-static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index);
 static char literal_escape(char c);
 static char numeric_escape(char c, const char **parse);
+static uint8_t *alternative(int *flag_param, len_range *range_param);
 static uint8_t *atom(int *flag_param, len_range *range_param);
-static void reg_error(const char *str);
+static uint8_t *back_ref(const char *c, int *flag_param, int emit);
+static uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
+static uint8_t *emit_node(int op_code);
+static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index);
 static uint8_t *insert(uint8_t op, uint8_t *opnd, long min, long max, int index);
 static uint8_t *next_ptr(uint8_t *ptr);
-static void offset_tail(uint8_t *ptr, int offset, uint8_t *val);
-static void branch_tail(uint8_t *ptr, int offset, uint8_t *val);
 static uint8_t *piece(int *flag_param, len_range *range_param);
-static void tail(uint8_t *search_from, uint8_t *point_t);
 static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit);
-
+static void branch_tail(uint8_t *ptr, int offset, uint8_t *val);
+static void emit_byte(uint8_t c);
+static void emit_class_byte(uint8_t c);
+static void offset_tail(uint8_t *ptr, int offset, uint8_t *val);
+static void reg_error(const char *str);
+static void tail(uint8_t *search_from, uint8_t *point_t);
 static int init_ansi_classes(void);
+
+namespace {
+
+uint8_t GET_OP_CODE(uint8_t *p) {
+	return *p;
+}
+
+uint8_t *OPERAND(uint8_t *p) {
+	return p + NODE_SIZE;
+}
+
+uint16_t GET_OFFSET(uint8_t *p) {
+	return ((p[1] & 0xff) << 8) + (p[2] & 0xff);
+}
+
+constexpr uint8_t PUT_OFFSET_L(uint16_t v) {
+	return (uint8_t)((v >> 8) & 0xff);
+}
+
+constexpr uint8_t PUT_OFFSET_R(uint16_t v) {
+	return (uint8_t)(v & 0xff);
+}
+
+uint8_t GET_LOWER(uint8_t *p) {
+	return ((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff);
+}
+
+uint8_t GET_UPPER(uint8_t *p) {
+	return ((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff);
+}
+
+/* Utility definitions. */
+
+bool IS_QUANTIFIER(char c) {
+	return c == '*' || c == '+' || c == '?' || c == Brace_Char;
+}
+
+template <class T>
+unsigned int U_CHAR_AT(T *p) {
+	return static_cast<unsigned int>(*p);
+}
+
+}
 
 
 /*----------------------------------------------------------------------*
@@ -541,9 +559,6 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Brace_Char = '*';                  /* Bypass the '{' in */
 		Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
 	}
-
-	/* Set up errorText to receive failure reports. */
-
 
 	if (exp == nullptr)
 		throw regex_error("nullptr argument, `CompileRE\'");
@@ -667,7 +682,7 @@ regexp::~regexp() {
  * branches to what follows makes it hard to avoid.                     *
  *----------------------------------------------------------------------*/
 
-static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
+uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	uint8_t *ret_val = nullptr;
 	uint8_t *this_branch;
@@ -869,7 +884,7 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
  * pointers of each regex atom together sequentialy.
  *----------------------------------------------------------------------*/
 
-static uint8_t *alternative(int *flag_param, len_range *range_param) {
+uint8_t *alternative(int *flag_param, len_range *range_param) {
 
 	uint8_t *ret_val;
 	uint8_t *chain;
@@ -927,7 +942,7 @@ static uint8_t *alternative(int *flag_param, len_range *range_param) {
  * dispensed with entirely, but the endmarker role is not redundant.
  *----------------------------------------------------------------------*/
 
-static uint8_t *piece(int *flag_param, len_range *range_param) {
+uint8_t *piece(int *flag_param, len_range *range_param) {
 
 	uint8_t *ret_val;
 	uint8_t *next;
@@ -1460,7 +1475,7 @@ static uint8_t *piece(int *flag_param, len_range *range_param) {
  * is smaller to store and faster to run.
  *----------------------------------------------------------------------*/
 
-static uint8_t *atom(int *flag_param, len_range *range_param) {
+uint8_t *atom(int *flag_param, len_range *range_param) {
 
 	uint8_t *ret_val;
 	uint8_t test;
@@ -1907,7 +1922,7 @@ static uint8_t *atom(int *flag_param, len_range *range_param) {
  * Returns a pointer to the START of the emitted node.
  *----------------------------------------------------------------------*/
 
-static uint8_t *emit_node(int op_code) {
+uint8_t *emit_node(int op_code) {
 
 	uint8_t *ret_val;
 	uint8_t *ptr;
@@ -1934,7 +1949,7 @@ static uint8_t *emit_node(int op_code) {
  * Emit (if appropriate) a byte of code (usually part of an operand.)
  *----------------------------------------------------------------------*/
 
-static void emit_byte(uint8_t c) {
+void emit_byte(uint8_t c) {
 
 	if (Code_Emit_Ptr == &Compute_Size) {
 		Reg_Size++;
@@ -1950,7 +1965,7 @@ static void emit_byte(uint8_t c) {
  * class operand.)
  *----------------------------------------------------------------------*/
 
-static void emit_class_byte(uint8_t c) {
+void emit_class_byte(uint8_t c) {
 
 	if (Code_Emit_Ptr == &Compute_Size) {
 		Reg_Size++;
@@ -1974,7 +1989,7 @@ static void emit_class_byte(uint8_t c) {
  * Emit nodes that need special processing.
  *----------------------------------------------------------------------*/
 
-static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index) {
+uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index) {
 
 	uint8_t *ret_val = &Compute_Size;
 	uint8_t *ptr;
@@ -2029,7 +2044,7 @@ static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index)
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
 
-static uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, int index) {
+uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, int index) {
 
 	uint8_t *src;
 	uint8_t *dst;
@@ -2082,7 +2097,7 @@ static uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, int 
  * tail - Set the next-pointer at the end of a node chain.
  *----------------------------------------------------------------------*/
 
-static void tail(uint8_t *search_from, uint8_t *point_to) {
+void tail(uint8_t *search_from, uint8_t *point_to) {
 
 	uint8_t *scan;
 	uint8_t *next;
@@ -2122,7 +2137,7 @@ static void tail(uint8_t *search_from, uint8_t *point_to) {
  * Perform a tail operation on (ptr + offset).
  *--------------------------------------------------------------------*/
 
-static void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
+void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (ptr == &Compute_Size || ptr == nullptr)
 		return;
@@ -2137,7 +2152,7 @@ static void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * BRANCH node.
  *--------------------------------------------------------------------*/
 
-static void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
+void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (ptr == &Compute_Size || ptr == nullptr || GET_OP_CODE(ptr) != BRANCH) {
 		return;
@@ -2185,7 +2200,7 @@ static void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  *
  *--------------------------------------------------------------------*/
 
-static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
+uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 
 	char *clazz = nullptr;
 	static const char codes[] = "ByYdDlLsSwW";
@@ -2322,11 +2337,11 @@ static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 
-static char numeric_escape(char c, const char **parse) {
+char numeric_escape(char c, const char **parse) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
-	static unsigned int digit_val[] = {15, 14, 13, 12, 11, 10,              /* Lower case Hex digits */
+	static const unsigned int digit_val[] = {15, 14, 13, 12, 11, 10,        /* Lower case Hex digits */
 	                                   15, 14, 13, 12, 11, 10,              /* Upper case Hex digits */
 	                                   9,  8,  7,  6,  5,  4,  3, 2, 1, 0}; /* Decimal Digits */
 
@@ -2416,11 +2431,11 @@ static char numeric_escape(char c, const char **parse) {
  * escape.
  *--------------------------------------------------------------------*/
 
-static char literal_escape(char c) {
+char literal_escape(char c) {
 
-	static uint8_t valid_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
+	static const uint8_t valid_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
 
-	static uint8_t value[] = {'\a', '\b', 0x1B, /* Escape character in ASCII character set. */
+	static const uint8_t value[] = {'\a', '\b', 0x1B, /* Escape character in ASCII character set. */
 	                                '\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
 
 	int i;
@@ -2447,7 +2462,7 @@ static char literal_escape(char c) {
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
 
-static uint8_t *back_ref(const char *c, int *flag_param, int emit) {
+uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 	int paren_no, c_offset = 0, is_cross_regex = 0;
 
@@ -2550,12 +2565,7 @@ static int Prev_Is_Delim;
 static int Succ_Is_Delim;
 
 /* Define a pointer to an array to hold general (...){m,n} counts. */
-
-struct brace_counts {
-	unsigned long count[1]; /* More unwarranted chumminess with compiler. */
-};
-
-static struct brace_counts *Brace;
+static uint32_t *BraceCounts;
 
 /* Default table for determining whether a character is a word delimiter. */
 
@@ -2603,7 +2613,6 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	const char **e_ptr;
 	int ret_val = 0;
 	uint8_t tempDelimitTable[256];
-	int i;
 
 	/* Check for valid parameters. */
 
@@ -2635,8 +2644,9 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	End_Of_String = match_to;
 
 	if (end == nullptr && reverse) {
-		for (end = string; !AT_END_OF_STRING(end); end++)
+		for (end = string; !AT_END_OF_STRING(end); end++) {
 			;
+		}
 		succ_char = '\n';
 	} else if (end == nullptr) {
 		succ_char = '\n';
@@ -2664,28 +2674,20 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	Recursion_Limit_Exceeded = 0;
 
 	/* Allocate memory for {m,n} construct counting variables if need be. */
-
 	if (Num_Braces > 0) {
-		Brace = (brace_counts *)malloc(sizeof(brace_counts) * Num_Braces);
-
-		if (Brace == nullptr) {
-			reg_error("out of memory in `ExecRE\'");
-			goto SINGLE_RETURN;
-		}
+		BraceCounts = new uint32_t[Num_Braces];
 	} else {
-		Brace = nullptr;
+		BraceCounts = nullptr;
 	}
 
 	/* Initialize the first nine (9) capturing parentheses start and end
 	   pointers to point to the start of the search string.  This is to prevent
 	   crashes when later trying to reference captured parens that do not exist
 	   in the compiled regex.  We only need to do the first nine since users
-	   can only specify \1, \2, ... \9. */
-
-	for (i = 9; i > 0; i--) {
-		*s_ptr++ = string;
-		*e_ptr++ = string;
-	}
+	   can only specify \1, \2, ... \9. */	
+	std::fill_n(s_ptr, 9, string);
+	std::fill_n(e_ptr, 9, string);
+	
 
 	if (!reverse) { /* Forward Search */
 		if (prog->anchor) {
@@ -2796,8 +2798,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	}
 
 SINGLE_RETURN:
-	if (Brace)
-		free(Brace);
+	delete [] BraceCounts;
 
 	if (Recursion_Limit_Exceeded)
 		return (0);
@@ -2811,8 +2812,7 @@ SINGLE_RETURN:
  * Generate character class sets using locale aware ANSI C functions.
  *
  *--------------------------------------------------------------------*/
-
-static int init_ansi_classes(void) {
+int init_ansi_classes(void) {
 
 	static bool initialized = false;
 	static const int underscore = (int)'_';
@@ -3346,17 +3346,17 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			break;
 
 		case INIT_COUNT:
-			Brace->count[*OPERAND(scan)] = REG_ZERO;
+			BraceCounts[*OPERAND(scan)] = REG_ZERO;
 
 			break;
 
 		case INC_COUNT:
-			Brace->count[*OPERAND(scan)]++;
+			BraceCounts[*OPERAND(scan)]++;
 
 			break;
 
 		case TEST_COUNT:
-			if (Brace->count[*OPERAND(scan)] < (unsigned long)GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE)) {
+			if (BraceCounts[*OPERAND(scan)] < (unsigned long)GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE)) {
 
 				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
 			}
@@ -4031,9 +4031,9 @@ static uint8_t *makeDelimiterTable(uint8_t *delimiters, uint8_t *table) {
 	}
 
 	table[(long)'\0'] = 1; /* These       */
-	table[(long)'\t'] = 1;    /* characters  */
-	table[(long)'\n'] = 1;    /* are always  */
-	table[(long)' '] = 1;     /* delimiters. */
+	table[(long)'\t'] = 1; /* characters  */
+	table[(long)'\n'] = 1; /* are always  */
+	table[(long)' ']  = 1; /* delimiters. */
 
 	return table;
 }
