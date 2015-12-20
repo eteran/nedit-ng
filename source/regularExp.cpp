@@ -2579,7 +2579,7 @@ static int attempt(regexp *, const char *);
 static int match(uint8_t *, int *);
 static unsigned long greedy(uint8_t *, long);
 static void adjustcase(char *str, int len, char chgcase);
-static uint8_t *makeDelimiterTable(uint8_t *, uint8_t *);
+static void makeDelimiterTable(const uint8_t *, uint8_t *);
 
 /*
  * ExecRE - match a `regexp' structure against a string
@@ -2636,7 +2636,8 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	if (delimiters == nullptr) {
 		Current_Delimiters = Default_Delimiters;
 	} else {
-		Current_Delimiters = makeDelimiterTable((uint8_t *)delimiters, tempDelimitTable);
+		makeDelimiterTable((uint8_t *)delimiters, tempDelimitTable);
+		Current_Delimiters = tempDelimitTable;
 	}
 
 	/* Remember the logical end of the string. */
@@ -4022,11 +4023,11 @@ static void reg_error(const char *str) {
  * Return value is a pointer to the table.
  *----------------------------------------------------------------------*/
 
-static uint8_t *makeDelimiterTable(uint8_t *delimiters, uint8_t *table) {
+static void makeDelimiterTable(const uint8_t *delimiters, uint8_t *table) {
 
 	memset(table, 0, 256);
 
-	for (uint8_t *c = delimiters; *c != '\0'; c++) {
+	for (const uint8_t *c = delimiters; *c != '\0'; c++) {
 		table[*c] = 1;
 	}
 
@@ -4034,8 +4035,6 @@ static uint8_t *makeDelimiterTable(uint8_t *delimiters, uint8_t *table) {
 	table[(long)'\t'] = 1; /* characters  */
 	table[(long)'\n'] = 1; /* are always  */
 	table[(long)' ']  = 1; /* delimiters. */
-
-	return table;
 }
 
 /*----------------------------------------------------------------------*
