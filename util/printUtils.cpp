@@ -613,8 +613,8 @@ static void noSpaceOrPunct(Widget widget, XtPointer client_data, XtPointer callD
 			
 			static const char prohibited[] = " \t,;|<>()[]{}!@?";
 			
-			for (int j = 0; j < (int)XtNumber(prohibited); j++) {
-				if (call_data->text->ptr[i] == prohibited[j]) {
+			for (auto & elem : prohibited) {
+				if (call_data->text->ptr[i] == elem) {
 					call_data->doit = False;
 					return;
 				}

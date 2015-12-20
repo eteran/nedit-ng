@@ -230,7 +230,7 @@ Widget ManageListAndButtons(Widget listW, Widget deleteBtn, Widget copyBtn, Widg
 
 	/* Create a managedList data structure to hold information about the
 	   widgets, callbacks, and current state of the list */
-	auto ml = new managedListData;
+	auto  ml = new managedListData;
 	ml->listW            = listW;
 	ml->deleteBtn        = deleteBtn;
 	ml->copyBtn          = copyBtn;
@@ -650,7 +650,7 @@ static void selectItem(Widget listW, int itemIndex, int updateDialog) {
 static Widget shellOfWidget(Widget w) {
 	while (1) {
 		if (!w)
-			return 0;
+			return nullptr;
 		if (XtIsSubclass(w, shellWidgetClass))
 			return w;
 		w = XtParent(w);

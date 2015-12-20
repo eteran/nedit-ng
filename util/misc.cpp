@@ -450,7 +450,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		   bug reports that seemed to indicate that non-32-bit visuals with an
 		   alpha-channel exist. The combined approach (env. var. + 32-bit
 		   check) should cover the vast majority of the cases, though. */
-		if (visList[i].depth >= 32 && strstr(ServerVendor(display), "X.Org") != 0) {
+		if (visList[i].depth >= 32 && strstr(ServerVendor(display), "X.Org") != nullptr) {
 			continue;
 		}
 		if (visList[i].depth > maxDepth) {
@@ -799,7 +799,7 @@ void RaiseWindow(Display *display, Window w, bool focus) {
 ** when the mnemonic is typed.
 */
 void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo) {
-	XtAddEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, (XtPointer)0);
+	XtAddEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, nullptr);
 	addMnemonicGrabs(dialog, dialog, unmodifiedToo);
 }
 
@@ -808,7 +808,7 @@ void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo) {
 */
 void RemoveDialogMnemonicHandler(Widget dialog) {
 	XtUngrabKey(dialog, AnyKey, Mod1Mask);
-	XtRemoveEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, (XtPointer)0);
+	XtRemoveEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, nullptr);
 }
 
 /*
@@ -932,7 +932,7 @@ XmString *StringTable(int count, ...) {
 		str = va_arg(ap, char *);
 		array[i] = XmStringCreateSimple(str);
 	}
-	array[i] = (XmString)0;
+	array[i] = nullptr;
 	va_end(ap);
 	return (array);
 }
@@ -940,7 +940,7 @@ XmString *StringTable(int count, ...) {
 void FreeStringTable(XmString *table) {
 	int i;
 
-	for (i = 0; table[i] != 0; i++)
+	for (i = 0; table[i] != nullptr; i++)
 		XmStringFree(table[i]);
 	XtFree((char *)table);
 }
@@ -1159,7 +1159,7 @@ void MakeSingleLineTextW(Widget textW) {
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems) {
 
 	/* create a data structure for passing history info to the callbacks */
-	auto histData = new histInfo;
+	auto  histData = new histInfo;
 	histData->list   = historyList;
 	histData->nItems = nItems;
 	histData->index  = -1;

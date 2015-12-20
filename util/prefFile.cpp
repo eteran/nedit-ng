@@ -244,7 +244,7 @@ void readPrefs(XrmDatabase prefDB, XrmDatabase appDB, const std::string &appName
 XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName, XrmOptionDescList opTable, int nOptions, unsigned int *argcInOut, char **argvInOut) {
 	XrmDatabase db;
 	int argcCopy;
-	static XrmOptionDescRec xrmOnlyTable[] = {{(char *)"-xrm", nullptr, XrmoptionResArg, (caddr_t)nullptr}};
+	static XrmOptionDescRec xrmOnlyTable[] = {{(char *)"-xrm", nullptr, XrmoptionResArg, nullptr}};
 
 	/* read the preferences file into an X database.
 	   On failure prefDB will be nullptr. */
@@ -260,7 +260,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 
 			/*  Add a resource to the database which remembers that
 			    the file is read, so that NEdit will know it.  */
-			auto rsrcName = new char[strlen(appName) + 14];
+			auto  rsrcName = new char[strlen(appName) + 14];
 			sprintf(rsrcName, "%s.prefFileRead", appName);
 			XrmPutStringResource(&db, rsrcName, "True");
 			delete [] rsrcName;
@@ -274,7 +274,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 	   pertaining to preference resources will be included in the database.
 	   Don't remove -xrm arguments from the argument vector, however, so
 	   XtDisplayInitialize can still read the non-preference resources */
-	auto argvCopy = new char *[*argcInOut];
+	auto  argvCopy = new char *[*argcInOut];
 	memcpy(argvCopy, argvInOut, sizeof(char *) * *argcInOut);
 	argcCopy = *argcInOut;
 	XrmParseCommand(&db, xrmOnlyTable, XtNumber(xrmOnlyTable), appName, &argcCopy, argvCopy);
