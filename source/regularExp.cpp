@@ -833,9 +833,9 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		/* Determine if a parenthesized expression is modified by a quantifier
 		   that can have zero width. */
 
-		if (*(Reg_Parse) == '?' || *(Reg_Parse) == '*') {
+		if (*Reg_Parse == '?' || *Reg_Parse == '*') {
 			zero_width++;
-		} else if (*(Reg_Parse) == '{' && Brace_Char == '{') {
+		} else if (*Reg_Parse == '{' && Brace_Char == '{') {
 			if (*(Reg_Parse + 1) == ',' || *(Reg_Parse + 1) == '}') {
 				zero_width++;
 			} else if (*(Reg_Parse + 1) == '0') {
