@@ -85,6 +85,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <bitset>
 
 /* The first byte of the regexp internal `program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the
@@ -394,26 +395,20 @@ uint8_t *OPERAND(uint8_t *p) {
 	return p + NODE_SIZE;
 }
 
-#define GET_OFFSET(p) (((*((p)+1) & 0377) << 8) + ((*((p)+2)) & 0377))
-#define PUT_OFFSET_L(v) (uint8_t)(((v) >> 8) & 0377)
-#define PUT_OFFSET_R(v) (uint8_t)((v)&0377)
-#define GET_LOWER(p) (((*((p)+NODE_SIZE) & 0377) << 8) + ((*((p)+NODE_SIZE + 1)) & 0377))
-#define GET_UPPER(p) (((*((p)+NODE_SIZE + 2) & 0377) << 8) + ((*((p)+NODE_SIZE + 3)) & 0377))
+#define GET_OFFSET(p) (((*((p)+1) & 0xff) << 8) + ((*((p)+2)) & 0xff))
+#define PUT_OFFSET_L(v) (uint8_t)(((v) >> 8) & 0xff)
+#define PUT_OFFSET_R(v) (uint8_t)((v)&0xff)
+#define GET_LOWER(p) (((*((p)+NODE_SIZE) & 0xff) << 8) + ((*((p)+NODE_SIZE + 1)) & 0xff))
+#define GET_UPPER(p) (((*((p)+NODE_SIZE + 2) & 0xff) << 8) + ((*((p)+NODE_SIZE + 3)) & 0xff))
 
 /* Utility definitions. */
 
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?' || (c) == Brace_Char)
-#define SET_BIT(i, n) ((i) |= (1 << ((n)-1)))
-#define TEST_BIT(i, n) ((i) & (1 << ((n)-1)))
 
-unsigned int U_CHAR_AT(uint8_t *p) {
+template <class T>
+unsigned int U_CHAR_AT(T *p) {
 	return (unsigned int)*p;
 }
-
-unsigned int U_CHAR_AT(const char *p) {
-	return (unsigned int)*p;
-}
-
 
 /* Flags to be passed up and down via function parameters during compile. */
 
@@ -460,8 +455,8 @@ static size_t Total_Paren;              /* Parentheses, (),  counter. */
 static size_t Num_Braces;               /* Number of general {m,n} constructs.
                                         {m,n} quantifiers of SIMPLE atoms are
                                         not included in this count. */
-static int Closed_Parens;            /* Bit flags indicating () closure. */
-static int Paren_Has_Width;          /* Bit flags indicating ()'s that are
+static std::bitset<32> Closed_Parens;            /* Bit flags indicating () closure. */
+static std::bitset<32> Paren_Has_Width;          /* Bit flags indicating ()'s that are
                                         known to not match the empty string */
 static uint8_t Compute_Size;   /* Address of this used as flag. */
 static uint8_t *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
@@ -677,7 +672,7 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	uint8_t *ret_val = nullptr;
 	uint8_t *this_branch;
 	uint8_t *ender = nullptr;
-	int this_paren = 0;
+	size_t this_paren = 0;
 	int flags_local, first = 1, zero_width, i;
 	int old_sensitive = Is_Case_Insensitive;
 	int old_newline = Match_Newline;
@@ -827,8 +822,8 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	/* Set a bit in Closed_Parens to let future calls to function `back_ref'
 	   know that we have closed this set of parentheses. */
 
-	if (paren == PAREN && this_paren <= (int)sizeof(Closed_Parens) * CHAR_BIT) {
-		SET_BIT(Closed_Parens, this_paren);
+	if (paren == PAREN && this_paren <= Closed_Parens.size()) {
+		Closed_Parens[this_paren] = true;
 
 		/* Determine if a parenthesized expression is modified by a quantifier
 		   that can have zero width. */
@@ -856,9 +851,9 @@ static uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 	   (*) or question (?) quantifiers to be aplied to a back-reference that
 	   refers to this set of parentheses. */
 
-	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren <= (int)(sizeof(Paren_Has_Width) * CHAR_BIT)) {
+	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren <= Paren_Has_Width.size()) {
 
-		SET_BIT(Paren_Has_Width, this_paren);
+		Paren_Has_Width[this_paren] = true;
 	}
 
 	Is_Case_Insensitive = old_sensitive;
@@ -2475,7 +2470,7 @@ static uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 	/* Make sure parentheses for requested back-reference are complete. */
 
-	if (!is_cross_regex && !TEST_BIT(Closed_Parens, paren_no)) {
+	if (!is_cross_regex && !Closed_Parens[paren_no]) {
 		throw regex_error("\\%d is an illegal back reference", paren_no);
 		return nullptr;
 	}
@@ -2500,7 +2495,7 @@ static uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 		emit_byte((uint8_t)paren_no);
 
-		if (is_cross_regex || TEST_BIT(Paren_Has_Width, paren_no)) {
+		if (is_cross_regex || Paren_Has_Width[paren_no]) {
 			*flag_param |= HAS_WIDTH;
 		}
 	} else if (emit == CHECK_ESCAPE) {
