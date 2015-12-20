@@ -92,6 +92,6 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
    is identical to `delimiters'.  Pass NULL for "default default" set of
    delimiters. */
 
-void SetREDefaultWordDelimiters(char *delimiters);
+void SetREDefaultWordDelimiters(const char *delimiters);
 
 #endif /* NEDIT_REGULAREXP_H_INCLUDED */

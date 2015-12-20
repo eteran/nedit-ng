@@ -2569,9 +2569,8 @@ static uint32_t *BraceCounts;
 
 /* Default table for determining whether a character is a word delimiter. */
 
-static uint8_t Default_Delimiters[UINT8_MAX + 1] = {0};
-
-static uint8_t *Current_Delimiters; /* Current delimiter table */
+static std::bitset<256> Default_Delimiters;
+static std::bitset<256> Current_Delimiters; /* Current delimiter table */
 
 /* Forward declarations of functions used by `ExecRE' */
 
@@ -2579,7 +2578,7 @@ static int attempt(regexp *, const char *);
 static int match(uint8_t *, int *);
 static unsigned long greedy(uint8_t *, long);
 static void adjustcase(char *str, int len, char chgcase);
-static void makeDelimiterTable(const uint8_t *, uint8_t *);
+static std::bitset<256> makeDelimiterTable(const char *);
 
 /*
  * ExecRE - match a `regexp' structure against a string
@@ -2612,7 +2611,6 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	const char **s_ptr;
 	const char **e_ptr;
 	int ret_val = 0;
-	uint8_t tempDelimitTable[256];
 
 	/* Check for valid parameters. */
 
@@ -2636,8 +2634,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	if (delimiters == nullptr) {
 		Current_Delimiters = Default_Delimiters;
 	} else {
-		makeDelimiterTable((uint8_t *)delimiters, tempDelimitTable);
-		Current_Delimiters = tempDelimitTable;
+		Current_Delimiters = makeDelimiterTable(delimiters);
 	}
 
 	/* Remember the logical end of the string. */
@@ -2665,8 +2662,8 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 
 	Prev_Is_BOL = ((prev_char == '\n') || (prev_char == '\0') ? 1 : 0);
 	Succ_Is_EOL = ((succ_char == '\n') || (succ_char == '\0') ? 1 : 0);
-	Prev_Is_Delim = (Current_Delimiters[(uint8_t)prev_char] ? 1 : 0);
-	Succ_Is_Delim = (Current_Delimiters[(uint8_t)succ_char] ? 1 : 0);
+	Prev_Is_Delim = Current_Delimiters[(uint8_t)prev_char];
+	Succ_Is_Delim = Current_Delimiters[(uint8_t)succ_char];
 
 	Total_Paren = (int)(prog->program[1]);
 	Num_Braces  = (int)(prog->program[2]);
@@ -4017,24 +4014,21 @@ static void reg_error(const char *str) {
  * Translate a null-terminated string of delimiters into a 256 byte
  * lookup table for determining whether a character is a delimiter or
  * not.
- *
- * Table must be allocated by the caller.
- *
- * Return value is a pointer to the table.
  *----------------------------------------------------------------------*/
+static std::bitset<256> makeDelimiterTable(const char *delimiters) {
 
-static void makeDelimiterTable(const uint8_t *delimiters, uint8_t *table) {
+	std::bitset<256> table;
 
-	memset(table, 0, 256);
-
-	for (const uint8_t *c = delimiters; *c != '\0'; c++) {
-		table[*c] = 1;
+	for (const char *c = delimiters; *c != '\0'; c++) {
+		table[*c] = true;
 	}
 
-	table[(long)'\0'] = 1; /* These       */
-	table[(long)'\t'] = 1; /* characters  */
-	table[(long)'\n'] = 1; /* are always  */
-	table[(long)' ']  = 1; /* delimiters. */
+	table[(long)'\0'] = true; /* These       */
+	table[(long)'\t'] = true; /* characters  */
+	table[(long)'\n'] = true; /* are always  */
+	table[(long)' ']  = true; /* delimiters. */
+	
+	return table;
 }
 
 /*----------------------------------------------------------------------*
@@ -4043,6 +4037,6 @@ static void makeDelimiterTable(const uint8_t *delimiters, uint8_t *table) {
  * Builds a default delimiter table that persists across `ExecRE' calls.
  *----------------------------------------------------------------------*/
 
-void SetREDefaultWordDelimiters(char *delimiters) {
-	makeDelimiterTable((uint8_t *)delimiters, Default_Delimiters);
+void SetREDefaultWordDelimiters(const char *delimiters) {
+	Default_Delimiters = makeDelimiterTable(delimiters);
 }
