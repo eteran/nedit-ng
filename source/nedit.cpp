@@ -572,23 +572,22 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 ** Return True if -do macro is valid, otherwise write an error on stderr
 */
 static int checkDoMacroArg(const char *macro) {
-	Program *prog;
+
 	const char *errMsg;
 	const char *stoppedAt;
-	char *tMacro;
 	int macroLen;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
 	macroLen = strlen(macro);
-	tMacro = XtMalloc(strlen(macro) + 2);
+	char *tMacro = (char *)malloc(strlen(macro) + 2);
 	strncpy(tMacro, macro, macroLen);
 	tMacro[macroLen] = '\n';
 	tMacro[macroLen + 1] = '\0';
 
 	/* Do a test parse */
-	prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
-	XtFree(tMacro);
+	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
+	free(tMacro);
 	if (prog == nullptr) {
 		ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
 		return False;

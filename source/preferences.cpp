@@ -955,7 +955,7 @@ static void lineNoFgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 static void cursorFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData);
 
 static int matchLanguageMode(WindowInfo *window);
-static int loadLanguageModesString(char *inString, int fileVer);
+static int loadLanguageModesString(const char *inString, int fileVer);
 static char *writeLanguageModesString(void);
 static char *createExtString(char **extensions, int nExtensions);
 static char **readExtensionList(const char **inPtr, int *nExtensions);
@@ -3086,7 +3086,6 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	Widget boldLbl, boldBtn, boldItalicLbl, boldItalicBtn;
 	Widget primaryFrame, primaryForm, highlightFrame, highlightForm;
 	Widget okBtn, applyBtn, cancelBtn;
-	fontDialog *fd;
 	XmString s1;
 	int ac;
 	Arg args[20];
@@ -3098,7 +3097,7 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	}
 
 	/* Create a structure for keeping track of dialog state */
-	fd = (fontDialog *)XtMalloc(sizeof(fontDialog));
+	auto fd = new fontDialog;
 	fd->window = window;
 	fd->forWindow = forWindow;
 	window->fontDialog = (Widget)(void *) fd;
@@ -3123,36 +3122,28 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	                                     XmALIGNMENT_CENTER, nullptr);
 	XmStringFree(s1);
 
-	primaryBtn = XtVaCreateManagedWidget("primaryBtn", xmPushButtonWidgetClass, primaryForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Browse..."), XmNmnemonic, 'r', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNtopOffset,
-	                                     BTN_TEXT_OFFSET, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
+	primaryBtn = XtVaCreateManagedWidget("primaryBtn", xmPushButtonWidgetClass, primaryForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Browse..."), XmNmnemonic, 'r', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNtopOffset, BTN_TEXT_OFFSET, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
 	XmStringFree(s1);
 	XtAddCallback(primaryBtn, XmNactivateCallback, primaryBrowseCB, fd);
 
-	fd->primaryW = XtVaCreateManagedWidget("primary", xmTextWidgetClass, primaryForm, XmNcolumns, 70, XmNmaxLength, MAX_FONT_LEN, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, primaryBtn, XmNtopAttachment, XmATTACH_POSITION,
-	                                       XmNtopPosition, 2, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	fd->primaryW = XtVaCreateManagedWidget("primary", xmTextWidgetClass, primaryForm, XmNcolumns, 70, XmNmaxLength, MAX_FONT_LEN, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, primaryBtn, XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
 	RemapDeleteKey(fd->primaryW);
 	XtAddCallback(fd->primaryW, XmNvalueChangedCallback, primaryModifiedCB, fd);
 	XtVaSetValues(primaryLbl, XmNuserData, fd->primaryW, nullptr);
 
-	highlightFrame = XtVaCreateManagedWidget("highlightFrame", xmFrameWidgetClass, form, XmNmarginHeight, 3, XmNnavigationType, XmTAB_GROUP, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, primaryFrame, XmNtopOffset, 20, XmNleftAttachment,
-	                                         XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	highlightFrame = XtVaCreateManagedWidget("highlightFrame", xmFrameWidgetClass, form, XmNmarginHeight, 3, XmNnavigationType, XmTAB_GROUP, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, primaryFrame, XmNtopOffset, 20, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
 	highlightForm = XtVaCreateManagedWidget("highlightForm", xmFormWidgetClass, highlightFrame, nullptr);
-	XtVaCreateManagedWidget("highlightFonts", xmLabelGadgetClass, highlightFrame, XmNlabelString, s1 = XmStringCreateSimpleEx("Fonts for Syntax Highlighting"), XmNchildType, XmFRAME_TITLE_CHILD, XmNchildHorizontalAlignment,
-	                        XmALIGNMENT_CENTER, nullptr);
+	XtVaCreateManagedWidget("highlightFonts", xmLabelGadgetClass, highlightFrame, XmNlabelString, s1 = XmStringCreateSimpleEx("Fonts for Syntax Highlighting"), XmNchildType, XmFRAME_TITLE_CHILD, XmNchildHorizontalAlignment, XmALIGNMENT_CENTER, nullptr);
 	XmStringFree(s1);
 
-	fd->fillW = XtVaCreateManagedWidget("fillBtn", xmPushButtonWidgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Fill Highlight Fonts from Primary"), XmNmnemonic, 'F', XmNtopAttachment, XmATTACH_POSITION,
-	                                    XmNtopPosition, 2, XmNtopOffset, BTN_TEXT_OFFSET, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
+	fd->fillW = XtVaCreateManagedWidget("fillBtn", xmPushButtonWidgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Fill Highlight Fonts from Primary"), XmNmnemonic, 'F', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNtopOffset, BTN_TEXT_OFFSET, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
 	XmStringFree(s1);
 	XtAddCallback(fd->fillW, XmNactivateCallback, fillFromPrimaryCB, fd);
 
-	italicLbl = XtVaCreateManagedWidget("italicLbl", xmLabelGadgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Italic Font"), XmNmnemonic, 'I', XmNalignment, XmALIGNMENT_BEGINNING, XmNtopAttachment, XmATTACH_WIDGET,
-	                                    XmNtopWidget, fd->fillW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
+	italicLbl = XtVaCreateManagedWidget("italicLbl", xmLabelGadgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Italic Font"), XmNmnemonic, 'I', XmNalignment, XmALIGNMENT_BEGINNING, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, fd->fillW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
 	XmStringFree(s1);
 
-	fd->italicErrW =
-	    XtVaCreateManagedWidget("italicErrLbl", xmLabelGadgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("(vvv  spacing is inconsistent with primary font  vvv)"), XmNalignment, XmALIGNMENT_END, XmNtopAttachment,
-	                            XmATTACH_WIDGET, XmNtopWidget, fd->fillW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, italicLbl, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	fd->italicErrW = XtVaCreateManagedWidget("italicErrLbl", xmLabelGadgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("(vvv  spacing is inconsistent with primary font  vvv)"), XmNalignment, XmALIGNMENT_END, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, fd->fillW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, italicLbl, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
 	XmStringFree(s1);
 
 	italicBtn = XtVaCreateManagedWidget("italicBtn", xmPushButtonWidgetClass, highlightForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Browse..."), XmNmnemonic, 'o', XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, italicLbl,
@@ -3160,8 +3151,8 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	XmStringFree(s1);
 	XtAddCallback(italicBtn, XmNactivateCallback, italicBrowseCB, fd);
 
-	fd->italicW = XtVaCreateManagedWidget("italic", xmTextWidgetClass, highlightForm, XmNmaxLength, MAX_FONT_LEN, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, italicBtn, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, italicLbl,
-	                                      XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	fd->italicW = XtVaCreateManagedWidget("italic", xmTextWidgetClass, highlightForm, XmNmaxLength, MAX_FONT_LEN, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, italicBtn, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, italicLbl, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	
 	RemapDeleteKey(fd->italicW);
 	XtAddCallback(fd->italicW, XmNvalueChangedCallback, italicModifiedCB, fd);
 	XtVaSetValues(italicLbl, XmNuserData, fd->italicW, nullptr);
@@ -3250,13 +3241,13 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 	char *primaryName;
 	char modifiedFontName[MAX_FONT_LEN];
-	const char *searchString = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
-	const char *italicReplaceString = "\\1-\\2-o-\\4";
-	const char *boldReplaceString = "\\1-bold-\\3-\\4";
-	const char *boldItalicReplaceString = "\\1-bold-o-\\4";
+	const char *const searchString            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
+	const char *const italicReplaceString     = "\\1-\\2-o-\\4";
+	const char *const boldReplaceString       = "\\1-bold-\\3-\\4";
+	const char *const boldItalicReplaceString = "\\1-bold-o-\\4";
 	regexp *compiledRE;
 
 	/* Match the primary font agains RE pattern for font names.  If it
@@ -3290,7 +3281,7 @@ static void primaryModifiedCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	showFontStatus(fd, fd->italicW, fd->italicErrW);
 	showFontStatus(fd, fd->boldW, fd->boldErrW);
@@ -3301,7 +3292,7 @@ static void italicModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	showFontStatus(fd, fd->italicW, fd->italicErrW);
 }
@@ -3310,7 +3301,7 @@ static void boldModifiedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	showFontStatus(fd, fd->boldW, fd->boldErrW);
 }
@@ -3319,7 +3310,7 @@ static void boldItalicModifiedCB(Widget w, XtPointer clientData, XtPointer callD
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	fontDialog *fd = reinterpret_cast<fontDialog *>(clientData);
 
 	showFontStatus(fd, fd->boldItalicW, fd->boldItalicErrW);
 }
@@ -3329,7 +3320,7 @@ static void primaryBrowseCB(Widget w, XtPointer clientData, XtPointer callData) 
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	fontDialog *fd = reinterpret_cast<fontDialog *>(clientData);
 
 	browseFont(fd->shell, fd->primaryW);
 }
@@ -3338,7 +3329,7 @@ static void italicBrowseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	fontDialog *fd = reinterpret_cast<fontDialog *>(clientData);
 
 	browseFont(fd->shell, fd->italicW);
 }
@@ -3347,7 +3338,7 @@ static void boldBrowseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	browseFont(fd->shell, fd->boldW);
 }
@@ -3356,7 +3347,7 @@ static void boldItalicBrowseCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto *fd = reinterpret_cast<fontDialog *>(clientData);
 
 	browseFont(fd->shell, fd->boldItalicW);
 }
@@ -3366,10 +3357,10 @@ static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	fd->window->fontDialog = nullptr;
-	XtFree((char *)fd);
+	delete fd;
 }
 
 static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -3377,7 +3368,7 @@ static void fontOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	updateFonts(fd);
 
@@ -3390,7 +3381,7 @@ static void fontApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	updateFonts(fd);
 }
@@ -3400,7 +3391,7 @@ static void fontCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	fontDialog *fd = (fontDialog *)clientData;
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	/* pop down and destroy the dialog */
 	XtDestroyWidget(fd->shell);
@@ -3488,20 +3479,22 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW, Widget errorLab
 ** Put up a font selector panel to set the font name in the text widget "fontTextW"
 */
 static void browseFont(Widget parent, Widget fontTextW) {
-	char *origFontName, *newFontName;
-	Pixel fgPixel, bgPixel;
+
 	int dummy;
 
-	origFontName = XmTextGetString(fontTextW);
+	char *origFontName = XmTextGetString(fontTextW);
 
 	/* Get the values from the defaults */
-	fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &dummy, &dummy, &dummy);
-	bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &dummy, &dummy, &dummy);
+	Pixel fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &dummy, &dummy, &dummy);
+	Pixel bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &dummy, &dummy, &dummy);
 
-	newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
+	char *newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
 	XtFree(origFontName);
-	if (newFontName == nullptr)
+	
+	if (!newFontName) {
 		return;
+	}
+	
 	XmTextSetStringEx(fontTextW, newFontName);
 	XtFree(newFontName);
 }
@@ -3510,12 +3503,11 @@ static void browseFont(Widget parent, Widget fontTextW) {
 ** Accept the changes in the dialog and set the fonts regardless of errors
 */
 static void updateFonts(fontDialog *fd) {
-	char *fontName, *italicName, *boldName, *boldItalicName;
 
-	fontName = XmTextGetString(fd->primaryW);
-	italicName = XmTextGetString(fd->italicW);
-	boldName = XmTextGetString(fd->boldW);
-	boldItalicName = XmTextGetString(fd->boldItalicW);
+	char *fontName       = XmTextGetString(fd->primaryW);
+	char *italicName     = XmTextGetString(fd->italicW);
+	char *boldName       = XmTextGetString(fd->boldW);
+	char *boldItalicName = XmTextGetString(fd->boldItalicW);
 
 	if (fd->forWindow) {
 		char *params[4];
@@ -3680,7 +3672,7 @@ static int matchLanguageMode(WindowInfo *window) {
 	return PLAIN_LANGUAGE_MODE;
 }
 
-static int loadLanguageModesString(char *inString, int fileVer) {
+static int loadLanguageModesString(const char *inString, int fileVer) {
 	const char *errMsg;
 	char *styleName;
 	const char *inPtr = inString;

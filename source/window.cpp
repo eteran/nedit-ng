@@ -2241,18 +2241,19 @@ void SetWindowModified(WindowInfo *window, int modified) {
 ** status of the window data structure
 */
 void UpdateWindowTitle(const WindowInfo *window) {
-	char *iconTitle, *title;
 
-	if (!window->IsTopDocument())
+	if (!window->IsTopDocument()) {
 		return;
+	}
 
-	title = FormatWindowTitle(window->filename, window->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, window->filenameSet, window->lockReasons, window->fileChanged, GetPrefTitleFormat());
-
-	iconTitle = XtMalloc(strlen(window->filename) + 2); /* strlen("*")+1 */
+	char *title = FormatWindowTitle(window->filename, window->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, window->filenameSet, window->lockReasons, window->fileChanged, GetPrefTitleFormat());
+	char *iconTitle = (char *)malloc(strlen(window->filename) + 2); /* strlen("*")+1 */
 
 	strcpy(iconTitle, window->filename);
-	if (window->fileChanged)
+	if (window->fileChanged) {
 		strcat(iconTitle, "*");
+	}
+	
 	XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, iconTitle, nullptr);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
@@ -2265,7 +2266,7 @@ void UpdateWindowTitle(const WindowInfo *window) {
 		sprintf(title, "Replace (in %s)", window->filename);
 		XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, nullptr);
 	}
-	XtFree(iconTitle);
+	free(iconTitle);
 
 	/* Update the Windows menus with the new name */
 	InvalidateWindowMenus();
