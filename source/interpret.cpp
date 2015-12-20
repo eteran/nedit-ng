@@ -501,8 +501,8 @@ int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, 
 ** "continuation"
 */
 int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg) {
-	register int status, instCount = 0;
-	register Inst *inst;
+	int status, instCount = 0;
+	Inst *inst;
 	RestartData oldContext;
 
 	/* To allow macros to be invoked arbitrarily (such as those automatically

@@ -143,7 +143,7 @@ static void addToFileList(const char *path) {
 
 	/* Add the atom to the head of the file list if it wasn't found. */
 	if (it == fileListHead.fileList.end()) {
-		FileListEntry *item = new FileListEntry;
+		auto item = new FileListEntry;
 		item->waitForFileOpenAtom   = None;
 		item->waitForFileClosedAtom = None;
 		item->path                  = path;

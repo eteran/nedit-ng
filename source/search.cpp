@@ -4474,7 +4474,7 @@ static int searchLiteralWord(const char *string, const char *searchString, int c
 		}                                                                                                                                                                                                                                      \
 	}
 
-	register const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
+	const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
 	char lcString[SEARCHMAX], ucString[SEARCHMAX];
 
 	int cignore_L = 0, cignore_R = 0;
@@ -4566,7 +4566,7 @@ static int searchLiteral(const char *string, const char *searchString, int caseS
 		}                                                                                                                                                                                                                                      \
 	}
 
-	register const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
+	const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
 	char lcString[SEARCHMAX], ucString[SEARCHMAX];
 
 	/* SEARCHMAX was fine in the original NEdit, but it should be done away with
