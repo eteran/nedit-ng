@@ -1264,7 +1264,6 @@ void BeginWait(Widget topCursorWidget) {
 }
 
 void BusyWait(Widget widget) {
-#ifdef __unix__
 	static const int timeout = 100000; /* 1/10 sec = 100 ms = 100,000 us */
 	static struct timeval last = {0, 0};
 	struct timeval current;
@@ -1274,16 +1273,6 @@ void BusyWait(Widget widget) {
 		XmUpdateDisplay(widget);
 		last = current;
 	}
-#else
-	static time_t last = 0;
-	time_t current;
-	time(&current);
-
-	if (difftime(current, last) > 0) {
-		XmUpdateDisplay(widget);
-		last = current;
-	}
-#endif
 }
 
 void EndWait(Widget topCursorWidget) {

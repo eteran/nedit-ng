@@ -76,9 +76,7 @@
 #include <cmath>
 #include <cctype>
 #include <ctime>
-#ifdef __unix__
 #include <sys/time.h>
-#endif
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
