@@ -79,7 +79,7 @@ static bool doSave(WindowInfo *window);
 static int fileWasModifiedExternally(WindowInfo *window);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapNewlines(WindowInfo *window);
-static void backupFileName(WindowInfo *window, char *name, size_t len);
+static std::string backupFileNameEx(WindowInfo *window);
 static void forceShowLineNumbers(WindowInfo *window);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void safeClose(WindowInfo *window);
@@ -104,7 +104,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 
 	path = window->path;
 	strcpy(window->filename, name);
-	strcpy(path, (defaultPath && *defaultPath) ? defaultPath : GetCurrentDir());
+	strcpy(path, (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx().c_str());
 	pathlen = strlen(window->path);
 
 	/* do we have a "/" at the end? if not, add one */
@@ -899,21 +899,20 @@ static bool doSave(WindowInfo *window) {
 ** tilde (~) on UNIX and underscore (_) on VMS to the beginning of the name.
 */
 int WriteBackupFile(WindowInfo *window) {
-	char name[MAXPATHLEN];
 	FILE *fp;
 	int fd;
 
 	/* Generate a name for the autoSave file */
-	backupFileName(window, name, sizeof(name));
+	std::string name = backupFileNameEx(window);
 
 	/* remove the old backup file.
 	   Well, this might fail - we'll notice later however. */
-	remove(name);
+	remove(name.c_str());
 
 	/* open the file, set more restrictive permissions (using default
 	    permissions was somewhat of a security hole, because permissions were
 	    independent of those of the original file being edited */
-	if ((fd = open(name, O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
+	if ((fd = open(name.c_str(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 		DialogF(DF_WARN, window->shell, 1, "Error writing Backup", "Unable to save backup for %s:\n%s\n"
 		                                                           "Automatic backup is now off",
 		        "OK", window->filename, strerror(errno));
@@ -940,7 +939,7 @@ int WriteBackupFile(WindowInfo *window) {
 		                                                         "Automatic backup is now off",
 		        "OK", window->filename, strerror(errno));
 		fclose(fp);
-		remove(name);
+		remove(name.c_str());
 		window->autoSave = FALSE;
 		return FALSE;
 	}
@@ -957,29 +956,28 @@ int WriteBackupFile(WindowInfo *window) {
 ** Remove the backup file associated with this window
 */
 void RemoveBackupFile(WindowInfo *window) {
-	char name[MAXPATHLEN];
 
 	/* Don't delete backup files when backups aren't activated. */
 	if (window->autoSave == FALSE)
 		return;
 
-	backupFileName(window, name, sizeof(name));
-	remove(name);
+	std::string name = backupFileNameEx(window);
+	remove(name.c_str());
 }
 
 /*
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-static void backupFileName(WindowInfo *window, char *name, size_t len) {
+static std::string backupFileNameEx(WindowInfo *window) {
 	
-
+	char buf[MAXPATHLEN];
 	if (window->filenameSet) {
-		snprintf(name, len, "%s~%s", window->path, window->filename);
+		snprintf(buf, sizeof(buf), "%s~%s", window->path, window->filename);
+		return buf;
 	} else {
-		char bckname[MAXPATHLEN];
-		snprintf(bckname, sizeof(bckname), "~%s", window->filename);
-		PrependHome(bckname, name, len);
+		snprintf(buf, sizeof(buf), "~%s", window->filename);
+		return PrependHomeEx(buf);
 	}
 }
 

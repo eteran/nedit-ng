@@ -39,8 +39,17 @@
 
 namespace {
 
-const char *hiddenFileNames[N_FILE_TYPES] = {".nedit", ".neditmacro", ".neditdb"};
-const char *plainFileNames[N_FILE_TYPES] = {"nedit.rc", "autoload.nm", "nedit.history"};
+const char *hiddenFileNames[N_FILE_TYPES] = {
+	".nedit",
+	".neditmacro",
+	".neditdb"
+};
+
+const char *plainFileNames[N_FILE_TYPES] = {
+	"nedit.rc",
+	"autoload.nm",
+	"nedit.history"
+};
 
 /*
 **  Builds a file path from 'dir' and 'file', watching for buffer overruns.
@@ -77,7 +86,6 @@ void buildFilePath(char *fullPath, const char *dir, const char *file) {
 */
 bool isDir(const char *file) {
 	struct stat attribute;
-
 	return ((stat(file, &attribute) == 0) && S_ISDIR(attribute.st_mode));
 }
 
@@ -93,7 +101,6 @@ bool isDir(const char *file) {
 */
 bool isRegFile(const char *file) {
 	struct stat attribute;
-
 	return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));
 }
 
@@ -102,28 +109,22 @@ bool isRegFile(const char *file) {
 
 /* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
-const char *GetCurrentDir(void) {
-	static char curdir[MAXPATHLEN];
+std::string GetCurrentDirEx(void) {
+	char curdir[MAXPATHLEN];
 
-	if (!getcwd(curdir, (size_t)MAXPATHLEN)) {
+	if (!getcwd(curdir, sizeof(curdir))) {
 		perror("nedit: getcwd() fails");
 		strcpy(curdir, ".");
 	}
-	return (curdir);
-}
-
-/* return non-nullptr value for the current working directory.
-   If system call fails, provide a fallback value */
-std::string GetCurrentDirEx(void) {
-	return GetCurrentDir();
+	return curdir;
 }
 
 /* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
-const char *GetHomeDir(void) {
+std::string GetHomeDirEx(void) {
 	const char *ptr;
-	static char homedir[MAXPATHLEN] = "";
+	char homedir[MAXPATHLEN] = "";
 	struct passwd *passwdEntry;
 	size_t len;
 
@@ -149,13 +150,6 @@ const char *GetHomeDir(void) {
 		homedir[len - 1] = '\0';
 	}
 	return homedir;
-}
-
-/* return a non-nullptr value for the user's home directory,
-   without trailing slash.
-   We try the  environment var and the system user database. */
-std::string GetHomeDirEx(void) {
-	return GetHomeDir();
 }
 
 /*
@@ -232,26 +226,6 @@ const char *GetNameOfHost(void) {
 ** Create a path: $HOME/filename
 ** Return "" if it doesn't fit into the buffer
 */
-void PrependHome(const char *filename, char *buf, size_t buflen) {
-
-	const char *const homedir = GetHomeDir();
-	
-	int n = snprintf(buf, buflen, "%s/%s", homedir, filename);
-	
-	if(n < 0) {
-		buf[0] = '\0';
-		return;
-	}
-	
-	if((size_t)n >= buflen) {
-		buf[0] = '\0';
-	}
-}
-
-/*
-** Create a path: $HOME/filename
-** Return "" if it doesn't fit into the buffer
-*/
 std::string PrependHomeEx(view::string_view filename) {
 
 	// TODO(eteran): there is likely a way to make this more efficient
@@ -288,17 +262,17 @@ const char *GetRCFileName(int type) {
 
 			/* Let's try if ~/.nedit is a regular file or not. */
 			char legacyFile[MAXPATHLEN + 1];
-			buildFilePath(legacyFile, GetHomeDir(), hiddenFileNames[NEDIT_RC]);
+			buildFilePath(legacyFile, GetHomeDirEx().c_str(), hiddenFileNames[NEDIT_RC]);
 			if (isRegFile(legacyFile)) {
 				/* This is a legacy setup with rc files in $HOME */
 				for (i = 0; i < N_FILE_TYPES; i++) {
-					buildFilePath(rcFiles[i], GetHomeDir(), hiddenFileNames[i]);
+					buildFilePath(rcFiles[i], GetHomeDirEx().c_str(), hiddenFileNames[i]);
 				}
 			} else {
 				/* ${HOME}/.nedit does not exist as a regular file. */
 				/* FIXME: Devices, sockets and fifos are ignored for now. */
 				char defaultNEditHome[MAXPATHLEN + 1];
-				buildFilePath(defaultNEditHome, GetHomeDir(), DEFAULT_NEDIT_HOME);
+				buildFilePath(defaultNEditHome, GetHomeDirEx().c_str(), DEFAULT_NEDIT_HOME);
 				if (!isDir(defaultNEditHome)) {
 					/* Create DEFAULT_NEDIT_HOME */
 					if (mkdir(defaultNEditHome, 0777) != 0) {

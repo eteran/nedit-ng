@@ -139,7 +139,7 @@ int ExpandTilde(char *pathname) {
 	}
 	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
 	username[nameEnd - &pathname[1]] = '\0';
-	/* We might consider to re-use the GetHomeDir() function,
+	/* We might consider to re-use the GetHomeDirEx() function,
 	   but to keep the code more similar for both cases ... */
 	if (username[0] == '\0') {
 		passwdEntry = getpwuid(getuid());
@@ -234,26 +234,29 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 **  FIXME: Change return value to False and True.
 */
 int NormalizePathname(char *pathname) {
+
+	// TODO(eteran): this can be more efficient
+	
 	/* if this is a relative pathname, prepend current directory */
 	if (pathname[0] != '/') {
-		char *oldPathname;
 		size_t len;
 
 		/* make a copy of pathname to work from */
-		oldPathname = (char *)malloc(strlen(pathname) + 1);
+		char *oldPathname = (char *)malloc(strlen(pathname) + 1);
 		strcpy(oldPathname, pathname);
+		
 		/* get the working directory and prepend to the path */
-		strcpy(pathname, GetCurrentDir());
+		strcpy(pathname, GetCurrentDirEx().c_str());
 
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things
 		   on non-un*x systems */
-		len = strlen(pathname); /* GetCurrentDir() returns non-nullptr value */
+		len = strlen(pathname); /* GetCurrentDirEx() returns non-nullptr value */
 
 		/*  Apart from the fact that people putting conditional expressions in
-		    ifs should be caned: How should len ever become 0 if GetCurrentDir()
+		    ifs should be caned: How should len ever become 0 if GetCurrentDirEx()
 		    always returns a useful value?
-		    FIXME: Check and document GetCurrentDir() return behaviour.  */
+		    FIXME: Check and document GetCurrentDirEx() return behaviour.  */
 		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
 			strcat(pathname, "/");
 		}

@@ -362,7 +362,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		if (windowPath && *windowPath) {
 			snprintf(pathName, sizeof(pathName), "%s/%s", windowPath, filename);
 		} else {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDir(), filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
 		}
 
 		NormalizePathname(pathName);
@@ -411,7 +411,6 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	tagFile *t;
 	int added = 1;
 	struct stat statbuf;
-	char *filename;
 	char pathName[MAXPATHLEN];
 	char *tmptagSpec;
 	tagFile *FileList;
@@ -432,11 +431,9 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 
 	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
 	strcpy(tmptagSpec, tagSpec);
-	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
+	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
-			strcpy(pathName, GetCurrentDir());
-			strcat(pathName, "/");
-			strcat(pathName, filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
 		} else {
 			strcpy(pathName, filename);
 		}
@@ -485,7 +482,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 	tagFile *t, *last;
 	tagFile *FileList;
-	char pathName[MAXPATHLEN], *tmptagSpec, *filename;
+	char pathName[MAXPATHLEN];
 	int removed;
 
 	/* To prevent any possible segfault */
@@ -500,14 +497,12 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 	else
 		FileList = TipsFileList;
 
-	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
+	char *tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
 	strcpy(tmptagSpec, tagSpec);
 	removed = 1;
-	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
+	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
-			strcpy(pathName, GetCurrentDir());
-			strcat(pathName, "/");
-			strcat(pathName, filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
 		} else {
 			strcpy(pathName, filename);
 		}
