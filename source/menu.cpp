@@ -4451,8 +4451,9 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 	/* Sort the previously opened file list if requested */
 	prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char *));
 	memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char *));
-	if (GetPrefSortOpenPrevMenu())
+	if (GetPrefSortOpenPrevMenu()) {
 		qsort(prevOpenSorted, NPrevOpen, sizeof(char *), cmpStrPtr);
+	}
 
 	/* Go thru all of the items in the menu and rename them to match the file
 	   list.  In older Motifs (particularly ibm), it was dangerous to replace

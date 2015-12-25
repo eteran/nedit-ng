@@ -156,7 +156,7 @@ std::string GetHomeDirEx(void) {
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
 */
-const char *GetUserName(void) {
+std::string GetUserNameEx(void) {
 	/* cuserid has apparently been dropped from the ansi C standard, and if
 	   strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
 	   to cuserid fail to compile.  Older versions of nedit try to use the
@@ -182,20 +182,11 @@ const char *GetUserName(void) {
 		// NOTE(eteran): so, this is effecively a one time memory leak
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
-		userName = (char *)malloc(strlen(passwdEntry->pw_name) + 1);
-		strcpy(userName, passwdEntry->pw_name);
+		userName = strdup(passwdEntry->pw_name);
 		return userName;
 	}
 }
 
-/*
-** Return a pointer to the username of the current user in a statically
-** allocated string.
-*/
-std::string GetUserNameEx(void) {
-	std::string str(GetUserName());
-	return str;
-}
 
 /*
 ** Writes the hostname of the current system in string "hostname".
@@ -204,8 +195,8 @@ std::string GetUserNameEx(void) {
 ** linking conflict on VMS with the standard gethostname function, because
 ** VMS links case-insensitively.
 */
-const char *GetNameOfHost(void) {
-	static char hostname[MAXNODENAMELEN + 1];
+std::string GetNameOfHostEx(void) {
+	char hostname[MAXNODENAMELEN + 1];
 	static bool hostnameFound = false;
 
 	if (!hostnameFound) {

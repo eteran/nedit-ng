@@ -49,12 +49,12 @@
  */
 void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn) {
 	char propName[20 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN];
-	const char *userName = GetUserName();
-	const char *hostName = GetNameOfHost();
+	std::string userName = GetUserNameEx();
+	std::string hostName = GetNameOfHostEx();
 
-	sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName, userName, serverName);
+	sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
 	*serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
-	sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName, userName, serverName);
+	sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
 	*serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
 }
 
@@ -77,22 +77,22 @@ void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomRet
  */
 Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
 	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 7];
-	const char *userName = GetUserName();
-	const char *hostName = GetNameOfHost();
+	std::string userName = GetUserNameEx();
+	std::string hostName = GetNameOfHostEx();
 	Atom atom;
 
-	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName, userName, serverName, path);
+	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.c_str(), userName.c_str(), serverName, path);
 	atom = XInternAtom(TheDisplay, propName, False);
 	return (atom);
 }
 
 Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exist) {
 	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 9];
-	const char *userName = GetUserName();
-	const char *hostName = GetNameOfHost();
+	std::string userName = GetUserNameEx();
+	std::string hostName = GetNameOfHostEx();
 	Atom atom;
 
-	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName, userName, serverName, path);
+	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.c_str(), userName.c_str(), serverName, path);
 	atom = XInternAtom(TheDisplay, propName, only_if_exist);
 	return (atom);
 }
@@ -103,9 +103,9 @@ Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool o
  */
 void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
 	char propNamePrefix[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1];
-	const char *userName = GetUserName();
-	const char *hostName = GetNameOfHost();
-	int length = sprintf(propNamePrefix, "NEDIT_FILE_%s_%s_%s_", hostName, userName, serverName);
+	std::string userName = GetUserNameEx();
+	std::string hostName = GetNameOfHostEx();
+	int length = sprintf(propNamePrefix, "NEDIT_FILE_%s_%s_%s_", hostName.c_str(), userName.c_str(), serverName);
 
 	int nProperties;
 	Atom *atoms = XListProperties(TheDisplay, rootWindow, &nProperties);

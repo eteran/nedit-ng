@@ -33,16 +33,13 @@
 #include <string>
 #include "string_view.h"
 
-const char *GetNameOfHost();
 const char *GetRCFileName(int type);
-const char *GetUserName();
 
 std::string GetCurrentDirEx();
 std::string GetHomeDirEx();
 std::string GetNameOfHostEx();
 std::string GetRCFileNameEx(int type);
 std::string GetUserNameEx();
-
 std::string PrependHomeEx(view::string_view filename);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */

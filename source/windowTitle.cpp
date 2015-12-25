@@ -317,7 +317,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 
 			case 'h': /* host name */
 				hostNamePresent = True;
-				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHost());
+				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHostEx().c_str());
 				break;
 
 			case 'S': /* file status */
@@ -336,7 +336,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 
 			case 'u': /* user name */
 				userNamePresent = True;
-				titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserName());
+				titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserNameEx().c_str());
 				break;
 
 			case '%': /* escaped % */
