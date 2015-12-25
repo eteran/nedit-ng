@@ -295,7 +295,7 @@ static void safeClose(WindowInfo *window) {
 	WindowInfo *p = WindowList;
 	while (p) {
 		if (p == window) {
-			CloseWindow(window);
+			window->CloseWindow();
 			return;
 		}
 		p = p->next;
@@ -638,7 +638,7 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse) {
 	     (window->fileMissing && window->lastModTime == 0) ||
 	     /* File deleted/modified externally, ignored by user. */
 	     !GetPrefWarnFileMods())) {
-		CloseWindow(window);
+		window->CloseWindow();
 		/* up-to-date windows don't have outstanding backup files to close */
 	} else {
 		if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
@@ -651,14 +651,14 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse) {
 			/* Save */
 			stat = SaveWindow(window);
 			if (stat) {
-				CloseWindow(window);
+				window->CloseWindow();
 			} else {
 				return FALSE;
 			}
 		} else if (response == NO_SBC_DIALOG_RESPONSE) {
 			/* Don't Save */
 			RemoveBackupFile(window);
-			CloseWindow(window);
+			window->CloseWindow();
 		} else /* 3 == Cancel */
 		{
 			return FALSE;

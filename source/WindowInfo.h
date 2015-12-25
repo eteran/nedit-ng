@@ -44,7 +44,6 @@ public:
 	int IsIconic();
 	int IsValidWindow();
 	int NDocuments();
-	
 	void LastDocument();
 	void MakeSelectionVisible(Widget textPane);
 	void MoveDocumentDialog();
@@ -52,6 +51,11 @@ public:
 	void PreviousDocument();
 	void RaiseDocument();
 	void RaiseDocumentWindow();
+	
+	void CleanUpTabBarExposeQueue();
+	void ClearModeMessage();
+	void ClosePane();
+	void CloseWindow();
 
 public:
 	WindowInfo *next;

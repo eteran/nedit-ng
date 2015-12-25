@@ -3327,7 +3327,7 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	WindowInfo *window = WidgetToWindow(w);
 
-	ClosePane(window);
+	window->ClosePane();
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
 		XtSetSensitive(window->closePaneItem, window->nPanes > 0);

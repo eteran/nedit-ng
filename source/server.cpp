@@ -409,9 +409,9 @@ static void processServerCommandString(char *string) {
 			window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop), filename, pathname, editFlags, geometry, iconicFlag, lmLen == 0 ? nullptr : langMode, tabbed == -1 ? GetPrefOpenInTab() : tabbed, True);
 
 			if (window) {
-				CleanUpTabBarExposeQueue(window);
+				window->CleanUpTabBarExposeQueue();
 				if (lastFile && window->shell != lastFile->shell) {
-					CleanUpTabBarExposeQueue(lastFile);
+					lastFile->CleanUpTabBarExposeQueue();
 					lastFile->RaiseDocument();
 				}
 			}
@@ -462,7 +462,7 @@ static void processServerCommandString(char *string) {
 
 	/* Raise the last file opened */
 	if (lastFile) {
-		CleanUpTabBarExposeQueue(lastFile);
+		lastFile->CleanUpTabBarExposeQueue();
 		if (lastIconic)
 			lastFile->RaiseDocument();
 		else

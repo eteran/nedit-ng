@@ -492,7 +492,7 @@ void FinishLearn(void) {
 	DimPasteReplayBtns(True);
 
 	/* Clear learn-mode banner */
-	ClearModeMessage(MacroRecordWindow);
+	MacroRecordWindow->ClearModeMessage();
 }
 
 /*
@@ -531,7 +531,7 @@ static void cancelLearn(void) {
 	}
 
 	/* Clear learn-mode banner */
-	ClearModeMessage(MacroRecordWindow);
+	MacroRecordWindow->ClearModeMessage();
 }
 
 /*
@@ -908,8 +908,9 @@ static void finishMacroCmdExecution(WindowInfo *window) {
 	XtVaSetValues(window->cancelMacroItem, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
 	XmStringFree(s);
 	SetSensitive(window, window->cancelMacroItem, False);
-	if (cmdData->bannerIsUp)
-		ClearModeMessage(window);
+	if (cmdData->bannerIsUp) {
+		window->ClearModeMessage();
+	}
 
 	/* If a dialog was up, get rid of it */
 	if (cmdData->dialog != nullptr)
@@ -924,7 +925,7 @@ static void finishMacroCmdExecution(WindowInfo *window) {
 	   but close was deferred until completion.  This is completion, so if
 	   the window is still empty, do the close */
 	if (closeOnCompletion && !window->filenameSet && !window->fileChanged) {
-		CloseWindow(window);
+		window->CloseWindow();
 		window = nullptr;
 	}
 

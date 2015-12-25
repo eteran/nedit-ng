@@ -768,8 +768,9 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	if (!cmdData->fromMacro) {
 		EndWait(window->shell);
 		SetSensitive(window, window->cancelShellItem, False);
-		if (cmdData->bannerIsUp)
-			ClearModeMessage(window);
+		if (cmdData->bannerIsUp) {
+			window->ClearModeMessage();
+		}
 	}
 
 	/* If the process was killed or became inaccessable, give up */

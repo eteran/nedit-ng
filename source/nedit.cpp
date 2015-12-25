@@ -491,11 +491,11 @@ int main(int argc, char **argv) {
 				window = EditExistingFile(WindowList, filename, pathname, editFlags, geometry, iconic, langMode, isTabbed, True);
 				fileSpecified = TRUE;
 				if (window) {
-					CleanUpTabBarExposeQueue(window);
+					window->CleanUpTabBarExposeQueue();
 
 					/* raise the last tab of previous window */
 					if (lastFile && window->shell != lastFile->shell) {
-						CleanUpTabBarExposeQueue(lastFile);
+						lastFile->CleanUpTabBarExposeQueue();
 						lastFile->RaiseDocument();
 					}
 
@@ -529,7 +529,7 @@ int main(int argc, char **argv) {
 
 	/* Raise the last file opened */
 	if (lastFile) {
-		CleanUpTabBarExposeQueue(lastFile);
+		lastFile->CleanUpTabBarExposeQueue();
 		lastFile->RaiseDocument();
 	}
 	CheckCloseDim();

@@ -142,7 +142,7 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
-static void showStats(WindowInfo *window, int state);
+static void showStatistics(WindowInfo *window, int state);
 static void showISearch(WindowInfo *window, int state);
 static void showStatsForm(WindowInfo *window);
 static void addToWindowList(WindowInfo *window);
@@ -1263,7 +1263,7 @@ WindowInfo *TabToWindow(Widget tab) {
 /*
 ** Close a document, or an editor window
 */
-void CloseWindow(WindowInfo *window) {
+void WindowInfo::CloseWindow() {
 	int keepWindow, state;
 	char name[MAXPATHLEN];
 	WindowInfo *win;
@@ -1271,18 +1271,18 @@ void CloseWindow(WindowInfo *window) {
 	WindowInfo *nextBuf = nullptr;
 
 	/* Free smart indent macro programs */
-	EndSmartIndent(window);
+	EndSmartIndent(this);
 
 	/* Clean up macro references to the doomed window.  If a macro is
 	   executing, stop it.  If macro is calling this (closing its own
 	   window), leave the window alive until the macro completes */
-	keepWindow = !MacroWindowCloseActions(window);
+	keepWindow = !MacroWindowCloseActions(this);
 
 	/* Kill shell sub-process and free related memory */
-	AbortShellCommand(window);
+	AbortShellCommand(this);
 
 	/* Unload the default tips files for this language mode if necessary */
-	UnloadLanguageModeTipsFile(window);
+	UnloadLanguageModeTipsFile(this);
 
 	/* If a window is closed while it is on the multi-file replace dialog
 	   list of any other window (or even the same one), we must update those
@@ -1290,91 +1290,91 @@ void CloseWindow(WindowInfo *window) {
 	   be only one of those dialogs at the same time (application modal),
 	   but LessTif doesn't even (always) honor application modalness, so
 	   there can be more than one dialog. */
-	RemoveFromMultiReplaceDialog(window);
+	RemoveFromMultiReplaceDialog(this);
 
 	/* Destroy the file closed property for this file */
-	DeleteFileClosedProperty(window);
+	DeleteFileClosedProperty(this);
 
 	/* Remove any possibly pending callback which might fire after the
 	   widget is gone. */
-	cancelTimeOut(&window->flashTimeoutID);
-	cancelTimeOut(&window->markTimeoutID);
+	cancelTimeOut(&this->flashTimeoutID);
+	cancelTimeOut(&this->markTimeoutID);
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (WindowList == window && window->next == nullptr)) {
-		window->filename[0] = '\0';
+	if (keepWindow || (WindowList == this && this->next == nullptr)) {
+		this->filename[0] = '\0';
 		UniqueUntitledName(name, sizeof(name));
-		CLEAR_ALL_LOCKS(window->lockReasons);
-		window->fileMode = 0;
-		window->fileUid = 0;
-		window->fileGid = 0;
-		strcpy(window->filename, name);
-		strcpy(window->path, "");
-		window->ignoreModify = TRUE;
-		window->buffer->BufSetAll("");
-		window->ignoreModify = FALSE;
-		window->nMarks = 0;
-		window->filenameSet = FALSE;
-		window->fileMissing = TRUE;
-		window->fileChanged = FALSE;
-		window->fileFormat = UNIX_FILE_FORMAT;
-		window->lastModTime = 0;
-		window->device = 0;
-		window->inode = 0;
+		CLEAR_ALL_LOCKS(this->lockReasons);
+		this->fileMode = 0;
+		this->fileUid = 0;
+		this->fileGid = 0;
+		strcpy(this->filename, name);
+		strcpy(this->path, "");
+		this->ignoreModify = TRUE;
+		this->buffer->BufSetAll("");
+		this->ignoreModify = FALSE;
+		this->nMarks = 0;
+		this->filenameSet = FALSE;
+		this->fileMissing = TRUE;
+		this->fileChanged = FALSE;
+		this->fileFormat = UNIX_FILE_FORMAT;
+		this->lastModTime = 0;
+		this->device = 0;
+		this->inode = 0;
 
-		StopHighlighting(window);
-		EndSmartIndent(window);
-		UpdateWindowTitle(window);
-		UpdateWindowReadOnly(window);
-		XtSetSensitive(window->closeItem, FALSE);
-		XtSetSensitive(window->readOnlyItem, TRUE);
-		XmToggleButtonSetState(window->readOnlyItem, FALSE, FALSE);
-		ClearUndoList(window);
-		ClearRedoList(window);
-		XmTextSetStringEx(window->statsLine, ""); /* resets scroll pos of stats
+		StopHighlighting(this);
+		EndSmartIndent(this);
+		UpdateWindowTitle(this);
+		UpdateWindowReadOnly(this);
+		XtSetSensitive(this->closeItem, FALSE);
+		XtSetSensitive(this->readOnlyItem, TRUE);
+		XmToggleButtonSetState(this->readOnlyItem, FALSE, FALSE);
+		ClearUndoList(this);
+		ClearRedoList(this);
+		XmTextSetStringEx(this->statsLine, ""); /* resets scroll pos of stats
 		                                            line from long file names */
-		UpdateStatsLine(window);
-		DetermineLanguageMode(window, True);
-		RefreshTabState(window);
-		updateLineNumDisp(window);
+		UpdateStatsLine(this);
+		DetermineLanguageMode(this, True);
+		RefreshTabState(this);
+		updateLineNumDisp(this);
 		return;
 	}
 
 	/* Free syntax highlighting patterns, if any. w/o redisplaying */
-	FreeHighlightingData(window);
+	FreeHighlightingData(this);
 
 	/* remove the buffer modification callbacks so the buffer will be
 	   deallocated when the last text widget is destroyed */
-	window->buffer->BufRemoveModifyCB(modifiedCB, window);
-	window->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCB, window);
+	this->buffer->BufRemoveModifyCB(modifiedCB, this);
+	this->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
 
 
 	/* free the undo and redo lists */
-	ClearUndoList(window);
-	ClearRedoList(window);
+	ClearUndoList(this);
+	ClearRedoList(this);
 
 	/* close the document/window */
-	if (window->NDocuments() > 1) {
-		if (MacroRunWindow() && MacroRunWindow() != window && MacroRunWindow()->shell == window->shell) {
+	if (this->NDocuments() > 1) {
+		if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell == this->shell) {
 			nextBuf = MacroRunWindow();
 			nextBuf->RaiseDocument();
-		} else if (window->IsTopDocument()) {
+		} else if (this->IsTopDocument()) {
 			/* need to find a successor before closing a top document */
-			nextBuf = getNextTabWindow(window, 1, 0, 0);
+			nextBuf = getNextTabWindow(this, 1, 0, 0);
 			nextBuf->RaiseDocument();
 		} else {
-			topBuf = GetTopDocument(window->shell);
+			topBuf = GetTopDocument(this->shell);
 		}
 	}
 
 	/* remove the window from the global window list, update window menus */
-	removeFromWindowList(window);
+	removeFromWindowList(this);
 	InvalidateWindowMenus();
 	CheckCloseDim(); /* Close of window running a macro may have been disabled. */
 
 	/* remove the tab of the closing document from tab bar */
-	XtDestroyWidget(window->tab);
+	XtDestroyWidget(this->tab);
 
 	/* refresh tab bar after closing a document */
 	if (nextBuf) {
@@ -1403,23 +1403,23 @@ void CloseWindow(WindowInfo *window) {
 	}
 
 	/* free background menu cache for document */
-	FreeUserBGMenuCache(&window->userBGMenuCache);
+	FreeUserBGMenuCache(&this->userBGMenuCache);
 
 	/* destroy the document's pane, or the window */
 	if (nextBuf || topBuf) {
-		deleteDocument(window);
+		deleteDocument(this);
 	} else {
 		/* free user menu cache for window */
-		FreeUserMenuCache(window->userMenuCache);
+		FreeUserMenuCache(this->userMenuCache);
 
 		/* remove and deallocate all of the widgets associated with window */
-		XtFree(window->backlightCharTypes); /* we made a copy earlier on */
-		CloseAllPopupsFor(window->shell);
-		XtDestroyWidget(window->shell);
+		XtFree(this->backlightCharTypes); /* we made a copy earlier on */
+		CloseAllPopupsFor(this->shell);
+		XtDestroyWidget(this->shell);
 	}
 
 	/* deallocate the window data structure */
-	delete window;
+	delete this;
 }
 
 void ShowWindowTabBar(WindowInfo *window) {
@@ -1574,7 +1574,7 @@ int WidgetToPaneIndex(WindowInfo *window, Widget w) {
 ** Close the window pane that last had the keyboard focus.  (Actually, close
 ** the bottom pane and make it look like pane which had focus was closed)
 */
-void ClosePane(WindowInfo *window) {
+void WindowInfo::ClosePane() {
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
@@ -1582,40 +1582,40 @@ void ClosePane(WindowInfo *window) {
 	Widget text;
 
 	/* Don't delete the last pane */
-	if (window->nPanes <= 0)
+	if (this->nPanes <= 0)
 		return;
 
 	/* Record the current heights, scroll positions, and insert positions
 	   of the existing panes, and the keyboard focus */
 	focusPane = 0;
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		insertPositions[i] = TextGetCursorPos(text);
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-		if (text == window->lastFocus)
+		if (text == this->lastFocus)
 			focusPane = i;
 	}
 
 	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-	XtUnmanageChild(window->splitPane);
+	XtUnmanageChild(this->splitPane);
 
 	/* Destroy last pane, and make sure lastFocus points to an existing pane.
 	   Workaround for OM 2.1.30: text widget must be unmanaged for
 	   xmPanedWindowWidget to calculate the correct pane heights for
 	   the remaining panes, simply detroying it didn't seem enough */
-	window->nPanes--;
-	XtUnmanageChild(containingPane(window->textPanes[window->nPanes]));
-	XtDestroyWidget(containingPane(window->textPanes[window->nPanes]));
+	this->nPanes--;
+	XtUnmanageChild(containingPane(this->textPanes[this->nPanes]));
+	XtDestroyWidget(containingPane(this->textPanes[this->nPanes]));
 
-	if (window->nPanes == 0)
-		window->lastFocus = window->textArea;
-	else if (focusPane > window->nPanes)
-		window->lastFocus = window->textPanes[window->nPanes - 1];
+	if (this->nPanes == 0)
+		this->lastFocus = this->textArea;
+	else if (focusPane > this->nPanes)
+		this->lastFocus = this->textPanes[this->nPanes - 1];
 
 	/* adjust the heights, scroll positions, etc., to make it look
 	   like the pane with the input focus was closed */
-	for (i = focusPane; i <= window->nPanes; i++) {
+	for (i = focusPane; i <= this->nPanes; i++) {
 		insertPositions[i] = insertPositions[i + 1];
 		paneHeights[i] = paneHeights[i + 1];
 		topLines[i] = topLines[i + 1];
@@ -1624,26 +1624,26 @@ void ClosePane(WindowInfo *window) {
 
 	/* set the desired heights and re-manage the paned window so it will
 	   recalculate pane heights */
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 	}
 
-	if (window->IsTopDocument())
-		XtManageChild(window->splitPane);
+	if (this->IsTopDocument())
+		XtManageChild(this->splitPane);
 
 	/* Reset all of the scroll positions, insert positions, etc. */
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
 		TextSetScroll(text, topLines[i], horizOffsets[i]);
 	}
-	XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
 
 	/* Update the window manager size hints after the sizes of the panes have
 	   been set (the widget heights are not yet readable here, but they will
 	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0, wmSizeUpdateProc, window);
+	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
 }
 
 /*
@@ -1756,7 +1756,7 @@ void ShowStatsLine(WindowInfo *window, int state) {
 		((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(state);
 	}
 	window->showStats = state;
-	showStats(window, state);
+	showStatistics(window, state);
 
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the window should synch */
@@ -1771,7 +1771,7 @@ void ShowStatsLine(WindowInfo *window, int state) {
 ** Displays and undisplays the statistics line (regardless of settings of
 ** window->showStats or window->modeMessageDisplayed)
 */
-static void showStats(WindowInfo *window, int state) {
+static void showStatistics(WindowInfo *window, int state) {
 	if (state) {
 		XtManageChild(window->statsLineForm);
 		showStatsForm(window);
@@ -1910,30 +1910,32 @@ void SetModeMessage(WindowInfo *window, const char *message) {
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
 	if (!window->showStats)
-		showStats(window, True);
+		showStatistics(window, True);
 }
 
 /*
 ** Clear special statistics line message set in SetModeMessage, returns
 ** the statistics line to its original state as set in window->showStats
 */
-void ClearModeMessage(WindowInfo *window) {
-	if (!window->modeMessageDisplayed)
+void WindowInfo::ClearModeMessage() {
+	if (!this->modeMessageDisplayed)
 		return;
 
-	window->modeMessageDisplayed = False;
-	XtFree(window->modeMessage);
-	window->modeMessage = nullptr;
+	this->modeMessageDisplayed = False;
+	XtFree(this->modeMessage);
+	this->modeMessage = nullptr;
 
-	if (!window->IsTopDocument())
+	if (!this->IsTopDocument())
 		return;
 
 	/*
 	 * Remove the stats line only if indicated by it's window state.
 	 */
-	if (!window->showStats)
-		showStats(window, False);
-	UpdateStatsLine(window);
+	if (!this->showStats) {
+		showStatistics(this, False);
+	}
+	
+	UpdateStatsLine(this);
 }
 
 /*
@@ -2825,10 +2827,9 @@ void AllWindowsBusy(const char *message) {
 }
 
 void AllWindowsUnbusy(void) {
-	WindowInfo *w;
 
-	for (w = WindowList; w != nullptr; w = w->next) {
-		ClearModeMessage(w);
+	for (WindowInfo *w = WindowList; w != nullptr; w = w->next) {
+		w->ClearModeMessage();
 		EndWait(w->shell);
 	}
 
@@ -3668,13 +3669,13 @@ void RefreshWindowStates(WindowInfo *window) {
 	/* show/hide statsline as needed */
 	if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm)) {
 		/* turn on statline to display mode message */
-		showStats(window, True);
+		showStatistics(window, True);
 	} else if (window->showStats && !XtIsManaged(window->statsLineForm)) {
 		/* turn on statsline since it is enabled */
-		showStats(window, True);
+		showStatistics(window, True);
 	} else if (!window->showStats && !window->modeMessageDisplayed && XtIsManaged(window->statsLineForm)) {
 		/* turn off statsline since there's nothing to show */
-		showStats(window, False);
+		showStatistics(window, False);
 	}
 
 	/* signal if macro/shell is running */
@@ -4137,29 +4138,29 @@ void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive) {
 /*
 ** Remove redundant expose events on tab bar.
 */
-void CleanUpTabBarExposeQueue(WindowInfo *window) {
+void WindowInfo::CleanUpTabBarExposeQueue() {
 	XEvent event;
 	XExposeEvent ev;
 	int count;
 
-	if (window == nullptr)
+	if (this == nullptr)
 		return;
 
 	/* remove redundant expose events on tab bar */
 	count = 0;
-	while (XCheckTypedWindowEvent(TheDisplay, XtWindow(window->tabBar), Expose, &event))
+	while (XCheckTypedWindowEvent(TheDisplay, XtWindow(this->tabBar), Expose, &event))
 		count++;
 
 	/* now we can update tabbar */
 	if (count) {
 		ev.type = Expose;
 		ev.display = TheDisplay;
-		ev.window = XtWindow(window->tabBar);
+		ev.window = XtWindow(this->tabBar);
 		ev.x = 0;
 		ev.y = 0;
-		ev.width = XtWidth(window->tabBar);
-		ev.height = XtHeight(window->tabBar);
+		ev.width = XtWidth(this->tabBar);
+		ev.height = XtHeight(this->tabBar);
 		ev.count = 0;
-		XSendEvent(TheDisplay, XtWindow(window->tabBar), False, ExposureMask, (XEvent *)&ev);
+		XSendEvent(TheDisplay, XtWindow(this->tabBar), False, ExposureMask, (XEvent *)&ev);
 	}
 }
