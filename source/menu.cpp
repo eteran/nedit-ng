@@ -306,7 +306,6 @@ static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(WindowInfo *win);
 static int strCaseCmp(const char *str1, const char *str2);
-static int compareWindowNames(const void *windowA, const void *windowB);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -4362,12 +4361,30 @@ static void updateWindowMenu(const WindowInfo *window) {
 		return;
 
 	/* Make a sorted list of windows */
-	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next, nWindows++)
+	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next, nWindows++) {
 		;
+	}
+	
 	windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
-	for (w = WindowList, i = 0; w != nullptr; w = w->next, i++)
+	for (w = WindowList, i = 0; w != nullptr; w = w->next, i++) {
 		windows[i] = w;
-	qsort(windows, nWindows, sizeof(WindowInfo *), compareWindowNames);
+	}
+	
+	std::sort(windows, windows + nWindows, [](const WindowInfo *a, const WindowInfo *b) {
+		int rc;
+		/* Untitled first */
+		rc = a->filenameSet == b->filenameSet ? 0 : a->filenameSet && !b->filenameSet ? 1 : -1;
+		if (rc != 0) {
+			return rc < 0;
+		}
+		
+		rc = strcmp(a->filename, b->filename);
+		if (rc != 0) {
+			return rc < 0;
+		}
+		
+		return strcmp(a->path, b->path) < 0;
+	});
 
 	/* if the menu is torn off, unmanage the menu pane
 	   before updating it to prevent the tear-off menu
@@ -4916,26 +4933,6 @@ static int strCaseCmp(const char *str1, const char *str2) {
 	} else {
 		return (1);
 	}
-}
-
-/*
-** Comparison function for sorting windows by title for the window menu.
-** Windows are sorted by Untitled and then alphabetically by filename and
-** then alphabetically by path.
-*/
-static int compareWindowNames(const void *windowA, const void *windowB) {
-	int rc;
-	const WindowInfo *a = *((WindowInfo **)windowA);
-	const WindowInfo *b = *((WindowInfo **)windowB);
-	/* Untitled first */
-	rc = a->filenameSet == b->filenameSet ? 0 : a->filenameSet && !b->filenameSet ? 1 : -1;
-	if (rc != 0)
-		return rc;
-	rc = strcmp(a->filename, b->filename);
-	if (rc != 0)
-		return rc;
-	rc = strcmp(a->path, b->path);
-	return rc;
 }
 
 /*
