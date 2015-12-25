@@ -4355,7 +4355,6 @@ static void updateWindowMenu(const WindowInfo *window) {
 	WidgetList items;
 	Cardinal nItems;
 	int i, n, nWindows, windowIndex;
-	WindowInfo **windows;
 
 	if (!window->IsTopDocument())
 		return;
@@ -4365,7 +4364,7 @@ static void updateWindowMenu(const WindowInfo *window) {
 		;
 	}
 	
-	windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWindows);
+	WindowInfo **windows = new WindowInfo *[nWindows];
 	for (w = WindowList, i = 0; w != nullptr; w = w->next, i++) {
 		windows[i] = w;
 	}
@@ -4433,7 +4432,8 @@ static void updateWindowMenu(const WindowInfo *window) {
 		XtAddCallback(btn, XmNactivateCallback, raiseCB, windows[windowIndex]);
 		XmStringFree(st1);
 	}
-	XtFree((char *)windows);
+	
+	delete [] windows;
 
 	/* if the menu is torn off, we need to manually adjust the
 	   dimension of the menuShell _before_ re-managing the menu
