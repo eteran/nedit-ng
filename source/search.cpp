@@ -47,6 +47,7 @@
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -2060,11 +2061,9 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 		unmanageReplaceDialogs(window);
 }
 
-static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer call_data) {
+static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
-
+	auto window = (WindowInfo *)clientData;
 	(void)callData;
 
 	window = WidgetToWindow(w);
@@ -2075,24 +2074,15 @@ static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer call_da
 ** Callback that frees the list of windows the multi-file replace
 ** dialog is unmapped.
 **/
-static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data) {
+static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
-
+	auto window = (WindowInfo *)clientData;
 	(void)callData;
 
 	window = WidgetToWindow(w);
-	XtFree((char *)window->writableWindows);
+	delete [] window->writableWindows;
 	window->writableWindows = nullptr;
 	window->nWritableWindows = 0;
-}
-
-/*
-** Comparison function for sorting windows by title for the window menu
-*/
-static int compareWindowNames(const void *windowA, const void *windowB) {
-	return strcmp((*((WindowInfo **)windowA))->filename, (*((WindowInfo **)windowB))->filename);
 }
 
 /*
@@ -2145,16 +2135,21 @@ static void collectWritableWindows(WindowInfo *window) {
 	WindowInfo *w;
 	WindowInfo **windows;
 
-	XtFree((char *)window->writableWindows);
+	delete [] window->writableWindows;
 
 	/* Make a sorted list of writable windows */
-	windows = (WindowInfo **)XtMalloc(sizeof(WindowInfo *) * nWritable);
-	for (w = WindowList, i = 0; w != nullptr; w = w->next)
-		if (!IS_ANY_LOCKED(w->lockReasons))
+	windows = new WindowInfo*[nWritable];
+	for (w = WindowList, i = 0; w != nullptr; w = w->next) {
+		if (!IS_ANY_LOCKED(w->lockReasons)) {
 			windows[i++] = w;
-	qsort(windows, nWritable, sizeof(WindowInfo *), compareWindowNames);
-
-	window->writableWindows = windows;
+		}
+	}
+	
+	std::sort(windows, windows + nWritable, [](const WindowInfo *lhs, const WindowInfo *rhs) {
+		return strcmp(lhs->filename, rhs->filename) < 0;
+	});
+	
+	window->writableWindows  = windows;
 	window->nWritableWindows = nWritable;
 }
 

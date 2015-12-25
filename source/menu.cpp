@@ -56,6 +56,7 @@
 #include "../util/utils.h"
 #include "../Xlt/BubbleButton.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cerrno>
 #include <cstdio>
@@ -64,7 +65,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include <sys/param.h>
 
 #include <X11/X.h>
@@ -302,7 +302,6 @@ static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
 static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData);
 static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData);
-static int cmpStrPtr(const void *strA, const void *strB);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(WindowInfo *win);
@@ -4452,8 +4451,11 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 	prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char *));
 	memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char *));
 	if (GetPrefSortOpenPrevMenu()) {
-		qsort(prevOpenSorted, NPrevOpen, sizeof(char *), cmpStrPtr);
+		std::sort(prevOpenSorted, prevOpenSorted + NPrevOpen, [](const char *lhs, const char *rhs) {
+			return strcmp(lhs, rhs) < 0; 		
+		});
 	}
+	
 
 	/* Go thru all of the items in the menu and rename them to match the file
 	   list.  In older Motifs (particularly ibm), it was dangerous to replace
@@ -4568,13 +4570,6 @@ static void updateTipsFileMenu(WindowInfo *window) {
 		XmStringFree(st1);
 		tf = tf->next;
 	}
-}
-
-/*
-** Comparison function for sorting file names for the Open Previous submenu
-*/
-static int cmpStrPtr(const void *strA, const void *strB) {
-	return strcmp(*((char **)strA), *((char **)strB));
 }
 
 static char neditDBBadFilenameChars[] = "\n";
