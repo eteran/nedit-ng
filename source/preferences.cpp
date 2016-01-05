@@ -995,7 +995,15 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 static const char *getDefaultShell(void);
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut) {
-	return CreatePreferencesDatabase(GetRCFileName(NEDIT_RC), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+
+	// NOTE(eteran): mimic previous bahavior here of passing null when nedit.rc lookup fails
+	try {
+		const std::string filename = GetRCFileNameEx(NEDIT_RC);
+		return CreatePreferencesDatabase(filename.c_str(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+	} catch(const path_error &e) {
+		return CreatePreferencesDatabase(nullptr, APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+	}
+	
 }
 
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB) {
@@ -1171,56 +1179,60 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 }
 
 void SaveNEditPrefs(Widget parent, int quietly) {
-	const char *prefFileName = GetRCFileName(NEDIT_RC);
-	if (prefFileName == nullptr) {
-		/*  GetRCFileName() might return nullptr if an error occurs during
-		    creation of the preference file directory. */
-		DialogF(DF_WARN, parent, 1, "Error saving Preferences", "Unable to save preferences: Cannot determine filename.", "OK");
-		return;
-	}
+	try {
+		std::string prefFileName = GetRCFileNameEx(NEDIT_RC);
 
-	if (!quietly) {
-		if (DialogF(DF_INF, parent, 2, "Save Preferences", ImportedFile == nullptr ? "Default preferences will be saved in the file:\n"
-		                                                                             "%s\n"
-		                                                                             "NEdit automatically loads this file\n"
-		                                                                             "each time it is started."
-		                                                                           : "Default preferences will be saved in the file:\n"
-		                                                                             "%s\n"
-		                                                                             "SAVING WILL INCORPORATE SETTINGS\n"
-		                                                                             "FROM FILE: %s",
-		            "OK", "Cancel", prefFileName, ImportedFile) == 2) {
-			return;
+		if (!quietly) {
+			if (DialogF(DF_INF, parent, 2, "Save Preferences", ImportedFile == nullptr ? "Default preferences will be saved in the file:\n"
+		                                                                            	 "%s\n"
+		                                                                            	 "NEdit automatically loads this file\n"
+		                                                                            	 "each time it is started."
+		                                                                        	   : "Default preferences will be saved in the file:\n"
+		                                                                            	 "%s\n"
+		                                                                            	 "SAVING WILL INCORPORATE SETTINGS\n"
+		                                                                            	 "FROM FILE: %s",
+		            	"OK", "Cancel", prefFileName.c_str(), ImportedFile) == 2) {
+				return;
+			}
 		}
+
+		/*  Write the more dynamic settings into TempStringPrefs.
+	    	These locations are set in PrefDescrip, so this is where
+	    	SavePreferences() will look for them.  */
+
+		TempStringPrefs.shellCmds         = WriteShellCmdsString();
+		TempStringPrefs.macroCmds         = WriteMacroCmdsString();
+		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsString();
+		TempStringPrefs.highlight         = WriteHighlightString();
+		TempStringPrefs.language          = writeLanguageModesString();
+		TempStringPrefs.styles            = WriteStylesString();
+		TempStringPrefs.smartIndent       = WriteSmartIndentString();
+		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
+		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
+
+		if (!SavePreferences(XtDisplay(parent), prefFileName.c_str(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
+			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
+		}
+
+		XtFree(TempStringPrefs.shellCmds);
+		XtFree(TempStringPrefs.macroCmds);
+		XtFree(TempStringPrefs.bgMenuCmds);
+		XtFree(TempStringPrefs.highlight);
+		XtFree(TempStringPrefs.language);
+		XtFree(TempStringPrefs.styles);
+		XtFree(TempStringPrefs.smartIndent);
+		XtFree(TempStringPrefs.smartIndentCommon);
+
+		PrefsHaveChanged = false;
+	} catch(const path_error &e) {
+		DialogF(
+			DF_WARN, 
+			parent, 
+			1, 
+			"Error saving Preferences", 
+			"Unable to save preferences: Cannot determine filename.", 
+			"OK");
 	}
-
-	/*  Write the more dynamic settings into TempStringPrefs.
-	    These locations are set in PrefDescrip, so this is where
-	    SavePreferences() will look for them.  */
-
-	TempStringPrefs.shellCmds         = WriteShellCmdsString();
-	TempStringPrefs.macroCmds         = WriteMacroCmdsString();
-	TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsString();
-	TempStringPrefs.highlight         = WriteHighlightString();
-	TempStringPrefs.language          = writeLanguageModesString();
-	TempStringPrefs.styles            = WriteStylesString();
-	TempStringPrefs.smartIndent       = WriteSmartIndentString();
-	TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
-	strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-
-	if (!SavePreferences(XtDisplay(parent), prefFileName, HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
-		DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName);
-	}
-
-	XtFree(TempStringPrefs.shellCmds);
-	XtFree(TempStringPrefs.macroCmds);
-	XtFree(TempStringPrefs.bgMenuCmds);
-	XtFree(TempStringPrefs.highlight);
-	XtFree(TempStringPrefs.language);
-	XtFree(TempStringPrefs.styles);
-	XtFree(TempStringPrefs.smartIndent);
-	XtFree(TempStringPrefs.smartIndentCommon);
-
-	PrefsHaveChanged = false;
 }
 
 /*

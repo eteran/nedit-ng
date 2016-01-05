@@ -562,14 +562,16 @@ void Replay(WindowInfo *window) {
 **  Read the initial NEdit macro file if one exists.
 */
 void ReadMacroInitFile(WindowInfo *window) {
-	const char *autoloadName = GetRCFileName(AUTOLOAD_NM);
-	static int initFileLoaded = False;
 
-	/*  GetRCFileName() might return nullptr if an error occurs during
-	    creation of the preference file directory. */
-	if (autoloadName != nullptr && !initFileLoaded) {
-		ReadMacroFile(window, autoloadName, False);
-		initFileLoaded = True;
+	try {
+		const std::string autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
+		static bool initFileLoaded = false;
+	
+		if (!initFileLoaded) {
+			ReadMacroFile(window, autoloadName.c_str(), False);
+			initFileLoaded = true;
+		}
+	} catch(const path_error &e) {
 	}
 }
 

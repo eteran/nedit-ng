@@ -4598,40 +4598,38 @@ static char neditDBBadFilenameChars[] = "\n";
 ** of previously opened files.
 */
 void WriteNEditDB(void) {
-	const char *fullName = GetRCFileName(NEDIT_HISTORY);
-	FILE *fp;
-	int i;
-	static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
 
-	if (fullName == nullptr) {
-		/*  GetRCFileName() might return nullptr if an error occurs during
-		    creation of the preference file directory. */
-		return;
-	}
+	try {
+		std::string fullName = GetRCFileNameEx(NEDIT_HISTORY);
+		FILE *fp;
+		int i;
+		static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
 
-	/* If the Open Previous command is disabled, just return */
-	if (GetPrefMaxPrevOpenFiles() < 1) {
-		return;
-	}
-
-	/* open the file */
-	if ((fp = fopen(fullName, "w")) == nullptr) {
-		return;
-	}
-
-	/* write the file header text to the file */
-	fprintf(fp, "%s", fileHeader);
-
-	/* Write the list of file names */
-	for (i = 0; i < NPrevOpen; ++i) {
-		size_t lineLen = strlen(PrevOpen[i]);
-
-		if (lineLen > 0 && PrevOpen[i][0] != '#' && strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
-			fprintf(fp, "%s\n", PrevOpen[i]);
+		/* If the Open Previous command is disabled, just return */
+		if (GetPrefMaxPrevOpenFiles() < 1) {
+			return;
 		}
-	}
 
-	fclose(fp);
+		/* open the file */
+		if ((fp = fopen(fullName.c_str(), "w")) == nullptr) {
+			return;
+		}
+
+		/* write the file header text to the file */
+		fprintf(fp, "%s", fileHeader);
+
+		/* Write the list of file names */
+		for (i = 0; i < NPrevOpen; ++i) {
+			size_t lineLen = strlen(PrevOpen[i]);
+
+			if (lineLen > 0 && PrevOpen[i][0] != '#' && strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
+				fprintf(fp, "%s\n", PrevOpen[i]);
+			}
+		}
+
+		fclose(fp);
+	} catch(const path_error &e) {
+	}
 }
 
 /*
@@ -4647,7 +4645,7 @@ void WriteNEditDB(void) {
 **  before), it is read in, otherwise nothing is done.
 */
 void ReadNEditDB(void) {
-	const char *fullName = GetRCFileName(NEDIT_HISTORY);
+	
 	char line[MAXPATHLEN + 2];
 	char *nameCopy;
 	struct stat attribute;
@@ -4670,15 +4668,16 @@ void ReadNEditDB(void) {
 
 	/* Don't move this check ahead of the previous statements. PrevOpen
 	   must be initialized at all times. */
-	if (fullName == nullptr) {
-		/*  GetRCFileName() might return nullptr if an error occurs during
-		    creation of the preference file directory. */
+	std::string fullName;
+	try {
+		fullName = GetRCFileNameEx(NEDIT_HISTORY);
+	} catch(const path_error &e) {
 		return;
 	}
 
 	/*  Stat history file to see whether someone touched it after this
 	    session last changed it.  */
-	if (stat(fullName, &attribute) == 0) {
+	if (stat(fullName.c_str(), &attribute) == 0) {
 		if (lastNeditdbModTime >= attribute.st_mtime) {
 			/*  Do nothing, history file is unchanged.  */
 			return;
@@ -4695,7 +4694,7 @@ void ReadNEditDB(void) {
 	}
 
 	/* open the file */
-	if ((fp = fopen(fullName, "r")) == nullptr) {
+	if ((fp = fopen(fullName.c_str(), "r")) == nullptr) {
 		return;
 	}
 

@@ -239,8 +239,8 @@ std::string PrependHomeEx(view::string_view filename) {
 **      - Pointer to a static array containing the file name
 **
 */
-const char *GetRCFileName(int type) {
-
+std::string GetRCFileNameEx(int type) {
+	
 	static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
 	static bool namesDetermined = false;
 
@@ -270,7 +270,7 @@ const char *GetRCFileName(int type) {
 						perror("nedit: Error while creating rc file directory"
 						       " $HOME/" DEFAULT_NEDIT_HOME "\n"
 						       " (Make sure all parent directories exist.)");
-						return nullptr;
+						throw path_error();
 					}
 				}
 
@@ -280,14 +280,14 @@ const char *GetRCFileName(int type) {
 				}
 			}
 		} else {
-/*  $NEDIT_HOME is set. */
+			/*  $NEDIT_HOME is set. */
 			/* FIXME: Is this required? Does VMS know stat(), mkdir()? */
 			if (!isDir(nedit_home)) {
 				/* Create $NEDIT_HOME */
 				if (mkdir(nedit_home, 0777) != 0) {
 					perror("nedit: Error while creating rc file directory $NEDIT_HOME\n"
 					       "nedit: (Make sure all parent directories exist.)");
-					return nullptr;
+					throw path_error();
 				}
 			}
 
@@ -301,25 +301,4 @@ const char *GetRCFileName(int type) {
 	}
 
 	return rcFiles[type];
-}
-
-/*
-**  Returns a pointer to the name of an rc file of the requested type.
-**
-**  Preconditions:
-**      - MAXPATHLEN is set to the max. allowed path length
-**      - fullPath points to a buffer of at least MAXPATHLEN
-**
-**  Returns:
-**      - nullptr if an error occurs while creating a directory
-**      - Pointer to a static array containing the file name
-**
-*/
-std::string GetRCFileNameEx(int type) {
-	
-	if(const char *r = GetRCFileName(type)) {
-		return r;
-	}
-	
-	return std::string();
 }

@@ -32,9 +32,10 @@
 #include <sys/utsname.h>
 #include <string>
 #include "string_view.h"
+#include "path_error.h"
 
-const char *GetRCFileName(int type);
-
+// TODO(eteran): make all of these throw an exception on error
+//               instead of returning an empty string
 std::string GetCurrentDirEx();
 std::string GetHomeDirEx();
 std::string GetNameOfHostEx();
