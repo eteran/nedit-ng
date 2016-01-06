@@ -4241,7 +4241,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 ** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
 ** an empty string if the text field is blank.
 */
-std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent, bool *ok) {
+std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
 
 	/* read from the text widget */
 	char *string    = XmTextGetString(textW);
@@ -4258,15 +4258,9 @@ std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, i
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
 		XtFree(string);
-		if(ok) {
-			*ok = false;
-		}
-		return std::string();
+		throw invalid_character_error();
 	}
 	XtFree(string);
-	if(ok) {
-		*ok = true;
-	}
 	return parsedString;
 }
 

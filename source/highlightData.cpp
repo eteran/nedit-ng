@@ -1235,72 +1235,73 @@ static highlightStyleRec *readHSDialogFields(int silent) {
 	hs = new highlightStyleRec;
 
 	/* read the name field */
-	bool ok;
-	hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent, &ok);
-	if (!ok) {
-		delete hs;
-		return nullptr;
-	}
+	try {
+		hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
 
-	if (hs->name.empty()) {
-		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
-			XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
+		if (hs->name.empty()) {
+			if (!silent) {
+				DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
+				XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
+			}
+			delete hs;
+			return nullptr;
 		}
-		delete hs;
-		return nullptr;
-	}
 
-	/* read the color field */
-	hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent, &ok);
-	if (!ok) {
-		delete hs;
-		return nullptr;
-	}
+		/* read the color field */
+		hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
 
-	if (hs->color.empty()) {
-		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
-			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+
+		if (hs->color.empty()) {
+			if (!silent) {
+				DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
+				XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+			}
+			delete hs;
+			return nullptr;
 		}
-		delete hs;
-		return nullptr;
-	}
 
-	/* Verify that the color is a valid X color spec */
-	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
-		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color.c_str());
-			XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+		/* Verify that the color is a valid X color spec */
+		if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
+			if (!silent) {
+				DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color.c_str());
+				XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+			}
+			delete hs;
+			return nullptr;
 		}
-		delete hs;
-		return nullptr;
-	}
 
-	/* read the background color field - this may be empty */
-	hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent, &ok);
-
-	/* Verify that the background color (if present) is a valid X color spec */
-	if (ok && !hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
-		if (!silent) {
-			DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.c_str());
-			XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+		/* read the background color field - this may be empty */
+		try {
+			hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent);
+		} catch(const invalid_character_error &e) {
+			hs->bgColor = std::string();
 		}
+
+		/* Verify that the background color (if present) is a valid X color spec */
+		if (!hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
+			if (!silent) {
+				DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.c_str());
+				XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+			}
+			delete hs;
+			return nullptr;
+		}
+
+		/* read the font buttons */
+		if (XmToggleButtonGetState(HSDialog.boldW))
+			hs->font = BOLD_FONT;
+		else if (XmToggleButtonGetState(HSDialog.italicW))
+			hs->font = ITALIC_FONT;
+		else if (XmToggleButtonGetState(HSDialog.boldItalicW))
+			hs->font = BOLD_ITALIC_FONT;
+		else
+			hs->font = PLAIN_FONT;
+
+		return hs;
+	} catch(const invalid_character_error &e) {
 		delete hs;
-		return nullptr;
+		return nullptr;	
 	}
-
-	/* read the font buttons */
-	if (XmToggleButtonGetState(HSDialog.boldW))
-		hs->font = BOLD_FONT;
-	else if (XmToggleButtonGetState(HSDialog.italicW))
-		hs->font = ITALIC_FONT;
-	else if (XmToggleButtonGetState(HSDialog.boldItalicW))
-		hs->font = BOLD_ITALIC_FONT;
-	else
-		hs->font = PLAIN_FONT;
-
-	return hs;
 }
 
 /*

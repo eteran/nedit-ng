@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef HIGHLIGHTDATA_H_
-#define HIGHLIGHTDATA_H_
+#ifndef HIGHLIGHT_DATA_H_
+#define HIGHLIGHT_DATA_H_
 
 #include "highlight.h"
 #include "nedit.h"
@@ -54,7 +54,5 @@ void EditHighlightPatterns(WindowInfo *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(const char *oldName, const char *newName);
 void UpdateLanguageModeMenu(void);
-
-
 
 #endif

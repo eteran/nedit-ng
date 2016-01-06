@@ -24,11 +24,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_PREFERENCES_H_INCLUDED
-#define NEDIT_PREFERENCES_H_INCLUDED
+#ifndef PREFERENCES_H_
+#define PREFERENCES_H_
 
 #include "nedit.h"
 #include "string_view.h"
+#include <exception>
+
+
+class invalid_character_error : public std::exception {
+public:
+	virtual const char *what() const noexcept {
+		return "invalid_character_error";
+	}
+};
+
+
 
 #include <X11/Intrinsic.h>
 #include <X11/Xresource.h>
@@ -180,7 +191,7 @@ int ReadNumericField(const char **inPtr, int *value);
 char *ReadSymbolicField(const char **inPtr);
 std::string ReadSymbolicFieldEx(const char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
-std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent, bool *ok);
+std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 char *MakeQuotedString(const char *string);
 char *EscapeSensitiveChars(const char *string);
@@ -218,4 +229,4 @@ Boolean GetPrefHonorSymlinks(void);
 Boolean GetPrefForceOSConversion(void);
 void SetPrefFocusOnRaise(Boolean);
 
-#endif /* NEDIT_PREFERENCES_H_INCLUDED */
+#endif

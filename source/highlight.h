@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_HIGHLIGHT_H_INCLUDED
-#define NEDIT_HIGHLIGHT_H_INCLUDED
+#ifndef HIGHLIGHT_H_
+#define HIGHLIGHT_H_
 
 #include "nedit.h"
 #include "highlightPattern.h"
@@ -71,4 +71,4 @@ std::string HighlightStyleOfCode(WindowInfo *window, int hCode);
 Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
 Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
 
-#endif /* NEDIT_HIGHLIGHT_H_INCLUDED */
+#endif

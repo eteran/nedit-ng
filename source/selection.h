@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_SELECTION_H_INCLUDED
-#define NEDIT_SELECTION_H_INCLUDED
+#ifndef SELECTION_H_
+#define SELECTION_H_
 
 #include "nedit.h"
 
@@ -47,4 +47,4 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel);
 void MarkDialog(WindowInfo *window);
 void GotoMarkDialog(WindowInfo *window, int extend);
 
-#endif /* NEDIT_SELECTION_H_INCLUDED */
+#endif
