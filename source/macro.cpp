@@ -386,8 +386,6 @@ void BeginLearn(WindowInfo *window) {
 	XmString s;
 	XmString xmFinish;
 	XmString xmCancel;
-	char *cFinish;
-	char *cCancel;
 	char message[MAX_LEARN_MSG_LEN];
 
 	/* If we're already in learn mode, return */
@@ -419,8 +417,8 @@ void BeginLearn(WindowInfo *window) {
 	XtVaGetValues(window->cancelMacroItem, XmNacceleratorText, &xmCancel, nullptr);
 
 	/* Translate Motif strings to char* */
-	cFinish = GetXmStringText(xmFinish);
-	cCancel = GetXmStringText(xmCancel);
+	std::string cFinish = GetXmStringTextEx(xmFinish);
+	std::string cCancel = GetXmStringTextEx(xmCancel);
 
 	/* Free Motif Strings */
 	XmStringFree(xmFinish);
@@ -432,20 +430,16 @@ void BeginLearn(WindowInfo *window) {
 			strncpy(message, "Learn Mode -- Use menu to finish or cancel", MAX_LEARN_MSG_LEN);
 			message[MAX_LEARN_MSG_LEN - 1] = '\0';
 		} else {
-			sprintf(message, "Learn Mode -- Use menu to finish, press %s to cancel", cCancel);
+			sprintf(message, "Learn Mode -- Use menu to finish, press %s to cancel", cCancel.c_str());
 		}
 	} else {
 		if (cCancel[0] == '\0') {
-			sprintf(message, "Learn Mode -- Press %s to finish, use menu to cancel", cFinish);
+			sprintf(message, "Learn Mode -- Press %s to finish, use menu to cancel", cFinish.c_str());
 
 		} else {
-			sprintf(message, "Learn Mode -- Press %s to finish, %s to cancel", cFinish, cCancel);
+			sprintf(message, "Learn Mode -- Press %s to finish, %s to cancel", cFinish.c_str(), cCancel.c_str());
 		}
 	}
-
-	/* Free C-strings */
-	XtFree(cFinish);
-	XtFree(cCancel);
 
 	/* Put up the learn-mode banner */
 	SetModeMessage(window, message);
@@ -1374,7 +1368,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	WindowInfo *window = (WindowInfo *)clientData;
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	XmString xmCancel;
-	const char *cCancel = "\0";
+	std::string cCancel;
 	char message[MAX_TIMEOUT_MSG_LEN];
 
 	cmdData->bannerIsUp = True;
@@ -1384,24 +1378,19 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	if (!XmStringEmpty(xmCancel)) {
 		/* Translate Motif string to char* */
-		cCancel = GetXmStringText(xmCancel);
+		cCancel = GetXmStringTextEx(xmCancel);
 
 		/* Free Motif String */
 		XmStringFree(xmCancel);
 	}
 
 	/* Create message */
-	if (cCancel[0] == '\0') {
+	if (cCancel.empty()) {
 		strncpy(message, "Macro Command in Progress", MAX_TIMEOUT_MSG_LEN);
 		message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
 	} else {
-		sprintf(message, "Macro Command in Progress -- Press %s to Cancel", cCancel);
+		snprintf(message, sizeof(message), "Macro Command in Progress -- Press %s to Cancel", cCancel.c_str());
 	}
-
-	/* Free C-string */
-	/* NOTE(eteran): BUGCHECK! if the above !XmStringEmpty call fails, this looks like
-	 * it will free a string constant! */
-	XtFree((char *)cCancel);
 
 	SetModeMessage(window, message);
 	cmdData->bannerTimeoutID = 0;
@@ -3056,8 +3045,6 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	char *defaultPath = (String) "";
 	char *filter = (String) "";
 	char *defaultName = (String) "";
-	char *orgDefaultPath;
-	char *orgFilter;
 	int gfnResult;
 
 	/* Ignore the focused window passed as the function argument and put
@@ -3099,17 +3086,17 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	}
 
 	/*  Set default directory (saving original for later)  */
-	orgDefaultPath = GetFileDialogDefaultDirectory();
+	auto orgDefaultPath = GetFileDialogDefaultDirectoryEx();
 	if ('\0' != defaultPath[0]) {
-		SetFileDialogDefaultDirectory(defaultPath);
+		SetFileDialogDefaultDirectory(boost::optional<std::string>(defaultPath));
 	} else {
-		SetFileDialogDefaultDirectory(window->path);
+		SetFileDialogDefaultDirectory(boost::optional<std::string>(window->path));
 	}
 
 	/*  Set filter (saving original for later)  */
-	orgFilter = GetFileDialogDefaultPattern();
-	if ('\0' != filter[0]) {
-		SetFileDialogDefaultPattern(filter);
+	auto orgFilter = GetFileDialogDefaultPatternEx();
+	if (filter[0] != '\0') {
+		SetFileDialogDefaultPattern(boost::optional<std::string>(filter));
 	}
 
 	/*  Fork to one of the worker methods from util/getfiles.c.
@@ -3123,8 +3110,6 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	/*  Reset original values and free temps  */
 	SetFileDialogDefaultDirectory(orgDefaultPath);
 	SetFileDialogDefaultPattern(orgFilter);
-	XtFree(orgDefaultPath);
-	XtFree(orgFilter);
 
 	result->tag = STRING_TAG;
 	if (GFN_OK == gfnResult) {

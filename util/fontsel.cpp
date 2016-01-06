@@ -984,17 +984,16 @@ static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on, XmFontList 
 }
 
 static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
-	char *sel;
 
 	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
 	auto call_data = (XmListCallbackStruct *)callData;
 
-	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
+	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
 	if (ctrlBlk->sel1 == nullptr) {
 		ctrlBlk->sel1 = XtStringDup(sel);
 	} else {
-		if (strcmp(ctrlBlk->sel1, sel) == 0) { /* Unselecting current selection */
+		if (strcmp(ctrlBlk->sel1, sel.c_str()) == 0) { /* Unselecting current selection */
 			XtFree(ctrlBlk->sel1);
 			ctrlBlk->sel1 = nullptr;
 			XmListDeselectItem(widget, call_data->item);
@@ -1004,7 +1003,6 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 		}
 	}
 
-	XtFree(sel);
 	setupScrollLists(FONT, *ctrlBlk);
 	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
 		choiceMade(ctrlBlk);
@@ -1015,17 +1013,16 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 }
 
 static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
-	char *sel;
 
 	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
 	auto call_data = (XmListCallbackStruct *)callData;
 
-	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
+	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
 	if (ctrlBlk->sel2 == nullptr) {
 		ctrlBlk->sel2 = XtStringDup(sel);
 	} else {
-		if (strcmp(ctrlBlk->sel2, sel) == 0) { /* unselecting current selection */
+		if (strcmp(ctrlBlk->sel2, sel.c_str()) == 0) { /* unselecting current selection */
 			XtFree(ctrlBlk->sel2);
 			ctrlBlk->sel2 = nullptr;
 			XmListDeselectItem(widget, call_data->item);
@@ -1035,7 +1032,6 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 		}
 	}
 
-	XtFree(sel);
 	setupScrollLists(STYLE, *ctrlBlk);
 	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
 		choiceMade(ctrlBlk);
@@ -1046,17 +1042,16 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 }
 
 static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
-	char *sel;
 
 	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
 	auto call_data = (XmListCallbackStruct *)callData;
 
-	XmStringGetLtoR(call_data->item, XmSTRING_DEFAULT_CHARSET, &sel);
+	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
 	if (ctrlBlk->sel3 == nullptr) {
 		ctrlBlk->sel3 = XtStringDup(sel);
 	} else {
-		if (strcmp(ctrlBlk->sel3, sel) == 0) { /* unselecting current selection */
+		if (strcmp(ctrlBlk->sel3, sel.c_str()) == 0) { /* unselecting current selection */
 			XtFree(ctrlBlk->sel3);
 			ctrlBlk->sel3 = nullptr;
 			XmListDeselectItem(widget, call_data->item);
@@ -1066,7 +1061,6 @@ static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData
 		}
 	}
 
-	XtFree(sel);
 	setupScrollLists(SIZE, *ctrlBlk);
 	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
 		choiceMade(ctrlBlk);

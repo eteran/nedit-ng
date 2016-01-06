@@ -1231,34 +1231,38 @@ static int findAllMatches(WindowInfo *window, const char *string) {
 }
 
 /*      Callback function for the FindAll widget. Process the users response. */
-static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data) {
+static void findAllCB(Widget parent, XtPointer clientData, XtPointer call_data) {
 
-	(void)client_data;
+	(void)clientData;
 
 	int i;
-	char *eptr;
+	
 
 	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
-	if (cbs->reason == XmCR_NO_MATCH)
+	if (cbs->reason == XmCR_NO_MATCH) {
 		return;
+	}
+	
 	if (cbs->reason == XmCR_CANCEL) {
 		XtDestroyWidget(XtParent(parent));
 		return;
 	}
 
-	XmStringGetLtoR(cbs->value, XmFONTLIST_DEFAULT_TAG, &eptr);
-	if ((i = atoi(eptr) - 1) < 0) {
+	std::string eptr = XmStringGetLtoREx(cbs->value, XmFONTLIST_DEFAULT_TAG);
+	if ((i = stoi(eptr) - 1) < 0) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	if (searchMode == TAG)
+	if (searchMode == TAG) {
 		editTaggedLocation(parent, i); /* Open the file with the definition */
-	else
+	} else {
 		showMatchingCalltip(parent, i);
+	}
 
-	if (cbs->reason == XmCR_OK)
+	if (cbs->reason == XmCR_OK) {
 		XtDestroyWidget(XtParent(parent));
+	}
 }
 
 /*      Window manager close-box callback for tag-collision dialog */

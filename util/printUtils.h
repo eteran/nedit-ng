@@ -30,9 +30,6 @@
 #include <X11/Intrinsic.h>
 #include <string>
 
-/* Maximum length of an error returned by IssuePrintCommand() */
-#define MAX_PRINT_ERROR_LENGTH 1024
-
 #define DESTINATION_REMOTE 1
 #define DESTINATION_LOCAL 2
 

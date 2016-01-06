@@ -869,9 +869,9 @@ void PopDownBugPatch(Widget w) {
 ** Convert a compound string to a C style null terminated string.
 ** Returned string must be freed by the caller.
 */
-char *GetXmStringText(XmString fromString) {
+std::string GetXmStringTextEx(XmString fromString) {
 	XmStringContext context;
-	char *text, *toPtr, *toString, *fromPtr;
+	char *text;
 	XmStringCharSet charset;
 	XmStringDirection direction;
 	Boolean separator;
@@ -879,24 +879,31 @@ char *GetXmStringText(XmString fromString) {
 	/* Malloc a buffer large enough to hold the string.  XmStringLength
 	   should always be slightly longer than necessary, but won't be
 	   shorter than the equivalent null-terminated string */
-	toString = XtMalloc(XmStringLength(fromString));
+	std::string toString;
+	toString.reserve(XmStringLength(fromString));
 
 	/* loop over all of the segments in the string, copying each segment
 	   into the output string and converting separators into newlines */
 	XmStringInitContext(&context, fromString);
-	toPtr = toString;
+	
+	auto toPtr = std::back_inserter(toString);
+	
 	while (XmStringGetNextSegment(context, &text, &charset, &direction, &separator)) {
-		for (fromPtr = text; *fromPtr != '\0'; fromPtr++)
+		for (char *fromPtr = text; *fromPtr != '\0'; fromPtr++) {
 			*toPtr++ = *fromPtr;
-		if (separator)
+		}
+		
+		if (separator) {
 			*toPtr++ = '\n';
+		}
+		
 		XtFree(text);
 		XtFree(charset);
 	}
 
 	/* terminate the string, free the context, and return the string */
-	*toPtr++ = '\0';
 	XmStringFreeContext(context);
+	
 	return toString;
 }
 

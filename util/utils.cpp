@@ -64,14 +64,12 @@ const char *plainFileNames[N_FILE_TYPES] = {
 **      - Exits when the result would be greater than MAXPATHLEN
 */
 void buildFilePath(char *fullPath, const char *dir, const char *file) {
-	if (MAXPATHLEN < strlen(dir) + strlen(file) + 2) {
+	const int len = snprintf(fullPath, MAXPATHLEN, "%s/%s", dir, file);
+	if(len >= MAXPATHLEN) {
 		/*  We have no way to build the path. */
 		fprintf(stderr, "nedit: rc file path too long for %s.\n", file);
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);	
 	}
-
-	/*  The length is already checked */
-	snprintf(fullPath, MAXPATHLEN, "%s/%s", dir, file);
 }
 
 /*
@@ -123,17 +121,15 @@ std::string GetCurrentDirEx(void) {
    without trailing slash.
    We try the  environment var and the system user database. */
 std::string GetHomeDirEx(void) {
-	const char *ptr;
-	char homedir[MAXPATHLEN] = "";
-	struct passwd *passwdEntry;
-	size_t len;
 
-	if (*homedir) {
+	static char homedir[MAXPATHLEN] = "";
+	if (homedir[0] != '\0') {
 		return homedir;
 	}
-	ptr = getenv("HOME");
+	
+	const char *ptr = getenv("HOME");
 	if (!ptr) {
-		passwdEntry = getpwuid(getuid());
+		struct passwd *passwdEntry = getpwuid(getuid());
 		if (passwdEntry && *(passwdEntry->pw_dir)) {
 			ptr = passwdEntry->pw_dir;
 		} else {
@@ -142,13 +138,16 @@ std::string GetHomeDirEx(void) {
 			exit(EXIT_FAILURE);
 		}
 	}
+	
 	strncpy(homedir, ptr, sizeof(homedir) - 1);
 	homedir[sizeof(homedir) - 1] = '\0';
+	
 	/* Fix trailing slash */
-	len = strlen(homedir);
+	size_t len = strlen(homedir);
 	if (len > 1 && homedir[len - 1] == '/') {
 		homedir[len - 1] = '\0';
 	}
+	
 	return homedir;
 }
 
@@ -164,13 +163,13 @@ std::string GetUserNameEx(void) {
 	   results in the user-name of the original terminal being used, which is
 	   not correct when the user uses the su command.  Now, getpwuid only: */
 
-	const struct passwd *passwdEntry;
 	static char *userName = nullptr;
 
-	if (userName)
+	if (userName) {
 		return userName;
+	}
 
-	passwdEntry = getpwuid(getuid());
+	const struct passwd *passwdEntry = getpwuid(getuid());
 	if (!passwdEntry) {
 		/* This is really serious, but sometimes username service
 		   is misconfigured through no fault of the user.  Be nice
@@ -179,7 +178,7 @@ std::string GetUserNameEx(void) {
 		return getenv("USER");
 	} else {
 	
-		// NOTE(eteran): so, this is effecively a one time memory leak
+		// NOTE(eteran): so, this is effecively a one time memory leak.
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
 		userName = strdup(passwdEntry->pw_name);

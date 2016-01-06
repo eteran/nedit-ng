@@ -267,8 +267,6 @@ int GetNewFilename(Widget parent, const char *promptString, char *filename, cons
 */
 int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	Boolean done_with_dialog = False; /* ok to destroy dialog flag	   */
-	char *fileString;                 /* C string for file selected        */
-	char *dirString;                  /* C string for dir of file selected */
 	XmString cFileString;             /* compound string for file selected */
 	XmString cDir;                    /* compound directory selected	   */
 	XmString cPattern;                /* compound filter pattern	   */
@@ -331,7 +329,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 			XmStringFree(DefaultPattern);
 		DefaultDirectory = cDir;
 		DefaultPattern = cPattern;
-		XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
+		std::string fileString = XmStringGetLtoREx(cFileString, XmSTRING_DEFAULT_CHARSET);
 		/* Motif 2.x seem to contain a bug that causes it to return only
 		   the relative name of the file in XmNdirSpec when XmNpathMode is set
 		   to XmPATH_MODE_RELATIVE (through X resources), although the man
@@ -343,16 +341,13 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 
 			/* The directory name is already present in the file name or
 			   the user entered a full path name. */
-			strcpy(filename, fileString);
+			strcpy(filename, fileString.c_str());
 		} else {
 			/* Concatenate the directory name and the file name */
-			XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
-			strcpy(filename, dirString);
-			strcat(filename, fileString);
-			XtFree(dirString);
+			std::string dirString = XmStringGetLtoREx(cDir, XmSTRING_DEFAULT_CHARSET);			
+			sprintf(filename, "%s%s", dirString.c_str(), fileString.c_str());
 		}
 		XmStringFree(cFileString);
-		XtFree(fileString);
 	}
 	/* Destroy the dialog _shell_ iso. the dialog. Normally, this shouldn't
 	   be necessary as the shell is destroyed automatically when the dialog
@@ -387,8 +382,6 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	XmString cFileString;             /* compound string for file selected */
 	XmString cDir;                    /* compound directory selected	   */
 	XmString cPattern;                /* compound filter pattern	   */
-	char *fileString;                 /* C string for file selected        */
-	char *dirString;                  /* C string for dir of file selected */
 #if XmVersion < 1002
 	int i;
 #endif
@@ -455,23 +448,21 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 			XmStringFree(DefaultPattern);
 		DefaultDirectory = cDir;
 		DefaultPattern = cPattern;
-		XmStringGetLtoR(cFileString, XmSTRING_DEFAULT_CHARSET, &fileString);
+		std::string fileString = XmStringGetLtoREx(cFileString, XmSTRING_DEFAULT_CHARSET);
 		/* See note in existing file routines about Motif 2.x bug. */
 
 		if (fileString[0] == '/') {
 
 			/* The directory name is already present in the file name or
 			   the user entered a full path name. */
-			strcpy(filename, fileString);
+			strcpy(filename, fileString.c_str());
 		} else {
 			/* Concatenate the directory name and the file name */
-			XmStringGetLtoR(cDir, XmSTRING_DEFAULT_CHARSET, &dirString);
-			strcpy(filename, dirString);
-			strcat(filename, fileString);
-			XtFree(dirString);
+			std::string dirString = XmStringGetLtoREx(cDir, XmSTRING_DEFAULT_CHARSET);
+			
+			sprintf(filename, "%s%s", dirString.c_str(), fileString.c_str());
 		}
 		XmStringFree(cFileString);
-		XtFree(fileString);
 	}
 	XtDestroyWidget(newFileSB);
 	return SelectResult;
@@ -511,17 +502,48 @@ char *GetFileDialogDefaultPattern(void) {
 	return string;
 }
 
+
+/*
+** Return current default directory used by GetExistingFilename.
+** Can return nullptr if no default directory has been set (meaning
+** use the application's current working directory) String must
+** be freed by the caller using XtFree.
+*/
+boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
+
+	if (DefaultDirectory == nullptr) {
+		return boost::optional<std::string>();
+	}
+	
+	return XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET);
+}
+
+/*
+** Return current default match pattern used by GetExistingFilename.
+** Can return nullptr if no default pattern has been set (meaning use
+** a pattern matching all files in the directory) String must be
+** freed by the caller using XtFree.
+*/
+boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
+
+	if (DefaultPattern == nullptr) {
+		return boost::optional<std::string>();
+	}
+	
+	return XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET);
+}
+
 /*
 ** Set the current default directory to be used by GetExistingFilename.
 ** "dir" can be passed as nullptr to clear the current default directory
 ** and use the application's working directory instead.
 */
-void SetFileDialogDefaultDirectory(const char *dir) {
+void SetFileDialogDefaultDirectory(boost::optional<std::string> dir) {
 	if (DefaultDirectory != nullptr) {
 		XmStringFree(DefaultDirectory);
 	}
 	
-	DefaultDirectory = (dir == nullptr) ? nullptr : XmStringCreateSimpleEx(dir);
+	DefaultDirectory = (!dir) ? nullptr : XmStringCreateSimpleEx(*dir);
 }
 
 /*
@@ -529,12 +551,12 @@ void SetFileDialogDefaultDirectory(const char *dir) {
 ** "pattern" can be passed as nullptr as the equivalent a pattern matching
 ** all files in the directory.
 */
-void SetFileDialogDefaultPattern(const char *pattern) {
+void SetFileDialogDefaultPattern(boost::optional<std::string> pattern) {
 	if (DefaultPattern != nullptr) {
 		XmStringFree(DefaultPattern);
 	}
 	
-	DefaultPattern = (pattern == nullptr) ? nullptr : XmStringCreateSimpleEx(pattern);
+	DefaultPattern = (!pattern) ? nullptr : XmStringCreateSimpleEx(*pattern);
 }
 
 /*

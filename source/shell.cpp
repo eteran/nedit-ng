@@ -648,8 +648,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	WindowInfo *window = (WindowInfo *)clientData;
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
-	XmString xmCancel;
-	char *cCancel;
+	XmString xmCancel;	
 	char message[MAX_TIMEOUT_MSG_LEN];
 
 	cmdData->bannerIsUp = True;
@@ -658,21 +657,18 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	XtVaGetValues(window->cancelShellItem, XmNacceleratorText, &xmCancel, nullptr);
 
 	/* Translate Motif string to char* */
-	cCancel = GetXmStringText(xmCancel);
+	std::string cCancel = GetXmStringTextEx(xmCancel);
 
 	/* Free Motif String */
 	XmStringFree(xmCancel);
 
 	/* Create message */
-	if ('\0' == cCancel[0]) {
+	if (cCancel.empty()) {
 		strncpy(message, "Shell Command in Progress", MAX_TIMEOUT_MSG_LEN);
 		message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
 	} else {
-		sprintf(message, "Shell Command in Progress -- Press %s to Cancel", cCancel);
+		snprintf(message, sizeof(message), "Shell Command in Progress -- Press %s to Cancel", cCancel.c_str());
 	}
-
-	/* Free C-string */
-	XtFree(cCancel);
 
 	SetModeMessage(window, message);
 	cmdData->bannerTimeoutID = 0;

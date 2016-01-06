@@ -52,9 +52,9 @@ void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomRet
 	std::string userName = GetUserNameEx();
 	std::string hostName = GetNameOfHostEx();
 
-	sprintf(propName, "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
+	snprintf(propName, sizeof(propName), "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
 	*serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
-	sprintf(propName, "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
+	snprintf(propName, sizeof(propName), "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
 	*serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
 }
 
@@ -81,7 +81,7 @@ Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
 	std::string hostName = GetNameOfHostEx();
 	Atom atom;
 
-	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.c_str(), userName.c_str(), serverName, path);
+	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.c_str(), userName.c_str(), serverName, path);
 	atom = XInternAtom(TheDisplay, propName, False);
 	return (atom);
 }
@@ -92,7 +92,7 @@ Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool o
 	std::string hostName = GetNameOfHostEx();
 	Atom atom;
 
-	sprintf(propName, "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.c_str(), userName.c_str(), serverName, path);
+	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.c_str(), userName.c_str(), serverName, path);
 	atom = XInternAtom(TheDisplay, propName, only_if_exist);
 	return (atom);
 }
@@ -105,7 +105,7 @@ void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
 	char propNamePrefix[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1];
 	std::string userName = GetUserNameEx();
 	std::string hostName = GetNameOfHostEx();
-	int length = sprintf(propNamePrefix, "NEDIT_FILE_%s_%s_%s_", hostName.c_str(), userName.c_str(), serverName);
+	int length = snprintf(propNamePrefix, sizeof(propNamePrefix), "NEDIT_FILE_%s_%s_%s_", hostName.c_str(), userName.c_str(), serverName);
 
 	int nProperties;
 	Atom *atoms = XListProperties(TheDisplay, rootWindow, &nProperties);

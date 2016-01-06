@@ -137,7 +137,7 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 	XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
 	XmString msgstr_xms, input_string_xms, titstr_xms;
 	char msgstr_vsp[DF_MAX_MSG_LENGTH + 1];
-	char *but_lbl, *input_string = nullptr, *input_string_ptr;
+	char *but_lbl, *input_string = nullptr;
 	int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
 	Arg args[256];
 	char titleCopy[MAX_TITLE_LEN];
@@ -301,10 +301,11 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 			XtSetArg(args[argcount], XmNtextString, &input_string_xms);
 			argcount++;
 			XtGetValues(dialog, args, argcount);
-			XmStringGetLtoR(input_string_xms, XmSTRING_DEFAULT_CHARSET, &input_string_ptr);
-			strcpy(input_string, input_string_ptr); /* This step is necessary */
+
+			std::string input_string_ptr = XmStringGetLtoREx(input_string_xms, XmSTRING_DEFAULT_CHARSET);
+			strcpy(input_string, input_string_ptr.c_str()); /* This step is necessary */
 			XmStringFree(input_string_xms);
-			XtFree(input_string_ptr);
+
 			/* Important! Only intercept unexpected destroy events. */
 			XtRemoveCallback(dialog, XmNdestroyCallback, destroy_callback, &df);
 			XtDestroyWidget(dialog);

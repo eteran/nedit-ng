@@ -11,7 +11,7 @@ add_library (NUtil
 	managedList.cpp 
 	utils.cpp 
 	clearcase.cpp)
-	
+
 target_include_directories (NUtil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")

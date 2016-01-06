@@ -28,6 +28,8 @@
 #define GETFILES_H_
 
 #include <X11/Intrinsic.h>
+#include <string>
+#include <boost/optional.hpp>
 
 #define GFN_OK 1     /* Get Filename OK constant     */
 #define GFN_CANCEL 2 /* Get Filename Cancel constant */
@@ -36,10 +38,10 @@ int GetExistingFilename(Widget parent, const char *promptString, char *filename)
 int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);
 int HandleCustomExistFileSB(Widget existFileSB, char *filename);
 int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName);
-char *GetFileDialogDefaultDirectory(void);
-char *GetFileDialogDefaultPattern(void);
-void SetFileDialogDefaultDirectory(const char *dir);
-void SetFileDialogDefaultPattern(const char *pattern);
+boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void);
+boost::optional<std::string> GetFileDialogDefaultPatternEx(void);
+void SetFileDialogDefaultDirectory(boost::optional<std::string> dir);
+void SetFileDialogDefaultPattern(boost::optional<std::string> pattern);
 void SetGetEFTextFieldRemoval(int state);
 
 #endif

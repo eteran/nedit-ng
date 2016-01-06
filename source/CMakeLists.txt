@@ -81,8 +81,6 @@ add_executable(nedit
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet27.inc
 	${BISON_parser_OUTPUT_SOURCE})
 
-add_definitions(-DUSE_DIRENT -DUSE_LPR_PRINT_CMD)
-
 include_directories(nedit
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}

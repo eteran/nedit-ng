@@ -38,20 +38,15 @@
 #include "prefFile.h"
 #include "MotifHelper.h"
 
-#include <cstring>
+#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
-#include <cctype>
-#include <sys/types.h>
-
-#ifdef USE_DIRENT
+#include <cstring>
 #include <dirent.h>
-#else
-#include <sys/dir.h>
-#endif /* USE_DIRENT */
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
@@ -89,6 +84,9 @@
 #define DEFAULT_QUEUE_INDEX 5
 #define DEFAULT_HOST_INDEX  6
 
+/* Maximum length of an error returned by IssuePrintCommand() */
+#define MAX_PRINT_ERROR_LENGTH 1024
+
 
 /* Function Prototypes */
 static Widget createForm(Widget parent);
@@ -102,12 +100,7 @@ static void setQueueLabelText(void);
 static int fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags);
 static int fileInPath(const char *filename, unsigned short mode_flags);
 static int flprPresent(void);
-#ifdef USE_LPR_PRINT_CMD
 static void getLprQueueDefault(char *defqueue);
-#endif
-#ifndef USE_LPR_PRINT_CMD
-static void getLpQueueDefault(char *defqueue);
-#endif
 static void setHostLabelText(void);
 
 static void getFlprHostDefault(char *defhost);
@@ -217,7 +210,6 @@ void LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, cons
 		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
 		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = defaultHost;
 	} else {
-#ifdef USE_LPR_PRINT_CMD
 		getLprQueueDefault(defaultQueue);
 		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "lpr";
 		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "-# ";
@@ -226,16 +218,6 @@ void LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, cons
 		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "";
 		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
 		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = "";
-#else
-		getLpQueueDefault(defaultQueue);
-		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "lp"; /* was lp -c */
-		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "-n";
-		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-d";
-		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-t";
-		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "";
-		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
-		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = "";
-#endif
 	}
 
 	/* Read in the preferences from the X database using the mechanism from
@@ -789,11 +771,7 @@ static int fileInDir(const char *filename, const char *dirpath, unsigned short m
 	DIR *dfile = opendir(dirpath);
 	if (dfile != nullptr) {
 		
-	#ifdef USE_DIRENT
-		struct dirent *DirEntryPtr;
-	#else
-		struct direct *DirEntryPtr;
-	#endif		
+		struct dirent *DirEntryPtr;	
 		
 		while ((DirEntryPtr = readdir(dfile)) != nullptr) {
 			if (!strcmp(DirEntryPtr->d_name, filename)) {
@@ -880,15 +858,15 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 	return False;
 }
 
-static int foundEnv(const char *EnvVarName, char *result) {
+static bool foundEnv(const char *EnvVarName, char *result) {
 	char *dqstr;
 
 	dqstr = getenv(EnvVarName);
 	if (dqstr != nullptr) {
 		strcpy(result, dqstr);
-		return True;
+		return true;
 	}
-	return False;
+	return false;
 }
 
 static void getFlprHostDefault(char *defhost) {
@@ -903,17 +881,7 @@ static void getFlprQueueDefault(char *defqueue) {
 			strcpy(defqueue, "");
 }
 
-#ifdef USE_LPR_PRINT_CMD
 static void getLprQueueDefault(char *defqueue) {
 	if (!foundEnv("PRINTER", defqueue))
 		strcpy(defqueue, "");
 }
-#endif
-
-#ifndef USE_LPR_PRINT_CMD
-static void getLpQueueDefault(char *defqueue) {
-	if (!foundEnv("LPDEST", defqueue))
-		defqueue[0] = '\0';
-}
-#endif
-

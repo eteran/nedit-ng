@@ -7,7 +7,20 @@
 #include <string>
 #include <cassert>
 
+//------------------------------------------------------------------------------
+inline std::string XmStringGetLtoREx(XmString s, XmStringCharSet tag) {
 
+	char *string;
+	if(XmStringGetLtoR(s, tag, &string)) {
+		std::string str(string);
+		XtFree(string);
+		return str;
+	}
+	
+	return std::string();
+}
+
+//------------------------------------------------------------------------------
 inline char *XtStringDup(const char *text) {
 	assert(text);
 	

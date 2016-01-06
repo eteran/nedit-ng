@@ -1185,14 +1185,12 @@ int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname
 	/* Temporarily set default directory to window->path, prompt for file,
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
-	char *savedDefaultDir = GetFileDialogDefaultDirectory();
+	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
 	if (*window->path != '\0')
-		SetFileDialogDefaultDirectory(window->path);
+		SetFileDialogDefaultDirectory(boost::optional<std::string>(window->path));
 	retVal = GetExistingFilename(window->shell, prompt, fullname);
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
-
-	XtFree(savedDefaultDir);
 
 	return retVal;
 }
@@ -1208,16 +1206,17 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int
 	XmString s1, s2;
 	Widget fileSB, wrapToggle;
 	Widget formatForm, formatBtns, unixFormat, dosFormat, macFormat;
-	char *savedDefaultDir;
 
 	*fileFormat = window->fileFormat;
 
 	/* Temporarily set default directory to window->path, prompt for file,
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
-	savedDefaultDir = GetFileDialogDefaultDirectory();
-	if (*window->path != '\0')
-		SetFileDialogDefaultDirectory(window->path);
+	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
+	if (*window->path != '\0') {
+		
+		SetFileDialogDefaultDirectory(boost::optional<std::string>(window->path));
+	}
 
 	/* Present a file selection dialog with an added field for requesting
 	   long line wrapping to become permanent via inserted newlines */
@@ -1266,8 +1265,6 @@ int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int
 
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
-
-	XtFree(savedDefaultDir);
 
 	return retVal;
 }
