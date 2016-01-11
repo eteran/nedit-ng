@@ -29,13 +29,15 @@
 
 #include <X11/Intrinsic.h>
 #include <string>
+#include <cassert>
 
 enum PrefDataTypes {
 	PREF_INT,          
 	PREF_BOOLEAN,      
 	PREF_ENUM,         
 	PREF_STRING,       
-	PREF_ALLOC_STRING  
+	PREF_ALLOC_STRING,
+	PREF_STD_STRING
 };
 
 struct PrefDescripRec {
@@ -47,15 +49,17 @@ struct PrefDescripRec {
 	// where shall we write the value?
 	union Value {
 	
-		Value(char *s)   : str(s)      {} // reading will read into this string
-		Value(char **sp) : str_ptr(sp) {} // reading will allocate a new string and assign it to *sp
-		Value(int  *n)   : number(n)   {} // reading will read into this int
-		Value(bool *b)   : boolean(b)  {} // reading will read into this bool
+		Value(char *s)        : str(s)      { assert(s);  } // reading will read into this string
+		Value(char **sp)      : str_ptr(sp) { assert(sp); } // reading will allocate a new string and assign it to *sp
+		Value(int  *n)        : number(n)   { assert(n);  } // reading will read into this int
+		Value(bool *b)        : boolean(b)  { assert(b);  } // reading will read into this bool
+		Value(std::string *s) : string(s)   { assert(s);  } // reading will read into this string
 	
 		char * str;
 		char **str_ptr;
 		int  * number;
 		bool * boolean;
+		std::string *string;
 	} valueAddr;
 	
 	// a parameter for the value

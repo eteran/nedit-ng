@@ -129,6 +129,11 @@ bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
 			*rsrcDescrip->valueAddr.str_ptr = XtStringDup(string);
 			return true;
 		}
+	case PREF_STD_STRING:
+		{
+			*rsrcDescrip->valueAddr.string = string;
+			return true;
+		}
 	default:
 		assert(0 && "reading setting of unknown type");		
 	}
@@ -348,6 +353,9 @@ bool SavePreferences(Display *display, const char *fullName, const char *fileHea
 			case PREF_ALLOC_STRING:
 				fprintf(fp, "%s", *rsrcDescrip[i].valueAddr.str_ptr);
 				break;
+			case PREF_STD_STRING:
+				fprintf(fp, "%s", rsrcDescrip[i].valueAddr.string->c_str());
+				break;				
 			case PREF_ENUM:
 				{
 					const char **enumStrings = rsrcDescrip[i].arg.str_ptr;
