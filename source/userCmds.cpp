@@ -254,7 +254,7 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkMacro(userCmdDialog *ucd);
-static int checkMacroText(char *macro, Widget errorParent, Widget errFocus);
+static int checkMacroText(const char *macro, Widget errorParent, Widget errFocus);
 static int applyDialogChanges(userCmdDialog *ucd);
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -276,7 +276,7 @@ static void freeItemCB(void *item);
 static int dialogFieldsAreEmpty(userCmdDialog *ucd);
 static void disableTextW(Widget textW);
 static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listType);
-static int loadMenuItemString(char *inString, menuItemRec **menuItems, int *nItems, int listType);
+static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType);
 static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
 static int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
@@ -841,7 +841,7 @@ char *WriteBGMenuCmdsString(void) {
 ** Read a string representing shell command menu items and add them to the
 ** internal list used for constructing shell menus
 */
-int LoadShellCmdsString(char *inString) {
+int LoadShellCmdsString(const char *inString) {
 	return loadMenuItemString(inString, ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
 }
 
@@ -849,11 +849,11 @@ int LoadShellCmdsString(char *inString) {
 ** Read strings representing macro menu or background menu command menu items
 ** and add them to the internal lists used for constructing menus
 */
-int LoadMacroCmdsString(char *inString) {
+int LoadMacroCmdsString(const char *inString) {
 	return loadMenuItemString(inString, MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
 }
 
-int LoadBGMenuCmdsString(char *inString) {
+int LoadBGMenuCmdsString(const char *inString) {
 	return loadMenuItemString(inString, BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
 }
 
@@ -1692,7 +1692,7 @@ static int checkMacro(userCmdDialog *ucd) {
 	return True;
 }
 
-static int checkMacroText(char *macro, Widget errorParent, Widget errFocus) {
+static int checkMacroText(const char *macro, Widget errorParent, Widget errFocus) {
 	Program *prog;
 	const char *errMsg;
 	const char *stoppedAt;
@@ -2270,7 +2270,7 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 	return outStr;
 }
 
-static int loadMenuItemString(char *inString, menuItemRec **menuItems, int *nItems, int listType) {
+static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType) {
 	menuItemRec *f;
 	char *cmdStr;
 	const char *inPtr = inString;
@@ -2784,15 +2784,14 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
 ** Store this info in given user menu info structure.
 */
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
-	char *atPtr, *firstAtPtr, *endPtr;
+	char *endPtr;
 	char c;
 	int languageMode;
 	int langModes[MAX_LANGUAGE_MODES];
 	int nbrLM = 0;
 	int size;
 
-	atPtr = firstAtPtr = strchr(menuItemName, '@');
-	if (atPtr != nullptr) {
+	if (char *atPtr = strchr(menuItemName, '@')) {
 		if (!strcmp(atPtr + 1, "*")) {
 			/* only language is "*": this is for all but language specific
 			   macros */
@@ -2907,13 +2906,12 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *
 ** parts (i.e. parts starting with "@").
 */
 static char *stripLanguageMode(const char *menuItemName) {
-	const char *firstAtPtr;
-
-	firstAtPtr = strchr(menuItemName, '@');
-	if (firstAtPtr == nullptr)
-		return XtNewStringEx(menuItemName);
-	else
+	
+	if(const char *firstAtPtr = strchr(menuItemName, '@')) {
 		return copySubstring(menuItemName, firstAtPtr - menuItemName);
+	} else {
+		return XtNewStringEx(menuItemName);
+	}
 }
 
 static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx) {
