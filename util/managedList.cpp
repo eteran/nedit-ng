@@ -392,7 +392,7 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	item = (*ml->getDialogDataCB)(ml->itemList[listPos - 2], False, &abort, ml->getDialogDataArg);
 	if (abort)
 		return;
-	if (item != nullptr) {
+	if (item) {
 		(*ml->freeItemCB)(ml->itemList[listPos - 2]);
 		ml->itemList[listPos - 2] = item;
 	}
@@ -534,7 +534,7 @@ static int incorporateDialogData(managedListData *ml, int listPos, int is_explic
 	item = (*ml->getDialogDataCB)(listPos == 1 ? nullptr : ml->itemList[listPos - 2], is_explicit, &abort, ml->getDialogDataArg);
 	if (abort)
 		return False;
-	if (item == nullptr) /* don't modify if fields are empty */
+	if(!item) /* don't modify if fields are empty */
 		return True;
 
 	/* If the item is "new" add a new entry to the list, otherwise,

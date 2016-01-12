@@ -3304,11 +3304,11 @@ void SetISearchTextCallbacks(WindowInfo *window) {
 
 	static XtActionsRec actions[] = {{(String) "isearch_clear_and_paste", iSearchTextClearAndPasteAP}};
 
-	if (tableText == nullptr)
+	if(!tableText)
 		tableText = XtParseTranslationTable(translationsText);
 	XtOverrideTranslations(window->iSearchText, tableText);
 
-	if (tableClear == nullptr) {
+	if(!tableClear) {
 		/* make sure actions are loaded */
 		XtAppAddActions(XtWidgetToApplicationContext(window->iSearchText), actions, XtNumber(actions));
 		tableClear = XtParseTranslationTable(translationsClear);
@@ -4165,7 +4165,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 
 	newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimiters(window));
 
-	if (newFileString == nullptr) {
+	if(!newFileString) {
 		if (window->multiFileBusy) {
 			window->replaceFailed = TRUE; /* only needed during multi-file
 			                                 replacements */
@@ -4482,7 +4482,7 @@ static int searchLiteralWord(const char *string, const char *searchString, int c
 		return FALSE;
 
 	/* If there is no language mode, we use the default list of delimiters */
-	if (delimiters == nullptr)
+	if(!delimiters)
 		delimiters = GetPrefDelimiters();
 
 	if (isspace((unsigned char)*searchString) || strchr(delimiters, *searchString))
@@ -4552,9 +4552,9 @@ static int searchLiteral(const char *string, const char *searchString, int caseS
 				/* matched whole string */                                                                                                                                                                                                     \
 				*startPos = filePtr - string;                                                                                                                                                                                                  \
 				*endPos = tempPtr - string;                                                                                                                                                                                                    \
-				if (searchExtentBW != nullptr)                                                                                                                                                                                                 \
+				if(searchExtentBW)                                                                                                                                                                                                 \
 					*searchExtentBW = *startPos;                                                                                                                                                                                               \
-				if (searchExtentFW != nullptr)                                                                                                                                                                                                 \
+				if(searchExtentFW)                                                                                                                                                                                                 \
 					*searchExtentFW = *endPos;                                                                                                                                                                                                 \
 				return TRUE;                                                                                                                                                                                                                   \
 			}                                                                                                                                                                                                                                  \
@@ -4635,9 +4635,9 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	if (ExecRE(compiledRE, string + beginPos, nullptr, FALSE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
-		if (searchExtentFW != nullptr)
+		if(searchExtentFW)
 			*searchExtentFW = compiledRE->extentpFW - string;
-		if (searchExtentBW != nullptr)
+		if(searchExtentBW)
 			*searchExtentBW = compiledRE->extentpBW - string;
 		delete compiledRE;
 		return TRUE;
@@ -4653,9 +4653,9 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	if (ExecRE(compiledRE, string, string + beginPos, FALSE, '\0', string[beginPos], delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
-		if (searchExtentFW != nullptr)
+		if(searchExtentFW)
 			*searchExtentFW = compiledRE->extentpFW - string;
-		if (searchExtentBW != nullptr)
+		if(searchExtentBW)
 			*searchExtentBW = compiledRE->extentpBW - string;
 		delete compiledRE;
 		return TRUE;
@@ -4683,9 +4683,9 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 		if (ExecRE(compiledRE, string, string + beginPos, TRUE, '\0', '\0', delimiters, string, nullptr)) {
 			*startPos = compiledRE->startp[0] - string;
 			*endPos = compiledRE->endp[0] - string;
-			if (searchExtentFW != nullptr)
+			if(searchExtentFW)
 				*searchExtentFW = compiledRE->extentpFW - string;
-			if (searchExtentBW != nullptr)
+			if(searchExtentBW)
 				*searchExtentBW = compiledRE->extentpBW - string;
 			delete compiledRE;
 			return TRUE;
@@ -4705,9 +4705,9 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	if (ExecRE(compiledRE, string + beginPos, string + length, TRUE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
-		if (searchExtentFW != nullptr)
+		if(searchExtentFW)
 			*searchExtentFW = compiledRE->extentpFW - string;
-		if (searchExtentBW != nullptr)
+		if(searchExtentBW)
 			*searchExtentBW = compiledRE->extentpBW - string;
 		delete compiledRE;
 		return TRUE;
@@ -4812,10 +4812,10 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 		*left = selStart;
 		*right = selEnd;
 	}
-	if (searchExtentBW != nullptr)
+	if(searchExtentBW)
 		*searchExtentBW = *left - (startPos - extentBW);
 
-	if (searchExtentFW != nullptr)
+	if(searchExtentFW)
 		*searchExtentFW = *right + extentFW - endPos;
 	return TRUE;
 }
@@ -4867,7 +4867,7 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 		return;
 
 	/* If replaceString is nullptr, duplicate the last one (if any) */
-	if (replaceString == nullptr)
+	if(!replaceString)
 		replaceString = NHist >= 1 ? ReplaceHistory[historyIndex(1)] : "";
 
 	/* Compare the current search and replace strings against the saved ones.

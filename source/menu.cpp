@@ -3695,7 +3695,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		} else if (strcmp(args[0], "next") == 0) {
 			if (window) {
 				window = window->next;
-				if (window == nullptr) {
+				if(!window) {
 					window = WindowList;
 				}
 			}
@@ -4005,7 +4005,7 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *n
 	WindowInfo *window = WidgetToWindow(w);
 	Boolean newState;
 
-	if (window == nullptr)
+	if(!window)
 		return;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike, "set_overtype_mode");
@@ -4127,7 +4127,7 @@ static Widget createMenu(Widget parent, const char *name, const char *label, cha
 		XtVaSetValues(cascade, XmNmnemonic, mnemonic, nullptr);
 	XtManageChild(cascade);
 
-	if (cascadeBtn != nullptr)
+	if(cascadeBtn)
 		*cascadeBtn = cascade;
 	return menu;
 }
@@ -4219,7 +4219,7 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode) {
 void CheckCloseDim(void) {
 	WindowInfo *window;
 
-	if (WindowList == nullptr)
+	if(!WindowList)
 		return;
 	if (WindowList->next == nullptr && !WindowList->filenameSet && !WindowList->fileChanged) {
 		XtSetSensitive(WindowList->closeItem, FALSE);
@@ -4982,7 +4982,7 @@ Widget CreateTabContextMenu(Widget parent, WindowInfo *window) {
 void AddBGMenuAction(Widget widget) {
 	static XtTranslations table = nullptr;
 
-	if (table == nullptr) {
+	if(!table) {
 		char translations[MAX_ACCEL_LEN + 25];
 		sprintf(translations, "%s: post_window_bg_menu()\n", GetPrefBGMenuBtn());
 		table = XtParseTranslationTable(translations);
@@ -5023,7 +5023,7 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 void AddTabContextMenuAction(Widget widget) {
 	static XtTranslations table = nullptr;
 
-	if (table == nullptr) {
+	if(!table) {
 		const char *translations = "<Btn3Down>: post_tab_context_menu()\n";
 		table = XtParseTranslationTable((String)translations);
 	}

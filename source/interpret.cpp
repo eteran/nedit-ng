@@ -1906,7 +1906,7 @@ static int returnValOrNone(int valOnStack) {
 	FrameP = newFrameP;
 
 	/* push returned value, if requsted */
-	if (PC == nullptr) {
+	if(!PC) {
 		if (valOnStack) {
 			PUSH(retVal);
 		} else {

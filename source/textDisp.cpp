@@ -241,7 +241,7 @@ textDisp::textDisp(Widget widget, Widget hScrollBar, Widget vScrollBar, Position
 	}
 
 	/* Update the display to reflect the contents of the buffer */
-	if (buffer != nullptr)
+	if(buffer)
 		bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
 
 	/* Decide if the horizontal scroll bar needs to be visible */
@@ -3232,7 +3232,7 @@ static int measurePropChar(const textDisp *textD, const char c, const int colNum
 	TextBuffer *styleBuf = textD->styleBuffer;
 
 	charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, textD->buffer->tabDist_, textD->buffer->nullSubsChar_);
-	if (styleBuf == nullptr) {
+	if(!styleBuf) {
 		style = 0;
 	} else {
 		style = (unsigned char)styleBuf->BufGetCharacter(pos);

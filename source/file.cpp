@@ -119,7 +119,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	UpdateWindowTitle(window);
 	RefreshTabState(window);
 
-	if (languageMode == nullptr)
+	if(!languageMode)
 		DetermineLanguageMode(window, True);
 	else
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
@@ -173,7 +173,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	/* If an existing window isn't specified; or the window is already
 	   in use (not Untitled or Untitled and modified), or is currently
 	   busy running a macro; create the window */
-	if (inWindow == nullptr) {
+	if(!inWindow) {
 		window = new WindowInfo(name, geometry, iconic);
 	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData) {
 		if (tabbed) {
@@ -202,7 +202,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	forceShowLineNumbers(window);
 
 	/* Decide what language mode to use, trigger language specific actions */
-	if (languageMode == nullptr)
+	if(!languageMode)
 		DetermineLanguageMode(window, True);
 	else
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
@@ -409,7 +409,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 
 	/* Allocate space for the whole contents of the file (unfortunately) */
 	auto fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
-	if (fileString == nullptr) {
+	if(!fileString) {
 		fclose(fp);
 		window->filenameSet = FALSE; /* Temp. prevent check for changes. */
 		DialogF(DF_ERR, window->shell, 1, "Error while opening File", "File is too large to edit", "OK");
@@ -517,7 +517,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 
 	/* Open the file */
 	fp = fopen(name, "rb");
-	if (fp == nullptr) {
+	if(!fp) {
 		DialogF(DF_ERR, window->shell, 1, "Error opening File", "Could not open %s:\n%s", "OK", name, strerror(errno));
 		return FALSE;
 	}
@@ -538,7 +538,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 
 	/* allocate space for the whole contents of the file */
 	fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
-	if (fileString == nullptr) {
+	if(!fileString) {
 		DialogF(DF_ERR, window->shell, 1, "Error opening File", "File is too large to include", "OK");
 		fclose(fp);
 		return FALSE;
@@ -714,7 +714,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	WindowInfo *otherWindow;
 
 	/* Get the new name for the file */
-	if (newName == nullptr) {
+	if(!newName) {
 		response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
 		if (response != GFN_OK)
 			return FALSE;
@@ -828,7 +828,7 @@ static bool doSave(WindowInfo *window) {
 
 	/* open the file */
 	fp = fopen(fullname, "wb");
-	if (fp == nullptr) {
+	if(!fp) {
 		result = DialogF(DF_WARN, window->shell, 2, "Error saving File", "Unable to save %s:\n%s\n\nSave as a new file?", "Save As...", "Cancel", window->filename, strerror(errno));
 
 		if (result == 1) {
@@ -1291,7 +1291,7 @@ void UniqueUntitledName(char *name, size_t size) {
 			}
 		}
 			
-		if (w == nullptr) {
+		if(!w) {
 			break;
 		}
 	}

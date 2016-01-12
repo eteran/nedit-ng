@@ -180,7 +180,7 @@ static tag *getTagFromTable(tag **table, const char *name) {
 	static tag *t;
 	static int addr;
 	
-	if (table == nullptr) {
+	if(!table) {
 		return nullptr;
 	}
 
@@ -226,11 +226,11 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	tag **table;
 
 	if (searchMode == TIP) {
-		if (Tips == nullptr)
+		if(!Tips)
 			Tips = new tag*[DefTagHashSize];
 		table = Tips;
 	} else {
-		if (Tags == nullptr)
+		if(!Tags)
 			Tags = new tag*[DefTagHashSize];
 		table = Tags;
 	}
@@ -289,7 +289,7 @@ static int delTag(const char *name, const char *file, int lang, const char *sear
 	else
 		table = Tags;
 
-	if (table == nullptr)
+	if(!table)
 		return FALSE;
 	if (name)
 		start = finish = hashAddr(name) % DefTagHashSize;
@@ -416,7 +416,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	tagFile *FileList;
 
 	/* To prevent any possible segfault */
-	if (tagSpec == nullptr) {
+	if(!tagSpec) {
 		fprintf(stderr, "nedit: Internal Error!\n"
 		                "  Passed nullptr pointer to AddTagsFile!\n");
 		return FALSE;
@@ -486,7 +486,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 	int removed;
 
 	/* To prevent any possible segfault */
-	if (tagSpec == nullptr) {
+	if(!tagSpec) {
 		fprintf(stderr, "nedit: Internal Error: Passed nullptr pointer to DeleteTagsFile!\n");
 		return FALSE;
 	}
@@ -1309,7 +1309,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	/* 1. Open the target file */
 	NormalizePathname(tagFiles[i]);
 	fp = fopen(tagFiles[i], "r");
-	if (fp == nullptr) {
+	if(!fp) {
 		DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s", "OK", tagFiles[i]);
 		return;
 	}
@@ -1323,7 +1323,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	/* Allocate space for the whole contents of the file (unfortunately) */
 	fileLen = statbuf.st_size;
 	fileString = XtMalloc(fileLen + 1); /* +1 = space for null */
-	if (fileString == nullptr) {
+	if(!fileString) {
 		fclose(fp);
 		DialogF(DF_ERR, parent, 1, "File too large", "File is too large to load", "OK");
 		return;
@@ -1387,7 +1387,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	/* 5. Copy the calltip to a string */
 	tipLen = endPos - startPos;
 	message = XtMalloc(tipLen + 1); /* +1 = space for null */
-	if (message == nullptr) {
+	if(!message) {
 		DialogF(DF_ERR, parent, 1, "Out of Memory", "Can't allocate memory for calltip message", "OK");
 		XtFree(fileString);
 		return;
@@ -1415,7 +1415,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	/* open the file containing the definition */
 	EditExistingFile(parentWindow, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 	windowToSearch = FindWindowWithFile(filename, pathname);
-	if (windowToSearch == nullptr) {
+	if(!windowToSearch) {
 		DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK", tagFiles[i]);
 		return;
 	}
@@ -1530,7 +1530,7 @@ static const char *rcs_strdup(const char *str) {
 
 	char *newstr = nullptr;
 
-	if (str == nullptr)
+	if(!str)
 		return nullptr;
 
 	bucket = hashAddr(str) % RCS_SIZE;

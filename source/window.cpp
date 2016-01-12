@@ -1023,7 +1023,7 @@ void WindowInfo::NextDocument() {
 		return;
 
 	win = getNextTabWindow(this, 1, GetPrefGlobalTabNavigate(), 1);
-	if (win == nullptr)
+	if(!win)
 		return;
 
 	if (this->shell == win->shell)
@@ -1042,7 +1042,7 @@ void WindowInfo::PreviousDocument() {
 	}
 
 	WindowInfo *win = getNextTabWindow(this, -1, GetPrefGlobalTabNavigate(), 1);
-	if (win == nullptr)
+	if(!win)
 		return;
 
 	if (this->shell == win->shell)
@@ -2052,7 +2052,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 	if (primaryChanged) {
 		strcpy(window->fontName, fontName);
 		font = XLoadQueryFont(TheDisplay, fontName);
-		if (font == nullptr)
+		if(!font)
 			XtVaGetValues(window->statsLine, XmNfontList, &window->fontList, nullptr);
 		else
 			window->fontList = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
@@ -2197,7 +2197,7 @@ WindowInfo *WidgetToWindow(Widget w) {
 		}
 
 		parent = XtParent(w);
-		if (parent == nullptr)
+		if(!parent)
 			return nullptr;
 
 		/* make sure it is not a dialog shell */
@@ -4143,7 +4143,7 @@ void WindowInfo::CleanUpTabBarExposeQueue() {
 	XExposeEvent ev;
 	int count;
 
-	if (this == nullptr)
+	if(!this)
 		return;
 
 	/* remove redundant expose events on tab bar */

@@ -704,7 +704,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	/* Issue the print command using a popen call and recover error messages
 	   from the output stream of the command. */
 	pipe = popen(command, "r");
-	if (pipe == nullptr) {
+	if(!pipe) {
 		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", strerror(errno));
 		return;
 	}
@@ -769,11 +769,11 @@ static int fileInDir(const char *filename, const char *dirpath, unsigned short m
 	struct stat statbuf;
 	
 	DIR *dfile = opendir(dirpath);
-	if (dfile != nullptr) {
+	if (dfile) {
 		
 		struct dirent *DirEntryPtr;	
 		
-		while ((DirEntryPtr = readdir(dfile)) != nullptr) {
+		while ((DirEntryPtr = readdir(dfile))) {
 			if (!strcmp(DirEntryPtr->d_name, filename)) {
 				char fullname[MAXPATHLEN];
 				
@@ -799,7 +799,7 @@ static int fileInPath(const char *filename, unsigned short mode_flags) {
 
 	/* Get environmental value of PATH */
 	pathstring = getenv("PATH");
-	if (pathstring == nullptr)
+	if(!pathstring)
 		return False;
 
 	/* parse the pathstring and search on each directory found */
@@ -809,7 +809,7 @@ static int fileInPath(const char *filename, unsigned short mode_flags) {
 			return False;
 		/* locate address of next : character */
 		lastchar = strchr(pathstring, SEPARATOR);
-		if (lastchar != nullptr) {
+		if (lastchar) {
 			/* if more directories remain in pathstring, copy up to : */
 			strncpy(path, pathstring, lastchar - pathstring);
 			path[lastchar - pathstring] = '\0';
@@ -842,7 +842,7 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 	strcat(tagformat, " %s");
 
 	tfile = fopen(tagfilename, "r");
-	if (tfile != nullptr) {
+	if (tfile) {
 		while (!feof(tfile)) {
 			
 			char line[512];
@@ -859,10 +859,8 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 }
 
 static bool foundEnv(const char *EnvVarName, char *result) {
-	char *dqstr;
 
-	dqstr = getenv(EnvVarName);
-	if (dqstr != nullptr) {
+	if (char *dqstr = getenv(EnvVarName)) {
 		strcpy(result, dqstr);
 		return true;
 	}

@@ -184,7 +184,7 @@ void RemapDeleteKey(Widget w) {
 	static const char *translations = "~Shift~Ctrl~Meta~Alt<Key>osfDelete: delete-previous-character()\n";
 
 	if (RemapDeleteEnabled) {
-		if (table == nullptr)
+		if(!table)
 			table = XtParseTranslationTable(translations);
 		XtOverrideTranslations(w, table);
 	}
@@ -340,7 +340,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	int bestClasses[] = {StaticGray, GrayScale, StaticColor, PseudoColor, DirectColor, TrueColor};
 
 	/* If results have already been computed, just return them */
-	if (cachedVisual != nullptr) {
+	if (cachedVisual) {
 		*visual = cachedVisual;
 		*depth = cachedDepth;
 		*colormap = cachedColormap;
@@ -390,7 +390,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	if (reqID != -1) {
 		visTemplate.visualid = reqID;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &visTemplate, &nVis);
-		if (visList == nullptr)
+		if(!visList)
 			fprintf(stderr, "VisualID resource value not valid\n");
 	}
 	if (visList == nullptr && reqClass != -1 && reqDepth != -1) {
@@ -402,7 +402,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 
 		visTemplate.depth = reqDepth;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualClassMask | VisualDepthMask, &visTemplate, &nVis);
-		if (visList == nullptr)
+		if(!visList)
 			fprintf(stderr, "Visual class/depth combination not available\n");
 	}
 	if (visList == nullptr && reqClass != -1) {
@@ -412,18 +412,18 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		visTemplate.class = reqClass;
 #endif
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualClassMask, &visTemplate, &nVis);
-		if (visList == nullptr)
+		if(!visList)
 			fprintf(stderr, "Visual Class from resource \"visualID\" not available\n");
 	}
 	if (visList == nullptr && reqDepth != -1) {
 		visTemplate.depth = reqDepth;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualDepthMask, &visTemplate, &nVis);
-		if (visList == nullptr)
+		if(!visList)
 			fprintf(stderr, "Requested visual depth not available\n");
 	}
-	if (visList == nullptr) {
+	if(!visList) {
 		visList = XGetVisualInfo(display, VisualScreenMask, &visTemplate, &nVis);
-		if (visList == nullptr) {
+		if(!visList) {
 			fprintf(stderr, "Internal Error: no visuals available?\n");
 			*visual = DefaultVisual(display, screen);
 			*depth = DefaultDepth(display, screen);
@@ -450,7 +450,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		   bug reports that seemed to indicate that non-32-bit visuals with an
 		   alpha-channel exist. The combined approach (env. var. + 32-bit
 		   check) should cover the vast majority of the cases, though. */
-		if (visList[i].depth >= 32 && strstr(ServerVendor(display), "X.Org") != nullptr) {
+		if (visList[i].depth >= 32 && strstr(ServerVendor(display), "X.Org")) {
 			continue;
 		}
 		if (visList[i].depth > maxDepth) {
@@ -489,7 +489,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 	    visList[bestVisual].depth, visList[bestVisual].clazz,
 	    *colormap, cachedVisual->visualid); */
 	/* Fix memory leak */
-	if (visList != nullptr) {
+	if (visList) {
 		XFree(visList);
 	}
 
@@ -605,7 +605,7 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcou
 	while (True) {
 		if (XtIsShell(parentShell))
 			break;
-		if (parentShell == nullptr) {
+		if(!parentShell) {
 			fprintf(stderr, "failed to find shell\n");
 			exit(EXIT_FAILURE);
 		}
@@ -1148,7 +1148,7 @@ void MakeSingleLineTextW(Widget textW) {
 	static XtTranslations noReturnTable = nullptr;
 	static const char *noReturnTranslations = "<Key>Return: activate()\n";
 
-	if (noReturnTable == nullptr)
+	if(!noReturnTable)
 		noReturnTable = XtParseTranslationTable(noReturnTranslations);
 	XtOverrideTranslations(textW, noReturnTable);
 }
@@ -1372,7 +1372,7 @@ static void warnHandlerCB(String message) {
 static XModifierKeymap *getKeyboardMapping(Display *display) {
 	static XModifierKeymap *keyboardMap = nullptr;
 
-	if (keyboardMap == nullptr) {
+	if(!keyboardMap) {
 		keyboardMap = XGetModifierMapping(display);
 	}
 	return (keyboardMap);
@@ -1548,7 +1548,7 @@ static void addAccelGrabs(Widget topWidget, Widget w) {
 			addAccelGrabs(topWidget, children[i]);
 	} else if (XtClass(w) == xmCascadeButtonWidgetClass) {
 		XtVaGetValues(w, XmNsubMenuId, &menu, nullptr);
-		if (menu != nullptr)
+		if(menu)
 			addAccelGrabs(topWidget, menu);
 	} else
 		addAccelGrab(topWidget, w);
@@ -1701,7 +1701,7 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int mod
 				return TRUE;
 	} else if (XtClass(w) == xmCascadeButtonWidgetClass) {
 		XtVaGetValues(w, XmNsubMenuId, &menu, nullptr);
-		if (menu != nullptr)
+		if(menu)
 			if (findAndActivateAccel(menu, keyCode, modifiers, event))
 				return TRUE;
 	} else {

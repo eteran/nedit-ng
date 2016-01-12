@@ -393,7 +393,7 @@ bool LoadHighlightString(const char *inString, int convertOld) {
 
 		/* Read each pattern set, abort on error */
 		patternSet *patSet = readPatternSet(&inPtr, convertOld);
-		if (patSet == nullptr)
+		if(!patSet)
 			return false;
 
 		/* Add/change the pattern set in the list */
@@ -758,7 +758,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		*inPtr += 7;
 		retPatSet = readDefaultPatternSet(patSet.languageMode);
 		XtFree((char *)patSet.languageMode);
-		if (retPatSet == nullptr)
+		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
 	}
@@ -933,7 +933,7 @@ static int isDefaultPatternSet(patternSet *patSet) {
 	int retVal;
 
 	defaultPatSet = readDefaultPatternSet(patSet->languageMode);
-	if (defaultPatSet == nullptr)
+	if(!defaultPatSet)
 		return False;
 	retVal = !patternSetsDiffer(patSet, defaultPatSet);
 	freePatternSet(defaultPatSet);
@@ -969,7 +969,7 @@ void EditHighlightStyles(const char *initialStyle) {
 
 	/* if the dialog is already displayed, just pop it to the top and return */
 	if (HSDialog.shell) {
-		if (initialStyle != nullptr)
+		if(initialStyle)
 			setStyleByName(initialStyle);
 		RaiseDialogWindow(HSDialog.shell);
 		return;
@@ -1095,7 +1095,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
 	/* If there's a suggestion for an initial selection, make it */
-	if (initialStyle != nullptr)
+	if(initialStyle)
 		setStyleByName(initialStyle);
 
 	/* Handle mnemonic selection of buttons and focus to dialog */
@@ -1165,7 +1165,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 
 	/* If there are no problems reading the data, just return it */
 	hs = readHSDialogFields(True);
-	if (hs != nullptr)
+	if(hs)
 		return (void *)hs;
 
 	/* If there are problems, and the user didn't ask for the fields to be
@@ -1185,7 +1185,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 static void hsSetDisplayedCB(void *item, void *cbArg) {
 	highlightStyleRec *hs = (highlightStyleRec *)item;
 
-	if (item == nullptr) {
+	if(!item) {
 		XmTextSetStringEx(HSDialog.nameW, "");
 		XmTextSetStringEx(HSDialog.colorW, "");
 		XmTextSetStringEx(HSDialog.bgColorW, "");
@@ -1761,7 +1761,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Look up the original version of the patterns being edited */
 	oldPatSet = FindPatternSet(HighlightDialog.langModeName);
-	if (oldPatSet == nullptr)
+	if(!oldPatSet)
 		oldPatSet = &emptyPatSet;
 
 	/* Get the current information displayed by the dialog.  If it's bad,
@@ -1769,7 +1769,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   it has changed, give the user the chance to apply discard or cancel. */
 	newPatSet = getDialogPatternSet();
 
-	if (newPatSet == nullptr) {
+	if(!newPatSet) {
 		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Incomplete Language Mode", "Discard incomplete entry\n"
 		                                                                           "for current language mode?",
 		            "Keep", "Discard") == 1) {
@@ -1787,7 +1787,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		}
 	}
 
-	if (newPatSet != nullptr)
+	if(newPatSet)
 		freePatternSet(newPatSet);
 
 	/* Free the old dialog information */
@@ -1798,7 +1798,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* Fill the dialog with the new language mode information */
 	HighlightDialog.langModeName = XtNewStringEx(modeName);
 	newPatSet = FindPatternSet(modeName);
-	if (newPatSet == nullptr) {
+	if(!newPatSet) {
 		HighlightDialog.nPatterns = 0;
 		SetIntText(HighlightDialog.lineContextW, 1);
 		SetIntText(HighlightDialog.charContextW, 0);
@@ -1881,7 +1881,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int i, psn;
 
 	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName);
-	if (defaultPatSet == nullptr) {
+	if(!defaultPatSet) {
 		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName);
 		return;
 	}
@@ -2004,7 +2004,7 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 
 	/* If there are no problems reading the data, just return it */
 	pat = readDialogFields(True);
-	if (pat != nullptr)
+	if(pat)
 		return (void *)pat;
 
 	/* If there are problems, and the user didn't ask for the fields to be
@@ -2028,7 +2028,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 	highlightPattern *pat = (highlightPattern *)item;
 	int isSubpat, isDeferred, isColorOnly, isRange;
 
-	if (item == nullptr) {
+	if(!item) {
 		XmTextSetStringEx(HighlightDialog.nameW, "");
 		XmTextSetStringEx(HighlightDialog.parentW, "");
 		XmTextSetStringEx(HighlightDialog.startW, "");
@@ -2076,7 +2076,7 @@ static int checkHighlightDialogData(void) {
 
 	/* Get the pattern information from the dialog */
 	patSet = getDialogPatternSet();
-	if (patSet == nullptr)
+	if(!patSet)
 		return False;
 
 	/* Compile the patterns  */
@@ -2308,7 +2308,7 @@ static int updatePatternSet(void) {
 
 	/* Get the current data */
 	patSet = getDialogPatternSet();
-	if (patSet == nullptr)
+	if(!patSet)
 		return False;
 
 	/* Find the pattern being modified */
@@ -2450,7 +2450,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo) {
 	highlightPattern *newPat;
 
-	if (copyTo == nullptr) {
+	if(!copyTo) {
 		newPat = new highlightPattern;
 	} else {
 		newPat = copyTo;

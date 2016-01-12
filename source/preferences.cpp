@@ -2073,7 +2073,7 @@ void TabsPrefDialog(Widget parent, WindowInfo *forWindow) {
 	XmStringFree(s1);
 
 	/* Set default values */
-	if (forWindow == nullptr) {
+	if(!forWindow) {
 		emTabDist = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 		useTabs = GetPrefInsertTabs();
 		tabDist = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
@@ -2146,7 +2146,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 		emTabDist = 0;
 
 	/* Set the value in either the requested window or default preferences */
-	if (TabsDialogForWindow == nullptr) {
+	if(!TabsDialogForWindow) {
 		SetPrefTabDist(tabDist);
 		SetPrefEmTabDist(emTabDist);
 		SetPrefInsertTabs(useTabs);
@@ -2235,7 +2235,7 @@ void WrapMarginDialog(Widget parent, WindowInfo *forWindow) {
 	XmStringFree(s1);
 
 	/* Set default value */
-	if (forWindow == nullptr)
+	if(!forWindow)
 		margin = GetPrefWrapMargin();
 	else
 		XtVaGetValues(forWindow->textArea, textNwrapMargin, &margin, nullptr);
@@ -2286,7 +2286,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	/* Set the value in either the requested window or default preferences */
-	if (WrapDialogForWindow == nullptr)
+	if(!WrapDialogForWindow)
 		SetPrefWrapMargin(margin);
 	else {
 		char *params[1];
@@ -2704,7 +2704,7 @@ static int updateLMList(void) {
 			for (i = 0; i < LMDialog.nLanguageModes; i++) {
 				if (!strcmp(oldModeName, LMDialog.languageModeList[i]->name)) {
 					newDelimiters = LMDialog.languageModeList[i]->delimiters;
-					if (newDelimiters == nullptr)
+					if(!newDelimiters)
 						newDelimiters = GetPrefDelimiters();
 					XtVaSetValues(window->textArea, textNwordDelimiters, newDelimiters, nullptr);
 					for (j = 0; j < window->nPanes; j++)
@@ -2805,7 +2805,7 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	}
 
 	/* If there are no problems reading the data, just return it */
-	if (lm != nullptr)
+	if(lm)
 		return (void *)lm;
 
 	/* If there are problems, and the user didn't ask for the fields to be
@@ -2829,7 +2829,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg) {
 	languageModeRec *lm = (languageModeRec *)item;
 	char *extStr;
 
-	if (item == nullptr) {
+	if(!item) {
 		XmTextSetStringEx(LMDialog.nameW, "");
 		XmTextSetStringEx(LMDialog.extW, "");
 		XmTextSetStringEx(LMDialog.recogW, "");
@@ -3426,7 +3426,7 @@ static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW) {
 		return BAD_FONT;
 	}
 	testFont = XLoadQueryFont(display, testName);
-	if (testFont == nullptr) {
+	if(!testFont) {
 		XtFree(testName);
 		return BAD_FONT;
 	}
@@ -3442,7 +3442,7 @@ static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW) {
 		return BAD_FONT;
 	}
 	primaryFont = XLoadQueryFont(display, primaryName);
-	if (primaryFont == nullptr) {
+	if(!primaryFont) {
 		XtFree(primaryName);
 		return BAD_PRIMARY;
 	}
@@ -3727,7 +3727,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 
 		/* read the indent style */
 		styleName = ReadSymbolicField(&inPtr);
-		if (styleName == nullptr)
+		if(!styleName)
 			lm->indentStyle = DEFAULT_INDENT;
 		else {
 			for (i = 0; i < N_INDENT_STYLES; i++) {
@@ -3745,7 +3745,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 
 		/* read the wrap style */
 		styleName = ReadSymbolicField(&inPtr);
-		if (styleName == nullptr)
+		if(!styleName)
 			lm->wrapStyle = DEFAULT_WRAP;
 		else {
 			for (i = 0; i < N_WRAP_STYLES; i++) {
@@ -4224,7 +4224,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 		return nullptr;
 	}
 	XtFree(string);
-	if (parsedString == nullptr) {
+	if(!parsedString) {
 		parsedString = XtStringDup("");
 	}
 	return parsedString;
@@ -4330,7 +4330,7 @@ static void updateLanguageModeSubmenu(WindowInfo *window) {
 
 	/* Destroy and re-create the menu pane */
 	XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, nullptr);
-	if (menu != nullptr)
+	if(menu)
 		XtDestroyWidget(menu);
 	menu = CreatePulldownMenu(XtParent(window->langModeCascade), "languageModes", args, 1);
 	btn =
@@ -4408,7 +4408,7 @@ int SkipOptSeparator(char separator, const char **inPtr) {
 ** error is, and returns False;
 */
 static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt, const char *message) {
-	if (lm != nullptr)
+	if(lm)
 		freeLanguageModeRec(lm);
 	return ParseError(nullptr, stringStart, stoppedAt, "language mode specification", message);
 }
@@ -4439,7 +4439,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 	errorLine[len++] = '=';
 	errorLine[len++] = '=';
 	errorLine[len] = '\0';
-	if (toDialog == nullptr) {
+	if(!toDialog) {
 		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
 	} else {
 		DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "OK", message, errorIn, errorLine);

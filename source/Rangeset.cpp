@@ -900,7 +900,7 @@ int Rangeset::RangesetAssignName(char *name) {
 
 int Rangeset::RangesetChangeModifyResponse(const char *name) {
 
-	if (name == nullptr)
+	if(!name)
 		name = DEFAULT_UPDATE_FN_NAME;
 
 	for(auto &entry : RangesetUpdateMap) {
@@ -1167,7 +1167,7 @@ void Rangeset::RangesetEmpty() {
 ** Get information about rangeset.
 */
 void Rangeset::RangesetGetInfo(int *defined, int *label, int *count, const char **color, const char **name, const char **mode) {
-	if (this == nullptr) {
+	if(!this) {
 		*defined = False;
 		*label = 0;
 		*count = 0;

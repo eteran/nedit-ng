@@ -1129,7 +1129,7 @@ void EditCustomTitleFormat(WindowInfo *window) {
 	etDialog.window = window;
 
 	/* Create the dialog if it doesn't already exist */
-	if (etDialog.form == nullptr) {
+	if(!etDialog.form) {
 		createEditTitleDialog(window->shell);
 	} else {
 		/* If the window is already up, just pop it to the top */

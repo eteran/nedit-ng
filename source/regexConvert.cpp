@@ -115,7 +115,7 @@ char *ConvertRE(const char *exp) {
 
 	/* Set up `errorText' to receive failure reports. */
 
-	if (exp == nullptr)
+	if(!exp)
 		throw regex_error("nullptr argument to `ConvertRE\'");
 
 	Code_Emit_Ptr = &Compute_Size;

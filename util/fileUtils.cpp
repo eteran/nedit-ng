@@ -134,7 +134,7 @@ int ExpandTilde(char *pathname) {
 	if (pathname[0] != '~')
 		return TRUE;
 	nameEnd = strchr(&pathname[1], '/');
-	if (nameEnd == nullptr) {
+	if(!nameEnd) {
 		nameEnd = pathname + strlen(pathname);
 	}
 	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
@@ -306,7 +306,7 @@ int CompressPathname(char *pathname) {
 	outPtr = buf;
 	/* copy initial / */
 	copyThruSlash(&outPtr, &inPtr);
-	while (inPtr != nullptr) {
+	while (inPtr) {
 		/* if the next component is "../", remove previous component */
 		if (compareThruSlash(inPtr, "../")) {
 			*outPtr = 0;
@@ -506,7 +506,7 @@ int ConvertToDosFileString(char **fileString, int *length) {
 
 	/* Allocate the new string */
 	auto outString = XtMalloc(outLength + 1);
-	if (outString == nullptr)
+	if(!outString)
 		return FALSE;
 
 	/* Do the conversion, free the old string */

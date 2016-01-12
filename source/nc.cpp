@@ -428,7 +428,7 @@ static CommandLine processCommandLine(int argc, char **argv) {
 
 	/* Convert command line arguments into a command string for the server */
 	parseCommandLine(argc, argv, &commandLine);
-	if (commandLine.serverRequest == nullptr) {
+	if(!commandLine.serverRequest) {
 		fprintf(stderr, "nc: Invalid commandline argument\n");
 		exit(EXIT_FAILURE);
 	}

@@ -184,7 +184,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro) {
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-	if (subsCommand == nullptr) {
+	if(!subsCommand) {
 		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
@@ -251,7 +251,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName, lineNumber);
-	if (subsCommand == nullptr) {
+	if(!subsCommand) {
 		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
@@ -294,7 +294,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command, fullName, lineNumber);
-	if (subsCommand == nullptr) {
+	if(!subsCommand) {
 		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
@@ -462,7 +462,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input, i
 	}
 
 	/* if there's nothing to write to the process' stdin, close it now */
-	if (input == nullptr)
+	if(!input)
 		close(stdinFD);
 
 	/* Create a data structure for passing process information around
@@ -497,7 +497,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input, i
 
 	/* set up callbacks for activity on the file descriptors */
 	cmdData->stdoutInputID = XtAppAddInput(context, stdoutFD, (XtPointer)XtInputReadMask, stdoutReadProc, window);
-	if (input != nullptr)
+	if(input)
 		cmdData->stdinInputID = XtAppAddInput(context, stdinFD, (XtPointer)XtInputWriteMask, stdinWriteProc, window);
 	else
 		cmdData->stdinInputID = 0;
@@ -890,7 +890,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	}
 	*stdinFD = pipeFDs[1];
 	childStdinFD = pipeFDs[0];
-	if (stderrFD == nullptr)
+	if(!stderrFD)
 		childStderrFD = childStdoutFD;
 	else {
 		if (pipe(pipeFDs) != 0) {
@@ -912,7 +912,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 		/* close the parent end of the pipes in the child process   */
 		close(*stdinFD);
 		close(*stdoutFD);
-		if (stderrFD != nullptr)
+		if(stderrFD)
 			close(*stderrFD);
 
 		/* close current stdin, stdout, and stderr file descriptors before
@@ -967,7 +967,7 @@ static pid_t forkCommand(Widget parent, const char *command, const char *cmdDir,
 	/* close the child ends of the pipes */
 	close(childStdinFD);
 	close(childStdoutFD);
-	if (stderrFD != nullptr)
+	if(stderrFD)
 		close(childStderrFD);
 
 	return childPid;

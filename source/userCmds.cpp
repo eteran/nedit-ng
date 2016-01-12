@@ -757,9 +757,9 @@ void UpdateUserMenus(WindowInfo *window) {
 ** Dim/undim buttons for pasting replay macros into macro and bg menu dialogs
 */
 void DimPasteReplayBtns(int sensitive) {
-	if (MacroCmdDialog != nullptr)
+	if(MacroCmdDialog)
 		XtSetSensitive(MacroPasteReplayBtn, sensitive);
-	if (BGMenuCmdDialog != nullptr)
+	if(BGMenuCmdDialog)
 		XtSetSensitive(BGMenuPasteReplayBtn, sensitive);
 }
 
@@ -1461,7 +1461,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 		subPane = menu->sumMenuPane;
 		for (;;) {
 			subSep = strchr(namePtr, '>');
-			if (subSep == nullptr) {
+			if(!subSep) {
 				
 				if(menuType == SHELL_CMDS) {
 					btn = createUserMenuItem(subPane, namePtr, item, n, shellMenuCB, (XtPointer)window);
@@ -1486,7 +1486,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 			auto hierName = copySubstringEx(fullName, subSep - fullName);
 			userSubMenuInfo *subMenuInfo = findSubMenuInfoEx(subMenus, hierName);
 			newSubPane = findInMenuTreeEx(menuTree, nTreeEntries, hierName);
-			if (newSubPane == nullptr) {
+			if(!newSubPane) {
 
 				auto subMenuName = copySubstringEx(namePtr, subSep - namePtr);
 				newSubPane = createUserSubMenuEx(subPane, subMenuName, &btn);
@@ -1689,7 +1689,7 @@ static int checkMacro(userCmdDialog *ucd) {
 	menuItemRec *f;
 
 	f = readDialogFields(ucd, False);
-	if (f == nullptr)
+	if(!f)
 		return False;
 	if (!checkMacroText(f->cmd, ucd->dlogShell, ucd->cmdTextW)) {
 		freeMenuItemRec(f);
@@ -1704,7 +1704,7 @@ static int checkMacroText(const char *macro, Widget errorParent, Widget errFocus
 	const char *stoppedAt;
 
 	prog = ParseMacro(macro, &errMsg, &stoppedAt);
-	if (prog == nullptr) {
+	if(!prog) {
 		if (errorParent) {
 			ParseError(errorParent, macro, stoppedAt, "macro", errMsg);
 			XmTextSetInsertionPosition(errFocus, stoppedAt - macro);
@@ -1956,7 +1956,7 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 
 	/* fill in the name, accelerator, mnemonic, and command fields of the
 	   dialog for the newly selected item, or blank them if "New" is selected */
-	if (f == nullptr) {
+	if(!f) {
 		XmTextSetStringEx(ucd->nameTextW, "");
 		XmTextSetStringEx(ucd->cmdTextW, "");
 		XmTextSetStringEx(ucd->accTextW, "");
@@ -2118,7 +2118,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 
 	/* If there are no problems reading the data, just return it */
 	currentFields = readDialogFields(ucd, True);
-	if (currentFields != nullptr)
+	if(currentFields)
 		return (void *)currentFields;
 
 	/* If user might not be expecting fields to be read, give more warning */
@@ -2167,7 +2167,7 @@ static void disableTextW(Widget textW) {
 	<Unmap>:	unmap()\n";
 
 	/* replace the translation table with the slimmed down one above */
-	if (emptyTable == nullptr)
+	if(!emptyTable)
 		emptyTable = XtParseTranslationTable(emptyTranslations);
 	XtVaSetValues(textW, XmNtranslations, emptyTable, nullptr);
 }
@@ -2391,7 +2391,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 			inPtr += cmdLen;
 		} else {
 			cmdStr = copyMacroToEnd(&inPtr);
-			if (cmdStr == nullptr)
+			if(!cmdStr)
 				return False;
 		}
 		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n')
@@ -2612,7 +2612,7 @@ static char *copyMacroToEnd(const char **inPtr) {
 
 	/* Parse the input */
 	prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
-	if (prog == nullptr) {
+	if(!prog) {
 		ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
 		return nullptr;
 	}
@@ -2867,7 +2867,7 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus) {
 	while ((subSep = strchr(subSep, '>'))) {
 		hierName = copySubstring(info->umiName, subSep - info->umiName);
 		curSubMenu = findSubMenuInfo(subMenus, hierName);
-		if (curSubMenu == nullptr) {
+		if(!curSubMenu) {
 			/* sub-menu info not stored before: new sub-menu;
 			   remember its hierarchical position */
 			info->umiId[subMenuDepth] = *menuIdx;

@@ -196,7 +196,7 @@ static const char *getBuildInfo(void) {
 
 	
 
-	if (bldInfoString == nullptr) {
+	if(!bldInfoString) {
 		const char *locale;
 		char visualStr[500] = "<unknown>";
 
@@ -331,10 +331,10 @@ static void loadFontsAndColors(Widget parent, int style) {
 	int r, g, b;
 	if (HelpStyleInfo[STYLE_INDEX(style)].font == nullptr) {
 		font = XLoadQueryFont(XtDisplay(parent), GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
-		if (font == nullptr) {
+		if(!font) {
 			fprintf(stderr, "NEdit: help font, %s, not available\n", GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
 			font = XLoadQueryFont(XtDisplay(parent), "fixed");
-			if (font == nullptr) {
+			if(!font) {
 				fprintf(stderr, "NEdit: fallback help font, \"fixed\", not "
 				                "available, cannot continue\n");
 				exit(EXIT_FAILURE);

@@ -3675,7 +3675,7 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
 	}
 
 	/* Return the wrapped text, possibly including part of startLine */
-	if (breakBefore == nullptr)
+	if(!breakBefore)
 		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->BufGetLength());
 	else {
 		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
@@ -3797,9 +3797,9 @@ static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, i
 	*indentPtr = '\0';
 
 	/* Return any requested stats */
-	if (length != nullptr)
+	if(length)
 		*length = indentPtr - indentStr;
-	if (column != nullptr)
+	if(column)
 		*column = indent;
 
 	return indentStr;

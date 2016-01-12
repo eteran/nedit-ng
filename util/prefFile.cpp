@@ -253,11 +253,11 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 
 	/* read the preferences file into an X database.
 	   On failure prefDB will be nullptr. */
-	if (fullName == nullptr) {
+	if(!fullName) {
 		db = nullptr;
 	} else {
 		char *fileString = ReadAnyTextFile(fullName, False);
-		if (fileString == nullptr) {
+		if(!fileString) {
 			db = nullptr;
 		} else {
 			db = XrmGetStringDatabase(fileString);

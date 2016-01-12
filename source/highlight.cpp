@@ -174,7 +174,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	WindowInfo *window = (WindowInfo *)cbArg;
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 
-	if (highlightData == nullptr)
+	if(!highlightData)
 		return;
 
 	/* Restyling-only modifications (usually a primary or secondary  selection)
@@ -225,13 +225,13 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
 	patterns = findPatternsForWindow(window, warn);
-	if (patterns == nullptr) {
+	if(!patterns) {
 		return;
 	}
 
 	/* Compile the patterns */
 	highlightData = createHighlightData(window, patterns);
-	if (highlightData == nullptr) {
+	if(!highlightData) {
 		return;
 	}
 
@@ -366,14 +366,14 @@ void UpdateHighlightStyles(WindowInfo *window) {
 
 	/* Find the pattern set for the window's current language mode */
 	patternSet *patterns = findPatternsForWindow(window, False);
-	if (patterns == nullptr) {
+	if(!patterns) {
 		StopHighlighting(window);
 		return;
 	}
 
 	/* Build new patterns */
 	windowHighlightData *highlightData = createHighlightData(window, patterns);
-	if (highlightData == nullptr) {
+	if(!highlightData) {
 		StopHighlighting(window);
 		return;
 	}
@@ -411,7 +411,7 @@ bool TestHighlightPatterns(patternSet *patSet) {
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
 	windowHighlightData *highlightData = createHighlightData(WindowList, patSet);
-	if (highlightData == nullptr)
+	if(!highlightData)
 		return false;
 	freeHighlightData(highlightData);
 	return true;
@@ -486,7 +486,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 
 	/* Find the window's language mode.  If none is set, warn user */
 	modeName = LanguageModeName(window->languageMode);
-	if (modeName == nullptr) {
+	if(!modeName) {
 		if (warn)
 			DialogF(DF_WARN, window->shell, 1, "Language Mode", "No language-specific mode has been set for this file.\n\n"
 			                                                    "To use syntax highlighting in this window, please select a\n"
@@ -500,7 +500,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 
 	/* Look up the appropriate pattern for the language */
 	patterns = FindPatternSet(modeName);
-	if (patterns == nullptr) {
+	if(!patterns) {
 		if (warn) {
 			DialogF(DF_WARN, window->shell, 1, "Language Mode", "Syntax highlighting is not available in language\n"
 			                                                    "mode %s.\n\n"
@@ -1077,7 +1077,7 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 		entry = styleTableEntryOfCode(window, hCode);
-		if (entry == nullptr)
+		if(!entry)
 			return 0;
 		if ((*checkStyleName) == nullptr)
 			(*checkStyleName) = entry->styleName;
@@ -1703,7 +1703,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 
 	for (i = 0; i < len; i++)
 		*(*stylePtr)++ = style;
-	if (prevChar != nullptr)
+	if(prevChar)
 		*prevChar = *(toPtr - 1);
 	*stringPtr = toPtr;
 }
@@ -2165,7 +2165,7 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName) {
 	int i;
 
-	if (patName == nullptr)
+	if(!patName)
 		return -1;
 	for (i = 0; i < nPats; i++)
 		if (!strcmp(patList[i].name, patName))

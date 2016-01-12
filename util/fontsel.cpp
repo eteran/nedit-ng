@@ -602,7 +602,7 @@ char *FontSel(Widget parent, int showPropFonts, const char *currFont, Pixel samp
 		XtDestroyWidget(dialog);
 	}
 
-	if (ctrlBlk.oldFont != nullptr) {
+	if (ctrlBlk.oldFont) {
 		XFreeFont(theDisplay, ctrlBlk.oldFont);
 		XmFontListFree(ctrlBlk.oldFontList);
 	}
@@ -675,7 +675,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		}
 		XmListDeleteAllItems(ctrlBlk.fontList);
 		XmListAddItems(ctrlBlk.fontList, items, itemCount1, 1);
-		if (ctrlBlk.sel1 != nullptr) {
+		if (ctrlBlk.sel1) {
 			XmStringFree(items[0]);
 			items[0] = XmStringCreate(ctrlBlk.sel1, XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.fontList, items[0], FALSE);
@@ -692,7 +692,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		}
 		XmListDeleteAllItems(ctrlBlk.styleList);
 		XmListAddItems(ctrlBlk.styleList, items, itemCount2, 1);
-		if (ctrlBlk.sel2 != nullptr) {
+		if (ctrlBlk.sel2) {
 			XmStringFree(items[0]);
 			items[0] = XmStringCreate(ctrlBlk.sel2, XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.styleList, items[0], FALSE);
@@ -709,7 +709,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		}
 		XmListDeleteAllItems(ctrlBlk.sizeList);
 		XmListAddItems(ctrlBlk.sizeList, items, itemCount3, 1);
-		if (ctrlBlk.sel3 != nullptr) {
+		if (ctrlBlk.sel3) {
 			XmStringFree(items[0]);
 			items[0] = XmStringCreate(ctrlBlk.sel3, XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.sizeList, items[0], FALSE);
@@ -1086,7 +1086,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk) {
 		}
 	}
 
-	if (ctrlBlk->fontName != nullptr) {
+	if (ctrlBlk->fontName) {
 		XmTextSetStringEx(ctrlBlk->fontNameField, ctrlBlk->fontName);
 		dispSample(ctrlBlk);
 	} else {
@@ -1107,7 +1107,7 @@ static void dispSample(xfselControlBlkType *ctrlBlk) {
 
 	enableSample(ctrlBlk, True, &fontList);
 
-	if (ctrlBlk->oldFont != nullptr) {
+	if (ctrlBlk->oldFont) {
 		XFreeFont(display, ctrlBlk->oldFont);
 		XmFontListFree(ctrlBlk->oldFontList);
 	}

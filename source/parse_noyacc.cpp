@@ -616,7 +616,7 @@ static Symbol *matchesActionRoutine(char **inPtr) {
 		return nullptr;
 	*symPtr = '\0';
 	s = LookupSymbol(symbolName);
-	if (s != nullptr)
+	if(s)
 		*inPtr = c;
 	return s;
 }
@@ -646,12 +646,12 @@ static int yygrowstack() {
 		newsize = YYMAXDEPTH;
 	i = yyssp - yyss;
 	newss = yyss ? (short *)realloc(yyss, newsize * sizeof *newss) : (short *)malloc(newsize * sizeof *newss);
-	if (newss == nullptr)
+	if(!newss)
 		return -1;
 	yyss = newss;
 	yyssp = newss + i;
 	newvs = yyvs ? (YYSTYPE *)realloc(yyvs, newsize * sizeof *newvs) : (YYSTYPE *)malloc(newsize * sizeof *newvs);
-	if (newvs == nullptr)
+	if(!newvs)
 		return -1;
 	yyvs = newvs;
 	yyvsp = newvs + i;

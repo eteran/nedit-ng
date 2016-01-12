@@ -281,7 +281,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	help = createPanelHelp(existFileSB, HelpExist, "Selecting Files to Open");
 	createErrorDialog(existFileSB);
 	XtAddCallback(existFileSB, XmNhelpCallback, existHelpCB, (char *)help);
-	if (DefaultDirectory != nullptr || DefaultPattern != nullptr) {
+	if (DefaultDirectory != nullptr || DefaultPattern) {
 		XtVaSetValues(existFileSB, XmNdirectory, DefaultDirectory, XmNpattern, DefaultPattern, nullptr);
 	}
 
@@ -430,7 +430,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	/* Delay the setting of the default name till after the replacement of
 	   the search procedures. Otherwise the field is cleared again by certain
 	   *tif implementations */
-	if (defaultName != nullptr) {
+	if (defaultName) {
 		Widget nameField = XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT);
 		XmTextInsert(nameField, XmTextGetLastPosition(nameField), (String)defaultName);
 	}
@@ -477,7 +477,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 char *GetFileDialogDefaultDirectory(void) {
 	char *string;
 
-	if (DefaultDirectory == nullptr) {
+	if(!DefaultDirectory) {
 		return nullptr;
 	}
 	
@@ -494,7 +494,7 @@ char *GetFileDialogDefaultDirectory(void) {
 char *GetFileDialogDefaultPattern(void) {
 	char *string;
 
-	if (DefaultPattern == nullptr) {
+	if(!DefaultPattern) {
 		return nullptr;
 	}
 	
@@ -511,7 +511,7 @@ char *GetFileDialogDefaultPattern(void) {
 */
 boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
 
-	if (DefaultDirectory == nullptr) {
+	if(!DefaultDirectory) {
 		return boost::optional<std::string>();
 	}
 	
@@ -526,7 +526,7 @@ boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
 */
 boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
 
-	if (DefaultPattern == nullptr) {
+	if(!DefaultPattern) {
 		return boost::optional<std::string>();
 	}
 	
@@ -539,7 +539,7 @@ boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
 ** and use the application's working directory instead.
 */
 void SetFileDialogDefaultDirectory(boost::optional<std::string> dir) {
-	if (DefaultDirectory != nullptr) {
+	if (DefaultDirectory) {
 		XmStringFree(DefaultDirectory);
 	}
 	
@@ -552,7 +552,7 @@ void SetFileDialogDefaultDirectory(boost::optional<std::string> dir) {
 ** all files in the directory.
 */
 void SetFileDialogDefaultPattern(boost::optional<std::string> pattern) {
-	if (DefaultPattern != nullptr) {
+	if (DefaultPattern) {
 		XmStringFree(DefaultPattern);
 	}
 	

@@ -560,7 +560,7 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
 	}
 
-	if (exp == nullptr)
+	if(!exp)
 		throw regex_error("nullptr argument, `CompileRE\'");
 
 	/* Initialize arrays used by function `shortcut_escape'. */
@@ -905,7 +905,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 	while (*Reg_Parse != '|' && *Reg_Parse != ')' && *Reg_Parse != '\0') {
 		latest = piece(&flags_local, &range_local);
 
-		if (latest == nullptr)
+		if(!latest)
 			return (nullptr); /* Something went wrong. */
 
 		*flag_param |= flags_local & HAS_WIDTH;
@@ -925,7 +925,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 		chain = latest;
 	}
 
-	if (chain == nullptr) { /* Loop ran zero times. */
+	if(!chain) { /* Loop ran zero times. */
 		(void)emit_node(NOTHING);
 	}
 
@@ -2631,7 +2631,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 
 	/* If caller has supplied delimiters, make a delimiter table */
 
-	if (delimiters == nullptr) {
+	if(!delimiters) {
 		Current_Delimiters = Default_Delimiters;
 	} else {
 		Current_Delimiters = makeDelimiterTable(delimiters);
@@ -2646,7 +2646,7 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 			;
 		}
 		succ_char = '\n';
-	} else if (end == nullptr) {
+	} else if(!end) {
 		succ_char = '\n';
 	}
 

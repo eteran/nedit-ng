@@ -55,12 +55,12 @@ const char *GetClearCaseViewTag(void) {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
 		const char *envPtr = getenv("CLEARCASE_ROOT");
-		if (envPtr != nullptr) {
+		if (envPtr) {
 			const char *tagPtr;
 			ClearCaseViewRoot = XtStringDup(envPtr);
 
 			tagPtr = strrchr(ClearCaseViewRoot, '/');
-			if (tagPtr != nullptr) {
+			if (tagPtr) {
 				ClearCaseViewTag = ++tagPtr;
 			}
 		}

@@ -588,7 +588,7 @@ static int checkDoMacroArg(const char *macro) {
 	/* Do a test parse */
 	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
 	free(tMacro);
-	if (prog == nullptr) {
+	if(!prog) {
 		ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
 		return False;
 	}

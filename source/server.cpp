@@ -298,7 +298,7 @@ static void processServerCommandString(char *string) {
 		for (window = WindowList; window != nullptr; window = window->next)
 			if (!window->filenameSet && !window->fileChanged && isLocatedOnDesktop(window, currentDesktop))
 				break;
-		if (window == nullptr) {
+		if(!window) {
 			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
 			CheckCloseDim();
 		} else {
@@ -358,7 +358,7 @@ static void processServerCommandString(char *string) {
 					break;
 
 			if (*doCommand == '\0') {
-				if (window == nullptr) {
+				if(!window) {
 					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
 				} else {
 					if (iconicFlag)
@@ -399,7 +399,7 @@ static void processServerCommandString(char *string) {
 		}
 
 		window = FindWindowWithFile(filename, pathname);
-		if (window == nullptr) {
+		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
 			   highlighting. At the end of the file-opening loop, the

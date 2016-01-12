@@ -389,7 +389,7 @@ void BeginLearn(WindowInfo *window) {
 	char message[MAX_LEARN_MSG_LEN];
 
 	/* If we're already in learn mode, return */
-	if (MacroRecordActionHook != nullptr)
+	if(MacroRecordActionHook)
 		return;
 
 	/* dim the inappropriate menus and items, and undim finish and cancel */
@@ -453,7 +453,7 @@ void FinishLearn(void) {
 	WindowInfo *win;
 
 	/* If we're not in learn mode, return */
-	if (MacroRecordActionHook == nullptr)
+	if(!MacroRecordActionHook)
 		return;
 
 	/* Remove the action hook */
@@ -493,7 +493,7 @@ void FinishLearn(void) {
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
 void CancelMacroOrLearn(WindowInfo *window) {
-	if (MacroRecordActionHook != nullptr)
+	if(MacroRecordActionHook)
 		cancelLearn();
 	else if (window->macroCmdData != nullptr)
 		AbortMacroCommand(window);
@@ -503,7 +503,7 @@ static void cancelLearn(void) {
 	WindowInfo *win;
 
 	/* If we're not in learn mode, return */
-	if (MacroRecordActionHook == nullptr)
+	if(!MacroRecordActionHook)
 		return;
 
 	/* Remove the action hook */
@@ -542,7 +542,7 @@ void Replay(WindowInfo *window) {
 		/* Parse the replay macro (it's stored in text form) and compile it into
 		an executable program "prog" */
 		prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
-		if (prog == nullptr) {
+		if(!prog) {
 			fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg);
 			return;
 		}
@@ -655,19 +655,19 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 			}
 			inPtr += strspn(inPtr, " \t\n");
 			if (*inPtr != '{') {
-				if (errPos != nullptr)
+				if(errPos)
 					*errPos = stoppedAt;
 				return ParseError(dialogParent, string, inPtr, errIn, "expected '{'");
 			}
 			prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
-			if (prog == nullptr) {
-				if (errPos != nullptr)
+			if(!prog) {
+				if(errPos)
 					*errPos = stoppedAt;
 				return ParseError(dialogParent, string, stoppedAt, errIn, errMsg);
 			}
 			if (runWindow) {
 				sym = LookupSymbol(subrName);
-				if (sym == nullptr) {
+				if(!sym) {
 					subrPtr.val.prog = prog;
 					subrPtr.tag = NO_TAG;
 					sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
@@ -688,7 +688,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 			   will probably run the code blocks in reverse order! */
 		} else {
 			prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
-			if (prog == nullptr) {
+			if(!prog) {
 				if (errPos) {
 					*errPos = stoppedAt;
 				}
@@ -806,7 +806,7 @@ static void runMacro(WindowInfo *window, Program *prog) {
 void ResumeMacroExecution(WindowInfo *window) {
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 
-	if (cmdData != nullptr)
+	if(cmdData)
 		cmdData->continueWorkProcID = XtAppAddWorkProc(XtWidgetToApplicationContext(window->shell), continueWorkProc, window);
 }
 
@@ -852,7 +852,7 @@ int MacroWindowCloseActions(WindowInfo *window) {
 	/* If no macro is executing in the window, allow the close, but check
 	   if macros executing in other windows have it as focus.  If so, set
 	   their focus back to the window from which they were originally run */
-	if (cmdData == nullptr) {
+	if(!cmdData) {
 		for (w = WindowList; w != nullptr; w = w->next) {
 			mcd = (macroCmdInfo *)w->macroCmdData;
 			if (w == MacroRunWindow() && MacroFocusWindow() == window)
@@ -972,7 +972,7 @@ void DoMacro(WindowInfo *window, view::string_view macro, const char *errInName)
 
 	/* Parse the macro and report errors if it fails */
 	Program *const prog = ParseMacro(tMacro.c_str(), &errMsg, &stoppedAt);
-	if (prog == nullptr) {
+	if(!prog) {
 		ParseError(window->shell, tMacro.c_str(), stoppedAt, errInName, errMsg);
 		return;
 	}
@@ -1001,7 +1001,7 @@ void RepeatDialog(WindowInfo *window) {
 	XmString s1;
 	int cmdNameLen;
 
-	if (LastCommand == nullptr) {
+	if(!LastCommand) {
 		DialogF(DF_WARN, window->shell, 1, "Repeat Macro", "No previous commands or learn/\nreplay sequences to repeat", "OK");
 		return;
 	}
@@ -1014,7 +1014,7 @@ void RepeatDialog(WindowInfo *window) {
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
 	parenChar = strchr(LastCommand, '(');
-	if (parenChar == nullptr)
+	if(!parenChar)
 		return;
 	cmdNameLen = parenChar - LastCommand;
 	lastCmdLabel = XtMalloc(16 + cmdNameLen);
@@ -1162,7 +1162,7 @@ void RepeatMacro(WindowInfo *window, const char *command, int how) {
 	const char *loopMacro;
 	char *loopedCmd;
 
-	if (command == nullptr)
+	if(!command)
 		return;
 
 	/* Wrap a for loop and counter/tests around the command */
@@ -1187,7 +1187,7 @@ selEnd += $text_length - startLength\n}\n";
 
 	/* Parse the resulting macro into an executable program "prog" */
 	prog = ParseMacro(loopedCmd, &errMsg, &stoppedAt);
-	if (prog == nullptr) {
+	if(!prog) {
 		fprintf(stderr, "NEdit internal error, repeat macro syntax wrong: %s\n", errMsg);
 		return;
 	}
@@ -1257,7 +1257,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 		if (i < window->nPanes)
 			break;
 	}
-	if (window == nullptr)
+	if(!window)
 		return;
 
 	/* The last action is recorded for the benefit of repeating the last
@@ -1569,7 +1569,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 			}
 		}
 		/* didn't work? try normalizing the string passed in */
-		if (w == nullptr) {
+		if(!w) {
 			strncpy(normalizedString, string, MAXPATHLEN);
 			normalizedString[MAXPATHLEN - 1] = '\0';
 			if (NormalizePathname(normalizedString) == 1) {
@@ -1586,7 +1586,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 	}
 
 	/* If no matching window was found, return empty string and do nothing */
-	if (w == nullptr) {
+	if(!w) {
 		result->tag = STRING_TAG;
 		result->val.str.rep = PERM_ALLOC_STR("");
 		result->val.str.len = 0;
@@ -1794,7 +1794,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 			return False;
 		}
 		selText = GetAnySelection(window);
-		if (selText == nullptr)
+		if(!selText)
 			selText = XtNewStringEx("");
 	} else {
 		selText = window->buffer->BufGetSelectionText();
@@ -2311,7 +2311,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs, 
 
 	/* Return the results */
 	result->tag = STRING_TAG;
-	if (replacedStr == nullptr) {
+	if(!replacedStr) {
 		if (force) {
 			/* Just copy the original DataValue */
 			if (argList[0].tag == STRING_TAG) {
@@ -2484,7 +2484,7 @@ static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 		return False;
 	}
 	value = getenv(name);
-	if (value == nullptr)
+	if(!value)
 		value = "";
 
 	/* Return the text as an allocated string */
@@ -2529,7 +2529,7 @@ void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int statu
 	DataValue retVal;
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return;
 	retVal.tag = STRING_TAG;
 	AllocNStringCpy(&retVal.val.str, outText);
@@ -2651,7 +2651,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* Return the index of the button which was pressed (stored in the userData
 	   field of the button widget).  The 1st button, being a gadget, is not
 	   returned in w. */
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return; /* shouldn't happen */
 	if (XtClass(w) == xmPushButtonWidgetClass) {
 		XtVaGetValues(w, XmNuserData, &userData, nullptr);
@@ -2803,7 +2803,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData
 	int btnNum;
 
 	/* shouldn't happen, but would crash if it did */
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return;
 
 	/* Return the string entered in the selection text area */
@@ -2843,7 +2843,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callDa
 	DataValue retVal;
 
 	/* shouldn't happen, but would crash if it did */
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return;
 
 	/* Return an empty string */
@@ -3353,7 +3353,7 @@ static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) 
 	size_t length;
 
 	/* shouldn't happen, but would crash if it did */
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return;
 
 	theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
@@ -3419,7 +3419,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData
 	Widget theList;
 
 	/* shouldn't happen, but would crash if it did */
-	if (cmdData == nullptr)
+	if(!cmdData)
 		return;
 
 	/* don't need text_lines anymore: retrieve it then free it */
@@ -3522,7 +3522,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue 
 			splitStr = nullptr;
 		}
 	}
-	if (splitStr == nullptr) {
+	if(!splitStr) {
 		*errMsg = "second argument must be a non-empty string: %s";
 		return (False);
 	}
@@ -4236,7 +4236,7 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 
 	const char *lmName = LanguageModeName(window->languageMode);
 
-	if (lmName == nullptr)
+	if(!lmName)
 		lmName = "Plain";
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, lmName);
@@ -4276,7 +4276,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = ArrayNew();
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		return True;
 	}
 
@@ -4288,7 +4288,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 
 		sprintf(indexStr, "%d", nRangesets - i - 1);
 		allocIndexStr = AllocString(strlen(indexStr) + 1);
-		if (allocIndexStr == nullptr)
+		if(!allocIndexStr)
 			M_FAILURE("Failed to allocate array key in %s");
 		strcpy(allocIndexStr, indexStr);
 
@@ -4342,7 +4342,7 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	if (nArgs > 1)
 		return wrongNArgsErr(errMsg);
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		window->buffer->rangesetTable_ = rangesetTable = new RangesetTable(window->buffer);
 	}
 
@@ -4464,7 +4464,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = ArrayNew();
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		return True;
 	}
 
@@ -4481,7 +4481,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 
 				sprintf(indexStr, "%d", insertIndex);
 				allocIndexStr = AllocString(strlen(indexStr) + 1);
-				if (allocIndexStr == nullptr)
+				if(!allocIndexStr)
 					M_FAILURE("Failed to allocate array key in %s");
 
 				strcpy(allocIndexStr, indexStr);
@@ -4518,13 +4518,13 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	targetRangeset = rangesetTable->RangesetFetch(label);
 
-	if (targetRangeset == nullptr) {
+	if(!targetRangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4547,7 +4547,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 		}
 
 		sourceRangeset = rangesetTable->RangesetFetch(label);
-		if (sourceRangeset == nullptr) {
+		if(!sourceRangeset) {
 			M_FAILURE("Second rangeset does not exist in %s");
 		}
 
@@ -4619,12 +4619,12 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	targetRangeset = rangesetTable->RangesetFetch(label);
-	if (targetRangeset == nullptr) {
+	if(!targetRangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4643,7 +4643,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 		}
 
 		sourceRangeset = rangesetTable->RangesetFetch(label);
-		if (sourceRangeset == nullptr) {
+		if(!sourceRangeset) {
 			M_FAILURE("Second rangeset does not exist in %s");
 		}
 		targetRangeset->RangesetRemove(sourceRangeset);
@@ -4698,12 +4698,12 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, D
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset == nullptr) {
+	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4802,7 +4802,7 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4863,12 +4863,12 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset == nullptr) {
+	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4914,12 +4914,12 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset == nullptr) {
+	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -4957,12 +4957,12 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset == nullptr) {
+	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -5001,12 +5001,12 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable == nullptr) {
+	if(!rangesetTable) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset == nullptr) {
+	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
@@ -5307,7 +5307,7 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
 	}
 
 	pattern = FindPatternOfWindow(window, patternName);
-	if (pattern == nullptr) {
+	if(!pattern) {
 		/* The pattern's name is unknown. */
 		return True;
 	}

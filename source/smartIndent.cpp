@@ -250,7 +250,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 
 	/* Find the window's language mode.  If none is set, warn the user */
 	modeName = LanguageModeName(window->languageMode);
-	if (modeName == nullptr) {
+	if(!modeName) {
 		if (warn) {
 			DialogF(DF_WARN, window->shell, 1, "Smart Indent", "No language-specific mode has been set for this file.\n\n"
 			                                                   "To use smart indent in this window, please select a\n"
@@ -262,7 +262,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 
 	/* Look up the appropriate smart-indent macros for the language */
 	indentMacros = findIndentSpec(modeName);
-	if (indentMacros == nullptr) {
+	if(!indentMacros) {
 		if (warn) {
 			DialogF(DF_WARN, window->shell, 1, "Smart Indent", "Smart indent is not available in languagemode\n%s.\n\n"
 			                                                   "You can create new smart indent macros in the\n"
@@ -319,7 +319,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 void EndSmartIndent(WindowInfo *window) {
 	windowSmartIndentData *winData = (windowSmartIndentData *)window->smartIndentData;
 
-	if (winData == nullptr)
+	if(!winData)
 		return;
 
 	/* Free programs and allocated data */
@@ -911,7 +911,7 @@ static int checkSmartIndentDialogData(void) {
 
 	widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
 	prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-	if (prog == nullptr) {
+	if(!prog) {
 		ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "newline macro", errMsg);
 		XmTextSetInsertionPosition(SmartIndentDialog.newlineMacro, stoppedAt - widgetText);
 		XmProcessTraversal(SmartIndentDialog.newlineMacro, XmTRAVERSE_CURRENT);
@@ -925,7 +925,7 @@ static int checkSmartIndentDialogData(void) {
 	if (!TextWidgetIsBlank(SmartIndentDialog.modMacro)) {
 		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
 		prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-		if (prog == nullptr) {
+		if(!prog) {
 			ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "modify macro", errMsg);
 			XmTextSetInsertionPosition(SmartIndentDialog.modMacro, stoppedAt - widgetText);
 			XmProcessTraversal(SmartIndentDialog.modMacro, XmTRAVERSE_CURRENT);
@@ -950,7 +950,7 @@ static smartIndentRec *getSmartIndentDialogData(void) {
 }
 
 static void setSmartIndentDialogData(smartIndentRec *is) {
-	if (is == nullptr) {
+	if(!is) {
 		XmTextSetStringEx(SmartIndentDialog.initMacro, "");
 		XmTextSetStringEx(SmartIndentDialog.newlineMacro, "");
 		XmTextSetStringEx(SmartIndentDialog.modMacro, "");
@@ -1297,14 +1297,14 @@ int LoadSmartIndentString(char *inString) {
 		/* read the initialization macro (arbitrary text terminated by the
 		   macro end boundary string) */
 		is.initMacro = readSIMacro(&inPtr);
-		if (is.initMacro == nullptr) {
+		if(!is.initMacro) {
 			XtFree((char *)is.lmName);
 			return siParseError(inString, inPtr, "no end boundary to initialization macro");
 		}
 
 		/* read the newline macro */
 		is.newlineMacro = readSIMacro(&inPtr);
-		if (is.newlineMacro == nullptr) {
+		if(!is.newlineMacro) {
 			XtFree((char *)is.lmName);
 			XtFree((char *)is.initMacro);
 			return siParseError(inString, inPtr, "no end boundary to newline macro");
@@ -1312,7 +1312,7 @@ int LoadSmartIndentString(char *inString) {
 
 		/* read the modify macro */
 		is.modMacro = readSIMacro(&inPtr);
-		if (is.modMacro == nullptr) {
+		if(!is.modMacro) {
 			XtFree((char *)is.lmName);
 			XtFree((char *)is.initMacro);
 			XtFree((char *)is.newlineMacro);
@@ -1380,7 +1380,7 @@ static char *readSIMacro(const char **inPtr) {
 
 	/* Find the end of the macro */
 	macroEnd = strstr(*inPtr, MacroEndBoundary);
-	if (macroEnd == nullptr)
+	if(!macroEnd)
 		return nullptr;
 
 	/* Copy the macro */
@@ -1456,7 +1456,7 @@ char *WriteSmartIndentCommonString(void) {
 
 	if (!strcmp(CommonMacros, DefaultCommonMacros))
 		return XtNewStringEx("Default");
-	if (CommonMacros == nullptr)
+	if(!CommonMacros)
 		return XtNewStringEx("");
 
 	/* Shift the macro over by a tab to keep .nedit file bright and clean */
@@ -1505,7 +1505,7 @@ static int isDefaultIndentSpec(smartIndentRec *indentSpec) {
 static smartIndentRec *findIndentSpec(const char *modeName) {
 	int i;
 
-	if (modeName == nullptr)
+	if(!modeName)
 		return nullptr;
 
 	for (i = 0; i < NSmartIndentSpecs; i++)
@@ -1525,7 +1525,7 @@ static char *ensureNewline(char *string) {
 	char *newString;
 	int length;
 
-	if (string == nullptr)
+	if(!string)
 		return nullptr;
 	length = strlen(string);
 	if (length == 0 || string[length - 1] == '\n')
