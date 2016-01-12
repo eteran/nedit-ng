@@ -574,14 +574,12 @@ void ReadMacroInitFile(WindowInfo *window) {
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
 int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist) {
-	int result;
-	char *fileString;
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	fileString = ReadAnyTextFile(fileName, True);
-	if (fileString == nullptr) {
+	auto fileString = ReadAnyTextFileEx(fileName, True);
+	if (!fileString) {
 		if (errno != ENOENT || warnNotExist) {
 			DialogF(DF_ERR, window->shell, 1, "Read Macro", "Error reading macro file %s: %s", "OK", fileName, strerror(errno));
 		}
@@ -589,9 +587,8 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist) {
 	}
 
 	/* Parse fileString */
-	result = readCheckMacroString(window->shell, fileString, window, fileName, nullptr);
-	XtFree(fileString);
-	return result;
+	return readCheckMacroString(window->shell, fileString.c_str(), window, fileName, nullptr);
+
 }
 
 /*
@@ -668,7 +665,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 					*errPos = stoppedAt;
 				return ParseError(dialogParent, string, stoppedAt, errIn, errMsg);
 			}
-			if (runWindow != nullptr) {
+			if (runWindow) {
 				sym = LookupSymbol(subrName);
 				if (sym == nullptr) {
 					subrPtr.val.prog = prog;
@@ -692,18 +689,18 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 		} else {
 			prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
 			if (prog == nullptr) {
-				if (errPos != nullptr) {
+				if (errPos) {
 					*errPos = stoppedAt;
 				}
 
 				return ParseError(dialogParent, string, stoppedAt, errIn, errMsg);
 			}
 
-			if (runWindow != nullptr) {
+			if (runWindow) {
 				XEvent nextEvent;
 				if (runWindow->macroCmdData == nullptr) {
 					runMacro(runWindow, prog);
-					while (runWindow->macroCmdData != nullptr) {
+					while (runWindow->macroCmdData) {
 						XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell), &nextEvent);
 						ServerDispatchEvent(&nextEvent);
 					}
@@ -752,7 +749,7 @@ static void runMacro(WindowInfo *window, Program *prog) {
 	/* If a macro is already running, just call the program as a subroutine,
 	   instead of starting a new one, so we don't have to keep a separate
 	   context, and the macros will serialize themselves automatically */
-	if (window->macroCmdData != nullptr) {
+	if (window->macroCmdData) {
 		RunMacroAsSubrCall(prog);
 		return;
 	}
@@ -1233,7 +1230,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 
 	/* Record the action and its parameters */
 	actionString = actionToString(w, actionName, event, params, *numParams);
-	if (actionString != nullptr) {
+	if (actionString) {
 		MacroRecordBuf->BufInsert(MacroRecordBuf->BufGetLength(), actionString);
 		XtFree(actionString);
 	}
@@ -1270,7 +1267,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 
 	/* Record the action and its parameters */
 	actionString = actionToString(w, actionName, event, params, *numParams);
-	if (actionString != nullptr) {
+	if (actionString) {
 		XtFree(LastCommand);
 		LastCommand = actionString;
 	}
@@ -4429,7 +4426,7 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, 
 			M_FAILURE("Invalid rangeset label in %s");
 		}
 
-		if (rangesetTable != nullptr) {
+		if (rangesetTable) {
 			rangesetTable->RangesetForget(label);
 		}
 	}
@@ -4741,7 +4738,7 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
-	if (rangesetTable != nullptr) {
+	if (rangesetTable) {
 		rangeset = rangesetTable->RangesetFetch(label);
 	}
 
@@ -4811,7 +4808,7 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 
 	ok = False;
 	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset != nullptr) {
+	if (rangeset) {
 		if (nArgs == 1) {
 			rangeIndex = rangeset->RangesetGetNRanges() - 1;
 			ok  = rangeset->RangesetFindRangeNo(0, &start, &dummy);
@@ -4927,7 +4924,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 	}
 
 	color_name = (String) "";
-	if (rangeset != nullptr) {
+	if (rangeset) {
 		if (!readStringArg(argList[1], &color_name, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a color name string in %s");
 		}
@@ -4970,7 +4967,7 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	}
 
 	name = (String) "";
-	if (rangeset != nullptr) {
+	if (rangeset) {
 		if (!readStringArg(argList[1], &name, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a valid name string in %s");
 		}
@@ -5014,7 +5011,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	}
 
 	update_fn_name = (String) "";
-	if (rangeset != nullptr) {
+	if (rangeset) {
 		if (nArgs == 2) {
 			if (!readStringArg(argList[1], &update_fn_name, stringStorage[0], errMsg)) {
 				M_FAILURE("Second parameter is not a string in %s");

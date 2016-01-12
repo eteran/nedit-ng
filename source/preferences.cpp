@@ -1100,43 +1100,43 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
 
-	if (TempStringPrefs.shellCmds != nullptr) {
+	if (TempStringPrefs.shellCmds) {
 		LoadShellCmdsString(TempStringPrefs.shellCmds);
 		XtFree(TempStringPrefs.shellCmds);
 		TempStringPrefs.shellCmds = nullptr;
 	}
 
-	if (TempStringPrefs.macroCmds != nullptr) {
+	if (TempStringPrefs.macroCmds) {
 		LoadMacroCmdsString(TempStringPrefs.macroCmds);
 		XtFree(TempStringPrefs.macroCmds);
 		TempStringPrefs.macroCmds = nullptr;
 	}
-	if (TempStringPrefs.bgMenuCmds != nullptr) {
+	if (TempStringPrefs.bgMenuCmds) {
 		LoadBGMenuCmdsString(TempStringPrefs.bgMenuCmds);
 		XtFree(TempStringPrefs.bgMenuCmds);
 		TempStringPrefs.bgMenuCmds = nullptr;
 	}
-	if (TempStringPrefs.highlight != nullptr) {
+	if (TempStringPrefs.highlight) {
 		LoadHighlightString(TempStringPrefs.highlight, convertOld);
 		XtFree(TempStringPrefs.highlight);
 		TempStringPrefs.highlight = nullptr;
 	}
-	if (TempStringPrefs.styles != nullptr) {
+	if (TempStringPrefs.styles) {
 		LoadStylesString(TempStringPrefs.styles);
 		XtFree(TempStringPrefs.styles);
 		TempStringPrefs.styles = nullptr;
 	}
-	if (TempStringPrefs.language != nullptr) {
+	if (TempStringPrefs.language) {
 		loadLanguageModesString(TempStringPrefs.language, fileVer);
 		XtFree(TempStringPrefs.language);
 		TempStringPrefs.language = nullptr;
 	}
-	if (TempStringPrefs.smartIndent != nullptr) {
+	if (TempStringPrefs.smartIndent) {
 		LoadSmartIndentString(TempStringPrefs.smartIndent);
 		XtFree(TempStringPrefs.smartIndent);
 		TempStringPrefs.smartIndent = nullptr;
 	}
-	if (TempStringPrefs.smartIndentCommon != nullptr) {
+	if (TempStringPrefs.smartIndentCommon) {
 		LoadSmartIndentCommonString(TempStringPrefs.smartIndentCommon);
 		XtFree(TempStringPrefs.smartIndentCommon);
 		TempStringPrefs.smartIndentCommon = nullptr;
@@ -1241,12 +1241,10 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 */
 void ImportPrefFile(const char *filename, int convertOld) {
 	XrmDatabase db;
-	char *fileString;
 
-	fileString = ReadAnyTextFile(filename, False);
-	if (fileString != nullptr) {
-		db = XrmGetStringDatabase(fileString);
-		XtFree(fileString);
+	auto fileString = ReadAnyTextFileEx(filename, False);
+	if (fileString) {
+		db = XrmGetStringDatabase(fileString.c_str());
 		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 		translatePrefFormats(convertOld, -1);
 		ImportedFile = XtNewStringEx(filename);
@@ -2420,7 +2418,7 @@ void EditLanguageModes(void) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (LMDialog.shell != nullptr) {
+	if (LMDialog.shell) {
 		RaiseDialogWindow(LMDialog.shell);
 		return;
 	}
@@ -2727,7 +2725,7 @@ static int updateLMList(void) {
 	/* If there were any name changes, re-name dependent highlight patterns
 	   and smart-indent macros and fix up the weird rename-format names */
 	for (i = 0; i < LMDialog.nLanguageModes; i++) {
-		if (strchr(LMDialog.languageModeList[i]->name, ':') != nullptr) {
+		if (strchr(LMDialog.languageModeList[i]->name, ':')) {
 			char *newName = strrchr(LMDialog.languageModeList[i]->name, ':') + 1;
 			*strchr(LMDialog.languageModeList[i]->name, ':') = '\0';
 			RenameHighlightPattern(LMDialog.languageModeList[i]->name, newName);
@@ -3103,7 +3101,7 @@ void ChooseFonts(WindowInfo *window, int forWindow) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (window->fontDialog != nullptr) {
+	if (window->fontDialog) {
 		RaiseDialogWindow(((fontDialog *)window->fontDialog)->shell);
 		return;
 	}
@@ -3654,7 +3652,7 @@ static int matchLanguageMode(WindowInfo *window) {
 	/* Do a regular expression search on for recognition pattern */
 	std::string first200 = window->buffer->BufGetRangeEx(0, 200);
 	for (i = 0; i < NLanguageModes; i++) {
-		if (LanguageModes[i]->recognitionExpr != nullptr) {
+		if (LanguageModes[i]->recognitionExpr) {
 			if (SearchString(first200.c_str(), LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
@@ -3830,7 +3828,7 @@ static char *writeLanguageModesString(void) {
 		outBuf->BufInsert(outBuf->BufGetLength(), str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
 		XtFree(str);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (LanguageModes[i]->recognitionExpr != nullptr) {
+		if (LanguageModes[i]->recognitionExpr) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->recognitionExpr));
 			XtFree(str);
 		}
@@ -3851,12 +3849,12 @@ static char *writeLanguageModesString(void) {
 			outBuf->BufInsert(outBuf->BufGetLength(), numBuf);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (LanguageModes[i]->delimiters != nullptr) {
+		if (LanguageModes[i]->delimiters) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->delimiters));
 			XtFree(str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (LanguageModes[i]->defTipsFile != nullptr) {
+		if (LanguageModes[i]->defTipsFile) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->defTipsFile));
 			XtFree(str);
 		}
@@ -5287,7 +5285,7 @@ void ChooseColors(WindowInfo *window) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (window->colorDialog != nullptr) {
+	if (window->colorDialog) {
 		RaiseDialogWindow(((colorDialog *)window->colorDialog)->shell);
 		return;
 	}

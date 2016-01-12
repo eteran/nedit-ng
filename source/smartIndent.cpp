@@ -287,7 +287,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 			return;
 		initialized = True;
 	}
-	if (indentMacros->initMacro != nullptr) {
+	if (indentMacros->initMacro) {
 		if (!ReadMacroString(window, indentMacros->initMacro, "smart indent initialization macro"))
 			return;
 	}
@@ -475,7 +475,7 @@ void EditSmartIndentMacros(WindowInfo *window) {
 	int n;
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (SmartIndentDialog.shell != nullptr) {
+	if (SmartIndentDialog.shell) {
 		RaiseDialogWindow(SmartIndentDialog.shell);
 		return;
 	}
@@ -977,7 +977,7 @@ void EditCommonSmartIndentMacro(void) {
 	int n;
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (CommonDialog.shell != nullptr) {
+	if (CommonDialog.shell) {
 		RaiseDialogWindow(CommonDialog.shell);
 		return;
 	}
@@ -1483,7 +1483,7 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 	char *shiftedMacro;
 	int shiftedLen;
 
-	if (macro != nullptr) {
+	if (macro) {
 		shiftedMacro = ShiftText(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
 		buf->BufInsert(buf->BufGetLength(), shiftedMacro);
 		XtFree(shiftedMacro);
@@ -1562,7 +1562,7 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 			SmartIndentSpecs[i]->lmName = XtNewStringEx(newName);
 		}
 	}
-	if (SmartIndentDialog.shell != nullptr) {
+	if (SmartIndentDialog.shell) {
 		if (!strcmp(SmartIndentDialog.langModeName, oldName)) {
 			XtFree(SmartIndentDialog.langModeName);
 			SmartIndentDialog.langModeName = XtNewStringEx(newName);

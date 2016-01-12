@@ -505,7 +505,7 @@ int main(int argc, char **argv) {
 					}
 					if (gotoLine)
 						SelectNumberedLine(window, lineNum);
-					if (toDoCommand != nullptr) {
+					if (toDoCommand) {
 						DoMacro(window, toDoCommand, "-do macro");
 						toDoCommand = nullptr;
 						if (!window->IsValidWindow())

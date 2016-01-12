@@ -10,8 +10,8 @@
 #include <list>
 
 
-class TextBuffer;
-class UndoInfo;
+struct TextBuffer;
+struct UndoInfo;
 
 /* The WindowInfo structure holds the information on a Document. A number
    of 'tabbed' documents may reside within a shell window, hence some of

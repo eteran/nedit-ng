@@ -918,7 +918,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 			range_param->upper += range_local.upper;
 		}
 
-		if (chain != nullptr) { /* Connect the regex atoms together sequentialy. */
+		if (chain) { /* Connect the regex atoms together sequentialy. */
 			tail(chain, latest);
 		}
 
@@ -2936,7 +2936,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 	scan = prog;
 
-	while (scan != nullptr) {
+	while (scan) {
 		NEXT_PTR(scan, next);
 
 		switch (GET_OP_CODE(scan)) {
@@ -3222,7 +3222,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			if (AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0); /* See comment for ANY_OF. */
 
-			if (strchr((char *)OPERAND(scan), *Reg_Input) != nullptr) {
+			if (strchr((char *)OPERAND(scan), *Reg_Input)) {
 				MATCH_RETURN(0);
 			}
 
@@ -3938,7 +3938,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 			} else {
 				*dst++ = c;
 			}
-		} else if (prog->startp[paren_no] != nullptr && prog->endp[paren_no] != nullptr) {
+		} else if (prog->startp[paren_no] != nullptr && prog->endp[paren_no]) {
 
 			len = prog->endp[paren_no] - prog->startp[paren_no];
 

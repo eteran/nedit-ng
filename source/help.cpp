@@ -44,6 +44,7 @@
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
+#include "XString.h"
 
 #include <clocale>
 #include <cstdlib>
@@ -159,7 +160,7 @@ static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData);
 static void printCB(Widget w, XtPointer clientData, XtPointer callData);
-static char *stitch(Widget parent, const char **string_list, char **styleMap);
+static XString stitchEx(Widget parent, const char **string_list, char **styleMap);
 static void searchHelpText(Widget parent, int parentTopic, const char *searchFor, int allSections, int startPos, int startTopic);
 static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic);
 static int findTopicFromShellWidget(Widget shellWidget);
@@ -278,7 +279,7 @@ static void initHelpStyles(Widget parent) {
 			* build information. Then stitching the help text
 			* will have the final count of characters to use.
 			*--------------------------------------------------*/
-			if (strstr(*line, "%s") != nullptr) {
+			if (strstr(*line, "%s")) {
 				const char *bldInfo = getBuildInfo();
 				char *text = XtMalloc(strlen(*line) + strlen(bldInfo));
 				sprintf(text, *line, bldInfo);
@@ -389,12 +390,12 @@ static void adaptNavigationButtons(int topic) {
 ** Put together stored help strings to create the text and optionally the style
 ** information for a given help topic.
 */
-static char *stitch(
-
-    Widget parent,            /* used for dynamic font/color allocation */
-    const char **string_list, /* given help strings to stitch together */
-    char **styleMap           /* nullptr, or a place to store help styles */
-    ) {
+static XString stitchEx(
+    	Widget parent,            /* used for dynamic font/color allocation */
+    	const char **string_list, /* given help strings to stitch together */
+    	char **styleMap           /* nullptr, or a place to store help styles */
+    	) {
+	
 	const char *cp;
 	char *section, *sp;       /* resulting help text section            */
 	char *styleData, *sdp;    /* resulting style data for text          */
@@ -459,7 +460,7 @@ static char *stitch(
 		*sdp = '\0';
 	}
 
-	return section;
+	return XString::takeString(section);
 }
 
 /*
@@ -511,7 +512,6 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 	Widget appShell, btn, closeBtn, form, btnFW;
 	Widget sw, hScrollBar, vScrollBar;
 	XmString st1;
-	char *helpText = nullptr;
 	char *styleData = nullptr;
 
 	ac = 0;
@@ -588,11 +588,10 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 
 	/* Put together the text to display and separate it into parallel text
 	   and style data for display by the widget */
-	helpText = stitch(HelpTextPanes[topic], HelpText[topic], &styleData);
+	auto helpText = stitchEx(HelpTextPanes[topic], HelpText[topic], &styleData);
 
 	/* Stuff the text into the widget's text buffer */
-	TextGetBuffer(HelpTextPanes[topic])->BufSetAll(helpText);
-	XtFree(helpText);
+	TextGetBuffer(HelpTextPanes[topic])->BufSetAll(helpText.c_str());
 
 	/* Create a style buffer for the text widget and fill it with the style
 	   data which was generated along with the text content */
@@ -661,7 +660,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   HelpWindows[topic] as nullptr, but it has happened */
 	XtDestroyWidget(HelpWindows[topic]);
 	HelpWindows[topic] = nullptr;
-	if (HelpStyleBuffers[topic] != nullptr) {
+	if (HelpStyleBuffers[topic]) {
 		delete HelpStyleBuffers[topic];
 		HelpStyleBuffers[topic] = nullptr;
 	}
@@ -829,7 +828,7 @@ static void followHyperlink(int topic, int charPosition, int newWindow) {
 	link_text = textD->buffer->BufGetRangeEx(begin, end);
 
 	if (is_known_link(link_text.c_str(), &link_topic, &link_pos)) {
-		if (HelpWindows[link_topic] != nullptr) {
+		if (HelpWindows[link_topic]) {
 			RaiseShellWindow(HelpWindows[link_topic], True);
 		} else {
 			if (newWindow) {
@@ -988,20 +987,17 @@ void InstallHelpLinkActions(XtAppContext context) {
 static void searchHelpText(Widget parent, int parentTopic, const char *searchFor, int allSections, int startPos, int startTopic) {
 	int topic, beginMatch, endMatch;
 	int found = False;
-	char *helpText = nullptr;
 
 	/* Search for the string */
 	for (topic = startTopic; topic < NUM_TOPICS; topic++) {
 		if (!allSections && topic != parentTopic)
 			continue;
-		helpText = stitch(parent, HelpText[topic], nullptr);
+		auto helpText = stitchEx(parent, HelpText[topic], nullptr);
 
-		if (SearchString(helpText, searchFor, SEARCH_FORWARD, SEARCH_LITERAL, False, topic == startTopic ? startPos : 0, &beginMatch, &endMatch, nullptr, nullptr, GetPrefDelimiters())) {
+		if (SearchString(helpText.c_str(), searchFor, SEARCH_FORWARD, SEARCH_LITERAL, False, topic == startTopic ? startPos : 0, &beginMatch, &endMatch, nullptr, nullptr, GetPrefDelimiters())) {
 			found = True;
-			XtFree(helpText);
 			break;
 		}
-		XtFree(helpText);
 	}
 
 	if (!found) {
@@ -1040,7 +1036,7 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
 ** place.)  To change the topic displayed, the stored data has to be relocated.
 */
 static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
-	char *helpText, *styleData;
+	char *styleData;
 
 	/* Relocate the window/widget/buffer information */
 	if (newTopic != existingTopic) {
@@ -1057,12 +1053,13 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
 	   highlighted, we have to turn off highlighting before changing the
 	   displayed text to prevent the text widget from trying to apply the
 	   old, mismatched, highlighting to the new text */
-	helpText = stitch(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
+	auto helpText = stitchEx(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, nullptr, nullptr, 0, '\0', nullptr, nullptr);
-	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAll(helpText);
-	XtFree(helpText);
+	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAll(helpText.c_str());
+
 	HelpStyleBuffers[newTopic]->BufSetAll(styleData);
 	XtFree(styleData);
+
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 }
 

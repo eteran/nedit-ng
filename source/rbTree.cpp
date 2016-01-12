@@ -49,7 +49,7 @@
 static void rotateLeft(rbTreeNode *x, rbTreeNode **root) {
 	rbTreeNode *y = x->right;
 	x->right = y->left;
-	if (y->left != nullptr) {
+	if (y->left) {
 		y->left->parent = x;
 	}
 	y->parent = x->parent;
@@ -71,7 +71,7 @@ static void rotateLeft(rbTreeNode *x, rbTreeNode **root) {
 static void rotateRight(rbTreeNode *x, rbTreeNode **root) {
 	rbTreeNode *y = x->left;
 	x->left = y->right;
-	if (y->right != nullptr) {
+	if (y->right) {
 		y->right->parent = x;
 	}
 	y->parent = x->parent;
@@ -150,7 +150,7 @@ rbTreeNode *rbTreeReverseBegin(rbTreeNode *base) {
 rbTreeNode *rbTreeFind(rbTreeNode *base, rbTreeNode *searchNode, rbTreeCompareNodeCB compareRecords) {
 	rbTreeNode *foundNode = nullptr;
 	rbTreeNode *current = base->parent;
-	while (current != nullptr) {
+	while (current) {
 		int compareResult = compareRecords(searchNode, current);
 
 		if (compareResult < 0) {
@@ -177,7 +177,7 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode, rbTreeCompare
 	current = base->parent;
 	parent = nullptr;
 	x = nullptr;
-	while (current != nullptr) {
+	while (current) {
 		int compareResult = compareRecords(searchNode, current);
 
 		if (compareResult < 0) {
@@ -250,7 +250,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z) {
 			}
 		} else {
 			y = y->right;
-			while (y->left != nullptr) {
+			while (y->left) {
 				y = y->left;
 			}
 			x = y->right;
@@ -261,7 +261,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z) {
 		y->left = z->left;
 		if (y != z->right) {
 			x_parent = y->parent;
-			if (x != nullptr) {
+			if (x) {
 				x->parent = y->parent;
 			}
 			y->parent->left = x;
@@ -286,7 +286,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z) {
 		y = z;
 	} else {
 		x_parent = y->parent;
-		if (x != nullptr) {
+		if (x) {
 			x->parent = y->parent;
 		}
 		if (base->parent == z) {
@@ -392,7 +392,7 @@ int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode, rbTreeCompareNodeCB c
 	rbTreeNode *z;
 
 	z = rbTreeFind(base, searchNode, compareRecords);
-	if (z != nullptr) {
+	if (z) {
 		rbTreeDeleteNode(base, z, disposeNode);
 		foundNode = 1;
 	}
@@ -405,9 +405,9 @@ int rbTreeDelete(rbTreeNode *base, rbTreeNode *searchNode, rbTreeCompareNodeCB c
 ** passing nullptr will result in unpredictable results
 */
 rbTreeNode *rbTreeNext(rbTreeNode *x) {
-	if (x->right != nullptr) {
+	if (x->right) {
 		x = x->right;
-		while (x->left != nullptr) {
+		while (x->left) {
 			x = x->left;
 		}
 	} else {
@@ -426,9 +426,9 @@ rbTreeNode *rbTreeNext(rbTreeNode *x) {
 ** passing nullptr will result in unpredictable results
 */
 rbTreeNode *rbTreePrevious(rbTreeNode *x) {
-	if (x->left != nullptr) {
+	if (x->left) {
 		x = x->left;
-		while (x->right != nullptr) {
+		while (x->right) {
 			x = x->right;
 		}
 	} else {
@@ -473,7 +473,7 @@ rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode) {
 */
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode) {
 	rbTreeNode *iter = rbTreeBegin(base);
-	while (iter != nullptr) {
+	while (iter) {
 		rbTreeNode *nextIter = rbTreeNext(iter);
 
 		if (iter->parent) {
@@ -483,7 +483,7 @@ void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode) {
 				iter->parent->right = iter->right;
 			}
 		}
-		if (iter->right != nullptr) {
+		if (iter->right) {
 			iter->right->parent = iter->parent;
 		}
 		base->left = nextIter;
@@ -598,7 +598,7 @@ static void DumpTree(rbTreeNode *base) {
 	rbTreeNode *newNode;
 
 	newNode = rbTreeBegin(base);
-	while (newNode != nullptr) {
+	while (newNode) {
 		rbTreeNode *nextNode = rbTreeNext(newNode);
 
 		printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);
@@ -634,7 +634,7 @@ int main(int argc, char **argv) {
 	}
 
 	newNode = rbTreeBegin(base);
-	while (newNode != nullptr) {
+	while (newNode) {
 		rbTreeNode *nextNode = rbTreeNext(newNode);
 
 		printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);

@@ -223,18 +223,18 @@ textDisp::textDisp(Widget widget, Widget hScrollBar, Widget vScrollBar, Position
 
 	/* Attach the callback to the text buffer for receiving modification
 	   information */
-	if (buffer != nullptr) {
+	if (buffer) {
 		buffer->BufAddModifyCB(bufModifiedCB, this);
 		buffer->BufAddPreDeleteCB(bufPreDeleteCB, this);
 	}
 
 	/* Initialize the scroll bars and attach movement callbacks */
-	if (vScrollBar != nullptr) {
+	if (vScrollBar) {
 		XtVaSetValues(vScrollBar, XmNminimum, 1, XmNmaximum, 2, XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, nullptr);
 		XtAddCallback(vScrollBar, XmNdragCallback, vScrollCB, (XtPointer)this);
 		XtAddCallback(vScrollBar, XmNvalueChangedCallback, vScrollCB, (XtPointer)this);
 	}
-	if (hScrollBar != nullptr) {
+	if (hScrollBar) {
 		XtVaSetValues(hScrollBar, XmNminimum, 0, XmNmaximum, 1, XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 0, XmNincrement, fontStruct->max_bounds.width, nullptr);
 		XtAddCallback(hScrollBar, XmNdragCallback, hScrollCB, (XtPointer)this);
 		XtAddCallback(hScrollBar, XmNvalueChangedCallback, hScrollCB, (XtPointer)this);
@@ -278,7 +278,7 @@ textDisp::~textDisp() {
 void textDisp::TextDSetBuffer(TextBuffer *buffer) {
 	/* If the text display is already displaying a buffer, clear it off
 	   of the display and remove our callback from it */
-	if (this->buffer != nullptr) {
+	if (this->buffer) {
 		bufModifiedCB(0, 0, this->buffer->BufGetLength(), 0, std::string(), this);
 		this->buffer->BufRemoveModifyCB(bufModifiedCB, this);
 		this->buffer->BufRemovePreDeleteCB(bufPreDeleteCB, this);
@@ -2008,7 +2008,7 @@ static int styleOfPos(textDisp *textD, int lineStartPos, int lineLen, int lineIn
 
 	if (lineIndex >= lineLen)
 		style = FILL_MASK;
-	else if (styleBuf != nullptr) {
+	else if (styleBuf) {
 		style = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (style == textD->unfinishedStyle) {
 			/* encountered "unfinished" style, trigger parsing */
@@ -2480,10 +2480,10 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset, int upda
 	/* Update the scroll bar positions if requested, note: updating the
 	   horizontal scroll bars can have the further side-effect of changing
 	   the horizontal scroll position, textD->horizOffset */
-	if (updateVScrollBar && textD->vScrollBar != nullptr) {
+	if (updateVScrollBar && textD->vScrollBar) {
 		updateVScrollBarRange(textD);
 	}
-	if (updateHScrollBar && textD->hScrollBar != nullptr) {
+	if (updateHScrollBar && textD->hScrollBar) {
 		updateHScrollBarRange(textD);
 	}
 

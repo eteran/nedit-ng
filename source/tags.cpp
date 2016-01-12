@@ -778,7 +778,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 	** to find multiple tags specs.
 	**
 	*/
-	if (name != nullptr) {
+	if (name) {
 		for (tagFile *tf = FileList; tf; tf = tf->next) {
 		
 			struct stat statbuf;
@@ -880,7 +880,7 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
 			status = findAllMatches(window, tagText);
 
 			/* If we didn't find a requested calltip, see if we can use a tag */
-			if (status == 0 && search_type == TIP && TagsFileList != nullptr) {
+			if (status == 0 && search_type == TIP && TagsFileList) {
 				searchMode = TIP_FROM_TAG;
 				status = findAllMatches(window, tagText);
 			}

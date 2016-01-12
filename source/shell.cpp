@@ -130,7 +130,7 @@ void FilterSelection(WindowInfo *window, const char *command, int fromMacro) {
 	char *text;
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData != nullptr) {
+	if (window->shellCmdData) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -164,7 +164,7 @@ void ExecShellCommand(WindowInfo *window, const char *command, int fromMacro) {
 	char lineNumber[11];
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData != nullptr) {
+	if (window->shellCmdData) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -223,7 +223,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 	char lineNumber[11];
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData != nullptr) {
+	if (window->shellCmdData) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -280,7 +280,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 	Widget outWidget;
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData != nullptr) {
+	if (window->shellCmdData) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -328,7 +328,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 
 	/* If the buffer was substituting another character for ascii-nuls,
 	   put the nuls back in before exporting the text */
-	if (text != nullptr) {
+	if (text) {
 		textLen = strlen(text);
 		window->buffer->BufUnsubstituteNullChars(text);
 	} else

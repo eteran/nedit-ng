@@ -160,7 +160,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 
 	/* first look to see if file is already displayed in a window */
 	window = FindWindowWithFile(name, path);
-	if (window != nullptr) {
+	if (window) {
 		if (!bgOpen) {
 			if (iconic)
 				window->RaiseDocument();
@@ -175,7 +175,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	   busy running a macro; create the window */
 	if (inWindow == nullptr) {
 		window = new WindowInfo(name, geometry, iconic);
-	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData != nullptr) {
+	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData) {
 		if (tabbed) {
 			window = CreateDocument(inWindow, name);
 		} else {
@@ -331,7 +331,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	   this is now the default.
 	*/
 	{
-		if ((fp = fopen(fullname, "r")) != nullptr) {
+		if ((fp = fopen(fullname, "r"))) {
 			if (access(fullname, W_OK) != 0)
 				SET_PERM_LOCKED(window->lockReasons, TRUE);
 
@@ -607,7 +607,7 @@ int CloseAllFilesAndWindows(void) {
 		 * document that gets closed, but it won't disappear; it becomes
 		 * Untitled.)
 		 */
-		if (WindowList == MacroRunWindow() && WindowList->next != nullptr) {
+		if (WindowList == MacroRunWindow() && WindowList->next) {
 			if (!WindowList->next->CloseAllDocumentInWindow()) {
 				return False;
 			}
@@ -747,7 +747,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	   is still up, because the dialog is not application modal, so after
 	   doing the dialog, check again whether the window still exists. */
 	otherWindow = FindWindowWithFile(filename, pathname);
-	if (otherWindow != nullptr) {
+	if (otherWindow) {
 		response = DialogF(DF_WARN, window->shell, 2, "File open", "%s is open in another NEdit window", "Cancel", "Close Other Window", filename);
 
 		if (response == 1) {
@@ -1451,7 +1451,7 @@ void CheckForChangesToFile(WindowInfo *window) {
 		window->fileMode = statbuf.st_mode;
 		window->fileUid = statbuf.st_uid;
 		window->fileGid = statbuf.st_gid;
-		if ((fp = fopen(fullname, "r")) != nullptr) {
+		if ((fp = fopen(fullname, "r"))) {
 			int readOnly;
 			fclose(fp);
 #ifndef DONT_USE_ACCESS

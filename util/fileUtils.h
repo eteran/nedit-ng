@@ -28,6 +28,7 @@
 #define FILEUTILS_H_
 
 #include <string>
+#include "XString.h"
 
 enum fileFormats {
 	UNIX_FILE_FORMAT, 
@@ -36,6 +37,7 @@ enum fileFormats {
 };
 
 char *ReadAnyTextFile(const char *fileName, int forceNL);
+XString ReadAnyTextFileEx(const char *fileName, int forceNL);
 const char *GetTrailingPathComponents(const char *path, int noOfComponents);
 int CompressPathname(char *pathname);
 int ConvertToDosFileString(char **fileString, int *length);

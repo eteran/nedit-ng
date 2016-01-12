@@ -259,7 +259,7 @@ static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		/* A new window is requested, unless we find an untitled unmodified
 		    document on the current desktop */
 		for (window = WindowList; window != nullptr; window = window->next) {
-			if (window->filenameSet || window->fileChanged || window->macroCmdData != nullptr) {
+			if (window->filenameSet || window->fileChanged || window->macroCmdData) {
 				continue;
 			}
 			/* No check for top document here! */
@@ -370,7 +370,7 @@ static void processServerCommandString(char *string) {
 				WindowInfo *win = WindowList;
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
-				while (win != nullptr && win->macroCmdData != nullptr) {
+				while (win != nullptr && win->macroCmdData) {
 					win = win->next;
 				}
 
@@ -419,7 +419,7 @@ static void processServerCommandString(char *string) {
 
 		/* Do the actions requested (note DoMacro is last, since the do
 		   command can do anything, including closing the window!) */
-		if (window != nullptr) {
+		if (window) {
 			deleteFileOpenProperty(window);
 			getFileClosedProperty(window);
 
@@ -436,7 +436,7 @@ static void processServerCommandString(char *string) {
 
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
-				if (window->macroCmdData != nullptr) {
+				if (window->macroCmdData) {
 					XBell(TheDisplay, 0);
 				} else {
 					DoMacro(window, doCommand, "-do macro");

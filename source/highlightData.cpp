@@ -657,7 +657,7 @@ void RenameHighlightPattern(const char *oldName, const char *newName) {
 			PatternSets[i]->languageMode = XtNewStringEx(newName);
 		}
 	}
-	if (HighlightDialog.shell != nullptr) {
+	if (HighlightDialog.shell) {
 		if (!strcmp(HighlightDialog.langModeName, oldName)) {
 			XtFree(HighlightDialog.langModeName);
 			HighlightDialog.langModeName = XtNewStringEx(newName);
@@ -701,17 +701,17 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 		outBuf->BufInsert(outBuf->BufGetLength(), indentStr);
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (pat->startRE != nullptr) {
+		if (pat->startRE) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->startRE));
 			XtFree(str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (pat->endRE != nullptr) {
+		if (pat->endRE) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->endRE));
 			XtFree(str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (pat->errorRE != nullptr) {
+		if (pat->errorRE) {
 			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->errorRE));
 			XtFree(str);
 		}
@@ -968,7 +968,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (HSDialog.shell != nullptr) {
+	if (HSDialog.shell) {
 		if (initialStyle != nullptr)
 			setStyleByName(initialStyle);
 		RaiseDialogWindow(HSDialog.shell);
@@ -1376,7 +1376,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (HighlightDialog.shell != nullptr) {
+	if (HighlightDialog.shell) {
 		RaiseDialogWindow(HighlightDialog.shell);
 		return;
 	}
@@ -2227,7 +2227,7 @@ static highlightPattern *readDialogFields(int silent) {
 		}
 
 		*outPtr = '\0';
-		if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE) || (*pat->startRE != '\\' && *pat->startRE != '&') || strstr(pat->startRE, "\\\\") != nullptr) {
+		if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE) || (*pat->startRE != '\\' && *pat->startRE != '&') || strstr(pat->startRE, "\\\\")) {
 			if (!silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Error", "The expression field in patterns which specify highlighting for\n"
 				                                                            "a parent, must contain only sub-expression references in regular\n"

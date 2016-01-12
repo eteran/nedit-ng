@@ -459,7 +459,7 @@ static int yylex(void) {
 						hexValue = hexD - hexDigits;
 						InPtr++;
 						/* now do we have another digit? only accept one more */
-						if (*InPtr != '\0' && (hexD = strchr(hexDigits, tolower(*InPtr))) != nullptr) {
+						if (*InPtr != '\0' && (hexD = strchr(hexDigits, tolower(*InPtr)))) {
 							hexValue = hexD - hexDigits + (hexValue << 4);
 							InPtr++;
 						}

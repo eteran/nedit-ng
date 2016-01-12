@@ -2150,7 +2150,7 @@ Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 		theArray->val.arrayPtr = ArrayNew();
 	}
 
-	if (theArray->val.arrayPtr != nullptr) {
+	if (theArray->val.arrayPtr) {
 		insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
 		if (insertedNode) {

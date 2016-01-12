@@ -910,7 +910,7 @@ static HelpMenu *buildHelpMenu(
     ) {
 	int hideIt = -1; /* This value should make all menu items accessible  */
 
-	if (menu != nullptr) {
+	if (menu) {
 		int crntLevel = menu->level;
 
 		/*-------------------------
@@ -3599,7 +3599,7 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   is explicitly invoking another macro via the menu or an accelerator,
 	   UNLESS the macro event marker is set */
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (WidgetToWindow(w)->macroCmdData != nullptr) {
+		if (WidgetToWindow(w)->macroCmdData) {
 			XBell(TheDisplay, 0);
 			return;
 		}
@@ -3615,7 +3615,7 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 	/* Same remark as for macro menu commands (see above). */
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (WidgetToWindow(w)->macroCmdData != nullptr) {
+		if (WidgetToWindow(w)->macroCmdData) {
 			XBell(TheDisplay, 0);
 			return;
 		}
@@ -3672,9 +3672,9 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 			window = WindowList;
 		} else if (strcmp(args[0], "first") == 0) {
 			window = WindowList;
-			if (window != nullptr) {
+			if (window) {
 				nextWindow = window->next;
-				while (nextWindow != nullptr) {
+				while (nextWindow) {
 					window = nextWindow;
 					nextWindow = nextWindow->next;
 				}
@@ -3682,7 +3682,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		} else if (strcmp(args[0], "previous") == 0) {
 			tmpWindow = window;
 			window = WindowList;
-			if (window != nullptr) {
+			if (window) {
 				nextWindow = window->next;
 				while (nextWindow != nullptr && nextWindow != tmpWindow) {
 					window = nextWindow;
@@ -3693,7 +3693,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 				}
 			}
 		} else if (strcmp(args[0], "next") == 0) {
-			if (window != nullptr) {
+			if (window) {
 				window = window->next;
 				if (window == nullptr) {
 					window = WindowList;
@@ -3732,7 +3732,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 			}
 		}
 	}
-	if (window != nullptr) {
+	if (window) {
 		RaiseFocusDocumentWindow(window, focus);
 	} else {
 		XBell(TheDisplay, 0);
@@ -3775,7 +3775,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		if (paneIndex >= 0 && paneIndex <= window->nPanes) {
 			newFocusPane = window->GetPaneByIndex(paneIndex);
 		}
-		if (newFocusPane != nullptr) {
+		if (newFocusPane) {
 			window->lastFocus = newFocusPane;
 			XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
 		} else {
@@ -4724,7 +4724,7 @@ void ReadNEditDB(void) {
 		if (line[lineLen - 1] != '\n') {
 			/* no newline, probably truncated */
 			fprintf(stderr, "nedit: Line too long in history file\n");
-			while (fgets(line, sizeof(line), fp) != nullptr) {
+			while (fgets(line, sizeof(line), fp)) {
 				lineLen = strlen(line);
 				if (lineLen > 0 && line[lineLen - 1] == '\n') {
 					break;

@@ -227,7 +227,7 @@ int RangesetTable::RangesetFindIndex(int label, int must_be_active) {
 		return -1;
 	}
 
-	if (this != nullptr) {
+	if (this) {
 		p_label = (unsigned char *)strchr((char *)rangeset_labels, label);
 		if (p_label) {
 			i = p_label - rangeset_labels;

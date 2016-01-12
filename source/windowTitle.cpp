@@ -258,7 +258,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 			switch (c) {
 			case 'c': /* ClearCase view tag */
 				clearCasePresent = True;
-				if (clearCaseViewTag != nullptr) {
+				if (clearCaseViewTag) {
 					if (serverNameSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, clearCaseViewTag);
 						clearCaseViewTagSeen = True;

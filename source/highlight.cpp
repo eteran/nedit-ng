@@ -188,14 +188,12 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	/* First and foremost, the style buffer must track the text buffer
 	   accurately and correctly */
 	if (nInserted > 0) {
-		char *insStyle;
-		int i;
-
-		insStyle = XtMalloc(nInserted + 1);
-		for (i = 0; i < nInserted; i++)
-			insStyle[i] = UNFINISHED_STYLE;
-		insStyle[i] = '\0';
+		char *insStyle = XtMalloc(nInserted + 1);
+		std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);	
+		insStyle[nInserted] = '\0';
+		
 		highlightData->styleBuffer->BufReplace(pos, pos + nDeleted, insStyle);
+		
 		XtFree(insStyle);
 	} else {
 		highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
@@ -575,7 +573,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	   individual flags had to be correct and were checked here, but dialog now
 	   shows this setting only on top patterns which is much less confusing) */
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf != nullptr) {
+		if (patternSrc[i].subPatternOf) {
 			int parentindex;
 
 			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
@@ -825,7 +823,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 			return nullptr;
 		}
 		int nSubExprs = 0;
-		if (patternSrc[i].startRE != nullptr) {
+		if (patternSrc[i].startRE) {
 			char *ptr = patternSrc[i].startRE;
 			while (true) {
 				if (*ptr == '&') {
@@ -840,7 +838,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		}
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
 		nSubExprs = 0;
-		if (patternSrc[i].endRE != nullptr) {
+		if (patternSrc[i].endRE) {
 			char *ptr = patternSrc[i].endRE;
 			while (true) {
 				if (*ptr == '&') {
@@ -909,7 +907,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		std::string bigPattern;
 		bigPattern.reserve(length);
 		
-		if (patternSrc[patternNum].endRE != nullptr) {
+		if (patternSrc[patternNum].endRE) {
 			bigPattern += '(';
 			bigPattern += '?';
 			bigPattern += ':';
@@ -919,7 +917,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 			compiledPats[patternNum].nSubBranches++;
 		}
 		
-		if (patternSrc[patternNum].errorRE != nullptr) {
+		if (patternSrc[patternNum].errorRE) {
 			bigPattern += '(';
 			bigPattern += '?';
 			bigPattern += ':';
@@ -1008,7 +1006,7 @@ int HighlightCodeOfPos(WindowInfo *window, int pos) {
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 
-	if (styleBuf != nullptr) {
+	if (styleBuf) {
 		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (hCode == UNFINISHED_STYLE) {
 			/* encountered "unfinished" style, trigger parsing */
@@ -1032,7 +1030,7 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 	int hCode = 0;
 	int oldPos = pos;
 
-	if (styleBuf != nullptr) {
+	if (styleBuf) {
 		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
@@ -1069,7 +1067,7 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 	int oldPos = pos;
 	styleTableEntry *entry;
 
-	if (styleBuf != nullptr) {
+	if (styleBuf) {
 		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
@@ -1530,7 +1528,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 	   end expression if there were coloring sub-patterns, and return */
 		savedStartPtr = stringPtr;
 		savedPrevChar = *prevChar;
-		if (pattern->endRE != nullptr) {
+		if (pattern->endRE) {
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
 				subExecuted = False;
@@ -1558,7 +1556,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 
 		/* If the combined pattern matched this pattern's error pattern, we're
 		   done.  Fill in the style string, update the pointers, and return */
-		if (pattern->errorRE != nullptr) {
+		if (pattern->errorRE) {
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
 				*string = stringPtr;
@@ -1587,7 +1585,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 			                subPat->style, prevChar);
 
 			/* Parse the remainder of the sub-pattern */
-		} else if (subPat->endRE != nullptr) {
+		} else if (subPat->endRE) {
 			/* The pattern is a starting/ending type of pattern, proceed with
 			   the regular hierarchical parsing. */
 
@@ -2179,7 +2177,7 @@ static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int ind
 	int topIndex;
 
 	topIndex = index;
-	while (patList[topIndex].subPatternOf != nullptr) {
+	while (patList[topIndex].subPatternOf) {
 		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
 		if (index == topIndex)
 			return -1; /* amai: circular dependency ?! */
