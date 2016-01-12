@@ -48,6 +48,7 @@
 #include <climits>
 #include <sys/param.h>
 #include <memory>
+#include <algorithm>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -836,7 +837,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 	/* allocate a more appropriately sized list to return patterns */
 	*nPatterns = pat - patternList;
 	returnedList = new highlightPattern[*nPatterns];
-	memcpy(returnedList, patternList, sizeof(highlightPattern) * *nPatterns);
+	std::copy_n(patternList, *nPatterns, returnedList);
 	return returnedList;
 }
 
@@ -2490,7 +2491,7 @@ static void freePatternSet(patternSet *p) {
 	for (int i = 0; i < p->nPatterns; i++)
 		freePatternSrc(&p->patterns[i], false);
 	XtFree((char *)p->languageMode);
-	XtFree((char *)p->patterns);
+	delete [] p->patterns;
 	XtFree((char *)p);
 }
 

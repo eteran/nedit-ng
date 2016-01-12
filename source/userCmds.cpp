@@ -2172,7 +2172,11 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 
 	/* determine the max. amount of memory needed for the returned string
 	   and allocate a buffer for composing the string */
-	length = 0;
+	   
+	// NOTE(eteran): this code unconditionally writes at least 2 chars
+	// so to avoid an off by one error, this needs to be initialized to
+	// 1
+	length = 1;
 	for (i = 0; i < nItems; i++) {
 		f = menuItems[i];
 		generateAcceleratorString(accStr, f->modifiers, f->keysym);

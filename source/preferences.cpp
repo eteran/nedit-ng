@@ -5059,7 +5059,7 @@ static void textFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->textFgW, cd->textFgErrW);
 }
 
@@ -5068,7 +5068,7 @@ static void textBgModifiedCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->textBgW, cd->textBgErrW);
 }
 
@@ -5077,7 +5077,7 @@ static void selectFgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->selectFgW, cd->selectFgErrW);
 }
 
@@ -5086,7 +5086,7 @@ static void selectBgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->selectBgW, cd->selectBgErrW);
 }
 
@@ -5095,7 +5095,7 @@ static void hiliteFgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->hiliteFgW, cd->hiliteFgErrW);
 }
 
@@ -5104,7 +5104,7 @@ static void hiliteBgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->hiliteBgW, cd->hiliteBgErrW);
 }
 
@@ -5113,7 +5113,7 @@ static void lineNoFgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->lineNoFgW, cd->lineNoFgErrW);
 }
 
@@ -5122,7 +5122,7 @@ static void cursorFgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 	showColorStatus(cd, cd->cursorFgW, cd->cursorFgErrW);
 }
 
@@ -5195,7 +5195,7 @@ static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	cd->window->colorDialog = nullptr;
 	XtFree((char *)cd);
@@ -5206,7 +5206,7 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	if (!verifyAllColors(cd)) {
 		DialogF(DF_ERR, w, 1, "Invalid Colors", "All colors must be valid to proceed.", "OK");
@@ -5223,7 +5223,7 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	if (!verifyAllColors(cd)) {
 		DialogF(DF_ERR, w, 1, "Invalid Colors", "All colors must be valid to be applied.", "OK");
@@ -5236,7 +5236,7 @@ static void colorCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	colorDialog *cd = (colorDialog *)clientData;
+	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	/* pop down and destroy the dialog */
 	XtDestroyWidget(cd->shell);
