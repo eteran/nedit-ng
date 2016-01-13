@@ -568,14 +568,15 @@ static void updateDialogFromList(managedListData *ml, int selection) {
 	XmListDeselectAllItems(ml->listW);
 
 	/* Fill in the list widget with the names from the item list */
-	stringTable = (XmString *)XtMalloc(sizeof(XmString) * (*ml->nItems + 1));
+	stringTable = new XmString[(*ml->nItems + 1)];
 	stringTable[0] = XmStringCreateSimpleEx("New");
 	for (i = 0; i < *ml->nItems; i++)
 		stringTable[i + 1] = XmStringCreateSimpleEx(*(char **)ml->itemList[i]);
 	XtVaSetValues(ml->listW, XmNitems, stringTable, XmNitemCount, *ml->nItems + 1, nullptr);
 	for (i = 0; i < *ml->nItems + 1; i++)
 		XmStringFree(stringTable[i]);
-	XtFree((char *)stringTable);
+	
+	delete [] stringTable;
 
 	/* Select the requested item (indirectly filling in the dialog fields),
 	   but don't trigger an update of the last selected item from the current

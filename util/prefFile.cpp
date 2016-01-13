@@ -256,12 +256,11 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 	if(!fullName) {
 		db = nullptr;
 	} else {
-		char *fileString = ReadAnyTextFile(fullName, False);
+		auto fileString = ReadAnyTextFileEx(fullName, False);
 		if(!fileString) {
 			db = nullptr;
 		} else {
-			db = XrmGetStringDatabase(fileString);
-			XtFree(fileString);
+			db = XrmGetStringDatabase(fileString.c_str());
 
 			/*  Add a resource to the database which remembers that
 			    the file is read, so that NEdit will know it.  */

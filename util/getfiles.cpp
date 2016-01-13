@@ -506,8 +506,7 @@ char *GetFileDialogDefaultPattern(void) {
 /*
 ** Return current default directory used by GetExistingFilename.
 ** Can return nullptr if no default directory has been set (meaning
-** use the application's current working directory) String must
-** be freed by the caller using XtFree.
+** use the application's current working directory).
 */
 boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
 
@@ -521,8 +520,7 @@ boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
 /*
 ** Return current default match pattern used by GetExistingFilename.
 ** Can return nullptr if no default pattern has been set (meaning use
-** a pattern matching all files in the directory) String must be
-** freed by the caller using XtFree.
+** a pattern matching all files in the directory).
 */
 boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
 
@@ -676,49 +674,44 @@ static void newFileOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	
-	auto client_data = (Boolean *)clientData;
-	auto call_data   = (XmFileSelectionBoxCallbackStruct *)callData;
+	auto client_data = static_cast<Boolean *>(clientData);
+	auto call_data   = static_cast<XmFileSelectionBoxCallbackStruct *>(callData);
 	
-	char *filename;  /* name of chosen file             */
 	int fd;          /* file descriptor                 */
 	int length;      /* length of file name		 */
 	struct stat buf; /* status from fstat		 */
 
-	XmStringGetLtoR(call_data->value, XmSTRING_DEFAULT_CHARSET, &filename);
+	std::string filename = XmStringGetLtoREx(call_data->value, XmSTRING_DEFAULT_CHARSET);
 	SelectResult = GFN_OK;
-	length = strlen(filename);
+	length = filename.size();
 	if (length == 0 || filename[length - 1] == '/') {
 		doErrorDialog("Please supply a name for the file", nullptr);
-		XtFree(filename);
 		return;
 	}
 
 	/* not VMS*/
-	if ((fd = open(filename, O_RDONLY, 0)) != -1) { /* exists */
+	if ((fd = open(filename.c_str(), O_RDONLY, 0)) != -1) { /* exists */
 		fstat(fd, &buf);
 		close(fd);
 		if (buf.st_mode & S_IFDIR) {
-			doErrorDialog("Error: %s is a directory", filename);
-			XtFree(filename);
+			doErrorDialog("Error: %s is a directory", filename.c_str());
 			return;
 		}
 		
-		int response = doYesNoDialog(filename);
+		int response = doYesNoDialog(filename.c_str());
 
 		if (!response) {
 			return;
 		}
 	} else {
-		if ((fd = creat(filename, PERMS)) == -1) {
-			doErrorDialog("Error: can't create %s ", filename);
-			XtFree(filename);
+		if ((fd = creat(filename.c_str(), PERMS)) == -1) {
+			doErrorDialog("Error: can't create %s ", filename.c_str());
 			return;
 		} else {
 			close(fd);
-			remove(filename);
+			remove(filename.c_str());
 		}
 	}
-	XtFree(filename);
 	*client_data = True; /* done with dialog */
 }
 
@@ -727,7 +720,7 @@ static void newFileCancelCB(Widget w, XtPointer clientData, XtPointer callData) 
 	(void)w;
 	(void)callData;
 	
-	auto client_data = (Boolean *)clientData;	
+	auto client_data = static_cast<Boolean *>(clientData);	
 
 	SelectResult = GFN_CANCEL;
 	*client_data = True;
@@ -747,30 +740,25 @@ static void existOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	
-	auto client_data = (Boolean *)clientData;
-	auto call_data   = (XmFileSelectionBoxCallbackStruct *)callData;
+	auto client_data = static_cast<Boolean *>(clientData);
+	auto call_data   = static_cast<XmFileSelectionBoxCallbackStruct *>(callData);
 	
-	char *filename; /* name of chosen file             */
 	int fd;         /* file descriptor                 */
 
-	XmStringGetLtoR(call_data->value, XmSTRING_DEFAULT_CHARSET, &filename);
+	std::string filename = XmStringGetLtoREx(call_data->value, XmSTRING_DEFAULT_CHARSET);
 	SelectResult = GFN_OK;
-	size_t length = strlen(filename);
+	size_t length = filename.size();
 	
 	if (length == 0 || filename[length - 1] == '/') {
 		doErrorDialog("Please select a file to open", nullptr);
-		XtFree(filename);
 		return;
-	} else if ((fd = open(filename, O_RDONLY, 0)) == -1) {
-		doErrorDialog("Error: can't open %s ", filename);
-		XtFree(filename);
+	} else if ((fd = open(filename.c_str(), O_RDONLY, 0)) == -1) {
+		doErrorDialog("Error: can't open %s ", filename.c_str());
 		return;
 	} else {
 		close(fd);
 	}
 	
-	XtFree(filename);
-
 	*client_data = True; /* done with dialog		*/
 }
 
@@ -779,7 +767,7 @@ static void existCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 	
-	auto client_data = (Boolean *)clientData;
+	auto client_data = static_cast<Boolean *>(clientData);
 
 	SelectResult = GFN_CANCEL;
 	*client_data = True; /* done with dialog		*/
@@ -891,7 +879,7 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *con
 
 	(void)callData;
 
-	char charString[5], c, *itemString;
+	char charString[5], c;
 	int nChars, nItems, i, selectPos, topPos, nVisible;
 	XmString *items;
 	KeySym kSym;
@@ -936,12 +924,11 @@ static void listCharEH(Widget w, XtPointer callData, XEvent *event, Boolean *con
 	   appropriate line in the list widget to select */
 	selectPos = 0;
 	for (i = 0; i < nItems; i++) {
-		XmStringGetLtoR(items[i], XmSTRING_DEFAULT_CHARSET, &itemString);
-		if (ParseFilename(itemString, name, path) != 0) {
-			XtFree(itemString);
+		std::string itemString = XmStringGetLtoREx(items[i], XmSTRING_DEFAULT_CHARSET);
+		if (ParseFilename(itemString.c_str(), name, path) != 0) {
 			return;
 		}
-		XtFree(itemString);
+
 		int cmp = strncmp(name, keystrokes, nKeystrokes);
 		if (cmp == 0) {
 			selectPos = i + 1;
@@ -1031,15 +1018,9 @@ static void sortWidgetList(Widget listWidget) {
 	}
 	
 	std::sort(sortedItems.begin(), sortedItems.end(), [](XmString string1, XmString string2) {
-		char *s1;
-		char *s2;
-
-		XmStringGetLtoR(string1, XmSTRING_DEFAULT_CHARSET, &s1);
-		XmStringGetLtoR(string2, XmSTRING_DEFAULT_CHARSET, &s2);
-		int result = strcmp(s1, s2);
-		XtFree(s1);
-		XtFree(s2);
-		return result < 0;
+		std::string s1 = XmStringGetLtoREx(string1, XmSTRING_DEFAULT_CHARSET);
+		std::string s2 = XmStringGetLtoREx(string2, XmSTRING_DEFAULT_CHARSET);
+		return s1 < s2;
 	});
 	
 	XmListReplaceItemsPos(listWidget, &sortedItems[0], nItems, 1);

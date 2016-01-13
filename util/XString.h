@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <cassert>
 #include <Xm/Xm.h>
 
 class XString {
@@ -12,6 +13,18 @@ public:
 	typedef const char* const_iterator;
 public:
 	XString() : size_(0) {
+	}
+	
+	XString(nullptr_t) : size_(0) {
+	}
+	
+	XString(const std::string &s) : size_(s.size()) {
+		char *str = XtMalloc(s.size() + 1);
+		strncpy(str, s.c_str(), s.size());
+		str[s.size()] = '\0';
+
+		ptr_  = std::shared_ptr<char>(str, XtFree);
+		size_ = s.size();		
 	}
 	
 	XString(const char *s) : size_(0) {
@@ -109,6 +122,10 @@ public:
 		return strcmp(ptr_.get(), s);
 	}
 	
+	int compare(const std::string &s) const {
+		return strcmp(ptr_.get(), s.c_str());
+	}	
+	
 	int compare(const XString &s) const {
 		return strcmp(ptr_.get(), s.ptr_.get());
 	}	
@@ -119,6 +136,8 @@ public:
 	}
 	
 public:
+	// NOTE(eteran): takes ownership of the string instead of copying it
+	// and thus will free it later
 	static XString takeString(char *s) {
 		XString str;
 		str.ptr_  = std::shared_ptr<char>(s, XtFree);
@@ -147,18 +166,38 @@ inline bool operator!=(const XString &lhs, const XString &rhs) {
 }
 
 inline bool operator==(const char *lhs, const XString &rhs) {
+	assert(lhs);
 	return rhs.compare(lhs) == 0;
 }
 
 inline bool operator!=(const char *lhs, const XString &rhs) {
+	assert(lhs);
 	return rhs.compare(lhs) != 0;
 }
 
 inline bool operator==(const XString &lhs, const char *rhs) {
+	assert(rhs);
 	return lhs.compare(rhs) == 0;
 }
 
 inline bool operator!=(const XString &lhs, const char *rhs) {
+	assert(rhs);
+	return lhs.compare(rhs) != 0;
+}
+
+inline bool operator==(const std::string &lhs, const XString &rhs) {
+	return rhs.compare(lhs) == 0;
+}
+
+inline bool operator!=(const std::string &lhs, const XString &rhs) {
+	return rhs.compare(lhs) != 0;
+}
+
+inline bool operator==(const XString &lhs, const std::string &rhs) {
+	return lhs.compare(rhs) == 0;
+}
+
+inline bool operator!=(const XString &lhs, const std::string &rhs) {
 	return lhs.compare(rhs) != 0;
 }
 

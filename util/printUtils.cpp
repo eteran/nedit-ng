@@ -37,6 +37,7 @@
 #include "misc.h"
 #include "prefFile.h"
 #include "MotifHelper.h"
+#include "XString.h"
 
 #include <cctype>
 #include <cerrno>
@@ -129,7 +130,7 @@ static char Copies[MAX_INT_STR] = "";    /* # of copies last entered by user */
 static char Queue[MAX_QUEUE_STR] = "";   /* queue name last entered by user */
 static char Host[MAX_HOST_STR] = "";     /* host name last entered by user */
 static char CmdText[MAX_CMD_STR] = "";   /* print command last entered by user */
-static int CmdFieldModified = False;     /* user last changed the print command field, so don't trust the rest */
+static bool CmdFieldModified = false;    /* user last changed the print command field, so don't trust the rest */
 						
 static PrefDescripRec PrintPrefDescrip[N_PRINT_PREFS] = {
     {"printCommand",      "PrintCommand",      PREF_STRING, nullptr, PrintCommand, MAX_PCMD_STR,  false},
@@ -164,7 +165,7 @@ void PrintFile(Widget parent, const std::string &printFile, const std::string &j
 	PrintJobName = jobName;
 
 	/* Create and display the print dialog */
-	DoneWithDialog = False;
+	DoneWithDialog = false;
 	Form = createForm(parent);
 	ManageDialogCenteredOnPointer(Form);
 
@@ -615,7 +616,6 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 	char command[MAX_CMD_STR], copiesArg[MAX_OPT_STR + MAX_INT_STR];
 	char jobArg[MAX_NAME_STR], hostArg[MAX_OPT_STR + MAX_HOST_STR];
 	char queueArg[MAX_OPT_STR + MAX_QUEUE_STR];
-	char *str;
 	int nCopies;
 
 	/* read each text field in the dialog and generate the corresponding
@@ -623,41 +623,43 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 	if (CopiesOption[0] == '\0') {
 		copiesArg[0] = '\0';
 	} else {
-		str = XmTextGetString(Text1);
-		if (str[0] == '\0') {
+		auto str = XString::takeString(XmTextGetString(Text1));
+		if (str.empty()) {
 			copiesArg[0] = '\0';
 		} else {
-			if (sscanf(str, "%d", &nCopies) != 1) {
+			if (sscanf(str.c_str(), "%d", &nCopies) != 1) {
 				copiesArg[0] = '\0';
 			} else {
-				sprintf(copiesArg, " %s%s", CopiesOption, str);
+				sprintf(copiesArg, " %s%s", CopiesOption, str.c_str());
 			}
 		}
-		XtFree(str);
 	}
+	
 	if (QueueOption[0] == '\0') {
 		queueArg[0] = '\0';
 	} else {
-		str = XmTextGetString(Text2);
-		if (str[0] == '\0')
+		auto str = XString::takeString(XmTextGetString(Text2));
+		if (str.empty()) {
 			queueArg[0] = '\0';
-		else
-			sprintf(queueArg, " %s%s", QueueOption, str);
-		XtFree(str);
+		} else {
+			sprintf(queueArg, " %s%s", QueueOption, str.c_str());
+		}
 	}
+	
 	if (HostOption[0] == '\0') {
 		hostArg[0] = '\0';
 	} else {
-		str = XmTextGetString(Text3);
-		if (str[0] == '\0')
+		auto str = XString::takeString(XmTextGetString(Text3));
+		if (str.empty()) {
 			hostArg[0] = '\0';
-		else
-			sprintf(hostArg, " %s%s", HostOption, str);
-		XtFree(str);
+		} else {
+			sprintf(hostArg, " %s%s", HostOption, str.c_str());
+		}
 	}
-	if (NameOption[0] == '\0')
+	
+	if (NameOption[0] == '\0') {
 		jobArg[0] = '\0';
-	else {
+	} else {
 		sprintf(jobArg, " %s\"%s\"", NameOption, PrintJobName.c_str());
 	}
 
@@ -670,7 +672,7 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 	/* Indicate that the command field was synthesized from the other fields,
 	   so future dialog invocations can safely re-generate the command without
 	   overwriting commands specifically entered by the user */
-	CmdFieldModified = False;
+	CmdFieldModified = false;
 }
 
 static void printCmdModified(Widget w, XtPointer client_data, XtPointer call_data) {
@@ -680,7 +682,7 @@ static void printCmdModified(Widget w, XtPointer client_data, XtPointer call_dat
 	
 	/* Indicate that the user has specifically modified the print command
 	   and that this field should be left as is in subsequent dialogs */
-	CmdFieldModified = True;
+	CmdFieldModified = true;
 }
 
 static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_data) {
@@ -689,18 +691,19 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	(void)client_data;
 	(void)call_data;
 	
-	char *str, command[MAX_CMD_STR];
+	char command[MAX_CMD_STR];
 	int nRead;
 	FILE *pipe;
 	char errorString[MAX_PRINT_ERROR_LENGTH], discarded[1024];
 
-	/* get the print command from the command text area */
-	str = XmTextGetString(Text4);
-
-	/* add the file name and output redirection to the print command */
-	sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str);
-	XtFree(str);
-
+	{
+		/* get the print command from the command text area */
+		auto str = XString::takeString(XmTextGetString(Text4));
+	
+		/* add the file name and output redirection to the print command */
+		sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str.c_str());
+	}
+	
 	/* Issue the print command using a popen call and recover error messages
 	   from the output stream of the command. */
 	pipe = popen(command, "r");
@@ -714,8 +717,9 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	/* Make sure that the print command doesn't get stuck when trying to
 	   write a lot of output on stderr (pipe may fill up). We discard
 	   the additional output, though. */
-	while (fread(discarded, sizeof(char), 1024, pipe) > 0)
+	while (fread(discarded, sizeof(char), 1024, pipe) > 0) {
 		;
+	}
 
 	if (!ferror(pipe)) {
 		errorString[nRead] = '\0';
@@ -728,26 +732,23 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 
 	/* Print command succeeded, so retain the current print parameters */
 	if (CopiesOption[0] != '\0') {
-		str = XmTextGetString(Text1);
-		strcpy(Copies, str);
-		XtFree(str);
+		auto str = XString::takeString(XmTextGetString(Text1));
+		strcpy(Copies, str.c_str());
 	}
 	if (QueueOption[0] != '\0') {
-		str = XmTextGetString(Text2);
-		strcpy(Queue, str);
-		XtFree(str);
+		auto str = XString::takeString(XmTextGetString(Text2));
+		strcpy(Queue, str.c_str());
 	}
 	if (HostOption[0] != '\0') {
-		str = XmTextGetString(Text3);
-		strcpy(Host, str);
-		XtFree(str);
+		auto str = XString::takeString(XmTextGetString(Text3));
+		strcpy(Host, str.c_str());
 	}
-	str = XmTextGetString(Text4);
-	strcpy(CmdText, str);
-	XtFree(str);
+	
+	auto str = XString::takeString(XmTextGetString(Text4));
+	strcpy(CmdText, str.c_str());
 
 	/* Pop down the dialog */
-	DoneWithDialog = True;
+	DoneWithDialog = true;
 }
 
 static void cancelButtonCB(Widget widget, XtPointer client_data, XtPointer call_data) {
@@ -756,8 +757,8 @@ static void cancelButtonCB(Widget widget, XtPointer client_data, XtPointer call_
 	(void)client_data;
 	(void)call_data;
 	
-	DoneWithDialog = True;
-	CmdFieldModified = False;
+	DoneWithDialog   = true;
+	CmdFieldModified = false;
 }
 
 /*

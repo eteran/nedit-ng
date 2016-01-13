@@ -498,7 +498,7 @@ static void addEscapeHandler(Widget dialog, struct dfcallbackstruct *df, int whi
 static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
 	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
 		return;
-	if (callData != nullptr)
+	if (callData)
 		help_callback(w, (struct dfcallbackstruct *)callData, nullptr);
 	*cont = False;
 }
@@ -510,7 +510,7 @@ static void escapeHelpCB(Widget w, XtPointer callData, XEvent *event, Boolean *c
 static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *cont) {
 	if (event->xkey.keycode != XKeysymToKeycode(XtDisplay(w), XK_Escape))
 		return;
-	if (callData != nullptr)
+	if (callData)
 		apply_callback(w, (struct dfcallbackstruct *)callData, nullptr);
 	*cont = False;
 }
@@ -520,35 +520,34 @@ static void escapeApplyCB(Widget w, XtPointer callData, XEvent *event, Boolean *
 */
 static void recurseCreateMnemonics(Widget w, Boolean *mnemonicUsed) {
 	WidgetList children;
-	Cardinal numChildren, i;
+	Cardinal numChildren;
 
 	XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
 
-	for (i = 0; i < numChildren; i++) {
+	for (Cardinal i = 0; i < numChildren; i++) {
 		Widget child = children[i];
 
 		if (XtIsComposite(child)) {
 			recurseCreateMnemonics(child, mnemonicUsed);
 		} else if (XtIsSubclass(child, xmPushButtonWidgetClass) || XtIsSubclass(child, xmPushButtonGadgetClass)) {
 			XmString xmslabel;
-			char *label;
 
 			XtVaGetValues(child, XmNlabelString, &xmslabel, nullptr);
-			if (XmStringGetLtoR(xmslabel, XmSTRING_DEFAULT_CHARSET, &label)) {
-				/* Scan through the string to see if the label is already used */
-				int labelLen = strlen(label);
-				for (int c = 0; c < labelLen; c++) {
-					unsigned char lc = tolower((unsigned char)label[c]);
+			
+			const std::string label = XmStringGetLtoREx(xmslabel, XmSTRING_DEFAULT_CHARSET);
+			
+			/* Scan through the string to see if the label is already used */
+			const int labelLen = label.size();
+			for (int c = 0; c < labelLen; c++) {
+				unsigned char lc = tolower((unsigned char)label[c]);
 
-					if (!mnemonicUsed[lc] && isalnum(lc)) {
-						mnemonicUsed[lc] = TRUE;
-						XtVaSetValues(child, XmNmnemonic, label[c], nullptr);
-						break;
-					}
+				if (!mnemonicUsed[lc] && isalnum(lc)) {
+					mnemonicUsed[lc] = TRUE;
+					XtVaSetValues(child, XmNmnemonic, label[c], nullptr);
+					break;
 				}
-
-				XtFree(label);
 			}
+
 			XmStringFree(xmslabel);
 		}
 	}

@@ -30,6 +30,7 @@
 #include "misc.h"
 #include "DialogF.h"
 #include "MotifHelper.h"
+#include "XString.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -75,9 +76,9 @@ typedef struct {
 	Widget dispField;       /* widget id */
 	char **fontData;        /* font name info  */
 	int numFonts;           /* number of fonts */
-	char *sel1;             /* selection from list 1 */
-	char *sel2;             /* selection from list 2 */
-	char *sel3;             /* selection from list 3 */
+	XString sel1;             /* selection from list 1 */
+	XString sel2;             /* selection from list 2 */
+	XString sel3;             /* selection from list 3 */
 	int showPropFonts;      /* toggle state - show prop fonts */
 	int showSizeInPixels;   /* toggle state - size in pixels  */
 	char *fontName;         /* current font name */
@@ -677,7 +678,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.fontList, items, itemCount1, 1);
 		if (ctrlBlk.sel1) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel1, XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel1.c_str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.fontList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.fontList, items[0]);
 		}
@@ -694,7 +695,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.styleList, items, itemCount2, 1);
 		if (ctrlBlk.sel2) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel2, XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel2.c_str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.styleList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.styleList, items[0]);
 		}
@@ -711,7 +712,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.sizeList, items, itemCount3, 1);
 		if (ctrlBlk.sel3) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel3, XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel3.c_str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.sizeList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.sizeList, items[0]);
 		}
@@ -738,12 +739,12 @@ static int notPropFont(const char *font) {
 static int styleMatch(xfselControlBlkType *ctrlBlk, const char *font) {
 	char buff[TEMP_BUF_SIZE];
 
-	if (ctrlBlk->sel2 == nullptr)
+	if(!ctrlBlk->sel2)
 		return (TRUE);
 
 	getStylePart(font, buff);
 
-	if (strcmp(buff, ctrlBlk->sel2) == 0)
+	if (buff == ctrlBlk->sel2)
 		return (TRUE);
 	else
 		return (FALSE);
@@ -755,11 +756,11 @@ static int styleMatch(xfselControlBlkType *ctrlBlk, const char *font) {
 static int sizeMatch(xfselControlBlkType *ctrlBlk, const char *font) {
 	char buff[TEMP_BUF_SIZE];
 
-	if (ctrlBlk->sel3 == nullptr)
+	if(!ctrlBlk->sel3)
 		return (TRUE);
 
 	getSizePart(font, buff, ctrlBlk->showSizeInPixels);
-	if (strcmp(buff, ctrlBlk->sel3) == 0)
+	if (buff == ctrlBlk->sel3)
 		return (TRUE);
 	else
 		return (FALSE);
@@ -771,11 +772,11 @@ static int sizeMatch(xfselControlBlkType *ctrlBlk, const char *font) {
 static int fontMatch(xfselControlBlkType *ctrlBlk, const char *font) {
 	char buff[TEMP_BUF_SIZE];
 
-	if (ctrlBlk->sel1 == nullptr)
+	if(!ctrlBlk->sel1)
 		return (TRUE);
 
 	getFontPart(font, buff);
-	if (strcmp(buff, ctrlBlk->sel1) == 0)
+	if (buff == ctrlBlk->sel1)
 		return (TRUE);
 	else
 		return (FALSE);
@@ -891,8 +892,8 @@ static void propFontToggleAction(Widget widget, XtPointer controlBlock, XtPointe
 
 	(void)widget;
 	
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmToggleButtonCallbackStruct *)callData;
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmToggleButtonCallbackStruct *>(callData);
 
 	if (call_data->reason == XmCR_VALUE_CHANGED) {
 		if (ctrlBlk->showPropFonts == PREF_FIXED)
@@ -900,14 +901,9 @@ static void propFontToggleAction(Widget widget, XtPointer controlBlock, XtPointe
 		else
 			ctrlBlk->showPropFonts = PREF_FIXED;
 
-		XtFree(ctrlBlk->sel1);
-		ctrlBlk->sel1 = nullptr;
-
-		XtFree(ctrlBlk->sel2);
-		ctrlBlk->sel2 = nullptr;
-
-		XtFree(ctrlBlk->sel3);
-		ctrlBlk->sel3 = nullptr;
+		ctrlBlk->sel1 = XString();
+		ctrlBlk->sel2 = XString();
+		ctrlBlk->sel3 = XString();
 
 		setupScrollLists(NONE, *ctrlBlk);
 
@@ -920,8 +916,8 @@ static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer ca
 
 	(void)widget;
 	
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmToggleButtonCallbackStruct *)callData;	
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmToggleButtonCallbackStruct *>(callData);	
 	
 	XmString str;
 
@@ -929,7 +925,7 @@ static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer ca
 		
 		char newSize[10];
 		
-		int makeSelection = (ctrlBlk->sel3 != nullptr);
+		bool makeSelection = static_cast<bool>(ctrlBlk->sel3);
 
 		for (int i = 0; (makeSelection) && (i < ctrlBlk->numFonts); i++)
 			if ((fontMatch(ctrlBlk, ctrlBlk->fontData[i])) && (styleMatch(ctrlBlk, ctrlBlk->fontData[i])) && (sizeMatch(ctrlBlk, ctrlBlk->fontData[i]))) {
@@ -942,9 +938,7 @@ static void sizeToggleAction(Widget widget, XtPointer controlBlock, XtPointer ca
 		else
 			ctrlBlk->showSizeInPixels = TRUE;
 
-		XtFree(ctrlBlk->sel3);
-
-		ctrlBlk->sel3 = nullptr;
+		ctrlBlk->sel3 = XString();
 		setupScrollLists(NONE, *ctrlBlk);
 
 		if (makeSelection) {
@@ -985,26 +979,24 @@ static void enableSample(xfselControlBlkType *ctrlBlk, Bool turn_on, XmFontList 
 
 static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmListCallbackStruct *)callData;
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmListCallbackStruct *>(callData);
 
 	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
-	if (ctrlBlk->sel1 == nullptr) {
-		ctrlBlk->sel1 = XtStringDup(sel);
+	if(!ctrlBlk->sel1) {
+		ctrlBlk->sel1 = sel;
 	} else {
-		if (strcmp(ctrlBlk->sel1, sel.c_str()) == 0) { /* Unselecting current selection */
-			XtFree(ctrlBlk->sel1);
-			ctrlBlk->sel1 = nullptr;
+		if (ctrlBlk->sel1 == sel) { /* Unselecting current selection */
+			ctrlBlk->sel1 = XString();
 			XmListDeselectItem(widget, call_data->item);
 		} else {
-			XtFree(ctrlBlk->sel1);
-			ctrlBlk->sel1 = XtStringDup(sel);
+			ctrlBlk->sel1 = sel;
 		}
 	}
 
 	setupScrollLists(FONT, *ctrlBlk);
-	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
+	if ((ctrlBlk->sel1) && (ctrlBlk->sel2) && (ctrlBlk->sel3))
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
@@ -1014,26 +1006,24 @@ static void fontAction(Widget widget, XtPointer controlBlock, XtPointer callData
 
 static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmListCallbackStruct *)callData;
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmListCallbackStruct *>(callData);
 
 	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
-	if (ctrlBlk->sel2 == nullptr) {
-		ctrlBlk->sel2 = XtStringDup(sel);
+	if(!ctrlBlk->sel2) {
+		ctrlBlk->sel2 = sel;
 	} else {
-		if (strcmp(ctrlBlk->sel2, sel.c_str()) == 0) { /* unselecting current selection */
-			XtFree(ctrlBlk->sel2);
-			ctrlBlk->sel2 = nullptr;
+		if (ctrlBlk->sel2 == sel) { /* unselecting current selection */
+			ctrlBlk->sel2 = XString();
 			XmListDeselectItem(widget, call_data->item);
 		} else {
-			XtFree(ctrlBlk->sel2);
-			ctrlBlk->sel2 = XtStringDup(sel);
+			ctrlBlk->sel2 = sel;
 		}
 	}
 
 	setupScrollLists(STYLE, *ctrlBlk);
-	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
+	if ((ctrlBlk->sel1) && (ctrlBlk->sel2) && (ctrlBlk->sel3))
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
@@ -1043,26 +1033,24 @@ static void styleAction(Widget widget, XtPointer controlBlock, XtPointer callDat
 
 static void sizeAction(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmListCallbackStruct *)callData;
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmListCallbackStruct *>(callData);
 
 	std::string sel = XmStringGetLtoREx(call_data->item, XmSTRING_DEFAULT_CHARSET);
 
-	if (ctrlBlk->sel3 == nullptr) {
-		ctrlBlk->sel3 = XtStringDup(sel);
+	if(!ctrlBlk->sel3) {
+		ctrlBlk->sel3 = sel;
 	} else {
-		if (strcmp(ctrlBlk->sel3, sel.c_str()) == 0) { /* unselecting current selection */
-			XtFree(ctrlBlk->sel3);
-			ctrlBlk->sel3 = nullptr;
+		if (ctrlBlk->sel3 == sel) { /* unselecting current selection */
+			ctrlBlk->sel3 = XString();
 			XmListDeselectItem(widget, call_data->item);
 		} else {
-			XtFree(ctrlBlk->sel3);
-			ctrlBlk->sel3 = XtStringDup(sel);
+			ctrlBlk->sel3 = sel;
 		}
 	}
 
 	setupScrollLists(SIZE, *ctrlBlk);
-	if ((ctrlBlk->sel1 != nullptr) && (ctrlBlk->sel2 != nullptr) && (ctrlBlk->sel3 != nullptr))
+	if ((ctrlBlk->sel1) && (ctrlBlk->sel2) && (ctrlBlk->sel3))
 		choiceMade(ctrlBlk);
 	else {
 		enableSample(ctrlBlk, False, nullptr);
@@ -1118,8 +1106,8 @@ static void dispSample(xfselControlBlkType *ctrlBlk) {
 static void destroyCB(Widget widget, XtPointer controlBlock, XtPointer callData) {
 
 
-	auto ctrlBlk   = (xfselControlBlkType *)controlBlock;
-	auto call_data = (XmListCallbackStruct *)callData;
+	auto ctrlBlk   = static_cast<xfselControlBlkType *>(controlBlock);
+	auto call_data = static_cast<XmListCallbackStruct *>(callData);
 	
 	/* Prevent double destruction of the font selection dialog */
 	ctrlBlk->destroyedFlag = TRUE;
@@ -1131,11 +1119,12 @@ static void cancelAction(Widget widget, XtPointer controlBlock, XtPointer callDa
 	(void)widget;
 	(void)callData;
 	
-	auto ctrlBlk = (xfselControlBlkType *)controlBlock;
+	auto ctrlBlk = static_cast<xfselControlBlkType *>(controlBlock);
 	
-	XtFree(ctrlBlk->sel1);
-	XtFree(ctrlBlk->sel2);
-	XtFree(ctrlBlk->sel3);
+	
+	ctrlBlk->sel1 = XString();
+	ctrlBlk->sel2 = XString();
+	ctrlBlk->sel3 = XString();
 	XtFree(ctrlBlk->fontName);
 
 	ctrlBlk->fontName = nullptr;
@@ -1149,7 +1138,7 @@ static void okAction(Widget widget, XtPointer controlBlock, XtPointer callData) 
 	(void)widget;
 	(void)callData;
 	
-	auto ctrlBlk = (xfselControlBlkType *)controlBlock;
+	auto ctrlBlk = static_cast<xfselControlBlkType *>(controlBlock);
 	
 	char *fontPattern;
 	char **fontName;
@@ -1166,9 +1155,9 @@ static void okAction(Widget widget, XtPointer controlBlock, XtPointer callData) 
 		XtFree(ctrlBlk->fontName);
 		ctrlBlk->fontName = XtStringDup(fontName[0]);
 
-		XtFree(ctrlBlk->sel1);
-		XtFree(ctrlBlk->sel2);
-		XtFree(ctrlBlk->sel3);
+		ctrlBlk->sel1 = XString();
+		ctrlBlk->sel2 = XString();
+		ctrlBlk->sel3 = XString();
 
 		XFreeFontNames(fontName);
 		XFreeFontNames(ctrlBlk->fontData);

@@ -660,12 +660,14 @@ XString ReadAnyTextFileEx(const char *fileName, int forceNL) {
 
 	/* Read the whole file into fileString */
 	if ((fp = fopen(fileName, "r")) == nullptr) {
-		return nullptr;
+		return XString();
 	}
+	
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		return nullptr;
+		return XString();
 	}
+	
 	fileLen = statbuf.st_size;
 	/* +1 = space for null
 	** +1 = possible additional \n
@@ -675,10 +677,10 @@ XString ReadAnyTextFileEx(const char *fileName, int forceNL) {
 	if (ferror(fp)) {
 		XtFree(fileString);
 		fclose(fp);
-		return nullptr;
+		return XString();
 	}
 	fclose(fp);
-	fileString[readLen] = 0;
+	fileString[readLen] = '\0';
 
 	/* Convert linebreaks? */
 	format = FormatOfFile(fileString);

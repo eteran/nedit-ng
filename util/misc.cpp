@@ -393,7 +393,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		if(!visList)
 			fprintf(stderr, "VisualID resource value not valid\n");
 	}
-	if (visList == nullptr && reqClass != -1 && reqDepth != -1) {
+	if (!visList && reqClass != -1 && reqDepth != -1) {
 #if defined(__cplusplus)
 		visTemplate.c_class = reqClass;
 #else
@@ -405,7 +405,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		if(!visList)
 			fprintf(stderr, "Visual class/depth combination not available\n");
 	}
-	if (visList == nullptr && reqClass != -1) {
+	if (!visList && reqClass != -1) {
 #if defined(__cplusplus)
 		visTemplate.c_class = reqClass;
 #else
@@ -415,7 +415,7 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 		if(!visList)
 			fprintf(stderr, "Visual Class from resource \"visualID\" not available\n");
 	}
-	if (visList == nullptr && reqDepth != -1) {
+	if (!visList && reqDepth != -1) {
 		visTemplate.depth = reqDepth;
 		visList = XGetVisualInfo(display, VisualScreenMask | VisualDepthMask, &visTemplate, &nVis);
 		if(!visList)
@@ -945,10 +945,11 @@ XmString *StringTable(int count, ...) {
 }
 
 void FreeStringTable(XmString *table) {
-	int i;
-
-	for (i = 0; table[i] != nullptr; i++)
+	
+	for (int i = 0; table[i]; i++) {
 		XmStringFree(table[i]);
+	}
+	
 	XtFree((char *)table);
 }
 
@@ -1232,7 +1233,7 @@ void AddToHistoryList(char *newItem, char ***historyList, int *nItems) {
 	newList = (char **)XtMalloc(sizeof(char *) * (*nItems + 1));
 	for (i = 0; i < *nItems; i++)
 		newList[i + 1] = (*historyList)[i];
-	if (*nItems != 0 && *historyList != nullptr)
+	if (*nItems != 0 && *historyList)
 		XtFree((char *)*historyList);
 	(*nItems)++;
 	newList[0] = XtNewStringEx(newItem);
@@ -1388,7 +1389,7 @@ static Modifiers findModifierMapping(Display *display, KeyCode keyCode) {
 	KeyCode *mapentry;
 	XModifierKeymap *modMap = getKeyboardMapping(display);
 
-	if (modMap == nullptr || keyCode == 0) {
+	if (!modMap || keyCode == 0) {
 		return (0);
 	}
 
@@ -1518,7 +1519,7 @@ static void findAndActivateMnemonic(Widget w, unsigned int keycode) {
 			if (XKeysymToKeycode(XtDisplay(XtParent(w)), XStringToKeysym(mneString)) == keycode) {
 				if (XtClass(w) == xmLabelWidgetClass || XtClass(w) == xmLabelGadgetClass) {
 					XtVaGetValues(w, XmNuserData, &userData, nullptr);
-					if (userData != nullptr && XtIsWidget(userData) && XmIsTraversable(userData))
+					if (userData && XtIsWidget(userData) && XmIsTraversable(userData))
 						XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
 				} else if (XmIsTraversable(w)) {
 					XmProcessTraversal(w, XmTRAVERSE_CURRENT);
@@ -1566,7 +1567,7 @@ static void addAccelGrab(Widget topWidget, Widget w) {
 	Modifiers numLockMask = GetNumLockModMask(XtDisplay(topWidget));
 
 	XtVaGetValues(w, XmNaccelerator, &accelString, nullptr);
-	if (accelString == nullptr || *accelString == '\0') {
+	if (!accelString || *accelString == '\0') {
 		XtFree(accelString);
 		return;
 	}
@@ -1706,7 +1707,7 @@ static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int mod
 				return TRUE;
 	} else {
 		XtVaGetValues(w, XmNaccelerator, &accelString, nullptr);
-		if (accelString != nullptr && *accelString != '\0') {
+		if (accelString && *accelString != '\0') {
 			if (!parseAccelString(XtDisplay(w), accelString, &keysym, &mods))
 				return FALSE;
 			if (keyCode == XKeysymToKeycode(XtDisplay(w), keysym) && modifiers == mods) {
@@ -1744,7 +1745,7 @@ void AddMouseWheelSupport(Widget w) {
 		                                         "<Btn5Down>,<Btn5Up>:      scrolled-window-scroll-down(3)\n";
 		static XtTranslations trans_table = nullptr;
 
-		if (trans_table == nullptr) {
+		if (!trans_table) {
 			trans_table = XtParseTranslationTable(scrollTranslations);
 		}
 		XtOverrideTranslations(w, trans_table);
