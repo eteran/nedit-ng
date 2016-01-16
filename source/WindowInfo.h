@@ -38,12 +38,15 @@ public:
 	
 public:
 	bool IsTopDocument() const;
-	Widget GetPaneByIndex(int paneIndex) const;	
 	int CloseAllDocumentInWindow();
 	int GetShowTabBar();
 	int IsIconic();
 	int IsValidWindow();
 	int NDocuments();
+	void CleanUpTabBarExposeQueue();
+	void ClearModeMessage();
+	void ClosePane();
+	void CloseWindow();	
 	void LastDocument();
 	void MakeSelectionVisible(Widget textPane);
 	void MoveDocumentDialog();
@@ -51,18 +54,21 @@ public:
 	void PreviousDocument();
 	void RaiseDocument();
 	void RaiseDocumentWindow();
-	void CleanUpTabBarExposeQueue();
-	void ClearModeMessage();
-	void ClosePane();
-	void CloseWindow();
-	
 	void RaiseFocusDocumentWindow(Boolean focus);
 	void RefreshMenuToggleStates();
 	void RefreshTabState();
 	void RefreshWindowStates();
 	void SetAutoIndent(int state);
 	void SetAutoScroll(int margin);
-	void SetAutoWrap(int state);	
+	void SetAutoWrap(int state);
+	Widget GetPaneByIndex(int paneIndex) const;
+	
+	void UpdateMinPaneHeights();
+	void UpdateNewOppositeMenu(int openInTab);
+	void UpdateStatsLine();
+	void UpdateWMSizeHints();
+	void UpdateWindowReadOnly();
+	void UpdateWindowTitle();	
 
 public:
 	WindowInfo *next;

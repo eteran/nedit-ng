@@ -67,11 +67,6 @@ void ShowWindowTabBar(WindowInfo *window);
 void SortTabBar(WindowInfo *window);
 void SplitPane(WindowInfo *window);
 void TempShowISearch(WindowInfo *window, int state);
-void UpdateMinPaneHeights(WindowInfo *window);
-void UpdateNewOppositeMenu(WindowInfo *window, int openInTab);
-void UpdateStatsLine(WindowInfo *window);
-void UpdateWMSizeHints(WindowInfo *window);
-void UpdateWindowReadOnly(WindowInfo *window);
-void UpdateWindowTitle(const WindowInfo *window);
+
 
 #endif

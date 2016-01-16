@@ -1257,7 +1257,7 @@ void SetPrefOpenInTab(int state) {
 	WindowInfo *w = WindowList;
 	setIntPref(&PrefData.openInTab, state);
 	for (; w != nullptr; w = w->next)
-		UpdateNewOppositeMenu(w, state);
+		w->UpdateNewOppositeMenu(state);
 }
 
 int GetPrefOpenInTab(void) {
@@ -1745,13 +1745,13 @@ int GetPrefTypingHidesPointer(void) {
 }
 
 void SetPrefTitleFormat(const char *format) {
-	const WindowInfo *window;
+	WindowInfo *window;
 
 	setStringPref(PrefData.titleFormat, format);
 
 	/* update all windows */
 	for (window = WindowList; window != nullptr; window = window->next) {
-		UpdateWindowTitle(window);
+		window->UpdateWindowTitle();
 	}
 }
 const char *GetPrefTitleFormat(void) {

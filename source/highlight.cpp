@@ -270,8 +270,8 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	/* Re-size the window to fit the highlight fonts properly & tell the
 	   window manager about the potential line-height change as well */
 	updateWindowHeight(window, oldFontHeight);
-	UpdateWMSizeHints(window);
-	UpdateMinPaneHeights(window);
+	window->UpdateWMSizeHints();
+	window->UpdateMinPaneHeights();
 
 	/* Make sure that if the window has grown, the additional area gets
 	   repainted. Otherwise, it is possible that the area gets moved before a
@@ -309,8 +309,8 @@ void StopHighlighting(WindowInfo *window) {
 	/* Re-size the window to fit the primary font properly & tell the window
 	   manager about the potential line-height change as well */
 	updateWindowHeight(window, oldFontHeight);
-	UpdateWMSizeHints(window);
-	UpdateMinPaneHeights(window);
+	window->UpdateWMSizeHints();
+	window->UpdateMinPaneHeights();
 }
 
 /*

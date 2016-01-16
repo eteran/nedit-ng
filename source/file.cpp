@@ -114,9 +114,9 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 
 	SetWindowModified(window, FALSE);
 	CLEAR_ALL_LOCKS(window->lockReasons);
-	UpdateWindowReadOnly(window);
-	UpdateStatsLine(window);
-	UpdateWindowTitle(window);
+	window->UpdateWindowReadOnly();
+	window->UpdateStatsLine();
+	window->UpdateWindowTitle();
 	window->RefreshTabState();
 
 	if(!languageMode)
@@ -217,9 +217,9 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 
 	/* Bring the title bar and statistics line up to date, doOpen does
 	   not necessarily set the window title or read-only status */
-	UpdateWindowTitle(window);
-	UpdateWindowReadOnly(window);
-	UpdateStatsLine(window);
+	window->UpdateWindowTitle();
+	window->UpdateWindowReadOnly();
+	window->UpdateStatsLine();
 
 	/* Add the name to the convenience menu of previously opened files */
 	strcpy(fullname, path);
@@ -273,8 +273,8 @@ void RevertToSaved(WindowInfo *window) {
 		return;
 	}
 	forceShowLineNumbers(window);
-	UpdateWindowTitle(window);
-	UpdateWindowReadOnly(window);
+	window->UpdateWindowTitle();
+	window->UpdateWindowReadOnly();
 
 	/* restore the insert and scroll positions of each pane */
 	for (i = 0; i <= window->nPanes; i++) {
@@ -369,7 +369,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 			if ((flags & PREF_READ_ONLY) != 0) {
 				SET_USER_LOCKED(window->lockReasons, TRUE);
 			}
-			UpdateWindowReadOnly(window);
+			window->UpdateWindowReadOnly();
 			return TRUE;
 		} else {
 			/* A true error */
@@ -497,14 +497,14 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	}
 	if (IS_PERM_LOCKED(window->lockReasons)) {
 		window->fileChanged = FALSE;
-		UpdateWindowTitle(window);
+		window->UpdateWindowTitle();
 	} else {
 		SetWindowModified(window, FALSE);
 		if (IS_ANY_LOCKED(window->lockReasons)) {
-			UpdateWindowTitle(window);
+			window->UpdateWindowTitle();
 		}
 	}
-	UpdateWindowReadOnly(window);
+	window->UpdateWindowReadOnly();
 
 	return TRUE;
 }
@@ -772,7 +772,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	window->fileGid = 0;
 	CLEAR_ALL_LOCKS(window->lockReasons);
 	retVal = doSave(window);
-	UpdateWindowReadOnly(window);
+	window->UpdateWindowReadOnly();
 	window->RefreshTabState();
 
 	/* Add the name to the convenience menu of previously opened files */
@@ -787,8 +787,8 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	window->filenameSet = True;
 
 	/* Update the stats line and window title with the new filename */
-	UpdateWindowTitle(window);
-	UpdateStatsLine(window);
+	window->UpdateWindowTitle();
+	window->UpdateStatsLine();
 
 	SortTabBar(window);
 	return retVal;
@@ -1439,8 +1439,8 @@ void CheckForChangesToFile(WindowInfo *window) {
 		/* Make sure that the window was not destroyed behind our back! */
 		if (!windowIsDestroyed) {
 			SET_PERM_LOCKED(window->lockReasons, False);
-			UpdateWindowTitle(window);
-			UpdateWindowReadOnly(window);
+			window->UpdateWindowTitle();
+			window->UpdateWindowReadOnly();
 		}
 		return;
 	}
@@ -1465,8 +1465,8 @@ void CheckForChangesToFile(WindowInfo *window) {
 #endif
 			if (IS_PERM_LOCKED(window->lockReasons) != readOnly) {
 				SET_PERM_LOCKED(window->lockReasons, readOnly);
-				UpdateWindowTitle(window);
-				UpdateWindowReadOnly(window);
+				window->UpdateWindowTitle();
+				window->UpdateWindowReadOnly();
 			}
 		}
 	}

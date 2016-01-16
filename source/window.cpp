@@ -631,10 +631,10 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	AddMotifCloseCallback(winShell, closeCB, this);
 
 	/* Make window resizing work in nice character heights */
-	UpdateWMSizeHints(this);
+	this->UpdateWMSizeHints();
 
 	/* Set the minimum pane height for the initial text pane */
-	UpdateMinPaneHeights(this);
+	this->UpdateMinPaneHeights();
 
 	/* create dialogs shared by all documents in a window */
 	CreateFindDlog(this->shell, this);
@@ -882,7 +882,7 @@ void WindowInfo::MakeSelectionVisible(Widget textPane) {
 	}
 
 	/* make sure that the statistics line is up to date */
-	UpdateStatsLine(this);
+	this->UpdateStatsLine();
 }
 
 /*
@@ -1144,7 +1144,7 @@ void WindowInfo::RaiseDocument() {
 		UpdateReplaceActionButtons(this);
 	}
 
-	UpdateWMSizeHints(this);
+	this->UpdateWMSizeHints();
 }
 
 
@@ -1325,8 +1325,8 @@ void WindowInfo::CloseWindow() {
 
 		StopHighlighting(this);
 		EndSmartIndent(this);
-		UpdateWindowTitle(this);
-		UpdateWindowReadOnly(this);
+		this->UpdateWindowTitle();
+		this->UpdateWindowReadOnly();
 		XtSetSensitive(this->closeItem, FALSE);
 		XtSetSensitive(this->readOnlyItem, TRUE);
 		XmToggleButtonSetState(this->readOnlyItem, FALSE, FALSE);
@@ -1334,7 +1334,7 @@ void WindowInfo::CloseWindow() {
 		ClearRedoList(this);
 		XmTextSetStringEx(this->statsLine, ""); /* resets scroll pos of stats
 		                                            line from long file names */
-		UpdateStatsLine(this);
+		this->UpdateStatsLine();
 		DetermineLanguageMode(this, True);
 		this->RefreshTabState();
 		updateLineNumDisp(this);
@@ -1520,7 +1520,7 @@ void SplitPane(WindowInfo *window) {
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
 	/* Set the minimum pane height in the new pane */
-	UpdateMinPaneHeights(window);
+	window->UpdateMinPaneHeights();
 
 	/* adjust the heights, scroll positions, etc., to split the focus pane */
 	for (i = window->nPanes; i > focusPane; i--) {
@@ -1694,7 +1694,7 @@ void ShowLineNumbers(WindowInfo *window, int state) {
 	}
 
 	/* Tell WM that the non-expandable part of the window has changed size */
-	UpdateWMSizeHints(window);
+	window->UpdateWMSizeHints();
 }
 
 void SetTabDist(WindowInfo *window, int tabDist) {
@@ -1782,7 +1782,7 @@ static void showStatistics(WindowInfo *window, int state) {
 
 	/* Tell WM that the non-expandable part of the window has changed size */
 	/* Already done in showStatsForm */
-	/* UpdateWMSizeHints(window); */
+	/* window->UpdateWMSizeHints(); */
 }
 
 /*
@@ -1852,7 +1852,7 @@ static void showISearch(WindowInfo *window, int state) {
 
 	/* Tell WM that the non-expandable part of the window has changed size */
 	/* This is already done in showStatsForm */
-	/* UpdateWMSizeHints(window); */
+	/* window->UpdateWMSizeHints(); */
 }
 
 /*
@@ -1880,14 +1880,14 @@ static void showStatsForm(WindowInfo *window) {
 #endif
 		XtManageChild(statsAreaForm);
 		XtVaSetValues(mainW, XmNshowSeparator, False, nullptr);
-		UpdateStatsLine(window);
+		window->UpdateStatsLine();
 	} else {
 		XtUnmanageChild(statsAreaForm);
 		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE, nullptr);
 	}
 
 	/* Tell WM that the non-expandable part of the window has changed size */
-	UpdateWMSizeHints(window);
+	window->UpdateWMSizeHints();
 }
 
 /*
@@ -1935,7 +1935,7 @@ void WindowInfo::ClearModeMessage() {
 		showStatistics(this, False);
 	}
 	
-	UpdateStatsLine(this);
+	this->UpdateStatsLine();
 }
 
 /*
@@ -1988,12 +1988,12 @@ void SetShowMatching(WindowInfo *window, int state) {
 /*
 ** Update the "New (in X)" menu item to reflect the preferences
 */
-void UpdateNewOppositeMenu(WindowInfo *window, int openInTab) {
+void WindowInfo::UpdateNewOppositeMenu(int openInTab) {
 	XmString lbl;
 	if (openInTab)
-		XtVaSetValues(window->newOppositeItem, XmNlabelString, lbl = XmStringCreateSimpleEx("New Window"), XmNmnemonic, 'W', nullptr);
+		XtVaSetValues(this->newOppositeItem, XmNlabelString, lbl = XmStringCreateSimpleEx("New Window"), XmNmnemonic, 'W', nullptr);
 	else
-		XtVaSetValues(window->newOppositeItem, XmNlabelString, lbl = XmStringCreateSimpleEx("New Tab"), XmNmnemonic, 'T', nullptr);
+		XtVaSetValues(this->newOppositeItem, XmNlabelString, lbl = XmStringCreateSimpleEx("New Tab"), XmNmnemonic, 'T', nullptr);
 	XmStringFree(lbl);
 }
 
@@ -2084,7 +2084,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 	   compliant window managers (such as fvwm2) would otherwise resize
 	   the window twice: once because of the new sizes requested, and once
 	   because of the new size increments, resulting in an overshoot. */
-	UpdateWMSizeHints(window);
+	window->UpdateWMSizeHints();
 
 	/* Use the information from the old window to re-size the window to a
 	   size appropriate for the new font, but only do so if there's only
@@ -2098,7 +2098,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 	}
 
 	/* Change the minimum pane height */
-	UpdateMinPaneHeights(window);
+	window->UpdateMinPaneHeights();
 }
 
 void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
@@ -2220,11 +2220,11 @@ void SetWindowModified(WindowInfo *window, int modified) {
 	if (window->fileChanged == FALSE && modified == TRUE) {
 		SetSensitive(window, window->closeItem, TRUE);
 		window->fileChanged = TRUE;
-		UpdateWindowTitle(window);
+		window->UpdateWindowTitle();
 		window->RefreshTabState();
 	} else if (window->fileChanged == TRUE && modified == FALSE) {
 		window->fileChanged = FALSE;
-		UpdateWindowTitle(window);
+		window->UpdateWindowTitle();
 		window->RefreshTabState();
 	}
 }
@@ -2233,31 +2233,31 @@ void SetWindowModified(WindowInfo *window, int modified) {
 ** Update the window title to reflect the filename, read-only, and modified
 ** status of the window data structure
 */
-void UpdateWindowTitle(const WindowInfo *window) {
+void WindowInfo::UpdateWindowTitle() {
 
-	if (!window->IsTopDocument()) {
+	if (!this->IsTopDocument()) {
 		return;
 	}
 
-	char *title = FormatWindowTitle(window->filename, window->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, window->filenameSet, window->lockReasons, window->fileChanged, GetPrefTitleFormat());
-	char *iconTitle = (char *)malloc(strlen(window->filename) + 2); /* strlen("*")+1 */
+	char *title = FormatWindowTitle(this->filename, this->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, this->filenameSet, this->lockReasons, this->fileChanged, GetPrefTitleFormat());
+	char *iconTitle = (char *)malloc(strlen(this->filename) + 2); /* strlen("*")+1 */
 
-	strcpy(iconTitle, window->filename);
-	if (window->fileChanged) {
+	strcpy(iconTitle, this->filename);
+	if (this->fileChanged) {
 		strcat(iconTitle, "*");
 	}
 	
-	XtVaSetValues(window->shell, XmNtitle, title, XmNiconName, iconTitle, nullptr);
+	XtVaSetValues(this->shell, XmNtitle, title, XmNiconName, iconTitle, nullptr);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
-	if (window->findDlog && XmToggleButtonGetState(window->findKeepBtn)) {
-		sprintf(title, "Find (in %s)", window->filename);
-		XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, nullptr);
+	if (this->findDlog && XmToggleButtonGetState(this->findKeepBtn)) {
+		sprintf(title, "Find (in %s)", this->filename);
+		XtVaSetValues(XtParent(this->findDlog), XmNtitle, title, nullptr);
 	}
-	if (window->replaceDlog && XmToggleButtonGetState(window->replaceKeepBtn)) {
-		sprintf(title, "Replace (in %s)", window->filename);
-		XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, nullptr);
+	if (this->replaceDlog && XmToggleButtonGetState(this->replaceKeepBtn)) {
+		sprintf(title, "Replace (in %s)", this->filename);
+		XtVaSetValues(XtParent(this->replaceDlog), XmNtitle, title, nullptr);
 	}
 	free(iconTitle);
 
@@ -2270,18 +2270,18 @@ void UpdateWindowTitle(const WindowInfo *window) {
 ** the ReadOnly toggle button in the File menu to agree with the state in
 ** the window data structure.
 */
-void UpdateWindowReadOnly(WindowInfo *window) {
+void WindowInfo::UpdateWindowReadOnly() {
 	int i, state;
 
-	if (!window->IsTopDocument())
+	if (!this->IsTopDocument())
 		return;
 
-	state = IS_ANY_LOCKED(window->lockReasons);
-	XtVaSetValues(window->textArea, textNreadOnly, state, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNreadOnly, state, nullptr);
-	XmToggleButtonSetState(window->readOnlyItem, state, FALSE);
-	XtSetSensitive(window->readOnlyItem, !IS_ANY_LOCKED_IGNORING_USER(window->lockReasons));
+	state = IS_ANY_LOCKED(this->lockReasons);
+	XtVaSetValues(this->textArea, textNreadOnly, state, nullptr);
+	for (i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNreadOnly, state, nullptr);
+	XmToggleButtonSetState(this->readOnlyItem, state, FALSE);
+	XtSetSensitive(this->readOnlyItem, !IS_ANY_LOCKED_IGNORING_USER(this->lockReasons));
 }
 
 /*
@@ -2351,7 +2351,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 
 static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2361,7 +2361,7 @@ static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	/* update line and column nubers in statistics line */
-	UpdateStatsLine(window);
+	window->UpdateStatsLine();
 
 	/* Check the character before the cursor for matchable characters */
 	FlashMatching(window, w);
@@ -2440,7 +2440,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	SetWindowModified(window, TRUE);
 
 	/* Update # of bytes, and line and col statistics */
-	UpdateStatsLine(window);
+	window->UpdateStatsLine();
 
 	/* Check if external changes have been made to file and warn user */
 	CheckForChangesToFile(window);
@@ -2448,7 +2448,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2456,7 +2456,7 @@ static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	window->lastFocus = w;
 
 	/* update line number statistic to reflect current focus pane */
-	UpdateStatsLine(window);
+	window->UpdateStatsLine();
 
 	/* finish off the current incremental search */
 	EndISearch(window);
@@ -2467,7 +2467,7 @@ static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 	(void)w;
@@ -2480,7 +2480,7 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	(void)w;
 	
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	auto callData = (dragEndCBStruct *)call_data;
 
 	/* restore recording of undo information */
@@ -2497,7 +2497,7 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	
 	window = WidgetToWindow(w);
 	if (!WindowCanBeClosed(window)) {
@@ -2687,7 +2687,7 @@ static int updateGutterWidth(WindowInfo *window) {
 		XtVaGetValues(window->shell, XmNwidth, &windowWidth, nullptr);
 		XtVaSetValues(window->shell, XmNwidth, (Dimension)windowWidth + (newColsDiff * fontWidth), nullptr);
 
-		UpdateWMSizeHints(window);
+		window->UpdateWMSizeHints();
 	}
 
 	for (document = WindowList; nullptr != document; document = document->next) {
@@ -2730,48 +2730,48 @@ static int updateLineNumDisp(WindowInfo *window) {
 /*
 ** Update the optional statistics line.
 */
-void UpdateStatsLine(WindowInfo *window) {
+void WindowInfo::UpdateStatsLine() {
 	int line;
 	int colNum;	
-	Widget statW = window->statsLine;
+	Widget statW = this->statsLine;
 	XmString xmslinecol;
 
-	if (!window->IsTopDocument()) {
+	if (!this->IsTopDocument()) {
 		return;
 	}
 
 	/* This routine is called for each character typed, so its performance
 	   affects overall editor perfomance.  Only update if the line is on. */
-	if (!window->showStats) {
+	if (!this->showStats) {
 		return;
 	}
 
 	/* Compose the string to display. If line # isn't available, leave it off */
-	int pos            = TextGetCursorPos(window->lastFocus);
-	size_t string_size = strlen(window->filename) + strlen(window->path) + 45;
+	int pos            = TextGetCursorPos(this->lastFocus);
+	size_t string_size = strlen(this->filename) + strlen(this->path) + 45;
 	char *string       = new char[string_size];
-	const char *format = (window->fileFormat == DOS_FILE_FORMAT) ? " DOS" : (window->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
+	const char *format = (this->fileFormat == DOS_FILE_FORMAT) ? " DOS" : (this->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
 	char slinecol[32];
 	
-	if (!TextPosToLineAndCol(window->lastFocus, pos, &line, &colNum)) {
-		snprintf(string, string_size, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
+	if (!TextPosToLineAndCol(this->lastFocus, pos, &line, &colNum)) {
+		snprintf(string, string_size, "%s%s%s %d bytes", this->path, this->filename, format, this->buffer->BufGetLength());
 		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
 		snprintf(slinecol, sizeof(slinecol), "L: %d  C: %d", line, colNum);
-		if (window->showLineNumbers) {
-			snprintf(string, string_size, "%s%s%s byte %d of %d", window->path, window->filename, format, pos, window->buffer->BufGetLength());
+		if (this->showLineNumbers) {
+			snprintf(string, string_size, "%s%s%s byte %d of %d", this->path, this->filename, format, pos, this->buffer->BufGetLength());
 		} else {
-			snprintf(string, string_size, "%s%s%s %d bytes", window->path, window->filename, format, window->buffer->BufGetLength());
+			snprintf(string, string_size, "%s%s%s %d bytes", this->path, this->filename, format, this->buffer->BufGetLength());
 		}
 	}
 
 	/* Update the line/column number */
 	xmslinecol = XmStringCreateSimpleEx(slinecol);
-	XtVaSetValues(window->statsLineColNo, XmNlabelString, xmslinecol, nullptr);
+	XtVaSetValues(this->statsLineColNo, XmNlabelString, xmslinecol, nullptr);
 	XmStringFree(xmslinecol);
 
 	/* Don't clobber the line if there's a special message being displayed */
-	if (!window->modeMessageDisplayed) {
+	if (!this->modeMessageDisplayed) {
 		/* Change the text in the stats line */
 		XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 	}
@@ -2779,7 +2779,7 @@ void UpdateStatsLine(WindowInfo *window) {
 
 	/* Update the line/col display */
 	xmslinecol = XmStringCreateSimpleEx(slinecol);
-	XtVaSetValues(window->statsLineColNo, XmNlabelString, xmslinecol, nullptr);
+	XtVaSetValues(this->statsLineColNo, XmNlabelString, xmslinecol, nullptr);
 	XmStringFree(xmslinecol);
 }
 
@@ -2860,25 +2860,25 @@ static void setPaneMinHeight(Widget w, int min) {
 ** hints also makes the resize indicator show the window size in characters
 ** rather than pixels, which is very helpful to users.
 */
-void UpdateWMSizeHints(WindowInfo *window) {
+void WindowInfo::UpdateWMSizeHints() {
 	Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
 	int marginHeight, marginWidth, totalHeight, nCols, nRows;
 	XFontStruct *fs;
 	int i, baseWidth, baseHeight, fontHeight, fontWidth;
 	Widget hScrollBar;
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 
 	/* Find the dimensions of a single character of the text font */
-	XtVaGetValues(window->textArea, textNfont, &fs, nullptr);
+	XtVaGetValues(this->textArea, textNfont, &fs, nullptr);
 	fontHeight = textD->ascent + textD->descent;
 	fontWidth = fs->max_bounds.width;
 
-	/* Find the base (non-expandable) width and height of the editor window.
+	/* Find the base (non-expandable) width and height of the editor this.
 
 	   FIXME:
-	   To workaround the shrinking-window bug on some WM such as Metacity,
-	   which caused the window to shrink as we switch between documents
-	   using different font sizes on the documents in the same window, the
+	   To workaround the shrinking-this bug on some WM such as Metacity,
+	   which caused the this to shrink as we switch between documents
+	   using different font sizes on the documents in the same this, the
 	   base width, and similarly the base height, is ajusted such that:
 	        shellWidth = baseWidth + cols * textWidth
 	   There are two issues with this workaround:
@@ -2886,10 +2886,10 @@ void UpdateWMSizeHints(WindowInfo *window) {
 	   2. the Col x Row info reported by the WM will be based on the fully
 	      display text.
 	*/
-	XtVaGetValues(window->textArea, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
+	XtVaGetValues(this->textArea, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
 	totalHeight = textHeight - 2 * marginHeight;
-	for (i = 0; i < window->nPanes; i++) {
-		XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, textNhScrollBar, &hScrollBar, nullptr);
+	for (i = 0; i < this->nPanes; i++) {
+		XtVaGetValues(this->textPanes[i], XmNheight, &textHeight, textNhScrollBar, &hScrollBar, nullptr);
 		totalHeight += textHeight - 2 * marginHeight;
 		if (!XtIsManaged(hScrollBar)) {
 			XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
@@ -2897,45 +2897,45 @@ void UpdateWMSizeHints(WindowInfo *window) {
 		}
 	}
 
-	XtVaGetValues(window->shell, XmNwidth, &shellWidth, XmNheight, &shellHeight, nullptr);
+	XtVaGetValues(this->shell, XmNwidth, &shellWidth, XmNheight, &shellHeight, nullptr);
 	nCols = textD->width / fontWidth;
 	nRows = totalHeight / fontHeight;
 	baseWidth = shellWidth - nCols * fontWidth;
 	baseHeight = shellHeight - nRows * fontHeight;
 
 	/* Set the size hints in the shell widget */
-	XtVaSetValues(window->shell, XmNwidthInc, fs->max_bounds.width, XmNheightInc, fontHeight, XmNbaseWidth, baseWidth, XmNbaseHeight, baseHeight, XmNminWidth, baseWidth + fontWidth, XmNminHeight,
-	              baseHeight + (1 + window->nPanes) * fontHeight, nullptr);
+	XtVaSetValues(this->shell, XmNwidthInc, fs->max_bounds.width, XmNheightInc, fontHeight, XmNbaseWidth, baseWidth, XmNbaseHeight, baseHeight, XmNminWidth, baseWidth + fontWidth, XmNminHeight,
+	              baseHeight + (1 + this->nPanes) * fontHeight, nullptr);
 
 	/* Motif will keep placing this on the shell every time we change it,
 	   so it needs to be undone every single time.  This only seems to
 	   happen on mult-head dispalys on screens 1 and higher. */
 
-	RemovePPositionHint(window->shell);
+	RemovePPositionHint(this->shell);
 }
 
 /*
 ** Update the minimum allowable height for a split pane after a change
 ** to font or margin height.
 */
-void UpdateMinPaneHeights(WindowInfo *window) {
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+void WindowInfo::UpdateMinPaneHeights() {
+	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 	Dimension hsbHeight, swMarginHeight, frameShadowHeight;
 	int i, marginHeight, minPaneHeight;
 	Widget hScrollBar;
 
 	/* find the minimum allowable size for a pane */
-	XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, nullptr);
-	XtVaGetValues(containingPane(window->textArea), XmNscrolledWindowMarginHeight, &swMarginHeight, nullptr);
-	XtVaGetValues(XtParent(window->textArea), XmNshadowThickness, &frameShadowHeight, nullptr);
-	XtVaGetValues(window->textArea, textNmarginHeight, &marginHeight, nullptr);
+	XtVaGetValues(this->textArea, textNhScrollBar, &hScrollBar, nullptr);
+	XtVaGetValues(containingPane(this->textArea), XmNscrolledWindowMarginHeight, &swMarginHeight, nullptr);
+	XtVaGetValues(XtParent(this->textArea), XmNshadowThickness, &frameShadowHeight, nullptr);
+	XtVaGetValues(this->textArea, textNmarginHeight, &marginHeight, nullptr);
 	XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, nullptr);
 	minPaneHeight = textD->ascent + textD->descent + marginHeight * 2 + swMarginHeight * 2 + hsbHeight + 2 * frameShadowHeight;
 
-	/* Set it in all of the widgets in the window */
-	setPaneMinHeight(containingPane(window->textArea), minPaneHeight);
-	for (i = 0; i < window->nPanes; i++)
-		setPaneMinHeight(containingPane(window->textPanes[i]), minPaneHeight);
+	/* Set it in all of the widgets in the this */
+	setPaneMinHeight(containingPane(this->textArea), minPaneHeight);
+	for (i = 0; i < this->nPanes; i++)
+		setPaneMinHeight(containingPane(this->textPanes[i]), minPaneHeight);
 }
 
 /* Add an icon to an applicaction shell widget.  addWindowIcon adds a large
@@ -3033,7 +3033,7 @@ static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	UpdateWMSizeHints((WindowInfo *)clientData);
+	static_cast<WindowInfo *>(clientData)->UpdateWMSizeHints();
 }
 
 /*
@@ -3486,7 +3486,7 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 
 	(void)w;
 	
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	int nDocuments = window->NDocuments();
 
@@ -3662,9 +3662,10 @@ void WindowInfo::RefreshWindowStates() {
 	if (this->modeMessageDisplayed)
 		XmTextSetStringEx(this->statsLine, this->modeMessage);
 	else
-		UpdateStatsLine(this);
-	UpdateWindowReadOnly(this);
-	UpdateWindowTitle(this);
+		this->UpdateStatsLine();
+		
+	this->UpdateWindowReadOnly();
+	this->UpdateWindowTitle();
 
 	/* show/hide statsline as needed */
 	if (this->modeMessageDisplayed && !XtIsManaged(this->statsLineForm)) {
@@ -3762,7 +3763,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 		}
 
 		/* Set the minimum pane height in the new pane */
-		UpdateMinPaneHeights(window);
+		window->UpdateMinPaneHeights();
 
 		for (i = 0; i <= window->nPanes; i++) {
 			text = i == 0 ? window->textArea : window->textPanes[i - 1];
@@ -4057,7 +4058,7 @@ static void hideTooltip(Widget tab) {
 
 static void closeTabProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
-	CloseFileAndWindow((WindowInfo *)clientData, PROMPT_SBC_DIALOG_RESPONSE);
+	CloseFileAndWindow(static_cast<WindowInfo *>(clientData), PROMPT_SBC_DIALOG_RESPONSE);
 }
 
 /*

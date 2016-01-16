@@ -4027,8 +4027,8 @@ static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	SET_USER_LOCKED(window->lockReasons, newState);
 	if (window->IsTopDocument())
 		XmToggleButtonSetState(window->readOnlyItem, IS_ANY_LOCKED(window->lockReasons), False);
-	UpdateWindowTitle(window);
-	UpdateWindowReadOnly(window);
+	window->UpdateWindowTitle();
+	window->UpdateWindowReadOnly();
 }
 
 static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
