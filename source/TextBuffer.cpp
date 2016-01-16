@@ -1328,9 +1328,9 @@ void TextBuffer::BufInsertCol(int column, int startPos, const char *text, int *c
 		fprintf(stderr, "NEdit internal consistency check ins1 failed");
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 	XtFree(deletedText);
-	if (charsInserted != nullptr)
+	if (charsInserted)
 		*charsInserted = nInserted;
-	if (charsDeleted != nullptr)
+	if (charsDeleted)
 		*charsDeleted = nDeleted;
 }
 
@@ -1355,9 +1355,9 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 		fprintf(stderr, "NEdit internal consistency check ins1 failed");
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 
-	if (charsInserted != nullptr)
+	if (charsInserted)
 		*charsInserted = nInserted;
-	if (charsDeleted != nullptr)
+	if (charsDeleted)
 		*charsDeleted = nDeleted;
 }
 
@@ -1385,9 +1385,9 @@ void TextBuffer::BufOverlayRect(int startPos, int rectStart, int rectEnd, const 
 		fprintf(stderr, "NEdit internal consistency check ovly1 failed");
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 	XtFree(deletedText);
-	if (charsInserted != nullptr)
+	if (charsInserted)
 		*charsInserted = nInserted;
-	if (charsDeleted != nullptr)
+	if (charsDeleted)
 		*charsDeleted = nDeleted;
 }
 
@@ -1414,9 +1414,9 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 		fprintf(stderr, "NEdit internal consistency check ovly1 failed");
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 
-	if (charsInserted != nullptr)
+	if (charsInserted)
 		*charsInserted = nInserted;
-	if (charsDeleted != nullptr)
+	if (charsDeleted)
 		*charsDeleted = nDeleted;
 }
 

@@ -243,7 +243,7 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
 	auto styleString = new char [window->buffer->BufGetLength() + 1];
 	char *stylePtr = styleString;
-	if (highlightData->pass1Patterns == nullptr) {
+	if (!highlightData->pass1Patterns) {
 		for (i = 0; i < window->buffer->BufGetLength(); i++)
 			*stylePtr++ = UNFINISHED_STYLE;
 	} else {
@@ -288,7 +288,7 @@ void StartHighlighting(WindowInfo *window, int warn) {
 void StopHighlighting(WindowInfo *window) {
 	int i, oldFontHeight;
 
-	if (window->highlightData == nullptr)
+	if (!window->highlightData)
 		return;
 
 	/* Get the line height being used by the highlight fonts in the window,
@@ -320,7 +320,7 @@ void StopHighlighting(WindowInfo *window) {
 void FreeHighlightingData(WindowInfo *window) {
 	int i;
 
-	if (window->highlightData == nullptr)
+	if (!window->highlightData)
 		return;
 
 	/* Free and remove the highlight data from the window */
@@ -360,7 +360,7 @@ void UpdateHighlightStyles(WindowInfo *window) {
 	auto oldHighlightData = (windowHighlightData *)window->highlightData;
 
 	/* Do nothing if window not highlighted */
-	if (window->highlightData == nullptr) {
+	if (!window->highlightData) {
 		return;
 	}
 
@@ -641,7 +641,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 		pass1Pats = nullptr;
 	} else {
 		pass1Pats = compilePatterns(window->shell, pass1PatternSrc, nPass1Patterns);
-		if (pass1Pats == nullptr) {
+		if (!pass1Pats) {
 			return nullptr;
 		}
 	}
@@ -650,7 +650,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 		pass2Pats = nullptr;
 	} else {
 		pass2Pats = compilePatterns(window->shell, pass2PatternSrc, nPass2Patterns);
-		if (pass2Pats == nullptr) {
+		if (!pass2Pats) {
 			return nullptr;
 		}
 	}
@@ -1191,7 +1191,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 
 	/* If there are no pass 2 patterns to process, do nothing (but this
 	   should never be triggered) */
-	if (pass2Patterns == nullptr)
+	if (!pass2Patterns)
 		return;
 
 	/* Find the point at which to begin parsing to ensure that the character at
@@ -1399,7 +1399,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	endParse = std::min<int>(endParse, stringPtr - string + beginSafety);
 
 	/* If there are no pass 2 patterns, we're done */
-	if (pass2Patterns == nullptr)
+	if (!pass2Patterns)
 		goto parseDone;
 
 	/* Parsing of pass 2 patterns is done only as necessary for determining
@@ -1580,7 +1580,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		}
 
 		/* the sub-pattern is a simple match, just color it */
-		if (subPat->subPatternRE == nullptr) {
+		if (!subPat->subPatternRE) {
 			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
 			                subPat->style, prevChar);
 

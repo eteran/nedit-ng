@@ -323,9 +323,9 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 		   strings on getValues calls.  I have risked freeing them to avoid
 		   memory leaks, since I assume other developers have made this same
 		   realization, therefore OSF can't easily go back and change it */
-		if (DefaultDirectory != nullptr)
+		if (DefaultDirectory)
 			XmStringFree(DefaultDirectory);
-		if (DefaultPattern != nullptr)
+		if (DefaultPattern)
 			XmStringFree(DefaultPattern);
 		DefaultDirectory = cDir;
 		DefaultPattern = cPattern;
@@ -442,9 +442,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 		/* See note in existing file routines about freeing the values
 		   obtained in the following call */
 		XtVaGetValues(newFileSB, XmNdirSpec, &cFileString, XmNdirectory, &cDir, XmNpattern, &cPattern, nullptr);
-		if (DefaultDirectory != nullptr)
+		if (DefaultDirectory)
 			XmStringFree(DefaultDirectory);
-		if (DefaultPattern != nullptr)
+		if (DefaultPattern)
 			XmStringFree(DefaultPattern);
 		DefaultDirectory = cDir;
 		DefaultPattern = cPattern;

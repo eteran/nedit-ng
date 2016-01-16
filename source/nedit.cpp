@@ -539,7 +539,7 @@ int main(int argc, char **argv) {
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
 		ReadMacroInitFile(WindowList);
 		CheckCloseDim();
-		if (toDoCommand != nullptr)
+		if (toDoCommand)
 			DoMacro(WindowList, toDoCommand, "-do macro");
 	}
 

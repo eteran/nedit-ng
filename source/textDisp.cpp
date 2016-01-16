@@ -2540,7 +2540,7 @@ static void setScroll(textDisp *textD, int topLineNum, int horizOffset, int upda
 static void updateVScrollBarRange(textDisp *textD) {
 	int sliderSize, sliderMax, sliderValue;
 
-	if (textD->vScrollBar == nullptr)
+	if (!textD->vScrollBar)
 		return;
 
 	/* The Vert. scroll bar value and slider size directly represent the top
@@ -2713,7 +2713,7 @@ static int measureVisLine(textDisp *textD, int visLineNum) {
 	int charCount = 0, lineStartPos = textD->lineStarts[visLineNum];
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
-	if (textD->styleBuffer == nullptr) {
+	if (!textD->styleBuffer) {
 		for (i = 0; i < lineLen; i++) {
 			len = textD->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
 			width += XTextWidth(textD->fontStruct, expandedChar, len);

@@ -718,7 +718,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		if (pat->subPatternOf != nullptr)
+		if (pat->subPatternOf)
 			outBuf->BufInsert(outBuf->BufGetLength(), pat->subPatternOf);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
@@ -844,7 +844,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 static int readHighlightPattern(const char **inPtr, const char **errMsg, highlightPattern *pattern) {
 	/* read the name field */
 	pattern->name = ReadSymbolicField(inPtr);
-	if (pattern->name == nullptr) {
+	if (!pattern->name) {
 		*errMsg = "pattern name is required";
 		return False;
 	}
@@ -875,7 +875,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 
 	/* read the style field */
 	pattern->style = ReadSymbolicField(inPtr);
-	if (pattern->style == nullptr) {
+	if (!pattern->style) {
 		*errMsg = "style field required in pattern";
 		return False;
 	}
@@ -2191,7 +2191,7 @@ static highlightPattern *readDialogFields(int silent) {
 
 	/* read the name field */
 	pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW, "highlight pattern name", silent);
-	if (pat->name == nullptr) {
+	if (!pat->name) {
 		delete pat;
 		return nullptr;
 	}

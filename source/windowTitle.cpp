@@ -404,12 +404,11 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 		if (dirNamePresent) /* Avoid erasing number when not active */
 		{
 			if (noOfComponents >= 0) {
-				char *value = XmTextGetString(etDialog.ndirW);
+				std::string value = XmTextGetStringEx(etDialog.ndirW);
 				char buf[2];
 				sprintf(&buf[0], "%d", noOfComponents);
-				if (strcmp(&buf[0], value)) /* Don't overwrite unless diff. */
+				if (strcmp(&buf[0], value.c_str())) /* Don't overwrite unless diff. */
 					SetIntText(etDialog.ndirW, noOfComponents);
-				XtFree(value);
 			} else {
 				XmTextSetStringEx(etDialog.ndirW, "");
 			}

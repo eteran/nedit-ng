@@ -2900,19 +2900,19 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 		newLM->extensions[i] = XtStringDup(lm->extensions[i]);
 	}
 	
-	if (lm->recognitionExpr == nullptr)
+	if (!lm->recognitionExpr)
 		newLM->recognitionExpr = nullptr;
 	else {
 		newLM->recognitionExpr = XtStringDup(lm->recognitionExpr);
 	}
 	
-	if (lm->defTipsFile == nullptr)
+	if (!lm->defTipsFile)
 		newLM->defTipsFile = nullptr;
 	else {
 		newLM->defTipsFile = XtStringDup(lm->defTipsFile);
 	}
 	
-	if (lm->delimiters == nullptr)
+	if (!lm->delimiters)
 		newLM->delimiters = nullptr;
 	else {
 		newLM->delimiters = XtStringDup(lm->delimiters);
@@ -2948,7 +2948,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 	/* read the name field */
 	lm->name = ReadSymbolicFieldTextWidget(LMDialog.nameW, "language mode name", silent);
-	if (lm->name == nullptr) {
+	if (!lm->name) {
 		XtFree((char *)lm);
 		return nullptr;
 	}
@@ -3705,7 +3705,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 
 		/* read language mode name */
 		lm->name = ReadSymbolicField(&inPtr);
-		if (lm->name == nullptr) {
+		if (!lm->name) {
 			XtFree((char *)lm);
 			return modeError(nullptr, inString, inPtr, "language mode name required");
 		}

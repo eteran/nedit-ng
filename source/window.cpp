@@ -549,7 +549,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 
 	/* If the fontList was nullptr, use the magical default provided by Motif,
 	   since it must have worked if we've gotten this far */
-	if (this->fontList == nullptr)
+	if (!this->fontList)
 		XtVaGetValues(stats, XmNfontList, &this->fontList, nullptr);
 
 	/* Create the menu bar */
@@ -1019,7 +1019,7 @@ void WindowInfo::MoveDocumentDialog() {
 void WindowInfo::NextDocument() {
 	WindowInfo *win;
 
-	if (WindowList->next == nullptr)
+	if (!WindowList->next)
 		return;
 
 	win = getNextTabWindow(this, 1, GetPrefGlobalTabNavigate(), 1);
@@ -1037,7 +1037,7 @@ void WindowInfo::NextDocument() {
 */
 void WindowInfo::PreviousDocument() {
 
-	if (WindowList->next == nullptr) {
+	if (!WindowList->next) {
 		return;
 	}
 
@@ -1505,7 +1505,7 @@ void SplitPane(WindowInfo *window) {
 	text = createTextArea(window->splitPane, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
 
 	TextSetBuffer(text, window->buffer);
-	if (window->highlightData != nullptr)
+	if (window->highlightData)
 		AttachHighlightToWidget(text, window);
 	if (window->backlightChars) {
 		XtVaSetValues(text, textNbacklightCharTypes, window->backlightCharTypes, nullptr);
@@ -2076,7 +2076,7 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 
 	/* Change the highlight fonts, even if they didn't change, because
 	   primary font is read through the style table for syntax highlighting */
-	if (window->highlightData != nullptr)
+	if (window->highlightData)
 		UpdateHighlightStyles(window);
 
 	/* Change the window manager size hints.
@@ -2121,7 +2121,7 @@ void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const
 	}
 
 	/* Redo any syntax highlighting */
-	if (window->highlightData != nullptr)
+	if (window->highlightData)
 		UpdateHighlightStyles(window);
 }
 
@@ -3268,7 +3268,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->device = 0;
 	window->inode = 0;
 
-	if (window->fontList == nullptr)
+	if (!window->fontList)
 		XtVaGetValues(shellWindow->statsLine, XmNfontList, &window->fontList, nullptr);
 
 	getTextPaneDimension(shellWindow, &nRows, &nCols);
@@ -3750,7 +3750,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 			text = createTextArea(window->splitPane, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
 			TextSetBuffer(text, window->buffer);
 
-			if (window->highlightData != nullptr)
+			if (window->highlightData)
 				AttachHighlightToWidget(text, window);
 			XtManageChild(text);
 			window->textPanes[i] = text;

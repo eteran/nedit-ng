@@ -703,7 +703,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	char *outText;
 
 	/* shouldn't happen, but it would be bad if it did */
-	if (cmdData->textW == nullptr)
+	if (!cmdData->textW)
 		return;
 
 	outText = coalesceOutputEx(cmdData->outBufs, &len);
@@ -748,7 +748,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	close(cmdData->stdoutFD);
 	if (cmdData->flags & ERROR_DIALOGS)
 		close(cmdData->stderrFD);
-	if (cmdData->inPtr != nullptr)
+	if (cmdData->inPtr)
 		close(cmdData->stdinFD);
 
 	/* Free the provided input text */

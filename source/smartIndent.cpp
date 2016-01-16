@@ -297,16 +297,16 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 	winData->inNewLineMacro = 0;
 	winData->inModMacro = 0;
 	winData->newlineMacro = ParseMacro((String)indentMacros->newlineMacro, &errMsg, &stoppedAt);
-	if (winData->newlineMacro == nullptr) {
+	if (!winData->newlineMacro) {
 		XtFree((char *)winData);
 		ParseError(window->shell, indentMacros->newlineMacro, stoppedAt, "newline macro", errMsg);
 		return;
 	}
-	if (indentMacros->modMacro == nullptr)
+	if (!indentMacros->modMacro)
 		winData->modMacro = nullptr;
 	else {
 		winData->modMacro = ParseMacro((String)indentMacros->modMacro, &errMsg, &stoppedAt);
-		if (winData->modMacro == nullptr) {
+		if (!winData->modMacro) {
 			FreeProgram(winData->newlineMacro);
 			XtFree((char *)winData);
 			ParseError(window->shell, indentMacros->modMacro, stoppedAt, "smart indent modify macro", errMsg);
@@ -323,7 +323,7 @@ void EndSmartIndent(WindowInfo *window) {
 		return;
 
 	/* Free programs and allocated data */
-	if (winData->modMacro != nullptr)
+	if (winData->modMacro)
 		FreeProgram(winData->modMacro);
 	FreeProgram(winData->newlineMacro);
 	XtFree((char *)winData);
@@ -352,7 +352,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	WindowInfo *window = WidgetToWindow(w);
 	smartIndentCBStruct *cbInfo = (smartIndentCBStruct *)callData;
 
-	if (window->smartIndentData == nullptr)
+	if (!window->smartIndentData)
 		return;
 	if (cbInfo->reason == CHAR_TYPED)
 		executeModMacro(window, cbInfo);
@@ -955,12 +955,12 @@ static void setSmartIndentDialogData(smartIndentRec *is) {
 		XmTextSetStringEx(SmartIndentDialog.newlineMacro, "");
 		XmTextSetStringEx(SmartIndentDialog.modMacro, "");
 	} else {
-		if (is->initMacro == nullptr)
+		if (!is->initMacro)
 			XmTextSetStringEx(SmartIndentDialog.initMacro, "");
 		else
 			XmTextSetStringEx(SmartIndentDialog.initMacro, is->initMacro);
 		XmTextSetStringEx(SmartIndentDialog.newlineMacro, is->newlineMacro);
-		if (is->modMacro == nullptr)
+		if (!is->modMacro)
 			XmTextSetStringEx(SmartIndentDialog.modMacro, "");
 		else
 			XmTextSetStringEx(SmartIndentDialog.modMacro, is->modMacro);

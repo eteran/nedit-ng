@@ -807,11 +807,11 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nM
 ** in the Edit menu
 */
 void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive) {
-	if (window->bgMenuUndoItem != nullptr)
+	if (window->bgMenuUndoItem)
 		SetSensitive(window, window->bgMenuUndoItem, sensitive);
 }
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive) {
-	if (window->bgMenuRedoItem != nullptr)
+	if (window->bgMenuRedoItem)
 		SetSensitive(window, window->bgMenuRedoItem, sensitive);
 }
 
@@ -1102,7 +1102,7 @@ static void resetManageMode(UserMenuList *list) {
 		element->umleManageMode = UMMM_UNMANAGE;
 
 		/* recursively reset manage mode of sub-menus */
-		if (element->umleSubMenuList != nullptr)
+		if (element->umleSubMenuList)
 			resetManageMode(element->umleSubMenuList);
 	}
 }
@@ -3087,7 +3087,7 @@ static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accK
 }
 
 static void freeUserMenuListElement(UserMenuListElement *element) {
-	if (element->umleSubMenuList != nullptr)
+	if (element->umleSubMenuList)
 		freeUserSubMenuList(element->umleSubMenuList);
 
 	XtFree(element->umleAccKeys);

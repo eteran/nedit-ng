@@ -354,7 +354,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* if there's a delete confirmation callback, call it first, and allow
 	   it to request that the operation be aborted */
-	if (ml->deleteConfirmCB != nullptr)
+	if (ml->deleteConfirmCB)
 		if (!(*ml->deleteConfirmCB)(ind, ml->deleteConfirmArg))
 			return;
 
@@ -514,7 +514,7 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData) 
 	ind = listPos - 2;
 
 	/* tell the caller to show the new item */
-	if (ml->setDialogDataCB != nullptr)
+	if (ml->setDialogDataCB)
 		(*ml->setDialogDataCB)(listPos == 1 ? nullptr : ml->itemList[ind], ml->setDialogDataArg);
 }
 

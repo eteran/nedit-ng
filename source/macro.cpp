@@ -495,7 +495,7 @@ void FinishLearn(void) {
 void CancelMacroOrLearn(WindowInfo *window) {
 	if(MacroRecordActionHook)
 		cancelLearn();
-	else if (window->macroCmdData != nullptr)
+	else if (window->macroCmdData)
 		AbortMacroCommand(window);
 }
 
@@ -698,7 +698,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 
 			if (runWindow) {
 				XEvent nextEvent;
-				if (runWindow->macroCmdData == nullptr) {
+				if (!runWindow->macroCmdData) {
 					runMacro(runWindow, prog);
 					while (runWindow->macroCmdData) {
 						XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell), &nextEvent);
@@ -814,14 +814,14 @@ void ResumeMacroExecution(WindowInfo *window) {
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
 void AbortMacroCommand(WindowInfo *window) {
-	if (window->macroCmdData == nullptr)
+	if (!window->macroCmdData)
 		return;
 
 	/* If there's both a macro and a shell command executing, the shell command
 	   must have been called from the macro.  When called from a macro, shell
 	   commands don't put up cancellation controls of their own, but rely
 	   instead on the macro cancellation mechanism (here) */
-	if (window->shellCmdData != nullptr)
+	if (window->shellCmdData)
 		AbortShellCommand(window);
 
 	/* Free the continuation */
@@ -906,7 +906,7 @@ static void finishMacroCmdExecution(WindowInfo *window) {
 	}
 
 	/* If a dialog was up, get rid of it */
-	if (cmdData->dialog != nullptr)
+	if (cmdData->dialog)
 		XtDestroyWidget(XtParent(cmdData->dialog));
 
 	/* Free execution information */

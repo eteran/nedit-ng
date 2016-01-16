@@ -7,6 +7,18 @@
 #include <string>
 #include <cassert>
 
+inline std::string XmTextGetStringEx(Widget widget) {
+	if(char *s = XmTextGetString(widget)) {
+		std::string str(s);
+		XtFree(s);
+		return str;
+	}
+	
+	return std::string();
+}
+
+
+
 //------------------------------------------------------------------------------
 inline std::string XmStringGetLtoREx(XmString s, XmStringCharSet tag) {
 
