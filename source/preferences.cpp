@@ -2365,7 +2365,7 @@ static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData
 	(void)widget;
 	(void)callData;
 
-	Widget shellSelDialog = (Widget)clientData;
+	Widget shellSelDialog = static_cast<Widget>(clientData);
 	String shellName = XtMalloc(MAXPATHLEN);
 	struct stat attribute;
 	unsigned dlgResult;
@@ -4057,7 +4057,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 	/* copy string up to end quote, transforming escaped quotes into quotes */
 	*string = XtMalloc(c - *inPtr + 1);
 	outPtr = *string;
-	while (True) {
+	while (true) {
 		if (**inPtr == '\"') {
 			if (*(*inPtr + 1) == '\"')
 				(*inPtr)++;
@@ -5286,7 +5286,7 @@ void ChooseColors(WindowInfo *window) {
 
 	/* if the dialog is already displayed, just pop it to the top and return */
 	if (window->colorDialog) {
-		RaiseDialogWindow(((colorDialog *)window->colorDialog)->shell);
+		RaiseDialogWindow(reinterpret_cast<colorDialog *>(window->colorDialog)->shell);
 		return;
 	}
 

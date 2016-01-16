@@ -1871,7 +1871,7 @@ static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	XtArgVal userData;
 	int index;
@@ -1891,7 +1891,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	XtArgVal userData;
 	int index;
@@ -1924,7 +1924,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	XtArgVal userData;
 	int index;

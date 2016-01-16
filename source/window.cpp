@@ -1708,7 +1708,7 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 
 		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
 			Widget w = window->GetPaneByIndex(paneIndex);
-			textDisp *textD = ((TextWidget)w)->text.textD;
+			textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 			TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
 			saveCursorPositions[paneIndex] = TextGetCursorPos(w);
@@ -1719,7 +1719,7 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 
 		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
 			Widget w = window->GetPaneByIndex(paneIndex);
-			textDisp *textD = ((TextWidget)w)->text.textD;
+			textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 			textD->modifyingTabDist = 0;
 			TextSetCursorPos(w, saveCursorPositions[paneIndex]);
@@ -2181,7 +2181,7 @@ WindowInfo *WidgetToWindow(Widget w) {
 	WindowInfo *window = nullptr;
 	Widget parent;
 
-	while (True) {
+	while (true) {
 		/* return window pointer of document */
 		if (XtClass(w) == xmPanedWindowWidgetClass)
 			break;
@@ -2510,7 +2510,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 #ifndef NO_SESSION_RESTART
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto appShell = (Widget)clientData;
+	auto appShell = static_cast<Widget>(clientData);
 	
 	(void)w;
 	(void)callData;
@@ -4066,7 +4066,7 @@ static void closeTabProc(XtPointer clientData, XtIntervalId *id) {
 */
 static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto mainWin = (Widget)clientData;
+	auto mainWin = static_cast<Widget>(clientData);
 
 	(void)callData;
 

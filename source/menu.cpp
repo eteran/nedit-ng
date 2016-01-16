@@ -4706,7 +4706,7 @@ void ReadNEditDB(void) {
 	/* read lines of the file, lines beginning with # are considered to be
 	   comments and are thrown away.  Lines are subject to cursory checking,
 	   then just copied to the Open Previous file menu list */
-	while (True) {
+	while (true) {
 		if (fgets(line, sizeof(line), fp) == nullptr) {
 			/* end of file */
 			fclose(fp);
@@ -5081,7 +5081,7 @@ static void tearoffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event) 
 
 	(void)w;
 
-	Widget shell = (Widget)clientData;
+	Widget shell = static_cast<Widget>(clientData);
 	XWMHints *wmHints;
 
 	if (event->type != MapNotify)

@@ -1330,7 +1330,7 @@ int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines) {
 		return textD->buffer->BufCountBackwardNLines(startPos, nLines);
 
 	pos = startPos;
-	while (True) {
+	while (true) {
 		lineStart = buf->BufStartOfLine(pos);
 		wrappedLineCounter(textD, textD->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retLines > nLines)
@@ -2900,7 +2900,7 @@ static void findWrapRangeEx(textDisp *textD, view::string_view deletedText, int 
 	*/
 	lineStart = countFrom;
 	*modRangeStart = countFrom;
-	while (True) {
+	while (true) {
 
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
@@ -3044,7 +3044,7 @@ static void measureDeletedLines(textDisp *textD, int pos, int nDeleted) {
 	** line starts to re-sync with the original line starts array
 	*/
 	lineStart = countFrom;
-	while (True) {
+	while (true) {
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
 		wrappedLineCounter(textD, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);

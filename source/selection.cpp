@@ -449,7 +449,7 @@ void BeginGotoMarkCommand(WindowInfo *window, int extend) {
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
-	Widget w = (Widget)clientData;
+	Widget w = static_cast<Widget>(clientData);
 	WindowInfo *window = WidgetToWindow(w);
 
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);

@@ -814,7 +814,7 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 	** parse each pattern in the list
 	*/
 	pat = patternList;
-	while (True) {
+	while (true) {
 		*inPtr += strspn(*inPtr, " \t\n");
 		if (**inPtr == '\0') {
 			if (withBraces) {

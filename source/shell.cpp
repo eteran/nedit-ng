@@ -521,7 +521,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 	int nRead;
 
@@ -565,7 +565,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 	int nRead;
 
@@ -608,7 +608,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 	int nWritten;
 
@@ -646,7 +646,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 	XmString xmCancel;	
 	char message[MAX_TIMEOUT_MSG_LEN];
@@ -696,7 +696,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
 	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 	int len;

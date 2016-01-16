@@ -1947,7 +1947,7 @@ static void removeDoomedWindowFromList(WindowInfo *window, int index) {
 */
 static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -1956,7 +1956,7 @@ static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -1967,7 +1967,7 @@ static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 /* when keeping a window up, clue the user what window it's associated with */
 static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -1983,7 +1983,7 @@ static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2003,8 +2003,8 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int direction, searchType;
 	const char *params[5];
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	window = WidgetToWindow(w);
 
@@ -2032,8 +2032,8 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
@@ -2063,7 +2063,7 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	(void)callData;
 
 	window = WidgetToWindow(w);
@@ -2076,7 +2076,7 @@ static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callDat
 **/
 static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	(void)callData;
 
 	window = WidgetToWindow(w);
@@ -2155,8 +2155,8 @@ static void collectWritableWindows(WindowInfo *window) {
 
 static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
@@ -2255,7 +2255,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 
 static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2270,8 +2270,8 @@ static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callDat
 
 static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
 
@@ -2307,8 +2307,8 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 
 static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
 
@@ -2318,8 +2318,8 @@ static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer ca
 
 static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
 
@@ -2463,8 +2463,8 @@ static void unmanageReplaceDialogs(const WindowInfo *window) {
 
 static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
@@ -2494,7 +2494,7 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void rCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2509,7 +2509,7 @@ static void rCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)callData;
 
@@ -2524,8 +2524,8 @@ static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
@@ -2564,8 +2564,8 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX + 1], replaceString[SEARCHMAX + 1];
 	int direction, searchType;
@@ -2693,7 +2693,7 @@ static int textFieldNonEmpty(Widget w) {
 static void rFindTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto event = (XKeyEvent *)callData;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)event;
 
@@ -2706,7 +2706,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2760,7 +2760,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 	
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2799,7 +2799,7 @@ static void fUpdateActionButtons(WindowInfo *window) {
 static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto event = (XKeyEvent *)callData;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	(void)event;
 
@@ -2812,7 +2812,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2856,8 +2856,8 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 
 static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	char searchString[SEARCHMAX];
 	int direction, searchType;
@@ -3388,8 +3388,8 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 */
 static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
 
@@ -3405,8 +3405,8 @@ static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_da
 */
 static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	const char *params[4];
 	char *searchString;
@@ -3449,8 +3449,8 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 */
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = (WindowInfo *)clientData;
-	auto callData = (XmAnyCallbackStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	const char *params[5];
 	char *searchString;
@@ -3513,7 +3513,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 
 
 	auto event = (XKeyEvent *)Event;
-	auto window = (WindowInfo *)clientData;
+	auto window = static_cast<WindowInfo *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -3802,8 +3802,8 @@ static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	eraseFlash((WindowInfo *)clientData);
-	((WindowInfo *)clientData)->flashTimeoutID = 0;
+	eraseFlash(static_cast<WindowInfo *>(clientData));
+	(static_cast<WindowInfo *>(clientData))->flashTimeoutID = 0;
 }
 
 /*

@@ -653,7 +653,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return;
 
 	/* I don't understand the mechanism by which this can be called with
@@ -673,7 +673,7 @@ static void prevTopicCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 
 	topic--;
@@ -688,7 +688,7 @@ static void nextTopicCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 
 	topic++;
@@ -702,7 +702,7 @@ static void bwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic, goTo;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 
 	goTo = navHistBack[topic];
@@ -718,7 +718,7 @@ static void fwHistoryCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic, goTo;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 
 	goTo = navHistForw[topic];
@@ -737,7 +737,7 @@ static void searchHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static char **searchHistory = nullptr;
 	static int nHistoryStrings = 0;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 	SetDialogFPromptHistory(searchHistory, nHistoryStrings);
 	response = DialogF(DF_PROMPT, HelpWindows[topic], 3, "Find", "Search for:    (use up arrow key to recall previous)", promptText, "This Section", "All Sections", "Cancel");
@@ -754,7 +754,7 @@ static void searchHelpAgainCB(Widget w, XtPointer clientData, XtPointer callData
 
 	int topic;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 	searchHelpText(HelpWindows[topic], topic, LastSearchString, LastSearchWasAllTopics, LastSearchPos, LastSearchTopic);
 }
@@ -766,7 +766,7 @@ static void printCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int topic;
 
-	if ((topic = findTopicFromShellWidget((Widget)clientData)) == -1)
+	if ((topic = findTopicFromShellWidget(static_cast<Widget>(clientData))) == -1)
 		return; /* shouldn't happen */
 
 	std::string helpString = TextGetWrappedEx(HelpTextPanes[topic], 0, TextGetBuffer(HelpTextPanes[topic])->BufGetLength());
@@ -909,9 +909,9 @@ static void helpButtonActionAP(Widget w, XEvent *event, String *args, Cardinal *
  * is called if no hyperlink has been recognized at the current event position.
  */
 static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	XButtonEvent *e = (XButtonEvent *)event;
+	XButtonEvent *e = reinterpret_cast<XButtonEvent *>(event);
 	int topic;
-	textDisp *textD = ((TextWidget)w)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int clickedPos, newWin;
 	static int pressX = 0, pressY = 0;
 

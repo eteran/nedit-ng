@@ -428,7 +428,7 @@ static void addLoopAddr(Inst *addr) {
 }
 
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
-	while (True) {
+	while (true) {
 		LoopStackPtr--;
 		if (LoopStackPtr < LoopStack) {
 			fprintf(stderr, "NEdit: internal error (lsu) in macro parser\n");

@@ -1218,7 +1218,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 		if (i < window->nPanes)
 			break;
 	}
-	if (window == nullptr || window != (WindowInfo *)clientData)
+	if (window == nullptr || window != static_cast<WindowInfo *>(clientData))
 		return;
 
 	/* beep on un-recordable operations which require a mouse position, to
@@ -1362,7 +1362,7 @@ static int isIgnoredAction(const char *action) {
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	XmString xmCancel;
 	std::string cCancel;
@@ -1405,7 +1405,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** than having users run a bunch of them at once together.
 */
 static Boolean continueWorkProc(XtPointer clientData) {
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	const char *errMsg;
 	int stat;
@@ -2643,7 +2643,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	XtPointer userData;
 	DataValue retVal;
@@ -2673,7 +2673,7 @@ static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	DataValue retVal;
 
@@ -2795,7 +2795,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData
 
 	(void)callData;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	XtPointer userData;
 	DataValue retVal;
@@ -2838,7 +2838,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)w;
 	(void)callData;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	DataValue retVal;
 
@@ -3341,7 +3341,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	XtPointer userData;
 	DataValue retVal;
@@ -3411,7 +3411,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)callData;
 	(void)w;
 
-	WindowInfo *window = (WindowInfo *)clientData;
+	WindowInfo *window = static_cast<WindowInfo *>(clientData);
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 	DataValue retVal;
 	char **text_lines;
