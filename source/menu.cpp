@@ -3733,7 +3733,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		}
 	}
 	if (window) {
-		RaiseFocusDocumentWindow(window, focus);
+		window->RaiseFocusDocumentWindow(focus);
 	} else {
 		XBell(TheDisplay, 0);
 	}
@@ -3850,11 +3850,11 @@ static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	WindowInfo *window = WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "off") == 0) {
-			SetAutoIndent(window, NO_AUTO_INDENT);
+			window->SetAutoIndent(NO_AUTO_INDENT);
 		} else if (strcmp(args[0], "on") == 0) {
-			SetAutoIndent(window, AUTO_INDENT);
+			window->SetAutoIndent(AUTO_INDENT);
 		} else if (strcmp(args[0], "smart") == 0) {
-			SetAutoIndent(window, SMART_INDENT);
+			window->SetAutoIndent(SMART_INDENT);
 		} else {
 			fprintf(stderr, "nedit: set_auto_indent invalid argument\n");
 		}
@@ -3870,11 +3870,11 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	WindowInfo *window = WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "none") == 0) {
-			SetAutoWrap(window, NO_WRAP);
+			window->SetAutoWrap(NO_WRAP);
 		} else if (strcmp(args[0], "auto") == 0) {
-			SetAutoWrap(window, NEWLINE_WRAP);
+			window->SetAutoWrap(NEWLINE_WRAP);
 		} else if (strcmp(args[0], "continuous") == 0) {
-			SetAutoWrap(window, CONTINUOUS_WRAP);
+			window->SetAutoWrap(CONTINUOUS_WRAP);
 		} else {
 			fprintf(stderr, "nedit: set_wrap_text invalid argument\n");
 		}
@@ -4874,7 +4874,7 @@ static char **shiftKeyToDir(XtPointer callData) {
 
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, ((XmAnyCallbackStruct *)callData)->event);
-	RaiseFocusDocumentWindow((WindowInfo *)clientData, True /* always focus */);
+	static_cast<WindowInfo *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 }
 
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {

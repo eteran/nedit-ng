@@ -117,7 +117,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	UpdateWindowReadOnly(window);
 	UpdateStatsLine(window);
 	UpdateWindowTitle(window);
-	RefreshTabState(window);
+	window->RefreshTabState();
 
 	if(!languageMode)
 		DetermineLanguageMode(window, True);
@@ -208,7 +208,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
 
 	/* update tab label and tooltip */
-	RefreshTabState(window);
+	window->RefreshTabState();
 	SortTabBar(window);
 	ShowTabBar(window, window->GetShowTabBar());
 
@@ -773,7 +773,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	CLEAR_ALL_LOCKS(window->lockReasons);
 	retVal = doSave(window);
 	UpdateWindowReadOnly(window);
-	RefreshTabState(window);
+	window->RefreshTabState();
 
 	/* Add the name to the convenience menu of previously opened files */
 	AddToPrevOpenMenu(fullname);

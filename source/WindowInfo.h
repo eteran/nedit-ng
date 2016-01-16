@@ -51,11 +51,18 @@ public:
 	void PreviousDocument();
 	void RaiseDocument();
 	void RaiseDocumentWindow();
-	
 	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();
 	void ClosePane();
 	void CloseWindow();
+	
+	void RaiseFocusDocumentWindow(Boolean focus);
+	void RefreshMenuToggleStates();
+	void RefreshTabState();
+	void RefreshWindowStates();
+	void SetAutoIndent(int state);
+	void SetAutoScroll(int margin);
+	void SetAutoWrap(int state);	
 
 public:
 	WindowInfo *next;

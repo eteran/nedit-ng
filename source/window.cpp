@@ -798,7 +798,7 @@ void WindowInfo::LastDocument() {
 	if (this->shell == win->shell)
 		win->RaiseDocument();
 	else
-		RaiseFocusDocumentWindow(win, True);
+		win->RaiseFocusDocumentWindow(True);
 }
 
 /*
@@ -1029,7 +1029,7 @@ void WindowInfo::NextDocument() {
 	if (this->shell == win->shell)
 		win->RaiseDocument();
 	else
-		RaiseFocusDocumentWindow(win, True);
+		win->RaiseFocusDocumentWindow(True);
 }
 
 /*
@@ -1048,7 +1048,7 @@ void WindowInfo::PreviousDocument() {
 	if (this->shell == win->shell)
 		win->RaiseDocument();
 	else
-		RaiseFocusDocumentWindow(win, True);
+		win->RaiseFocusDocumentWindow(True);
 }
 
 /*
@@ -1120,14 +1120,14 @@ void WindowInfo::RaiseDocument() {
 	   the back */
 	XLowerWindow(TheDisplay, XtWindow(win->splitPane));
 	XtUnmanageChild(win->splitPane);
-	RefreshTabState(win);
+	win->RefreshTabState();
 
 	/* now refresh this state/info. RefreshWindowStates()
 	   has a lot of work to do, so we update the screen first so
 	   the document appears to switch swiftly. */
 	XmUpdateDisplay(this->splitPane);
-	RefreshWindowStates(this);
-	RefreshTabState(this);
+	this->RefreshWindowStates();
+	this->RefreshTabState();
 
 	/* put away the bg menu tearoffs of last active document */
 	hideTearOffs(win->bgMenuPane);
@@ -1243,7 +1243,7 @@ void SortTabBar(WindowInfo *window) {
 			XmLFolderSetActiveTab(window->tabBar, i, False);
 
 		windows[j]->tab = tabList[i];
-		RefreshTabState(windows[j]);
+		windows[j]->RefreshTabState();
 		j++;
 	}
 }
@@ -1336,7 +1336,7 @@ void WindowInfo::CloseWindow() {
 		                                            line from long file names */
 		UpdateStatsLine(this);
 		DetermineLanguageMode(this, True);
-		RefreshTabState(this);
+		this->RefreshTabState();
 		updateLineNumDisp(this);
 		return;
 	}
@@ -1953,22 +1953,22 @@ int NWindows(void) {
 /*
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
-void SetAutoIndent(WindowInfo *window, int state) {
+void WindowInfo::SetAutoIndent(int state) {
 	int autoIndent = state == AUTO_INDENT, smartIndent = state == SMART_INDENT;
 	int i;
 
-	if (window->indentStyle == SMART_INDENT && !smartIndent)
-		EndSmartIndent(window);
-	else if (smartIndent && window->indentStyle != SMART_INDENT)
-		BeginSmartIndent(window, True);
-	window->indentStyle = state;
-	XtVaSetValues(window->textArea, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	if (window->IsTopDocument()) {
-		XmToggleButtonSetState(window->smartIndentItem, smartIndent, False);
-		XmToggleButtonSetState(window->autoIndentItem, autoIndent, False);
-		XmToggleButtonSetState(window->autoIndentOffItem, state == NO_AUTO_INDENT, False);
+	if (this->indentStyle == SMART_INDENT && !smartIndent)
+		EndSmartIndent(this);
+	else if (smartIndent && this->indentStyle != SMART_INDENT)
+		BeginSmartIndent(this, True);
+	this->indentStyle = state;
+	XtVaSetValues(this->textArea, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
+	for (i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
+	if (this->IsTopDocument()) {
+		XmToggleButtonSetState(this->smartIndentItem, smartIndent, False);
+		XmToggleButtonSetState(this->autoIndentItem, autoIndent, False);
+		XmToggleButtonSetState(this->autoIndentOffItem, state == NO_AUTO_INDENT, False);
 	}
 }
 
@@ -2140,31 +2140,31 @@ void SetOverstrike(WindowInfo *window, int overstrike) {
 /*
 ** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
 */
-void SetAutoWrap(WindowInfo *window, int state) {
+void WindowInfo::SetAutoWrap(int state) {
 	int i;
 	int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;
 
-	XtVaSetValues(window->textArea, textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
-	window->wrapMode = state;
+	XtVaSetValues(this->textArea, textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
+	for (i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
+	this->wrapMode = state;
 
-	if (window->IsTopDocument()) {
-		XmToggleButtonSetState(window->newlineWrapItem, autoWrap, False);
-		XmToggleButtonSetState(window->continuousWrapItem, contWrap, False);
-		XmToggleButtonSetState(window->noWrapItem, state == NO_WRAP, False);
+	if (this->IsTopDocument()) {
+		XmToggleButtonSetState(this->newlineWrapItem, autoWrap, False);
+		XmToggleButtonSetState(this->continuousWrapItem, contWrap, False);
+		XmToggleButtonSetState(this->noWrapItem, state == NO_WRAP, False);
 	}
 }
 
 /*
 ** Set the auto-scroll margin
 */
-void SetAutoScroll(WindowInfo *window, int margin) {
+void WindowInfo::SetAutoScroll(int margin) {
 	int i;
 
-	XtVaSetValues(window->textArea, textNcursorVPadding, margin, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNcursorVPadding, margin, nullptr);
+	XtVaSetValues(this->textArea, textNcursorVPadding, margin, nullptr);
+	for (i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNcursorVPadding, margin, nullptr);
 }
 
 /*
@@ -2221,11 +2221,11 @@ void SetWindowModified(WindowInfo *window, int modified) {
 		SetSensitive(window, window->closeItem, TRUE);
 		window->fileChanged = TRUE;
 		UpdateWindowTitle(window);
-		RefreshTabState(window);
+		window->RefreshTabState();
 	} else if (window->fileChanged == TRUE && modified == FALSE) {
 		window->fileChanged = FALSE;
 		UpdateWindowTitle(window);
-		RefreshTabState(window);
+		window->RefreshTabState();
 	}
 }
 
@@ -3450,7 +3450,7 @@ static int getTabPosition(Widget tab) {
 /*
 ** update the tab label, etc. of a tab, per the states of it's document.
 */
-void RefreshTabState(WindowInfo *win) {
+void WindowInfo::RefreshTabState() {
 	XmString s1, tipString;
 	char labelString[MAXPATHLEN];
 	char *tag = XmFONTLIST_DEFAULT_TAG;
@@ -3458,26 +3458,26 @@ void RefreshTabState(WindowInfo *win) {
 
 	/* Set tab label to document's filename. Position of
 	   "*" (modified) will change per label alignment setting */
-	XtVaGetValues(win->tab, XmNalignment, &alignment, nullptr);
+	XtVaGetValues(this->tab, XmNalignment, &alignment, nullptr);
 	if (alignment != XmALIGNMENT_END) {
-		sprintf(labelString, "%s%s", win->fileChanged ? "*" : "", win->filename);
+		sprintf(labelString, "%s%s", this->fileChanged ? "*" : "", this->filename);
 	} else {
-		sprintf(labelString, "%s%s", win->filename, win->fileChanged ? "*" : "");
+		sprintf(labelString, "%s%s", this->filename, this->fileChanged ? "*" : "");
 	}
 
 	/* Make the top document stand out a little more */
-	if (win->IsTopDocument())
+	if (this->IsTopDocument())
 		tag = (String) "BOLD";
 
 	s1 = XmStringCreateLtoREx(labelString, tag);
 
-	if (GetPrefShowPathInWindowsMenu() && win->filenameSet) {
+	if (GetPrefShowPathInWindowsMenu() && this->filenameSet) {
 		strcat(labelString, " - ");
-		strcat(labelString, win->path);
+		strcat(labelString, this->path);
 	}
 	tipString = XmStringCreateSimpleEx(labelString);
 
-	XtVaSetValues(win->tab, XltNbubbleString, tipString, XmNlabelString, s1, nullptr);
+	XtVaSetValues(this->tab, XltNbubbleString, tipString, XmNlabelString, s1, nullptr);
 	XmStringFree(s1);
 	XmStringFree(tipString);
 }
@@ -3511,53 +3511,53 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 ** Refresh the menu entries per the settings of the
 ** top document.
 */
-void RefreshMenuToggleStates(WindowInfo *window) {
+void WindowInfo::RefreshMenuToggleStates() {
 
-	if (!window->IsTopDocument())
+	if (!this->IsTopDocument())
 		return;
 
 	/* File menu */
-	XtSetSensitive(window->printSelItem, window->wasSelected);
+	XtSetSensitive(this->printSelItem, this->wasSelected);
 
 	/* Edit menu */
-	XtSetSensitive(window->undoItem, !window->undo.empty());
-	XtSetSensitive(window->redoItem, !window->redo.empty());
-	XtSetSensitive(window->printSelItem, window->wasSelected);
-	XtSetSensitive(window->cutItem, window->wasSelected);
-	XtSetSensitive(window->copyItem, window->wasSelected);
-	XtSetSensitive(window->delItem, window->wasSelected);
+	XtSetSensitive(this->undoItem, !this->undo.empty());
+	XtSetSensitive(this->redoItem, !this->redo.empty());
+	XtSetSensitive(this->printSelItem, this->wasSelected);
+	XtSetSensitive(this->cutItem, this->wasSelected);
+	XtSetSensitive(this->copyItem, this->wasSelected);
+	XtSetSensitive(this->delItem, this->wasSelected);
 
 	/* Preferences menu */
-	XmToggleButtonSetState(window->statsLineItem, window->showStats, False);
-	XmToggleButtonSetState(window->iSearchLineItem, window->showISearchLine, False);
-	XmToggleButtonSetState(window->lineNumsItem, window->showLineNumbers, False);
-	XmToggleButtonSetState(window->highlightItem, window->highlightSyntax, False);
-	XtSetSensitive(window->highlightItem, window->languageMode != PLAIN_LANGUAGE_MODE);
-	XmToggleButtonSetState(window->backlightCharsItem, window->backlightChars, False);
-	XmToggleButtonSetState(window->saveLastItem, window->saveOldVersion, False);
-	XmToggleButtonSetState(window->autoSaveItem, window->autoSave, False);
-	XmToggleButtonSetState(window->overtypeModeItem, window->overstrike, False);
-	XmToggleButtonSetState(window->matchSyntaxBasedItem, window->matchSyntaxBased, False);
-	XmToggleButtonSetState(window->readOnlyItem, IS_USER_LOCKED(window->lockReasons), False);
+	XmToggleButtonSetState(this->statsLineItem, this->showStats, False);
+	XmToggleButtonSetState(this->iSearchLineItem, this->showISearchLine, False);
+	XmToggleButtonSetState(this->lineNumsItem, this->showLineNumbers, False);
+	XmToggleButtonSetState(this->highlightItem, this->highlightSyntax, False);
+	XtSetSensitive(this->highlightItem, this->languageMode != PLAIN_LANGUAGE_MODE);
+	XmToggleButtonSetState(this->backlightCharsItem, this->backlightChars, False);
+	XmToggleButtonSetState(this->saveLastItem, this->saveOldVersion, False);
+	XmToggleButtonSetState(this->autoSaveItem, this->autoSave, False);
+	XmToggleButtonSetState(this->overtypeModeItem, this->overstrike, False);
+	XmToggleButtonSetState(this->matchSyntaxBasedItem, this->matchSyntaxBased, False);
+	XmToggleButtonSetState(this->readOnlyItem, IS_USER_LOCKED(this->lockReasons), False);
 
-	XtSetSensitive(window->smartIndentItem, SmartIndentMacrosAvailable(LanguageModeName(window->languageMode)));
+	XtSetSensitive(this->smartIndentItem, SmartIndentMacrosAvailable(LanguageModeName(this->languageMode)));
 
-	SetAutoIndent(window, window->indentStyle);
-	SetAutoWrap(window, window->wrapMode);
-	SetShowMatching(window, window->showMatchingStyle);
-	SetLanguageMode(window, window->languageMode, FALSE);
+	this->SetAutoIndent(this->indentStyle);
+	this->SetAutoWrap(this->wrapMode);
+	SetShowMatching(this, this->showMatchingStyle);
+	SetLanguageMode(this, this->languageMode, FALSE);
 
 	/* Windows Menu */
-	XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
-	XtSetSensitive(window->closePaneItem, window->nPanes > 0);
-	XtSetSensitive(window->detachDocumentItem, window->NDocuments() > 1);
-	XtSetSensitive(window->contextDetachDocumentItem, window->NDocuments() > 1);
+	XtSetSensitive(this->splitPaneItem, this->nPanes < MAX_PANES);
+	XtSetSensitive(this->closePaneItem, this->nPanes > 0);
+	XtSetSensitive(this->detachDocumentItem, this->NDocuments() > 1);
+	XtSetSensitive(this->contextDetachDocumentItem, this->NDocuments() > 1);
 
 	WindowInfo *win;
 	for (win = WindowList; win; win = win->next)
-		if (win->shell != window->shell)
+		if (win->shell != this->shell)
 			break;
-	XtSetSensitive(window->moveDocumentItem, win != nullptr);
+	XtSetSensitive(this->moveDocumentItem, win != nullptr);
 }
 
 /*
@@ -3565,7 +3565,7 @@ void RefreshMenuToggleStates(WindowInfo *window) {
 ** settings of the top document.
 */
 static void refreshMenuBar(WindowInfo *window) {
-	RefreshMenuToggleStates(window);
+	window->RefreshMenuToggleStates();
 
 	/* Add/remove language specific menu items */
 	UpdateUserMenus(window);
@@ -3604,12 +3604,12 @@ WindowInfo *MarkActiveDocument(WindowInfo *window) {
 /*
 ** raise the document and its shell window and optionally focus.
 */
-void RaiseFocusDocumentWindow(WindowInfo *window, Boolean focus) {
-	if (!window)
+void WindowInfo::RaiseFocusDocumentWindow(Boolean focus) {
+	if (!this)
 		return;
 
-	window->RaiseDocument();
-	RaiseShellWindow(window->shell, focus);
+	this->RaiseDocument();
+	RaiseShellWindow(this->shell, focus);
 }
 
 
@@ -3655,45 +3655,45 @@ static void deleteDocument(WindowInfo *window) {
 /*
 ** refresh window state for this document
 */
-void RefreshWindowStates(WindowInfo *window) {
-	if (!window->IsTopDocument())
+void WindowInfo::RefreshWindowStates() {
+	if (!this->IsTopDocument())
 		return;
 
-	if (window->modeMessageDisplayed)
-		XmTextSetStringEx(window->statsLine, window->modeMessage);
+	if (this->modeMessageDisplayed)
+		XmTextSetStringEx(this->statsLine, this->modeMessage);
 	else
-		UpdateStatsLine(window);
-	UpdateWindowReadOnly(window);
-	UpdateWindowTitle(window);
+		UpdateStatsLine(this);
+	UpdateWindowReadOnly(this);
+	UpdateWindowTitle(this);
 
 	/* show/hide statsline as needed */
-	if (window->modeMessageDisplayed && !XtIsManaged(window->statsLineForm)) {
+	if (this->modeMessageDisplayed && !XtIsManaged(this->statsLineForm)) {
 		/* turn on statline to display mode message */
-		showStatistics(window, True);
-	} else if (window->showStats && !XtIsManaged(window->statsLineForm)) {
+		showStatistics(this, True);
+	} else if (this->showStats && !XtIsManaged(this->statsLineForm)) {
 		/* turn on statsline since it is enabled */
-		showStatistics(window, True);
-	} else if (!window->showStats && !window->modeMessageDisplayed && XtIsManaged(window->statsLineForm)) {
+		showStatistics(this, True);
+	} else if (!this->showStats && !this->modeMessageDisplayed && XtIsManaged(this->statsLineForm)) {
 		/* turn off statsline since there's nothing to show */
-		showStatistics(window, False);
+		showStatistics(this, False);
 	}
 
 	/* signal if macro/shell is running */
-	if (window->shellCmdData || window->macroCmdData)
-		BeginWait(window->shell);
+	if (this->shellCmdData || this->macroCmdData)
+		BeginWait(this->shell);
 	else
-		EndWait(window->shell);
+		EndWait(this->shell);
 
 	/* we need to force the statsline to reveal itself */
-	if (XtIsManaged(window->statsLineForm)) {
-		XmTextSetCursorPosition(window->statsLine, 0);    /* start of line */
-		XmTextSetCursorPosition(window->statsLine, 9000); /* end of line */
+	if (XtIsManaged(this->statsLineForm)) {
+		XmTextSetCursorPosition(this->statsLine, 0);    /* start of line */
+		XmTextSetCursorPosition(this->statsLine, 9000); /* end of line */
 	}
 
-	XmUpdateDisplay(window->statsLine);
-	refreshMenuBar(window);
+	XmUpdateDisplay(this->statsLine);
+	refreshMenuBar(this);
 
-	updateLineNumDisp(window);
+	updateLineNumDisp(this);
 }
 
 static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
@@ -3927,10 +3927,10 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 
 	/* kick start the auto-indent engine */
 	window->indentStyle = NO_AUTO_INDENT;
-	SetAutoIndent(window, orgWin->indentStyle);
+	window->SetAutoIndent(orgWin->indentStyle);
 
 	/* synchronize window state to this document */
-	RefreshWindowStates(window);
+	window->RefreshWindowStates();
 }
 
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
@@ -3986,12 +3986,12 @@ WindowInfo *DetachDocument(WindowInfo *window) {
 
 	/* refresh former host window */
 	if (win) {
-		RefreshWindowStates(win);
+		win->RefreshWindowStates();
 	}
 
 	/* this should keep the new document window fresh */
-	RefreshWindowStates(cloneWin);
-	RefreshTabState(cloneWin);
+	cloneWin->RefreshWindowStates();
+	cloneWin->RefreshTabState();
 	SortTabBar(cloneWin);
 
 	return cloneWin;
@@ -4036,12 +4036,13 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
 	CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
 
 	/* some menu states might have changed when deleting document */
-	if (win)
-		RefreshWindowStates(win);
+	if (win) {
+		win->RefreshWindowStates();
+	}
 
 	/* this should keep the new document window fresh */
 	cloneWin->RaiseDocumentWindow();
-	RefreshTabState(cloneWin);
+	cloneWin->RefreshTabState();
 	SortTabBar(cloneWin);
 
 	return cloneWin;

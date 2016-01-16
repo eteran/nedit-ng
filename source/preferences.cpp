@@ -1589,7 +1589,7 @@ void SetPrefAutoScroll(int state) {
 
 	setIntPref(&PrefData.autoScroll, state);
 	for (w = WindowList; w != nullptr; w = w->next)
-		SetAutoScroll(w, margin);
+		w->SetAutoScroll(margin);
 }
 
 int GetPrefAutoScroll(void) {
@@ -3623,8 +3623,8 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	}
 
 	/* set requested wrap, indent, and tabs */
-	SetAutoWrap(window, wrapMode);
-	SetAutoIndent(window, indentStyle);
+	window->SetAutoWrap(wrapMode);
+	window->SetAutoIndent(indentStyle);
 	SetTabDist(window, tabDist);
 	SetEmTabDist(window, emTabDist);
 

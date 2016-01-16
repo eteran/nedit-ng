@@ -1436,7 +1436,7 @@ static void editTaggedLocation(Widget parent, int i) {
 
 	/* select the matched string */
 	windowToSearch->buffer->BufSelect(startPos, endPos);
-	RaiseFocusDocumentWindow(windowToSearch, True);
+	windowToSearch->RaiseFocusDocumentWindow(True);
 
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */
