@@ -3829,8 +3829,8 @@ static char *writeLanguageModesString(void) {
 		XtFree(str);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (LanguageModes[i]->recognitionExpr) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->recognitionExpr));
-			XtFree(str);
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
@@ -3850,13 +3850,13 @@ static char *writeLanguageModesString(void) {
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (LanguageModes[i]->delimiters) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->delimiters));
-			XtFree(str);
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (LanguageModes[i]->defTipsFile) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(LanguageModes[i]->defTipsFile));
-			XtFree(str);
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 
 		outBuf->BufInsert(outBuf->BufGetLength(), "\n");
@@ -4162,35 +4162,36 @@ std::string EscapeSensitiveCharsEx(view::string_view string) {
 ** characters with two double quotes.  Enables the string to be read back
 ** by ReadQuotedString.
 */
-char *MakeQuotedString(const char *string) {
-	const char *c;
-	char *outStr, *outPtr;
+std::string MakeQuotedStringEx(view::string_view string) {
+
 	int length = 0;
 
 	/* calculate length and allocate returned string */
-	for (c = string; *c != '\0'; c++) {
-		if (*c == '\"')
+	for(char ch: string) {
+		if (ch == '\"') {
 			length++;
+		}
 		length++;
 	}
-	outStr = XtMalloc(length + 3);
-	outPtr = outStr;
+	
+	std::string outStr;
+	outStr.reserve(length + 3);
+	auto outPtr = std::back_inserter(outStr);
 
 	/* add starting quote */
 	*outPtr++ = '\"';
 
 	/* copy string, escaping quotes with "" */
-	for (c = string; *c != '\0'; c++) {
-		if (*c == '\"')
+	for(char ch: string) {
+		if (ch == '\"') {
 			*outPtr++ = '\"';
-		*outPtr++ = *c;
+		}
+		*outPtr++ = ch;
 	}
 
 	/* add ending quote */
 	*outPtr++ = '\"';
 
-	/* terminate string and return */
-	*outPtr = '\0';
 	return outStr;
 }
 

@@ -453,24 +453,25 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** macro exceeded its alotted time-slice and scheduled...
 */
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
-	RestartData *context;
+
 	static DataValue noValue = {NO_TAG, {0}};
 	int i;
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
 	   and a program counter) which will retain the program state across
 	   preemption and resumption of execution */
-	context = (RestartData *)XtMalloc(sizeof(RestartData));
-	context->stack = (DataValue *)XtMalloc(sizeof(DataValue) * STACK_SIZE);
-	*continuation = context;
-	context->stackP = context->stack;
-	context->pc = prog->code;
-	context->runWindow = window;
+	auto context         = new RestartData;
+	context->stack       = new DataValue[STACK_SIZE];
+	*continuation        = context;
+	context->stackP      = context->stack;
+	context->pc          = prog->code;
+	context->runWindow   = window;
 	context->focusWindow = window;
 
 	/* Push arguments and call information onto the stack */
-	for (i = 0; i < nArgs; i++)
+	for (i = 0; i < nArgs; i++) {
 		*(context->stackP++) = args[i];
+	}
 
 	context->stackP->val.subr = nullptr; /* return PC */
 	context->stackP->tag = NO_TAG;
@@ -589,8 +590,8 @@ void RunMacroAsSubrCall(Program *prog) {
 }
 
 void FreeRestartData(RestartData *context) {
-	XtFree((char *)context->stack);
-	XtFree((char *)context);
+	delete [] context->stack;
+	delete context;
 }
 
 /*

@@ -41,6 +41,7 @@
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/MotifHelper.h"
+#include "../util/XString.h"
 
 #include <cstdio>
 #include <climits>
@@ -1185,8 +1186,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 
 	reparseContext *context = &highlightData->contextRequirements;
 	highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
-	char *string, *styleString, *stylePtr, c, prevChar;
-	const char *stringPtr;
+	char c, prevChar;
 	int firstPass2Style = (unsigned char)pass2Patterns[1].style;
 
 	/* If there are no pass 2 patterns to process, do nothing (but this
@@ -1232,8 +1232,10 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 	/* Copy the buffer range into a string */
 	/* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
 	        beginParse, endParse, beginSafety, endSafety); */
-	stringPtr = string = buf->BufGetRange(beginSafety, endSafety);
-	styleString = stylePtr = styleBuf->BufGetRange(beginSafety, endSafety);
+	char *string          = buf->BufGetRange(beginSafety, endSafety);
+	const char *stringPtr = string;
+	char *styleString     = styleBuf->BufGetRange(beginSafety, endSafety);
+	char *stylePtr        = styleString;
 
 	/* Parse it with pass 2 patterns */
 	prevChar = getPrevChar(buf, beginSafety);
@@ -1345,9 +1347,8 @@ static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *b
 ** pattern which does end and the end is reached).
 */
 static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
-	char *string, *styleString, *stylePtr, *temp, prevChar;
-	const char *stringPtr;
-	int endSafety, endPass2Safety, startPass2Safety, tempLen;
+
+	int endSafety, endPass2Safety, startPass2Safety;
 	int modStart, modEnd, beginSafety, beginStyle, p, style;
 	int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : (unsigned char)pass2Patterns[1].style;
 
@@ -1385,14 +1386,15 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 		endSafety = std::min<int>(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
 
 	/* copy the buffer range into a string */
-	string = buf->BufGetRange(beginSafety, endSafety);
-	styleString = styleBuf->BufGetRange(beginSafety, endSafety);
+	char *string      = buf->BufGetRange(beginSafety, endSafety);
+	char *styleString = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	/* Parse it with pass 1 patterns */
 	/* printf("parsing from %d thru %d\n", beginSafety, endSafety); */
-	prevChar = getPrevChar(buf, beginParse);
-	stringPtr = &string[beginParse - beginSafety];
-	stylePtr = &styleString[beginParse - beginSafety];
+	char prevChar         = getPrevChar(buf, beginParse);
+	const char *stringPtr = &string[beginParse - beginSafety];
+	char *stylePtr        = &styleString[beginParse - beginSafety];
+	
 	parseString(pass1Patterns, &stringPtr, &stylePtr, endParse - beginParse, &prevChar, False, delimiters, string, nullptr);
 
 	/* On non top-level patterns, parsing can end early */
@@ -1431,12 +1433,11 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, nullptr);
 			goto parseDone;
 		} else {
-			tempLen = endPass2Safety - modStart;
-			temp = XtMalloc(tempLen);
-			strncpy(temp, &styleString[modStart - beginSafety], tempLen);
+		
+			const int tempLen = endPass2Safety - modStart;			
+			XString temp(&styleString[modStart - beginSafety], tempLen);
 			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, nullptr);
-			strncpy(&styleString[modStart - beginSafety], temp, tempLen);
-			XtFree(temp);
+			strncpy(&styleString[modStart - beginSafety], temp.c_str(), tempLen);
 		}
 	}
 
@@ -1449,13 +1450,12 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, nullptr);
 		} else {
 			startPass2Safety = std::max<int>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
-			tempLen = modEnd - startPass2Safety;
-			temp = XtMalloc(tempLen);
-			strncpy(temp, &styleString[startPass2Safety - beginSafety], tempLen);
+
+			const int tempLen = modEnd - startPass2Safety;			
+			XString temp(&styleString[startPass2Safety - beginSafety], tempLen);
 			prevChar = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, nullptr);
-			strncpy(&styleString[startPass2Safety - beginSafety], temp, tempLen);
-			XtFree(temp);
+			strncpy(&styleString[startPass2Safety - beginSafety], temp.c_str(), tempLen);
 		}
 	}
 

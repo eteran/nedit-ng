@@ -692,7 +692,6 @@ static Widget createHighlightStylesMenu(Widget parent) {
 }
 
 static std::string createPatternsString(patternSet *patSet, const char *indentStr) {
-	char *str;
 
 	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
@@ -702,18 +701,18 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->startRE) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->startRE));
-			XtFree(str);
+			std::string str = MakeQuotedStringEx(pat->startRE);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->endRE) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->endRE));
-			XtFree(str);
+			std::string str =MakeQuotedStringEx(pat->endRE);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->errorRE) {
-			outBuf->BufInsert(outBuf->BufGetLength(), str = MakeQuotedString(pat->errorRE));
-			XtFree(str);
+			std::string str =MakeQuotedStringEx(pat->errorRE);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
@@ -911,14 +910,11 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 ** freed by the caller with freePatternSet()
 */
 static patternSet *readDefaultPatternSet(const char *langModeName) {
-	int i;
-	size_t modeNameLen;
-	const char *strPtr;
 
-	modeNameLen = strlen(langModeName);
-	for (i = 0; i < (int)XtNumber(DefaultPatternSets); i++) {
+	size_t modeNameLen = strlen(langModeName);
+	for (int i = 0; i < (int)XtNumber(DefaultPatternSets); i++) {
 		if (!strncmp(langModeName, DefaultPatternSets[i], modeNameLen) && DefaultPatternSets[i][modeNameLen] == ':') {
-			strPtr = DefaultPatternSets[i];
+			const char *strPtr = DefaultPatternSets[i];
 			return readPatternSet(&strPtr, False);
 		}
 	}
@@ -929,13 +925,13 @@ static patternSet *readDefaultPatternSet(const char *langModeName) {
 ** Return True if patSet exactly matches one of the default pattern sets
 */
 static int isDefaultPatternSet(patternSet *patSet) {
-	patternSet *defaultPatSet;
-	int retVal;
 
-	defaultPatSet = readDefaultPatternSet(patSet->languageMode);
-	if(!defaultPatSet)
+	patternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode);
+	if(!defaultPatSet) {
 		return False;
-	retVal = !patternSetsDiffer(patSet, defaultPatSet);
+	}
+	
+	int retVal = !patternSetsDiffer(patSet, defaultPatSet);
 	freePatternSet(defaultPatSet);
 	return retVal;
 }
