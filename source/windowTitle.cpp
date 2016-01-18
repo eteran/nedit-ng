@@ -62,7 +62,50 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 
-#define WINDOWTITLE_MAX_LEN 500
+namespace {
+
+const int LEFT_MARGIN_POS     = 2;
+const int RIGHT_MARGIN_POS    = 98;
+const int V_MARGIN            = 5;
+const int RADIO_INDENT        = 3;
+const int WINDOWTITLE_MAX_LEN = 500;
+
+char *removeSequence(char *sourcePtr, char c) {
+
+	while (*sourcePtr == c) {
+		sourcePtr++;
+	}
+	
+	return sourcePtr;
+}
+
+/*
+** Two functions for performing safe insertions into a finite
+** size buffer so that we don't get any memory overruns.
+*/
+char *safeStrCpy(char *dest, char *destEnd, const char *source) {
+	int len = (int)strlen(source);
+	if (len <= (destEnd - dest)) {
+		strcpy(dest, source);
+		return (dest + len);
+	} else {
+		strncpy(dest, source, destEnd - dest);
+		*destEnd = '\0';
+		return destEnd;
+	}
+}
+
+char *safeCharAdd(char *dest, char *destEnd, char c) {
+	if (destEnd - dest > 0) {
+		*dest++ = c;
+		*dest = '\0';
+	}
+	return dest;
+}
+
+}
+
+
 
 /* Customize window title dialog information */
 static struct {
@@ -104,36 +147,9 @@ static struct {
 } etDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
               nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, "",      "",      "",      "",      0,       0,       0,       0,       0};
 
-static char *removeSequence(char *sourcePtr, char c) {
-	while (*sourcePtr == c) {
-		sourcePtr++;
-	}
-	return (sourcePtr);
-}
 
-/*
-** Two functions for performing safe insertions into a finite
-** size buffer so that we don't get any memory overruns.
-*/
-static char *safeStrCpy(char *dest, char *destEnd, const char *source) {
-	int len = (int)strlen(source);
-	if (len <= (destEnd - dest)) {
-		strcpy(dest, source);
-		return (dest + len);
-	} else {
-		strncpy(dest, source, destEnd - dest);
-		*destEnd = '\0';
-		return (destEnd);
-	}
-}
 
-static char *safeCharAdd(char *dest, char *destEnd, char c) {
-	if (destEnd - dest > 0) {
-		*dest++ = c;
-		*dest = '\0';
-	}
-	return (dest);
-}
+
 
 /*
 ** Remove empty paranthesis pairs and multiple spaces in a row
@@ -878,10 +894,6 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void createEditTitleDialog(Widget parent) {
-#define LEFT_MARGIN_POS 2
-#define RIGHT_MARGIN_POS 98
-#define V_MARGIN 5
-#define RADIO_INDENT 3
 
 	Widget buttonForm, formatLbl, previewFrame;
 	Widget previewForm, previewBox, selectFrame, selectBox, selectForm;
@@ -1102,22 +1114,22 @@ static void createEditTitleDialog(Widget parent) {
 	etDialog.suppressFormatUpdate = FALSE;
 }
 
-void EditCustomTitleFormat(WindowInfo *window) {
-	/* copy attributes from current window so that we can use as many
+void WindowInfo::EditCustomTitleFormat() {
+	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */
-	strcpy(etDialog.path, window->path);
-	strcpy(etDialog.filename, window->filename);
+	strcpy(etDialog.path, this->path);
+	strcpy(etDialog.filename, this->filename);
 	strcpy(etDialog.viewTag, GetClearCaseViewTag() != nullptr ? GetClearCaseViewTag() : "viewtag");
 	strcpy(etDialog.serverName, IsServer ? GetPrefServerName() : "servername");
 	etDialog.isServer = IsServer;
-	etDialog.filenameSet = window->filenameSet;
-	etDialog.lockReasons = window->lockReasons;
-	etDialog.fileChanged = window->fileChanged;
+	etDialog.filenameSet = this->filenameSet;
+	etDialog.lockReasons = this->lockReasons;
+	etDialog.fileChanged = this->fileChanged;
 
-	if (etDialog.window != window && etDialog.form) {
-		/* Destroy the dialog owned by the other window.
+	if (etDialog.window != this && etDialog.form) {
+		/* Destroy the dialog owned by the other this.
 		   Note: don't rely on the destroy event handler to reset the
 		         form. Events are handled asynchronously, so the old dialog
 		         may continue to live for a while. */
@@ -1125,13 +1137,13 @@ void EditCustomTitleFormat(WindowInfo *window) {
 		etDialog.form = nullptr;
 	}
 
-	etDialog.window = window;
+	etDialog.window = this;
 
 	/* Create the dialog if it doesn't already exist */
 	if(!etDialog.form) {
-		createEditTitleDialog(window->shell);
+		createEditTitleDialog(this->shell);
 	} else {
-		/* If the window is already up, just pop it to the top */
+		/* If the this is already up, just pop it to the top */
 		if (XtIsManaged(etDialog.form)) {
 
 			RaiseDialogWindow(XtParent(etDialog.form));

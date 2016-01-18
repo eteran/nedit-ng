@@ -1750,7 +1750,7 @@ static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callDa
 	WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
 
 	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, ((XmAnyCallbackStruct *)callData)->event);
-	EditCustomTitleFormat(window);
+	window->EditCustomTitleFormat();
 }
 
 static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) {

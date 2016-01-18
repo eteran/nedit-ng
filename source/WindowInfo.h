@@ -95,6 +95,7 @@ public:
 	void UpdateWMSizeHints();
 	Widget GetPaneByIndex(int paneIndex) const;
 	int WidgetToPaneIndex(Widget w);
+	void EditCustomTitleFormat();
 
 public:
 	WindowInfo *next;
