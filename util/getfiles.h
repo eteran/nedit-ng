@@ -29,7 +29,7 @@
 
 #include <X11/Intrinsic.h>
 #include <string>
-#include <boost/optional.hpp>
+#include "nullable_string.h"
 
 #define GFN_OK 1     /* Get Filename OK constant     */
 #define GFN_CANCEL 2 /* Get Filename Cancel constant */
@@ -38,10 +38,10 @@ int GetExistingFilename(Widget parent, const char *promptString, char *filename)
 int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);
 int HandleCustomExistFileSB(Widget existFileSB, char *filename);
 int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName);
-boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void);
-boost::optional<std::string> GetFileDialogDefaultPatternEx(void);
-void SetFileDialogDefaultDirectory(boost::optional<std::string> dir);
-void SetFileDialogDefaultPattern(boost::optional<std::string> pattern);
+nullable_string GetFileDialogDefaultDirectoryEx(void);
+nullable_string GetFileDialogDefaultPatternEx(void);
+void SetFileDialogDefaultDirectory(nullable_string dir);
+void SetFileDialogDefaultPattern(nullable_string pattern);
 void SetGetEFTextFieldRemoval(int state);
 
 #endif

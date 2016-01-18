@@ -33,6 +33,7 @@
 #include "../util/getfiles.h"
 #include "../util/misc.h"
 #include "../util/utils.h"
+#include "../util/nullable_string.h"
 #include "MotifHelper.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
@@ -3085,15 +3086,15 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 	/*  Set default directory (saving original for later)  */
 	auto orgDefaultPath = GetFileDialogDefaultDirectoryEx();
 	if ('\0' != defaultPath[0]) {
-		SetFileDialogDefaultDirectory(boost::optional<std::string>(defaultPath));
+		SetFileDialogDefaultDirectory(nullable_string(defaultPath));
 	} else {
-		SetFileDialogDefaultDirectory(boost::optional<std::string>(window->path));
+		SetFileDialogDefaultDirectory(nullable_string(window->path));
 	}
 
 	/*  Set filter (saving original for later)  */
 	auto orgFilter = GetFileDialogDefaultPatternEx();
 	if (filter[0] != '\0') {
-		SetFileDialogDefaultPattern(boost::optional<std::string>(filter));
+		SetFileDialogDefaultPattern(nullable_string(filter));
 	}
 
 	/*  Fork to one of the worker methods from util/getfiles.c.

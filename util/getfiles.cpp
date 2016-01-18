@@ -508,10 +508,10 @@ char *GetFileDialogDefaultPattern(void) {
 ** Can return nullptr if no default directory has been set (meaning
 ** use the application's current working directory).
 */
-boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
+nullable_string GetFileDialogDefaultDirectoryEx(void) {
 
 	if(!DefaultDirectory) {
-		return boost::optional<std::string>();
+		return nullable_string();
 	}
 	
 	return XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET);
@@ -522,10 +522,10 @@ boost::optional<std::string> GetFileDialogDefaultDirectoryEx(void) {
 ** Can return nullptr if no default pattern has been set (meaning use
 ** a pattern matching all files in the directory).
 */
-boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
+nullable_string GetFileDialogDefaultPatternEx(void) {
 
 	if(!DefaultPattern) {
-		return boost::optional<std::string>();
+		return nullable_string();
 	}
 	
 	return XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET);
@@ -536,7 +536,7 @@ boost::optional<std::string> GetFileDialogDefaultPatternEx(void) {
 ** "dir" can be passed as nullptr to clear the current default directory
 ** and use the application's working directory instead.
 */
-void SetFileDialogDefaultDirectory(boost::optional<std::string> dir) {
+void SetFileDialogDefaultDirectory(nullable_string dir) {
 	if (DefaultDirectory) {
 		XmStringFree(DefaultDirectory);
 	}
@@ -549,7 +549,7 @@ void SetFileDialogDefaultDirectory(boost::optional<std::string> dir) {
 ** "pattern" can be passed as nullptr as the equivalent a pattern matching
 ** all files in the directory.
 */
-void SetFileDialogDefaultPattern(boost::optional<std::string> pattern) {
+void SetFileDialogDefaultPattern(nullable_string pattern) {
 	if (DefaultPattern) {
 		XmStringFree(DefaultPattern);
 	}
