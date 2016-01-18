@@ -98,7 +98,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 
 	/* create new window/document */
 	if (inWindow)
-		window = CreateDocument(inWindow, name);
+		window = inWindow->CreateDocument(name);
 	else
 		window = new WindowInfo(name, geometry, iconic);
 
@@ -177,7 +177,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 		window = new WindowInfo(name, geometry, iconic);
 	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData) {
 		if (tabbed) {
-			window = CreateDocument(inWindow, name);
+			window = inWindow->CreateDocument(name);
 		} else {
 			window = new WindowInfo(name, geometry, iconic);
 		}
@@ -917,7 +917,7 @@ int WriteBackupFile(WindowInfo *window) {
 		                                                           "Automatic backup is now off",
 		        "OK", window->filename, strerror(errno));
 		window->autoSave = FALSE;
-		SetToggleButtonState(window, window->autoSaveItem, FALSE, FALSE);
+		window->SetToggleButtonState(window->autoSaveItem, FALSE, FALSE);
 		return FALSE;
 	}
 
@@ -1094,7 +1094,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
 		return TRUE;
 	if (resp == 2) {
 		window->saveOldVersion = FALSE;
-		SetToggleButtonState(window, window->saveLastItem, FALSE, FALSE);
+		window->SetToggleButtonState(window->saveLastItem, FALSE, FALSE);
 	}
 	return FALSE;
 }
@@ -1612,7 +1612,7 @@ static void addWrapNewlines(WindowInfo *window) {
 
 	/* Show the user that something has happened by turning off
 	   Continuous Wrap mode */
-	SetToggleButtonState(window, window->continuousWrapItem, False, True);
+	window->SetToggleButtonState(window->continuousWrapItem, False, True);
 }
 
 /*

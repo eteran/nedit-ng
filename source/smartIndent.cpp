@@ -1232,7 +1232,7 @@ static int updateSmartIndentData(void) {
 	for (window = WindowList; window != nullptr; window = window->next) {
 		lmName = LanguageModeName(window->languageMode);
 		if (lmName != nullptr && !strcmp(lmName, newMacros->lmName)) {
-			SetSensitive(window, window->smartIndentItem, True);
+			window->SetSensitive(window->smartIndentItem, True);
 			if (window->indentStyle == SMART_INDENT && window->languageMode != PLAIN_LANGUAGE_MODE) {
 				EndSmartIndent(window);
 				BeginSmartIndent(window, False);

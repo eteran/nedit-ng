@@ -1297,7 +1297,7 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 
 	int applyBacklight = XmToggleButtonGetState(w);
 	WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
-	SetBacklightChars(window, applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
+	window->SetBacklightChars(applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
 }
 
 static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -3349,7 +3349,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	resp = DialogF(DF_QUES, window->shell, 2, "Detach %s?", "Detach", "Cancel", window->filename);
 
 	if (resp == 1)
-		DetachDocument(window);
+		window->DetachDocument();
 }
 
 static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3363,7 +3363,7 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	if (window->NDocuments() < 2)
 		return;
 
-	DetachDocument(window);
+	window->DetachDocument();
 }
 
 static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3752,12 +3752,12 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		} else if (strcmp(args[0], "last") == 0) {
 			paneIndex = window->nPanes;
 		} else if (strcmp(args[0], "next") == 0) {
-			paneIndex = WidgetToPaneIndex(window, window->lastFocus) + 1;
+			paneIndex = window->WidgetToPaneIndex(window->lastFocus) + 1;
 			if (paneIndex > window->nPanes) {
 				paneIndex = 0;
 			}
 		} else if (strcmp(args[0], "previous") == 0) {
-			paneIndex = WidgetToPaneIndex(window, window->lastFocus) - 1;
+			paneIndex = window->WidgetToPaneIndex(window->lastFocus) - 1;
 			if (paneIndex < 0) {
 				paneIndex = window->nPanes;
 			}
@@ -3961,11 +3961,11 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *n
 	WindowInfo *window = WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], NO_FLASH_STRING) == 0) {
-			SetShowMatching(window, NO_FLASH);
+			window->SetShowMatching(NO_FLASH);
 		} else if (strcmp(args[0], FLASH_DELIMIT_STRING) == 0) {
-			SetShowMatching(window, FLASH_DELIMIT);
+			window->SetShowMatching(FLASH_DELIMIT);
 		} else if (strcmp(args[0], FLASH_RANGE_STRING) == 0) {
-			SetShowMatching(window, FLASH_RANGE);
+			window->SetShowMatching(FLASH_RANGE);
 		}
 		/* For backward compatibility with pre-5.2 versions, we also
 		   accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
@@ -3973,9 +3973,9 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *n
 		   action procedure via the macro language or a key binding,
 		   so this can probably be left out safely. */
 		else if (strcmp(args[0], "0") == 0) {
-			SetShowMatching(window, NO_FLASH);
+			window->SetShowMatching(NO_FLASH);
 		} else if (strcmp(args[0], "1") == 0) {
-			SetShowMatching(window, FLASH_DELIMIT);
+			window->SetShowMatching(FLASH_DELIMIT);
 		} else {
 			fprintf(stderr, "nedit: Invalid argument for set_show_matching\n");
 		}
@@ -4012,7 +4012,7 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	if (window->IsTopDocument())
 		XmToggleButtonSetState(window->overtypeModeItem, newState, False);
-	SetOverstrike(window, newState);
+	window->SetOverstrike(newState);
 }
 
 static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4040,7 +4040,7 @@ static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (*nArgs > 0) {
 		int newTabDist = 0;
 		if (sscanf(args[0], "%d", &newTabDist) == 1 && newTabDist > 0 && newTabDist <= MAX_EXP_CHAR_LEN) {
-			SetTabDist(window, newTabDist);
+			window->SetTabDist(newTabDist);
 		} else {
 			fprintf(stderr, "nedit: set_tab_dist requires integer argument > 0 and <= %d\n", MAX_EXP_CHAR_LEN);
 		}
@@ -4061,7 +4061,7 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 			if (newEmTabDist < 0) {
 				newEmTabDist = 0;
 			}
-			SetEmTabDist(window, newEmTabDist);
+			window->SetEmTabDist(newEmTabDist);
 		} else {
 			fprintf(stderr, "nedit: set_em_tab_dist requires integer argument >= -1 and < 1000\n");
 		}
@@ -4087,7 +4087,7 @@ static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
 	WindowInfo *window = WidgetToWindow(w);
 	if (*nArgs >= 4) {
-		SetFonts(window, args[0], args[1], args[2], args[3]);
+		window->SetFonts(args[0], args[1], args[2], args[3]);
 	} else {
 		fprintf(stderr, "nedit: set_fonts requires 4 arguments\n");
 	}

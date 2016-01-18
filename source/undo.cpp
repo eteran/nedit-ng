@@ -289,7 +289,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 
 	/* Make the undo menu item sensitive now that there's something to undo */
 	if (window->undo.empty()) {
-		SetSensitive(window, window->undoItem, True);
+		window->SetSensitive(window->undoItem, True);
 		SetBGMenuUndoSensitivity(window, True);
 	}
 
@@ -314,7 +314,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 static void addRedoItem(WindowInfo *window, UndoInfo *redo) {
 	/* Make the redo menu item sensitive now that there's something to redo */
 	if (window->redo.empty()) {	
-		SetSensitive(window, window->redoItem, True);
+		window->SetSensitive(window->redoItem, True);
 		SetBGMenuRedoSensitivity(window, True);
 	}
 
@@ -343,7 +343,7 @@ static void removeUndoItem(WindowInfo *window) {
 
 	/* if there are no more undo records left, dim the Undo menu item */
 	if (window->undo.empty()) {
-		SetSensitive(window, window->undoItem, False);
+		window->SetSensitive(window->undoItem, False);
 		SetBGMenuUndoSensitivity(window, False);
 	}
 }
@@ -360,7 +360,7 @@ static void removeRedoItem(WindowInfo *window) {
 
 	/* if there are no more redo records left, dim the Redo menu item */
 	if (window->redo.empty()) {
-		SetSensitive(window, window->redoItem, False);
+		window->SetSensitive(window->redoItem, False);
 		SetBGMenuRedoSensitivity(window, False);
 	}
 }

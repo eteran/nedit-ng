@@ -3609,7 +3609,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 
 	/* Change highlighting */
 	window->highlightSyntax = highlight;
-	SetToggleButtonState(window, window->highlightItem, highlight, False);
+	window->SetToggleButtonState(window->highlightItem, highlight, False);
 	StopHighlighting(window);
 
 	/* we defer highlighting to RaiseDocument() if doc is hidden */
@@ -3625,8 +3625,8 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 	/* set requested wrap, indent, and tabs */
 	window->SetAutoWrap(wrapMode);
 	window->SetAutoIndent(indentStyle);
-	SetTabDist(window, tabDist);
-	SetEmTabDist(window, emTabDist);
+	window->SetTabDist(tabDist);
+	window->SetEmTabDist(emTabDist);
 
 	/* Load calltips files for new mode */
 	if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
@@ -5163,7 +5163,7 @@ static void updateColors(colorDialog *cd) {
 	     *hiliteBg = XmTextGetString(cd->hiliteBgW), *lineNoFg = XmTextGetString(cd->lineNoFgW), *cursorFg = XmTextGetString(cd->cursorFgW);
 
 	for (window = WindowList; window != nullptr; window = window->next) {
-		SetColors(window, textFg, textBg, selectFg, selectBg, hiliteFg, hiliteBg, lineNoFg, cursorFg);
+		window->SetColors(textFg, textBg, selectFg, selectBg, hiliteFg, hiliteBg, lineNoFg, cursorFg);
 	}
 
 	SetPrefColorName(TEXT_FG_COLOR, textFg);

@@ -35,6 +35,13 @@ public:
 	WindowInfo(const char *name, char *geometry, bool iconic);
 	WindowInfo(const WindowInfo &) = default;
 	WindowInfo& operator=(const WindowInfo &) = default;
+
+public:
+	WindowInfo *CreateDocument(const char *name);
+	WindowInfo *DetachDocument();
+	WindowInfo *MarkActiveDocument();
+	WindowInfo *MarkLastDocument();
+	WindowInfo *MoveDocument(WindowInfo *toWindow);
 	
 public:
 	bool IsTopDocument() const;
@@ -61,6 +68,16 @@ public:
 	void SetAutoIndent(int state);
 	void SetAutoScroll(int margin);
 	void SetAutoWrap(int state);
+	void SetBacklightChars(char *applyBacklightTypes);
+	void SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
+	void SetEmTabDist(int emTabDist);
+	void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
+	void SetModeMessage(const char *message);
+	void SetOverstrike(int overstrike);
+	void SetSensitive(Widget w, Boolean sensitive);
+	void SetShowMatching(int state);
+	void SetTabDist(int tabDist);
+	void SetToggleButtonState(Widget w, Boolean state, Boolean notify);	
 	void SetWindowModified(int modified);
 	void ShowISearchLine(int state);
 	void ShowLineNumbers(int state);
@@ -77,6 +94,7 @@ public:
 	void UpdateWindowTitle();
 	void UpdateWMSizeHints();
 	Widget GetPaneByIndex(int paneIndex) const;
+	int WidgetToPaneIndex(Widget w);
 
 public:
 	WindowInfo *next;
@@ -258,22 +276,17 @@ public:
 	unsigned fileMode;           /* permissions of file being edited */
 	uid_t fileUid;               /* last recorded user id of the file */
 	gid_t fileGid;               /* last recorded group id of the file */
-	int fileFormat;              /* whether to save the file straight
-	                                (Unix format), or convert it to
-	            MS DOS style with \r\n line breaks */
+	int fileFormat;              /* whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks */
 	time_t lastModTime;          /* time of last modification to file */
 	dev_t device;                /*  device where the file resides */
 	ino_t inode;                 /*  file's inode  */
 	std::list<UndoInfo *> undo;              /* info for undoing last operation */
 	std::list<UndoInfo *> redo;              /* info for redoing last undone op */
 	TextBuffer *buffer;          /* holds the text being edited */
-	int nPanes;                  /* number of additional text editing
-	                            areas, created by splitWindow */
-	int autoSaveCharCount;       /* count of single characters typed
-	                        since last backup file generated */
+	int nPanes;                  /* number of additional text editing areas, created by splitWindow */
+	int autoSaveCharCount;       /* count of single characters typed since last backup file generated */
 	int autoSaveOpCount;         /* count of editing operations "" */
-	int undoMemUsed;             /* amount of memory (in bytes)
-	                        dedicated to the undo list */
+	int undoMemUsed;             /* amount of memory (in bytes) dedicated to the undo list */
 	char fontName[MAX_FONT_LEN]; /* names of the text fonts in use */
 	char italicFontName[MAX_FONT_LEN];
 	char boldFontName[MAX_FONT_LEN];
@@ -282,13 +295,9 @@ public:
 	XFontStruct *italicFontStruct; /* fontStructs for highlighting fonts */
 	XFontStruct *boldFontStruct;
 	XFontStruct *boldItalicFontStruct;
-	XtIntervalId flashTimeoutID;   /* timer procedure id for getting rid
-	                      of highlighted matching paren.  Non-
-	                      zero val. means highlight is drawn */
-	int flashPos;                  /* position saved for erasing matching
-	                              paren highlight (if one is drawn) */
-	int wasSelected;               /* last selection state (for dim/undim
-	                          of selection related menu items */
+	XtIntervalId flashTimeoutID;   /* timer procedure id for getting rid of highlighted matching paren.  Non-zero val. means highlight is drawn */
+	int flashPos;                  /* position saved for erasing matching paren highlight (if one is drawn) */
+	int wasSelected;               /* last selection state (for dim/undim of selection related menu items */
 	bool filenameSet;           /* is the window still "Untitled"? */
 	bool fileChanged;           /* has window been modified? */
 	bool fileMissing;           /* is the window's file gone? */
@@ -296,12 +305,9 @@ public:
 	bool autoSave;              /* is autosave turned on? */
 	bool saveOldVersion;        /* keep old version in filename.bck */
 	char indentStyle;              /* whether/how to auto indent */
-	char wrapMode;                 /* line wrap style: NO_WRAP,
-	                                              NEWLINE_WRAP or CONTINUOUS_WRAP */
+	char wrapMode;                 /* line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP */
 	bool overstrike;            /* is overstrike mode turned on ? */
-	char showMatchingStyle;        /* How to show matching parens:
-	                      NO_FLASH, FLASH_DELIMIT, or
-	                      FLASH_RANGE */
+	char showMatchingStyle;        /* How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE */
 	char matchSyntaxBased;         /* Use syntax info to show matching */
 	bool showStats;             /* is stats line supposed to be shown */
 	bool showISearchLine;       /* is incr. search line to be shown */
@@ -309,13 +315,12 @@ public:
 	bool highlightSyntax;       /* is syntax highlighting turned on? */
 	bool backlightChars;        /* is char backlighting turned on? */
 	char *backlightCharTypes;      /* what backlighting to use */
-	bool modeMessageDisplayed;  /* special stats line banner for learn
-	                      and shell command executing modes */
-	char *modeMessage;             /* stats line banner content for learn
-	                          and shell command executing modes */
+	bool modeMessageDisplayed;  /* special stats line banner for learn and shell command executing modes */
+	char *modeMessage;             /* stats line banner content for learn and shell command executing modes */
 	bool ignoreModify;          /* ignore modifications to text area */
 	bool windowMenuValid;       /* is window menu up to date? */
-	int rHistIndex, fHistIndex;    /* history placeholders for */
+	int rHistIndex;
+	int fHistIndex;                 /* history placeholders for */
 	int iSearchHistIndex;          /*   find and replace dialogs */
 	int iSearchStartPos;           /* start pos. of current incr. search */
 	int iSearchLastBeginPos;       /* beg. pos. last match of current i.s.*/
@@ -323,27 +328,19 @@ public:
 	XtIntervalId markTimeoutID;    /* backup timer for mark event handler*/
 	Bookmark markTable[MAX_MARKS]; /* marked locations in window */
 	void *highlightData;           /* info for syntax highlighting */
-	void *shellCmdData;            /* when a shell command is executing,
-	                                      info. about it, otherwise, NULL */
+	void *shellCmdData;            /* when a shell command is executing, info. about it, otherwise, NULL */
 	void *macroCmdData;            /* same for macro commands */
 	void *smartIndentData;         /* compiled macros for smart indent */
 	Atom fileClosedAtom;           /* Atom used to tell nc that the file is closed */
-	int languageMode;              /* identifies language mode currently
-	                                      selected in the window */
-	bool multiFileReplSelected; /* selected during last multi-window
-	                  replacement operation (history) */
-	struct WindowInfo **           /* temporary list of writable windows */
-	    writableWindows;           /* used during multi-file replacements */
+	int languageMode;              /* identifies language mode currently selected in the window */
+	bool multiFileReplSelected; /* selected during last multi-window replacement operation (history) */
+	WindowInfo ** writableWindows;          /* temporary list of writable windows, used during multi-file replacements */
 	int nWritableWindows;          /* number of elements in the list */
-	Bool multiFileBusy;            /* suppresses multiple beeps/dialogs
-	                      during multi-file replacements */
-	Bool replaceFailed;            /* flags replacements failures during
-	                      multi-file replacements */
-	Bool replaceLastRegexCase;     /* last state of the case sense button
-	                                      in regex mode for replace dialog */
+	Bool multiFileBusy;            /* suppresses multiple beeps/dialogs during multi-file replacements */
+	Bool replaceFailed;            /* flags replacements failures during multi-file replacements */
+	Bool replaceLastRegexCase;     /* last state of the case sense button in regex mode for replace dialog */
 	Bool replaceLastLiteralCase;   /* idem, for literal mode */
-	Bool iSearchLastRegexCase;     /* idem, for regex mode in
-	                                      incremental search bar */
+	Bool iSearchLastRegexCase;     /* idem, for regex mode in incremental search bar */
 	Bool iSearchLastLiteralCase;   /* idem, for literal mode */
 	Bool findLastRegexCase;        /* idem, for regex mode in find dialog */
 	Bool findLastLiteralCase;      /* idem, for literal mode */

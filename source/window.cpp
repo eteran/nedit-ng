@@ -579,7 +579,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	this->lastFocus = text;
 
 	/* Set the initial colors from the globals. */
-	SetColors(this, GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
+	this->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
 	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Create the right button popup menu (note: order is important here,
@@ -996,16 +996,16 @@ void WindowInfo::MoveDocumentDialog() {
 			for (win = WindowList; win;) {
 				if (win != this && win->shell == this->shell) {
 					WindowInfo *next = win->next;
-					MoveDocument(targetWin, win);
+					win->MoveDocument(targetWin);
 					win = next;
 				} else
 					win = win->next;
 			}
 
 			/* invoking document is the last to move */
-			MoveDocument(targetWin, this);
+			this->MoveDocument(targetWin);
 		} else {
-			MoveDocument(targetWin, this);
+			this->MoveDocument(targetWin);
 		}
 	}
 
@@ -1074,9 +1074,9 @@ void WindowInfo::RaiseDocument() {
 	if (!this || !WindowList)
 		return;
 
-	lastwin = MarkActiveDocument(this);
+	lastwin = this->MarkActiveDocument();
 	if (lastwin != this && lastwin->IsValidWindow())
-		MarkLastDocument(lastwin);
+		lastwin->MarkLastDocument();
 
 	/* document already on top? */
 	XtVaGetValues(this->mainWin, XmNuserData, &win, nullptr);
@@ -1556,13 +1556,13 @@ void WindowInfo::SplitPane() {
 	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
 }
 
-int WidgetToPaneIndex(WindowInfo *window, Widget w) {
+int WindowInfo::WidgetToPaneIndex(Widget w) {
 	int i;
 	Widget text;
 	int paneIndex = 0;
 
-	for (i = 0; i <= window->nPanes; ++i) {
-		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; ++i) {
+		text = (i == 0) ? this->textArea : this->textPanes[i - 1];
 		if (text == w) {
 			paneIndex = i;
 		}
@@ -1697,17 +1697,17 @@ void WindowInfo::ShowLineNumbers(int state) {
 	this->UpdateWMSizeHints();
 }
 
-void SetTabDist(WindowInfo *window, int tabDist) {
-	if (window->buffer->tabDist_ != tabDist) {
+void WindowInfo::SetTabDist(int tabDist) {
+	if (this->buffer->tabDist_ != tabDist) {
 		int saveCursorPositions[MAX_PANES + 1];
 		int saveVScrollPositions[MAX_PANES + 1];
 		int saveHScrollPositions[MAX_PANES + 1];
 		int paneIndex;
 
-		window->ignoreModify = True;
+		this->ignoreModify = True;
 
-		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-			Widget w = window->GetPaneByIndex(paneIndex);
+		for (paneIndex = 0; paneIndex <= this->nPanes; ++paneIndex) {
+			Widget w = this->GetPaneByIndex(paneIndex);
 			textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 			TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
@@ -1715,10 +1715,10 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 			textD->modifyingTabDist = 1;
 		}
 
-		window->buffer->BufSetTabDistance(tabDist);
+		this->buffer->BufSetTabDistance(tabDist);
 
-		for (paneIndex = 0; paneIndex <= window->nPanes; ++paneIndex) {
-			Widget w = window->GetPaneByIndex(paneIndex);
+		for (paneIndex = 0; paneIndex <= this->nPanes; ++paneIndex) {
+			Widget w = this->GetPaneByIndex(paneIndex);
 			textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 			textD->modifyingTabDist = 0;
@@ -1726,16 +1726,16 @@ void SetTabDist(WindowInfo *window, int tabDist) {
 			TextSetScroll(w, saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
 		}
 
-		window->ignoreModify = False;
+		this->ignoreModify = False;
 	}
 }
 
-void SetEmTabDist(WindowInfo *window, int emTabDist) {
+void WindowInfo::SetEmTabDist(int emTabDist) {
 	int i;
 
-	XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, nullptr);
-	for (i = 0; i < window->nPanes; ++i) {
-		XtVaSetValues(window->textPanes[i], textNemulateTabs, emTabDist, nullptr);
+	XtVaSetValues(this->textArea, textNemulateTabs, emTabDist, nullptr);
+	for (i = 0; i < this->nPanes; ++i) {
+		XtVaSetValues(this->textPanes[i], textNemulateTabs, emTabDist, nullptr);
 	}
 }
 
@@ -1894,23 +1894,23 @@ static void showStatsForm(WindowInfo *window) {
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void SetModeMessage(WindowInfo *window, const char *message) {
+void WindowInfo::SetModeMessage(const char *message) {
 	/* this document may be hidden (not on top) or later made hidden,
 	   so we save a copy of the mode message, so we can restore the
 	   statsline when the document is raised to top again */
-	window->modeMessageDisplayed = True;
-	XtFree(window->modeMessage);
-	window->modeMessage = XtNewStringEx(message);
+	this->modeMessageDisplayed = True;
+	XtFree(this->modeMessage);
+	this->modeMessage = XtNewStringEx(message);
 
-	if (!window->IsTopDocument())
+	if (!this->IsTopDocument())
 		return;
 
-	XmTextSetStringEx(window->statsLine, message);
+	XmTextSetStringEx(this->statsLine, message);
 	/*
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
-	if (!window->showStats)
-		showStatistics(window, True);
+	if (!this->showStats)
+		showStatistics(this, True);
 }
 
 /*
@@ -1976,12 +1976,12 @@ void WindowInfo::SetAutoIndent(int state) {
 ** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
 ** Update the menu to reflect the change of state.
 */
-void SetShowMatching(WindowInfo *window, int state) {
-	window->showMatchingStyle = state;
-	if (window->IsTopDocument()) {
-		XmToggleButtonSetState(window->showMatchingOffItem, state == NO_FLASH, False);
-		XmToggleButtonSetState(window->showMatchingDelimitItem, state == FLASH_DELIMIT, False);
-		XmToggleButtonSetState(window->showMatchingRangeItem, state == FLASH_RANGE, False);
+void WindowInfo::SetShowMatching(int state) {
+	this->showMatchingStyle = state;
+	if (this->IsTopDocument()) {
+		XmToggleButtonSetState(this->showMatchingOffItem, state == NO_FLASH, False);
+		XmToggleButtonSetState(this->showMatchingDelimitItem, state == FLASH_DELIMIT, False);
+		XmToggleButtonSetState(this->showMatchingRangeItem, state == FLASH_RANGE, False);
 	}
 }
 
@@ -2010,34 +2010,35 @@ void WindowInfo::UpdateNewOppositeMenu(int openInTab) {
 ** (which shouldn't happen much in normal NEdit operation), and skip the
 ** futile effort of freeing them.
 */
-void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
+void WindowInfo::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
+
 	XFontStruct *font, *oldFont;
 	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
 	int borderWidth, borderHeight, marginWidth, marginHeight;
 	int primaryChanged, highlightChanged = False;
 	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
 	Dimension textHeight, newWindowWidth, newWindowHeight;
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 
 	/* Check which fonts have changed */
-	primaryChanged = strcmp(fontName, window->fontName);
-	if (strcmp(italicName, window->italicFontName))
+	primaryChanged = strcmp(fontName, this->fontName);
+	if (strcmp(italicName, this->italicFontName))
 		highlightChanged = True;
-	if (strcmp(boldName, window->boldFontName))
+	if (strcmp(boldName, this->boldFontName))
 		highlightChanged = True;
-	if (strcmp(boldItalicName, window->boldItalicFontName))
+	if (strcmp(boldItalicName, this->boldItalicFontName))
 		highlightChanged = True;
 	if (!primaryChanged && !highlightChanged)
 		return;
 
-	/* Get information about the current window sizing, to be used to
-	   determine the correct window size after the font is changed */
-	XtVaGetValues(window->shell, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
-	XtVaGetValues(window->textArea, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
+	/* Get information about the current this sizing, to be used to
+	   determine the correct this size after the font is changed */
+	XtVaGetValues(this->shell, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
+	XtVaGetValues(this->textArea, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
 	oldTextWidth = textD->width + textD->lineNumWidth;
 	oldTextHeight = textHeight - 2 * marginHeight;
-	for (i = 0; i < window->nPanes; i++) {
-		XtVaGetValues(window->textPanes[i], XmNheight, &textHeight, nullptr);
+	for (i = 0; i < this->nPanes; i++) {
+		XtVaGetValues(this->textPanes[i], XmNheight, &textHeight, nullptr);
 		oldTextHeight += textHeight - 2 * marginHeight;
 	}
 	borderWidth = oldWindowWidth - oldTextWidth;
@@ -2045,96 +2046,98 @@ void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, 
 	oldFontWidth = oldFont->max_bounds.width;
 	oldFontHeight = textD->ascent + textD->descent;
 
-	/* Change the fonts in the window data structure.  If the primary font
+	/* Change the fonts in the this data structure.  If the primary font
 	   didn't work, use Motif's fallback mechanism by stealing it from the
 	   statistics line.  Highlight fonts are allowed to be nullptr, which
 	   is interpreted as "use the primary font" */
 	if (primaryChanged) {
-		strcpy(window->fontName, fontName);
+		strcpy(this->fontName, fontName);
 		font = XLoadQueryFont(TheDisplay, fontName);
 		if(!font)
-			XtVaGetValues(window->statsLine, XmNfontList, &window->fontList, nullptr);
+			XtVaGetValues(this->statsLine, XmNfontList, &this->fontList, nullptr);
 		else
-			window->fontList = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
+			this->fontList = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
 	}
 	if (highlightChanged) {
-		strcpy(window->italicFontName, italicName);
-		window->italicFontStruct = XLoadQueryFont(TheDisplay, italicName);
-		strcpy(window->boldFontName, boldName);
-		window->boldFontStruct = XLoadQueryFont(TheDisplay, boldName);
-		strcpy(window->boldItalicFontName, boldItalicName);
-		window->boldItalicFontStruct = XLoadQueryFont(TheDisplay, boldItalicName);
+		strcpy(this->italicFontName, italicName);
+		this->italicFontStruct = XLoadQueryFont(TheDisplay, italicName);
+		strcpy(this->boldFontName, boldName);
+		this->boldFontStruct = XLoadQueryFont(TheDisplay, boldName);
+		strcpy(this->boldItalicFontName, boldItalicName);
+		this->boldItalicFontStruct = XLoadQueryFont(TheDisplay, boldItalicName);
 	}
 
 	/* Change the primary font in all the widgets */
 	if (primaryChanged) {
-		font = GetDefaultFontStruct(window->fontList);
-		XtVaSetValues(window->textArea, textNfont, font, nullptr);
-		for (i = 0; i < window->nPanes; i++)
-			XtVaSetValues(window->textPanes[i], textNfont, font, nullptr);
+		font = GetDefaultFontStruct(this->fontList);
+		XtVaSetValues(this->textArea, textNfont, font, nullptr);
+		for (i = 0; i < this->nPanes; i++)
+			XtVaSetValues(this->textPanes[i], textNfont, font, nullptr);
 	}
 
 	/* Change the highlight fonts, even if they didn't change, because
 	   primary font is read through the style table for syntax highlighting */
-	if (window->highlightData)
-		UpdateHighlightStyles(window);
+	if (this->highlightData)
+		UpdateHighlightStyles(this);
 
-	/* Change the window manager size hints.
+	/* Change the this manager size hints.
 	   Note: this has to be done _before_ we set the new sizes. ICCCM2
-	   compliant window managers (such as fvwm2) would otherwise resize
-	   the window twice: once because of the new sizes requested, and once
+	   compliant this managers (such as fvwm2) would otherwise resize
+	   the this twice: once because of the new sizes requested, and once
 	   because of the new size increments, resulting in an overshoot. */
-	window->UpdateWMSizeHints();
+	this->UpdateWMSizeHints();
 
-	/* Use the information from the old window to re-size the window to a
+	/* Use the information from the old this to re-size the this to a
 	   size appropriate for the new font, but only do so if there's only
-	   _one_ document in the window, in order to avoid growing-window bug */
-	if (window->NDocuments() == 1) {
-		fontWidth = GetDefaultFontStruct(window->fontList)->max_bounds.width;
+	   _one_ document in the this, in order to avoid growing-this bug */
+	if (this->NDocuments() == 1) {
+		fontWidth = GetDefaultFontStruct(this->fontList)->max_bounds.width;
 		fontHeight = textD->ascent + textD->descent;
 		newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
 		newWindowHeight = (oldTextHeight * fontHeight) / oldFontHeight + borderHeight;
-		XtVaSetValues(window->shell, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
+		XtVaSetValues(this->shell, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
 	}
 
 	/* Change the minimum pane height */
-	window->UpdateMinPaneHeights();
+	this->UpdateMinPaneHeights();
 }
 
-void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
+void WindowInfo::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
+	
 	int i, dummy;
-	Pixel textFgPix = AllocColor(window->textArea, textFg, &dummy, &dummy, &dummy), textBgPix = AllocColor(window->textArea, textBg, &dummy, &dummy, &dummy), selectFgPix = AllocColor(window->textArea, selectFg, &dummy, &dummy, &dummy),
-	      selectBgPix = AllocColor(window->textArea, selectBg, &dummy, &dummy, &dummy), hiliteFgPix = AllocColor(window->textArea, hiliteFg, &dummy, &dummy, &dummy),
-	      hiliteBgPix = AllocColor(window->textArea, hiliteBg, &dummy, &dummy, &dummy), lineNoFgPix = AllocColor(window->textArea, lineNoFg, &dummy, &dummy, &dummy),
-	      cursorFgPix = AllocColor(window->textArea, cursorFg, &dummy, &dummy, &dummy);
+	
+	Pixel textFgPix = AllocColor(this->textArea, textFg, &dummy, &dummy, &dummy), textBgPix = AllocColor(this->textArea, textBg, &dummy, &dummy, &dummy), selectFgPix = AllocColor(this->textArea, selectFg, &dummy, &dummy, &dummy);
+	Pixel selectBgPix = AllocColor(this->textArea, selectBg, &dummy, &dummy, &dummy), hiliteFgPix = AllocColor(this->textArea, hiliteFg, &dummy, &dummy, &dummy);
+	Pixel hiliteBgPix = AllocColor(this->textArea, hiliteBg, &dummy, &dummy, &dummy), lineNoFgPix = AllocColor(this->textArea, lineNoFg, &dummy, &dummy, &dummy);
+	Pixel cursorFgPix = AllocColor(this->textArea, cursorFg, &dummy, &dummy, &dummy);
+	
 	textDisp *textD;
 
 	/* Update the main pane */
-	XtVaSetValues(window->textArea, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-	textD = ((TextWidget)window->textArea)->text.textD;
+	XtVaSetValues(this->textArea, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
+	textD = ((TextWidget)this->textArea)->text.textD;
 	textD->	TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	/* Update any additional panes */
-	for (i = 0; i < window->nPanes; i++) {
-		XtVaSetValues(window->textPanes[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-		textD = ((TextWidget)window->textPanes[i])->text.textD;
+	for (i = 0; i < this->nPanes; i++) {
+		XtVaSetValues(this->textPanes[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
+		textD = ((TextWidget)this->textPanes[i])->text.textD;
 		textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	}
 
 	/* Redo any syntax highlighting */
-	if (window->highlightData)
-		UpdateHighlightStyles(window);
+	if (this->highlightData)
+		UpdateHighlightStyles(this);
 }
 
 /*
 ** Set insert/overstrike mode
 */
-void SetOverstrike(WindowInfo *window, int overstrike) {
-	int i;
+void WindowInfo::SetOverstrike(int overstrike) {
 
-	XtVaSetValues(window->textArea, textNoverstrike, overstrike, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNoverstrike, overstrike, nullptr);
-	window->overstrike = overstrike;
+	XtVaSetValues(this->textArea, textNoverstrike, overstrike, nullptr);
+	for (int i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNoverstrike, overstrike, nullptr);
+	this->overstrike = overstrike;
 }
 
 /*
@@ -2218,7 +2221,7 @@ WindowInfo *WidgetToWindow(Widget w) {
 */
 void WindowInfo::SetWindowModified(int modified) {
 	if (this->fileChanged == FALSE && modified == TRUE) {
-		SetSensitive(this, this->closeItem, TRUE);
+		this->SetSensitive(this->closeItem, TRUE);
 		this->fileChanged = TRUE;
 		this->UpdateWindowTitle();
 		this->RefreshTabState();
@@ -2803,7 +2806,7 @@ void AllWindowsBusy(const char *message) {
 		busyStartTime = getRelTimeInTenthsOfSeconds();
 		modeMessageSet = False;
 
-		for (w = WindowList; w != nullptr; w = w->next) {
+		for (w = WindowList; w; w = w->next) {
 			/* We don't the display message here yet, but defer it for
 			   a while. If the wait is short, we don't want
 			   to have it flash on and off the screen.  However,
@@ -2816,8 +2819,8 @@ void AllWindowsBusy(const char *message) {
 		}
 	} else if (!modeMessageSet && message && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 		/* Show the mode message when we've been busy for more than a second */
-		for (w = WindowList; w != nullptr; w = w->next) {
-			SetModeMessage(w, message);
+		for (w = WindowList; w; w = w->next) {
+			w->SetModeMessage(message);
 		}
 		modeMessageSet = True;
 	}
@@ -2828,7 +2831,7 @@ void AllWindowsBusy(const char *message) {
 
 void AllWindowsUnbusy(void) {
 
-	for (WindowInfo *w = WindowList; w != nullptr; w = w->next) {
+	for (WindowInfo *w = WindowList; w; w = w->next) {
 		w->ClearModeMessage();
 		EndWait(w->shell);
 	}
@@ -3039,27 +3042,27 @@ static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 /*
 ** Set the backlight character class string
 */
-void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes) {
+void WindowInfo::SetBacklightChars(char *applyBacklightTypes) {
 	int i;
-	int is_applied = XmToggleButtonGetState(window->backlightCharsItem) ? 1 : 0;
+	int is_applied = XmToggleButtonGetState(this->backlightCharsItem) ? 1 : 0;
 	int do_apply = applyBacklightTypes ? 1 : 0;
 
-	window->backlightChars = do_apply;
+	this->backlightChars = do_apply;
 
-	XtFree(window->backlightCharTypes);
+	XtFree(this->backlightCharTypes);
 	
 	
-	if(window->backlightChars) {
-		window->backlightCharTypes = XtStringDup(applyBacklightTypes);
+	if(this->backlightChars) {
+		this->backlightCharTypes = XtStringDup(applyBacklightTypes);
 	} else {
-		window->backlightCharTypes = nullptr;
+		this->backlightCharTypes = nullptr;
 	}
 
-	XtVaSetValues(window->textArea, textNbacklightCharTypes, window->backlightCharTypes, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNbacklightCharTypes, window->backlightCharTypes, nullptr);
+	XtVaSetValues(this->textArea, textNbacklightCharTypes, this->backlightCharTypes, nullptr);
+	for (i = 0; i < this->nPanes; i++)
+		XtVaSetValues(this->textPanes[i], textNbacklightCharTypes, this->backlightCharTypes, nullptr);
 	if (is_applied != do_apply)
-		SetToggleButtonState(window, window->backlightCharsItem, do_apply, False);
+		this->SetToggleButtonState(this->backlightCharsItem, do_apply, False);
 }
 
 /*
@@ -3166,12 +3169,12 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols) {
 ** unnecessarily; hence speeding up the process of opening
 ** multiple files.
 */
-WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
+WindowInfo *WindowInfo::CreateDocument(const char *name) {
 	Widget pane, text;
 	int nCols, nRows;
 
 	/* Allocate some memory for the new window data structure */
-	auto window = new WindowInfo(*shellWindow);
+	auto window = new WindowInfo(*this);
 
 #if 0
     /* share these dialog items with parent shell */
@@ -3269,9 +3272,9 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->inode = 0;
 
 	if (!window->fontList)
-		XtVaGetValues(shellWindow->statsLine, XmNfontList, &window->fontList, nullptr);
+		XtVaGetValues(this->statsLine, XmNfontList, &window->fontList, nullptr);
 
-	getTextPaneDimension(shellWindow, &nRows, &nCols);
+	getTextPaneDimension(this, &nRows, &nCols);
 
 	/* Create pane that actaully holds the new document. As
 	   document is created in 'background', we need to hide
@@ -3305,7 +3308,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	window->lastFocus = text;
 
 	/* Set the initial colors from the globals. */
-	SetColors(window, GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
+	window->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
 	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Create the right button popup menu (note: order is important here,
@@ -3342,7 +3345,7 @@ WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name) {
 	addToWindowList(window);
 
 	/* return the shell ownership to previous tabbed doc */
-	XtVaSetValues(window->mainWin, XmNworkWindow, shellWindow->splitPane, nullptr);
+	XtVaSetValues(window->mainWin, XmNworkWindow, this->splitPane, nullptr);
 	XLowerWindow(TheDisplay, XtWindow(window->splitPane));
 	XtUnmanageChild(window->splitPane);
 	XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, nullptr);
@@ -3544,7 +3547,7 @@ void WindowInfo::RefreshMenuToggleStates() {
 
 	this->SetAutoIndent(this->indentStyle);
 	this->SetAutoWrap(this->wrapMode);
-	SetShowMatching(this, this->showMatchingStyle);
+	this->SetShowMatching(this->showMatchingStyle);
 	SetLanguageMode(this, this->languageMode, FALSE);
 
 	/* Windows Menu */
@@ -3577,11 +3580,11 @@ static void refreshMenuBar(WindowInfo *window) {
 /*
 ** remember the last document.
 */
-WindowInfo *MarkLastDocument(WindowInfo *window) {
+WindowInfo *WindowInfo::MarkLastDocument() {
 	WindowInfo *prev = lastFocusDocument;
 
-	if (window)
-		lastFocusDocument = window;
+	if (this)
+		lastFocusDocument = this;
 
 	return prev;
 }
@@ -3589,11 +3592,11 @@ WindowInfo *MarkLastDocument(WindowInfo *window) {
 /*
 ** remember the active (top) document.
 */
-WindowInfo *MarkActiveDocument(WindowInfo *window) {
+WindowInfo *WindowInfo::MarkActiveDocument() {
 	WindowInfo *prev = inFocusDocument;
 
-	if (window)
-		inFocusDocument = window;
+	if (this)
+		inFocusDocument = this;
 
 	return prev;
 }
@@ -3829,7 +3832,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	window->buffer->BufSetTabDistance(orgWin->buffer->tabDist_);
 	window->buffer->useTabs_ = orgWin->buffer->useTabs_;
 	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, nullptr);
-	SetEmTabDist(window, emTabDist);
+	window->SetEmTabDist(emTabDist);
 
 	window->ignoreModify = False;
 
@@ -3840,7 +3843,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	params[3] = orgWin->boldItalicFontName;
 	XtCallActionProc(window->textArea, "set_fonts", nullptr, params, 4);
 
-	SetBacklightChars(window, orgWin->backlightCharTypes);
+	window->SetBacklightChars(orgWin->backlightCharTypes);
 
 	/* Clone rangeset info.
 
@@ -3876,7 +3879,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	window->autoSave = orgWin->autoSave;
 	window->saveOldVersion = orgWin->saveOldVersion;
 	window->wrapMode = orgWin->wrapMode;
-	SetOverstrike(window, orgWin->overstrike);
+	window->SetOverstrike(orgWin->overstrike);
 	window->showMatchingStyle = orgWin->showMatchingStyle;
 	window->matchSyntaxBased = orgWin->matchSyntaxBased;
 #if 0    
@@ -3946,51 +3949,51 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 /*
 ** spin off the document to a new window
 */
-WindowInfo *DetachDocument(WindowInfo *window) {
+WindowInfo *WindowInfo::DetachDocument() {
 	WindowInfo *win = nullptr, *cloneWin;
 
-	if (window->NDocuments() < 2)
+	if (this->NDocuments() < 2)
 		return nullptr;
 
-	/* raise another document in the same shell window if the window
+	/* raise another document in the same shell this if the this
 	   being detached is the top document */
-	if (window->IsTopDocument()) {
-		win = getNextTabWindow(window, 1, 0, 0);
+	if (this->IsTopDocument()) {
+		win = getNextTabWindow(this, 1, 0, 0);
 		win->RaiseDocument();
 	}
 
-	/* Create a new window */
-	cloneWin = new WindowInfo(window->filename, nullptr, false);
+	/* Create a new this */
+	cloneWin = new WindowInfo(this->filename, nullptr, false);
 
-	/* CreateWindow() simply adds the new window's pointer to the
-	   head of WindowList. We need to adjust the detached window's
+	/* CreateWindow() simply adds the new this's pointer to the
+	   head of WindowList. We need to adjust the detached this's
 	   pointer, so that macro functions such as focus_window("last")
 	   will travel across the documents per the sequence they're
 	   opened. The new doc will appear to replace it's former self
 	   as the old doc is closed. */
 	WindowList = cloneWin->next;
-	cloneWin->next = window->next;
-	window->next = cloneWin;
+	cloneWin->next = this->next;
+	this->next = cloneWin;
 
 	/* these settings should follow the detached document.
-	   must be done before cloning window, else the height
+	   must be done before cloning this, else the height
 	   of split panes may not come out correctly */
-	cloneWin->ShowISearchLine(window->showISearchLine);
-	cloneWin->ShowStatsLine(window->showStats);
+	cloneWin->ShowISearchLine(this->showISearchLine);
+	cloneWin->ShowStatsLine(this->showStats);
 
 	/* clone the document & its pref settings */
-	cloneDocument(cloneWin, window);
+	cloneDocument(cloneWin, this);
 
-	/* remove the document from the old window */
-	window->fileChanged = False;
-	CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
+	/* remove the document from the old this */
+	this->fileChanged = False;
+	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
-	/* refresh former host window */
+	/* refresh former host this */
 	if (win) {
 		win->RefreshWindowStates();
 	}
 
-	/* this should keep the new document window fresh */
+	/* this should keep the new document this fresh */
 	cloneWin->RefreshWindowStates();
 	cloneWin->RefreshTabState();
 	cloneWin->SortTabBar();
@@ -4004,44 +4007,44 @@ WindowInfo *DetachDocument(WindowInfo *window) {
 ** the moving document will receive certain window settings from
 ** its new host, i.e. the window size, stats and isearch lines.
 */
-WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
+WindowInfo *WindowInfo::MoveDocument(WindowInfo *toWindow) {
 	WindowInfo *win = nullptr, *cloneWin;
 
 	/* prepare to move document */
-	if (window->NDocuments() < 2) {
-		/* hide the window to make it look like we are moving */
-		XtUnmapWidget(window->shell);
-	} else if (window->IsTopDocument()) {
+	if (this->NDocuments() < 2) {
+		/* hide the this to make it look like we are moving */
+		XtUnmapWidget(this->shell);
+	} else if (this->IsTopDocument()) {
 		/* raise another document to replace the document being moved */
-		win = getNextTabWindow(window, 1, 0, 0);
+		win = getNextTabWindow(this, 1, 0, 0);
 		win->RaiseDocument();
 	}
 
-	/* relocate the document to target window */
-	cloneWin = CreateDocument(toWindow, window->filename);
+	/* relocate the document to target this */
+	cloneWin = toWindow->CreateDocument(this->filename);
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
-	cloneDocument(cloneWin, window);
+	cloneDocument(cloneWin, this);
 
-	/* CreateDocument() simply adds the new window's pointer to the
-	   head of WindowList. We need to adjust the detached window's
+	/* CreateDocument() simply adds the new this's pointer to the
+	   head of WindowList. We need to adjust the detached this's
 	   pointer, so that macro functions such as focus_window("last")
 	   will travel across the documents per the sequence they're
 	   opened. The new doc will appear to replace it's former self
 	   as the old doc is closed. */
 	WindowList = cloneWin->next;
-	cloneWin->next = window->next;
-	window->next = cloneWin;
+	cloneWin->next = this->next;
+	this->next = cloneWin;
 
-	/* remove the document from the old window */
-	window->fileChanged = False;
-	CloseFileAndWindow(window, NO_SBC_DIALOG_RESPONSE);
+	/* remove the document from the old this */
+	this->fileChanged = False;
+	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
 	/* some menu states might have changed when deleting document */
 	if (win) {
 		win->RefreshWindowStates();
 	}
 
-	/* this should keep the new document window fresh */
+	/* this should keep the new document this fresh */
 	cloneWin->RaiseDocumentWindow();
 	cloneWin->RefreshTabState();
 	cloneWin->SortTabBar();
@@ -4122,8 +4125,8 @@ static void cancelTimeOut(XtIntervalId *timer) {
 /*
 ** set/clear toggle menu state if the calling document is on top.
 */
-void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean notify) {
-	if (window->IsTopDocument()) {
+void WindowInfo::SetToggleButtonState(Widget w, Boolean state, Boolean notify) {
+	if (this->IsTopDocument()) {
 		XmToggleButtonSetState(w, state, notify);
 	}
 }
@@ -4131,8 +4134,8 @@ void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean n
 /*
 ** set/clear menu sensitivity if the calling document is on top.
 */
-void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive) {
-	if (window->IsTopDocument()) {
+void WindowInfo::SetSensitive(Widget w, Boolean sensitive) {
+	if (this->IsTopDocument()) {
 		XtSetSensitive(w, sensitive);
 	}
 }

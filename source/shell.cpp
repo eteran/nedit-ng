@@ -446,7 +446,7 @@ static void issueCommand(WindowInfo *window, const char *command, char *input, i
 
 	/* enable the cancel menu item */
 	if (!fromMacro)
-		SetSensitive(window, window->cancelShellItem, True);
+		window->SetSensitive(window->cancelShellItem, True);
 
 	/* fork the subprocess and issue the command */
 	childPid = forkCommand(window->shell, command, window->path, &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
@@ -670,7 +670,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 		snprintf(message, sizeof(message), "Shell Command in Progress -- Press %s to Cancel", cCancel.c_str());
 	}
 
-	SetModeMessage(window, message);
+	window->SetModeMessage(message);
 	cmdData->bannerTimeoutID = 0;
 }
 
@@ -763,7 +763,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	/* Clean up waiting-for-shell-command-to-complete mode */
 	if (!cmdData->fromMacro) {
 		EndWait(window->shell);
-		SetSensitive(window, window->cancelShellItem, False);
+		window->SetSensitive(window->cancelShellItem, False);
 		if (cmdData->bannerIsUp) {
 			window->ClearModeMessage();
 		}

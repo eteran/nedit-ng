@@ -398,10 +398,10 @@ void BeginLearn(WindowInfo *window) {
 			continue;
 		XtSetSensitive(win->learnItem, False);
 	}
-	SetSensitive(window, window->finishLearnItem, True);
+	window->SetSensitive(window->finishLearnItem, True);
 	XtVaSetValues(window->cancelMacroItem, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
 	XmStringFree(s);
-	SetSensitive(window, window->cancelMacroItem, True);
+	window->SetSensitive(window->cancelMacroItem, True);
 
 	/* Mark the window where learn mode is happening */
 	MacroRecordWindow = window;
@@ -442,7 +442,7 @@ void BeginLearn(WindowInfo *window) {
 	}
 
 	/* Put up the learn-mode banner */
-	SetModeMessage(window, message);
+	window->SetModeMessage(message);
 }
 
 void AddLastCommandActionHook(XtAppContext context) {
@@ -760,7 +760,7 @@ static void runMacro(WindowInfo *window, Program *prog) {
 	/* enable the cancel menu item */
 	XtVaSetValues(window->cancelMacroItem, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Macro"), nullptr);
 	XmStringFree(s);
-	SetSensitive(window, window->cancelMacroItem, True);
+	window->SetSensitive(window->cancelMacroItem, True);
 
 	/* Create a data structure for passing macro execution information around
 	   amongst the callback routines which will process i/o and completion */
@@ -900,7 +900,7 @@ static void finishMacroCmdExecution(WindowInfo *window) {
 	EndWait(window->shell);
 	XtVaSetValues(window->cancelMacroItem, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
 	XmStringFree(s);
-	SetSensitive(window, window->cancelMacroItem, False);
+	window->SetSensitive(window->cancelMacroItem, False);
 	if (cmdData->bannerIsUp) {
 		window->ClearModeMessage();
 	}
@@ -1389,7 +1389,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 		snprintf(message, sizeof(message), "Macro Command in Progress -- Press %s to Cancel", cCancel.c_str());
 	}
 
-	SetModeMessage(window, message);
+	window->SetModeMessage(message);
 	cmdData->bannerTimeoutID = 0;
 }
 
@@ -3667,7 +3667,7 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
     if (backlightString && *backlightString == '\0')  / * empty string param * /
       backlightString = nullptr;                 / * turns of backlighting * /
 
-    SetBacklightChars(window, backlightString);
+    window->SetBacklightChars(backlightString);
     return True;
 } */
 
@@ -4143,7 +4143,7 @@ static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	(void)errMsg;
 
 	result->tag = INT_TAG;
-	result->val.n = WidgetToPaneIndex(window, window->lastFocus) + 1;
+	result->val.n = window->WidgetToPaneIndex(window->lastFocus) + 1;
 	return True;
 }
 

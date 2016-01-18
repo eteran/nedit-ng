@@ -808,11 +808,11 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nM
 */
 void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive) {
 	if (window->bgMenuUndoItem)
-		SetSensitive(window, window->bgMenuUndoItem, sensitive);
+		window->SetSensitive(window->bgMenuUndoItem, sensitive);
 }
 void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive) {
 	if (window->bgMenuRedoItem)
-		SetSensitive(window, window->bgMenuRedoItem, sensitive);
+		window->SetSensitive(window->bgMenuRedoItem, sensitive);
 }
 
 /*

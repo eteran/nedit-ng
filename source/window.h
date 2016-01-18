@@ -28,35 +28,20 @@
 #define WINDOW_H_
 
 #include "nedit.h"
-#include "TextBuffer.h"
+
+struct TextBuffer;
 
 #include <X11/Intrinsic.h>
 
-WindowInfo *CreateDocument(WindowInfo *shellWindow, const char *name);
-WindowInfo *DetachDocument(WindowInfo *window);
 WindowInfo *FindWindowWithFile(const char *name, const char *path);
 WindowInfo *GetTopDocument(Widget w);
-WindowInfo *MarkActiveDocument(WindowInfo *window);
-WindowInfo *MarkLastDocument(WindowInfo *window);
-WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window);
 WindowInfo *TabToWindow(Widget tab);
 WindowInfo *WidgetToWindow(Widget w);
 int GetSimpleSelection(TextBuffer *buf, int *left, int *right);
 int NWindows(void);
-int WidgetToPaneIndex(WindowInfo *window, Widget w);
 void AddSmallIcon(Widget shell);
 void AllWindowsBusy(const char *message);
 void AllWindowsUnbusy(void);
 void AttachSessionMgrHandler(Widget appShell);
-void SetBacklightChars(WindowInfo *window, char *applyBacklightTypes);
-void SetColors(WindowInfo *window, const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
-void SetEmTabDist(WindowInfo *window, int emTabDist);
-void SetFonts(WindowInfo *window, const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
-void SetModeMessage(WindowInfo *window, const char *message);
-void SetOverstrike(WindowInfo *window, int overstrike);
-void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive);
-void SetShowMatching(WindowInfo *window, int state);
-void SetTabDist(WindowInfo *window, int tabDist);
-void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean notify);
 
 #endif

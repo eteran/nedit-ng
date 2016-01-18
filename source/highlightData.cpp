@@ -2347,7 +2347,7 @@ static int updatePatternSet(void) {
 					StopHighlighting(window);
 					if (window->IsTopDocument()) {
 						XtSetSensitive(window->highlightItem, True);
-						SetToggleButtonState(window, window->highlightItem, True, False);
+						window->SetToggleButtonState(window->highlightItem, True, False);
 					}
 					StartHighlighting(window, True);
 				}
@@ -2360,7 +2360,7 @@ static int updatePatternSet(void) {
 
 			if (window->IsTopDocument()) {
 				XtSetSensitive(window->highlightItem, False);
-				SetToggleButtonState(window, window->highlightItem, False, False);
+				window->SetToggleButtonState(window->highlightItem, False, False);
 			}
 		}
 	}
