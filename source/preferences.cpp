@@ -2934,8 +2934,6 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 static languageModeRec *readLMDialogFields(int silent) {
 	languageModeRec *lm;
 	regexp *compiledRE;
-	const char *extStr;
-	const char *extPtr;
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
@@ -2949,7 +2947,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 	/* read the name field */
 	lm->name = ReadSymbolicFieldTextWidget(LMDialog.nameW, "language mode name", silent);
 	if (!lm->name) {
-		XtFree((char *)lm);
+		delete lm;
 		return nullptr;
 	}
 
@@ -2963,7 +2961,9 @@ static languageModeRec *readLMDialogFields(int silent) {
 	}
 
 	/* read the extension list field */
-	extStr = extPtr = XmTextGetString(LMDialog.extW);
+	const char *extStr = XmTextGetString(LMDialog.extW);
+	const char *extPtr = extStr;
+	
 	lm->extensions = readExtensionList(&extPtr, &lm->nExtensions);
 	XtFree((char *)extStr);
 
@@ -3706,7 +3706,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		/* read language mode name */
 		lm->name = ReadSymbolicField(&inPtr);
 		if (!lm->name) {
-			XtFree((char *)lm);
+			delete lm;
 			return modeError(nullptr, inString, inPtr, "language mode name required");
 		}
 		if (!SkipDelimiter(&inPtr, &errMsg))

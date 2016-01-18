@@ -856,8 +856,8 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure) {
 static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	int maxCount = 1, i, count;
 	const char *pos = (const char *)bindings;
-	char *copy;
-	char *pos2, *pos3;
+	char *pos2;
+	char *pos3;
 
 	/* First count the number of bindings; bindings are separated by \n
 	   strings. The number of bindings equals the number of \n + 1.
@@ -873,7 +873,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 
 	auto keys = new char *[maxCount];
 	
-	copy = XtNewStringEx((const char *)bindings);
+	auto copy = XtNewStringEx((const char *)bindings);
 	i = 0;
 	pos2 = copy;
 
