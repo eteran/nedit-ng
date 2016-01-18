@@ -535,7 +535,6 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	int noPass2;
 	char *parentStyles;
 	char *parentStylesPtr;
-	char *parentName;
 	TextBuffer *styleBuf;
 	highlightDataRec *pass1Pats;
 	highlightDataRec *pass2Pats;
@@ -553,10 +552,10 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf != nullptr && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
+		if (patternSrc[i].subPatternOf != nullptr && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str()) == -1) {
 			DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\n"
 			                                                     "does not match any highlight patterns in this set",
-			        "OK", patternSrc[i].subPatternOf, patternSrc[i].name->c_str());
+			        "OK", patternSrc[i].subPatternOf->c_str(), patternSrc[i].name->c_str());
 			return nullptr;
 		}
 	}
@@ -680,12 +679,12 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	*parentStylesPtr++ = '\0';
 	*parentStylesPtr++ = '\0';
 	for (i = 1; i < nPass1Patterns; i++) {
-		parentName = pass1PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = parentName == nullptr ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName)].style;
+		nullable_string parentName = pass1PatternSrc[i].subPatternOf;
+		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName->c_str())].style;
 	}
 	for (i = 1; i < nPass2Patterns; i++) {
-		parentName = pass2PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = parentName == nullptr ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName)].style;
+		nullable_string parentName = pass2PatternSrc[i].subPatternOf;
+		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName->c_str())].style;
 	}
 
 	/* Set up table for mapping colors and fonts to syntax */
@@ -792,7 +791,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		if (patternSrc[i].subPatternOf == nullptr) {
 			compiledPats[0].nSubPatterns++;
 		} else {
-			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
+			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str())].nSubPatterns++;
 		}
 	}
 
@@ -808,7 +807,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		if (patternSrc[i].subPatternOf == nullptr) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf);
+			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str());
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}
@@ -2141,11 +2140,9 @@ static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromP
 ** corresponding portion of "string".
 */
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString) {
-	const char *stringPtr;
-	char *stylePtr;
 
-	stringPtr = re->startp[subexpr];
-	stylePtr = &styleString[stringPtr - string];
+	const char *stringPtr = re->startp[subexpr];
+	char *stylePtr        = &styleString[stringPtr - string];
 	fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, nullptr);
 }
 
@@ -2153,8 +2150,8 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, const char *strin
 ** Search for a pattern in pattern list "patterns" with style "style"
 */
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
-	int i;
-	for (i = 0; patterns[i].style != 0; i++)
+
+	for (int i = 0; patterns[i].style != 0; i++)
 		if (patterns[i].style == style)
 			return &patterns[i];
 	if (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
@@ -2163,22 +2160,20 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 }
 
 static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName) {
-	int i;
 
 	if(!patName)
 		return -1;
-	for (i = 0; i < nPats; i++)
+	for (int i = 0; i < nPats; i++)
 		if (*(patList[i].name) == patName)
 			return i;
 	return -1;
 }
 
 static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index) {
-	int topIndex;
 
-	topIndex = index;
+	int topIndex = index;
 	while (patList[topIndex].subPatternOf) {
-		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
+		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf->c_str());
 		if (index == topIndex)
 			return -1; /* amai: circular dependency ?! */
 	}

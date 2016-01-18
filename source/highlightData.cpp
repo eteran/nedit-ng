@@ -718,7 +718,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
-			outBuf->BufInsert(outBuf->BufGetLength(), pat->subPatternOf);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), *(pat->subPatternOf));
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
 			outBuf->BufInsert(outBuf->BufGetLength(), "D");
@@ -882,7 +882,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 		return False;
 
 	/* read the sub-pattern-of field */
-	pattern->subPatternOf = ReadSymbolicField(inPtr);
+	pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -2043,7 +2043,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = pat->endRE != nullptr;
 		XmTextSetStringEx(HighlightDialog.nameW, *(pat->name));
-		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
+		XmTextSetStringEx(HighlightDialog.parentW, *(pat->subPatternOf));
 		XmTextSetStringEx(HighlightDialog.startW, pat->startRE);
 		XmTextSetStringEx(HighlightDialog.endW, pat->endRE);
 		XmTextSetStringEx(HighlightDialog.errorW, pat->errorRE);
@@ -2430,7 +2430,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 			return True;
 		if (AllocatedStringsDiffer(pat1->style, pat2->style))
 			return True;
-		if (AllocatedStringsDiffer(pat1->subPatternOf, pat2->subPatternOf))
+		if (AllocatedStringsDiffer(pat1->subPatternOf->c_str(), pat2->subPatternOf->c_str()))
 			return True;
 	}
 	return False;
@@ -2456,7 +2456,7 @@ static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPa
 	newPat->endRE        = XtNewStringEx(pat->endRE);
 	newPat->errorRE      = XtNewStringEx(pat->errorRE);
 	newPat->style        = XtNewStringEx(pat->style);
-	newPat->subPatternOf = XtNewStringEx(pat->subPatternOf);
+	newPat->subPatternOf = pat->subPatternOf;
 	newPat->flags        = pat->flags;
 	return newPat;
 }
@@ -2470,7 +2470,6 @@ static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
 	XtFree(pat->style);
-	XtFree(pat->subPatternOf);
 	if(freeStruct) {
 		delete pat;
 	}

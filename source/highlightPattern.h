@@ -22,7 +22,7 @@ public:
 	char *endRE;
 	char *errorRE;
 	char *style;
-	char *subPatternOf;
+	nullable_string subPatternOf;
 	int flags;
 };
 
