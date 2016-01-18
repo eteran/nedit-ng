@@ -61,14 +61,22 @@ public:
 	void SetAutoIndent(int state);
 	void SetAutoScroll(int margin);
 	void SetAutoWrap(int state);
-	Widget GetPaneByIndex(int paneIndex) const;
-	
+	void SetWindowModified(int modified);
+	void ShowISearchLine(int state);
+	void ShowLineNumbers(int state);
+	void ShowStatsLine(int state);
+	void ShowTabBar(int state);
+	void ShowWindowTabBar();
+	void SortTabBar();
+	void SplitPane();
+	void TempShowISearch(int state);
 	void UpdateMinPaneHeights();
 	void UpdateNewOppositeMenu(int openInTab);
 	void UpdateStatsLine();
-	void UpdateWMSizeHints();
 	void UpdateWindowReadOnly();
-	void UpdateWindowTitle();	
+	void UpdateWindowTitle();
+	void UpdateWMSizeHints();
+	Widget GetPaneByIndex(int paneIndex) const;
 
 public:
 	WindowInfo *next;

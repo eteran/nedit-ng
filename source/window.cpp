@@ -1202,13 +1202,13 @@ static Widget addTab(Widget folder, const char *string) {
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
 */
-void SortTabBar(WindowInfo *window) {
+void WindowInfo::SortTabBar() {
 
 	if (!GetPrefSortTabs())
 		return;
 
 	/* need more than one tab to sort */
-	const int nDoc = window->NDocuments();
+	const int nDoc = this->NDocuments();
 	if (nDoc < 2) {
 		return;
 	}
@@ -1218,7 +1218,7 @@ void SortTabBar(WindowInfo *window) {
 	windows.reserve(nDoc);
 	
 	for (WindowInfo *w = WindowList; w != nullptr; w = w->next) {
-		if (window->shell == w->shell)
+		if (this->shell == w->shell)
 			windows.push_back(w);
 	}
 	
@@ -1232,7 +1232,7 @@ void SortTabBar(WindowInfo *window) {
 	/* assign tabs to documents in sorted order */
 	WidgetList tabList;
 	int tabCount;	
-	XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
+	XtVaGetValues(this->tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
 
 	for (int i = 0, j = 0; i < tabCount && j < nDoc; i++) {
 		if (tabList[i]->core.being_destroyed)
@@ -1240,7 +1240,7 @@ void SortTabBar(WindowInfo *window) {
 
 		/* set tab as active */
 		if (windows[j]->IsTopDocument())
-			XmLFolderSetActiveTab(window->tabBar, i, False);
+			XmLFolderSetActiveTab(this->tabBar, i, False);
 
 		windows[j]->tab = tabList[i];
 		windows[j]->RefreshTabState();
@@ -1378,10 +1378,10 @@ void WindowInfo::CloseWindow() {
 
 	/* refresh tab bar after closing a document */
 	if (nextBuf) {
-		ShowWindowTabBar(nextBuf);
+		nextBuf->ShowWindowTabBar();
 		updateLineNumDisp(nextBuf);
 	} else if (topBuf) {
-		ShowWindowTabBar(topBuf);
+		topBuf->ShowWindowTabBar();
 		updateLineNumDisp(topBuf);
 	}
 
@@ -1422,14 +1422,14 @@ void WindowInfo::CloseWindow() {
 	delete this;
 }
 
-void ShowWindowTabBar(WindowInfo *window) {
+void WindowInfo::ShowWindowTabBar() {
 	if (GetPrefTabBar()) {
 		if (GetPrefTabBarHideOne())
-			ShowTabBar(window, window->NDocuments() > 1);
+			this->ShowTabBar(this->NDocuments() > 1);
 		else
-			ShowTabBar(window, True);
+			this->ShowTabBar(True);
 	} else
-		ShowTabBar(window, False);
+		this->ShowTabBar(False);
 }
 
 /*
@@ -1470,7 +1470,7 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path) {
 ** Add another independently scrollable pane to the current document,
 ** splitting the pane which currently has keyboard focus.
 */
-void SplitPane(WindowInfo *window) {
+void WindowInfo::SplitPane() {
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
@@ -1480,50 +1480,50 @@ void SplitPane(WindowInfo *window) {
 	textDisp *textD, *newTextD;
 
 	/* Don't create new panes if we're already at the limit */
-	if (window->nPanes >= MAX_PANES)
+	if (this->nPanes >= MAX_PANES)
 		return;
 
 	/* Record the current heights, scroll positions, and insert positions
 	   of the existing panes, keyboard focus */
 	focusPane = 0;
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		insertPositions[i] = TextGetCursorPos(text);
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
 		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-		if (text == window->lastFocus)
+		if (text == this->lastFocus)
 			focusPane = i;
 	}
 
 	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-	XtUnmanageChild(window->splitPane);
+	XtUnmanageChild(this->splitPane);
 
 	/* Create a text widget to add to the pane and set its buffer and
 	   highlight data to be the same as the other panes in the document */
-	XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, textNlineNumCols, &lineNumCols, nullptr);
-	text = createTextArea(window->splitPane, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
+	XtVaGetValues(this->textArea, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, textNlineNumCols, &lineNumCols, nullptr);
+	text = createTextArea(this->splitPane, this, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
 
-	TextSetBuffer(text, window->buffer);
-	if (window->highlightData)
-		AttachHighlightToWidget(text, window);
-	if (window->backlightChars) {
-		XtVaSetValues(text, textNbacklightCharTypes, window->backlightCharTypes, nullptr);
+	TextSetBuffer(text, this->buffer);
+	if (this->highlightData)
+		AttachHighlightToWidget(text, this);
+	if (this->backlightChars) {
+		XtVaSetValues(text, textNbacklightCharTypes, this->backlightCharTypes, nullptr);
 	}
 	XtManageChild(text);
-	window->textPanes[window->nPanes++] = text;
+	this->textPanes[this->nPanes++] = text;
 
 	/* Fix up the colors */
-	textD = ((TextWidget)window->textArea)->text.textD;
+	textD = ((TextWidget)this->textArea)->text.textD;
 	newTextD = ((TextWidget)text)->text.textD;
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
 	/* Set the minimum pane height in the new pane */
-	window->UpdateMinPaneHeights();
+	this->UpdateMinPaneHeights();
 
 	/* adjust the heights, scroll positions, etc., to split the focus pane */
-	for (i = window->nPanes; i > focusPane; i--) {
+	for (i = this->nPanes; i > focusPane; i--) {
 		insertPositions[i] = insertPositions[i - 1];
 		paneHeights[i] = paneHeights[i - 1];
 		topLines[i] = topLines[i - 1];
@@ -1532,28 +1532,28 @@ void SplitPane(WindowInfo *window) {
 	paneHeights[focusPane] = paneHeights[focusPane] / 2;
 	paneHeights[focusPane + 1] = paneHeights[focusPane];
 
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 	}
 
 	/* Re-manage panedWindow to recalculate pane heights & reset selection */
-	if (window->IsTopDocument())
-		XtManageChild(window->splitPane);
+	if (this->IsTopDocument())
+		XtManageChild(this->splitPane);
 
 	/* Reset all of the heights, scroll positions, etc. */
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = i == 0 ? this->textArea : this->textPanes[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
 		TextSetScroll(text, topLines[i], horizOffsets[i]);
-		setPaneDesiredHeight(containingPane(text), totalHeight / (window->nPanes + 1));
+		setPaneDesiredHeight(containingPane(text), totalHeight / (this->nPanes + 1));
 	}
-	XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
 
-	/* Update the window manager size hints after the sizes of the panes have
+	/* Update the this manager size hints after the sizes of the panes have
 	   been set (the widget heights are not yet readable here, but they will
 	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0, wmSizeUpdateProc, window);
+	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
 }
 
 int WidgetToPaneIndex(WindowInfo *window, Widget w) {
@@ -1649,39 +1649,39 @@ void WindowInfo::ClosePane() {
 /*
 ** Turn on and off the display of line numbers
 */
-void ShowLineNumbers(WindowInfo *window, int state) {
+void WindowInfo::ShowLineNumbers(int state) {
 	Widget text;
 	int i, marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
 	WindowInfo *win;
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 
-	if (window->showLineNumbers == state)
+	if (this->showLineNumbers == state)
 		return;
-	window->showLineNumbers = state;
+	this->showLineNumbers = state;
 
-	/* Just setting window->showLineNumbers is sufficient to tell
-	   updateLineNumDisp() to expand the line number areas and the window
+	/* Just setting this->showLineNumbers is sufficient to tell
+	   updateLineNumDisp() to expand the line number areas and the this
 	   size for the number of lines required.  To hide the line number
-	   display, set the width to zero, and contract the window width. */
+	   display, set the width to zero, and contract the this width. */
 	if (state) {
-		reqCols = updateLineNumDisp(window);
+		reqCols = updateLineNumDisp(this);
 	} else {
-		XtVaGetValues(window->shell, XmNwidth, &windowWidth, nullptr);
-		XtVaGetValues(window->textArea, textNmarginWidth, &marginWidth, nullptr);
-		XtVaSetValues(window->shell, XmNwidth, windowWidth - textD->left + marginWidth, nullptr);
+		XtVaGetValues(this->shell, XmNwidth, &windowWidth, nullptr);
+		XtVaGetValues(this->textArea, textNmarginWidth, &marginWidth, nullptr);
+		XtVaSetValues(this->shell, XmNwidth, windowWidth - textD->left + marginWidth, nullptr);
 
-		for (i = 0; i <= window->nPanes; i++) {
-			text = i == 0 ? window->textArea : window->textPanes[i - 1];
+		for (i = 0; i <= this->nPanes; i++) {
+			text = i == 0 ? this->textArea : this->textPanes[i - 1];
 			XtVaSetValues(text, textNlineNumCols, 0, nullptr);
 		}
 	}
 
 	/* line numbers panel is shell-level, hence other
-	   tabbed documents in the window should synch */
+	   tabbed documents in the this should synch */
 	for (win = WindowList; win; win = win->next) {
-		if (win->shell != window->shell || win == window)
+		if (win->shell != this->shell || win == this)
 			continue;
 
 		win->showLineNumbers = state;
@@ -1693,8 +1693,8 @@ void ShowLineNumbers(WindowInfo *window, int state) {
 		}
 	}
 
-	/* Tell WM that the non-expandable part of the window has changed size */
-	window->UpdateWMSizeHints();
+	/* Tell WM that the non-expandable part of the this has changed size */
+	this->UpdateWMSizeHints();
 }
 
 void SetTabDist(WindowInfo *window, int tabDist) {
@@ -1742,7 +1742,7 @@ void SetEmTabDist(WindowInfo *window, int emTabDist) {
 /*
 ** Turn on and off the display of the statistics line
 */
-void ShowStatsLine(WindowInfo *window, int state) {
+void WindowInfo::ShowStatsLine(int state) {
 	WindowInfo *win;
 	Widget text;
 	int i;
@@ -1751,17 +1751,17 @@ void ShowStatsLine(WindowInfo *window, int state) {
 	   the top line number in absolute (non-wrapped) lines, because it can
 	   be a costly calculation, and is only needed for displaying line
 	   numbers, either in the stats line, or along the left margin */
-	for (i = 0; i <= window->nPanes; i++) {
-		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
+	for (i = 0; i <= this->nPanes; i++) {
+		text = (i == 0) ? this->textArea : this->textPanes[i - 1];
 		((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(state);
 	}
-	window->showStats = state;
-	showStatistics(window, state);
+	this->showStats = state;
+	showStatistics(this, state);
 
 	/* i-search line is shell-level, hence other tabbed
-	   documents in the window should synch */
+	   documents in the this should synch */
 	for (win = WindowList; win; win = win->next) {
-		if (win->shell != window->shell || win == window)
+		if (win->shell != this->shell || win == this)
 			continue;
 		win->showStats = state;
 	}
@@ -1799,28 +1799,28 @@ static void showTabBar(WindowInfo *window, int state) {
 
 /*
 */
-void ShowTabBar(WindowInfo *window, int state) {
-	if (XtIsManaged(XtParent(window->tabBar)) == state)
+void WindowInfo::ShowTabBar(int state) {
+	if (XtIsManaged(XtParent(this->tabBar)) == state)
 		return;
-	showTabBar(window, state);
+	showTabBar(this, state);
 }
 
 /*
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void ShowISearchLine(WindowInfo *window, int state) {
+void WindowInfo::ShowISearchLine(int state) {
 	WindowInfo *win;
 
-	if (window->showISearchLine == state)
+	if (this->showISearchLine == state)
 		return;
-	window->showISearchLine = state;
-	showISearch(window, state);
+	this->showISearchLine = state;
+	showISearch(this, state);
 
 	/* i-search line is shell-level, hence other tabbed
-	   documents in the window should synch */
+	   documents in the this should synch */
 	for (win = WindowList; win; win = win->next) {
-		if (win->shell != window->shell || win == window)
+		if (win->shell != this->shell || win == this)
 			continue;
 		win->showISearchLine = state;
 	}
@@ -1830,11 +1830,11 @@ void ShowISearchLine(WindowInfo *window, int state) {
 ** Temporarily show and hide the incremental search line if the line is not
 ** already up.
 */
-void TempShowISearch(WindowInfo *window, int state) {
-	if (window->showISearchLine)
+void WindowInfo::TempShowISearch(int state) {
+	if (this->showISearchLine)
 		return;
-	if (XtIsManaged(window->iSearchForm) != state)
-		showISearch(window, state);
+	if (XtIsManaged(this->iSearchForm) != state)
+		showISearch(this, state);
 }
 
 /*
@@ -2216,16 +2216,16 @@ WindowInfo *WidgetToWindow(Widget w) {
 ** Change the window appearance and the window data structure to show
 ** that the file it contains has been modified
 */
-void SetWindowModified(WindowInfo *window, int modified) {
-	if (window->fileChanged == FALSE && modified == TRUE) {
-		SetSensitive(window, window->closeItem, TRUE);
-		window->fileChanged = TRUE;
-		window->UpdateWindowTitle();
-		window->RefreshTabState();
-	} else if (window->fileChanged == TRUE && modified == FALSE) {
-		window->fileChanged = FALSE;
-		window->UpdateWindowTitle();
-		window->RefreshTabState();
+void WindowInfo::SetWindowModified(int modified) {
+	if (this->fileChanged == FALSE && modified == TRUE) {
+		SetSensitive(this, this->closeItem, TRUE);
+		this->fileChanged = TRUE;
+		this->UpdateWindowTitle();
+		this->RefreshTabState();
+	} else if (this->fileChanged == TRUE && modified == FALSE) {
+		this->fileChanged = FALSE;
+		this->UpdateWindowTitle();
+		this->RefreshTabState();
 	}
 }
 
@@ -2437,7 +2437,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	}
 
 	/* Indicate that the window has now been modified */
-	SetWindowModified(window, TRUE);
+	window->SetWindowModified(TRUE);
 
 	/* Update # of bytes, and line and col statistics */
 	window->UpdateStatsLine();
@@ -3817,7 +3817,7 @@ static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
 	strcpy(window->path,     orgWin->path);
 	strcpy(window->filename, orgWin->filename);
 
-	ShowLineNumbers(window, orgWin->showLineNumbers);
+	window->ShowLineNumbers(orgWin->showLineNumbers);
 
 	window->ignoreModify = True;
 
@@ -3975,8 +3975,8 @@ WindowInfo *DetachDocument(WindowInfo *window) {
 	/* these settings should follow the detached document.
 	   must be done before cloning window, else the height
 	   of split panes may not come out correctly */
-	ShowISearchLine(cloneWin, window->showISearchLine);
-	ShowStatsLine(cloneWin, window->showStats);
+	cloneWin->ShowISearchLine(window->showISearchLine);
+	cloneWin->ShowStatsLine(window->showStats);
 
 	/* clone the document & its pref settings */
 	cloneDocument(cloneWin, window);
@@ -3993,7 +3993,7 @@ WindowInfo *DetachDocument(WindowInfo *window) {
 	/* this should keep the new document window fresh */
 	cloneWin->RefreshWindowStates();
 	cloneWin->RefreshTabState();
-	SortTabBar(cloneWin);
+	cloneWin->SortTabBar();
 
 	return cloneWin;
 }
@@ -4019,7 +4019,7 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
 
 	/* relocate the document to target window */
 	cloneWin = CreateDocument(toWindow, window->filename);
-	ShowTabBar(cloneWin, cloneWin->GetShowTabBar());
+	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin, window);
 
 	/* CreateDocument() simply adds the new window's pointer to the
@@ -4044,7 +4044,7 @@ WindowInfo *MoveDocument(WindowInfo *toWindow, WindowInfo *window) {
 	/* this should keep the new document window fresh */
 	cloneWin->RaiseDocumentWindow();
 	cloneWin->RefreshTabState();
-	SortTabBar(cloneWin);
+	cloneWin->SortTabBar();
 
 	return cloneWin;
 }

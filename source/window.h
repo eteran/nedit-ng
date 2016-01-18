@@ -58,15 +58,5 @@ void SetSensitive(WindowInfo *window, Widget w, Boolean sensitive);
 void SetShowMatching(WindowInfo *window, int state);
 void SetTabDist(WindowInfo *window, int tabDist);
 void SetToggleButtonState(WindowInfo *window, Widget w, Boolean state, Boolean notify);
-void SetWindowModified(WindowInfo *window, int modified);
-void ShowISearchLine(WindowInfo *window, int state);
-void ShowLineNumbers(WindowInfo *window, int state);
-void ShowStatsLine(WindowInfo *window, int state);
-void ShowTabBar(WindowInfo *window, int state);
-void ShowWindowTabBar(WindowInfo *window);
-void SortTabBar(WindowInfo *window);
-void SplitPane(WindowInfo *window);
-void TempShowISearch(WindowInfo *window, int state);
-
 
 #endif

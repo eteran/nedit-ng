@@ -112,7 +112,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 		strcpy(&path[pathlen], "/");
 	}
 
-	SetWindowModified(window, FALSE);
+	window->SetWindowModified(FALSE);
 	CLEAR_ALL_LOCKS(window->lockReasons);
 	window->UpdateWindowReadOnly();
 	window->UpdateStatsLine();
@@ -124,14 +124,14 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	else
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
 
-	ShowTabBar(window, window->GetShowTabBar());
+	window->ShowTabBar(window->GetShowTabBar());
 
 	if (iconic && window->IsIconic())
 		window->RaiseDocument();
 	else
 		window->RaiseDocumentWindow();
 
-	SortTabBar(window);
+	window->SortTabBar();
 	return window;
 }
 
@@ -209,8 +209,8 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 
 	/* update tab label and tooltip */
 	window->RefreshTabState();
-	SortTabBar(window);
-	ShowTabBar(window, window->GetShowTabBar());
+	window->SortTabBar();
+	window->ShowTabBar(window->GetShowTabBar());
 
 	if (!bgOpen)
 		window->RaiseDocument();
@@ -365,7 +365,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 				remove(fullname);
 			}
 
-			SetWindowModified(window, FALSE);
+			window->SetWindowModified(FALSE);
 			if ((flags & PREF_READ_ONLY) != 0) {
 				SET_USER_LOCKED(window->lockReasons, TRUE);
 			}
@@ -499,7 +499,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 		window->fileChanged = FALSE;
 		window->UpdateWindowTitle();
 	} else {
-		SetWindowModified(window, FALSE);
+		window->SetWindowModified(FALSE);
 		if (IS_ANY_LOCKED(window->lockReasons)) {
 			window->UpdateWindowTitle();
 		}
@@ -790,7 +790,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	window->UpdateWindowTitle();
 	window->UpdateStatsLine();
 
-	SortTabBar(window);
+	window->SortTabBar();
 	return retVal;
 }
 
@@ -874,7 +874,7 @@ static bool doSave(WindowInfo *window) {
 	}
 
 	/* success, file was written */
-	SetWindowModified(window, FALSE);
+	window->SetWindowModified(FALSE);
 
 	/* update the modification time */
 	if (stat(fullname, &statbuf) == 0) {
@@ -1733,6 +1733,6 @@ static void forceShowLineNumbers(WindowInfo *window) {
 	Boolean showLineNum = window->showLineNumbers;
 	if (showLineNum) {
 		window->showLineNumbers = False;
-		ShowLineNumbers(window, showLineNum);
+		window->ShowLineNumbers(showLineNum);
 	}
 }

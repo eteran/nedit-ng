@@ -97,7 +97,7 @@ void Undo(WindowInfo *window) {
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (undo->restoresToSaved) {
-		SetWindowModified(window, False);
+		window->SetWindowModified(False);
 		RemoveBackupFile(window);
 	}
 
@@ -145,7 +145,7 @@ void Redo(WindowInfo *window) {
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (redo->restoresToSaved) {
-		SetWindowModified(window, False);
+		window->SetWindowModified(False);
 		RemoveBackupFile(window);
 	}
 

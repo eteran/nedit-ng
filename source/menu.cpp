@@ -1961,7 +1961,7 @@ static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 		if (!win->IsTopDocument())
 			continue;
 		XmToggleButtonSetState(win->tabBarDefItem, state, False);
-		ShowWindowTabBar(win);
+		win->ShowWindowTabBar();
 	}
 }
 
@@ -1979,7 +1979,7 @@ static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 		if (!win->IsTopDocument())
 			continue;
 		XmToggleButtonSetState(win->tabBarHideDefItem, state, False);
-		ShowWindowTabBar(win);
+		win->ShowWindowTabBar();
 	}
 }
 
@@ -2038,7 +2038,7 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 		Widget shell = nullptr;
 		for (win = WindowList; win; win = win->next) {
 			if (win->shell != shell) {
-				SortTabBar(win);
+				win->SortTabBar();
 				shell = win->shell;
 			}
 		}
@@ -3312,7 +3312,7 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	WindowInfo *window = WidgetToWindow(w);
 
-	SplitPane(window);
+	window->SplitPane();
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->splitPaneItem, window->nPanes < MAX_PANES);
 		XtSetSensitive(window->closePaneItem, window->nPanes > 0);
@@ -3812,7 +3812,7 @@ static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal 
 	   state regardless of it's 'topness' */
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats, "set_statistics_line");
 	XmToggleButtonSetState(window->statsLineItem, newState, False);
-	ShowStatsLine(window, newState);
+	window->ShowStatsLine(newState);
 }
 
 static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3826,7 +3826,7 @@ static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Ca
 	   state regardless of it's 'topness' */
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showISearchLine, "set_incremental_search_line");
 	XmToggleButtonSetState(window->iSearchLineItem, newState, False);
-	ShowISearchLine(window, newState);
+	window->ShowISearchLine(newState);
 }
 
 static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3840,7 +3840,7 @@ static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal
 	   state regardless of it's 'topness' */
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showLineNumbers, "set_show_line_numbers");
 	XmToggleButtonSetState(window->lineNumsItem, newState, False);
-	ShowLineNumbers(window, newState);
+	window->ShowLineNumbers(newState);
 }
 
 static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

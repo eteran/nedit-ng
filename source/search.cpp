@@ -3184,7 +3184,7 @@ void BeginISearch(WindowInfo *window, int direction) {
 	   choice. If not, an initToggleButtons() call should be inserted
 	   here. But in that case, it might be appropriate to have different
 	   default search modes for i-search and replace/find. */
-	TempShowISearch(window, TRUE);
+	window->TempShowISearch(TRUE);
 	XmProcessTraversal(window->iSearchText, XmTRAVERSE_CURRENT);
 }
 
@@ -3206,7 +3206,7 @@ void EndISearch(WindowInfo *window) {
 	saveSearchHistory("", nullptr, 0, FALSE);
 
 	/* Pop down the search line (if it's not pegged up in Preferences) */
-	TempShowISearch(window, FALSE);
+	window->TempShowISearch(FALSE);
 }
 
 /*
