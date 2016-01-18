@@ -271,14 +271,16 @@ void BeginCreatingProgram(void) {
 */
 Program *FinishCreatingProgram(void) {
 
-	int progLen;
 	int fpOffset = 0;
 
-	auto newProg = new Program;
-	progLen = ((char *)ProgP) - ((char *)Prog);
-	newProg->code = (Inst *)XtMalloc(progLen);
-	memcpy(newProg->code, Prog, progLen);
+	auto newProg      = new Program;
+	ptrdiff_t progLen = reinterpret_cast<char *>(ProgP) - reinterpret_cast<char *>(Prog);
+	size_t count      = progLen / sizeof(Inst);
+	newProg->code     = new Inst[count];
 	
+	std::copy_n(Prog, count, newProg->code);
+	
+
 	
 	newProg->localSymList = std::move(LocalSymList);
 	LocalSymList = std::list<Symbol *>();
@@ -296,7 +298,7 @@ Program *FinishCreatingProgram(void) {
 
 void FreeProgram(Program *prog) {
 	freeSymbolTable(prog->localSymList);
-	XtFree((char *)prog->code);
+	delete [] prog->code;
 	delete prog;
 }
 
