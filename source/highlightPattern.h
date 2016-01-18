@@ -3,6 +3,7 @@
 #define HIGHLIGHT_PATTERN_H_
 
 #include <string>
+#include "nullable_string.h"
 
 /* Pattern specification structure */
 struct highlightPattern {
@@ -16,7 +17,7 @@ public:
 	void swap(highlightPattern &other);
 
 public:
-	const char *name;
+	nullable_string name;
 	char *startRE;
 	char *endRE;
 	char *errorRE;

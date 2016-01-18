@@ -504,9 +504,9 @@ static void convertOldPatternSet(patternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
-		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -697,9 +697,9 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 
 	for (int pn = 0; pn < patSet->nPatterns; pn++) {
 		highlightPattern *pat = &patSet->patterns[pn];
-		outBuf->BufInsert(outBuf->BufGetLength(), indentStr);
-		outBuf->BufInsert(outBuf->BufGetLength(), pat->name);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), indentStr);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), *(pat->name));
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->startRE) {
 			std::string str = MakeQuotedStringEx(pat->startRE);
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
@@ -2042,7 +2042,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isDeferred = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = pat->endRE != nullptr;
-		XmTextSetStringEx(HighlightDialog.nameW, pat->name);
+		XmTextSetStringEx(HighlightDialog.nameW, *(pat->name));
 		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
 		XmTextSetStringEx(HighlightDialog.startW, pat->startRE);
 		XmTextSetStringEx(HighlightDialog.endW, pat->endRE);
@@ -2186,18 +2186,17 @@ static highlightPattern *readDialogFields(int silent) {
 		pat->flags = COLOR_ONLY;
 
 	/* read the name field */
-	pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW, "highlight pattern name", silent);
+	pat->name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
 	if (!pat->name) {
 		delete pat;
 		return nullptr;
 	}
 
-	if (*pat->name == '\0') {
+	if (pat->name->empty()) {
 		if (!silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name", "Please specify a name\nfor the pattern", "OK");
 			XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
 		}
-		XtFree((char *)pat->name);
 		delete pat;
 		return nullptr;
 	}
@@ -2421,7 +2420,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 		
 		if (pat1->flags != pat2->flags)
 			return True;
-		if (AllocatedStringsDiffer(pat1->name, pat2->name))
+		if (AllocatedStringsDiffer(pat1->name->c_str(), pat2->name->c_str()))
 			return True;
 		if (AllocatedStringsDiffer(pat1->startRE, pat2->startRE))
 			return True;
@@ -2452,7 +2451,7 @@ static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPa
 		newPat = copyTo;
 	}
 
-	newPat->name         = XtNewStringEx(pat->name);
+	newPat->name         = pat->name;
 	newPat->startRE      = XtNewStringEx(pat->startRE);
 	newPat->endRE        = XtNewStringEx(pat->endRE);
 	newPat->errorRE      = XtNewStringEx(pat->errorRE);
@@ -2467,7 +2466,6 @@ static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPa
 ** If "freeStruct" is true, free the structure itself as well.
 */
 static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
-	XtFree((char *)pat->name);
 	XtFree(pat->startRE);
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
