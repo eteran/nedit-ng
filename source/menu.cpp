@@ -2911,7 +2911,7 @@ static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	if (CheckReadOnly(window))
 		return;
-	Undo(window);
+	window->Undo();
 }
 
 static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2924,7 +2924,7 @@ static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	if (CheckReadOnly(window))
 		return;
-	Redo(window);
+	window->Redo();
 }
 
 static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

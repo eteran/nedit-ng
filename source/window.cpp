@@ -1330,8 +1330,8 @@ void WindowInfo::CloseWindow() {
 		XtSetSensitive(this->closeItem, FALSE);
 		XtSetSensitive(this->readOnlyItem, TRUE);
 		XmToggleButtonSetState(this->readOnlyItem, FALSE, FALSE);
-		ClearUndoList(this);
-		ClearRedoList(this);
+		this->ClearUndoList();
+		this->ClearRedoList();
 		XmTextSetStringEx(this->statsLine, ""); /* resets scroll pos of stats
 		                                            line from long file names */
 		this->UpdateStatsLine();
@@ -1351,8 +1351,8 @@ void WindowInfo::CloseWindow() {
 
 
 	/* free the undo and redo lists */
-	ClearUndoList(this);
-	ClearRedoList(this);
+	this->ClearUndoList();
+	this->ClearRedoList();
 
 	/* close the document/window */
 	if (this->NDocuments() > 1) {
@@ -2430,7 +2430,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 	/* Save information for undoing this operation (this call also counts
 	   characters and editing operations for triggering autosave */
-	SaveUndoInformation(window, pos, nInserted, nDeleted, deletedText);
+	window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 	/* Trigger automatic backup if operation or character limits reached */
 	if (window->autoSave && (window->autoSaveCharCount > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount > AUTOSAVE_OP_LIMIT)) {

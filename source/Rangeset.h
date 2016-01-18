@@ -50,9 +50,9 @@ public:
 	char *RangesetGetName();
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
-	int RangesetAssignColorName(char *color_name);
+	int RangesetAssignColorName(const char *color_name);
 	int RangesetAssignColorPixel(Pixel color, int ok);
-	int RangesetAssignName(char *name);
+	int RangesetAssignName(const char *name);
 	int RangesetChangeModifyResponse(const char *name);
 	int RangesetCheckRangeOfPos(int pos);
 	int RangesetFindRangeNo(int index, int *start, int *end);

@@ -505,7 +505,7 @@ static void convertOldPatternSet(patternSet *patSet) {
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
 		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name, pattern->flags & COLOR_ONLY);
 	}
 }

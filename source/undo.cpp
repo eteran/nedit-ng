@@ -55,16 +55,16 @@ static void appendDeletedText(WindowInfo *window, view::string_view deletedText,
 static void trimUndoList(WindowInfo *window, int maxLength);
 static undoTypes determineUndoType(int nInserted, int nDeleted);
 
-void Undo(WindowInfo *window) {
+void WindowInfo::Undo() {
 
 	int restoredTextLength;
 
 	/* return if nothing to undo */
-	if (window->undo.empty()) {
+	if (this->undo.empty()) {
 		return;
 	}
 		
-	UndoInfo *undo = window->undo.front();
+	UndoInfo *undo = this->undo.front();
 
 	/* BufReplace will eventually call SaveUndoInformation.  This is mostly
 	   good because it makes accumulating redo operations easier, however
@@ -74,47 +74,47 @@ void Undo(WindowInfo *window) {
 	undo->inUndo = true;
 
 	/* use the saved undo information to reverse changes */
-	window->buffer->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
+	this->buffer->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
 
 	restoredTextLength = undo->oldText.size();
-	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
+	if (!this->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		TextSetCursorPos(window->lastFocus, undo->startPos + restoredTextLength);
+		TextSetCursorPos(this->lastFocus, undo->startPos + restoredTextLength);
 	}
 
 	if (GetPrefUndoModifiesSelection()) {
 		if (restoredTextLength > 0) {
-			window->buffer->BufSelect(undo->startPos, undo->startPos + restoredTextLength);
+			this->buffer->BufSelect(undo->startPos, undo->startPos + restoredTextLength);
 		} else {
-			window->buffer->BufUnselect();
+			this->buffer->BufUnselect();
 		}
 	}
-	window->MakeSelectionVisible(window->lastFocus);
+	this->MakeSelectionVisible(this->lastFocus);
 
 	/* restore the file's unmodified status if the file was unmodified
 	   when the change being undone was originally made.  Also, remove
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (undo->restoresToSaved) {
-		window->SetWindowModified(False);
-		RemoveBackupFile(window);
+		this->SetWindowModified(False);
+		RemoveBackupFile(this);
 	}
 
 	/* free the undo record and remove it from the chain */
-	removeUndoItem(window);
+	removeUndoItem(this);
 }
 
-void Redo(WindowInfo *window) {
+void WindowInfo::Redo() {
 	
 	int restoredTextLength;
 
 	/* return if nothing to redo */
-	if (window->redo.empty()) {
+	if (this->redo.empty()) {
 		return;
 	}
 	
-	UndoInfo *redo = window->redo.front();
+	UndoInfo *redo = this->redo.front();
 
 	/* BufReplace will eventually call SaveUndoInformation.  To indicate
 	   to SaveUndoInformation that this is the context of a redo operation,
@@ -122,35 +122,35 @@ void Redo(WindowInfo *window) {
 	redo->inUndo = true;
 
 	/* use the saved redo information to reverse changes */
-	window->buffer->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
+	this->buffer->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
 
 	restoredTextLength = redo->oldText.size();
-	if (!window->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
+	if (!this->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		TextSetCursorPos(window->lastFocus, redo->startPos + restoredTextLength);
+		TextSetCursorPos(this->lastFocus, redo->startPos + restoredTextLength);
 	}
 	if (GetPrefUndoModifiesSelection()) {
 
 		if (restoredTextLength > 0) {
-			window->buffer->BufSelect(redo->startPos, redo->startPos + restoredTextLength);
+			this->buffer->BufSelect(redo->startPos, redo->startPos + restoredTextLength);
 		} else {
-			window->buffer->BufUnselect();
+			this->buffer->BufUnselect();
 		}
 	}
-	window->MakeSelectionVisible(window->lastFocus);
+	this->MakeSelectionVisible(this->lastFocus);
 
 	/* restore the file's unmodified status if the file was unmodified
 	   when the change being redone was originally made. Also, remove
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (redo->restoresToSaved) {
-		window->SetWindowModified(False);
-		RemoveBackupFile(window);
+		this->SetWindowModified(False);
+		RemoveBackupFile(this);
 	}
 
 	/* remove the redo record from the chain and free it */
-	removeRedoItem(window);
+	removeRedoItem(this);
 }
 
 /*
@@ -161,16 +161,16 @@ void Redo(WindowInfo *window) {
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDeleted, view::string_view deletedText) {
+void WindowInfo::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
 	
-	const int isUndo = (!window->undo.empty() && window->undo.front()->inUndo);
-	const int isRedo = (!window->redo.empty() && window->redo.front()->inUndo);
+	const int isUndo = (!this->undo.empty() && this->undo.front()->inUndo);
+	const int isRedo = (!this->redo.empty() && this->redo.front()->inUndo);
 
 	/* redo operations become invalid once the user begins typing or does
 	   other editing.  If this is not a redo or undo operation and a redo
 	   list still exists, clear it and dim the redo menu item */
-	if (!(isUndo || isRedo) && !window->redo.empty()) {
-		ClearRedoList(window);
+	if (!(isUndo || isRedo) && !this->redo.empty()) {
+		this->ClearRedoList();
 	}
 
 	/* figure out what kind of editing operation this is, and recall
@@ -181,43 +181,43 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	}
 		
 		
-	UndoInfo *const currentUndo = window->undo.front();
+	UndoInfo *const currentUndo = this->undo.front();
 	
 	const undoTypes oldType = (currentUndo == nullptr || isUndo) ? UNDO_NOOP : currentUndo->type;
 
 	/*
 	** Check for continuations of single character operations.  These are
 	** accumulated so a whole insertion or deletion can be undone, rather
-	** than just the last character that the user typed.  If the window
+	** than just the last character that the user typed.  If the this
 	** is currently in an unmodified state, don't accumulate operations
 	** across the save, so the user can undo back to the unmodified state.
 	*/
-	if (window->fileChanged) {
+	if (this->fileChanged) {
 
 		/* normal sequential character insertion */
 		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
 			currentUndo->endPos++;
-			window->autoSaveCharCount++;
+			this->autoSaveCharCount++;
 			return;
 		}
 
 		/* overstrike mode replacement */
 		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
-			appendDeletedText(window, deletedText, nDeleted, FORWARD);
+			appendDeletedText(this, deletedText, nDeleted, FORWARD);
 			currentUndo->endPos++;
-			window->autoSaveCharCount++;
+			this->autoSaveCharCount++;
 			return;
 		}
 
 		/* forward delete */
 		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
-			appendDeletedText(window, deletedText, nDeleted, FORWARD);
+			appendDeletedText(this, deletedText, nDeleted, FORWARD);
 			return;
 		}
 
 		/* reverse delete */
 		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
-			appendDeletedText(window, deletedText, nDeleted, REVERSE);
+			appendDeletedText(this, deletedText, nDeleted, REVERSE);
 			currentUndo->startPos--;
 			currentUndo->endPos--;
 			return;
@@ -237,18 +237,18 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	}
 
 	/* increment the operation count for the autosave feature */
-	window->autoSaveOpCount++;
+	this->autoSaveOpCount++;
 
-	/* if the window is currently unmodified, remove the previous
+	/* if the this is currently unmodified, remove the previous
 	   restoresToSaved marker, and set it on this record */
-	if (!window->fileChanged) {
+	if (!this->fileChanged) {
 		undo->restoresToSaved = true;
 		
-		for(UndoInfo *u : window->undo) {
+		for(UndoInfo *u : this->undo) {
 			u->restoresToSaved = false;
 		}
 		
-		for(UndoInfo *u : window->redo) {
+		for(UndoInfo *u : this->redo) {
 			u->restoresToSaved = false;
 		}
 	}
@@ -257,9 +257,9 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 	   saving information generated by an Undo operation itself, in
 	   which case, add the new record to the redo list. */
 	if (isUndo) {
-		addRedoItem(window, undo);
+		addRedoItem(this, undo);
 	} else {
-		addUndoItem(window, undo);
+		addUndoItem(this, undo);
 	}
 }
 
@@ -269,14 +269,14 @@ void SaveUndoInformation(WindowInfo *window, int pos, int nInserted, int nDelete
 ** Functions for clearing all of the information off of the undo or redo
 ** lists and adjusting the edit menu accordingly
 */
-void ClearUndoList(WindowInfo *window) {
-	while (!window->undo.empty()) {
-		removeUndoItem(window);
+void WindowInfo::ClearUndoList() {
+	while (!this->undo.empty()) {
+		removeUndoItem(this);
 	}
 }
-void ClearRedoList(WindowInfo *window) {
-	while (!window->redo.empty()) {
-		removeRedoItem(window);
+void WindowInfo::ClearRedoList() {
+	while (!this->redo.empty()) {
+		removeRedoItem(this);
 	}
 }
 

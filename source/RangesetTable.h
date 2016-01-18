@@ -11,15 +11,15 @@ public:
 	~RangesetTable();
 	
 public:
-	int RangesetCreate();
-	Rangeset *RangesetFetch(int label);
-	Rangeset *RangesetForget(int label);
 	char *RangesetTableGetColorName(int index);
+	int nRangesetsAvailable();
+	int RangesetCreate();
 	int RangesetFindIndex(int label, int must_be_active);
 	int RangesetIndex1ofPos(int pos, int needs_color);
 	int RangesetTableAssignColorPixel(int index, Pixel color, int ok);	
 	int RangesetTableGetColorValid(int index, Pixel *color);
-	int nRangesetsAvailable();
+	Rangeset *RangesetFetch(int label);
+	Rangeset *RangesetForget(int label);
 	unsigned char *RangesetGetList();
 	void RangesetTableUpdatePos(int pos, int n_ins, int n_del);
 	

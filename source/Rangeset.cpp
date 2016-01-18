@@ -831,7 +831,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 ** Assign a color name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignColorName(char *color_name) {
+int Rangeset::RangesetAssignColorName(const char *color_name) {
 	char *cp;
 
 	if (color_name && color_name[0] == '\0')
@@ -870,7 +870,7 @@ int Rangeset::RangesetAssignColorPixel(Pixel color, int ok) {
 ** Assign a name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignName(char *name) {
+int Rangeset::RangesetAssignName(const char *name) {
 	char *cp;
 
 	if (name && name[0] == '\0') {

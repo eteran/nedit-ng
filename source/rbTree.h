@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_RBTREE_H_INCLUDED
-#define NEDIT_RBTREE_H_INCLUDED
+#ifndef RBTREE_H_
+#define RBTREE_H_
 
 struct rbTreeNode {
 	struct rbTreeNode *left;   /* left child */
@@ -53,4 +53,4 @@ int rbTreeSize(rbTreeNode *base);
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode);
 void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode);
 
-#endif /* NEDIT_RBTREE_H_INCLUDED */
+#endif

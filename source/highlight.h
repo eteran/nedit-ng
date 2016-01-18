@@ -31,6 +31,7 @@
 #include "highlightPattern.h"
 
 #include <X11/Intrinsic.h>
+#include <string>
 
 /* Pattern flags for modifying pattern matching behavior */
 #define PARSE_SUBPATS_FROM_START 1
@@ -39,7 +40,7 @@
 
 /* Don't use plain 'A' or 'B' for style indices, it causes problems
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
-#define ASCII_A ((char)65)
+#define ASCII_A static_cast<char>(65)
 
 
 /* Header for a set of patterns */

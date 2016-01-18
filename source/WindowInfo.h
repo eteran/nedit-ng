@@ -96,6 +96,13 @@ public:
 	Widget GetPaneByIndex(int paneIndex) const;
 	int WidgetToPaneIndex(Widget w);
 	void EditCustomTitleFormat();
+	
+public:
+	void Undo();
+	void Redo();
+	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
+	void ClearUndoList();
+	void ClearRedoList();
 
 public:
 	WindowInfo *next;

@@ -256,7 +256,7 @@ void RevertToSaved(WindowInfo *window) {
 	strcpy(name, window->filename);
 	strcpy(path, window->path);
 	RemoveBackupFile(window);
-	ClearUndoList(window);
+	window->ClearUndoList();
 	openFlags |= IS_USER_LOCKED(window->lockReasons) ? PREF_READ_ONLY : 0;
 	if (!doOpen(window, name, path, openFlags)) {
 		/* This is a bit sketchy.  The only error in doOpen that irreperably
