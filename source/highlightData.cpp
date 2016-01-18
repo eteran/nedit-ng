@@ -169,7 +169,7 @@ static struct {
 	Widget endLbl;
 	Widget errorLbl;
 	Widget matchLbl;
-	char *langModeName;
+	nullable_string langModeName;
 	int nPatterns;
 	highlightPattern **patterns;
 } HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
@@ -398,7 +398,7 @@ bool LoadHighlightString(const char *inString, int convertOld) {
 
 		/* Add/change the pattern set in the list */
 		for (i = 0; i < NPatternSets; i++) {
-			if (!strcmp(PatternSets[i]->languageMode, patSet->languageMode)) {
+			if (*PatternSets[i]->languageMode == *patSet->languageMode) {
 				freePatternSet(PatternSets[i]);
 				PatternSets[i] = patSet;
 				break;
@@ -434,7 +434,7 @@ char *WriteHighlightString(void) {
 		}
 		
 		written = true;
-		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), *patSet->languageMode);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
@@ -474,7 +474,7 @@ std::string WriteHighlightStringEx(void) {
 		
 		written = true;
 		
-		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), *patSet->languageMode);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
@@ -504,9 +504,9 @@ static void convertOldPatternSet(patternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
-		convertPatternExpr(&pattern->startRE, patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->errorRE, patSet->languageMode, pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -625,7 +625,7 @@ bool NamedStyleExists(view::string_view styleName) {
 patternSet *FindPatternSet(view::string_view langModeName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
-		if (langModeName == view::string_view(PatternSets[i]->languageMode)) {
+		if (langModeName == view::string_view(*PatternSets[i]->languageMode)) {
 			return PatternSets[i];
 		}
 	}
@@ -640,7 +640,7 @@ patternSet *FindPatternSet(view::string_view langModeName) {
 int LMHasHighlightPatterns(view::string_view languageMode) {
 	if (FindPatternSet(languageMode) != nullptr)
 		return True;
-	return HighlightDialog.shell != nullptr && languageMode == view::string_view(HighlightDialog.langModeName) && HighlightDialog.nPatterns != 0;
+	return HighlightDialog.shell != nullptr && languageMode == view::string_view(*HighlightDialog.langModeName) && HighlightDialog.nPatterns != 0;
 }
 
 /*
@@ -652,15 +652,13 @@ void RenameHighlightPattern(const char *oldName, const char *newName) {
 	int i;
 
 	for (i = 0; i < NPatternSets; i++) {
-		if (!strcmp(oldName, PatternSets[i]->languageMode)) {
-			XtFree((char *)PatternSets[i]->languageMode);
-			PatternSets[i]->languageMode = XtNewStringEx(newName);
+		if (oldName == *PatternSets[i]->languageMode) {
+			PatternSets[i]->languageMode = std::string(newName);
 		}
 	}
 	if (HighlightDialog.shell) {
-		if (!strcmp(HighlightDialog.langModeName, oldName)) {
-			XtFree(HighlightDialog.langModeName);
-			HighlightDialog.langModeName = XtNewStringEx(newName);
+		if (*HighlightDialog.langModeName == oldName) {
+			HighlightDialog.langModeName = newName;
 		}
 	}
 }
@@ -755,8 +753,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		retPatSet = readDefaultPatternSet(patSet.languageMode);
-		XtFree((char *)patSet.languageMode);
+		retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
 		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
@@ -778,7 +775,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	retPatSet = (patternSet *)XtMalloc(sizeof(patternSet));
+	retPatSet = new patternSet;
 	*retPatSet = patSet;
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
@@ -926,7 +923,7 @@ static patternSet *readDefaultPatternSet(const char *langModeName) {
 */
 static int isDefaultPatternSet(patternSet *patSet) {
 
-	patternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode);
+	patternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode->c_str());
 	if(!defaultPatSet) {
 		return False;
 	}
@@ -1388,7 +1385,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	HighlightDialog.langModeName = XtNewStringEx(LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode));
 
 	/* Find the associated pattern set (patSet) to edit */
-	patSet = FindPatternSet(HighlightDialog.langModeName);
+	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
 
 	/* Copy the list of patterns to one that the user can freely edit */
 	HighlightDialog.patterns = new highlightPattern *[MAX_PATTERNS];
@@ -1677,7 +1674,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	/* Fill in the dialog information for the selected language mode */
 	SetIntText(HighlightDialog.lineContextW, patSet == nullptr ? 1 : patSet->lineContext);
 	SetIntText(HighlightDialog.charContextW, patSet == nullptr ? 0 : patSet->charContext);
-	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
+	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 	updateLabels();
 
 	/* Realize all of the widgets in the new dialog */
@@ -1720,7 +1717,7 @@ void UpdateLanguageModeMenu(void) {
 	oldMenu = HighlightDialog.lmPulldown;
 	HighlightDialog.lmPulldown = CreateLanguageModeMenu(XtParent(XtParent(oldMenu)), langModeCB, nullptr);
 	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.lmOptMenu), XmNsubMenuId, HighlightDialog.lmPulldown, nullptr);
-	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
+	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 
 	XtDestroyWidget(oldMenu);
 }
@@ -1731,11 +1728,11 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	int i;
 
-	XtFree(HighlightDialog.langModeName);
-	for (i = 0; i < HighlightDialog.nPatterns; i++)
+	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		freePatternSrc(HighlightDialog.patterns[i], true);
+	}
+	
 	HighlightDialog.shell = nullptr;
 }
 
@@ -1752,11 +1749,11 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
-	if (!strcmp(modeName, HighlightDialog.langModeName))
+	if ((modeName == *HighlightDialog.langModeName))
 		return;
 
 	/* Look up the original version of the patterns being edited */
-	oldPatSet = FindPatternSet(HighlightDialog.langModeName);
+	oldPatSet = FindPatternSet(HighlightDialog.langModeName->c_str());
 	if(!oldPatSet)
 		oldPatSet = &emptyPatSet;
 
@@ -1769,13 +1766,13 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Incomplete Language Mode", "Discard incomplete entry\n"
 		                                                                           "for current language mode?",
 		            "Keep", "Discard") == 1) {
-			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
+			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 			return;
 		}
 	} else if (patternSetsDiffer(oldPatSet, newPatSet)) {
-		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName);
+		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName->c_str());
 		if (resp == 3) {
-			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName);
+			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 			return;
 		}
 		if (resp == 1) {
@@ -1787,9 +1784,9 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		freePatternSet(newPatSet);
 
 	/* Free the old dialog information */
-	XtFree(HighlightDialog.langModeName);
-	for (i = 0; i < HighlightDialog.nPatterns; i++)
+	for (i = 0; i < HighlightDialog.nPatterns; i++) {
 		freePatternSrc(HighlightDialog.patterns[i], true);
+	}
 
 	/* Fill the dialog with the new language mode information */
 	HighlightDialog.langModeName = XtNewStringEx(modeName);
@@ -1876,23 +1873,23 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	patternSet *defaultPatSet;
 	int i, psn;
 
-	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName);
+	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName->c_str());
 	if(!defaultPatSet) {
-		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName);
+		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName->c_str());
 		return;
 	}
 
 	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\n"
 	                                                                  "all changes to syntax highlighting\n"
 	                                                                  "patterns for language mode %s?",
-	            "Discard", "Cancel", HighlightDialog.langModeName) == 2) {
+	            "Discard", "Cancel", HighlightDialog.langModeName->c_str()) == 2) {
 		return;
 	}
 
 	/* if a stored version of the pattern set exists, replace it, if it
 	   doesn't, add a new one */
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (!strcmp(HighlightDialog.langModeName, PatternSets[psn]->languageMode))
+		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
 			break;
 	if (psn < NPatternSets) {
 		freePatternSet(PatternSets[psn]);
@@ -1924,13 +1921,13 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern", "Are you sure you want to delete\n"
 	                                                                 "syntax highlighting patterns for\n"
 	                                                                 "language mode %s?",
-	            "Yes, Delete", "Cancel", HighlightDialog.langModeName) == 2) {
+	            "Yes, Delete", "Cancel", HighlightDialog.langModeName->c_str()) == 2) {
 		return;
 	}
 
 	/* if a stored version of the pattern set exists, delete it from the list */
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (!strcmp(HighlightDialog.langModeName, PatternSets[psn]->languageMode))
+		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
 			break;
 	if (psn < NPatternSets) {
 		freePatternSet(PatternSets[psn]);
@@ -2308,7 +2305,7 @@ static int updatePatternSet(void) {
 
 	/* Find the pattern being modified */
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (!strcmp(HighlightDialog.langModeName, PatternSets[psn]->languageMode))
+		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
 			break;
 
 	/* If it's a new pattern, add it at the end, otherwise free the
@@ -2326,7 +2323,7 @@ static int updatePatternSet(void) {
 	   re-do the highlighting */
 	for (window = WindowList; window != nullptr; window = window->next) {
 		if (patSet->nPatterns > 0) {
-			if (window->languageMode != PLAIN_LANGUAGE_MODE && strcmp(LanguageModeName(window->languageMode), patSet->languageMode) == 0) {
+			if (window->languageMode != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode) == *patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -2390,8 +2387,8 @@ static patternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	patSet = (patternSet *)XtMalloc(sizeof(patternSet));
-	patSet->languageMode = XtNewStringEx(HighlightDialog.langModeName);
+	patSet = new patternSet;
+	patSet->languageMode = HighlightDialog.langModeName;
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	patSet->nPatterns    = HighlightDialog.nPatterns;
@@ -2483,9 +2480,9 @@ static void freePatternSet(patternSet *p) {
 
 	for (int i = 0; i < p->nPatterns; i++)
 		freePatternSrc(&p->patterns[i], false);
-	XtFree((char *)p->languageMode);
+
 	delete [] p->patterns;
-	XtFree((char *)p);
+	delete p;
 }
 
 #if 0

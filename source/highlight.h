@@ -29,6 +29,7 @@
 
 #include "nedit.h"
 #include "highlightPattern.h"
+#include "nullable_string.h"
 
 #include <X11/Intrinsic.h>
 #include <string>
@@ -45,7 +46,7 @@
 
 /* Header for a set of patterns */
 struct patternSet {
-	const char *languageMode;
+	nullable_string languageMode;
 	int lineContext;
 	int charContext;
 	int nPatterns;
