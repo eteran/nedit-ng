@@ -185,7 +185,7 @@ static char *ErrMsg;                           /* global for returning error mes
                                                       from executing functions */
 static WindowInfo *InitiatingWindow = nullptr; /* window from which macro was run */
 static WindowInfo *FocusWindow;                /* window on which macro commands operate */
-static int PreemptRequest;                     /* passes preemption requests from called
+static bool PreemptRequest;                     /* passes preemption requests from called
                                                   routines back up to the interpreter */
 
 /* Array for mapping operations to functions for performing the operations
@@ -600,7 +600,7 @@ void FreeRestartData(RestartData *context) {
 ** to resume.
 */
 void PreemptMacro(void) {
-	PreemptRequest = True;
+	PreemptRequest = true;
 }
 
 /*
@@ -1765,7 +1765,7 @@ static int callSubroutine(void) {
 		StackP -= nArgs;
 
 		/* Call the function and check for preemption */
-		PreemptRequest = False;
+		PreemptRequest = false;
 		if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg))
 			return execError(errMsg, sym->name);
 		if (PC->func == fetchRetVal) {
@@ -1844,7 +1844,7 @@ static int callSubroutine(void) {
 		}
 
 		/* Call the action routine and check for preemption */
-		PreemptRequest = False;
+		PreemptRequest = false;
 		sym->value.val.xtproc(FocusWindow->lastFocus, (XEvent *)&key_event, argList, &numArgs);
 		XtFree((char *)argList);
 		if (PC->func == fetchRetVal) {
