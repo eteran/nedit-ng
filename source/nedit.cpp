@@ -606,19 +606,17 @@ static int checkDoMacroArg(const char *macro) {
 ** -geometry and -iconic.
 */
 static void maskArgvKeywords(int argc, char **argv, const char **maskArgs) {
-	int i, k;
 
-	for (i = 1; i < argc; i++)
-		for (k = 0; maskArgs[k] != nullptr; k++)
+	for (int i = 1; i < argc; i++)
+		for (int k = 0; maskArgs[k] != nullptr; k++)
 			if (!strcmp(argv[i], maskArgs[k]))
 				argv[i][0] = ' ';
 }
 
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs) {
-	int i, k;
 
-	for (i = 1; i < argc; i++)
-		for (k = 0; maskArgs[k] != nullptr; k++)
+	for (int i = 1; i < argc; i++)
+		for (int k = 0; maskArgs[k] != nullptr; k++)
 			if (argv[i][0] == ' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
 				argv[i][0] = '-';
 }

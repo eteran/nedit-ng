@@ -143,7 +143,21 @@ public:
 		str.ptr_  = std::shared_ptr<char>(s, XtFree);
 		str.size_ = strlen(s);
 		return str;
-	}	
+	}
+	
+	template <class... Args>
+	static XString format(const char *format, Args... args) {
+	
+		int length = snprintf(nullptr, 0, format, args...) + 1;	
+		char *s    = XtMalloc(length);
+		
+		snprintf(s, length, format, args...);	
+		
+		XString str;
+		str.ptr_  = std::shared_ptr<char>(s, XtFree);
+		str.size_ = length;
+		return str;
+	}
 	
 public:
 	void swap(XString &other) {

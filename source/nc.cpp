@@ -383,9 +383,7 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 ** Prompt the user about starting a server, with "message", then start server
 */
 static int startServer(const char *message, const char *commandLineArgs) {
-	char c, *commandLine;
-
-	int sysrc;
+	char c;
 
 	/* prompt user whether to start server */
 	if (!Preferences.autoStart) {
@@ -398,16 +396,11 @@ static int startServer(const char *message, const char *commandLineArgs) {
 	}
 
 	/* start the server */
-	commandLine = XtMalloc(strlen(Preferences.serverCmd) + strlen(commandLineArgs) + 3);
-	sprintf(commandLine, "%s %s&", Preferences.serverCmd, commandLineArgs);
+	auto commandLine = XString::format("%s %s&", Preferences.serverCmd, commandLineArgs);
+	
+	int sysrc = system(commandLine.c_str());
 
-	sysrc = system(commandLine);
-	XtFree(commandLine);
-
-	if (sysrc == 0)
-		return 0;
-	else
-		return (-1);
+	return (sysrc == 0) ? 0 : -1;
 }
 
 /* Reconstruct the command line in string commandLine in case we have to
@@ -417,10 +410,9 @@ static int startServer(const char *message, const char *commandLineArgs) {
  */
 static CommandLine processCommandLine(int argc, char **argv) {
 	CommandLine commandLine;
-	int i;
 	int length = 0;
 
-	for (i = 1; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		length += 1 + strlen(argv[i]) * 4 + 2;
 	}
 	commandLine.shell = XtMalloc(length + 1 + 9 + MAXPATHLEN);
