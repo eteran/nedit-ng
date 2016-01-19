@@ -306,7 +306,7 @@ static struct prefData {
 static struct {
 	nullable_string shellCmds;
 	nullable_string macroCmds;
-	char *bgMenuCmds;
+	nullable_string bgMenuCmds;
 	char *highlight;
 	char *language;
 	char *styles;
@@ -645,7 +645,7 @@ static PrefDescripRec PrefDescrip[] = {
 		replace_range(0, 0, prototypes staticPrototypes)\n\
 	}",
      &TempStringPrefs.macroCmds, nullptr, true},
-    {"bgMenuCommands", "BGMenuCommands", PREF_ALLOC_STRING, "Undo:::: {\nundo()\n}\n\
+    {"bgMenuCommands", "BGMenuCommands", PREF_STD_STRING, "Undo:::: {\nundo()\n}\n\
 	Redo:::: {\nredo()\n}\n\
 	Cut:::R: {\ncut_clipboard()\n}\n\
 	Copy:::R: {\ncopy_clipboard()\n}\n\
@@ -1113,9 +1113,8 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 		TempStringPrefs.macroCmds = nullable_string();
 	}
 	if (TempStringPrefs.bgMenuCmds) {
-		LoadBGMenuCmdsString(TempStringPrefs.bgMenuCmds);
-		XtFree(TempStringPrefs.bgMenuCmds);
-		TempStringPrefs.bgMenuCmds = nullptr;
+		LoadBGMenuCmdsStringEx(TempStringPrefs.bgMenuCmds);
+		TempStringPrefs.bgMenuCmds = nullable_string();
 	}
 	if (TempStringPrefs.highlight) {
 		LoadHighlightString(TempStringPrefs.highlight, convertOld);
@@ -1203,7 +1202,7 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 
 		TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
 		TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
-		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsString();
+		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
 		TempStringPrefs.highlight         = WriteHighlightString();
 		TempStringPrefs.language          = writeLanguageModesString();
 		TempStringPrefs.styles            = WriteStylesString();
@@ -1215,7 +1214,6 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
 		}
 
-		XtFree(TempStringPrefs.bgMenuCmds);
 		XtFree(TempStringPrefs.highlight);
 		XtFree(TempStringPrefs.language);
 		XtFree(TempStringPrefs.styles);
