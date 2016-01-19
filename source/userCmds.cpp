@@ -848,6 +848,15 @@ int LoadShellCmdsString(const char *inString) {
 	return loadMenuItemString(inString, ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
 }
 
+
+/*
+** Read a string representing shell command menu items and add them to the
+** internal list used for constructing shell menus
+*/
+int LoadShellCmdsStringEx(const nullable_string &inString) {
+	return loadMenuItemString(inString->c_str(), ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
+}
+
 /*
 ** Read strings representing macro menu or background menu command menu items
 ** and add them to the internal lists used for constructing menus

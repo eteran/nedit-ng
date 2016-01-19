@@ -51,6 +51,7 @@
 #include "../util/fontsel.h"
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
+#include "../util/nullable_string.h"
 
 #include <cctype>
 #include <pwd.h>
@@ -303,7 +304,7 @@ static struct prefData {
 /* Temporary storage for preferences strings which are discarded after being
    read */
 static struct {
-	char *shellCmds;
+	nullable_string shellCmds;
 	char *macroCmds;
 	char *bgMenuCmds;
 	char *highlight;
@@ -319,21 +320,21 @@ static PrefDescripRec PrefDescrip[] = {
     {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, sizeof(PrefData.fileVersion), true},
 
 #ifdef linux
-    {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
+    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:EX:\n\
     cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
     wc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
      &TempStringPrefs.shellCmds, nullptr, true},
 #elif __FreeBSD__
-    {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:EX:\n\
+    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:EX:\n\
     cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
     wc::w:ED:\nwc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
      &TempStringPrefs.shellCmds, nullptr, true},
 #else
-    {"shellCommands", "ShellCommands", PREF_ALLOC_STRING, "spell:Alt+B:s:ED:\n\
+    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:ED:\n\
     (cat;echo \"\") | spell\nwc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     \nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
@@ -988,9 +989,11 @@ static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr, const char *replaceWith);
+static int regexReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith);
 static int caseFind(const char *inString, const char *expr);
 static int caseReplace(char **inString, const char *expr, const char *replaceWith, int replaceLen);
 static int stringReplace(char **inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
+static int stringReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
 static const char *getDefaultShell(void);
 
@@ -1101,9 +1104,8 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	   the standard resource manager routines */
 
 	if (TempStringPrefs.shellCmds) {
-		LoadShellCmdsString(TempStringPrefs.shellCmds);
-		XtFree(TempStringPrefs.shellCmds);
-		TempStringPrefs.shellCmds = nullptr;
+		LoadShellCmdsStringEx(TempStringPrefs.shellCmds);
+		TempStringPrefs.shellCmds = nullable_string();
 	}
 
 	if (TempStringPrefs.macroCmds) {
@@ -1214,7 +1216,6 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
 		}
 
-		XtFree(TempStringPrefs.shellCmds);
 		XtFree(TempStringPrefs.macroCmds);
 		XtFree(TempStringPrefs.bgMenuCmds);
 		XtFree(TempStringPrefs.highlight);
@@ -4739,6 +4740,31 @@ static int stringReplace(char **inString, const char *expr, const char *replaceW
 	return TRUE;
 }
 
+
+/*
+** Common implementation for simplified string replacement routines.
+*/
+static int stringReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
+	int beginPos;
+	int endPos;
+	int inLen = inString->size();
+
+	if (0 >= replaceLen)
+		replaceLen = strlen(replaceWith);
+		
+	if (!SearchString(inString->c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
+		return FALSE;
+
+
+	std::string newString;
+	newString.append(inString->c_str(), beginPos);
+	newString.append(replaceWith, replaceLen);
+	newString.append(&((*inString)[endPos]), inLen - endPos);
+
+	inString = newString;
+	return TRUE;
+}
+
 /*
 ** Simplified regular expression replacement routine which replaces the
 ** first occurence of expr in inString with replaceWith, reallocating
@@ -4747,6 +4773,10 @@ static int stringReplace(char **inString, const char *expr, const char *replaceW
 */
 static int regexReplace(char **inString, const char *expr, const char *replaceWith) {
 	return stringReplace(inString, expr, replaceWith, SEARCH_REGEX, -1);
+}
+
+static int regexReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith) {
+	return stringReplaceEx(inString, expr, replaceWith, SEARCH_REGEX, -1);
 }
 
 /*
@@ -4787,9 +4817,6 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 ** had no special meaning before.
 */
 static void updateShellCmdsTo5dot3(void) {
-	char *cOld, *cNew, *pCol, *pNL;
-	int nHash, isCmd;
-	char *newString;
 
 	if (!TempStringPrefs.shellCmds)
 		return;
@@ -4798,21 +4825,26 @@ static void updateShellCmdsTo5dot3(void) {
 	** part of the definition we count too much and later allocate too much
 	** memory for the new string, but this doesn't hurt.
 	*/
-	for (cOld = TempStringPrefs.shellCmds, nHash = 0; *cOld; cOld++)
-		if (*cOld == '#')
+	int nHash = 0;
+	
+	for(char ch: *TempStringPrefs.shellCmds) {
+		if (ch == '#') {
 			nHash++;
+		}
+	}
 
 	/* No '#' -> no conversion necessary. */
-	if (!nHash)
+	if (!nHash) {
 		return;
+	}
 
-	newString = XtMalloc(strlen(TempStringPrefs.shellCmds) + 1 + nHash);
+	char *newString = XtMalloc(TempStringPrefs.shellCmds->size() + 1 + nHash);
 
-	cOld = TempStringPrefs.shellCmds;
-	cNew = newString;
-	isCmd = 0;
-	pCol = nullptr;
-	pNL = nullptr;
+	char *cOld = &(*TempStringPrefs.shellCmds)[0]; // TODO(eteran): probably a better approach to this..
+	char *cNew  = newString;
+	int isCmd   = 0;
+	char *pCol  = nullptr;
+	char *pNL   = nullptr;
 
 	/* Copy all characters from TempStringPrefs.shellCmds into newString
 	** and duplicate '#' in command parts. A simple check for really beeing
@@ -4845,9 +4877,6 @@ static void updateShellCmdsTo5dot3(void) {
 	/* Terminate new preferences string */
 	*cNew = 0;
 
-	/* free the old memory */
-	XtFree(TempStringPrefs.shellCmds);
-
 	/* exchange the string */
 	TempStringPrefs.shellCmds = newString;
 }
@@ -4861,8 +4890,8 @@ static void updateShellCmdsTo5dot4(void) {
 	const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
 #endif /* __FreeBSD__ */
 
-	if (regexFind(TempStringPrefs.shellCmds, wc5dot3))
-		regexReplace(&TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
+	if (regexFind(TempStringPrefs.shellCmds->c_str(), wc5dot3))
+		regexReplaceEx(TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
 
 	return;
 }
