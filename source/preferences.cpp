@@ -312,7 +312,6 @@ static struct {
 	char *styles;
 	char *smartIndent;
 	char *smartIndentCommon;
-	char *shell;
 } TempStringPrefs;
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
