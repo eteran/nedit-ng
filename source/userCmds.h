@@ -34,6 +34,11 @@ UserMenuCache *CreateUserMenuCache(void);
 char *WriteBGMenuCmdsString(void);
 char *WriteMacroCmdsString(void);
 char *WriteShellCmdsString(void);
+
+nullable_string WriteBGMenuCmdsStringEx(void);
+nullable_string WriteMacroCmdsStringEx(void);
+nullable_string WriteShellCmdsStringEx(void);
+
 int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName);
 int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName);
 int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro);

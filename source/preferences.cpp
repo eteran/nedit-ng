@@ -305,7 +305,7 @@ static struct prefData {
    read */
 static struct {
 	nullable_string shellCmds;
-	char *macroCmds;
+	nullable_string macroCmds;
 	char *bgMenuCmds;
 	char *highlight;
 	char *language;
@@ -341,7 +341,7 @@ static PrefDescripRec PrefDescrip[] = {
      &TempStringPrefs.shellCmds, nullptr, true},
 #endif /* linux, __FreeBSD__ */
 
-    {"macroCommands", "MacroCommands", PREF_ALLOC_STRING, "Complete Word:Alt+D::: {\n\
+    {"macroCommands", "MacroCommands", PREF_STD_STRING, "Complete Word:Alt+D::: {\n\
 		# This macro attempts to complete the current word by\n\
 		# finding another word in the same document that has\n\
 		# the same prefix; repeated invocations of the macro\n\
@@ -991,7 +991,7 @@ static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr, const char *replaceWith);
 static int regexReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith);
 static int caseFind(const char *inString, const char *expr);
-static int caseReplace(char **inString, const char *expr, const char *replaceWith, int replaceLen);
+static int caseReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int replaceLen);
 static int stringReplace(char **inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
 static int stringReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
@@ -1109,9 +1109,8 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	}
 
 	if (TempStringPrefs.macroCmds) {
-		LoadMacroCmdsString(TempStringPrefs.macroCmds);
-		XtFree(TempStringPrefs.macroCmds);
-		TempStringPrefs.macroCmds = nullptr;
+		LoadMacroCmdsStringEx(TempStringPrefs.macroCmds);
+		TempStringPrefs.macroCmds = nullable_string();
 	}
 	if (TempStringPrefs.bgMenuCmds) {
 		LoadBGMenuCmdsString(TempStringPrefs.bgMenuCmds);
@@ -1202,8 +1201,8 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 	    	These locations are set in PrefDescrip, so this is where
 	    	SavePreferences() will look for them.  */
 
-		TempStringPrefs.shellCmds         = WriteShellCmdsString();
-		TempStringPrefs.macroCmds         = WriteMacroCmdsString();
+		TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
+		TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
 		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsString();
 		TempStringPrefs.highlight         = WriteHighlightString();
 		TempStringPrefs.language          = writeLanguageModesString();
@@ -1216,7 +1215,6 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
 		}
 
-		XtFree(TempStringPrefs.macroCmds);
 		XtFree(TempStringPrefs.bgMenuCmds);
 		XtFree(TempStringPrefs.highlight);
 		XtFree(TempStringPrefs.language);
@@ -4785,8 +4783,8 @@ static int regexReplaceEx(nullable_string &inString, const char *expr, const cha
 ** reallocating inString with XtMalloc.  If expr is not found, does nothing
 ** and returns false.
 */
-static int caseReplace(char **inString, const char *expr, const char *replaceWith, int replaceLen) {
-	return stringReplace(inString, expr, replaceWith, SEARCH_CASE_SENSE, replaceLen);
+static int caseReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int replaceLen) {
+	return stringReplaceEx(inString, expr, replaceWith, SEARCH_CASE_SENSE, replaceLen);
 }
 
 /*
@@ -4796,14 +4794,14 @@ static int caseReplace(char **inString, const char *expr, const char *replaceWit
 ** (inclusive). Returns the length of the replacement.
 */
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd) {
-	if (caseFind(TempStringPrefs.macroCmds, oldText)) {
+	if (caseFind(TempStringPrefs.macroCmds->c_str(), oldText)) {
 		const char *start = strstr(PrefDescrip[2].defaultString, newStart);
 
 		if (start) {
 			const char *end = strstr(start, newEnd);
 			if (end) {
 				int length = (int)(end - start) + strlen(newEnd);
-				caseReplace(&TempStringPrefs.macroCmds, oldText, start, length);
+				caseReplaceEx(TempStringPrefs.macroCmds, oldText, start, length);
 				return length;
 			}
 		}
@@ -4899,8 +4897,8 @@ static void updateShellCmdsTo5dot4(void) {
 static void updateMacroCmdsTo5dot5(void) {
 	const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
 	const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
-	if (regexFind(TempStringPrefs.macroCmds, uc5dot4))
-		regexReplace(&TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
+	if (regexFind(TempStringPrefs.macroCmds->c_str(), uc5dot4))
+		regexReplaceEx(TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
 
 	return;
 }

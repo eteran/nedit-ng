@@ -278,6 +278,7 @@ static void freeItemCB(void *item);
 static int dialogFieldsAreEmpty(userCmdDialog *ucd);
 static void disableTextW(Widget textW);
 static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listType);
+static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems, int listType);
 static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType);
 static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
@@ -826,6 +827,16 @@ char *WriteShellCmdsString(void) {
 }
 
 /*
+** Generate a text string for the preferences file describing the contents
+** of the shell cmd list.  This string is not exactly of the form that it
+** can be read by LoadShellCmdsString, rather, it is what needs to be written
+** to a resource file such that it will read back in that form.
+*/
+nullable_string WriteShellCmdsStringEx(void) {
+	return writeMenuItemStringEx(ShellMenuItems, NShellMenuItems, SHELL_CMDS);
+}
+
+/*
 ** Generate a text string for the preferences file describing the contents of
 ** the macro menu and background menu commands lists.  These strings are not
 ** exactly of the form that it can be read by LoadMacroCmdsString, rather, it
@@ -836,8 +847,16 @@ char *WriteMacroCmdsString(void) {
 	return writeMenuItemString(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
 }
 
+nullable_string WriteMacroCmdsStringEx(void) {
+	return writeMenuItemStringEx(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
+}
+
 char *WriteBGMenuCmdsString(void) {
 	return writeMenuItemString(BGMenuItems, NBGMenuItems, BG_MENU_CMDS);
+}
+
+nullable_string WriteBGMenuCmdsStringEx(void) {
+	return writeMenuItemStringEx(BGMenuItems, NBGMenuItems, BG_MENU_CMDS);
 }
 
 /*
@@ -865,8 +884,16 @@ int LoadMacroCmdsString(const char *inString) {
 	return loadMenuItemString(inString, MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
 }
 
+int LoadMacroCmdsStringEx(const nullable_string &inString) {
+	return loadMenuItemString(inString->c_str(), MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
+}
+
 int LoadBGMenuCmdsString(const char *inString) {
 	return loadMenuItemString(inString, BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
+}
+
+int LoadBGMenuCmdsStringEx(const nullable_string &inString) {
+	return loadMenuItemString(inString->c_str(), BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
 }
 
 /*
@@ -2292,6 +2319,17 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 	--outPtr;
 	*--outPtr = '\0';
 	return outStr;
+}
+
+
+static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems, int listType) {
+
+	nullable_string str;
+	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
+		str = std::string(s);
+		XtFree(s);
+	}
+	return str;
 }
 
 static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType) {
