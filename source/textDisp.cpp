@@ -765,11 +765,11 @@ int TextDGetInsertPosition(textDisp *textD) {
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
-void textDisp::TextDInsert(const char *text) {
+void textDisp::TextDInsert(view::string_view text) {
 	int pos = this->cursorPos;
 
-	this->cursorToHint = pos + strlen(text);
-	this->buffer->BufInsert(pos, text);
+	this->cursorToHint = pos + text.size();
+	this->buffer->BufInsertEx(pos, text);
 	this->cursorToHint = NO_HINT;
 }
 
@@ -777,22 +777,23 @@ void textDisp::TextDInsert(const char *text) {
 ** Insert "text" (which must not contain newlines), overstriking the current
 ** cursor location.
 */
-void textDisp::TextDOverstrike(const char *text) {
+void textDisp::TextDOverstrike(view::string_view text) {
 	int startPos = this->cursorPos;
 	TextBuffer *buf = this->buffer;
 	int lineStart = buf->BufStartOfLine(startPos);
-	int textLen = strlen(text);
-	int i, p, endPos, indent, startIndent, endIndent;
-	const char *c;
-	char ch;
+	int textLen = text.size();
+	int i, p, endPos;
 	char *paddedText = nullptr;
 
 	/* determine how many displayed character positions are covered */
-	startIndent = this->buffer->BufCountDispChars(lineStart, startPos);
-	indent = startIndent;
-	for (c = text; *c != '\0'; c++)
-		indent += TextBuffer::BufCharWidth(*c, indent, buf->tabDist_, buf->nullSubsChar_);
-	endIndent = indent;
+	int startIndent = this->buffer->BufCountDispChars(lineStart, startPos);
+	int indent = startIndent;
+	
+	for(char ch : text) {
+		indent += TextBuffer::BufCharWidth(ch, indent, buf->tabDist_, buf->nullSubsChar_);
+	}
+	
+	int endIndent = indent;
 
 	/* find which characters to remove, and if necessary generate additional
 	   padding to make up for removed control characters at the end */
@@ -800,7 +801,7 @@ void textDisp::TextDOverstrike(const char *text) {
 	for (p = startPos;; p++) {
 		if (p == buf->BufGetLength())
 			break;
-		ch = buf->BufGetCharacter(p);
+		char ch = buf->BufGetCharacter(p);
 		if (ch == '\n')
 			break;
 		indent += TextBuffer::BufCharWidth(ch, indent, buf->tabDist_, buf->nullSubsChar_);
@@ -811,9 +812,13 @@ void textDisp::TextDOverstrike(const char *text) {
 			if (ch != '\t') {
 				p++;
 				paddedText = new char[textLen + MAX_EXP_CHAR_LEN + 1];
-				strcpy(paddedText, text);
-				for (i = 0; i < indent - endIndent; i++)
+				
+				text.copy(paddedText, text.size());
+				paddedText[text.size()] = '\0';
+				
+				for (i = 0; i < indent - endIndent; i++) {
 					paddedText[textLen + i] = ' ';
+				}
 				paddedText[textLen + i] = '\0';
 			}
 			break;
@@ -822,7 +827,7 @@ void textDisp::TextDOverstrike(const char *text) {
 	endPos = p;
 
 	this->cursorToHint = startPos + textLen;
-	buf->BufReplace(startPos, endPos, paddedText == nullptr ? text : paddedText);
+	buf->BufReplaceEx(startPos, endPos, paddedText == nullptr ? text : paddedText);
 	this->cursorToHint = NO_HINT;
 	delete[] paddedText;
 }

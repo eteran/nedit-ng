@@ -413,7 +413,6 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int isColumnar = *(int *)clientData;
 	int cursorLineStart, cursorPos, column, row;
-	char *string;
 
 	/* Confirm that the returned value is of the correct type */
 	if (*type != XA_STRING || *format != 8) {
@@ -424,15 +423,15 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	/* Copy the string just to make space for the null character (this may
 	   not be necessary, XLib documentation claims a nullptr is already added,
 	   but the Xt documentation for this routine makes no such claim) */
-	string = XtMalloc(*length + 1);
-	memcpy(string, value, *length);
-	string[*length] = '\0';
+	std::string string;
+	string.reserve(*length);
+	std::copy_n(static_cast<char *>(value), *length, std::back_inserter(string));
+
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
-	if (!textD->buffer->BufSubstituteNullChars(string, *length)) {
+	if (!textD->buffer->BufSubstituteNullCharsEx(string)) {
 		fprintf(stderr, "Too much binary data, giving up\n");
-		XtFree(string);
 		XtFree((char *)value);
 		return;
 	}
@@ -442,11 +441,10 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 		cursorPos = TextDGetInsertPosition(textD);
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(reinterpret_cast<TextWidget>(w)->text.btnDownX, reinterpret_cast<TextWidget>(w)->text.btnDownY, &row, &column);
-		textD->buffer->BufInsertCol(column, cursorLineStart, string, nullptr, nullptr);
+		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
 		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else
-		TextInsertAtCursor(w, string, nullptr, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
-	XtFree(string);
+		TextInsertAtCursorEx(w, string, nullptr, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 
 	/* The selection requstor is required to free the memory passed
 	   to it via value */

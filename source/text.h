@@ -161,6 +161,7 @@ void TextCutClipboard(Widget w, Time time);
 void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextHandleXSelections(Widget w);
 void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap);
+void TextInsertAtCursorEx(Widget w, const std::string &chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);
 void TextSetBuffer(Widget w, TextBuffer *buffer);
 void TextSetCursorPos(Widget w, int pos);

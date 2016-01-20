@@ -107,7 +107,7 @@ struct menuItemRec {
 	char repInput;
 	char saveFirst;
 	char loadAfter;
-	char *cmd;
+	XString cmd;
 };
 
 /* Structure for widgets and flags associated with shell command,
@@ -285,7 +285,7 @@ static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym)
 static int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
-static void addTerminatingNewline(char **string);
+static void addTerminatingNewlineEx(XString *string);
 static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus);
 static int getSubMenuDepth(const char *menuName);
 static userMenuInfo *parseMenuItemRec(menuItemRec *item);
@@ -314,9 +314,8 @@ static void freeUserSubMenuList(UserMenuList *list);
 void EditShellMenu(WindowInfo *window) {
 	Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
-	userCmdDialog *ucd;
 	XmString s1;
-	int ac, i;
+	int ac;
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
@@ -326,13 +325,16 @@ void EditShellMenu(WindowInfo *window) {
 	}
 
 	/* Create a structure for keeping track of dialog state */
-	ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
 	/* Set the dialog to operate on the Shell menu */
-	ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec *) * MAX_ITEMS_PER_MENU);
-	for (i = 0; i < NShellMenuItems; i++)
+	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
+	
+	for (int i = 0; i < NShellMenuItems; i++) {
 		ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
+	}
+	
 	ucd->nMenuItems = NShellMenuItems;
 	ucd->dialogType = SHELL_CMDS;
 
@@ -534,10 +536,9 @@ void EditBGMenu(WindowInfo *window) {
 static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
 	Widget form, accLabel, pasteReplayBtn;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
-	userCmdDialog *ucd;
 	char *title;
 	XmString s1;
-	int ac, i;
+	int ac;
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
@@ -551,20 +552,26 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
 	}
 
 	/* Create a structure for keeping track of dialog state */
-	ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
 	/* Set the dialog to operate on the Macro menu */
-	ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec **) * MAX_ITEMS_PER_MENU);
+	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
+	
 	if (dialogType == MACRO_CMDS) {
-		for (i = 0; i < NMacroMenuItems; i++)
+		for (int i = 0; i < NMacroMenuItems; i++) {
 			ucd->menuItemsList[i] = copyMenuItemRec(MacroMenuItems[i]);
+		}
+		
 		ucd->nMenuItems = NMacroMenuItems;
 	} else { /* BG_MENU_CMDS */
-		for (i = 0; i < NBGMenuItems; i++)
+		for (int i = 0; i < NBGMenuItems; i++) {
 			ucd->menuItemsList[i] = copyMenuItemRec(BGMenuItems[i]);
+		}
+		
 		ucd->nMenuItems = NBGMenuItems;
 	}
+	
 	ucd->dialogType = dialogType;
 
 	title = dialogType == MACRO_CMDS ? (String) "Macro Commands" : (String) "Window Background Menu";
@@ -938,7 +945,15 @@ int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro)
 		if (ShellMenuItems[i]->name == itemName) {
 			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
 				return False;
-			DoShellMenuCmd(window, ShellMenuItems[i]->cmd, ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
+			DoShellMenuCmd(
+				window, 
+				ShellMenuItems[i]->cmd.c_str(), 
+				ShellMenuItems[i]->input, 
+				ShellMenuItems[i]->output, 
+				ShellMenuItems[i]->repInput, 
+				ShellMenuItems[i]->saveFirst, 
+				ShellMenuItems[i]->loadAfter, 
+				fromMacro);
 			return True;
 		}
 	}
@@ -955,7 +970,7 @@ int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName) {
 
 	for (i = 0; i < NMacroMenuItems; i++) {
 		if (MacroMenuItems[i]->name == itemName) {
-			DoMacro(window, MacroMenuItems[i]->cmd, "macro menu command");
+			DoMacro(window, MacroMenuItems[i]->cmd.c_str(), "macro menu command");
 			return True;
 		}
 	}
@@ -967,7 +982,7 @@ int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName) {
 
 	for (i = 0; i < NBGMenuItems; i++) {
 		if (BGMenuItems[i]->name == itemName) {
-			DoMacro(window, BGMenuItems[i]->cmd, "background menu macro");
+			DoMacro(window, BGMenuItems[i]->cmd.c_str(), "background menu macro");
 			return True;
 		}
 	}
@@ -1507,10 +1522,12 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
 				}
 				
-				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n"))
+				if (menuType == BG_MENU_CMDS && item->cmd == "undo()\n") {
 					window->bgMenuUndoItem = btn;
-				else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n"))
+				} else if (menuType == BG_MENU_CMDS && item->cmd == "redo()\n") {
 					window->bgMenuRedoItem = btn;
+				}
+				
 				/* generate accelerator keys */
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
 				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
@@ -1662,7 +1679,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	/* Mark that there's no longer a (macro, bg, or shell) dialog up */
 	if (ucd->dialogType == SHELL_CMDS)
@@ -1682,7 +1699,7 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	/* Read the dialog fields, and update the menus */
 	if (!applyDialogChanges(ucd))
@@ -1706,7 +1723,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	applyDialogChanges((userCmdDialog *)clientData);
+	applyDialogChanges(static_cast<userCmdDialog *>(clientData));
 }
 
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1714,7 +1731,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	if (checkMacro(ucd)) {
 		DialogF(DF_INF, ucd->dlogShell, 1, "Macro", "Macro compiled without error", "OK");
@@ -1727,7 +1744,7 @@ static int checkMacro(userCmdDialog *ucd) {
 	f = readDialogFields(ucd, False);
 	if(!f)
 		return False;
-	if (!checkMacroText(f->cmd, ucd->dlogShell, ucd->cmdTextW)) {
+	if (!checkMacroText(f->cmd.c_str(), ucd->dlogShell, ucd->cmdTextW)) {
 		freeMenuItemRec(f);
 		return False;
 	}
@@ -1814,7 +1831,7 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	if (GetReplayMacro().empty())
 		return;
@@ -1827,13 +1844,13 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
-	int i;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
-	for (i = 0; i < ucd->nMenuItems; i++)
+	for (int i = 0; i < ucd->nMenuItems; i++)
 		freeMenuItemRec(ucd->menuItemsList[i]);
-	XtFree((char *)ucd->menuItemsList);
-	XtFree((char *)ucd);
+		
+	delete [] ucd->menuItemsList;
+	delete ucd;
 }
 
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1841,7 +1858,7 @@ static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	RemoveDialogMnemonicHandler(XtParent(ucd->accTextW));
 }
@@ -1851,7 +1868,7 @@ static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	AddDialogMnemonicHandler(XtParent(ucd->accTextW), FALSE);
 }
@@ -1860,7 +1877,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 
 	(void)w;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 	KeySym keysym = XLookupKeysym(event, 0);
 	char outStr[MAX_ACCEL_LEN];
 
@@ -1902,7 +1919,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 
 static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
-	XtSetSensitive(((userCmdDialog *)clientData)->repInpBtn, XmToggleButtonGetState(w));
+	XtSetSensitive((static_cast<userCmdDialog *>(clientData))->repInpBtn, XmToggleButtonGetState(w));
 }
 
 static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2011,7 +2028,7 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 		generateAcceleratorString(accString, f->modifiers, f->keysym);
 		
 		XmTextSetStringEx(ucd->nameTextW, f->name.c_str());
-		XmTextSetStringEx(ucd->cmdTextW,  f->cmd);
+		XmTextSetStringEx(ucd->cmdTextW,  f->cmd.c_str());
 		XmTextSetStringEx(ucd->accTextW,  accString);
 		XmTextSetStringEx(ucd->mneTextW,  mneString);
 		
@@ -2038,11 +2055,10 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 ** failure.
 */
 static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
-	char *cmdText, *mneText, *accText;
+	char *mneText, *accText;
 	menuItemRec *f;
 
-	auto nameTextTemp = XmTextGetString(ucd->nameTextW);
-	auto nameText = XString::takeString(nameTextTemp);
+	auto nameText = XmTextGetStringXString(ucd->nameTextW);
 	
 	if (nameText.empty()) {
 		if (!silent) {
@@ -2060,21 +2076,18 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 		return nullptr;
 	}
 
-	cmdText = XmTextGetString(ucd->cmdTextW);
-	if (cmdText == nullptr || *cmdText == '\0') {
+	auto cmdText = XmTextGetStringXString(ucd->cmdTextW);
+	if (!cmdText || cmdText.empty() == '\0') {
 		if (!silent) {
 			DialogF(DF_WARN, ucd->dlogShell, 1, "Command to Execute", "Please specify %s to execute", "OK", ucd->dialogType == SHELL_CMDS ? "shell command" : "macro command(s)");
 			XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(cmdText);
-
 		return nullptr;
 	}
 
 	if (ucd->dialogType == MACRO_CMDS || ucd->dialogType == BG_MENU_CMDS) {
-		addTerminatingNewline(&cmdText);
-		if (!checkMacroText(cmdText, silent ? nullptr : ucd->dlogShell, ucd->cmdTextW)) {
-			XtFree(cmdText);
+		addTerminatingNewlineEx(&cmdText);
+		if (!checkMacroText(cmdText.c_str(), silent ? nullptr : ucd->dlogShell, ucd->cmdTextW)) {
 			return nullptr;
 		}
 	}
@@ -2126,17 +2139,13 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 */
 static menuItemRec *copyMenuItemRec(menuItemRec *item) {
 
-	auto newItem = new menuItemRec(*item);
-	newItem->name = XString(item->name);
-	newItem->cmd  = XtStringDup(item->cmd);
-	return newItem;
+	return new menuItemRec(*item);
 }
 
 /*
 ** Free a menu item record, and its associated memory
 */
 static void freeMenuItemRec(menuItemRec *item) {
-	XtFree(item->cmd);
 	delete item;
 }
 
@@ -2144,7 +2153,7 @@ static void freeMenuItemRec(menuItemRec *item) {
 ** Callbacks for managed-list operations
 */
 static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, void *cbArg) {
-	userCmdDialog *ucd = (userCmdDialog *)cbArg;
+	auto ucd = static_cast<userCmdDialog *>(cbArg);
 	menuItemRec *currentFields;
 
 	/* If the dialog is currently displaying the "new" entry and the
@@ -2171,7 +2180,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 }
 
 static void setDialogDataCB(void *item, void *cbArg) {
-	updateDialogFields((menuItemRec *)item, (userCmdDialog *)cbArg);
+	updateDialogFields((menuItemRec *)item, static_cast<userCmdDialog *>(cbArg));
 }
 
 static int dialogFieldsAreEmpty(userCmdDialog *ucd) {
@@ -2225,7 +2234,7 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 		generateAcceleratorString(accStr, f->modifiers, f->keysym);
 		length += f->name.size() * 2; /* allow for \n & \\ expansions */
 		length += strlen(accStr);
-		length += strlen(f->cmd) * 6; /* allow for \n & \\ expansions */
+		length += f->cmd.size() * 6; /* allow for \n & \\ expansions */
 		length += 21;                 /* number of characters added below */
 	}
 	length++; /* terminating null */
@@ -2291,19 +2300,20 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 		*outPtr++ = '\t';
 		*outPtr++ = '\t';
 		
-		for (auto c = f->cmd; *c != '\0'; c++) { /* Copy the command string, changing */
-			if (*c == '\\') {               /* backslashes to double backslashes */
+		for(char ch : f->cmd) {             /* Copy the command string, changing */
+			if (ch == '\\') {               /* backslashes to double backslashes */
 				*outPtr++ = '\\';           /* and newlines to backslash-n's,    */
 				*outPtr++ = '\\';           /* followed by real newlines and tab */
-			} else if (*c == '\n') {
+			} else if (ch == '\n') {
 				*outPtr++ = '\\';
 				*outPtr++ = 'n';
 				*outPtr++ = '\\';
 				*outPtr++ = '\n';
 				*outPtr++ = '\t';
 				*outPtr++ = '\t';
-			} else
-				*outPtr++ = *c;
+			} else {
+				*outPtr++ = ch;
+			}
 		}
 		
 		if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
@@ -2696,18 +2706,16 @@ static char *copyMacroToEnd(const char **inPtr) {
 ** statements, but the text widget doesn't force it like the NEdit text buffer
 ** does, so this might avoid some confusion.)
 */
-static void addTerminatingNewline(char **string) {
-	char *newString;
-	int length;
+static void addTerminatingNewlineEx(XString *string) {
 
-	length = strlen(*string);
+	int length = string->size();
 	if ((*string)[length - 1] != '\n') {
-		newString = XtMalloc(length + 2);
-		strcpy(newString, *string);
-		newString[length] = '\n';
+		char *newString = XtMalloc(length + 2);
+		strcpy(newString, string->c_str());
+		newString[length + 0] = '\n';
 		newString[length + 1] = '\0';
-		XtFree(*string);
-		*string = newString;
+		
+		*string = XString::takeString(newString);
 	}
 }
 

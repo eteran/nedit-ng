@@ -36,6 +36,7 @@
 #include <cctype>
 #include <cstdio>
 #include <ctime>
+#include <vector>
 
 #include <sys/time.h>
 #include <sys/select.h>
@@ -113,7 +114,7 @@ static void removeWhiteSpace(char *string);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch);
-static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount);
+static std::vector<Arg> addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine, Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void scrollUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -550,42 +551,39 @@ Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist, Cardi
 }
 
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount) {
-	Widget result;
-	ArgList al = addParentVisArgs(parent, arglist, &argcount);
-	result = XtCreateWidget(name, clazz, parent, al, argcount);
-	XtFree((char *)al);
-	return result;
+	std::vector<Arg> al = addParentVisArgs(parent, arglist, &argcount);
+	return XtCreateWidget(name, clazz, parent, &al[0], argcount);
 }
 
 Widget CreateShellWithBestVis(String appName, String appClass, WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs) {
 	Visual *visual;
 	int depth;
 	Colormap colormap;
-	ArgList al;
 	Cardinal ac = nArgs;
 	Widget result;
 
 	FindBestVisual(display, appName, appClass, &visual, &depth, &colormap);
-	al = (ArgList)XtMalloc(sizeof(Arg) * (nArgs + 3));
-	if (nArgs != 0)
-		memcpy(al, args, sizeof(Arg) * nArgs);
+	
+	std::vector<Arg> al;
+	al.reserve(nArgs);
+	std::copy_n(args, nArgs, std::back_inserter(al));
+	al.resize(nArgs + 3);
+
 	XtSetArg(al[ac], XtNvisual, visual);
 	ac++;
 	XtSetArg(al[ac], XtNdepth, depth);
 	ac++;
 	XtSetArg(al[ac], XtNcolormap, colormap);
 	ac++;
-	result = XtAppCreateShell(appName, appClass, clazz, display, al, ac);
-	XtFree((char *)al);
+	
+	result = XtAppCreateShell(appName, appClass, clazz, display, &al[0], ac);
+	
 	return result;
 }
 
 Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget parent, ArgList arglist, Cardinal argcount) {
-	Widget result;
-	ArgList al = addParentVisArgs(parent, arglist, &argcount);
-	result = XtCreatePopupShell(shellName, clazz, parent, al, argcount);
-	XtFree((char *)al);
-	return result;
+	std::vector<Arg> al = addParentVisArgs(parent, arglist, &argcount);
+	return XtCreatePopupShell(shellName, clazz, parent, &al[0], argcount);
 }
 
 /*
@@ -593,11 +591,10 @@ Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget p
 ** for visual, colormap, and depth. The original argument list is not altered
 ** and it's the caller's responsability to free the returned list.
 */
-static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount) {
+static std::vector<Arg> addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount) {
 	Visual *visual;
 	int depth;
 	Colormap colormap;
-	ArgList al;
 	Widget parentShell = parent;
 
 	/* Find the application/dialog/menu shell at the top of the widget
@@ -614,10 +611,15 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcou
 
 	/* Add the visual, depth, and colormap resources to the argument list */
 	XtVaGetValues(parentShell, XtNvisual, &visual, XtNdepth, &depth, XtNcolormap, &colormap, nullptr);
-	al = (ArgList)XtMalloc(sizeof(Arg) * ((*argcount) + 3));
-	if ((*argcount) != 0)
-		memcpy(al, arglist, sizeof(Arg) * (*argcount));
-
+	
+	std::vector<Arg> al;
+	al.reserve(*argcount);
+	std::copy_n(arglist, *argcount, std::back_inserter(al));
+	
+	// just to make the later array access valid
+	al.resize(*argcount + 3);
+	
+	
 	/* For non-Lesstif versions, the visual, depth, and colormap are now set
 	   globally via the resource database. So strictly spoken, it is no
 	   longer necessary to set them explicitly for every shell widget.
@@ -640,10 +642,8 @@ static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcou
 */
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine, Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
 
-	ArgList al = addParentVisArgs(parent, arglist, &argcount);
-	Widget result = (*createRoutine)(parent, (char *)name, al, argcount);
-	XtFree((char *)al);
-	return result;
+	std::vector<Arg> al = addParentVisArgs(parent, arglist, &argcount);
+	return (*createRoutine)(parent, (char *)name, &al[0], argcount);
 }
 
 /*
@@ -1054,10 +1054,10 @@ void SetIntText(Widget text, int value) {
 ** warnBlank to true if a blank field is also considered an error.
 */
 int GetFloatText(Widget text, double *value) {
-	char *strValue, *endPtr;
+	char *endPtr;
 	int retVal;
 
-	strValue = XmTextGetString(text);   /* Get Value */
+	char *strValue = XmTextGetString(text);   /* Get Value */
 	removeWhiteSpace(strValue);         /* Remove blanks and tabs */
 	*value = strtod(strValue, &endPtr); /* Convert string to double */
 	if (strlen(strValue) == 0)          /* String is empty */
@@ -1071,10 +1071,10 @@ int GetFloatText(Widget text, double *value) {
 }
 
 int GetIntText(Widget text, int *value) {
-	char *strValue, *endPtr;
+	char *endPtr;
 	int retVal;
 
-	strValue = XmTextGetString(text);       /* Get Value */
+	char *strValue = XmTextGetString(text);       /* Get Value */
 	removeWhiteSpace(strValue);             /* Remove blanks and tabs */
 	*value = strtol(strValue, &endPtr, 10); /* Convert string to long */
 	if (strlen(strValue) == 0)              /* String is empty */
