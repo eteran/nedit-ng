@@ -75,7 +75,6 @@ static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void fixupBrokenXKeysymDB(void);
 static void patchResourcesForVisual(void);
-static void patchResourcesForKDEbug(void);
 static void patchLocaleForMotif(void);
 static unsigned char *sanitizeVirtualKeyBindings(void);
 static int virtKeyBindingsAreInvalid(const unsigned char *bindings);
@@ -324,7 +323,6 @@ int main(int argc, char **argv) {
 	/* Must be done before creating widgets */
 	fixupBrokenXKeysymDB();
 	patchResourcesForVisual();
-	patchResourcesForKDEbug();
 
 	/* Initialize global symbols and subroutines used in the macro language */
 	InitMacroGlobals();
@@ -702,79 +700,6 @@ static void patchResourcesForVisual(void) {
 				XrmPutLineResource(&db, buf);
 			}
 		}
-	}
-}
-
-/*
-** Several KDE version (2.x and 3.x) ship with a template application-default
-** file for NEdit in which several strings have to be substituted in order to
-** make it a valid .ad file. However, for some reason (a KDE bug?), the
-** template sometimes ends up in the resource db unmodified, such that several
-** invalid entries are present. This function checks for the presence of such
-** invalid entries and silently replaces them with NEdit's default values where
-** necessary. Without this, NEdit will typically write several warnings to
-** the terminal (Cannot convert string "FONTLIST" to type FontStruct etc) and
-** fall back on some really ugly colors and fonts.
-*/
-static void patchResourcesForKDEbug(void) {
-	/*
-	 * These are the resources found the Nedit.ad template shipped with KDE 3.0.
-	 */
-	static const char *buggyResources[][3] = {{"*fontList", "FONTLIST", NEDIT_DEFAULT_FONT},
-	                                          {"*XmText.background", "BACKGROUND", NEDIT_DEFAULT_TEXT_BG},
-	                                          {"*XmText.foreground", "FOREGROUND", NEDIT_DEFAULT_FG},
-	                                          {"*XmTextField.background", "BACKGROUND", NEDIT_DEFAULT_TEXT_BG},
-	                                          {"*XmTextField.foreground", "FOREGROUND", NEDIT_DEFAULT_FG},
-	                                          {"*XmList.background", "BACKGROUND", NEDIT_DEFAULT_TEXT_BG},
-	                                          {"*XmList.foreground", "FOREGROUND", NEDIT_DEFAULT_FG},
-	                                          {"*helpText.background", "BACKGROUND", NEDIT_DEFAULT_HELP_BG},
-	                                          {"*helpText.foreground", "FOREGROUND", NEDIT_DEFAULT_HELP_FG},
-	                                          {"*background", "BACKGROUND", NEDIT_DEFAULT_BG},
-	                                          {
-	                                           "*foreground", "FOREGROUND", NEDIT_DEFAULT_FG,
-	                                          },
-	                                          {"*selectColor", "BACKGROUND", NEDIT_DEFAULT_SEL_BG},
-	                                          {"*highlightColor", "BACKGROUND", NEDIT_DEFAULT_HI_BG},
-	                                          {"*text.background", "WINDOW_BACKGROUND", NEDIT_DEFAULT_TEXT_BG},
-	                                          {"*text.foreground", "WINDOW_FOREGROUND", NEDIT_DEFAULT_FG},
-	                                          {"*text.selectBackground", "SELECT_BACKGROUND", NEDIT_DEFAULT_SEL_BG},
-	                                          {"*text.selectForeground", "SELECT_FOREGROUND", NEDIT_DEFAULT_SEL_FG},
-	                                          {"*text.cursorForeground", "WINDOW_FOREGROUND", NEDIT_DEFAULT_CURSOR_FG},
-	                                          /* { "*remapDeleteKey",         "False", }, OK */
-	                                          /* { "!*text.heavyCursor",      "True" }, OK */
-	                                          /* { "!*BlinkRate",             "0" }, OK */
-	                                          /* { "*shell",                  "/bin/sh" }, OK */
-	                                          {"*statsLine.background", "BACKGROUND", NEDIT_DEFAULT_BG},
-	                                          {"*statsLine.foreground", "FOREGROUND", NEDIT_DEFAULT_FG},
-	                                          {nullptr, nullptr, nullptr}};
-	XrmDatabase db;
-	int i;
-
-	if (!TheDisplay)
-		return;
-
-	db = XtDatabase(TheDisplay);
-
-	i = 0;
-	while (buggyResources[i][0]) {
-		const char *resource = buggyResources[i][0];
-		const char *buggyValue = buggyResources[i][1];
-		const char *defaultValue = buggyResources[i][2];
-		char name[128] = APP_NAME;
-		char clazz[128] = APP_CLASS;
-		char *type;
-		XrmValue resValue;
-
-		strcat(name, resource);
-		strcat(clazz, resource); /* Is this ok ? */
-
-		if (XrmGetResource(db, name, clazz, &type, &resValue) && !strcmp(type, XmRString)) {
-			/* Buggy value? Replace by the default. */
-			if (!strcmp(resValue.addr, buggyValue)) {
-				XrmPutStringResource(&db, &name[0], (char *)defaultValue);
-			}
-		}
-		++i;
 	}
 }
 
