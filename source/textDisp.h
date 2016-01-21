@@ -96,11 +96,12 @@ public:
 	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
 	void TextDSetCursorStyle(int style);
 	void TextDSetFont(XFontStruct *fontStruct);
-
 	void TextDInsert(const char *text);
+	void TextDInsertEx(view::string_view text);
 	void TextDMaintainAbsLineNum(int state);
 	void TextDMakeInsertPosVisible();
 	void TextDOverstrike(const char *text);
+	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDResize(int width, int height);
 	

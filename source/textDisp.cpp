@@ -774,6 +774,20 @@ void textDisp::TextDInsert(const char *text) {
 }
 
 /*
+** Insert "text" at the current cursor location.  This has the same
+** effect as inserting the text into the buffer using BufInsert and
+** then moving the insert position after the newly inserted text, except
+** that it's optimized to do less redrawing.
+*/
+void textDisp::TextDInsertEx(view::string_view text) {
+	int pos = this->cursorPos;
+
+	this->cursorToHint = pos + text.size();
+	this->buffer->BufInsertEx(pos, text);
+	this->cursorToHint = NO_HINT;
+}
+
+/*
 ** Insert "text" (which must not contain newlines), overstriking the current
 ** cursor location.
 */
@@ -825,6 +839,59 @@ void textDisp::TextDOverstrike(const char *text) {
 	buf->BufReplace(startPos, endPos, paddedText == nullptr ? text : paddedText);
 	this->cursorToHint = NO_HINT;
 	delete[] paddedText;
+}
+
+/*
+** Insert "text" (which must not contain newlines), overstriking the current
+** cursor location.
+*/
+void textDisp::TextDOverstrikeEx(view::string_view text) {
+	int startPos    = this->cursorPos;
+	TextBuffer *buf = this->buffer;
+	int lineStart   = buf->BufStartOfLine(startPos);
+	int textLen     = text.size();
+	int p, endPos, indent, startIndent, endIndent;
+
+	nullable_string paddedText;
+
+	/* determine how many displayed character positions are covered */
+	startIndent = this->buffer->BufCountDispChars(lineStart, startPos);
+	indent = startIndent;
+	for (char ch : text) {
+		indent += TextBuffer::BufCharWidth(ch, indent, buf->tabDist_, buf->nullSubsChar_);
+	}
+	endIndent = indent;
+
+	/* find which characters to remove, and if necessary generate additional
+	   padding to make up for removed control characters at the end */
+	indent = startIndent;
+	for (p = startPos;; p++) {
+		if (p == buf->BufGetLength())
+			break;
+		char ch = buf->BufGetCharacter(p);
+		if (ch == '\n')
+			break;
+		indent += TextBuffer::BufCharWidth(ch, indent, buf->tabDist_, buf->nullSubsChar_);
+		if (indent == endIndent) {
+			p++;
+			break;
+		} else if (indent > endIndent) {
+			if (ch != '\t') {
+				p++;
+
+				std::string padded;
+				padded.append(text.begin(), text.end());
+				padded.append(indent - endIndent, ' ');
+				paddedText = std::move(padded);
+			}
+			break;
+		}
+	}
+	endPos = p;
+
+	this->cursorToHint = startPos + textLen;
+	buf->BufReplaceEx(startPos, endPos, !paddedText ? text : *paddedText);
+	this->cursorToHint = NO_HINT;
 }
 
 /*
