@@ -127,7 +127,7 @@ static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, co
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
-static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, int anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void passTwoParseString(highlightDataRec *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
@@ -1239,7 +1239,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 
 	/* Parse it with pass 2 patterns */
 	prevChar = getPrevChar(buf, beginSafety);
-	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, False, GetWindowDelimiters(window), string, nullptr);
+	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, false, GetWindowDelimiters(window), string, nullptr);
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
@@ -1395,7 +1395,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	const char *stringPtr = &string[beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
-	parseString(pass1Patterns, &stringPtr, &stylePtr, endParse - beginParse, &prevChar, False, delimiters, string, nullptr);
+	parseString(pass1Patterns, &stringPtr, &stylePtr, endParse - beginParse, &prevChar, false, delimiters, string, nullptr);
 
 	/* On non top-level patterns, parsing can end early */
 	endParse = std::min<int>(endParse, stringPtr - string + beginSafety);
@@ -1494,7 +1494,7 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, int anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
 	int i, subExecuted, subIndex;
 	char *stylePtr;
 	const char *stringPtr, *savedStartPtr, *startingStringPtr;
