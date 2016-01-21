@@ -680,7 +680,7 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 
 	/* Start with the cursor blanked (widgets don't have focus on creation,
 	   the initial FocusIn event will unblank it and get blinking started) */
-	new_widget->text.textD->cursorOn = False;
+	new_widget->text.textD->cursorOn = false;
 
 	/* Initialize the widget variables */
 	new_widget->text.autoScrollProcID = 0;
@@ -688,8 +688,8 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 	new_widget->text.dragState = NOT_CLICKED;
 	new_widget->text.multiClickState = NO_CLICKS;
 	new_widget->text.lastBtnDown = 0;
-	new_widget->text.selectionOwner = False;
-	new_widget->text.motifDestOwner = False;
+	new_widget->text.selectionOwner = false;
+	new_widget->text.motifDestOwner = false;
 	new_widget->text.emTabsBeforeCursor = 0;
 
 	/* Register the widget to the input manager */
@@ -745,7 +745,7 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer) {
 				/* Switch to empty cursor */
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
-				w->text.textD->pointerHidden = True;
+				w->text.textD->pointerHidden = true;
 
 				/* Listen to mouse movement, focus change, and button presses */
 				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, (Opaque) nullptr);
@@ -755,7 +755,7 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer) {
 				/* Switch to regular cursor */
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
-				w->text.textD->pointerHidden = False;
+				w->text.textD->pointerHidden = false;
 
 				/* Listen for keypresses now */
 				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
@@ -852,8 +852,8 @@ static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event
 	}
 }
 
-static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *event, Boolean *first, int *left, int *top, int *width, int *height) {
-	Boolean removeQueueEntry = False;
+static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *event, bool *first, int *left, int *top, int *width, int *height) {
+	bool removeQueueEntry = false;
 
 	if (event->type == GraphicsExpose) {
 		XGraphicsExposeEvent *e = &event->xgraphicsexpose;
@@ -866,7 +866,7 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 			*width = e->width;
 			*height = e->height;
 
-			*first = False;
+			*first = false;
 		} else {
 			int prev_left = *left;
 			int prev_top = *top;
@@ -877,10 +877,10 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 			*height = std::max<int>(prev_top + *height, y + e->height) - *top;
 		}
 		if (e->count == 0) {
-			removeQueueEntry = True;
+			removeQueueEntry = true;
 		}
 	} else if (event->type == NoExpose) {
-		removeQueueEntry = True;
+		removeQueueEntry = true;
 	}
 	if (removeQueueEntry) {
 		TextDPopGraphicExposeQueueEntry(w->text.textD);
@@ -903,7 +903,7 @@ void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event) {
 	int top;
 	int width;
 	int height;
-	Boolean invalidRect = True;
+	bool invalidRect = true;
 
 	if (event) {
 		adjustRectForGraphicsExposeOrNoExposeEvent(w, event, &invalidRect, &left, &top, &width, &height);
@@ -923,7 +923,8 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 
 	(void)request;
 
-	Boolean redraw = False, reconfigure = False;
+	bool redraw = false;
+	bool reconfigure = false;
 
 	if (new_widget->text.overstrike != current->text.overstrike) {
 		if (current->text.textD->cursorStyle == BLOCK_CURSOR)
@@ -934,7 +935,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 
 	if (new_widget->text.fontStruct != current->text.fontStruct) {
 		if (new_widget->text.lineNumCols != 0)
-			reconfigure = True;
+			reconfigure = true;
 		current->text.textD->TextDSetFont(new_widget->text.fontStruct);
 	}
 
@@ -970,7 +971,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 
 	if (new_widget->text.backlightCharTypes != current->text.backlightCharTypes) {
 		TextDSetupBGClasses((Widget)new_widget, new_widget->text.backlightCharTypes, &new_widget->text.textD->bgClassPixel, &new_widget->text.textD->bgClass, new_widget->text.textD->bgPixel);
-		redraw = True;
+		redraw = true;
 	}
 
 	return redraw;
@@ -1826,7 +1827,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *sec = &buf->secondary_, *primary = &buf->primary_;
-	char *primaryText, *secText;
+
 	int newPrimaryStart, newPrimaryEnd, secWasRect;
 	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState; /* save before endDrag */
 	int silent = hasKey("nobell", args, nArgs);
@@ -1855,15 +1856,14 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	/* Both primary and secondary are in this widget, do the exchange here */
-	primaryText = buf->BufGetSelectionText();
-	secText = buf->BufGetSecSelectText();
+	std::string primaryText = buf->BufGetSelectionTextEx();
+	std::string secText = buf->BufGetSecSelectTextEx();
 	secWasRect = sec->rectangular;
-	buf->BufReplaceSecSelect(primaryText);
+	buf->BufReplaceSecSelectEx(primaryText);
 	newPrimaryStart = primary->start;
-	buf->BufReplaceSelected(secText);
-	newPrimaryEnd = newPrimaryStart + strlen(secText);
-	XtFree(primaryText);
-	XtFree(secText);
+	buf->BufReplaceSelectedEx(secText);
+	newPrimaryEnd = newPrimaryStart + secText.size();
+
 	buf->BufSecondaryUnselect();
 	if (secWasRect) {
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
@@ -1881,26 +1881,25 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	TextBuffer *buf = textD->buffer;
 	TextSelection *primary = &buf->primary_;
 	int rectangular = hasKey("rect", args, nArgs);
-	char *textToCopy;
 	int insertPos, col;
 
 	cancelDrag(w);
 	if (checkReadOnly(w))
 		return;
 	if (primary->selected && rectangular) {
-		textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionText();
 		insertPos = TextDGetInsertPosition(textD);
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
-		buf->BufInsertCol(col, insertPos, textToCopy, nullptr, nullptr);
+		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		XtFree(textToCopy);
+
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
-		textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionText();
 		insertPos = TextDGetInsertPosition(textD);
-		buf->BufInsert(insertPos, textToCopy);
-		textD->TextDSetInsertPosition(insertPos + strlen(textToCopy));
-		XtFree(textToCopy);
+		buf->BufInsertEx(insertPos, textToCopy);
+		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
+
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
 		if (!TextDPositionToXY(textD, TextDGetInsertPosition(textD), &tw->text.btnDownX, &tw->text.btnDownY))
@@ -1915,7 +1914,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *primary = &buf->primary_;
-	char *textToCopy;
+
 	int rectangular = hasKey("rect", args, nArgs);
 	int insertPos, col;
 
@@ -1923,20 +1922,20 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (checkReadOnly(w))
 		return;
 	if (primary->selected && rectangular) {
-		textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionText();
 		insertPos = TextDGetInsertPosition(textD);
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
-		buf->BufInsertCol(col, insertPos, textToCopy, nullptr, nullptr);
+		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		XtFree(textToCopy);
+
 		buf->BufRemoveSelected();
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
-		textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionText();
 		insertPos = TextDGetInsertPosition(textD);
-		buf->BufInsert(insertPos, textToCopy);
-		textD->TextDSetInsertPosition(insertPos + strlen(textToCopy));
-		XtFree(textToCopy);
+		buf->BufInsertEx(insertPos, textToCopy);
+		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
+		
 		buf->BufRemoveSelected();
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
@@ -2930,10 +2929,10 @@ static void toggleOverstrikeAP(Widget w, XEvent *event, String *args, Cardinal *
 	TextWidget tw = reinterpret_cast<TextWidget>(w);
 
 	if (tw->text.overstrike) {
-		tw->text.overstrike = False;
+		tw->text.overstrike = false;
 		tw->text.textD->TextDSetCursorStyle(tw->text.heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
 	} else {
-		tw->text.overstrike = True;
+		tw->text.overstrike = true;
 		if (tw->text.textD->cursorStyle == NORMAL_CURSOR || tw->text.textD->cursorStyle == HEAVY_CURSOR)
 			tw->text.textD->TextDSetCursorStyle(BLOCK_CURSOR);
 	}
@@ -3298,7 +3297,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 	int emTabsBeforeCursor = reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor;
 	int startIndent, toIndent, insertPos, startPos, lineStart;
 	int pos, indent, startPosIndent;
-	char c, *spaceString;
+	char c;
 
 	if (emTabDist <= 0 || emTabsBeforeCursor <= 0)
 		return False;
@@ -3335,12 +3334,11 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 	   to be inserted to make up for a deleted tab, do a BufReplace, otherwise,
 	   do a BufRemove. */
 	if (startPosIndent < toIndent) {
-		spaceString = XtMalloc(toIndent - startPosIndent + 1);
-		memset(spaceString, ' ', toIndent - startPosIndent);
-		spaceString[toIndent - startPosIndent] = '\0';
-		buf->BufReplace(startPos, insertPos, spaceString);
+	
+		std::string spaceString(toIndent - startPosIndent, ' ');
+	
+		buf->BufReplaceEx(startPos, insertPos, spaceString);
 		textD->TextDSetInsertPosition(startPos + toIndent - startPosIndent);
-		XtFree(spaceString);
 	} else {
 		buf->BufRemove(startPos, insertPos);
 		textD->TextDSetInsertPosition(startPos);
