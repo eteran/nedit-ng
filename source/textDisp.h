@@ -28,7 +28,6 @@
 #define TEXTDISP_H_
 
 #include "TextBuffer.h"
-#include "string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -98,10 +97,10 @@ public:
 	void TextDSetCursorStyle(int style);
 	void TextDSetFont(XFontStruct *fontStruct);
 
-	void TextDInsert(view::string_view text);
+	void TextDInsert(const char *text);
 	void TextDMaintainAbsLineNum(int state);
 	void TextDMakeInsertPosVisible();
-	void TextDOverstrike(view::string_view text);
+	void TextDOverstrike(const char *text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDResize(int width, int height);
 	

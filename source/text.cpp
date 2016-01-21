@@ -147,7 +147,6 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int startPos, int re
 static void checkAutoShowInsertPos(Widget w);
 static int checkReadOnly(Widget w);
 static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete);
-static void simpleInsertAtCursorEx(Widget w, const std::string &chars, XEvent *event, int allowPendingDelete);
 static int pendingSelection(Widget w);
 static int deletePendingSelection(Widget w, XEvent *event);
 static int deleteEmulatedTab(Widget w, XEvent *event);
@@ -1240,79 +1239,6 @@ void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPen
 	/* Wrap the text */
 	lineStartText = buf->BufGetRange(lineStartPos, cursorPos);
 	wrappedText = wrapText(tw, lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
-	XtFree(lineStartText);
-
-	/* Insert the text.  Where possible, use TextDInsert which is optimized
-	   for less redraw. */
-	if (replaceSel) {
-		buf->BufReplaceSelected(wrappedText);
-		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (tw->text.overstrike) {
-		if (breakAt == 0 && singleLine)
-			textD->TextDOverstrike(wrappedText);
-		else {
-			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
-			textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		}
-	} else {
-		if (breakAt == 0) {
-			textD->TextDInsert(wrappedText);
-		} else {
-			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
-			textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		}
-	}
-	XtFree(wrappedText);
-	checkAutoShowInsertPos(w);
-	callCursorMovementCBs(w, event);
-}
-
-void TextInsertAtCursorEx(Widget w, const std::string &chars, XEvent *event, int allowPendingDelete, int allowWrap) {
-
-	int wrapMargin, colNum, lineStartPos, cursorPos;
-	char *lineStartText, *wrappedText;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
-	textDisp *textD = tw->text.textD;
-	TextBuffer *buf = textD->buffer;
-	int fontWidth = textD->fontStruct->max_bounds.width;
-	int replaceSel, breakAt = 0;
-
-	/* Don't wrap if auto-wrap is off or suppressed, or it's just a newline */
-	if (!allowWrap || !tw->text.autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
-		simpleInsertAtCursorEx(w, chars, event, allowPendingDelete);
-		return;
-	}
-
-	/* If this is going to be a pending delete operation, the real insert
-	   position is the start of the selection.  This will make rectangular
-	   selections wrap strangely, but this routine should rarely be used for
-	   them, and even more rarely when they need to be wrapped. */
-	replaceSel = allowPendingDelete && pendingSelection(w);
-	cursorPos = replaceSel ? buf->primary_.start : TextDGetInsertPosition(textD);
-
-	/* If the text is only one line and doesn't need to be wrapped, just insert
-	   it and be done (for efficiency only, this routine is called for each
-	   character typed). (Of course, it may not be significantly more efficient
-	   than the more general code below it, so it may be a waste of time!) */
-	wrapMargin = tw->text.wrapMargin != 0 ? tw->text.wrapMargin : textD->width / fontWidth;
-	lineStartPos = buf->BufStartOfLine(cursorPos);
-	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
-	
-	
-	auto it = chars.begin();
-	for(; it != chars.end() && *it != '\n'; ++it) {
-		colNum += TextBuffer::BufCharWidth(*it, colNum, buf->tabDist_, buf->nullSubsChar_);
-	}
-		
-	bool singleLine = it == chars.end();
-	if (colNum < wrapMargin && singleLine) {
-		simpleInsertAtCursorEx(w, chars, event, True);
-		return;
-	}
-
-	/* Wrap the text */
-	lineStartText = buf->BufGetRange(lineStartPos, cursorPos);
-	wrappedText = wrapText(tw, lineStartText, chars.c_str(), lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
 	XtFree(lineStartText);
 
 	/* Insert the text.  Where possible, use TextDInsert which is optimized
@@ -3323,33 +3249,6 @@ static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int
 		}
 
 		if (*c == '\n') {
-			textD->TextDInsert(chars);
-		} else {
-			textD->TextDOverstrike(chars);
-		}
-	} else {
-		textD->TextDInsert(chars);
-	}
-	
-	checkAutoShowInsertPos(w);
-	callCursorMovementCBs(w, event);
-}
-
-static void simpleInsertAtCursorEx(Widget w, const std::string &chars, XEvent *event, int allowPendingDelete) {
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = textD->buffer;
-
-	if (allowPendingDelete && pendingSelection(w)) {
-		buf->BufReplaceSelectedEx(chars);
-		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (reinterpret_cast<TextWidget>(w)->text.overstrike) {
-	
-		auto it = chars.begin();
-		for(; it != chars.end() && *it != '\n'; ++it) {
-			;
-		}
-
-		if (*it == '\n') {
 			textD->TextDInsert(chars);
 		} else {
 			textD->TextDOverstrike(chars);

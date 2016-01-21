@@ -6,7 +6,6 @@
 #include <Xm/Text.h>
 #include <string>
 #include <cassert>
-#include "XString.h"
 
 inline std::string XmTextGetStringEx(Widget widget) {
 	if(char *s = XmTextGetString(widget)) {
@@ -16,15 +15,6 @@ inline std::string XmTextGetStringEx(Widget widget) {
 	}
 	
 	return std::string();
-}
-
-inline XString XmTextGetStringXString(Widget widget) {
-
-	if(char *s = XmTextGetString(widget)) {
-		return XString::takeString(s);
-	}
-	
-	return XString();
 }
 
 
