@@ -552,10 +552,10 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf != nullptr && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str()) == -1) {
+		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
 			DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\n"
 			                                                     "does not match any highlight patterns in this set",
-			        "OK", patternSrc[i].subPatternOf->c_str(), patternSrc[i].name->c_str());
+			        "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
 			return nullptr;
 		}
 	}
@@ -564,7 +564,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 		if (!NamedStyleExists(patternSrc[i].style)) {
 			DialogF(DF_WARN, window->shell, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\n"
 			                                                      "does not match any existing style",
-			        "OK", patternSrc[i].style, patternSrc[i].name->c_str());
+			        "OK", patternSrc[i].style, patternSrc[i].name);
 			return nullptr;
 		}
 	}
@@ -578,7 +578,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 
 			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
 			if (parentindex == -1) {
-				DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name->c_str());
+				DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name);
 				return nullptr;
 			}
 
@@ -679,12 +679,12 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	*parentStylesPtr++ = '\0';
 	*parentStylesPtr++ = '\0';
 	for (i = 1; i < nPass1Patterns; i++) {
-		nullable_string parentName = pass1PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName->c_str())].style;
+		const auto &parentName = pass1PatternSrc[i].subPatternOf;
+		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName)].style;
 	}
 	for (i = 1; i < nPass2Patterns; i++) {
-		nullable_string parentName = pass2PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName->c_str())].style;
+		const auto &parentName = pass2PatternSrc[i].subPatternOf;
+		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName)].style;
 	}
 
 	/* Set up table for mapping colors and fonts to syntax */
@@ -695,7 +695,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	auto setStyleTablePtr = [window](styleTableEntry *p, highlightPattern *pat) {
 		int r, g, b;
 
-		p->highlightName = pat->name->c_str();
+		p->highlightName = pat->name;
 		p->styleName     = pat->style;
 		p->colorName     = ColorOfNamedStyleEx(pat->style);
 		p->bgColorName   = BgColorOfNamedStyleEx(pat->style);
@@ -788,10 +788,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 	}
 	
 	for (int i = 1; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf == nullptr) {
+		if (!patternSrc[i].subPatternOf) {
 			compiledPats[0].nSubPatterns++;
 		} else {
-			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str())].nSubPatterns++;
+			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
 		}
 	}
 
@@ -804,10 +804,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 	}
 
 	for (int i = 1; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf == nullptr) {
+		if (!patternSrc[i].subPatternOf) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str());
+			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf);
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}
@@ -819,7 +819,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
 		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
-			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name->c_str());
+			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name);
 			return nullptr;
 		}
 		int nSubExprs = 0;
@@ -991,8 +991,9 @@ highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
 
 	if (hData && (set = hData->patternSetForWindow)) {
 		for (int i = 0; i < set->nPatterns; i++)
-			if (*(set->patterns[i].name) == name)
+			if (strcmp(set->patterns[i].name, name) == 0) {
 				return &set->patterns[i];
+			}
 	}
 	return nullptr;
 }
@@ -2163,9 +2164,13 @@ static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char 
 
 	if(!patName)
 		return -1;
-	for (int i = 0; i < nPats; i++)
-		if (*(patList[i].name) == patName)
+	
+	for (int i = 0; i < nPats; i++) {
+		if (strcmp(patList[i].name, patName) == 0) {
 			return i;
+		}
+	}
+	
 	return -1;
 }
 
@@ -2173,7 +2178,7 @@ static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int ind
 
 	int topIndex = index;
 	while (patList[topIndex].subPatternOf) {
-		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf->c_str());
+		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
 		if (index == topIndex)
 			return -1; /* amai: circular dependency ?! */
 	}

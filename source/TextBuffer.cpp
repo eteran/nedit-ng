@@ -1425,68 +1425,6 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 ** and "rectEnd", with "text".  If "text" is vertically longer than the
 ** rectangle, add extra lines to make room for it.
 */
-void TextBuffer::BufReplaceRect(int start, int end, int rectStart, int rectEnd, const char *text) {
-	char *deletedText;
-	char *insText = nullptr;
-	int i, nInsertedLines, nDeletedLines, insLen, hint;
-	int insertDeleted, insertInserted, deleteInserted;
-	int linesPadded = 0;
-
-	/* Make sure start and end refer to complete lines, since the
-	   columnar delete and insert operations will replace whole lines */
-	start = BufStartOfLine(start);
-	end = BufEndOfLine(end);
-
-	callPreDeleteCBs(start, end - start);
-
-	/* If more lines will be deleted than inserted, pad the inserted text
-	   with newlines to make it as long as the number of deleted lines.  This
-	   will indent all of the text to the right of the rectangle to the same
-	   column.  If more lines will be inserted than deleted, insert extra
-	   lines in the buffer at the end of the rectangle to make room for the
-	   additional lines in "text" */
-	nInsertedLines = countLines(text);
-	nDeletedLines = BufCountLines(start, end);
-	if (nInsertedLines < nDeletedLines) {
-		char *insPtr;
-
-		insLen = strlen(text);
-		insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
-		strcpy(insText, text);
-		insPtr = insText + insLen;
-		for (i = 0; i < nDeletedLines - nInsertedLines; i++)
-			*insPtr++ = '\n';
-		*insPtr = '\0';
-	} else if (nDeletedLines < nInsertedLines) {
-		linesPadded = nInsertedLines - nDeletedLines;
-		for (i = 0; i < linesPadded; i++)
-			insert(end, "\n");
-	} else /* nDeletedLines == nInsertedLines */ {
-	}
-
-	/* Save a copy of the text which will be modified for the modify CBs */
-	deletedText = BufGetRange(start, end);
-
-	/* Delete then insert */
-	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
-	if (insText) {
-		insertCol(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
-		XtFree(insText);
-	} else
-		insertCol(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
-
-	/* Figure out how many chars were inserted and call modify callbacks */
-	if (insertDeleted != deleteInserted + linesPadded)
-		fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
-	callModifyCBs(start, end - start, insertInserted, 0, deletedText);
-	XtFree(deletedText);
-}
-
-/*
-** Replace a rectangular area in buf, given by "start", "end", "rectStart",
-** and "rectEnd", with "text".  If "text" is vertically longer than the
-** rectangle, add extra lines to make room for it.
-*/
 void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
 	char *deletedText;
 	char *insText = nullptr;
@@ -1711,9 +1649,6 @@ void TextBuffer::BufRemoveSelected() {
 	removeSelected(&primary_);
 }
 
-void TextBuffer::BufReplaceSelected(const char *text) {
-	replaceSelected(&primary_, text);
-}
 
 void TextBuffer::BufReplaceSelectedEx(view::string_view text) {
 	replaceSelectedEx(&primary_, text);
@@ -1755,10 +1690,6 @@ std::string TextBuffer::BufGetSecSelectTextEx() {
 
 void TextBuffer::BufRemoveSecSelect() {
 	removeSelected(&secondary_);
-}
-
-void TextBuffer::BufReplaceSecSelect(const char *text) {
-	replaceSelected(&secondary_, text);
 }
 
 void TextBuffer::BufReplaceSecSelectEx(view::string_view text) {
@@ -3102,27 +3033,6 @@ void TextBuffer::removeSelected(TextSelection *sel) {
 	}	
 }
 
-void TextBuffer::replaceSelected(TextSelection *sel, const char *text) {
-
-	TextSelection oldSelection = *sel;
-
-	/* If there's no selection, return */
-	if (!*sel)
-		return;
-
-	/* Do the appropriate type of replace */
-	if (sel->rectangular) {
-		BufReplaceRect(sel->start, sel->end, sel->rectStart, sel->rectEnd, text);
-	} else {
-		BufReplace(sel->start, sel->end, text);
-	}
-
-	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
-	   can't detect when the contents of a selection goes away) */
-	sel->selected = false;
-	redisplaySelection(&oldSelection, sel);
-}
-
 void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 
 	TextSelection oldSelection = *sel;
@@ -3140,7 +3050,7 @@ void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 	}
 	
 
-	/* Unselect (happens automatically in BufReplace, but BufReplaceRect
+	/* Unselect (happens automatically in BufReplace, but BufReplaceRectEx
 	   can't detect when the contents of a selection goes away) */
 	sel->selected = false;
 	redisplaySelection(&oldSelection, sel);

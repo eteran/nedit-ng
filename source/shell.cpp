@@ -835,7 +835,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 		}
 		if (cmdData->flags & REPLACE_SELECTION) {
 			reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
-			buf->BufReplaceSelected(outText);
+			buf->BufReplaceSelectedEx(outText);
 			TextSetCursorPos(cmdData->textW, buf->cursorPosHint_);
 			if (reselectStart != -1)
 				buf->BufSelect(reselectStart, reselectStart + strlen(outText));

@@ -17,12 +17,12 @@ public:
 	void swap(highlightPattern &other);
 
 public:
-	nullable_string name;
+	const char *name;
 	char *startRE;
 	char *endRE;
 	char *errorRE;
 	char *style;
-	nullable_string subPatternOf;
+	char *subPatternOf;
 	int flags;
 };
 

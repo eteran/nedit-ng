@@ -198,7 +198,7 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 		}
 
 		if (modified) {
-			buf->BufReplaceSelected(text);
+			buf->BufReplaceSelectedEx(text);
 		}
 
 		XtFree(text);

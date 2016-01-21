@@ -1527,7 +1527,7 @@ static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
 				auto subMenuName = copySubstringEx(namePtr, subSep - namePtr);
 				newSubPane = createUserSubMenuEx(subPane, subMenuName, &btn);
 
-				menuTree[nTreeEntries].name = hierName;
+				menuTree[nTreeEntries].name       = hierName;
 				menuTree[nTreeEntries++].menuPane = newSubPane;
 
 				currentLE = allocUserMenuListElement(btn, nullptr);

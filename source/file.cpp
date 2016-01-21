@@ -583,7 +583,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	/* insert the contents of the file in the selection or at the insert
 	   position in the window if no selection exists */
 	if (window->buffer->primary_.selected) {
-		window->buffer->BufReplaceSelected(fileString);
+		window->buffer->BufReplaceSelectedEx(fileString);
 	} else {
 		window->buffer->BufInsert(TextGetCursorPos(window->lastFocus), fileString);
 	}

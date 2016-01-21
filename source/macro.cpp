@@ -1772,7 +1772,7 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 	}
 
 	/* Do the replace */
-	window->buffer->BufReplaceSelected(string);
+	window->buffer->BufReplaceSelectedEx(string);
 	result->tag = NO_TAG;
 	return True;
 }

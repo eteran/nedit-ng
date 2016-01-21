@@ -6,51 +6,57 @@
 #include <algorithm>
 #include <cassert>
 #include <Xm/Xm.h>
+#include "MotifHelper.h"
+
+// NOTE(eteran): this does more copies than necessary, we could do reference
+//               counting, but we would rather this be "obviously" correct
 
 class XString {
 public:
 	typedef char*       iterator;
 	typedef const char* const_iterator;
+	
 public:
-	XString() : size_(0) {
+	XString() : ptr_(nullptr), size_(0) {
 	}
 	
-	XString(nullptr_t) : size_(0) {
+	explicit XString(nullptr_t) : ptr_(nullptr), size_(0) {
 	}
 	
-	XString(const std::string &s) : size_(s.size()) {
-		char *str = XtMalloc(s.size() + 1);
-		strncpy(str, s.c_str(), s.size());
-		str[s.size()] = '\0';
-
-		ptr_  = std::shared_ptr<char>(str, XtFree);
-		size_ = s.size();		
+	explicit XString(const std::string &text) : ptr_(nullptr), size_(0) {
+	
+	
+		size_ = text.size();	
+		
+		ptr_  = XtMalloc(size_ + 1);
+		strncpy(ptr_, text.c_str(), size_ + 1);
+		ptr_[size_] = '\0';
+			
 	}
 	
-	XString(const char *s) : size_(0) {
-		if(s) {
-			int length = strlen(s);
-			char *str = XtMalloc(length + 1);
-			strncpy(str, s, length);
-			str[length] = '\0';
-
-			ptr_  = std::shared_ptr<char>(str, XtFree);
-			size_ = length;	
+	explicit XString(const char *text) : ptr_(nullptr), size_(0) {
+		if(text) {
+			size_ = strlen(text);
+			ptr_  = XtMalloc(size_ + 1);
+			strcpy(ptr_, text);
 		}
 	}	
 	
-	XString(const char *s, int length) : size_(0) {
-		if(s) {	
-			char *str = XtMalloc(length + 1);
-			strncpy(str, s, length);
-			str[length] = '\0';
-	
-			ptr_  = std::shared_ptr<char>(str, XtFree);
+	XString(const char *text, size_t length) : ptr_(nullptr), size_(length) {
+		if(text) {	
 			size_ = length;	
+			ptr_  = XtMalloc(size_ + 1);
+			strncpy(ptr_, text, size_ + 1);
+			ptr_[size_] = '\0';
 		}
 	}
 	
-	XString(const XString &other) : ptr_(other.ptr_), size_(other.size_) {
+	XString(const XString &other) : ptr_(nullptr), size_(0) {
+		if(other.ptr_) {	
+			size_ = strlen(other.ptr_);
+			ptr_  = XtMalloc(size_ + 1);
+			strcpy(ptr_, other.ptr_);
+		}	
 	}
 	
 	XString& operator=(const XString &rhs) {
@@ -60,7 +66,14 @@ public:
 		return *this;
 	}
 	
-	XString(XString &&other) : ptr_(std::move(other.ptr_)), size_(other.size_) {
+	XString& operator=(const std::string &rhs) {
+		XString(rhs).swap(*this);
+		return *this;
+	}	
+	
+	XString(XString &&other) : ptr_(other.ptr_), size_(other.size_) {
+		other.ptr_  = nullptr;
+		other.size_ = 0;
 	}
 	
 	XString& operator=(XString &&rhs) {
@@ -69,8 +82,9 @@ public:
 		}
 		return *this;
 	}
-	
+
 	~XString() {
+		XtFree(ptr_);
 	}
 
 public:
@@ -87,52 +101,53 @@ public:
 	}
 	
 public:
-	iterator begin()             { return ptr_.get(); }
-	iterator end()               { return ptr_.get() + size(); }
-	const_iterator begin() const { return ptr_.get(); }
-	const_iterator end() const   { return ptr_.get() + size(); }
+	iterator begin()             { return ptr_;          }
+	iterator end()               { return ptr_ + size_; }
+	const_iterator begin() const { return ptr_;          }
+	const_iterator end() const   { return ptr_ + size_; }
 	
 public:
 	char operator[](size_t index) const {
-		return ptr_.get()[index];
+		return ptr_[index];
 	}
 	
 	char& operator[](size_t index) {
-		return ptr_.get()[index];
+		return ptr_[index];
 	}
 	
 	char *c_str() {
-		return ptr_.get();
+		return ptr_;
 	}
 	
 	const char *c_str() const {
-		return ptr_.get();
+		return ptr_;
 	}
 	
 	char *data() {
-		return ptr_.get();
+		return ptr_;
 	}
 	
 	const char *data() const {
-		return ptr_.get();
+		return ptr_;
 	}	
 
 public:
 	int compare(const char *s) const {
-		return strcmp(ptr_.get(), s);
+		assert(s);
+		return strcmp(ptr_, s);
 	}
 	
 	int compare(const std::string &s) const {
-		return strcmp(ptr_.get(), s.c_str());
+		return strcmp(ptr_, s.c_str());
 	}	
 	
 	int compare(const XString &s) const {
-		return strcmp(ptr_.get(), s.ptr_.get());
+		return strcmp(ptr_, s.ptr_);
 	}	
 	
 public:
 	XmString toXmString() const {
-		return XmStringCreateSimple(ptr_.get());
+		return XmStringCreateSimple(ptr_);
 	}
 	
 public:
@@ -140,7 +155,7 @@ public:
 	// and thus will free it later
 	static XString takeString(char *s) {
 		XString str;
-		str.ptr_  = std::shared_ptr<char>(s, XtFree);
+		str.ptr_  = s;
 		str.size_ = strlen(s);
 		return str;
 	}
@@ -148,13 +163,12 @@ public:
 	template <class... Args>
 	static XString format(const char *format, Args... args) {
 	
-		int length = snprintf(nullptr, 0, format, args...) + 1;	
-		char *s    = XtMalloc(length);
-		
-		snprintf(s, length, format, args...);	
+		int length = snprintf(nullptr, 0, format, args...);	
+		char *s    = XtMalloc(length + 1);
+		snprintf(s, length + 1, format, args...);	
 		
 		XString str;
-		str.ptr_  = std::shared_ptr<char>(s, XtFree);
+		str.ptr_  = s;
 		str.size_ = length;
 		return str;
 	}
@@ -162,13 +176,13 @@ public:
 public:
 	void swap(XString &other) {
 		using std::swap;
-		swap(ptr_, other.ptr_);
+		swap(ptr_,  other.ptr_);
 		swap(size_, other.size_);
 	}
 	
 private:
-	std::shared_ptr<char> ptr_;
-	int                   size_;
+	char  *ptr_;
+	size_t size_;
 };
 
 inline bool operator==(const XString &lhs, const XString &rhs) {

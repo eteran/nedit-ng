@@ -56,22 +56,28 @@ public:
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
 private:
-	
+public:  bool BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
+public:  bool BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
+public:  bool BufSubstituteNullChars(char *string, int length);
+public:  char *BufGetAll();
+public:  char *BufGetRange(int start, int end);
+public:  char *BufGetSecSelectText();
+public:  char *BufGetSelectionText();
+public:  char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
+public:  int BufCmp(int pos, int len, const char *cmpText);
+public:  void BufInsertCol(int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);	
+public:  void BufInsert(int pos, const char *text);
+public:  void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
+public:  void BufReplace(int start, int end, const char *text);
+public:  void BufSetAll(const char *text);
+public:  void BufUnsubstituteNullChars(char *string) const;
+
 public:
-	bool BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
-	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
-	bool BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
-	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;
-	bool BufSubstituteNullChars(char *string, int length);
+	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
+	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSubstituteNullCharsEx(std::string &string);
-	char *BufGetAll();
-	char *BufGetRange(int start, int end);
-	char *BufGetSecSelectText();
-	char *BufGetSelectionText();
-	char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);
 	char BufGetCharacter(int pos) const;
 	const char *BufAsString();
-	int BufCmp(int pos, int len, const char *cmpText);
 	int BufCmpEx(int pos, int len, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
@@ -100,11 +106,8 @@ public:
 	void BufClearRect(int start, int end, int rectStart, int rectEnd);
 	void BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos);
 	void BufHighlight(int start, int end);
-	void BufInsert(int pos, const char *text);
-	void BufInsertCol(int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);
 	void BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufInsertEx(int pos, view::string_view text);
-	void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);
 	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufRectHighlight(int start, int end, int rectStart, int rectEnd);
 	void BufRectSelect(int start, int end, int rectStart, int rectEnd);
@@ -114,24 +117,18 @@ public:
 	void BufRemoveRect(int start, int end, int rectStart, int rectEnd);
 	void BufRemoveSecSelect();
 	void BufRemoveSelected();
-	void BufReplace(int start, int end, const char *text);
 	void BufReplaceEx(int start, int end, view::string_view text);
-	void BufReplaceRect(int start, int end, int rectStart, int rectEnd, const char *text);
 	void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text);
-	void BufReplaceSecSelect(const char *text);
-	void BufReplaceSecSelectEx(view::string_view text);
-	void BufReplaceSelected(const char *text);
+	void BufReplaceSecSelectEx(view::string_view text);	
 	void BufReplaceSelectedEx(view::string_view text);
 	void BufSecRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufSecondarySelect(int start, int end);
 	void BufSecondaryUnselect();
 	void BufSelect(int start, int end);
-	void BufSetAll(const char *text);
 	void BufSetAllEx(view::string_view text);
 	void BufSetTabDistance(int tabDist);
 	void BufUnhighlight();
 	void BufUnselect();
-	void BufUnsubstituteNullChars(char *string) const;
 	void BufUnsubstituteNullCharsEx(std::string &string) const;
 
 private:
@@ -154,7 +151,6 @@ private:
 	void reallocateBuf(int newGapStart, int newGapLen);
 	void redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection);
 	void removeSelected(TextSelection *sel);
-	void replaceSelected(TextSelection *sel, const char *text);
 	void replaceSelectedEx(TextSelection *sel, view::string_view text); 
 	void updateSelections(int pos, int nDeleted, int nInserted);
 		 	

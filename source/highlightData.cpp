@@ -122,7 +122,6 @@ static int dialogEmpty(void);
 static int updatePatternSet(void);
 static patternSet *getDialogPatternSet(void);
 static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
-static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo);
 static void freeItemCB(void *item);
 static void freePatternSrc(highlightPattern *pat, bool freeStruct);
 static void freePatternSet(patternSet *p);
@@ -504,9 +503,9 @@ static void convertOldPatternSet(patternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
-		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name->c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -696,7 +695,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 	for (int pn = 0; pn < patSet->nPatterns; pn++) {
 		highlightPattern *pat = &patSet->patterns[pn];
 		outBuf->BufInsertEx(outBuf->BufGetLength(), indentStr);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), *(pat->name));
+		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->startRE) {
 			std::string str = MakeQuotedStringEx(pat->startRE);
@@ -716,7 +715,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), *(pat->subPatternOf));
+			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf);
 		outBuf->BufInsert(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
 			outBuf->BufInsert(outBuf->BufGetLength(), "D");
@@ -879,7 +878,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 		return False;
 
 	/* read the sub-pattern-of field */
-	pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
+	pattern->subPatternOf = ReadSymbolicField(inPtr);
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -1390,8 +1389,9 @@ void EditHighlightPatterns(WindowInfo *window) {
 	/* Copy the list of patterns to one that the user can freely edit */
 	HighlightDialog.patterns = new highlightPattern *[MAX_PATTERNS];
 	nPatterns = patSet == nullptr ? 0 : patSet->nPatterns;
-	for (i = 0; i < nPatterns; i++)
-		HighlightDialog.patterns[i] = copyPatternSrc(&patSet->patterns[i], nullptr);
+	for (i = 0; i < nPatterns; i++) {
+		HighlightDialog.patterns[i] = new highlightPattern(patSet->patterns[i]);
+	}
 	HighlightDialog.nPatterns = nPatterns;
 
 	/* Create a form widget in an application shell */
@@ -1796,8 +1796,9 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		SetIntText(HighlightDialog.lineContextW, 1);
 		SetIntText(HighlightDialog.charContextW, 0);
 	} else {
-		for (i = 0; i < newPatSet->nPatterns; i++)
-			HighlightDialog.patterns[i] = copyPatternSrc(&newPatSet->patterns[i], nullptr);
+		for (i = 0; i < newPatSet->nPatterns; i++) {
+			HighlightDialog.patterns[i] = new highlightPattern(newPatSet->patterns[i]);
+		}
 		HighlightDialog.nPatterns = newPatSet->nPatterns;
 		SetIntText(HighlightDialog.lineContextW, newPatSet->lineContext);
 		SetIntText(HighlightDialog.charContextW, newPatSet->charContext);
@@ -1903,8 +1904,10 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	/* Update the dialog */
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
-	for (i = 0; i < defaultPatSet->nPatterns; i++)
-		HighlightDialog.patterns[i] = copyPatternSrc(&defaultPatSet->patterns[i], nullptr);
+	for (i = 0; i < defaultPatSet->nPatterns; i++) {
+		HighlightDialog.patterns[i] = new highlightPattern(defaultPatSet->patterns[i]);
+	}
+	
 	SetIntText(HighlightDialog.lineContextW, defaultPatSet->lineContext);
 	SetIntText(HighlightDialog.charContextW, defaultPatSet->charContext);
 	ChangeManagedListData(HighlightDialog.managedListW);
@@ -1987,16 +1990,16 @@ static void matchTypeCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg) {
 
 	(void)cbArg;
-
-	highlightPattern *pat;
+	
+	auto oldPattern = static_cast<highlightPattern *>(oldItem);
 
 	/* If the dialog is currently displaying the "new" entry and the
 	   fields are empty, that's just fine */
-	if (oldItem == nullptr && dialogEmpty())
+	if (!oldItem && dialogEmpty())
 		return nullptr;
 
 	/* If there are no problems reading the data, just return it */
-	pat = readDialogFields(True);
+	highlightPattern *pat = readDialogFields(True);
 	if(pat)
 		return (void *)pat;
 
@@ -2004,7 +2007,11 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 	   read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Entry", "Discard incomplete entry\nfor current pattern?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : (void *)copyPatternSrc((highlightPattern *)oldItem, nullptr);
+			if(!oldItem) {
+				return nullptr;
+			}
+			
+			return new highlightPattern(*oldPattern);
 		}
 	}
 
@@ -2019,7 +2026,10 @@ static void setDisplayedCB(void *item, void *cbArg) {
 	(void)cbArg;
 
 	highlightPattern *pat = (highlightPattern *)item;
-	int isSubpat, isDeferred, isColorOnly, isRange;
+	bool isSubpat;
+	bool isDeferred;
+	bool isColorOnly;
+	bool isRange;
 
 	if(!item) {
 		XmTextSetStringEx(HighlightDialog.nameW, "");
@@ -2035,21 +2045,22 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.rangeW, False, False);
 		setStyleMenu("Plain");
 	} else {
-		isSubpat = pat->subPatternOf != nullptr;
-		isDeferred = pat->flags & DEFER_PARSING;
+		isSubpat    = (bool)pat->subPatternOf;
+		isDeferred  = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = pat->endRE != nullptr;
-		XmTextSetStringEx(HighlightDialog.nameW, *(pat->name));
-		XmTextSetStringEx(HighlightDialog.parentW, *(pat->subPatternOf));
-		XmTextSetStringEx(HighlightDialog.startW, pat->startRE);
-		XmTextSetStringEx(HighlightDialog.endW, pat->endRE);
-		XmTextSetStringEx(HighlightDialog.errorW, pat->errorRE);
-		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred, False);
-		RadioButtonChangeState(HighlightDialog.deferredW, !isSubpat && isDeferred, False);
-		RadioButtonChangeState(HighlightDialog.subPatW, isSubpat && !isColorOnly, False);
-		RadioButtonChangeState(HighlightDialog.colorPatW, isSubpat && isColorOnly, False);
-		RadioButtonChangeState(HighlightDialog.simpleW, !isRange, False);
-		RadioButtonChangeState(HighlightDialog.rangeW, isRange, False);
+		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
+		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
+		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE);
+		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE);
+		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE);
+		
+		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred,  False);
+		RadioButtonChangeState(HighlightDialog.deferredW, !isSubpat &&  isDeferred,  False);
+		RadioButtonChangeState(HighlightDialog.subPatW,    isSubpat && !isColorOnly, False);
+		RadioButtonChangeState(HighlightDialog.colorPatW,  isSubpat &&  isColorOnly, False);
+		RadioButtonChangeState(HighlightDialog.simpleW,   !isRange, False);
+		RadioButtonChangeState(HighlightDialog.rangeW,     isRange, False);
 		setStyleMenu(pat->style);
 	}
 	updateLabels();
@@ -2183,17 +2194,18 @@ static highlightPattern *readDialogFields(int silent) {
 		pat->flags = COLOR_ONLY;
 
 	/* read the name field */
-	pat->name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
+	pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW, "highlight pattern name", silent);
 	if (!pat->name) {
 		delete pat;
 		return nullptr;
 	}
 
-	if (pat->name->empty()) {
+	if (strcmp(pat->name, "") == 0) {
 		if (!silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name", "Please specify a name\nfor the pattern", "OK");
 			XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
 		}
+		XtFree((char *)pat->name);
 		delete pat;
 		return nullptr;
 	}
@@ -2243,7 +2255,9 @@ static highlightPattern *readDialogFields(int silent) {
 			freePatternSrc(pat, true);
 			return nullptr;
 		}
-		pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
+		char *p = XmTextGetString(HighlightDialog.parentW);
+		pat->subPatternOf = p;
+		XtFree(p);
 	}
 
 	/* read the styles option menu */
@@ -2392,10 +2406,12 @@ static patternSet *getDialogPatternSet(void) {
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	patSet->nPatterns    = HighlightDialog.nPatterns;
-	patSet->patterns     = (highlightPattern *)XtMalloc(sizeof(highlightPattern) * HighlightDialog.nPatterns);
+	patSet->patterns     = new highlightPattern[HighlightDialog.nPatterns];
 	
-	for (i = 0; i < HighlightDialog.nPatterns; i++)
-		copyPatternSrc(HighlightDialog.patterns[i], &patSet->patterns[i]);
+	for (i = 0; i < HighlightDialog.nPatterns; i++) {		
+		patSet->patterns[i] = *(HighlightDialog.patterns[i]);
+	}
+	
 	return patSet;
 }
 
@@ -2417,7 +2433,7 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 		
 		if (pat1->flags != pat2->flags)
 			return True;
-		if (AllocatedStringsDiffer(pat1->name->c_str(), pat2->name->c_str()))
+		if (AllocatedStringsDiffer(pat1->name, pat2->name))
 			return True;
 		if (AllocatedStringsDiffer(pat1->startRE, pat2->startRE))
 			return True;
@@ -2427,35 +2443,10 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 			return True;
 		if (AllocatedStringsDiffer(pat1->style, pat2->style))
 			return True;
-		if (AllocatedStringsDiffer(pat1->subPatternOf->c_str(), pat2->subPatternOf->c_str()))
+		if (AllocatedStringsDiffer(pat1->subPatternOf, pat2->subPatternOf))
 			return True;
 	}
 	return False;
-}
-
-/*
-** Copy a highlight pattern data structure and all of the allocated data
-** it contains.  If "copyTo" is non-null, use that as the top-level structure,
-** otherwise allocate a new highlightPattern structure and return it as the
-** function value.
-*/
-static highlightPattern *copyPatternSrc(const highlightPattern *pat, highlightPattern *copyTo) {
-	highlightPattern *newPat;
-
-	if(!copyTo) {
-		newPat = new highlightPattern;
-	} else {
-		newPat = copyTo;
-	}
-
-	newPat->name         = pat->name;
-	newPat->startRE      = XtNewStringEx(pat->startRE);
-	newPat->endRE        = XtNewStringEx(pat->endRE);
-	newPat->errorRE      = XtNewStringEx(pat->errorRE);
-	newPat->style        = XtNewStringEx(pat->style);
-	newPat->subPatternOf = pat->subPatternOf;
-	newPat->flags        = pat->flags;
-	return newPat;
 }
 
 /*
