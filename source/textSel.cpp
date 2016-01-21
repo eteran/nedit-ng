@@ -90,7 +90,7 @@ static Atom getAtom(Display *display, int atomNum);
 ** in its attached buffer (a buffer can be attached to multiple text widgets).
 */
 void HandleXSelections(Widget w) {
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
 	/* Remove any existing selection handlers for other widgets */
 	for (const auto &pair : buf->modifyProcs_) {
@@ -109,7 +109,7 @@ void HandleXSelections(Widget w) {
 ** (if "w" was the designated selection owner)
 */
 void StopHandlingXSelections(Widget w) {
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
 
 	for (auto it = buf->modifyProcs_.begin(); it != buf->modifyProcs_.end(); ++it) {
@@ -225,7 +225,7 @@ void ExchangeSelections(Widget w, Time time) {
 void MovePrimarySelection(Widget w, Time time, int isColumnar) {
 	static Atom targets[2] = {XA_STRING};
 	static int isColFlag;
-	static XtPointer clientData[2] = {(XtPointer)&isColFlag, (XtPointer)&isColFlag};
+	static XtPointer clientData[2] = {&isColFlag, &isColFlag};
 
 	targets[1] = getAtom(XtDisplay(w), A_DELETE);
 	isColFlag = isColumnar;
@@ -240,8 +240,8 @@ void MovePrimarySelection(Widget w, Time time, int isColumnar) {
 */
 void InsertClipboard(Widget w, int isColumnar) {
 	unsigned long length, retLength;
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto buf   = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 	int cursorLineStart, column, cursorPos;
 	long id = 0;
 
@@ -396,8 +396,8 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 	cbInfo->widget       = (Widget)w;
 	cbInfo->actionText   = actionText;
 	cbInfo->length       = actionTextLen;
-	XtAddEventHandler(w, 0, True, selectNotifyEH, (XtPointer)cbInfo);
-	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, (XtPointer)cbInfo);
+	XtAddEventHandler(w, 0, True, selectNotifyEH, cbInfo);
+	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
 }
 
 /*
@@ -409,7 +409,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 
 	(void)selType;
 
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int isColumnar = *(int *)clientData;
 	int cursorLineStart, cursorPos, column, row;
 
@@ -458,7 +458,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 
 	(void)selType;
 
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 	int *resultFlag = (int *)clientData;
 
 	/* Confirm that the returned value is of the correct type */
@@ -523,7 +523,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 */
 static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
 	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 	Display *display = XtDisplay(w);
 	Atom *targets, dummyAtom;
 	unsigned long nItems, dummyULong;
@@ -536,8 +536,8 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		/* We really don't directly support COMPOUND_TEXT, but recent
 		   versions gnome-terminal incorrectly ask for it, even though
 		   don't declare that we do.  Just reply in string format. */
-		*type = XA_STRING;
-		*value = (XtPointer)buf->BufGetSelectionText();
+		*type   = XA_STRING;
+		*value  = buf->BufGetSelectionText();
 		*length = strlen((char *)*value);
 		*format = 8;
 		buf->BufUnsubstituteNullChars((char *)*value);
@@ -555,7 +555,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		targets[5] = getAtom(display, A_INSERT_SELECTION);
 		targets[6] = getAtom(display, A_DELETE);
 		*type = XA_ATOM;
-		*value = (XtPointer)targets;
+		*value = targets;
 		*length = N_SELECT_TARGETS;
 		*format = 32;
 		return True;
@@ -625,7 +625,7 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 
 	(void)selType;
 
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
 	/* target must be string */
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
@@ -634,7 +634,7 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 	/* Return the contents of the secondary selection.  The memory allocated
 	   here is freed by the X toolkit */
 	*type = XA_STRING;
-	*value = (XtPointer)buf->BufGetSecSelectText();
+	*value = buf->BufGetSecSelectText();
 	*length = strlen((char *)*value);
 	*format = 8;
 	buf->BufUnsubstituteNullChars((char *)*value);
@@ -670,7 +670,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *t
 		targets[1] = getAtom(display, A_TIMESTAMP);
 		targets[2] = getAtom(display, A_INSERT_SELECTION);
 		*type = XA_ATOM;
-		*value = (XtPointer)targets;
+		*value = targets;
 		*length = 3;
 		*format = 32;
 		return True;
@@ -729,9 +729,9 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 
 	(void)continueDispatch;
 
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
-	XSelectionEvent *e = (XSelectionEvent *)event;
-	selectNotifyInfo *cbInfo = (selectNotifyInfo *)data;
+	auto buf    = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto e      = reinterpret_cast<XSelectionEvent *>(event);
+	auto cbInfo = static_cast<selectNotifyInfo *>(data);
 	int selStart, selEnd;
 
 	/* Check if this was the selection request for which this handler was
