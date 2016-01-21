@@ -471,8 +471,7 @@ std::string WriteHighlightStringEx(void) {
 			continue;
 		}
 		
-		written = true;
-		
+		written = true;		
 		outBuf->BufInsertEx(outBuf->BufGetLength(), *patSet->languageMode);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
@@ -648,13 +647,13 @@ int LMHasHighlightPatterns(view::string_view languageMode) {
 ** edited in the dialog.
 */
 void RenameHighlightPattern(const char *oldName, const char *newName) {
-	int i;
 
-	for (i = 0; i < NPatternSets; i++) {
+	for (int i = 0; i < NPatternSets; i++) {
 		if (oldName == *PatternSets[i]->languageMode) {
 			PatternSets[i]->languageMode = std::string(newName);
 		}
 	}
+	
 	if (HighlightDialog.shell) {
 		if (*HighlightDialog.langModeName == oldName) {
 			HighlightDialog.langModeName = newName;
@@ -743,10 +742,13 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 
 	/* read language mode field */
 	patSet.languageMode = ReadSymbolicField(inPtr);
-	if (patSet.languageMode == nullptr)
+	if (!patSet.languageMode) {
 		return highlightError(stringStart, *inPtr, "language mode must be specified");
-	if (!SkipDelimiter(inPtr, &errMsg))
+	}
+
+	if (!SkipDelimiter(inPtr, &errMsg)) {
 		return highlightError(stringStart, *inPtr, errMsg);
+	}
 
 	/* look for "Default" keyword, and if it's there, return the default
 	   pattern set */
