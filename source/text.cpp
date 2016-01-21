@@ -633,7 +633,6 @@ static Cursor empty_cursor = 0;
 */
 static void initialize(TextWidget request, TextWidget new_widget) {
 	XFontStruct *fs = new_widget->text.fontStruct;
-	char *delimiters;
 	TextBuffer *buf;
 	Pixel white, black;
 	int textLeft;
@@ -674,9 +673,7 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 	   delimiters.  The memory use scheme here is that new values are
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
-	delimiters = XtMalloc(strlen(new_widget->text.delimiters) + 4);
-	sprintf(delimiters, "%s%s", " \t\n", new_widget->text.delimiters);
-	new_widget->text.delimiters = delimiters;
+	new_widget->text.delimiters = XString::format("%s%s", " \t\n", new_widget->text.delimiters.c_str());
 
 	/* Start with the cursor blanked (widgets don't have focus on creation,
 	   the initial FocusIn event will unblank it and get blinking started) */
@@ -782,7 +779,7 @@ static void destroy(TextWidget w) {
 
 	if (w->text.cursorBlinkProcID != 0)
 		XtRemoveTimeOut(w->text.cursorBlinkProcID);
-	XtFree(w->text.delimiters);
+
 	XtRemoveAllCallbacks((Widget)w, textNfocusCallback);
 	XtRemoveAllCallbacks((Widget)w, textNlosingFocusCallback);
 	XtRemoveAllCallbacks((Widget)w, textNcursorMovementCallback);
@@ -946,10 +943,13 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	   doesn't have to manage it, and add mandatory delimiters blank,
 	   tab, and newline to the list */
 	if (new_widget->text.delimiters != current->text.delimiters) {
-		char *delimiters = XtMalloc(strlen(new_widget->text.delimiters) + 4);
-		XtFree(current->text.delimiters);
-		sprintf(delimiters, "%s%s", " \t\n", new_widget->text.delimiters);
-		new_widget->text.delimiters = delimiters;
+
+		// TODO(eteran): is this a copy and paste error? this seems to just add white space chars to the delimeters
+		//               already in there. I would have expected that this would be:
+		// current->text.delimiters = XString::format("%s%s", " \t\n", new_widget->text.delimiters.c_str());
+		// since that would be consistent with what a lot of the other code is doing...
+		//
+		new_widget->text.delimiters = XString::format("%s%s", " \t\n", new_widget->text.delimiters.c_str());
 	}
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
@@ -2267,7 +2267,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = TextDGetInsertPosition(textD);
 	int pos, lineStart = textD->buffer->BufStartOfLine(insertPos);
-	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
+	XString delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2286,7 +2286,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	}
 
 	pos = std::max<int>(insertPos - 1, 0);
-	while (strchr(delimiters, textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
+	while (strchr(delimiters.c_str(), textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
 		pos--;
 	}
 
@@ -2301,7 +2301,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = TextDGetInsertPosition(textD);
 	int pos, lineEnd = textD->buffer->BufEndOfLine(insertPos);
-	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
+	XString delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2320,7 +2320,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	}
 
 	pos = insertPos;
-	while (strchr(delimiters, textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
+	while (strchr(delimiters.c_str(), textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
 		pos++;
 	}
 
@@ -2414,7 +2414,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = TextDGetInsertPosition(textD);
-	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
+	XString delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2426,19 +2426,19 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	if (hasKey("tail", args, nArgs)) {
 		for (; pos < buf->BufGetLength(); pos++) {
-			if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
+			if (strchr(delimiters.c_str(), buf->BufGetCharacter(pos)) == nullptr) {
 				break;
 			}
 		}
-		if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
+		if (strchr(delimiters.c_str(), buf->BufGetCharacter(pos)) == nullptr) {
 			pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
 		}
 	} else {
-		if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
+		if (strchr(delimiters.c_str(), buf->BufGetCharacter(pos)) == nullptr) {
 			pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
 		}
 		for (; pos < buf->BufGetLength(); pos++) {
-			if (nullptr == strchr(delimiters, buf->BufGetCharacter(pos))) {
+			if (strchr(delimiters.c_str(), buf->BufGetCharacter(pos)) == nullptr) {
 				break;
 			}
 		}
@@ -2454,7 +2454,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = TextDGetInsertPosition(textD);
-	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
+	XString delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2463,7 +2463,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		return;
 	}
 	pos = std::max<int>(insertPos - 1, 0);
-	while (strchr(delimiters, buf->BufGetCharacter(pos)) != nullptr && pos > 0)
+	while (strchr(delimiters.c_str(), buf->BufGetCharacter(pos)) != nullptr && pos > 0)
 		pos--;
 	pos = startOfWord(reinterpret_cast<TextWidget>(w), pos);
 
@@ -3376,17 +3376,17 @@ static void selectWord(Widget w, int pointerX) {
 static int startOfWord(TextWidget w, int pos) {
 	int startPos;
 	TextBuffer *buf = w->text.textD->buffer;
-	char *delimiters = w->text.delimiters;
+	const XString &delimiters = w->text.delimiters;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
 		if (!spanBackward(buf, pos, " \t", False, &startPos))
 			return 0;
-	} else if (strchr(delimiters, c)) {
-		if (!spanBackward(buf, pos, delimiters, True, &startPos))
+	} else if (strchr(delimiters.c_str(), c)) {
+		if (!spanBackward(buf, pos, delimiters.c_str(), True, &startPos))
 			return 0;
 	} else {
-		if (!buf->BufSearchBackward(pos, delimiters, &startPos))
+		if (!buf->BufSearchBackward(pos, delimiters.c_str(), &startPos))
 			return 0;
 	}
 	return std::min<int>(pos, startPos + 1);
@@ -3395,17 +3395,17 @@ static int startOfWord(TextWidget w, int pos) {
 static int endOfWord(TextWidget w, int pos) {
 	int endPos;
 	TextBuffer *buf = w->text.textD->buffer;
-	char *delimiters = w->text.delimiters;
+	const XString &delimiters = w->text.delimiters;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
 		if (!spanForward(buf, pos, " \t", False, &endPos))
 			return buf->BufGetLength();
-	} else if (strchr(delimiters, c)) {
-		if (!spanForward(buf, pos, delimiters, True, &endPos))
+	} else if (strchr(delimiters.c_str(), c)) {
+		if (!spanForward(buf, pos, delimiters.c_str(), True, &endPos))
 			return buf->BufGetLength();
 	} else {
-		if (!buf->BufSearchForward(pos, delimiters, &endPos))
+		if (!buf->BufSearchForward(pos, delimiters.c_str(), &endPos))
 			return buf->BufGetLength();
 	}
 	return endPos;

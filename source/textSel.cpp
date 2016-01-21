@@ -370,7 +370,6 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actionText, int actionTextLen) {
 	static Atom selInfoProp[2] = {XA_SECONDARY, XA_STRING};
 	Display *disp = XtDisplay(w);
-	selectNotifyInfo *cbInfo;
 	XtAppContext context = XtWidgetToApplicationContext((Widget)w);
 
 	/* Take ownership of the secondary selection, give up if we can't */
@@ -391,12 +390,12 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 	   succeeded or not, and a backup timer to clean up if the select
 	   notify event is never returned */
 	XConvertSelection(XtDisplay(w), sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w), time);
-	cbInfo = (selectNotifyInfo *)XtMalloc(sizeof(selectNotifyInfo));
-	cbInfo->action = action;
-	cbInfo->timeStamp = time;
-	cbInfo->widget = (Widget)w;
-	cbInfo->actionText = actionText;
-	cbInfo->length = actionTextLen;
+	auto cbInfo = new selectNotifyInfo;
+	cbInfo->action       = action;
+	cbInfo->timeStamp    = time;
+	cbInfo->widget       = (Widget)w;
+	cbInfo->actionText   = actionText;
+	cbInfo->length       = actionTextLen;
 	XtAddEventHandler(w, 0, True, selectNotifyEH, (XtPointer)cbInfo);
 	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, (XtPointer)cbInfo);
 }
@@ -734,7 +733,6 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 	XSelectionEvent *e = (XSelectionEvent *)event;
 	selectNotifyInfo *cbInfo = (selectNotifyInfo *)data;
 	int selStart, selEnd;
-	char *string;
 
 	/* Check if this was the selection request for which this handler was
 	   set up, if not, do nothing */
@@ -753,7 +751,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 		buf->BufSecondaryUnselect();
 		XtDisownSelection(w, XA_SECONDARY, e->time);
 		XtFree(cbInfo->actionText);
-		XtFree((char *)cbInfo);
+		delete cbInfo;
 		return;
 	}
 
@@ -763,12 +761,11 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 	if (cbInfo->action == REMOVE_SECONDARY) {
 		buf->BufRemoveSecSelect();
 	} else if (cbInfo->action == EXCHANGE_SECONDARY) {
-		string = XtMalloc(cbInfo->length + 1);
-		memcpy(string, cbInfo->actionText, cbInfo->length);
-		string[cbInfo->length] = '\0';
+		std::string string(cbInfo->actionText, cbInfo->length);
+
 		selStart = buf->secondary_.start;
-		if (buf->BufSubstituteNullChars(string, cbInfo->length)) {
-			buf->BufReplaceSecSelect(string);
+		if (buf->BufSubstituteNullCharsEx(string)) {
+			buf->BufReplaceSecSelectEx(string);
 			if (buf->secondary_.rectangular) {
 				/*... it would be nice to re-select, but probably impossible */
 				reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(buf->cursorPosHint_);
@@ -777,14 +774,14 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 				buf->BufSelect(selStart, selEnd);
 				reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(selEnd);
 			}
-		} else
+		} else {
 			fprintf(stderr, "Too much binary data\n");
-		XtFree(string);
+		}
 	}
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(w, XA_SECONDARY, e->time);
 	XtFree(cbInfo->actionText);
-	XtFree((char *)cbInfo);
+	delete cbInfo;
 }
 
 /*
@@ -796,7 +793,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	selectNotifyInfo *cbInfo = (selectNotifyInfo *)clientData;
+	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
 	TextBuffer *buf = ((TextWidget)cbInfo->widget)->text.textD->buffer;
 
 	fprintf(stderr, "NEdit: timeout on selection request\n");
@@ -804,7 +801,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
 	XtFree(cbInfo->actionText);
-	XtFree((char *)cbInfo);
+	delete cbInfo;
 }
 
 /*

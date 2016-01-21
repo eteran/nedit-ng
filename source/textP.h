@@ -29,6 +29,7 @@
 
 #include "TextBuffer.h"
 #include "textDisp.h"
+#include "XString.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -92,7 +93,7 @@ struct TextPart {
 	int wrapMargin;
 	int emulateTabs;
 	int lineNumCols;
-	char *delimiters;
+	XString delimiters;
 	Cardinal cursorVPadding;
 	Widget hScrollBar, vScrollBar;
 	XtCallbackList focusInCB;
