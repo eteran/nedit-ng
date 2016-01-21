@@ -172,7 +172,7 @@ static struct {
 	int nPatterns;
 	highlightPattern **patterns;
 } HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0,       nullptr};
+                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullable_string(), 0,       nullptr};
 
 /* Pattern sources loaded from the .nedit file or set by the user */
 static int NPatternSets = 0;
