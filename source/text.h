@@ -160,7 +160,6 @@ void TextCopyClipboard(Widget w, Time time);
 void TextCutClipboard(Widget w, Time time);
 void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextHandleXSelections(Widget w);
-void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);
 void TextSetBuffer(Widget w, TextBuffer *buffer);

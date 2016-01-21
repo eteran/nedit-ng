@@ -146,7 +146,6 @@ static void checkMoveSelectionChange(Widget w, XEvent *event, int startPos, Stri
 static void keyMoveExtendSelection(Widget w, XEvent *event, int startPos, int rectangular);
 static void checkAutoShowInsertPos(Widget w);
 static int checkReadOnly(Widget w);
-static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete);
 static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete);
 static int pendingSelection(Widget w);
 static int deletePendingSelection(Widget w, XEvent *event);
@@ -164,10 +163,9 @@ static void callCursorMovementCBs(Widget w, XEvent *event);
 static void adjustSelection(TextWidget tw, int x, int y);
 static void adjustSecondarySelection(TextWidget tw, int x, int y);
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
-static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufOffset, int wrapMargin, int *breakBefore);
 static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 static int wrapLine(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
-static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
+static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 static int hasKey(const char *key, const String *args, const Cardinal *nArgs);
 static int strCaseCmp(const char *str1, const char *str2);
@@ -1200,83 +1198,6 @@ int TextLastVisiblePos(Widget w) {
 ** treated as pending delete selections (True), or ignored (False). "event"
 ** is optional and is just passed on to the cursor movement callbacks.
 */
-void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete, int allowWrap) {
-	int wrapMargin, colNum, lineStartPos, cursorPos;
-	const char *c;
-	char *lineStartText, *wrappedText;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
-	textDisp *textD = tw->text.textD;
-	TextBuffer *buf = textD->buffer;
-	int fontWidth = textD->fontStruct->max_bounds.width;
-	int replaceSel, singleLine, breakAt = 0;
-
-	/* Don't wrap if auto-wrap is off or suppressed, or it's just a newline */
-	if (!allowWrap || !tw->text.autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
-		simpleInsertAtCursor(w, chars, event, allowPendingDelete);
-		return;
-	}
-
-	/* If this is going to be a pending delete operation, the real insert
-	   position is the start of the selection.  This will make rectangular
-	   selections wrap strangely, but this routine should rarely be used for
-	   them, and even more rarely when they need to be wrapped. */
-	replaceSel = allowPendingDelete && pendingSelection(w);
-	cursorPos = replaceSel ? buf->primary_.start : TextDGetInsertPosition(textD);
-
-	/* If the text is only one line and doesn't need to be wrapped, just insert
-	   it and be done (for efficiency only, this routine is called for each
-	   character typed). (Of course, it may not be significantly more efficient
-	   than the more general code below it, so it may be a waste of time!) */
-	wrapMargin = tw->text.wrapMargin != 0 ? tw->text.wrapMargin : textD->width / fontWidth;
-	lineStartPos = buf->BufStartOfLine(cursorPos);
-	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
-	for (c = chars; *c != '\0' && *c != '\n'; c++)
-		colNum += TextBuffer::BufCharWidth(*c, colNum, buf->tabDist_, buf->nullSubsChar_);
-	singleLine = *c == '\0';
-	if (colNum < wrapMargin && singleLine) {
-		simpleInsertAtCursor(w, chars, event, True);
-		return;
-	}
-
-	/* Wrap the text */
-	lineStartText = buf->BufGetRange(lineStartPos, cursorPos);
-	wrappedText = wrapText(tw, lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
-	XtFree(lineStartText);
-
-	/* Insert the text.  Where possible, use TextDInsert which is optimized
-	   for less redraw. */
-	if (replaceSel) {
-		buf->BufReplaceSelected(wrappedText);
-		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (tw->text.overstrike) {
-		if (breakAt == 0 && singleLine)
-			textD->TextDOverstrike(wrappedText);
-		else {
-			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
-			textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		}
-	} else {
-		if (breakAt == 0) {
-			textD->TextDInsert(wrappedText);
-		} else {
-			buf->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
-			textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		}
-	}
-	XtFree(wrappedText);
-	checkAutoShowInsertPos(w);
-	callCursorMovementCBs(w, event);
-}
-
-/*
-** Insert text "chars" at the cursor position, respecting pending delete
-** selections, overstrike, and handling cursor repositioning as if the text
-** had been typed.  If autoWrap is on wraps the text to fit within the wrap
-** margin, auto-indenting where the line was wrapped (but nowhere else).
-** "allowPendingDelete" controls whether primary selections in the widget are
-** treated as pending delete selections (True), or ignored (False). "event"
-** is optional and is just passed on to the cursor movement callbacks.
-*/
 void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap) {
 	int wrapMargin, colNum, lineStartPos, cursorPos;
 	TextWidget tw   = reinterpret_cast<TextWidget>(w);
@@ -2163,7 +2084,7 @@ static void newlineNoIndentAP(Widget w, XEvent *event, String *args, Cardinal *n
 	if (checkReadOnly(w))
 		return;
 	TakeMotifDestination(w, e->time);
-	simpleInsertAtCursor(w, "\n", event, True);
+	simpleInsertAtCursorEx(w, "\n", event, True);
 	(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
 }
 
@@ -2176,8 +2097,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	TextWidget tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
-	char *indentStr;
-	int cursorPos, lineStartPos, column;
+	int column;
 
 	if (checkReadOnly(w))
 		return;
@@ -2186,13 +2106,12 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	/* Create a string containing a newline followed by auto or smart
 	   indent string */
-	cursorPos = TextDGetInsertPosition(textD);
-	lineStartPos = buf->BufStartOfLine(cursorPos);
-	indentStr = createIndentString(tw, buf, 0, lineStartPos, cursorPos, nullptr, &column);
+	int cursorPos = TextDGetInsertPosition(textD);
+	int lineStartPos = buf->BufStartOfLine(cursorPos);
+	std::string indentStr = createIndentStringEx(tw, buf, 0, lineStartPos, cursorPos, nullptr, &column);
 
 	/* Insert it at the cursor */
-	simpleInsertAtCursor(w, indentStr, event, True);
-	XtFree(indentStr);
+	simpleInsertAtCursorEx(w, indentStr, event, True);
 
 	if (tw->text.emulateTabs > 0) {
 		/*  If emulated tabs are on, make the inserted indent deletable by
@@ -3304,40 +3223,10 @@ static int checkReadOnly(Widget w) {
 	return False;
 }
 
-/*
-** Insert text "chars" at the cursor position, as if the text had been
-** typed.  Same as TextInsertAtCursor, but without the complicated auto-wrap
-** scanning and re-formatting.
-*/
-static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete) {
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = textD->buffer;
-	const char *c;
-
-	if (allowPendingDelete && pendingSelection(w)) {
-		buf->BufReplaceSelected(chars);
-		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (reinterpret_cast<TextWidget>(w)->text.overstrike) {
-		for (c = chars; *c != '\0' && *c != '\n'; c++) {
-			;
-		}
-
-		if (*c == '\n') {
-			textD->TextDInsert(chars);
-		} else {
-			textD->TextDOverstrike(chars);
-		}
-	} else {
-		textD->TextDInsert(chars);
-	}
-	
-	checkAutoShowInsertPos(w);
-	callCursorMovementCBs(w, event);
-}
 
 /*
 ** Insert text "chars" at the cursor position, as if the text had been
-** typed.  Same as TextInsertAtCursor, but without the complicated auto-wrap
+** typed.  Same as TextInsertAtCursorEx, but without the complicated auto-wrap
 ** scanning and re-formatting.
 */
 static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete) {
@@ -3734,71 +3623,6 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 ** smart indent (which can be triggered by wrapping) can search back farther
 ** in the buffer than just the text in startLine.
 */
-static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufOffset, int wrapMargin, int *breakBefore) {
-	TextBuffer *wrapBuf, *buf = tw->text.textD->buffer;
-	int startLineLen = strlen(startLine);
-	int colNum, pos, lineStartPos, limitPos, breakAt, charsAdded;
-	int firstBreak = -1, tabDist = buf->tabDist_;
-	char c, *wrappedText;
-
-	/* Create a temporary text buffer and load it with the strings */
-	wrapBuf = new TextBuffer;
-	wrapBuf->BufInsert(0, startLine);
-	wrapBuf->BufInsert(wrapBuf->BufGetLength(), text);
-
-	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
-	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
-	   string (if requested), and prevents re-scanning of long unbreakable
-	   lines for each character beyond the margin */
-	colNum = 0;
-	pos = 0;
-	lineStartPos = 0;
-	limitPos = breakBefore == nullptr ? startLineLen : 0;
-	while (pos < wrapBuf->BufGetLength()) {
-		c = wrapBuf->BufGetCharacter(pos);
-		if (c == '\n') {
-			lineStartPos = limitPos = pos + 1;
-			colNum = 0;
-		} else {
-			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buf->nullSubsChar_);
-			if (colNum > wrapMargin) {
-				if (!wrapLine(tw, wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
-					limitPos = std::max<int>(pos, limitPos);
-				} else {
-					lineStartPos = limitPos = breakAt + 1;
-					pos += charsAdded;
-					colNum = wrapBuf->BufCountDispChars(lineStartPos, pos + 1);
-					if (firstBreak == -1)
-						firstBreak = breakAt;
-				}
-			}
-		}
-		pos++;
-	}
-
-	/* Return the wrapped text, possibly including part of startLine */
-	if(!breakBefore)
-		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->BufGetLength());
-	else {
-		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
-		wrappedText = wrapBuf->BufGetRange(startLineLen - *breakBefore, wrapBuf->BufGetLength());
-	}
-	delete wrapBuf;
-	return wrappedText;
-}
-
-/*
-** Wrap multi-line text in argument "text" to be inserted at the end of the
-** text on line "startLine" and return the result.  If "breakBefore" is
-** non-nullptr, allow wrapping to extend back into "startLine", in which case
-** the returned text will include the wrapped part of "startLine", and
-** "breakBefore" will return the number of characters at the end of
-** "startLine" that were absorbed into the returned string.  "breakBefore"
-** will return zero if no characters were absorbed into the returned string.
-** The buffer offset of text in the widget's text buffer is needed so that
-** smart indent (which can be triggered by wrapping) can search back farther
-** in the buffer than just the text in startLine.
-*/
 static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore) {
 	TextBuffer *wrapBuf, *buf = tw->text.textD->buffer;
 	int startLineLen = startLine.size();
@@ -3869,15 +3693,16 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 */
 static int wrapLine(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded) {
 	int p, length, column;
-	char c;
-	char *indentStr;
+
 
 	/* Scan backward for whitespace or BOL.  If BOL, return False, no
 	   whitespace in line at which to wrap */
 	for (p = lineEndPos;; p--) {
-		if (p < lineStartPos || p < limitPos)
+		if (p < lineStartPos || p < limitPos) {
 			return False;
-		c = buf->BufGetCharacter(p);
+		}
+		
+		char c = buf->BufGetCharacter(p);
 		if (c == '\t' || c == ' ')
 			break;
 	}
@@ -3885,20 +3710,21 @@ static int wrapLine(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStart
 	/* Create an auto-indent string to insert to do wrap.  If the auto
 	   indent string reaches the wrap position, slice the auto-indent
 	   back off and return to the left margin */
+	std::string indentStr;
 	if (tw->text.autoIndent || tw->text.smartIndent) {
-		indentStr = createIndentString(tw, buf, bufOffset, lineStartPos, lineEndPos, &length, &column);
-		if (column >= p - lineStartPos)
-			indentStr[1] = '\0';
+		indentStr = createIndentStringEx(tw, buf, bufOffset, lineStartPos, lineEndPos, &length, &column);
+		if (column >= p - lineStartPos) {
+			indentStr.resize(1);
+		}
 	} else {
-		indentStr = (String) "\n";
+		indentStr = "\n";
 		length = 1;
 	}
 
 	/* Replace the whitespace character with the auto-indent string
 	   and return the stats */
-	buf->BufReplace(p, p + 1, indentStr);
-	if (tw->text.autoIndent || tw->text.smartIndent)
-		XtFree(indentStr);
+	buf->BufReplaceEx(p, p + 1, indentStr);
+	
 	*breakAt = p;
 	*charsAdded = length - 1;
 	return True;
@@ -3913,11 +3739,11 @@ static int wrapLine(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStart
 ** string length is returned in "length" (or "length" can be passed as nullptr,
 ** and the indent column is returned in "column" (if non nullptr).
 */
-static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
+static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
 	textDisp *textD = tw->text.textD;
 	int pos, indent = -1, tabDist = textD->buffer->tabDist_;
 	int i, useTabs = textD->buffer->useTabs_;
-	char *indentPtr, *indentStr, c;
+	char c;
 	smartIndentCBStruct smartIndent;
 
 	/* If smart indent is on, call the smart indent callback.  It is not
@@ -3950,7 +3776,11 @@ static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, i
 	}
 
 	/* Allocate and create a string of tabs and spaces to achieve the indent */
-	indentPtr = indentStr = XtMalloc(indent + 2);
+	std::string indentStr;
+	indentStr.reserve(indent + 2);
+	
+	auto indentPtr = std::back_inserter(indentStr);
+	
 	*indentPtr++ = '\n';
 	if (useTabs) {
 		for (i = 0; i < indent / tabDist; i++)
@@ -3961,11 +3791,10 @@ static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, i
 		for (i = 0; i < indent; i++)
 			*indentPtr++ = ' ';
 	}
-	*indentPtr = '\0';
 
 	/* Return any requested stats */
 	if(length)
-		*length = indentPtr - indentStr;
+		*length = indentStr.size();
 	if(column)
 		*column = indent;
 
