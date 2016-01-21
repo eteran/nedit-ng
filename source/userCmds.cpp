@@ -872,8 +872,9 @@ int LoadShellCmdsString(const char *inString) {
 ** Read a string representing shell command menu items and add them to the
 ** internal list used for constructing shell menus
 */
-int LoadShellCmdsStringEx(const nullable_string &inString) {
-	return loadMenuItemString(inString->c_str(), ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
+int LoadShellCmdsStringEx(view::string_view inString) {
+	// TODO(eteran): make this more efficient
+	return loadMenuItemString(inString.to_string().c_str(), ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
 }
 
 /*
@@ -884,16 +885,18 @@ int LoadMacroCmdsString(const char *inString) {
 	return loadMenuItemString(inString, MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
 }
 
-int LoadMacroCmdsStringEx(const nullable_string &inString) {
-	return loadMenuItemString(inString->c_str(), MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
+int LoadMacroCmdsStringEx(view::string_view inString) {
+	// TODO(eteran): make this more efficient
+	return loadMenuItemString(inString.to_string().c_str(), MacroMenuItems, &NMacroMenuItems, MACRO_CMDS);
 }
 
 int LoadBGMenuCmdsString(const char *inString) {
 	return loadMenuItemString(inString, BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
 }
 
-int LoadBGMenuCmdsStringEx(const nullable_string &inString) {
-	return loadMenuItemString(inString->c_str(), BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
+int LoadBGMenuCmdsStringEx(view::string_view inString) {
+	// TODO(eteran): make this more efficient
+	return loadMenuItemString(inString.to_string().c_str(), BGMenuItems, &NBGMenuItems, BG_MENU_CMDS);
 }
 
 /*

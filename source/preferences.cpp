@@ -1103,16 +1103,16 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	   the standard resource manager routines */
 
 	if (TempStringPrefs.shellCmds) {
-		LoadShellCmdsStringEx(TempStringPrefs.shellCmds);
+		LoadShellCmdsStringEx(*TempStringPrefs.shellCmds);
 		TempStringPrefs.shellCmds = nullable_string();
 	}
 
 	if (TempStringPrefs.macroCmds) {
-		LoadMacroCmdsStringEx(TempStringPrefs.macroCmds);
+		LoadMacroCmdsStringEx(*TempStringPrefs.macroCmds);
 		TempStringPrefs.macroCmds = nullable_string();
 	}
 	if (TempStringPrefs.bgMenuCmds) {
-		LoadBGMenuCmdsStringEx(TempStringPrefs.bgMenuCmds);
+		LoadBGMenuCmdsStringEx(*TempStringPrefs.bgMenuCmds);
 		TempStringPrefs.bgMenuCmds = nullable_string();
 	}
 	if (TempStringPrefs.highlight) {

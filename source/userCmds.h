@@ -28,6 +28,7 @@
 #define USER_CMDS_H_
 
 #include "nedit.h"
+#include "string_view.h"
 #include "nullable_string.h"
 
 UserMenuCache *CreateUserMenuCache(void);
@@ -46,9 +47,9 @@ int LoadBGMenuCmdsString(const char *inString);
 int LoadMacroCmdsString(const char *inString);
 int LoadShellCmdsString(const char *inString);
 
-int LoadBGMenuCmdsStringEx(const nullable_string &inString);
-int LoadMacroCmdsStringEx(const nullable_string &inString);
-int LoadShellCmdsStringEx(const nullable_string &inString);
+int LoadBGMenuCmdsStringEx(view::string_view inString);
+int LoadMacroCmdsStringEx(view::string_view inString);
+int LoadShellCmdsStringEx(view::string_view inString);
 
 void DimPasteReplayBtns(int sensitive);
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
