@@ -988,11 +988,11 @@ static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void spliceString(char **intoString, const char *insertString, const char *atExpr);
 static int regexFind(const char *inString, const char *expr);
 static int regexReplace(char **inString, const char *expr, const char *replaceWith);
-static int regexReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith);
+static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
 static int caseFind(const char *inString, const char *expr);
-static int caseReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int replaceLen);
+static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
 static int stringReplace(char **inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
-static int stringReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
+static int stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
 static const char *getDefaultShell(void);
 
@@ -4739,24 +4739,27 @@ static int stringReplace(char **inString, const char *expr, const char *replaceW
 /*
 ** Common implementation for simplified string replacement routines.
 */
-static int stringReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
+static int stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
+	
+	const std::string &oldString = *inString;
+	
 	int beginPos;
 	int endPos;
-	int inLen = inString->size();
+	int inLen = oldString.size();
 
 	if (0 >= replaceLen)
 		replaceLen = strlen(replaceWith);
 		
-	if (!SearchString(inString->c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
+	if (!SearchString(oldString.c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
 		return FALSE;
 
-
 	std::string newString;
-	newString.append(inString->c_str(), beginPos);
+	newString.reserve(oldString.size() + replaceLen);
+	newString.append(oldString.substr(0, beginPos));
 	newString.append(replaceWith, replaceLen);
-	newString.append(&((*inString)[endPos]), inLen - endPos);
-
-	inString = newString;
+	newString.append(oldString.substr(endPos, inLen - endPos));
+	
+	*inString = std::move(newString);
 	return TRUE;
 }
 
@@ -4770,7 +4773,7 @@ static int regexReplace(char **inString, const char *expr, const char *replaceWi
 	return stringReplace(inString, expr, replaceWith, SEARCH_REGEX, -1);
 }
 
-static int regexReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith) {
+static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith) {
 	return stringReplaceEx(inString, expr, replaceWith, SEARCH_REGEX, -1);
 }
 
@@ -4780,7 +4783,7 @@ static int regexReplaceEx(nullable_string &inString, const char *expr, const cha
 ** reallocating inString with XtMalloc.  If expr is not found, does nothing
 ** and returns false.
 */
-static int caseReplaceEx(nullable_string &inString, const char *expr, const char *replaceWith, int replaceLen) {
+static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen) {
 	return stringReplaceEx(inString, expr, replaceWith, SEARCH_CASE_SENSE, replaceLen);
 }
 
@@ -4798,7 +4801,7 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 			const char *end = strstr(start, newEnd);
 			if (end) {
 				int length = (int)(end - start) + strlen(newEnd);
-				caseReplaceEx(TempStringPrefs.macroCmds, oldText, start, length);
+				caseReplaceEx(&*TempStringPrefs.macroCmds, oldText, start, length);
 				return length;
 			}
 		}
@@ -4886,7 +4889,7 @@ static void updateShellCmdsTo5dot4(void) {
 #endif /* __FreeBSD__ */
 
 	if (regexFind(TempStringPrefs.shellCmds->c_str(), wc5dot3))
-		regexReplaceEx(TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
+		regexReplaceEx(&*TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
 
 	return;
 }
@@ -4895,7 +4898,7 @@ static void updateMacroCmdsTo5dot5(void) {
 	const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
 	const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
 	if (regexFind(TempStringPrefs.macroCmds->c_str(), uc5dot4))
-		regexReplaceEx(TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
+		regexReplaceEx(&*TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
 
 	return;
 }
