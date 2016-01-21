@@ -147,6 +147,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int startPos, int re
 static void checkAutoShowInsertPos(Widget w);
 static int checkReadOnly(Widget w);
 static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPendingDelete);
+static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete);
 static int pendingSelection(Widget w);
 static int deletePendingSelection(Widget w, XEvent *event);
 static int deleteEmulatedTab(Widget w, XEvent *event);
@@ -164,6 +165,7 @@ static void adjustSelection(TextWidget tw, int x, int y);
 static void adjustSecondarySelection(TextWidget tw, int x, int y);
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
 static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufOffset, int wrapMargin, int *breakBefore);
+static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 static int wrapLine(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
 static char *createIndentString(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
@@ -1267,6 +1269,83 @@ void TextInsertAtCursor(Widget w, const char *chars, XEvent *event, int allowPen
 }
 
 /*
+** Insert text "chars" at the cursor position, respecting pending delete
+** selections, overstrike, and handling cursor repositioning as if the text
+** had been typed.  If autoWrap is on wraps the text to fit within the wrap
+** margin, auto-indenting where the line was wrapped (but nowhere else).
+** "allowPendingDelete" controls whether primary selections in the widget are
+** treated as pending delete selections (True), or ignored (False). "event"
+** is optional and is just passed on to the cursor movement callbacks.
+*/
+void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap) {
+	int wrapMargin, colNum, lineStartPos, cursorPos;
+	TextWidget tw   = reinterpret_cast<TextWidget>(w);
+	textDisp *textD = tw->text.textD;
+	TextBuffer *buf = textD->buffer;
+	int fontWidth   = textD->fontStruct->max_bounds.width;
+	int replaceSel, singleLine, breakAt = 0;
+
+	/* Don't wrap if auto-wrap is off or suppressed, or it's just a newline */
+	if (!allowWrap || !tw->text.autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
+		simpleInsertAtCursorEx(w, chars, event, allowPendingDelete);
+		return;
+	}
+
+	/* If this is going to be a pending delete operation, the real insert
+	   position is the start of the selection.  This will make rectangular
+	   selections wrap strangely, but this routine should rarely be used for
+	   them, and even more rarely when they need to be wrapped. */
+	replaceSel = allowPendingDelete && pendingSelection(w);
+	cursorPos = replaceSel ? buf->primary_.start : TextDGetInsertPosition(textD);
+
+	/* If the text is only one line and doesn't need to be wrapped, just insert
+	   it and be done (for efficiency only, this routine is called for each
+	   character typed). (Of course, it may not be significantly more efficient
+	   than the more general code below it, so it may be a waste of time!) */
+	wrapMargin = tw->text.wrapMargin != 0 ? tw->text.wrapMargin : textD->width / fontWidth;
+	lineStartPos = buf->BufStartOfLine(cursorPos);
+	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
+	
+	auto it = chars.begin();
+	for (; it != chars.end() && *it != '\n'; it++) {
+		colNum += TextBuffer::BufCharWidth(*it, colNum, buf->tabDist_, buf->nullSubsChar_);
+	}
+	
+	singleLine = it == chars.end();
+	if (colNum < wrapMargin && singleLine) {
+		simpleInsertAtCursorEx(w, chars, event, True);
+		return;
+	}
+
+	/* Wrap the text */
+	std::string lineStartText = buf->BufGetRangeEx(lineStartPos, cursorPos);
+	std::string wrappedText = wrapTextEx(tw, lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
+
+	/* Insert the text.  Where possible, use TextDInsert which is optimized
+	   for less redraw. */
+	if (replaceSel) {
+		buf->BufReplaceSelectedEx(wrappedText);
+		textD->TextDSetInsertPosition(buf->cursorPosHint_);
+	} else if (tw->text.overstrike) {
+		if (breakAt == 0 && singleLine)
+			textD->TextDOverstrikeEx(wrappedText);
+		else {
+			buf->BufReplaceEx(cursorPos - breakAt, cursorPos, wrappedText);
+			textD->TextDSetInsertPosition(buf->cursorPosHint_);
+		}
+	} else {
+		if (breakAt == 0) {
+			textD->TextDInsertEx(wrappedText);
+		} else {
+			buf->BufReplaceEx(cursorPos - breakAt, cursorPos, wrappedText);
+			textD->TextDSetInsertPosition(buf->cursorPosHint_);
+		}
+	}
+	checkAutoShowInsertPos(w);
+	callCursorMovementCBs(w, event);
+}
+
+/*
 ** Fetch text from the widget's buffer, adding wrapping newlines to emulate
 ** effect acheived by wrapping in the text display in continuous wrap mode.
 */
@@ -1690,7 +1769,6 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	TextBuffer *buf = textD->buffer;
 	TextSelection *secondary = &buf->secondary_, *primary = &buf->primary_;
 	int rectangular = secondary->rectangular;
-	char *textToCopy;
 	int insertPos, lineStart, column;
 
 	endDrag(w);
@@ -1705,29 +1783,28 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	if (secondary->selected) {
 		if (tw->text.motifDestOwner) {
 			TextDBlankCursor(textD);
-			textToCopy = buf->BufGetSecSelectText();
+			std::string textToCopy = buf->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
 				insertPos = TextDGetInsertPosition(textD);
-				buf->BufReplaceSelected(textToCopy);
+				buf->BufReplaceSelectedEx(textToCopy);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else if (rectangular) {
 				insertPos = TextDGetInsertPosition(textD);
 				lineStart = buf->BufStartOfLine(insertPos);
 				column = buf->BufCountDispChars(lineStart, insertPos);
-				buf->BufInsertCol(column, lineStart, textToCopy, nullptr, nullptr);
+				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else
-				TextInsertAtCursor(w, textToCopy, event, True, tw->text.autoWrapPastedText);
-			XtFree(textToCopy);
+				TextInsertAtCursorEx(w, textToCopy, event, True, tw->text.autoWrapPastedText);
+
 			buf->BufSecondaryUnselect();
 			textD->TextDUnblankCursor();
 		} else
 			SendSecondarySelection(w, e->time, False);
 	} else if (primary->selected) {
-		textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionTextEx();
 		textD->TextDSetInsertPosition(TextDXYToPosition(textD, e->x, e->y));
-		TextInsertAtCursor(w, textToCopy, event, False, tw->text.autoWrapPastedText);
-		XtFree(textToCopy);
+		TextInsertAtCursorEx(w, textToCopy, event, False, tw->text.autoWrapPastedText);
 	} else {
 		textD->TextDSetInsertPosition(TextDXYToPosition(textD, e->x, e->y));
 		InsertPrimarySelection(w, e->time, False);
@@ -1757,7 +1834,6 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	TextSelection *secondary = &buf->secondary_, *primary = &buf->primary_;
 	int insertPos, rectangular = secondary->rectangular;
 	int column, lineStart;
-	char *textToCopy;
 
 	endDrag(w);
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED))
@@ -1769,29 +1845,29 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	if (secondary->selected) {
 		if (reinterpret_cast<TextWidget>(w)->text.motifDestOwner) {
-			textToCopy = buf->BufGetSecSelectText();
+			std::string textToCopy = buf->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
 				insertPos = TextDGetInsertPosition(textD);
-				buf->BufReplaceSelected(textToCopy);
+				buf->BufReplaceSelectedEx(textToCopy);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else if (rectangular) {
 				insertPos = TextDGetInsertPosition(textD);
 				lineStart = buf->BufStartOfLine(insertPos);
 				column = buf->BufCountDispChars(lineStart, insertPos);
-				buf->BufInsertCol(column, lineStart, textToCopy, nullptr, nullptr);
+				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else
-				TextInsertAtCursor(w, textToCopy, event, True, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
-			XtFree(textToCopy);
+				TextInsertAtCursorEx(w, textToCopy, event, True, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+
 			buf->BufRemoveSecSelect();
 			buf->BufSecondaryUnselect();
 		} else
 			SendSecondarySelection(w, e->time, True);
 	} else if (primary->selected) {
-		textToCopy = buf->BufGetRange(primary->start, primary->end);
+		std::string textToCopy = buf->BufGetRangeEx(primary->start, primary->end);
 		textD->TextDSetInsertPosition(TextDXYToPosition(textD, e->x, e->y));
-		TextInsertAtCursor(w, textToCopy, event, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
-		XtFree(textToCopy);
+		TextInsertAtCursorEx(w, textToCopy, event, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+
 		buf->BufRemoveSelected();
 		buf->BufUnselect();
 	} else {
@@ -2020,7 +2096,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		smartIndent.charsTyped = args[0];
 		XtCallCallbacks(w, textNsmartIndentCallback, (XtPointer)&smartIndent);
 	}
-	TextInsertAtCursor(w, args[0], event, True, True);
+	TextInsertAtCursorEx(w, args[0], event, True, True);
 	(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
 }
 
@@ -2065,7 +2141,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		smartIndent.charsTyped = chars;
 		XtCallCallbacks(w, textNsmartIndentCallback, (XtPointer)&smartIndent);
 	}
-	TextInsertAtCursor(w, chars, event, True, True);
+	TextInsertAtCursorEx(w, chars, event, True, True);
 	textD->buffer->BufUnselect();
 }
 
@@ -2140,7 +2216,6 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	int emTabDist = reinterpret_cast<TextWidget>(w)->text.emulateTabs;
 	int emTabsBeforeCursor = reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor;
 	int insertPos, indent, startIndent, toIndent, lineStart, tabWidth;
-	char *outStr, *outPtr;
 
 	if (checkReadOnly(w))
 		return;
@@ -2149,7 +2224,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	/* If emulated tabs are off, just insert a tab */
 	if (emTabDist <= 0) {
-		TextInsertAtCursor(w, "\t", event, True, True);
+		TextInsertAtCursorEx(w, "\t", event, True, True);
 		return;
 	}
 
@@ -2170,10 +2245,11 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	}
 
 	/* Allocate a buffer assuming all the inserted characters will be spaces */
-	outStr = XtMalloc(toIndent - startIndent + 1);
-
+	std::string outStr;
+	outStr.reserve(toIndent - startIndent);
+		
 	/* Add spaces and tabs to outStr until it reaches toIndent */
-	outPtr = outStr;
+	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
 		tabWidth = TextBuffer::BufCharWidth('\t', indent, buf->tabDist_, buf->nullSubsChar_);
@@ -2185,13 +2261,11 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 			indent++;
 		}
 	}
-	*outPtr = '\0';
 
 	/* Insert the emulated tab */
-	TextInsertAtCursor(w, outStr, event, True, True);
-	XtFree(outStr);
+	TextInsertAtCursorEx(w, outStr, event, True, True);
 
-	/* Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursor */
+	/* Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx */
 	reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor = emTabsBeforeCursor + 1;
 
 	buf->BufUnselect();
@@ -3262,6 +3336,34 @@ static void simpleInsertAtCursor(Widget w, const char *chars, XEvent *event, int
 }
 
 /*
+** Insert text "chars" at the cursor position, as if the text had been
+** typed.  Same as TextInsertAtCursor, but without the complicated auto-wrap
+** scanning and re-formatting.
+*/
+static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete) {
+	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	TextBuffer *buf = textD->buffer;
+
+	if (allowPendingDelete && pendingSelection(w)) {
+		buf->BufReplaceSelectedEx(chars);
+		textD->TextDSetInsertPosition(buf->cursorPosHint_);
+	} else if (reinterpret_cast<TextWidget>(w)->text.overstrike) {
+	
+		size_t index = chars.find('\n');
+		if(index != view::string_view::npos) {
+			textD->TextDInsertEx(chars);
+		} else {
+			textD->TextDOverstrikeEx(chars);
+		}
+	} else {
+		textD->TextDInsertEx(chars);
+	}
+	
+	checkAutoShowInsertPos(w);
+	callCursorMovementCBs(w, event);
+}
+
+/*
 ** If there's a selection, delete it and position the cursor where the
 ** selection was deleted.  (Called by routines which do deletion to check
 ** first for and do possible selection delete)
@@ -3301,9 +3403,9 @@ static int pendingSelection(Widget w) {
 ** emTabsBeforeCursor which is otherwise cleared by callCursorMovementCBs).
 */
 static int deleteEmulatedTab(Widget w, XEvent *event) {
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
-	int emTabDist = reinterpret_cast<TextWidget>(w)->text.emulateTabs;
+	textDisp *textD        = reinterpret_cast<TextWidget>(w)->text.textD;
+	TextBuffer *buf        = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	int emTabDist          = reinterpret_cast<TextWidget>(w)->text.emulateTabs;
 	int emTabsBeforeCursor = reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor;
 	int startIndent, toIndent, insertPos, startPos, lineStart;
 	int pos, indent, startPosIndent;
@@ -3643,6 +3745,71 @@ static char *wrapText(TextWidget tw, char *startLine, const char *text, int bufO
 	wrapBuf = new TextBuffer;
 	wrapBuf->BufInsert(0, startLine);
 	wrapBuf->BufInsert(wrapBuf->BufGetLength(), text);
+
+	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
+	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
+	   string (if requested), and prevents re-scanning of long unbreakable
+	   lines for each character beyond the margin */
+	colNum = 0;
+	pos = 0;
+	lineStartPos = 0;
+	limitPos = breakBefore == nullptr ? startLineLen : 0;
+	while (pos < wrapBuf->BufGetLength()) {
+		c = wrapBuf->BufGetCharacter(pos);
+		if (c == '\n') {
+			lineStartPos = limitPos = pos + 1;
+			colNum = 0;
+		} else {
+			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buf->nullSubsChar_);
+			if (colNum > wrapMargin) {
+				if (!wrapLine(tw, wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
+					limitPos = std::max<int>(pos, limitPos);
+				} else {
+					lineStartPos = limitPos = breakAt + 1;
+					pos += charsAdded;
+					colNum = wrapBuf->BufCountDispChars(lineStartPos, pos + 1);
+					if (firstBreak == -1)
+						firstBreak = breakAt;
+				}
+			}
+		}
+		pos++;
+	}
+
+	/* Return the wrapped text, possibly including part of startLine */
+	if(!breakBefore)
+		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->BufGetLength());
+	else {
+		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
+		wrappedText = wrapBuf->BufGetRange(startLineLen - *breakBefore, wrapBuf->BufGetLength());
+	}
+	delete wrapBuf;
+	return wrappedText;
+}
+
+/*
+** Wrap multi-line text in argument "text" to be inserted at the end of the
+** text on line "startLine" and return the result.  If "breakBefore" is
+** non-nullptr, allow wrapping to extend back into "startLine", in which case
+** the returned text will include the wrapped part of "startLine", and
+** "breakBefore" will return the number of characters at the end of
+** "startLine" that were absorbed into the returned string.  "breakBefore"
+** will return zero if no characters were absorbed into the returned string.
+** The buffer offset of text in the widget's text buffer is needed so that
+** smart indent (which can be triggered by wrapping) can search back farther
+** in the buffer than just the text in startLine.
+*/
+static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore) {
+	TextBuffer *wrapBuf, *buf = tw->text.textD->buffer;
+	int startLineLen = startLine.size();
+	int colNum, pos, lineStartPos, limitPos, breakAt, charsAdded;
+	int firstBreak = -1, tabDist = buf->tabDist_;
+	char c, *wrappedText;
+
+	/* Create a temporary text buffer and load it with the strings */
+	wrapBuf = new TextBuffer;
+	wrapBuf->BufInsertEx(0, startLine);
+	wrapBuf->BufInsertEx(wrapBuf->BufGetLength(), text);
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
