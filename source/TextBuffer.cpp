@@ -1024,39 +1024,6 @@ view::string_view TextBuffer::BufAsStringEx() {
 /*
 ** Replace the entire contents of the text buffer
 */
-void TextBuffer::BufSetAll(const char *text) {
-
-	const int length = strlen(text);
-
-	callPreDeleteCBs(0, length_);
-
-	/* Save information for redisplay, and get rid of the old buffer */
-	std::string deletedText = BufGetAllEx();
-	const int deletedLength = length_;
-	XtFree(buf_);
-
-	/* Start a new buffer with a gap of PreferredGapSize in the center */
-	buf_ = XtMalloc(length + PreferredGapSize + 1);
-	buf_[length + PreferredGapSize] = '\0';
-	length_ = length;
-	gapStart_ = length / 2;
-	gapEnd_ = gapStart_ + PreferredGapSize;
-	memcpy(buf_, text, gapStart_);
-	memcpy(&buf_[gapEnd_], &text[gapStart_], length - gapStart_);
-#ifdef PURIFY
-	std::fill(&buf_[gapStart_], &buf_[gapEnd_], '.');
-#endif
-
-	/* Zero all of the existing selections */
-	updateSelections(0, deletedLength, 0);
-
-	/* Call the saved display routine(s) to update the screen */
-	callModifyCBs(0, deletedLength, length, 0, deletedText);
-}
-
-/*
-** Replace the entire contents of the text buffer
-*/
 void TextBuffer::BufSetAllEx(view::string_view text) {
 	int length, deletedLength;
 	length = text.size();
@@ -1184,27 +1151,6 @@ char TextBuffer::BufGetCharacter(int pos) const {
 /*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
-void TextBuffer::BufInsert(int pos, const char *text) {
-	int nInserted;
-
-	/* if pos is not contiguous to existing text, make it */
-	if (pos > length_)
-		pos = length_;
-	if (pos < 0)
-		pos = 0;
-
-	/* Even if nothing is deleted, we must call these callbacks */
-	callPreDeleteCBs(pos, 0);
-
-	/* insert and redisplay */
-	nInserted = insert(pos, text);
-	cursorPosHint_ = pos + nInserted;
-	callModifyCBs(pos, 0, nInserted, 0, std::string());
-}
-
-/*
-** Insert null-terminated string "text" at position "pos" in "buf"
-*/
 void TextBuffer::BufInsertEx(int pos, view::string_view text) {
 	int nInserted;
 
@@ -1221,21 +1167,6 @@ void TextBuffer::BufInsertEx(int pos, view::string_view text) {
 	nInserted = insertEx(pos, text);
 	cursorPosHint_ = pos + nInserted;
 	callModifyCBs(pos, 0, nInserted, 0, std::string());
-}
-
-/*
-** Delete the characters between "start" and "end", and insert the
-** null-terminated string "text" in their place in in "buf"
-*/
-void TextBuffer::BufReplace(int start, int end, const char *text) {
-	int nInserted = strlen(text);
-
-	callPreDeleteCBs(start, end - start);
-	std::string deletedText = BufGetRangeEx(start, end);
-	deleteRange(start, end);
-	insert(start, text);
-	cursorPosHint_ = start + nInserted;
-	callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }
 
 /*
@@ -1304,34 +1235,6 @@ void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd,
 	gapStart_ += length;
 	length_ += length;
 	updateSelections(toPos, 0, length);
-}
-
-/*
-** Insert "text" columnwise into buffer starting at displayed character
-** position "column" on the line beginning at "startPos".  Opens a rectangular
-** space the width and height of "text", by moving all text to the right of
-** "column" right.  If charsInserted and charsDeleted are not nullptr, the
-** number of characters inserted and deleted in the operation (beginning
-** at startPos) are returned in these arguments
-*/
-void TextBuffer::BufInsertCol(int column, int startPos, const char *text, int *charsInserted, int *charsDeleted) {
-	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
-	char *deletedText;
-
-	nLines = countLines(text);
-	lineStartPos = BufStartOfLine(startPos);
-	nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
-	callPreDeleteCBs(lineStartPos, nDeleted);
-	deletedText = BufGetRange(lineStartPos, lineStartPos + nDeleted);
-	insertCol(column, lineStartPos, text, &insertDeleted, &nInserted, &cursorPosHint_);
-	if (nDeleted != insertDeleted)
-		fprintf(stderr, "NEdit internal consistency check ins1 failed");
-	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
-	XtFree(deletedText);
-	if (charsInserted)
-		*charsInserted = nInserted;
-	if (charsDeleted)
-		*charsDeleted = nDeleted;
 }
 
 /*
@@ -1991,38 +1894,6 @@ int TextBuffer::BufCountBackwardNLines(int startPos, int nLines) const {
 ** with the character "startPos", and returning the result in "foundPos"
 ** returns true if found, false if not.
 */
-bool TextBuffer::BufSearchForward(int startPos, const char *searchChars, int *foundPos) const {
-	int pos, gapLen = gapEnd_ - gapStart_;
-	const char *c;
-
-	pos = startPos;
-	while (pos < gapStart_) {
-		for (c = searchChars; *c != '\0'; c++) {
-			if (buf_[pos] == *c) {
-				*foundPos = pos;
-				return true;
-			}
-		}
-		pos++;
-	}
-	while (pos < length_) {
-		for (c = searchChars; *c != '\0'; c++) {
-			if (buf_[pos + gapLen] == *c) {
-				*foundPos = pos;
-				return true;
-			}
-		}
-		pos++;
-	}
-	*foundPos = length_;
-	return false;
-}
-
-/*
-** Search forwards in buffer "buf" for characters in "searchChars", starting
-** with the character "startPos", and returning the result in "foundPos"
-** returns true if found, false if not.
-*/
 bool TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 
@@ -2046,42 +1917,6 @@ bool TextBuffer::BufSearchForwardEx(int startPos, view::string_view searchChars,
 		pos++;
 	}
 	*foundPos = length_;
-	return false;
-}
-
-/*
-** Search backwards in buffer "buf" for characters in "searchChars", starting
-** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns true if found, false if not.
-*/
-bool TextBuffer::BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const {
-	int pos, gapLen = gapEnd_ - gapStart_;
-	const char *c;
-
-	if (startPos == 0) {
-		*foundPos = 0;
-		return false;
-	}
-	pos = startPos == 0 ? 0 : startPos - 1;
-	while (pos >= gapStart_) {
-		for (c = searchChars; *c != '\0'; c++) {
-			if (buf_[pos + gapLen] == *c) {
-				*foundPos = pos;
-				return true;
-			}
-		}
-		pos--;
-	}
-	while (pos >= 0) {
-		for (c = searchChars; *c != '\0'; c++) {
-			if (buf_[pos] == *c) {
-				*foundPos = pos;
-				return true;
-			}
-		}
-		pos--;
-	}
-	*foundPos = 0;
 	return false;
 }
 
@@ -2260,39 +2095,6 @@ void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) const {
 ** != 0 otherwise.
 **
 */
-int TextBuffer::BufCmp(int pos, int len, const char *cmpText) {
-	int posEnd;
-	int part1Length;
-	int result;
-
-	posEnd = pos + len;
-	if (posEnd > length_) {
-		return (1);
-	}
-	if (pos < 0) {
-		return (-1);
-	}
-
-	if (posEnd <= gapStart_) {
-		return (strncmp(&(buf_[pos]), cmpText, len));
-	} else if (pos >= gapStart_) {
-		return (strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText, len));
-	} else {
-		part1Length = gapStart_ - pos;
-		result = strncmp(&buf_[pos], cmpText, part1Length);
-		if (result) {
-			return (result);
-		}
-		return (strncmp(&buf_[gapEnd_], &cmpText[part1Length], len - part1Length));
-	}
-}
-
-/*
-** Compares len Bytes contained in buf starting at Position pos with
-** the contens of cmpText. Returns 0 if there are no differences,
-** != 0 otherwise.
-**
-*/
 int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 	int posEnd;
 	int part1Length;
@@ -2338,7 +2140,7 @@ char *TextBuffer::getSelectionText(TextSelection *sel) {
 }
 
 /*
-** Internal (non-redisplaying) version of BufInsert.  Returns the length of
+** Internal (non-redisplaying) version of BufInsertEx.  Returns the length of
 ** text inserted (this is just strlen(text), however this calculation can be
 ** expensive and the length will be required by any caller who will continue
 ** on to call redisplay).  pos must be contiguous with the existing text in
@@ -2367,7 +2169,7 @@ int TextBuffer::insert(int pos, const char *text) {
 }
 
 /*
-** Internal (non-redisplaying) version of BufInsert.  Returns the length of
+** Internal (non-redisplaying) version of BufInsertEx.  Returns the length of
 ** text inserted (this is just strlen(text), however this calculation can be
 ** expensive and the length will be required by any caller who will continue
 ** on to call redisplay).  pos must be contiguous with the existing text in
@@ -2399,7 +2201,7 @@ int TextBuffer::insertEx(int pos, view::string_view text) {
 ** Search forwards in buffer "buf" for character "searchChar", starting
 ** with the character "startPos", and returning the result in "foundPos"
 ** returns true if found, false if not.  (The difference between this and
-** BufSearchForward is that it's optimized for single characters.  The
+** BufSearchForwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
@@ -2432,7 +2234,7 @@ bool TextBuffer::searchForward(int startPos, char searchChar, int *foundPos) con
 ** Search backwards in buffer "buf" for character "searchChar", starting
 ** with the character BEFORE "startPos", returning the result in "foundPos"
 ** returns true if found, false if not.  (The difference between this and
-** BufSearchBackward is that it's optimized for single characters.  The
+** BufSearchBackwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
@@ -3050,7 +2852,7 @@ void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 	}
 	
 
-	/* Unselect (happens automatically in BufReplace, but BufReplaceRectEx
+	/* Unselect (happens automatically in BufReplaceEx, but BufReplaceRectEx
 	   can't detect when the contents of a selection goes away) */
 	sel->selected = false;
 	redisplaySelection(&oldSelection, sel);

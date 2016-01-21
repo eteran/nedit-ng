@@ -1428,11 +1428,11 @@ char *WriteSmartIndentString(void) {
 	outBuf = new TextBuffer;
 	for (i = 0; i < NSmartIndentSpecs; i++) {
 		sis = SmartIndentSpecs[i];
-		outBuf->BufInsert(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsert(outBuf->BufGetLength(), sis->lmName);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), sis->lmName);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultIndentSpec(sis))
-			outBuf->BufInsert(outBuf->BufGetLength(), "Default\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n");
 		else {
 			insertShiftedMacro(outBuf, (String)sis->initMacro);
 			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
@@ -1485,12 +1485,12 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 
 	if (macro) {
 		shiftedMacro = ShiftText(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
-		buf->BufInsert(buf->BufGetLength(), shiftedMacro);
+		buf->BufInsertEx(buf->BufGetLength(), shiftedMacro);
 		XtFree(shiftedMacro);
 	}
-	buf->BufInsert(buf->BufGetLength(), "\t");
-	buf->BufInsert(buf->BufGetLength(), MacroEndBoundary);
-	buf->BufInsert(buf->BufGetLength(), "\n");
+	buf->BufInsertEx(buf->BufGetLength(), "\t");
+	buf->BufInsertEx(buf->BufGetLength(), MacroEndBoundary);
+	buf->BufInsertEx(buf->BufGetLength(), "\n");
 }
 
 static int isDefaultIndentSpec(smartIndentRec *indentSpec) {

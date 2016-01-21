@@ -1300,9 +1300,9 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
 		outPos += toPos - fromPos;
 		c = outBuf->BufGetCharacter(outPos - 1);
 		if (c == ' ' || c == '\t')
-			outBuf->BufReplace(outPos - 1, outPos, "\n");
+			outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
 		else if (c != '\n') {
-			outBuf->BufInsert(outPos, "\n");
+			outBuf->BufInsertEx(outPos, "\n");
 			outPos++;
 		}
 		fromPos = toPos;
@@ -1344,9 +1344,9 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
 		outPos += toPos - fromPos;
 		char c = outBuf->BufGetCharacter(outPos - 1);
 		if (c == ' ' || c == '\t')
-			outBuf->BufReplace(outPos - 1, outPos, "\n");
+			outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
 		else if (c != '\n') {
-			outBuf->BufInsert(outPos, "\n");
+			outBuf->BufInsertEx(outPos, "\n");
 			outPos++;
 		}
 		fromPos = toPos;
@@ -1889,7 +1889,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	if (checkReadOnly(w))
 		return;
 	if (primary->selected && rectangular) {
-		std::string textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = TextDGetInsertPosition(textD);
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
 		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
@@ -1897,7 +1897,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
-		std::string textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = TextDGetInsertPosition(textD);
 		buf->BufInsertEx(insertPos, textToCopy);
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
@@ -1924,7 +1924,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (checkReadOnly(w))
 		return;
 	if (primary->selected && rectangular) {
-		std::string textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = TextDGetInsertPosition(textD);
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
 		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
@@ -1933,7 +1933,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		buf->BufRemoveSelected();
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
-		std::string textToCopy = buf->BufGetSelectionText();
+		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = TextDGetInsertPosition(textD);
 		buf->BufInsertEx(insertPos, textToCopy);
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
@@ -2233,7 +2233,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 		if (c == '\n')
 			textD->buffer->BufRemove(insertPos - 1, insertPos);
 		else if (c != '\t')
-			textD->buffer->BufReplace(insertPos - 1, insertPos, " ");
+			textD->buffer->BufReplaceEx(insertPos - 1, insertPos, " ");
 	} else {
 		textD->buffer->BufRemove(insertPos - 1, insertPos);
 	}
@@ -3333,7 +3333,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 	}
 
 	/* Do the text replacement and reposition the cursor.  If any spaces need
-	   to be inserted to make up for a deleted tab, do a BufReplace, otherwise,
+	   to be inserted to make up for a deleted tab, do a BufReplaceEx, otherwise,
 	   do a BufRemove. */
 	if (startPosIndent < toIndent) {
 	
@@ -3388,7 +3388,7 @@ static int startOfWord(TextWidget w, int pos) {
 		if (!spanBackward(buf, pos, delimiters, True, &startPos))
 			return 0;
 	} else {
-		if (!buf->BufSearchBackward(pos, delimiters, &startPos))
+		if (!buf->BufSearchBackwardEx(pos, delimiters, &startPos))
 			return 0;
 	}
 	return std::min<int>(pos, startPos + 1);
@@ -3407,7 +3407,7 @@ static int endOfWord(TextWidget w, int pos) {
 		if (!spanForward(buf, pos, delimiters, True, &endPos))
 			return buf->BufGetLength();
 	} else {
-		if (!buf->BufSearchForward(pos, delimiters, &endPos))
+		if (!buf->BufSearchForwardEx(pos, delimiters, &endPos))
 			return buf->BufGetLength();
 	}
 	return endPos;

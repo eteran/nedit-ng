@@ -1232,7 +1232,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	/* Record the action and its parameters */
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString) {
-		MacroRecordBuf->BufInsert(MacroRecordBuf->BufGetLength(), actionString);
+		MacroRecordBuf->BufInsertEx(MacroRecordBuf->BufGetLength(), actionString);
 		XtFree(actionString);
 	}
 }
@@ -1734,7 +1734,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	}
 
 	/* Do the replace */
-	buf->BufReplace(from, to, string);
+	buf->BufReplaceEx(from, to, string);
 	result->tag = NO_TAG;
 	return True;
 }

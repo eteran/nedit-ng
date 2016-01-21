@@ -701,29 +701,29 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 			std::string str = MakeQuotedStringEx(pat->startRE);
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->endRE) {
 			std::string str =MakeQuotedStringEx(pat->endRE);
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->errorRE) {
 			std::string str =MakeQuotedStringEx(pat->errorRE);
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
-		outBuf->BufInsert(outBuf->BufGetLength(), pat->style);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->style);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
 			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf);
-		outBuf->BufInsert(outBuf->BufGetLength(), ":");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
-			outBuf->BufInsert(outBuf->BufGetLength(), "D");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "D");
 		if (pat->flags & PARSE_SUBPATS_FROM_START)
-			outBuf->BufInsert(outBuf->BufGetLength(), "R");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "R");
 		if (pat->flags & COLOR_ONLY)
-			outBuf->BufInsert(outBuf->BufGetLength(), "C");
-		outBuf->BufInsert(outBuf->BufGetLength(), "\n");
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "C");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\n");
 	}
 	return outBuf->BufGetAllEx();
 }

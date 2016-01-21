@@ -152,7 +152,6 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	int overlay, oldDragType = tw->text.dragType;
 	int nLines = tw->text.dragNLines;
 	int insLineNum, insLineStart, insRectStart, insRectEnd, insStart;
-	char *insText;
 	int modRangeStart = -1, tempModRangeEnd = -1, bufModRangeEnd = -1;
 	int referenceLine, referencePos, tempStart, tempEnd, origSelLen;
 	int insertInserted, insertDeleted, row, column;
@@ -291,20 +290,18 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 
 	/* Do the insert in the temporary buffer */
 	if (rectangular || overlay) {
-		insText = origBuf->BufGetTextInRect(origSelLineStart, origSelLineEnd, origSel->rectStart, origSel->rectEnd);
+		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel->rectStart, origSel->rectEnd);
 		if (overlay)
-			tempBuf->BufOverlayRect(insStart - tempStart, insRectStart, insRectStart + origSel->rectEnd - origSel->rectStart, insText, &insertInserted, &insertDeleted);
+			tempBuf->BufOverlayRectEx(insStart - tempStart, insRectStart, insRectStart + origSel->rectEnd - origSel->rectStart, insText, &insertInserted, &insertDeleted);
 		else
-			tempBuf->BufInsertCol(insRectStart, insStart - tempStart, insText, &insertInserted, &insertDeleted);
+			tempBuf->BufInsertColEx(insRectStart, insStart - tempStart, insText, &insertInserted, &insertDeleted);
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
-		XtFree(insText);
 	} else {
-		insText = origBuf->BufGetSelectionText();
-		tempBuf->BufInsert(insStart - tempStart, insText);
+		std::string insText = origBuf->BufGetSelectionTextEx();
+		tempBuf->BufInsertEx(insStart - tempStart, insText);
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel->end - origSel->start, 0);
 		insertInserted = origSel->end - origSel->start;
 		insertDeleted = 0;
-		XtFree(insText);
 	}
 
 	/* Make the changes in the real buffer */

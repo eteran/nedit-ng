@@ -236,7 +236,7 @@ void MovePrimarySelection(Widget w, Time time, int isColumnar) {
 
 /*
 ** Insert the X CLIPBOARD selection at the cursor position.  If isColumnar,
-** do an BufInsertCol for a columnar paste instead of BufInsert.
+** do an BufInsertColEx for a columnar paste instead of BufInsertEx.
 */
 void InsertClipboard(Widget w, int isColumnar) {
 	unsigned long length, retLength;

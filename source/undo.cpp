@@ -66,7 +66,7 @@ void WindowInfo::Undo() {
 		
 	UndoInfo *undo = this->undo.front();
 
-	/* BufReplace will eventually call SaveUndoInformation.  This is mostly
+	/* BufReplaceEx will eventually call SaveUndoInformation.  This is mostly
 	   good because it makes accumulating redo operations easier, however
 	   SaveUndoInformation needs to know that it is being called in the context
 	   of an undo.  The inUndo field in the undo record indicates that this
@@ -116,7 +116,7 @@ void WindowInfo::Redo() {
 	
 	UndoInfo *redo = this->redo.front();
 
-	/* BufReplace will eventually call SaveUndoInformation.  To indicate
+	/* BufReplaceEx will eventually call SaveUndoInformation.  To indicate
 	   to SaveUndoInformation that this is the context of a redo operation,
 	   we set the inUndo indicator in the redo record */
 	redo->inUndo = true;

@@ -193,7 +193,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 		std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);	
 		insStyle[nInserted] = '\0';
 		
-		highlightData->styleBuffer->BufReplace(pos, pos + nDeleted, insStyle);
+		highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
 		
 		XtFree(insStyle);
 	} else {
@@ -252,7 +252,7 @@ void StartHighlighting(WindowInfo *window, int warn) {
 		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
 	}
 	*stylePtr = '\0';
-	highlightData->styleBuffer->BufSetAll(styleString);
+	highlightData->styleBuffer->BufSetAllEx(styleString);
 	delete [] styleString;
 
 	/* install highlight pattern data in the window data structure */
@@ -1244,7 +1244,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
 	styleString[endParse - beginSafety] = '\0';
-	styleBuf->BufReplace(beginParse, endParse, &styleString[beginParse - beginSafety]);
+	styleBuf->BufReplaceEx(beginParse, endParse, &styleString[beginParse - beginSafety]);
 	XtFree(styleString);
 	XtFree(string);
 }
@@ -1751,11 +1751,11 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 	}
 
 	/* Make the modification */
-	styleBuf->BufReplace(startPos, endPos, styleString);
+	styleBuf->BufReplaceEx(startPos, endPos, styleString);
 
 	/* Mark or extend the range that needs to be redrawn.  Even if no
 	   change was made, it's important to re-establish the selection,
-	   because it can get damaged by the BufReplace above */
+	   because it can get damaged by the BufReplaceEx above */
 	styleBuf->BufSelect(std::min<int>(modStart, minPos), std::max<int>(modEnd, maxPos));
 }
 

@@ -460,7 +460,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 
 	/* Display the file contents in the text widget */
 	window->ignoreModify = True;
-	window->buffer->BufSetAll(fileString);
+	window->buffer->BufSetAllEx(fileString);
 	window->ignoreModify = False;
 
 	/* Check that the length that the buffer thinks it has is the same
@@ -485,7 +485,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 			window->buffer->nullSubsChar_ = (char)0xfe;
 		}
 		window->ignoreModify = True;
-		window->buffer->BufSetAll(fileString);
+		window->buffer->BufSetAllEx(fileString);
 		window->ignoreModify = False;
 	}
 
@@ -585,7 +585,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	if (window->buffer->primary_.selected) {
 		window->buffer->BufReplaceSelectedEx(fileString);
 	} else {
-		window->buffer->BufInsert(TextGetCursorPos(window->lastFocus), fileString);
+		window->buffer->BufInsertEx(TextGetCursorPos(window->lastFocus), fileString);
 	}
 
 	/* release the memory that holds fileString */
@@ -824,7 +824,7 @@ static bool doSave(WindowInfo *window) {
 	         zero size on disk, and the check would falsely conclude that the
 	         file has changed on disk, and would pop up a warning dialog */
 	if (window->buffer->BufGetCharacter(window->buffer->BufGetLength() - 1) != '\n' && window->buffer->BufGetLength() != 0 && GetPrefAppendLF()) {
-		window->buffer->BufInsert(window->buffer->BufGetLength(), "\n");
+		window->buffer->BufInsertEx(window->buffer->BufGetLength(), "\n");
 	}
 
 	/* open the file */
@@ -1702,7 +1702,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 
 		/* Beware of 0 chars ! */
 		buf->BufSubstituteNullChars(fileString, nRead);
-		rv = buf->BufCmp(bufPos, nRead, fileString);
+		rv = buf->BufCmpEx(bufPos, nRead, fileString);
 		if (rv) {
 			fclose(fp);
 			AllWindowsUnbusy();
@@ -1714,7 +1714,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 	AllWindowsUnbusy();
 	fclose(fp);
 	if (pendingCR) {
-		rv = buf->BufCmp(bufPos, 1, &pendingCR);
+		rv = buf->BufCmpEx(bufPos, 1, &pendingCR);
 		if (rv) {
 			return (rv);
 		}

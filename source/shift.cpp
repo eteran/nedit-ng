@@ -170,8 +170,6 @@ void DowncaseSelection(WindowInfo *window) {
 */
 static void changeCase(WindowInfo *window, int makeUpper) {
 	TextBuffer *buf = window->buffer;
-	char *text, *c;
-	char oldChar;
 	int cursorPos, start, end, isRect, rectStart, rectEnd;
 
 	/* Get the selection.  Use character before cursor if no selection */
@@ -184,16 +182,17 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 		}
 		*bufChar = buf->BufGetCharacter(cursorPos - 1);
 		*bufChar = makeUpper ? toupper((unsigned char)*bufChar) : tolower((unsigned char)*bufChar);
-		buf->BufReplace(cursorPos - 1, cursorPos, bufChar);
+		buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
 	} else {
-		Boolean modified = False;
+		bool modified = false;
 
-		text = buf->BufGetSelectionText();
-		for (c = text; *c != '\0'; c++) {
-			oldChar = *c;
-			*c = makeUpper ? toupper((unsigned char)*c) : tolower((unsigned char)*c);
-			if (*c != oldChar) {
-				modified = True;
+		std::string text = buf->BufGetSelectionTextEx();
+		
+		for(char &ch: text) {
+			char oldChar = ch;
+			ch = makeUpper ? toupper((unsigned char)ch) : tolower((unsigned char)ch);
+			if (ch != oldChar) {
+				modified = true;
 			}
 		}
 
@@ -201,7 +200,6 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 			buf->BufReplaceSelectedEx(text);
 		}
 
-		XtFree(text);
 		if (isRect)
 			buf->BufRectSelect(start, end, rectStart, rectEnd);
 		else

@@ -1312,7 +1312,7 @@ void WindowInfo::CloseWindow() {
 		strcpy(this->filename, name);
 		strcpy(this->path, "");
 		this->ignoreModify = TRUE;
-		this->buffer->BufSetAll("");
+		this->buffer->BufSetAllEx("");
 		this->ignoreModify = FALSE;
 		this->nMarks = 0;
 		this->filenameSet = FALSE;

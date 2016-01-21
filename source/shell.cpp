@@ -241,7 +241,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 	window->buffer->BufUnsubstituteNullCharsEx(cmdText);
 
 	/* insert a newline after the entire line */
-	window->buffer->BufInsert(insertPos, "\n");
+	window->buffer->BufInsertEx(insertPos, "\n");
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -685,7 +685,7 @@ static void safeBufReplace(TextBuffer *buf, int *start, int *end, const char *te
 		*start = buf->BufGetLength();
 	if (*end > buf->BufGetLength())
 		*end = buf->BufGetLength();
-	buf->BufReplace(*start, *end, text);
+	buf->BufReplaceEx(*start, *end, text);
 }
 
 /*

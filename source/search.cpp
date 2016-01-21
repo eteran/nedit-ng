@@ -3864,10 +3864,10 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
 			replaceUsingRE(searchString, replaceString, foundString.c_str(), startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), GetWindowDelimiters(window),
 			               defaultRegexFlags(searchType));
 
-			window->buffer->BufReplace(startPos, endPos, replaceResult);
+			window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
 			replaceLen = strlen(replaceResult);
 		} else {
-			window->buffer->BufReplace(startPos, endPos, replaceString);
+			window->buffer->BufReplaceEx(startPos, endPos, replaceString);
 			replaceLen = strlen(replaceString);
 		}
 
@@ -3923,10 +3923,10 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 		replaceUsingRE(searchString, replaceString, foundString.c_str(), startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), GetWindowDelimiters(window),
 		               defaultRegexFlags(searchType));
 
-		window->buffer->BufReplace(startPos, endPos, replaceResult);
+		window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
 		replaceLen = strlen(replaceResult);
 	} else {
-		window->buffer->BufReplace(startPos, endPos, replaceString);
+		window->buffer->BufReplaceEx(startPos, endPos, replaceString);
 		replaceLen = strlen(replaceString);
 	}
 
@@ -4094,11 +4094,11 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 				}
 			}
 
-			tempBuf->BufReplace(startPos + realOffset, endPos + realOffset, replaceResult);
+			tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
 			replaceLen = strlen(replaceResult);
 		} else {
 			/* at this point plain substitutions (should) always work */
-			tempBuf->BufReplace(startPos + realOffset, endPos + realOffset, replaceString);
+			tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString);
 			substSuccess = True;
 		}
 
@@ -4181,7 +4181,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 	}
 
 	/* replace the contents of the text widget with the substituted text */
-	window->buffer->BufReplace(copyStart, copyEnd, newFileString);
+	window->buffer->BufReplaceEx(copyStart, copyEnd, newFileString);
 
 	/* Move the cursor to the end of the last replacement */
 	TextSetCursorPos(window->lastFocus, copyStart + replacementLen);

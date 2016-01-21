@@ -56,28 +56,22 @@ public:
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
 private:
-public:  bool BufSearchBackward(int startPos, const char *searchChars, int *foundPos) const;
-public:  bool BufSearchForward(int startPos, const char *searchChars, int *foundPos) const;
+private: char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
+private: void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
 public:  bool BufSubstituteNullChars(char *string, int length);
 public:  char *BufGetAll();
 public:  char *BufGetRange(int start, int end);
 public:  char *BufGetSecSelectText();
 public:  char *BufGetSelectionText();
-public:  char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
-public:  int BufCmp(int pos, int len, const char *cmpText);
-public:  void BufInsertCol(int column, int startPos, const char *text, int *charsInserted, int *charsDeleted);	
-public:  void BufInsert(int pos, const char *text);
-public:  void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
-public:  void BufReplace(int start, int end, const char *text);
-public:  void BufSetAll(const char *text);
+public:  const char *BufAsString();
 public:  void BufUnsubstituteNullChars(char *string) const;
+
 
 public:
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSubstituteNullCharsEx(std::string &string);
 	char BufGetCharacter(int pos) const;
-	const char *BufAsString();
 	int BufCmpEx(int pos, int len, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;

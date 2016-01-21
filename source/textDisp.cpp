@@ -761,7 +761,7 @@ int TextDGetInsertPosition(textDisp *textD) {
 
 /*
 ** Insert "text" at the current cursor location.  This has the same
-** effect as inserting the text into the buffer using BufInsert and
+** effect as inserting the text into the buffer using BufInsertEx and
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
@@ -769,13 +769,13 @@ void textDisp::TextDInsert(const char *text) {
 	int pos = this->cursorPos;
 
 	this->cursorToHint = pos + strlen(text);
-	this->buffer->BufInsert(pos, text);
+	this->buffer->BufInsertEx(pos, text);
 	this->cursorToHint = NO_HINT;
 }
 
 /*
 ** Insert "text" at the current cursor location.  This has the same
-** effect as inserting the text into the buffer using BufInsert and
+** effect as inserting the text into the buffer using BufInsertEx and
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
@@ -836,7 +836,7 @@ void textDisp::TextDOverstrike(const char *text) {
 	endPos = p;
 
 	this->cursorToHint = startPos + textLen;
-	buf->BufReplace(startPos, endPos, paddedText == nullptr ? text : paddedText);
+	buf->BufReplaceEx(startPos, endPos, paddedText == nullptr ? text : paddedText);
 	this->cursorToHint = NO_HINT;
 	delete[] paddedText;
 }
