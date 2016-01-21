@@ -852,7 +852,8 @@ void textDisp::TextDOverstrikeEx(view::string_view text) {
 	int textLen     = text.size();
 	int p, endPos, indent, startIndent, endIndent;
 
-	nullable_string paddedText;
+	std::string paddedText;
+	bool paddedTextSet = false;
 
 	/* determine how many displayed character positions are covered */
 	startIndent = this->buffer->BufCountDispChars(lineStart, startPos);
@@ -883,6 +884,7 @@ void textDisp::TextDOverstrikeEx(view::string_view text) {
 				padded.append(text.begin(), text.end());
 				padded.append(indent - endIndent, ' ');
 				paddedText = std::move(padded);
+				paddedTextSet = true;
 			}
 			break;
 		}
@@ -890,7 +892,7 @@ void textDisp::TextDOverstrikeEx(view::string_view text) {
 	endPos = p;
 
 	this->cursorToHint = startPos + textLen;
-	buf->BufReplaceEx(startPos, endPos, !paddedText ? text : *paddedText);
+	buf->BufReplaceEx(startPos, endPos, !paddedTextSet ? text : paddedText);
 	this->cursorToHint = NO_HINT;
 }
 
