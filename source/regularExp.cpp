@@ -204,9 +204,7 @@
 
 #define LAST_PAREN (CLOSE + NSUBEXP)
 
-#if (LAST_PAREN > UINT8_MAX)
-#error "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)"
-#endif
+static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)");
 
 /* The next_ptr () function can consume up to 30% of the time during matching
    because it is called an immense number of times (an average of 25
