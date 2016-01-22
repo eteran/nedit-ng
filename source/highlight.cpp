@@ -1509,7 +1509,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 	const char *stringPtr = *string;
 	char *stylePtr        = *styleString;
 
-	while (ExecRE(pattern->subPatternRE, stringPtr, anchored ? *string + 1 : *string + length + 1, False, *prevChar, succChar, delimiters, lookBehindTo, match_till)) {
+	while (ExecRE(pattern->subPatternRE, stringPtr, anchored ? *string + 1 : *string + length + 1, false, *prevChar, succChar, delimiters, lookBehindTo, match_till)) {
 	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1536,7 +1536,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 					subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
-							if (!ExecRE(pattern->endRE, savedStartPtr, savedStartPtr + 1, False, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
+							if (!ExecRE(pattern->endRE, savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
 								fprintf(stderr, "Internal error, failed to recover end match in parseString\n");
 								return false;
 							}
@@ -1616,7 +1616,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 			subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
-					if (!ExecRE(subPat->startRE, savedStartPtr, savedStartPtr + 1, False, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
+					if (!ExecRE(subPat->startRE, savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
 						fprintf(stderr, "Internal error, failed to recover "
 						                "start match in parseString\n");
 						return false;

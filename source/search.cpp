@@ -4632,7 +4632,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	}
 
 	/* search from beginPos to end of string */
-	if (ExecRE(compiledRE, string + beginPos, nullptr, FALSE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+	if (ExecRE(compiledRE, string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
 		if(searchExtentFW)
@@ -4650,7 +4650,7 @@ static int forwardRegexSearch(const char *string, const char *searchString, int 
 	}
 
 	/* search from the beginning of the string to beginPos */
-	if (ExecRE(compiledRE, string, string + beginPos, FALSE, '\0', string[beginPos], delimiters, string, nullptr)) {
+	if (ExecRE(compiledRE, string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
 		if(searchExtentFW)
@@ -4680,7 +4680,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	/* search from beginPos to start of file.  A negative begin pos	*/
 	/* says begin searching from the far end of the file.		*/
 	if (beginPos >= 0) {
-		if (ExecRE(compiledRE, string, string + beginPos, TRUE, '\0', '\0', delimiters, string, nullptr)) {
+		if (ExecRE(compiledRE, string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
 			*startPos = compiledRE->startp[0] - string;
 			*endPos = compiledRE->endp[0] - string;
 			if(searchExtentFW)
@@ -4702,7 +4702,7 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 	if (beginPos < 0)
 		beginPos = 0;
 	length = strlen(string); /* sadly, this means scanning entire string */
-	if (ExecRE(compiledRE, string + beginPos, string + length, TRUE, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+	if (ExecRE(compiledRE, string + beginPos, string + length, true, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
 		*startPos = compiledRE->startp[0] - string;
 		*endPos = compiledRE->endp[0] - string;
 		if(searchExtentFW)
@@ -4833,7 +4833,7 @@ static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, con
 
 	try {
 		auto compiledRE = new regexp(searchStr, defaultFlags);
-		ExecRE(compiledRE, sourceStr + beginPos, nullptr, False, prevChar, '\0', delimiters, sourceStr, nullptr);
+		ExecRE(compiledRE, sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
 		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
 		delete compiledRE;
 	

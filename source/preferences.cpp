@@ -3264,7 +3264,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 		// NOTE(eteran): ignoring error?!
 	}
 	primaryName = XmTextGetString(fd->primaryW);
-	if (!ExecRE(compiledRE, primaryName, nullptr, False, '\0', '\0', nullptr, nullptr, nullptr)) {
+	if (!ExecRE(compiledRE, primaryName, nullptr, false, '\0', '\0', nullptr, nullptr, nullptr)) {
 		XBell(XtDisplay(fd->shell), 0);
 		delete compiledRE;
 		XtFree(primaryName);
