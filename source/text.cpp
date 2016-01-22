@@ -634,7 +634,6 @@ static Cursor empty_cursor = 0;
 static void initialize(TextWidget request, TextWidget new_widget) {
 
 	XFontStruct *fs = new_widget->text.fontStruct;
-	TextBuffer *buf;
 	Pixel white, black;
 	int textLeft;
 	int charWidth = fs->max_bounds.width;
@@ -661,7 +660,7 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 
 	/* Create the initial text buffer for the widget to display (which can
 	   be replaced later with TextSetBuffer) */
-	buf = new TextBuffer;
+	auto buf = new TextBuffer;
 
 	/* Create and initialize the text-display part of the widget */
 	textLeft = new_widget->text.marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
@@ -1276,7 +1275,6 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	TextBuffer *outBuf;
 	int fromPos, toPos, outPos;
 	char c, *outString;
 
@@ -1288,7 +1286,7 @@ char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
 	/* Create a text buffer with a good estimate of the size that adding
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
-	outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
+	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
 	outPos = 0;
 
 	/* Go (displayed) line by line through the buffer, adding newlines where
@@ -3624,14 +3622,14 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 ** in the buffer than just the text in startLine.
 */
 static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore) {
-	TextBuffer *wrapBuf, *buf = tw->text.textD->buffer;
+	TextBuffer *buf = tw->text.textD->buffer;
 	int startLineLen = startLine.size();
 	int colNum, pos, lineStartPos, limitPos, breakAt, charsAdded;
 	int firstBreak = -1, tabDist = buf->tabDist_;
 	char c, *wrappedText;
 
 	/* Create a temporary text buffer and load it with the strings */
-	wrapBuf = new TextBuffer;
+	auto wrapBuf = new TextBuffer;
 	wrapBuf->BufInsertEx(0, startLine);
 	wrapBuf->BufInsertEx(wrapBuf->BufGetLength(), text);
 

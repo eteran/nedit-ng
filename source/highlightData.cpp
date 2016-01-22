@@ -735,7 +735,6 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 	const char *errMsg;
 	const char *stringStart = *inPtr;
 	patternSet patSet;
-	patternSet *retPatSet;
 
 	/* remove leading whitespace */
 	*inPtr += strspn(*inPtr, " \t\n");
@@ -754,7 +753,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
+		patternSet *retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
 		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
@@ -776,12 +775,13 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	retPatSet = new patternSet(patSet);
+	auto retPatSet = new patternSet(patSet);
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
 	   syntax to quote braces and use & rather than \0 */
-	if (convertOld)
+	if (convertOld) {
 		convertOldPatternSet(retPatSet);
+	}
 
 	return retPatSet;
 }
@@ -2388,7 +2388,6 @@ static int updatePatternSet(void) {
 */
 static patternSet *getDialogPatternSet(void) {
 	int i, lineContext, charContext;
-	patternSet *patSet;
 
 	/* Get the current contents of the "patterns" dialog fields */
 	if (!UpdateManagedList(HighlightDialog.managedListW, True))
@@ -2402,7 +2401,7 @@ static patternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	patSet = new patternSet;
+	auto patSet = new patternSet;
 	patSet->languageMode = HighlightDialog.langModeName;
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
