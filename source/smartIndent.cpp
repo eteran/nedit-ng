@@ -939,13 +939,12 @@ static int checkSmartIndentDialogData(void) {
 }
 
 static smartIndentRec *getSmartIndentDialogData(void) {
-	smartIndentRec *is;
 
-	is = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-	is->lmName = XtNewStringEx(SmartIndentDialog.langModeName);
-	is->initMacro = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
+	auto is = new smartIndentRec;
+	is->lmName       = XtNewStringEx(SmartIndentDialog.langModeName);
+	is->initMacro    = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
 	is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
-	is->modMacro = TextWidgetIsBlank(SmartIndentDialog.modMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
+	is->modMacro     = TextWidgetIsBlank(SmartIndentDialog.modMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
 	return is;
 }
 
@@ -1396,7 +1395,8 @@ static char *readSIMacro(const char **inPtr) {
 }
 
 static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
-	smartIndentRec *ris = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
+
+	auto ris = new smartIndentRec;
 	ris->lmName       = XtNewStringEx(is->lmName);
 	ris->initMacro    = XtNewStringEx(is->initMacro);
 	ris->newlineMacro = XtNewStringEx(is->newlineMacro);
@@ -1405,10 +1405,12 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
 }
 
 static void freeIndentSpec(smartIndentRec *is) {
+
 	XtFree((char *)is->lmName);
 	XtFree((char *)is->initMacro);
 	XtFree((char *)is->newlineMacro);
 	XtFree((char *)is->modMacro);
+	// TODO(eteran): is this a memory leak? we never free is!
 }
 
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2) {
@@ -1420,20 +1422,17 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 }
 
 char *WriteSmartIndentString(void) {
-	int i;
-	smartIndentRec *sis;
-	TextBuffer *outBuf;
-	char *escapedStr;
 
-	outBuf = new TextBuffer;
-	for (i = 0; i < NSmartIndentSpecs; i++) {
-		sis = SmartIndentSpecs[i];
+	auto outBuf = new TextBuffer;
+	for (int i = 0; i < NSmartIndentSpecs; i++) {
+		smartIndentRec *sis = SmartIndentSpecs[i];
+		
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), sis->lmName);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (isDefaultIndentSpec(sis))
+		if (isDefaultIndentSpec(sis)) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n");
-		else {
+		} else {
 			insertShiftedMacro(outBuf, (String)sis->initMacro);
 			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
 			insertShiftedMacro(outBuf, (String)sis->modMacro);
@@ -1446,8 +1445,7 @@ char *WriteSmartIndentString(void) {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	escapedStr = EscapeSensitiveChars(outStr.c_str());
-	return escapedStr;
+	return EscapeSensitiveChars(outStr.c_str());
 }
 
 char *WriteSmartIndentCommonString(void) {
