@@ -4619,68 +4619,15 @@ static int searchRegex(const char *string, const char *searchString, int directi
 }
 
 static int forwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-	regexp *compiledRE = nullptr;
 
 	/* compile the search string for searching with ExecRE.  Note that
 	   this does not process errors from compiling the expression.  It
 	   assumes that the expression was checked earlier. */
 	try {
-		compiledRE = new regexp(searchString, defaultFlags);
-	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error!
-		return FALSE;
-	}
+		auto compiledRE = new regexp(searchString, defaultFlags);
 
-	/* search from beginPos to end of string */
-	if (ExecRE(compiledRE, string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
-		if(searchExtentFW)
-			*searchExtentFW = compiledRE->extentpFW - string;
-		if(searchExtentBW)
-			*searchExtentBW = compiledRE->extentpBW - string;
-		delete compiledRE;
-		return TRUE;
-	}
-
-	/* if wrap turned off, we're done */
-	if (!wrap) {
-		delete compiledRE;
-		return FALSE;
-	}
-
-	/* search from the beginning of the string to beginPos */
-	if (ExecRE(compiledRE, string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
-		if(searchExtentFW)
-			*searchExtentFW = compiledRE->extentpFW - string;
-		if(searchExtentBW)
-			*searchExtentBW = compiledRE->extentpBW - string;
-		delete compiledRE;
-		return TRUE;
-	}
-
-	delete compiledRE;
-	return FALSE;
-}
-
-static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-	regexp *compiledRE = nullptr;
-	int length;
-
-	/* compile the search string for searching with ExecRE */
-	try {
-		compiledRE = new regexp(searchString, defaultFlags);
-	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error!
-		return FALSE;
-	}
-
-	/* search from beginPos to start of file.  A negative begin pos	*/
-	/* says begin searching from the far end of the file.		*/
-	if (beginPos >= 0) {
-		if (ExecRE(compiledRE, string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
+		/* search from beginPos to end of string */
+		if (ExecRE(compiledRE, string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
 			*startPos = compiledRE->startp[0] - string;
 			*endPos = compiledRE->endp[0] - string;
 			if(searchExtentFW)
@@ -4690,30 +4637,81 @@ static int backwardRegexSearch(const char *string, const char *searchString, int
 			delete compiledRE;
 			return TRUE;
 		}
-	}
 
-	/* if wrap turned off, we're done */
-	if (!wrap) {
+		/* if wrap turned off, we're done */
+		if (!wrap) {
+			delete compiledRE;
+			return FALSE;
+		}
+
+		/* search from the beginning of the string to beginPos */
+		if (ExecRE(compiledRE, string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
+			*startPos = compiledRE->startp[0] - string;
+			*endPos = compiledRE->endp[0] - string;
+			if(searchExtentFW)
+				*searchExtentFW = compiledRE->extentpFW - string;
+			if(searchExtentBW)
+				*searchExtentBW = compiledRE->extentpBW - string;
+			delete compiledRE;
+			return TRUE;
+		}
+
 		delete compiledRE;
 		return FALSE;
-	}
+	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error!
+		return FALSE;
+	}	
+}
 
-	/* search from the end of the string to beginPos */
-	if (beginPos < 0)
-		beginPos = 0;
-	length = strlen(string); /* sadly, this means scanning entire string */
-	if (ExecRE(compiledRE, string + beginPos, string + length, true, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-		*startPos = compiledRE->startp[0] - string;
-		*endPos = compiledRE->endp[0] - string;
-		if(searchExtentFW)
-			*searchExtentFW = compiledRE->extentpFW - string;
-		if(searchExtentBW)
-			*searchExtentBW = compiledRE->extentpBW - string;
+static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+	int length;
+
+	/* compile the search string for searching with ExecRE */
+	try {
+		auto compiledRE = new regexp(searchString, defaultFlags);
+
+		/* search from beginPos to start of file.  A negative begin pos	*/
+		/* says begin searching from the far end of the file.		*/
+		if (beginPos >= 0) {
+			if (ExecRE(compiledRE, string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
+				*startPos = compiledRE->startp[0] - string;
+				*endPos = compiledRE->endp[0] - string;
+				if(searchExtentFW)
+					*searchExtentFW = compiledRE->extentpFW - string;
+				if(searchExtentBW)
+					*searchExtentBW = compiledRE->extentpBW - string;
+				delete compiledRE;
+				return TRUE;
+			}
+		}
+
+		/* if wrap turned off, we're done */
+		if (!wrap) {
+			delete compiledRE;
+			return FALSE;
+		}
+
+		/* search from the end of the string to beginPos */
+		if (beginPos < 0)
+			beginPos = 0;
+		length = strlen(string); /* sadly, this means scanning entire string */
+		if (ExecRE(compiledRE, string + beginPos, string + length, true, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+			*startPos = compiledRE->startp[0] - string;
+			*endPos = compiledRE->endp[0] - string;
+			if(searchExtentFW)
+				*searchExtentFW = compiledRE->extentpFW - string;
+			if(searchExtentBW)
+				*searchExtentBW = compiledRE->extentpBW - string;
+			delete compiledRE;
+			return TRUE;
+		}
 		delete compiledRE;
-		return TRUE;
-	}
-	delete compiledRE;
-	return FALSE;
+		return FALSE;
+	} catch(const regex_error &e) {
+		// NOTE(eteran): ignoring error!
+		return FALSE;
+	}		
 }
 
 static void upCaseString(char *outString, const char *inString) {
@@ -4832,12 +4830,9 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
 
 	try {
-		auto compiledRE = new regexp(searchStr, defaultFlags);
-		ExecRE(compiledRE, sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
-		Boolean substResult = SubstituteRE(compiledRE, replaceStr, destStr, maxDestLen);
-		delete compiledRE;
-	
-		return substResult;
+		regexp compiledRE(searchStr, defaultFlags);
+		ExecRE(&compiledRE, sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
+		return SubstituteRE(&compiledRE, replaceStr, destStr, maxDestLen);
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
 		return false;

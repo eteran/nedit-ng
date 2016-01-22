@@ -2576,6 +2576,10 @@ static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
 
+int ExecRE(regexp *prog, const char *string) {
+	return ExecRE(prog, string, nullptr, false, '\0', '\0', nullptr, nullptr, nullptr);
+}
+
 /*
  * ExecRE - match a 'regexp' structure against a string
  *

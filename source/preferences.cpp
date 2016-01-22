@@ -3248,7 +3248,6 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)callData;
 
 	auto fd = reinterpret_cast<fontDialog *>(clientData);
-	char *primaryName;
 	char modifiedFontName[MAX_FONT_LEN];
 	const char *const searchString            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
 	const char *const italicReplaceString     = "\\1-\\2-o-\\4";
@@ -3263,11 +3262,10 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error?!
 	}
-	primaryName = XmTextGetString(fd->primaryW);
-	if (!ExecRE(compiledRE, primaryName, nullptr, false, '\0', '\0', nullptr, nullptr, nullptr)) {
+	std::string primaryName = XmTextGetStringEx(fd->primaryW);
+	if (!ExecRE(compiledRE, primaryName.c_str())) {
 		XBell(XtDisplay(fd->shell), 0);
 		delete compiledRE;
-		XtFree(primaryName);
 		return;
 	}
 
@@ -3278,8 +3276,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	XmTextSetStringEx(fd->boldW, modifiedFontName);
 	SubstituteRE(compiledRE, boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
 	XmTextSetStringEx(fd->boldItalicW, modifiedFontName);
-	XtFree(primaryName);
-	free(compiledRE);
+	delete compiledRE;
 }
 
 static void primaryModifiedCB(Widget w, XtPointer clientData, XtPointer callData) {

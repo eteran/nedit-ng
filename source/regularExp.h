@@ -75,6 +75,10 @@ int ExecRE(regexp *prog,               /* Compiled regex. */
            const char *look_behind_to, /* Boundary for look-behind; defaults to "string" if NULL */
            const char *match_till);    /* Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary. */
 
+
+int ExecRE(regexp *prog,        /* Compiled regex. */
+           const char *string); /* Text to search within. */
+
 /* Perform substitutions after a 'regexp' match. */
 bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
