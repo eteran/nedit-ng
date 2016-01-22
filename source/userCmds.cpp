@@ -2156,12 +2156,12 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 	/* If there are no problems reading the data, just return it */
 	currentFields = readDialogFields(ucd, True);
 	if(currentFields)
-		return (void *)currentFields;
+		return currentFields;
 
 	/* If user might not be expecting fields to be read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, ucd->dlogShell, 2, "Discard Entry", "Discard incomplete entry\nfor current menu item?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : (void *)copyMenuItemRec((menuItemRec *)oldItem);
+			return oldItem == nullptr ? nullptr : copyMenuItemRec((menuItemRec *)oldItem);
 		}
 	}
 

@@ -313,7 +313,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 			return;
 		}
 	}
-	window->smartIndentData = (void *)winData;
+	window->smartIndentData = winData;
 }
 
 void EndSmartIndent(WindowInfo *window) {

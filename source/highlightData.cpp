@@ -1160,13 +1160,13 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	/* If there are no problems reading the data, just return it */
 	hs = readHSDialogFields(True);
 	if(hs)
-		return (void *)hs;
+		return hs;
 
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, HSDialog.shell, 2, "Incomplete Style", "Discard incomplete entry\nfor current highlight style?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : (void *)new highlightStyleRec(*(highlightStyleRec *)oldItem);
+			return oldItem == nullptr ? nullptr : new highlightStyleRec(*(highlightStyleRec *)oldItem);
 		}
 	}
 
@@ -2003,7 +2003,7 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 	/* If there are no problems reading the data, just return it */
 	highlightPattern *pat = readDialogFields(True);
 	if(pat)
-		return (void *)pat;
+		return pat;
 
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */

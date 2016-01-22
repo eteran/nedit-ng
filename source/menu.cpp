@@ -4145,7 +4145,7 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
 	XmString st1;
 
 	button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNmnemonic, mnemonic, nullptr);
-	XtAddCallback(button, XmNactivateCallback, callback, (void *)cbArg);
+	XtAddCallback(button, XmNactivateCallback, callback, const_cast<void *>(cbArg));
 	XmStringFree(st1);
 
 	XtManageChild(button);
@@ -4163,7 +4163,7 @@ static Widget createFakeMenuItem(Widget parent, const char *name, menuCallbackPr
 	XmString st1;
 
 	button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(""), XmNshadowThickness, 0, XmNmarginHeight, 0, XmNheight, 0, nullptr);
-	XtAddCallback(button, XmNactivateCallback, callback, (void *)cbArg);
+	XtAddCallback(button, XmNactivateCallback, callback, const_cast<void *>(cbArg));
 	XmStringFree(st1);
 	XtVaSetValues(button, XmNtraversalOn, False, nullptr);
 
@@ -4182,7 +4182,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
 	XmString st1;
 
 	button = XtVaCreateWidget(name, xmToggleButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNmnemonic, mnemonic, XmNset, set, nullptr);
-	XtAddCallback(button, XmNvalueChangedCallback, callback, (void *)cbArg);
+	XtAddCallback(button, XmNvalueChangedCallback, callback, const_cast<void *>(cbArg));
 	XmStringFree(st1);
 
 	XtManageChild(button);
@@ -4195,7 +4195,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
 static Widget createMenuRadioToggle(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int set, int mode) {
 
 	Widget button;
-	button = createMenuToggle(parent, name, label, mnemonic, callback, (void *)cbArg, set, mode);
+	button = createMenuToggle(parent, name, label, mnemonic, callback, const_cast<void *>(cbArg), set, mode);
 	XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, nullptr);
 	return button;
 }

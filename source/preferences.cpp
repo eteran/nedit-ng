@@ -2802,13 +2802,13 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 
 	/* If there are no problems reading the data, just return it */
 	if(lm)
-		return (void *)lm;
+		return lm;
 
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, LMDialog.shell, 2, "Discard Language Mode", "Discard incomplete entry\nfor current language mode?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : (void *)copyLanguageModeRec((languageModeRec *)oldItem);
+			return oldItem == nullptr ? nullptr : copyLanguageModeRec((languageModeRec *)oldItem);
 		}
 	}
 
@@ -4270,7 +4270,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
 
 	menu = CreatePulldownMenu(parent, "languageModes", nullptr, 0);
 	for (i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, (void *)LanguageModes[i]->name, nullptr);
+		btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, LanguageModes[i]->name, nullptr);
 		XmStringFree(s1);
 		XtAddCallback(btn, XmNactivateCallback, cbProc, cbArg);
 	}
@@ -4331,11 +4331,11 @@ static void updateLanguageModeSubmenu(WindowInfo *window) {
 		XtDestroyWidget(menu);
 	menu = CreatePulldownMenu(XtParent(window->langModeCascade), "languageModes", args, 1);
 	btn =
-	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, (void *)PLAIN_LANGUAGE_MODE, XmNset, window->languageMode == PLAIN_LANGUAGE_MODE, nullptr);
+	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode == PLAIN_LANGUAGE_MODE, nullptr);
 	XmStringFree(s1);
 	XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
 	for (i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, (void *)i, XmNset, window->languageMode == i,
+		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode == i,
 		                              nullptr);
 		XmStringFree(s1);
 		XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
