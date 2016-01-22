@@ -2578,7 +2578,8 @@ static int attempt(regexp *, const char *);
 static int match(uint8_t *, int *);
 static unsigned long greedy(uint8_t *, long);
 static void adjustcase(char *str, int len, char chgcase);
-static std::bitset<256> makeDelimiterTable(const char *);
+static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
+
 
 /*
  * ExecRE - match a `regexp' structure against a string
@@ -2605,7 +2606,7 @@ static std::bitset<256> makeDelimiterTable(const char *);
  * larger than or equal to end, if set.
  */
 
-int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
+int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
 
 	const char *str;
 	const char **s_ptr;
@@ -2638,7 +2639,6 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 	}
 
 	/* Remember the logical end of the string. */
-
 	End_Of_String = match_to;
 
 	if (end == nullptr && reverse) {
@@ -2656,7 +2656,6 @@ int ExecRE(regexp *prog, const char *string, const char *end, int reverse, char 
 		goto SINGLE_RETURN;
 
 	/* Remember the beginning of the string for matching BOL */
-
 	Start_Of_String = string;
 	Look_Behind_To  = (look_behind_to ? look_behind_to : string);
 
@@ -3865,7 +3864,7 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	char chgcase;
 	bool anyWarnings = false;
 
-	if (prog == nullptr || source == nullptr || dest == nullptr) {
+	if (!prog || !source || !dest) {
 		reg_error("nullptr parm to `SubstituteRE\'");
 
 		return false;
@@ -3969,30 +3968,28 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	return !anyWarnings;
 }
 
-static void adjustcase(char *str, int len, char chgcase) {
-
-	char *string = str;
-	int i;
+static void adjustcase(char *string, int len, char chgcase) {
 
 	/* The tokens \u and \l only modify the first character while the tokens
 	   \U and \L modify the entire string. */
 
-	if (islower(chgcase) && len > 0)
+	if (islower(chgcase) && len > 0) {
 		len = 1;
+	}
 
 	switch (chgcase) {
 	case 'u':
 	case 'U':
-		for (i = 0; i < len; i++) {
-			*(string + i) = toupper((int)*(string + i));
+		for (int i = 0; i < len; i++) {
+			string[i] = toupper((int)string[i]);
 		}
 
 		break;
 
 	case 'l':
 	case 'L':
-		for (i = 0; i < len; i++) {
-			*(string + i) = tolower((int)*(string + i));
+		for (int i = 0; i < len; i++) {
+			string[i] = tolower((int)string[i]);
 		}
 
 		break;
@@ -4015,18 +4012,18 @@ static void reg_error(const char *str) {
  * lookup table for determining whether a character is a delimiter or
  * not.
  *----------------------------------------------------------------------*/
-static std::bitset<256> makeDelimiterTable(const char *delimiters) {
+static std::bitset<256> makeDelimiterTable(view::string_view delimiters) {
 
 	std::bitset<256> table;
 
-	for (const char *c = delimiters; *c != '\0'; c++) {
-		table[*c] = true;
+	for(char ch : delimiters) {
+		table[ch] = true;
 	}
 
-	table[(long)'\0'] = true; /* These       */
-	table[(long)'\t'] = true; /* characters  */
-	table[(long)'\n'] = true; /* are always  */
-	table[(long)' ']  = true; /* delimiters. */
+	table['\0'] = true; /* These	   */
+	table['\t'] = true; /* characters  */
+	table['\n'] = true; /* are always  */
+	table[' ']  = true; /* delimiters. */
 	
 	return table;
 }
@@ -4037,6 +4034,6 @@ static std::bitset<256> makeDelimiterTable(const char *delimiters) {
  * Builds a default delimiter table that persists across `ExecRE' calls.
  *----------------------------------------------------------------------*/
 
-void SetREDefaultWordDelimiters(const char *delimiters) {
+void SetREDefaultWordDelimiters(view::string_view delimiters) {
 	Default_Delimiters = makeDelimiterTable(delimiters);
 }

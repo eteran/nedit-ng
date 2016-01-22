@@ -27,9 +27,10 @@
 #include <X11/Intrinsic.h>
 #include <cstdint>
 #include "regex_error.h"
+#include "string_view.h"
 
-#ifndef NEDIT_REGULAREXP_H_INCLUDED
-#define NEDIT_REGULAREXP_H_INCLUDED
+#ifndef REGULAREXP_H_
+#define REGULAREXP_H_
 
 /* Number of text capturing parentheses allowed. */
 
@@ -46,17 +47,12 @@ public:
 public:
 	const char *startp[NSUBEXP]; /* Captured text starting locations. */
 	const char *endp[NSUBEXP];   /* Captured text ending locations. */
-	const char *extentpBW;       /* Points to the maximum extent of text scanned by
-	                          ExecRE in front of the string to achieve a match
-	                          (needed because of positive look-behind.) */
-	const char *extentpFW;       /* Points to the maximum extent of text scanned by
-	                          ExecRE to achieve a match (needed because of
-	                          positive look-ahead.) */
-	int top_branch;        /* Zero-based index of the top branch that matches.
-	                          Used by syntax highlighting only. */
-	char match_start;      /* Internal use only. */
-	char anchor;           /* Internal use only. */
-	uint8_t *program;         /* Unwarranted chumminess with compiler. */
+	const char *extentpBW;       /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
+	const char *extentpFW;       /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
+	int top_branch;              /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+	char match_start;            /* Internal use only. */
+	char anchor;                 /* Internal use only. */
+	uint8_t *program;
 };
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -71,19 +67,13 @@ enum RE_DEFAULT_FLAG {
 
 int ExecRE(regexp *prog,               /* Compiled regex. */
            const char *string,         /* Text to search within. */
-           const char *end,            /* Pointer to the end of `string'.  If NULL will
-                                    scan from `string' until '\0' is found. */
-           int reverse,                /* Backward search. */
-           char prev_char,             /* Character immediately prior to `string'.  Set
-                                          to '\n' or '\0' if true beginning of text. */
-           char succ_char,             /* Character immediately after `end'.  Set
-                                          to '\n' or '\0' if true beginning of text. */
+           const char *end,            /* Pointer to the end of `string'.  If NULL will scan from `string' until '\0' is found. */
+           bool reverse,               /* Backward search. */
+           char prev_char,             /* Character immediately prior to `string'.  Set to '\n' or '\0' if true beginning of text. */
+           char succ_char,             /* Character immediately after `end'.  Set to '\n' or '\0' if true beginning of text. */
            const char *delimiters,     /* Word delimiters to use (NULL for default) */
-           const char *look_behind_to, /* Boundary for look-behind; defaults to
-                                          "string" if NULL */
-           const char *match_till);    /* Boundary to where match can extend.
-                                          \0 is assumed to be the boundary if not
-                                          set. Lookahead can cross the boundary. */
+           const char *look_behind_to, /* Boundary for look-behind; defaults to "string" if NULL */
+           const char *match_till);    /* Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary. */
 
 /* Perform substitutions after a `regexp' match. */
 bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
@@ -92,6 +82,6 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
    is identical to `delimiters'.  Pass NULL for "default default" set of
    delimiters. */
 
-void SetREDefaultWordDelimiters(const char *delimiters);
+void SetREDefaultWordDelimiters(view::string_view delimiters);
 
-#endif /* NEDIT_REGULAREXP_H_INCLUDED */
+#endif

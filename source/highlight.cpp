@@ -127,7 +127,7 @@ static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, co
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
-static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static bool parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void passTwoParseString(highlightDataRec *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
@@ -1494,30 +1494,30 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-static int parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
-	int i, subExecuted, subIndex;
-	char *stylePtr;
-	const char *stringPtr, *savedStartPtr, *startingStringPtr;
+static bool parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+
+	bool subExecuted;
 	int *subExpr;
-	char savedPrevChar;
 	char succChar = match_till ? (*match_till) : '\0';
 	highlightDataRec *subPat = nullptr;
 	highlightDataRec *subSubPat;
 
-	if (length <= 0)
-		return False;
+	if (length <= 0) {
+		return false;
+	}
 
-	stringPtr = *string;
-	stylePtr = *styleString;
+	const char *stringPtr = *string;
+	char *stylePtr        = *styleString;
 
 	while (ExecRE(pattern->subPatternRE, stringPtr, anchored ? *string + 1 : *string + length + 1, False, *prevChar, succChar, delimiters, lookBehindTo, match_till)) {
+	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
-		subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
+		int subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
 		/* Combination of all sub-patterns and end pattern matched */
 		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); */
-		startingStringPtr = stringPtr;
+		const char *startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
 		   the match, and advance the pointers to the start of the pattern */
@@ -1525,23 +1525,22 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 
 		/* If the combined pattern matched this pattern's end pattern, we're
 		   done.  Fill in the style string, update the pointers, color the
-	   end expression if there were coloring sub-patterns, and return */
-		savedStartPtr = stringPtr;
-		savedPrevChar = *prevChar;
+	       end expression if there were coloring sub-patterns, and return */
+		const char *savedStartPtr = stringPtr;
+		char savedPrevChar        = *prevChar;
 		if (pattern->endRE) {
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
-				subExecuted = False;
-				for (i = 0; i < pattern->nSubPatterns; i++) {
+				subExecuted = false;
+				for (int i = 0; i < pattern->nSubPatterns; i++) {
 					subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
 							if (!ExecRE(pattern->endRE, savedStartPtr, savedStartPtr + 1, False, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
-								fprintf(stderr, "Internal error, failed to "
-								                "recover end match in parseString\n");
-								return False;
+								fprintf(stderr, "Internal error, failed to recover end match in parseString\n");
+								return false;
 							}
-							subExecuted = True;
+							subExecuted = true;
 						}
 						for (subExpr = subPat->endSubexprs; *subExpr != -1; subExpr++)
 							recolorSubexpr(pattern->endRE, *subExpr, subPat->style, *string, *styleString);
@@ -1549,7 +1548,7 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 				}
 				*string = stringPtr;
 				*styleString = stylePtr;
-				return True;
+				return true;
 			}
 			--subIndex;
 		}
@@ -1559,30 +1558,32 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		if (pattern->errorRE) {
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
-				*string = stringPtr;
+				*string      = stringPtr;
 				*styleString = stylePtr;
-				return False;
+				return false;
 			}
 			--subIndex;
 		}
 
+		int i;
 		/* Figure out which sub-pattern matched */
 		for (i = 0; i < pattern->nSubPatterns; i++) {
 			subPat = pattern->subPatterns[i];
-			if (subPat->colorOnly)
+			if (subPat->colorOnly) {
 				++subIndex;
-			else if (i == subIndex)
+			} else if (i == subIndex) {
 				break;
+			}
 		}
+		
 		if (i == pattern->nSubPatterns) {
 			fprintf(stderr, "Internal error, failed to match in parseString\n");
-			return False;
+			return false;
 		}
 
 		/* the sub-pattern is a simple match, just color it */
 		if (!subPat->subPatternRE) {
-			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
-			                subPat->style, prevChar);
+			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);
 
 			/* Parse the remainder of the sub-pattern */
 		} else if (subPat->endRE) {
@@ -1609,8 +1610,8 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
-	   based on the coloring sub-expression references */
-		subExecuted = False;
+	       based on the coloring sub-expression references */
+		subExecuted = false;
 		for (i = 0; i < subPat->nSubPatterns; i++) {
 			subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
@@ -1618,9 +1619,9 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 					if (!ExecRE(subPat->startRE, savedStartPtr, savedStartPtr + 1, False, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
 						fprintf(stderr, "Internal error, failed to recover "
 						                "start match in parseString\n");
-						return False;
+						return false;
 					}
-					subExecuted = True;
+					subExecuted = true;
 				}
 				for (subExpr = subSubPat->startSubexprs; *subExpr != -1; subExpr++)
 					recolorSubexpr(subPat->startRE, *subExpr, subSubPat->style, *string, *styleString);
@@ -1630,26 +1631,30 @@ static int parseString(highlightDataRec *pattern, const char **string, char **st
 		/* Make sure parsing progresses.  If patterns match the empty string,
 		   they can get stuck and hang the process */
 		if (stringPtr == startingStringPtr) {
-			/* Avoid stepping over the end of the string (possible for
-			       zero-length matches at end of the string) */
-			if (*stringPtr == '\0')
+			/* Avoid stepping over the end of the string (possible for 
+			   zero-length matches at end of the string) */
+			if (*stringPtr == '\0') {
 				break;
+			}
+			
 			fillStyleString(&stringPtr, &stylePtr, stringPtr + 1, pattern->style, prevChar);
 		}
 	}
 
 	/* If this is an anchored match (must match on first character), and
-	   nothing matched, return False */
-	if (anchored && stringPtr == *string)
-		return False;
+	   nothing matched, return false */
+	if (anchored && stringPtr == *string) {
+		return false;
+	}
 
 	/* Reached end of string, fill in the remaining text with pattern style
 	   (unless this was an anchored match) */
-	if (!anchored)
+	if (!anchored) {
 		fillStyleString(&stringPtr, &stylePtr, *string + length, pattern->style, prevChar);
+	}
 
 	/* Advance the string and style pointers to the end of the parsed text */
-	*string = stringPtr;
+	*string      = stringPtr;
 	*styleString = stylePtr;
 	return pattern->endRE == nullptr;
 }
