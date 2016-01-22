@@ -599,11 +599,11 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void appendToFormat(const char *string) {
-	char *format = XmTextGetString(etDialog.formatW);
-	char *buf    = XtMalloc(strlen(string) + strlen(format) + 1);
-	sprintf(buf, "%s%s", format, string);
+
+	std::string format = XmTextGetStringEx(etDialog.formatW);
+	char *buf    = XtMalloc(strlen(string) + format.size() + 1);
+	sprintf(buf, "%s%s", format.c_str(), string);
 	XmTextSetStringEx(etDialog.formatW, buf);
-	XtFree(format);
 	XtFree(buf);
 }
 
@@ -743,7 +743,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 		do {
 			pos = strstr(format, "%S");
 			if (pos) {
-				char *tmp = XtMalloc((strlen(format) + 2) * sizeof(char));
+				char *tmp = XtMalloc((strlen(format) + 2));
 				strncpy(tmp, format, (size_t)(pos - format + 1));
 				tmp[pos - format + 1] = 0;
 				strcat(tmp, "*");
@@ -846,7 +846,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 			found = False;
 			pos = strstr(format, "%d");
 			if (pos) {
-				char *tmp = XtMalloc((strlen(format) + 2) * sizeof(char));
+				char *tmp = XtMalloc((strlen(format) + 2));
 				strncpy(tmp, format, (size_t)(pos - format + 1));
 				tmp[pos - format + 1] = 0;
 				strcat(tmp, &insert[0]);
