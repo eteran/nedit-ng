@@ -285,7 +285,7 @@ static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym)
 static int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
-static void addTerminatingNewline(char **string);
+static char *addTerminatingNewlineEx(char *string) ;
 static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus);
 static int getSubMenuDepth(const char *menuName);
 static userMenuInfo *parseMenuItemRec(menuItemRec *item);
@@ -314,7 +314,6 @@ static void freeUserSubMenuList(UserMenuList *list);
 void EditShellMenu(WindowInfo *window) {
 	Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
-	userCmdDialog *ucd;
 	XmString s1;
 	int ac, i;
 	Arg args[20];
@@ -326,7 +325,7 @@ void EditShellMenu(WindowInfo *window) {
 	}
 
 	/* Create a structure for keeping track of dialog state */
-	ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
 	/* Set the dialog to operate on the Shell menu */
@@ -1665,7 +1664,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	/* Mark that there's no longer a (macro, bg, or shell) dialog up */
 	if (ucd->dialogType == SHELL_CMDS)
@@ -1685,7 +1684,7 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	/* Read the dialog fields, and update the menus */
 	if (!applyDialogChanges(ucd))
@@ -1717,7 +1716,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	if (checkMacro(ucd)) {
 		DialogF(DF_INF, ucd->dlogShell, 1, "Macro", "Macro compiled without error", "OK");
@@ -1817,7 +1816,7 @@ static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	if (GetReplayMacro().empty())
 		return;
@@ -1830,13 +1829,12 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
-	int i;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
-	for (i = 0; i < ucd->nMenuItems; i++)
+	for (int i = 0; i < ucd->nMenuItems; i++)
 		freeMenuItemRec(ucd->menuItemsList[i]);
 	XtFree((char *)ucd->menuItemsList);
-	XtFree((char *)ucd);
+	delete ucd;
 }
 
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1844,7 +1842,7 @@ static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	RemoveDialogMnemonicHandler(XtParent(ucd->accTextW));
 }
@@ -1854,7 +1852,7 @@ static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	AddDialogMnemonicHandler(XtParent(ucd->accTextW), FALSE);
 }
@@ -1863,7 +1861,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 
 	(void)w;
 
-	userCmdDialog *ucd = (userCmdDialog *)clientData;
+	auto ucd = static_cast<userCmdDialog *>(clientData);
 	KeySym keysym = XLookupKeysym(event, 0);
 	char outStr[MAX_ACCEL_LEN];
 
@@ -2075,7 +2073,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 	}
 
 	if (ucd->dialogType == MACRO_CMDS || ucd->dialogType == BG_MENU_CMDS) {
-		addTerminatingNewline(&cmdText);
+		cmdText = addTerminatingNewlineEx(cmdText);
 		if (!checkMacroText(cmdText, silent ? nullptr : ucd->dlogShell, ucd->cmdTextW)) {
 			XtFree(cmdText);
 			return nullptr;
@@ -2699,19 +2697,19 @@ static char *copyMacroToEnd(const char **inPtr) {
 ** statements, but the text widget doesn't force it like the NEdit text buffer
 ** does, so this might avoid some confusion.)
 */
-static void addTerminatingNewline(char **string) {
-	char *newString;
-	int length;
+static char *addTerminatingNewlineEx(char *string) {
 
-	length = strlen(*string);
-	if ((*string)[length - 1] != '\n') {
-		newString = XtMalloc(length + 2);
-		strcpy(newString, *string);
-		newString[length] = '\n';
-		newString[length + 1] = '\0';
-		XtFree(*string);
-		*string = newString;
+	int length = strlen(string);
+	if (string[length - 1] == '\n') {
+		return string;
 	}
+
+	char *str = XtMalloc(length + 2);
+	strcpy(str, string);
+	str[length] = '\n';
+	str[length + 1] = '\0';
+	XtFree(string);
+	return str;
 }
 
 /*
@@ -2720,7 +2718,7 @@ static void addTerminatingNewline(char **string) {
 */
 UserMenuCache *CreateUserMenuCache(void) {
 	/* allocate some memory for the new data structure */
-	UserMenuCache *cache = (UserMenuCache *)XtMalloc(sizeof(UserMenuCache));
+	auto cache = new UserMenuCache;
 
 	cache->umcLanguageMode = -2;
 	cache->umcShellMenuCreated = False;
@@ -2737,7 +2735,7 @@ void FreeUserMenuCache(UserMenuCache *cache) {
 	freeUserMenuList(&cache->umcShellMenuList);
 	freeUserMenuList(&cache->umcMacroMenuList);
 
-	XtFree((char *)cache);
+	delete cache;
 }
 
 /*
