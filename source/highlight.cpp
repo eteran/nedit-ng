@@ -535,10 +535,8 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	int noPass2;
 	char *parentStyles;
 	char *parentStylesPtr;
-	TextBuffer *styleBuf;
 	highlightDataRec *pass1Pats;
 	highlightDataRec *pass2Pats;
-	windowHighlightData *highlightData;
 
 	/* The highlighting code can't handle empty pattern sets, quietly say no */
 	if (nPatterns == 0) {
@@ -747,10 +745,10 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	delete[] pass2PatternSrc;
 
 	/* Create the style buffer */
-	styleBuf = new TextBuffer;
+	auto styleBuf = new TextBuffer;
 
 	/* Collect all of the highlighting information in a single structure */
-	highlightData = new windowHighlightData;
+	auto highlightData = new windowHighlightData;
 	highlightData->pass1Patterns              = pass1Pats;
 	highlightData->pass2Patterns              = pass2Pats;
 	highlightData->parentStyles               = parentStyles;

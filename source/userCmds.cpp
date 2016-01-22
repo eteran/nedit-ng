@@ -1625,7 +1625,7 @@ static void deleteMenuItems(Widget menuPane) {
 	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
 
 	/* make a copy because the widget alters the list as you delete widgets */
-	WidgetList items = new Widget[nItems];
+	auto items = new Widget[nItems];
 	std::copy_n(itemList, nItems, items);
 
 	/* delete all of the widgets not marked as PERMANENT_MENU_ITEM */
@@ -2040,7 +2040,6 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 */
 static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 	char *cmdText, *mneText, *accText;
-	menuItemRec *f;
 
 	auto nameTextTemp = XmTextGetString(ucd->nameTextW);
 	auto nameText = XString::takeString(nameTextTemp);
@@ -2080,7 +2079,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 		}
 	}
 
-	f = new menuItemRec;
+	auto f = new menuItemRec;
 	f->name = nameText;
 	f->cmd  = cmdText;
 
@@ -2334,7 +2333,7 @@ static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems
 }
 
 static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType) {
-	menuItemRec *f;
+
 	char *cmdStr;
 	const char *inPtr = inString;
 	char *nameStr, accStr[MAX_ACCEL_LEN], mneChar;
@@ -2450,7 +2449,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 			return parseError("couldn't read accelerator field");
 
 		/* create a menu item record */
-		f = new menuItemRec;
+		auto f = new menuItemRec;
 		f->name      = nameStr;
 		f->cmd       = cmdStr;
 		f->mnemonic  = mneChar;
@@ -2810,12 +2809,12 @@ static int getSubMenuDepth(const char *menuName) {
 ** holding extracted info.
 */
 static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
-	userMenuInfo *newInfo;
+
 	int subMenuDepth;
 	int idSize;
 
 	/* allocate a new user menu info element */
-	newInfo = new userMenuInfo;
+	auto newInfo = new userMenuInfo;
 
 	/* determine sub-menu depth and allocate some memory
 	   for hierarchical ID; init. ID with {0,.., 0} */

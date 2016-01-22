@@ -4364,7 +4364,7 @@ static void updateWindowMenu(const WindowInfo *window) {
 		;
 	}
 	
-	WindowInfo **windows = new WindowInfo *[nWindows];
+	auto windows = new WindowInfo *[nWindows];
 	for (w = WindowList, i = 0; w != nullptr; w = w->next, i++) {
 		windows[i] = w;
 	}

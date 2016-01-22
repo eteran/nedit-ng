@@ -1455,7 +1455,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 
 	start = BufStartOfLine(start);
 	end = BufEndOfLine(end);
-	char *textOut = new char[(end - start) + 1];
+	auto textOut = new char[(end - start) + 1];
 	lineStart = start;
 	char *outPtr = textOut;
 	while (lineStart <= end) {

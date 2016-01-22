@@ -2928,12 +2928,12 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 ** return nullptr.  Passing "silent" as True, suppresses the warning dialogs.
 */
 static languageModeRec *readLMDialogFields(int silent) {
-	languageModeRec *lm;
+
 	regexp *compiledRE;
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
-	lm = new languageModeRec;
+	auto lm = new languageModeRec;
 	
 	lm->nExtensions     = 0;
 	lm->recognitionExpr = nullptr;
@@ -3682,7 +3682,6 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 	const char *errMsg;
 	char *styleName;
 	const char *inPtr = inString;
-	languageModeRec *lm;
 	int i;
 
 	for (;;) {
@@ -3692,7 +3691,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 
 		/* Allocate a language mode structure to return, set unread fields to
 		   empty so everything can be freed on errors by freeLanguageModeRec */
-		lm = new languageModeRec;
+		auto lm = new languageModeRec;
 		
 		lm->nExtensions     = 0;
 		lm->recognitionExpr = nullptr;
@@ -3816,7 +3815,7 @@ static char *writeLanguageModesString(void) {
 	char *escapedStr, *str, numBuf[25];
 
 	auto outBuf = new TextBuffer;
-	;
+
 	for (i = 0; i < NLanguageModes; i++) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), LanguageModes[i]->name);

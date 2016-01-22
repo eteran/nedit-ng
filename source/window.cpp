@@ -2518,7 +2518,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	WindowInfo *win, *topWin, **revWindowList;
+	WindowInfo *win, *topWin;
 	char geometry[MAX_GEOM_STRING_LEN];
 	int argc = 0, maxArgc, nWindows, i;
 	char **argv;
@@ -2538,7 +2538,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		nWindows++;
 	}
 	argv = (char **)XtMalloc(maxArgc * sizeof(char *));
-	revWindowList = new WindowInfo *[nWindows];
+	auto revWindowList = new WindowInfo *[nWindows];
 	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--)
 		revWindowList[i] = win;
 
@@ -2752,7 +2752,7 @@ void WindowInfo::UpdateStatsLine() {
 	/* Compose the string to display. If line # isn't available, leave it off */
 	int pos            = TextGetCursorPos(this->lastFocus);
 	size_t string_size = strlen(this->filename) + strlen(this->path) + 45;
-	char *string       = new char[string_size];
+	auto string        = new char[string_size];
 	const char *format = (this->fileFormat == DOS_FILE_FORMAT) ? " DOS" : (this->fileFormat == MAC_FILE_FORMAT ? " Mac" : "");
 	char slinecol[32];
 	
@@ -3950,7 +3950,7 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 ** spin off the document to a new window
 */
 WindowInfo *WindowInfo::DetachDocument() {
-	WindowInfo *win = nullptr, *cloneWin;
+	WindowInfo *win = nullptr;
 
 	if (this->NDocuments() < 2)
 		return nullptr;
@@ -3963,7 +3963,7 @@ WindowInfo *WindowInfo::DetachDocument() {
 	}
 
 	/* Create a new this */
-	cloneWin = new WindowInfo(this->filename, nullptr, false);
+	auto cloneWin = new WindowInfo(this->filename, nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's

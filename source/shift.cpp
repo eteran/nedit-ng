@@ -119,7 +119,6 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 
 static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
 	int offset, emTabDist;
-	TextBuffer *tempBuf;
 	TextBuffer *buf = window->buffer;
 
 	/* Make sure selStart and SelEnd refer to whole lines */
@@ -138,7 +137,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 
 	/* Create a temporary buffer for the lines containing the selection, to
 	   hide the intermediate steps from the display update routines */
-	tempBuf = new TextBuffer;
+	auto tempBuf = new TextBuffer;
 	tempBuf->tabDist_ = buf->tabDist_;
 	tempBuf->useTabs_ = buf->useTabs_;
 	std::string text = buf->BufGetRangeEx(selStart, selEnd);
@@ -565,10 +564,9 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	int firstLineIndent;
 	int leftMargin;
 	int len;
-	TextBuffer *buf;
 
 	/* Create a buffer to accumulate the filled paragraphs */
-	buf = new TextBuffer;
+	auto buf = new TextBuffer;
 	buf->BufSetAllEx(text);
 
 	/*

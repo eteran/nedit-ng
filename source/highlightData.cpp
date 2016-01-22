@@ -772,12 +772,11 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 
 	/* read pattern list */
 	patSet.patterns = readHighlightPatterns(inPtr, True, &errMsg, &patSet.nPatterns);
-	if (patSet.patterns == nullptr)
+	if (!patSet.patterns)
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	retPatSet = new patternSet;
-	*retPatSet = patSet;
+	retPatSet = new patternSet(patSet);
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
 	   syntax to quote braces and use & rather than \0 */
@@ -1221,13 +1220,13 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 }
 
 static highlightStyleRec *readHSDialogFields(int silent) {
-	highlightStyleRec *hs;
+
 	Display *display = XtDisplay(HSDialog.shell);
 	int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
 	XColor rgb;
 
 	/* Allocate a language mode structure to return */
-	hs = new highlightStyleRec;
+	auto hs = new highlightStyleRec;
 
 	/* read the name field */
 	try {

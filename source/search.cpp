@@ -443,7 +443,7 @@ void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs, int s
 static void setTextField(WindowInfo *window, Time time, Widget textField) {
 	XEvent nextEvent;
 	char *primary_selection = nullptr;
-	SelectionInfo *selectionInfo = new SelectionInfo;
+	auto selectionInfo = new SelectionInfo;
 
 	if (GetPrefFindReplaceUsesSelection()) {
 		selectionInfo->done      = 0;
