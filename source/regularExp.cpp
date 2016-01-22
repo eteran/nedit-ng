@@ -2571,9 +2571,9 @@ static std::bitset<256> Current_Delimiters; /* Current delimiter table */
 
 /* Forward declarations of functions used by 'ExecRE' */
 
-static int attempt(regexp *prog, const char *);
-static int match(uint8_t *, int *);
-static unsigned long greedy(uint8_t *, long);
+static int attempt(regexp *prog, const char *string);
+static int match(uint8_t *prog, int *branch_index_param);
+static unsigned long greedy(uint8_t *p, long max);
 static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
