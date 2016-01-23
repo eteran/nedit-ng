@@ -28,6 +28,7 @@
 #include <cstdint>
 #include "regex_error.h"
 #include "string_view.h"
+#include <string>
 
 #ifndef REGULAREXP_H_
 #define REGULAREXP_H_
@@ -36,14 +37,100 @@
 
 #define NSUBEXP 50u
 
-/* Structure to contain the compiled form of a regular expression plus
-   pointers to matched text.  'program' is the actual compiled regex code. */
+
+/* Flags for CompileRE default settings (Markus Schwarzenberg) */
+
+enum RE_DEFAULT_FLAG {
+	REDFLT_STANDARD = 0,
+	REDFLT_CASE_INSENSITIVE = 1
+	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
+};
+
 
 class regexp {
 public:
 	regexp(const char *exp, int defaultFlags);
 	~regexp();
+	regexp(const regexp &) = delete;
+	regexp& operator=(const regexp &) = delete;
 
+public:
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog           Compiled regex
+	 * @param string         Text to search within
+	 * @param reverse        Backward search.
+	 * @param prev_char      Character immediately prior to 'string'.  Set to '\n' or '\0' if true beginning of text.
+	 * @param succ_char      Character immediately after 'end'.  Set to '\n' or '\0' if true beginning of text.
+	 * @param delimiters     Word delimiters to use (NULL for default)
+	 * @param look_behind_to Boundary for look-behind; defaults to "string" if NULL
+	 * @param match_till     Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary.
+	 */
+	bool ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_till);
+
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog   Compiled regex
+	 * @param string Text to search within
+	 */
+	bool ExecRE(const std::string &string, bool reverse = false);
+
+
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog   Compiled regex
+	 * @param string Text to search within
+	 */
+	bool ExecRE(const char *string, bool reverse = false);
+	
+	
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog   Compiled regex
+	 * @param string Text to search within
+	 * @param offset Offset into the string to begin search
+	 */
+	bool ExecRE(const char *string, int offset, bool reverse = false);
+	
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog   Compiled regex
+	 * @param string Text to search within
+	 * @param offset Offset into the string to begin search
+	 */
+	bool ExecRE(const std::string &string, int offset, bool reverse = false);	
+
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog       Compiled regex
+	 * @param string     Text to search within
+	 * @param offset     Offset into the string to begin search
+	 * @param delimiters Word delimiters to use (NULL for default)	 
+	 */
+	bool ExecRE(const char *string, int offset, const char *delimiters, bool reverse = false);
+	
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog       Compiled regex
+	 * @param string     Text to search within
+	 * @param offset     Offset into the string to begin search
+	 * @param delimiters Word delimiters to use (NULL for default)		 
+	 */	
+	bool ExecRE(const std::string &string, int offset, const char *delimiters, bool reverse = false);	
+	
+	/* Perform substitutions after a 'regexp' match. */
+	bool SubstituteRE(const char *source, char *dest, const int max) const;
+	
+	
+
+	
 public:
 	const char *startp[NSUBEXP]; /* Captured text starting locations. */
 	const char *endp[NSUBEXP];   /* Captured text ending locations. */
@@ -55,32 +142,8 @@ public:
 	uint8_t *program;
 };
 
-/* Flags for CompileRE default settings (Markus Schwarzenberg) */
-
-enum RE_DEFAULT_FLAG {
-	REDFLT_STANDARD = 0,
-	REDFLT_CASE_INSENSITIVE = 1
-	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
-};
-
-/* Match a 'regexp' structure against a string. */
-
-int ExecRE(regexp *prog,               /* Compiled regex. */
-           const char *string,         /* Text to search within. */
-           const char *end,            /* Pointer to the end of 'string'.  If NULL will scan from 'string' until '\0' is found. */
-           bool reverse,               /* Backward search. */
-           char prev_char,             /* Character immediately prior to 'string'.  Set to '\n' or '\0' if true beginning of text. */
-           char succ_char,             /* Character immediately after 'end'.  Set to '\n' or '\0' if true beginning of text. */
-           const char *delimiters,     /* Word delimiters to use (NULL for default) */
-           const char *look_behind_to, /* Boundary for look-behind; defaults to "string" if NULL */
-           const char *match_till);    /* Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary. */
 
 
-int ExecRE(regexp *prog,        /* Compiled regex. */
-           const char *string); /* Text to search within. */
-
-/* Perform substitutions after a 'regexp' match. */
-bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max);
 
 /* Builds a default delimiter table that persists across 'ExecRE' calls that
    is identical to 'delimiters'.  Pass NULL for "default default" set of

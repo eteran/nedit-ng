@@ -2546,18 +2546,22 @@ static const char *Back_Ref_End[10];   /* Back_Ref_End [0] are not      */
                                            *
                                            * So 10 000 ought to be safe.
                                            */
-#define REGEX_RECURSION_LIMIT 10000
-static int Recursion_Count;          /* Recursion counter */
-static int Recursion_Limit_Exceeded; /* Recursion limit exceeded flag */
+const int REGEX_RECURSION_LIMIT = 10000;
+static int Recursion_Count;           /* Recursion counter */
+static bool Recursion_Limit_Exceeded; /* Recursion limit exceeded flag */
 
-#define AT_END_OF_STRING(X) (*(X) == (uint8_t)'\0' || (End_Of_String != nullptr && (X) >= End_Of_String))
+
+bool AT_END_OF_STRING(const char *ptr) {
+	return (*ptr == '\0' || (End_Of_String != nullptr && ptr >= End_Of_String));
+}
+
 
 /* static regexp *Cross_Regex_Backref; */
 
-static int Prev_Is_BOL;
-static int Succ_Is_EOL;
-static int Prev_Is_Delim;
-static int Succ_Is_Delim;
+static bool Prev_Is_BOL;
+static bool Succ_Is_EOL;
+static bool Prev_Is_Delim;
+static bool Succ_Is_Delim;
 
 /* Define a pointer to an array to hold general (...){m,n} counts. */
 static uint32_t *BraceCounts;
@@ -2576,8 +2580,32 @@ static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
 
-int ExecRE(regexp *prog, const char *string) {
-	return ExecRE(prog, string, nullptr, false, '\0', '\0', nullptr, nullptr, nullptr);
+bool regexp::ExecRE(const char *string, bool reverse) {
+	return ExecRE(string, nullptr, reverse, '\0', '\0', nullptr, nullptr, nullptr);
+}
+
+bool regexp::ExecRE(const std::string &string, bool reverse) {
+	return ExecRE(string.c_str(), nullptr, reverse, '\0', '\0', nullptr, nullptr, nullptr);
+}
+
+bool regexp::ExecRE(const char *string, int offset, bool reverse) {
+	assert(offset >= 0);
+	return ExecRE(string + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', nullptr, string, nullptr);
+}
+
+bool regexp::ExecRE(const std::string &string, int offset, bool reverse) {
+	assert(offset >= 0);
+	return ExecRE(string.c_str() + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', nullptr, string.c_str(), nullptr);
+}
+
+bool regexp::ExecRE(const char *string, int offset, const char *delimiters, bool reverse) {
+	assert(offset >= 0);
+	return ExecRE(string + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, string, nullptr);
+}
+
+bool regexp::ExecRE(const std::string &string, int offset, const char *delimiters, bool reverse) {
+	assert(offset >= 0);
+	return ExecRE(string.c_str() + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, string.c_str(), string.c_str() + string.size());
 }
 
 /*
@@ -2605,44 +2633,48 @@ int ExecRE(regexp *prog, const char *string) {
  * larger than or equal to end, if set.
  */
 
-int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
 
-	const char *str;
-	const char **s_ptr;
-	const char **e_ptr;
-	int ret_val = 0;
+/*
+
+Notes: look_behind_to <= string <= end <= match_to
+
+look_behind_to string            end           match_to
+|              |                 |             |
++--------------+-----------------+-------------+
+|  Look Behind | String Contents | Look Ahead  |
++--------------+-----------------+-------------+
+
+*/
+bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
+
+	// TODO(eteran): some of these checks, I'd prefer as asserts
+	//               but for now, we will maintain old behavior
 
 	/* Check for valid parameters. */
-
-	if (prog == nullptr || string == nullptr) {
+	if (string == nullptr) {
 		reg_error("nullptr parameter to 'ExecRE'");
-		goto SINGLE_RETURN;
+		return false;
 	}
 
 	/* Check validity of program. */
-
-	if (U_CHAR_AT(prog->program) != MAGIC) {
+	if (U_CHAR_AT(this->program) != MAGIC) {
 		reg_error("corrupted program");
-		goto SINGLE_RETURN;
+		return false;
 	}
 
-	s_ptr = prog->startp;
-	e_ptr = prog->endp;
+	const char *str;
+	bool ret_val = false;
+	const char **s_ptr = this->startp;
+	const char **e_ptr = this->endp;
 
 	/* If caller has supplied delimiters, make a delimiter table */
-
-	if(!delimiters) {
-		Current_Delimiters = Default_Delimiters;
-	} else {
-		Current_Delimiters = makeDelimiterTable(delimiters);
-	}
+	Current_Delimiters = delimiters ? makeDelimiterTable(delimiters) : Default_Delimiters;
 
 	/* Remember the logical end of the string. */
 	End_Of_String = match_to;
 
-	if (end == nullptr && reverse) {
+	if (!end && reverse) {
 		for (end = string; !AT_END_OF_STRING(end); end++) {
-			;
 		}
 		succ_char = '\n';
 	} else if(!end) {
@@ -2650,24 +2682,26 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 	}
 
 	/* Initialize arrays used by shortcut_escape. */
-
-	if (!init_ansi_classes())
+	// TODO(eteran): this seems redundant, it was done in the regexp constructor
+	//               which MUST have been called before now
+	if (!init_ansi_classes()) {
 		goto SINGLE_RETURN;
+	}
 
 	/* Remember the beginning of the string for matching BOL */
 	Start_Of_String = string;
 	Look_Behind_To  = (look_behind_to ? look_behind_to : string);
 
-	Prev_Is_BOL = ((prev_char == '\n') || (prev_char == '\0') ? 1 : 0);
-	Succ_Is_EOL = ((succ_char == '\n') || (succ_char == '\0') ? 1 : 0);
+	Prev_Is_BOL   = (prev_char == '\n') || (prev_char == '\0');
+	Succ_Is_EOL   = (succ_char == '\n') || (succ_char == '\0');
 	Prev_Is_Delim = Current_Delimiters[(uint8_t)prev_char];
 	Succ_Is_Delim = Current_Delimiters[(uint8_t)succ_char];
 
-	Total_Paren = (int)(prog->program[1]);
-	Num_Braces  = (int)(prog->program[2]);
+	Total_Paren = (int)(this->program[1]);
+	Num_Braces  = (int)(this->program[2]);
 
 	/* Reset the recursion detection flag */
-	Recursion_Limit_Exceeded = 0;
+	Recursion_Limit_Exceeded = false;
 
 	/* Allocate memory for {m,n} construct counting variables if need be. */
 	if (Num_Braces > 0) {
@@ -2686,19 +2720,19 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 	
 
 	if (!reverse) { /* Forward Search */
-		if (prog->anchor) {
+		if (this->anchor) {
 			/* Search is anchored at BOL */
 
-			if (attempt(prog, string)) {
-				ret_val = 1;
+			if (attempt(this, string)) {
+				ret_val = true;
 				goto SINGLE_RETURN;
 			}
 
 			for (str = string; !AT_END_OF_STRING(str) && str != end && !Recursion_Limit_Exceeded; str++) {
 
 				if (*str == '\n') {
-					if (attempt(prog, str + 1)) {
-						ret_val = 1;
+					if (attempt(this, str + 1)) {
+						ret_val = true;
 						break;
 					}
 				}
@@ -2706,14 +2740,14 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 
 			goto SINGLE_RETURN;
 
-		} else if (prog->match_start != '\0') {
+		} else if (this->match_start != '\0') {
 			/* We know what char match must start with. */
 
 			for (str = string; !AT_END_OF_STRING(str) && str != end && !Recursion_Limit_Exceeded; str++) {
 
-				if (*str == (uint8_t)prog->match_start) {
-					if (attempt(prog, str)) {
-						ret_val = 1;
+				if (*str == (uint8_t)this->match_start) {
+					if (attempt(this, str)) {
+						ret_val = true;
 						break;
 					}
 				}
@@ -2725,16 +2759,16 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 
 			for (str = string; !AT_END_OF_STRING(str) && str != end && !Recursion_Limit_Exceeded; str++) {
 
-				if (attempt(prog, str)) {
-					ret_val = 1;
+				if (attempt(this, str)) {
+					ret_val = true;
 					break;
 				}
 			}
 
 			/* Beware of a single $ matching \0 */
 			if (!Recursion_Limit_Exceeded && !ret_val && AT_END_OF_STRING(str) && str != end) {
-				if (attempt(prog, str)) {
-					ret_val = 1;
+				if (attempt(this, str)) {
+					ret_val = true;
 				}
 			}
 
@@ -2747,33 +2781,33 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 			end = End_Of_String;
 		}
 
-		if (prog->anchor) {
+		if (this->anchor) {
 			/* Search is anchored at BOL */
 
 			for (str = (end - 1); str >= string && !Recursion_Limit_Exceeded; str--) {
 
 				if (*str == '\n') {
-					if (attempt(prog, str + 1)) {
-						ret_val = 1;
+					if (attempt(this, str + 1)) {
+						ret_val = true;
 						goto SINGLE_RETURN;
 					}
 				}
 			}
 
-			if (!Recursion_Limit_Exceeded && attempt(prog, string)) {
-				ret_val = 1;
+			if (!Recursion_Limit_Exceeded && attempt(this, string)) {
+				ret_val = true;
 				goto SINGLE_RETURN;
 			}
 
 			goto SINGLE_RETURN;
-		} else if (prog->match_start != '\0') {
+		} else if (this->match_start != '\0') {
 			/* We know what char match must start with. */
 
 			for (str = end; str >= string && !Recursion_Limit_Exceeded; str--) {
 
-				if (*str == (uint8_t)prog->match_start) {
-					if (attempt(prog, str)) {
-						ret_val = 1;
+				if (*str == (uint8_t)this->match_start) {
+					if (attempt(this, str)) {
+						ret_val = true;
 						break;
 					}
 				}
@@ -2785,8 +2819,8 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 
 			for (str = end; str >= string && !Recursion_Limit_Exceeded; str--) {
 
-				if (attempt(prog, str)) {
-					ret_val = 1;
+				if (attempt(this, str)) {
+					ret_val = true;
 					break;
 				}
 			}
@@ -2796,10 +2830,11 @@ int ExecRE(regexp *prog, const char *string, const char *end, bool reverse, char
 SINGLE_RETURN:
 	delete [] BraceCounts;
 
-	if (Recursion_Limit_Exceeded)
-		return (0);
+	if (Recursion_Limit_Exceeded) {
+		return false;
+	}
 
-	return (ret_val);
+	return ret_val;
 }
 
 /*--------------------------------------------------------------------*
@@ -2824,11 +2859,11 @@ int init_ansi_classes(void) {
 
 		for (int i = 1; i < (int)UINT8_MAX; i++) {
 			if (isalnum(i) || i == underscore) {
-				Word_Char[word_count++] = (char)i;
+				Word_Char[word_count++] = static_cast<char>(i);
 			}
 
 			if (isalpha(i)) {
-				Letter_Char[letter_count++] = (char)i;
+				Letter_Char[letter_count++] = static_cast<char>(i);
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
@@ -2836,7 +2871,7 @@ int init_ansi_classes(void) {
 			   here. */
 
 			if (isspace(i) && (i != (int)'\n')) {
-				White_Space[space_count++] = (char)i;
+				White_Space[space_count++] = static_cast<char>(i);
 			}
 
 			/* Make sure arrays are big enough.  ("- 2" because of zero array
@@ -2928,7 +2963,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 	if (++Recursion_Count > REGEX_RECURSION_LIMIT) {
 		if (!Recursion_Limit_Exceeded) /* Prevent duplicate errors */
 			reg_error("recursion limit exceeded, please respecify expression");
-		Recursion_Limit_Exceeded = 1;
+		Recursion_Limit_Exceeded = true;
 		MATCH_RETURN(0);
 	}
 
@@ -3851,7 +3886,7 @@ static uint8_t *next_ptr(uint8_t *ptr) {
 **  To give the caller a chance to react to this the function returns false
 **  on any error. The substitution will still be executed.
 */
-bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int max) {
+bool regexp::SubstituteRE(const char *source, char *dest, const int max) const {
 
 	const char *src;
 	const char *src_alias;
@@ -3863,13 +3898,13 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 	char chgcase;
 	bool anyWarnings = false;
 
-	if (!prog || !source || !dest) {
+	if (!this || !source || !dest) {
 		reg_error("nullptr parm to 'SubstituteRE'");
 
 		return false;
 	}
 
-	if (U_CHAR_AT(prog->program) != MAGIC) {
+	if (U_CHAR_AT(this->program) != MAGIC) {
 		reg_error("damaged regexp passed to 'SubstituteRE'");
 
 		return false;
@@ -3929,25 +3964,23 @@ bool SubstituteRE(const regexp *prog, const char *source, char *dest, const int 
 
 		if (paren_no < 0) { /* Ordinary character. */
 			if ((dst - dest) >= (max - 1)) {
-				reg_error("replacing expression in 'SubstituteRE' too long; "
-				          "truncating");
+				reg_error("replacing expression in 'SubstituteRE' too long; truncating");
 				anyWarnings = true;
 				break;
 			} else {
 				*dst++ = c;
 			}
-		} else if (prog->startp[paren_no] != nullptr && prog->endp[paren_no]) {
+		} else if (this->startp[paren_no] != nullptr && this->endp[paren_no]) {
 
-			len = prog->endp[paren_no] - prog->startp[paren_no];
+			len = this->endp[paren_no] - this->startp[paren_no];
 
 			if ((dst + len - dest) >= max - 1) {
-				reg_error("replacing expression in 'SubstituteRE' too long; "
-				          "truncating");
+				reg_error("replacing expression in 'SubstituteRE' too long; truncating");
 				anyWarnings = true;
 				len = max - (dst - dest) - 1;
 			}
 
-			strncpy(dst, prog->startp[paren_no], len);
+			strncpy(dst, this->startp[paren_no], len);
 
 			if (chgcase != '\0') {
 				adjustcase(dst, len, chgcase);

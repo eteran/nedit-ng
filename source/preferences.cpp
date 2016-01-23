@@ -3263,18 +3263,18 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 		// NOTE(eteran): ignoring error?!
 	}
 	std::string primaryName = XmTextGetStringEx(fd->primaryW);
-	if (!ExecRE(compiledRE, primaryName.c_str())) {
+	if (!compiledRE->ExecRE(primaryName)) {
 		XBell(XtDisplay(fd->shell), 0);
 		delete compiledRE;
 		return;
 	}
 
 	/* Make up names for new fonts based on RE replace patterns */
-	SubstituteRE(compiledRE, italicReplaceString, modifiedFontName, MAX_FONT_LEN);
+	compiledRE->SubstituteRE(italicReplaceString, modifiedFontName, MAX_FONT_LEN);
 	XmTextSetStringEx(fd->italicW, modifiedFontName);
-	SubstituteRE(compiledRE, boldReplaceString, modifiedFontName, MAX_FONT_LEN);
+	compiledRE->SubstituteRE(boldReplaceString, modifiedFontName, MAX_FONT_LEN);
 	XmTextSetStringEx(fd->boldW, modifiedFontName);
-	SubstituteRE(compiledRE, boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
+	compiledRE->SubstituteRE(boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
 	XmTextSetStringEx(fd->boldItalicW, modifiedFontName);
 	delete compiledRE;
 }

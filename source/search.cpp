@@ -40,10 +40,12 @@
 #include "highlight.h"
 #include "selection.h"
 #include "MotifHelper.h"
+
 #ifdef REPLACE_SCOPE
 #include "textDisp.h"
 #include "textP.h"
 #endif
+
 #include "../util/DialogF.h"
 #include "../util/misc.h"
 
@@ -59,11 +61,13 @@
 #include <Xm/XmP.h>
 #include <Xm/Form.h>
 #include <Xm/Label.h>
+
 #ifdef REPLACE_SCOPE
 #if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
 #endif
 #endif
+
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/Text.h>
@@ -121,64 +125,64 @@ static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_data);
 #endif
 
-static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
-static void fUpdateActionButtons(WindowInfo *window);
-static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
-static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void findCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void uploadFileListItems(WindowInfo *window, Bool replace);
-static int countWindows(void);
-static int countWritableWindows(void);
-static void collectWritableWindows(WindowInfo *window);
-static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
-static void removeDoomedWindowFromList(WindowInfo *window, int index);
-static void unmanageReplaceDialogs(const WindowInfo *window);
-static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
-static void eraseFlash(WindowInfo *window);
-static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType);
-static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType);
-static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
-static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg);
-static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
-static int searchLiteral(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static int searchLiteralWord(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static int searchRegex(const char *string, const char *searchString, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static int forwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static void upCaseString(char *outString, const char *inString);
-static void downCaseString(char *outString, const char *inString);
-static void resetFindTabGroup(WindowInfo *window);
-static void resetReplaceTabGroup(WindowInfo *window);
-static int searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
-static int findMatchingChar(WindowInfo *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
+static bool backwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
 static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
-static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental);
-static int historyIndex(int nCycles);
+static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool searchRegex(const char *string, const char *searchString, int direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static const char *directionArg(int direction);
 static const char *searchTypeArg(int searchType);
 static const char *searchWrapArg(int searchWrap);
-static const char *directionArg(int direction);
-static int isRegexType(int searchType);
+static int countWindows(void);
+static int countWritableWindows(void);
 static int defaultRegexFlags(int searchType);
-static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static int findMatchingChar(WindowInfo *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
+static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType);
+static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType);
+static int historyIndex(int nCycles);
+static int isRegexType(int searchType);
+static int searchLiteral(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
+static int searchLiteralWord(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static int searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
+static void collectWritableWindows(WindowInfo *window);
+static void downCaseString(char *outString, const char *inString);
+static void eraseFlash(WindowInfo *window);
+static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static void findCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData);
+static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
+static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void fUpdateActionButtons(WindowInfo *window);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos, int startPos);
 static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, int initPos);
-static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
+static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg);
+static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
+static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos, int startPos);
+static void removeDoomedWindowFromList(WindowInfo *window, int index);
+static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
+static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
+static void resetFindTabGroup(WindowInfo *window);
+static void resetReplaceTabGroup(WindowInfo *window);
+static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callData);
+static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
+static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental);
+static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
+static void unmanageReplaceDialogs(const WindowInfo *window);
+static void upCaseString(char *outString, const char *inString);
+static void uploadFileListItems(WindowInfo *window, Bool replace);
 
 struct charMatchTable {
 	char c;
@@ -4611,106 +4615,113 @@ static int searchLiteral(const char *string, const char *searchString, int caseS
 	}
 }
 
-static int searchRegex(const char *string, const char *searchString, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool searchRegex(const char *string, const char *searchString, int direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	if (direction == SEARCH_FORWARD)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
 		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 }
 
-static int forwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	/* compile the search string for searching with ExecRE.  Note that
 	   this does not process errors from compiling the expression.  It
 	   assumes that the expression was checked earlier. */
 	try {
-		auto compiledRE = new regexp(searchString, defaultFlags);
+		regexp compiledRE(searchString, defaultFlags);
 
 		/* search from beginPos to end of string */
-		if (ExecRE(compiledRE, string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-			*startPos = compiledRE->startp[0] - string;
-			*endPos = compiledRE->endp[0] - string;
-			if(searchExtentFW)
-				*searchExtentFW = compiledRE->extentpFW - string;
-			if(searchExtentBW)
-				*searchExtentBW = compiledRE->extentpBW - string;
-			delete compiledRE;
-			return TRUE;
+		if (compiledRE.ExecRE(string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+			
+			*startPos = compiledRE.startp[0] - string;
+			*endPos   = compiledRE.endp[0]   - string;
+			
+			if(searchExtentFW) {
+				*searchExtentFW = compiledRE.extentpFW - string;
+			}
+			
+			if(searchExtentBW) {
+				*searchExtentBW = compiledRE.extentpBW - string;
+			}
+			
+			return true;
 		}
 
 		/* if wrap turned off, we're done */
 		if (!wrap) {
-			delete compiledRE;
-			return FALSE;
+			return false;
 		}
 
 		/* search from the beginning of the string to beginPos */
-		if (ExecRE(compiledRE, string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
-			*startPos = compiledRE->startp[0] - string;
-			*endPos = compiledRE->endp[0] - string;
+		if (compiledRE.ExecRE(string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
+			*startPos = compiledRE.startp[0] - string;
+			*endPos = compiledRE.endp[0] - string;
 			if(searchExtentFW)
-				*searchExtentFW = compiledRE->extentpFW - string;
+				*searchExtentFW = compiledRE.extentpFW - string;
 			if(searchExtentBW)
-				*searchExtentBW = compiledRE->extentpBW - string;
-			delete compiledRE;
-			return TRUE;
+				*searchExtentBW = compiledRE.extentpBW - string;
+			return true;
 		}
 
-		delete compiledRE;
-		return FALSE;
+		return false;
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
-		return FALSE;
+		return false;
 	}	
 }
 
-static int backwardRegexSearch(const char *string, const char *searchString, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-	int length;
+static bool backwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	/* compile the search string for searching with ExecRE */
 	try {
-		auto compiledRE = new regexp(searchString, defaultFlags);
+		regexp compiledRE(searchString, defaultFlags);
 
 		/* search from beginPos to start of file.  A negative begin pos	*/
 		/* says begin searching from the far end of the file.		*/
 		if (beginPos >= 0) {
-			if (ExecRE(compiledRE, string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
-				*startPos = compiledRE->startp[0] - string;
-				*endPos = compiledRE->endp[0] - string;
+			if (compiledRE.ExecRE(string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
+				*startPos = compiledRE.startp[0] - string;
+				*endPos = compiledRE.endp[0] - string;
 				if(searchExtentFW)
-					*searchExtentFW = compiledRE->extentpFW - string;
+					*searchExtentFW = compiledRE.extentpFW - string;
 				if(searchExtentBW)
-					*searchExtentBW = compiledRE->extentpBW - string;
-				delete compiledRE;
-				return TRUE;
+					*searchExtentBW = compiledRE.extentpBW - string;
+
+				return true;
 			}
 		}
 
 		/* if wrap turned off, we're done */
 		if (!wrap) {
-			delete compiledRE;
 			return FALSE;
 		}
 
 		/* search from the end of the string to beginPos */
-		if (beginPos < 0)
+		if (beginPos < 0) {
 			beginPos = 0;
-		length = strlen(string); /* sadly, this means scanning entire string */
-		if (ExecRE(compiledRE, string + beginPos, string + length, true, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
-			*startPos = compiledRE->startp[0] - string;
-			*endPos = compiledRE->endp[0] - string;
-			if(searchExtentFW)
-				*searchExtentFW = compiledRE->extentpFW - string;
-			if(searchExtentBW)
-				*searchExtentBW = compiledRE->extentpBW - string;
-			delete compiledRE;
-			return TRUE;
 		}
-		delete compiledRE;
-		return FALSE;
+		
+		int length = strlen(string); /* sadly, this means scanning entire string */
+		
+		if (compiledRE.ExecRE(string + beginPos, string + length, true,  (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+			*startPos = compiledRE.startp[0] - string;
+			*endPos   = compiledRE.endp[0] - string;
+			
+			if(searchExtentFW) {
+				*searchExtentFW = compiledRE.extentpFW - string;
+			}
+			
+			if(searchExtentBW) {
+				*searchExtentBW = compiledRE.extentpBW - string;
+			}
+			
+			return true;
+		}
+
+		return false;
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
-		return FALSE;
+		return false;
 	}		
 }
 
@@ -4831,8 +4842,8 @@ static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, con
 
 	try {
 		regexp compiledRE(searchStr, defaultFlags);
-		ExecRE(&compiledRE, sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
-		return SubstituteRE(&compiledRE, replaceStr, destStr, maxDestLen);
+		compiledRE.ExecRE(sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
+		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
 		return false;
