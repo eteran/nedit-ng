@@ -250,7 +250,7 @@ static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int calltipIDMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readSearchArgs(DataValue *argList, int nArgs, int *searchDirection, int *searchType, int *wrap, const char **errMsg);
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg);
 static int wrongNArgsErr(const char **errMsg);
 static int tooFewArgsErr(const char **errMsg);
 static int strCaseCmp(char *str1, char *str2);
@@ -2208,11 +2208,12 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 ** also returns the ending position of the match in $searchEndPos
 */
 static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int beginPos, wrap, direction, found = False, foundStart, foundEnd, type;
+	int beginPos, wrap, found = False, foundStart, foundEnd, type;
 	int skipSearch = False, len;
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *string;
 	char *searchStr;
+	SearchDirection direction;
 
 	/* Validate arguments and convert to proper types */
 	if (nArgs < 3)
@@ -2337,7 +2338,7 @@ static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	return True;
 }
 
-static int readSearchArgs(DataValue *argList, int nArgs, int *searchDirection, int *searchType, int *wrap, const char **errMsg) {
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg) {
 	int i;
 	char *argStr;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];

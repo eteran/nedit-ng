@@ -2580,45 +2580,38 @@ static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
 
-bool regexp::ExecRE(const char *string, bool reverse) {
-	return ExecRE(string, nullptr, reverse, '\0', '\0', nullptr, nullptr, nullptr);
+bool regexp::ExecRE(view::string_view string, bool reverse) {
+	return ExecRE(string, 0, reverse);
 }
 
-bool regexp::ExecRE(const std::string &string, bool reverse) {
-	const char *ptr = string.data();
-	return ExecRE(ptr, nullptr, reverse, '\0', '\0', nullptr, nullptr, ptr + string.size());
+bool regexp::ExecRE(view::string_view string, size_t offset, bool reverse) {
+	return ExecRE(string, offset, nullptr, reverse);
 }
 
-bool regexp::ExecRE(const char *string, size_t offset, bool reverse) {
-	return ExecRE(string + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', nullptr, string, nullptr);
-}
-
-bool regexp::ExecRE(const std::string &string, size_t offset, bool reverse) {
-	const char *ptr = string.data();
-	return ExecRE(ptr + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', nullptr, ptr, ptr + string.size());
-}
-
-bool regexp::ExecRE(const char *string, size_t offset, const char *delimiters, bool reverse) {
-	return ExecRE(string + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, string, nullptr);
-}
-
-bool regexp::ExecRE(const std::string &string, size_t offset, const char *delimiters, bool reverse) {
-	const char *ptr = string.data();
-	return ExecRE(ptr + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, ptr, ptr + string.size());
+bool regexp::ExecRE(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
+	assert(offset <= string.size());
+	return ExecRE(
+		&string[offset], 
+		&string[string.size()], 
+		reverse, 
+		(offset == 0) ? '\0' : string[offset - 1], 
+		'\0', 
+		delimiters,
+		&string[0],
+		&string[string.size()]);
 }
 
 bool regexp::ExecRE(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
-	assert(end_offset >= offset);
-	const char *ptr = string.data();
+	assert(offset <= end_offset);
 	return ExecRE(
-		ptr + offset, 
-		ptr + end_offset, 
+		&string[offset], 
+		&string[end_offset], 
 		reverse, 
 		(offset     == 0            ) ? '\0' : string[offset - 1], 
 		(end_offset == string.size()) ? '\0' : string[end_offset], 
 		delimiters, 
-		ptr, 
-		ptr + string.size());
+		&string[0], 
+		&string[string.size()]);
 }
 
 /*

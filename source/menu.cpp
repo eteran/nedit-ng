@@ -293,7 +293,7 @@ static void updateWindowMenu(const WindowInfo *window);
 static void updatePrevOpenMenu(WindowInfo *window);
 static void updateTagsFileMenu(WindowInfo *window);
 static void updateTipsFileMenu(WindowInfo *window);
-static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
+static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
@@ -4795,7 +4795,7 @@ static void updateWindowSizeMenu(WindowInfo *win) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static int searchDirection(int ignoreArgs, String *args, Cardinal *nArgs) {
+static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs) {
 	int i;
 
 	for (i = ignoreArgs; i < (int)*nArgs; i++) {

@@ -75,18 +75,7 @@ public:
 	 * @param string  Text to search within
 	 * @param reverse Backward search.
 	 */
-	bool ExecRE(const std::string &string, bool reverse = false);
-
-
-	/**
-	 * Match a 'regexp' structure against a string.
-	 *
-	 * @param prog    Compiled regex
-	 * @param string  Text to search within
-	 * @param reverse Backward search.
-	 */
-	bool ExecRE(const char *string, bool reverse = false);
-
+	bool ExecRE(view::string_view string, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
@@ -96,17 +85,7 @@ public:
 	 * @param offset  Offset into the string to begin search
 	 * @param reverse Backward search.
 	 */
-	bool ExecRE(const char *string, size_t offset, bool reverse = false);
-
-	/**
-	 * Match a 'regexp' structure against a string.
-	 *
-	 * @param prog    Compiled regex
-	 * @param string  Text to search within
-	 * @param offset  Offset into the string to begin search
-	 * @param reverse Backward search.
-	 */
-	bool ExecRE(const std::string &string, size_t offset, bool reverse = false);
+	bool ExecRE(view::string_view string, size_t offset, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
@@ -117,18 +96,7 @@ public:
 	 * @param delimiters Word delimiters to use (NULL for default)
 	 * @param reverse    Backward search.
 	 */
-	bool ExecRE(const char *string, size_t offset, const char *delimiters, bool reverse = false);
-
-	/**
-	 * Match a 'regexp' structure against a string.
-	 *
-	 * @param prog       Compiled regex
-	 * @param string     Text to search within
-	 * @param offset     Offset into the string to begin search
-	 * @param delimiters Word delimiters to use (NULL for default)
-	 * @param reverse    Backward search.
-	 */
-	bool ExecRE(const std::string &string, size_t offset, const char *delimiters, bool reverse = false);
+	bool ExecRE(view::string_view string, size_t offset, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
@@ -155,8 +123,6 @@ public:
 	char anchor;                 /* Internal use only. */
 	uint8_t *program;
 };
-
-
 
 
 /* Builds a default delimiter table that persists across 'ExecRE' calls that

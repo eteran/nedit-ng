@@ -1004,7 +1004,9 @@ static void setTag(tag *t, const char *name, const char *file, int language, con
 ** caller is responsible for freeing it.
 */
 static int fakeRegExSearch(WindowInfo *window, const char *in_buffer, const char *searchString, int *startPos, int *endPos) {
-	int found, searchStartPos, dir, ctagsMode;
+	int found, searchStartPos;
+	SearchDirection dir;
+	int ctagsMode;
 	char searchSubs[3 * MAXLINE + 3];
 	char *outPtr;
 	const char *fileString;

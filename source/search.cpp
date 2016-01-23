@@ -86,7 +86,7 @@ struct SelectionInfo {
 };
 
 struct SearchSelectedCallData {
-	int direction;
+	SearchDirection direction;
 	int searchType;
 	int searchWrap;
 };
@@ -131,20 +131,20 @@ static bool replaceUsingRE(const char *searchStr, const char *replaceStr, const 
 static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool searchRegex(const char *string, const char *searchString, int direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static const char *directionArg(int direction);
+static bool searchRegex(const char *string, const char *searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static const char *directionArg(SearchDirection direction);
 static const char *searchTypeArg(int searchType);
 static const char *searchWrapArg(int searchWrap);
 static int countWindows(void);
 static int countWritableWindows(void);
 static int defaultRegexFlags(int searchType);
 static int findMatchingChar(WindowInfo *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
-static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType);
-static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType);
+static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, int *searchType);
+static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
-static int searchLiteral(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static int searchLiteralWord(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static int searchLiteral(const char *string, const char *searchString, int caseSense, SearchDirection direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
+static int searchLiteralWord(const char *string, const char *searchString, int caseSense, SearchDirection direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static int searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
 static void collectWritableWindows(WindowInfo *window);
@@ -159,14 +159,14 @@ static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void fUpdateActionButtons(WindowInfo *window);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, int initPos);
+static void iSearchRecordLastBeginPos(WindowInfo *window, SearchDirection direction, int initPos);
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg);
 static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos, int startPos);
+static void iSearchTryBeepOnWrap(WindowInfo *window, SearchDirection direction, int beginPos, int startPos);
 static void removeDoomedWindowFromList(WindowInfo *window, int index);
 static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -369,7 +369,7 @@ static int selectionSpansMultipleLines(WindowInfo *window) {
 }
 #endif
 
-void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs, int searchType, Time time) {
+void DoFindReplaceDlog(WindowInfo *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
 	if (window->replaceDlog == nullptr)
@@ -506,7 +506,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	selectionInfo->done = 1;
 }
 
-void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, int searchType, Time time) {
+void DoFindDlog(WindowInfo *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
 	if (window->findDlog == nullptr)
@@ -546,7 +546,8 @@ void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, int searchTy
 
 void DoReplaceMultiFileDlog(WindowInfo *window) {
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2006,7 +2007,8 @@ static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[5];
 
 	auto window   = static_cast<WindowInfo *>(clientData);
@@ -2042,7 +2044,8 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[3];
 
 	window = WidgetToWindow(w);
@@ -2165,7 +2168,8 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[4];
 	int nSelected, i;
 	WindowInfo *writableWin;
@@ -2473,7 +2477,8 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[3];
 
 	window = WidgetToWindow(w);
@@ -2534,7 +2539,8 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[4];
 
 	window = WidgetToWindow(w);
@@ -2574,7 +2580,8 @@ static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX + 1], replaceString[SEARCHMAX + 1];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[4];
 
 	window = WidgetToWindow(w);
@@ -2866,7 +2873,8 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX];
-	int direction, searchType;
+	SearchDirection direction;
+	int searchType;
 	const char *params[4];
 
 	window = WidgetToWindow(w);
@@ -2900,7 +2908,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 ** return search type in "searchType", and return TRUE as the function
 ** value.  Otherwise, return FALSE.
 */
-static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchString, char *replaceString, int *searchType) {
+static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType) {
 	regexp *compiledRE = nullptr;
 
 	/* Get the search and replace strings, search type, and direction
@@ -2972,7 +2980,7 @@ static int getReplaceDlogInfo(WindowInfo *window, int *direction, char *searchSt
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchString, int *searchType) {
+static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, int *searchType) {
 
 	regexp *compiledRE = nullptr;
 
@@ -3027,7 +3035,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchStrin
 	return TRUE;
 }
 
-bool SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap) {
+bool SearchAndSelectSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3041,7 +3049,7 @@ bool SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap) {
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelect(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap) {
+bool SearchAndSelect(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap) {
 	int startPos, endPos;
 	int beginPos, cursorPos, selStart, selEnd;
 	int movedFwd = 0;
@@ -3108,7 +3116,7 @@ bool SearchAndSelect(WindowInfo *window, int direction, const char *searchString
 	return TRUE;
 }
 
-void SearchForSelected(WindowInfo *window, int direction, int searchType, int searchWrap, Time time) {
+void SearchForSelected(WindowInfo *window, SearchDirection direction, int searchType, int searchWrap, Time time) {
 	SearchSelectedCallData *callData = XtNew(SearchSelectedCallData);
 	callData->direction = direction;
 	callData->searchType = searchType;
@@ -3180,7 +3188,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 /*
 ** Pop up and clear the incremental search line and prepare to search.
 */
-void BeginISearch(WindowInfo *window, int direction) {
+void BeginISearch(WindowInfo *window, SearchDirection direction) {
 	window->iSearchStartPos = -1;
 	XmTextSetStringEx(window->iSearchText, (String) "");
 	XmToggleButtonSetState(window->iSearchRevToggle, direction == SEARCH_BACKWARD, FALSE);
@@ -3219,7 +3227,7 @@ void EndISearch(WindowInfo *window) {
 ** Reset window->iSearchLastBeginPos to the resulting initial
 ** search begin position for incremental searches.
 */
-static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, int initPos) {
+static void iSearchRecordLastBeginPos(WindowInfo *window, SearchDirection direction, int initPos) {
 	window->iSearchLastBeginPos = initPos;
 	if (direction == SEARCH_BACKWARD)
 		window->iSearchLastBeginPos--;
@@ -3232,7 +3240,7 @@ static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, int ini
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncremental(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int continued) {
+bool SearchAndSelectIncremental(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int continued) {
 	int beginPos, startPos, endPos;
 
 	/* If there's a search in progress, start the search from the original
@@ -3416,7 +3424,8 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 
 	const char *params[4];
 	char *searchString;
-	int searchType, direction;
+	int searchType;
+	SearchDirection direction;
 
 	window = WidgetToWindow(w);
 
@@ -3460,7 +3469,9 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	const char *params[5];
 	char *searchString;
-	int searchType, direction, nParams;
+	int searchType;
+	SearchDirection direction;
+	int nParams;
 
 	window = WidgetToWindow(w);
 
@@ -3824,7 +3835,7 @@ static void eraseFlash(WindowInfo *window) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceSame(WindowInfo *window, int direction, int searchWrap) {
+bool ReplaceSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3837,7 +3848,7 @@ bool ReplaceSame(WindowInfo *window, int direction, int searchWrap) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceFindSame(WindowInfo *window, int direction, int searchWrap) {
+bool ReplaceFindSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3850,7 +3861,7 @@ bool ReplaceFindSame(WindowInfo *window, int direction, int searchWrap) {
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool ReplaceAndSearch(WindowInfo *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
 	int startPos = 0;
 	int endPos = 0;
 	int replaceLen = 0;
@@ -3904,7 +3915,7 @@ bool ReplaceAndSearch(WindowInfo *window, int direction, const char *searchStrin
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool SearchAndReplace(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool SearchAndReplace(WindowInfo *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
 	int startPos, endPos, replaceLen, searchExtentBW, searchExtentFW;
 	int found;
 	int beginPos, cursorPos;
@@ -4334,7 +4345,7 @@ char *ReplaceAllInString(const char *inString, const char *searchString, const c
 ** Emit a beep if the search wrapped over BOF/EOF compared to
 ** the last startPos of the current incremental search.
 */
-static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos, int startPos) {
+static void iSearchTryBeepOnWrap(WindowInfo *window, SearchDirection direction, int beginPos, int startPos) {
 	if (GetPrefBeepOnSearchWrap()) {
 		if (direction == SEARCH_FORWARD) {
 			if ((startPos >= beginPos && window->iSearchLastBeginPos < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos >= beginPos)) {
@@ -4351,7 +4362,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindow(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	bool found;
 	int resp;
 	int fileEnd = window->buffer->BufGetLength() - 1;
@@ -4443,7 +4454,7 @@ bool SearchWindow(WindowInfo *window, int direction, const char *searchString, i
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchString(const char *string, const char *searchString, int direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+bool SearchString(const char *string, const char *searchString, SearchDirection direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
 		return searchLiteralWord(string, searchString, TRUE, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -4495,7 +4506,7 @@ int StringToSearchType(const char *string, int *searchType) {
 **  will suffice in that case.
 **
 */
-static int searchLiteralWord(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
+static int searchLiteralWord(const char *string, const char *searchString, int caseSense, SearchDirection direction, int wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 /* This is critical code for the speed of searches.			    */
 /* For efficiency, we define the macro DOSEARCH with the guts of the search */
 /* routine and repeat it, changing the parameters of the outer loop for the */
@@ -4585,7 +4596,7 @@ static int searchLiteralWord(const char *string, const char *searchString, int c
 	}
 }
 
-static int searchLiteral(const char *string, const char *searchString, int caseSense, int direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
+static int searchLiteral(const char *string, const char *searchString, int caseSense, SearchDirection direction, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
 /* This is critical code for the speed of searches.			    */
 /* For efficiency, we define the macro DOSEARCH with the guts of the search */
 /* routine and repeat it, changing the parameters of the outer loop for the */
@@ -4663,7 +4674,7 @@ static int searchLiteral(const char *string, const char *searchString, int caseS
 	}
 }
 
-static bool searchRegex(const char *string, const char *searchString, int direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool searchRegex(const char *string, const char *searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	if (direction == SEARCH_FORWARD)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
@@ -4671,7 +4682,6 @@ static bool searchRegex(const char *string, const char *searchString, int direct
 }
 
 static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-
 
 	try {
 		regexp compiledRE(searchString, defaultFlags);
@@ -4699,13 +4709,18 @@ static bool forwardRegexSearch(const char *string, const char *searchString, boo
 		}
 
 		/* search from the beginning of the string to beginPos */
-		if (compiledRE.ExecRE(string, string + beginPos, false, '\0', string[beginPos], delimiters, string, nullptr)) {
+		if (compiledRE.ExecRE(string, 0, beginPos, delimiters, false)) {
+			
 			*startPos = compiledRE.startp[0] - string;
-			*endPos = compiledRE.endp[0] - string;
-			if(searchExtentFW)
+			*endPos = compiledRE.endp[0]     - string;
+			
+			if(searchExtentFW) {
 				*searchExtentFW = compiledRE.extentpFW - string;
-			if(searchExtentBW)
+			}
+			
+			if(searchExtentBW) {
 				*searchExtentBW = compiledRE.extentpBW - string;
+			}
 			return true;
 		}
 
@@ -5018,7 +5033,7 @@ static const char *searchWrapArg(int searchWrap) {
 ** Return a pointer to the string describing search direction for search action
 ** routine parameters (see menu.c for processing of action routines)
 */
-static const char *directionArg(int direction) {
+static const char *directionArg(SearchDirection direction) {
 	if (direction == SEARCH_BACKWARD)
 		return "backward";
 	return "forward";
