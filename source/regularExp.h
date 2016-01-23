@@ -58,8 +58,8 @@ public:
 	/**
 	 * Match a 'regexp' structure against a string.
 	 *
-	 * @param prog           Compiled regex
 	 * @param string         Text to search within
+	 * @param end            Pointer to the logical end of the string
 	 * @param reverse        Backward search.
 	 * @param prev_char      Character immediately prior to 'string'.  Set to '\n' or '\0' if true beginning of text.
 	 * @param succ_char      Character immediately after 'end'.  Set to '\n' or '\0' if true beginning of text.
@@ -72,8 +72,8 @@ public:
 	/**
 	 * Match a 'regexp' structure against a string.
 	 *
-	 * @param prog   Compiled regex
-	 * @param string Text to search within
+	 * @param string  Text to search within
+	 * @param reverse Backward search.
 	 */
 	bool ExecRE(const std::string &string, bool reverse = false);
 
@@ -81,8 +81,9 @@ public:
 	/**
 	 * Match a 'regexp' structure against a string.
 	 *
-	 * @param prog   Compiled regex
-	 * @param string Text to search within
+	 * @param prog    Compiled regex
+	 * @param string  Text to search within
+	 * @param reverse Backward search.
 	 */
 	bool ExecRE(const char *string, bool reverse = false);
 
@@ -90,30 +91,22 @@ public:
 	/**
 	 * Match a 'regexp' structure against a string.
 	 *
-	 * @param prog   Compiled regex
-	 * @param string Text to search within
-	 * @param offset Offset into the string to begin search
+	 * @param prog    Compiled regex
+	 * @param string  Text to search within
+	 * @param offset  Offset into the string to begin search
+	 * @param reverse Backward search.
 	 */
-	bool ExecRE(const char *string, int offset, bool reverse = false);
+	bool ExecRE(const char *string, size_t offset, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
 	 *
-	 * @param prog   Compiled regex
-	 * @param string Text to search within
-	 * @param offset Offset into the string to begin search
+	 * @param prog    Compiled regex
+	 * @param string  Text to search within
+	 * @param offset  Offset into the string to begin search
+	 * @param reverse Backward search.
 	 */
-	bool ExecRE(const std::string &string, int offset, bool reverse = false);
-
-	/**
-	 * Match a 'regexp' structure against a string.
-	 *
-	 * @param prog       Compiled regex
-	 * @param string     Text to search within
-	 * @param offset     Offset into the string to begin search
-	 * @param delimiters Word delimiters to use (NULL for default)
-	 */
-	bool ExecRE(const char *string, int offset, const char *delimiters, bool reverse = false);
+	bool ExecRE(const std::string &string, size_t offset, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
@@ -122,8 +115,20 @@ public:
 	 * @param string     Text to search within
 	 * @param offset     Offset into the string to begin search
 	 * @param delimiters Word delimiters to use (NULL for default)
+	 * @param reverse    Backward search.
 	 */
-	bool ExecRE(const std::string &string, int offset, const char *delimiters, bool reverse = false);
+	bool ExecRE(const char *string, size_t offset, const char *delimiters, bool reverse = false);
+
+	/**
+	 * Match a 'regexp' structure against a string.
+	 *
+	 * @param prog       Compiled regex
+	 * @param string     Text to search within
+	 * @param offset     Offset into the string to begin search
+	 * @param delimiters Word delimiters to use (NULL for default)
+	 * @param reverse    Backward search.
+	 */
+	bool ExecRE(const std::string &string, size_t offset, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
@@ -133,19 +138,9 @@ public:
 	 * @param offset     Offset into the string to begin search
  	 * @param end_offset Offset into the string to end search
 	 * @param delimiters Word delimiters to use (NULL for default)
+	 * @param reverse    Backward search.
 	 */
-	bool ExecRE(const char *string, int offset, int end_offset, const char *delimiters, bool reverse = false);
-
-	/**
-	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
-	 *
-	 * @param prog       Compiled regex
-	 * @param string     Text to search within
-	 * @param offset     Offset into the string to begin search
- 	 * @param end_offset Offset into the string to end search
-	 * @param delimiters Word delimiters to use (NULL for default)
-	 */
-	bool ExecRE(const std::string &string, int offset, int end_offset, const char *delimiters, bool reverse = false);
+	bool ExecRE(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
 
 	/* Perform substitutions after a 'regexp' match. */
 	bool SubstituteRE(const char *source, char *dest, const int max) const;

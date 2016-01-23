@@ -456,15 +456,15 @@ static void setTextField(WindowInfo *window, Time time, Widget textField) {
 		selectionInfo->window    = window;
 		selectionInfo->selection = nullptr;
 		XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
-		
+
 		while (selectionInfo->done == 0) {
 			XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
 			ServerDispatchEvent(&nextEvent);
 		}
-		
+
 		primary_selection = selectionInfo->selection;
 	}
-	
+
 	if (primary_selection == nullptr) {
 		primary_selection = XtNewStringEx("");
 	}
@@ -2040,7 +2040,7 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
 	const char *params[3];
@@ -2150,11 +2150,11 @@ static void collectWritableWindows(WindowInfo *window) {
 			windows[i++] = w;
 		}
 	}
-	
+
 	std::sort(windows, windows + nWritable, [](const WindowInfo *lhs, const WindowInfo *rhs) {
 		return strcmp(lhs->filename, rhs->filename) < 0;
 	});
-	
+
 	window->writableWindows  = windows;
 	window->nWritableWindows = nWritable;
 }
@@ -2163,7 +2163,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
 	const char *params[4];
@@ -2471,7 +2471,7 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
 	const char *params[3];
@@ -2532,7 +2532,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	int direction, searchType;
 	const char *params[4];
@@ -2572,7 +2572,7 @@ static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX + 1], replaceString[SEARCHMAX + 1];
 	int direction, searchType;
 	const char *params[4];
@@ -2713,7 +2713,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 
 	auto event = (XKeyEvent *)Event;
 	auto window = static_cast<WindowInfo *>(clientData);
-	
+
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
 	const char *searchStr;
@@ -2767,7 +2767,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 
 	auto event = (XKeyEvent *)Event;
 	auto window = static_cast<WindowInfo *>(clientData);
-	
+
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
 
@@ -2864,7 +2864,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	char searchString[SEARCHMAX];
 	int direction, searchType;
 	const char *params[4];
@@ -3413,7 +3413,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	const char *params[4];
 	char *searchString;
 	int searchType, direction;
@@ -3457,7 +3457,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-	
+
 	const char *params[5];
 	char *searchString;
 	int searchType, direction, nParams;
@@ -3870,13 +3870,13 @@ bool ReplaceAndSearch(WindowInfo *window, int direction, const char *searchStrin
 			const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
 			replaceUsingREEx(
-				searchString, 
-				replaceString, 
-				foundString, 
-				startPos - searchExtentBW, 
-				replaceResult, 
-				SEARCHMAX, 
-				startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), 
+				searchString,
+				replaceString,
+				foundString,
+				startPos - searchExtentBW,
+				replaceResult,
+				SEARCHMAX,
+				startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1),
 				GetWindowDelimiters(window),
 				defaultRegexFlags(searchType));
 
@@ -3937,13 +3937,13 @@ bool SearchAndReplace(WindowInfo *window, int direction, const char *searchStrin
 		char replaceResult[SEARCHMAX];
 		const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 		replaceUsingREEx(
-			searchString, 
-			replaceString, 
-			foundString, 
-			startPos - searchExtentBW, 
-			replaceResult, 
-			SEARCHMAX, 
-			startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), 
+			searchString,
+			replaceString,
+			foundString,
+			startPos - searchExtentBW,
+			replaceResult,
+			SEARCHMAX,
+			startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1),
 			GetWindowDelimiters(window),
 			defaultRegexFlags(searchType));
 
@@ -4104,12 +4104,12 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 			char replaceResult[SEARCHMAX];
 			const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
 			substSuccess = replaceUsingREEx(
-							searchString, 
-							replaceString, 
-							foundString, 
-							startPos - extentBW, 
-							replaceResult, 
-							SEARCHMAX, 
+							searchString,
+							replaceString,
+							foundString,
+							startPos - extentBW,
+							replaceResult,
+							SEARCHMAX,
 							(startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
 							GetWindowDelimiters(window),
 							defaultRegexFlags(searchType));
@@ -4260,16 +4260,16 @@ char *ReplaceAllInString(const char *inString, const char *searchString, const c
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
 				replaceUsingREEx(
-					searchString, 
-					replaceString, 
-					&inString[searchExtentBW], 
-					startPos - searchExtentBW, 
-					replaceResult, 
-					SEARCHMAX, 
-					startPos == 0 ? '\0' : inString[startPos - 1], 
-					delimiters, 
+					searchString,
+					replaceString,
+					&inString[searchExtentBW],
+					startPos - searchExtentBW,
+					replaceResult,
+					SEARCHMAX,
+					startPos == 0 ? '\0' : inString[startPos - 1],
+					delimiters,
 					defaultRegexFlags(searchType));
-					
+
 				addLen += strlen(replaceResult);
 			} else
 				addLen += replaceLen;
@@ -4301,16 +4301,16 @@ char *ReplaceAllInString(const char *inString, const char *searchString, const c
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
 				replaceUsingREEx(
-					searchString, 
-					replaceString, 
-					&inString[searchExtentBW], 
-					startPos - searchExtentBW, 
-					replaceResult, 
-					SEARCHMAX, 
-					startPos == 0 ? '\0' : inString[startPos - 1], 
-					delimiters, 
+					searchString,
+					replaceString,
+					&inString[searchExtentBW],
+					startPos - searchExtentBW,
+					replaceResult,
+					SEARCHMAX,
+					startPos == 0 ? '\0' : inString[startPos - 1],
+					delimiters,
 					defaultRegexFlags(searchType));
-					
+
 				replaceLen = strlen(replaceResult);
 				memcpy(fillPtr, replaceResult, replaceLen);
 			} else {
@@ -4672,26 +4672,24 @@ static bool searchRegex(const char *string, const char *searchString, int direct
 
 static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
-	/* compile the search string for searching with ExecRE.  Note that
-	   this does not process errors from compiling the expression.  It
-	   assumes that the expression was checked earlier. */
+
 	try {
 		regexp compiledRE(searchString, defaultFlags);
 
 		/* search from beginPos to end of string */
-		if (compiledRE.ExecRE(string, beginPos, delimiters, false)) {		
-			
+		if (compiledRE.ExecRE(string, beginPos, delimiters, false)) {
+
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0]   - string;
-			
+
 			if(searchExtentFW) {
 				*searchExtentFW = compiledRE.extentpFW - string;
 			}
-			
+
 			if(searchExtentBW) {
 				*searchExtentBW = compiledRE.extentpBW - string;
 			}
-			
+
 			return true;
 		}
 
@@ -4713,9 +4711,11 @@ static bool forwardRegexSearch(const char *string, const char *searchString, boo
 
 		return false;
 	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error!
+		/* Note that this does not process errors from compiling the expression.
+		 * It assumes that the expression was checked earlier.
+		 */
 		return false;
-	}	
+	}
 }
 
 static bool backwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
@@ -4748,22 +4748,22 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 		if (beginPos < 0) {
 			beginPos = 0;
 		}
-		
+
 		int length = strlen(string); /* sadly, this means scanning entire string */
-		
+
 		if (compiledRE.ExecRE(string, beginPos, length, delimiters, true)) {
 
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0] - string;
-			
+
 			if(searchExtentFW) {
 				*searchExtentFW = compiledRE.extentpFW - string;
 			}
-			
+
 			if(searchExtentBW) {
 				*searchExtentBW = compiledRE.extentpBW - string;
 			}
-			
+
 			return true;
 		}
 
@@ -4771,7 +4771,7 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
 		return false;
-	}		
+	}
 }
 
 static void upCaseString(char *outString, const char *inString) {
