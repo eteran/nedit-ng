@@ -2605,7 +2605,21 @@ bool regexp::ExecRE(const char *string, int offset, const char *delimiters, bool
 
 bool regexp::ExecRE(const std::string &string, int offset, const char *delimiters, bool reverse) {
 	assert(offset >= 0);
-	return ExecRE(string.c_str() + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, string.c_str(), string.c_str() + string.size());
+	const char *ptr = string.data();
+	return ExecRE(ptr + offset, nullptr, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, ptr, ptr + string.size());
+}
+
+bool regexp::ExecRE(const char *string, int offset, int end_offset, const char *delimiters, bool reverse) {
+	assert(offset >= 0);
+	assert(end_offset >= offset);
+	return ExecRE(string + offset, string + end_offset, reverse, (offset == 0) ? '\0' : string[offset - 1], '\0', delimiters, string, nullptr);
+}
+
+bool regexp::ExecRE(const std::string &string, int offset, int end_offset, const char *delimiters, bool reverse) {
+	assert(offset >= 0);
+	assert(end_offset >= offset);
+	const char *ptr = string.data();
+	return ExecRE(ptr + offset, ptr + end_offset, reverse, (offset == 0) ? '\0' : string[offset - 1], (static_cast<size_t>(end_offset) == string.size()) ? '\0' : string[end_offset], delimiters, ptr, ptr + string.size());
 }
 
 /*

@@ -34,34 +34,34 @@
 
 enum SearchDirection { SEARCH_FORWARD, SEARCH_BACKWARD };
 
+Boolean WindowCanBeClosed(WindowInfo *window);
+bool ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType);
+bool ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap);
+bool ReplaceFindSame(WindowInfo *window, int direction, int searchWrap);
+bool ReplaceSame(WindowInfo *window, int direction, int searchWrap);
+bool SearchAndReplace(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap);
+bool SearchAndSelectIncremental(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int continued);
+bool SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);
+bool SearchAndSelect(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap);
+bool SearchString(const char *string, const char *searchString, int direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
+bool SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+char *ReplaceAllInString(const char *inString, const char *searchString, const char *replaceString, int searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
+void BeginISearch(WindowInfo *window, int direction);
 void CreateFindDlog(Widget parent, WindowInfo *window);
 void CreateReplaceDlog(Widget parent, WindowInfo *window);
 void CreateReplaceMultiFileDlog(WindowInfo *window);
+void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, int searchType, Time time);
 void DoFindReplaceDlog(WindowInfo *window, int direction, int keepDialogs, int searchType, Time time);
 void DoReplaceMultiFileDlog(WindowInfo *window);
-void UpdateReplaceActionButtons(WindowInfo *window);
-void DoFindDlog(WindowInfo *window, int direction, int keepDialogs, int searchType, Time time);
-int SearchAndSelect(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap);
-int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap);
-int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int continued);
-void SearchForSelected(WindowInfo *window, int direction, int searchWrap, int searchType, Time time);
-int SearchAndReplace(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap);
-int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap);
-int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap);
-int ReplaceSame(WindowInfo *window, int direction, int searchWrap);
-int ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType);
-void ReplaceInSelection(const WindowInfo *window, const char *searchString, const char *replaceString, const int searchType);
-int SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
-int SearchString(const char *string, const char *searchString, int direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
-char *ReplaceAllInString(const char *inString, const char *searchString, const char *replaceString, int searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
-void BeginISearch(WindowInfo *window, int direction);
 void EndISearch(WindowInfo *window);
-void SetISearchTextCallbacks(WindowInfo *window);
 void FlashMatching(WindowInfo *window, Widget textW);
-void SelectToMatchingCharacter(WindowInfo *window);
 void GotoMatchingCharacter(WindowInfo *window);
 void RemoveFromMultiReplaceDialog(WindowInfo *window);
-Boolean WindowCanBeClosed(WindowInfo *window);
+void ReplaceInSelection(const WindowInfo *window, const char *searchString, const char *replaceString, const int searchType);
+void SearchForSelected(WindowInfo *window, int direction, int searchWrap, int searchType, Time time);
+void SelectToMatchingCharacter(WindowInfo *window);
+void SetISearchTextCallbacks(WindowInfo *window);
+void UpdateReplaceActionButtons(WindowInfo *window);
 
 /*
 ** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE

@@ -127,7 +127,9 @@ static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_dat
 
 static bool backwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
-static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
+static bool replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
+static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
+
 static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(const char *string, const char *searchString, int direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static const char *directionArg(int direction);
@@ -3025,7 +3027,7 @@ static int getFindDlogInfo(WindowInfo *window, int *direction, char *searchStrin
 	return TRUE;
 }
 
-int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap) {
+bool SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3039,7 +3041,7 @@ int SearchAndSelectSame(WindowInfo *window, int direction, int searchWrap) {
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-int SearchAndSelect(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap) {
+bool SearchAndSelect(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap) {
 	int startPos, endPos;
 	int beginPos, cursorPos, selStart, selEnd;
 	int movedFwd = 0;
@@ -3230,7 +3232,7 @@ static void iSearchRecordLastBeginPos(WindowInfo *window, int direction, int ini
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int continued) {
+bool SearchAndSelectIncremental(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int continued) {
 	int beginPos, startPos, endPos;
 
 	/* If there's a search in progress, start the search from the original
@@ -3251,7 +3253,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *se
 		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos);
 		window->buffer->BufUnselect();
 		TextSetCursorPos(window->lastFocus, beginPos);
-		return TRUE;
+		return true;
 	}
 
 	/* Save the string in the search history, unless we're cycling thru
@@ -3269,7 +3271,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *se
 
 	/* do the search.  SearchWindow does appropriate dialogs and beeps */
 	if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
-		return FALSE;
+		return false;
 
 	window->iSearchLastBeginPos = startPos;
 
@@ -3278,7 +3280,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *se
 	   otherwise repeated finds will get "stuck" at zero-length matches */
 	if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos)
 		if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
-			return FALSE;
+			return false;
 
 	window->iSearchLastBeginPos = startPos;
 
@@ -3287,7 +3289,7 @@ int SearchAndSelectIncremental(WindowInfo *window, int direction, const char *se
 	window->MakeSelectionVisible(window->lastFocus);
 	TextSetCursorPos(window->lastFocus, endPos);
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -3822,7 +3824,7 @@ static void eraseFlash(WindowInfo *window) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-int ReplaceSame(WindowInfo *window, int direction, int searchWrap) {
+bool ReplaceSame(WindowInfo *window, int direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3835,7 +3837,7 @@ int ReplaceSame(WindowInfo *window, int direction, int searchWrap) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap) {
+bool ReplaceFindSame(WindowInfo *window, int direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3848,25 +3850,35 @@ int ReplaceFindSame(WindowInfo *window, int direction, int searchWrap) {
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
-	int startPos = 0, endPos = 0, replaceLen = 0;
-	int searchExtentBW, searchExtentFW;
-	int replaced;
+bool ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+	int startPos = 0;
+	int endPos = 0;
+	int replaceLen = 0;
+	int searchExtentBW;
+	int searchExtentFW;
 
 	/* Save a copy of search and replace strings in the search history */
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
 
-	replaced = 0;
+	bool replaced = false;
 
 	/* Replace the selected text only if it matches the search string */
 	if (searchMatchesSelection(window, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 		/* replace the text */
 		if (isRegexType(searchType)) {
 			char replaceResult[SEARCHMAX + 1];
-			std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+			const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
-			replaceUsingRE(searchString, replaceString, foundString.c_str(), startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), GetWindowDelimiters(window),
-			               defaultRegexFlags(searchType));
+			replaceUsingREEx(
+				searchString, 
+				replaceString, 
+				foundString, 
+				startPos - searchExtentBW, 
+				replaceResult, 
+				SEARCHMAX, 
+				startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), 
+				GetWindowDelimiters(window),
+				defaultRegexFlags(searchType));
 
 			window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
 			replaceLen = strlen(replaceResult);
@@ -3878,7 +3890,7 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
 		/* Position the cursor so the next search will work correctly based */
 		/* on the direction of the search */
 		TextSetCursorPos(window->lastFocus, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
-		replaced = 1;
+		replaced = true;
 	}
 
 	/* do the search; beeps/dialogs are taken care of */
@@ -3892,7 +3904,7 @@ int ReplaceAndSearch(WindowInfo *window, int direction, const char *searchString
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-int SearchAndReplace(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool SearchAndReplace(WindowInfo *window, int direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
 	int startPos, endPos, replaceLen, searchExtentBW, searchExtentFW;
 	int found;
 	int beginPos, cursorPos;
@@ -3917,15 +3929,23 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 		/* do the search */
 		found = SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
 		if (!found)
-			return FALSE;
+			return false;
 	}
 
 	/* replace the text */
 	if (isRegexType(searchType)) {
 		char replaceResult[SEARCHMAX];
-		std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
-		replaceUsingRE(searchString, replaceString, foundString.c_str(), startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), GetWindowDelimiters(window),
-		               defaultRegexFlags(searchType));
+		const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+		replaceUsingREEx(
+			searchString, 
+			replaceString, 
+			foundString, 
+			startPos - searchExtentBW, 
+			replaceResult, 
+			SEARCHMAX, 
+			startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1), 
+			GetWindowDelimiters(window),
+			defaultRegexFlags(searchType));
 
 		window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
 		replaceLen = strlen(replaceResult);
@@ -3949,7 +3969,7 @@ int SearchAndReplace(WindowInfo *window, int direction, const char *searchString
 	window->MakeSelectionVisible(window->lastFocus);
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -4082,9 +4102,17 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 		/* replace the string and compensate for length change */
 		if (isRegexType(searchType)) {
 			char replaceResult[SEARCHMAX];
-			std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
-			substSuccess = replaceUsingRE(searchString, replaceString, foundString.c_str(), startPos - extentBW, replaceResult, SEARCHMAX, 0 == (startPos + realOffset) ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
-			                              GetWindowDelimiters(window), defaultRegexFlags(searchType));
+			const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
+			substSuccess = replaceUsingREEx(
+							searchString, 
+							replaceString, 
+							foundString, 
+							startPos - extentBW, 
+							replaceResult, 
+							SEARCHMAX, 
+							(startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
+							GetWindowDelimiters(window),
+							defaultRegexFlags(searchType));
 
 			if (!substSuccess) {
 				/*  The substitution failed. Primary reason for this would be
@@ -4153,13 +4181,13 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 ** Replace all occurences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
-int ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType) {
+bool ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType) {
 	char *newFileString;
 	int copyStart, copyEnd, replacementLen;
 
 	/* reject empty string */
 	if (*searchString == '\0')
-		return FALSE;
+		return false;
 
 	/* save a copy of search and replace strings in the search history */
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
@@ -4181,7 +4209,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 			DialogF(DF_INF, window->shell, 1, "String not found", "String was not found", "OK");
 		} else
 			XBell(TheDisplay, 0);
-		return FALSE;
+		return false;
 	}
 
 	/* replace the contents of the text widget with the substituted text */
@@ -4191,7 +4219,7 @@ int ReplaceAll(WindowInfo *window, const char *searchString, const char *replace
 	TextSetCursorPos(window->lastFocus, copyStart + replacementLen);
 
 	XtFree(newFileString);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -4231,7 +4259,17 @@ char *ReplaceAllInString(const char *inString, const char *searchString, const c
 			removeLen += endPos - startPos;
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
-				replaceUsingRE(searchString, replaceString, &inString[searchExtentBW], startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : inString[startPos - 1], delimiters, defaultRegexFlags(searchType));
+				replaceUsingREEx(
+					searchString, 
+					replaceString, 
+					&inString[searchExtentBW], 
+					startPos - searchExtentBW, 
+					replaceResult, 
+					SEARCHMAX, 
+					startPos == 0 ? '\0' : inString[startPos - 1], 
+					delimiters, 
+					defaultRegexFlags(searchType));
+					
 				addLen += strlen(replaceResult);
 			} else
 				addLen += replaceLen;
@@ -4262,7 +4300,17 @@ char *ReplaceAllInString(const char *inString, const char *searchString, const c
 			}
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
-				replaceUsingRE(searchString, replaceString, &inString[searchExtentBW], startPos - searchExtentBW, replaceResult, SEARCHMAX, startPos == 0 ? '\0' : inString[startPos - 1], delimiters, defaultRegexFlags(searchType));
+				replaceUsingREEx(
+					searchString, 
+					replaceString, 
+					&inString[searchExtentBW], 
+					startPos - searchExtentBW, 
+					replaceResult, 
+					SEARCHMAX, 
+					startPos == 0 ? '\0' : inString[startPos - 1], 
+					delimiters, 
+					defaultRegexFlags(searchType));
+					
 				replaceLen = strlen(replaceResult);
 				memcpy(fillPtr, replaceResult, replaceLen);
 			} else {
@@ -4303,15 +4351,15 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, int direction, int beginPos
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-int SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
-	int found;
+bool SearchWindow(WindowInfo *window, int direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+	bool found;
 	int resp;
 	int fileEnd = window->buffer->BufGetLength() - 1;
-	int outsideBounds;
+	bool outsideBounds;
 
 	/* reject empty string */
 	if (*searchString == '\0')
-		return FALSE;
+		return false;
 
 	/* get the entire text buffer from the text area widget */
 	const char *fileString = window->buffer->BufAsString();
@@ -4320,9 +4368,9 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString, in
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
 	   searching for $ at the end of a file ending with \n.) */
 	if ((direction == SEARCH_FORWARD && beginPos > fileEnd + 1) || (direction == SEARCH_BACKWARD && beginPos < 0)) {
-		outsideBounds = TRUE;
+		outsideBounds = true;
 	} else {
-		outsideBounds = FALSE;
+		outsideBounds = false;
 	}
 
 	/* search the string copied from the text area widget, and present
@@ -4343,7 +4391,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString, in
 					} else if (GetPrefSearchDlogs()) {
 						resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search", "Continue search from\nbeginning of file?", "Continue", "Cancel");
 						if (resp == 2) {
-							return False;
+							return false;
 						}
 					}
 					found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
@@ -4353,7 +4401,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString, in
 					} else if (GetPrefSearchDlogs()) {
 						resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search", "Continue search\nfrom end of file?", "Continue", "Cancel");
 						if (resp == 2) {
-							return False;
+							return false;
 						}
 					}
 					found = SearchString(fileString, searchString, direction, searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
@@ -4395,7 +4443,7 @@ int SearchWindow(WindowInfo *window, int direction, const char *searchString, in
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-int SearchString(const char *string, const char *searchString, int direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+bool SearchString(const char *string, const char *searchString, int direction, int searchType, int wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
 		return searchLiteralWord(string, searchString, TRUE, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -4410,7 +4458,7 @@ int SearchString(const char *string, const char *searchString, int direction, in
 	case SEARCH_REGEX_NOCASE:
 		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	}
-	return FALSE; /* never reached, just makes compilers happy */
+	return false; /* never reached, just makes compilers happy */
 }
 
 /*
@@ -4631,7 +4679,7 @@ static bool forwardRegexSearch(const char *string, const char *searchString, boo
 		regexp compiledRE(searchString, defaultFlags);
 
 		/* search from beginPos to end of string */
-		if (compiledRE.ExecRE(string + beginPos, nullptr, false, (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+		if (compiledRE.ExecRE(string, beginPos, delimiters, false)) {		
 			
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0]   - string;
@@ -4693,7 +4741,7 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 
 		/* if wrap turned off, we're done */
 		if (!wrap) {
-			return FALSE;
+			return false;
 		}
 
 		/* search from the end of the string to beginPos */
@@ -4703,7 +4751,8 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 		
 		int length = strlen(string); /* sadly, this means scanning entire string */
 		
-		if (compiledRE.ExecRE(string + beginPos, string + length, true,  (beginPos == 0) ? '\0' : string[beginPos - 1], '\0', delimiters, string, nullptr)) {
+		if (compiledRE.ExecRE(string, beginPos, length, delimiters, true)) {
+
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0] - string;
 			
@@ -4838,7 +4887,7 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
+static bool replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
 
 	try {
 		regexp compiledRE(searchStr, defaultFlags);
@@ -4848,6 +4897,10 @@ static Boolean replaceUsingRE(const char *searchStr, const char *replaceStr, con
 		// NOTE(eteran): ignoring error!
 		return false;
 	}
+}
+
+static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
+	return replaceUsingRE(searchStr, replaceStr, sourceStr.c_str(), beginPos, destStr, maxDestLen, prevChar, delimiters, defaultFlags);
 }
 
 /*
