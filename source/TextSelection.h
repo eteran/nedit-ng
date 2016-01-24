@@ -10,7 +10,7 @@ public:
 	~TextSelection() = default;
 
 public:
-	int getSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	int getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	void setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd);
 	void setSelection(int newStart, int newEnd);
 	void updateSelection(int pos, int nDeleted, int nInserted);

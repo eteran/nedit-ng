@@ -1531,12 +1531,12 @@ void TextBuffer::BufRectSelect(int start, int end, int rectStart, int rectEnd) {
 	redisplaySelection(&oldSelection, &primary_);
 }
 
-int TextBuffer::BufGetSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int TextBuffer::BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 /* Same as above, but also returns TRUE for empty selections */
-int TextBuffer::BufGetEmptySelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int TextBuffer::BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
 }
 
@@ -1579,7 +1579,7 @@ void TextBuffer::BufSecRectSelect(int start, int end, int rectStart, int rectEnd
 	redisplaySelection(&oldSelection, &secondary_);
 }
 
-int TextBuffer::BufGetSecSelectPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int TextBuffer::BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return secondary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
@@ -1621,7 +1621,7 @@ void TextBuffer::BufRectHighlight(int start, int end, int rectStart, int rectEnd
 	redisplaySelection(&oldSelection, &highlight_);
 }
 
-int TextBuffer::BufGetHighlightPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int TextBuffer::BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return highlight_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 

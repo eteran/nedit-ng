@@ -63,7 +63,7 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 	int selStart;
 	int selEnd;
-	int isRect;
+	bool isRect;
 	int rectStart;
 	int rectEnd;
 	int shiftedLen;
@@ -169,7 +169,8 @@ void DowncaseSelection(WindowInfo *window) {
 */
 static void changeCase(WindowInfo *window, int makeUpper) {
 	TextBuffer *buf = window->buffer;
-	int cursorPos, start, end, isRect, rectStart, rectEnd;
+	int cursorPos, start, end, rectStart, rectEnd;
+	bool isRect;
 
 	/* Get the selection.  Use character before cursor if no selection */
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
@@ -208,7 +209,8 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 
 void FillSelection(WindowInfo *window) {
 	TextBuffer *buf = window->buffer;
-	int left, right, nCols, len, isRect, rectStart, rectEnd;
+	int left, right, nCols, len, rectStart, rectEnd;
+	bool isRect;
 	int rightMargin, wrapMargin;
 	int insertPos = TextGetCursorPos(window->lastFocus);
 	int hasSelection = window->buffer->primary_.selected;

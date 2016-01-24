@@ -79,12 +79,12 @@ public:
 	int BufCountForwardNLines(int startPos, unsigned nLines) const;
 	int BufCountLines(int startPos, int endPos) const;
 	int BufEndOfLine(int pos) const;
-	int BufGetEmptySelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetExpandedChar(int pos, int indent, char *outStr) const;
-	int BufGetHighlightPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	int BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetLength() const;
-	int BufGetSecSelectPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
-	int BufGetSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd);
+	int BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
+	int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetTabDistance() const;
 	int BufStartOfLine(int pos) const;
 	std::string BufGetAllEx();

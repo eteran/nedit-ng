@@ -1077,7 +1077,7 @@ static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	repeatDialog *rd = (repeatDialog *)clientData;
 
-	if (doRepeatDialogAction(rd, ((XmAnyCallbackStruct *)callData)->event))
+	if (doRepeatDialogAction(rd, static_cast<XmAnyCallbackStruct *>(callData)->event))
 		XtDestroyWidget(rd->shell);
 }
 
@@ -1088,7 +1088,7 @@ static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void repeatApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
-	doRepeatDialogAction((repeatDialog *)clientData, ((XmAnyCallbackStruct *)callData)->event);
+	doRepeatDialogAction((repeatDialog *)clientData, static_cast<XmAnyCallbackStruct *>(callData)->event);
 }
 
 static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
@@ -4510,7 +4510,8 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
-	int start, end, isRect, rectStart, rectEnd, maxpos, index;
+	int start, end, rectStart, rectEnd, maxpos, index;
+	bool isRect;
 	int label = 0;
 
 	if (nArgs < 1 || nArgs > 3)
@@ -4610,7 +4611,8 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
-	int start, end, isRect, rectStart, rectEnd, maxpos;
+	int start, end, rectStart, rectEnd, maxpos;
+	bool isRect;
 	int label = 0;
 
 	if (nArgs < 1 || nArgs > 3) {

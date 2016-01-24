@@ -36,7 +36,7 @@ void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, in
 //------------------------------------------------------------------------------
 // Name: getSelectionPos
 //------------------------------------------------------------------------------
-int TextSelection::getSelectionPos(int *start, int *end, int *isRect, int *rectStart, int *rectEnd) {
+int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	/* Always fill in the parameters (zero-width can be requested too). */
 	*isRect = this->rectangular;
 	*start  = this->start;

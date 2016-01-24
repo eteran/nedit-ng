@@ -809,7 +809,8 @@ void WindowInfo::LastDocument() {
 ** well with rectangular selections.
 */
 void WindowInfo::MakeSelectionVisible(Widget textPane) {
-	int left, right, isRect, rectStart, rectEnd, horizOffset;
+	int left, right, rectStart, rectEnd, horizOffset;
+	bool isRect;
 	int scrollOffset, leftX, rightX, y, rows, margin;
 	int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
 	textDisp *textD = ((TextWidget)textPane)->text.textD;
@@ -2293,7 +2294,8 @@ void WindowInfo::UpdateWindowReadOnly() {
 ** span lines.
 */
 int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
-	int selStart, selEnd, isRect, rectStart, rectEnd, lineStart;
+	int selStart, selEnd, rectStart, rectEnd, lineStart;
+	bool isRect;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
