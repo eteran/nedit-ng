@@ -43,9 +43,9 @@ bool SearchAndReplace(WindowInfo *window, SearchDirection direction, const char 
 bool SearchAndSelectIncremental(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int continued);
 bool SearchAndSelectSame(WindowInfo *window, SearchDirection direction, int searchWrap);
 bool SearchAndSelect(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap);
-bool SearchString(const char *string, const char *searchString, SearchDirection direction, int searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
+bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, int searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
 bool SearchWindow(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
-char *ReplaceAllInString(const char *inString, const char *searchString, const char *replaceString, int searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
+char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, int searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
 void BeginISearch(WindowInfo *window, SearchDirection direction);
 void CreateFindDlog(Widget parent, WindowInfo *window);
 void CreateReplaceDlog(Widget parent, WindowInfo *window);
