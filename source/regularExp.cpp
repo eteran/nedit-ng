@@ -2580,35 +2580,53 @@ static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
 
+//------------------------------------------------------------------------------
+// Name: execute
+//------------------------------------------------------------------------------
 bool regexp::execute(view::string_view string, bool reverse) {
 	return execute(string, 0, reverse);
 }
 
+//------------------------------------------------------------------------------
+// Name: execute
+//------------------------------------------------------------------------------
 bool regexp::execute(view::string_view string, size_t offset, bool reverse) {
 	return execute(string, offset, nullptr, reverse);
 }
 
+//------------------------------------------------------------------------------
+// Name: execute
+//------------------------------------------------------------------------------
 bool regexp::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
-	assert(offset <= string.size());
-	return ExecRE(
-		&string[offset], 
-		&string[string.size()], 
-		reverse, 
-		(offset == 0) ? '\0' : string[offset - 1], 
-		'\0', 
-		delimiters,
-		&string[0],
-		&string[string.size()]);
+	return execute(string, offset, string.size(), delimiters, reverse);
 }
 
+//------------------------------------------------------------------------------
+// Name: execute
+//------------------------------------------------------------------------------
 bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
+	return execute(
+		string, 
+		offset, 
+		end_offset, 
+		(offset     == 0            ) ? '\0' : string[offset - 1], 
+		(end_offset == string.size()) ? '\0' : string[end_offset],
+		delimiters,
+		reverse);
+}
+
+//------------------------------------------------------------------------------
+// Name: execute
+//------------------------------------------------------------------------------
+bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
+	assert(end_offset <= string.size());
 	return ExecRE(
 		&string[offset], 
 		&string[end_offset], 
 		reverse, 
-		(offset     == 0            ) ? '\0' : string[offset - 1], 
-		(end_offset == string.size()) ? '\0' : string[end_offset], 
+		prev, 
+		succ, 
 		delimiters, 
 		&string[0], 
 		&string[string.size()]);

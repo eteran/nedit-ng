@@ -127,7 +127,6 @@ static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_dat
 
 static bool backwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
-static bool replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(const char *string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -145,7 +144,7 @@ static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
 static int searchLiteral(const char *string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static int searchLiteralWord(const char *string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static int searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
 static void collectWritableWindows(WindowInfo *window);
 static void downCaseString(char *outString, const char *inString);
@@ -4756,8 +4755,8 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 		/* says begin searching from the far end of the file.		*/
 		if (beginPos >= 0) {
 		
-			// TODO(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?			
-			if (compiledRE.ExecRE(string, string + beginPos, true, '\0', '\0', delimiters, string, nullptr)) {
+			// TODO(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
+			if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 				
 				*startPos = compiledRE.startp[0] - string;
 				*endPos   = compiledRE.endp[0]   - string;
@@ -4845,71 +4844,86 @@ static void resetReplaceTabGroup(WindowInfo *window) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static int searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
 	int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
 	int regexLookContext = isRegexType(searchType) ? 1000 : 0;
 	std::string string;
-	int found, rectStart, rectEnd, lineStart = 0;
+	int rectStart, rectEnd, lineStart = 0;
 	bool isRect;
 
 	/* find length of selection, give up on no selection or too long */
-	if (!window->buffer->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
-		return FALSE;
-	if (selEnd - selStart > SEARCHMAX)
-		return FALSE;
+	if (!window->buffer->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+		return false;
+	}
+	
+	if (selEnd - selStart > SEARCHMAX) {
+		return false;
+	}
 
 	/* if the selection is rectangular, don't match if it spans lines */
 	if (isRect) {
 		lineStart = window->buffer->BufStartOfLine(selStart);
-		if (lineStart != window->buffer->BufStartOfLine(selEnd))
-			return FALSE;
+		if (lineStart != window->buffer->BufStartOfLine(selEnd)) {
+			return false;
+		}
 	}
 
 	/* get the selected text plus some additional context for regular
 	   expression lookahead */
 	if (isRect) {
 		int stringStart = lineStart + rectStart - regexLookContext;
-		if (stringStart < 0)
+		if (stringStart < 0) {
 			stringStart = 0;
+		}
+		
 		string = window->buffer->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
 		selLen = rectEnd - rectStart;
 		beginPos = lineStart + rectStart - stringStart;
 	} else {
 		int stringStart = selStart - regexLookContext;
-		if (stringStart < 0)
+		if (stringStart < 0) {
 			stringStart = 0;
+		}
+		
 		string = window->buffer->BufGetRangeEx(stringStart, selEnd + regexLookContext);
 		selLen = selEnd - selStart;
 		beginPos = selStart - stringStart;
 	}
 	if (string.empty()) {
-		return FALSE;
+		return false;
 	}
 
 	/* search for the string in the selection (we are only interested 	*/
 	/* in an exact match, but the procedure SearchString does important */
 	/* stuff like applying the correct matching algorithm)		*/
-	found = SearchString(string.c_str(), searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
+	bool found = SearchString(string.c_str(), searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
 
 	/* decide if it is an exact match */
-	if (!found)
-		return FALSE;
-	if (startPos != beginPos || endPos - beginPos != selLen)
-		return FALSE;
+	if (!found) {
+		return false;
+	}
+	
+	if (startPos != beginPos || endPos - beginPos != selLen) {
+		return false;
+	}
 
 	/* return the start and end of the selection */
-	if (isRect)
+	if (isRect) {
 		GetSimpleSelection(window->buffer, left, right);
-	else {
-		*left = selStart;
+	} else {
+		*left  = selStart;
 		*right = selEnd;
 	}
-	if(searchExtentBW)
+	
+	if(searchExtentBW) {
 		*searchExtentBW = *left - (startPos - extentBW);
+	}
 
-	if(searchExtentFW)
+	if(searchExtentFW) {
 		*searchExtentFW = *right + extentFW - endPos;
-	return TRUE;
+	}
+	
+	return true;
 }
 
 /*
@@ -4921,20 +4935,15 @@ static int searchMatchesSelection(WindowInfo *window, const char *searchString, 
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-static bool replaceUsingRE(const char *searchStr, const char *replaceStr, const char *sourceStr, const int beginPos, char *destStr, const int maxDestLen, const int prevChar, const char *delimiters, const int defaultFlags) {
-
+static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
 	try {
 		regexp compiledRE(searchStr, defaultFlags);
-		compiledRE.ExecRE(sourceStr + beginPos, nullptr, false, prevChar, '\0', delimiters, sourceStr, nullptr);
+		compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
 		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
 		return false;
 	}
-}
-
-static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
-	return replaceUsingRE(searchStr, replaceStr, sourceStr.c_str(), beginPos, destStr, maxDestLen, prevChar, delimiters, defaultFlags);
 }
 
 /*

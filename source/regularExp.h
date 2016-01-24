@@ -109,6 +109,22 @@ public:
 	 * @param reverse    Backward search.
 	 */
 	bool execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
+	
+	
+
+	/**
+	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
+	 *
+	 * @param prog       Compiled regex
+	 * @param string     Text to search within
+	 * @param offset     Offset into the string to begin search
+ 	 * @param end_offset Offset into the string to end search
+	 * @param delimiters Word delimiters to use (NULL for default)
+	 * @param prev       Character immediately prior to 'string'.  Set to '\n' or '\0' if true beginning of text.
+	 * @param succ       Character immediately after 'end'.  Set to '\n' or '\0' if true beginning of text.	 
+	 * @param reverse    Backward search.
+	 */
+	bool execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse = false);	
 
 	/* Perform substitutions after a 'regexp' match. */
 	bool SubstituteRE(const char *source, char *dest, const int max) const;
