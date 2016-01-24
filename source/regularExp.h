@@ -75,7 +75,7 @@ public:
 	 * @param string  Text to search within
 	 * @param reverse Backward search.
 	 */
-	bool ExecRE(view::string_view string, bool reverse = false);
+	bool execute(view::string_view string, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
@@ -85,7 +85,7 @@ public:
 	 * @param offset  Offset into the string to begin search
 	 * @param reverse Backward search.
 	 */
-	bool ExecRE(view::string_view string, size_t offset, bool reverse = false);
+	bool execute(view::string_view string, size_t offset, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string.
@@ -96,7 +96,7 @@ public:
 	 * @param delimiters Word delimiters to use (NULL for default)
 	 * @param reverse    Backward search.
 	 */
-	bool ExecRE(view::string_view string, size_t offset, const char *delimiters, bool reverse = false);
+	bool execute(view::string_view string, size_t offset, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
@@ -108,7 +108,7 @@ public:
 	 * @param delimiters Word delimiters to use (NULL for default)
 	 * @param reverse    Backward search.
 	 */
-	bool ExecRE(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
+	bool execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
 
 	/* Perform substitutions after a 'regexp' match. */
 	bool SubstituteRE(const char *source, char *dest, const int max) const;

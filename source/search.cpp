@@ -4687,7 +4687,7 @@ static bool forwardRegexSearch(const char *string, const char *searchString, boo
 		regexp compiledRE(searchString, defaultFlags);
 
 		/* search from beginPos to end of string */
-		if (compiledRE.ExecRE(string, beginPos, delimiters, false)) {
+		if (compiledRE.execute(string, beginPos, delimiters, false)) {
 
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0]   - string;
@@ -4709,7 +4709,7 @@ static bool forwardRegexSearch(const char *string, const char *searchString, boo
 		}
 
 		/* search from the beginning of the string to beginPos */
-		if (compiledRE.ExecRE(string, 0, beginPos, delimiters, false)) {
+		if (compiledRE.execute(string, 0, beginPos, delimiters, false)) {
 			
 			*startPos = compiledRE.startp[0] - string;
 			*endPos = compiledRE.endp[0]     - string;
@@ -4766,7 +4766,7 @@ static bool backwardRegexSearch(const char *string, const char *searchString, bo
 
 		int length = strlen(string); /* sadly, this means scanning entire string */
 
-		if (compiledRE.ExecRE(string, beginPos, length, delimiters, true)) {
+		if (compiledRE.execute(string, beginPos, length, delimiters, true)) {
 
 			*startPos = compiledRE.startp[0] - string;
 			*endPos   = compiledRE.endp[0] - string;

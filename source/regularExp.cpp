@@ -2580,15 +2580,15 @@ static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
 
-bool regexp::ExecRE(view::string_view string, bool reverse) {
-	return ExecRE(string, 0, reverse);
+bool regexp::execute(view::string_view string, bool reverse) {
+	return execute(string, 0, reverse);
 }
 
-bool regexp::ExecRE(view::string_view string, size_t offset, bool reverse) {
-	return ExecRE(string, offset, nullptr, reverse);
+bool regexp::execute(view::string_view string, size_t offset, bool reverse) {
+	return execute(string, offset, nullptr, reverse);
 }
 
-bool regexp::ExecRE(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
+bool regexp::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
 	assert(offset <= string.size());
 	return ExecRE(
 		&string[offset], 
@@ -2601,7 +2601,7 @@ bool regexp::ExecRE(view::string_view string, size_t offset, const char *delimit
 		&string[string.size()]);
 }
 
-bool regexp::ExecRE(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
+bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
 	return ExecRE(
 		&string[offset], 

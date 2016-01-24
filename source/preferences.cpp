@@ -3263,7 +3263,7 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 		// NOTE(eteran): ignoring error?!
 	}
 	std::string primaryName = XmTextGetStringEx(fd->primaryW);
-	if (!compiledRE->ExecRE(primaryName)) {
+	if (!compiledRE->execute(primaryName)) {
 		XBell(XtDisplay(fd->shell), 0);
 		delete compiledRE;
 		return;
