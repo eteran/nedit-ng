@@ -2524,14 +2524,14 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void ReturnShellCommandOutput(WindowInfo *window, const char *outText, int status) {
+void ReturnShellCommandOutput(WindowInfo *window, const std::string &outText, int status) {
 	DataValue retVal;
 	macroCmdInfo *cmdData = (macroCmdInfo *)window->macroCmdData;
 
 	if(!cmdData)
 		return;
 	retVal.tag = STRING_TAG;
-	AllocNStringCpy(&retVal.val.str, outText);
+	AllocNStringCpy(&retVal.val.str, outText.c_str());
 	ModifyReturnedValue(cmdData->context, retVal);
 	ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
 	ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
