@@ -91,7 +91,7 @@ enum searchDirection { FORWARD, BACKWARD };
 static int loadTagsFile(const char *tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
-static int fakeRegExSearch(WindowInfo *window, const char *buffer, const char *searchString, int *startPos, int *endPos);
+static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
 static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
@@ -998,26 +998,16 @@ static void setTag(tag *t, const char *name, const char *file, int language, con
 ** line starting "^" and ending "$" delimiters. This routine translates them
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
-**
-** If in_buffer is not nullptr then it is searched instead of the window buffer.
-** In this case in_buffer should be an XtMalloc allocated buffer and the
-** caller is responsible for freeing it.
 */
-static int fakeRegExSearch(WindowInfo *window, const char *in_buffer, const char *searchString, int *startPos, int *endPos) {
+static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchString, int *startPos, int *endPos) {
 	int found, searchStartPos;
 	SearchDirection dir;
 	int ctagsMode;
 	char searchSubs[3 * MAXLINE + 3];
 	char *outPtr;
-	const char *fileString;
 	const char *inPtr;
 
-	if (in_buffer == nullptr) {
-		/* get the entire (sigh) text buffer from the text area widget */
-		fileString = window->buffer->BufAsString();
-	} else {
-		fileString = in_buffer;
-	}
+	view::string_view fileString = in_buffer;
 
 	/* determine search direction and start position */
 	if (*startPos != -1) { /* etags mode! */
@@ -1031,7 +1021,7 @@ static int fakeRegExSearch(WindowInfo *window, const char *in_buffer, const char
 	} else if (searchString[0] == '?') {
 		dir = SEARCH_BACKWARD;
 		/* searchStartPos = window->buffer->length; */
-		searchStartPos = strlen(fileString);
+		searchStartPos = fileString.size();
 		ctagsMode = 1;
 	} else {
 		fprintf(stderr, "NEdit: Error parsing tag file search string");
@@ -1358,7 +1348,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 		}
 	} else {
 		startPos = tagPosInf[i];
-		if (!fakeRegExSearch(WidgetToWindow(parent), fileString, tagSearch[i], &startPos, &endPos)) {
+		if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
 			DialogF(DF_WARN, parent, 1, "Tag not found", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
 			XtFree(fileString);
 			return;
@@ -1431,7 +1421,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	}
 
 	/* search for the tags file search string in the newly opened file */
-	if (!fakeRegExSearch(windowToSearch, nullptr, tagSearch[i], &startPos, &endPos)) {
+	if (!fakeRegExSearchEx(windowToSearch->buffer->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
 		DialogF(DF_WARN, windowToSearch->shell, 1, "Tag Error", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
 		return;
 	}

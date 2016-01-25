@@ -338,9 +338,10 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 ** Complete a block text drag operation
 */
 void FinishBlockDrag(TextWidget tw) {
-	dragEndCBStruct endStruct;
-	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
-	char *deletedText;
+	
+	int modRangeStart = -1;
+	int origModRangeEnd;
+	int bufModRangeEnd;
 
 	/* Find the changed region of the buffer, covering both the deletion
 	   of the selected text at the drag start position, and insertion at
@@ -349,7 +350,7 @@ void FinishBlockDrag(TextWidget tw) {
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, tw->text.dragInsertPos, tw->text.dragInserted, tw->text.dragDeleted);
 
 	/* Get the original (pre-modified) range of text from saved backup buffer */
-	deletedText = tw->text.dragOrigBuf->BufGetRange(modRangeStart, origModRangeEnd);
+	view::string_view deletedText = tw->text.dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
 
 	/* Free the backup buffer */
 	delete tw->text.dragOrigBuf;
@@ -358,17 +359,13 @@ void FinishBlockDrag(TextWidget tw) {
 	tw->text.dragState = NOT_CLICKED;
 
 	/* Call finish-drag calback */
-	endStruct.startPos = modRangeStart;
-	endStruct.nCharsDeleted = origModRangeEnd - modRangeStart;
-	endStruct.nCharsInserted = bufModRangeEnd - modRangeStart;
-	endStruct.deletedText = deletedText;
+	dragEndCBStruct endStruct;
+	endStruct.startPos       = modRangeStart;
+	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
+	endStruct.nCharsInserted = bufModRangeEnd  - modRangeStart;
+	endStruct.deletedText    = deletedText;
 
-	// TODO(eteran): figure out the best way to have endStruct.deletedtext
-	//               not need a copy of the string, while still being able
-	//               to use std::string here
-
-	XtCallCallbacks((Widget)tw, textNdragEndCallback, (XtPointer)&endStruct);
-	XtFree(deletedText);
+	XtCallCallbacks((Widget)tw, textNdragEndCallback, &endStruct);
 }
 
 /*
@@ -379,8 +376,6 @@ void CancelBlockDrag(TextWidget tw) {
 	TextBuffer *origBuf = tw->text.dragOrigBuf;
 	TextSelection *origSel = &origBuf->primary_;
 	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
-
-	dragEndCBStruct endStruct;
 
 	/* If the operation was a move, make the modify range reflect the
 	   removal of the text from the starting position */
@@ -411,11 +406,11 @@ void CancelBlockDrag(TextWidget tw) {
 	tw->text.dragState = DRAG_CANCELED;
 
 	/* Call finish-drag calback */
-	endStruct.startPos = 0;
-	endStruct.nCharsDeleted = 0;
+	dragEndCBStruct endStruct;	
+	endStruct.startPos       = 0;
+	endStruct.nCharsDeleted  = 0;
 	endStruct.nCharsInserted = 0;
-	endStruct.deletedText = nullptr;
-	XtCallCallbacks((Widget)tw, textNdragEndCallback, (XtPointer)&endStruct);
+	XtCallCallbacks((Widget)tw, textNdragEndCallback, &endStruct);
 }
 
 /*

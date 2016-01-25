@@ -633,8 +633,8 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 
 	/* Return the contents of the secondary selection.  The memory allocated
 	   here is freed by the X toolkit */
-	*type = XA_STRING;
-	*value = buf->BufGetSecSelectText();
+	*type   = XA_STRING;
+	*value  = buf->BufGetSecSelectText();
 	*length = strlen((char *)*value);
 	*format = 8;
 	buf->BufUnsubstituteNullChars((char *)*value);
