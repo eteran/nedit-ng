@@ -1783,7 +1783,7 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** part of screen if "any" argument is given
 */
 static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	char *selText;
+	std::string selText;
 
 	/* Read argument list to check for "any" keyword, and get the appropriate
 	   selection */
@@ -1794,18 +1794,15 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 			*errMsg = "Unrecognized argument to %s";
 			return False;
 		}
-		selText = GetAnySelection(window);
-		if(!selText)
-			selText = XtNewStringEx("");
+		selText = GetAnySelectionEx(window);
 	} else {
-		selText = window->buffer->BufGetSelectionText();
-		window->buffer->BufUnsubstituteNullChars(selText);
+		selText = window->buffer->BufGetSelectionTextEx();
+		window->buffer->BufUnsubstituteNullCharsEx(selText);
 	}
 
 	/* Return the text as an allocated string */
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, selText);
-	XtFree(selText);
+	AllocNStringCpy(&result->val.str, selText.c_str());
 	return True;
 }
 
