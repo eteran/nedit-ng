@@ -91,8 +91,8 @@ struct shellCmdInfo {
 	XtInputId stdinInputID, stdoutInputID, stderrInputID;
 	std::list<bufElem *> outBufs;
 	std::list<bufElem *> errBufs;
-	char *input;
-	char *inPtr;
+	const char *input;
+	const char *inPtr;
 	Widget textW;
 	int leftPos, rightPos;
 	int inLength;
@@ -396,7 +396,7 @@ void DoShellMenuCmd(WindowInfo *window, const char *command, int input, int outp
 ** Cancel the shell command in progress
 */
 void AbortShellCommand(WindowInfo *window) {
-	if(shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData) {
+	if(auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData)) {
 		kill(-cmdData->childPid, SIGTERM);
 		finishCmdExecution(window, True);
 	}
@@ -521,8 +521,8 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = static_cast<WindowInfo *>(clientData);
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto window = static_cast<WindowInfo *>(clientData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nRead;
 
 	/* read from the process' stdout stream */
@@ -565,8 +565,8 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = static_cast<WindowInfo *>(clientData);
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto window = static_cast<WindowInfo *>(clientData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nRead;
 
 	/* read from the process' stderr stream */
@@ -608,8 +608,8 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	WindowInfo *window = static_cast<WindowInfo *>(clientData);
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto window = static_cast<WindowInfo *>(clientData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nWritten;
 
 	nWritten = write(cmdData->stdinFD, cmdData->inPtr, cmdData->inLength);
@@ -646,8 +646,8 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	WindowInfo *window = static_cast<WindowInfo *>(clientData);
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto window = static_cast<WindowInfo *>(clientData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	XmString xmCancel;	
 	char message[MAX_TIMEOUT_MSG_LEN];
 
@@ -696,8 +696,8 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	WindowInfo *window = static_cast<WindowInfo *>(clientData);
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto window  = static_cast<WindowInfo *>(clientData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 	int len;
 	char *outText;
@@ -730,7 +730,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** user interface state.
 */
 static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
-	shellCmdInfo *cmdData = (shellCmdInfo *)window->shellCmdData;
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart, outTextLen, errTextLen;
 	int resp, cancel = False, fromMacro = cmdData->fromMacro;
@@ -752,7 +752,7 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 		close(cmdData->stdinFD);
 
 	/* Free the provided input text */
-	XtFree(cmdData->input);
+	XtFree((char *)cmdData->input);
 
 	/* Cancel pending timeouts */
 	if (cmdData->flushTimeoutID != 0)
