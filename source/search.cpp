@@ -147,7 +147,6 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
 static void collectWritableWindows(WindowInfo *window);
-static void downCaseString(char *outString, const char *inString);
 static void eraseFlash(WindowInfo *window);
 static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -182,7 +181,6 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
 static void unmanageReplaceDialogs(const WindowInfo *window);
-static void upCaseString(char *outString, const char *inString);
 static void uploadFileListItems(WindowInfo *window, Bool replace);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
@@ -4529,72 +4527,78 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 	//               also, I'd love to have a nice clean way of replacing this macro
 	//               with a lambda or similar
 
-/* This is critical code for the speed of searches.			    */
-/* For efficiency, we define the macro DOSEARCH with the guts of the search */
-/* routine and repeat it, changing the parameters of the outer loop for the */
-/* searching, forwards, backwards, and before and after the begin point	    */
-#define DOSEARCHWORD()                                                                                                                                                                                                                         \
-	if (*filePtr == *ucString || *filePtr == *lcString) {                                                                                                                                                                                      \
-		/* matched first character */                                                                                                                                                                                                          \
-		ucPtr = ucString;                                                                                                                                                                                                                      \
-		lcPtr = lcString;                                                                                                                                                                                                                      \
-		tempPtr = filePtr;                                                                                                                                                                                                                     \
-		while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {                                                                                                                                                                                     \
-			tempPtr++;                                                                                                                                                                                                                         \
-			ucPtr++;                                                                                                                                                                                                                           \
-			lcPtr++;                                                                                                                                                                                                                           \
-			if (*ucPtr == 0                                                                        /* matched whole string */                                                                                                                  \
-			    && (cignore_R || isspace((unsigned char)*tempPtr) || strchr(delimiters, *tempPtr)) /* next char right delimits word ? */                                                                                                       \
-			    && (cignore_L || filePtr == &string[0] ||                                              /* border case */                                                                                                                           \
-			        isspace((unsigned char)filePtr[-1]) || strchr(delimiters, filePtr[-1]))) /* next char left delimits word ? */ {                                                                                                            \
-				*startPos = filePtr - &string[0];                                                                                                                                                                                                  \
-				*endPos = tempPtr - &string[0];                                                                                                                                                                                                    \
-				return TRUE;                                                                                                                                                                                                                   \
-			}                                                                                                                                                                                                                                  \
-		}                                                                                                                                                                                                                                      \
-	}
+	std::string lcString;
+	std::string ucString;
+	bool cignore_L = false;
+	bool cignore_R = false;
 
-	const char *filePtr, *tempPtr, *ucPtr, *lcPtr;
-	char lcString[SEARCHMAX], ucString[SEARCHMAX];
+	auto DOSEARCHWORD2 = [&](const char *filePtr) {
+		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
+			/* matched first character */
+			auto ucPtr = ucString.begin();
+			auto lcPtr = lcString.begin();
+			const char *tempPtr = filePtr;
+			while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
+				tempPtr++;
+				ucPtr++;
+				lcPtr++;
+				if (ucPtr == ucString.end()                                                            /* matched whole string */
+			    	&& (cignore_R || isspace((unsigned char)*tempPtr) || strchr(delimiters, *tempPtr)) /* next char right delimits word ? */
+			    	&& (cignore_L || filePtr == &string[0] ||                                          /* border case */
+			        	isspace((unsigned char)filePtr[-1]) || strchr(delimiters, filePtr[-1])))       /* next char left delimits word ? */ {
+					*startPos = filePtr - &string[0];
+					*endPos = tempPtr - &string[0];
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	};
 
-	int cignore_L = 0, cignore_R = 0;
 
 	/* SEARCHMAX was fine in the original NEdit, but it should be done away
 	   with now that searching can be done from macros without limits.
 	   Returning search failure here is cheating users.  This limit is not
 	   documented. */
 	if (strlen(searchString) >= SEARCHMAX)
-		return FALSE;
+		return false;
 
 	/* If there is no language mode, we use the default list of delimiters */
 	if(!delimiters)
 		delimiters = GetPrefDelimiters();
 
-	if (isspace((unsigned char)*searchString) || strchr(delimiters, *searchString))
-		cignore_L = 1;
+	if (isspace((unsigned char)*searchString) || strchr(delimiters, *searchString)) {
+		cignore_L = true;
+	}
 
-	if (isspace((unsigned char)searchString[strlen(searchString) - 1]) || strchr(delimiters, searchString[strlen(searchString) - 1]))
-		cignore_R = 1;
+	if (isspace((unsigned char)searchString[strlen(searchString) - 1]) || strchr(delimiters, searchString[strlen(searchString) - 1])) {
+		cignore_R = true;
+	}
 
 	if (caseSense) {
-		strcpy(ucString, searchString);
-		strcpy(lcString, searchString);
+		ucString = searchString;
+		lcString = searchString;
 	} else {
-		upCaseString(ucString, searchString);
-		downCaseString(lcString, searchString);
+		ucString = upCaseStringEx(searchString);
+		lcString = downCaseStringEx(searchString);
 	}
 
 	if (direction == SEARCH_FORWARD) {
 		/* search from beginPos to end of string */
-		for (filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
-			DOSEARCHWORD()
+		for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
+			if(DOSEARCHWORD2(filePtr)) {
+				return true;
+			}
 		}
 		if (!wrap)
 			return FALSE;
 
 		/* search from start of file to beginPos */
-		for (filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
-			DOSEARCHWORD()
+		for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
+			if(DOSEARCHWORD2(filePtr)) {
+				return true;
+			}
 		}
 		return FALSE;
 	} else {
@@ -4602,8 +4606,10 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 		/* search from beginPos to start of file. A negative begin pos */
 		/* says begin searching from the far end of the file */
 		if (beginPos >= 0) {
-			for (filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
-				DOSEARCHWORD()
+			for (auto filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
+				if(DOSEARCHWORD2(filePtr)) {
+					return true;
+				}
 			}
 		}
 		if (!wrap)
@@ -4611,8 +4617,10 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 		/* search from end of file to beginPos */
 		/*... this strlen call is extreme inefficiency, but it's not obvious */
 		/* how to get the text string length from the text widget (under 1.1)*/
-		for (filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
-			DOSEARCHWORD()
+		for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
+			if(DOSEARCHWORD2(filePtr)) {
+				return true;
+			}
 		}
 		return FALSE;
 	}
@@ -4630,7 +4638,7 @@ static bool searchLiteral(view::string_view string, const char *searchString, in
 			auto ucPtr   = ucString.begin();
 			auto lcPtr   = lcString.begin();
 			const char *tempPtr = filePtr;
-			
+
 			while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
 				tempPtr++;
 				ucPtr++;
@@ -4642,7 +4650,7 @@ static bool searchLiteral(view::string_view string, const char *searchString, in
 					if(searchExtentBW) {
 						*searchExtentBW = *startPos;
 					}
-					
+
 					if(searchExtentFW) {
 						*searchExtentFW = *endPos;
 					}
@@ -4839,26 +4847,6 @@ static bool backwardRegexSearch(view::string_view string, const char *searchStri
 		// NOTE(eteran): ignoring error!
 		return false;
 	}
-}
-
-static void upCaseString(char *outString, const char *inString) {
-	char *outPtr;
-	const char *inPtr;
-
-	for (outPtr = outString, inPtr = inString; *inPtr != 0; inPtr++, outPtr++) {
-		*outPtr = toupper((unsigned char)*inPtr);
-	}
-	*outPtr = '\0';
-}
-
-static void downCaseString(char *outString, const char *inString) {
-	char *outPtr;
-	const char *inPtr;
-
-	for (outPtr = outString, inPtr = inString; *inPtr != 0; inPtr++, outPtr++) {
-		*outPtr = tolower((unsigned char)*inPtr);
-	}
-	*outPtr = '\0';
 }
 
 static std::string upCaseStringEx(view::string_view inString) {
