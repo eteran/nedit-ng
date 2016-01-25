@@ -4557,13 +4557,6 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 	};
 
 
-	/* SEARCHMAX was fine in the original NEdit, but it should be done away
-	   with now that searching can be done from macros without limits.
-	   Returning search failure here is cheating users.  This limit is not
-	   documented. */
-	if (strlen(searchString) >= SEARCHMAX)
-		return false;
-
 	/* If there is no language mode, we use the default list of delimiters */
 	if(!delimiters)
 		delimiters = GetPrefDelimiters();
