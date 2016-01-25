@@ -219,7 +219,6 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 void StartHighlighting(WindowInfo *window, int warn) {
 	patternSet *patterns;
 	windowHighlightData *highlightData;
-	const char *bufString;
 	char prevChar = '\0';
 	int i, oldFontHeight;
 
@@ -248,7 +247,8 @@ void StartHighlighting(WindowInfo *window, int warn) {
 		for (i = 0; i < window->buffer->BufGetLength(); i++)
 			*stylePtr++ = UNFINISHED_STYLE;
 	} else {
-		const char *stringPtr = bufString = window->buffer->BufAsString();
+		const char *bufString = window->buffer->BufAsString();
+		const char *stringPtr = bufString;		
 		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
 	}
 	*stylePtr = '\0';

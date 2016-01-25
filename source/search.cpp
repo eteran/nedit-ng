@@ -142,8 +142,8 @@ static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char 
 static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
-static bool searchLiteral(view::string_view string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static bool searchLiteralWord(view::string_view string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static bool searchLiteral(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
+static bool searchLiteralWord(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
 static void collectWritableWindows(WindowInfo *window);
@@ -4387,7 +4387,7 @@ bool SearchWindow(WindowInfo *window, SearchDirection direction, const char *sea
 		return false;
 
 	/* get the entire text buffer from the text area widget */
-	const char *fileString = window->buffer->BufAsString();
+	view::string_view fileString = window->buffer->BufAsStringEx();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -4471,13 +4471,13 @@ bool SearchWindow(WindowInfo *window, SearchDirection direction, const char *sea
 bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, int searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
-		return searchLiteralWord(string, searchString, TRUE, direction, wrap, beginPos, startPos, endPos, delimiters);
+		return searchLiteralWord(string, searchString, true, direction, wrap, beginPos, startPos, endPos, delimiters);
 	case SEARCH_LITERAL_WORD:
-		return searchLiteralWord(string, searchString, FALSE, direction, wrap, beginPos, startPos, endPos, delimiters);
+		return searchLiteralWord(string, searchString, false, direction, wrap, beginPos, startPos, endPos, delimiters);
 	case SEARCH_CASE_SENSE:
-		return searchLiteral(string, searchString, TRUE, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+		return searchLiteral(string, searchString, true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
 	case SEARCH_LITERAL:
-		return searchLiteral(string, searchString, FALSE, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+		return searchLiteral(string, searchString, false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
 	case SEARCH_REGEX:
 		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
 	case SEARCH_REGEX_NOCASE:
@@ -4520,7 +4520,7 @@ int StringToSearchType(const char *string, int *searchType) {
 **  will suffice in that case.
 **
 */
-static bool searchLiteralWord(view::string_view string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
+static bool searchLiteralWord(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 
 
 	// TODO(eteran): rework this code in terms of iterators, it will be more clean
@@ -4619,7 +4619,7 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 	}
 }
 
-static bool searchLiteral(view::string_view string, const char *searchString, int caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
+static bool searchLiteral(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
 
 
 	std::string lcString;
