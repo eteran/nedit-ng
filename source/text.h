@@ -138,7 +138,6 @@ struct smartIndentCBStruct {
 /* User callable routines */
 
 XtActionsRec *TextGetActions(int *nActions);
-char *TextGetWrapped(Widget w, int startPos, int endPos, int *length);
 int TextFirstVisibleLine(Widget w);
 int TextFirstVisiblePos(Widget w);
 int TextGetCursorPos(Widget w);

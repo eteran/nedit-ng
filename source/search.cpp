@@ -3378,7 +3378,6 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 	(void)nArg;
 
 	WindowInfo *window;
-	char *selText;
 	XmAnyCallbackStruct cbdata;
 
 	memset(&cbdata, 0, sizeof(cbdata));
@@ -3386,7 +3385,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 
 	window = WidgetToWindow(w);
 
-	selText = GetAnySelection(window);
+	char *selText = GetAnySelection(window);
 	iSearchTextSetString(w, window, selText);
 	if (selText) {
 		XmTextSetInsertionPosition(window->iSearchText, strlen(selText));

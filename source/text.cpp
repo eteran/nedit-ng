@@ -35,6 +35,7 @@
 #include "calltips.h"
 #include "../util/DialogF.h"
 #include "window.h"
+#include "../util/memory.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -1266,53 +1267,6 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 	}
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
-}
-
-/*
-** Fetch text from the widget's buffer, adding wrapping newlines to emulate
-** effect acheived by wrapping in the text display in continuous wrap mode.
-*/
-char *TextGetWrapped(Widget w, int startPos, int endPos, int *outLen) {
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = textD->buffer;
-	int fromPos, toPos, outPos;
-	char c, *outString;
-
-	if (!reinterpret_cast<TextWidget>(w)->text.continuousWrap || startPos == endPos) {
-		*outLen = endPos - startPos;
-		return buf->BufGetRange(startPos, endPos);
-	}
-
-	/* Create a text buffer with a good estimate of the size that adding
-	   newlines will expand it to.  Since it's a text buffer, if we guess
-	   wrong, it will fail softly, and simply expand the size */
-	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
-	outPos = 0;
-
-	/* Go (displayed) line by line through the buffer, adding newlines where
-	   the text is wrapped at some character other than an existing newline */
-	fromPos = startPos;
-	toPos = TextDCountForwardNLines(textD, startPos, 1, False);
-	while (toPos < endPos) {
-		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
-		outPos += toPos - fromPos;
-		c = outBuf->BufGetCharacter(outPos - 1);
-		if (c == ' ' || c == '\t')
-			outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
-		else if (c != '\n') {
-			outBuf->BufInsertEx(outPos, "\n");
-			outPos++;
-		}
-		fromPos = toPos;
-		toPos = TextDCountForwardNLines(textD, fromPos, 1, True);
-	}
-	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
-
-	/* return the contents of the output buffer as a string */
-	outString = outBuf->BufGetAll();
-	*outLen = outBuf->BufGetLength();
-	delete outBuf;
-	return outString;
 }
 
 /*
@@ -3626,7 +3580,8 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 	int startLineLen = startLine.size();
 	int colNum, pos, lineStartPos, limitPos, breakAt, charsAdded;
 	int firstBreak = -1, tabDist = buf->tabDist_;
-	char c, *wrappedText;
+	char c;
+	std::string wrappedText;
 
 	/* Create a temporary text buffer and load it with the strings */
 	auto wrapBuf = new TextBuffer;
@@ -3664,11 +3619,11 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 	}
 
 	/* Return the wrapped text, possibly including part of startLine */
-	if(!breakBefore)
-		wrappedText = wrapBuf->BufGetRange(startLineLen, wrapBuf->BufGetLength());
-	else {
+	if(!breakBefore) {
+		wrappedText = wrapBuf->BufGetRangeEx(startLineLen, wrapBuf->BufGetLength());
+	} else {
 		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
-		wrappedText = wrapBuf->BufGetRange(startLineLen - *breakBefore, wrapBuf->BufGetLength());
+		wrappedText = wrapBuf->BufGetRangeEx(startLineLen - *breakBefore, wrapBuf->BufGetLength());
 	}
 	delete wrapBuf;
 	return wrappedText;

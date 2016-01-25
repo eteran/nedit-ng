@@ -32,6 +32,7 @@
 #include "nedit.h"
 #include "WindowInfo.h"
 #include "window.h"
+#include "memory.h"
 
 #include <cstring>
 #include <climits>
@@ -46,7 +47,10 @@ static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int 
 static int atTabStop(int pos, int tabDist);
 static int countLines(const char *text);
 static int countLinesEx(view::string_view text);
-static int findLeftMargin(char *text, int length, int tabDist);
+
+template <class In>
+static int findLeftMarginEx(In first, In last, int length, int tabDist);
+
 static int findParagraphEnd(TextBuffer *buf, int startPos);
 static int findParagraphStart(TextBuffer *buf, int startPos);
 static int nextTab(int pos, int tabDist);
@@ -521,30 +525,40 @@ static int countLinesEx(view::string_view text) {
 ** null character at the end of the string, or "length" characters, whever
 ** comes first.
 */
-static int findLeftMargin(char *text, int length, int tabDist) {
-	char *c;
-	int col = 0, leftMargin = INT_MAX;
-	int inMargin = True;
+template <class In>
+static int findLeftMarginEx(In first, In last, int length, int tabDist) {
 
-	for (c = text; *c != '\0' && c - text < length; c++) {
-		if (*c == '\t') {
+	int col        = 0;
+	int leftMargin = INT_MAX;
+	bool inMargin  = true;
+
+	for (auto it = first; it != last && length--; ++it) {
+	
+		switch(*it) {
+		case '\t':
 			col += TextBuffer::BufCharWidth('\t', col, tabDist, '\0');
-		} else if (*c == ' ') {
+			break;
+		case ' ':
 			col++;
-		} else if (*c == '\n') {
+			break;
+		case '\n':
 			col = 0;
-			inMargin = True;
-		} else {
+			inMargin = true;
+			break;
+		default:
 			/* non-whitespace */
-			if (col < leftMargin && inMargin)
+			if (col < leftMargin && inMargin) {
 				leftMargin = col;
-			inMargin = False;
+			}
+			inMargin = false;
+			break;						
 		}
 	}
 
 	/* if no non-white text is found, the leftMargin will never be set */
-	if (leftMargin == INT_MAX)
+	if (leftMargin == INT_MAX) {
 		return 0;
+	}
 
 	return leftMargin;
 }
@@ -557,14 +571,8 @@ static int findLeftMargin(char *text, int length, int tabDist) {
 ** previous versions which did all paragraphs together).
 */
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
-	int paraStart, paraEnd, fillEnd;
-	char *c;
+	int paraEnd, fillEnd;
 	char ch;
-	char *secondLineStart;
-	char *paraText;
-	int firstLineLen;
-	int firstLineIndent;
-	int leftMargin;
 	int len;
 
 	/* Create a buffer to accumulate the filled paragraphs */
@@ -575,7 +583,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	** Loop over paragraphs, filling each one, and accumulating the results
 	** in buf
 	*/
-	paraStart = 0;
+	int paraStart = 0;
 	for (;;) {
 
 		/* Skip over white space */
@@ -585,8 +593,10 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 				break;
 			paraStart++;
 		}
-		if (paraStart >= buf->BufGetLength())
+		if (paraStart >= buf->BufGetLength()) {
 			break;
+		}
+		
 		paraStart = buf->BufStartOfLine(paraStart);
 
 		/* Find the end of the paragraph */
@@ -599,17 +609,16 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
-		paraText = buf->BufGetRange(paraStart, fillEnd);
+		std::string paraText = buf->BufGetRangeEx(paraStart, fillEnd);
 
 		/* Find separate left margins for the first and for the first line of
 		   the paragraph, and for rest of the remainder of the paragraph */
-		for (c = paraText; *c != '\0' && *c != '\n'; c++)
-			;
-
-		firstLineLen    = c - paraText;
-		secondLineStart = *c == '\0' ? paraText : c + 1;
-		firstLineIndent = findLeftMargin(paraText, firstLineLen, tabDist);
-		leftMargin      = findLeftMargin(secondLineStart, paraEnd - paraStart - (secondLineStart - paraText), tabDist);
+		auto it = std::find(paraText.begin(), paraText.end(), '\n');
+		
+		int firstLineLen     = std::distance(paraText.begin(), it);
+		auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
+		int firstLineIndent  = findLeftMarginEx(paraText.begin(), paraText.end(), firstLineLen, tabDist);
+		int leftMargin       = findLeftMarginEx(secondLineStart,  paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
 
 		/* Fill the paragraph */
 		std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar, &len);

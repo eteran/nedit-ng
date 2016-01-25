@@ -1710,9 +1710,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	if (to > buf->BufGetLength())
 		to = buf->BufGetLength();
 	if (from > to) {
-		int temp = from;
-		from = to;
-		to = temp;
+		std::swap(from, to);
 	}
 
 	/* Don't allow modifications if the window is read-only */
