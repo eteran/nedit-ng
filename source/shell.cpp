@@ -462,8 +462,9 @@ static void issueCommand(WindowInfo *window, const std::string &command, const c
 	}
 
 	/* if there's nothing to write to the process' stdin, close it now */
-	if(!input)
+	if(!input) {
 		close(stdinFD);
+	}
 
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */
@@ -484,32 +485,38 @@ static void issueCommand(WindowInfo *window, const std::string &command, const c
 	cmdData->inLength    = inputLen;
 
 	/* Set up timer proc for putting up banner when process takes too long */
-	if (fromMacro)
+	if (fromMacro) {
 		cmdData->bannerTimeoutID = 0;
-	else
+	} else {
 		cmdData->bannerTimeoutID = XtAppAddTimeOut(context, BANNER_WAIT_TIME, bannerTimeoutProc, window);
+	}
 
 	/* Set up timer proc for flushing output buffers periodically */
-	if ((flags & ACCUMULATE) || textW == nullptr)
+	if ((flags & ACCUMULATE) || !textW) {
 		cmdData->flushTimeoutID = 0;
-	else
+	} else {
 		cmdData->flushTimeoutID = XtAppAddTimeOut(context, OUTPUT_FLUSH_FREQ, flushTimeoutProc, window);
+	}
 
 	/* set up callbacks for activity on the file descriptors */
 	cmdData->stdoutInputID = XtAppAddInput(context, stdoutFD, (XtPointer)XtInputReadMask, stdoutReadProc, window);
-	if(input)
+	if(input) {
 		cmdData->stdinInputID = XtAppAddInput(context, stdinFD, (XtPointer)XtInputWriteMask, stdinWriteProc, window);
-	else
+	} else {
 		cmdData->stdinInputID = 0;
-	if (flags & ERROR_DIALOGS)
+	}
+	
+	if (flags & ERROR_DIALOGS) {
 		cmdData->stderrInputID = XtAppAddInput(context, stderrFD, (XtPointer)XtInputReadMask, stderrReadProc, window);
-	else
+	} else {
 		cmdData->stderrInputID = 0;
+	}
 
 	/* If this was called from a macro, preempt the macro untill shell
 	   command completes */
-	if (fromMacro)
+	if (fromMacro) {
 		PreemptMacro();
+	}
 }
 
 /*

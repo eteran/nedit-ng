@@ -3354,7 +3354,7 @@ void SetISearchTextCallbacks(WindowInfo *window) {
 ** Remove callbacks before resetting the incremental search text to avoid any
 ** cursor movement and/or clearing of selections.
 */
-static void iSearchTextSetString(Widget w, WindowInfo *window, char *str) {
+static void iSearchTextSetString(Widget w, WindowInfo *window, const char *str) {
 
 	(void)w;
 
@@ -3362,7 +3362,7 @@ static void iSearchTextSetString(Widget w, WindowInfo *window, char *str) {
 	XtRemoveAllCallbacks(window->iSearchText, XmNvalueChangedCallback);
 	XtRemoveAllCallbacks(window->iSearchText, XmNactivateCallback);
 	/* empty the text */
-	XmTextSetStringEx(window->iSearchText, str ? str : (String) "");
+	XmTextSetStringEx(window->iSearchText, str ? str : "");
 	/* put back the callbacks */
 	XtAddCallback(window->iSearchText, XmNactivateCallback, iSearchTextActivateCB, window);
 	XtAddCallback(window->iSearchText, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
@@ -3377,13 +3377,11 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 	(void)args;
 	(void)nArg;
 
-	WindowInfo *window;
 	XmAnyCallbackStruct cbdata;
-
 	memset(&cbdata, 0, sizeof(cbdata));
 	cbdata.event = event;
 
-	window = WidgetToWindow(w);
+	WindowInfo *window = WidgetToWindow(w);
 
 	char *selText = GetAnySelection(window);
 	iSearchTextSetString(w, window, selText);
@@ -3408,7 +3406,7 @@ static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_da
 
 	window = WidgetToWindow(w);
 
-	iSearchTextSetString(w, window, nullptr);
+	iSearchTextSetString(w, window, "");
 }
 
 /*

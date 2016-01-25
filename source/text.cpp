@@ -1968,7 +1968,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		smartIndent.pos = TextDGetInsertPosition(textD);
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped = args[0];
-		XtCallCallbacks(w, textNsmartIndentCallback, (XtPointer)&smartIndent);
+		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	TextInsertAtCursorEx(w, args[0], event, True, True);
 	(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
@@ -2009,11 +2009,11 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	/* If smart indent is on, call the smart indent callback to check the
 	   inserted character */
 	if (reinterpret_cast<TextWidget>(w)->text.smartIndent) {
-		smartIndent.reason = CHAR_TYPED;
-		smartIndent.pos = TextDGetInsertPosition(textD);
+		smartIndent.reason        = CHAR_TYPED;
+		smartIndent.pos           = TextDGetInsertPosition(textD);
 		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped = chars;
-		XtCallCallbacks(w, textNsmartIndentCallback, (XtPointer)&smartIndent);
+		smartIndent.charsTyped    = chars;
+		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	TextInsertAtCursorEx(w, chars, event, True, True);
 	textD->buffer->BufUnselect();
@@ -3710,7 +3710,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 		smartIndent.pos = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped = nullptr;
-		XtCallCallbacks((Widget)tw, textNsmartIndentCallback, (XtPointer)&smartIndent);
+		XtCallCallbacks((Widget)tw, textNsmartIndentCallback, &smartIndent);
 		indent = smartIndent.indentRequest;
 	}
 
