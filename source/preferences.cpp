@@ -1105,7 +1105,6 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 		LoadShellCmdsStringEx(*TempStringPrefs.shellCmds);
 		TempStringPrefs.shellCmds = nullable_string();
 	}
-
 	if (TempStringPrefs.macroCmds) {
 		LoadMacroCmdsStringEx(*TempStringPrefs.macroCmds);
 		TempStringPrefs.macroCmds = nullable_string();

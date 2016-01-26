@@ -44,6 +44,10 @@
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
 static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);
+
+static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars);
+static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars);
+
 static int atTabStop(int pos, int tabDist);
 static int countLines(const char *text);
 static int countLinesEx(view::string_view text);
@@ -360,18 +364,12 @@ std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, 
 		if (textPtr == text.end() || *textPtr == '\n') {
 		
 			// TODO(eteran): avoid the string copy... wish we had string_view!
-			std::string segment(lineStartPtr, text.end());
+			auto segment = view::substr(lineStartPtr, text.end());
 			
-			char *shiftedLine = (direction == SHIFT_RIGHT) ? 
-				shiftLineRight(segment.c_str(), textPtr - lineStartPtr, tabsAllowed, tabDist, nChars): 
-				shiftLineLeft (segment.c_str(), textPtr - lineStartPtr, 			 tabDist, nChars);
-				
-		
-			// TODO(eteran): avoid the string copy... wish we had string_view!
-			std::string shiftedLineString = shiftedLine;
-			
-			XtFree(shiftedLine);
-			
+			std::string shiftedLineString = (direction == SHIFT_RIGHT) ? 
+				shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars): 
+				shiftLineLeftEx (segment, textPtr - lineStartPtr, 			   tabDist, nChars);
+							
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
 			if (textPtr == text.end()) {
@@ -400,7 +398,7 @@ static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int 
 	lineOut = XtMalloc(lineLen + nChars + 1);
 	lineOutPtr = lineOut;
 	whiteWidth = 0;
-	while (TRUE) {
+	while (true) {
 		if (*lineInPtr == '\0' || (lineInPtr - line) >= lineLen) {
 			/* nothing on line, wipe it out */
 			*lineOut = '\0';
@@ -433,6 +431,53 @@ static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int 
 	}
 }
 
+
+static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
+	int whiteWidth, i;
+
+	auto lineInPtr = line.begin();
+	std::string lineOut;
+	lineOut.reserve(lineLen + nChars);
+
+	auto lineOutPtr = std::back_inserter(lineOut);
+	whiteWidth = 0;
+	while (true) {
+		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
+			/* nothing on line, wipe it out */
+			return lineOut;
+		} else if (*lineInPtr == ' ') {
+			/* white space continues with tab, advance to next tab stop */
+			whiteWidth++;
+			*lineOutPtr++ = *lineInPtr++;
+		} else if (*lineInPtr == '\t') {
+			/* white space continues with tab, advance to next tab stop */
+			whiteWidth = nextTab(whiteWidth, tabDist);
+			*lineOutPtr++ = *lineInPtr++;
+		} else {
+			/* end of white space, add nChars of space */
+			for (i = 0; i < nChars; i++) {
+				*lineOutPtr++ = ' ';
+				whiteWidth++;
+				/* if we're now at a tab stop, change last 8 spaces to a tab */
+				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
+				
+					lineOut.resize(lineOut.size() - tabDist);
+				
+					//lineOutPtr -= tabDist;
+					*lineOutPtr++ = '\t';
+				}
+			}
+			
+			/* move remainder of line */
+			while (lineInPtr != line.end() && (lineInPtr - line.begin()) < lineLen) {
+				*lineOutPtr++ = *lineInPtr++;
+			}
+
+			return lineOut;
+		}
+	}
+}
+
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars) {
 	char *lineOut;
 	int i, whiteWidth, lastWhiteWidth, whiteGoal;
@@ -444,7 +489,7 @@ static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChar
 	lineOutPtr = lineOut;
 	whiteWidth = 0;
 	lastWhiteWidth = 0;
-	while (TRUE) {
+	while (true) {
 		if (*lineInPtr == '\0' || (lineInPtr - line) >= lineLen) {
 			/* nothing on line, wipe it out */
 			*lineOut = '\0';
@@ -487,6 +532,18 @@ static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChar
 			return lineOut;
 		}
 	}
+}
+
+static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars) {
+
+
+	auto buffer = new char[line.size() + 1];
+	std::copy(line.begin(), line.end(), buffer);
+	buffer[line.size()] = '\0';
+	std::string r = shiftLineLeft(buffer, lineLen, tabDist, nChars);
+	delete [] buffer;
+	return r;
+	
 }
 
 static int atTabStop(int pos, int tabDist) {

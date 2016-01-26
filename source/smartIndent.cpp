@@ -130,6 +130,8 @@ static char *readSIMacro(const char **inPtr);
 static smartIndentRec *copyIndentSpec(smartIndentRec *is);
 static void freeIndentSpec(smartIndentRec *is);
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
+static int LoadSmartIndentCommonString(char *inString);
+static int LoadSmartIndentString(char *inString);
 
 #define N_DEFAULT_INDENT_SPECS 4
 static smartIndentRec DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
@@ -1256,9 +1258,10 @@ static int loadDefaultIndentSpec(const char *lmName) {
 	return False;
 }
 
-int LoadSmartIndentStringEx(const std::string &inString) {
-	auto buffer = new char[inString.size() + 1];
-	strcpy(buffer, inString.c_str());
+int LoadSmartIndentStringEx(view::string_view string) {
+	auto buffer = new char[string.size() + 1];
+	std::copy(string.begin(), string.end(), buffer);
+	buffer[string.size()] = '\0';
 	int r = LoadSmartIndentString(buffer);
 	delete [] buffer;
 	return r;
@@ -1347,9 +1350,11 @@ int LoadSmartIndentString(char *inString) {
 	}
 }
 
-int LoadSmartIndentCommonStringEx(const std::string &inString) {
-	auto buffer = new char[inString.size() + 1];
-	strcpy(buffer, inString.c_str());
+int LoadSmartIndentCommonStringEx(view::string_view string) {
+
+	auto buffer = new char[string.size() + 1];
+	std::copy(string.begin(), string.end(), buffer);
+	buffer[string.size()] = '\0';
 	int r = LoadSmartIndentCommonString(buffer);
 	delete [] buffer;
 	return r;
@@ -1437,33 +1442,6 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 	return ParseError(nullptr, stringStart, stoppedAt, "smart indent specification", message);
 }
 
-char *WriteSmartIndentString(void) {
-
-	auto outBuf = new TextBuffer;
-	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		smartIndentRec *sis = SmartIndentSpecs[i];
-		
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), sis->lmName);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (isDefaultIndentSpec(sis)) {
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n");
-		} else {
-			insertShiftedMacro(outBuf, (String)sis->initMacro);
-			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
-			insertShiftedMacro(outBuf, (String)sis->modMacro);
-		}
-	}
-
-	/* Get the output string, and lop off the trailing newline */
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() > 0 ? outBuf->BufGetLength() - 1 : 0);
-	delete outBuf;
-
-	/* Protect newlines and backslashes from translation by the resource
-	   reader */
-	return EscapeSensitiveChars(outStr.c_str());
-}
-
 std::string WriteSmartIndentStringEx(void) {
 
 	auto outBuf = new TextBuffer;
@@ -1489,30 +1467,6 @@ std::string WriteSmartIndentStringEx(void) {
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
 	return EscapeSensitiveCharsEx(outStr);
-}
-
-char *WriteSmartIndentCommonString(void) {
-	int len;
-	char *outStr, *escapedStr;
-
-	if (!strcmp(CommonMacros, DefaultCommonMacros))
-		return XtNewStringEx("Default");
-	if(!CommonMacros)
-		return XtNewStringEx("");
-
-	/* Shift the macro over by a tab to keep .nedit file bright and clean */
-	outStr = ShiftText(CommonMacros, SHIFT_RIGHT, True, 8, 8, &len);
-
-	/* Protect newlines and backslashes from translation by the resource
-	   reader */
-	escapedStr = EscapeSensitiveChars(outStr);
-	XtFree(outStr);
-
-	/* If there's a trailing escaped newline, remove it */
-	len = strlen(escapedStr);
-	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\')
-		escapedStr[len - 2] = '\0';
-	return escapedStr;
 }
 
 std::string WriteSmartIndentCommonStringEx(void) {
@@ -1546,13 +1500,11 @@ std::string WriteSmartIndentCommonStringEx(void) {
 ** boundary string.
 */
 static void insertShiftedMacro(TextBuffer *buf, char *macro) {
-	char *shiftedMacro;
 	int shiftedLen;
 
 	if (macro) {
-		shiftedMacro = ShiftText(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
+		std::string shiftedMacro = ShiftTextEx(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
 		buf->BufInsertEx(buf->BufGetLength(), shiftedMacro);
-		XtFree(shiftedMacro);
 	}
 	buf->BufInsertEx(buf->BufGetLength(), "\t");
 	buf->BufInsertEx(buf->BufGetLength(), MacroEndBoundary);

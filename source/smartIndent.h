@@ -32,13 +32,9 @@
 #include <X11/Intrinsic.h>
 
 Boolean InSmartIndentMacros(WindowInfo *window);
-char *WriteSmartIndentCommonString(void);
-char *WriteSmartIndentString(void);
 int LMHasSmartIndentMacros(const char *languageMode);
-int LoadSmartIndentCommonString(char *inString);
-int LoadSmartIndentString(char *inString);
-int LoadSmartIndentCommonStringEx(const std::string &inString);
-int LoadSmartIndentStringEx(const std::string &inString);
+int LoadSmartIndentCommonStringEx(view::string_view string);
+int LoadSmartIndentStringEx(view::string_view string);
 int SmartIndentMacrosAvailable(char *languageMode);
 std::string WriteSmartIndentCommonStringEx(void);
 std::string WriteSmartIndentStringEx(void);
