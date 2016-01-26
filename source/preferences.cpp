@@ -311,7 +311,7 @@ static struct {
 	nullable_string language;
 	nullable_string styles;
 	nullable_string smartIndent;
-	char *smartIndentCommon;
+	nullable_string smartIndentCommon;
 } TempStringPrefs;
 
 /* preference descriptions for SavePreferences and RestorePreferences. */
@@ -748,7 +748,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Python:Default\n\
 	Matlab:Default",
      &TempStringPrefs.smartIndent, nullptr, true},
-    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_ALLOC_STRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
+    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_STD_STRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
     {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous", &PrefData.wrapStyle, AutoWrapTypes, true},
     {"wrapMargin", "WrapMargin", PREF_INT, "0", &PrefData.wrapMargin, nullptr, true},
     {"autoIndent", "AutoIndent", PREF_ENUM, "Auto", &PrefData.autoIndent, AutoIndentTypes, true},
@@ -1131,9 +1131,8 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 		TempStringPrefs.smartIndent = nullable_string();
 	}
 	if (TempStringPrefs.smartIndentCommon) {
-		LoadSmartIndentCommonString(TempStringPrefs.smartIndentCommon);
-		XtFree(TempStringPrefs.smartIndentCommon);
-		TempStringPrefs.smartIndentCommon = nullptr;
+		LoadSmartIndentCommonStringEx(*TempStringPrefs.smartIndentCommon);
+		TempStringPrefs.smartIndentCommon = nullable_string();
 	}
 
 	/* translate the font names into fontLists suitable for the text widget */
@@ -1201,14 +1200,12 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		TempStringPrefs.language          = WriteLanguageModesStringEx();
 		TempStringPrefs.styles            = WriteStylesStringEx();
 		TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
-		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
+		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
 		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
 
 		if (!SavePreferences(XtDisplay(parent), prefFileName.c_str(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
 			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
 		}
-
-		XtFree(TempStringPrefs.smartIndentCommon);
 
 		PrefsHaveChanged = false;
 	} catch(const path_error &e) {

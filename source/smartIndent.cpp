@@ -1347,6 +1347,14 @@ int LoadSmartIndentString(char *inString) {
 	}
 }
 
+int LoadSmartIndentCommonStringEx(const std::string &inString) {
+	auto buffer = new char[inString.size() + 1];
+	strcpy(buffer, inString.c_str());
+	int r = LoadSmartIndentCommonString(buffer);
+	delete [] buffer;
+	return r;
+}
+
 int LoadSmartIndentCommonString(char *inString) {
 	int shiftedLen;
 	char *inPtr = inString;
@@ -1504,6 +1512,31 @@ char *WriteSmartIndentCommonString(void) {
 	len = strlen(escapedStr);
 	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\')
 		escapedStr[len - 2] = '\0';
+	return escapedStr;
+}
+
+std::string WriteSmartIndentCommonStringEx(void) {
+
+	if (!strcmp(CommonMacros, DefaultCommonMacros))
+		return "Default";
+
+	if(!CommonMacros)
+		return "";
+
+	/* Shift the macro over by a tab to keep .nedit file bright and clean */
+	int len;
+	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8, &len);
+
+	/* Protect newlines and backslashes from translation by the resource
+	   reader */
+	std::string escapedStr = EscapeSensitiveCharsEx(outStr);
+
+	/* If there's a trailing escaped newline, remove it */
+	len = escapedStr.size();
+	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\') {
+		escapedStr.resize(len - 2);
+	}
+	
 	return escapedStr;
 }
 
