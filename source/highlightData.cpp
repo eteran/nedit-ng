@@ -42,6 +42,7 @@
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
+#include "../util/memory.h"
 
 #include <cstdio>
 #include <cstring>
@@ -241,7 +242,13 @@ static const char *DefaultPatternSets[] = {
 ** styles information, parse it, and load it into the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-bool LoadStylesString(const char *inString) {
+bool LoadStylesStringEx(const std::string &string) {
+
+	// TODO(eteran): implement this using better algorithms
+
+	auto inString = new char[string.size() + 1];
+	strcpy(inString, string.c_str());
+
 	const char *errMsg;
 	const char *inPtr = inString;
 	int i;
@@ -257,11 +264,13 @@ bool LoadStylesString(const char *inString) {
 		/* read style name */
 		hs->name = ReadSymbolicFieldEx(&inPtr);
 		if (hs->name.empty()) {
+			delete [] inString;
 			return styleError(inString, inPtr, "style name required");
 		}
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
+			delete [] inString;
 			return styleError(inString, inPtr, errMsg);
 		}
 
@@ -269,6 +278,7 @@ bool LoadStylesString(const char *inString) {
 		hs->color = ReadSymbolicFieldEx(&inPtr);
 		if (hs->color.empty()) {
 			delete hs;
+			delete [] inString;
 			return styleError(inString, inPtr, "color name required");
 		}
 		hs->bgColor = std::string();
@@ -278,6 +288,7 @@ bool LoadStylesString(const char *inString) {
 		}
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
+			delete [] inString;
 			return styleError(inString, inPtr, errMsg);
 		}
 
@@ -291,6 +302,7 @@ bool LoadStylesString(const char *inString) {
 		}
 		if (i == N_FONT_TYPES) {
 			delete hs;
+			delete [] inString;
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
 
@@ -304,45 +316,19 @@ bool LoadStylesString(const char *inString) {
 		}
 		if (i == NHighlightStyles) {
 			HighlightStyles[NHighlightStyles++] = hs;
-			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES)
+			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES) {
+				delete [] inString;
 				return styleError(inString, inPtr, "maximum allowable number of styles exceeded");
+			}
 		}
 
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
-		if (*inPtr == '\0')
+		if (*inPtr == '\0') {
+			delete [] inString;
 			return true;
-	}
-}
-
-/*
-** Create a string in the correct format for the styles resource, containing
-** all of the highlight styles information from the stored highlight style
-** list (HighlightStyles) for this NEdit session.
-*/
-char *WriteStylesString(void) {
-	int i;
-	highlightStyleRec *style;
-
-	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
-
-	for (i = 0; i < NHighlightStyles; i++) {
-		style = HighlightStyles[i];
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
-		if (!style->bgColor.empty()) {
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\\n\\\n");
 	}
-
-	/* Get the output, and lop off the trailing newlines */
-	return outBuf->BufGetRange(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
 }
 
 /*
@@ -354,7 +340,7 @@ std::string WriteStylesStringEx(void) {
 	int i;
 	highlightStyleRec *style;
 
-	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
+	auto outBuf = memory::make_unique<TextBuffer>();
 
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
@@ -384,7 +370,14 @@ std::string WriteStylesStringEx(void) {
 ** that they may contain regular expressions are of the older syntax where
 ** braces were not quoted, and \0 was a legal substitution character).
 */
-bool LoadHighlightString(const char *inString, int convertOld) {
+
+bool LoadHighlightStringEx(const std::string &string, int convertOld) {
+
+	// TODO(eteran): rework this to actually use a modern approach
+	auto inString = new char[string.size() + 1];
+	strcpy(inString, &string[0]);
+	
+	
 	const char *inPtr = inString;
 	int i;
 
@@ -392,8 +385,10 @@ bool LoadHighlightString(const char *inString, int convertOld) {
 
 		/* Read each pattern set, abort on error */
 		patternSet *patSet = readPatternSet(&inPtr, convertOld);
-		if(!patSet)
+		if(!patSet) {
+			delete [] inString;
 			return false;
+		}
 
 		/* Add/change the pattern set in the list */
 		for (i = 0; i < NPatternSets; i++) {
@@ -405,54 +400,19 @@ bool LoadHighlightString(const char *inString, int convertOld) {
 		}
 		if (i == NPatternSets) {
 			PatternSets[NPatternSets++] = patSet;
-			if (NPatternSets > MAX_LANGUAGE_MODES)
+			if (NPatternSets > MAX_LANGUAGE_MODES) {
+				delete [] inString;
 				return false;
+			}
 		}
 
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
-		if (*inPtr == '\0')
+		if (*inPtr == '\0') {
+			delete [] inString;
 			return true;
-	}
-}
-
-/*
-** Create a string in the correct format for the highlightPatterns resource,
-** containing all of the highlight pattern information from the stored
-** highlight pattern list (PatternSets) for this NEdit session.
-*/
-char *WriteHighlightString(void) {
-
-	bool written = false;
-	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
-
-	for (int psn = 0; psn < NPatternSets; psn++) {
-		patternSet *patSet = PatternSets[psn];
-		if (patSet->nPatterns == 0) {
-			continue;
-		}
-		
-		written = true;
-		outBuf->BufInsertEx(outBuf->BufGetLength(), *patSet->languageMode);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
-		else {
-			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "{\n");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "\t}\n\t");
 		}
 	}
-
-	/* Get the output string, and lop off the trailing newline and tab */
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
-
-	/* Protect newlines and backslashes from translation by the resource
-	   reader */
-	return EscapeSensitiveChars(outStr.c_str());
 }
 
 /*
@@ -463,7 +423,7 @@ char *WriteHighlightString(void) {
 std::string WriteHighlightStringEx(void) {
 
 	bool written = false;
-	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
+	auto outBuf = memory::make_unique<TextBuffer>();
 
 	for (int psn = 0; psn < NPatternSets; psn++) {
 		patternSet *patSet = PatternSets[psn];

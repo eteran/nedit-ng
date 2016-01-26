@@ -142,8 +142,8 @@ static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char 
 static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
-static bool searchLiteral(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static bool searchLiteralWord(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
 static void collectWritableWindows(WindowInfo *window);
@@ -4517,7 +4517,7 @@ int StringToSearchType(const char *string, int *searchType) {
 **  will suffice in that case.
 **
 */
-static bool searchLiteralWord(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 
 
 	// TODO(eteran): rework this code in terms of iterators, it will be more clean
@@ -4558,17 +4558,17 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 	if(!delimiters)
 		delimiters = GetPrefDelimiters();
 
-	if (isspace((unsigned char)*searchString) || strchr(delimiters, *searchString)) {
+	if (isspace((unsigned char)searchString[0]) || strchr(delimiters, searchString[0])) {
 		cignore_L = true;
 	}
 
-	if (isspace((unsigned char)searchString[strlen(searchString) - 1]) || strchr(delimiters, searchString[strlen(searchString) - 1])) {
+	if (isspace((unsigned char)searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
 		cignore_R = true;
 	}
 
 	if (caseSense) {
-		ucString = searchString;
-		lcString = searchString;
+		ucString = searchString.to_string();
+		lcString = searchString.to_string();
 	} else {
 		ucString = upCaseStringEx(searchString);
 		lcString = downCaseStringEx(searchString);
@@ -4616,7 +4616,7 @@ static bool searchLiteralWord(view::string_view string, const char *searchString
 	}
 }
 
-static bool searchLiteral(view::string_view string, const char *searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
 
 
 	std::string lcString;
@@ -4653,8 +4653,8 @@ static bool searchLiteral(view::string_view string, const char *searchString, bo
 	};
 
 	if (caseSense) {
-		lcString = searchString;
-		ucString = searchString;
+		lcString = searchString.to_string();
+		ucString = searchString.to_string();
 	} else {
 		ucString = upCaseStringEx(searchString);
 		lcString = downCaseStringEx(searchString);

@@ -35,12 +35,9 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
-XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName);
-bool LoadHighlightString(const char *inString, int convertOld);
-bool LoadStylesString(const char *inString);
+bool LoadHighlightStringEx(const std::string &inString, int convertOld);
+bool LoadStylesStringEx(const std::string &string);
 bool NamedStyleExists(view::string_view styleName);
-char *WriteHighlightString(void);
-char *WriteStylesString(void);
 int FontOfNamedStyleIsBold(view::string_view styleName);
 int FontOfNamedStyleIsItalic(view::string_view styleName);
 int IndexOfNamedStyle(view::string_view styleName);
@@ -54,5 +51,6 @@ void EditHighlightPatterns(WindowInfo *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(const char *oldName, const char *newName);
 void UpdateLanguageModeMenu(void);
+XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName);
 
 #endif

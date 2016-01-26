@@ -1246,15 +1246,23 @@ static int updateSmartIndentData(void) {
 }
 
 static int loadDefaultIndentSpec(const char *lmName) {
-	int i;
 
-	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
+	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
 		if (!strcmp(lmName, DefaultIndentSpecs[i].lmName)) {
 			SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(&DefaultIndentSpecs[i]);
 			return True;
 		}
 	}
 	return False;
+}
+
+int LoadSmartIndentStringEx(const std::string &inString) {
+	auto buffer = new char[inString.size() + 1];
+	strcpy(buffer, inString.c_str());
+	int r = LoadSmartIndentString(buffer);
+	delete [] buffer;
+	return r;
+
 }
 
 int LoadSmartIndentString(char *inString) {
@@ -1446,6 +1454,33 @@ char *WriteSmartIndentString(void) {
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
 	return EscapeSensitiveChars(outStr.c_str());
+}
+
+std::string WriteSmartIndentStringEx(void) {
+
+	auto outBuf = new TextBuffer;
+	for (int i = 0; i < NSmartIndentSpecs; i++) {
+		smartIndentRec *sis = SmartIndentSpecs[i];
+		
+		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
+		outBuf->BufInsertEx(outBuf->BufGetLength(), sis->lmName);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		if (isDefaultIndentSpec(sis)) {
+			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n");
+		} else {
+			insertShiftedMacro(outBuf, (String)sis->initMacro);
+			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
+			insertShiftedMacro(outBuf, (String)sis->modMacro);
+		}
+	}
+
+	/* Get the output string, and lop off the trailing newline */
+	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() > 0 ? outBuf->BufGetLength() - 1 : 0);
+	delete outBuf;
+
+	/* Protect newlines and backslashes from translation by the resource
+	   reader */
+	return EscapeSensitiveCharsEx(outStr);
 }
 
 char *WriteSmartIndentCommonString(void) {

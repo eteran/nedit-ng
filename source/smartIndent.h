@@ -24,26 +24,31 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_SMARTINDENT_H_INCLUDED
-#define NEDIT_SMARTINDENT_H_INCLUDED
+#ifndef SMART_INDENT_H_
+#define SMART_INDENT_H_
 
 #include "nedit.h"
 
 #include <X11/Intrinsic.h>
 
-void BeginSmartIndent(WindowInfo *window, int warn);
-void EndSmartIndent(WindowInfo *window);
-void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
-int LoadSmartIndentString(char *inString);
-int LoadSmartIndentCommonString(char *inString);
-char *WriteSmartIndentString(void);
-char *WriteSmartIndentCommonString(void);
-int SmartIndentMacrosAvailable(char *languageMode);
-void EditSmartIndentMacros(WindowInfo *window);
-void EditCommonSmartIndentMacro(void);
 Boolean InSmartIndentMacros(WindowInfo *window);
+char *WriteSmartIndentCommonString(void);
+char *WriteSmartIndentString(void);
 int LMHasSmartIndentMacros(const char *languageMode);
+int LoadSmartIndentCommonString(char *inString);
+int LoadSmartIndentString(char *inString);
+int LoadSmartIndentCommonStringEx(const std::string &inString);
+int LoadSmartIndentStringEx(const std::string &inString);
+int SmartIndentMacrosAvailable(char *languageMode);
+std::string WriteSmartIndentCommonStringEx(void);
+std::string WriteSmartIndentStringEx(void);
+void BeginSmartIndent(WindowInfo *window, int warn);
+void EditCommonSmartIndentMacro(void);
+void EditSmartIndentMacros(WindowInfo *window);
+void EndSmartIndent(WindowInfo *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
+void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
 
-#endif /* NEDIT_SMARTINDENT_H_INCLUDED */
+
+#endif 

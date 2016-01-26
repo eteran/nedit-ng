@@ -307,10 +307,10 @@ static struct {
 	nullable_string shellCmds;
 	nullable_string macroCmds;
 	nullable_string bgMenuCmds;
-	char *highlight;
-	char *language;
-	char *styles;
-	char *smartIndent;
+	nullable_string highlight;
+	nullable_string language;
+	nullable_string styles;
+	nullable_string smartIndent;
 	char *smartIndentCommon;
 } TempStringPrefs;
 
@@ -651,7 +651,7 @@ static PrefDescripRec PrefDescrip[] = {
 	Paste:::: {\npaste_clipboard()\n}",
      &TempStringPrefs.bgMenuCmds, nullptr, true},
 
-    {"highlightPatterns", "HighlightPatterns", PREF_ALLOC_STRING, "Ada:Default\n\
+    {"highlightPatterns", "HighlightPatterns", PREF_STD_STRING, "Ada:Default\n\
         Awk:Default\n\
         C++:Default\n\
         C:Default\n\
@@ -680,7 +680,7 @@ static PrefDescripRec PrefDescrip[] = {
         X Resources:Default\n\
         Yacc:Default",
      &TempStringPrefs.highlight, nullptr, true},
-    {"languageModes", "LanguageModes", PREF_ALLOC_STRING,
+    {"languageModes", "LanguageModes", PREF_STD_STRING,
 
      "Ada:.ada .ad .ads .adb .a:::::::\n\
         Awk:.awk:::::::\n\
@@ -712,7 +712,7 @@ static PrefDescripRec PrefDescrip[] = {
         Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 
      &TempStringPrefs.language, nullptr, true},
-    {"styles", "Styles", PREF_ALLOC_STRING, "Plain:black:Plain\n\
+    {"styles", "Styles", PREF_STD_STRING, "Plain:black:Plain\n\
     	Comment:gray20:Italic\n\
     	Keyword:black:Bold\n\
         Operator:dark blue:Bold\n\
@@ -743,7 +743,7 @@ static PrefDescripRec PrefDescrip[] = {
     	Text Escape:gray30:Bold\n\
 	LaTeX Math:darkGreen:Plain\n" ADD_5_2_STYLES,
      &TempStringPrefs.styles, nullptr, true},
-    {"smartIndentInit", "SmartIndentInit", PREF_ALLOC_STRING, "C:Default\n\
+    {"smartIndentInit", "SmartIndentInit", PREF_STD_STRING, "C:Default\n\
 	C++:Default\n\
 	Python:Default\n\
 	Matlab:Default",
@@ -954,47 +954,46 @@ static void hiliteBgModifiedCB(Widget w, XtPointer clientData, XtPointer callDat
 static void lineNoFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cursorFgModifiedCB(Widget w, XtPointer clientData, XtPointer callData);
 
-static int matchLanguageMode(WindowInfo *window);
-static int loadLanguageModesString(const char *inString, int fileVer);
-static char *writeLanguageModesString(void);
+static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
 static char *createExtString(char **extensions, int nExtensions);
 static char **readExtensionList(const char **inPtr, int *nExtensions);
-static void updateLanguageModeSubmenu(WindowInfo *window);
-static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
-static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt, const char *message);
-static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData);
+static const char *getDefaultShell(void);
+static int caseFind(view::string_view inString, const char *expr);
+static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
 static int lmDeleteConfirmCB(int itemIndex, void *cbArg);
+static int lmDialogEmpty(void);
+static int loadLanguageModesString(const char *inString, int fileVer);
+static int loadLanguageModesStringEx(const std::string &string, int fileVer);
+static int matchLanguageMode(WindowInfo *window);
+static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt, const char *message);
+static int regexFind(view::string_view inString, const char *expr);
+static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
+static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
 static int updateLMList(void);
 static languageModeRec *copyLanguageModeRec(languageModeRec *lm);
-static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
-static void lmSetDisplayedCB(void *item, void *cbArg);
 static languageModeRec *readLMDialogFields(int silent);
-static void lmFreeItemCB(void *item);
+static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr);
+static std::string WriteLanguageModesStringEx(void);
 static void freeLanguageModeRec(languageModeRec *lm);
-static int lmDialogEmpty(void);
+static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmFreeItemCB(void *item);
+static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
+static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmSetDisplayedCB(void *item, void *cbArg);
+static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
+static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void updateLanguageModeSubmenu(WindowInfo *window);
+static void updateMacroCmdsTo5dot5(void);
+static void updateMacroCmdsTo5dot6(void);
 static void updatePatternsTo5dot1(void);
 static void updatePatternsTo5dot2(void);
 static void updatePatternsTo5dot3(void);
 static void updatePatternsTo5dot4(void);
+static void updatePatternsTo5dot6(void);
 static void updateShellCmdsTo5dot3(void);
 static void updateShellCmdsTo5dot4(void);
-static void updateMacroCmdsTo5dot5(void);
-static void updatePatternsTo5dot6(void);
-static void updateMacroCmdsTo5dot6(void);
-static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
-static void spliceString(char **intoString, const char *insertString, const char *atExpr);
-static int regexFind(const char *inString, const char *expr);
-static int regexReplace(char **inString, const char *expr, const char *replaceWith);
-static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
-static int caseFind(const char *inString, const char *expr);
-static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
-static int stringReplace(char **inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
-static int stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
-static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
-static const char *getDefaultShell(void);
 
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut) {
 
@@ -1116,24 +1115,20 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 		TempStringPrefs.bgMenuCmds = nullable_string();
 	}
 	if (TempStringPrefs.highlight) {
-		LoadHighlightString(TempStringPrefs.highlight, convertOld);
-		XtFree(TempStringPrefs.highlight);
-		TempStringPrefs.highlight = nullptr;
+		LoadHighlightStringEx(*TempStringPrefs.highlight, convertOld);
+		TempStringPrefs.highlight = nullable_string();
 	}
 	if (TempStringPrefs.styles) {
-		LoadStylesString(TempStringPrefs.styles);
-		XtFree(TempStringPrefs.styles);
-		TempStringPrefs.styles = nullptr;
+		LoadStylesStringEx(*TempStringPrefs.styles);
+		TempStringPrefs.styles = nullable_string();
 	}
 	if (TempStringPrefs.language) {
-		loadLanguageModesString(TempStringPrefs.language, fileVer);
-		XtFree(TempStringPrefs.language);
-		TempStringPrefs.language = nullptr;
+		loadLanguageModesStringEx(*TempStringPrefs.language, fileVer);
+		TempStringPrefs.language = nullable_string();
 	}
 	if (TempStringPrefs.smartIndent) {
-		LoadSmartIndentString(TempStringPrefs.smartIndent);
-		XtFree(TempStringPrefs.smartIndent);
-		TempStringPrefs.smartIndent = nullptr;
+		LoadSmartIndentStringEx(*TempStringPrefs.smartIndent);
+		TempStringPrefs.smartIndent = nullable_string();
 	}
 	if (TempStringPrefs.smartIndentCommon) {
 		LoadSmartIndentCommonString(TempStringPrefs.smartIndentCommon);
@@ -1202,10 +1197,10 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
 		TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
 		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
-		TempStringPrefs.highlight         = WriteHighlightString();
-		TempStringPrefs.language          = writeLanguageModesString();
-		TempStringPrefs.styles            = WriteStylesString();
-		TempStringPrefs.smartIndent       = WriteSmartIndentString();
+		TempStringPrefs.highlight         = WriteHighlightStringEx();
+		TempStringPrefs.language          = WriteLanguageModesStringEx();
+		TempStringPrefs.styles            = WriteStylesStringEx();
+		TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
 		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonString();
 		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
 
@@ -1213,10 +1208,6 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
 		}
 
-		XtFree(TempStringPrefs.highlight);
-		XtFree(TempStringPrefs.language);
-		XtFree(TempStringPrefs.styles);
-		XtFree(TempStringPrefs.smartIndent);
 		XtFree(TempStringPrefs.smartIndentCommon);
 
 		PrefsHaveChanged = false;
@@ -3675,6 +3666,17 @@ static int matchLanguageMode(WindowInfo *window) {
 	return PLAIN_LANGUAGE_MODE;
 }
 
+static int loadLanguageModesStringEx(const std::string &string, int fileVer) {
+	
+	// TODO(eteran): implement this natively
+	auto buffer = new char[string.size() + 1];
+	strcpy(buffer, string.c_str());
+	int r = loadLanguageModesString(buffer, fileVer);
+	delete [] buffer;
+	return r;
+
+}
+
 static int loadLanguageModesString(const char *inString, int fileVer) {
 	const char *errMsg;
 	char *styleName;
@@ -3807,13 +3809,13 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 	} /* End for(;;) */
 }
 
-static char *writeLanguageModesString(void) {
-	int i;
-	char *escapedStr, *str, numBuf[25];
+static std::string WriteLanguageModesStringEx(void) {
+	char *str;
+	char numBuf[25];
 
 	auto outBuf = new TextBuffer;
 
-	for (i = 0; i < NLanguageModes; i++) {
+	for (int i = 0; i < NLanguageModes; i++) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), LanguageModes[i]->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -3857,8 +3859,7 @@ static char *writeLanguageModesString(void) {
 	/* Get the output, and lop off the trailing newline */
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - 1);
 	delete outBuf;
-	escapedStr = EscapeSensitiveChars(outStr.c_str());
-	return escapedStr;
+	return EscapeSensitiveCharsEx(outStr);
 }
 
 static char *createExtString(char **extensions, int nExtensions) {
@@ -4455,41 +4456,73 @@ int AllocatedStringsDiffer(const char *s1, const char *s2) {
 static void updatePatternsTo5dot1(void) {
 	const char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
 	const char *vhdlAnchorExpr = "^[ \t]*VHDL:";
+	
+	
+	std::string newHighlight   = *TempStringPrefs.highlight;
+	std::string newStyles      = *TempStringPrefs.styles;
+	std::string newLanguage    = *TempStringPrefs.language;
+	std::string newSmartIndent = *TempStringPrefs.smartIndent;
 
 	/* Add new patterns if there aren't already existing patterns with
 	   the same name.  If possible, insert before VHDL in language mode
 	   list.  If not, just add to end */
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*PostScript:"))
-		spliceString(&TempStringPrefs.highlight, "PostScript:Default", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*PostScript:"))
-		spliceString(&TempStringPrefs.language, "PostScript:.ps .PS .eps .EPS .epsf .epsi::::::", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Lex:"))
-		spliceString(&TempStringPrefs.highlight, "Lex:Default", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*Lex:"))
-		spliceString(&TempStringPrefs.language, "Lex:.lex::::::", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*SQL:"))
-		spliceString(&TempStringPrefs.highlight, "SQL:Default", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*SQL:"))
-		spliceString(&TempStringPrefs.language, "SQL:.sql::::::", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Matlab:"))
-		spliceString(&TempStringPrefs.highlight, "Matlab:Default", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*Matlab:"))
-		spliceString(&TempStringPrefs.language, "Matlab:..m .oct .sci::::::", vhdlAnchorExpr);
-	if (!regexFind(TempStringPrefs.smartIndent, "^[ \t]*Matlab:"))
-		spliceString(&TempStringPrefs.smartIndent, "Matlab:Default", nullptr);
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Label:"))
-		spliceString(&TempStringPrefs.styles, "Label:red:Italic", "^[ \t]*Flag:");
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Storage Type1:"))
-		spliceString(&TempStringPrefs.styles, "Storage Type1:saddle brown:Bold", "^[ \t]*String:");
+	if (!regexFind(newHighlight, "^[ \t]*PostScript:")) {
+		newHighlight = spliceStringEx(newHighlight, "PostScript:Default", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newLanguage, "^[ \t]*PostScript:")) {
+		newLanguage = spliceStringEx(newLanguage, "PostScript:.ps .PS .eps .EPS .epsf .epsi::::::", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newHighlight, "^[ \t]*Lex:")) {
+		newHighlight = spliceStringEx(newHighlight, "Lex:Default", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newLanguage, "^[ \t]*Lex:")) {
+		newLanguage = spliceStringEx(newLanguage, "Lex:.lex::::::", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newHighlight, "^[ \t]*SQL:")) {
+		newHighlight = spliceStringEx(newHighlight, "SQL:Default", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newLanguage, "^[ \t]*SQL:")) {
+		newLanguage = spliceStringEx(newLanguage, "SQL:.sql::::::", vhdlAnchorExpr);
+	}
+	if (!regexFind(newHighlight, "^[ \t]*Matlab:")) {
+		newHighlight = spliceStringEx(newHighlight, "Matlab:Default", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newLanguage, "^[ \t]*Matlab:")) {
+		newLanguage = spliceStringEx(newLanguage, "Matlab:..m .oct .sci::::::", vhdlAnchorExpr);
+	}
+	
+	if (!regexFind(newSmartIndent, "^[ \t]*Matlab:")) {
+		newSmartIndent = spliceStringEx(newSmartIndent, "Matlab:Default", nullptr);
+	}
+	
+	if (!regexFind(newStyles, "^[ \t]*Label:")) {
+		newStyles = spliceStringEx(newStyles, "Label:red:Italic", "^[ \t]*Flag:");
+	}
+	
+	if (!regexFind(newStyles, "^[ \t]*Storage Type1:")) {
+		newStyles = spliceStringEx(newStyles, "Storage Type1:saddle brown:Bold", "^[ \t]*String:");
+	}
 
 	/* Replace html pattern with sgml html pattern, as long as there
 	   isn't an existing html pattern which will be overwritten */
-	if (regexFind(TempStringPrefs.highlight, htmlDefaultExpr)) {
-		regexReplace(&TempStringPrefs.highlight, htmlDefaultExpr, "SGML HTML:Default");
-		if (!regexReplace(&TempStringPrefs.language, "^[ \t]*HTML:.*$", "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n")) {
-			spliceString(&TempStringPrefs.language, "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n", vhdlAnchorExpr);
+	if (regexFind(newHighlight, htmlDefaultExpr)) {
+		regexReplaceEx(&newHighlight, htmlDefaultExpr, "SGML HTML:Default");
+		
+		if (!regexReplaceEx(&newLanguage, "^[ \t]*HTML:.*$", "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n")) {
+			newLanguage = spliceStringEx(newLanguage, "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n", vhdlAnchorExpr);
 		}
 	}
+	
+	TempStringPrefs.smartIndent = newSmartIndent;
+	TempStringPrefs.language    = newLanguage;
+	TempStringPrefs.styles      = newStyles;
+	TempStringPrefs.highlight   = newHighlight;
 }
 
 static void updatePatternsTo5dot2(void) {
@@ -4520,46 +4553,55 @@ static void updatePatternsTo5dot2(void) {
 	const char *ptrStyle = "Pointer:#660000:Bold";
 	const char *reStyle = "Regex:#009944:Bold";
 	const char *wrnStyle = "Warning:brown2:Italic";
+	
+	std::string newHighlight = *TempStringPrefs.highlight;
+	std::string newStyles    = *TempStringPrefs.styles;
+	std::string newLanguage  = *TempStringPrefs.language;
 
 	/* First upgrade modified language modes, only if the user hasn't
 	   altered the default 5.1 definitions. */
-	if (regexFind(TempStringPrefs.language, cppLm5dot1))
-		regexReplace(&TempStringPrefs.language, cppLm5dot1, cppLm5dot2);
-	if (regexFind(TempStringPrefs.language, perlLm5dot1))
-		regexReplace(&TempStringPrefs.language, perlLm5dot1, perlLm5dot2);
-	if (regexFind(TempStringPrefs.language, psLm5dot1))
-		regexReplace(&TempStringPrefs.language, psLm5dot1, psLm5dot2);
-	if (regexFind(TempStringPrefs.language, shLm5dot1))
-		regexReplace(&TempStringPrefs.language, shLm5dot1, shLm5dot2);
-	if (regexFind(TempStringPrefs.language, tclLm5dot1))
-		regexReplace(&TempStringPrefs.language, tclLm5dot1, tclLm5dot2);
+	if (regexFind(newLanguage, cppLm5dot1))
+		regexReplaceEx(&newLanguage, cppLm5dot1, cppLm5dot2);
+	if (regexFind(newLanguage, perlLm5dot1))
+		regexReplaceEx(&newLanguage, perlLm5dot1, perlLm5dot2);
+	if (regexFind(newLanguage, psLm5dot1))
+		regexReplaceEx(&newLanguage, psLm5dot1, psLm5dot2);
+	if (regexFind(newLanguage, shLm5dot1))
+		regexReplaceEx(&newLanguage, shLm5dot1, shLm5dot2);
+	if (regexFind(newLanguage, tclLm5dot1))
+		regexReplaceEx(&newLanguage, tclLm5dot1, tclLm5dot2);
 
 	/* Then append the new modes (trying to keep them in alphabetical order
 	   makes no sense, since 5.1 didn't use alphabetical order). */
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*CSS:"))
-		spliceString(&TempStringPrefs.language, cssLm5dot2, nullptr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*Regex:"))
-		spliceString(&TempStringPrefs.language, reLm5dot2, nullptr);
-	if (!regexFind(TempStringPrefs.language, "^[ \t]*XML:"))
-		spliceString(&TempStringPrefs.language, xmlLm5dot2, nullptr);
+	if (!regexFind(newLanguage, "^[ \t]*CSS:"))
+		newLanguage = spliceStringEx(newLanguage, cssLm5dot2, nullptr);
+	if (!regexFind(newLanguage, "^[ \t]*Regex:"))
+		newLanguage = spliceStringEx(newLanguage, reLm5dot2, nullptr);
+	if (!regexFind(newLanguage, "^[ \t]*XML:"))
+		newLanguage = spliceStringEx(newLanguage, xmlLm5dot2, nullptr);
 
 	/* Enable default highlighting patterns for these modes, unless already
 	   present */
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*CSS:"))
-		spliceString(&TempStringPrefs.highlight, cssHl5dot2, nullptr);
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*Regex:"))
-		spliceString(&TempStringPrefs.highlight, reHl5dot2, nullptr);
-	if (!regexFind(TempStringPrefs.highlight, "^[ \t]*XML:"))
-		spliceString(&TempStringPrefs.highlight, xmlHl5dot2, nullptr);
+	if (!regexFind(newHighlight, "^[ \t]*CSS:"))
+		newHighlight = spliceStringEx(newHighlight, cssHl5dot2, nullptr);
+	if (!regexFind(newHighlight, "^[ \t]*Regex:"))
+		newHighlight = spliceStringEx(newHighlight, reHl5dot2, nullptr);
+	if (!regexFind(newHighlight, "^[ \t]*XML:"))
+		newHighlight = spliceStringEx(newHighlight, xmlHl5dot2, nullptr);
 
 	/* Finally, append the new highlight styles */
 
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Warning:"))
-		spliceString(&TempStringPrefs.styles, wrnStyle, nullptr);
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Regex:"))
-		spliceString(&TempStringPrefs.styles, reStyle, "^[ \t]*Warning:");
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Pointer:"))
-		spliceString(&TempStringPrefs.styles, ptrStyle, "^[ \t]*Regex:");
+	if (!regexFind(newStyles, "^[ \t]*Warning:"))
+		newStyles = spliceStringEx(newStyles, wrnStyle, nullptr);
+	if (!regexFind(newStyles, "^[ \t]*Regex:"))
+		newStyles = spliceStringEx(newStyles, reStyle, "^[ \t]*Warning:");
+	if (!regexFind(newStyles, "^[ \t]*Pointer:"))
+		newStyles = spliceStringEx(newStyles, ptrStyle, "^[ \t]*Regex:");
+		
+	
+	TempStringPrefs.language  = newLanguage;
+	TempStringPrefs.styles    = newStyles;		
+	TempStringPrefs.highlight = newHighlight;
 }
 
 static void updatePatternsTo5dot3(void) {
@@ -4575,16 +4617,23 @@ static void updatePatternsTo5dot4(void) {
 	const char *pyLm5dot4 = "Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
 	const char *xrLm5dot4 = "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
 
+	std::string newStyles   = *TempStringPrefs.styles;
+	std::string newLanguage = *TempStringPrefs.language;
+
 	/* Upgrade modified language modes, only if the user hasn't
 	   altered the default 5.3 definitions. */
-	if (regexFind(TempStringPrefs.language, pyLm5dot3))
-		regexReplace(&TempStringPrefs.language, pyLm5dot3, pyLm5dot4);
-	if (regexFind(TempStringPrefs.language, xrLm5dot3))
-		regexReplace(&TempStringPrefs.language, xrLm5dot3, xrLm5dot4);
+	if (regexFind(newLanguage, pyLm5dot3))
+		regexReplaceEx(&newLanguage, pyLm5dot3, pyLm5dot4);
+	if (regexFind(newLanguage, xrLm5dot3))
+		regexReplaceEx(&newLanguage, xrLm5dot3, xrLm5dot4);
 
 	/* Add new styles */
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Identifier2:"))
-		spliceString(&TempStringPrefs.styles, "Identifier2:SteelBlue:Plain", "^[ \t]*Subroutine:");
+	if (!regexFind(newStyles, "^[ \t]*Identifier2:")) {
+		newStyles = spliceStringEx(newStyles, "Identifier2:SteelBlue:Plain", "^[ \t]*Subroutine:");
+	}
+	
+	TempStringPrefs.language  = newLanguage;
+	TempStringPrefs.styles    = newStyles;
 }
 
 static void updatePatternsTo5dot6(void) {
@@ -4595,19 +4644,28 @@ static void updatePatternsTo5dot6(void) {
 	                      "\\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::\\n",
 	                      "X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n", nullptr};
 
+	std::string newStyles   = *TempStringPrefs.styles;
+	std::string newLanguage = *TempStringPrefs.language;
+
 	/* Upgrade modified language modes, only if the user hasn't
 	   altered the default 5.5 definitions. */
-	int i;
-	for (i = 0; pats[i]; i += 2) {
-		if (regexFind(TempStringPrefs.language, pats[i]))
-			regexReplace(&TempStringPrefs.language, pats[i], pats[i + 1]);
+	for (int i = 0; pats[i]; i += 2) {
+		if (regexFind(newLanguage, pats[i])) {
+			regexReplaceEx(&newLanguage, pats[i], pats[i + 1]);
+		}
 	}
 
 	/* Add new styles */
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Bracket:"))
-		spliceString(&TempStringPrefs.styles, "Bracket:dark blue:Bold", "^[ \t]*Storage Type:");
-	if (!regexFind(TempStringPrefs.styles, "^[ \t]*Operator:"))
-		spliceString(&TempStringPrefs.styles, "Operator:dark blue:Bold", "^[ \t]*Bracket:");
+	if (!regexFind(newStyles, "^[ \t]*Bracket:")) {
+		newStyles = spliceStringEx(newStyles, "Bracket:dark blue:Bold", "^[ \t]*Storage Type:");
+	}
+	
+	if (!regexFind(newStyles, "^[ \t]*Operator:")) {
+		newStyles = spliceStringEx(newStyles, "Operator:dark blue:Bold", "^[ \t]*Bracket:");
+	}
+		
+	TempStringPrefs.styles   = newStyles;
+	TempStringPrefs.language = newLanguage;
 }
 
 /*
@@ -4670,72 +4728,52 @@ static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB) {
 ** followed by a newline.  If atExpr is not found, inserts insertString
 ** at the end, PRECEDED by a newline.
 */
-static void spliceString(char **intoString, const char *insertString, const char *atExpr) {
-	int beginPos, endPos;
-	int intoLen = strlen(*intoString);
-	int insertLen = strlen(insertString);
-	char *newString = XtMalloc(intoLen + insertLen + 2);
+static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr) {
+	int beginPos;
+	int endPos;
+	
+	std::string newString;
+	newString.reserve(intoString.size() + insertString.size());
 
-	if (atExpr != nullptr && SearchString(*intoString, atExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
-		strncpy(newString, *intoString, beginPos);
-		strncpy(&newString[beginPos], insertString, insertLen);
-		newString[beginPos + insertLen] = '\n';
-		strncpy(&newString[beginPos + insertLen + 1], &((*intoString)[beginPos]), intoLen - beginPos);
+	if (atExpr && SearchString(intoString, atExpr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+		
+		newString.append(intoString, 0, beginPos);
+		newString.append(insertString.begin(), insertString.end());	
+		newString.append("\n");
+		newString.append(intoString, beginPos, std::string::npos);
 	} else {
-		strncpy(newString, *intoString, intoLen);
-		newString[intoLen] = '\n';
-		strncpy(&newString[intoLen + 1], insertString, insertLen);
+		newString.append(intoString);
+		newString.append("\n");
+		newString.append(insertString.begin(), insertString.end());	
 	}
-	newString[intoLen + insertLen + 1] = '\0';
-	XtFree(*intoString);
-	*intoString = newString;
+
+	return newString;
 }
 
 /*
 ** Simplified regular expression search routine which just returns true
 ** or false depending on whether inString matches expr
 */
-static int regexFind(const char *inString, const char *expr) {
+static int regexFind(view::string_view inString, const char *expr) {
 	int beginPos, endPos;
-	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
+	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
 }
 
 /*
 ** Simplified case-sensisitive string search routine which just
 ** returns true or false depending on whether inString matches expr
 */
-static int caseFind(const char *inString, const char *expr) {
-	int beginPos, endPos;
-	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_CASE_SENSE, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
-}
-
-/*
-** Common implementation for simplified string replacement routines.
-*/
-static int stringReplace(char **inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
-	int beginPos, endPos, newLen;
-	char *newString;
-	int inLen = strlen(*inString);
-	if (0 >= replaceLen)
-		replaceLen = strlen(replaceWith);
-	if (!SearchString(*inString, expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
-		return FALSE;
-	newLen = inLen + replaceLen - (endPos - beginPos);
-	newString = XtMalloc(newLen + 1);
-	strncpy(newString, *inString, beginPos);
-	strncpy(&newString[beginPos], replaceWith, replaceLen);
-	strncpy(&newString[beginPos + replaceLen], &((*inString)[endPos]), inLen - endPos);
-	newString[newLen] = '\0';
-	XtFree(*inString);
-	*inString = newString;
-	return TRUE;
+static int caseFind(view::string_view inString, const char *expr) {
+	int beginPos;
+	int endPos;
+	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_CASE_SENSE, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
 }
 
 
 /*
 ** Common implementation for simplified string replacement routines.
 */
-static int stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
+static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
 	
 	const std::string &oldString = *inString;
 	
@@ -4746,8 +4784,9 @@ static int stringReplaceEx(std::string *inString, const char *expr, const char *
 	if (0 >= replaceLen)
 		replaceLen = strlen(replaceWith);
 		
-	if (!SearchString(oldString.c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr))
-		return FALSE;
+	if (!SearchString(oldString.c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+		return false;
+	}
 
 	std::string newString;
 	newString.reserve(oldString.size() + replaceLen);
@@ -4756,7 +4795,7 @@ static int stringReplaceEx(std::string *inString, const char *expr, const char *
 	newString.append(oldString.substr(endPos, inLen - endPos));
 	
 	*inString = std::move(newString);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -4765,10 +4804,6 @@ static int stringReplaceEx(std::string *inString, const char *expr, const char *
 ** inString with XtMalloc.  If expr is not found, does nothing and
 ** returns false.
 */
-static int regexReplace(char **inString, const char *expr, const char *replaceWith) {
-	return stringReplace(inString, expr, replaceWith, SEARCH_REGEX, -1);
-}
-
 static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith) {
 	return stringReplaceEx(inString, expr, replaceWith, SEARCH_REGEX, -1);
 }
