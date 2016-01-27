@@ -2824,40 +2824,23 @@ static void freeLanguageModeRec(languageModeRec *lm) {
 */
 static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 
-	int i;
-
 	auto newLM = new languageModeRec;
 	
 	newLM->name        = XtStringDup(lm->name);
 	newLM->nExtensions = lm->nExtensions;
 	newLM->extensions  = (char **)XtMalloc(sizeof(char *) * lm->nExtensions);
 	
-	for (i = 0; i < lm->nExtensions; i++) {
+	for (int i = 0; i < lm->nExtensions; i++) {
 		newLM->extensions[i] = XtStringDup(lm->extensions[i]);
 	}
 	
-	if (!lm->recognitionExpr)
-		newLM->recognitionExpr = nullptr;
-	else {
-		newLM->recognitionExpr = XtStringDup(lm->recognitionExpr);
-	}
-	
-	if (!lm->defTipsFile)
-		newLM->defTipsFile = nullptr;
-	else {
-		newLM->defTipsFile = XtStringDup(lm->defTipsFile);
-	}
-	
-	if (!lm->delimiters)
-		newLM->delimiters = nullptr;
-	else {
-		newLM->delimiters = XtStringDup(lm->delimiters);
-	}
-	
-	newLM->wrapStyle   = lm->wrapStyle;
-	newLM->indentStyle = lm->indentStyle;
-	newLM->tabDist     = lm->tabDist;
-	newLM->emTabDist   = lm->emTabDist;
+	newLM->recognitionExpr = lm->recognitionExpr ? XtStringDup(lm->recognitionExpr) : nullptr;
+	newLM->defTipsFile     = lm->defTipsFile     ? XtStringDup(lm->defTipsFile)     : nullptr;
+	newLM->delimiters      = lm->delimiters      ? XtStringDup(lm->delimiters)      : nullptr;	
+	newLM->wrapStyle       = lm->wrapStyle;
+	newLM->indentStyle     = lm->indentStyle;
+	newLM->tabDist         = lm->tabDist;
+	newLM->emTabDist       = lm->emTabDist;
 	return newLM;
 }
 
@@ -3586,7 +3569,7 @@ static int matchLanguageMode(WindowInfo *window) {
 	std::string first200 = window->buffer->BufGetRangeEx(0, 200);
 	for (i = 0; i < NLanguageModes; i++) {
 		if (LanguageModes[i]->recognitionExpr) {
-			if (SearchString(first200.c_str(), LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+			if (SearchString(first200, LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
 		}
@@ -4733,7 +4716,7 @@ static bool stringReplaceEx(std::string *inString, const char *expr, const char 
 	if (0 >= replaceLen)
 		replaceLen = strlen(replaceWith);
 		
-	if (!SearchString(oldString.c_str(), expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+	if (!SearchString(oldString, expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 		return false;
 	}
 
