@@ -3447,7 +3447,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)nArgs;
 
 	WindowInfo *window = WidgetToWindow(w);
-	unsigned char charCodeString[2];
+	char charCodeString[2];
 	char charCodeText[DF_MAX_PROMPT_LENGTH], dummy[DF_MAX_PROMPT_LENGTH];
 	char *params[1];
 	int charCode, nRead, response;
@@ -3468,9 +3468,9 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	}
 	charCodeString[0] = (unsigned char)charCode;
 	charCodeString[1] = '\0';
-	params[0] = (char *)charCodeString;
+	params[0] = charCodeString;
 
-	if (!window->buffer->BufSubstituteNullChars((char *)charCodeString, 1)) {
+	if (!window->buffer->BufSubstituteNullChars(charCodeString, 1)) {
 		DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data", "OK");
 		return;
 	}

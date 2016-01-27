@@ -64,7 +64,7 @@ private: char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);
 private: void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
 public:  bool BufSubstituteNullChars(char *string, int length);
 public:  const char *BufAsString();
-public:  void BufUnsubstituteNullChars(char *string) const;
+public:  void BufUnsubstituteNullChars(char *string, int length) const;
 
 public:
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	

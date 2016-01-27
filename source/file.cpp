@@ -306,7 +306,6 @@ static void safeClose(WindowInfo *window) {
 static int doOpen(WindowInfo *window, const char *name, const char *path, int flags) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
-	int fileLen, readLen;
 	char *c;
 	FILE *fp = nullptr;
 	int fd;
@@ -333,14 +332,15 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	*/
 	{
 		if ((fp = fopen(fullname, "r"))) {
-			if (access(fullname, W_OK) != 0)
+			if (access(fullname, W_OK) != 0) {
 				SET_PERM_LOCKED(window->lockReasons, TRUE);
+			}
 
 		} else if (flags & CREATE && errno == ENOENT) {
 			/* Give option to create (or to exit if this is the only window) */
 			if (!(flags & SUPPRESS_CREATE_WARN)) {
 				/* on Solaris 2.6, and possibly other OSes, dialog won't
-		   show if parent window is iconized. */
+		           show if parent window is iconized. */
 				RaiseShellWindow(window->shell, False);
 
 				/* ask user for next action if file not found */
@@ -406,7 +406,8 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 		return FALSE;
 	}
 #endif
-	fileLen = statbuf.st_size;
+
+	int fileLen = statbuf.st_size;
 
 	/* Allocate space for the whole contents of the file (unfortunately) */
 	auto fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
@@ -419,7 +420,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	}
 
 	/* Read the file into fileString and terminate with a null */
-	readLen = fread(fileString, sizeof(char), fileLen, fp);
+	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
 		window->filenameSet = FALSE; /* Temp. prevent check for changes. */
@@ -450,7 +451,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 
 	/* Detect and convert DOS and Macintosh format files */
 	if (GetPrefForceOSConversion()) {
-		window->fileFormat = FormatOfFile(fileString);
+		window->fileFormat = FormatOfFile(fileString, readLen);
 		if (window->fileFormat == DOS_FILE_FORMAT) {
 			ConvertFromDosFileString(fileString, &readLen, nullptr);
 		} else if (window->fileFormat == MAC_FILE_FORMAT) {
@@ -460,7 +461,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 
 	/* Display the file contents in the text widget */
 	window->ignoreModify = True;
-	window->buffer->BufSetAllEx(fileString);
+	window->buffer->BufSetAllEx(view::string_view(fileString, readLen));
 	window->ignoreModify = False;
 
 	/* Check that the length that the buffer thinks it has is the same
@@ -469,8 +470,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	   the user, make the file read-only, and force a substitution */
 	if (window->buffer->BufGetLength() != readLen) {
 		if (!window->buffer->BufSubstituteNullChars(fileString, readLen)) {
-			resp = DialogF(DF_ERR, window->shell, 2, "Error while opening File", "Too much binary data in file.  You may view\n"
-			                                                                     "it, but not modify or re-save its contents.",
+			resp = DialogF(DF_ERR, window->shell, 2, "Error while opening File", "Too much binary data in file.  You may view\nit, but not modify or re-save its contents.",
 			               "View", "Cancel");
 			if (resp == 2) {
 				return FALSE;
@@ -556,7 +556,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	fileString[readLen] = '\0';
 
 	/* Detect and convert DOS and Macintosh format files */
-	switch (FormatOfFile(fileString)) {
+	switch (FormatOfFile(fileString, readLen)) {
 	case DOS_FILE_FORMAT:
 		ConvertFromDosFileString(fileString, &readLen, nullptr);
 		break;
@@ -1689,7 +1689,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 		nRead += offset;
 
 		/* check for on-disk file format changes, but only for the first hunk */
-		if (bufPos == 0 && fileFormat != FormatOfFile(fileString)) {
+		if (bufPos == 0 && fileFormat != FormatOfFile(fileString, nRead)) {
 			fclose(fp);
 			AllWindowsUnbusy();
 			return (1);

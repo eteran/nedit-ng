@@ -970,7 +970,7 @@ std::string TextBuffer::BufGetAllEx() {
 ** moved so that the buffer data can be accessed as a single contiguous
 ** character array.
 ** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
-** (we make an exception in TextBuffer::BufSubstituteNullChars() however)
+** (we make an exception in TextBuffer::BufSubstituteNullCharsEx() however)
 ** This function is intended ONLY to provide a searchable string without copying
 ** into a temporary buffer.
 */
@@ -998,7 +998,7 @@ const char *TextBuffer::BufAsString() {
 ** moved so that the buffer data can be accessed as a single contiguous
 ** character array.
 ** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
-** (we make an exception in TextBuffer::BufSubstituteNullChars() however)
+** (we make an exception in TextBuffer::BufSubstituteNullCharsEx() however)
 ** This function is intended ONLY to provide a searchable string without copying
 ** into a temporary buffer.
 */
@@ -2055,14 +2055,14 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 ** a null-containing string.  There is no time penalty for calling this
 ** routine if no substitution has been done.
 */
-void TextBuffer::BufUnsubstituteNullChars(char *string) const {
+void TextBuffer::BufUnsubstituteNullChars(char *string, int length) const {
 	const char subsChar = nullSubsChar_;
 
 	if (subsChar == '\0') {
 		return;
 	}
 	
-	for (char *c = string; *c != '\0'; c++) {
+	for (char *c = string; length-- != 0; c++) {
 		if (*c == subsChar) {
 			*c = '\0';
 		}

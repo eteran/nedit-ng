@@ -416,11 +416,12 @@ const char *GetTrailingPathComponents(const char *path, int noOfComponents) {
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-int FormatOfFile(const char *fileString) {
+int FormatOfFile(const char *fileString, int length) {
 	const char *p;
-	int nNewlines = 0, nReturns = 0;
+	int nNewlines = 0;
+	int nReturns = 0;
 
-	for (p = fileString; *p != '\0' && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
+	for (p = fileString; length-- != 0 && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
 		if (*p == '\n') {
 			nNewlines++;
 			if (p == fileString || *(p - 1) != '\r')
@@ -629,7 +630,7 @@ char *ReadAnyTextFile(const char *fileName, int forceNL) {
 	fileString[readLen] = 0;
 
 	/* Convert linebreaks? */
-	format = FormatOfFile(fileString);
+	format = FormatOfFile(fileString, readLen);
 	if (format == DOS_FILE_FORMAT) {
 		char pendingCR;
 		ConvertFromDosFileString(fileString, &readLen, &pendingCR);
@@ -683,7 +684,7 @@ XString ReadAnyTextFileEx(const char *fileName, int forceNL) {
 	fileString[readLen] = '\0';
 
 	/* Convert linebreaks? */
-	format = FormatOfFile(fileString);
+	format = FormatOfFile(fileString, readLen);
 	if (format == DOS_FILE_FORMAT) {
 		char pendingCR;
 		ConvertFromDosFileString(fileString, &readLen, &pendingCR);

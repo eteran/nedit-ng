@@ -256,6 +256,8 @@ static int tooFewArgsErr(const char **errMsg);
 static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, const char **errMsg);
 static int readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg);
+static int readStringArgEx(DataValue dv, std::string *result, const char **errMsg);
+
 /* DISABLED FOR 5.4
 static int backlightStringMV(WindowInfo *window, DataValue *argList,
     int nArgs, DataValue *result, const char **errMsg);
@@ -1676,7 +1678,8 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, 2);
 	result->val.str.rep[0] = buf->BufGetCharacter(pos);
-	buf->BufUnsubstituteNullChars(result->val.str.rep);
+
+	buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
 	/* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
 	return True;
@@ -1688,27 +1691,35 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 */
 static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int from, to;
-	char stringStorage[TYPE_INT_STR_SIZE(int)];
-	char *string;
 	TextBuffer *buf = window->buffer;
+	
+	std::string string;
 
 	/* Validate arguments and convert to int */
 	if (nArgs != 3)
 		return wrongNArgsErr(errMsg);
+		
 	if (!readIntArg(argList[0], &from, errMsg))
 		return False;
+		
 	if (!readIntArg(argList[1], &to, errMsg))
 		return False;
-	if (!readStringArg(argList[2], &string, stringStorage, errMsg))
+		
+	if (!readStringArgEx(argList[2], &string, errMsg))
 		return False;
+		
 	if (from < 0)
 		from = 0;
+		
 	if (from > buf->BufGetLength())
 		from = buf->BufGetLength();
+		
 	if (to < 0)
 		to = 0;
+		
 	if (to > buf->BufGetLength())
 		to = buf->BufGetLength();
+		
 	if (from > to) {
 		std::swap(from, to);
 	}
@@ -1726,7 +1737,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	   theoretically become a null.  In the highly unlikely event that
 	   all of the possible substitution characters in the buffer are used
 	   up, stop the macro and tell the user of the failure */
-	if (!window->buffer->BufSubstituteNullChars(string, strlen(string))) {
+	if (!window->buffer->BufSubstituteNullCharsEx(string)) {
 		*errMsg = "Too much binary data in file";
 		return False;
 	}
@@ -1742,13 +1753,13 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** text in the current window's text buffer
 */
 static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	char stringStorage[TYPE_INT_STR_SIZE(int)];
-	char *string;
+	std::string string;
 
 	/* Validate argument and convert to string */
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+
+	if (!readStringArgEx(argList[0], &string, errMsg))
 		return False;
 
 	/* Don't allow modifications if the window is read-only */
@@ -1764,7 +1775,7 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 	   theoretically become a null.  In the highly unlikely event that
 	   all of the possible substitution characters in the buffer are used
 	   up, stop the macro and tell the user of the failure */
-	if (!window->buffer->BufSubstituteNullChars(string, strlen(string))) {
+	if (!window->buffer->BufSubstituteNullCharsEx(string)) {
 		*errMsg = "Too much binary data in file";
 		return False;
 	}
@@ -5444,3 +5455,20 @@ static int readStringArg(DataValue dv, char **result, char *stringStorage, const
 	*errMsg = "%s called with unknown object";
 	return False;
 }
+
+static int readStringArgEx(DataValue dv, std::string *result, const char **errMsg) {
+
+	if (dv.tag == STRING_TAG) {
+		*result = dv.val.str.rep;
+		return True;
+	} else if (dv.tag == INT_TAG) {
+		char storage[32];
+		sprintf(storage, "%d", dv.val.n);
+		*result = storage;
+		return True;
+	}
+	
+	*errMsg = "%s called with unknown object";
+	return False;
+}
+
