@@ -536,11 +536,18 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		/* We really don't directly support COMPOUND_TEXT, but recent
 		   versions gnome-terminal incorrectly ask for it, even though
 		   don't declare that we do.  Just reply in string format. */
+		   
+		// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
+		std::string s = buf->BufGetSelectionTextEx();
+		buf->BufUnsubstituteNullCharsEx(s);
+		
+		char *str = XtStringDup(s);
+		   
 		*type   = XA_STRING;
-		*value  = buf->BufGetSelectionText();
-		*length = strlen((char *)*value);
+		*value  = str;
+		*length = s.size();
 		*format = 8;
-		buf->BufUnsubstituteNullChars((char *)*value);
+
 		return True;
 	}
 
@@ -633,11 +640,18 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 
 	/* Return the contents of the secondary selection.  The memory allocated
 	   here is freed by the X toolkit */
+	   
+	// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
+	std::string s = buf->BufGetSecSelectTextEx();
+	buf->BufUnsubstituteNullCharsEx(s);
+	
+	char *str = XtStringDup(s);
+	
 	*type   = XA_STRING;
-	*value  = buf->BufGetSecSelectText();
-	*length = strlen((char *)*value);
+	*value  = str;
+	*length = s.size();
 	*format = 8;
-	buf->BufUnsubstituteNullChars((char *)*value);
+
 	return True;
 }
 

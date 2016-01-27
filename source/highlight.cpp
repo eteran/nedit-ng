@@ -244,8 +244,9 @@ void StartHighlighting(WindowInfo *window, int warn) {
 	auto styleString = new char [window->buffer->BufGetLength() + 1];
 	char *stylePtr = styleString;
 	if (!highlightData->pass1Patterns) {
-		for (i = 0; i < window->buffer->BufGetLength(); i++)
+		for (i = 0; i < window->buffer->BufGetLength(); i++) {
 			*stylePtr++ = UNFINISHED_STYLE;
+		}
 	} else {
 		const char *bufString = window->buffer->BufAsString();
 		const char *stringPtr = bufString;		
@@ -1230,10 +1231,15 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 	/* Copy the buffer range into a string */
 	/* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
 	        beginParse, endParse, beginSafety, endSafety); */
-	char *string          = buf->BufGetRange(beginSafety, endSafety);
-	const char *stringPtr = string;
-	char *styleString     = styleBuf->BufGetRange(beginSafety, endSafety);
-	char *stylePtr        = styleString;
+			
+	std::string str       = buf->BufGetRangeEx(beginSafety, endSafety);
+	char *string          = &str[0];
+	const char *stringPtr = &str[0];
+	
+	
+	std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
+	char *styleString     = &styleStr[0];
+	char *stylePtr        = &styleStr[0];
 
 	/* Parse it with pass 2 patterns */
 	prevChar = getPrevChar(buf, beginSafety);
@@ -1243,8 +1249,6 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 	   beginParse and endParse.  Skip the safety region */
 	styleString[endParse - beginSafety] = '\0';
 	styleBuf->BufReplaceEx(beginParse, endParse, &styleString[beginParse - beginSafety]);
-	XtFree(styleString);
-	XtFree(string);
 }
 
 /*
@@ -1384,8 +1388,12 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 		endSafety = std::min<int>(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
 
 	/* copy the buffer range into a string */
-	char *string      = buf->BufGetRange(beginSafety, endSafety);
-	char *styleString = styleBuf->BufGetRange(beginSafety, endSafety);
+	
+	std::string str      = buf->BufGetRangeEx(beginSafety, endSafety);
+	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
+	
+	char *string      = &str[0];
+	char *styleString = &styleStr[0];
 
 	/* Parse it with pass 1 patterns */
 	/* printf("parsing from %d thru %d\n", beginSafety, endSafety); */
@@ -1463,8 +1471,6 @@ parseDone:
 	   through endParse.  Skip the safety region at the end */
 	styleString[endParse - beginSafety] = '\0';
 	modifyStyleBuf(styleBuf, &styleString[beginParse - beginSafety], beginParse, endParse, firstPass2Style);
-	XtFree(styleString);
-	XtFree(string);
 
 	return endParse;
 }

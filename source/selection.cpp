@@ -140,7 +140,7 @@ void OpenSelectedFile(WindowInfo *window, Time time) {
 ** (processing events) while waiting for a reply.  On failure (timeout or
 ** bad format) returns nullptr, otherwise returns the contents of the selection.
 */
-char *GetAnySelection(WindowInfo *window) {
+nullable_string GetAnySelectionEx(WindowInfo *window) {
 	static char waitingMarker[1] = "";
 	char *selText = waitingMarker;
 	XEvent nextEvent;
@@ -148,38 +148,9 @@ char *GetAnySelection(WindowInfo *window) {
 	/* If the selection is in the window's own buffer get it from there,
 	   but substitute null characters as if it were an external selection */
 	if (window->buffer->primary_.selected) {
-		selText = window->buffer->BufGetSelectionText();
-		window->buffer->BufUnsubstituteNullChars(selText);
-		return selText;
-	}
-
-	/* Request the selection value to be delivered to getAnySelectionCB */
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea)));
-
-	/* Wait for the value to appear */
-	while (selText == waitingMarker) {
-		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
-		ServerDispatchEvent(&nextEvent);
-	}
-	return selText;
-}
-
-/*
-** Getting the current selection by making the request, and then blocking
-** (processing events) while waiting for a reply.  On failure (timeout or
-** bad format) returns nullptr, otherwise returns the contents of the selection.
-*/
-std::string GetAnySelectionEx(WindowInfo *window) {
-	static char waitingMarker[1] = "";
-	char *selText = waitingMarker;
-	XEvent nextEvent;
-
-	/* If the selection is in the window's own buffer get it from there,
-	   but substitute null characters as if it were an external selection */
-	if (window->buffer->primary_.selected) {
-		std::string selText = window->buffer->BufGetSelectionTextEx();
-		window->buffer->BufUnsubstituteNullCharsEx(selText);
-		return selText;
+		std::string text = window->buffer->BufGetSelectionTextEx();
+		window->buffer->BufUnsubstituteNullCharsEx(text);
+		return text;
 	}
 
 	/* Request the selection value to be delivered to getAnySelectionCB */
@@ -191,9 +162,13 @@ std::string GetAnySelectionEx(WindowInfo *window) {
 		ServerDispatchEvent(&nextEvent);
 	}
 	
-	std::string r = selText ? selText : "" ;
+	if(!selText) {
+		return nullable_string();
+	}
+	
+	nullable_string s = std::string(selText);
 	XtFree(selText);
-	return r;
+	return s;
 }
 
 static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format) {

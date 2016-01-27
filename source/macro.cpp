@@ -1785,14 +1785,22 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 
 	/* Read argument list to check for "any" keyword, and get the appropriate
 	   selection */
-	if (nArgs != 0 && nArgs != 1)
+	if (nArgs != 0 && nArgs != 1) {
 		return wrongNArgsErr(errMsg);
+	}
+
 	if (nArgs == 1) {
 		if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str.rep, "any")) {
 			*errMsg = "Unrecognized argument to %s";
-			return False;
+			return false;
 		}
-		selText = GetAnySelectionEx(window);
+		
+		nullable_string text = GetAnySelectionEx(window);
+		if (!text) {
+			text = std::string("");
+		}
+		
+		selText = *text;
 	} else {
 		selText = window->buffer->BufGetSelectionTextEx();
 		window->buffer->BufUnsubstituteNullCharsEx(selText);
@@ -1801,7 +1809,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	/* Return the text as an allocated string */
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, selText.c_str());
-	return True;
+	return true;
 }
 
 /*
@@ -2179,7 +2187,7 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	if (nArgs > 8)
 		return wrongNArgsErr(errMsg);
 
-	/* we remove constness from BufAsString() result since we know
+	/* we remove constness from BufAsStringEx() result since we know
 	   searchStringMS will not modify the result */
 	newArgList[0].tag = STRING_TAG;
 	newArgList[0].val.str.rep = const_cast<char *>(window->buffer->BufAsString());

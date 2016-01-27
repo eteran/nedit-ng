@@ -56,16 +56,15 @@ public:
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
 private:
+private:  char *BufGetAll();
+private: char *BufGetRange(int start, int end);
+private: char *BufGetSecSelectText();
+private: char *BufGetSelectionText();
 private: char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
 private: void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
 public:  bool BufSubstituteNullChars(char *string, int length);
-private:  char *BufGetAll();
-public:  char *BufGetRange(int start, int end);
-public:  char *BufGetSecSelectText();
-public:  char *BufGetSelectionText();
 public:  const char *BufAsString();
 public:  void BufUnsubstituteNullChars(char *string) const;
-
 
 public:
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	

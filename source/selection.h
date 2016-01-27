@@ -27,24 +27,25 @@
 #ifndef SELECTION_H_
 #define SELECTION_H_
 
-#include "nedit.h"
+#include "nullable_string.h"
+
+struct WindowInfo;
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
-void GotoSelectedLineNumber(WindowInfo *window, Time time);
-void GotoLineNumber(WindowInfo *window);
-void SelectNumberedLine(WindowInfo *window, int lineNum);
-void OpenSelectedFile(WindowInfo *window, Time time);
-char *GetAnySelection(WindowInfo *window);
-std::string GetAnySelectionEx(WindowInfo *window);
-void BeginMarkCommand(WindowInfo *window);
-void BeginGotoMarkCommand(WindowInfo *window, int extend);
+nullable_string GetAnySelectionEx(WindowInfo *window);
 void AddMark(WindowInfo *window, Widget widget, char label);
-void UpdateMarkTable(WindowInfo *window, int pos, int nInserted, int nDeleted);
-void GotoMark(WindowInfo *window, Widget w, char label, int extendSel);
-void MarkDialog(WindowInfo *window);
+void BeginGotoMarkCommand(WindowInfo *window, int extend);
+void BeginMarkCommand(WindowInfo *window);
+void GotoLineNumber(WindowInfo *window);
 void GotoMarkDialog(WindowInfo *window, int extend);
+void GotoMark(WindowInfo *window, Widget w, char label, int extendSel);
+void GotoSelectedLineNumber(WindowInfo *window, Time time);
+void MarkDialog(WindowInfo *window);
+void OpenSelectedFile(WindowInfo *window, Time time);
+void SelectNumberedLine(WindowInfo *window, int lineNum);
+void UpdateMarkTable(WindowInfo *window, int pos, int nInserted, int nDeleted);
 
 #endif
