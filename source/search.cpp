@@ -138,7 +138,7 @@ static int countWindows(void);
 static int countWritableWindows(void);
 static int defaultRegexFlags(int searchType);
 static int findMatchingChar(WindowInfo *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
-static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, int *searchType);
+static int getFindDlogInfoEx(WindowInfo *window, SearchDirection *direction, std::string *searchString, int *searchType);
 static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
@@ -2872,7 +2872,6 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
-	char searchString[SEARCHMAX];
 	SearchDirection direction;
 	int searchType;
 	const char *params[4];
@@ -2880,17 +2879,19 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	window = WidgetToWindow(w);
 
 	/* fetch find string, direction and type from the dialog */
-	if (!getFindDlogInfo(window, &direction, searchString, &searchType))
+	std::string searchString;
+	if (!getFindDlogInfoEx(window, &direction, &searchString, &searchType))
 		return;
 
 	/* Set the initial focus of the dialog back to the search string	*/
 	resetFindTabGroup(window);
 
 	/* find the text and mark it */
-	params[0] = searchString;
+	params[0] = searchString.c_str();
 	params[1] = directionArg(direction);
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
+	
 	windowNotToClose = window;
 	XtCallActionProc(window->lastFocus, (String) "find", callData->event, (char **)params, 4);
 	windowNotToClose = nullptr;
@@ -2980,7 +2981,7 @@ static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, ch
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, int *searchType) {
+static int getFindDlogInfoEx(WindowInfo *window, SearchDirection *direction, std::string *searchString, int *searchType) {
 
 	regexp *compiledRE = nullptr;
 
@@ -3030,7 +3031,7 @@ static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char 
 		return FALSE;
 	}
 	
-	strcpy(searchString, findText.c_str());
+	*searchString = findText;
 	return TRUE;
 }
 
@@ -4088,7 +4089,7 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 	cursorPos = 0;
 	realOffset = 0;
 	while (found) {
-		found = SearchString(fileString.c_str(), searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
+		found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
 		if (!found)
 			break;
 
@@ -4929,7 +4930,7 @@ static bool searchMatchesSelection(WindowInfo *window, const char *searchString,
 	/* search for the string in the selection (we are only interested 	*/
 	/* in an exact match, but the procedure SearchString does important */
 	/* stuff like applying the correct matching algorithm)		*/
-	bool found = SearchString(string.c_str(), searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
+	bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
 
 	/* decide if it is an exact match */
 	if (!found) {

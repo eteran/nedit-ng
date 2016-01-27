@@ -565,7 +565,7 @@ void ReadMacroInitFile(WindowInfo *window) {
 		static bool initFileLoaded = false;
 	
 		if (!initFileLoaded) {
-			ReadMacroFile(window, autoloadName.c_str(), False);
+			ReadMacroFileEx(window, autoloadName.c_str(), False);
 			initFileLoaded = true;
 		}
 	} catch(const path_error &e) {
@@ -576,7 +576,7 @@ void ReadMacroInitFile(WindowInfo *window) {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist) {
+int ReadMacroFileEx(WindowInfo *window, const std::string &fileName, int warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
@@ -584,14 +584,13 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist) {
 	auto fileString = ReadAnyTextFileEx(fileName, True);
 	if (!fileString) {
 		if (errno != ENOENT || warnNotExist) {
-			DialogF(DF_ERR, window->shell, 1, "Read Macro", "Error reading macro file %s: %s", "OK", fileName, strerror(errno));
+			DialogF(DF_ERR, window->shell, 1, "Read Macro", "Error reading macro file %s: %s", "OK", fileName.c_str(), strerror(errno));
 		}
 		return False;
 	}
 
 	/* Parse fileString */
-	return readCheckMacroString(window->shell, fileString.str(), window, fileName, nullptr);
-
+	return readCheckMacroString(window->shell, fileString.str(), window, fileName.c_str(), nullptr);
 }
 
 /*

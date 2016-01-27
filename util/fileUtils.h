@@ -36,8 +36,7 @@ enum fileFormats {
 	MAC_FILE_FORMAT
 };
 
-char *ReadAnyTextFile(const char *fileName, int forceNL);
-XString ReadAnyTextFileEx(const char *fileName, int forceNL);
+XString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
 const char *GetTrailingPathComponents(const char *path, int noOfComponents);
 int CompressPathname(char *pathname);
 int ConvertToDosFileString(char **fileString, int *length);

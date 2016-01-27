@@ -48,7 +48,7 @@ void AbortMacroCommand(WindowInfo *window);
 int MacroWindowCloseActions(WindowInfo *window);
 void RepeatDialog(WindowInfo *window);
 void RepeatMacro(WindowInfo *window, const char *command, int how);
-int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist);
+int ReadMacroFileEx(WindowInfo *window, const std::string &fileName, int warnNotExist);
 int ReadMacroString(WindowInfo *window, const char *string, const char *errIn);
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 std::string GetReplayMacro(void);

@@ -601,66 +601,14 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 **
 ** Force a terminating \n, if this is requested
 */
-char *ReadAnyTextFile(const char *fileName, int forceNL) {
+XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	struct stat statbuf;
 	FILE *fp;
 	int fileLen, readLen;
 	int format;
 
 	/* Read the whole file into fileString */
-	if ((fp = fopen(fileName, "r")) == nullptr) {
-		return nullptr;
-	}
-	if (fstat(fileno(fp), &statbuf) != 0) {
-		fclose(fp);
-		return nullptr;
-	}
-	fileLen = statbuf.st_size;
-	/* +1 = space for null
-	** +1 = possible additional \n
-	*/
-	auto fileString = XtMalloc(fileLen + 2);
-	readLen = fread(fileString, sizeof(char), fileLen, fp);
-	if (ferror(fp)) {
-		XtFree(fileString);
-		fclose(fp);
-		return nullptr;
-	}
-	fclose(fp);
-	fileString[readLen] = 0;
-
-	/* Convert linebreaks? */
-	format = FormatOfFile(fileString, readLen);
-	if (format == DOS_FILE_FORMAT) {
-		char pendingCR;
-		ConvertFromDosFileString(fileString, &readLen, &pendingCR);
-	} else if (format == MAC_FILE_FORMAT) {
-		ConvertFromMacFileString(fileString, readLen);
-	}
-
-	/* now, that the fileString is in Unix format, check for terminating \n */
-	if (forceNL && fileString[readLen - 1] != '\n') {
-		fileString[readLen] = '\n';
-		fileString[readLen + 1] = '\0';
-	}
-
-	return fileString;
-}
-
-/*
-** Reads a text file into a string buffer, converting line breaks to
-** unix-style if appropriate.
-**
-** Force a terminating \n, if this is requested
-*/
-XString ReadAnyTextFileEx(const char *fileName, int forceNL) {
-	struct stat statbuf;
-	FILE *fp;
-	int fileLen, readLen;
-	int format;
-
-	/* Read the whole file into fileString */
-	if ((fp = fopen(fileName, "r")) == nullptr) {
+	if ((fp = fopen(fileName.c_str(), "r")) == nullptr) {
 		return XString();
 	}
 	

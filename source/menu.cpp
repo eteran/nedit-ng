@@ -2711,7 +2711,7 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		fprintf(stderr, "nedit: load_macro_file action requires file argument\n");
 		return;
 	}
-	ReadMacroFile(WidgetToWindow(w), args[0], True);
+	ReadMacroFileEx(WidgetToWindow(w), args[0], True);
 }
 
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
