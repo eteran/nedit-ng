@@ -125,12 +125,12 @@ static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_data);
 #endif
 
-static bool backwardRegexSearch(view::string_view string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
-static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
+static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 
-static bool forwardRegexSearch(view::string_view string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool searchRegex(view::string_view string, const char *searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static const char *directionArg(SearchDirection direction);
 static const char *searchTypeArg(int searchType);
 static const char *searchWrapArg(int searchWrap);
@@ -2985,7 +2985,7 @@ static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char 
 	regexp *compiledRE = nullptr;
 
 	/* Get the search string, search type, and direction from the dialog */
-	char *findText = XmTextGetString(window->findText);
+	std::string findText = XmTextGetStringEx(window->findText);
 
 	if (XmToggleButtonGetState(window->findRegexToggle)) {
 		int regexDefault;
@@ -3025,13 +3025,12 @@ static int getFindDlogInfo(WindowInfo *window, SearchDirection *direction, char 
 	}
 
 	/* Return the search string */
-	if (strlen(findText) >= SEARCHMAX) {
+	if (findText.size() >= SEARCHMAX) {
 		DialogF(DF_WARN, XtParent(window->findDlog), 1, "String too long", "Search string too long.", "OK");
-		XtFree(findText);
 		return FALSE;
 	}
-	strcpy(searchString, findText);
-	XtFree(findText);
+	
+	strcpy(searchString, findText.c_str());
 	return TRUE;
 }
 
@@ -3463,9 +3462,8 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	auto window   = static_cast<WindowInfo *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
-
+	
 	const char *params[5];
-	char *searchString;
 	int searchType;
 	SearchDirection direction;
 	int nParams;
@@ -3474,7 +3472,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	searchString = XmTextGetString(window->iSearchText);
+	std::string searchString = XmTextGetStringEx(window->iSearchText);
 	if (XmToggleButtonGetState(window->iSearchCaseToggle)) {
 		if (XmToggleButtonGetState(window->iSearchRegexToggle))
 			searchType = SEARCH_REGEX;
@@ -3497,7 +3495,6 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 		try {
 			compiledRE = new regexp(searchString, defaultRegexFlags(searchType));
 		} catch(const regex_error &e) {
-			XtFree(searchString);
 			return;
 		}
 		delete compiledRE;
@@ -3509,14 +3506,15 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   as "continued" so the search routine knows to re-start the search
 	   from the original starting position */
 	nParams = 0;
-	params[nParams++] = searchString;
+	params[nParams++] = searchString.c_str(); // TODO(eteran): is this OK?
 	params[nParams++] = directionArg(direction);
 	params[nParams++] = searchTypeArg(searchType);
 	params[nParams++] = searchWrapArg(GetPrefSearchWraps());
-	if (window->iSearchStartPos != -1)
+	if (window->iSearchStartPos != -1) {
 		params[nParams++] = "continued";
+	}
+	
 	XtCallActionProc(window->lastFocus, (String) "find_incremental", callData->event, (char **)params, nParams);
-	XtFree(searchString);
 }
 
 /*
@@ -4720,14 +4718,14 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 	}
 }
 
-static bool searchRegex(view::string_view string, const char *searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 	if (direction == SEARCH_FORWARD)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
 		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 }
 
-static bool forwardRegexSearch(view::string_view string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
 		regexp compiledRE(searchString, defaultFlags);
@@ -4779,7 +4777,7 @@ static bool forwardRegexSearch(view::string_view string, const char *searchStrin
 	}
 }
 
-static bool backwardRegexSearch(view::string_view string, const char *searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
 		regexp compiledRE(searchString, defaultFlags);
@@ -4968,7 +4966,7 @@ static bool searchMatchesSelection(WindowInfo *window, const char *searchString,
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-static bool replaceUsingREEx(const char *searchStr, const char *replaceStr, const std::string &sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
+static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
 	try {
 		regexp compiledRE(searchStr, defaultFlags);
 		compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);

@@ -133,7 +133,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static int lastModified(TextBuffer *styleBuf);
 static char getPrevChar(TextBuffer *buf, int pos);
-static regexp *compileREAndWarn(Widget parent, const char *re);
+static regexp *compileREAndWarn(Widget parent, view::string_view re);
 static int parentStyleOf(const char *parentStyles, int style);
 static int isParentStyle(const char *parentStyles, int style1, int style2);
 static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlightData, int *pos);
@@ -944,7 +944,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 		bigPattern.pop_back(); // remove last '|' character
 
 		try {
-			compiledPats[patternNum].subPatternRE = new regexp(bigPattern.c_str(), REDFLT_STANDARD);
+			compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
 			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
 			return nullptr;
@@ -1920,22 +1920,23 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-static regexp *compileREAndWarn(Widget parent, const char *re) {
+static regexp *compileREAndWarn(Widget parent, view::string_view re) {
 
 	try {
 		return new regexp(re, REDFLT_STANDARD);
 	} catch(const regex_error &e) {
-		char *boundedRe = XtNewStringEx(re);
 		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(e.what()) - 60;
 
 		/* Prevent buffer overflow in DialogF. If the re is too long,
 		truncate it and append ... */
-		if (strlen(boundedRe) > maxLength) {
-			strcpy(&boundedRe[maxLength - 3], "...");
+		std::string boundedRe = re.to_string();
+				
+		if (boundedRe.size() > maxLength) {
+			boundedRe.resize(maxLength - 3);
+			boundedRe.append("...");
 		}
 
-		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe, e.what());
-		XtFree(boundedRe);
+		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe.c_str(), e.what());
 		return nullptr;
 	}
 	
