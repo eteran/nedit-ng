@@ -47,42 +47,6 @@ const int PreferredGapSize = 80;
 const char *ControlCodeTable[32] = {"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", "bs",  "ht", "nl",  "vt",  "np", "cr", "so", "si",
                                     "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb", "can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
 
-/*
-** Convert sequences of spaces into tabs.  The threshold for conversion is
-** when 3 or more spaces can be converted into a single tab, this avoids
-** converting double spaces after a period withing a block of text.
-*/
-char *unexpandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
-	char *outStr, *outPtr, expandedChar[MAX_EXP_CHAR_LEN];
-	const char *c;
-	int indent, len;
-
-	outStr = XtMalloc(strlen(text) + 1);
-	outPtr = outStr;
-	indent = startIndent;
-	for (c = text; *c != '\0';) {
-		if (*c == ' ') {
-			len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
-			if (len >= 3 && !strncmp(c, expandedChar, len)) {
-				c += len;
-				*outPtr++ = '\t';
-				indent += len;
-			} else {
-				*outPtr++ = *c++;
-				indent++;
-			}
-		} else if (*c == '\n') {
-			indent = startIndent;
-			*outPtr++ = *c++;
-		} else {
-			*outPtr++ = *c++;
-			indent++;
-		}
-	}
-	*outPtr = '\0';
-	*newLen = outPtr - outStr;
-	return outStr;
-}
 
 /*
 ** Convert sequences of spaces into tabs.  The threshold for conversion is
@@ -119,54 +83,6 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 	}
 
 	*newLen = outStr.size();
-	return outStr;
-}
-
-/*
-** Expand tabs to spaces for a block of text.  The additional parameter
-** "startIndent" if nonzero, indicates that the text is a rectangular selection
-** beginning at column "startIndent"
-*/
-char *expandTabs(const char *text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
-	char *outStr, *outPtr;
-	const char *c;
-	int indent, len, outLen = 0;
-
-	/* rehearse the expansion to figure out length for output string */
-	indent = startIndent;
-	for (c = text; *c != '\0'; c++) {
-		if (*c == '\t') {
-			len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-			outLen += len;
-			indent += len;
-		} else if (*c == '\n') {
-			indent = startIndent;
-			outLen++;
-		} else {
-			indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-			outLen++;
-		}
-	}
-
-	/* do the expansion */
-	outStr = XtMalloc(outLen + 1);
-	outPtr = outStr;
-	indent = startIndent;
-	for (c = text; *c != '\0'; c++) {
-		if (*c == '\t') {
-			len = TextBuffer::BufExpandCharacter(*c, indent, outPtr, tabDist, nullSubsChar);
-			outPtr += len;
-			indent += len;
-		} else if (*c == '\n') {
-			indent = startIndent;
-			*outPtr++ = *c;
-		} else {
-			indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-			*outPtr++ = *c;
-		}
-	}
-	outStr[outLen] = '\0';
-	*newLen = outLen;
 	return outStr;
 }
 
@@ -234,37 +150,6 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 ** "origIndent" to starting at "newIndent".  Returns an allocated string
 ** which must be freed by the caller with XtFree.
 */
-char *realignTabs(const char *text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
-	char *expStr, *outStr;
-	int len;
-
-	/* If the tabs settings are the same, retain original tabs */
-	if (origIndent % tabDist == newIndent % tabDist) {
-		len = strlen(text);
-		outStr = XtMalloc(len + 1);
-		strcpy(outStr, text);
-		*newLength = len;
-		return outStr;
-	}
-
-	/* If the tab settings are not the same, brutally convert tabs to
-	   spaces, then back to tabs in the new position */
-	expStr = expandTabs(text, origIndent, tabDist, nullSubsChar, &len);
-	if (!useTabs) {
-		*newLength = len;
-		return expStr;
-	}
-	outStr = unexpandTabs(expStr, newIndent, tabDist, nullSubsChar, newLength);
-	XtFree(expStr);
-	return outStr;
-}
-
-/*
-** Adjust the space and tab characters from string "text" so that non-white
-** characters remain stationary when the text is shifted from starting at
-** "origIndent" to starting at "newIndent".  Returns an allocated string
-** which must be freed by the caller with XtFree.
-*/
 std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
 	int len;
 
@@ -284,22 +169,6 @@ std::string realignTabsEx(view::string_view text, int origIndent, int newIndent,
 	}
 
 	return unexpandTabsEx(expStr, newIndent, tabDist, nullSubsChar, newLength);
-}
-
-/*
-** Create a pseudo-histogram of the characters in a string (don't actually
-** count, because we don't want overflow, just mark the character's presence
-** with a 1).  If init is true, initialize the histogram before acumulating.
-** if not, add the new data to an existing histogram.
-*/
-void histogramCharacters(const char *string, int length, bool hist[256], bool init) {
-
-	if (init) {
-		std::fill_n(hist, 256, false);
-	}
-	
-	for (const char *c = string; c < &string[length]; c++)
-		hist[*((unsigned char *)c)] = true;
 }
 
 /*
@@ -483,7 +352,6 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	int indent, preRectIndent, postRectIndent, len;
 	const char *c;
 	char *outPtr;
-	char *retabbedStr;
 
 	/* copy the line up to rectStart */
 	outPtr = outStr;
@@ -520,9 +388,9 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	/* Copy the rest of the line.  If the indentation has changed, preserve
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
-	retabbedStr = realignTabs(c, postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	strcpy(outPtr, retabbedStr);
-	XtFree(retabbedStr);
+	std::string retabbedStr = realignTabsEx(c, postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	strcpy(outPtr, retabbedStr.c_str());
+
 	*endOffset = outPtr - outStr;
 	*outLen = (outPtr - outStr) + len;
 }
@@ -1621,7 +1489,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	bool histogram[256];
 
 	/* Find out what characters the string contains */
-	histogramCharacters(string, length, histogram, true);
+	histogramCharactersEx(view::string_view(string, length), histogram, true);
 
 	/* Does the string contain the null-substitute character?  If so, re-
 	   histogram the buffer text to find a character which is ok in both the
@@ -1632,7 +1500,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
 		bufString = const_cast<char *>(BufAsString());
-		histogramCharacters(bufString, length_, histogram, false);
+		histogramCharactersEx(view::string_view(bufString, length_), histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return false;
@@ -1674,7 +1542,7 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
 		bufString = const_cast<char *>(BufAsString());
-		histogramCharacters(bufString, length_, histogram, false);
+		histogramCharactersEx(view::string_view(bufString, length_), histogram, false);
 		newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return false;
