@@ -598,13 +598,17 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 		XtDestroyWidget(etDialog.form);
 }
 
-static void appendToFormat(const char *string) {
+static void appendToFormat(view::string_view string) {
 
 	std::string format = XmTextGetStringEx(etDialog.formatW);
-	char *buf    = XtMalloc(strlen(string) + format.size() + 1);
-	sprintf(buf, "%s%s", format.c_str(), string);
+
+	std::string buf;
+	buf.reserve(string.size() + format.size());
+	
+	buf.append(format);
+	buf.append(string.begin(), string.end());
+	
 	XmTextSetStringEx(etDialog.formatW, buf);
-	XtFree(buf);
 }
 
 static void removeFromFormat(const char *string) {

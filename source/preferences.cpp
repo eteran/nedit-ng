@@ -4757,7 +4757,7 @@ static int caseReplaceEx(std::string *inString, const char *expr, const char *re
 ** (inclusive). Returns the length of the replacement.
 */
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd) {
-	if (caseFind(TempStringPrefs.macroCmds->c_str(), oldText)) {
+	if (caseFind(*TempStringPrefs.macroCmds, oldText)) {
 		const char *start = strstr(PrefDescrip[2].defaultString, newStart);
 
 		if (start) {
@@ -4851,7 +4851,7 @@ static void updateShellCmdsTo5dot4(void) {
 	const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
 #endif /* __FreeBSD__ */
 
-	if (regexFind(TempStringPrefs.shellCmds->c_str(), wc5dot3))
+	if (regexFind(*TempStringPrefs.shellCmds, wc5dot3))
 		regexReplaceEx(&*TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
 
 	return;
@@ -4860,7 +4860,7 @@ static void updateShellCmdsTo5dot4(void) {
 static void updateMacroCmdsTo5dot5(void) {
 	const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
 	const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
-	if (regexFind(TempStringPrefs.macroCmds->c_str(), uc5dot4))
+	if (regexFind(*TempStringPrefs.macroCmds, uc5dot4))
 		regexReplaceEx(&*TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
 
 	return;

@@ -24,14 +24,10 @@ public:
 	}
 	
 	explicit XString(const std::string &text) : ptr_(nullptr), size_(0) {
-	
-	
-		size_ = text.size();	
-		
+		size_ = text.size();
 		ptr_  = XtMalloc(size_ + 1);
-		strncpy(ptr_, text.c_str(), size_ + 1);
+		std::copy(text.begin(), text.end(), ptr_);
 		ptr_[size_] = '\0';
-			
 	}
 	
 	explicit XString(const char *text) : ptr_(nullptr), size_(0) {
@@ -46,16 +42,17 @@ public:
 		if(text) {	
 			size_ = length;	
 			ptr_  = XtMalloc(size_ + 1);
-			strncpy(ptr_, text, size_ + 1);
+			std::copy_n(text, length, ptr_);
 			ptr_[size_] = '\0';
 		}
 	}
 	
 	XString(const XString &other) : ptr_(nullptr), size_(0) {
 		if(other.ptr_) {	
-			size_ = strlen(other.ptr_);
+			size_ = other.size_;
 			ptr_  = XtMalloc(size_ + 1);
-			strcpy(ptr_, other.ptr_);
+			std::copy(other.begin(), other.end(), ptr_);
+			ptr_[size_] = '\0';
 		}	
 	}
 	

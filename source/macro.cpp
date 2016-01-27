@@ -1620,22 +1620,27 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	/* Validate arguments and convert to int */
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
+		
 	if (!readIntArg(argList[0], &from, errMsg))
 		return False;
+		
 	if (!readIntArg(argList[1], &to, errMsg))
 		return False;
+		
 	if (from < 0)
 		from = 0;
+		
 	if (from > buf->BufGetLength())
 		from = buf->BufGetLength();
+		
 	if (to < 0)
 		to = 0;
+		
 	if (to > buf->BufGetLength())
 		to = buf->BufGetLength();
+		
 	if (from > to) {
-		int temp = from;
-		from = to;
-		to = temp;
+		std::swap(from, to);
 	}
 
 	/* Copy text from buffer (this extra copy could be avoided if TextBuffer.c

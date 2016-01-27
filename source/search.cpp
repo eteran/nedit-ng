@@ -2887,7 +2887,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	resetFindTabGroup(window);
 
 	/* find the text and mark it */
-	params[0] = searchString.c_str();
+	params[0] = searchString.c_str(); // TODO(eteran): is this OK?
 	params[1] = directionArg(direction);
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());

@@ -126,8 +126,6 @@ void StopHandlingXSelections(Widget w) {
 */
 void CopyToClipboard(Widget w, Time time) {
 	long itemID = 0;
-	XmString s;
-	int stat, length;
 
 	/* Get the selected text, if there's no selection, do nothing */
 	std::string text = reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufGetSelectionTextEx();
@@ -137,7 +135,7 @@ void CopyToClipboard(Widget w, Time time) {
 
 	/* If the string contained ascii-nul characters, something else was
 	   substituted in the buffer.  Put the nulls back */
-	length = text.size();
+	int length = text.size();
 	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnsubstituteNullCharsEx(text);
 
 	/* Shut up LessTif */
@@ -147,9 +145,10 @@ void CopyToClipboard(Widget w, Time time) {
 
 	/* Use the XmClipboard routines to copy the text to the clipboard.
 	   If errors occur, just give up.  */
-	s = XmStringCreateSimpleEx("NEdit");
-	stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s, time, w, nullptr, &itemID);
+	XmString s = XmStringCreateSimpleEx("NEdit");
+	int stat = SpinClipboardStartCopy(XtDisplay(w), XtWindow(w), s, time, w, nullptr, &itemID);
 	XmStringFree(s);
+	
 	if (stat != ClipboardSuccess) {
 		SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 		return;
@@ -159,7 +158,7 @@ void CopyToClipboard(Widget w, Time time) {
 	   that this was inconsistent with the somewhat ambiguous policy of
 	   including a terminating null but not mentioning it in the length */
 
-	if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String) "STRING", (char *)text.c_str(), length, 0, nullptr) != ClipboardSuccess) {
+	if (SpinClipboardCopy(XtDisplay(w), XtWindow(w), itemID, (String) "STRING", (char *)text.data(), length, 0, nullptr) != ClipboardSuccess) {
 		SpinClipboardEndCopy(XtDisplay(w), XtWindow(w), itemID);
 		SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 		return;
