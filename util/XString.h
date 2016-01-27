@@ -115,11 +115,11 @@ public:
 		return ptr_[index];
 	}
 	
-	char *c_str() {
+	char *str() {
 		return ptr_;
 	}
 	
-	const char *c_str() const {
+	const char *str() const {
 		return ptr_;
 	}
 	

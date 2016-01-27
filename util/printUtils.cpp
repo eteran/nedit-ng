@@ -627,10 +627,10 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 		if (str.empty()) {
 			copiesArg[0] = '\0';
 		} else {
-			if (sscanf(str.c_str(), "%d", &nCopies) != 1) {
+			if (sscanf(str.str(), "%d", &nCopies) != 1) {
 				copiesArg[0] = '\0';
 			} else {
-				sprintf(copiesArg, " %s%s", CopiesOption, str.c_str());
+				sprintf(copiesArg, " %s%s", CopiesOption, str.str());
 			}
 		}
 	}
@@ -642,7 +642,7 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 		if (str.empty()) {
 			queueArg[0] = '\0';
 		} else {
-			sprintf(queueArg, " %s%s", QueueOption, str.c_str());
+			sprintf(queueArg, " %s%s", QueueOption, str.str());
 		}
 	}
 	
@@ -653,7 +653,7 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 		if (str.empty()) {
 			hostArg[0] = '\0';
 		} else {
-			sprintf(hostArg, " %s%s", HostOption, str.c_str());
+			sprintf(hostArg, " %s%s", HostOption, str.str());
 		}
 	}
 	
@@ -701,7 +701,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 		auto str = XString::takeString(XmTextGetString(Text4));
 	
 		/* add the file name and output redirection to the print command */
-		sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str.c_str());
+		sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str.str());
 	}
 	
 	/* Issue the print command using a popen call and recover error messages
@@ -733,19 +733,19 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	/* Print command succeeded, so retain the current print parameters */
 	if (CopiesOption[0] != '\0') {
 		auto str = XString::takeString(XmTextGetString(Text1));
-		strcpy(Copies, str.c_str());
+		strcpy(Copies, str.str());
 	}
 	if (QueueOption[0] != '\0') {
 		auto str = XString::takeString(XmTextGetString(Text2));
-		strcpy(Queue, str.c_str());
+		strcpy(Queue, str.str());
 	}
 	if (HostOption[0] != '\0') {
 		auto str = XString::takeString(XmTextGetString(Text3));
-		strcpy(Host, str.c_str());
+		strcpy(Host, str.str());
 	}
 	
 	auto str = XString::takeString(XmTextGetString(Text4));
-	strcpy(CmdText, str.c_str());
+	strcpy(CmdText, str.str());
 
 	/* Pop down the dialog */
 	DoneWithDialog = true;

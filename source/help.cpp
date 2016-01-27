@@ -591,7 +591,7 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 	auto helpText = stitchEx(HelpTextPanes[topic], HelpText[topic], &styleData);
 
 	/* Stuff the text into the widget's text buffer */
-	TextGetBuffer(HelpTextPanes[topic])->BufSetAllEx(helpText.c_str());
+	TextGetBuffer(HelpTextPanes[topic])->BufSetAllEx(helpText.str());
 
 	/* Create a style buffer for the text widget and fill it with the style
 	   data which was generated along with the text content */
@@ -994,7 +994,7 @@ static void searchHelpText(Widget parent, int parentTopic, const char *searchFor
 			continue;
 		auto helpText = stitchEx(parent, HelpText[topic], nullptr);
 
-		if (SearchString(helpText.c_str(), searchFor, SEARCH_FORWARD, SEARCH_LITERAL, False, topic == startTopic ? startPos : 0, &beginMatch, &endMatch, nullptr, nullptr, GetPrefDelimiters())) {
+		if (SearchString(helpText.str(), searchFor, SEARCH_FORWARD, SEARCH_LITERAL, False, topic == startTopic ? startPos : 0, &beginMatch, &endMatch, nullptr, nullptr, GetPrefDelimiters())) {
 			found = True;
 			break;
 		}
@@ -1055,7 +1055,7 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
 	   old, mismatched, highlighting to the new text */
 	auto helpText = stitchEx(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
 	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, nullptr, nullptr, 0, '\0', nullptr, nullptr);
-	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAllEx(helpText.c_str());
+	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAllEx(helpText.str());
 
 	HelpStyleBuffers[newTopic]->BufSetAllEx(styleData);
 	XtFree(styleData);

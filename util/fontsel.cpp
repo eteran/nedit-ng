@@ -678,7 +678,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.fontList, items, itemCount1, 1);
 		if (ctrlBlk.sel1) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel1.c_str(), XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel1.str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.fontList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.fontList, items[0]);
 		}
@@ -695,7 +695,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.styleList, items, itemCount2, 1);
 		if (ctrlBlk.sel2) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel2.c_str(), XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel2.str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.styleList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.styleList, items[0]);
 		}
@@ -712,7 +712,7 @@ static void setupScrollLists(int dontChange, xfselControlBlkType ctrlBlk) {
 		XmListAddItems(ctrlBlk.sizeList, items, itemCount3, 1);
 		if (ctrlBlk.sel3) {
 			XmStringFree(items[0]);
-			items[0] = XmStringCreate(ctrlBlk.sel3.c_str(), XmSTRING_DEFAULT_CHARSET);
+			items[0] = XmStringCreate(ctrlBlk.sel3.str(), XmSTRING_DEFAULT_CHARSET);
 			XmListSelectItem(ctrlBlk.sizeList, items[0], FALSE);
 			XmListSetBottomItem(ctrlBlk.sizeList, items[0]);
 		}

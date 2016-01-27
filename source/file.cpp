@@ -858,7 +858,7 @@ static bool doSave(WindowInfo *window) {
 	}
 
 	/* write to the file */
-	fwrite(fileString.c_str(), sizeof(char), fileString.size(), fp);
+	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 	
 	
 	if (ferror(fp)) {
@@ -934,7 +934,7 @@ int WriteBackupFile(WindowInfo *window) {
 	}
 
 	/* write out the file */
-	fwrite(fileString.c_str(), sizeof(char), fileString.size(), fp);
+	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell, 1, "Error saving Backup", "Error while saving backup for %s:\n%s\n"
 		                                                         "Automatic backup is now off",
@@ -1155,7 +1155,7 @@ void PrintString(const std::string &string, int length, Widget parent, const std
 	}
 
 	/* write to the file */
-	fwrite(string.c_str(), sizeof(char), length, fp);
+	fwrite(string.data(), sizeof(char), length, fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName.c_str(), strerror(errno));
 		fclose(fp); /* should call close(fd) in turn! */

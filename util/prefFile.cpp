@@ -260,7 +260,7 @@ XrmDatabase CreatePreferencesDatabase(const char *fullName, const char *appName,
 		if(!fileString) {
 			db = nullptr;
 		} else {
-			db = XrmGetStringDatabase(fileString.c_str());
+			db = XrmGetStringDatabase(fileString.str());
 
 			/*  Add a resource to the database which remembers that
 			    the file is read, so that NEdit will know it.  */

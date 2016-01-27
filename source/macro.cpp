@@ -590,7 +590,7 @@ int ReadMacroFile(WindowInfo *window, const char *fileName, int warnNotExist) {
 	}
 
 	/* Parse fileString */
-	return readCheckMacroString(window->shell, fileString.c_str(), window, fileName, nullptr);
+	return readCheckMacroString(window->shell, fileString.str(), window, fileName, nullptr);
 
 }
 

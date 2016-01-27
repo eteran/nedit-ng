@@ -1922,7 +1922,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NShellMenuItems)
 		return;
 
-	params[0] = ShellMenuItems[index]->name.c_str();
+	params[0] = ShellMenuItems[index]->name.str();
 	XtCallActionProc(window->lastFocus, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1955,7 +1955,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NMacroMenuItems)
 		return;
 
-	params[0] = MacroMenuItems[index]->name.c_str();
+	params[0] = MacroMenuItems[index]->name.str();
 	XtCallActionProc(window->lastFocus, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1979,7 +1979,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NBGMenuItems)
 		return;
 
-	params[0] = BGMenuItems[index]->name.c_str();
+	params[0] = BGMenuItems[index]->name.str();
 	XtCallActionProc(window->lastFocus, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -2011,7 +2011,7 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 		mneString[1] = '\0';
 		generateAcceleratorString(accString, f->modifiers, f->keysym);
 		
-		XmTextSetStringEx(ucd->nameTextW, f->name.c_str());
+		XmTextSetStringEx(ucd->nameTextW, f->name.str());
 		XmTextSetStringEx(ucd->cmdTextW,  f->cmd);
 		XmTextSetStringEx(ucd->accTextW,  accString);
 		XmTextSetStringEx(ucd->mneTextW,  mneString);
@@ -2052,7 +2052,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 		return nullptr;
 	}
 
-	if (strchr(nameText.c_str(), ':')) {
+	if (strchr(nameText.str(), ':')) {
 		if (!silent) {
 			DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry", "Menu item names may not\ncontain colon (:) characters", "OK");
 			XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
@@ -2835,7 +2835,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
 	newInfo->umiToBeManaged = False;
 
 	/* assign language mode info to new user menu info element */
-	parseMenuItemName(item->name.c_str(), newInfo);
+	parseMenuItemName(item->name.str(), newInfo);
 
 	return newInfo;
 }
@@ -2986,10 +2986,10 @@ static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const XStr
 */
 static char *stripLanguageModeEx(const XString &menuItemName) {
 	
-	if(const char *firstAtPtr = strchr(menuItemName.c_str(), '@')) {
-		return copySubstring(menuItemName.c_str(), firstAtPtr - menuItemName.c_str());
+	if(const char *firstAtPtr = strchr(menuItemName.str(), '@')) {
+		return copySubstring(menuItemName.str(), firstAtPtr - menuItemName.str());
 	} else {
-		return XtNewStringEx(menuItemName.c_str());
+		return XtNewStringEx(menuItemName.str());
 	}
 }
 

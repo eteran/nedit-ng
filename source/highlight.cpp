@@ -1443,7 +1443,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 			const int tempLen = endPass2Safety - modStart;			
 			XString temp(&styleString[modStart - beginSafety], tempLen);
 			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, nullptr);
-			strncpy(&styleString[modStart - beginSafety], temp.c_str(), tempLen);
+			strncpy(&styleString[modStart - beginSafety], temp.str(), tempLen);
 		}
 	}
 
@@ -1461,7 +1461,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 			XString temp(&styleString[startPass2Safety - beginSafety], tempLen);
 			prevChar = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, nullptr);
-			strncpy(&styleString[startPass2Safety - beginSafety], temp.c_str(), tempLen);
+			strncpy(&styleString[startPass2Safety - beginSafety], temp.str(), tempLen);
 		}
 	}
 

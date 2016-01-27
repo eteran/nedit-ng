@@ -398,7 +398,7 @@ static int startServer(const char *message, const char *commandLineArgs) {
 	/* start the server */
 	auto commandLine = XString::format("%s %s&", Preferences.serverCmd, commandLineArgs);
 	
-	int sysrc = system(commandLine.c_str());
+	int sysrc = system(commandLine.str());
 
 	return (sysrc == 0) ? 0 : -1;
 }

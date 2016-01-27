@@ -1226,7 +1226,7 @@ void ImportPrefFile(const char *filename, int convertOld) {
 
 	auto fileString = ReadAnyTextFileEx(filename, False);
 	if (fileString) {
-		db = XrmGetStringDatabase(fileString.c_str());
+		db = XrmGetStringDatabase(fileString.str());
 		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 		translatePrefFormats(convertOld, -1);
 		ImportedFile = XtNewStringEx(filename);
