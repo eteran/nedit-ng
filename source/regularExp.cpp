@@ -425,7 +425,10 @@ static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an u
 
 /* Global work variables for 'CompileRE'. */
 
-static const char *Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static view::string_view::iterator Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static view::string_view::iterator Reg_Parse_End;
+
+
 static size_t Total_Paren;              /* Parentheses, (),  counter. */
 static size_t Num_Braces;               /* Number of general {m,n} constructs.
                                         {m,n} quantifiers of SIMPLE atoms are
@@ -544,7 +547,7 @@ unsigned int U_CHAR_AT(T *p) {
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
-regexp::regexp(const char *exp, int defaultFlags) {
+regexp::regexp(view::string_view exp, int defaultFlags) {
 
 	uint8_t *scan;
 	int flags_local, pass;
@@ -558,13 +561,10 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Meta_Char = &Default_Meta_Char[1]; /* Default_Meta_Char */
 	}
 
-	if(!exp)
-		throw regex_error("nullptr argument, 'CompileRE'");
-
 	/* Initialize arrays used by function 'shortcut_escape'. */
-
-	if (!init_ansi_classes())
+	if (!init_ansi_classes()) {
 		throw regex_error("internal error #1, 'CompileRE'");
+	}
 
 	Code_Emit_Ptr = &Compute_Size;
 	Reg_Size = 0UL;
@@ -594,7 +594,8 @@ regexp::regexp(const char *exp, int defaultFlags) {
 		Match_Newline = 0; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)   ? 1 : 0);
 		                      Currently not used. Uncomment if needed. */
 
-		Reg_Parse       = exp;
+		Reg_Parse       = exp.begin();
+		Reg_Parse_End   = exp.end();
 		Total_Paren     = 1;
 		Num_Braces      = 0;
 		Closed_Parens   = 0;
@@ -799,7 +800,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	if (paren != NO_PAREN && *Reg_Parse++ != ')') {
 		throw regex_error("missing right parenthesis ')'");
-	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
+	} else if (paren == NO_PAREN && Reg_Parse != Reg_Parse_End) {
 		if (*Reg_Parse == ')') {
 			throw regex_error("missing left parenthesis '('");
 		} else {
@@ -844,15 +845,15 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		if (*Reg_Parse == '?' || *Reg_Parse == '*') {
 			zero_width++;
 		} else if (*Reg_Parse == '{' && Brace_Char == '{') {
-			if (*(Reg_Parse + 1) == ',' || *(Reg_Parse + 1) == '}') {
+			if (Reg_Parse[1] == ',' || Reg_Parse[1] == '}') {
 				zero_width++;
-			} else if (*(Reg_Parse + 1) == '0') {
+			} else if (Reg_Parse[1] == '0') {
 				i = 2;
 
-				while (*(Reg_Parse + i) == '0')
+				while (Reg_Parse[i] == '0')
 					i++;
 
-				if (*(Reg_Parse + i) == ',')
+				if (Reg_Parse[i] == ',')
 					zero_width++;
 			}
 		}
@@ -900,7 +901,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
 
-	while (*Reg_Parse != '|' && *Reg_Parse != ')' && *Reg_Parse != '\0') {
+	while (*Reg_Parse != '|' && *Reg_Parse != ')' && Reg_Parse != Reg_Parse_End) {
 		latest = piece(&flags_local, &range_local);
 
 		if(!latest)
@@ -1490,11 +1491,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 	   string)... period.  Handles multiple sequential comments,
 	   e.g. '(?# one)(?# two)...'  */
 
-	while (*Reg_Parse == '(' && *(Reg_Parse + 1) == '?' && *(Reg_Parse + 2) == '#') {
+	while (*Reg_Parse == '(' && Reg_Parse[1] == '?' && *(Reg_Parse + 2) == '#') {
 
 		Reg_Parse += 3;
 
-		while (*Reg_Parse != ')' && *Reg_Parse != '\0') {
+		while (*Reg_Parse != ')' && Reg_Parse != Reg_Parse_End) {
 			Reg_Parse++;
 		}
 
@@ -1502,7 +1503,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 			Reg_Parse++;
 		}
 
-		if (*Reg_Parse == ')' || *Reg_Parse == '|' || *Reg_Parse == '\0') {
+		if (*Reg_Parse == ')' || *Reg_Parse == '|' || Reg_Parse == Reg_Parse_End) {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
@@ -1511,6 +1512,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 			return (ret_val);
 		}
+	}
+	
+	if(Reg_Parse == Reg_Parse_End) {
+		throw regex_error("internal error #3, 'atom'"); /* Supposed to be  */
+	                                                    /* caught earlier. */	
 	}
 
 	switch (*Reg_Parse++) {
@@ -1597,15 +1603,14 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 		break;
 
-	case '\0':
 	case '|':
 	case ')':
 		throw regex_error("internal error #3, 'atom'"); /* Supposed to be  */
-	                                            /* caught earlier. */
+	                                                    /* caught earlier. */
 	case '?':
 	case '+':
 	case '*':
-		throw regex_error("%c follows nothing", *(Reg_Parse - 1));
+		throw regex_error("%c follows nothing", Reg_Parse[-1]);
 
 	case '{':
 		if (Enable_Counting_Quantifier) {
@@ -1651,11 +1656,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 		/* Handle the rest of the class characters. */
 
-		while (*Reg_Parse != '\0' && *Reg_Parse != ']') {
+		while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') {
 			if (*Reg_Parse == '-') { /* Process a range, e.g [a-z]. */
 				Reg_Parse++;
 
-				if (*Reg_Parse == ']' || *Reg_Parse == '\0') {
+				if (*Reg_Parse == ']' || Reg_Parse == Reg_Parse_End) {
 					/* If '-' is the last character in a class it is a literal
 					   character.  If 'Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
@@ -1735,7 +1740,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 					last_emit = test;
 				} else if (shortcut_escape(*Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
 
-					if (*(Reg_Parse + 1) == '-') {
+					if (Reg_Parse[1] == '-') {
 						/* Specifically disallow shortcut escapes as the start
 						   of a character class range (see comment above.) */
 
@@ -1759,7 +1764,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 				last_emit = *Reg_Parse;
 				Reg_Parse++;
 			}
-		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
+		} /* End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
 			throw regex_error("missing right ']'");
@@ -1823,7 +1828,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 			/* Loop until we find a meta character, shortcut escape, back
 			   reference, or end of regex string. */
 
-			for (; *Reg_Parse != '\0' && !strchr(Meta_Char, (int)*Reg_Parse); len++) {
+			for (; Reg_Parse != Reg_Parse_End && !strchr(Meta_Char, (int)*Reg_Parse); len++) {
 
 				/* Save where we are in case we have to back
 				   this character out. */
@@ -1938,7 +1943,7 @@ uint8_t *emit_node(int op_code) {
 		Code_Emit_Ptr = ptr;
 	}
 
-	return (ret_val);
+	return ret_val;
 }
 
 /*----------------------------------------------------------------------*
@@ -2368,7 +2373,7 @@ char numeric_escape(char c, const char **parse) {
 		break;
 
 	default:
-		return ('\0'); /* Not a numeric escape */
+		return '\0'; /* Not a numeric escape */
 	}
 
 	scan = *parse;

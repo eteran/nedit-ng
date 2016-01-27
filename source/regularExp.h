@@ -49,7 +49,7 @@ enum RE_DEFAULT_FLAG {
 
 class regexp {
 public:
-	regexp(const char *exp, int defaultFlags);
+	regexp(view::string_view exp, int defaultFlags);
 	~regexp();
 	regexp(const regexp &) = delete;
 	regexp& operator=(const regexp &) = delete;
