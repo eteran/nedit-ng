@@ -172,7 +172,6 @@ void SetPrefAutoIndent(int state);
 void SetPrefAutoSave(int state);
 void SetPrefAutoScroll(int state);
 void SetPrefBacklightChars(int state);
-void SetPrefBacklightCharTypes(char *types);
 void SetPrefBeepOnSearchWrap(int state);
 void SetPrefBoldFont(char *fontName);
 void SetPrefBoldItalicFont(char *fontName);

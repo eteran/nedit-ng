@@ -59,7 +59,7 @@ private:
 private: char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
 private: void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
 public:  bool BufSubstituteNullChars(char *string, int length);
-public:  char *BufGetAll();
+private:  char *BufGetAll();
 public:  char *BufGetRange(int start, int end);
 public:  char *BufGetSecSelectText();
 public:  char *BufGetSelectionText();

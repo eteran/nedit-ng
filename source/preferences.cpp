@@ -906,7 +906,6 @@ static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void setStringAllocPref(char **pprefDataField, char *newValue);
 static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1550,10 +1549,6 @@ int GetPrefBacklightChars(void) {
 	return PrefData.backlightChars;
 }
 
-void SetPrefBacklightCharTypes(char *types) {
-	setStringAllocPref(&PrefData.backlightCharTypes, types);
-}
-
 char *GetPrefBacklightCharTypes(void) {
 	return PrefData.backlightCharTypes;
 }
@@ -1811,48 +1806,6 @@ static void setStringPref(char *prefDataField, const char *newValue) {
 	if (strcmp(prefDataField, newValue))
 		PrefsHaveChanged = true;
 	strcpy(prefDataField, newValue);
-}
-
-static void setStringAllocPref(char **pprefDataField, char *newValue) {
-	char *p_newField;
-
-	/* treat empty strings as nulls */
-	if (newValue && *newValue == '\0') {
-		newValue = nullptr;
-	}
-	
-	if (*pprefDataField && **pprefDataField == '\0') {
-		*pprefDataField = nullptr; /* assume statically alloc'ed "" */
-	}
-
-	/* check changes */
-	if (!*pprefDataField && !newValue) {
-		return;
-	} else if (!*pprefDataField && newValue) {
-		PrefsHaveChanged = true;
-	} else if (*pprefDataField && !newValue) {
-		PrefsHaveChanged = true;
-	} else if (strcmp(*pprefDataField, newValue)) {
-		PrefsHaveChanged = true;
-	}
-
-	/* get rid of old preference */
-	XtFree(*pprefDataField);
-
-	/* store new preference */
-	if (newValue) {
-		p_newField = XtStringDup(newValue);
-		// TODO(eteran): this is what the original code did (copy but then just
-		//               leak the new string... this can't possibly be what was
-		//               intended. I bet they wanted to put something like this
-		//               here (so we store a copy of the input string):
-		//               newValue = p_newField;
-	}
-	
-	// NOTE(eteran): hush a warning for now
-	(void)p_newField;
-	
-	*pprefDataField = newValue;
 }
 
 /*

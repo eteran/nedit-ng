@@ -91,8 +91,8 @@ struct shellCmdInfo {
 	XtInputId stdinInputID, stdoutInputID, stderrInputID;
 	std::list<bufElem *> outBufs;
 	std::list<bufElem *> errBufs;
-	const char *input;
-	const char *inPtr;
+	std::string input;
+	int inIndex;
 	Widget textW;
 	int leftPos, rightPos;
 	int inLength;
@@ -101,7 +101,7 @@ struct shellCmdInfo {
 	char fromMacro;
 };
 
-static void issueCommand(WindowInfo *window, const std::string &command, const char *input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
+static void issueCommand(WindowInfo *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
@@ -135,14 +135,13 @@ void FilterSelection(WindowInfo *window, const std::string &command, int fromMac
 
 	/* Get the selection and the range in character positions that it
 	   occupies.  Beep and return if no selection */
-	char *text = window->buffer->BufGetSelectionText();
-	if (*text == '\0') {
-		XtFree(text);
+	std::string text = window->buffer->BufGetSelectionTextEx();
+	if (text.empty()) {
 		XBell(TheDisplay, 0);
 		return;
 	}
-	int textLen = strlen(text);
-	window->buffer->BufUnsubstituteNullChars(text);
+	int textLen = text.size();
+	window->buffer->BufUnsubstituteNullCharsEx(text);
 	int left  = window->buffer->primary_.start;
 	int right = window->buffer->primary_.end;
 
@@ -191,7 +190,7 @@ void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMa
 	}
 
 	/* issue the command */
-	issueCommand(window, subsCommand, nullptr, 0, flags, window->lastFocus, left, right, fromMacro);
+	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus, left, right, fromMacro);
 	free(subsCommand);
 }
 
@@ -201,12 +200,8 @@ void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMa
 */
 void ShellCmdToMacroString(WindowInfo *window, const std::string &command, const std::string &input) {
 
-	/* Make a copy of the input string for issueCommand to hold and free
-	   upon completion */
-	char *inputCopy = input.empty() ? nullptr : XtNewStringEx(input);
-
 	/* fork the command and begin processing input/output */
-	issueCommand(window, command, inputCopy, input.size(), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
+	issueCommand(window, command, input, input.size(), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
 }
 
 /*
@@ -257,7 +252,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 	}
 
 	/* issue the command */
-	issueCommand(window, subsCommand, nullptr, 0, 0, window->lastFocus, insertPos + 1, insertPos + 1, fromMacro);
+	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus, insertPos + 1, insertPos + 1, fromMacro);
 	free(subsCommand);
 }
 
@@ -268,7 +263,6 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 */
 void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
-	char *text;
 	char *subsCommand, fullName[MAXPATHLEN];
 	int left = 0, right = 0, textLen;
 	int pos, line, column;
@@ -301,38 +295,33 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
+	std::string text;
 	if (input == FROM_SELECTION) {
-		text = window->buffer->BufGetSelectionText();
-		if (*text == '\0') {
-			XtFree(text);
+		text = window->buffer->BufGetSelectionTextEx();
+		if (text.empty()) {
 			free(subsCommand);
 			XBell(TheDisplay, 0);
 			return;
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_WINDOW) {
-		text = window->buffer->BufGetAll();
+		text = window->buffer->BufGetAllEx();
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_EITHER) {
-		text = window->buffer->BufGetSelectionText();
-		if (*text == '\0') {
-			XtFree(text);
-			text = window->buffer->BufGetAll();
+		text = window->buffer->BufGetSelectionTextEx();
+		if (text.empty()) {
+			text = window->buffer->BufGetAllEx();
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else {
 		/* FROM_NONE */
-		text = nullptr;
+		text = std::string();
 	}
 
 	/* If the buffer was substituting another character for ascii-nuls,
 	   put the nuls back in before exporting the text */
-	if (text) {
-		textLen = strlen(text);
-		window->buffer->BufUnsubstituteNullChars(text);
-	} else {
-		textLen = 0;
-	}
+	textLen = text.size();
+	window->buffer->BufUnsubstituteNullCharsEx(text);
 
 	/* Assign the output destination.  If output is to a new window,
 	   create it, and run the command from it instead of the current
@@ -376,7 +365,6 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 	if (saveFirst) {
 		if (!SaveWindow(window)) {
 			if (input != FROM_NONE)
-				XtFree(text);
 			free(subsCommand);
 			return;
 		}
@@ -425,7 +413,7 @@ void AbortShellCommand(WindowInfo *window) {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-static void issueCommand(WindowInfo *window, const std::string &command, const char *input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
+static void issueCommand(WindowInfo *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
 	int stdinFD, stdoutFD, stderrFD = 0;
 	XtAppContext context = XtWidgetToApplicationContext(window->shell);
 	pid_t childPid;
@@ -462,7 +450,7 @@ static void issueCommand(WindowInfo *window, const std::string &command, const c
 	}
 
 	/* if there's nothing to write to the process' stdin, close it now */
-	if(!input) {
+	if(input.empty()) {
 		close(stdinFD);
 	}
 
@@ -476,7 +464,7 @@ static void issueCommand(WindowInfo *window, const std::string &command, const c
 	cmdData->stderrFD    = stderrFD;
 	cmdData->childPid    = childPid;
 	cmdData->input       = input;
-	cmdData->inPtr       = input;
+	cmdData->inIndex     = 0;
 	cmdData->textW       = textW;
 	cmdData->bannerIsUp  = False;
 	cmdData->fromMacro   = fromMacro;
@@ -500,7 +488,7 @@ static void issueCommand(WindowInfo *window, const std::string &command, const c
 
 	/* set up callbacks for activity on the file descriptors */
 	cmdData->stdoutInputID = XtAppAddInput(context, stdoutFD, (XtPointer)XtInputReadMask, stdoutReadProc, window);
-	if(input) {
+	if(!input.empty()) {
 		cmdData->stdinInputID = XtAppAddInput(context, stdinFD, (XtPointer)XtInputWriteMask, stdinWriteProc, window);
 	} else {
 		cmdData->stdinInputID = 0;
@@ -619,7 +607,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nWritten;
 
-	nWritten = write(cmdData->stdinFD, cmdData->inPtr, cmdData->inLength);
+	nWritten = write(cmdData->stdinFD, &cmdData->input[cmdData->inIndex], cmdData->inLength);
 	if (nWritten == -1) {
 		if (errno == EPIPE) {
 			/* Just shut off input to broken pipes.  User is likely feeding
@@ -627,19 +615,19 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 			XtRemoveInput(cmdData->stdinInputID);
 			cmdData->stdinInputID = 0;
 			close(cmdData->stdinFD);
-			cmdData->inPtr = nullptr;
+			cmdData->inIndex = -1;
 		} else if (errno != EWOULDBLOCK && errno != EAGAIN) {
 			perror("nedit: Write to shell command failed");
 			finishCmdExecution(window, True);
 		}
 	} else {
-		cmdData->inPtr += nWritten;
+		cmdData->inIndex += nWritten;
 		cmdData->inLength -= nWritten;
 		if (cmdData->inLength <= 0) {
 			XtRemoveInput(cmdData->stdinInputID);
 			cmdData->stdinInputID = 0;
 			close(cmdData->stdinFD);
-			cmdData->inPtr = nullptr;
+			cmdData->inIndex = -1;
 		}
 	}
 }
@@ -753,11 +741,8 @@ static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
 	close(cmdData->stdoutFD);
 	if (cmdData->flags & ERROR_DIALOGS)
 		close(cmdData->stderrFD);
-	if (cmdData->inPtr)
+	if (cmdData->inIndex != -1)
 		close(cmdData->stdinFD);
-
-	/* Free the provided input text */
-	XtFree((char *)cmdData->input);
 
 	/* Cancel pending timeouts */
 	if (cmdData->flushTimeoutID != 0)
