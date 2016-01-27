@@ -55,16 +55,9 @@ public:
 	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
-private:
-private:  char *BufGetAll();
-private: char *BufGetRange(int start, int end);
-private: char *BufGetSecSelectText();
-private: char *BufGetSelectionText();
-private: char *BufGetTextInRect(int start, int end, int rectStart, int rectEnd);	
-private: void BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted);	
-public:  bool BufSubstituteNullChars(char *string, int length);
-public:  const char *BufAsString();
-public:  void BufUnsubstituteNullChars(char *string, int length) const;
+public: bool BufSubstituteNullChars(char *string, int length);
+public: const char *BufAsString();
+public: void BufUnsubstituteNullChars(char *string, int length) const;
 
 public:
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
@@ -127,8 +120,6 @@ public:
 private:
 	bool searchBackward(int startPos, char searchChar, int *foundPos) const;
 	bool searchForward(int startPos, char searchChar, int *foundPos) const;
-	char *getSelectionText(TextSelection *sel);  
-	int insert(int pos, const char *text);
 	int insertEx(int pos, view::string_view text);
 	std::string getSelectionTextEx(TextSelection *sel);
 	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText);
@@ -136,17 +127,15 @@ private:
 	void deleteRange(int start, int end);
 	void deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos);
 	void findRectSelBoundariesForCopy(int lineStartPos, int rectStart, int rectEnd, int *selStart, int *selEnd);
-	void insertCol(int column, int startPos, const char *insText, int *nDeleted, int *nInserted, int *endPos);
 	void insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
 	void moveGap(int pos);
-	void overlayRect(int startPos, int rectStart, int rectEnd, const char *insText, int *nDeleted, int *nInserted, int *endPos);
 	void overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
 	void reallocateBuf(int newGapStart, int newGapLen);
 	void redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection);
 	void removeSelected(TextSelection *sel);
 	void replaceSelectedEx(TextSelection *sel, view::string_view text); 
 	void updateSelections(int pos, int nDeleted, int nInserted);
-		 	
+	 	
 private:
 	char *buf_;         /* allocated memory where the text is stored */
 	int gapStart_;      /* points to the first character of the gap */

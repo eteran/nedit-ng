@@ -393,91 +393,6 @@ void addPadding(char *string, int startIndent, int toIndent, int tabDist, int us
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-void insertColInLine(const char *line, const char *insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-	char *c, *outPtr, *retabbedStr;
-	const char *linePtr;
-	int indent, toIndent, len, postColIndent;
-
-	/* copy the line up to "column" */
-	outPtr = outStr;
-	indent = 0;
-	for (linePtr = line; *linePtr != '\0'; linePtr++) {
-		len = TextBuffer::BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
-		if (indent + len > column)
-			break;
-		indent += len;
-		*outPtr++ = *linePtr;
-	}
-
-	/* If "column" falls in the middle of a character, and the character is a
-	   tab, leave it off and leave the indent short and it will get padded
-	   later.  If it's a control character, insert it and adjust indent
-	   accordingly. */
-	if (indent < column && *linePtr != '\0') {
-		postColIndent = indent + len;
-		if (*linePtr == '\t')
-			linePtr++;
-		else {
-			*outPtr++ = *linePtr++;
-			indent += len;
-		}
-	} else
-		postColIndent = indent;
-
-	/* If there's no text after the column and no text to insert, that's all */
-	if (*insLine == '\0' && *linePtr == '\0') {
-		*outLen = *endOffset = outPtr - outStr;
-		return;
-	}
-
-	/* pad out to column if text is too short */
-	if (indent < column) {
-		addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar, &len);
-		outPtr += len;
-		indent = column;
-	}
-
-	/* Copy the text from "insLine" (if any), recalculating the tabs as if
-	   the inserted string began at column 0 to its new column destination */
-	if (*insLine != '\0') {
-		retabbedStr = realignTabs(insLine, 0, indent, tabDist, useTabs, nullSubsChar, &len);
-		for (c = retabbedStr; *c != '\0'; c++) {
-			*outPtr++ = *c;
-			len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-			indent += len;
-		}
-		XtFree(retabbedStr);
-	}
-
-	/* If the original line did not extend past "column", that's all */
-	if (*linePtr == '\0') {
-		*outLen = *endOffset = outPtr - outStr;
-		return;
-	}
-
-	/* Pad out to column + width of inserted text + (additional original
-	   offset due to non-breaking character at column) */
-	toIndent = column + insWidth + postColIndent - column;
-	addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar, &len);
-	outPtr += len;
-	indent = toIndent;
-
-	/* realign tabs for text beyond "column" and write it out */
-	retabbedStr = realignTabs(linePtr, postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	strcpy(outPtr, retabbedStr);
-	XtFree(retabbedStr);
-	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + len;
-}
-
-/*
-** Insert characters from single-line string "insLine" in single-line string
-** "line" at "column", leaving "insWidth" space before continuing line.
-** "outLen" returns the number of characters written to "outStr", "endOffset"
-** returns the number of characters from the beginning of the string to
-** the right edge of the inserted text (as a hint for routines which need
-** to position the cursor).
-*/
 void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	int indent, toIndent, len, postColIndent;
 
@@ -622,103 +537,6 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 **
 ** This code does not handle control characters very well, but oh well.
 */
-void overlayRectInLine(const char *line, const char *insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-	char *c, *outPtr, *retabbedStr;
-	const char *linePtr;
-	int inIndent, outIndent, len, postRectIndent;
-
-	/* copy the line up to "rectStart" or just before the char that
-	    contains it*/
-	outPtr = outStr;
-	inIndent = outIndent = 0;
-	for (linePtr = line; *linePtr != '\0'; linePtr++) {
-		len = TextBuffer::BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
-		if (inIndent + len > rectStart)
-			break;
-		inIndent += len;
-		outIndent += len;
-		*outPtr++ = *linePtr;
-	}
-
-	/* If "rectStart" falls in the middle of a character, and the character
-	   is a tab, leave it off and leave the outIndent short and it will get
-	   padded later.  If it's a control character, insert it and adjust
-	   outIndent accordingly. */
-	if (inIndent < rectStart && *linePtr != '\0') {
-		if (*linePtr == '\t') {
-			/* Skip past the tab */
-			linePtr++;
-			inIndent += len;
-		} else {
-			*outPtr++ = *linePtr++;
-			outIndent += len;
-			inIndent += len;
-		}
-	}
-
-	/* skip the characters between rectStart and rectEnd */
-	for (; *linePtr != '\0' && inIndent < rectEnd; linePtr++)
-		inIndent += TextBuffer::BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
-	postRectIndent = inIndent;
-
-	/* After this inIndent is dead and linePtr is supposed to point at the
-	    character just past the last character that will be altered by
-	    the overlay, whether that's a \t or otherwise.  postRectIndent is
-	    the position at which that character is supposed to appear */
-
-	/* If there's no text after rectStart and no text to insert, that's all */
-	if (*insLine == '\0' && *linePtr == '\0') {
-		*outLen = *endOffset = outPtr - outStr;
-		return;
-	}
-
-	/* pad out to rectStart if text is too short */
-	if (outIndent < rectStart) {
-		addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar, &len);
-		outPtr += len;
-	}
-	outIndent = rectStart;
-
-	/* Copy the text from "insLine" (if any), recalculating the tabs as if
-	   the inserted string began at column 0 to its new column destination */
-	if (*insLine != '\0') {
-		retabbedStr = realignTabs(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar, &len);
-		for (c = retabbedStr; *c != '\0'; c++) {
-			*outPtr++ = *c;
-			len = TextBuffer::BufCharWidth(*c, outIndent, tabDist, nullSubsChar);
-			outIndent += len;
-		}
-		XtFree(retabbedStr);
-	}
-
-	/* If the original line did not extend past "rectStart", that's all */
-	if (*linePtr == '\0') {
-		*outLen = *endOffset = outPtr - outStr;
-		return;
-	}
-
-	/* Pad out to rectEnd + (additional original offset
-	   due to non-breaking character at right boundary) */
-	addPadding(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar, &len);
-	outPtr += len;
-	outIndent = postRectIndent;
-
-	/* copy the text beyond "rectEnd" */
-	strcpy(outPtr, linePtr);
-	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + strlen(linePtr);
-}
-
-/*
-** Overlay characters from single-line string "insLine" on single-line string
-** "line" between displayed character offsets "rectStart" and "rectEnd".
-** "outLen" returns the number of characters written to "outStr", "endOffset"
-** returns the number of characters from the beginning of the string to
-** the right edge of the inserted text (as a hint for routines which need
-** to position the cursor).
-**
-** This code does not handle control characters very well, but oh well.
-*/
 void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	char *outPtr;
 	std::string retabbedStr;
@@ -816,25 +634,6 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-char *copyLine(const char *text, int *lineLen) {
-	int len = 0;
-	const char *c;
-	char *outStr;
-
-	for (c = text; *c != '\0' && *c != '\n'; c++)
-		len++;
-	outStr = XtMalloc(len + 1);
-	strncpy(outStr, text, len);
-	outStr[len] = '\0';
-	*lineLen = len;
-	return outStr;
-}
-
-/*
-** Copy from "text" to end up to but not including newline (or end of "text")
-** and return the copy as the function value, and the length of the line in
-** "lineLen"
-*/
 std::string copyLineEx(view::string_view::const_iterator first, view::string_view::const_iterator last, int *lineLen) {
 	int len = 0;
 
@@ -851,41 +650,8 @@ std::string copyLineEx(view::string_view::const_iterator first, view::string_vie
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
-int countLines(const char *string) {
-	const char *c;
-	int lineCount = 0;
-
-	for (c = string; *c != '\0'; c++)
-		if (*c == '\n')
-			lineCount++;
-	return lineCount;
-}
-
-/*
-** Count the number of newlines in a null-terminated text string;
-*/
 int countLinesEx(view::string_view string) {
 	return std::count(string.begin(), string.end(), '\n');
-}
-
-/*
-** Measure the width in displayed characters of string "text"
-*/
-int textWidth(const char *text, int tabDist, char nullSubsChar) {
-	int width = 0, maxWidth = 0;
-	const char *c;
-
-	for (c = text; *c != '\0'; c++) {
-		if (*c == '\n') {
-			if (width > maxWidth)
-				maxWidth = width;
-			width = 0;
-		} else
-			width += TextBuffer::BufCharWidth(*c, width, tabDist, nullSubsChar);
-	}
-	if (width > maxWidth)
-		return width;
-	return maxWidth;
 }
 
 /*
@@ -936,19 +702,6 @@ TextBuffer::~TextBuffer() {
 	XtFree(buf_);
 
 	delete rangesetTable_;
-}
-
-/*
-** Get the entire contents of a text buffer.  Memory is allocated to contain
-** the returned string, which the caller must free.
-*/
-char *TextBuffer::BufGetAll() {
-
-	char *text = XtMalloc(length_ + 1);
-	memcpy(text, buf_, gapStart_);
-	memcpy(&text[gapStart_], &buf_[gapEnd_], length_ - gapStart_);
-	text[length_] = '\0';
-	return text;
 }
 
 /*
@@ -1053,46 +806,6 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 
 	/* Call the saved display routine(s) to update the screen */
 	callModifyCBs(0, deletedLength, length, 0, deletedText);
-}
-
-/*
-** Return a copy of the text between "start" and "end" character positions
-** from text buffer "buf".  Positions start at 0, and the range does not
-** include the character pointed to by "end"
-*/
-char *TextBuffer::BufGetRange(int start, int end) {
-	char *text;
-	int length, part1Length;
-
-	/* Make sure start and end are ok, and allocate memory for returned string.
-	   If start is bad, return "", if end is bad, adjust it. */
-	if (start < 0 || start > length_) {
-		text = XtMalloc(1);
-		text[0] = '\0';
-		return text;
-	}
-	if (end < start) {
-		int temp = start;
-		start = end;
-		end = temp;
-	}
-	if (end > length_)
-		end = length_;
-	length = end - start;
-	text = XtMalloc(length + 1);
-
-	/* Copy the text from the buffer to the returned string */
-	if (end <= gapStart_) {
-		memcpy(text, &buf_[start], length);
-	} else if (start >= gapStart_) {
-		memcpy(text, &buf_[start + (gapEnd_ - gapStart_)], length);
-	} else {
-		part1Length = gapStart_ - start;
-		memcpy(text, &buf_[start], part1Length);
-		memcpy(&text[part1Length], &buf_[gapEnd_], length - part1Length);
-	}
-	text[length] = '\0';
-	return text;
 }
 
 /*
@@ -1271,36 +984,6 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 ** in the operation (beginning at startPos) are returned in these arguments.
 ** If rectEnd equals -1, the width of the inserted text is measured first.
 */
-void TextBuffer::BufOverlayRect(int startPos, int rectStart, int rectEnd, const char *text, int *charsInserted, int *charsDeleted) {
-	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
-	char *deletedText;
-
-	nLines = countLines(text);
-	lineStartPos = BufStartOfLine(startPos);
-	if (rectEnd == -1)
-		rectEnd = rectStart + textWidth(text, tabDist_, nullSubsChar_);
-	lineStartPos = BufStartOfLine(startPos);
-	nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
-	callPreDeleteCBs(lineStartPos, nDeleted);
-	deletedText = BufGetRange(lineStartPos, lineStartPos + nDeleted);
-	overlayRect(lineStartPos, rectStart, rectEnd, text, &insertDeleted, &nInserted, &cursorPosHint_);
-	if (nDeleted != insertDeleted)
-		fprintf(stderr, "NEdit internal consistency check ovly1 failed");
-	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
-	XtFree(deletedText);
-	if (charsInserted)
-		*charsInserted = nInserted;
-	if (charsDeleted)
-		*charsDeleted = nDeleted;
-}
-
-/*
-** Overlay "text" between displayed character positions "rectStart" and
-** "rectEnd" on the line beginning at "startPos".  If charsInserted and
-** charsDeleted are not nullptr, the number of characters inserted and deleted
-** in the operation (beginning at startPos) are returned in these arguments.
-** If rectEnd equals -1, the width of the inserted text is measured first.
-*/
 void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted) {
 	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
 
@@ -1329,7 +1012,7 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 ** rectangle, add extra lines to make room for it.
 */
 void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
-	char *deletedText;
+
 	char *insText = nullptr;
 	int i, nInsertedLines, nDeletedLines, hint;
 	int insertDeleted, insertInserted, deleteInserted;
@@ -1363,17 +1046,17 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	} else if (nDeletedLines < nInsertedLines) {
 		linesPadded = nInsertedLines - nDeletedLines;
 		for (i = 0; i < linesPadded; i++)
-			insert(end, "\n");
+			insertEx(end, "\n");
 	} else /* nDeletedLines == nInsertedLines */ {
 	}
 
 	/* Save a copy of the text which will be modified for the modify CBs */
-	deletedText = BufGetRange(start, end);
+	std::string deletedText = BufGetRangeEx(start, end);
 
 	/* Delete then insert */
 	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
 	if (insText) {
-		insertCol(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
+		insertColEx(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
 		XtFree(insText);
 	} else
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
@@ -1382,7 +1065,6 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	if (insertDeleted != deleteInserted + linesPadded)
 		fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
 	callModifyCBs(start, end - start, insertInserted, 0, deletedText);
-	XtFree(deletedText);
 }
 
 /*
@@ -1390,16 +1072,14 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 ** and end and horizontal displayed-character offsets rectStart and rectEnd.
 */
 void TextBuffer::BufRemoveRect(int start, int end, int rectStart, int rectEnd) {
-	char *deletedText;
 	int nInserted;
 
 	start = BufStartOfLine(start);
 	end = BufEndOfLine(end);
 	callPreDeleteCBs(start, end - start);
-	deletedText = BufGetRange(start, end);
+	std::string deletedText = BufGetRangeEx(start, end);
 	deleteRect(start, end, rectStart, rectEnd, &nInserted, &cursorPosHint_);
 	callModifyCBs(start, end - start, nInserted, 0, deletedText);
-	XtFree(deletedText);
 }
 
 /*
@@ -1408,46 +1088,16 @@ void TextBuffer::BufRemoveRect(int start, int end, int rectStart, int rectEnd) {
 ** rectEnd.
 */
 void TextBuffer::BufClearRect(int start, int end, int rectStart, int rectEnd) {
-	int i, nLines;
-	char *newlineString;
 
-	nLines = BufCountLines(start, end);
-	newlineString = XtMalloc(nLines + 1);
-	for (i = 0; i < nLines; i++)
+	int nLines = BufCountLines(start, end);
+	char *newlineString = XtMalloc(nLines + 1);
+	for (int i = 0; i < nLines; i++) {
 		newlineString[i] = '\n';
-	newlineString[i] = '\0';
-	BufOverlayRect(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
-	XtFree(newlineString);
-}
-
-char *TextBuffer::BufGetTextInRect(int start, int end, int rectStart, int rectEnd) {
-	int lineStart, selLeft, selRight, len;
-	char *textOut, *textIn, *outPtr, *retabbedStr;
-
-	start = BufStartOfLine(start);
-	end = BufEndOfLine(end);
-	textOut = XtMalloc((end - start) + 1);
-	lineStart = start;
-	outPtr = textOut;
-	while (lineStart <= end) {
-		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
-		textIn = BufGetRange(selLeft, selRight);
-		len = selRight - selLeft;
-		memcpy(outPtr, textIn, len);
-		XtFree(textIn);
-		outPtr += len;
-		lineStart = BufEndOfLine(selRight) + 1;
-		*outPtr++ = '\n';
 	}
-	if (outPtr != textOut)
-		outPtr--; /* don't leave trailing newline */
-	*outPtr = '\0';
-
-	/* If necessary, realign the tabs in the selection as if the text were
-	   positioned at the left margin */
-	retabbedStr = realignTabs(textOut, rectStart, 0, tabDist_, useTabs_, nullSubsChar_, &len);
-	XtFree(textOut);
-	return retabbedStr;
+	
+	newlineString[nLines] = '\0';
+	BufOverlayRectEx(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
+	XtFree(newlineString);
 }
 
 std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd) {
@@ -1540,10 +1190,6 @@ int TextBuffer::BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int 
 	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
 }
 
-char *TextBuffer::BufGetSelectionText() {
-	return getSelectionText(&primary_);
-}
-
 std::string TextBuffer::BufGetSelectionTextEx() {
 	return getSelectionTextEx(&primary_);
 }
@@ -1581,10 +1227,6 @@ void TextBuffer::BufSecRectSelect(int start, int end, int rectStart, int rectEnd
 
 int TextBuffer::BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return secondary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
-}
-
-char *TextBuffer::BufGetSecSelectText() {
-	return getSelectionText(&secondary_);
 }
 
 std::string TextBuffer::BufGetSecSelectTextEx() {
@@ -2122,52 +1764,6 @@ int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 	}
 }
 
-char *TextBuffer::getSelectionText(TextSelection *sel) {
-
-	/* If there's no selection, return an allocated empty string */
-	if(!*sel) {
-		char *text = XtMalloc(1);
-		*text = '\0';
-		return text;	
-	}
-	
-	/* If the selection is not rectangular, return the selected range */
-	if (sel->rectangular) {
-		return BufGetTextInRect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-	} else {
-		return BufGetRange(sel->start, sel->end);	
-	}
-}
-
-/*
-** Internal (non-redisplaying) version of BufInsertEx.  Returns the length of
-** text inserted (this is just strlen(text), however this calculation can be
-** expensive and the length will be required by any caller who will continue
-** on to call redisplay).  pos must be contiguous with the existing text in
-** the buffer (i.e. not past the end).
-*/
-int TextBuffer::insert(int pos, const char *text) {
-	int length = strlen(text);
-
-	/* Prepare the buffer to receive the new text.  If the new text fits in
-	   the current buffer, just move the gap (if necessary) to where
-	   the text should be inserted.  If the new text is too large, reallocate
-	   the buffer with a gap large enough to accomodate the new text and a
-	   gap of PreferredGapSize */
-	if (length > gapEnd_ - gapStart_)
-		reallocateBuf(pos, length + PreferredGapSize);
-	else if (pos != gapStart_)
-		moveGap(pos);
-
-	/* Insert the new text (pos now corresponds to the start of the gap) */
-	memcpy(&buf_[pos], text, length);
-	gapStart_ += length;
-	length_ += length;
-	updateSelections(pos, 0, length);
-
-	return length;
-}
-
 /*
 ** Internal (non-redisplaying) version of BufInsertEx.  Returns the length of
 ** text inserted (this is just strlen(text), however this calculation can be
@@ -2336,7 +1932,6 @@ void TextBuffer::deleteRange(int start, int end) {
 */
 void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos) {
 	int nLines, lineStart, lineEnd, len, endOffset;
-	char *outStr, *outPtr, *line, *text, *expText;
 
 	/* allocate a buffer for the replacement string large enough to hold
 	   possibly expanded tabs as well as an additional  MAX_EXP_CHAR_LEN * 2
@@ -2345,32 +1940,33 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	start = BufStartOfLine(start);
 	end = BufEndOfLine(end);
 	nLines = BufCountLines(start, end) + 1;
-	text = BufGetRange(start, end);
-	expText = expandTabs(text, 0, tabDist_, nullSubsChar_, &len);
-	XtFree(text);
-	XtFree(expText);
-	outStr = XtMalloc(len + nLines * MAX_EXP_CHAR_LEN * 2 + 1);
+	
+	std::string text = BufGetRangeEx(start, end);
+	std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_, &len);
+
+	char *outStr = XtMalloc(len + nLines * MAX_EXP_CHAR_LEN * 2 + 1);
 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
 	lineStart = start;
-	outPtr = outStr;
+	char *outPtr = outStr;
 	while (lineStart <= length_ && lineStart <= end) {
 		lineEnd = BufEndOfLine(lineStart);
-		line = BufGetRange(lineStart, lineEnd);
-		deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
-		XtFree(line);
+		std::string line = BufGetRangeEx(lineStart, lineEnd);
+		deleteRectFromLine(line.c_str(), rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
+
 		outPtr += len;
 		*outPtr++ = '\n';
 		lineStart = lineEnd + 1;
 	}
-	if (outPtr != outStr)
+	if (outPtr != outStr) {
 		outPtr--; /* trim back off extra newline */
+	}
 	*outPtr = '\0';
 
 	/* replace the text between start and end with the newly created string */
 	deleteRange(start, end);
-	insert(start, outStr);
+	insertEx(start, outStr);
 	*replaceLen = outPtr - outStr;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
 	XtFree(outStr);
@@ -2425,89 +2021,6 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 		}
 	}
 	*selEnd = pos;
-}
-
-/*
-** Insert a column of text without calling the modify callbacks.  Note that
-** in some pathological cases, inserting can actually decrease the size of
-** the buffer because of spaces being coalesced into tabs.  "nDeleted" and
-** "nInserted" return the number of characters deleted and inserted beginning
-** at the start of the line containing "startPos".  "endPos" returns buffer
-** position of the lower left edge of the inserted column (as a hint for
-** routines which need to set a cursor position).
-*/
-void TextBuffer::insertCol(int column, int startPos, const char *insText, int *nDeleted, int *nInserted, int *endPos) {
-	int nLines, start, end, insWidth, lineStart, lineEnd;
-	int expReplLen, expInsLen, len, endOffset;
-	char *outStr, *outPtr, *line, *replText, *expText, *insLine;
-	const char *insPtr;
-
-	if (column < 0)
-		column = 0;
-
-	/* Allocate a buffer for the replacement string large enough to hold
-	   possibly expanded tabs in both the inserted text and the replaced
-	   area, as well as per line: 1) an additional 2*MAX_EXP_CHAR_LEN
-	   characters for padding where tabs and control characters cross the
-	   column of the selection, 2) up to "column" additional spaces per
-	   line for padding out to the position of "column", 3) padding up
-	   to the width of the inserted text if that must be padded to align
-	   the text beyond the inserted column.  (Space for additional
-	   newlines if the inserted text extends beyond the end of the buffer
-	   is counted with the length of insText) */
-	start = BufStartOfLine(startPos);
-	nLines = countLines(insText) + 1;
-	insWidth = textWidth(insText, tabDist_, nullSubsChar_);
-	end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
-	replText = BufGetRange(start, end);
-	expText = expandTabs(replText, 0, tabDist_, nullSubsChar_, &expReplLen);
-	XtFree(replText);
-	XtFree(expText);
-	expText = expandTabs(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
-	XtFree(expText);
-	outStr = XtMalloc(expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
-
-	/* Loop over all lines in the buffer between start and end inserting
-	   text at column, splitting tabs and adding padding appropriately */
-	outPtr = outStr;
-	lineStart = start;
-	insPtr = insText;
-	while (true) {
-		lineEnd = BufEndOfLine(lineStart);
-		line = BufGetRange(lineStart, lineEnd);
-		insLine = copyLine(insPtr, &len);
-		insPtr += len;
-		insertColInLine(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
-		XtFree(line);
-		XtFree(insLine);
-#if 0 /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
-      the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
-      add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
-      paragraph filling, so lets see if it works without it. MWE */
-        {
-            char *c;
-    	    for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
-                len--;
-        }
-#endif
-		outPtr += len;
-		*outPtr++ = '\n';
-		lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-		if (*insPtr == '\0')
-			break;
-		insPtr++;
-	}
-	if (outPtr != outStr)
-		outPtr--; /* trim back off extra newline */
-	*outPtr = '\0';
-
-	/* replace the text between start and end with the new stuff */
-	deleteRange(start, end);
-	insert(start, outStr);
-	*nInserted = outPtr - outStr;
-	*nDeleted = end - start;
-	*endPos = start + (outPtr - outStr) - len + endOffset;
-	XtFree(outStr);
 }
 
 /*
@@ -2584,7 +2097,7 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
 	/* replace the text between start and end with the new stuff */
 	deleteRange(start, end);
-	insert(start, outStr);
+	insertEx(start, outStr);
 	*nInserted = outPtr - outStr;
 	*nDeleted = end - start;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
@@ -2609,76 +2122,9 @@ void TextBuffer::moveGap(int pos) {
 ** "endPos" returns buffer position of the lower left edge of the inserted
 ** column (as a hint for routines which need to set a cursor position).
 */
-void TextBuffer::overlayRect(int startPos, int rectStart, int rectEnd, const char *insText, int *nDeleted, int *nInserted, int *endPos) {
-	int nLines, start, end, lineStart, lineEnd;
-	int expInsLen, len, endOffset;
-	char *c, *outStr, *outPtr, *line, *expText, *insLine;
-	const char *insPtr;
-
-	/* Allocate a buffer for the replacement string large enough to hold
-	   possibly expanded tabs in the inserted text, as well as per line: 1)
-	   an additional 2*MAX_EXP_CHAR_LEN characters for padding where tabs
-	   and control characters cross the column of the selection, 2) up to
-	   "column" additional spaces per line for padding out to the position
-	   of "column", 3) padding up to the width of the inserted text if that
-	   must be padded to align the text beyond the inserted column.  (Space
-	   for additional newlines if the inserted text extends beyond the end
-	   of the buffer is counted with the length of insText) */
-	start = BufStartOfLine(startPos);
-	nLines = countLines(insText) + 1;
-	end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
-	expText = expandTabs(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
-	XtFree(expText);
-	outStr = XtMalloc(end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1);
-
-	/* Loop over all lines in the buffer between start and end overlaying the
-	   text between rectStart and rectEnd and padding appropriately.  Trim
-	   trailing space from line (whitespace at the ends of lines otherwise
-	   tends to multiply, since additional padding is added to maintain it */
-	outPtr = outStr;
-	lineStart = start;
-	insPtr = insText;
-	while (true) {
-		lineEnd = BufEndOfLine(lineStart);
-		line = BufGetRange(lineStart, lineEnd);
-		insLine = copyLine(insPtr, &len);
-		insPtr += len;
-		overlayRectInLine(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
-		XtFree(line);
-		XtFree(insLine);
-		for (c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--)
-			len--;
-		outPtr += len;
-		*outPtr++ = '\n';
-		lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-		if (*insPtr == '\0')
-			break;
-		insPtr++;
-	}
-	if (outPtr != outStr)
-		outPtr--; /* trim back off extra newline */
-	*outPtr = '\0';
-
-	/* replace the text between start and end with the new stuff */
-	deleteRange(start, end);
-	insert(start, outStr);
-	*nInserted = outPtr - outStr;
-	*nDeleted = end - start;
-	*endPos = start + (outPtr - outStr) - len + endOffset;
-	XtFree(outStr);
-}
-
-/*
-** Overlay a rectangular area of text without calling the modify callbacks.
-** "nDeleted" and "nInserted" return the number of characters deleted and
-** inserted beginning at the start of the line containing "startPos".
-** "endPos" returns buffer position of the lower left edge of the inserted
-** column (as a hint for routines which need to set a cursor position).
-*/
 void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
-	int nLines, start, end, lineStart, lineEnd;
 	int expInsLen, len, endOffset;
-	char *c, *outStr, *outPtr;
+	char *c;
 
 	/* Allocate a buffer for the replacement string large enough to hold
 	   possibly expanded tabs in the inserted text, as well as per line: 1)
@@ -2689,43 +2135,52 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	   must be padded to align the text beyond the inserted column.  (Space
 	   for additional newlines if the inserted text extends beyond the end
 	   of the buffer is counted with the length of insText) */
-	start = BufStartOfLine(startPos);
-	nLines = countLinesEx(insText) + 1;
-	end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
+	int start  = BufStartOfLine(startPos);
+	int nLines = countLinesEx(insText) + 1;
+	int end    = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 	std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
 
-	outStr = XtMalloc(end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1);
+	char *outStr = XtMalloc(end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1);
 
 	/* Loop over all lines in the buffer between start and end overlaying the
 	   text between rectStart and rectEnd and padding appropriately.  Trim
 	   trailing space from line (whitespace at the ends of lines otherwise
 	   tends to multiply, since additional padding is added to maintain it */
-	outPtr = outStr;
-	lineStart = start;
+	char *outPtr = outStr;
+	int lineStart = start;
+	
 	auto insPtr = insText.begin();
 	while (true) {
-		lineEnd = BufEndOfLine(lineStart);
+		int lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
 		std::string insLine = copyLineEx(insPtr, insText.end(), &len);
 		insPtr += len;
 		overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
-		for (c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--)
+		for (c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
 			len--;
+		}
+		
 		outPtr += len;
 		*outPtr++ = '\n';
 		lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-		if (insPtr == insText.end())
+		
+		if (insPtr == insText.end()) {
 			break;
+		}
+		
 		insPtr++;
 	}
-	if (outPtr != outStr)
+	
+	if (outPtr != outStr) {
 		outPtr--; /* trim back off extra newline */
+	}
+	
 	*outPtr = '\0';
 
 	/* replace the text between start and end with the new stuff */
 	deleteRange(start, end);
-	insert(start, outStr);
+	insertEx(start, outStr);
 	*nInserted = outPtr - outStr;
 	*nDeleted = end - start;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
