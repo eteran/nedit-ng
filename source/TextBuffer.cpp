@@ -331,7 +331,13 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	/* realign tabs for text beyond "column" and write it out */
 	std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	strcpy(outPtr, retabbedStr.c_str());
+
+	auto it = retabbedStr.begin();
+	auto out = outPtr;
+	while(it != retabbedStr.end()) {
+		*out++ = *it++;
+	}
+	*out++ = '\0';
 
 	*endOffset = (outPtr - outStr);
 	*outLen    = (outPtr - outStr) + len;
@@ -346,15 +352,14 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 ** the beginning of the string to the point where the characters were
 ** deleted (as a hint for routines which need to position the cursor).
 */
-void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	int indent, preRectIndent, postRectIndent, len;
-	const char *c;
-	char *outPtr;
 
 	/* copy the line up to rectStart */
-	outPtr = outStr;
+	char *outPtr = outStr;
 	indent = 0;
-	for (c = line; *c != '\0'; c++) {
+	auto c = line.begin();
+	for (; c != line.end(); c++) {
 		if (indent > rectStart)
 			break;
 		len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
@@ -366,12 +371,12 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	preRectIndent = indent;
 
 	/* skip the characters between rectStart and rectEnd */
-	for (; *c != '\0' && indent < rectEnd; c++)
+	for (; c != line.end() && indent < rectEnd; c++)
 		indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
 	postRectIndent = indent;
 
 	/* If the line ended before rectEnd, there's nothing more to do */
-	if (*c == '\0') {
+	if (c == line.end()) {
 		*outPtr = '\0';
 		*outLen = *endOffset = outPtr - outStr;
 		return;
@@ -387,10 +392,16 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
 	std::string retabbedStr = realignTabsEx(c, postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	strcpy(outPtr, retabbedStr.c_str());
+
+	auto it = retabbedStr.begin();
+	auto out = outPtr;
+	while(it != retabbedStr.end()) {
+		*out++ = *it++;
+	}
+	*out++ = '\0';
 
 	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + len;
+	*outLen    = (outPtr - outStr) + len;
 }
 
 /*
@@ -441,7 +452,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	}
 
 	/* skip the characters between rectStart and rectEnd */
-	for (; *linePtr != '\0' && inIndent < rectEnd; linePtr++)
+	for (; linePtr != line.end() && inIndent < rectEnd; linePtr++)
 		inIndent += TextBuffer::BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
 	postRectIndent = inIndent;
 
@@ -475,7 +486,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	}
 
 	/* If the original line did not extend past "rectStart", that's all */
-	if (*linePtr == '\0') {
+	if (linePtr == line.end()) {
 		*outLen = *endOffset = outPtr - outStr;
 		return;
 	}
@@ -486,13 +497,16 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	outPtr += len;
 	outIndent = postRectIndent;
 
-	// TODO(eteran): fix this std::string copy inefficiency!
-	std::string temp(linePtr, line.end());
-
-	/* copy the text beyond "rectEnd" */
-	strcpy(outPtr, temp.c_str());
+	auto it = linePtr;
+	auto out = outPtr;
+	while(it != line.end()) {
+		*out++ = *it++;
+	}
+	*out++ = '\0';	
+	
+	
 	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + temp.size();
+	*outLen = (outPtr - outStr) + std::distance(linePtr, line.end());
 }
 
 /*
@@ -1943,7 +1957,7 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 		outPtr += len;
 		*outPtr++ = '\n';
 		lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-		if (*insPtr == '\0')
+		if (insPtr == insText.end())
 			break;
 		insPtr++;
 	}
