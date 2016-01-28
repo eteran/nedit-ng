@@ -1862,8 +1862,9 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 		PatternSets[NPatternSets++] = defaultPatSet;
 
 	/* Free the old dialog information */
-	for (i = 0; i < HighlightDialog.nPatterns; i++)
+	for (i = 0; i < HighlightDialog.nPatterns; i++) {
 		freePatternSrc(HighlightDialog.patterns[i], true);
+	}
 
 	/* Update the dialog */
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
