@@ -44,14 +44,7 @@
 #define ASCII_A static_cast<char>(65)
 
 
-/* Header for a set of patterns */
-struct patternSet {
-	nullable_string languageMode;
-	int lineContext;
-	int charContext;
-	int nPatterns;
-	highlightPattern *patterns;
-};
+struct PatternSet;
 
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 void StartHighlighting(WindowInfo *window, int warn);
@@ -60,7 +53,7 @@ void AttachHighlightToWidget(Widget widget, WindowInfo *window);
 void FreeHighlightingData(WindowInfo *window);
 void RemoveWidgetHighlight(Widget widget);
 void UpdateHighlightStyles(WindowInfo *window);
-bool TestHighlightPatterns(patternSet *patSet);
+bool TestHighlightPatterns(PatternSet *patSet);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
 void *GetHighlightInfo(WindowInfo *window, int pos);

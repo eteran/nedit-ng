@@ -32,6 +32,8 @@
 #include "string_view.h"
 #include <string>
 
+struct PatternSet;
+
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 
@@ -42,7 +44,7 @@ int FontOfNamedStyleIsBold(view::string_view styleName);
 int FontOfNamedStyleIsItalic(view::string_view styleName);
 int IndexOfNamedStyle(view::string_view styleName);
 int LMHasHighlightPatterns(view::string_view languageMode);
-patternSet *FindPatternSet(view::string_view langModeName);
+PatternSet *FindPatternSet(view::string_view langModeName);
 std::string BgColorOfNamedStyleEx(view::string_view styleName);
 std::string ColorOfNamedStyleEx(view::string_view styleName);
 std::string WriteHighlightStringEx(void);

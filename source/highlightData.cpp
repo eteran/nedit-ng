@@ -38,6 +38,7 @@
 #include "WindowInfo.h"
 #include "regexConvert.h"
 #include "MotifHelper.h"
+#include "PatternSet.h"
 #include "highlightStyleRec.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
@@ -75,17 +76,14 @@ enum fontTypes { PLAIN_FONT, ITALIC_FONT, BOLD_FONT, BOLD_ITALIC_FONT };
 static const char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bold Italic"};
 
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
-#if 0
-static int lookupNamedPattern(patternSet *p, const char *patternName);
-#endif
 static int lookupNamedStyle(view::string_view styleName);
 static highlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, highlightPattern *pattern);
-static patternSet *readDefaultPatternSet(const char *langModeName);
-static int isDefaultPatternSet(patternSet *patSet);
-static patternSet *readPatternSet(const char **inPtr, int convertOld);
-static patternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
-static std::string createPatternsString(patternSet *patSet, const char *indentStr);
+static PatternSet *readDefaultPatternSet(const char *langModeName);
+static bool isDefaultPatternSet(PatternSet *patSet);
+static PatternSet *readPatternSet(const char **inPtr, int convertOld);
+static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
+static std::string createPatternsString(PatternSet *patSet, const char *indentStr);
 static void setStyleByName(const char *style);
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -97,7 +95,7 @@ static highlightStyleRec *readHSDialogFields(int silent);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
-static void convertOldPatternSet(patternSet *patSet);
+static void convertOldPatternSet(PatternSet *patSet);
 static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr);
 static Widget createHighlightStylesMenu(Widget parent);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -121,11 +119,10 @@ static void setStyleMenu(const char *styleName);
 static highlightPattern *readDialogFields(int silent);
 static int dialogEmpty(void);
 static int updatePatternSet(void);
-static patternSet *getDialogPatternSet(void);
-static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2);
+static PatternSet *getDialogPatternSet(void);
 static void freeItemCB(void *item);
 static void freePatternSrc(highlightPattern *pat, bool freeStruct);
-static void freePatternSet(patternSet *p);
+static void freePatternSet(PatternSet *p);
 
 /* list of available highlight styles */
 static int NHighlightStyles = 0;
@@ -177,7 +174,7 @@ static struct {
 
 /* Pattern sources loaded from the .nedit file or set by the user */
 static int NPatternSets = 0;
-static patternSet *PatternSets[MAX_LANGUAGE_MODES];
+static PatternSet *PatternSets[MAX_LANGUAGE_MODES];
 
 static const char *DefaultPatternSets[] = {
 	#include "DefaultPatternSet00.inc"
@@ -384,7 +381,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 	for (;;) {
 
 		/* Read each pattern set, abort on error */
-		patternSet *patSet = readPatternSet(&inPtr, convertOld);
+		PatternSet *patSet = readPatternSet(&inPtr, convertOld);
 		if(!patSet) {
 			delete [] inString;
 			return false;
@@ -426,7 +423,7 @@ std::string WriteHighlightStringEx(void) {
 	auto outBuf = memory::make_unique<TextBuffer>();
 
 	for (int psn = 0; psn < NPatternSets; psn++) {
-		patternSet *patSet = PatternSets[psn];
+		PatternSet *patSet = PatternSets[psn];
 		if (patSet->nPatterns == 0) {
 			continue;
 		}
@@ -458,7 +455,7 @@ std::string WriteHighlightStringEx(void) {
 ** Update regular expressions in stored pattern sets to version 5.1 regular
 ** expression syntax, in which braces and \0 have different meanings
 */
-static void convertOldPatternSet(patternSet *patSet) {
+static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		highlightPattern *pattern = &patSet->patterns[p];
@@ -580,7 +577,7 @@ bool NamedStyleExists(view::string_view styleName) {
 ** Look through the list of pattern sets, and find the one for a particular
 ** language.  Returns nullptr if not found.
 */
-patternSet *FindPatternSet(view::string_view langModeName) {
+PatternSet *FindPatternSet(view::string_view langModeName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
 		if (langModeName == view::string_view(*PatternSets[i]->languageMode)) {
@@ -647,7 +644,7 @@ static Widget createHighlightStylesMenu(Widget parent) {
 	return menu;
 }
 
-static std::string createPatternsString(patternSet *patSet, const char *indentStr) {
+static std::string createPatternsString(PatternSet *patSet, const char *indentStr) {
 
 	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
@@ -691,10 +688,10 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
 */
-static patternSet *readPatternSet(const char **inPtr, int convertOld) {
+static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	const char *errMsg;
 	const char *stringStart = *inPtr;
-	patternSet patSet;
+	PatternSet patSet;
 
 	/* remove leading whitespace */
 	*inPtr += strspn(*inPtr, " \t\n");
@@ -713,7 +710,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		patternSet *retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
+		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
 		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
@@ -735,7 +732,7 @@ static patternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	/* pattern set was read correctly, make an allocated copy to return */
-	auto retPatSet = new patternSet(patSet);
+	auto retPatSet = new PatternSet(patSet);
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
 	   syntax to quote braces and use & rather than \0 */
@@ -866,7 +863,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 ** return a new allocated copy of it.  The returned pattern set should be
 ** freed by the caller with freePatternSet()
 */
-static patternSet *readDefaultPatternSet(const char *langModeName) {
+static PatternSet *readDefaultPatternSet(const char *langModeName) {
 
 	size_t modeNameLen = strlen(langModeName);
 	for (int i = 0; i < (int)XtNumber(DefaultPatternSets); i++) {
@@ -881,14 +878,14 @@ static patternSet *readDefaultPatternSet(const char *langModeName) {
 /*
 ** Return True if patSet exactly matches one of the default pattern sets
 */
-static int isDefaultPatternSet(patternSet *patSet) {
+static bool isDefaultPatternSet(PatternSet *patSet) {
 
-	patternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode->c_str());
+	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode->c_str());
 	if(!defaultPatSet) {
 		return False;
 	}
 	
-	int retVal = !patternSetsDiffer(patSet, defaultPatSet);
+	bool retVal = *patSet == *defaultPatSet;
 	freePatternSet(defaultPatSet);
 	return retVal;
 }
@@ -896,7 +893,7 @@ static int isDefaultPatternSet(patternSet *patSet) {
 /*
 ** Short-hand functions for formating and outputing errors for
 */
-static patternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message) {
+static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message) {
 	ParseError(nullptr, stringStart, stoppedAt, "highlight pattern", message);
 	return nullptr;
 }
@@ -1325,7 +1322,7 @@ void EditHighlightPatterns(WindowInfo *window) {
 	Widget lmForm, contextFrame, contextForm, styleLbl, styleBtn;
 	Widget okBtn, applyBtn, checkBtn, deleteBtn, closeBtn, helpBtn;
 	Widget restoreBtn, nameLbl, typeLbl, typeBox, lmBtn, matchBox;
-	patternSet *patSet;
+	PatternSet *patSet;
 	XmString s1;
 	int i, n, nPatterns;
 	Arg args[20];
@@ -1706,8 +1703,8 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	char *modeName;
-	patternSet *oldPatSet, *newPatSet;
-	patternSet emptyPatSet = {nullptr, 1, 0, 0, nullptr};
+	PatternSet *oldPatSet, *newPatSet;
+	PatternSet emptyPatSet = {nullptr, 1, 0, 0, nullptr};
 	int i, resp;
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */
@@ -1732,7 +1729,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 			return;
 		}
-	} else if (patternSetsDiffer(oldPatSet, newPatSet)) {
+	} else if (oldPatSet != newPatSet) {
 		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName->c_str());
 		if (resp == 3) {
 			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
@@ -1834,7 +1831,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	patternSet *defaultPatSet;
+	PatternSet *defaultPatSet;
 	int i, psn;
 
 	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName->c_str());
@@ -1897,7 +1894,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 			break;
 	if (psn < NPatternSets) {
 		freePatternSet(PatternSets[psn]);
-		memmove(&PatternSets[psn], &PatternSets[psn + 1], (NPatternSets - 1 - psn) * sizeof(patternSet *));
+		memmove(&PatternSets[psn], &PatternSets[psn + 1], (NPatternSets - 1 - psn) * sizeof(PatternSet *));
 		NPatternSets--;
 	}
 
@@ -2038,7 +2035,7 @@ static void freeItemCB(void *item) {
 ** patterns dialog, and display warning dialogs if there are problems
 */
 static int checkHighlightDialogData(void) {
-	patternSet *patSet;
+	PatternSet *patSet;
 	int result;
 
 	/* Get the pattern information from the dialog */
@@ -2267,7 +2264,7 @@ static int dialogEmpty(void) {
 ** apply changes to any window which is currently using the patterns.
 */
 static int updatePatternSet(void) {
-	patternSet *patSet;
+	PatternSet *patSet;
 	WindowInfo *window;
 	int psn, oldNum = -1;
 
@@ -2348,7 +2345,7 @@ static int updatePatternSet(void) {
 ** Get the current information that the user has entered in the syntax
 ** highlighting dialog.  Return nullptr if the data is currently invalid
 */
-static patternSet *getDialogPatternSet(void) {
+static PatternSet *getDialogPatternSet(void) {
 	int i, lineContext, charContext;
 
 	/* Get the current contents of the "patterns" dialog fields */
@@ -2363,7 +2360,7 @@ static patternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	auto patSet = new patternSet;
+	auto patSet = new PatternSet;
 	patSet->languageMode = HighlightDialog.langModeName;
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
@@ -2375,44 +2372,6 @@ static patternSet *getDialogPatternSet(void) {
 	}
 	
 	return patSet;
-}
-
-/*
-** Return True if "patSet1" and "patSet2" differ
-*/
-static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
-
-	if (patSet1->lineContext != patSet2->lineContext)
-		return True;
-	if (patSet1->charContext != patSet2->charContext)
-		return True;
-	if (patSet1->nPatterns != patSet2->nPatterns)
-		return True;
-		
-	for (int i = 0; i < patSet2->nPatterns; i++) {
-		highlightPattern *pat1 = &patSet1->patterns[i];
-		highlightPattern *pat2 = &patSet2->patterns[i];
-		
-		if (pat1->flags != pat2->flags)
-			return True;
-		if (AllocatedStringsDiffer(pat1->name, pat2->name))
-			return True;
-		if (AllocatedStringsDiffer(pat1->startRE, pat2->startRE))
-			return True;
-		if (AllocatedStringsDiffer(pat1->endRE, pat2->endRE))
-			return True;
-		if (AllocatedStringsDiffer(pat1->errorRE, pat2->errorRE))
-			return True;
-			
-			
-		if(pat1->style != pat2->style) {
-			return True;
-		}
-		
-		if (AllocatedStringsDiffer(pat1->subPatternOf, pat2->subPatternOf))
-			return True;
-	}
-	return False;
 }
 
 /*
@@ -2430,10 +2389,10 @@ static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 }
 
 /*
-** Free the allocated memory contained in a patternSet data structure
+** Free the allocated memory contained in a PatternSet data structure
 ** If "freeStruct" is true, free the structure itself as well.
 */
-static void freePatternSet(patternSet *p) {
+static void freePatternSet(PatternSet *p) {
 
 	for (int i = 0; i < p->nPatterns; i++)
 		freePatternSrc(&p->patterns[i], false);
@@ -2441,22 +2400,6 @@ static void freePatternSet(patternSet *p) {
 	delete [] p->patterns;
 	delete p;
 }
-
-#if 0
-/*
-** Free the allocated memory contained in a patternSet data structure
-** If "freeStruct" is true, free the structure itself as well.
-*/
-static int lookupNamedPattern(patternSet *p, const char *patternName)
-{
-    int i;
-    
-    for (i=0; i<p->nPatterns; i++)
-      if (strcmp(p->patterns[i].name, patternName))
-              return i;
-    return -1;
-}
-#endif
 
 /*
 ** Find the index into the HighlightStyles array corresponding to "styleName".

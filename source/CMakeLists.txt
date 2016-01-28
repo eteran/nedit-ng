@@ -14,6 +14,7 @@ find_library(LibM m)
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
 add_executable(nedit
+	PatternSet.cpp
 	Rangeset.cpp
 	RangesetTable.cpp
 	TextBuffer.cpp

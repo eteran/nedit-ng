@@ -38,6 +38,7 @@
 #include "preferences.h"
 #include "WindowInfo.h"
 #include "window.h"
+#include "PatternSet.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/MotifHelper.h"
@@ -115,12 +116,12 @@ struct windowHighlightData {
 	styleTableEntry *styleTable;
 	int nStyles;
 	TextBuffer *styleBuffer;
-	patternSet *patternSetForWindow;
+	PatternSet *patternSetForWindow;
 };
 
-static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *patSet);
+static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet);
 static void freeHighlightData(windowHighlightData *hd);
-static patternSet *findPatternsForWindow(WindowInfo *window, int warn);
+static PatternSet *findPatternsForWindow(WindowInfo *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
 static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, const int pos);
@@ -217,7 +218,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 ** can't be done, otherwise, just return.
 */
 void StartHighlighting(WindowInfo *window, int warn) {
-	patternSet *patterns;
+	PatternSet *patterns;
 	windowHighlightData *highlightData;
 	char prevChar = '\0';
 	int i, oldFontHeight;
@@ -367,7 +368,7 @@ void UpdateHighlightStyles(WindowInfo *window) {
 	}
 
 	/* Find the pattern set for the window's current language mode */
-	patternSet *patterns = findPatternsForWindow(window, False);
+	PatternSet *patterns = findPatternsForWindow(window, False);
 	if(!patterns) {
 		StopHighlighting(window);
 		return;
@@ -408,7 +409,7 @@ void UpdateHighlightStyles(WindowInfo *window) {
 ** dialog parent as well, in non-popups-under-pointer mode, these dialogs
 ** will appear in odd places on the screen.
 */
-bool TestHighlightPatterns(patternSet *patSet) {
+bool TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
@@ -482,8 +483,8 @@ static void freeHighlightData(windowHighlightData *hd) {
 ** Find the pattern set matching the window's current language mode, or
 ** tell the user if it can't be done (if warn is True) and return nullptr.
 */
-static patternSet *findPatternsForWindow(WindowInfo *window, int warn) {
-	patternSet *patterns;
+static PatternSet *findPatternsForWindow(WindowInfo *window, int warn) {
+	PatternSet *patterns;
 	char *modeName;
 
 	/* Find the window's language mode.  If none is set, warn user */
@@ -524,7 +525,7 @@ static patternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 ** are encountered, warns user with a dialog and returns nullptr.  To free the
 ** allocated components of the returned data structure, use freeHighlightData.
 */
-static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *patSet) {
+static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet) {
 	highlightPattern *patternSrc = patSet->patterns;
 	int nPatterns    = patSet->nPatterns;
 	int contextLines = patSet->lineContext;
@@ -985,7 +986,7 @@ static void freePatterns(highlightDataRec *patterns) {
 */
 highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
 	auto hData = (windowHighlightData *)window->highlightData;
-	patternSet *set;
+	PatternSet *set;
 
 	if (hData && (set = hData->patternSetForWindow)) {
 		for (int i = 0; i < set->nPatterns; i++)
