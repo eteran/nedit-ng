@@ -4349,9 +4349,9 @@ static int modeError(languageModeRec *lm, const char *stringStart, const char *s
 ** For a dialog, pass the dialog parent in toDialog.
 */
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message) {
-	int len, nNonWhite = 0;
+	int len;
+	int nNonWhite = 0;
 	const char *c;
-	char *errorLine;
 
 	for (c = stoppedAt; c >= stringStart; c--) {
 		if (c == stringStart)
@@ -4362,18 +4362,21 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 			nNonWhite++;
 	}
 	len = stoppedAt - c + (*stoppedAt == '\0' ? 0 : 1);
-	errorLine = XtMalloc(len + 4);
+
+	auto errorLine = new char[len + 4];
 	strncpy(errorLine, c, len);
 	errorLine[len++] = '<';
 	errorLine[len++] = '=';
 	errorLine[len++] = '=';
 	errorLine[len] = '\0';
+	
 	if(!toDialog) {
 		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
 	} else {
 		DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "OK", message, errorIn, errorLine);
 	}
-	XtFree(errorLine);
+	
+	delete [] errorLine;
 	return False;
 }
 
@@ -4735,9 +4738,8 @@ static bool stringReplaceEx(std::string *inString, const char *expr, const char 
 
 /*
 ** Simplified regular expression replacement routine which replaces the
-** first occurence of expr in inString with replaceWith, reallocating
-** inString with XtMalloc.  If expr is not found, does nothing and
-** returns false.
+** first occurence of expr in inString with replaceWith.
+** If expr is not found, does nothing and returns false.
 */
 static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith) {
 	return stringReplaceEx(inString, expr, replaceWith, SEARCH_REGEX, -1);
@@ -4745,9 +4747,8 @@ static int regexReplaceEx(std::string *inString, const char *expr, const char *r
 
 /*
 ** Simplified case-sensisitive string replacement routine which
-** replaces the first occurence of expr in inString with replaceWith,
-** reallocating inString with XtMalloc.  If expr is not found, does nothing
-** and returns false.
+** replaces the first occurence of expr in inString with replaceWith.
+** If expr is not found, does nothing and returns false.
 */
 static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen) {
 	return stringReplaceEx(inString, expr, replaceWith, SEARCH_CASE_SENSE, replaceLen);

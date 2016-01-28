@@ -306,7 +306,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 	(void)widget;
 	(void)selection;
 
-	char **result = (char **)client_data;
+	auto result = static_cast<char **>(client_data);
 
 	/* Confirm that the returned value is of the correct type */
 	if (*type != XA_STRING || *format != 8) {

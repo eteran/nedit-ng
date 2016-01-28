@@ -149,7 +149,7 @@ char *ConvertRE(view::string_view exp) {
 		if (pass == 1) {
 			/* Allocate memory. */
 
-			Convert_Str = (char *)XtMalloc(sizeof(char) * Convert_Size);
+			Convert_Str = (char *)XtMalloc(Convert_Size);
 
 			if (!Convert_Str) {
 				throw regex_error("out of memory in `ConvertRE\'");

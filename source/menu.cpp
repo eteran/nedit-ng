@@ -4594,7 +4594,7 @@ void ReadNEditDB(void) {
 	/* Initialize the files list and allocate a (permanent) block memory
 	   of the size prescribed by the maxPrevOpenFiles resource */
 	if (!PrevOpen) {
-		PrevOpen = (char **)XtMalloc(sizeof(char *) * GetPrefMaxPrevOpenFiles());
+		PrevOpen = new char*[GetPrefMaxPrevOpenFiles()];
 		NPrevOpen = 0;
 	}
 

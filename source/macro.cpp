@@ -998,7 +998,6 @@ std::string GetReplayMacro(void) {
 */
 void RepeatDialog(WindowInfo *window) {
 	Widget form, selBox, radioBox, timesForm;
-	repeatDialog *rd;
 	Arg selBoxArgs[1];
 	char *lastCmdLabel, *parenChar;
 	XmString s1;
@@ -1011,7 +1010,7 @@ void RepeatDialog(WindowInfo *window) {
 
 	/* Remeber the last command, since the user is allowed to work in the
 	   window while the dialog is up */
-	rd = (repeatDialog *)XtMalloc(sizeof(repeatDialog));
+	auto rd = new repeatDialog;
 	rd->lastCommand = XtNewStringEx(LastCommand);
 
 	/* make a label for the Last command item of the dialog, which includes
@@ -1146,7 +1145,7 @@ static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData) 
 	auto rd = static_cast<repeatDialog *>(clientData);
 
 	XtFree(rd->lastCommand);
-	XtFree((char *)rd);
+	delete rd;
 }
 
 /*

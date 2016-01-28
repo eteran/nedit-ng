@@ -1390,9 +1390,7 @@ int LoadSmartIndentCommonString(char *inString) {
 ** Returns nullptr if the macro end boundary string is not found.
 */
 static char *readSIMacro(const char **inPtr) {
-	char *retStr;
-	int shiftedLen;
-
+	
 	/* Strip leading newline */
 	if (**inPtr == '\n') {
 		(*inPtr)++;
@@ -1400,18 +1398,20 @@ static char *readSIMacro(const char **inPtr) {
 
 	/* Find the end of the macro */
 	const char *macroEnd = strstr(*inPtr, MacroEndBoundary);
-	if(!macroEnd)
+	if(!macroEnd) {
 		return nullptr;
+	}
 
 	/* Copy the macro */
-	char *macroStr = XtMalloc(macroEnd - *inPtr + 1);
+	auto macroStr = new char[macroEnd - *inPtr + 1];
 	strncpy(macroStr, *inPtr, macroEnd - *inPtr);
 	macroStr[macroEnd - *inPtr] = '\0';
 
 	/* Remove leading tabs added by writer routine */
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
-	retStr = ShiftText(macroStr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
-	XtFree(macroStr);
+	int shiftedLen;
+	char *retStr = ShiftText(macroStr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
+	delete [] macroStr;
 	return retStr;
 }
 
@@ -1479,15 +1479,14 @@ std::string WriteSmartIndentCommonStringEx(void) {
 		return "";
 
 	/* Shift the macro over by a tab to keep .nedit file bright and clean */
-	int len;
-	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8, &len);
+	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
 	std::string escapedStr = EscapeSensitiveCharsEx(outStr);
 
 	/* If there's a trailing escaped newline, remove it */
-	len = escapedStr.size();
+	int len = escapedStr.size();
 	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\') {
 		escapedStr.resize(len - 2);
 	}
@@ -1501,10 +1500,9 @@ std::string WriteSmartIndentCommonStringEx(void) {
 ** boundary string.
 */
 static void insertShiftedMacro(TextBuffer *buf, char *macro) {
-	int shiftedLen;
 
 	if (macro) {
-		std::string shiftedMacro = ShiftTextEx(macro, SHIFT_RIGHT, True, 8, 8, &shiftedLen);
+		std::string shiftedMacro = ShiftTextEx(macro, SHIFT_RIGHT, True, 8, 8);
 		buf->BufInsertEx(buf->BufGetLength(), shiftedMacro);
 	}
 	buf->BufInsertEx(buf->BufGetLength(), "\t");

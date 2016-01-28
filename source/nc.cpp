@@ -415,8 +415,9 @@ static CommandLine processCommandLine(int argc, char **argv) {
 	for (int i = 1; i < argc; i++) {
 		length += 1 + strlen(argv[i]) * 4 + 2;
 	}
+	
 	commandLine.shell = XtMalloc(length + 1 + 9 + MAXPATHLEN);
-	*commandLine.shell = '\0';
+	commandLine.shell[0] = '\0';
 
 	/* Convert command line arguments into a command string for the server */
 	parseCommandLine(argc, argv, &commandLine);
@@ -436,7 +437,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 #define MAX_RECORD_HEADER_LENGTH 38
 	char name[MAXPATHLEN], path[MAXPATHLEN];
 	const char *toDoCommand = "", *langMode = "", *geometry = "";
-	char *commandString, *outPtr;
+	char *outPtr;
 	int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
 	int i, lineArg, nRead, opts = True;
 	int fileCount = 0, group = 0, isTabbed;
@@ -451,7 +452,8 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 	if (length < MAX_RECORD_HEADER_LENGTH) {
 		length = MAX_RECORD_HEADER_LENGTH;
 	}
-	commandString = XtMalloc(length + 1);
+	
+	char *commandString = XtMalloc(length + 1);
 
 	/* Parse the arguments and write the output string */
 	outPtr = commandString;

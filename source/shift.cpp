@@ -74,7 +74,6 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 	bool isRect;
 	int rectStart;
 	int rectEnd;
-	int shiftedLen;
 	int newEndPos;
 	int cursorPos;
 	int origLength;
@@ -117,11 +116,11 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 	} else
 		shiftDist = 1;
 
-	std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist, &shiftedLen);
+	std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist);
 
 	buf->BufReplaceSelectedEx(shiftedText);
 
-	newEndPos = selStart + shiftedLen;
+	newEndPos = selStart + shiftedText.size();
 	buf->BufSelect(selStart, newEndPos);
 }
 
@@ -296,10 +295,12 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 	** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
 	** Shift right adds a maximum of nChars character per line.
 	*/
-	if (direction == SHIFT_RIGHT)
+	if (direction == SHIFT_RIGHT) {
 		bufLen = strlen(text) + countLines(text) * nChars;
-	else
+	} else {
 		bufLen = strlen(text) + countLines(text) * tabDist;
+	}
+	
 	shiftedText = XtMalloc(bufLen + 1);
 
 	/*
@@ -310,7 +311,8 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 	shiftedPtr = shiftedText;
 	while (TRUE) {
 		if (*textPtr == '\n' || *textPtr == '\0') {
-			shiftedLine = (direction == SHIFT_RIGHT) ? shiftLineRight(lineStartPtr, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) : shiftLineLeft(lineStartPtr, textPtr - lineStartPtr, tabDist, nChars);
+			shiftedLine = (direction == SHIFT_RIGHT) ? shiftLineRight(lineStartPtr, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) 
+			                                         : shiftLineLeft (lineStartPtr, textPtr - lineStartPtr,              tabDist, nChars);
 			strcpy(shiftedPtr, shiftedLine);
 			shiftedPtr += strlen(shiftedLine);
 			XtFree(shiftedLine);
@@ -335,7 +337,7 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 ** shift lines left and right in a multi-line text string.  Returns the
 ** shifted text in memory that must be freed by the caller with XtFree.
 */
-std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
+std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars) {
 	int bufLen;
 
 	/*
@@ -343,10 +345,11 @@ std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, 
 	** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
 	** Shift right adds a maximum of nChars character per line.
 	*/
-	if (direction == SHIFT_RIGHT)
+	if (direction == SHIFT_RIGHT) {
 		bufLen = text.size() + countLinesEx(text) * nChars;
-	else
+	} else {
 		bufLen = text.size() + countLinesEx(text) * tabDist;
+	}
 		
 
 	std::string shiftedText;
@@ -360,7 +363,7 @@ std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, 
 	auto lineStartPtr = text.begin();
 	auto textPtr      = text.begin();
 	
-	while (TRUE) {
+	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 		
 			// TODO(eteran): avoid the string copy... wish we had string_view!
@@ -384,7 +387,7 @@ std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, 
 		} else
 			textPtr++;
 	}
-	*newLen = shiftedText.size();
+
 	return shiftedText;
 }
 

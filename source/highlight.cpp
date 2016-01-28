@@ -191,13 +191,13 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	/* First and foremost, the style buffer must track the text buffer
 	   accurately and correctly */
 	if (nInserted > 0) {
-		char *insStyle = XtMalloc(nInserted + 1);
+		auto insStyle = new char[nInserted + 1];
 		std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);	
 		insStyle[nInserted] = '\0';
 		
 		highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
 		
-		XtFree(insStyle);
+		delete [] insStyle;
 	} else {
 		highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
 	}
@@ -536,7 +536,6 @@ static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *
 	int nPass2Patterns;
 	int noPass1;
 	int noPass2;
-	char *parentStyles;
 	char *parentStylesPtr;
 	highlightDataRec *pass1Pats;
 	highlightDataRec *pass2Pats;
@@ -675,14 +674,18 @@ static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *
 		pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
 
 	/* Create table for finding parent styles */
-	parentStylesPtr = parentStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 2);
+	char *parentStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 2);
+	parentStylesPtr = parentStyles;
+	
 	*parentStylesPtr++ = '\0';
 	*parentStylesPtr++ = '\0';
-	for (i = 1; i < nPass1Patterns; i++) {
+	
+	for (int i = 1; i < nPass1Patterns; i++) {
 		const auto &parentName = pass1PatternSrc[i].subPatternOf;
 		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName)].style;
 	}
-	for (i = 1; i < nPass2Patterns; i++) {
+	
+	for (int i = 1; i < nPass2Patterns; i++) {
 		const auto &parentName = pass2PatternSrc[i].subPatternOf;
 		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName)].style;
 	}

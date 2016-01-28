@@ -2345,7 +2345,7 @@ static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data
  * the file names or the path names are listed.
  */
 static void uploadFileListItems(WindowInfo *window, Bool replace) {
-	XmStringTable names;
+
 	int nWritable, i, *selected, selectedCount;
 	char buf[MAXPATHLEN + 1], policy;
 	Bool usePathNames;
@@ -2355,7 +2355,7 @@ static void uploadFileListItems(WindowInfo *window, Bool replace) {
 	nWritable = window->nWritableWindows;
 	list = window->replaceMultiFileList;
 
-	names = (XmStringTable)XtMalloc(nWritable * sizeof(XmString *));
+	auto names = new XmString[nWritable];
 
 	usePathNames = XmToggleButtonGetState(window->replaceMultiFilePathBtn);
 
@@ -2450,9 +2450,11 @@ static void uploadFileListItems(WindowInfo *window, Bool replace) {
 	/* Put the list back into its original selection policy. */
 	XtVaSetValues(list, XmNselectionPolicy, policy, nullptr);
 
-	for (i = 0; i < nWritable; ++i)
+	for (int i = 0; i < nWritable; ++i) {
 		XmStringFree(names[i]);
-	XtFree((char *)names);
+	}
+	
+	delete [] names;
 }
 
 /*
