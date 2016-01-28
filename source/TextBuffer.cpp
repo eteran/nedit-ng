@@ -65,6 +65,8 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 	for (auto c = text.begin(); c != text.end();) {
 		if (*c == ' ') {
 			int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
+			
+			// TODO(eteran): replace strncmp
 			if (len >= 3 && !strncmp(&*c, expandedChar, len)) {
 				c += len;
 				*outPtr++ = '\t';
@@ -514,13 +516,10 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-std::string copyLineEx(view::string_view::const_iterator first, view::string_view::const_iterator last, int *lineLen) {
+std::string copyLineEx(view::string_view::const_iterator first, view::string_view::const_iterator last) {
 
 	auto it = std::find(first, last, '\n');
-	auto outStr = std::string(first, it);
-
-	*lineLen = outStr.size();
-	return outStr;
+	return std::string(first, it);
 }
 
 /*
@@ -1609,29 +1608,27 @@ void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) const {
 **
 */
 int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
-	int posEnd;
-	int part1Length;
-	int result;
 
-	posEnd = pos + len;
+	int posEnd = pos + len;
 	if (posEnd > length_) {
-		return (1);
+		return 1;
 	}
 	if (pos < 0) {
-		return (-1);
+		return -1;
 	}
 
+	// TODO(eteran): replace strncmp
 	if (posEnd <= gapStart_) {
-		return (strncmp(&(buf_[pos]), cmpText.to_string().c_str(), len));
+		return strncmp(&buf_[pos], cmpText.to_string().c_str(), len);
 	} else if (pos >= gapStart_) {
-		return (strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.to_string().c_str(), len));
+		return strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.to_string().c_str(), len);
 	} else {
-		part1Length = gapStart_ - pos;
-		result = strncmp(&buf_[pos], cmpText.to_string().c_str(), part1Length);
+		int part1Length = gapStart_ - pos;
+		int result = strncmp(&buf_[pos], cmpText.to_string().c_str(), part1Length);
 		if (result) {
-			return (result);
+			return result;
 		}
-		return (strncmp(&buf_[gapEnd_], &cmpText[part1Length], len - part1Length));
+		return strncmp(&buf_[gapEnd_], &cmpText[part1Length], len - part1Length);
 	}
 }
 
@@ -1940,8 +1937,8 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	while (true) {
 		lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
-		std::string insLine = copyLineEx(insPtr, insText.end(), &len);
-		insPtr += len;
+		std::string insLine = copyLineEx(insPtr, insText.end());
+		insPtr += insLine.size();
 		insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
 #if 0 /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
@@ -2024,8 +2021,8 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	while (true) {
 		int lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
-		std::string insLine = copyLineEx(insPtr, insText.end(), &len);
-		insPtr += len;
+		std::string insLine = copyLineEx(insPtr, insText.end());
+		insPtr += insLine.size();
 		overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
 		for (c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
