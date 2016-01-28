@@ -126,9 +126,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 			char *temp_ptr = temp;
 			len = TextBuffer::BufExpandCharacter(ch, indent, temp, tabDist, nullSubsChar);
 
-			for (int i = 0; i < len; ++i) {
-				*outPtr++ = *temp_ptr++;
-			}
+			std::copy_n(temp_ptr, len, outPtr);
 
 			indent += len;
 		} else if (ch == '\n') {
@@ -147,8 +145,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 /*
 ** Adjust the space and tab characters from string "text" so that non-white
 ** characters remain stationary when the text is shifted from starting at
-** "origIndent" to starting at "newIndent".  Returns an allocated string
-** which must be freed by the caller with XtFree.
+** "origIndent" to starting at "newIndent". 
 */
 std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
 	int len;
@@ -163,6 +160,7 @@ std::string realignTabsEx(view::string_view text, int origIndent, int newIndent,
 	/* If the tab settings are not the same, brutally convert tabs to
 	   spaces, then back to tabs in the new position */
 	std::string expStr = expandTabsEx(text, origIndent, tabDist, nullSubsChar, &len);
+	
 	if (!useTabs) {
 		*newLength = len;
 		return expStr;
@@ -555,7 +553,7 @@ TextBuffer::TextBuffer() : TextBuffer(0) {
 */
 TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), nullSubsChar_('\0'), rangesetTable_(nullptr) {
 
-	buf_ = XtMalloc(requestedSize + PreferredGapSize + 1);
+	buf_ = new char[requestedSize + PreferredGapSize + 1];
 	buf_[requestedSize + PreferredGapSize] = '\0';
 
 #ifdef PURIFY
@@ -567,8 +565,7 @@ TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSi
 ** Free a text buffer
 */
 TextBuffer::~TextBuffer() {
-	XtFree(buf_);
-
+	delete [] buf_;
 	delete rangesetTable_;
 }
 
@@ -654,10 +651,10 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 	/* Save information for redisplay, and get rid of the old buffer */
 	std::string deletedText = BufGetAllEx();
 	deletedLength = length_;
-	XtFree(buf_);
+	delete [] buf_;
 
 	/* Start a new buffer with a gap of PreferredGapSize in the center */
-	buf_ = XtMalloc(length + PreferredGapSize + 1);
+	buf_ = new char[length + PreferredGapSize + 1];
 	buf_[length + PreferredGapSize] = '\0';
 	length_ = length;
 	gapStart_ = length / 2;
@@ -905,7 +902,7 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 		char *insPtr;
 
 		int insLen = text.size();
-		insText = XtMalloc(insLen + nDeletedLines - nInsertedLines + 1);
+		insText = new char[insLen + nDeletedLines - nInsertedLines + 1];
 		text.copy(insText, insLen, 0);
 		insPtr = insText + insLen;
 		for (i = 0; i < nDeletedLines - nInsertedLines; i++)
@@ -925,7 +922,7 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
 	if (insText) {
 		insertColEx(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
-		XtFree(insText);
+		delete [] insText;
 	} else
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
 
@@ -957,43 +954,41 @@ void TextBuffer::BufRemoveRect(int start, int end, int rectStart, int rectEnd) {
 */
 void TextBuffer::BufClearRect(int start, int end, int rectStart, int rectEnd) {
 
-	int nLines = BufCountLines(start, end);
-	char *newlineString = XtMalloc(nLines + 1);
-	for (int i = 0; i < nLines; i++) {
-		newlineString[i] = '\n';
-	}
-	
-	newlineString[nLines] = '\0';
+	int nLines = BufCountLines(start, end);	
+	std::string newlineString(nLines, '\n');
 	BufOverlayRectEx(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
-	XtFree(newlineString);
 }
 
 std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd) {
-	int lineStart, selLeft, selRight, len;
+	int selLeft, selRight, len;
 
 	start = BufStartOfLine(start);
-	end = BufEndOfLine(end);
-	auto textOut = new char[(end - start) + 1];
-	lineStart = start;
-	char *outPtr = textOut;
+	end   = BufEndOfLine(end);
+	
+	std::string textOut;
+	textOut.reserve(end - start);
+	
+	int lineStart = start;
+	auto outPtr = std::back_inserter(textOut);
+	
 	while (lineStart <= end) {
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
 		std::string textIn = BufGetRangeEx(selLeft, selRight);
 		len = selRight - selLeft;
+		
 		std::copy_n(textIn.begin(), len, outPtr);
-		outPtr += len;
 		lineStart = BufEndOfLine(selRight) + 1;
 		*outPtr++ = '\n';
 	}
-	if (outPtr != textOut)
-		outPtr--; /* don't leave trailing newline */
-	*outPtr = '\0';
-
+	
+	/* don't leave trailing newline */
+	if(!textOut.empty()) {
+		textOut.pop_back();
+	}
+	
 	/* If necessary, realign the tabs in the selection as if the text were
 	   positioned at the left margin */
-	std::string retabbedStr = realignTabsEx(textOut, rectStart, 0, tabDist_, useTabs_, nullSubsChar_, &len);
-	delete[] textOut;
-	return retabbedStr;
+	return realignTabsEx(textOut, rectStart, 0, tabDist_, useTabs_, nullSubsChar_, &len);
 }
 
 /*
@@ -1810,7 +1805,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	std::string text = BufGetRangeEx(start, end);
 	std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_, &len);
 
-	char *outStr = XtMalloc(len + nLines * MAX_EXP_CHAR_LEN * 2 + 1);
+	auto outStr = new char[len + nLines * MAX_EXP_CHAR_LEN * 2 + 1];
 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
@@ -1835,7 +1830,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	insertEx(start, outStr);
 	*replaceLen = outPtr - outStr;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
-	XtFree(outStr);
+	delete [] outStr;
 }
 
 /*
@@ -1901,7 +1896,6 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 void TextBuffer::insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
 	int nLines, start, end, insWidth, lineEnd;
 	int expReplLen, expInsLen, len, endOffset;
-	char *outStr;
 
 	if (column < 0)
 		column = 0;
@@ -1926,7 +1920,7 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
 	expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
 
-	outStr = XtMalloc(expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1);
+	auto outStr = new char[expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
 
 	/* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */
@@ -1967,7 +1961,8 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	*nInserted = outPtr - outStr;
 	*nDeleted = end - start;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
-	XtFree(outStr);
+
+	delete [] outStr;
 }
 
 void TextBuffer::moveGap(int pos) {
@@ -2006,7 +2001,7 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	int end    = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 	std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
 
-	char *outStr = XtMalloc(end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1);
+	auto outStr = new char[end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1];
 
 	/* Loop over all lines in the buffer between start and end overlaying the
 	   text between rectStart and rectEnd and padding appropriately.  Trim
@@ -2050,7 +2045,8 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	*nInserted = outPtr - outStr;
 	*nDeleted = end - start;
 	*endPos = start + (outPtr - outStr) - len + endOffset;
-	XtFree(outStr);
+
+	delete [] outStr;
 }
 
 /*
@@ -2058,10 +2054,10 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 ** and a gap size of "newGapLen", preserving the buffer's current contents.
 */
 void TextBuffer::reallocateBuf(int newGapStart, int newGapLen) {
-	char *newBuf;
+
 	int newGapEnd;
 
-	newBuf = XtMalloc(length_ + newGapLen + 1);
+	auto newBuf = new char[length_ + newGapLen + 1];
 	newBuf[length_ + PreferredGapSize] = '\0';
 	newGapEnd = newGapStart + newGapLen;
 	if (newGapStart <= gapStart_) {
@@ -2073,7 +2069,7 @@ void TextBuffer::reallocateBuf(int newGapStart, int newGapLen) {
 		memcpy(&newBuf[gapStart_], &buf_[gapEnd_], newGapStart - gapStart_);
 		memcpy(&newBuf[newGapEnd], &buf_[gapEnd_ + newGapStart - gapStart_], length_ - newGapStart);
 	}
-	XtFree(buf_);
+	delete [] buf_;
 	buf_ = newBuf;
 	gapStart_ = newGapStart;
 	gapEnd_ = newGapEnd;
