@@ -295,12 +295,12 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 	}
 
 	/* Compile the newline and modify macros and attach them to the window */
-	winData = (windowSmartIndentData *)XtMalloc(sizeof(windowSmartIndentData));
+	winData = new windowSmartIndentData;
 	winData->inNewLineMacro = 0;
 	winData->inModMacro = 0;
 	winData->newlineMacro = ParseMacro((String)indentMacros->newlineMacro, &errMsg, &stoppedAt);
 	if (!winData->newlineMacro) {
-		XtFree((char *)winData);
+		delete winData;
 		ParseError(window->shell, indentMacros->newlineMacro, stoppedAt, "newline macro", errMsg);
 		return;
 	}
@@ -310,7 +310,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 		winData->modMacro = ParseMacro((String)indentMacros->modMacro, &errMsg, &stoppedAt);
 		if (!winData->modMacro) {
 			FreeProgram(winData->newlineMacro);
-			XtFree((char *)winData);
+			delete winData;
 			ParseError(window->shell, indentMacros->modMacro, stoppedAt, "smart indent modify macro", errMsg);
 			return;
 		}
@@ -319,7 +319,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 }
 
 void EndSmartIndent(WindowInfo *window) {
-	windowSmartIndentData *winData = (windowSmartIndentData *)window->smartIndentData;
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 
 	if(!winData)
 		return;
@@ -328,7 +328,8 @@ void EndSmartIndent(WindowInfo *window) {
 	if (winData->modMacro)
 		FreeProgram(winData->modMacro);
 	FreeProgram(winData->newlineMacro);
-	XtFree((char *)winData);
+	
+	delete winData;
 	window->smartIndentData = nullptr;
 }
 
@@ -367,7 +368,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** structure passed by the widget
 */
 static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo) {
-	windowSmartIndentData *winData = (windowSmartIndentData *)window->smartIndentData;
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 	/* posValue probably shouldn't be static due to re-entrance issues <slobasso> */
 	static DataValue posValue = {INT_TAG, {0}};
 	DataValue result;
@@ -415,7 +416,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
 }
 
 Boolean InSmartIndentMacros(WindowInfo *window) {
-	windowSmartIndentData *winData = (windowSmartIndentData *)window->smartIndentData;
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 
 	return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
 }
@@ -425,7 +426,7 @@ Boolean InSmartIndentMacros(WindowInfo *window) {
 ** structure passed by the widget
 */
 static void executeModMacro(WindowInfo *window, smartIndentCBStruct *cbInfo) {
-	windowSmartIndentData *winData = (windowSmartIndentData *)window->smartIndentData;
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 	/* args probably shouldn't be static due to future re-entrance issues <slobasso> */
 	static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
 	/* after 5.2 release remove inModCB and use new winData->inModMacro value */
@@ -1336,8 +1337,8 @@ int LoadSmartIndentString(char *inString) {
 		}
 
 		/* create a new data structure and add/change it in the list */
-		isCopy = (smartIndentRec *)XtMalloc(sizeof(smartIndentRec));
-		*isCopy = is;
+		isCopy = new smartIndentRec(is);
+
 		for (i = 0; i < NSmartIndentSpecs; i++) {
 			if (!strcmp(SmartIndentSpecs[i]->lmName, is.lmName)) {
 				freeIndentSpec(SmartIndentSpecs[i]);
@@ -1390,21 +1391,20 @@ int LoadSmartIndentCommonString(char *inString) {
 */
 static char *readSIMacro(const char **inPtr) {
 	char *retStr;
-	char *macroStr;
-	const char *macroEnd;
 	int shiftedLen;
 
 	/* Strip leading newline */
-	if (**inPtr == '\n')
+	if (**inPtr == '\n') {
 		(*inPtr)++;
+	}
 
 	/* Find the end of the macro */
-	macroEnd = strstr(*inPtr, MacroEndBoundary);
+	const char *macroEnd = strstr(*inPtr, MacroEndBoundary);
 	if(!macroEnd)
 		return nullptr;
 
 	/* Copy the macro */
-	macroStr = XtMalloc(macroEnd - *inPtr + 1);
+	char *macroStr = XtMalloc(macroEnd - *inPtr + 1);
 	strncpy(macroStr, *inPtr, macroEnd - *inPtr);
 	macroStr[macroEnd - *inPtr] = '\0';
 
@@ -1432,6 +1432,7 @@ static void freeIndentSpec(smartIndentRec *is) {
 	XtFree((char *)is->newlineMacro);
 	XtFree((char *)is->modMacro);
 	// TODO(eteran): is this a memory leak? we never free is!
+	// delete is;
 }
 
 static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2) {

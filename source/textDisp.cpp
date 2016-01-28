@@ -2493,7 +2493,7 @@ Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD) {
 
 	if (removedGEQEntry) {
 		textD->graphicsExposeQueue = removedGEQEntry->next;
-		XtFree((char *)removedGEQEntry);
+		delete removedGEQEntry;
 	}
 	return (removedGEQEntry ? True : False);
 }
@@ -2501,7 +2501,7 @@ Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD) {
 void textDisp::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry) {
 	graphicExposeTranslationEntry *newGEQEntry = nullptr;
 	if (appendEntry) {
-		newGEQEntry = (graphicExposeTranslationEntry *)XtMalloc(sizeof(graphicExposeTranslationEntry));
+		newGEQEntry = new graphicExposeTranslationEntry;
 		newGEQEntry->next = nullptr;
 		newGEQEntry->horizontal = xOffset;
 		newGEQEntry->vertical = yOffset;
@@ -2514,7 +2514,7 @@ void textDisp::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean
 			iter = iter->next;
 		}
 		if (appendEntry) {
-			iter->next = (struct graphicExposeTranslationEntry *)newGEQEntry;
+			iter->next = (graphicExposeTranslationEntry *)newGEQEntry;
 		}
 	} else {
 		if (appendEntry) {

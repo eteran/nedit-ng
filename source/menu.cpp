@@ -4391,15 +4391,13 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 	Widget btn;
 	WidgetList items;
 	Cardinal nItems;
-	int n, index;
 	XmString st1;
-	char **prevOpenSorted;
 
 	/*  Read history file to get entries written by other sessions.  */
 	ReadNEditDB();
 
 	/* Sort the previously opened file list if requested */
-	prevOpenSorted = (char **)XtMalloc(NPrevOpen * sizeof(char *));
+	auto prevOpenSorted = new char *[NPrevOpen];
 	memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char *));
 	if (GetPrefSortOpenPrevMenu()) {
 		std::sort(prevOpenSorted, prevOpenSorted + NPrevOpen, [](const char *lhs, const char *rhs) {
@@ -4414,8 +4412,8 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 	   code was already written for the Windows menu and is well tested, I'll
 	   stick with this weird method of re-naming the items */
 	XtVaGetValues(window->prevOpenMenuPane, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	index = 0;
-	for (n = 0; n < (int)nItems; n++) {
+	int index = 0;
+	for (int n = 0; n < (int)nItems; n++) {
 		if (index >= NPrevOpen) {
 			/* unmanaging before destroying stops parent from displaying */
 			XtUnmanageChild(items[n]);
@@ -4436,7 +4434,7 @@ static void updatePrevOpenMenu(WindowInfo *window) {
 		XmStringFree(st1);
 	}
 
-	XtFree((char *)prevOpenSorted);
+	delete [] prevOpenSorted;
 }
 
 /*

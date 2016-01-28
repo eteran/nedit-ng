@@ -768,7 +768,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 	indentString = makeIndentString(leftMargin, tabDist, allowTabs, &indentLen);
 
 	/* allocate memory for the finished string */
-	outText = XtMalloc(sizeof(char) * (cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1));
+	outText = XtMalloc((cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1));
 	outPtr = outText;
 
 	/* prepend the indent string to each line of the filled text */
@@ -803,7 +803,7 @@ static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChar
 	char *indentString, *outPtr;
 	int i;
 
-	outPtr = indentString = XtMalloc(sizeof(char) * indent + 1);
+	outPtr = indentString = XtMalloc(indent + 1);
 	if (allowTabs) {
 		for (i = 0; i < indent / tabDist; i++)
 			*outPtr++ = '\t';

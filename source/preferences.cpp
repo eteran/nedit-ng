@@ -2814,8 +2814,8 @@ static void freeLanguageModeRec(languageModeRec *lm) {
 	XtFree(lm->delimiters);
 	for (int i = 0; i < lm->nExtensions; i++)
 		XtFree(lm->extensions[i]);
-	XtFree((char *)lm->extensions);
-	
+
+	delete [] lm->extensions;
 	delete lm;
 }
 
@@ -2828,7 +2828,7 @@ static languageModeRec *copyLanguageModeRec(languageModeRec *lm) {
 	
 	newLM->name        = XtStringDup(lm->name);
 	newLM->nExtensions = lm->nExtensions;
-	newLM->extensions  = (char **)XtMalloc(sizeof(char *) * lm->nExtensions);
+	newLM->extensions  = new char *[lm->nExtensions];
 	
 	for (int i = 0; i < lm->nExtensions; i++) {
 		newLM->extensions[i] = XtStringDup(lm->extensions[i]);
@@ -3815,7 +3815,6 @@ static char *createExtString(char **extensions, int nExtensions) {
 
 static char **readExtensionList(const char **inPtr, int *nExtensions) {
 	char *extensionList[MAX_FILE_EXTENSIONS];
-	char **retList;
 	const char *strStart;
 	int i, len;
 
@@ -3833,10 +3832,12 @@ static char **readExtensionList(const char **inPtr, int *nExtensions) {
 		extensionList[i][len] = '\0';
 	}
 	*nExtensions = i;
-	if (i == 0)
+	if (i == 0) {
 		return nullptr;
-	retList = (char **)XtMalloc(sizeof(char *) * i);
-	memcpy(retList, extensionList, sizeof(char *) * i);
+	}
+	
+	auto retList = new char*[i];
+	std::copy_n(extensionList, i, retList);
 	return retList;
 }
 
@@ -3846,8 +3847,10 @@ int ReadNumericField(const char **inPtr, int *value) {
 	/* skip over blank space */
 	*inPtr += strspn(*inPtr, " \t");
 
-	if (sscanf(*inPtr, "%d%n", value, &charsRead) != 1)
+	if (sscanf(*inPtr, "%d%n", value, &charsRead) != 1) {
 		return False;
+	}
+	
 	*inPtr += charsRead;
 	return True;
 }

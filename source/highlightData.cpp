@@ -917,7 +917,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	Widget form, nameLbl, topLbl, colorLbl, bgColorLbl, fontLbl;
 	Widget fontBox, sep1, okBtn, applyBtn, closeBtn;
 	XmString s1;
-	int i, ac;
+	int ac;
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
@@ -930,9 +930,11 @@ void EditHighlightStyles(const char *initialStyle) {
 
 	/* Copy the list of highlight style information to one that the user
 	   can freely edit (via the dialog and managed-list code) */
-	HSDialog.highlightStyleList = (highlightStyleRec **)XtMalloc(sizeof(highlightStyleRec *) * MAX_HIGHLIGHT_STYLES);
-	for (i = 0; i < NHighlightStyles; i++)
+	HSDialog.highlightStyleList = new highlightStyleRec *[MAX_HIGHLIGHT_STYLES];
+	for (int i = 0; i < NHighlightStyles; i++) {
 		HSDialog.highlightStyleList[i] = new highlightStyleRec(*HighlightStyles[i]);
+	}
+	
 	HSDialog.nHighlightStyles = NHighlightStyles;
 
 	/* Create a form widget in an application shell */
@@ -1068,7 +1070,7 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 		delete HSDialog.highlightStyleList[i];
 	}
 	
-	XtFree((char *)HSDialog.highlightStyleList);
+	delete [] HSDialog.highlightStyleList;
 }
 
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData) {

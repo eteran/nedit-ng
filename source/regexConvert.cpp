@@ -73,7 +73,8 @@
 
 /* Global work variables for `ConvertRE'. */
 
-static const char *Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static view::string_view::iterator Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static view::string_view::iterator Reg_Parse_End = nullptr;
 static int Total_Paren;              /* Parentheses, (),  counter. */
 static size_t Convert_Size;   /* Address of this used as flag. */
 static char *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
@@ -109,14 +110,12 @@ static int piece(int *flag_param);
  * some of the structure of the compiled regexp.
  *----------------------------------------------------------------------*/
 
-char *ConvertRE(const char *exp) {
+char *ConvertRE(view::string_view exp) {
 
 	int flags_local, pass;
 
 	/* Set up `errorText' to receive failure reports. */
 
-	if(!exp)
-		throw regex_error("nullptr argument to `ConvertRE\'");
 
 	Code_Emit_Ptr = &Compute_Size;
 	Convert_Size = 0UL;
@@ -136,7 +135,9 @@ char *ConvertRE(const char *exp) {
 		 * SECOND PASS: Emit converted code.         *
 		 *-------------------------------------------*/
 
-		Reg_Parse = exp;
+		Reg_Parse     = exp.begin();
+		Reg_Parse_End = exp.end();
+		
 		Total_Paren = 1;
 
 		if (chunk(NO_PAREN, &flags_local) == 0) {
@@ -150,7 +151,7 @@ char *ConvertRE(const char *exp) {
 
 			Convert_Str = (char *)XtMalloc(sizeof(char) * Convert_Size);
 
-			if (Convert_Str == nullptr) {
+			if (!Convert_Str) {
 				throw regex_error("out of memory in `ConvertRE\'");
 			}
 
@@ -219,7 +220,7 @@ static int chunk(int paren, int *flag_param) {
 		emit_convert_byte(')');
 		Reg_Parse++;
 
-	} else if (paren == NO_PAREN && *Reg_Parse != '\0') {
+	} else if (paren == NO_PAREN && Reg_Parse != Reg_Parse_End) {
 		if (*Reg_Parse == ')') {
 			throw regex_error("missing left parenthesis \'(\'");
 		} else {
@@ -244,7 +245,7 @@ static int alternative(int *flag_param) {
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
 
-	while (*Reg_Parse != '|' && *Reg_Parse != ')' && *Reg_Parse != '\0') {
+	while (*Reg_Parse != '|' && *Reg_Parse != ')' && Reg_Parse != Reg_Parse_End) {
 		ret_val = piece(&flags_local);
 
 		if (ret_val == 0)
@@ -414,11 +415,11 @@ static int atom(int *flag_param) {
 
 		/* Handle the rest of the class characters. */
 
-		while (*Reg_Parse != '\0' && *Reg_Parse != ']') {
+		while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') {
 			if (*Reg_Parse == '-') { /* Process a range, e.g [a-z]. */
 				Reg_Parse++;
 
-				if (*Reg_Parse == ']' || *Reg_Parse == '\0') {
+				if (*Reg_Parse == ']' || Reg_Parse == Reg_Parse_End) {
 					/* If '-' is the last character in a class it is a literal
 					   character.  If `Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
@@ -566,7 +567,7 @@ static int atom(int *flag_param) {
 
 				Reg_Parse++;
 			}
-		} /* End of while (*Reg_Parse != '\0' && *Reg_Parse != ']') */
+		} /* End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') */
 
 		if (*Reg_Parse != ']')
 			throw regex_error("missing right \']\'");
@@ -673,7 +674,7 @@ static int atom(int *flag_param) {
 
 			/* Loop until we find a meta character or end of regex string. */
 
-			for (; *Reg_Parse != '\0' && !strchr((char *)Meta_Char, (int)*Reg_Parse); len++) {
+			for (; Reg_Parse != Reg_Parse_End && !strchr((char *)Meta_Char, (int)*Reg_Parse); len++) {
 
 				/* Save where we are in case we have to back
 				   this character out. */

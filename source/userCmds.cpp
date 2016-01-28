@@ -315,7 +315,7 @@ void EditShellMenu(WindowInfo *window) {
 	Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
 	XmString s1;
-	int ac, i;
+	int ac;
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
@@ -329,9 +329,11 @@ void EditShellMenu(WindowInfo *window) {
 	ucd->window = window;
 
 	/* Set the dialog to operate on the Shell menu */
-	ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec *) * MAX_ITEMS_PER_MENU);
-	for (i = 0; i < NShellMenuItems; i++)
+	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
+	for (int i = 0; i < NShellMenuItems; i++) {
 		ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
+	}
+	
 	ucd->nMenuItems = NShellMenuItems;
 	ucd->dialogType = SHELL_CMDS;
 
@@ -533,7 +535,6 @@ void EditBGMenu(WindowInfo *window) {
 static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
 	Widget form, accLabel, pasteReplayBtn;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
-	userCmdDialog *ucd;
 	char *title;
 	XmString s1;
 	int ac, i;
@@ -550,11 +551,11 @@ static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
 	}
 
 	/* Create a structure for keeping track of dialog state */
-	ucd = (userCmdDialog *)XtMalloc(sizeof(userCmdDialog));
+	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
 	/* Set the dialog to operate on the Macro menu */
-	ucd->menuItemsList = (menuItemRec **)XtMalloc(sizeof(menuItemRec **) * MAX_ITEMS_PER_MENU);
+	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
 	if (dialogType == MACRO_CMDS) {
 		for (i = 0; i < NMacroMenuItems; i++)
 			ucd->menuItemsList[i] = copyMenuItemRec(MacroMenuItems[i]);
@@ -1128,11 +1129,9 @@ static void manageTearOffMenu(Widget menuPane) {
 ** Reset manage mode of user menu items in window cache.
 */
 static void resetManageMode(UserMenuList *list) {
-	int i;
-	UserMenuListElement *element;
 
-	for (i = 0; i < list->umlNbrItems; i++) {
-		element = list->umlItems[i];
+	for (int i = 0; i < list->umlNbrItems; i++) {
+		UserMenuListElement *element = list->umlItems[i];
 
 		/* remember current manage mode before reset it to
 		   "unmanaged" */
@@ -1304,12 +1303,10 @@ static void manageMenuWidgets(UserMenuList *list) {
 ** Remove accelerators from all items of given user (sub-)menu list.
 */
 static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
-	int i;
-	UserMenuListElement *element;
 
 	/* scan all elements of this (sub-)menu */
-	for (i = 0; i < menuList->umlNbrItems; i++) {
-		element = menuList->umlItems[i];
+	for (int i = 0; i < menuList->umlNbrItems; i++) {
+		UserMenuListElement *element = menuList->umlItems[i];
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue removing accelerators
@@ -1831,9 +1828,11 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto ucd = static_cast<userCmdDialog *>(clientData);
 
-	for (int i = 0; i < ucd->nMenuItems; i++)
+	for (int i = 0; i < ucd->nMenuItems; i++) {
 		freeMenuItemRec(ucd->menuItemsList[i]);
-	XtFree((char *)ucd->menuItemsList);
+	}
+	
+	delete [] ucd->menuItemsList;
 	delete ucd;
 }
 
@@ -3080,11 +3079,9 @@ static void freeUserMenuInfo(userMenuInfo *info) {
 ** Allocate & init. storage for structures to manage sub-menus
 */
 static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems) {
-	int size = sizeof(userSubMenuInfo) * nbrOfItems;
-
 	subMenus->usmcNbrOfMainMenuItems = 0;
-	subMenus->usmcNbrOfSubMenus = 0;
-	subMenus->usmcInfo = (userSubMenuInfo *)XtMalloc(size);
+	subMenus->usmcNbrOfSubMenus      = 0;
+	subMenus->usmcInfo               = new userSubMenuInfo[nbrOfItems];
 }
 
 static void freeSubMenuCache(userSubMenuCache *subMenus) {
@@ -3095,14 +3092,12 @@ static void freeSubMenuCache(userSubMenuCache *subMenus) {
 		XtFree((char *)subMenus->usmcInfo[i].usmiId);
 	}
 
-	XtFree((char *)subMenus->usmcInfo);
+	delete [] subMenus->usmcInfo;
 }
 
 static void allocUserMenuList(UserMenuList *list, int nbrOfItems) {
-	int size = sizeof(UserMenuListElement *) * nbrOfItems;
-
 	list->umlNbrItems = 0;
-	list->umlItems = (UserMenuListElement **)XtMalloc(size);
+	list->umlItems = new UserMenuListElement *[nbrOfItems];
 }
 
 static void freeUserMenuList(UserMenuList *list) {
@@ -3113,22 +3108,21 @@ static void freeUserMenuList(UserMenuList *list) {
 
 	list->umlNbrItems = 0;
 
-	XtFree((char *)list->umlItems);
+	delete [] list->umlItems;
 	list->umlItems = nullptr;
 }
 
 static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys) {
-	UserMenuListElement *element;
 
-	element = (UserMenuListElement *)XtMalloc(sizeof(UserMenuListElement));
+	auto element = new UserMenuListElement;
 
-	element->umleManageMode = UMMM_UNMANAGE;
-	element->umlePrevManageMode = UMMM_UNMANAGE;
-	element->umleAccKeys = accKeys;
+	element->umleManageMode          = UMMM_UNMANAGE;
+	element->umlePrevManageMode      = UMMM_UNMANAGE;
+	element->umleAccKeys             = accKeys;
 	element->umleAccLockPatchApplied = False;
-	element->umleMenuItem = menuItem;
-	element->umleSubMenuPane = nullptr;
-	element->umleSubMenuList = nullptr;
+	element->umleMenuItem            = menuItem;
+	element->umleSubMenuPane         = nullptr;
+	element->umleSubMenuList         = nullptr;
 
 	return element;
 }
@@ -3138,21 +3132,17 @@ static void freeUserMenuListElement(UserMenuListElement *element) {
 		freeUserSubMenuList(element->umleSubMenuList);
 
 	XtFree(element->umleAccKeys);
-	XtFree((char *)element);
+	
+	delete element;
 }
 
 static UserMenuList *allocUserSubMenuList(int nbrOfItems) {
-	UserMenuList *list;
-
-	list = (UserMenuList *)XtMalloc(sizeof(UserMenuList));
-
+	auto list = new UserMenuList;
 	allocUserMenuList(list, nbrOfItems);
-
 	return list;
 }
 
 static void freeUserSubMenuList(UserMenuList *list) {
 	freeUserMenuList(list);
-
-	XtFree((char *)list);
+	delete list;
 }
