@@ -822,16 +822,6 @@ void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive) {
 ** can be read by LoadShellCmdsString, rather, it is what needs to be written
 ** to a resource file such that it will read back in that form.
 */
-char *WriteShellCmdsString(void) {
-	return writeMenuItemString(ShellMenuItems, NShellMenuItems, SHELL_CMDS);
-}
-
-/*
-** Generate a text string for the preferences file describing the contents
-** of the shell cmd list.  This string is not exactly of the form that it
-** can be read by LoadShellCmdsString, rather, it is what needs to be written
-** to a resource file such that it will read back in that form.
-*/
 nullable_string WriteShellCmdsStringEx(void) {
 	return writeMenuItemStringEx(ShellMenuItems, NShellMenuItems, SHELL_CMDS);
 }
@@ -843,16 +833,9 @@ nullable_string WriteShellCmdsStringEx(void) {
 ** is what needs to be written to a resource file such that it will read back
 ** in that form.
 */
-char *WriteMacroCmdsString(void) {
-	return writeMenuItemString(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
-}
 
 nullable_string WriteMacroCmdsStringEx(void) {
 	return writeMenuItemStringEx(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
-}
-
-char *WriteBGMenuCmdsString(void) {
-	return writeMenuItemString(BGMenuItems, NBGMenuItems, BG_MENU_CMDS);
 }
 
 nullable_string WriteBGMenuCmdsStringEx(void) {
@@ -866,7 +849,6 @@ nullable_string WriteBGMenuCmdsStringEx(void) {
 int LoadShellCmdsString(const char *inString) {
 	return loadMenuItemString(inString, ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
 }
-
 
 /*
 ** Read a string representing shell command menu items and add them to the

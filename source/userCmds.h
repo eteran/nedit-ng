@@ -31,26 +31,19 @@
 #include "string_view.h"
 #include "nullable_string.h"
 
-UserMenuCache *CreateUserMenuCache(void);
-char *WriteBGMenuCmdsString(void);
-char *WriteMacroCmdsString(void);
-char *WriteShellCmdsString(void);
-
-nullable_string WriteBGMenuCmdsStringEx(void);
-nullable_string WriteMacroCmdsStringEx(void);
-nullable_string WriteShellCmdsStringEx(void);
-
 int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName);
 int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName);
 int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro);
 int LoadBGMenuCmdsString(const char *inString);
-int LoadMacroCmdsString(const char *inString);
-int LoadShellCmdsString(const char *inString);
-
 int LoadBGMenuCmdsStringEx(view::string_view inString);
+int LoadMacroCmdsString(const char *inString);
 int LoadMacroCmdsStringEx(view::string_view inString);
+int LoadShellCmdsString(const char *inString);
 int LoadShellCmdsStringEx(view::string_view inString);
-
+nullable_string WriteBGMenuCmdsStringEx(void);
+nullable_string WriteMacroCmdsStringEx(void);
+nullable_string WriteShellCmdsStringEx(void);
+UserMenuCache *CreateUserMenuCache(void);
 void DimPasteReplayBtns(int sensitive);
 void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
 void EditBGMenu(WindowInfo *window);
