@@ -331,12 +331,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	/* realign tabs for text beyond "column" and write it out */
 	std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	
-	auto it = retabbedStr.begin();
-	while(it != retabbedStr.end()) {
-		*outPtr++ = *it++;
-	}
-	*outPtr++ = '\0';
+	strcpy(outPtr, retabbedStr.c_str());
 
 	*endOffset = (outPtr - outStr);
 	*outLen    = (outPtr - outStr) + len;
@@ -392,12 +387,7 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
 	std::string retabbedStr = realignTabsEx(c, postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
-	
-	auto it = retabbedStr.begin();
-	while(it != retabbedStr.end()) {
-		*outPtr++ = *it++;
-	}
-	*outPtr++ = '\0';	
+	strcpy(outPtr, retabbedStr.c_str());
 
 	*endOffset = outPtr - outStr;
 	*outLen = (outPtr - outStr) + len;
@@ -496,17 +486,13 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	outPtr += len;
 	outIndent = postRectIndent;
 
+	// TODO(eteran): fix this std::string copy inefficiency!
+	std::string temp(linePtr, line.end());
 
 	/* copy the text beyond "rectEnd" */
-	auto it = linePtr;
-	while(it != line.end()) {
-		*outPtr++ = *it++;
-	}
-	*outPtr++ = '\0';	
-	
-	
+	strcpy(outPtr, temp.c_str());
 	*endOffset = outPtr - outStr;
-	*outLen = (outPtr - outStr) + std::distance(linePtr, line.end());
+	*outLen = (outPtr - outStr) + temp.size();
 }
 
 /*
