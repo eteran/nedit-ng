@@ -830,7 +830,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 		return False;
 
 	/* read the style field */
-	pattern->style = ReadSymbolicFieldEx(inPtr);
+	pattern->style = ReadSymbolicField(inPtr);
 	if (!pattern->style) {
 		*errMsg = "style field required in pattern";
 		return False;

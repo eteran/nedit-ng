@@ -609,7 +609,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	p1Ptr->startRE      = p2Ptr->startRE      = nullptr;
 	p1Ptr->endRE        = p2Ptr->endRE        = nullptr;
 	p1Ptr->errorRE      = p2Ptr->errorRE      = nullptr;
-	p1Ptr->style        = p2Ptr->style        = (String) "Plain";
+	p1Ptr->style        = p2Ptr->style        = "Plain";
 	p1Ptr->subPatternOf = p2Ptr->subPatternOf = nullptr;
 	p1Ptr->flags        = p2Ptr->flags        = 0;
 	
