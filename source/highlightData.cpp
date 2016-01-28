@@ -39,6 +39,7 @@
 #include "regexConvert.h"
 #include "MotifHelper.h"
 #include "PatternSet.h"
+#include "HighlightPattern.h"
 #include "highlightStyleRec.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
@@ -77,8 +78,8 @@ static const char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bo
 
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 static int lookupNamedStyle(view::string_view styleName);
-static highlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
-static int readHighlightPattern(const char **inPtr, const char **errMsg, highlightPattern *pattern);
+static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
+static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *readDefaultPatternSet(const char *langModeName);
 static bool isDefaultPatternSet(PatternSet *patSet);
 static PatternSet *readPatternSet(const char **inPtr, int convertOld);
@@ -116,12 +117,12 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void setDisplayedCB(void *item, void *cbArg);
 static void setStyleMenu(const char *styleName);
-static highlightPattern *readDialogFields(int silent);
+static HighlightPattern *readDialogFields(bool silent);
 static int dialogEmpty(void);
 static int updatePatternSet(void);
 static PatternSet *getDialogPatternSet(void);
 static void freeItemCB(void *item);
-static void freePatternSrc(highlightPattern *pat, bool freeStruct);
+static void freePatternSrc(HighlightPattern *pat, bool freeStruct);
 static void freePatternSet(PatternSet *p);
 
 /* list of available highlight styles */
@@ -168,7 +169,7 @@ static struct {
 	Widget matchLbl;
 	nullable_string langModeName;
 	int nPatterns;
-	highlightPattern **patterns;
+	HighlightPattern **patterns;
 } HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullable_string(), 0,       nullptr};
 
@@ -458,7 +459,7 @@ std::string WriteHighlightStringEx(void) {
 static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
-		highlightPattern *pattern = &patSet->patterns[p];
+		HighlightPattern *pattern = &patSet->patterns[p];
 		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
 		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
@@ -580,7 +581,7 @@ bool NamedStyleExists(view::string_view styleName) {
 PatternSet *FindPatternSet(view::string_view langModeName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
-		if (langModeName == view::string_view(*PatternSets[i]->languageMode)) {
+		if (langModeName == *PatternSets[i]->languageMode) {
 			return PatternSets[i];
 		}
 	}
@@ -592,10 +593,11 @@ PatternSet *FindPatternSet(view::string_view langModeName) {
 ** Returns True if there are highlight patterns, or potential patterns
 ** not yet committed in the syntax highlighting dialog for a language mode,
 */
-int LMHasHighlightPatterns(view::string_view languageMode) {
+bool LMHasHighlightPatterns(view::string_view languageMode) {
 	if (FindPatternSet(languageMode) != nullptr)
-		return True;
-	return HighlightDialog.shell != nullptr && languageMode == view::string_view(*HighlightDialog.langModeName) && HighlightDialog.nPatterns != 0;
+		return true;
+		
+	return HighlightDialog.shell != nullptr && languageMode == *HighlightDialog.langModeName && HighlightDialog.nPatterns != 0;
 }
 
 /*
@@ -603,17 +605,18 @@ int LMHasHighlightPatterns(view::string_view languageMode) {
 ** "newName" in both the stored patterns, and the pattern set currently being
 ** edited in the dialog.
 */
-void RenameHighlightPattern(const char *oldName, const char *newName) {
+void RenameHighlightPattern(view::string_view oldName, view::string_view newName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
-		if (oldName == *PatternSets[i]->languageMode) {
-			PatternSets[i]->languageMode = std::string(newName);
+	
+		if (*PatternSets[i]->languageMode == oldName) {
+			PatternSets[i]->languageMode = newName.to_string();
 		}
 	}
 	
 	if (HighlightDialog.shell) {
 		if (*HighlightDialog.langModeName == oldName) {
-			HighlightDialog.langModeName = newName;
+			HighlightDialog.langModeName = newName.to_string();
 		}
 	}
 }
@@ -649,7 +652,7 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
 	for (int pn = 0; pn < patSet->nPatterns; pn++) {
-		highlightPattern *pat = &patSet->patterns[pn];
+		HighlightPattern *pat = &patSet->patterns[pn];
 		outBuf->BufInsertEx(outBuf->BufGetLength(), indentStr);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -744,12 +747,12 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 }
 
 /*
-** Parse a set of highlight patterns into an array of highlightPattern
+** Parse a set of highlight patterns into an array of HighlightPattern
 ** structures, and a language mode name.  If unsuccessful, returns nullptr with
 ** (statically allocated) message in "errMsg".
 */
-static highlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns) {
-	highlightPattern *pat, *returnedList, patternList[MAX_PATTERNS];
+static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns) {
+	HighlightPattern *pat, *returnedList, patternList[MAX_PATTERNS];
 
 	/* skip over blank space */
 	*inPtr += strspn(*inPtr, " \t\n");
@@ -789,12 +792,12 @@ static highlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 
 	/* allocate a more appropriately sized list to return patterns */
 	*nPatterns = pat - patternList;
-	returnedList = new highlightPattern[*nPatterns];
+	returnedList = new HighlightPattern[*nPatterns];
 	std::copy_n(patternList, *nPatterns, returnedList);
 	return returnedList;
 }
 
-static int readHighlightPattern(const char **inPtr, const char **errMsg, highlightPattern *pattern) {
+static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern) {
 	/* read the name field */
 	pattern->name = ReadSymbolicField(inPtr);
 	if (!pattern->name) {
@@ -1347,10 +1350,10 @@ void EditHighlightPatterns(WindowInfo *window) {
 	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
 
 	/* Copy the list of patterns to one that the user can freely edit */
-	HighlightDialog.patterns = new highlightPattern *[MAX_PATTERNS];
+	HighlightDialog.patterns = new HighlightPattern *[MAX_PATTERNS];
 	nPatterns = patSet == nullptr ? 0 : patSet->nPatterns;
 	for (i = 0; i < nPatterns; i++) {
-		HighlightDialog.patterns[i] = new highlightPattern(patSet->patterns[i]);
+		HighlightDialog.patterns[i] = new HighlightPattern(patSet->patterns[i]);
 	}
 	HighlightDialog.nPatterns = nPatterns;
 
@@ -1757,7 +1760,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		SetIntText(HighlightDialog.charContextW, 0);
 	} else {
 		for (i = 0; i < newPatSet->nPatterns; i++) {
-			HighlightDialog.patterns[i] = new highlightPattern(newPatSet->patterns[i]);
+			HighlightDialog.patterns[i] = new HighlightPattern(newPatSet->patterns[i]);
 		}
 		HighlightDialog.nPatterns = newPatSet->nPatterns;
 		SetIntText(HighlightDialog.lineContextW, newPatSet->lineContext);
@@ -1865,7 +1868,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* Update the dialog */
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
 	for (i = 0; i < defaultPatSet->nPatterns; i++) {
-		HighlightDialog.patterns[i] = new highlightPattern(defaultPatSet->patterns[i]);
+		HighlightDialog.patterns[i] = new HighlightPattern(defaultPatSet->patterns[i]);
 	}
 	
 	SetIntText(HighlightDialog.lineContextW, defaultPatSet->lineContext);
@@ -1879,7 +1882,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	int i, psn;
+	int psn;
 
 	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern", "Are you sure you want to delete\n"
 	                                                                 "syntax highlighting patterns for\n"
@@ -1889,9 +1892,12 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	/* if a stored version of the pattern set exists, delete it from the list */
-	for (psn = 0; psn < NPatternSets; psn++)
-		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
+	for (psn = 0; psn < NPatternSets; psn++) {
+		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode) {
 			break;
+		}
+	}
+	
 	if (psn < NPatternSets) {
 		freePatternSet(PatternSets[psn]);
 		memmove(&PatternSets[psn], &PatternSets[psn + 1], (NPatternSets - 1 - psn) * sizeof(PatternSet *));
@@ -1899,8 +1905,9 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	/* Free the old dialog information */
-	for (i = 0; i < HighlightDialog.nPatterns; i++)
+	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		freePatternSrc(HighlightDialog.patterns[i], true);
+	}
 
 	/* Clear out the dialog */
 	HighlightDialog.nPatterns = 0;
@@ -1951,7 +1958,7 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 
 	(void)cbArg;
 	
-	auto oldPattern = static_cast<highlightPattern *>(oldItem);
+	auto oldPattern = static_cast<HighlightPattern *>(oldItem);
 
 	/* If the dialog is currently displaying the "new" entry and the
 	   fields are empty, that's just fine */
@@ -1959,9 +1966,9 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 		return nullptr;
 
 	/* If there are no problems reading the data, just return it */
-	highlightPattern *pat = readDialogFields(True);
-	if(pat)
+	if(HighlightPattern *pat = readDialogFields(true)) {
 		return pat;
+	}
 
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
@@ -1971,12 +1978,12 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 				return nullptr;
 			}
 			
-			return new highlightPattern(*oldPattern);
+			return new HighlightPattern(*oldPattern);
 		}
 	}
 
 	/* Do readDialogFields again without "silent" mode to display warning */
-	pat = readDialogFields(False);
+	readDialogFields(false);
 	*abort = True;
 	return nullptr;
 }
@@ -1985,18 +1992,18 @@ static void setDisplayedCB(void *item, void *cbArg) {
 
 	(void)cbArg;
 
-	highlightPattern *pat = (highlightPattern *)item;
+	HighlightPattern *pat = (HighlightPattern *)item;
 	bool isSubpat;
 	bool isDeferred;
 	bool isColorOnly;
 	bool isRange;
 
 	if(!item) {
-		XmTextSetStringEx(HighlightDialog.nameW, "");
+		XmTextSetStringEx(HighlightDialog.nameW,   "");
 		XmTextSetStringEx(HighlightDialog.parentW, "");
-		XmTextSetStringEx(HighlightDialog.startW, "");
-		XmTextSetStringEx(HighlightDialog.endW, "");
-		XmTextSetStringEx(HighlightDialog.errorW, "");
+		XmTextSetStringEx(HighlightDialog.startW,  "");
+		XmTextSetStringEx(HighlightDialog.endW,    "");
+		XmTextSetStringEx(HighlightDialog.errorW,  "");
 		RadioButtonChangeState(HighlightDialog.topLevelW, True, False);
 		RadioButtonChangeState(HighlightDialog.deferredW, False, False);
 		RadioButtonChangeState(HighlightDialog.subPatW, False, False);
@@ -2027,7 +2034,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 }
 
 static void freeItemCB(void *item) {
-	freePatternSrc((highlightPattern *)item, true);
+	freePatternSrc((HighlightPattern *)item, true);
 }
 
 /*
@@ -2035,16 +2042,14 @@ static void freeItemCB(void *item) {
 ** patterns dialog, and display warning dialogs if there are problems
 */
 static int checkHighlightDialogData(void) {
-	PatternSet *patSet;
-	int result;
 
 	/* Get the pattern information from the dialog */
-	patSet = getDialogPatternSet();
+	PatternSet *patSet = getDialogPatternSet();
 	if(!patSet)
 		return False;
 
 	/* Compile the patterns  */
-	result = patSet->nPatterns == 0 ? True : TestHighlightPatterns(patSet);
+	int result = patSet->nPatterns == 0 ? True : TestHighlightPatterns(patSet);
 	freePatternSet(patSet);
 	return result;
 }
@@ -2127,11 +2132,11 @@ static void setStyleMenu(const char *styleName) {
 
 /*
 ** Read the pattern fields of the highlight dialog, and produce an allocated
-** highlightPattern structure reflecting the contents, or pop up dialogs
+** HighlightPattern structure reflecting the contents, or pop up dialogs
 ** telling the user what's wrong (Passing "silent" as True, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-static highlightPattern *readDialogFields(int silent) {
+static HighlightPattern *readDialogFields(bool silent) {
 
 	char *inPtr, *outPtr, *style;
 	Widget selectedItem;
@@ -2139,14 +2144,9 @@ static highlightPattern *readDialogFields(int silent) {
 
 	/* Allocate a pattern source structure to return, zero out fields
 	   so that the whole pattern can be freed on error with freePatternSrc */
-	auto pat = new highlightPattern;
-	pat->endRE        = nullptr;
-	pat->errorRE      = nullptr;
-	pat->style        = nullable_string();
-	pat->subPatternOf = nullptr;
+	auto pat = new HighlightPattern;
 
 	/* read the type buttons */
-	pat->flags = 0;
 	colorOnly = XmToggleButtonGetState(HighlightDialog.colorPatW);
 	if (XmToggleButtonGetState(HighlightDialog.deferredW))
 		pat->flags |= DEFER_PARSING;
@@ -2346,7 +2346,7 @@ static int updatePatternSet(void) {
 ** highlighting dialog.  Return nullptr if the data is currently invalid
 */
 static PatternSet *getDialogPatternSet(void) {
-	int i, lineContext, charContext;
+	int lineContext, charContext;
 
 	/* Get the current contents of the "patterns" dialog fields */
 	if (!UpdateManagedList(HighlightDialog.managedListW, True))
@@ -2365,9 +2365,9 @@ static PatternSet *getDialogPatternSet(void) {
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	patSet->nPatterns    = HighlightDialog.nPatterns;
-	patSet->patterns     = new highlightPattern[HighlightDialog.nPatterns];
+	patSet->patterns     = new HighlightPattern[HighlightDialog.nPatterns];
 	
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {		
+	for (int i = 0; i < HighlightDialog.nPatterns; i++) {		
 		patSet->patterns[i] = *(HighlightDialog.patterns[i]);
 	}
 	
@@ -2375,10 +2375,10 @@ static PatternSet *getDialogPatternSet(void) {
 }
 
 /*
-** Free the allocated memory contained in a highlightPattern data structure
+** Free the allocated memory contained in a HighlightPattern data structure
 ** If "freeStruct" is true, free the structure itself as well.
 */
-static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
+static void freePatternSrc(HighlightPattern *pat, bool freeStruct) {
 	XtFree(pat->startRE);
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
@@ -2408,7 +2408,7 @@ static void freePatternSet(PatternSet *p) {
 static int lookupNamedStyle(view::string_view styleName) {
 
 	for (int i = 0; i < NHighlightStyles; i++) {
-		if (styleName == view::string_view(HighlightStyles[i]->name)) {
+		if (styleName == HighlightStyles[i]->name) {
 			return i;
 		}
 	}

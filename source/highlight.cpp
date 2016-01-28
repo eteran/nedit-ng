@@ -39,6 +39,7 @@
 #include "WindowInfo.h"
 #include "window.h"
 #include "PatternSet.h"
+#include "HighlightPattern.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/MotifHelper.h"
@@ -122,7 +123,7 @@ struct windowHighlightData {
 static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet);
 static void freeHighlightData(windowHighlightData *hd);
 static PatternSet *findPatternsForWindow(WindowInfo *window, int warn);
-static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns);
+static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
 static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, const int pos);
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
@@ -141,8 +142,8 @@ static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlig
 static int backwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
 static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
-static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName);
-static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index);
+static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
+static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
 static void updateWindowHeight(WindowInfo *window, int oldFontHeight);
 static int getFontHeight(WindowInfo *window);
@@ -526,7 +527,7 @@ static PatternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 ** allocated components of the returned data structure, use freeHighlightData.
 */
 static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet) {
-	highlightPattern *patternSrc = patSet->patterns;
+	HighlightPattern *patternSrc = patSet->patterns;
 	int nPatterns    = patSet->nPatterns;
 	int contextLines = patSet->lineContext;
 	int contextChars = patSet->charContext;
@@ -599,12 +600,12 @@ static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *
 		else
 			nPass1Patterns++;
 
-	auto pass1PatternSrc = new highlightPattern[nPass1Patterns];
-	auto pass2PatternSrc = new highlightPattern[nPass2Patterns];
+	auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
+	auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
 
 
-	highlightPattern *p1Ptr = pass1PatternSrc;
-	highlightPattern *p2Ptr = pass2PatternSrc;
+	HighlightPattern *p1Ptr = pass1PatternSrc;
+	HighlightPattern *p2Ptr = pass2PatternSrc;
 
 	p1Ptr->name         = p2Ptr->name         = "";
 	p1Ptr->startRE      = p2Ptr->startRE      = nullptr;
@@ -691,7 +692,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *
 
 	styleTableEntry *styleTablePtr = styleTable;
 
-	auto setStyleTablePtr = [window](styleTableEntry *p, highlightPattern *pat) {
+	auto setStyleTablePtr = [window](styleTableEntry *p, HighlightPattern *pat) {
 		int r, g, b;
 
 		p->highlightName = pat->name;
@@ -768,7 +769,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *
 ** actually used by the code.  Output is a tree of highlightDataRec structures
 ** containing compiled regular expressions and style information.
 */
-static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *patternSrc, int nPatterns) {
+static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns) {
 	int length;
 	int subPatIndex;
 	int subExprNum;
@@ -982,9 +983,9 @@ static void freePatterns(highlightDataRec *patterns) {
 }
 
 /*
-** Find the highlightPattern structure with a given name in the window.
+** Find the HighlightPattern structure with a given name in the window.
 */
-highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
+HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
 	auto hData = (windowHighlightData *)window->highlightData;
 	PatternSet *set;
 
@@ -2174,7 +2175,7 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 	return nullptr;
 }
 
-static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char *patName) {
+static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName) {
 
 	if(!patName)
 		return -1;
@@ -2188,7 +2189,7 @@ static int indexOfNamedPattern(highlightPattern *patList, int nPats, const char 
 	return -1;
 }
 
-static int findTopLevelParentIndex(highlightPattern *patList, int nPats, int index) {
+static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index) {
 
 	int topIndex = index;
 	while (patList[topIndex].subPatternOf) {

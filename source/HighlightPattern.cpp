@@ -1,12 +1,12 @@
 
-#include "highlightPattern.h"
+#include "HighlightPattern.h"
 #include "MotifHelper.h"
 #include <algorithm>
 
-highlightPattern::highlightPattern() : name(nullptr), startRE(nullptr), endRE(nullptr), errorRE(nullptr), subPatternOf(nullptr), flags(0) {
+HighlightPattern::HighlightPattern() : name(nullptr), startRE(nullptr), endRE(nullptr), errorRE(nullptr), subPatternOf(nullptr), flags(0) {
 }
 
-highlightPattern::highlightPattern(const highlightPattern &other) {
+HighlightPattern::HighlightPattern(const HighlightPattern &other) {
 
 	name         = XtNewStringEx(other.name);
 	startRE      = XtNewStringEx(other.startRE);
@@ -17,19 +17,19 @@ highlightPattern::highlightPattern(const highlightPattern &other) {
 	flags        = other.flags;
 }
 
-highlightPattern &highlightPattern::operator=(const highlightPattern &rhs) {
+HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
 	if(this != &rhs) {
-		highlightPattern(rhs).swap(*this);
+		HighlightPattern(rhs).swap(*this);
 	}
 	return *this;
 }
 
-highlightPattern::~highlightPattern() {
+HighlightPattern::~HighlightPattern() {
 	// NOTE(eteran): this is a no-op FOR NOW. Ownership of these
 	// strings is a mess and needs to be cleaned up first
 }
 
-void highlightPattern::swap(highlightPattern &other) {
+void HighlightPattern::swap(HighlightPattern &other) {
 	using std::swap;
 	
 	std::swap(name,         other.name);

@@ -1,7 +1,7 @@
 
 #include "PatternSet.h"
 #include "preferences.h" // for AllocatedStringsDiffer
-#include "highlightPattern.h"
+#include "HighlightPattern.h"
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -21,8 +21,8 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 	}
 		
 	for (int i = 0; i < rhs.nPatterns; i++) {
-		highlightPattern *pat1 = &this->patterns[i];
-		highlightPattern *pat2 = &rhs.patterns[i];
+		HighlightPattern *pat1 = &this->patterns[i];
+		HighlightPattern *pat2 = &rhs.patterns[i];
 		
 		if (pat1->flags != pat2->flags) {
 			return true;

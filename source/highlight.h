@@ -28,8 +28,6 @@
 #define HIGHLIGHT_H_
 
 #include "nedit.h"
-#include "highlightPattern.h"
-#include "nullable_string.h"
 
 #include <X11/Intrinsic.h>
 #include <string>
@@ -45,6 +43,7 @@
 
 
 struct PatternSet;
+struct HighlightPattern;
 
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 void StartHighlighting(WindowInfo *window, int warn);
@@ -57,7 +56,7 @@ bool TestHighlightPatterns(PatternSet *patSet);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
 void *GetHighlightInfo(WindowInfo *window, int pos);
-highlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
+HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos);

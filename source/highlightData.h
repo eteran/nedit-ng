@@ -43,7 +43,7 @@ bool NamedStyleExists(view::string_view styleName);
 int FontOfNamedStyleIsBold(view::string_view styleName);
 int FontOfNamedStyleIsItalic(view::string_view styleName);
 int IndexOfNamedStyle(view::string_view styleName);
-int LMHasHighlightPatterns(view::string_view languageMode);
+bool LMHasHighlightPatterns(view::string_view languageMode);
 PatternSet *FindPatternSet(view::string_view langModeName);
 std::string BgColorOfNamedStyleEx(view::string_view styleName);
 std::string ColorOfNamedStyleEx(view::string_view styleName);
@@ -51,7 +51,7 @@ std::string WriteHighlightStringEx(void);
 std::string WriteStylesStringEx(void);
 void EditHighlightPatterns(WindowInfo *window);
 void EditHighlightStyles(const char *initialStyle);
-void RenameHighlightPattern(const char *oldName, const char *newName);
+void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
 void UpdateLanguageModeMenu(void);
 XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName);
 

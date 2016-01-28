@@ -56,6 +56,7 @@
 #include "text.h"
 #include "userCmds.h"
 #include "window.h"
+#include "HighlightPattern.h"
 
 
 #include <cstdio>
@@ -5311,7 +5312,7 @@ static int fillPatternResult(DataValue *result, const char **errMsg, WindowInfo 
 static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *patternName = nullptr;
-	highlightPattern *pattern;
+	HighlightPattern *pattern;
 
 	/* Begin of building the result. */
 	result->tag = ARRAY_TAG;

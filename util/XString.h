@@ -226,11 +226,4 @@ inline bool operator!=(const XString &lhs, const std::string &rhs) {
 	return lhs.compare(rhs) != 0;
 }
 
-
-// try to cause a linker error if we use a null pointer
-bool operator==(nullptr_t, const XString &rhs);
-bool operator!=(nullptr_t, const XString &rhs);
-bool operator==(const XString &lhs, nullptr_t);
-bool operator!=(const XString &lhs, nullptr_t);
-
 #endif

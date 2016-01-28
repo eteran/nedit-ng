@@ -6,15 +6,15 @@
 #include "nullable_string.h"
 
 /* Pattern specification structure */
-struct highlightPattern {
+struct HighlightPattern {
 public:
-	highlightPattern();
-	highlightPattern(const highlightPattern &other);
-	highlightPattern &operator=(const highlightPattern &rhs);
-	~highlightPattern();
+	HighlightPattern();
+	HighlightPattern(const HighlightPattern &other);
+	HighlightPattern &operator=(const HighlightPattern &rhs);
+	~HighlightPattern();
 	
 public:
-	void swap(highlightPattern &other);
+	void swap(HighlightPattern &other);
 
 public:
 	const char *name;

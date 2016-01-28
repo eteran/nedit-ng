@@ -4,7 +4,7 @@
 
 #include "nullable_string.h"
 
-struct highlightPattern;
+struct HighlightPattern;
 
 /* Header for a set of patterns */
 struct PatternSet {
@@ -17,7 +17,7 @@ public:
 	int lineContext;
 	int charContext;
 	int nPatterns;
-	highlightPattern *patterns;
+	HighlightPattern *patterns;
 };
 
 #endif
