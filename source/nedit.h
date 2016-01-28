@@ -71,10 +71,10 @@
 
 
 
-enum indentStyle { NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT };
-enum wrapStyle { NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP };
+enum indentStyle       { NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT };
+enum wrapStyle         { NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP };
 enum showMatchingStyle { NO_FLASH, FLASH_DELIMIT, FLASH_RANGE };
-enum virtKeyOverride { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
+enum virtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
 
 /*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
     in preferences.c  */
