@@ -5157,8 +5157,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *w
 
 	if (bufferPos >= 0) {
 		/* insert extent */
-		const char *styleNameNotUsed = nullptr;
-		DV.val.n = StyleLengthOfCodeFromPos(window, bufferPos, &styleNameNotUsed);
+		DV.val.n = StyleLengthOfCodeFromPos(window, bufferPos);
 		if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
 			M_ARRAY_INSERT_FAILURE();
 		}
@@ -5333,7 +5332,7 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
 		return True;
 	}
 
-	return fillPatternResult(result, errMsg, window, patternName, (argList[0].tag == STRING_TAG), False, pattern->style, -1);
+	return fillPatternResult(result, errMsg, window, patternName, (argList[0].tag == STRING_TAG), False, const_cast<char *>(pattern->style->c_str()), -1);
 }
 
 /*

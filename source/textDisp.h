@@ -39,7 +39,7 @@ enum cursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY
 
 struct styleTableEntry {
 	std::string highlightName;
-	const char *styleName;
+	std::string styleName;
 	std::string colorName;
 	char isBold;
 	char isItalic;

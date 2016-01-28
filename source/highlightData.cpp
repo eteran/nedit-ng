@@ -671,7 +671,7 @@ static std::string createPatternsString(patternSet *patSet, const char *indentSt
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->style);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->style);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
 			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf);
@@ -830,7 +830,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, highlig
 		return False;
 
 	/* read the style field */
-	pattern->style = ReadSymbolicField(inPtr);
+	pattern->style = ReadSymbolicFieldEx(inPtr);
 	if (!pattern->style) {
 		*errMsg = "style field required in pattern";
 		return False;
@@ -1662,7 +1662,7 @@ static void updateHighlightStyleMenu(void) {
 	if (patIndex == -1)
 		setStyleMenu("Plain");
 	else
-		setStyleMenu(HighlightDialog.patterns[patIndex]->style);
+		setStyleMenu(HighlightDialog.patterns[patIndex]->style->c_str());
 
 	XtDestroyWidget(oldMenu);
 }
@@ -2024,7 +2024,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.colorPatW,  isSubpat &&  isColorOnly, False);
 		RadioButtonChangeState(HighlightDialog.simpleW,   !isRange, False);
 		RadioButtonChangeState(HighlightDialog.rangeW,     isRange, False);
-		setStyleMenu(pat->style);
+		setStyleMenu(pat->style->c_str());
 	}
 	updateLabels();
 }
@@ -2145,7 +2145,7 @@ static highlightPattern *readDialogFields(int silent) {
 	auto pat = new highlightPattern;
 	pat->endRE        = nullptr;
 	pat->errorRE      = nullptr;
-	pat->style        = nullptr;
+	pat->style        = nullable_string();
 	pat->subPatternOf = nullptr;
 
 	/* read the type buttons */
@@ -2226,7 +2226,7 @@ static highlightPattern *readDialogFields(int silent) {
 	/* read the styles option menu */
 	XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, nullptr);
 	XtVaGetValues(selectedItem, XmNuserData, &style, nullptr);
-	pat->style = XtStringDup(style);
+	pat->style = style;
 
 	/* read the endRE field */
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
@@ -2403,8 +2403,12 @@ static int patternSetsDiffer(patternSet *patSet1, patternSet *patSet2) {
 			return True;
 		if (AllocatedStringsDiffer(pat1->errorRE, pat2->errorRE))
 			return True;
-		if (AllocatedStringsDiffer(pat1->style, pat2->style))
+			
+			
+		if(pat1->style != pat2->style) {
 			return True;
+		}
+		
 		if (AllocatedStringsDiffer(pat1->subPatternOf, pat2->subPatternOf))
 			return True;
 	}
@@ -2419,7 +2423,7 @@ static void freePatternSrc(highlightPattern *pat, bool freeStruct) {
 	XtFree(pat->startRE);
 	XtFree(pat->endRE);
 	XtFree(pat->errorRE);
-	XtFree(pat->style);
+
 	if(freeStruct) {
 		delete pat;
 	}

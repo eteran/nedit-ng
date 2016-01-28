@@ -560,10 +560,9 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (!NamedStyleExists(patternSrc[i].style)) {
-			DialogF(DF_WARN, window->shell, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\n"
-			                                                      "does not match any existing style",
-			        "OK", patternSrc[i].style, patternSrc[i].name);
+		if (!NamedStyleExists(*patternSrc[i].style)) {
+			DialogF(DF_WARN, window->shell, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style",
+			        "OK", patternSrc[i].style->c_str(), patternSrc[i].name);
 			return nullptr;
 		}
 	}
@@ -695,11 +694,11 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 		int r, g, b;
 
 		p->highlightName = pat->name;
-		p->styleName     = pat->style;
-		p->colorName     = ColorOfNamedStyleEx(pat->style);
-		p->bgColorName   = BgColorOfNamedStyleEx(pat->style);
-		p->isBold        = FontOfNamedStyleIsBold(pat->style);
-		p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
+		p->styleName     = *pat->style;
+		p->colorName     = ColorOfNamedStyleEx(*pat->style);
+		p->bgColorName   = BgColorOfNamedStyleEx(*pat->style);
+		p->isBold        = FontOfNamedStyleIsBold(*pat->style);
+		p->isItalic      = FontOfNamedStyleIsItalic(*pat->style);
 
 		/* And now for the more physical stuff */
 		p->color = AllocColor(window->textArea, p->colorName.c_str(), &r, &g, &b);
@@ -719,7 +718,7 @@ static windowHighlightData *createHighlightData(WindowInfo *window, patternSet *
 			p->bgBlue  = b;
 		}
 
-		p->font = FontOfNamedStyle(window, pat->style);
+		p->font = FontOfNamedStyle(window, *pat->style);
 	};
 
 	/* PLAIN_STYLE (pass 1) */
@@ -815,7 +814,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 	   just colors and fonts for sub-expressions of the parent pattern */
 	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
-		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
+		compiledPats[i].userStyleIndex = IndexOfNamedStyle(*patternSrc[i].style);
 		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
 			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name);
@@ -1060,28 +1059,31 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyleName) {
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
-	styleTableEntry *entry;
+
 
 	if (styleBuf) {
 		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
+			
 		if (hCode == UNFINISHED_STYLE) {
 			/* encountered "unfinished" style, trigger parsing */
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
-		entry = styleTableEntryOfCode(window, hCode);
+		
+		styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 		if(!entry)
 			return 0;
-		if ((*checkStyleName) == nullptr)
-			(*checkStyleName) = entry->styleName;
-		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && strcmp(entry->styleName, (*checkStyleName)) == 0)) {
+			
+		std::string checkStyleName = entry->styleName;
+			
+		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && entry->styleName == checkStyleName)) {
 			if (hCode == UNFINISHED_STYLE) {
 				/* encountered "unfinished" style, trigger parsing, then loop */
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
@@ -1092,6 +1094,7 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos, const char **checkStyl
 			}
 		}
 	}
+	
 	return pos - oldPos;
 }
 

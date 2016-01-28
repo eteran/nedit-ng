@@ -3,7 +3,7 @@
 #include "MotifHelper.h"
 #include <algorithm>
 
-highlightPattern::highlightPattern() : name(nullptr), startRE(nullptr), endRE(nullptr), errorRE(nullptr), style(nullptr), subPatternOf(nullptr), flags(0) {
+highlightPattern::highlightPattern() : name(nullptr), startRE(nullptr), endRE(nullptr), errorRE(nullptr), subPatternOf(nullptr), flags(0) {
 }
 
 highlightPattern::highlightPattern(const highlightPattern &other) {
@@ -12,7 +12,7 @@ highlightPattern::highlightPattern(const highlightPattern &other) {
 	startRE      = XtNewStringEx(other.startRE);
 	endRE        = XtNewStringEx(other.endRE);
 	errorRE      = XtNewStringEx(other.errorRE);
-	style        = XtNewStringEx(other.style);
+	style        = other.style;
 	subPatternOf = XtNewStringEx(other.subPatternOf);
 	flags        = other.flags;
 }

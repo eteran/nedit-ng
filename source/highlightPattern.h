@@ -3,6 +3,7 @@
 #define HIGHLIGHT_PATTERN_H_
 
 #include <string>
+#include "nullable_string.h"
 
 /* Pattern specification structure */
 struct highlightPattern {
@@ -20,7 +21,7 @@ public:
 	char *startRE;
 	char *endRE;
 	char *errorRE;
-	char *style;
+	nullable_string style;
 	char *subPatternOf;
 	int flags;
 };
