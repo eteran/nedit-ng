@@ -67,6 +67,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <vector>
 #include <sys/stat.h>
 
 #include <sys/param.h>
@@ -2485,8 +2486,8 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	(void)w;
 	
-	auto window = static_cast<WindowInfo *>(clientData);
-	auto callData = (dragEndCBStruct *)call_data;
+	auto window   = static_cast<WindowInfo *>(clientData);
+	auto callData = static_cast<dragEndCBStruct *>(call_data);
 
 	/* restore recording of undo information */
 	window->ignoreModify = False;
@@ -2522,10 +2523,9 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	WindowInfo *win, *topWin;
 	char geometry[MAX_GEOM_STRING_LEN];
-	int argc = 0, maxArgc, nWindows, i;
-	char **argv;
+	int i;
 	int wasIconic = False;
-	int n, nItems;
+	int nItems;
 	WidgetList children;
 
 	/* Allocate memory for an argument list and for a reversed list of
@@ -2533,31 +2533,33 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   window/session manager combination which uses window creation
 	   order for re-associating stored geometry information with
 	   new windows created by a restored application */
-	maxArgc = 4; /* nedit -server -svrname name */
-	nWindows = 0;
-	for (win = WindowList; win != nullptr; win = win->next) {
-		maxArgc += 5; /* -iconic -group -geometry WxH+x+y filename */
+	int nWindows = 0;
+	for (WindowInfo *win = WindowList; win != nullptr; win = win->next) {
 		nWindows++;
 	}
-	argv = (char **)XtMalloc(maxArgc * sizeof(char *));
+	
 	auto revWindowList = new WindowInfo *[nWindows];
-	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--)
+	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--) {
 		revWindowList[i] = win;
+	}
 
 	/* Create command line arguments for restoring each window in the list */
-	argv[argc++] = XtNewStringEx(ArgV0);
+	std::vector<char *> argv;
+	argv.push_back(XtNewStringEx(ArgV0));
+	
 	if (IsServer) {
-		argv[argc++] = XtNewStringEx("-server");
+		argv.push_back(XtNewStringEx("-server"));
+		
 		if (GetPrefServerName()[0] != '\0') {
-			argv[argc++] = XtNewStringEx("-svrname");
-			argv[argc++] = XtNewStringEx(GetPrefServerName());
+			argv.push_back(XtNewStringEx("-svrname"));
+			argv.push_back(XtNewStringEx(GetPrefServerName()));
 		}
 	}
 
 	/* editor windows are popup-shell children of top-level appShell */
 	XtVaGetValues(appShell, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
 
-	for (n = nItems - 1; n >= 0; n--) {
+	for (int n = nItems - 1; n >= 0; n--) {
 		WidgetList tabs;
 		int tabCount;
 
@@ -2566,26 +2568,28 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 		/* create a group for each window */
 		getGeometryString(topWin, geometry);
-		argv[argc++] = XtNewStringEx("-group");
-		argv[argc++] = XtNewStringEx("-geometry");
-		argv[argc++] = XtNewStringEx(geometry);
+		argv.push_back(XtNewStringEx("-group"));
+		argv.push_back(XtNewStringEx("-geometry"));
+		argv.push_back(XtNewStringEx(geometry));
+		
 		if (topWin->IsIconic()) {
-			argv[argc++] = XtNewStringEx("-iconic");
+			argv.push_back(XtNewStringEx("-iconic"));
 			wasIconic = True;
 		} else if (wasIconic) {
-			argv[argc++] = XtNewStringEx("-noiconic");
+			argv.push_back(XtNewStringEx("-noiconic"));
 			wasIconic = False;
 		}
 
 		/* add filename of each tab in window... */
 		XtVaGetValues(topWin->tabBar, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
 
-		for (i = 0; i < tabCount; i++) {
+		for (int i = 0; i < tabCount; i++) {
 			win = TabToWindow(tabs[i]);
 			if (win->filenameSet) {
 				/* add filename */
-				argv[argc] = XtMalloc(strlen(win->path) + strlen(win->filename) + 1);
-				sprintf(argv[argc++], "%s%s", win->path, win->filename);
+				char *p = XtMalloc(strlen(win->path) + strlen(win->filename) + 1);
+				sprintf(p, "%s%s", win->path, win->filename);
+				argv.push_back(p);
 			}
 		}
 	}
@@ -2593,10 +2597,10 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	delete [] revWindowList;
 
 	/* Set the window's WM_COMMAND property to the created command line */
-	XSetCommand(TheDisplay, XtWindow(appShell), argv, argc);
-	for (i = 0; i < argc; i++)
-		XtFree(argv[i]);
-	XtFree((char *)argv);
+	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());
+	for (char *p : argv) {
+		XtFree(p);		
+	}
 }
 
 void AttachSessionMgrHandler(Widget appShell) {
