@@ -228,7 +228,7 @@ char chooseNullSubsChar(bool hist[256]) {
 	return '\0';
 }
 
-void addPadding(char *string, int startIndent, int toIndent, int tabDist, int useTabs, char nullSubsChar, int *charsAdded) {
+int addPadding(char *string, int startIndent, int toIndent, int tabDist, int useTabs, char nullSubsChar) {
 
 	int indent = startIndent;
 	char *outPtr = string;
@@ -249,7 +249,7 @@ void addPadding(char *string, int startIndent, int toIndent, int tabDist, int us
 			indent++;
 		}
 	}
-	*charsAdded = outPtr - string;
+	return outPtr - string;
 }
 
 /*
@@ -299,7 +299,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	/* pad out to column if text is too short */
 	if (indent < column) {
-		addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar, &len);
+		len = addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
 		outPtr += len;
 		indent = column;
 	}
@@ -325,7 +325,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	/* Pad out to column + width of inserted text + (additional original
 	   offset due to non-breaking character at column) */
 	toIndent = column + insWidth + postColIndent - column;
-	addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar, &len);
+	len = addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 	indent = toIndent;
 
@@ -380,7 +380,7 @@ void deleteRectFromLine(const char *line, int rectStart, int rectEnd, int tabDis
 	/* fill in any space left by removed tabs or control characters
 	   which straddled the boundaries */
 	indent = std::max<int>(rectStart + postRectIndent - rectEnd, preRectIndent);
-	addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 
 	/* Copy the rest of the line.  If the indentation has changed, preserve
@@ -458,7 +458,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 
 	/* pad out to rectStart if text is too short */
 	if (outIndent < rectStart) {
-		addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar, &len);
+		len = addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar);
 		outPtr += len;
 	}
 	outIndent = rectStart;
@@ -482,7 +482,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 
 	/* Pad out to rectEnd + (additional original offset
 	   due to non-breaking character at right boundary) */
-	addPadding(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar, &len);
+	len = addPadding(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 	outIndent = postRectIndent;
 
