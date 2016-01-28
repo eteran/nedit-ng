@@ -1232,24 +1232,22 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 	/* Convert tabs to spaces */
 	if (c == '\t') {
 		int nSpaces = tabDist - (indent % tabDist);
-		for (int i = 0; i < nSpaces; i++)
+		for (int i = 0; i < nSpaces; i++) {
 			outStr[i] = ' ';
+		}
 		return nSpaces;
 	}
 
 	/* Convert ASCII control
 	   codes to readable character sequences */
 	if (c == nullSubsChar) {
-		sprintf(outStr, "<nul>");
-		return 5;
+		return sprintf(outStr, "<nul>");
 	}
 
 	if (((unsigned char)c) <= 31) {
-		sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
-		return strlen(outStr);
+		return sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
 	} else if (c == 127) {
-		sprintf(outStr, "<del>");
-		return 5;
+		return sprintf(outStr, "<del>");
 	}
 
 	/* Otherwise, just return the character */
@@ -1634,7 +1632,7 @@ int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 
 /*
 ** Internal (non-redisplaying) version of BufInsertEx.  Returns the length of
-** text inserted (this is just strlen(text), however this calculation can be
+** text inserted (this is just (text.size()), however this calculation can be
 ** expensive and the length will be required by any caller who will continue
 ** on to call redisplay).  pos must be contiguous with the existing text in
 ** the buffer (i.e. not past the end).

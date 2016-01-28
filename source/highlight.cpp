@@ -890,7 +890,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, highlightPattern *
 			continue;
 		}
 		
-		length = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE == nullptr) ? 0 : strlen(patternSrc[patternNum].endRE) + 5;
+		length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE == nullptr)   ? 0 : strlen(patternSrc[patternNum].endRE) + 5;
 		length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE == nullptr) ? 0 : strlen(patternSrc[patternNum].errorRE) + 5;
 		
 		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
