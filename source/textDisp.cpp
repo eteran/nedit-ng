@@ -268,8 +268,9 @@ textDisp::~textDisp() {
 
 	while (TextDPopGraphicExposeQueueEntry(this)) {
 	}
-	XtFree((char *)this->bgClassPixel);
-	XtFree((char *)this->bgClass);
+	
+	delete [] this->bgClassPixel;
+	delete [] this->bgClass;
 }
 
 /*
@@ -3485,11 +3486,11 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsign
 	char *pos;
 	Boolean is_good = True;
 
-	XtFree((char *)*pp_bgClass);
-	XtFree((char *)*pp_bgClassPixel);
+	delete [] *pp_bgClass;
+	delete [] *pp_bgClassPixel;
 
 	*pp_bgClassPixel = nullptr;
-	*pp_bgClass = nullptr;
+	*pp_bgClass      = nullptr;
 
 	if (!s)
 		return;
@@ -3560,13 +3561,15 @@ void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsign
 	/* when we get here, we've set up our class table and class-to-pixel table
 	   in local variables: now put them into the "real thing" */
 	class_no++; /* bigger than all valid class_nos */
-	*pp_bgClass = (unsigned char *)XtMalloc(256);
-	*pp_bgClassPixel = (Pixel *)XtMalloc(class_no * sizeof(Pixel));
+	*pp_bgClass      = new unsigned char[256];
+	*pp_bgClassPixel = new Pixel[class_no];
+	
 	if (!*pp_bgClass || !*pp_bgClassPixel) {
-		XtFree((char *)*pp_bgClass);
-		XtFree((char *)*pp_bgClassPixel);
+		delete [] *pp_bgClass;
+		delete [] *pp_bgClassPixel;
 		return;
 	}
-	memcpy(*pp_bgClass, bgClass, 256);
-	memcpy(*pp_bgClassPixel, bgClassPixel, class_no * sizeof(Pixel));
+	
+	std::copy_n(bgClass, 256, *pp_bgClass);
+	std::copy_n(bgClassPixel, class_no, *pp_bgClassPixel);
 }

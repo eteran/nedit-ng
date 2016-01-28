@@ -2563,8 +2563,9 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		WidgetList tabs;
 		int tabCount;
 
-		if (strcmp(XtName(children[n]), "textShell") || ((topWin = WidgetToWindow(children[n])) == nullptr))
+		if (strcmp(XtName(children[n]), "textShell") || ((topWin = WidgetToWindow(children[n])) == nullptr)) {
 			continue; /* skip non-editor windows */
+		}
 
 		/* create a group for each window */
 		getGeometryString(topWin, geometry);
@@ -2587,7 +2588,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 			win = TabToWindow(tabs[i]);
 			if (win->filenameSet) {
 				/* add filename */
-				char *p = XtMalloc(strlen(win->path) + strlen(win->filename) + 1);
+				auto p = new char[strlen(win->path) + strlen(win->filename) + 1];
 				sprintf(p, "%s%s", win->path, win->filename);
 				argv.push_back(p);
 			}
@@ -2599,7 +2600,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* Set the window's WM_COMMAND property to the created command line */
 	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());
 	for (char *p : argv) {
-		XtFree(p);		
+		delete [] p;
 	}
 }
 

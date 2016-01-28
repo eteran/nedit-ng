@@ -2190,7 +2190,7 @@ static void disableTextW(Widget textW) {
 }
 
 static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listType) {
-	char *outStr, *outPtr, accStr[MAX_ACCEL_LEN];
+	char accStr[MAX_ACCEL_LEN];
 	menuItemRec *f;
 	int i, length;
 
@@ -2210,10 +2210,10 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 		length += 21;                 /* number of characters added below */
 	}
 	length++; /* terminating null */
-	outStr = XtMalloc(length);
+	char *outStr = XtMalloc(length);
 
 	/* write the string */
-	outPtr = outStr;
+	char *outPtr = outStr;
 	*outPtr++ = '\\';
 	*outPtr++ = '\n';
 	for (i = 0; i < nItems; i++) {

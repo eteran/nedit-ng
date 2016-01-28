@@ -1296,7 +1296,6 @@ static void showMatchingCalltip(Widget parent, int i) {
 	char *fileString;
 	FILE *fp;
 	struct stat statbuf;
-	char *message;
 
 	/* 1. Open the target file */
 	NormalizePathname(tagFiles[i]);
@@ -1314,7 +1313,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	/* 2. Read the target file */
 	/* Allocate space for the whole contents of the file (unfortunately) */
 	fileLen = statbuf.st_size;
-	fileString = XtMalloc(fileLen + 1); /* +1 = space for null */
+	fileString = new char[fileLen + 1]; /* +1 = space for null */
 	if(!fileString) {
 		fclose(fp);
 		DialogF(DF_ERR, parent, 1, "File too large", "File is too large to load", "OK");
@@ -1322,11 +1321,11 @@ static void showMatchingCalltip(Widget parent, int i) {
 	}
 
 	/* Read the file into fileString and terminate with a null */
-	readLen = fread(fileString, sizeof(char), fileLen, fp);
+	readLen = fread(fileString, 1, fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
 		DialogF(DF_ERR, parent, 1, "Error reading File", "Error reading %s", "OK", tagFiles[i]);
-		XtFree(fileString);
+		delete [] fileString;
 		return;
 	}
 	fileString[readLen] = 0;
@@ -1343,14 +1342,14 @@ static void showMatchingCalltip(Widget parent, int i) {
 		/* It's a line number, just go for it */
 		if ((moveAheadNLines(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
 			DialogF(DF_ERR, parent, 1, "Tags Error", "%s\n not long enough for definition to be on line %d", "OK", tagFiles[i], tagPosInf[i]);
-			XtFree(fileString);
+			delete [] fileString;
 			return;
 		}
 	} else {
 		startPos = tagPosInf[i];
 		if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
 			DialogF(DF_WARN, parent, 1, "Tag not found", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
-			XtFree(fileString);
+			delete [] fileString;
 			return;
 		}
 	}
@@ -1378,10 +1377,10 @@ static void showMatchingCalltip(Widget parent, int i) {
 	}
 	/* 5. Copy the calltip to a string */
 	tipLen = endPos - startPos;
-	message = XtMalloc(tipLen + 1); /* +1 = space for null */
+	auto message = new char[tipLen + 1]; /* +1 = space for null */
 	if(!message) {
 		DialogF(DF_ERR, parent, 1, "Out of Memory", "Can't allocate memory for calltip message", "OK");
-		XtFree(fileString);
+		delete [] fileString;
 		return;
 	}
 	strncpy(message, &fileString[startPos], tipLen);
@@ -1389,8 +1388,9 @@ static void showMatchingCalltip(Widget parent, int i) {
 
 	/* 6. Display it */
 	tagsShowCalltip(WidgetToWindow(parent), message);
-	XtFree(message);
-	XtFree(fileString);
+
+	delete [] message;
+	delete [] fileString;
 }
 
 /*  Open a new (or existing) editor window to the location specified in
@@ -1443,14 +1443,16 @@ static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char
 	int i;
 	char tmpStr[100];
 	Widget menu;
-	XmStringTable list;
 	XmString popupTitle;
 	int ac;
 	Arg csdargs[20];
 
-	list = (XmStringTable)XtMalloc(nArgs * sizeof(XmString *));
-	for (i = 0; i < nArgs; i++)
+	auto list = new XmString[nArgs];
+	
+	for (i = 0; i < nArgs; i++) {
 		list[i] = XmStringCreateSimpleEx(args[i]);
+	}
+	
 	sprintf(tmpStr, "Select File With TAG: %s", tagName);
 	popupTitle = XmStringCreateSimpleEx(tmpStr);
 	ac = 0;
@@ -1472,9 +1474,13 @@ static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char
 	XtAddCallback(menu, XmNapplyCallback, findAllCB, menu);
 	XtAddCallback(menu, XmNcancelCallback, findAllCB, menu);
 	AddMotifCloseCallback(XtParent(menu), findAllCloseCB, nullptr);
-	for (i = 0; i < nArgs; i++)
+	
+	for (i = 0; i < nArgs; i++) {
 		XmStringFree(list[i]);
-	XtFree((char *)list);
+	}
+
+	delete [] list;
+
 	XmStringFree(popupTitle);
 	ManageDialogCenteredOnPointer(menu);
 	return menu;

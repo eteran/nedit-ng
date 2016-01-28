@@ -262,7 +262,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 		SpinClipboardUnlock(XtDisplay(w), XtWindow(w));
 		return;
 	}
-	char *string = XtMalloc(length + 1);
+	auto string = new char[length + 1];
 	if (SpinClipboardRetrieve(XtDisplay(w), XtWindow(w), (String) "STRING", string, length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
 		XtFree(string);
 		/*
@@ -275,7 +275,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 	string[retLength] = '\0';
 	
 	std::string contents(string, retLength);
-	XtFree(string);
+	delete [] string;
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
@@ -553,6 +553,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 	/* target is "TARGETS", return a list of targets we can handle */
 	if (*target == getAtom(display, A_TARGETS)) {
 		targets = (Atom *)XtMalloc(sizeof(Atom) * N_SELECT_TARGETS);
+		
 		targets[0] = XA_STRING;
 		targets[1] = getAtom(display, A_TEXT);
 		targets[2] = getAtom(display, A_TARGETS);
@@ -560,8 +561,9 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		targets[4] = getAtom(display, A_TIMESTAMP);
 		targets[5] = getAtom(display, A_INSERT_SELECTION);
 		targets[6] = getAtom(display, A_DELETE);
-		*type = XA_ATOM;
-		*value = targets;
+		
+		*type   = XA_ATOM;
+		*value  = targets;
 		*length = N_SELECT_TARGETS;
 		*format = 32;
 		return True;
@@ -679,11 +681,13 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *t
 	/* target is "TARGETS", return a list of targets it can handle */
 	if (*target == getAtom(display, A_TARGETS)) {
 		targets = (Atom *)XtMalloc(sizeof(Atom) * 3);
+		
 		targets[0] = getAtom(display, A_TARGETS);
 		targets[1] = getAtom(display, A_TIMESTAMP);
 		targets[2] = getAtom(display, A_INSERT_SELECTION);
-		*type = XA_ATOM;
-		*value = targets;
+		
+		*type   = XA_ATOM;
+		*value  = targets;
 		*length = 3;
 		*format = 32;
 		return True;
