@@ -2099,8 +2099,8 @@ static rbTreeNode *arrayEmptyAllocator(void) {
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 	SparseArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-		newNode->key   = ((SparseArrayEntry *)src)->key;
-		newNode->value = ((SparseArrayEntry *)src)->value;
+		newNode->key   = static_cast<SparseArrayEntry *>(src)->key;
+		newNode->value = static_cast<SparseArrayEntry *>(src)->value;
 	}
 	return (newNode);
 }

@@ -134,7 +134,7 @@ struct DataValue {
 	
 };
 
-struct SparseArrayEntry : public rbTreeNode{
+struct SparseArrayEntry : public rbTreeNode {
 	char *key;
 	DataValue value;
 };
@@ -144,7 +144,7 @@ struct Symbol {
 	char *name;
 	enum symTypes type;
 	DataValue value;
-	struct Symbol *next; /* to link to another */
+	Symbol *next; /* to link to another */
 };
 
 struct Program {
