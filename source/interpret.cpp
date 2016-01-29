@@ -31,7 +31,6 @@
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"
-#include "rbTree.h"
 #include "WindowInfo.h"
 
 #include <algorithm>
