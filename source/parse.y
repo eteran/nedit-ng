@@ -1,7 +1,6 @@
 %{
 #include "parse.h"
 #include "nedit.h"
-#include "rbTree.h"
 #include "interpret.h"
 
 #include <cstdlib>
