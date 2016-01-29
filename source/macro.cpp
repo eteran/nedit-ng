@@ -46,7 +46,6 @@
 #include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
-#include "rbTree.h"
 #include "search.h"
 #include "selection.h"
 #include "server.h"
