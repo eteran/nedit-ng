@@ -24,13 +24,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_TAGS_H_INCLUDED
-#define NEDIT_TAGS_H_INCLUDED
+#ifndef TAGS_H_
+#define TAGS_H_
 
 #include "nedit.h"
-#include <unordered_set>
 #include <string>
-#include <list>
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
@@ -66,4 +64,4 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg);
     TIP or TIP_FROM_TAG here. */
 int ShowTipString(WindowInfo *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
-#endif /* NEDIT_TAGS_H_INCLUDED */
+#endif

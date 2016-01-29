@@ -317,7 +317,7 @@ static int delTag(const char *name, const char *file, int lang, const char *sear
 			rcs_free(t->file);
 			rcs_free(t->searchString);
 			rcs_free(t->path);
-			free(t);
+			delete t;
 			t = nullptr;
 			del++;
 		}
@@ -534,7 +534,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 			removed = 0;
 	}
 	
-	free(tmptagSpec);
+	delete [] tmptagSpec;
 	
 	if (removed)
 		return TRUE;
@@ -1171,11 +1171,7 @@ static int findAllMatches(WindowInfo *window, const char *string) {
 	}
 
 	if (nMatches > 1) {
-		if (!(dupTagsList = (char **)malloc(sizeof(char *) * nMatches))) {
-			fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
-			XBell(TheDisplay, 0);
-			return -1;
-		}
+		dupTagsList = new char*[nMatches];
 
 		for (i = 0; i < nMatches; i++) {
 			ParseFilename(tagFiles[i], filename, pathname);
@@ -1190,27 +1186,15 @@ static int findAllMatches(WindowInfo *window, const char *string) {
 			} else {
 				sprintf(temp, "%2d. %s%s", i + 1, pathname, filename);
 			}
-
-			if (nullptr == (dupTagsList[i] = (char *)malloc(strlen(temp) + 1))) {
-				int j;
-				fprintf(stderr, "nedit: findAllMatches(): out of heap space!\n");
-
-				/*  dupTagsList[i] is unallocated, let's free [i - 1] to [0]  */
-				for (j = i - 1; j > -1; j--) {
-					free(dupTagsList[j]);
-				}
-				free(dupTagsList);
-
-				XBell(TheDisplay, 0);
-				return -1;
-			}
-
+			
+			dupTagsList[i] = new char[strlen(temp) + 1];
 			strcpy(dupTagsList[i], temp);
 		}
 		createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
 		for (i = 0; i < nMatches; i++)
-			free(dupTagsList[i]);
-		free(dupTagsList);
+			delete [] dupTagsList[i];
+
+		delete [] dupTagsList;
 		return 1;
 	}
 
@@ -1570,13 +1554,9 @@ static const char *rcs_strdup(const char *str) {
 	} else /* Doesn't exist, conjure up a new one. */
 	{
 		auto newrcs = new rcs;
+		newrcs->string = new char[len + 1];
 
-		if (nullptr == (newrcs->string = (char *)malloc(len + 1))) {
-			/*  Not much to fall back to here.  */
-			fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
-			XBell(TheDisplay, 0);
-			exit(1);
-		}
+
 		strcpy(newrcs->string, str);
 		newrcs->usage = 1;
 		newrcs->next = nullptr;
@@ -1627,11 +1607,14 @@ static void rcs_free(const char *rcs_str) {
 
 		if (rp->usage == 0) /* Last one- free the storage */
 		{
-			free(rp->string);
-			if (prev)
+			delete []rp->string;
+			
+			if (prev) {
 				prev->next = rp->next;
-			else
+			} else {
 				Rcs[bucket] = rp->next;
+			}
+			
 			delete rp;
 		}
 	} else /* Doesn't appear to be a shared string */
@@ -1769,12 +1752,10 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			return TF_ERROR;
 		}
 		/* Make space for the filenames/alias sources */
-		*body = (char *)malloc(incLen + 1);
-		if (!*body)
-			return TF_ERROR;
-		*body[0] = 0;
+		*body = new char[incLen + 1];
+		*body[0] = '\0';
 		if (fseek(fp, incPos, SEEK_SET) != 0) {
-			free(*body);
+			delete [] *body;
 			return TF_ERROR;
 		}
 		/* Read all the lines in the block */
@@ -1782,7 +1763,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		for (i = 0; i < incLines; i++) {
 			status = fgets(line, MAXLINE, fp);
 			if (!status) {
-				free(*body);
+				delete [] *body;
 				return TF_ERROR_EOF;
 			}
 			rstrip(line, line);
@@ -1872,18 +1853,13 @@ struct tf_alias {
 ** seem strange but that's the way it's called
 */
 static tf_alias *new_alias(const char *dest, char *sources) {
-	tf_alias *alias;
 
 	/* fprintf(stderr, "new_alias: %s <- %s\n", dest, sources); */
 	/* Allocate the alias */
-	alias = (tf_alias *)malloc(sizeof(tf_alias));
-	if (!alias)
-		return nullptr;
+	auto alias = new tf_alias;
 
 	/* Fill it in */
-	alias->dest = (char *)malloc(strlen(dest) + 1);
-	if (!(alias->dest))
-		return nullptr;
+	alias->dest = new char[strlen(dest) + 1];
 	strcpy(alias->dest, dest);
 	alias->sources = sources;
 	return alias;
@@ -1891,12 +1867,12 @@ static tf_alias *new_alias(const char *dest, char *sources) {
 
 /* Deallocate a linked-list of aliases */
 static void free_alias_list(tf_alias *alias) {
-	tf_alias *tmp_alias;
+
 	while (alias) {
-		tmp_alias = alias->next;
-		free(alias->dest);
-		free(alias->sources);
-		free(alias);
+		tf_alias *tmp_alias = alias->next;
+		delete [] alias->dest;
+		delete [] alias->sources;
+		delete alias;
 		alias = tmp_alias;
 	}
 }
@@ -1910,7 +1886,8 @@ static void free_alias_list(tf_alias *alias) {
 static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char header[MAXLINE];
-	char *body, *tipIncFile;
+	char *body;
+	char *tipIncFile;
 	char tipPath[MAXPATHLEN];
 	char resolvedTipsFile[MAXPATHLEN + 1];
 	int nTipsAdded = 0, langMode = PLAIN_LANGUAGE_MODE, oldLangMode;
@@ -1952,7 +1929,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 			    want to have to deal with adding escape characters for
 			    regex metacharacters that might appear in the string */
 			nTipsAdded += addTag(header, resolvedTipsFile, langMode, "", blkLine, tipPath, index);
-			free(body);
+			delete [] body;
 			break;
 		case TF_INCLUDE:
 			/* nextTFBlock returns a colon-separated list of tips files
@@ -1963,7 +1940,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 				    tipIncFile); */
 				nTipsAdded += loadTipsFile(tipIncFile, index, recLevel + 1);
 			}
-			free(body);
+			delete [] body;
 			break;
 		case TF_LANGUAGE:
 			/* Switch to the new language mode if it's valid, else ignore
