@@ -66,8 +66,6 @@
    (should probably be a language-dependent option, but...) */
 #define TIP_DEFAULT_LINES 4
 
-#define STRSAVE(a) ((a != nullptr) ? strcpy((char *)malloc(strlen(a) + 1), (a)) : strcpy((char *)malloc(1), ""))
-
 struct tag {
 	struct tag *next;
 	const char *path;
@@ -351,7 +349,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		FileList = TipsFileList;
 	}
 
-	tmptagSpec = (char *)malloc(strlen(tagSpec) + 1);
+	tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
 	
 	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
@@ -1571,13 +1569,7 @@ static const char *rcs_strdup(const char *str) {
 		RcsStats.tbyteshared += len;
 	} else /* Doesn't exist, conjure up a new one. */
 	{
-		struct rcs *newrcs;
-		if (nullptr == (newrcs = (struct rcs *)malloc(sizeof(struct rcs)))) {
-			/*  Not much to fall back to here.  */
-			fprintf(stderr, "nedit: rcs_strdup(): out of heap space!\n");
-			XBell(TheDisplay, 0);
-			exit(1);
-		}
+		auto newrcs = new rcs;
 
 		if (nullptr == (newrcs->string = (char *)malloc(len + 1))) {
 			/*  Not much to fall back to here.  */
@@ -1640,7 +1632,7 @@ static void rcs_free(const char *rcs_str) {
 				prev->next = rp->next;
 			else
 				Rcs[bucket] = rp->next;
-			free(rp);
+			delete rp;
 		}
 	} else /* Doesn't appear to be a shared string */
 	{
