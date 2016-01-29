@@ -69,7 +69,7 @@
 /* Length of delay in milliseconds for vertical autoscrolling */
 #define VERTICAL_SCROLL_DELAY 50
 
-static void initialize(TextWidget request, TextWidget new_widget);
+static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal *num_args);
 static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 static void redisplay(TextWidget w, XEvent *event, Region region);
@@ -530,98 +530,101 @@ static XtActionsRec actionsList[] = {
     select-end()
 */
 
-static XtResource resources[] = {{XmNhighlightThickness, XmCHighlightThickness, XmRDimension, sizeof(Dimension), XtOffset(TextWidget, primitive.highlight_thickness), XmRInt, 0},
-                                 {XmNshadowThickness, XmCShadowThickness, XmRDimension, sizeof(Dimension), XtOffset(TextWidget, primitive.shadow_thickness), XmRInt, 0},
-                                 {textNfont, textCFont, XmRFontStruct, sizeof(XFontStruct *), XtOffset(TextWidget, text.fontStruct), XmRString, (String) "fixed"},
-                                 {textNselectForeground, textCSelectForeground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.selectFGPixel), XmRString, (String)NEDIT_DEFAULT_SEL_FG},
-                                 {textNselectBackground, textCSelectBackground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.selectBGPixel), XmRString, (String)NEDIT_DEFAULT_SEL_BG},
-                                 {textNhighlightForeground, textCHighlightForeground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.highlightFGPixel), XmRString, (String)NEDIT_DEFAULT_HI_FG},
-                                 {textNhighlightBackground, textCHighlightBackground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.highlightBGPixel), XmRString, (String)NEDIT_DEFAULT_HI_BG},
-                                 {textNlineNumForeground, textCLineNumForeground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.lineNumFGPixel), XmRString, (String)NEDIT_DEFAULT_LINENO_FG},
-                                 {textNcursorForeground, textCCursorForeground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.cursorFGPixel), XmRString, (String)NEDIT_DEFAULT_CURSOR_FG},
-                                 {textNcalltipForeground, textCcalltipForeground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.calltipFGPixel), XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG},
-                                 {textNcalltipBackground, textCcalltipBackground, XmRPixel, sizeof(Pixel), XtOffset(TextWidget, text.calltipBGPixel), XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG},
-                                 {textNbacklightCharTypes, textCBacklightCharTypes, XmRString, sizeof(XmString), XtOffset(TextWidget, text.backlightCharTypes), XmRString, nullptr},
-                                 {textNrows, textCRows, XmRInt, sizeof(int), XtOffset(TextWidget, text.rows), XmRString, (String) "24"},
-                                 {textNcolumns, textCColumns, XmRInt, sizeof(int), XtOffset(TextWidget, text.columns), XmRString, (String) "80"},
-                                 {textNmarginWidth, textCMarginWidth, XmRInt, sizeof(int), XtOffset(TextWidget, text.marginWidth), XmRString, (String) "5"},
-                                 {textNmarginHeight, textCMarginHeight, XmRInt, sizeof(int), XtOffset(TextWidget, text.marginHeight), XmRString, (String) "5"},
-                                 {textNpendingDelete, textCPendingDelete, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.pendingDelete), XmRString, (String) "True"},
-                                 {textNautoWrap, textCAutoWrap, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.autoWrap), XmRString, (String) "True"},
-                                 {textNcontinuousWrap, textCContinuousWrap, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.continuousWrap), XmRString, (String) "True"},
-                                 {textNautoIndent, textCAutoIndent, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.autoIndent), XmRString, (String) "True"},
-                                 {textNsmartIndent, textCSmartIndent, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.smartIndent), XmRString, (String) "False"},
-                                 {textNoverstrike, textCOverstrike, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.overstrike), XmRString, (String) "False"},
-                                 {textNheavyCursor, textCHeavyCursor, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.heavyCursor), XmRString, (String) "False"},
-                                 {textNreadOnly, textCReadOnly, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.readOnly), XmRString, (String) "False"},
-                                 {textNhidePointer, textCHidePointer, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.hidePointer), XmRString, (String) "False"},
-                                 {textNwrapMargin, textCWrapMargin, XmRInt, sizeof(int), XtOffset(TextWidget, text.wrapMargin), XmRString, (String) "0"},
-                                 {textNhScrollBar, textCHScrollBar, XmRWidget, sizeof(Widget), XtOffset(TextWidget, text.hScrollBar), XmRString, (String) ""},
-                                 {textNvScrollBar, textCVScrollBar, XmRWidget, sizeof(Widget), XtOffset(TextWidget, text.vScrollBar), XmRString, (String) ""},
-                                 {textNlineNumCols, textCLineNumCols, XmRInt, sizeof(int), XtOffset(TextWidget, text.lineNumCols), XmRString, (String) "0"},
-                                 {textNautoShowInsertPos, textCAutoShowInsertPos, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.autoShowInsertPos), XmRString, (String) "True"},
-                                 {textNautoWrapPastedText, textCAutoWrapPastedText, XmRBoolean, sizeof(Boolean), XtOffset(TextWidget, text.autoWrapPastedText), XmRString, (String) "False"},
-                                 {textNwordDelimiters, textCWordDelimiters, XmRString, sizeof(char *), XtOffset(TextWidget, text.delimiters), XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?"},
-                                 {textNblinkRate, textCBlinkRate, XmRInt, sizeof(int), XtOffset(TextWidget, text.cursorBlinkRate), XmRString, (String) "500"},
-                                 {textNemulateTabs, textCEmulateTabs, XmRInt, sizeof(int), XtOffset(TextWidget, text.emulateTabs), XmRString, (String) "0"},
-                                 {textNfocusCallback, textCFocusCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.focusInCB), XtRCallback, nullptr},
-                                 {textNlosingFocusCallback, textCLosingFocusCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.focusOutCB), XtRCallback, nullptr},
-                                 {textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.cursorCB), XtRCallback, nullptr},
-                                 {textNdragStartCallback, textCDragStartCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.dragStartCB), XtRCallback, nullptr},
-                                 {textNdragEndCallback, textCDragEndCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.dragEndCB), XtRCallback, nullptr},
-                                 {textNsmartIndentCallback, textCSmartIndentCallback, XmRCallback, sizeof(caddr_t), XtOffset(TextWidget, text.smartIndentCB), XtRCallback, nullptr},
-                                 {textNcursorVPadding, textCCursorVPadding, XtRCardinal, sizeof(Cardinal), XtOffset(TextWidget, text.cursorVPadding), XmRString, (String) "0"}};
+static XtResource resources[] = {
+	{ XmNhighlightThickness,	   XmCHighlightThickness,		XmRDimension,  sizeof(Dimension),	  XtOffset(TextWidget, primitive.highlight_thickness), XmRInt,    0                                         },
+	{ XmNshadowThickness,		   XmCShadowThickness,  		XmRDimension,  sizeof(Dimension),	  XtOffset(TextWidget, primitive.shadow_thickness),    XmRInt,    0                                         },
+	{ textNfont,				   textCFont,					XmRFontStruct, sizeof(XFontStruct *), XtOffset(TextWidget, text.fontStruct),			   XmRString, (String) "fixed"                          },
+	{ textNselectForeground,	   textCSelectForeground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.selectFGPixel), 		   XmRString, (String)NEDIT_DEFAULT_SEL_FG              },
+	{ textNselectBackground,	   textCSelectBackground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.selectBGPixel), 		   XmRString, (String)NEDIT_DEFAULT_SEL_BG              },
+	{ textNhighlightForeground,    textCHighlightForeground,	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.highlightFGPixel),  	   XmRString, (String)NEDIT_DEFAULT_HI_FG               },
+	{ textNhighlightBackground,    textCHighlightBackground,	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.highlightBGPixel),  	   XmRString, (String)NEDIT_DEFAULT_HI_BG               },
+	{ textNlineNumForeground,	   textCLineNumForeground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.lineNumFGPixel),		   XmRString, (String)NEDIT_DEFAULT_LINENO_FG           },
+	{ textNcursorForeground,	   textCCursorForeground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.cursorFGPixel), 		   XmRString, (String)NEDIT_DEFAULT_CURSOR_FG           },
+	{ textNcalltipForeground,	   textCcalltipForeground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.calltipFGPixel),		   XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG          },
+	{ textNcalltipBackground,	   textCcalltipBackground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.calltipBGPixel),		   XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG          },
+	{ textNbacklightCharTypes,     textCBacklightCharTypes, 	XmRString,     sizeof(XmString),	  XtOffset(TextWidget, text.backlightCharTypes),	   XmRString, nullptr                                   },
+	{ textNrows,				   textCRows,					XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.rows),  				   XmRString, (String) "24"                             },
+	{ textNcolumns, 			   textCColumns,				XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.columns),				   XmRString, (String) "80"                             },
+	{ textNmarginWidth, 		   textCMarginWidth,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.marginWidth),			   XmRString, (String) "5"                              },
+	{ textNmarginHeight,		   textCMarginHeight,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.marginHeight),  		   XmRString, (String) "5"                              },
+	{ textNpendingDelete,		   textCPendingDelete,  		XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.pendingDelete), 		   XmRString, (String) "True"                           },
+	{ textNautoWrap,			   textCAutoWrap,				XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoWrap),  			   XmRString, (String) "True"                           },
+	{ textNcontinuousWrap,  	   textCContinuousWrap, 		XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.continuousWrap),		   XmRString, (String) "True"                           },
+	{ textNautoIndent,  		   textCAutoIndent, 			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoIndent),			   XmRString, (String) "True"                           },
+	{ textNsmartIndent, 		   textCSmartIndent,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.smartIndent),			   XmRString, (String) "False"                          },
+	{ textNoverstrike,  		   textCOverstrike, 			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.overstrike),			   XmRString, (String) "False"                          },
+	{ textNheavyCursor, 		   textCHeavyCursor,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.heavyCursor),			   XmRString, (String) "False"                          },
+	{ textNreadOnly,			   textCReadOnly,				XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.readOnly),  			   XmRString, (String) "False"                          },
+	{ textNhidePointer, 		   textCHidePointer,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.hidePointer),			   XmRString, (String) "False"                          },
+	{ textNwrapMargin,  		   textCWrapMargin, 			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.wrapMargin),			   XmRString, (String) "0"                              },
+	{ textNhScrollBar,  		   textCHScrollBar, 			XmRWidget,     sizeof(Widget),  	  XtOffset(TextWidget, text.hScrollBar),			   XmRString, (String) ""                               },
+	{ textNvScrollBar,  		   textCVScrollBar, 			XmRWidget,     sizeof(Widget),  	  XtOffset(TextWidget, text.vScrollBar),			   XmRString, (String) ""                               },
+	{ textNlineNumCols, 		   textCLineNumCols,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.lineNumCols),			   XmRString, (String) "0"                              },
+	{ textNautoShowInsertPos,	   textCAutoShowInsertPos,  	XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoShowInsertPos), 	   XmRString, (String) "True"                           },
+	{ textNautoWrapPastedText,     textCAutoWrapPastedText, 	XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoWrapPastedText),	   XmRString, (String) "False"                          },
+	{ textNwordDelimiters,  	   textCWordDelimiters, 		XmRString,     sizeof(char *),  	  XtOffset(TextWidget, text.delimiters),			   XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?" },
+	{ textNblinkRate,			   textCBlinkRate,  			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.cursorBlinkRate),		   XmRString, (String) "500"                            },
+	{ textNemulateTabs, 		   textCEmulateTabs,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.emulateTabs),			   XmRString, (String) "0"                              },
+	{ textNfocusCallback,		   textCFocusCallback,  		XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.focusInCB), 			   XtRCallback, nullptr                                 },
+	{ textNlosingFocusCallback,    textCLosingFocusCallback,	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.focusOutCB),			   XtRCallback, nullptr                                 },
+	{ textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.cursorCB),  			   XtRCallback, nullptr                                 },
+	{ textNdragStartCallback,	   textCDragStartCallback,  	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.dragStartCB),			   XtRCallback, nullptr                                 },
+	{ textNdragEndCallback, 	   textCDragEndCallback,		XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.dragEndCB), 			   XtRCallback, nullptr                                 },
+	{ textNsmartIndentCallback,    textCSmartIndentCallback,	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.smartIndentCB), 		   XtRCallback, nullptr                                 },
+	{ textNcursorVPadding,  	   textCCursorVPadding, 		XtRCardinal,   sizeof(Cardinal),	  XtOffset(TextWidget, text.cursorVPadding),		   XmRString, (String) "0"                              }
+};
 
 static TextClassRec textClassRec = {
-    /* CoreClassPart */
-    {
-     (WidgetClass)&xmPrimitiveClassRec, /* superclass       */
-     (String) "Text",                   /* class_name            */
-     sizeof(TextRec),                   /* widget_size           */
-     nullptr,                           /* class_initialize      */
-     nullptr,                           /* class_part_initialize */
-     FALSE,                             /* class_inited          */
-     (XtInitProc)initialize,            /* initialize            */
-     nullptr,                           /* initialize_hook       */
-     realize,                           /* realize               */
-     actionsList,                       /* actions               */
-     XtNumber(actionsList),             /* num_actions           */
-     resources,                         /* resources             */
-     XtNumber(resources),               /* num_resources         */
-     NULLQUARK,                         /* xrm_class             */
-     TRUE,                              /* compress_motion       */
-     TRUE,                              /* compress_exposure     */
-     TRUE,                              /* compress_enterleave   */
-     FALSE,                             /* visible_interest      */
-     (XtWidgetProc)destroy,             /* destroy               */
-     (XtWidgetProc)resize,              /* resize                */
-     (XtExposeProc)redisplay,           /* expose                */
-     (XtSetValuesFunc)setValues,        /* set_values            */
-     nullptr,                           /* set_values_hook       */
-     XtInheritSetValuesAlmost,          /* set_values_almost     */
-     nullptr,                           /* get_values_hook       */
-     nullptr,                           /* accept_focus          */
-     XtVersion,                         /* version               */
-     nullptr,                           /* callback private      */
-     defaultTranslations,               /* tm_table              */
-     queryGeometry,                     /* query_geometry        */
-     nullptr,                           /* display_accelerator   */
-     nullptr,                           /* extension             */
-    },
-    /* Motif primitive class fields */
-    {
-     (XtWidgetProc)_XtInherit,           /* Primitive border_highlight   */
-     (XtWidgetProc)_XtInherit,           /* Primitive border_unhighlight */
-     nullptr, /*XtInheritTranslations,*/ /* translations                 */
-     nullptr,                            /* arm_and_activate             */
-     nullptr,                            /* get resources      		*/
-     0,                                  /* num get_resources  		*/
-     nullptr,                            /* extension                    */
-    },
-    /* Text class part */
-    {
-     0, /* ignored	                */
-    }};
+	/* CoreClassPart */
+	{
+		(WidgetClass)&xmPrimitiveClassRec, /* superclass            */
+		(String) "Text",                   /* class_name            */
+		sizeof(TextRec),                   /* widget_size           */
+		nullptr,                           /* class_initialize      */
+		nullptr,                           /* class_part_initialize */
+		FALSE,                             /* class_inited          */
+		initialize,                        /* initialize            */
+		nullptr,                           /* initialize_hook       */
+		realize,                           /* realize               */
+		actionsList,                       /* actions               */
+		XtNumber(actionsList),             /* num_actions           */
+		resources,                         /* resources             */
+		XtNumber(resources),               /* num_resources         */
+		NULLQUARK,                         /* xrm_class             */
+		TRUE,                              /* compress_motion       */
+		TRUE,                              /* compress_exposure     */
+		TRUE,                              /* compress_enterleave   */
+		FALSE,                             /* visible_interest      */
+		(XtWidgetProc)destroy,             /* destroy               */
+		(XtWidgetProc)resize,              /* resize                */
+		(XtExposeProc)redisplay,           /* expose                */
+		(XtSetValuesFunc)setValues,        /* set_values            */
+		nullptr,                           /* set_values_hook       */
+		XtInheritSetValuesAlmost,          /* set_values_almost     */
+		nullptr,                           /* get_values_hook       */
+		nullptr,                           /* accept_focus          */
+		XtVersion,                         /* version               */
+		nullptr,                           /* callback private      */
+		defaultTranslations,               /* tm_table              */
+		queryGeometry,                     /* query_geometry        */
+		nullptr,                           /* display_accelerator   */
+		nullptr,                           /* extension             */
+	},
+	/* Motif primitive class fields */
+	{
+		(XtWidgetProc)_XtInherit,           /* Primitive border_highlight   */
+		(XtWidgetProc)_XtInherit,           /* Primitive border_unhighlight */
+		nullptr, /*XtInheritTranslations,*/ /* translations                 */
+		nullptr,                            /* arm_and_activate             */
+		nullptr,                            /* get resources      		*/
+		0,                                  /* num get_resources  		*/
+		nullptr,                            /* extension                    */
+	},
+	/* Text class part */
+	{
+		0, /* ignored	                */
+	}
+};
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
 #define NEDIT_HIDE_CURSOR_MASK (KeyPressMask)
@@ -632,28 +635,36 @@ static Cursor empty_cursor = 0;
 /*
 ** Widget initialize method
 */
-static void initialize(TextWidget request, TextWidget new_widget) {
+static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal *num_args) {
+
+	(void)args;
+	(void)num_args;
+	
+	auto new_widget = reinterpret_cast<TextWidget>(newWidget);
 
 	XFontStruct *fs = new_widget->text.fontStruct;
-	Pixel white, black;
 	int textLeft;
-	int charWidth = fs->max_bounds.width;
+	int charWidth   = fs->max_bounds.width;
 	int marginWidth = new_widget->text.marginWidth;
 	int lineNumCols = new_widget->text.lineNumCols;
-
+	
 	/* Set the initial window size based on the rows and columns resources */
-	if (request->core.width == 0)
+	if (request->core.width == 0) {
 		new_widget->core.width = charWidth * new_widget->text.columns + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
-	if (request->core.height == 0)
+	}
+	
+	if (request->core.height == 0) {
 		new_widget->core.height = (fs->ascent + fs->descent) * new_widget->text.rows + new_widget->text.marginHeight * 2;
+	}
 
 	/* The default colors work for B&W as well as color, except for
 	   selectFGPixel and selectBGPixel, where color highlighting looks
 	   much better without reverse video, so if we get here, and the
 	   selection is totally unreadable because of the bad default colors,
 	   swap the colors and make the selection reverse video */
-	white = WhitePixelOfScreen(XtScreen((Widget)new_widget));
-	black = BlackPixelOfScreen(XtScreen((Widget)new_widget));
+	Pixel white = WhitePixelOfScreen(XtScreen(newWidget));
+	Pixel black = BlackPixelOfScreen(XtScreen(newWidget));
+	
 	if (new_widget->text.selectBGPixel == white && new_widget->core.background_pixel == white && new_widget->text.selectFGPixel == black && new_widget->primitive.foreground == black) {
 		new_widget->text.selectBGPixel = black;
 		new_widget->text.selectFGPixel = white;
@@ -665,7 +676,7 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 
 	/* Create and initialize the text-display part of the widget */
 	textLeft = new_widget->text.marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
-	new_widget->text.textD = new textDisp((Widget)new_widget, new_widget->text.hScrollBar, new_widget->text.vScrollBar, textLeft, new_widget->text.marginHeight, new_widget->core.width - marginWidth - textLeft,
+	new_widget->text.textD = new textDisp(newWidget, new_widget->text.hScrollBar, new_widget->text.vScrollBar, textLeft, new_widget->text.marginHeight, new_widget->core.width - marginWidth - textLeft,
 	                new_widget->core.height - new_widget->text.marginHeight * 2, lineNumCols == 0 ? 0 : marginWidth, lineNumCols == 0 ? 0 : lineNumCols * charWidth, buf, new_widget->text.fontStruct, new_widget->core.background_pixel,
 	                new_widget->primitive.foreground, new_widget->text.selectFGPixel, new_widget->text.selectBGPixel, new_widget->text.highlightFGPixel, new_widget->text.highlightBGPixel, new_widget->text.cursorFGPixel,
 	                new_widget->text.lineNumFGPixel, new_widget->text.continuousWrap, new_widget->text.wrapMargin, new_widget->text.backlightCharTypes, new_widget->text.calltipFGPixel, new_widget->text.calltipBGPixel);
@@ -694,11 +705,11 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 	new_widget->text.emTabsBeforeCursor = 0;
 
 	/* Register the widget to the input manager */
-	XmImRegister((Widget)new_widget, 0);
+	XmImRegister(newWidget, 0);
 	/* In case some Resources for the IC need to be set, add them below */
-	XmImVaSetValues((Widget)new_widget, nullptr);
+	XmImVaSetValues(newWidget, nullptr);
 
-	XtAddEventHandler((Widget)new_widget, GraphicsExpose, True, (XtEventHandler)redisplayGE, (Opaque) nullptr);
+	XtAddEventHandler(newWidget, GraphicsExpose, True, (XtEventHandler)redisplayGE, (Opaque) nullptr);
 
 	if (new_widget->text.hidePointer) {
 		Display *theDisplay;
@@ -706,14 +717,14 @@ static void initialize(TextWidget request, TextWidget new_widget) {
 		XColor black_color;
 		/* Set up the empty Cursor */
 		if (empty_cursor == 0) {
-			theDisplay = XtDisplay((Widget)new_widget);
-			empty_pixmap = XCreateBitmapFromData(theDisplay, RootWindowOfScreen(XtScreen((Widget)new_widget)), empty_bits, 1, 1);
-			XParseColor(theDisplay, DefaultColormapOfScreen(XtScreen((Widget)new_widget)), "black", &black_color);
+			theDisplay = XtDisplay(newWidget);
+			empty_pixmap = XCreateBitmapFromData(theDisplay, RootWindowOfScreen(XtScreen(newWidget)), empty_bits, 1, 1);
+			XParseColor(theDisplay, DefaultColormapOfScreen(XtScreen(newWidget)), "black", &black_color);
 			empty_cursor = XCreatePixmapCursor(theDisplay, empty_pixmap, empty_pixmap, &black_color, &black_color, 0, 0);
 		}
 
 		/* Add event handler to hide the pointer on keypresses */
-		XtAddEventHandler((Widget)new_widget, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
+		XtAddEventHandler(newWidget, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
 	}
 }
 

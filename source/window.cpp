@@ -1517,7 +1517,7 @@ void WindowInfo::SplitPane() {
 
 	/* Fix up the colors */
 	textD = ((TextWidget)this->textArea)->text.textD;
-	newTextD = ((TextWidget)text)->text.textD;
+	newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
@@ -1755,7 +1755,7 @@ void WindowInfo::ShowStatsLine(int state) {
 	   numbers, either in the stats line, or along the left margin */
 	for (i = 0; i <= this->nPanes; i++) {
 		text = (i == 0) ? this->textArea : this->textPanes[i - 1];
-		((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(state);
+		reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(state);
 	}
 	this->showStats = state;
 	showStatistics(this, state);
@@ -2316,17 +2316,54 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 
 
 static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
-	Widget text, sw, hScrollBar, vScrollBar, frame;
 
 	/* Create a text widget inside of a scrolled window widget */
-	sw = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
-	hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
-	vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
-	frame = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
-	text = XtVaCreateManagedWidget("text", textWidgetClass, frame, textNbacklightCharTypes, window->backlightCharTypes, textNrows, rows, textNcolumns, cols, textNlineNumCols, lineNumCols, textNemulateTabs, emTabDist, textNfont,
-	                               GetDefaultFontStruct(window->fontList), textNhScrollBar, hScrollBar, textNvScrollBar, vScrollBar, textNreadOnly, IS_ANY_LOCKED(window->lockReasons), textNwordDelimiters, delimiters, textNwrapMargin,
-	                               wrapMargin, textNautoIndent, window->indentStyle == AUTO_INDENT, textNsmartIndent, window->indentStyle == SMART_INDENT, textNautoWrap, window->wrapMode == NEWLINE_WRAP, textNcontinuousWrap,
-	                               window->wrapMode == CONTINUOUS_WRAP, textNoverstrike, window->overstrike, textNhidePointer, (Boolean)GetPrefTypingHidesPointer(), textNcursorVPadding, GetVerticalAutoScroll(), nullptr);
+	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
+	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
+	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
+	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
+	
+	Widget text = XtVaCreateManagedWidget(
+		"text", 
+		textWidgetClass, 
+		frame, 
+		textNbacklightCharTypes, 
+		window->backlightCharTypes, 
+		textNrows, 
+		rows, 
+		textNcolumns, 
+		cols, 
+		textNlineNumCols, 
+		lineNumCols, 
+		textNemulateTabs, 
+		emTabDist, 
+		textNfont,
+	    GetDefaultFontStruct(window->fontList), 
+		textNhScrollBar, 
+		hScrollBar, 
+		textNvScrollBar, 
+		vScrollBar, 
+		textNreadOnly, 
+		IS_ANY_LOCKED(window->lockReasons), 
+		textNwordDelimiters, 
+		delimiters, 
+		textNwrapMargin,
+	    wrapMargin, 
+		textNautoIndent, 
+		window->indentStyle == AUTO_INDENT, 
+		textNsmartIndent, 
+		window->indentStyle == SMART_INDENT, 
+		textNautoWrap, 
+		window->wrapMode == NEWLINE_WRAP, 
+		textNcontinuousWrap,
+	    window->wrapMode == CONTINUOUS_WRAP, 
+		textNoverstrike, 
+		window->overstrike, 
+		textNhidePointer, 
+		(Boolean)GetPrefTypingHidesPointer(), 
+		textNcursorVPadding, 
+		GetVerticalAutoScroll(), 
+		nullptr);
 
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
@@ -2350,7 +2387,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 	/* If absolute line numbers will be needed for display in the statistics
 	   line, tell the widget to maintain them (otherwise, it's a costly
 	   operation and performance will be better without it) */
-	((TextWidget)text)->text.textD->TextDMaintainAbsLineNum(window->showStats);
+	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats);
 
 	return text;
 }
@@ -3767,7 +3804,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 			window->textPanes[i] = text;
 
 			/* Fix up the colors */
-			newTextD = ((TextWidget)text)->text.textD;
+			newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}
@@ -3786,14 +3823,12 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 
 	/* Reset all of the heights, scroll positions, etc. */
 	for (i = 0; i <= window->nPanes; i++) {
-		textDisp *textD;
-
 		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
 		TextSetScroll(text, topLines[i], horizOffsets[i]);
 
 		/* dim the cursor */
-		textD = ((TextWidget)text)->text.textD;
+		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextDSetCursorStyle(DIM_CURSOR);
 		textD->TextDUnblankCursor();
 	}
