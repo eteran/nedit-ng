@@ -137,6 +137,7 @@ struct DataValue {
 struct SparseArrayEntry : public rbTreeNode {
 	char *key;
 	DataValue value;
+	bool      inUse; /* we use pointers to the data to refer to the entire struct */
 };
 
 /* symbol table entry */

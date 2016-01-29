@@ -155,11 +155,7 @@ static std::list<Symbol *> GlobalSymList;
 /* List of all memory allocated for strings */
 static std::list<char *> AllocatedStrings;
 
-struct SparseArrayEntryWrapper : public SparseArrayEntry {
-	int inUse;             /* we use pointers to the data to refer to the entire struct */
-};
-
-static std::list<SparseArrayEntryWrapper *> AllocatedSparseArrayEntries;
+static std::list<SparseArrayEntry *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
@@ -868,9 +864,8 @@ int AllocNStringCpy(NString *string, const char *s) {
 }
 
 static SparseArrayEntry *allocateSparseArrayEntry(void) {
-	auto mem = new SparseArrayEntryWrapper;	
+	auto mem = new SparseArrayEntry;	
 	AllocatedSparseArrayEntries.push_back(mem);
-
 	return mem;
 }
 
@@ -878,10 +873,13 @@ static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
 	SparseArrayEntry *globalSEUse;
 
 	if (arrayPtr) {
-		static_cast<SparseArrayEntryWrapper *>(arrayPtr)->inUse = 1;
-		for (globalSEUse = (SparseArrayEntry *)rbTreeBegin(arrayPtr); globalSEUse != nullptr; globalSEUse = (SparseArrayEntry *)rbTreeNext(globalSEUse)) {
+		arrayPtr->inUse = true;
+		
+		auto first = static_cast<SparseArrayEntry *>(rbTreeBegin(arrayPtr));
+		
+		for (globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<SparseArrayEntry *>(rbTreeNext(globalSEUse))) {
 
-			static_cast<SparseArrayEntryWrapper *>(globalSEUse)->inUse = 1;
+			globalSEUse->inUse = true;
 			
 			/* test first because it may be read-only static string */
 			if (globalSEUse->key[-1] == 0) {
@@ -913,8 +911,8 @@ void GarbageCollectStrings(void) {
 		*p = 0;
 	}
 
-	for(SparseArrayEntryWrapper *thisAP : AllocatedSparseArrayEntries) {
-		thisAP->inUse = 0;
+	for(SparseArrayEntry *thisAP : AllocatedSparseArrayEntries) {
+		thisAP->inUse = false;
 	}
 
 	/* Sweep the global symbol list, marking which strings are still
@@ -944,10 +942,10 @@ void GarbageCollectStrings(void) {
 	}
 	
 	for(auto it = AllocatedSparseArrayEntries.begin(); it != AllocatedSparseArrayEntries.end(); ) {
-		SparseArrayEntryWrapper *thisAP = *it;
+		SparseArrayEntry *thisAP = *it;
 		assert(thisAP);
 	
-		if (thisAP->inUse == 0) {
+		if (!thisAP->inUse) {
 			delete thisAP;
 			it = AllocatedSparseArrayEntries.erase(it);
 		} else {
