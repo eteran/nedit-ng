@@ -578,14 +578,14 @@ static int checkDoMacroArg(const char *macro) {
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
 	macroLen = strlen(macro);
-	char *tMacro = (char *)malloc(strlen(macro) + 2);
+	char *tMacro = new char[strlen(macro) + 2];
 	strncpy(tMacro, macro, macroLen);
 	tMacro[macroLen] = '\n';
 	tMacro[macroLen + 1] = '\0';
 
 	/* Do a test parse */
 	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
-	free(tMacro);
+	delete [] tMacro;
 	if(!prog) {
 		ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
 		return False;

@@ -825,7 +825,7 @@ void AbortMacroCommand(WindowInfo *window) {
 		AbortShellCommand(window);
 
 	/* Free the continuation */
-	FreeRestartData(((macroCmdInfo *)window->macroCmdData)->context);
+	FreeRestartData((static_cast<macroCmdInfo *>(window->macroCmdData))->context);
 
 	/* Kill the macro command */
 	finishMacroCmdExecution(window);
@@ -842,7 +842,7 @@ void AbortMacroCommand(WindowInfo *window) {
 ** process close the window when the macro is finished executing.
 */
 int MacroWindowCloseActions(WindowInfo *window) {
-	macroCmdInfo *mcd, *cmdData = (macroCmdInfo *)window->macroCmdData;
+	macroCmdInfo *mcd, *cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	WindowInfo *w;
 
 	if (MacroRecordActionHook != nullptr && MacroRecordWindow == window) {
@@ -2570,7 +2570,7 @@ static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
 	window = MacroRunWindow();
-	cmdData = (macroCmdInfo *)window->macroCmdData;
+	cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2722,7 +2722,7 @@ static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
 	window = MacroRunWindow();
-	cmdData = (macroCmdInfo *)window->macroCmdData;
+	cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -3156,9 +3156,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	char *p;
 	char *old_p;
 	char **text_lines;
-	char *tmp;
-	int tmp_len;
-	int n, is_last;
+	int n;
 	XmString *test_strings;
 	int tabDist;
 	Arg al[20];
@@ -3167,7 +3165,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
 	window = MacroRunWindow();
-	cmdData = (macroCmdInfo *)window->macroCmdData;
+	cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -3231,24 +3229,26 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 
 	/* load the table */
 	n = 0;
-	is_last = 0;
+	bool is_last = false;
 	p = old_p = text;
-	tmp_len = 0;             /* current allocated size of temporary buffer tmp */
-	tmp = (char *)malloc(1); /* temporary buffer into which to expand tabs */
+	int tmp_len = 0;             /* current allocated size of temporary buffer tmp */
+	auto tmp = (char *)malloc(1); /* temporary buffer into which to expand tabs */
 	do {
 		is_last = (*p == '\0');
 		if (*p == '\n' || is_last) {
 			*p = '\0';
 			if (strlen(old_p) > 0) { /* only include non-empty lines */
-				char *s, *t;
+				char *s;
+				char *t;
 				int l;
 
 				/* save the actual text line in text_lines[n] */
 				text_lines[n] = XtStringDup(old_p);
 
 				/* work out the tabs expanded length */
-				for (s = old_p, l = 0; *s; s++)
+				for (s = old_p, l = 0; *s != '\0'; s++) {
 					l += (*s == '\t') ? tabDist - (l % tabDist) : 1;
+				}
 
 				/* verify tmp is big enough then tab-expand old_p into tmp */
 				if (l > tmp_len) {
@@ -3257,6 +3257,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 					assert(new_tmp);
 					tmp = new_tmp;
 				}
+				
 				for (s = old_p, t = tmp, l = 0; *s; s++) {
 					if (*s == '\t') {
 						for (i = tabDist - (l % tabDist); i--; l++)

@@ -191,7 +191,7 @@ void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMa
 
 	/* issue the command */
 	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus, left, right, fromMacro);
-	free(subsCommand);
+	delete [] subsCommand;
 }
 
 /*
@@ -253,7 +253,7 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 
 	/* issue the command */
 	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus, insertPos + 1, insertPos + 1, fromMacro);
-	free(subsCommand);
+	delete [] subsCommand;
 }
 
 /*
@@ -299,7 +299,7 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 	if (input == FROM_SELECTION) {
 		text = window->buffer->BufGetSelectionTextEx();
 		if (text.empty()) {
-			free(subsCommand);
+			delete [] subsCommand;
 			XBell(TheDisplay, 0);
 			return;
 		}
@@ -365,7 +365,7 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 	if (saveFirst) {
 		if (!SaveWindow(window)) {
 			if (input != FROM_NONE)
-			free(subsCommand);
+			delete [] subsCommand;
 			return;
 		}
 	}
@@ -377,7 +377,7 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 
 	/* issue the command */
 	issueCommand(inWindow, subsCommand, text, textLen, flags, outWidget, left, right, fromMacro);
-	free(subsCommand);
+	delete [] subsCommand;
 }
 
 /*
@@ -1270,14 +1270,14 @@ static char *shellCommandSubstitutes(const char *inStr, const char *fileStr, con
 
 	cmdLen = shellSubstituter(nullptr, inStr, fileStr, lineStr, 0, 1);
 	if (cmdLen >= 0) {
-		subsCmdStr = (char *)malloc(cmdLen);
+		subsCmdStr = new char[cmdLen];
 		if (subsCmdStr) {
 			cmdLen = shellSubstituter(subsCmdStr, inStr, fileStr, lineStr, cmdLen, 0);
 			if (cmdLen < 0) {
-				free(subsCmdStr);
+				delete [] subsCmdStr;
 				subsCmdStr = nullptr;
 			}
 		}
 	}
-	return (subsCmdStr);
+	return subsCmdStr;
 }
