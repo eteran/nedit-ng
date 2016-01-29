@@ -84,7 +84,7 @@ static void showWarningFilter(String);
 
 WindowInfo *WindowList = nullptr;
 Display *TheDisplay = nullptr;
-char *ArgV0 = nullptr;
+const char *ArgV0 = nullptr;
 bool IsServer = false;
 Widget TheAppShell;
 

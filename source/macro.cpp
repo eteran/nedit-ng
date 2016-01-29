@@ -256,13 +256,8 @@ static int wrongNArgsErr(const char **errMsg);
 static int tooFewArgsErr(const char **errMsg);
 static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, const char **errMsg);
-static int readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg);
-static int readStringArgEx(DataValue dv, std::string *result, const char **errMsg);
-
-/* DISABLED FOR 5.4
-static int backlightStringMV(WindowInfo *window, DataValue *argList,
-    int nArgs, DataValue *result, const char **errMsg);
-*/
+static bool readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg);
+static bool readStringArgEx(DataValue dv, std::string *result, const char **errMsg);
 static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int versionMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -296,6 +291,7 @@ static BuiltInSubr MacroSubrs[] = {lengthMS,            getRangeMS,        tPrin
                                    rangesetCreateMS,    rangesetDestroyMS, rangesetAddMS,       rangesetSubtractMS, rangesetInvertMS,  rangesetInfoMS,     rangesetRangeMS,    rangesetIncludesPosMS, rangesetSetColorMS,
                                    rangesetSetNameMS,   rangesetSetModeMS, rangesetGetByNameMS, getPatternByNameMS, getPatternAtPosMS, getStyleByNameMS,   getStyleAtPosMS,    filenameDialogMS};
 #define N_MACRO_SUBRS (sizeof MacroSubrs / sizeof *MacroSubrs)
+
 static const char *MacroSubrNames[N_MACRO_SUBRS] = {
     "length",              "get_range",         "t_print",              "dialog",              "string_dialog",      "replace_range",     "replace_selection", "set_cursor_pos",    "get_character",
     "min",                 "max",               "search",               "search_string",       "substring",          "replace_substring", "read_file",         "write_file",        "append_file",
@@ -304,13 +300,14 @@ static const char *MacroSubrNames[N_MACRO_SUBRS] = {
     /* DISABLED for 5.4        "set_backlight_string", */
     "rangeset_create",     "rangeset_destroy",  "rangeset_add",         "rangeset_subtract",   "rangeset_invert",    "rangeset_info",     "rangeset_range",    "rangeset_includes", "rangeset_set_color",
     "rangeset_set_name",   "rangeset_set_mode", "rangeset_get_by_name", "get_pattern_by_name", "get_pattern_at_pos", "get_style_by_name", "get_style_at_pos",  "filename_dialog"};
+
 static BuiltInSubr SpecialVars[] = {cursorMV,          lineMV,       columnMV,          fileNameMV,        filePathMV,       lengthMV,       selectionStartMV,     selectionEndMV,     selectionLeftMV,
                                     selectionRightMV,  wrapMarginMV, tabDistMV,         emTabDistMV,       useTabsMV,        languageModeMV, modifiedMV,           statisticsLineMV,   incSearchLineMV,
                                     showLineNumbersMV, autoIndentMV, wrapTextMV,        highlightSyntaxMV, makeBackupCopyMV, incBackupMV,    showMatchingMV,       matchSyntaxBasedMV, overTypeModeMV,
                                     readOnlyMV,        lockedMV,     fileFormatMV,      fontNameMV,        fontNameItalicMV, fontNameBoldMV, fontNameBoldItalicMV, subscriptSepMV,     minFontWidthMV,
                                     maxFontWidthMV,    topLineMV,    numDisplayLinesMV, displayWidthMV,    activePaneMV,     nPanesMV,       emptyArrayMV,         serverNameMV,       calltipIDMV,
-                                    /* DISABLED for 5.4        backlightStringMV, */
                                     rangesetListMV,    versionMV};
+									
 #define N_SPECIAL_VARS (sizeof SpecialVars / sizeof *SpecialVars)
 static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor",          "$line",                    "$column",            "$file_name",      "$file_path",      "$text_length",      "$selection_start",  "$selection_end",
                                                       "$selection_left",  "$selection_right",         "$wrap_margin",       "$tab_dist",       "$em_tab_dist",    "$use_tabs",         "$language_mode",    "$modified",
@@ -324,6 +321,7 @@ static const char *SpecialVarNames[N_SPECIAL_VARS] = {"$cursor",          "$line
 /* Global symbols for returning values from built-in functions */
 #define N_RETURN_GLOBALS 5
 enum retGlobalSyms { STRING_DIALOG_BUTTON, SEARCH_END, READ_STATUS, SHELL_CMD_STATUS, LIST_DIALOG_BUTTON };
+
 static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {"$string_dialog_button", "$search_end", "$read_status", "$shell_cmd_status", "$list_dialog_button"};
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
@@ -4262,19 +4260,6 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-/* DISABLED for 5.4
-static int backlightStringMV(WindowInfo *window, DataValue *argList,
-      int nArgs, DataValue *result, const char **errMsg)
-{
-    char *backlightString = window->backlightCharTypes;
-
-    result->tag = STRING_TAG;
-    if (!backlightString || !window->backlightChars)
-      backlightString = "";
-    AllocNStringCpy(&result->val.str, backlightString);
-    return True;
-} */
-
 /* -------------------------------------------------------------------------- */
 
 /*
@@ -4464,7 +4449,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	Rangeset *rangeset;
 	int label;
-	char *name, *rangeset_name;
+	char *name;
 	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	unsigned char *rangesetList;
 	char *allocIndexStr;
@@ -4493,7 +4478,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 		label = rangesetList[i];
 		rangeset = rangesetTable->RangesetFetch(label);
 		if (rangeset) {
-			rangeset_name = rangeset->RangesetGetName();
+			const char *rangeset_name = rangeset->RangesetGetName();
 			if (strcmp(name, rangeset_name ? rangeset_name : "") == 0) {
 				element.tag = INT_TAG;
 				element.val.n = label;
@@ -4966,8 +4951,6 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *rangeset;
-	char *name;
 	int label = 0;
 
 	if (nArgs != 2) {
@@ -4982,12 +4965,12 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
 	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	name = (String) "";
+	char *name = (String) "";
 	if (rangeset) {
 		if (!readStringArg(argList[1], &name, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a valid name string in %s");
@@ -5441,36 +5424,36 @@ typeError:
 /*
 ** Get an string value from a tagged DataValue structure.  Return True
 ** if conversion succeeded, and store result in *result, otherwise
-** return False with an error message in *errMsg.  If an integer value
+** return false with an error message in *errMsg.  If an integer value
 ** is converted, write the string in the space provided by "stringStorage",
 ** which must be large enough to handle ints of the maximum size.
 */
-static int readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg) {
+static bool readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg) {
 	if (dv.tag == STRING_TAG) {
 		*result = dv.val.str.rep;
-		return True;
+		return true;
 	} else if (dv.tag == INT_TAG) {
 		sprintf(stringStorage, "%d", dv.val.n);
 		*result = stringStorage;
-		return True;
+		return true;
 	}
 	*errMsg = "%s called with unknown object";
-	return False;
+	return false;
 }
 
-static int readStringArgEx(DataValue dv, std::string *result, const char **errMsg) {
+static bool readStringArgEx(DataValue dv, std::string *result, const char **errMsg) {
 
 	if (dv.tag == STRING_TAG) {
 		*result = dv.val.str.rep;
-		return True;
+		return true;
 	} else if (dv.tag == INT_TAG) {
 		char storage[32];
 		sprintf(storage, "%d", dv.val.n);
 		*result = storage;
-		return True;
+		return true;
 	}
 	
 	*errMsg = "%s called with unknown object";
-	return False;
+	return false;
 }
 

@@ -17,7 +17,7 @@ static unsigned char rangeset_labels[N_RANGESETS + 1] = {58, 10, 15, 1,  27, 52,
 static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 	(void)nRestyled;
 
-	RangesetTable *table = (RangesetTable *)cbArg;
+	auto table = static_cast<RangesetTable *>(cbArg);
 	if ((nInserted != nDeleted) || table->buf->BufCmpEx(pos, nInserted, deletedText) != 0) {
 		table->RangesetTableUpdatePos(pos, nInserted, nDeleted);
 	}
@@ -27,13 +27,14 @@ static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRes
 ** clone a ranges set.
 */
 static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
-	destRangeset->update_fn = srcRangeset->update_fn;
+	
+	destRangeset->update_fn   = srcRangeset->update_fn;
 	destRangeset->update_name = srcRangeset->update_name;
-	destRangeset->maxpos = srcRangeset->maxpos;
-	destRangeset->last_index = srcRangeset->last_index;
-	destRangeset->n_ranges = srcRangeset->n_ranges;
-	destRangeset->color_set = srcRangeset->color_set;
-	destRangeset->color = srcRangeset->color;
+	destRangeset->maxpos      = srcRangeset->maxpos;
+	destRangeset->last_index  = srcRangeset->last_index;
+	destRangeset->n_ranges    = srcRangeset->n_ranges;
+	destRangeset->color_set   = srcRangeset->color_set;
+	destRangeset->color       = srcRangeset->color;
 
 	if (srcRangeset->color_name) {
 		destRangeset->color_name = XtStringDup(srcRangeset->color_name);
@@ -54,10 +55,11 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 */
 
 static void RangesetTableListSet(RangesetTable *table) {
-	int i;
 
-	for (i = 0; i < table->n_set; i++)
+	for (int i = 0; i < table->n_set; i++) {
 		table->list[i] = rangeset_labels[(int)table->order[i]];
+	}
+	
 	table->list[table->n_set] = '\0';
 }
 
@@ -67,20 +69,21 @@ static void RangesetTableListSet(RangesetTable *table) {
 */
 
 static int activateRangeset(RangesetTable *table, int active) {
-	int depth, i, j;
 
-	if (table->active[active])
+	if (table->active[active]) {
 		return 0; /* already active */
+	}
 
-	depth = table->depth[active];
+	int depth = table->depth[active];
 
 	/* we want to make the "active" set the most recent (lowest depth value):
 	   shuffle table->order[0..depth-1] to table->order[1..depth]
 	   readjust the entries in table->depth[] accordingly */
-	for (i = depth; i > 0; i--) {
-		j = table->order[i] = table->order[i - 1];
+	for (int i = depth; i > 0; i--) {
+		int j = table->order[i] = table->order[i - 1];
 		table->depth[j] = i;
 	}
+	
 	/* insert the new one: first in order, of depth 0 */
 	table->order[0] = active;
 	table->depth[active] = 0;
@@ -95,7 +98,7 @@ static int activateRangeset(RangesetTable *table, int active) {
 }
 
 static int deactivateRangeset(RangesetTable *table, int active) {
-	int depth, n, i, j;
+	int depth, j;
 
 	if (!table->active[active])
 		return 0; /* already inactive */
@@ -104,12 +107,13 @@ static int deactivateRangeset(RangesetTable *table, int active) {
 	   shuffle table->order[depth+1..n_set-1] to table->order[depth..n_set-2]
 	   readjust the entries in table->depth[] accordingly */
 	depth = table->depth[active];
-	n = table->n_set - 1;
+	int n = table->n_set - 1;
 
-	for (i = depth; i < n; i++) {
+	for (int i = depth; i < n; i++) {
 		j = table->order[i] = table->order[i + 1];
 		table->depth[j] = i;
 	}
+	
 	/* reinsert the old one: at max (active) depth */
 	table->order[n] = active;
 	table->depth[active] = n;

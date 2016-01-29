@@ -542,12 +542,11 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
 }
 
-
 /*
 ** Return the name, if any.
 */
 
-char *Rangeset::RangesetGetName() {
+const char *Rangeset::RangesetGetName() const {
 	return this->name;
 }
 
@@ -558,11 +557,12 @@ char *Rangeset::RangesetGetName() {
 */
 
 int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
-	if (!this || index < 0 || this->n_ranges <= index || !this->ranges)
+	if (!this || index < 0 || this->n_ranges <= index || !this->ranges) {
 		return 0;
+	}
 
 	*start = this->ranges[index].start;
-	*end = this->ranges[index].end;
+	*end   = this->ranges[index].end;
 
 	return 1;
 }
@@ -575,10 +575,11 @@ int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
 
 int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
 
-	if (!this || !this->n_ranges || !this->ranges)
+	if (!this || !this->n_ranges || !this->ranges) {
 		return -1;
+	}
 
-	// TODO(eteran): BUGCHECK this seems very dangerous, I this this is well into UB
+	// TODO(eteran): BUGCHECK this seems very dangerous, I think this is well into UB
 	auto ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
 	int len = this->n_ranges * 2;
 	int ind = at_or_before(ranges, 0, len, pos);
@@ -626,7 +627,7 @@ int Rangeset::RangesetInverse() {
 	if (!this)
 		return -1;
 
-	// TODO(eteran): BUGCHECK this seems very dangerous, I this this is well into UB
+	// TODO(eteran): BUGCHECK this seems very dangerous, I think this is well into UB
 	auto rangeTable = (int *)this->ranges;
 
 	if (this->n_ranges == 0) {

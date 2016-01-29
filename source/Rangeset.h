@@ -47,7 +47,7 @@ typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
 struct Rangeset {
 public:
-	char *RangesetGetName();
+	const char *RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
 	int RangesetAssignColorName(const char *color_name);
