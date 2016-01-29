@@ -49,22 +49,18 @@
 
 #include "window.h"
 
-#define PROGRAM_SIZE 4096   /* Maximum program size */
-#define MAX_ERR_MSG_LEN 256 /* Max. length for error messages */
-#define LOOP_STACK_SIZE                                                                                                                                                                                                                        \
-	200 /* (Approx.) Number of break/continue stmts                                                                                                                                                                                            \
-	           allowed per program */
-#define INSTRUCTION_LIMIT                                                                                                                                                                                                                      \
-	100 /* Number of instructions the interpreter is                                                                                                                                                                                           \
-	       allowed to execute before preempting and                                                                                                                                                                                            \
-	       returning to allow other things to run */
+const int PROGRAM_SIZE      = 4096; // Maximum program size
+const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
+const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
+const int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
 
 /* Temporary markers placed in a branch address location to designate
    which loop address (break or continue) the location needs */
-#define NEEDS_BREAK 1
-#define NEEDS_CONTINUE 2
 
-#define N_ARGS_ARG_SYM -1 /* special arg number meaning $n_args value */
+const int NEEDS_BREAK    = 1;
+const int NEEDS_CONTINUE = 2;
+
+const int N_ARGS_ARG_SYM = -1; /* special arg number meaning $n_args value */
 
 enum opStatusCodes { STAT_OK = 2, STAT_DONE, STAT_ERROR, STAT_PREEMPT };
 
@@ -119,35 +115,35 @@ static void freeSymbolTable(std::list<Symbol *> &symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
 
-static SparseArrayEntry *allocateSparseArrayEntry(void);
+static ArrayEntry *allocateSparseArrayEntry(void);
 static rbTreeNode *arrayEmptyAllocator(void);
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
 
-/*#define DEBUG_ASSEMBLY*/
-/*#define DEBUG_STACK*/
+// #define DEBUG_ASSEMBLY
+// #define DEBUG_STACK
 
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
 static void disasm(Inst *inst, int nInstr);
-#endif /* #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK) */
+#endif
 
 #ifdef DEBUG_ASSEMBLY /* for disassembly */
 #define DISASM(i, n) disasm(i, n)
-#else /* #ifndef DEBUG_ASSEMBLY */
+#else
 #define DISASM(i, n)
-#endif /* #ifndef DEBUG_ASSEMBLY */
+#endif
 
 #ifdef DEBUG_STACK /* for run-time instruction and stack trace */
 static void stackdump(int n, int extra);
 #define STACKDUMP(n, x) stackdump(n, x)
 #define DISASM_RT(i, n) disasm(i, n)
-#else /* #ifndef DEBUG_STACK */
+#else
 #define STACKDUMP(n, x)
 #define DISASM_RT(i, n)
-#endif /* #ifndef DEBUG_STACK */
+#endif
 
 /* Global symbols and function definitions */
 static std::list<Symbol *> GlobalSymList;
@@ -155,11 +151,11 @@ static std::list<Symbol *> GlobalSymList;
 /* List of all memory allocated for strings */
 static std::list<char *> AllocatedStrings;
 
-static std::list<SparseArrayEntry *> AllocatedSparseArrayEntries;
+static std::list<ArrayEntry *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
-static const char *StackOverflowMsg = "macro stack overflow";
+static const char *StackOverflowMsg  = "macro stack overflow";
 static const char *StackUnderflowMsg = "macro stack underflow";
 static const char *StringToNumberMsg = "string could not be converted to number";
 
@@ -171,17 +167,14 @@ static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */
 static Inst **LoopStackPtr = LoopStack;  /*  to fill at the end of a loop */
 
 /* Global data for the interpreter */
-static DataValue *TheStack;                    /* the stack */
-static DataValue *StackP;                      /* next free spot on stack */
-static DataValue *FrameP;                      /* frame pointer (start of local variables
-                                                  for the current subroutine invocation) */
-static Inst *PC;                               /* program counter during execution */
-static char *ErrMsg;                           /* global for returning error messages
-                                                      from executing functions */
-static WindowInfo *InitiatingWindow = nullptr; /* window from which macro was run */
-static WindowInfo *FocusWindow;                /* window on which macro commands operate */
-static bool PreemptRequest;                     /* passes preemption requests from called
-                                                  routines back up to the interpreter */
+static DataValue *TheStack;                    // the stack
+static DataValue *StackP;                      // next free spot on stack
+static DataValue *FrameP;                      // frame pointer (start of local variables for the current subroutine invocation)
+static Inst *PC;                               // program counter during execution
+static char *ErrMsg;                           // global for returning error messages from executing functions
+static WindowInfo *InitiatingWindow = nullptr; // window from which macro was run
+static WindowInfo *FocusWindow;                // window on which macro commands operate
+static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
 /* Array for mapping operations to functions for performing the operations
    Must correspond to the enum called "operations" in interpret.h */
@@ -196,12 +189,15 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 #define FP_OLD_FP_INDEX (-3)
 #define FP_RET_PC_INDEX (-4)
 #define FP_TO_ARGS_DIST (4) /* should be 0 - (above index) */
+
 #define FP_GET_ITEM(xFrameP, xIndex) (*(xFrameP + xIndex))
+
 #define FP_GET_ARG_ARRAY_CACHE(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_ARRAY_CACHE_INDEX))
-#define FP_GET_ARG_COUNT(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX).val.n)
-#define FP_GET_OLD_FP(xFrameP) ((FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX)).val.dataval)
-#define FP_GET_RET_PC(xFrameP) ((FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX)).val.inst)
-#define FP_ARG_START_INDEX(xFrameP) (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
+#define FP_GET_ARG_COUNT(xFrameP)       (FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX).val.n)
+#define FP_GET_OLD_FP(xFrameP)          (FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX).val.dataval)
+#define FP_GET_RET_PC(xFrameP)          (FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX).val.inst)
+
+#define FP_ARG_START_INDEX(xFrameP)     (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
 #define FP_GET_ARG_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
 #define FP_GET_SYM_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN))
 #define FP_GET_SYM_VAL(xFrameP, xSym) (FP_GET_SYM_N(xFrameP, xSym->value.val.n))
@@ -255,7 +251,7 @@ void InitMacroGlobals(void) {
 */
 void BeginCreatingProgram(void) {
 	LocalSymList.clear();
-	ProgP = Prog;
+	ProgP        = Prog;
 	LoopStackPtr = LoopStack;
 }
 
@@ -272,11 +268,11 @@ Program *FinishCreatingProgram(void) {
 	ptrdiff_t progLen = reinterpret_cast<char *>(ProgP) - reinterpret_cast<char *>(Prog);
 	size_t count      = progLen / sizeof(Inst);
 	newProg->code     = new Inst[count];
-	
-	std::copy_n(Prog, count, newProg->code);
-	
 
-	
+	std::copy_n(Prog, count, newProg->code);
+
+
+
 	newProg->localSymList = std::move(LocalSymList);
 	LocalSymList = std::list<Symbol *>();
 
@@ -687,20 +683,20 @@ Symbol *InstallStringConstSymbol(const char *str) {
 /*
 ** find a symbol in the symbol table
 */
-Symbol *LookupSymbol(const char *name) {
+Symbol *LookupSymbol(view::string_view name) {
 
 	for(Symbol *s : LocalSymList) {
-		if (strcmp(s->name, name) == 0) {
+		if (s->name == name) {
 			return s;
 		}
 	}
 
 	for(Symbol *s: GlobalSymList) {
-		if (strcmp(s->name, name) == 0) {
+		if (s->name == name) {
 			return s;
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -710,10 +706,10 @@ Symbol *LookupSymbol(const char *name) {
 Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
 
 	auto s = new Symbol;
-	s->name  = strdup(name);
+	s->name  = name;
 	s->type  = type;
 	s->value = value;
-	
+
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
 	} else {
@@ -752,13 +748,13 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	if (sym == s) {
 		/* case a)
 		   just make this symbol a GLOBAL_SYM symbol and return */
-		fprintf(stderr, "nedit: To boldly go where no local sym has gone before: %s\n", sym->name);
+		fprintf(stderr, "nedit: To boldly go where no local sym has gone before: %s\n", sym->name.c_str());
 		sym->type = GLOBAL_SYM;
 		return sym;
 	} else if (nullptr != s) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
-		fprintf(stderr, "nedit: duplicate symbol in LocalSymList and GlobalSymList: %s\n", sym->name);
+		fprintf(stderr, "nedit: duplicate symbol in LocalSymList and GlobalSymList: %s\n", sym->name.c_str());
 	}
 
 	/* Add the symbol directly to the GlobalSymList, because InstallSymbol()
@@ -768,9 +764,9 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	   but this symbol has no program attached and ProgramFree() is not nullptr
 	   pointer safe */
 	sym->type = GLOBAL_SYM;
-	
+
 	GlobalSymList.push_back(sym);
-	
+
 	return sym;
 }
 
@@ -787,7 +783,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 /* Allocate a new string buffer of length chars */
 char *AllocString(int length) {
-	char *mem = XtMalloc(length + 1);	
+	char *mem = XtMalloc(length + 1);
 	AllocatedStrings.push_back(mem);
 	return mem + 1;
 }
@@ -852,40 +848,40 @@ char *AllocStringCpy(const char *s) {
  */
 int AllocNStringCpy(NString *string, const char *s) {
 	size_t length = s ? strlen(s) : 0;
-	
+
 	if (!AllocNString(string, length + 1)) {
 		return False;
 	}
-	
+
 	if (s) {
 		strncpy(string->rep, s, length);
 	}
 	return True;
 }
 
-static SparseArrayEntry *allocateSparseArrayEntry(void) {
-	auto mem = new SparseArrayEntry;	
+static ArrayEntry *allocateSparseArrayEntry(void) {
+	auto mem = new ArrayEntry;
 	AllocatedSparseArrayEntries.push_back(mem);
 	return mem;
 }
 
-static void MarkArrayContentsAsUsed(SparseArrayEntry *arrayPtr) {
-	SparseArrayEntry *globalSEUse;
+static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
+	ArrayEntry *globalSEUse;
 
 	if (arrayPtr) {
 		arrayPtr->inUse = true;
-		
-		auto first = static_cast<SparseArrayEntry *>(rbTreeBegin(arrayPtr));
-		
-		for (globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<SparseArrayEntry *>(rbTreeNext(globalSEUse))) {
+
+		auto first = static_cast<ArrayEntry *>(rbTreeBegin(arrayPtr));
+
+		for (globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<ArrayEntry *>(rbTreeNext(globalSEUse))) {
 
 			globalSEUse->inUse = true;
-			
+
 			/* test first because it may be read-only static string */
 			if (globalSEUse->key[-1] == 0) {
 				globalSEUse->key[-1] = 1;
 			}
-			
+
 			if (globalSEUse->value.tag == STRING_TAG) {
 				/* test first because it may be read-only static string */
 				if (globalSEUse->value.val.str.rep[-1] == 0) {
@@ -911,7 +907,7 @@ void GarbageCollectStrings(void) {
 		*p = 0;
 	}
 
-	for(SparseArrayEntry *thisAP : AllocatedSparseArrayEntries) {
+	for(ArrayEntry *thisAP : AllocatedSparseArrayEntries) {
 		thisAP->inUse = false;
 	}
 
@@ -932,7 +928,7 @@ void GarbageCollectStrings(void) {
 	for(auto it = AllocatedStrings.begin(); it != AllocatedStrings.end(); ) {
 		char *p = *it;
 		assert(p);
-		
+
 		if (*p == 0) {
 			XtFree(p);
 			it = AllocatedStrings.erase(it);
@@ -940,11 +936,11 @@ void GarbageCollectStrings(void) {
 			++it;
 		}
 	}
-	
+
 	for(auto it = AllocatedSparseArrayEntries.begin(); it != AllocatedSparseArrayEntries.end(); ) {
-		SparseArrayEntry *thisAP = *it;
+		ArrayEntry *thisAP = *it;
 		assert(thisAP);
-	
+
 		if (!thisAP->inUse) {
 			delete thisAP;
 			it = AllocatedSparseArrayEntries.erase(it);
@@ -962,21 +958,21 @@ void GarbageCollectStrings(void) {
 ** Save and restore execution context to data structure "context"
 */
 static void saveContext(RestartData *context) {
-	context->stack = TheStack;
-	context->stackP = StackP;
-	context->frameP = FrameP;
-	context->pc = PC;
-	context->runWindow = InitiatingWindow;
+	context->stack      = TheStack;
+	context->stackP     = StackP;
+	context->frameP     = FrameP;
+	context->pc         = PC;
+	context->runWindow  = InitiatingWindow;
 	context->focusWindow = FocusWindow;
 }
 
 static void restoreContext(RestartData *context) {
-	TheStack = context->stack;
-	StackP = context->stackP;
-	FrameP = context->frameP;
-	PC = context->pc;
+	TheStack         = context->stack;
+	StackP           = context->stackP;
+	FrameP           = context->frameP;
+	PC               = context->pc;
 	InitiatingWindow = context->runWindow;
-	FocusWindow = context->focusWindow;
+	FocusWindow      = context->focusWindow;
 }
 
 static void freeSymbolTable(std::list<Symbol *> &symTab) {
@@ -1102,7 +1098,7 @@ static int pushSymVal(void) {
 		nArgs = FP_GET_ARG_COUNT(FrameP);
 		argNum = s->value.val.n;
 		if (argNum >= nArgs) {
-			return execError("referenced undefined argument: %s", s->name);
+			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
 		if (argNum == N_ARGS_ARG_SYM) {
 			symVal.tag = INT_TAG;
@@ -1113,12 +1109,12 @@ static int pushSymVal(void) {
 	} else if (s->type == PROC_VALUE_SYM) {
 		const char *errMsg;
 		if (!(s->value.val.subr)(FocusWindow, nullptr, 0, &symVal, &errMsg)) {
-			return execError(errMsg, s->name);
+			return execError(errMsg, s->name.c_str());
 		}
 	} else
-		return execError("reading non-variable: %s", s->name);
+		return execError("reading non-variable: %s", s->name.c_str());
 	if (symVal.tag == NO_TAG) {
-		return execError("variable not set: %s", s->name);
+		return execError("variable not set: %s", s->name.c_str());
 	}
 
 	PUSH(symVal)
@@ -1206,7 +1202,7 @@ static int pushArraySymVal(void) {
 	} else if (sym->type == GLOBAL_SYM) {
 		dataPtr = &sym->value;
 	} else {
-		return execError("assigning to non-lvalue array or non-array: %s", sym->name);
+		return execError("assigning to non-lvalue array or non-array: %s", sym->name.c_str());
 	}
 
 	if (initEmpty && dataPtr->tag == NO_TAG) {
@@ -1215,7 +1211,7 @@ static int pushArraySymVal(void) {
 	}
 
 	if (dataPtr->tag == NO_TAG) {
-		return execError("variable not set: %s", sym->name);
+		return execError("variable not set: %s", sym->name.c_str());
 	}
 
 	PUSH(*dataPtr)
@@ -1244,11 +1240,11 @@ static int assign(void) {
 
 	if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
 		if (sym->type == ARG_SYM) {
-			return execError("assignment to function argument: %s", sym->name);
+			return execError("assignment to function argument: %s", sym->name.c_str());
 		} else if (sym->type == PROC_VALUE_SYM) {
-			return execError("assignment to read-only variable: %s", sym->name);
+			return execError("assignment to read-only variable: %s", sym->name.c_str());
 		} else {
-			return execError("assignment to non-variable: %s", sym->name);
+			return execError("assignment to non-variable: %s", sym->name.c_str());
 		}
 	}
 
@@ -1304,7 +1300,7 @@ static int add(void) {
 	if (rightVal.tag == ARRAY_TAG) {
 		PEEK(leftVal, 1)
 		if (leftVal.tag == ARRAY_TAG) {
-			SparseArrayEntry *leftIter, *rightIter;
+			ArrayEntry *leftIter, *rightIter;
 			resultArray.tag = ARRAY_TAG;
 			resultArray.val.arrayPtr = ArrayNew();
 
@@ -1369,7 +1365,7 @@ static int subtract(void) {
 	if (rightVal.tag == ARRAY_TAG) {
 		PEEK(leftVal, 1)
 		if (leftVal.tag == ARRAY_TAG) {
-			SparseArrayEntry *leftIter, *rightIter;
+			ArrayEntry *leftIter, *rightIter;
 			resultArray.tag = ARRAY_TAG;
 			resultArray.val.arrayPtr = ArrayNew();
 
@@ -1546,7 +1542,7 @@ static int bitAnd(void) {
 	if (rightVal.tag == ARRAY_TAG) {
 		PEEK(leftVal, 1)
 		if (leftVal.tag == ARRAY_TAG) {
-			SparseArrayEntry *leftIter, *rightIter;
+			ArrayEntry *leftIter, *rightIter;
 			resultArray.tag = ARRAY_TAG;
 			resultArray.val.arrayPtr = ArrayNew();
 
@@ -1601,7 +1597,7 @@ static int bitOr(void) {
 	if (rightVal.tag == ARRAY_TAG) {
 		PEEK(leftVal, 1)
 		if (leftVal.tag == ARRAY_TAG) {
-			SparseArrayEntry *leftIter, *rightIter;
+			ArrayEntry *leftIter, *rightIter;
 			resultArray.tag = ARRAY_TAG;
 			resultArray.val.arrayPtr = ArrayNew();
 
@@ -1767,10 +1763,10 @@ static int callSubroutine(void) {
 		/* Call the function and check for preemption */
 		PreemptRequest = false;
 		if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg))
-			return execError(errMsg, sym->name);
+			return execError(errMsg, sym->name.c_str());
 		if (PC->func == fetchRetVal) {
 			if (result.tag == NO_TAG) {
-				return execError("%s does not return a value", sym->name);
+				return execError("%s does not return a value", sym->name.c_str());
 			}
 			PUSH(result);
 			PC++;
@@ -1803,7 +1799,7 @@ static int callSubroutine(void) {
 		FrameP = StackP;
 		prog = sym->value.val.prog;
 		PC = prog->code;
-		
+
 		for(Symbol *s : prog->localSymList) {
 			FP_GET_SYM_VAL(FrameP, s) = noValue;
 			StackP++;
@@ -1818,14 +1814,12 @@ static int callSubroutine(void) {
 		String *argList;
 		Cardinal numArgs = nArgs;
 		XKeyEvent key_event;
-		Display *disp;
-		Window win;
 
 		/* Create a fake event with a timestamp suitable for actions which need
 		   timestamps, a marker to indicate that the call was from a macro
 		   (to stop shell commands from putting up their own separate banner) */
-		disp = XtDisplay(InitiatingWindow->shell);
-		win = XtWindow(InitiatingWindow->shell);
+		Display *disp = XtDisplay(InitiatingWindow->shell);
+		Window win    = XtWindow (InitiatingWindow->shell);
 
 		key_event.type = KeyPress;
 		key_event.send_event = MACRO_EVENT_MARKER;
@@ -1848,13 +1842,13 @@ static int callSubroutine(void) {
 		sym->value.val.xtproc(FocusWindow->lastFocus, (XEvent *)&key_event, argList, &numArgs);
 		XtFree((char *)argList);
 		if (PC->func == fetchRetVal) {
-			return execError("%s does not return a value", sym->name);
+			return execError("%s does not return a value", sym->name.c_str());
 		}
 		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
 	}
 
 	/* Calling a non subroutine symbol */
-	return execError("%s is not a function or subroutine", sym->name);
+	return execError("%s is not a function or subroutine", sym->name.c_str());
 }
 
 /*
@@ -1918,7 +1912,7 @@ static int returnValOrNone(int valOnStack) {
 			PUSH(retVal);
 			PC++;
 		} else {
-			return execError("using return value of %s which does not return a value", ((PC - 2)->sym->name));
+			return execError("using return value of %s which does not return a value", ((PC - 2)->sym->name.c_str()));
 		}
 	}
 
@@ -2001,7 +1995,7 @@ static int branchNever(void) {
 ** modified, only replaced
 */
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
-	SparseArrayEntry *srcIter;
+	ArrayEntry *srcIter;
 
 	dstArray->tag = ARRAY_TAG;
 	dstArray->val.arrayPtr = ArrayNew();
@@ -2082,7 +2076,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 ** contains any data, only refernces to other nodes
 */
 static rbTreeNode *arrayEmptyAllocator(void) {
-	SparseArrayEntry *newNode = allocateSparseArrayEntry();
+	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
 		newNode->key = nullptr;
 		newNode->value.tag = NO_TAG;
@@ -2095,10 +2089,10 @@ static rbTreeNode *arrayEmptyAllocator(void) {
 ** since they are never modified, only replaced
 */
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
-	SparseArrayEntry *newNode = allocateSparseArrayEntry();
+	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-		newNode->key   = static_cast<SparseArrayEntry *>(src)->key;
-		newNode->value = static_cast<SparseArrayEntry *>(src)->value;
+		newNode->key   = static_cast<ArrayEntry *>(src)->key;
+		newNode->value = static_cast<ArrayEntry *>(src)->value;
 	}
 	return (newNode);
 }
@@ -2108,8 +2102,8 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 ** modified, only replaced
 */
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
-	((SparseArrayEntry *)dst)->key   = ((SparseArrayEntry *)src)->key;
-	((SparseArrayEntry *)dst)->value = ((SparseArrayEntry *)src)->value;
+	((ArrayEntry *)dst)->key   = ((ArrayEntry *)src)->key;
+	((ArrayEntry *)dst)->value = ((ArrayEntry *)src)->value;
 	return (1);
 }
 
@@ -2117,7 +2111,7 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
 ** compare two array nodes returning an integer value similar to strcmp()
 */
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
-	return (strcmp(((SparseArrayEntry *)left)->key, ((SparseArrayEntry *)right)->key));
+	return (strcmp(((ArrayEntry *)left)->key, ((ArrayEntry *)right)->key));
 }
 
 /*
@@ -2132,8 +2126,8 @@ static void arrayDisposeNode(rbTreeNode *src) {
 	src->color  = -1;
 }
 
-SparseArrayEntry *ArrayNew(void) {
-	return ((SparseArrayEntry *)rbTreeNew(arrayEmptyAllocator));
+ArrayEntry *ArrayNew(void) {
+	return ((ArrayEntry *)rbTreeNew(arrayEmptyAllocator));
 }
 
 /*
@@ -2141,7 +2135,7 @@ SparseArrayEntry *ArrayNew(void) {
 ** keyStr must be a string that was allocated with AllocString()
 */
 Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
-	SparseArrayEntry tmpEntry;
+	ArrayEntry tmpEntry;
 	rbTreeNode *insertedNode;
 
 	tmpEntry.key = keyStr;
@@ -2168,7 +2162,7 @@ Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 ** remove a node from an array whose key matches keyStr
 */
 void ArrayDelete(DataValue *theArray, char *keyStr) {
-	SparseArrayEntry searchEntry;
+	ArrayEntry searchEntry;
 
 	if (theArray->val.arrayPtr) {
 		searchEntry.key = keyStr;
@@ -2207,14 +2201,14 @@ unsigned ArraySize(DataValue *theArray) {
 ** returns 1 for success 0 for not found
 */
 Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
-	SparseArrayEntry searchEntry;
+	ArrayEntry searchEntry;
 	rbTreeNode *foundNode;
 
 	if (theArray->val.arrayPtr) {
 		searchEntry.key = keyStr;
 		foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
 		if (foundNode) {
-			*theValue = ((SparseArrayEntry *)foundNode)->value;
+			*theValue = ((ArrayEntry *)foundNode)->value;
 			return True;
 		}
 	}
@@ -2225,10 +2219,10 @@ Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 /*
 ** get pointer to start iterating an array
 */
-SparseArrayEntry *arrayIterateFirst(DataValue *theArray) {
-	SparseArrayEntry *startPos;
+ArrayEntry *arrayIterateFirst(DataValue *theArray) {
+	ArrayEntry *startPos;
 	if (theArray->val.arrayPtr) {
-		startPos = (SparseArrayEntry *)rbTreeBegin(theArray->val.arrayPtr);
+		startPos = (ArrayEntry *)rbTreeBegin(theArray->val.arrayPtr);
 	} else {
 		startPos = nullptr;
 	}
@@ -2238,10 +2232,10 @@ SparseArrayEntry *arrayIterateFirst(DataValue *theArray) {
 /*
 ** move iterator to next entry in array
 */
-SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator) {
-	SparseArrayEntry *nextPos;
+ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
+	ArrayEntry *nextPos;
 	if (iterator) {
-		nextPos = (SparseArrayEntry *)rbTreeNext(iterator);
+		nextPos = (ArrayEntry *)rbTreeNext(iterator);
 	} else {
 		nextPos = nullptr;
 	}
@@ -2424,7 +2418,7 @@ static int beginArrayIter(void) {
 	if (iterator->type == LOCAL_SYM) {
 		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 	} else {
-		return (execError("bad temporary iterator: %s", iterator->name));
+		return (execError("bad temporary iterator: %s", iterator->name.c_str()));
 	}
 
 	iteratorValPtr->tag = INT_TAG;
@@ -2463,7 +2457,7 @@ static int arrayIter(void) {
 	Symbol *item;
 	DataValue *iteratorValPtr;
 	DataValue *itemValPtr;
-	SparseArrayEntry *thisEntry;
+	ArrayEntry *thisEntry;
 	Inst *branchAddr;
 
 	DISASM_RT(PC - 1, 4);
@@ -2481,14 +2475,14 @@ static int arrayIter(void) {
 	} else if (item->type == GLOBAL_SYM) {
 		itemValPtr = &(item->value);
 	} else {
-		return (execError("can't assign to: %s", item->name));
+		return (execError("can't assign to: %s", item->name.c_str()));
 	}
 	itemValPtr->tag = NO_TAG;
 
 	if (iterator->type == LOCAL_SYM) {
 		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 	} else {
-		return (execError("bad temporary iterator: %s", iterator->name));
+		return (execError("bad temporary iterator: %s", iterator->name.c_str()));
 	}
 
 	thisEntry = iteratorValPtr->val.arrayPtr;
@@ -2530,7 +2524,7 @@ static int inArray(void) {
 	}
 	PEEK(leftArray, 0)
 	if (leftArray.tag == ARRAY_TAG) {
-		SparseArrayEntry *iter;
+		ArrayEntry *iter;
 
 		POP(leftArray)
 		inResult = 1;

@@ -95,7 +95,7 @@ enum execReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR 
 #define ARRAY_DIM_SEP "\034"
 
 struct DataValue;
-struct SparseArrayEntry;
+struct ArrayEntry;
 struct Program;
 struct Symbol;
 
@@ -117,24 +117,24 @@ struct NString {
 
 struct DataValue {
 	enum typeTags tag;
-
+	
 	union {
-		int               n;
-		NString           str;
-		BuiltInSubr       subr;
-		Program          *prog;
-		XtActionProc      xtproc;
-		Inst             *inst;
-		DataValue        *dataval;
-		SparseArrayEntry *arrayPtr;
+		int                n;
+		NString            str;
+		BuiltInSubr        subr;
+		Program*           prog;
+		XtActionProc       xtproc;
+		Inst*              inst;
+		DataValue*         dataval;
+		ArrayEntry*  arrayPtr;
 	} val;
 	
-	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, SparseArrayEntry*> value_type;
+	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, ArrayEntry*> value_type;
 	value_type value;
-	
 };
 
-struct SparseArrayEntry : public rbTreeNode {
+//------------------------------------------------------------------------------
+struct ArrayEntry : public rbTreeNode {
 	char *key;
 	DataValue value;
 	bool      inUse; /* we use pointers to the data to refer to the entire struct */
@@ -142,10 +142,9 @@ struct SparseArrayEntry : public rbTreeNode {
 
 /* symbol table entry */
 struct Symbol {
-	char *name;
+	std::string   name;
 	enum symTypes type;
-	DataValue value;
-	Symbol *next; /* to link to another */
+	DataValue     value;
 };
 
 struct Program {
@@ -165,9 +164,9 @@ struct RestartData {
 
 void InitMacroGlobals(void);
 
-SparseArrayEntry *arrayIterateFirst(DataValue *theArray);
-SparseArrayEntry *arrayIterateNext(SparseArrayEntry *iterator);
-SparseArrayEntry *ArrayNew(void);
+ArrayEntry *arrayIterateFirst(DataValue *theArray);
+ArrayEntry *arrayIterateNext(ArrayEntry *iterator);
+ArrayEntry *ArrayNew(void);
 Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
@@ -186,7 +185,7 @@ Inst *GetPC(void);
 Symbol *InstallIteratorSymbol(void);
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
-Symbol *LookupSymbol(const char *name);
+Symbol *LookupSymbol(view::string_view name);
 Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value);
 Program *FinishCreatingProgram(void);
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
