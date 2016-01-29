@@ -117,16 +117,16 @@ struct NString {
 
 struct DataValue {
 	enum typeTags tag;
-	
+
 	union {
-		int                      n;
-		NString                  str;
-		BuiltInSubr              subr;
-		struct Program          *prog;
-		XtActionProc             xtproc;
-		Inst                    *inst;
-		struct DataValue        *dataval;
-		struct SparseArrayEntry *arrayPtr;
+		int               n;
+		NString           str;
+		BuiltInSubr       subr;
+		Program          *prog;
+		XtActionProc      xtproc;
+		Inst             *inst;
+		DataValue        *dataval;
+		SparseArrayEntry *arrayPtr;
 	} val;
 	
 	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, SparseArrayEntry*> value_type;
