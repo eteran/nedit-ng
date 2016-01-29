@@ -723,7 +723,7 @@ static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean
 	(void)event;
 	(void)continue_to_dispatch;
 
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	ShowHidePointer(tw, True);
 }
 
@@ -733,7 +733,7 @@ static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean
 	(void)event;
 	(void)continue_to_dispatch;
 
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	ShowHidePointer(tw, False);
 }
 
@@ -996,7 +996,7 @@ static void realize(Widget w, XtValueMask *valueMask, XSetWindowAttributes *attr
 ** Widget query geometry method ... unless asked to negotiate a different size simply return current size.
 */
 static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWidgetGeometry *answer) {
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 
 	int curHeight = tw->core.height;
 	int curWidth = tw->core.width;
@@ -1327,7 +1327,7 @@ XtActionsRec *TextGetActions(int *nActions) {
 
 static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XButtonEvent *e = &event->xbutton;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	Time lastBtnDown = tw->text.lastBtnDown;
 	int row, column;
@@ -1404,7 +1404,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 	(void)event;
 
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	XMotionEvent *e = &event->xmotion;
 	int dragState = tw->text.dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
@@ -1491,7 +1491,7 @@ static void extendEndAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)event;
 
 	XButtonEvent *e = &event->xbutton;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 
 	if (tw->text.dragState == PRIMARY_CLICKED && tw->text.lastBtnDown <= e->time + XtGetMultiClickTime(XtDisplay(w)))
 		tw->text.multiClickState++;
@@ -1574,7 +1574,7 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 }
 
 static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	XMotionEvent *e = &event->xmotion;
 	int dragState = tw->text.dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
@@ -1605,7 +1605,7 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 }
 
 static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	XMotionEvent *e = &event->xmotion;
 	int dragState = tw->text.dragState;
 
@@ -1639,7 +1639,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 
 	XButtonEvent *e = &event->xbutton;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	int dragState = tw->text.dragState;
 	TextBuffer *buf = textD->buffer;
@@ -1830,7 +1830,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *primary = &buf->primary_;
@@ -1907,7 +1907,7 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 
 	XButtonEvent *e = &event->xbutton;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	int lineHeight = textD->ascent + textD->descent;
 	int topLineNum, horizOffset;
@@ -2047,7 +2047,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	(void)nArgs;
 
 	XKeyEvent *e = &event->xkey;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int column;
@@ -2880,7 +2880,7 @@ static void toggleOverstrikeAP(Widget w, XEvent *event, String *args, Cardinal *
 	(void)nArgs;
 	(void)event;
 
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 
 	if (tw->text.overstrike) {
 		tw->text.overstrike = false;
@@ -3099,7 +3099,7 @@ static void checkMoveSelectionChange(Widget w, XEvent *event, int startPos, Stri
 */
 static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rectangular) {
 	XKeyEvent *e = &event->xkey;
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	textDisp *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *sel = &buf->primary_;
@@ -3317,7 +3317,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 ** is used instead.
 */
 static void selectWord(Widget w, int pointerX) {
-	TextWidget tw = reinterpret_cast<TextWidget>(w);
+	auto tw = reinterpret_cast<TextWidget>(w);
 	TextBuffer *buf = tw->text.textD->buffer;
 	int x, y, insertPos = TextDGetInsertPosition(tw->text.textD);
 

@@ -119,7 +119,7 @@ extern WidgetClass textWidgetClass;
 struct TextClassRec;
 struct TextRec;
 
-typedef struct TextRec *TextWidget;
+typedef TextRec *TextWidget;
 
 struct dragEndCBStruct {
 	int               startPos;
