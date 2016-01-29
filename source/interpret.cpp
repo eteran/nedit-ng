@@ -219,7 +219,7 @@ void InitMacroGlobals(void) {
 	XtActionsRec *actions;
 	int i, nActions;
 	static char argName[3] = "$x";
-	static DataValue dv = {NO_TAG, {0}};
+	static DataValue dv = {NO_TAG, {0}, {0}};
 
 	/* Add action routines from NEdit menus and text widget */
 	actions = GetMenuActions(&nActions);
@@ -455,7 +455,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 */
 int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
 
-	static DataValue noValue = {NO_TAG, {0}};
+	static DataValue noValue = {NO_TAG, {0}, {0}};
 	int i;
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
@@ -564,7 +564,7 @@ int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg
 ** additional work.
 */
 void RunMacroAsSubrCall(Program *prog) {
-	static DataValue noValue = {NO_TAG, {0}};
+	static DataValue noValue = {NO_TAG, {0}, {0}};
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
 	   for a subroutine call */
@@ -713,10 +713,11 @@ Symbol *LookupSymbol(const char *name) {
 */
 Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
 
-	auto s = (Symbol *)malloc(sizeof(Symbol));
+	auto s = new Symbol;
 	s->name  = strdup(name);
 	s->type  = type;
 	s->value = value;
+	
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
 	} else {
@@ -984,7 +985,7 @@ static void freeSymbolTable(std::list<Symbol *> &symTab) {
 
 
 	for(Symbol *s : symTab) {
-		free(s);	
+		delete s;
 	}
 }
 
@@ -1744,7 +1745,7 @@ static int concat(void) {
 static int callSubroutine(void) {
 	Symbol *sym;
 	int i, nArgs;
-	static DataValue noValue = {NO_TAG, {0}};
+	static DataValue noValue = {NO_TAG, {0}, {0}};
 	Program *prog;
 	const char *errMsg;
 
@@ -1884,7 +1885,7 @@ static int returnVal(void) {
 */
 static int returnValOrNone(int valOnStack) {
 	DataValue retVal;
-	static DataValue noValue = {NO_TAG, {0}};
+	static DataValue noValue = {NO_TAG, {0}, {0}};
 	DataValue *newFrameP;
 	int nArgs;
 

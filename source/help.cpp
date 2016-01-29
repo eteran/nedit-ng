@@ -211,7 +211,7 @@ static const char *getBuildInfo(void) {
 			snprintf(visualStr, sizeof(visualStr), "%d-bit %s (ID %#lx%s)", depth, visualClass[visual->c_class], visual->visualid, usingDefaultVisual ? ", Default" : "");
 		}
 
-		bldInfoString = (char *)malloc(sizeof(bldFormat) + 1024);
+		bldInfoString = new char[sizeof(bldFormat) + 1024];
 		locale = setlocale(LC_MESSAGES, "");
 
 		sprintf(bldInfoString,
@@ -238,7 +238,7 @@ static const char *getBuildInfo(void) {
 
 		atexit([](){
 			/* This keeps memory leak detectors happy */
-			free(bldInfoString);		
+			delete [] bldInfoString;
 		});
 	}
 
@@ -485,7 +485,7 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic) {
 	char *buf;
 	const char *topStr = HelpTitles[topic_num];
 
-	buf = (char *)malloc(strlen(topStr) + 24);
+	buf = new char[strlen(topStr) + 24];
 	topic_num++;
 
 	sprintf(buf, "NEdit Help (%d)", topic_num);
@@ -494,7 +494,7 @@ static void setHelpWinTitle(Widget win, enum HelpTopic topic) {
 	sprintf(buf, "NEdit Help: %s (%d)", topStr, topic_num);
 	XtVaSetValues(win, XmNtitle, buf, nullptr);
 
-	free(buf);
+	delete [] buf;
 }
 
 /*

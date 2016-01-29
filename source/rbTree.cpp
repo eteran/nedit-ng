@@ -35,18 +35,16 @@
 
 #include <cstdlib>
 #include <cstring>
-/*#define RBTREE_TEST_CODE*/
-#ifdef RBTREE_TEST_CODE
-#include <cstdio>
-#endif
 
-#define rbTreeNodeRed 0
-#define rbTreeNodeBlack 1
+namespace {
+
+const int rbTreeNodeRed   = 0;
+const int rbTreeNodeBlack = 1;
 
 /*
 ** rotate a node left
 */
-static void rotateLeft(rbTreeNode *x, rbTreeNode **root) {
+void rotateLeft(rbTreeNode *x, rbTreeNode **root) {
 	rbTreeNode *y = x->right;
 	x->right = y->left;
 	if (y->left) {
@@ -68,7 +66,7 @@ static void rotateLeft(rbTreeNode *x, rbTreeNode **root) {
 /*
 ** rotate a node right
 */
-static void rotateRight(rbTreeNode *x, rbTreeNode **root) {
+void rotateRight(rbTreeNode *x, rbTreeNode **root) {
 	rbTreeNode *y = x->left;
 	x->left = y->right;
 	if (y->right) {
@@ -90,7 +88,7 @@ static void rotateRight(rbTreeNode *x, rbTreeNode **root) {
 /*
 ** balance tree after an insert of node x
 */
-static void insertBalance(rbTreeNode *x, rbTreeNode **root) {
+void insertBalance(rbTreeNode *x, rbTreeNode **root) {
 	x->color = rbTreeNodeRed;
 	while (x != *root && x->parent->color == rbTreeNodeRed) {
 		if (x->parent == x->parent->parent->left) {
@@ -128,6 +126,8 @@ static void insertBalance(rbTreeNode *x, rbTreeNode **root) {
 		}
 	}
 	(*root)->color = rbTreeNodeBlack;
+}
+
 }
 
 /*
@@ -446,7 +446,7 @@ rbTreeNode *rbTreePrevious(rbTreeNode *x) {
 ** the base node since it contains no data
 */
 int rbTreeSize(rbTreeNode *base) {
-	return (base->color);
+	return base->color;
 }
 
 /*
@@ -455,13 +455,14 @@ int rbTreeSize(rbTreeNode *base) {
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode) {
 	rbTreeNode *rootStorage = allocateEmptyNode();
 	if (rootStorage) {
-		rootStorage->left = nullptr;   /* leftmost node */
-		rootStorage->right = nullptr;  /* rightmost node */
+		rootStorage->left   = nullptr;   /* leftmost node */
+		rootStorage->right  = nullptr;  /* rightmost node */
 		rootStorage->parent = nullptr; /* root node */
-		rootStorage->color = 0;        /* node count */
+		rootStorage->color  = 0;        /* node count */
 	}
-	return (rootStorage);
+	return rootStorage;
 }
+
 
 /*
 ** iterate through all nodes, unlinking and disposing them
@@ -500,164 +501,3 @@ void rbTreeDispose(rbTreeNode *base, rbTreeDisposeNodeCB disposeNode) {
 	}
 	disposeNode(base);
 }
-
-#ifdef RBTREE_TEST_CODE
-/* ================================================================== */
-
-/*
-** code to test basic stuff of tree routines
-*/
-
-struct TestNode {
-	rbTreeNode nodePointers; /* MUST BE FIRST MEMBER */
-	char *str;
-	char *key;
-};
-
-static int rbTreeCompareNode_TestNode(rbTreeNode *left, rbTreeNode *right) {
-	return (strcmp(((TestNode *)left)->key, ((TestNode *)right)->key));
-}
-
-static rbTreeNode *rbTreeAllocateNode_TestNode(rbTreeNode *src) {
-	TestNode *newNode = malloc(sizeof(TestNode));
-	if (newNode) {
-		newNode->str = malloc(strlen(((TestNode *)src)->str) + 1);
-		if (newNode->str) {
-			strcpy(newNode->str, ((TestNode *)src)->str);
-
-			newNode->key = malloc(strlen(((TestNode *)src)->key) + 1);
-			if (newNode->key) {
-				strcpy(newNode->key, ((TestNode *)src)->key);
-			} else {
-				free(newNode->str);
-				newNode->str = nullptr;
-
-				free(newNode);
-				newNode = nullptr;
-			}
-		} else {
-			free(newNode);
-			newNode = nullptr;
-		}
-	}
-	return ((rbTreeNode *)newNode);
-}
-
-rbTreeNode *rbTreeAllocateEmptyNodeCB_TestNode(void) {
-	TestNode *newNode = malloc(sizeof(TestNode));
-	if (newNode) {
-		newNode->str = nullptr;
-		newNode->key = nullptr;
-	}
-	return ((rbTreeNode *)newNode);
-}
-
-static void rbTreeDisposeNode_TestNode(rbTreeNode *src) {
-	if (src) {
-		if (((TestNode *)src)->str) {
-			free(((TestNode *)src)->str);
-			((TestNode *)src)->str = nullptr;
-		}
-		if (((TestNode *)src)->key) {
-			free(((TestNode *)src)->key);
-			((TestNode *)src)->key = nullptr;
-		}
-		src->left = (void *)-1;
-		src->right = (void *)-1;
-		src->parent = (void *)-1;
-		src->color = rbTreeNodeBlack;
-
-		free(src);
-	}
-}
-
-static int rbTreeCopyToNode_TestNode(rbTreeNode *dst, rbTreeNode *src) {
-	TestNode newValues;
-	int copiedOK = 0;
-
-	newValues.str = malloc(strlen(((TestNode *)src)->str) + 1);
-	if (newValues.str) {
-		strcpy(newValues.str, ((TestNode *)src)->str);
-
-		newValues.key = malloc(strlen(((TestNode *)src)->key) + 1);
-		if (newValues.key) {
-			strcpy(newValues.key, ((TestNode *)src)->key);
-
-			((TestNode *)dst)->str = newValues.str;
-			((TestNode *)dst)->key = newValues.key;
-			copiedOK = 1;
-		} else {
-			free(newValues.str);
-			newValues.str = nullptr;
-		}
-	}
-	return (copiedOK);
-}
-
-static void DumpTree(rbTreeNode *base) {
-	rbTreeNode *newNode;
-
-	newNode = rbTreeBegin(base);
-	while (newNode) {
-		rbTreeNode *nextNode = rbTreeNext(newNode);
-
-		printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);
-		printf("[%x] l[%x] r[%x] p[%x] <%s>\n", (int)newNode, (int)newNode->left, (int)newNode->right, (int)newNode->parent, ((newNode->color == rbTreeNodeBlack) ? "Black" : "Red"));
-
-		newNode = nextNode;
-	}
-}
-
-int main(int argc, char **argv) {
-	rbTreeNode *base, *newNode;
-	TestNode searchNode;
-	char tmpkey[20], tmpValue[40];
-	int i;
-
-	searchNode.key = tmpkey;
-	searchNode.str = tmpValue;
-
-	base = rbTreeNew(rbTreeAllocateEmptyNodeCB_TestNode);
-	if (!base) {
-		printf("Failed New!!!\n");
-		exit(1);
-	}
-	for (i = 0; i < 100; ++i) {
-		sprintf(tmpkey, "%d", i);
-		sprintf(tmpValue, "<%d>", i * i);
-
-		newNode = rbTreeInsert(base, (rbTreeNode *)&searchNode, rbTreeCompareNode_TestNode, rbTreeAllocateNode_TestNode, rbTreeCopyToNode_TestNode);
-		if (!newNode) {
-			printf("Failed!!!\n");
-			exit(1);
-		}
-	}
-
-	newNode = rbTreeBegin(base);
-	while (newNode) {
-		rbTreeNode *nextNode = rbTreeNext(newNode);
-
-		printf("[%s] = \"%s\"\n", ((TestNode *)newNode)->key, ((TestNode *)newNode)->str);
-
-		if (strlen(((TestNode *)newNode)->str) < 7) {
-			int didDelete;
-
-			printf("Deleting [%s]\n", ((TestNode *)newNode)->key);
-			didDelete = rbTreeDelete(base, newNode, rbTreeCompareNode_TestNode, rbTreeDisposeNode_TestNode);
-			printf("delete result = %d\n", didDelete);
-		}
-
-		newNode = nextNode;
-	}
-
-	printf("Tree Size = %d\n", rbTreeSize(base));
-	printf("\n++++++++++++++++\n");
-	DumpTree(base);
-	printf("\n++++++++++++++++\n");
-
-	rbTreeDispose(base, rbTreeDisposeNode_TestNode);
-
-	printf("\nDone.\n");
-	return (0);
-}
-#endif

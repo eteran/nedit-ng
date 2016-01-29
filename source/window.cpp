@@ -2245,7 +2245,7 @@ void WindowInfo::UpdateWindowTitle() {
 	}
 
 	char *title = FormatWindowTitle(this->filename, this->path, GetClearCaseViewTag(), GetPrefServerName(), IsServer, this->filenameSet, this->lockReasons, this->fileChanged, GetPrefTitleFormat());
-	char *iconTitle = (char *)malloc(strlen(this->filename) + 2); /* strlen("*")+1 */
+	char *iconTitle = new char[strlen(this->filename) + 2]; /* strlen("*")+1 */
 
 	strcpy(iconTitle, this->filename);
 	if (this->fileChanged) {
@@ -2264,7 +2264,7 @@ void WindowInfo::UpdateWindowTitle() {
 		sprintf(title, "Replace (in %s)", this->filename);
 		XtVaSetValues(XtParent(this->replaceDlog), XmNtitle, title, nullptr);
 	}
-	free(iconTitle);
+	delete [] iconTitle;
 
 	/* Update the Windows menus with the new name */
 	InvalidateWindowMenus();

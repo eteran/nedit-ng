@@ -28,6 +28,8 @@
 #define RBTREE_H_
 
 struct rbTreeNode {
+	virtual ~rbTreeNode() {}
+	
 	struct rbTreeNode *left;   /* left child */
 	struct rbTreeNode *right;  /* right child */
 	struct rbTreeNode *parent; /* parent */

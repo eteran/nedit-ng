@@ -361,7 +361,7 @@ static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 ** editor information
 */
 void RegisterMacroSubroutines(void) {
-	static DataValue subrPtr = {NO_TAG, {0}}, noValue = {NO_TAG, {0}};
+	static DataValue subrPtr = {NO_TAG, {0}, {0}}, noValue = {NO_TAG, {0}, {0}};
 	unsigned i;
 
 	/* Install symbols for built-in routines and variables, with pointers

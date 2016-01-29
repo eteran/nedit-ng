@@ -410,7 +410,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	int fileLen = statbuf.st_size;
 
 	/* Allocate space for the whole contents of the file (unfortunately) */
-	auto fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
+	auto fileString = new char[fileLen + 1]; /* +1 = space for null */
 	if(!fileString) {
 		fclose(fp);
 		window->filenameSet = FALSE; /* Temp. prevent check for changes. */
@@ -426,7 +426,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 		window->filenameSet = FALSE; /* Temp. prevent check for changes. */
 		DialogF(DF_ERR, window->shell, 1, "Error while opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
 		window->filenameSet = TRUE;
-		free(fileString);
+		delete [] fileString;
 		return FALSE;
 	}
 	fileString[readLen] = '\0';
@@ -490,7 +490,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	}
 
 	/* Release the memory that holds fileString */
-	free(fileString);
+	delete [] fileString;
 
 	/* Set window title and file changed flag */
 	if ((flags & PREF_READ_ONLY) != 0) {
@@ -538,7 +538,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	fileLen = statbuf.st_size;
 
 	/* allocate space for the whole contents of the file */
-	fileString = (char *)malloc(fileLen + 1); /* +1 = space for null */
+	fileString = new char[fileLen + 1]; /* +1 = space for null */
 	if(!fileString) {
 		DialogF(DF_ERR, window->shell, 1, "Error opening File", "File is too large to include", "OK");
 		fclose(fp);
@@ -550,7 +550,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell, 1, "Error opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
 		fclose(fp);
-		free(fileString);
+		delete [] fileString;
 		return FALSE;
 	}
 	fileString[readLen] = '\0';
@@ -589,7 +589,7 @@ int IncludeFile(WindowInfo *window, const char *name) {
 	}
 
 	/* release the memory that holds fileString */
-	free(fileString);
+	delete [] fileString;
 
 	return TRUE;
 }

@@ -465,7 +465,7 @@ static int yylex(void)
 {
     int i, len;
     Symbol *s;
-    static DataValue value = {NO_TAG, {0}};
+    static DataValue value = {NO_TAG, {0}, {0}};
     static char escape[] = "\\\"ntbrfave";
     static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
 

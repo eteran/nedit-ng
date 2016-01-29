@@ -31,6 +31,7 @@
 #include "rbTree.h"
 #include <map>
 #include <list>
+#include <boost/variant.hpp>
 
 #define STACK_SIZE 1024 /* Maximum stack size */
 #define MAX_SYM_LEN 100 /* Max. symbol name length */
@@ -113,8 +114,10 @@ struct NString {
 
 
 // TODO(eteran): we can replace this with boost::variant
+
 struct DataValue {
 	enum typeTags tag;
+	
 	union {
 		int                      n;
 		NString                  str;
@@ -125,6 +128,10 @@ struct DataValue {
 		struct DataValue        *dataval;
 		struct SparseArrayEntry *arrayPtr;
 	} val;
+	
+	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, SparseArrayEntry*> value_type;
+	value_type value;
+	
 };
 
 struct SparseArrayEntry : public rbTreeNode{
