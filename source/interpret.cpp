@@ -49,6 +49,8 @@
 
 #include "window.h"
 
+namespace {
+
 const int PROGRAM_SIZE      = 4096; // Maximum program size
 const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
 const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
@@ -62,7 +64,14 @@ const int NEEDS_CONTINUE = 2;
 
 const int N_ARGS_ARG_SYM = -1; /* special arg number meaning $n_args value */
 
-enum opStatusCodes { STAT_OK = 2, STAT_DONE, STAT_ERROR, STAT_PREEMPT };
+enum opStatusCodes {
+	STAT_OK = 2, 
+	STAT_DONE, 
+	STAT_ERROR, 
+	STAT_PREEMPT
+};
+
+}
 
 static void addLoopAddr(Inst *addr);
 static void saveContext(RestartData *context);
@@ -155,18 +164,18 @@ static std::list<ArrayEntry *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
-static const char *StackOverflowMsg  = "macro stack overflow";
-static const char *StackUnderflowMsg = "macro stack underflow";
-static const char *StringToNumberMsg = "string could not be converted to number";
+static const char StackOverflowMsg[]  = "macro stack overflow";
+static const char StackUnderflowMsg[] = "macro stack underflow";
+static const char StringToNumberMsg[] = "string could not be converted to number";
 
-/* Temporary global data for use while accumulating programs */
-static std::list<Symbol *> LocalSymList; /* symbols local to the program */
-static Inst Prog[PROGRAM_SIZE];          /* the program */
-static Inst *ProgP;                      /* next free spot for code gen. */
-static Inst *LoopStack[LOOP_STACK_SIZE]; /* addresses of break, cont stmts */
-static Inst **LoopStackPtr = LoopStack;  /*  to fill at the end of a loop */
+// Temporary global data for use while accumulating programs
+static std::list<Symbol *> LocalSymList; // symbols local to the program
+static Inst Prog[PROGRAM_SIZE];          // the program
+static Inst *ProgP;                      // next free spot for code gen.
+static Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
+static Inst **LoopStackPtr = LoopStack;  //  to fill at the end of a loop
 
-/* Global data for the interpreter */
+// Global data for the interpreter
 static DataValue *TheStack;                    // the stack
 static DataValue *StackP;                      // next free spot on stack
 static DataValue *FrameP;                      // frame pointer (start of local variables for the current subroutine invocation)
@@ -185,10 +194,10 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 
 /* Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
 #define FP_ARG_ARRAY_CACHE_INDEX (-1)
-#define FP_ARG_COUNT_INDEX (-2)
-#define FP_OLD_FP_INDEX (-3)
-#define FP_RET_PC_INDEX (-4)
-#define FP_TO_ARGS_DIST (4) /* should be 0 - (above index) */
+#define FP_ARG_COUNT_INDEX       (-2)
+#define FP_OLD_FP_INDEX          (-3)
+#define FP_RET_PC_INDEX          (-4)
+#define FP_TO_ARGS_DIST           (4) /* should be 0 - (above index) */
 
 #define FP_GET_ITEM(xFrameP, xIndex) (*(xFrameP + xIndex))
 
@@ -958,11 +967,11 @@ void GarbageCollectStrings(void) {
 ** Save and restore execution context to data structure "context"
 */
 static void saveContext(RestartData *context) {
-	context->stack      = TheStack;
-	context->stackP     = StackP;
-	context->frameP     = FrameP;
-	context->pc         = PC;
-	context->runWindow  = InitiatingWindow;
+	context->stack       = TheStack;
+	context->stackP      = StackP;
+	context->frameP      = FrameP;
+	context->pc          = PC;
+	context->runWindow   = InitiatingWindow;
 	context->focusWindow = FocusWindow;
 }
 
@@ -976,100 +985,97 @@ static void restoreContext(RestartData *context) {
 }
 
 static void freeSymbolTable(std::list<Symbol *> &symTab) {
-
-
 	for(Symbol *s : symTab) {
 		delete s;
 	}
 }
 
-#define POP(dataVal)                                                                                                                                                                                                                           \
-	if (StackP == TheStack)                                                                                                                                                                                                                    \
-		return execError(StackUnderflowMsg, "");                                                                                                                                                                                               \
+#define POP(dataVal)                                                                               \
+	if (StackP == TheStack)                                                                        \
+		return execError(StackUnderflowMsg, "");                                                   \
 	dataVal = *--StackP;
 
-#define PUSH(dataVal)                                                                                                                                                                                                                          \
-	if (StackP >= &TheStack[STACK_SIZE])                                                                                                                                                                                                       \
-		return execError(StackOverflowMsg, "");                                                                                                                                                                                                \
+#define PUSH(dataVal)                                                                              \
+	if (StackP >= &TheStack[STACK_SIZE])                                                           \
+		return execError(StackOverflowMsg, "");                                                    \
 	*StackP++ = dataVal;
 
 #define PEEK(dataVal, peekIndex) dataVal = *(StackP - peekIndex - 1);
 
-#define POP_INT(number)                                                                                                                                                                                                                        \
-	if (StackP == TheStack)                                                                                                                                                                                                                    \
-		return execError(StackUnderflowMsg, "");                                                                                                                                                                                               \
-	--StackP;                                                                                                                                                                                                                                  \
-	if (StackP->tag == STRING_TAG) {                                                                                                                                                                                                           \
-		if (!StringToNum(StackP->val.str.rep, &number))                                                                                                                                                                                        \
-			return execError(StringToNumberMsg, "");                                                                                                                                                                                           \
-	} else if (StackP->tag == INT_TAG)                                                                                                                                                                                                         \
-		number = StackP->val.n;                                                                                                                                                                                                                \
-	else                                                                                                                                                                                                                                       \
+#define POP_INT(number)                                                                            \
+	if (StackP == TheStack)                                                                        \
+		return execError(StackUnderflowMsg, "");                                                   \
+	--StackP;                                                                                      \
+	if (StackP->tag == STRING_TAG) {                                                               \
+		if (!StringToNum(StackP->val.str.rep, &number))                                            \
+			return execError(StringToNumberMsg, "");                                               \
+	} else if (StackP->tag == INT_TAG)                                                             \
+		number = StackP->val.n;                                                                    \
+	else                                                                                           \
 		return (execError("can't convert array to integer", nullptr));
 
-#define POP_STRING(string)                                                                                                                                                                                                                     \
-	if (StackP == TheStack)                                                                                                                                                                                                                    \
-		return execError(StackUnderflowMsg, "");                                                                                                                                                                                               \
-	--StackP;                                                                                                                                                                                                                                  \
-	if (StackP->tag == INT_TAG) {                                                                                                                                                                                                              \
-		string = AllocString(TYPE_INT_STR_SIZE(int));                                                                                                                                                                                          \
-		sprintf(string, "%d", StackP->val.n);                                                                                                                                                                                                  \
-	} else if (StackP->tag == STRING_TAG)                                                                                                                                                                                                      \
-		string = StackP->val.str.rep;                                                                                                                                                                                                          \
-	else                                                                                                                                                                                                                                       \
+#define POP_STRING(string)                                                                         \
+	if (StackP == TheStack)                                                                        \
+		return execError(StackUnderflowMsg, "");                                                   \
+	--StackP;                                                                                      \
+	if (StackP->tag == INT_TAG) {                                                                  \
+		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
+		sprintf(string, "%d", StackP->val.n);                                                      \
+	} else if (StackP->tag == STRING_TAG)                                                          \
+		string = StackP->val.str.rep;                                                              \
+	else                                                                                           \
 		return (execError("can't convert array to string", nullptr));
 
-#define PEEK_STRING(string, peekIndex)                                                                                                                                                                                                         \
-	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                                                                                                                                                            \
-		string = AllocString(TYPE_INT_STR_SIZE(int));                                                                                                                                                                                          \
-		sprintf(string, "%d", (StackP - peekIndex - 1)->val.n);                                                                                                                                                                                \
-	} else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                                                                                                                                                                  \
-		string = (StackP - peekIndex - 1)->val.str.rep;                                                                                                                                                                                        \
-	} else {                                                                                                                                                                                                                                   \
-		return (execError("can't convert array to string", nullptr));                                                                                                                                                                          \
+#define PEEK_STRING(string, peekIndex)                                                             \
+	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                \
+		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
+		sprintf(string, "%d", (StackP - peekIndex - 1)->val.n);                                    \
+	} else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                      \
+		string = (StackP - peekIndex - 1)->val.str.rep;                                            \
+	} else {                                                                                       \
+		return (execError("can't convert array to string", nullptr));                              \
 	}
 
-#define PEEK_INT(number, peekIndex)                                                                                                                                                                                                            \
-	if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                                                                                                                                                                         \
-		if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {                                                                                                                                                                    \
-			return execError(StringToNumberMsg, "");                                                                                                                                                                                           \
-		}                                                                                                                                                                                                                                      \
-	} else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                                                                                                                                                     \
-		number = (StackP - peekIndex - 1)->val.n;                                                                                                                                                                                              \
-	} else {                                                                                                                                                                                                                                   \
-		return (execError("can't convert array to string", nullptr));                                                                                                                                                                          \
+#define PEEK_INT(number, peekIndex)                                                                \
+	if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                             \
+		if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {                        \
+			return execError(StringToNumberMsg, "");                                               \
+		}                                                                                          \
+	} else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                         \
+		number = (StackP - peekIndex - 1)->val.n;                                                  \
+	} else {                                                                                       \
+		return (execError("can't convert array to string", nullptr));                              \
 	}
 
-#define PUSH_INT(number)                                                                                                                                                                                                                       \
-	if (StackP >= &TheStack[STACK_SIZE])                                                                                                                                                                                                       \
-		return execError(StackOverflowMsg, "");                                                                                                                                                                                                \
-	StackP->tag = INT_TAG;                                                                                                                                                                                                                     \
-	StackP->val.n = number;                                                                                                                                                                                                                    \
+#define PUSH_INT(number)                                                                           \
+	if (StackP >= &TheStack[STACK_SIZE])                                                           \
+		return execError(StackOverflowMsg, "");                                                    \
+	StackP->tag   = INT_TAG;                                                                       \
+	StackP->val.n = number;                                                                        \
 	StackP++;
 
-#define PUSH_STRING(string, length)                                                                                                                                                                                                            \
-	if (StackP >= &TheStack[STACK_SIZE])                                                                                                                                                                                                       \
-		return execError(StackOverflowMsg, "");                                                                                                                                                                                                \
-	StackP->tag = STRING_TAG;                                                                                                                                                                                                                  \
-	StackP->val.str.rep = string;                                                                                                                                                                                                              \
-	StackP->val.str.len = length;                                                                                                                                                                                                              \
+#define PUSH_STRING(string, length)                                                                \
+	if (StackP >= &TheStack[STACK_SIZE])                                                           \
+		return execError(StackOverflowMsg, "");                                                    \
+	StackP->tag     = STRING_TAG;                                                                  \
+	StackP->val.str = NString({string, size_t(length)});                                           \
 	StackP++;
 
-#define BINARY_NUMERIC_OPERATION(operator)                                                                                                                                                                                                     \
-	int n1, n2;                                                                                                                                                                                                                                \
-	DISASM_RT(PC - 1, 1);                                                                                                                                                                                                                      \
-	STACKDUMP(2, 3);                                                                                                                                                                                                                           \
-	POP_INT(n2)                                                                                                                                                                                                                                \
-	POP_INT(n1)                                                                                                                                                                                                                                \
-	PUSH_INT(n1 operator n2)                                                                                                                                                                                                                   \
+#define BINARY_NUMERIC_OPERATION(operator)                                                         \
+	int n1, n2;                                                                                    \
+	DISASM_RT(PC - 1, 1);                                                                          \
+	STACKDUMP(2, 3);                                                                               \
+	POP_INT(n2)                                                                                    \
+	POP_INT(n1)                                                                                    \
+	PUSH_INT(n1 operator n2)                                                                       \
 	return STAT_OK;
 
-#define UNARY_NUMERIC_OPERATION(operator)                                                                                                                                                                                                      \
-	int n;                                                                                                                                                                                                                                     \
-	DISASM_RT(PC - 1, 1);                                                                                                                                                                                                                      \
-	STACKDUMP(1, 3);                                                                                                                                                                                                                           \
-	POP_INT(n)                                                                                                                                                                                                                                 \
-	PUSH_INT(operator n)                                                                                                                                                                                                                       \
+#define UNARY_NUMERIC_OPERATION(operator)                                                          \
+	int n;                                                                                         \
+	DISASM_RT(PC - 1, 1);                                                                          \
+	STACKDUMP(1, 3);                                                                               \
+	POP_INT(n)                                                                                     \
+	PUSH_INT(operator n)                                                                           \
 	return STAT_OK;
 
 /*
@@ -1185,17 +1191,14 @@ static int pushArgArray(void) {
 ** present in the array, create it.
 */
 static int pushArraySymVal(void) {
-	Symbol *sym;
-	DataValue *dataPtr;
-	int initEmpty;
 
+	DataValue *dataPtr;
+	
 	DISASM_RT(PC - 1, 3);
 	STACKDUMP(0, 3);
 
-	sym = PC->sym;
-	PC++;
-	initEmpty = PC->value;
-	PC++;
+	Symbol *sym   = PC++->sym;
+	int initEmpty = PC++->value;
 
 	if (sym->type == LOCAL_SYM) {
 		dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
@@ -2488,8 +2491,7 @@ static int arrayIter(void) {
 	thisEntry = iteratorValPtr->val.arrayPtr;
 	if (thisEntry && thisEntry->color != -1) {
 		itemValPtr->tag = STRING_TAG;
-		itemValPtr->val.str.rep = thisEntry->key;
-		itemValPtr->val.str.len = strlen(thisEntry->key);
+		itemValPtr->val.str = NString{thisEntry->key, strlen(thisEntry->key)};
 
 		iteratorValPtr->val.arrayPtr = arrayIterateNext(thisEntry);
 	} else {

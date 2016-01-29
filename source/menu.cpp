@@ -4464,7 +4464,7 @@ static void updateTagsFileMenu(WindowInfo *window) {
 		} else {
 			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
 			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, unloadTagsFileCB, tf->filename);
+			XtAddCallback(items[n], XmNactivateCallback, unloadTagsFileCB, const_cast<char *>(tf->filename.c_str()));
 			XmStringFree(st1);
 			tf = tf->next;
 		}
@@ -4473,7 +4473,7 @@ static void updateTagsFileMenu(WindowInfo *window) {
 	/* Add new items for the remaining file names to the menu */
 	while (tf) {
 		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTagsMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, unloadTagsFileCB, tf->filename);
+		XtAddCallback(btn, XmNactivateCallback, unloadTagsFileCB, const_cast<char *>(tf->filename.c_str()));
 		XmStringFree(st1);
 		tf = tf->next;
 	}
@@ -4506,7 +4506,7 @@ static void updateTipsFileMenu(WindowInfo *window) {
 		} else {
 			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
 			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, unloadTipsFileCB, tf->filename);
+			XtAddCallback(items[n], XmNactivateCallback, unloadTipsFileCB, const_cast<char *>(tf->filename.c_str()));
 			XmStringFree(st1);
 			tf = tf->next;
 		}
@@ -4515,7 +4515,7 @@ static void updateTipsFileMenu(WindowInfo *window) {
 	/* Add new items for the remaining file names to the menu */
 	while (tf) {
 		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTipsMenuPane, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, unloadTipsFileCB, tf->filename);
+		XtAddCallback(btn, XmNactivateCallback, unloadTipsFileCB, const_cast<char *>(tf->filename.c_str()));
 		XmStringFree(st1);
 		tf = tf->next;
 	}

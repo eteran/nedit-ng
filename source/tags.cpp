@@ -88,7 +88,7 @@ struct tag {
 
 enum searchDirection { FORWARD, BACKWARD };
 
-static int loadTagsFile(const char *tagSpec, int index, int recLevel);
+static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
@@ -109,7 +109,7 @@ static void rcs_free(const char *str);
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
-static int loadTipsFile(const char *tipsFile, int index, int recLevel);
+static int loadTipsFile(const std::string &tipsFile, int index, int recLevel);
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
@@ -367,7 +367,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 
 		NormalizePathname(pathName);
 
-		for (t = FileList; t && strcmp(t->filename, pathName); t = t->next) {
+		for (t = FileList; t && t->filename != pathName; t = t->next) {
 			;
 		}
 		
@@ -380,7 +380,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		}
 		
 		t = new tagFile;
-		t->filename = STRSAVE(pathName);
+		t->filename = pathName;
 		t->loaded   = false;
 		t->date     = statbuf.st_mtime;
 		t->index    = ++tagFileIndex;
@@ -439,7 +439,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 		}
 		NormalizePathname(pathName);
 
-		for (t = FileList; t && strcmp(t->filename, pathName); t = t->next)
+		for (t = FileList; t && t->filename != pathName; t = t->next)
 			;
 		if (t) {
 			/* This file is already in the list.  It's easiest to just
@@ -455,7 +455,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 			continue;
 		}
 		t = new tagFile;
-		t->filename = STRSAVE(pathName);
+		t->filename = pathName;
 		t->loaded   = false;
 		t->date     = statbuf.st_mtime;
 		t->index    = ++tagFileIndex;
@@ -510,19 +510,23 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 		NormalizePathname(pathName);
 
 		for (last = nullptr, t = FileList; t; last = t, t = t->next) {
-			if (strcmp(t->filename, pathName))
+			if (t->filename != pathName)
 				continue;
 			/* Don't unload tips files with nonzero refcounts unless forced */
 			if (searchMode == TIP && !force_unload && --t->refcount > 0) {
 				break;
 			}
-			if (t->loaded)
+
+			if (t->loaded) {
 				delTag(nullptr, nullptr, -2, nullptr, -2, t->index);
-			if (last)
+			}
+
+			if (last) {
 				last->next = t->next;
-			else
+			} else {
 				FileList = setFileListHead(t->next, file_type);
-			free(t->filename);
+			}
+				
 			delete t;
 			updateMenuItems();
 			break;
@@ -710,7 +714,7 @@ enum TFT { TFT_CHECK, TFT_ETAGS, TFT_CTAGS };
 ** Loads tagsFile into the hash table.
 ** Returns the number of added tag specifications.
 */
-static int loadTagsFile(const char *tagsFile, int index, int recLevel) {
+static int loadTagsFile(const std::string &tagsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char line[MAXLINE];
 	char file[MAXPATHLEN], tagPath[MAXPATHLEN];
@@ -725,7 +729,7 @@ static int loadTagsFile(const char *tagsFile, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-	if (!ResolvePath(tagsFile, resolvedTagsFile)) {
+	if (!ResolvePath(tagsFile.c_str(), resolvedTagsFile)) {
 		return 0;
 	}
 
@@ -786,8 +790,8 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 			int load_status;		
 		
 			if (tf->loaded) {
-				if (stat(tf->filename, &statbuf) != 0) { /*  */
-					fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+				if (stat(tf->filename.c_str(), &statbuf) != 0) { /*  */
+					fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.c_str());
 				} else {
 					if (tf->date == statbuf.st_mtime) {
 						/* current tags file tf is already loaded and up to date */
@@ -806,10 +810,10 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 			}
 
 			if (load_status) {
-				if (stat(tf->filename, &statbuf) != 0) {
+				if (stat(tf->filename.c_str(), &statbuf) != 0) {
 					if (!tf->loaded) {
 						/* if tf->loaded == true we already have seen the error msg */
-						fprintf(stderr, TAG_STS_ERR_FMT, tf->filename);
+						fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.c_str());
 					}
 				} else {
 					tf->date = statbuf.st_mtime;
@@ -1911,7 +1915,7 @@ static void free_alias_list(tf_alias *alias) {
 ** at which it appears--the exact same way ctags indexes source-code.  That's
 ** why calltips and tags share so much code.
 */
-static int loadTipsFile(const char *tipsFile, int index, int recLevel) {
+static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char header[MAXLINE];
 	char *body, *tipIncFile;
@@ -1922,13 +1926,13 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel) {
 	tf_alias *aliases = nullptr, *tmp_alias;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-		fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile);
+		fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile.c_str());
 		return 0;
 	}
 
 	/* find the tips file */
 	/* Allow ~ in Unix filenames */
-	strncpy(tipPath, tipsFile, MAXPATHLEN); /* ExpandTilde is destructive */
+	strncpy(tipPath, tipsFile.c_str(), MAXPATHLEN); /* ExpandTilde is destructive */
 	ExpandTilde(tipPath);
 	if (!ResolvePath(tipPath, resolvedTipsFile))
 		return 0;
@@ -1977,7 +1981,7 @@ static int loadTipsFile(const char *tipsFile, int index, int recLevel) {
 			if (langMode == PLAIN_LANGUAGE_MODE && strcmp(header, "Plain")) {
 				fprintf(stderr, "nedit: Error reading calltips file:\n\t%s\n"
 				                "Unknown language mode: \"%s\"\n",
-				        tipsFile, header);
+				        tipsFile.c_str(), header);
 				langMode = oldLangMode;
 			}
 			break;

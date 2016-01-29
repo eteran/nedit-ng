@@ -119,13 +119,13 @@ struct DataValue {
 	enum typeTags tag;
 	
 	union {
-		int                n;
-		NString            str;
-		BuiltInSubr        subr;
-		Program*           prog;
-		XtActionProc       xtproc;
-		Inst*              inst;
-		DataValue*         dataval;
+		int          n;
+		NString      str;
+		BuiltInSubr  subr;
+		Program*     prog;
+		XtActionProc xtproc;
+		Inst*        inst;
+		DataValue*   dataval;
 		ArrayEntry*  arrayPtr;
 	} val;
 	

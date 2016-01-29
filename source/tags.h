@@ -29,6 +29,8 @@
 
 #include "nedit.h"
 #include <unordered_set>
+#include <string>
+#include <list>
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
@@ -36,11 +38,11 @@
 
 struct tagFile {
 	struct tagFile *next;
-	char *filename;
-	time_t date;
-	bool loaded;
-	short index;
-	short refcount; /* Only tips files are refcounted, not tags files */
+	std::string filename;
+	time_t      date;
+	bool        loaded;
+	short       index;
+	short       refcount; /* Only tips files are refcounted, not tags files */
 };
 
 extern tagFile *TagsFileList; /* list of loaded tags files */
