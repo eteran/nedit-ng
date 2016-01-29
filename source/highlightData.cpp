@@ -40,7 +40,7 @@
 #include "MotifHelper.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
-#include "highlightStyleRec.h"
+#include "HighlightStyle.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/managedList.h"
@@ -92,7 +92,7 @@ static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void hsSetDisplayedCB(void *item, void *cbArg);
-static highlightStyleRec *readHSDialogFields(int silent);
+static HighlightStyle *readHSDialogFields(int silent);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
@@ -127,7 +127,7 @@ static void freePatternSet(PatternSet *p);
 
 /* list of available highlight styles */
 static int NHighlightStyles = 0;
-static highlightStyleRec *HighlightStyles[MAX_HIGHLIGHT_STYLES];
+static HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
 
 /* Highlight styles dialog information */
 static struct {
@@ -137,7 +137,7 @@ static struct {
 	Widget bgColorW;
 	Widget plainW, boldW, italicW, boldItalicW;
 	Widget managedListW;
-	highlightStyleRec **highlightStyleList;
+	HighlightStyle **highlightStyleList;
 	int nHighlightStyles;
 } HSDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0};
 
@@ -257,7 +257,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		inPtr += strspn(inPtr, " \t");
 
 		/* Allocate a language mode structure in which to store the info. */
-		auto hs = new highlightStyleRec;
+		auto hs = new HighlightStyle;
 
 		/* read style name */
 		hs->name = ReadSymbolicFieldEx(&inPtr);
@@ -336,7 +336,7 @@ bool LoadStylesStringEx(const std::string &string) {
 */
 std::string WriteStylesStringEx(void) {
 	int i;
-	highlightStyleRec *style;
+	HighlightStyle *style;
 
 	auto outBuf = memory::make_unique<TextBuffer>();
 
@@ -930,9 +930,9 @@ void EditHighlightStyles(const char *initialStyle) {
 
 	/* Copy the list of highlight style information to one that the user
 	   can freely edit (via the dialog and managed-list code) */
-	HSDialog.highlightStyleList = new highlightStyleRec *[MAX_HIGHLIGHT_STYLES];
+	HSDialog.highlightStyleList = new HighlightStyle *[MAX_HIGHLIGHT_STYLES];
 	for (int i = 0; i < NHighlightStyles; i++) {
-		HSDialog.highlightStyleList[i] = new highlightStyleRec(*HighlightStyles[i]);
+		HSDialog.highlightStyleList[i] = new HighlightStyle(*HighlightStyles[i]);
 	}
 	
 	HSDialog.nHighlightStyles = NHighlightStyles;
@@ -1040,7 +1040,7 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	ac++;
 	
 	HSDialog.managedListW = CreateManagedList(form, (String) "list", args, ac, (void **)HSDialog.highlightStyleList, &HSDialog.nHighlightStyles, MAX_HIGHLIGHT_STYLES, 20, hsGetDisplayedCB, nullptr, hsSetDisplayedCB, form, [](void *item) {
-		delete static_cast<highlightStyleRec *>(item);
+		delete static_cast<HighlightStyle *>(item);
 	});
 	
 	XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, nullptr);
@@ -1111,7 +1111,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 
 	(void)cbArg;
 
-	highlightStyleRec *hs;
+	HighlightStyle *hs;
 
 	/* If the dialog is currently displaying the "new" entry and the
 	   fields are empty, that's just fine */
@@ -1127,7 +1127,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	   read, give more warning */
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, HSDialog.shell, 2, "Incomplete Style", "Discard incomplete entry\nfor current highlight style?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : new highlightStyleRec(*(highlightStyleRec *)oldItem);
+			return oldItem == nullptr ? nullptr : new HighlightStyle(*(HighlightStyle *)oldItem);
 		}
 	}
 
@@ -1138,7 +1138,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 }
 
 static void hsSetDisplayedCB(void *item, void *cbArg) {
-	highlightStyleRec *hs = (highlightStyleRec *)item;
+	HighlightStyle *hs = (HighlightStyle *)item;
 
 	if(!item) {
 		XmTextSetStringEx(HSDialog.nameW, "");
@@ -1154,7 +1154,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 			int i;
 			int others = 0;
 			int nList = HSDialog.nHighlightStyles;
-			highlightStyleRec **list = HSDialog.highlightStyleList;
+			HighlightStyle **list = HSDialog.highlightStyleList;
 			/* do we have other styles called Plain? */
 			for (i = 0; i < nList; i++) {
 				if (list[i] != hs && (list[i]->name == "Plain")) {
@@ -1181,14 +1181,14 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 	}
 }
 
-static highlightStyleRec *readHSDialogFields(int silent) {
+static HighlightStyle *readHSDialogFields(int silent) {
 
 	Display *display = XtDisplay(HSDialog.shell);
 	int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
 	XColor rgb;
 
 	/* Allocate a language mode structure to return */
-	auto hs = new highlightStyleRec;
+	auto hs = new HighlightStyle;
 
 	/* read the name field */
 	try {
@@ -1298,7 +1298,7 @@ static int updateHSList(void) {
 	}
 	
 	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
-		HighlightStyles[i] = new highlightStyleRec(*HSDialog.highlightStyleList[i]);
+		HighlightStyles[i] = new HighlightStyle(*HSDialog.highlightStyleList[i]);
 	}
 	NHighlightStyles = HSDialog.nHighlightStyles;
 
@@ -1319,8 +1319,10 @@ static int updateHSList(void) {
 ** Present a dialog for editing highlight pattern information
 */
 void EditHighlightPatterns(WindowInfo *window) {
-#define BORDER 4
-#define LIST_RIGHT 41
+
+	const int BORDER = 4;
+	const int LIST_RIGHT = 41;
+
 	Widget form, lmOptMenu, patternsForm, patternsFrame, patternsLbl;
 	Widget lmForm, contextFrame, contextForm, styleLbl, styleBtn;
 	Widget okBtn, applyBtn, checkBtn, deleteBtn, closeBtn, helpBtn;
@@ -1351,10 +1353,12 @@ void EditHighlightPatterns(WindowInfo *window) {
 
 	/* Copy the list of patterns to one that the user can freely edit */
 	HighlightDialog.patterns = new HighlightPattern *[MAX_PATTERNS];
-	nPatterns = patSet == nullptr ? 0 : patSet->nPatterns;
+	nPatterns                = (!patSet) ? 0 : patSet->nPatterns;
+	
 	for (i = 0; i < nPatterns; i++) {
 		HighlightDialog.patterns[i] = new HighlightPattern(patSet->patterns[i]);
 	}
+	
 	HighlightDialog.nPatterns = nPatterns;
 
 	/* Create a form widget in an application shell */

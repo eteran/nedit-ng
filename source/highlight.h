@@ -45,24 +45,24 @@
 struct PatternSet;
 struct HighlightPattern;
 
-void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-void StartHighlighting(WindowInfo *window, int warn);
-void StopHighlighting(WindowInfo *window);
-void AttachHighlightToWidget(Widget widget, WindowInfo *window);
-void FreeHighlightingData(WindowInfo *window);
-void RemoveWidgetHighlight(Widget widget);
-void UpdateHighlightStyles(WindowInfo *window);
 bool TestHighlightPatterns(PatternSet *patSet);
-Pixel AllocateColor(Widget w, const char *colorName);
-Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
-void *GetHighlightInfo(WindowInfo *window, int pos);
 HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
 int HighlightCodeOfPos(WindowInfo *window, int pos);
 int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(WindowInfo *window, int pos);
+Pixel AllocateColor(Widget w, const char *colorName);
+Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
+Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
+Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
 std::string HighlightNameOfCode(WindowInfo *window, int hCode);
 std::string HighlightStyleOfCode(WindowInfo *window, int hCode);
-Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
-Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
+void AttachHighlightToWidget(Widget widget, WindowInfo *window);
+void FreeHighlightingData(WindowInfo *window);
+void *GetHighlightInfo(WindowInfo *window, int pos);
+void RemoveWidgetHighlight(Widget widget);
+void StartHighlighting(WindowInfo *window, int warn);
+void StopHighlighting(WindowInfo *window);
+void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
+void UpdateHighlightStyles(WindowInfo *window);
 
 #endif

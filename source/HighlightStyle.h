@@ -1,10 +1,10 @@
 
-#ifndef HIGHLIGHT_STYLE_REC_H_
-#define HIGHLIGHT_STYLE_REC_H_
+#ifndef HIGHLIGHT_STYLE_H_
+#define HIGHLIGHT_STYLE_H_
 
 #include <string>
 
-struct highlightStyleRec {
+struct HighlightStyle {
 	std::string name;
 	std::string color;
 	std::string bgColor;

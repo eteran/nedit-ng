@@ -799,7 +799,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	}
 
 	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].subPatterns = compiledPats[i].nSubPatterns == 0 ? nullptr : new highlightDataRec *[compiledPats[i].nSubPatterns];
+		compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new highlightDataRec *[compiledPats[i].nSubPatterns];
 	}
 
 	for (int i = 0; i < nPatterns; i++) {

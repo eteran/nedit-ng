@@ -51,7 +51,6 @@ add_executable(nedit
 	window.cpp
 	windowTitle.cpp
 	HighlightPattern.cpp
-	highlightStyleRec.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet01.inc
