@@ -373,14 +373,14 @@ Range *RangesetTable::RangesNew(int n) {
 		    n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
 		 */
 		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		return new Range[n];
+		return (Range *)malloc(n * sizeof(Range));
 	}
 
 	return nullptr;
 }
 
 Range *RangesetTable::RangesFree(Range *ranges) {
-	delete [] ranges;
+	free(ranges);
 	return nullptr;
 }
 
