@@ -30,7 +30,7 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "memory.h"
 
@@ -60,15 +60,15 @@ static int findParagraphStart(TextBuffer *buf, int startPos);
 static int nextTab(int pos, int tabDist);
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
-static void changeCase(WindowInfo *window, int makeUpper);
-static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
+static void changeCase(Document *window, int makeUpper);
+static void shiftRect(Document *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void ShiftSelection(WindowInfo *window, int direction, int byTab) {
+void ShiftSelection(Document *window, int direction, int byTab) {
 	int selStart;
 	int selEnd;
 	bool isRect;
@@ -124,7 +124,7 @@ void ShiftSelection(WindowInfo *window, int direction, int byTab) {
 	buf->BufSelect(selStart, newEndPos);
 }
 
-static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
+static void shiftRect(Document *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
 	int offset, emTabDist;
 	TextBuffer *buf = window->buffer;
 
@@ -161,11 +161,11 @@ static void shiftRect(WindowInfo *window, int direction, int byTab, int selStart
 	delete tempBuf;
 }
 
-void UpcaseSelection(WindowInfo *window) {
+void UpcaseSelection(Document *window) {
 	changeCase(window, True);
 }
 
-void DowncaseSelection(WindowInfo *window) {
+void DowncaseSelection(Document *window) {
 	changeCase(window, False);
 }
 
@@ -174,7 +174,7 @@ void DowncaseSelection(WindowInfo *window) {
 ** before the cursor if there is no selection).  If "makeUpper" is true,
 ** change to upper case, otherwise, change to lower case.
 */
-static void changeCase(WindowInfo *window, int makeUpper) {
+static void changeCase(Document *window, int makeUpper) {
 	TextBuffer *buf = window->buffer;
 	int cursorPos, start, end, rectStart, rectEnd;
 	bool isRect;
@@ -214,7 +214,7 @@ static void changeCase(WindowInfo *window, int makeUpper) {
 	}
 }
 
-void FillSelection(WindowInfo *window) {
+void FillSelection(Document *window) {
 	TextBuffer *buf = window->buffer;
 	int left, right, nCols, len, rectStart, rectEnd;
 	bool isRect;

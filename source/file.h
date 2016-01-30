@@ -41,22 +41,22 @@
 #define YES_SBC_DIALOG_RESPONSE 1
 #define NO_SBC_DIALOG_RESPONSE 2
 
-int CheckReadOnly(WindowInfo *window);
+int CheckReadOnly(Document *window);
 int CloseAllFilesAndWindows(void);
-int CloseFileAndWindow(WindowInfo *window, int preResponse);
-int IncludeFile(WindowInfo *window, const char *name);
-int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname);
-int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap);
-int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap);
-int SaveWindow(WindowInfo *window);
-int WriteBackupFile(WindowInfo *window);
-void CheckForChangesToFile(WindowInfo *window);
+int CloseFileAndWindow(Document *window, int preResponse);
+int IncludeFile(Document *window, const char *name);
+int PromptForExistingFile(Document *window, const char *prompt, char *fullname);
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap);
+int SaveWindowAs(Document *window, const char *newName, int addWrap);
+int SaveWindow(Document *window);
+int WriteBackupFile(Document *window);
+void CheckForChangesToFile(Document *window);
 void PrintString(const std::string &string, int length, Widget parent, const std::string &jobName);
-void PrintWindow(WindowInfo *window, int selectedOnly);
-void RemoveBackupFile(WindowInfo *window);
-void RevertToSaved(WindowInfo *window);
+void PrintWindow(Document *window, int selectedOnly);
+void RemoveBackupFile(Document *window);
+void RevertToSaved(Document *window);
 void UniqueUntitledName(char *name, size_t size);
-WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
-WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath);
+Document *EditExistingFile(Document *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
+Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath);
 
 #endif

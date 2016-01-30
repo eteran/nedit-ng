@@ -33,10 +33,10 @@ struct TextBuffer;
 
 #include <X11/Intrinsic.h>
 
-WindowInfo *FindWindowWithFile(const char *name, const char *path);
-WindowInfo *GetTopDocument(Widget w);
-WindowInfo *TabToWindow(Widget tab);
-WindowInfo *WidgetToWindow(Widget w);
+Document *FindWindowWithFile(const char *name, const char *path);
+Document *GetTopDocument(Widget w);
+Document *TabToWindow(Widget tab);
+Document *WidgetToWindow(Widget w);
 int GetSimpleSelection(TextBuffer *buf, int *left, int *right);
 int NWindows(void);
 void AddSmallIcon(Widget shell);

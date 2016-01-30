@@ -31,7 +31,7 @@
 #include "textSel.h"
 #include "textDrag.h"
 #include "nedit.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "calltips.h"
 #include "../util/DialogF.h"
 #include "window.h"
@@ -1990,7 +1990,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 
 
 	int status;

@@ -35,9 +35,9 @@
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
 
-Widget CreateBGMenu(WindowInfo *window);
-Widget CreateMenuBar(Widget parent, WindowInfo *window);
-Widget CreateTabContextMenu(Widget parent, WindowInfo *window);
+Widget CreateBGMenu(Document *window);
+Widget CreateMenuBar(Widget parent, Document *window);
+Widget CreateTabContextMenu(Widget parent, Document *window);
 XtActionsRec *GetMenuActions(int *nActions);
 void AddBGMenuAction(Widget widget);
 void AddTabContextMenuAction(Widget widget);

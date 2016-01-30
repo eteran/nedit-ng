@@ -29,7 +29,7 @@
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "../util/MotifHelper.h"
 #include "../util/misc.h"
 
@@ -47,7 +47,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 /*
 ** Pop-down a calltip if one exists, else do nothing
 */
-void KillCalltip(WindowInfo *window, int calltipID) {
+void KillCalltip(Document *window, int calltipID) {
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	TextDKillCalltip(textD, calltipID);
 }
@@ -67,7 +67,7 @@ void TextDKillCalltip(textDisp *textD, int calltipID) {
 ** calltipID != 0, returns 0 unless there is a calltip being
 ** displayed with that calltipID.
 */
-int GetCalltipID(WindowInfo *window, int calltipID) {
+int GetCalltipID(Document *window, int calltipID) {
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	if (calltipID == 0)
 		return textD->calltip.ID;
@@ -220,7 +220,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width) {
 ** If a calltip is already being displayed it is destroyed and replaced with
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
-int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
 	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
 	int rel_x, rel_y;

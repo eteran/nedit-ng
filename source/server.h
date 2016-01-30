@@ -36,6 +36,6 @@
 void InitServerCommunication(void);
 void ServerMainLoop(XtAppContext context);
 Boolean ServerDispatchEvent(XEvent *event);
-void DeleteFileClosedProperty(WindowInfo *window);
+void DeleteFileClosedProperty(Document *window);
 
 #endif /* NEDIT_SERVER_H_INCLUDED */

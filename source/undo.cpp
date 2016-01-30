@@ -31,7 +31,7 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "search.h"
 #include "window.h"
 #include "file.h"
@@ -47,15 +47,15 @@
 #define FORWARD 1
 #define REVERSE 2
 
-static void addUndoItem(WindowInfo *window, UndoInfo *undo);
-static void addRedoItem(WindowInfo *window, UndoInfo *redo);
-static void removeUndoItem(WindowInfo *window);
-static void removeRedoItem(WindowInfo *window);
-static void appendDeletedText(WindowInfo *window, view::string_view deletedText, int deletedLen, int direction);
-static void trimUndoList(WindowInfo *window, int maxLength);
+static void addUndoItem(Document *window, UndoInfo *undo);
+static void addRedoItem(Document *window, UndoInfo *redo);
+static void removeUndoItem(Document *window);
+static void removeRedoItem(Document *window);
+static void appendDeletedText(Document *window, view::string_view deletedText, int deletedLen, int direction);
+static void trimUndoList(Document *window, int maxLength);
 static undoTypes determineUndoType(int nInserted, int nDeleted);
 
-void WindowInfo::Undo() {
+void Document::Undo() {
 
 	int restoredTextLength;
 
@@ -105,7 +105,7 @@ void WindowInfo::Undo() {
 	removeUndoItem(this);
 }
 
-void WindowInfo::Redo() {
+void Document::Redo() {
 	
 	int restoredTextLength;
 
@@ -161,7 +161,7 @@ void WindowInfo::Redo() {
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void WindowInfo::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
+void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
 	
 	const int isUndo = (!this->undo.empty() && this->undo.front()->inUndo);
 	const int isRedo = (!this->redo.empty() && this->redo.front()->inUndo);
@@ -269,12 +269,12 @@ void WindowInfo::SaveUndoInformation(int pos, int nInserted, int nDeleted, view:
 ** Functions for clearing all of the information off of the undo or redo
 ** lists and adjusting the edit menu accordingly
 */
-void WindowInfo::ClearUndoList() {
+void Document::ClearUndoList() {
 	while (!this->undo.empty()) {
 		removeUndoItem(this);
 	}
 }
-void WindowInfo::ClearRedoList() {
+void Document::ClearRedoList() {
 	while (!this->redo.empty()) {
 		removeRedoItem(this);
 	}
@@ -285,7 +285,7 @@ void WindowInfo::ClearRedoList() {
 ** list if the item pushes the undo operation or character counts past the
 ** limits, trim the undo list to an acceptable length.
 */
-static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
+static void addUndoItem(Document *window, UndoInfo *undo) {
 
 	/* Make the undo menu item sensitive now that there's something to undo */
 	if (window->undo.empty()) {
@@ -311,7 +311,7 @@ static void addUndoItem(WindowInfo *window, UndoInfo *undo) {
 /*
 ** Add an item (already allocated by the caller) to the window's redo list.
 */
-static void addRedoItem(WindowInfo *window, UndoInfo *redo) {
+static void addRedoItem(Document *window, UndoInfo *redo) {
 	/* Make the redo menu item sensitive now that there's something to redo */
 	if (window->redo.empty()) {	
 		window->SetSensitive(window->redoItem, True);
@@ -325,7 +325,7 @@ static void addRedoItem(WindowInfo *window, UndoInfo *redo) {
 /*
 ** Pop (remove and free) the current (front) undo record from the undo list
 */
-static void removeUndoItem(WindowInfo *window) {
+static void removeUndoItem(Document *window) {
 
 	if (window->undo.empty()) {
 		return;
@@ -351,7 +351,7 @@ static void removeUndoItem(WindowInfo *window) {
 /*
 ** Pop (remove and free) the current (front) redo record from the redo list
 */
-static void removeRedoItem(WindowInfo *window) {
+static void removeRedoItem(Document *window) {
 	UndoInfo *redo = window->redo.front();
 
 	/* Remove and free the item */
@@ -371,7 +371,7 @@ static void removeRedoItem(WindowInfo *window) {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-static void appendDeletedText(WindowInfo *window, view::string_view deletedText, int deletedLen, int direction) {
+static void appendDeletedText(Document *window, view::string_view deletedText, int deletedLen, int direction) {
 	UndoInfo *undo = window->undo.front();
 
 	/* re-allocate, adding space for the new character(s) */
@@ -399,7 +399,7 @@ static void appendDeletedText(WindowInfo *window, view::string_view deletedText,
 ** Trim records off of the END of the undo list to reduce it to length
 ** maxLength
 */
-static void trimUndoList(WindowInfo *window, int maxLength) {
+static void trimUndoList(Document *window, int maxLength) {
 
 	if (window->undo.empty()) {
 		return;

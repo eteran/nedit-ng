@@ -32,7 +32,7 @@
 #include "window.h"
 #include "file.h"
 #include "selection.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "macro.h"
 #include "menu.h"
 #include "preferences.h"
@@ -58,9 +58,9 @@
 static void processServerCommand(void);
 static void cleanUpServerCommunication(void);
 static void processServerCommandString(char *string);
-static void getFileClosedProperty(WindowInfo *window);
-static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop);
-static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop);
+static void getFileClosedProperty(Document *window);
+static int isLocatedOnDesktop(Document *window, long currentDesktop);
+static Document *findWindowOnDesktop(int tabbed, long currentDesktop);
 
 static Atom ServerRequestAtom = 0;
 static Atom ServerExistsAtom = 0;
@@ -106,7 +106,7 @@ static void deleteProperty(Atom *atom) {
 ** Exit handler.  Removes server-exists property on root window
 */
 static void cleanUpServerCommunication(void) {
-	WindowInfo *w;
+	Document *w;
 
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
@@ -192,7 +192,7 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 /* Destroy the 'FileOpen' atom to inform nc that this file has
 ** been opened.
 */
-static void deleteFileOpenProperty(WindowInfo *window) {
+static void deleteFileOpenProperty(Document *window) {
 	if (window->filenameSet) {
 		Atom atom = findFileOpenProperty(window->filename, window->path);
 		deleteProperty(&atom);
@@ -219,7 +219,7 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 }
 
 /* Get hold of the property to use when closing the file. */
-static void getFileClosedProperty(WindowInfo *window) {
+static void getFileClosedProperty(Document *window) {
 	if (window->filenameSet) {
 		window->fileClosedAtom = findFileClosedProperty(window->filename, window->path);
 	}
@@ -228,7 +228,7 @@ static void getFileClosedProperty(WindowInfo *window) {
 /* Delete the 'FileClosed' atom to inform nc that this file has
 ** been closed.
 */
-void DeleteFileClosedProperty(WindowInfo *window) {
+void DeleteFileClosedProperty(Document *window) {
 	if (window->filenameSet) {
 		deleteProperty(&window->fileClosedAtom);
 	}
@@ -239,7 +239,7 @@ static void deleteFileClosedProperty2(const char *filename, const char *pathname
 	deleteProperty(&atom);
 }
 
-static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop) {
+static int isLocatedOnDesktop(Document *window, long currentDesktop) {
 	long windowDesktop;
 	if (currentDesktop == -1)
 		return True; /* No desktop information available */
@@ -252,8 +252,8 @@ static int isLocatedOnDesktop(WindowInfo *window, long currentDesktop) {
 	return False;
 }
 
-static WindowInfo *findWindowOnDesktop(int tabbed, long currentDesktop) {
-	WindowInfo *window;
+static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
+	Document *window;
 
 	if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
 		/* A new window is requested, unless we find an untitled unmodified
@@ -289,7 +289,7 @@ static void processServerCommandString(char *string) {
 	int editFlags, stringLen = strlen(string);
 	int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed = -1;
 	int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
-	WindowInfo *window, *lastFile = nullptr;
+	Document *window, *lastFile = nullptr;
 	long currentDesktop = QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
 
 	/* If the command string is empty, put up an empty, Untitled window
@@ -367,7 +367,7 @@ static void processServerCommandString(char *string) {
 						window->RaiseDocumentWindow();
 				}
 			} else {
-				WindowInfo *win = WindowList;
+				Document *win = WindowList;
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
 				while (win != nullptr && win->macroCmdData) {

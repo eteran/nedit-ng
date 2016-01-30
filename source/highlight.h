@@ -46,23 +46,23 @@ struct PatternSet;
 struct HighlightPattern;
 
 bool TestHighlightPatterns(PatternSet *patSet);
-HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name);
-int HighlightCodeOfPos(WindowInfo *window, int pos);
-int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode);
-int StyleLengthOfCodeFromPos(WindowInfo *window, int pos);
+HighlightPattern *FindPatternOfWindow(Document *window, char *name);
+int HighlightCodeOfPos(Document *window, int pos);
+int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode);
+int StyleLengthOfCodeFromPos(Document *window, int pos);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
-Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
-Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b);
-std::string HighlightNameOfCode(WindowInfo *window, int hCode);
-std::string HighlightStyleOfCode(WindowInfo *window, int hCode);
-void AttachHighlightToWidget(Widget widget, WindowInfo *window);
-void FreeHighlightingData(WindowInfo *window);
-void *GetHighlightInfo(WindowInfo *window, int pos);
+Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int *b);
+Pixel HighlightColorValueOfCode(Document *window, int hCode, int *r, int *g, int *b);
+std::string HighlightNameOfCode(Document *window, int hCode);
+std::string HighlightStyleOfCode(Document *window, int hCode);
+void AttachHighlightToWidget(Widget widget, Document *window);
+void FreeHighlightingData(Document *window);
+void *GetHighlightInfo(Document *window, int pos);
 void RemoveWidgetHighlight(Widget widget);
-void StartHighlighting(WindowInfo *window, int warn);
-void StopHighlighting(WindowInfo *window);
+void StartHighlighting(Document *window, int warn);
+void StopHighlighting(Document *window);
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-void UpdateHighlightStyles(WindowInfo *window);
+void UpdateHighlightStyles(Document *window);
 
 #endif

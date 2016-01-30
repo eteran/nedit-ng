@@ -29,17 +29,17 @@
 
 #include "string_view.h"
 
-class WindowInfo;
+class Document;
 
 enum ShiftDirection {
 	SHIFT_LEFT, 
 	SHIFT_RIGHT
 };
 
-void ShiftSelection(WindowInfo *window, int direction, int byTab);
-void UpcaseSelection(WindowInfo *window);
-void DowncaseSelection(WindowInfo *window);
-void FillSelection(WindowInfo *window);
+void ShiftSelection(Document *window, int direction, int byTab);
+void UpcaseSelection(Document *window);
+void DowncaseSelection(Document *window);
+void FillSelection(Document *window);
 char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars);
 

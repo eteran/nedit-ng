@@ -36,7 +36,7 @@
 #include "regularExp.h"
 #include "highlightData.h"
 #include "preferences.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
@@ -120,12 +120,12 @@ struct windowHighlightData {
 	PatternSet *patternSetForWindow;
 };
 
-static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet);
+static windowHighlightData *createHighlightData(Document *window, PatternSet *patSet);
 static void freeHighlightData(windowHighlightData *hd);
-static PatternSet *findPatternsForWindow(WindowInfo *window, int warn);
+static PatternSet *findPatternsForWindow(Document *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
-static void handleUnparsedRegion(const WindowInfo *win, TextBuffer *styleBuf, const int pos);
+static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, const int pos);
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
@@ -145,9 +145,9 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, const char *strin
 static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
-static void updateWindowHeight(WindowInfo *window, int oldFontHeight);
-static int getFontHeight(WindowInfo *window);
-static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode);
+static void updateWindowHeight(Document *window, int oldFontHeight);
+static int getFontHeight(Document *window);
+static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -174,7 +174,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	(void)nRestyled;
 	(void)deletedText;
 
-	WindowInfo *window = (WindowInfo *)cbArg;
+	Document *window = (Document *)cbArg;
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 
 	if(!highlightData)
@@ -218,7 +218,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 ** Turn on syntax highlighting.  If "warn" is true, warn the user when it
 ** can't be done, otherwise, just return.
 */
-void StartHighlighting(WindowInfo *window, int warn) {
+void StartHighlighting(Document *window, int warn) {
 	PatternSet *patterns;
 	windowHighlightData *highlightData;
 	char prevChar = '\0';
@@ -289,7 +289,7 @@ void StartHighlighting(WindowInfo *window, int warn) {
 ** Turn off syntax highlighting and free style buffer, compiled patterns, and
 ** related data.
 */
-void StopHighlighting(WindowInfo *window) {
+void StopHighlighting(Document *window) {
 	int i, oldFontHeight;
 
 	if (!window->highlightData)
@@ -321,7 +321,7 @@ void StopHighlighting(WindowInfo *window) {
 ** Free highlighting data from a window destined for destruction, without
 ** redisplaying.
 */
-void FreeHighlightingData(WindowInfo *window) {
+void FreeHighlightingData(Document *window) {
 	int i;
 
 	if (!window->highlightData)
@@ -342,7 +342,7 @@ void FreeHighlightingData(WindowInfo *window) {
 ** Attach style information from a window's highlight data to a
 ** text widget and redisplay.
 */
-void AttachHighlightToWidget(Widget widget, WindowInfo *window) {
+void AttachHighlightToWidget(Widget widget, Document *window) {
 	auto highlightData = (windowHighlightData *)window->highlightData;
 
 	TextDAttachHighlightData(((TextWidget)widget)->text.textD, highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
@@ -359,7 +359,7 @@ void RemoveWidgetHighlight(Widget widget) {
 ** Change highlight fonts and/or styles in a highlighted window, without
 ** re-parsing.
 */
-void UpdateHighlightStyles(WindowInfo *window) {
+void UpdateHighlightStyles(Document *window) {
 
 	auto oldHighlightData = (windowHighlightData *)window->highlightData;
 
@@ -431,7 +431,7 @@ bool TestHighlightPatterns(PatternSet *patSet) {
 ** pointer is returned for two positions, the corresponding characters have
 ** the same highlight style.
 **/
-void *GetHighlightInfo(WindowInfo *window, int pos) {
+void *GetHighlightInfo(Document *window, int pos) {
 
 	highlightDataRec *pattern = nullptr;
 	auto highlightData = (windowHighlightData *)window->highlightData;
@@ -484,7 +484,7 @@ static void freeHighlightData(windowHighlightData *hd) {
 ** Find the pattern set matching the window's current language mode, or
 ** tell the user if it can't be done (if warn is True) and return nullptr.
 */
-static PatternSet *findPatternsForWindow(WindowInfo *window, int warn) {
+static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	PatternSet *patterns;
 	char *modeName;
 
@@ -526,7 +526,7 @@ static PatternSet *findPatternsForWindow(WindowInfo *window, int warn) {
 ** are encountered, warns user with a dialog and returns nullptr.  To free the
 ** allocated components of the returned data structure, use freeHighlightData.
 */
-static windowHighlightData *createHighlightData(WindowInfo *window, PatternSet *patSet) {
+static windowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	HighlightPattern *patternSrc = patSet->patterns;
 	int nPatterns    = patSet->nPatterns;
 	int contextLines = patSet->lineContext;
@@ -988,7 +988,7 @@ static void freePatterns(highlightDataRec *patterns) {
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
-HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
+HighlightPattern *FindPatternOfWindow(Document *window, char *name) {
 	auto hData = (windowHighlightData *)window->highlightData;
 	PatternSet *set;
 
@@ -1005,7 +1005,7 @@ HighlightPattern *FindPatternOfWindow(WindowInfo *window, char *name) {
 ** Picks up the entry in the style buffer for the position (if any). Rather
 ** like styleOfPos() in textDisp.c. Returns the style code or zero.
 */
-int HighlightCodeOfPos(WindowInfo *window, int pos) {
+int HighlightCodeOfPos(Document *window, int pos) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
@@ -1028,7 +1028,7 @@ int HighlightCodeOfPos(WindowInfo *window, int pos) {
 */
 /* YOO: This is called form only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
-int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
+int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
@@ -1064,7 +1064,7 @@ int HighlightLengthOfCodeFromPos(WindowInfo *window, int pos, int *checkCode) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
+int StyleLengthOfCodeFromPos(Document *window, int pos) {
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
@@ -1107,7 +1107,7 @@ int StyleLengthOfCodeFromPos(WindowInfo *window, int pos) {
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode) {
+static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 	auto highlightData = (windowHighlightData *)window->highlightData;
 
 	hCode -= UNFINISHED_STYLE; /* get the correct index value */
@@ -1120,17 +1120,17 @@ static styleTableEntry *styleTableEntryOfCode(WindowInfo *window, int hCode) {
 ** Functions to return style information from the highlighting style table.
 */
 
-std::string HighlightNameOfCode(WindowInfo *window, int hCode) {
+std::string HighlightNameOfCode(Document *window, int hCode) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->highlightName : "";
 }
 
-std::string HighlightStyleOfCode(WindowInfo *window, int hCode) {
+std::string HighlightStyleOfCode(Document *window, int hCode) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->styleName : "";
 }
 
-Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b) {
+Pixel HighlightColorValueOfCode(Document *window, int hCode, int *r, int *g, int *b) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	if (entry) {
 		*r = entry->red;
@@ -1153,7 +1153,7 @@ Pixel HighlightColorValueOfCode(WindowInfo *window, int hCode, int *r, int *g, i
 	}
 }
 
-Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, int *b) {
+Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int *b) {
 	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	
 	if (entry && !entry->bgColorName.empty()) {
@@ -1186,7 +1186,7 @@ Pixel GetHighlightBGColorOfCode(WindowInfo *window, int hCode, int *r, int *g, i
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf, const int pos) {
+static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, const int pos) {
 	TextBuffer *buf = window->buffer;
 	int beginParse, endParse, beginSafety, endSafety, p;
 	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
@@ -1263,7 +1263,7 @@ static void handleUnparsedRegion(const WindowInfo *window, TextBuffer *styleBuf,
 ** Callback wrapper around the above function.
 */
 static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg) {
-	handleUnparsedRegion((WindowInfo *)cbArg, textD->styleBuffer, pos);
+	handleUnparsedRegion((Document *)cbArg, textD->styleBuffer, pos);
 }
 
 /*
@@ -2211,7 +2211,7 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 ** Note that this messes up the window manager's height increment hint,
 ** which must be subsequently reset by UpdateWMSizeHints.
 */
-static void updateWindowHeight(WindowInfo *window, int oldFontHeight) {
+static void updateWindowHeight(Document *window, int oldFontHeight) {
 	int i, borderHeight, marginHeight;
 	Dimension windowHeight, textAreaHeight, textHeight, newWindowHeight;
 
@@ -2249,7 +2249,7 @@ static void updateWindowHeight(WindowInfo *window, int oldFontHeight) {
 ** a composite of all of the active highlighting fonts as determined by the
 ** text display component
 */
-static int getFontHeight(WindowInfo *window) {
+static int getFontHeight(Document *window) {
 	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
 	return textD->ascent + textD->descent;

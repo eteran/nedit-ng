@@ -31,7 +31,7 @@
 #include "text.h"
 #include "nedit.h"
 #include "preferences.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "menu.h"
 #include "shell.h"
@@ -114,7 +114,7 @@ struct menuItemRec {
    macro command and BG command editing dialogs */
 struct userCmdDialog {
 	int dialogType;
-	WindowInfo *window;
+	Document *window;
 	Widget nameTextW, accTextW, mneTextW, cmdTextW, saveFirstBtn;
 	Widget loadAfterBtn, selInpBtn, winInpBtn, eitherInpBtn, noInpBtn;
 	Widget repInpBtn, sameOutBtn, dlogOutBtn, winOutBtn, dlogShell;
@@ -231,27 +231,27 @@ static Widget BGMenuCmdDialog = nullptr;
 static Widget MacroPasteReplayBtn = nullptr;
 static Widget BGMenuPasteReplayBtn = nullptr;
 
-static void editMacroOrBGMenu(WindowInfo *window, int dialogType);
+static void editMacroOrBGMenu(Document *window, int dialogType);
 static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nMenuItems, int sensitive);
 static void rebuildMenuOfAllWindows(int menuType);
-static void rebuildMenu(WindowInfo *window, int menuType);
+static void rebuildMenu(Document *window, int menuType);
 static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const XString &hierName);
 static char *copySubstring(const char *string, int length);
 static XString copySubstringEx(const char *string, int length);
 static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f, int index, XtCallbackProc cbRtn, XtPointer cbArg);
 static Widget createUserSubMenuEx(Widget parent, const XString &label, Widget *menuItem);
 static void deleteMenuItems(Widget menuPane);
-static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *menu);
-static void updateMenu(WindowInfo *window, int menuType);
+static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu);
+static void updateMenu(Document *window, int menuType);
 static void manageTearOffMenu(Widget menuPane);
 static void resetManageMode(UserMenuList *list);
 static void manageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu);
 static void manageMenuWidgets(UserMenuList *list);
 static void removeAccelFromMenuWidgets(UserMenuList *menuList);
-static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window);
-static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window);
-static void createMenuItems(WindowInfo *window, selectedUserMenu *menu);
+static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window);
+static void manageUserMenu(selectedUserMenu *menu, Document *window);
+static void createMenuItems(Document *window, selectedUserMenu *menu);
 static void okCB(Widget w, XtPointer clientData, XtPointer callData);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -311,7 +311,7 @@ static void freeUserSubMenuList(UserMenuList *list);
 /*
 ** Present a dialog for editing the user specified commands in the shell menu
 */
-void EditShellMenu(WindowInfo *window) {
+void EditShellMenu(Document *window) {
 	Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
 	XmString s1;
@@ -525,14 +525,14 @@ Select \"New\" to add a new command to the menu."),
 ** Present a dialogs for editing the user specified commands in the Macro
 ** and background menus
 */
-void EditMacroMenu(WindowInfo *window) {
+void EditMacroMenu(Document *window) {
 	editMacroOrBGMenu(window, MACRO_CMDS);
 }
-void EditBGMenu(WindowInfo *window) {
+void EditBGMenu(Document *window) {
 	editMacroOrBGMenu(window, BG_MENU_CMDS);
 }
 
-static void editMacroOrBGMenu(WindowInfo *window, int dialogType) {
+static void editMacroOrBGMenu(Document *window, int dialogType) {
 	Widget form, accLabel, pasteReplayBtn;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
 	char *title;
@@ -730,7 +730,7 @@ Select \"New\" to add a new command to the menu."),
 ** Update the Shell, Macro, and Window Background menus of window
 ** "window" from the currently loaded command descriptions.
 */
-void UpdateUserMenus(WindowInfo *window) {
+void UpdateUserMenus(Document *window) {
 	if (!window->IsTopDocument())
 		return;
 
@@ -768,7 +768,7 @@ void DimPasteReplayBtns(int sensitive) {
 ** Dim/undim user programmable menu items which depend on there being
 ** a selection in their associated window.
 */
-void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive) {
+void DimSelectionDepUserMenuItems(Document *window, int sensitive) {
 	if (!window->IsTopDocument())
 		return;
 
@@ -807,11 +807,11 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nM
 ** sensitive (even though they're programmable) along with real undo item
 ** in the Edit menu
 */
-void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive) {
+void SetBGMenuUndoSensitivity(Document *window, int sensitive) {
 	if (window->bgMenuUndoItem)
 		window->SetSensitive(window->bgMenuUndoItem, sensitive);
 }
-void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive) {
+void SetBGMenuRedoSensitivity(Document *window, int sensitive) {
 	if (window->bgMenuRedoItem)
 		window->SetSensitive(window->bgMenuRedoItem, sensitive);
 }
@@ -916,7 +916,7 @@ void UpdateUserMenuInfo(void) {
 ** Search through the shell menu and execute the first command with menu item
 ** name "itemName".  Returns True on successs and False on failure.
 */
-int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro) {
+int DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 	int i;
 
 	for (i = 0; i < NShellMenuItems; i++) {
@@ -935,7 +935,7 @@ int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro)
 ** with menu item name "itemName".  Returns True on successs and False on
 ** failure.
 */
-int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName) {
+int DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 	int i;
 
 	for (i = 0; i < NMacroMenuItems; i++) {
@@ -947,7 +947,7 @@ int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName) {
 	return False;
 }
 
-int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName) {
+int DoNamedBGMenuCmd(Document *window, const char *itemName) {
 	int i;
 
 	for (i = 0; i < NBGMenuItems; i++) {
@@ -963,7 +963,7 @@ int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName) {
 ** Cache user menus:
 ** Rebuild all of the Shell, Macro, Background menus of given editor window.
 */
-void RebuildAllMenus(WindowInfo *window) {
+void RebuildAllMenus(Document *window) {
 	rebuildMenu(window, SHELL_CMDS);
 	rebuildMenu(window, MACRO_CMDS);
 	rebuildMenu(window, BG_MENU_CMDS);
@@ -974,7 +974,7 @@ void RebuildAllMenus(WindowInfo *window) {
 ** Rebuild either Shell, Macro or Background menus of all editor windows.
 */
 static void rebuildMenuOfAllWindows(int menuType) {
-	WindowInfo *w;
+	Document *w;
 
 	for (w = WindowList; w != nullptr; w = w->next)
 		rebuildMenu(w, menuType);
@@ -987,7 +987,7 @@ static void rebuildMenuOfAllWindows(int menuType) {
 ** - delete all user defined menu widgets.
 ** - update user menu including (re)creation of menu widgets.
 */
-static void rebuildMenu(WindowInfo *window, int menuType) {
+static void rebuildMenu(Document *window, int menuType) {
 	selectedUserMenu menu;
 
 	/* Background menu is always rebuild (exists once per document).
@@ -1023,7 +1023,7 @@ static void rebuildMenu(WindowInfo *window, int menuType) {
 /*
 ** Fetch the appropriate menu info for given menu type
 */
-static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *menu) {
+static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu) {
 	if (menuType == SHELL_CMDS) {
 		menu->sumMenuPane = window->shellMenuPane;
 		menu->sumNbrOfListItems = NShellMenuItems;
@@ -1062,7 +1062,7 @@ static void selectUserMenu(WindowInfo *window, int menuType, selectedUserMenu *m
 ** - manage / unmanage user menu widgets according to "to be managed"
 **   indication of user menu info list items.
 */
-static void updateMenu(WindowInfo *window, int menuType) {
+static void updateMenu(Document *window, int menuType) {
 	selectedUserMenu menu;
 
 	/* Fetch the appropriate menu data */
@@ -1305,7 +1305,7 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 ** Cache user menus:
 ** Assign accelerators to all managed items of given user (sub-)menu list.
 */
-static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window) {
+static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 	int i;
 	UserMenuListElement *element;
 
@@ -1332,7 +1332,7 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, WindowInfo *window)
 ** Cache user menus:
 ** (Un)Manage all items of selected user menu.
 */
-static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window) {
+static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 	int n, i;
 	int *id;
 	Boolean currentLEisSubMenu;
@@ -1435,7 +1435,7 @@ static void manageUserMenu(selectedUserMenu *menu, WindowInfo *window) {
 ** Create either the variable Shell menu, Macro menu or Background menu
 ** items of "window" (driven by value of "menuType")
 */
-static void createMenuItems(WindowInfo *window, selectedUserMenu *menu) {
+static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	Widget btn, subPane, newSubPane;
 	int n;
 	menuItemRec *item;
@@ -1889,7 +1889,7 @@ static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	XtArgVal userData;
 	int index;
@@ -1909,7 +1909,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	XtArgVal userData;
 	int index;
@@ -1942,7 +1942,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	XtArgVal userData;
 	int index;

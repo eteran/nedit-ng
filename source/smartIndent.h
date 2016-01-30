@@ -31,17 +31,17 @@
 
 #include <X11/Intrinsic.h>
 
-Boolean InSmartIndentMacros(WindowInfo *window);
+Boolean InSmartIndentMacros(Document *window);
 int LMHasSmartIndentMacros(const char *languageMode);
 int LoadSmartIndentCommonStringEx(view::string_view string);
 int LoadSmartIndentStringEx(view::string_view string);
 int SmartIndentMacrosAvailable(char *languageMode);
 std::string WriteSmartIndentCommonStringEx(void);
 std::string WriteSmartIndentStringEx(void);
-void BeginSmartIndent(WindowInfo *window, int warn);
+void BeginSmartIndent(Document *window, int warn);
 void EditCommonSmartIndentMacro(void);
-void EditSmartIndentMacros(WindowInfo *window);
-void EndSmartIndent(WindowInfo *window);
+void EditSmartIndentMacros(Document *window);
+void EndSmartIndent(Document *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);

@@ -33,11 +33,11 @@
 enum inSrcs { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };
 enum outDests { TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG };
 
-void FilterSelection(WindowInfo *window, const std::string &command, int fromMacro);
-void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMacro);
-void ExecCursorLine(WindowInfo *window, int fromMacro);
-void ShellCmdToMacroString(WindowInfo *window, const std::string &command, const std::string &input);
-void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, int output, int outputReplaceInput, int saveFirst, int loadAfter, int fromMacro);
-void AbortShellCommand(WindowInfo *window);
+void FilterSelection(Document *window, const std::string &command, int fromMacro);
+void ExecShellCommand(Document *window, const std::string &command, int fromMacro);
+void ExecCursorLine(Document *window, int fromMacro);
+void ShellCmdToMacroString(Document *window, const std::string &command, const std::string &input);
+void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplaceInput, int saveFirst, int loadAfter, int fromMacro);
+void AbortShellCommand(Document *window);
 
 #endif

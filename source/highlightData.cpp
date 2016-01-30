@@ -35,7 +35,7 @@
 #include "preferences.h"
 #include "help.h"
 #include "window.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "regexConvert.h"
 #include "MotifHelper.h"
 #include "PatternSet.h"
@@ -501,7 +501,7 @@ static void convertPatternExpr(char **patternRE, const char *patSetName, const c
 ** This routine must only be called with a valid styleName (call
 ** NamedStyleExists to find out whether styleName is valid).
 */
-XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName) {
+XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName), fontNum;
 	XFontStruct *font;
 
@@ -1286,7 +1286,7 @@ static int hsDialogEmpty(void) {
 ** highlight style information in HighlightStyles
 */
 static int updateHSList(void) {
-	WindowInfo *window;
+	Document *window;
 
 	/* Get the current contents of the dialog fields */
 	if (!UpdateManagedList(HSDialog.managedListW, True))
@@ -1318,7 +1318,7 @@ static int updateHSList(void) {
 /*
 ** Present a dialog for editing highlight pattern information
 */
-void EditHighlightPatterns(WindowInfo *window) {
+void EditHighlightPatterns(Document *window) {
 
 	const int BORDER = 4;
 	const int LIST_RIGHT = 41;
@@ -2270,7 +2270,7 @@ static int dialogEmpty(void) {
 */
 static int updatePatternSet(void) {
 	PatternSet *patSet;
-	WindowInfo *window;
+	Document *window;
 	int psn, oldNum = -1;
 
 	/* Make sure the patterns are valid and compile */

@@ -32,7 +32,7 @@
 #include "menu.h"
 #include "text.h"
 #include "search.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "userCmds.h"
 #include "highlight.h"
@@ -190,7 +190,7 @@ struct fontDialog {
 	Widget boldErrW;
 	Widget boldItalicW;
 	Widget boldItalicErrW;
-	WindowInfo *window;
+	Document *window;
 	int forWindow;
 };
 
@@ -213,7 +213,7 @@ struct colorDialog {
 	Widget lineNoFgErrW;
 	Widget cursorFgW;
 	Widget cursorFgErrW;
-	WindowInfo *window;
+	Document *window;
 };
 
 /* Repository for simple preferences settings */
@@ -891,12 +891,12 @@ static Widget RowText, ColText;
 
 /* Module-global variables for Tabs dialog */
 static int DoneWithTabsDialog;
-static WindowInfo *TabsDialogForWindow;
+static Document *TabsDialogForWindow;
 static Widget TabDistText, EmTabText, EmTabToggle, UseTabsToggle, EmTabLabel;
 
 /* Module-global variables for Wrap Margin dialog */
 static int DoneWithWrapDialog;
-static WindowInfo *WrapDialogForWindow;
+static Document *WrapDialogForWindow;
 static Widget WrapText, WrapTextLabel, WrapWindowToggle;
 
 /*  Module-global variables for shell selection dialog  */
@@ -916,7 +916,7 @@ static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData);
 static void shellSelCancelCB(Widget widgget, XtPointer clientData, XtPointer callData);
-static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults);
+static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
 
 static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkFontStatus(fontDialog *fd, Widget fontTextFieldW);
@@ -963,7 +963,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg);
 static int lmDialogEmpty(void);
 static int loadLanguageModesString(const char *inString, int fileVer);
 static int loadLanguageModesStringEx(const std::string &string, int fileVer);
-static int matchLanguageMode(WindowInfo *window);
+static int matchLanguageMode(Document *window);
 static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt, const char *message);
 static int regexFind(view::string_view inString, const char *expr);
 static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
@@ -983,7 +983,7 @@ static void lmOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmSetDisplayedCB(void *item, void *cbArg);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void updateLanguageModeSubmenu(WindowInfo *window);
+static void updateLanguageModeSubmenu(Document *window);
 static void updateMacroCmdsTo5dot5(void);
 static void updateMacroCmdsTo5dot6(void);
 static void updatePatternsTo5dot1(void);
@@ -1236,7 +1236,7 @@ void ImportPrefFile(const char *filename, int convertOld) {
 }
 
 void SetPrefOpenInTab(int state) {
-	WindowInfo *w = WindowList;
+	Document *w = WindowList;
 	setIntPref(&PrefData.openInTab, state);
 	for (; w != nullptr; w = w->next)
 		w->UpdateNewOppositeMenu(state);
@@ -1562,7 +1562,7 @@ int GetPrefRepositionDialogs(void) {
 }
 
 void SetPrefAutoScroll(int state) {
-	WindowInfo *w = WindowList;
+	Document *w = WindowList;
 	int margin = state ? PrefData.autoScrollVPadding : 0;
 
 	setIntPref(&PrefData.autoScroll, state);
@@ -1723,7 +1723,7 @@ int GetPrefTypingHidesPointer(void) {
 }
 
 void SetPrefTitleFormat(const char *format) {
-	WindowInfo *window;
+	Document *window;
 
 	setStringPref(PrefData.titleFormat, format);
 
@@ -1814,7 +1814,7 @@ static void setStringPref(char *prefDataField, const char *newValue) {
 ** true, re-establish default settings for language-specific preferences
 ** regardless of whether they were previously set by the user.
 */
-void SetLanguageMode(WindowInfo *window, int mode, int forceNewDefaults) {
+void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 	Widget menu;
 	WidgetList items;
 	int n;
@@ -1858,7 +1858,7 @@ int FindLanguageMode(const char *languageName) {
 ** settings for language-specific preferences regardless of whether
 ** they were previously set by the user.
 */
-void DetermineLanguageMode(WindowInfo *window, int forceNewDefaults) {
+void DetermineLanguageMode(Document *window, int forceNewDefaults) {
 	SetLanguageMode(window, matchLanguageMode(window), forceNewDefaults);
 }
 
@@ -1881,7 +1881,7 @@ char *LanguageModeName(int mode) {
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is nullptr).
 */
-char *GetWindowDelimiters(const WindowInfo *window) {
+char *GetWindowDelimiters(const Document *window) {
 	if (window->languageMode == PLAIN_LANGUAGE_MODE)
 		return nullptr;
 	else
@@ -1971,7 +1971,7 @@ static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** defaults, or for a specific window (pass "forWindow" as nullptr to set default
 ** preference, or a window to set preferences for the specific window.
 */
-void TabsPrefDialog(Widget parent, WindowInfo *forWindow) {
+void TabsPrefDialog(Widget parent, Document *forWindow) {
 	Widget form, selBox;
 	Arg selBoxArgs[2];
 	XmString s1;
@@ -2055,7 +2055,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 
 	int emulate, useTabs, stat, tabDist, emTabDist;
-	WindowInfo *window = TabsDialogForWindow;
+	Document *window = TabsDialogForWindow;
 
 	/* get the values that the user entered and make sure they're ok */
 	emulate = XmToggleButtonGetState(EmTabToggle);
@@ -2141,7 +2141,7 @@ static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 /*
 ** Present the user a dialog for setting wrap margin.
 */
-void WrapMarginDialog(Widget parent, WindowInfo *forWindow) {
+void WrapMarginDialog(Widget parent, Document *forWindow) {
 	Widget form, selBox;
 	Arg selBoxArgs[2];
 	XmString s1;
@@ -2204,7 +2204,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 
 	int wrapAtWindow, margin, stat;
-	WindowInfo *window = WrapDialogForWindow;
+	Document *window = WrapDialogForWindow;
 
 	/* get the values that the user entered and make sure they're ok */
 	wrapAtWindow = XmToggleButtonGetState(WrapWindowToggle);
@@ -2258,7 +2258,7 @@ static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData) {
 /*
 **  Create and show a dialog for selecting the shell
 */
-void SelectShellDialog(Widget parent, WindowInfo *forWindow) {
+void SelectShellDialog(Widget parent, Document *forWindow) {
 
 	(void)forWindow;
 
@@ -2620,7 +2620,7 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg) {
 ** LanguageModes)
 */
 static int updateLMList(void) {
-	WindowInfo *window;
+	Document *window;
 	int oldLanguageMode;
 	char *oldModeName, *newDelimiters;
 	int i, j;
@@ -3008,7 +3008,7 @@ static int lmDialogEmpty(void) {
 /*
 ** Present a dialog for changing fonts (primary, and for highlighting).
 */
-void ChooseFonts(WindowInfo *window, int forWindow) {
+void ChooseFonts(Document *window, int forWindow) {
 #define MARGIN_SPACING 10
 #define BTN_TEXT_OFFSET 3
 	Widget form, primaryLbl, primaryBtn, italicLbl, italicBtn;
@@ -3461,7 +3461,7 @@ static void updateFonts(fontDialog *fd) {
 ** Change the language mode to the one indexed by "mode", reseting word
 ** delimiters, syntax highlighting and other mode specific parameters
 */
-static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults) {
+static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	char *delimiters;
 	int i, wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
 	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
@@ -3558,7 +3558,7 @@ static void reapplyLanguageMode(WindowInfo *window, int mode, int forceDefaults)
 ** the file in "window".  Returns a pointer to a string, which will
 ** remain valid until a change is made to the language modes list.
 */
-static int matchLanguageMode(WindowInfo *window) {
+static int matchLanguageMode(Document *window) {
 	char *ext;
 	int i, j, fileNameLen, extLen, beginPos, endPos, start;
 	const char *versionExtendedPath;
@@ -4238,7 +4238,7 @@ void SetLangModeMenu(Widget optMenu, const char *modeName) {
 /*
 ** Create a submenu for chosing language mode for the current window.
 */
-void CreateLanguageModeSubMenu(WindowInfo *window, const Widget parent, const char *name, const char *label, const char mnemonic) {
+void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic) {
 	XmString string = XmStringCreateSimpleEx((char *)label);
 
 	window->langModeCascade = XtVaCreateManagedWidget(name, xmCascadeButtonGadgetClass, parent, XmNlabelString, string, XmNmnemonic, mnemonic, XmNsubMenuId, nullptr, nullptr);
@@ -4251,7 +4251,7 @@ void CreateLanguageModeSubMenu(WindowInfo *window, const Widget parent, const ch
 ** Re-build the language mode sub-menu using the current data stored
 ** in the master list: LanguageModes.
 */
-static void updateLanguageModeSubmenu(WindowInfo *window) {
+static void updateLanguageModeSubmenu(Document *window) {
 	long i;
 	XmString s1;
 	Widget menu, btn;
@@ -4281,7 +4281,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)clientData;
 
-	WindowInfo *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = WidgetToWindow(MENU_WIDGET(w));
 	const char *params[1];
 	void *mode;
 
@@ -5017,7 +5017,7 @@ static void updateMacroCmdsTo5dot6(void) {
 }
 
 /* Decref the default calltips file(s) for this window */
-void UnloadLanguageModeTipsFile(WindowInfo *window) {
+void UnloadLanguageModeTipsFile(Document *window) {
 	int mode;
 
 	mode = window->languageMode;
@@ -5151,7 +5151,7 @@ static void showColorStatus(colorDialog *cd, Widget colorFieldW, Widget errorLab
 
 /* Update the colors in the window or in the preferences */
 static void updateColors(colorDialog *cd) {
-	WindowInfo *window;
+	Document *window;
 
 	char *textFg = XmTextGetString(cd->textFgW), *textBg = XmTextGetString(cd->textBgW), *selectFg = XmTextGetString(cd->selectFgW), *selectBg = XmTextGetString(cd->selectBgW), *hiliteFg = XmTextGetString(cd->hiliteFgW),
 	     *hiliteBg = XmTextGetString(cd->hiliteBgW), *lineNoFg = XmTextGetString(cd->lineNoFgW), *cursorFg = XmTextGetString(cd->cursorFgW);
@@ -5271,7 +5271,7 @@ static Widget addColorGroup(Widget parent, const char *name, char mnemonic, cons
 /*
  * Code for the dialog itself
  */
-void ChooseColors(WindowInfo *window) {
+void ChooseColors(Document *window) {
 	Widget form, tmpW, topW, infoLbl;
 	Widget okBtn, applyBtn, closeBtn;
 	colorDialog *cd;

@@ -38,7 +38,7 @@
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "TextBuffer.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "calltips.h"
 #include "highlight.h"
 #include "highlightData.h"
@@ -128,15 +128,15 @@ struct macroCmdInfo {
 
 /* Widgets and global data for Repeat dialog */
 struct repeatDialog {
-	WindowInfo *forWindow;
+	Document *forWindow;
 	char *lastCommand;
 	Widget shell, repeatText, lastCmdToggle;
 	Widget inSelToggle, toEndToggle;
 };
 
 static void cancelLearn(void);
-static void runMacro(WindowInfo *window, Program *prog);
-static void finishMacroCmdExecution(WindowInfo *window);
+static void runMacro(Document *window, Program *prog);
+static void finishMacroCmdExecution(Document *window);
 static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void repeatApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static int doRepeatDialogAction(repeatDialog *rd, XEvent *event);
@@ -148,108 +148,108 @@ static char *actionToString(Widget w, const char *actionName, XEvent *event, Str
 static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
-static int readCheckMacroString(Widget dialogParent, const char *string, WindowInfo *runWindow, const char *errIn, const char **errPos);
+static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
 static int escapeStringChars(char *fromString, char *toString);
 static int escapedStringLength(char *string);
-static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int minMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int maxMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int writeFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int appendFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int writeOrAppendFile(int append, WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int substringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int setCursorPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int beepMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int minMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int maxMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getCharacterMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int replaceSelectionMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getSelectionMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int validNumberMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int readFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int writeFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int appendFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int writeOrAppendFile(int append, Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int substringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int clipboardToStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int searchMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int beepMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectRectangleMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 
-static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 
-static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 /* T Balinski */
-static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 /* T Balinski End */
 
-static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int splitMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int stringCompareMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 /* DISASBLED for 5.4
-static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
+static int setBacklightStringMS(Document *window, DataValue *argList,
     int nArgs, DataValue *result, const char **errMsg);
 */
-static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int columnMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int calltipIDMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int lengthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectionStartMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectionEndMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectionLeftMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectionRightMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int statisticsLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int incSearchLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int showLineNumbersMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int autoIndentMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int wrapTextMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int highlightSyntaxMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int makeBackupCopyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int incBackupMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int showMatchingMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int matchSyntaxBasedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int overTypeModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int readOnlyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int lockedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fileFormatMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fontNameItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fontNameBoldMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fontNameBoldItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int subscriptSepMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int wrapMarginMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int activePaneMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int nPanesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int emptyArrayMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int serverNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int tabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int emTabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int useTabsMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int modifiedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg);
 static int wrongNArgsErr(const char **errMsg);
 static int tooFewArgsErr(const char **errMsg);
@@ -257,29 +257,29 @@ static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, const char **errMsg);
 static bool readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg);
 static bool readStringArgEx(DataValue dv, std::string *result, const char **errMsg);
-static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int versionMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int versionMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetCreateMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetDestroyMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetSubtractMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetInfoMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetSetColorMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetSetNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static int fillPatternResult(DataValue *result, const char **errMsg, WindowInfo *window, char *patternName, Boolean preallocatedPatternName, Boolean includeName, char *styleName, int bufferPos);
-static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fillPatternResult(DataValue *result, const char **errMsg, Document *window, char *patternName, Boolean preallocatedPatternName, Boolean includeName, char *styleName, int bufferPos);
+static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *window, const char *styleName, Boolean preallocatedStyleName, Boolean includeName, int patCode, int bufferPos);
-static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int fillStyleResult(DataValue *result, const char **errMsg, Document *window, const char *styleName, Boolean preallocatedStyleName, Boolean includeName, int patCode, int bufferPos);
+static int getStyleByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int getStyleAtPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 /* Built-in subroutines and variables for the macro language */
 static BuiltInSubr MacroSubrs[] = {lengthMS,            getRangeMS,        tPrintMS,            dialogMS,           stringDialogMS,    replaceRangeMS,     replaceSelectionMS, setCursorPosMS,        getCharacterMS,
@@ -350,7 +350,7 @@ static TextBuffer *MacroRecordBuf = nullptr;
 static XtActionHookId MacroRecordActionHook = nullptr;
 
 /* Window where macro recording is taking place */
-static WindowInfo *MacroRecordWindow = nullptr;
+static Document *MacroRecordWindow = nullptr;
 
 /* Arrays for translating escape characters in escapeStringChars */
 static char ReplaceChars[] = "\\\"ntbrfav";
@@ -382,8 +382,8 @@ void RegisterMacroSubroutines(void) {
 }
 
 #define MAX_LEARN_MSG_LEN ((2 * MAX_ACCEL_LEN) + 60)
-void BeginLearn(WindowInfo *window) {
-	WindowInfo *win;
+void BeginLearn(Document *window) {
+	Document *win;
 	XmString s;
 	XmString xmFinish;
 	XmString xmCancel;
@@ -451,7 +451,7 @@ void AddLastCommandActionHook(XtAppContext context) {
 }
 
 void FinishLearn(void) {
-	WindowInfo *win;
+	Document *win;
 
 	/* If we're not in learn mode, return */
 	if(!MacroRecordActionHook)
@@ -493,7 +493,7 @@ void FinishLearn(void) {
 /*
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
-void CancelMacroOrLearn(WindowInfo *window) {
+void CancelMacroOrLearn(Document *window) {
 	if(MacroRecordActionHook)
 		cancelLearn();
 	else if (window->macroCmdData)
@@ -501,7 +501,7 @@ void CancelMacroOrLearn(WindowInfo *window) {
 }
 
 static void cancelLearn(void) {
-	WindowInfo *win;
+	Document *win;
 
 	/* If we're not in learn mode, return */
 	if(!MacroRecordActionHook)
@@ -532,7 +532,7 @@ static void cancelLearn(void) {
 /*
 ** Execute the learn/replay sequence stored in "window"
 */
-void Replay(WindowInfo *window) {
+void Replay(Document *window) {
 	Program *prog;
 	const char *errMsg;
 	const char *stoppedAt;
@@ -556,7 +556,7 @@ void Replay(WindowInfo *window) {
 /*
 **  Read the initial NEdit macro file if one exists.
 */
-void ReadMacroInitFile(WindowInfo *window) {
+void ReadMacroInitFile(Document *window) {
 
 	try {
 		const std::string autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
@@ -574,7 +574,7 @@ void ReadMacroInitFile(WindowInfo *window) {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-int ReadMacroFileEx(WindowInfo *window, const std::string &fileName, int warnNotExist) {
+int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
@@ -595,7 +595,7 @@ int ReadMacroFileEx(WindowInfo *window, const std::string &fileName, int warnNot
 ** Parse and execute a macro string including macro definitions.  Report
 ** parsing errors in a dialog posted over window->shell.
 */
-int ReadMacroString(WindowInfo *window, const char *string, const char *errIn) {
+int ReadMacroString(Document *window, const char *string, const char *errIn) {
 	return readCheckMacroString(window->shell, string, window, errIn, nullptr);
 }
 
@@ -616,7 +616,7 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 ** runWindow is passed as nullptr, does parse only.  If errPos is non-null,
 ** returns a pointer to the error location in the string.
 */
-static int readCheckMacroString(Widget dialogParent, const char *string, WindowInfo *runWindow, const char *errIn, const char **errPos) {
+static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos) {
 	const char *stoppedAt;
 	const char *inPtr;
 	char *namePtr;
@@ -739,7 +739,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, WindowI
 ** a macro is running, and handling preemption, resumption, and cancellation.
 ** frees prog when macro execution is complete;
 */
-static void runMacro(WindowInfo *window, Program *prog) {
+static void runMacro(Document *window, Program *prog) {
 	DataValue result;
 	const char *errMsg;
 	int stat;
@@ -803,7 +803,7 @@ static void runMacro(WindowInfo *window, Program *prog) {
 ** which the macro is executing (the window to which macroCmdData is attached),
 ** and not the window to which operations are focused.
 */
-void ResumeMacroExecution(WindowInfo *window) {
+void ResumeMacroExecution(Document *window) {
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 
 	if(cmdData)
@@ -813,7 +813,7 @@ void ResumeMacroExecution(WindowInfo *window) {
 /*
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
-void AbortMacroCommand(WindowInfo *window) {
+void AbortMacroCommand(Document *window) {
 	if (!window->macroCmdData)
 		return;
 
@@ -841,9 +841,9 @@ void AbortMacroCommand(WindowInfo *window) {
 ** Instead, empty it and make it Untitled, and let the macro completion
 ** process close the window when the macro is finished executing.
 */
-int MacroWindowCloseActions(WindowInfo *window) {
+int MacroWindowCloseActions(Document *window) {
 	macroCmdInfo *mcd, *cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
-	WindowInfo *w;
+	Document *w;
 
 	if (MacroRecordActionHook != nullptr && MacroRecordWindow == window) {
 		FinishLearn();
@@ -884,7 +884,7 @@ int MacroWindowCloseActions(WindowInfo *window) {
 ** Clean up after the execution of a macro command: free memory, and restore
 ** the user interface state.
 */
-static void finishMacroCmdExecution(WindowInfo *window) {
+static void finishMacroCmdExecution(Document *window) {
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	int closeOnCompletion = cmdData->closeOnCompletion;
 	XmString s;
@@ -944,7 +944,7 @@ static void finishMacroCmdExecution(WindowInfo *window) {
 ** defers GC to the completion of the last macro out.
 */
 void SafeGC(void) {
-	WindowInfo *win;
+	Document *win;
 
 	for (win = WindowList; win != nullptr; win = win->next)
 		if (win->macroCmdData != nullptr || InSmartIndentMacros(win))
@@ -957,7 +957,7 @@ void SafeGC(void) {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacro(WindowInfo *window, view::string_view macro, const char *errInName) {
+void DoMacro(Document *window, view::string_view macro, const char *errInName) {
 
 	const char *errMsg;
 	const char *stoppedAt;
@@ -993,7 +993,7 @@ std::string GetReplayMacro(void) {
 /*
 ** Present the user a dialog for "Repeat" command
 */
-void RepeatDialog(WindowInfo *window) {
+void RepeatDialog(Document *window) {
 	Widget form, selBox, radioBox, timesForm;
 	Arg selBoxArgs[1];
 	char *lastCmdLabel, *parenChar;
@@ -1154,7 +1154,7 @@ static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData) 
 ** Note that as with most macro routines, this returns BEFORE the macro is
 ** finished executing
 */
-void RepeatMacro(WindowInfo *window, const char *command, int how) {
+void RepeatMacro(Document *window, const char *command, int how) {
 	Program *prog;
 	const char *errMsg;
 	const char *stoppedAt;
@@ -1201,7 +1201,7 @@ selEnd += $text_length - startLength\n}\n";
 ** learn.
 */
 static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
-	WindowInfo *window;
+	Document *window;
 	int i;
 	char *actionString;
 
@@ -1217,7 +1217,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 		if (i < window->nPanes)
 			break;
 	}
-	if (window == nullptr || window != static_cast<WindowInfo *>(clientData))
+	if (window == nullptr || window != static_cast<Document *>(clientData))
 		return;
 
 	/* beep on un-recordable operations which require a mouse position, to
@@ -1241,7 +1241,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 
 	(void)clientData;
-	WindowInfo *window;
+	Document *window;
 	int i;
 	char *actionString;
 
@@ -1361,7 +1361,7 @@ static int isIgnoredAction(const char *action) {
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	XmString xmCancel;
 	std::string cCancel;
@@ -1404,7 +1404,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** than having users run a bunch of them at once together.
 */
 static Boolean continueWorkProc(XtPointer clientData) {
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	const char *errMsg;
 	int stat;
@@ -1482,7 +1482,7 @@ static int escapedStringLength(char *string) {
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -1501,7 +1501,7 @@ static int lengthMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 /*
 ** Built-in macro subroutines for min and max
 */
-static int minMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int minMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
 	int minVal, value, i;
@@ -1519,7 +1519,7 @@ static int minMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *r
 	result->val.n = minVal;
 	return True;
 }
-static int maxMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int maxMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
 	int maxVal, value, i;
@@ -1538,15 +1538,15 @@ static int maxMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *r
 	return True;
 }
 
-static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
-	WindowInfo *w;
+	Document *w;
 	char fullname[MAXPATHLEN];
 	char normalizedString[MAXPATHLEN];
 
 	/* Read the argument representing the window to focus to, and translate
-	   it into a pointer to a real WindowInfo */
+	   it into a pointer to a real Document */
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 
@@ -1610,7 +1610,7 @@ static int focusWindowMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 ** Built-in macro subroutine for getting text from the current window's text
 ** buffer
 */
-static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int from, to;
 	TextBuffer *buf = window->buffer;
 
@@ -1661,7 +1661,7 @@ static int getRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 ** Built-in macro subroutine for getting a single character at the position
 ** given, from the current window
 */
-static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getCharacterMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int pos;
 	TextBuffer *buf = window->buffer;
 
@@ -1690,7 +1690,7 @@ static int getCharacterMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** Built-in macro subroutine for replacing text in the current window's text
 ** buffer
 */
-static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int from, to;
 	TextBuffer *buf = window->buffer;
 	
@@ -1753,7 +1753,7 @@ static int replaceRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** Built-in macro subroutine for replacing the primary-selection selected
 ** text in the current window's text buffer
 */
-static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int replaceSelectionMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	std::string string;
 
 	/* Validate argument and convert to string */
@@ -1792,7 +1792,7 @@ static int replaceSelectionMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** the primary selection in the current window's text buffer, or in any
 ** part of screen if "any" argument is given
 */
-static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getSelectionMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	std::string selText;
 
 	/* Read argument list to check for "any" keyword, and get the appropriate
@@ -1828,7 +1828,7 @@ static int getSelectionMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** Built-in macro subroutine for determining if implicit conversion of
 ** a string to number will succeed or fail
 */
-static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int validNumberMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
 	char *string;
@@ -1850,7 +1850,7 @@ static int validNumberMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 /*
 ** Built-in macro subroutine for replacing a substring within another string
 */
-static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 	(void)nArgs;
@@ -1902,7 +1902,7 @@ static int replaceSubstringMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** Built-in macro subroutine for getting a substring of a string.
 ** Called as substring(string, from [, to])
 */
-static int substringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int substringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -1942,7 +1942,7 @@ static int substringMS(WindowInfo *window, DataValue *argList, int nArgs, DataVa
 	return True;
 }
 
-static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 	int i, length;
@@ -1964,7 +1964,7 @@ static int toupperMS(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	return True;
 }
 
-static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 	int i, length;
@@ -1986,7 +1986,7 @@ static int tolowerMS(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	return True;
 }
 
-static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	long itemID = 0;
 	XmString s;
 	int stat;
@@ -2014,7 +2014,7 @@ static int stringToClipboardMS(WindowInfo *window, DataValue *argList, int nArgs
 	return True;
 }
 
-static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int clipboardToStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)argList;
 
@@ -2063,7 +2063,7 @@ static int clipboardToStringMS(WindowInfo *window, DataValue *argList, int nArgs
 ** file as a string in the subroutine return value.  On failure, returns
 ** the empty string "" and an 0 $readStatus.
 */
-static int readFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int readFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
@@ -2130,15 +2130,15 @@ errorNoClose:
 ** to a file named in parameter $2. Returns 1 on successful write, or 0 if
 ** unsuccessful.
 */
-static int writeFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int writeFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	return writeOrAppendFile(False, window, argList, nArgs, result, errMsg);
 }
 
-static int appendFileMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int appendFileMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	return writeOrAppendFile(True, window, argList, nArgs, result, errMsg);
 }
 
-static int writeOrAppendFile(int append, WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int writeOrAppendFile(int append, Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -2190,7 +2190,7 @@ static int writeOrAppendFile(int append, WindowInfo *window, DataValue *argList,
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int searchMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	DataValue newArgList[9];
 
 	/* Use the search string routine, by adding the buffer contents as
@@ -2221,7 +2221,7 @@ static int searchMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int beginPos, wrap, found = False, foundStart, foundEnd, type;
 	int skipSearch = False, len;
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
@@ -2288,7 +2288,7 @@ static int searchStringMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** were performed and "copy" was specified, returns a copy of the original
 ** string.  Otherwise returns an empty string ("").
 */
-static int replaceInStringMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[3][TYPE_INT_STR_SIZE(int)];
 	char *string;
 	char *searchStr;
@@ -2379,7 +2379,7 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
 	return True;
 }
 
-static int setCursorPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int pos;
 
 	/* Get argument and convert to int */
@@ -2394,7 +2394,7 @@ static int setCursorPosMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int selectMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int start, end, startTmp;
 
 	/* Get arguments and convert to int */
@@ -2426,7 +2426,7 @@ static int selectMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectRectangleMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int start, end, left, right;
 
 	/* Get arguments and convert to int */
@@ -2450,7 +2450,7 @@ static int selectRectangleMS(WindowInfo *window, DataValue *argList, int nArgs, 
 /*
 ** Macro subroutine to ring the bell
 */
-static int beepMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int beepMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)argList;
 
@@ -2461,7 +2461,7 @@ static int beepMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *
 	return True;
 }
 
-static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -2484,7 +2484,7 @@ static int tPrintMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 /*
 ** Built-in macro subroutine for getting the value of an environment variable
 */
-static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -2509,7 +2509,7 @@ static int getenvMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *cmdString;
 	char *inputString;
@@ -2541,7 +2541,7 @@ static int shellCmdMS(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void ReturnShellCommandOutput(WindowInfo *window, const std::string &outText, int status) {
+void ReturnShellCommandOutput(Document *window, const std::string &outText, int status) {
 	DataValue retVal;
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 
@@ -2554,7 +2554,7 @@ void ReturnShellCommandOutput(WindowInfo *window, const std::string &outText, in
 	ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
 }
 
-static int dialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	macroCmdInfo *cmdData;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char btnStorage[TYPE_INT_STR_SIZE(int)];
@@ -2659,7 +2659,7 @@ static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	XtPointer userData;
 	DataValue retVal;
@@ -2689,7 +2689,7 @@ static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	DataValue retVal;
 
@@ -2706,7 +2706,7 @@ static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	ResumeMacroExecution(window);
 }
 
-static int stringDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	macroCmdInfo *cmdData;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char btnStorage[TYPE_INT_STR_SIZE(int)];
@@ -2811,7 +2811,7 @@ static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData
 
 	(void)callData;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	XtPointer userData;
 	DataValue retVal;
@@ -2854,7 +2854,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)w;
 	(void)callData;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	DataValue retVal;
 
@@ -2904,7 +2904,7 @@ static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callDa
 ** Does this need to go on IgnoredActions?  I don't think so, since
 ** showing a calltip may be part of the action you want to learn.
 */
-static int calltipMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *tipText;
 	char *txtArg;
@@ -2997,7 +2997,7 @@ bad_arg:
 /*
 ** A subroutine to kill the current calltip
 */
-static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int calltipID = 0;
 
 	if (nArgs > 1) {
@@ -3018,7 +3018,7 @@ static int killCalltipMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-static int calltipIDMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3050,7 +3050,7 @@ static int calltipIDMV(WindowInfo *window, DataValue *argList, int nArgs, DataVa
 **
 ** Note that defaultName doesn't work on all *tifs.  :-(
 */
-static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[5][TYPE_INT_STR_SIZE(int)];
 	char filename[MAXPATHLEN + 1];
 	char *title = (String) "Choose Filename";
@@ -3140,7 +3140,7 @@ static int filenameDialogMS(WindowInfo *window, DataValue *argList, int nArgs, D
 }
 
 /* T Balinski */
-static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	macroCmdInfo *cmdData;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char textStorage[TYPE_INT_STR_SIZE(int)];
@@ -3358,7 +3358,7 @@ static int listDialogMS(WindowInfo *window, DataValue *argList, int nArgs, DataV
 static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	XtPointer userData;
 	DataValue retVal;
@@ -3428,7 +3428,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)callData;
 	(void)w;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData);
 	DataValue retVal;
 	char **text_lines;
@@ -3465,7 +3465,7 @@ static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData
 }
 /* T Balinski End */
 
-static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int stringCompareMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 
@@ -3516,7 +3516,7 @@ static int stringCompareMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 ** array sub-scripts
 */
 
-static int splitMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[3][TYPE_INT_STR_SIZE(int)];
 	char *sourceStr, *splitStr, *typeSplitStr;
 	int searchType, beginPos, foundStart, foundEnd, strLength, lastEnd;
@@ -3661,7 +3661,7 @@ static int splitMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue 
 ** will be cleared, turning off backlighting.
 */
 /* DISABLED for 5.4
-static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
+static int setBacklightStringMS(Document *window, DataValue *argList,
       int nArgs, DataValue *result, const char **errMsg)
 {
     char *backlightString;
@@ -3688,7 +3688,7 @@ static int setBacklightStringMS(WindowInfo *window, DataValue *argList,
     return True;
 } */
 
-static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3699,7 +3699,7 @@ static int cursorMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int lineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3715,7 +3715,7 @@ static int lineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *
 	return True;
 }
 
-static int columnMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3730,7 +3730,7 @@ static int columnMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3741,7 +3741,7 @@ static int fileNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3752,7 +3752,7 @@ static int filePathMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int lengthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3763,7 +3763,7 @@ static int lengthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectionStartMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3774,7 +3774,7 @@ static int selectionStartMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	return True;
 }
 
-static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectionEndMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3785,7 +3785,7 @@ static int selectionEndMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectionLeftMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3798,7 +3798,7 @@ static int selectionLeftMV(WindowInfo *window, DataValue *argList, int nArgs, Da
 	return True;
 }
 
-static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int selectionRightMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3811,7 +3811,7 @@ static int selectionRightMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	return True;
 }
 
-static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int wrapMarginMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3825,7 +3825,7 @@ static int wrapMarginMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int statisticsLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3836,7 +3836,7 @@ static int statisticsLineMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	return True;
 }
 
-static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int incSearchLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3847,7 +3847,7 @@ static int incSearchLineMV(WindowInfo *window, DataValue *argList, int nArgs, Da
 	return True;
 }
 
-static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int showLineNumbersMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3858,7 +3858,7 @@ static int showLineNumbersMV(WindowInfo *window, DataValue *argList, int nArgs, 
 	return True;
 }
 
-static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int autoIndentMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3887,7 +3887,7 @@ static int autoIndentMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int wrapTextMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3916,7 +3916,7 @@ static int wrapTextMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int highlightSyntaxMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3927,7 +3927,7 @@ static int highlightSyntaxMV(WindowInfo *window, DataValue *argList, int nArgs, 
 	return True;
 }
 
-static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int makeBackupCopyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3938,7 +3938,7 @@ static int makeBackupCopyMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	return True;
 }
 
-static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int incBackupMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3949,7 +3949,7 @@ static int incBackupMV(WindowInfo *window, DataValue *argList, int nArgs, DataVa
 	return True;
 }
 
-static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int showMatchingMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3978,7 +3978,7 @@ static int showMatchingMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int matchSyntaxBasedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -3989,7 +3989,7 @@ static int matchSyntaxBasedMV(WindowInfo *window, DataValue *argList, int nArgs,
 	return True;
 }
 
-static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int overTypeModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4000,7 +4000,7 @@ static int overTypeModeMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int readOnlyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4011,7 +4011,7 @@ static int readOnlyMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int lockedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4022,7 +4022,7 @@ static int lockedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fileFormatMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4050,7 +4050,7 @@ static int fileFormatMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4060,7 +4060,7 @@ static int fontNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fontNameItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4070,7 +4070,7 @@ static int fontNameItalicMV(WindowInfo *window, DataValue *argList, int nArgs, D
 	return True;
 }
 
-static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fontNameBoldMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4080,7 +4080,7 @@ static int fontNameBoldMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int fontNameBoldItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4090,7 +4090,7 @@ static int fontNameBoldItalicMV(WindowInfo *window, DataValue *argList, int nArg
 	return True;
 }
 
-static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int subscriptSepMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 	(void)errMsg;
 	(void)nArgs;
@@ -4102,7 +4102,7 @@ static int subscriptSepMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4112,7 +4112,7 @@ static int minFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4122,7 +4122,7 @@ static int maxFontWidthMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4132,7 +4132,7 @@ static int topLineMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	return True;
 }
 
-static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -4142,7 +4142,7 @@ static int numDisplayLinesMV(WindowInfo *window, DataValue *argList, int nArgs, 
 	return True;
 }
 
-static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4153,7 +4153,7 @@ static int displayWidthMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 	return True;
 }
 
-static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int activePaneMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4164,7 +4164,7 @@ static int activePaneMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int nPanesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4175,7 +4175,7 @@ static int nPanesMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue
 	return True;
 }
 
-static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int emptyArrayMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 	(void)nArgs;
@@ -4187,7 +4187,7 @@ static int emptyArrayMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int serverNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)window;
 	(void)nArgs;
@@ -4199,7 +4199,7 @@ static int serverNameMV(WindowInfo *window, DataValue *argList, int nArgs, DataV
 	return True;
 }
 
-static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int tabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4210,7 +4210,7 @@ static int tabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	return True;
 }
 
-static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int emTabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4224,7 +4224,7 @@ static int emTabDistMV(WindowInfo *window, DataValue *argList, int nArgs, DataVa
 	return True;
 }
 
-static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int useTabsMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)nArgs;
 	(void)argList;
 	(void)errMsg;
@@ -4234,7 +4234,7 @@ static int useTabsMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 	return True;
 }
 
-static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int modifiedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4245,7 +4245,7 @@ static int modifiedMV(WindowInfo *window, DataValue *argList, int nArgs, DataVal
 	return True;
 }
 
-static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4265,7 +4265,7 @@ static int languageModeMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 /*
 ** Range set macro variables and functions
 */
-static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)nArgs;
 	(void)argList;
@@ -4313,7 +4313,7 @@ static int rangesetListMV(WindowInfo *window, DataValue *argList, int nArgs, Dat
 **  different point revisions. This is done because the macro interface
 **  does not change for the same version.
 */
-static int versionMV(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int versionMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
@@ -4335,7 +4335,7 @@ static int versionMV(WindowInfo *window, DataValue *argList, int nArgs, DataValu
 ** If called with no arguments, returns a single rangeset label (not an array),
 ** or an empty string if there are no rangesets available.
 */
-static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetCreateMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int label;
 	int i, nRangesetsRequired;
 	DataValue element;
@@ -4387,7 +4387,7 @@ static int rangesetCreateMS(WindowInfo *window, DataValue *argList, int nArgs, D
 /*
 ** Built-in macro subroutine for forgetting a range set.
 */
-static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetDestroyMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	DataValue *array;
 	DataValue element;
@@ -4445,7 +4445,7 @@ static int rangesetDestroyMS(WindowInfo *window, DataValue *argList, int nArgs, 
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
-static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	Rangeset *rangeset;
 	int label;
@@ -4508,7 +4508,7 @@ static int rangesetGetByNameMS(WindowInfo *window, DataValue *argList, int nArgs
 ** if any to specify range to add - must not be rectangular). Returns the
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
-static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
@@ -4609,7 +4609,7 @@ static int rangesetAddMS(WindowInfo *window, DataValue *argList, int nArgs, Data
 ** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an
 ** undefined destination range, and that it returns no value.
 */
-static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetSubtractMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *targetRangeset, *sourceRangeset;
@@ -4691,7 +4691,7 @@ static int rangesetSubtractMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** label (one alphabetic character). Returns nothing. Fails if range set
 ** undefined.
 */
-static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	Rangeset *rangeset;
@@ -4727,7 +4727,7 @@ static int rangesetInvertMS(WindowInfo *window, DataValue *argList, int nArgs, D
 ** argument of a rangeset label.  Returns an array with the following keys:
 **    defined, count, color, mode.
 */
-static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetInfoMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	RangesetTable *rangesetTable = window->buffer->rangesetTable_;
 	Rangeset *rangeset = nullptr;
 	int count, defined;
@@ -4792,7 +4792,7 @@ static int rangesetInfoMS(WindowInfo *window, DataValue *argList, int nArgs, Dat
 ** ranges, otherwise select the individual range specified.  Returns
 ** an array with the keys "start" and "end" and values
 */
-static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
@@ -4854,7 +4854,7 @@ static int rangesetRangeMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 ** false (zero) if not in a range, range index (1-based) if in a range;
 ** fails if parameters were bad.
 */
-static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
@@ -4904,7 +4904,7 @@ static int rangesetIncludesPosMS(WindowInfo *window, DataValue *argList, int nAr
 ** found/applied. If no color is applied, any current color is removed. Returns
 ** true if the rangeset is valid.
 */
-static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetSetColorMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -4947,7 +4947,7 @@ static int rangesetSetColorMS(WindowInfo *window, DataValue *argList, int nArgs,
 ** Set the name of a range set's ranges. Returns
 ** true if the rangeset is valid.
 */
-static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetSetNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -4988,7 +4988,7 @@ static int rangesetSetNameMS(WindowInfo *window, DataValue *argList, int nArgs, 
 ** Change a range's modification response. Returns true if the rangeset is
 ** valid and the response type name is valid.
 */
-static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	TextBuffer *buffer = window->buffer;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5057,7 +5057,7 @@ static int rangesetSetModeMS(WindowInfo *window, DataValue *argList, int nArgs, 
 **      ["style"]       Name of style
 **
 */
-static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *window, const char *styleName, Boolean preallocatedStyleName, Boolean includeName, int patCode, int bufferPos) {
+static int fillStyleResult(DataValue *result, const char **errMsg, Document *window, const char *styleName, Boolean preallocatedStyleName, Boolean includeName, int patCode, int bufferPos) {
 	DataValue DV;
 	char colorValue[20];
 	int r, g, b;
@@ -5156,7 +5156,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, WindowInfo *w
 **      ["italic"]      '1' if style is italic, '0' otherwise
 **
 */
-static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getStyleByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *styleName;
 
@@ -5193,7 +5193,7 @@ static int getStyleByNameMS(WindowInfo *window, DataValue *argList, int nArgs, D
 **      ["extent"]      Forward distance from position over which style applies
 **
 */
-static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getStyleAtPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int patCode;
 	int bufferPos;
 	TextBuffer *buf = window->buffer;
@@ -5238,7 +5238,7 @@ static int getStyleAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, Da
 **      ["pattern"]     Name of pattern
 **
 */
-static int fillPatternResult(DataValue *result, const char **errMsg, WindowInfo *window, char *patternName, Boolean preallocatedPatternName, Boolean includeName, char *styleName, int bufferPos) {
+static int fillPatternResult(DataValue *result, const char **errMsg, Document *window, char *patternName, Boolean preallocatedPatternName, Boolean includeName, char *styleName, int bufferPos) {
 	DataValue DV;
 
 	/* initialize array */
@@ -5291,7 +5291,7 @@ static int fillPatternResult(DataValue *result, const char **errMsg, WindowInfo 
 ** The returned array looks like this:
 **      ["style"]       Name of style
 */
-static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *patternName = nullptr;
 	HighlightPattern *pattern;
@@ -5326,7 +5326,7 @@ static int getPatternByNameMS(WindowInfo *window, DataValue *argList, int nArgs,
 **      ["style"]       Name of style
 **      ["extent"]      Distance from position over which this pattern applies
 */
-static int getPatternAtPosMS(WindowInfo *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int bufferPos = -1;
 	TextBuffer *buffer = window->buffer;
 	int patCode = 0;

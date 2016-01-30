@@ -30,7 +30,7 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "preferences.h"
 #include "file.h"
@@ -101,11 +101,11 @@ struct shellCmdInfo {
 	char fromMacro;
 };
 
-static void issueCommand(WindowInfo *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
+static void issueCommand(Document *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
-static void finishCmdExecution(WindowInfo *window, int terminatedOnError);
+static void finishCmdExecution(Document *window, int terminatedOnError);
 static pid_t forkCommand(Widget parent, const std::string &command, const char *cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD);
 static std::string coalesceOutputEx(std::list<bufElem *> &bufList);
 static void freeBufListEx(std::list<bufElem *> &bufList);
@@ -125,7 +125,7 @@ static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr
 ** is removed, and replaced by the output from the command execution.  Failed
 ** command status and output to stderr are presented in dialog form.
 */
-void FilterSelection(WindowInfo *window, const std::string &command, int fromMacro) {
+void FilterSelection(Document *window, const std::string &command, int fromMacro) {
 
 	/* Can't do two shell commands at once in the same window */
 	if (window->shellCmdData) {
@@ -154,7 +154,7 @@ void FilterSelection(WindowInfo *window, const std::string &command, int fromMac
 ** insert position or in the current selection if the window has a
 ** selection.
 */
-void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMacro) {
+void ExecShellCommand(Document *window, const std::string &command, int fromMacro) {
 	int left, right, flags = 0;
 	char *subsCommand, fullName[MAXPATHLEN];
 	int pos, line, column;
@@ -198,7 +198,7 @@ void ExecShellCommand(WindowInfo *window, const std::string &command, int fromMa
 ** Execute shell command "command", on input string "input", depositing the
 ** in a macro string (via a call back to ReturnShellCommandOutput).
 */
-void ShellCmdToMacroString(WindowInfo *window, const std::string &command, const std::string &input) {
+void ShellCmdToMacroString(Document *window, const std::string &command, const std::string &input) {
 
 	/* fork the command and begin processing input/output */
 	issueCommand(window, command, input, input.size(), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
@@ -208,7 +208,7 @@ void ShellCmdToMacroString(WindowInfo *window, const std::string &command, const
 ** Execute the line of text where the the insertion cursor is positioned
 ** as a shell command.
 */
-void ExecCursorLine(WindowInfo *window, int fromMacro) {
+void ExecCursorLine(Document *window, int fromMacro) {
 	int left, right, insertPos;
 	char *subsCommand, fullName[MAXPATHLEN];
 	int pos, line, column;
@@ -261,13 +261,13 @@ void ExecCursorLine(WindowInfo *window, int fromMacro) {
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
+void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
 	char *subsCommand, fullName[MAXPATHLEN];
 	int left = 0, right = 0, textLen;
 	int pos, line, column;
 	char lineNumber[11];
-	WindowInfo *inWindow = window;
+	Document *inWindow = window;
 	Widget outWidget;
 
 	/* Can't do two shell commands at once in the same window */
@@ -383,7 +383,7 @@ void DoShellMenuCmd(WindowInfo *window, const std::string &command, int input, i
 /*
 ** Cancel the shell command in progress
 */
-void AbortShellCommand(WindowInfo *window) {
+void AbortShellCommand(Document *window) {
 	if(auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData)) {
 		kill(-cmdData->childPid, SIGTERM);
 		finishCmdExecution(window, True);
@@ -413,7 +413,7 @@ void AbortShellCommand(WindowInfo *window) {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-static void issueCommand(WindowInfo *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
+static void issueCommand(Document *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
 	int stdinFD, stdoutFD, stderrFD = 0;
 	XtAppContext context = XtWidgetToApplicationContext(window->shell);
 	pid_t childPid;
@@ -516,7 +516,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nRead;
 
@@ -560,7 +560,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nRead;
 
@@ -603,7 +603,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)id;
 	(void)source;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	int nWritten;
 
@@ -641,7 +641,7 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	XmString xmCancel;	
 	char message[MAX_TIMEOUT_MSG_LEN];
@@ -691,7 +691,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	auto window  = static_cast<WindowInfo *>(clientData);
+	auto window  = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 
@@ -721,7 +721,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** output, just close the i/o descriptors, free the memory, and restore the
 ** user interface state.
 */
-static void finishCmdExecution(WindowInfo *window, int terminatedOnError) {
+static void finishCmdExecution(Document *window, int terminatedOnError) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
 	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart;

@@ -31,7 +31,7 @@
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"
-#include "WindowInfo.h"
+#include "Document.h"
 
 #include <algorithm>
 #include <cassert>
@@ -181,8 +181,8 @@ static DataValue *StackP;                      // next free spot on stack
 static DataValue *FrameP;                      // frame pointer (start of local variables for the current subroutine invocation)
 static Inst *PC;                               // program counter during execution
 static char *ErrMsg;                           // global for returning error messages from executing functions
-static WindowInfo *InitiatingWindow = nullptr; // window from which macro was run
-static WindowInfo *FocusWindow;                // window on which macro commands operate
+static Document *InitiatingWindow = nullptr; // window from which macro was run
+static Document *FocusWindow;                // window on which macro commands operate
 static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
 /* Array for mapping operations to functions for performing the operations
@@ -454,7 +454,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
+int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
 
 	static DataValue noValue = {NO_TAG, {0}, {0}};
 	int i;
@@ -619,7 +619,7 @@ void ModifyReturnedValue(RestartData *context, DataValue dv) {
 ** Called within a routine invoked from a macro, returns the window in
 ** which the macro is executing (where the banner is, not where it is focused)
 */
-WindowInfo *MacroRunWindow(void) {
+Document *MacroRunWindow(void) {
 	return InitiatingWindow;
 }
 
@@ -628,7 +628,7 @@ WindowInfo *MacroRunWindow(void) {
 ** the currently executing macro is focused (the window which macro commands
 ** modify, not the window from which the macro is being run)
 */
-WindowInfo *MacroFocusWindow(void) {
+Document *MacroFocusWindow(void) {
 	return FocusWindow;
 }
 
@@ -636,7 +636,7 @@ WindowInfo *MacroFocusWindow(void) {
 ** Set the window to which macro subroutines and actions which operate on an
 ** implied window are directed.
 */
-void SetMacroFocusWindow(WindowInfo *window) {
+void SetMacroFocusWindow(Document *window) {
 	FocusWindow = window;
 }
 

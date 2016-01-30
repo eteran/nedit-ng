@@ -40,7 +40,7 @@
 #include "macro.h"
 #include "server.h"
 #include "interpret.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "parse.h"
 #include "help.h"
 #include "../util/misc.h"
@@ -82,7 +82,7 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *bindings);
 static void noWarningFilter(String);
 static void showWarningFilter(String);
 
-WindowInfo *WindowList = nullptr;
+Document *WindowList = nullptr;
 Display *TheDisplay = nullptr;
 const char *ArgV0 = nullptr;
 bool IsServer = false;
@@ -235,7 +235,6 @@ Ctrl<Key>G:help-button-action(\"findAgain\")\\n\
     nullptr};
 
 static const char cmdLineHelp[] =
-
     "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
 	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
 	      [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n\
@@ -246,16 +245,28 @@ static const char cmdLineHelp[] =
 	      [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n\
 	      [--] [file...]\n";
 
-int main(int argc, char **argv) {
-	int i, lineNum, nRead, fileSpecified = FALSE, editFlags = CREATE;
-	int gotoLine = False, macroFileRead = False, opts = True;
-	int iconic = False, tabbed = -1, group = 0, isTabbed;
-	char *toDoCommand = nullptr, *geometry = nullptr, *langMode = nullptr;
-	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	XtAppContext context;
-	XrmDatabase prefDB;
-	WindowInfo *window = nullptr, *lastFile = nullptr;
+int main(int argc, char *argv[]) {
+
 	static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
+
+	int lineNum;
+	int nRead;
+	int fileSpecified = FALSE;
+	int editFlags = CREATE;
+	int gotoLine = False;
+	int macroFileRead = False;
+	int opts = True;
+	int iconic = False;
+	int tabbed = -1;
+	int group = 0;
+	int isTabbed;
+	char *toDoCommand = nullptr;
+	char *geometry = nullptr;
+	char *langMode = nullptr;
+	char filename[MAXPATHLEN];
+	char pathname[MAXPATHLEN];
+	Document *window = nullptr;
+	Document *lastFile = nullptr;
 	unsigned char *invalidBindings = nullptr;
 
 	/* Save the command which was used to invoke nedit for restart command */
@@ -267,7 +278,7 @@ int main(int argc, char **argv) {
 
 	/* Initialize X toolkit (does not open display yet) */
 	XtToolkitInitialize();
-	context = XtCreateApplicationContext();
+	XtAppContext context = XtCreateApplicationContext();
 
 	/* Set up a warning handler to trap obnoxious Xt grab warnings */
 	SuppressPassiveGrabWarnings();
@@ -284,14 +295,15 @@ int main(int argc, char **argv) {
 #endif
 
 	/* Read the preferences file and command line into a database */
-	prefDB = CreateNEditPrefDB(&argc, argv);
+	XrmDatabase prefDB = CreateNEditPrefDB(&argc, argv);
 
 	/* Open the display and read X database and remaining command line args.
 	   XtOpenDisplay must be allowed to process some of the resource arguments
 	   with its inaccessible internal option table, but others, like -geometry
 	   and -iconic are per-window and it should not be allowed to consume them,
-	   so we temporarily masked them out. */
+	   so we temporarily masked them out. */	
 	maskArgvKeywords(argc, argv, protectedKeywords);
+	
 	/* X.Org 6.8 and above add support for ARGB visuals (with alpha-channel),
 	   typically with a 32-bit color depth. By default, NEdit uses the visual
 	   with the largest color depth. However, both OpenMotif and Lesstif
@@ -306,11 +318,14 @@ int main(int argc, char **argv) {
 	   more convenient that NEdit takes care of this. This must be done before
 	   the display is opened (empirically verified). */
 	putenv((char *)"XLIB_SKIP_ARGB_VISUALS=1");
+	
 	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
+	
 	unmaskArgvKeywords(argc, argv, protectedKeywords);
+	
 	if (!TheDisplay) {
 		/* Respond to -V or -version even if there is no display */
-		for (i = 1; i < argc && strcmp(argv[i], "--"); i++) {
+		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
 				PrintVersion();
 				exit(EXIT_SUCCESS);
@@ -362,8 +377,8 @@ int main(int argc, char **argv) {
 
 	/* Add Actions for following hyperlinks in the help window */
 	InstallHelpLinkActions(context);
-	/* Add actions for mouse wheel support in scrolled windows (except text
-	   area) */
+
+	/* Add actions for mouse wheel support in scrolled windows (except text area) */
 	InstallMouseWheelActions(context);
 
 	/* Install word delimiters for regular expression matching */
@@ -376,7 +391,7 @@ int main(int argc, char **argv) {
 	/* Process -import command line argument before others which might
 	   open windows (loading preferences doesn't update menu settings,
 	   which would then be out of sync with the real preference settings) */
-	for (i = 1; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--")) {
 			break; /* treat all remaining arguments as filenames */
 		} else if (!strcmp(argv[i], "-import")) {
@@ -403,7 +418,7 @@ int main(int argc, char **argv) {
 	   +<line_number>, -line, -server, and files to edit) not already
 	   processed by RestoreNEditPrefs. */
 	fileSpecified = FALSE;
-	for (i = 1; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		if (opts && !strcmp(argv[i], "--")) {
 			opts = False; /* treat all remaining arguments as filenames */
 			continue;
@@ -545,17 +560,16 @@ int main(int argc, char **argv) {
 	AddLastCommandActionHook(context);
 
 	/* Set up communication port and write ~/.nedit_server_process file */
-	if (IsServer)
+	if (IsServer) {
 		InitServerCommunication();
+	}
 
 	/* Process events. */
-	if (IsServer)
+	if (IsServer) {
 		ServerMainLoop(context);
-	else
+	} else {
 		XtAppMainLoop(context);
-
-	/* Not reached but this keeps some picky compilers happy */
-	return EXIT_SUCCESS;
+	}
 }
 
 static void nextArg(int argc, char **argv, int *argIndex) {

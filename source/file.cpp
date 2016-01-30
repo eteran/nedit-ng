@@ -36,7 +36,7 @@
 #include "tags.h"
 #include "server.h"
 #include "interpret.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "MotifHelper.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
@@ -72,23 +72,23 @@
    system which is slow to process stat requests (which I'm not sure exists) */
 #define MOD_CHECK_INTERVAL 3000
 
-static bool writeBckVersion(WindowInfo *window);
-static int bckError(WindowInfo *window, const char *errString, const char *file);
-static int cmpWinAgainstFile(WindowInfo *window, const char *fileName);
-static int doOpen(WindowInfo *window, const char *name, const char *path, int flags);
-static bool doSave(WindowInfo *window);
-static int fileWasModifiedExternally(WindowInfo *window);
+static bool writeBckVersion(Document *window);
+static int bckError(Document *window, const char *errString, const char *file);
+static int cmpWinAgainstFile(Document *window, const char *fileName);
+static int doOpen(Document *window, const char *name, const char *path, int flags);
+static bool doSave(Document *window);
+static int fileWasModifiedExternally(Document *window);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static void addWrapNewlines(WindowInfo *window);
-static std::string backupFileNameEx(WindowInfo *window);
-static void forceShowLineNumbers(WindowInfo *window);
+static void addWrapNewlines(Document *window);
+static std::string backupFileNameEx(Document *window);
+static void forceShowLineNumbers(Document *window);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
-static void safeClose(WindowInfo *window);
+static void safeClose(Document *window);
 static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 
-WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
+Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
 	char name[MAXPATHLEN];
-	WindowInfo *window;
+	Document *window;
 	size_t pathlen;
 	char *path;
 
@@ -101,7 +101,7 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 	if (inWindow)
 		window = inWindow->CreateDocument(name);
 	else
-		window = new WindowInfo(name, geometry, iconic);
+		window = new Document(name, geometry, iconic);
 
 	path = window->path;
 	strcpy(window->filename, name);
@@ -155,8 +155,8 @@ WindowInfo *EditNewFile(WindowInfo *inWindow, char *geometry, int iconic, const 
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
-	WindowInfo *window;
+Document *EditExistingFile(Document *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
+	Document *window;
 	char fullname[MAXPATHLEN];
 
 	/* first look to see if file is already displayed in a window */
@@ -175,12 +175,12 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	   in use (not Untitled or Untitled and modified), or is currently
 	   busy running a macro; create the window */
 	if(!inWindow) {
-		window = new WindowInfo(name, geometry, iconic);
+		window = new Document(name, geometry, iconic);
 	} else if (inWindow->filenameSet || inWindow->fileChanged || inWindow->macroCmdData) {
 		if (tabbed) {
 			window = inWindow->CreateDocument(name);
 		} else {
-			window = new WindowInfo(name, geometry, iconic);
+			window = new Document(name, geometry, iconic);
 		}
 	} else {
 		/* open file in untitled document */
@@ -232,7 +232,7 @@ WindowInfo *EditExistingFile(WindowInfo *inWindow, const char *name, const char 
 	return window;
 }
 
-void RevertToSaved(WindowInfo *window) {
+void RevertToSaved(Document *window) {
 	char name[MAXPATHLEN], path[MAXPATHLEN];
 	int i;
 	int insertPositions[MAX_PANES], topLines[MAX_PANES];
@@ -292,8 +292,8 @@ void RevertToSaved(WindowInfo *window) {
 ** window instead of the error dialog. In that case, we shouldn't close the
 ** window a second time.
 */
-static void safeClose(WindowInfo *window) {
-	WindowInfo *p = WindowList;
+static void safeClose(Document *window) {
+	Document *p = WindowList;
 	while (p) {
 		if (p == window) {
 			window->CloseWindow();
@@ -303,7 +303,7 @@ static void safeClose(WindowInfo *window) {
 	}
 }
 
-static int doOpen(WindowInfo *window, const char *name, const char *path, int flags) {
+static int doOpen(Document *window, const char *name, const char *path, int flags) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	char *c;
@@ -510,7 +510,7 @@ static int doOpen(WindowInfo *window, const char *name, const char *path, int fl
 	return TRUE;
 }
 
-int IncludeFile(WindowInfo *window, const char *name) {
+int IncludeFile(Document *window, const char *name) {
 	struct stat statbuf;
 	int fileLen, readLen;
 	char *fileString;
@@ -622,7 +622,7 @@ int CloseAllFilesAndWindows(void) {
 	return TRUE;
 }
 
-int CloseFileAndWindow(WindowInfo *window, int preResponse) {
+int CloseFileAndWindow(Document *window, int preResponse) {
 	int response, stat;
 
 	/* Make sure that the window is not in iconified state */
@@ -668,7 +668,7 @@ int CloseFileAndWindow(WindowInfo *window, int preResponse) {
 	return TRUE;
 }
 
-int SaveWindow(WindowInfo *window) {
+int SaveWindow(Document *window) {
 
 	/* Try to ensure our information is up-to-date */
 	CheckForChangesToFile(window);
@@ -709,10 +709,10 @@ int SaveWindow(WindowInfo *window) {
 	return stat;
 }
 
-int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
+int SaveWindowAs(Document *window, const char *newName, int addWrap) {
 	int response, retVal, fileFormat;
 	char fullname[MAXPATHLEN], filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	WindowInfo *otherWindow;
+	Document *otherWindow;
 
 	/* Get the new name for the file */
 	if(!newName) {
@@ -795,7 +795,7 @@ int SaveWindowAs(WindowInfo *window, const char *newName, int addWrap) {
 	return retVal;
 }
 
-static bool doSave(WindowInfo *window) {
+static bool doSave(Document *window) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	FILE *fp;
@@ -899,7 +899,7 @@ static bool doSave(WindowInfo *window) {
 ** is generated using the name and path stored in the window and adding a
 ** tilde (~) on UNIX and underscore (_) on VMS to the beginning of the name.
 */
-int WriteBackupFile(WindowInfo *window) {
+int WriteBackupFile(Document *window) {
 	FILE *fp;
 	int fd;
 
@@ -956,7 +956,7 @@ int WriteBackupFile(WindowInfo *window) {
 /*
 ** Remove the backup file associated with this window
 */
-void RemoveBackupFile(WindowInfo *window) {
+void RemoveBackupFile(Document *window) {
 
 	/* Don't delete backup files when backups aren't activated. */
 	if (window->autoSave == FALSE)
@@ -970,7 +970,7 @@ void RemoveBackupFile(WindowInfo *window) {
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-static std::string backupFileNameEx(WindowInfo *window) {
+static std::string backupFileNameEx(Document *window) {
 	
 	char buf[MAXPATHLEN];
 	if (window->filenameSet) {
@@ -987,7 +987,7 @@ static std::string backupFileNameEx(WindowInfo *window) {
 ** <filename>.bck in anticipation of a new version being saved.  Returns
 ** True if backup fails and user requests that the new file not be written.
 */
-static bool writeBckVersion(WindowInfo *window) {
+static bool writeBckVersion(Document *window) {
 	char fullname[MAXPATHLEN];
 	char bckname[MAXPATHLEN];
 	struct stat statbuf;
@@ -1087,7 +1087,7 @@ static bool writeBckVersion(WindowInfo *window) {
 ** Error processing for writeBckVersion, gives the user option to cancel
 ** the subsequent save, or continue and optionally turn off versioning
 */
-static int bckError(WindowInfo *window, const char *errString, const char *file) {
+static int bckError(Document *window, const char *errString, const char *file) {
 	int resp;
 
 	resp = DialogF(DF_ERR, window->shell, 3, "Error writing Backup", "Couldn't write .bck (last version) file.\n%s: %s", "Cancel Save", "Turn off Backups", "Continue", file, errString);
@@ -1100,7 +1100,7 @@ static int bckError(WindowInfo *window, const char *errString, const char *file)
 	return FALSE;
 }
 
-void PrintWindow(WindowInfo *window, int selectedOnly) {
+void PrintWindow(Document *window, int selectedOnly) {
 	TextBuffer *buf = window->buffer;
 	TextSelection *sel = &buf->primary_;
 	std::string fileString;
@@ -1180,7 +1180,7 @@ void PrintString(const std::string &string, int length, Widget parent, const std
 ** Wrapper for GetExistingFilename which uses the current window's path
 ** (if set) as the default directory.
 */
-int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname) {
+int PromptForExistingFile(Document *window, const char *prompt, char *fullname) {
 	int retVal;
 
 	/* Temporarily set default directory to window->path, prompt for file,
@@ -1201,7 +1201,7 @@ int PromptForExistingFile(WindowInfo *window, const char *prompt, char *fullname
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-int PromptForNewFile(WindowInfo *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap) {
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap) {
 	int n, retVal;
 	Arg args[20];
 	XmString s1, s2;
@@ -1285,7 +1285,7 @@ void UniqueUntitledName(char *name, size_t size) {
 			snprintf(name, size, "Untitled_%d", i);
 		}
 		
-		WindowInfo *w;
+		Document *w;
 		for (w = WindowList; w != nullptr; w = w->next) {
 			if (!strcmp(w->filename, name)) {
 				break;
@@ -1313,8 +1313,8 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 ** Check if the file in the window was changed by an external source.
 ** and put up a warning dialog if it has.
 */
-void CheckForChangesToFile(WindowInfo *window) {
-	static WindowInfo *lastCheckWindow = nullptr;
+void CheckForChangesToFile(Document *window) {
+	static Document *lastCheckWindow = nullptr;
 	static Time lastCheckTime = 0;
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
@@ -1507,7 +1507,7 @@ void CheckForChangesToFile(WindowInfo *window) {
 ** to nedit.  This should return FALSE if the file has been deleted or is
 ** unavailable.
 */
-static int fileWasModifiedExternally(WindowInfo *window) {
+static int fileWasModifiedExternally(Document *window) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 
@@ -1531,7 +1531,7 @@ static int fileWasModifiedExternally(WindowInfo *window) {
 ** Check the read-only or locked status of the window and beep and return
 ** false if the window should not be written in.
 */
-int CheckReadOnly(WindowInfo *window) {
+int CheckReadOnly(Document *window) {
 	if (IS_ANY_LOCKED(window->lockReasons)) {
 		XBell(TheDisplay, 0);
 		return True;
@@ -1588,7 +1588,7 @@ static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** conventional Unix format of embedded newlines.  Indicate to the user
 ** by turning off Continuous Wrap mode.
 */
-static void addWrapNewlines(WindowInfo *window) {
+static void addWrapNewlines(Document *window) {
 	int i, insertPositions[MAX_PANES], topLines[MAX_PANES];
 	int horizOffset;
 	Widget text;
@@ -1630,7 +1630,7 @@ static void addWrapNewlines(WindowInfo *window) {
  *   0: no difference found
  *  !0: difference found or could not compare contents.
  */
-static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
+static int cmpWinAgainstFile(Document *window, const char *fileName) {
 	char fileString[PREFERRED_CMPBUF_LEN + 2];
 	struct stat statbuf;
 	int fileLen, restLen, nRead, bufPos, rv, offset, filePos;
@@ -1730,7 +1730,7 @@ static int cmpWinAgainstFile(WindowInfo *window, const char *fileName) {
 ** Force ShowLineNumbers() to re-evaluate line counts for the window if line
 ** counts are required.
 */
-static void forceShowLineNumbers(WindowInfo *window) {
+static void forceShowLineNumbers(Document *window) {
 	Boolean showLineNum = window->showLineNumbers;
 	if (showLineNum) {
 		window->showLineNumbers = False;

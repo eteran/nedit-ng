@@ -31,7 +31,7 @@
 #include "nedit.h"
 #include "preferences.h"
 #include "help.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "MotifHelper.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"
@@ -111,7 +111,7 @@ char *safeCharAdd(char *dest, char *destEnd, char c) {
 static struct {
 	Widget form;
 	Widget shell;
-	WindowInfo *window;
+	Document *window;
 	Widget previewW;
 	Widget formatW;
 
@@ -1118,7 +1118,7 @@ static void createEditTitleDialog(Widget parent) {
 	etDialog.suppressFormatUpdate = FALSE;
 }
 
-void WindowInfo::EditCustomTitleFormat() {
+void Document::EditCustomTitleFormat() {
 	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.

@@ -124,7 +124,7 @@ enum truncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
 struct UndoInfo;
-struct WindowInfo;
+struct Document;
 
 /* Element in bookmark table */
 struct Bookmark {
@@ -199,7 +199,7 @@ struct UserBGMenuCache {
 
 
 
-extern WindowInfo *WindowList;
+extern Document *WindowList;
 extern Display *TheDisplay;
 extern Widget TheAppShell;
 extern const char *ArgV0;

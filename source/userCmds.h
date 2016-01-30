@@ -31,9 +31,9 @@
 #include "string_view.h"
 #include "nullable_string.h"
 
-int DoNamedBGMenuCmd(WindowInfo *window, const char *itemName);
-int DoNamedMacroMenuCmd(WindowInfo *window, const char *itemName);
-int DoNamedShellMenuCmd(WindowInfo *window, const char *itemName, int fromMacro);
+int DoNamedBGMenuCmd(Document *window, const char *itemName);
+int DoNamedMacroMenuCmd(Document *window, const char *itemName);
+int DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro);
 int LoadBGMenuCmdsString(const char *inString);
 int LoadBGMenuCmdsStringEx(view::string_view inString);
 int LoadMacroCmdsString(const char *inString);
@@ -45,18 +45,18 @@ nullable_string WriteMacroCmdsStringEx(void);
 nullable_string WriteShellCmdsStringEx(void);
 UserMenuCache *CreateUserMenuCache(void);
 void DimPasteReplayBtns(int sensitive);
-void DimSelectionDepUserMenuItems(WindowInfo *window, int sensitive);
-void EditBGMenu(WindowInfo *window);
-void EditMacroMenu(WindowInfo *window);
-void EditShellMenu(WindowInfo *window);
+void DimSelectionDepUserMenuItems(Document *window, int sensitive);
+void EditBGMenu(Document *window);
+void EditMacroMenu(Document *window);
+void EditShellMenu(Document *window);
 void FreeUserBGMenuCache(UserBGMenuCache *cache);
 void FreeUserMenuCache(UserMenuCache *cache);
 void InitUserBGMenuCache(UserBGMenuCache *cache);
-void RebuildAllMenus(WindowInfo *window);
-void SetBGMenuRedoSensitivity(WindowInfo *window, int sensitive);
-void SetBGMenuUndoSensitivity(WindowInfo *window, int sensitive);
+void RebuildAllMenus(Document *window);
+void SetBGMenuRedoSensitivity(Document *window, int sensitive);
+void SetBGMenuUndoSensitivity(Document *window, int sensitive);
 void SetupUserMenuInfo(void);
 void UpdateUserMenuInfo(void);
-void UpdateUserMenus(WindowInfo *window);
+void UpdateUserMenus(Document *window);
 
 #endif

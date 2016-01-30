@@ -27,7 +27,7 @@
 #ifndef CALLTIPS_H_
 #define CALLTIPS_H_
 
-#include "nedit.h"    /* For WindowInfo */
+#include "nedit.h"    /* For Document */
 #include "textDisp.h" /* for textDisp */
 #include "string_view.h"
 #include <string>
@@ -39,9 +39,9 @@ enum TipHAlignMode { TIP_LEFT, TIP_CENTER, TIP_RIGHT };
 enum TipVAlignMode { TIP_ABOVE, TIP_BELOW };
 enum TipAlignStrict { TIP_SLOPPY, TIP_STRICT };
 
-int GetCalltipID(WindowInfo *window, int calltipID);
-int ShowCalltip(WindowInfo *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode);
-void KillCalltip(WindowInfo *window, int calltipID);
+int GetCalltipID(Document *window, int calltipID);
+int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode);
+void KillCalltip(Document *window, int calltipID);
 void TextDKillCalltip(textDisp *textD, int calltipID);
 void TextDRedrawCalltip(textDisp *textD, int calltipID);
 

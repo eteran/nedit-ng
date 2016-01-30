@@ -32,7 +32,7 @@
 #include "text.h"
 #include "nedit.h"
 #include "server.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "window.h"
 #include "userCmds.h"
 #include "preferences.h"
@@ -81,7 +81,7 @@ int NHist = 0;
 
 struct SelectionInfo {
 	int done;
-	WindowInfo *window;
+	Document *window;
 	char *selection;
 };
 
@@ -98,7 +98,7 @@ static int SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
 static int textFieldNonEmpty(Widget w);
-static void setTextField(WindowInfo *window, Time time, Widget textField);
+static void setTextField(Document *window, Time time, Widget textField);
 static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Atom *type, char *value, int *length, int *format);
 static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -113,7 +113,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void rFindTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 
-static void rSetActionButtons(WindowInfo *window, int replaceBtn, int replaceFindBtn, int replaceAndFindBtn,
+static void rSetActionButtons(Document *window, int replaceBtn, int replaceFindBtn, int replaceAndFindBtn,
 #ifndef REPLACE_SCOPE
                               int replaceInWinBtn, int replaceInSelBtn,
 #endif
@@ -137,17 +137,17 @@ static const char *searchWrapArg(int searchWrap);
 static int countWindows(void);
 static int countWritableWindows(void);
 static int defaultRegexFlags(int searchType);
-static int findMatchingChar(WindowInfo *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
-static int getFindDlogInfoEx(WindowInfo *window, SearchDirection *direction, std::string *searchString, int *searchType);
-static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
+static int findMatchingChar(Document *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
+static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::string *searchString, int *searchType);
+static int getReplaceDlogInfo(Document *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 static int historyIndex(int nCycles);
 static int isRegexType(int searchType);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
-static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow);
-static void collectWritableWindows(WindowInfo *window);
-static void eraseFlash(WindowInfo *window);
+static bool searchMatchesSelection(Document *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow);
+static void collectWritableWindows(Document *window);
+static void eraseFlash(Document *window);
 static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findCB(Widget w, XtPointer clientData, XtPointer call_data);
@@ -155,24 +155,24 @@ static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callDat
 static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void fUpdateActionButtons(WindowInfo *window);
+static void fUpdateActionButtons(Document *window);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void iSearchRecordLastBeginPos(WindowInfo *window, SearchDirection direction, int initPos);
+static void iSearchRecordLastBeginPos(Document *window, SearchDirection direction, int initPos);
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg);
 static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
-static void iSearchTryBeepOnWrap(WindowInfo *window, SearchDirection direction, int beginPos, int startPos);
-static void removeDoomedWindowFromList(WindowInfo *window, int index);
+static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos);
+static void removeDoomedWindowFromList(Document *window, int index);
 static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void resetFindTabGroup(WindowInfo *window);
-static void resetReplaceTabGroup(WindowInfo *window);
+static void resetFindTabGroup(Document *window);
+static void resetReplaceTabGroup(Document *window);
 static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data);
@@ -180,8 +180,8 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
-static void unmanageReplaceDialogs(const WindowInfo *window);
-static void uploadFileListItems(WindowInfo *window, Bool replace);
+static void unmanageReplaceDialogs(const Document *window);
+static void uploadFileListItems(Document *window, Bool replace);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
 
@@ -232,9 +232,9 @@ static const char *searchTypeStrings[] = {"literal",     /* SEARCH_LITERAL      
 ** close callback of the window to intercept and reject the request by calling
 ** the WindowCanBeClosed() function.
 */
-static WindowInfo *windowNotToClose = nullptr;
+static Document *windowNotToClose = nullptr;
 
-Boolean WindowCanBeClosed(WindowInfo *window) {
+Boolean WindowCanBeClosed(Document *window) {
 	if (windowNotToClose && GetTopDocument(window->shell) == GetTopDocument(windowNotToClose->shell)) {
 		return False;
 	}
@@ -320,7 +320,7 @@ static void initToggleButtons(int searchType, Widget regexToggle, Widget caseTog
 ** This routine introduces a dependency on textDisp.h, which is not so nice,
 ** but I currently don't have a cleaner solution.
 */
-static int selectionSpansMultipleLines(WindowInfo *window) {
+static int selectionSpansMultipleLines(Document *window) {
 	int selStart, selEnd, isRect, rectStart, rectEnd, lineStartStart, lineStartEnd;
 	int lineWidth;
 	textDisp *textD;
@@ -369,7 +369,7 @@ static int selectionSpansMultipleLines(WindowInfo *window) {
 }
 #endif
 
-void DoFindReplaceDlog(WindowInfo *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
+void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
 	if (window->replaceDlog == nullptr)
@@ -446,7 +446,7 @@ void DoFindReplaceDlog(WindowInfo *window, SearchDirection direction, int keepDi
 	XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);
 }
 
-static void setTextField(WindowInfo *window, Time time, Widget textField) {
+static void setTextField(Document *window, Time time, Widget textField) {
 	XEvent nextEvent;
 	char *primary_selection = nullptr;
 	auto selectionInfo = new SelectionInfo;
@@ -482,7 +482,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	(void)w;
 	(void)selection;
 
-	WindowInfo *window = selectionInfo->window;
+	Document *window = selectionInfo->window;
 
 	/* return an empty string if we can't get the selection data */
 	if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == nullptr || *length == 0) {
@@ -506,7 +506,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	selectionInfo->done = 1;
 }
 
-void DoFindDlog(WindowInfo *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
+void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
 	if (window->findDlog == nullptr)
@@ -544,7 +544,7 @@ void DoFindDlog(WindowInfo *window, SearchDirection direction, int keepDialogs, 
 	XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
 }
 
-void DoReplaceMultiFileDlog(WindowInfo *window) {
+void DoReplaceMultiFileDlog(Document *window) {
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	SearchDirection direction;
 	int searchType;
@@ -587,8 +587,8 @@ void DoReplaceMultiFileDlog(WindowInfo *window) {
 ** (application modal), but Lesstif doesn't (always) honor application
 ** modalness, so there can be more than one dialog.
 */
-void RemoveFromMultiReplaceDialog(WindowInfo *doomedWindow) {
-	WindowInfo *w;
+void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
+	Document *w;
 
 	for (w = WindowList; w != nullptr; w = w->next)
 		if (w->writableWindows)
@@ -596,7 +596,7 @@ void RemoveFromMultiReplaceDialog(WindowInfo *doomedWindow) {
 			checkMultiReplaceListForDoomedW(w, doomedWindow);
 }
 
-void CreateReplaceDlog(Widget parent, WindowInfo *window) {
+void CreateReplaceDlog(Widget parent, Document *window) {
 	Arg args[50];
 	int argcnt, defaultBtnOffset;
 	XmString st1;
@@ -1307,7 +1307,7 @@ void CreateReplaceDlog(Widget parent, WindowInfo *window) {
 #endif
 }
 
-void CreateFindDlog(Widget parent, WindowInfo *window) {
+void CreateFindDlog(Widget parent, Document *window) {
 	Arg args[50];
 	int argcnt, defaultBtnOffset;
 	XmString st1;
@@ -1602,7 +1602,7 @@ void CreateFindDlog(Widget parent, WindowInfo *window) {
 	window->findSearchTypeBox = searchTypeBox;
 }
 
-void CreateReplaceMultiFileDlog(WindowInfo *window) {
+void CreateReplaceMultiFileDlog(Document *window) {
 	Arg args[50];
 	int argcnt, defaultBtnOffset;
 	XmString st1;
@@ -1904,8 +1904,8 @@ void CreateReplaceMultiFileDlog(WindowInfo *window) {
 ** Iterates through the list of writable windows of a window, and removes
 ** the doomed window if necessary.
 */
-static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doomedWindow) {
-	WindowInfo *w;
+static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow) {
+	Document *w;
 	int i;
 
 	/* If the window owning the list and the doomed window are one and the
@@ -1929,7 +1929,7 @@ static void checkMultiReplaceListForDoomedW(WindowInfo *window, WindowInfo *doom
 ** Removes a window that is about to be closed from the list of files in
 ** which to replace. If the list becomes empty, the dialog is popped down.
 */
-static void removeDoomedWindowFromList(WindowInfo *window, int index) {
+static void removeDoomedWindowFromList(Document *window, int index) {
 	int entriesToMove;
 
 	/* If the list would become empty, we remove the dialog */
@@ -1939,7 +1939,7 @@ static void removeDoomedWindowFromList(WindowInfo *window, int index) {
 	}
 
 	entriesToMove = window->nWritableWindows - index - 1;
-	memmove(&(window->writableWindows[index]), &(window->writableWindows[index + 1]), (size_t)(entriesToMove * sizeof(WindowInfo *)));
+	memmove(&(window->writableWindows[index]), &(window->writableWindows[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
 	window->nWritableWindows -= 1;
 
 	XmListDeletePos(window->replaceMultiFileList, index + 1);
@@ -1954,7 +1954,7 @@ static void removeDoomedWindowFromList(WindowInfo *window, int index) {
 */
 static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -1963,7 +1963,7 @@ static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -1974,7 +1974,7 @@ static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 /* when keeping a window up, clue the user what window it's associated with */
 static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -1990,7 +1990,7 @@ static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2011,7 +2011,7 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[5];
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	window = WidgetToWindow(w);
@@ -2040,7 +2040,7 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
@@ -2072,7 +2072,7 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	(void)callData;
 
 	window = WidgetToWindow(w);
@@ -2085,7 +2085,7 @@ static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callDat
 **/
 static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	(void)callData;
 
 	window = WidgetToWindow(w);
@@ -2099,7 +2099,7 @@ static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call
 */
 static int countWindows(void) {
 	int nWindows;
-	const WindowInfo *w;
+	const Document *w;
 
 	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next, ++nWindows)
 		;
@@ -2112,7 +2112,7 @@ static int countWindows(void) {
 */
 static int countWritableWindows(void) {
 	int nWritable, nBefore, nAfter;
-	WindowInfo *w;
+	Document *w;
 
 	nBefore = countWindows();
 	for (w = WindowList, nWritable = 0; w != nullptr; w = w->next) {
@@ -2138,23 +2138,23 @@ static int countWritableWindows(void) {
 ** Collects a list of writable windows (sorted by file name).
 ** The previous list, if any is freed first.
 **/
-static void collectWritableWindows(WindowInfo *window) {
+static void collectWritableWindows(Document *window) {
 	int nWritable = countWritableWindows();
 	int i;
-	WindowInfo *w;
-	WindowInfo **windows;
+	Document *w;
+	Document **windows;
 
 	delete [] window->writableWindows;
 
 	/* Make a sorted list of writable windows */
-	windows = new WindowInfo*[nWritable];
+	windows = new Document*[nWritable];
 	for (w = WindowList, i = 0; w != nullptr; w = w->next) {
 		if (!IS_ANY_LOCKED(w->lockReasons)) {
 			windows[i++] = w;
 		}
 	}
 
-	std::sort(windows, windows + nWritable, [](const WindowInfo *lhs, const WindowInfo *rhs) {
+	std::sort(windows, windows + nWritable, [](const Document *lhs, const Document *rhs) {
 		return strcmp(lhs->filename, rhs->filename) < 0;
 	});
 
@@ -2164,7 +2164,7 @@ static void collectWritableWindows(WindowInfo *window) {
 
 static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
@@ -2172,7 +2172,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	int searchType;
 	const char *params[4];
 	int nSelected, i;
-	WindowInfo *writableWin;
+	Document *writableWin;
 	Bool replaceFailed, noWritableLeft;
 
 	window = WidgetToWindow(w);
@@ -2265,7 +2265,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 
 static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2280,7 +2280,7 @@ static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callDat
 
 static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
@@ -2317,7 +2317,7 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 
 static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
@@ -2328,7 +2328,7 @@ static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer ca
 
 static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
@@ -2344,12 +2344,12 @@ static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data
  * Depending on the state of the "Show path names" toggle button, either
  * the file names or the path names are listed.
  */
-static void uploadFileListItems(WindowInfo *window, Bool replace) {
+static void uploadFileListItems(Document *window, Bool replace) {
 
 	int nWritable, i, *selected, selectedCount;
 	char buf[MAXPATHLEN + 1], policy;
 	Bool usePathNames;
-	WindowInfo *w;
+	Document *w;
 	Widget list;
 
 	nWritable = window->nWritableWindows;
@@ -2461,7 +2461,7 @@ static void uploadFileListItems(WindowInfo *window, Bool replace) {
 ** Unconditionally pops down the replace dialog and the
 ** replace-in-multiple-files dialog, if it exists.
 */
-static void unmanageReplaceDialogs(const WindowInfo *window) {
+static void unmanageReplaceDialogs(const Document *window) {
 	/* If the replace dialog goes down, the multi-file replace dialog must
 	   go down too */
 	if (window->replaceMultiFileDlog && XtIsManaged(window->replaceMultiFileDlog)) {
@@ -2475,7 +2475,7 @@ static void unmanageReplaceDialogs(const WindowInfo *window) {
 
 static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
@@ -2507,7 +2507,7 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void rCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2522,7 +2522,7 @@ static void rCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2537,7 +2537,7 @@ static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
@@ -2578,7 +2578,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	char searchString[SEARCHMAX + 1], replaceString[SEARCHMAX + 1];
@@ -2609,7 +2609,7 @@ static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 		unmanageReplaceDialogs(window);
 }
 
-static void rSetActionButtons(WindowInfo *window, int replaceBtn, int replaceFindBtn, int replaceAndFindBtn,
+static void rSetActionButtons(Document *window, int replaceBtn, int replaceFindBtn, int replaceAndFindBtn,
 #ifndef REPLACE_SCOPE
                               int replaceInWinBtn, int replaceInSelBtn,
 #endif
@@ -2624,7 +2624,7 @@ static void rSetActionButtons(WindowInfo *window, int replaceBtn, int replaceFin
 	XtSetSensitive(window->replaceAllBtn, replaceAllBtn);
 }
 
-void UpdateReplaceActionButtons(WindowInfo *window) {
+void UpdateReplaceActionButtons(Document *window) {
 	/* Is there any text in the search for field */
 	int searchText = textFieldNonEmpty(window->replaceText);
 #ifdef REPLACE_SCOPE
@@ -2708,7 +2708,7 @@ static int textFieldNonEmpty(Widget w) {
 static void rFindTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto event = (XKeyEvent *)callData;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)event;
 
@@ -2721,7 +2721,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2775,7 +2775,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2806,7 +2806,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 	window->rHistIndex = index;
 }
 
-static void fUpdateActionButtons(WindowInfo *window) {
+static void fUpdateActionButtons(Document *window) {
 	int buttonState = textFieldNonEmpty(window->findText);
 	XtSetSensitive(window->findBtn, buttonState);
 }
@@ -2814,7 +2814,7 @@ static void fUpdateActionButtons(WindowInfo *window) {
 static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto event = (XKeyEvent *)callData;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)event;
 
@@ -2827,7 +2827,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 	(void)continueDispatch;
 
 	auto event = (XKeyEvent *)Event;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -2871,7 +2871,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 
 static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	SearchDirection direction;
@@ -2911,7 +2911,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 ** return search type in "searchType", and return TRUE as the function
 ** value.  Otherwise, return FALSE.
 */
-static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType) {
+static int getReplaceDlogInfo(Document *window, SearchDirection *direction, char *searchString, char *replaceString, int *searchType) {
 	regexp *compiledRE = nullptr;
 
 	/* Get the search and replace strings, search type, and direction
@@ -2983,7 +2983,7 @@ static int getReplaceDlogInfo(WindowInfo *window, SearchDirection *direction, ch
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-static int getFindDlogInfoEx(WindowInfo *window, SearchDirection *direction, std::string *searchString, int *searchType) {
+static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::string *searchString, int *searchType) {
 
 	regexp *compiledRE = nullptr;
 
@@ -3037,7 +3037,7 @@ static int getFindDlogInfoEx(WindowInfo *window, SearchDirection *direction, std
 	return TRUE;
 }
 
-bool SearchAndSelectSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
+bool SearchAndSelectSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3051,7 +3051,7 @@ bool SearchAndSelectSame(WindowInfo *window, SearchDirection direction, int sear
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelect(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap) {
+bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap) {
 	int startPos, endPos;
 	int beginPos, cursorPos, selStart, selEnd;
 	int movedFwd = 0;
@@ -3118,7 +3118,7 @@ bool SearchAndSelect(WindowInfo *window, SearchDirection direction, const char *
 	return TRUE;
 }
 
-void SearchForSelected(WindowInfo *window, SearchDirection direction, int searchType, int searchWrap, Time time) {
+void SearchForSelected(Document *window, SearchDirection direction, int searchType, int searchWrap, Time time) {
 	SearchSelectedCallData *callData = XtNew(SearchSelectedCallData);
 	callData->direction = direction;
 	callData->searchType = searchType;
@@ -3130,7 +3130,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 
 	(void)selection;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;
 	int searchType;
 	char searchString[SEARCHMAX + 1];
@@ -3190,7 +3190,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 /*
 ** Pop up and clear the incremental search line and prepare to search.
 */
-void BeginISearch(WindowInfo *window, SearchDirection direction) {
+void BeginISearch(Document *window, SearchDirection direction) {
 	window->iSearchStartPos = -1;
 	XmTextSetStringEx(window->iSearchText, (String) "");
 	XmToggleButtonSetState(window->iSearchRevToggle, direction == SEARCH_BACKWARD, FALSE);
@@ -3210,7 +3210,7 @@ void BeginISearch(WindowInfo *window, SearchDirection direction) {
 ** to forget about this original anchor, and if the search bar is not
 ** permanently up, pop it down.
 */
-void EndISearch(WindowInfo *window) {
+void EndISearch(Document *window) {
 	/* Note: Please maintain this such that it can be freely peppered in
 	   mainline code, without callers having to worry about performance
 	   or visual glitches.  */
@@ -3229,7 +3229,7 @@ void EndISearch(WindowInfo *window) {
 ** Reset window->iSearchLastBeginPos to the resulting initial
 ** search begin position for incremental searches.
 */
-static void iSearchRecordLastBeginPos(WindowInfo *window, SearchDirection direction, int initPos) {
+static void iSearchRecordLastBeginPos(Document *window, SearchDirection direction, int initPos) {
 	window->iSearchLastBeginPos = initPos;
 	if (direction == SEARCH_BACKWARD)
 		window->iSearchLastBeginPos--;
@@ -3242,7 +3242,7 @@ static void iSearchRecordLastBeginPos(WindowInfo *window, SearchDirection direct
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncremental(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int continued) {
+bool SearchAndSelectIncremental(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int continued) {
 	int beginPos, startPos, endPos;
 
 	/* If there's a search in progress, start the search from the original
@@ -3311,7 +3311,7 @@ bool SearchAndSelectIncremental(WindowInfo *window, SearchDirection direction, c
 ** occurrence of the search string, and Shift+Return, which is the natural
 ** command for a reverse search does not naturally trigger this callback.
 */
-void SetISearchTextCallbacks(WindowInfo *window) {
+void SetISearchTextCallbacks(Document *window) {
 	static XtTranslations tableText = nullptr;
 	static const char *translationsText = "Shift<KeyPress>Return: activate()\n";
 
@@ -3356,7 +3356,7 @@ void SetISearchTextCallbacks(WindowInfo *window) {
 ** Remove callbacks before resetting the incremental search text to avoid any
 ** cursor movement and/or clearing of selections.
 */
-static void iSearchTextSetString(Widget w, WindowInfo *window, const std::string &str) {
+static void iSearchTextSetString(Widget w, Document *window, const std::string &str) {
 
 	(void)w;
 
@@ -3383,7 +3383,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 	memset(&cbdata, 0, sizeof(cbdata));
 	cbdata.event = event;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 
 	nullable_string selText = GetAnySelectionEx(window);
 	
@@ -3403,7 +3403,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 */
 static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	(void)callData;
@@ -3420,7 +3420,7 @@ static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_da
 */
 static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	const char *params[4];
@@ -3465,7 +3465,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 */
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	const char *params[5];
@@ -3530,7 +3530,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 
 
 	auto event = (XKeyEvent *)Event;
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
@@ -3588,7 +3588,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 ** the matching character (a timer procedure is scheduled for removing the
 ** highlights)
 */
-void FlashMatching(WindowInfo *window, Widget textW) {
+void FlashMatching(Document *window, Widget textW) {
 	char c;
 	void *style;
 	int pos, matchIndex;
@@ -3661,7 +3661,7 @@ void FlashMatching(WindowInfo *window, Widget textW) {
 	window->flashPos = matchPos;
 }
 
-void SelectToMatchingCharacter(WindowInfo *window) {
+void SelectToMatchingCharacter(Document *window) {
 	int selStart, selEnd;
 	int startPos, endPos, matchPos;
 	TextBuffer *buf = window->buffer;
@@ -3704,7 +3704,7 @@ void SelectToMatchingCharacter(WindowInfo *window) {
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 }
 
-void GotoMatchingCharacter(WindowInfo *window) {
+void GotoMatchingCharacter(Document *window) {
 	int selStart, selEnd;
 	int matchPos;
 	TextBuffer *buf = window->buffer;
@@ -3744,7 +3744,7 @@ void GotoMatchingCharacter(WindowInfo *window) {
 	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
 }
 
-static int findMatchingChar(WindowInfo *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
+static int findMatchingChar(Document *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
 	int nestDepth, matchIndex, direction, beginPos, pos;
 	char matchChar, c;
 	void *style = nullptr;
@@ -3819,15 +3819,15 @@ static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	eraseFlash(static_cast<WindowInfo *>(clientData));
-	(static_cast<WindowInfo *>(clientData))->flashTimeoutID = 0;
+	eraseFlash(static_cast<Document *>(clientData));
+	(static_cast<Document *>(clientData))->flashTimeoutID = 0;
 }
 
 /*
 ** Erase the marker drawn on a matching parenthesis bracket or brace
 ** character.
 */
-static void eraseFlash(WindowInfo *window) {
+static void eraseFlash(Document *window) {
 	window->buffer->BufUnhighlight();
 }
 
@@ -3835,7 +3835,7 @@ static void eraseFlash(WindowInfo *window) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
+bool ReplaceSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3848,7 +3848,7 @@ bool ReplaceSame(WindowInfo *window, SearchDirection direction, int searchWrap) 
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceFindSame(WindowInfo *window, SearchDirection direction, int searchWrap) {
+bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
 		XBell(TheDisplay, 0);
 		return FALSE;
@@ -3861,7 +3861,7 @@ bool ReplaceFindSame(WindowInfo *window, SearchDirection direction, int searchWr
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearch(WindowInfo *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
 	int startPos = 0;
 	int endPos = 0;
 	int replaceLen = 0;
@@ -3915,7 +3915,7 @@ bool ReplaceAndSearch(WindowInfo *window, SearchDirection direction, const char 
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool SearchAndReplace(WindowInfo *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
 	int startPos, endPos, replaceLen, searchExtentBW, searchExtentFW;
 	int found;
 	int beginPos, cursorPos;
@@ -4040,7 +4040,7 @@ static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *displa
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
-void ReplaceInSelection(const WindowInfo *window, const char *searchString, const char *replaceString, const int searchType) {
+void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, const int searchType) {
 	int selStart;
 	int selEnd;
 	int beginPos;
@@ -4206,7 +4206,7 @@ void ReplaceInSelection(const WindowInfo *window, const char *searchString, cons
 ** Replace all occurences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
-bool ReplaceAll(WindowInfo *window, const char *searchString, const char *replaceString, int searchType) {
+bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, int searchType) {
 	char *newFileString;
 	int copyStart, copyEnd, replacementLen;
 
@@ -4359,7 +4359,7 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 ** Emit a beep if the search wrapped over BOF/EOF compared to
 ** the last startPos of the current incremental search.
 */
-static void iSearchTryBeepOnWrap(WindowInfo *window, SearchDirection direction, int beginPos, int startPos) {
+static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos) {
 	if (GetPrefBeepOnSearchWrap()) {
 		if (direction == SEARCH_FORWARD) {
 			if ((startPos >= beginPos && window->iSearchLastBeginPos < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos >= beginPos)) {
@@ -4376,7 +4376,7 @@ static void iSearchTryBeepOnWrap(WindowInfo *window, SearchDirection direction, 
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindow(WindowInfo *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	bool found;
 	int resp;
 	int fileEnd = window->buffer->BufGetLength() - 1;
@@ -4868,10 +4868,10 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** all on these dialogs.  ...It seems to have started working around
 ** Motif 1.1.2
 */
-static void resetFindTabGroup(WindowInfo *window) {
+static void resetFindTabGroup(Document *window) {
 	XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
 }
-static void resetReplaceTabGroup(WindowInfo *window) {
+static void resetReplaceTabGroup(Document *window) {
 	XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);
 }
 
@@ -4880,7 +4880,7 @@ static void resetReplaceTabGroup(WindowInfo *window) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static bool searchMatchesSelection(WindowInfo *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+static bool searchMatchesSelection(Document *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
 	int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
 	int regexLookContext = isRegexType(searchType) ? 1000 : 0;
 	std::string string;
@@ -4993,7 +4993,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental) {
 	char *sStr, *rStr;
 	static int currentItemIsIncremental = FALSE;
-	WindowInfo *w;
+	Document *w;
 
 	/* Cancel accumulation of contiguous incremental searches (even if the
 	   information is not worthy of saving) if search is not incremental */
@@ -5152,7 +5152,7 @@ static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->findCaseToggle);
 
@@ -5175,7 +5175,7 @@ static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->replaceCaseToggle);
 
@@ -5198,7 +5198,7 @@ static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->iSearchCaseToggle);
 
@@ -5219,7 +5219,7 @@ static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button
@@ -5235,7 +5235,7 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button
@@ -5250,7 +5250,7 @@ static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button

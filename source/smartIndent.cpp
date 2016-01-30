@@ -31,7 +31,7 @@
 #include "nedit.h"
 #include "text.h"
 #include "preferences.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "interpret.h"
 #include "macro.h"
 #include "window.h"
@@ -95,8 +95,8 @@ static int NSmartIndentSpecs = 0;
 static smartIndentRec *SmartIndentSpecs[MAX_LANGUAGE_MODES];
 static char *CommonMacros = nullptr;
 
-static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo);
-static void executeModMacro(WindowInfo *window, smartIndentCBStruct *cbInfo);
+static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
+static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
 static int isDefaultIndentSpec(smartIndentRec *indentSpec);
 static smartIndentRec *findIndentSpec(const char *modeName);
@@ -242,7 +242,7 @@ static const char DefaultCommonMacros[] =
 ** be repeated whenever a new text widget is created within this window
 ** (a split-window command).
 */
-void BeginSmartIndent(WindowInfo *window, int warn) {
+void BeginSmartIndent(Document *window, int warn) {
 	windowSmartIndentData *winData;
 	smartIndentRec *indentMacros;
 	char *modeName;
@@ -318,7 +318,7 @@ void BeginSmartIndent(WindowInfo *window, int warn) {
 	window->smartIndentData = winData;
 }
 
-void EndSmartIndent(WindowInfo *window) {
+void EndSmartIndent(Document *window) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 
 	if(!winData)
@@ -352,7 +352,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	smartIndentCBStruct *cbInfo = (smartIndentCBStruct *)callData;
 
 	if (!window->smartIndentData)
@@ -367,7 +367,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** Run the newline macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo) {
+static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 	/* posValue probably shouldn't be static due to re-entrance issues <slobasso> */
 	static DataValue posValue = {INT_TAG, {0}, {0}};
@@ -415,7 +415,7 @@ static void executeNewlineMacro(WindowInfo *window, smartIndentCBStruct *cbInfo)
 	cbInfo->indentRequest = result.val.n;
 }
 
-Boolean InSmartIndentMacros(WindowInfo *window) {
+Boolean InSmartIndentMacros(Document *window) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 
 	return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
@@ -425,7 +425,7 @@ Boolean InSmartIndentMacros(WindowInfo *window) {
 ** Run the modification macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-static void executeModMacro(WindowInfo *window, smartIndentCBStruct *cbInfo) {
+static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
 	/* args probably shouldn't be static due to future re-entrance issues <slobasso> */
 	static DataValue args[2] = {{INT_TAG, {0}, {0}}, {STRING_TAG, {0}, {0}}};
@@ -465,7 +465,7 @@ static void executeModMacro(WindowInfo *window, smartIndentCBStruct *cbInfo) {
 	}
 }
 
-void EditSmartIndentMacros(WindowInfo *window) {
+void EditSmartIndentMacros(Document *window) {
 #define BORDER 4
 	Widget form, lmOptMenu, lmForm, lmBtn;
 	Widget okBtn, applyBtn, checkBtn, deleteBtn, commonBtn;
@@ -1149,7 +1149,7 @@ static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** apply changes to any window which is currently using the macros.
 */
 static int updateSmartIndentCommonData(void) {
-	WindowInfo *window;
+	Document *window;
 
 	/* Make sure the patterns are valid and compile */
 	if (!checkSmartIndentCommonDialogData())
@@ -1204,7 +1204,7 @@ static int checkSmartIndentCommonDialogData(void) {
 */
 static int updateSmartIndentData(void) {
 	smartIndentRec *newMacros;
-	WindowInfo *window;
+	Document *window;
 	char *lmName;
 	int i;
 

@@ -31,7 +31,7 @@
 #include "textSel.h"
 #include "text.h"
 #include "textDisp.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "textP.h"
 #include "UndoInfo.h"
 #include "nedit.h"
@@ -107,13 +107,7 @@
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
-/* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
-   (which may break in a future release) is not available */
-#define PANE_MIN_HEIGHT 39
 
-/* Thickness of 3D border around statistics and/or incremental search areas
-   below the main menu bar */
-#define STAT_SHADOW_THICKNESS 1
 
 /* bitmap data for the close-tab button */
 #define close_width 11
@@ -134,7 +128,7 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void hideTooltip(Widget tab);
 static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height);
-static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int crossWin, int wrap);
+static Document *getNextTabWindow(Document *window, int direction, int crossWin, int wrap);
 static Widget addTab(Widget folder, const char *string);
 static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
@@ -142,12 +136,12 @@ static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData);
 static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
-static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
-static void showStatistics(WindowInfo *window, int state);
-static void showISearch(WindowInfo *window, int state);
-static void showStatsForm(WindowInfo *window);
-static void addToWindowList(WindowInfo *window);
-static void removeFromWindowList(WindowInfo *window);
+static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
+static void showStatistics(Document *window, int state);
+static void showISearch(Document *window, int state);
+static void showStatsForm(Document *window);
+static void addToWindowList(Document *window);
+static void removeFromWindowList(Document *window);
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void movedCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -159,25 +153,35 @@ static void setPaneDesiredHeight(Widget w, int height);
 static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
-static void getGeometryString(WindowInfo *window, char *geomString);
-static void refreshMenuBar(WindowInfo *window);
-static void cloneDocument(WindowInfo *window, WindowInfo *orgWin);
-static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin);
+static void getGeometryString(Document *window, char *geomString);
+static void refreshMenuBar(Document *window);
+static void cloneDocument(Document *window, Document *orgWin);
+static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
-
-static WindowInfo *inFocusDocument = nullptr;   /* where we are now */
-static WindowInfo *lastFocusDocument = nullptr; /* where we came from */
 static int DoneWithMoveDocumentDialog;
-static int updateLineNumDisp(WindowInfo *window);
-static int updateGutterWidth(WindowInfo *window);
-static void deleteDocument(WindowInfo *window);
+static int updateLineNumDisp(Document *window);
+static int updateGutterWidth(Document *window);
+static void deleteDocument(Document *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
-/* From Xt, Shell.c, "BIGSIZE" */
-static const Dimension XT_IGNORE_PPOSITION = 32767;
+namespace {
 
-static void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
+/* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
+   (which may break in a future release) is not available */
+const int PANE_MIN_HEIGHT = 39;
+
+/* Thickness of 3D border around statistics and/or incremental search areas
+   below the main menu bar */
+const int STAT_SHADOW_THICKNESS = 1;
+
+Document *inFocusDocument = nullptr;   /* where we are now */
+Document *lastFocusDocument = nullptr; /* where we came from */
+
+/* From Xt, Shell.c, "BIGSIZE" */
+const Dimension XT_IGNORE_PPOSITION = 32767;
+
+void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
 
 	(void)dialog;
 	(void)clientData;
@@ -189,7 +193,7 @@ static void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_d
 /*
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
-static void redisplayTearOffs(Widget menuPane) {
+void redisplayTearOffs(Widget menuPane) {
 	WidgetList itemList;
 	Widget subMenuID;
 	Cardinal nItems;
@@ -209,10 +213,12 @@ static void redisplayTearOffs(Widget menuPane) {
 		ShowHiddenTearOff(menuPane);
 }
 
+}
+
 /*
 ** Create a new editor window
 */
-WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
+Document::Document(const char *name, char *geometry, bool iconic) {
 	
 	Widget winShell;
 	Widget mainWin;
@@ -228,7 +234,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	int ac;
 	XmString s1;
 	XmFontList statsFontList;
-	WindowInfo *win;
+	Document *win;
 	char newGeometry[MAX_GEOM_STRING_LEN];
 	unsigned int rows, cols;
 	int x = 0, y = 0, bitmask, showTabBar, state;
@@ -239,7 +245,7 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 
 	/* initialize window structure */
 	/* + Schwarzenberg: should a
-	  memset(window, 0, sizeof(WindowInfo));
+	  memset(window, 0, sizeof(Document));
 	     be added here ?
 	*/
 	this->replaceDlog = nullptr;
@@ -652,102 +658,33 @@ WindowInfo::WindowInfo(const char *name, char *geometry, bool iconic) {
 	}
 }
 
-bool WindowInfo::IsTopDocument() const {
+bool Document::IsTopDocument() const {
 	return this == GetTopDocument(this->shell);
 }
 
-Widget WindowInfo::GetPaneByIndex(int paneIndex) const {
-	Widget text = nullptr;
-	if (paneIndex >= 0 && paneIndex <= this->nPanes) {
-		text = (paneIndex == 0) ? this->textArea : this->textPanes[paneIndex - 1];
-	}
-	return text;
-}
 
-/*
-** make sure window is alive is kicking
-*/
-int WindowInfo::IsValidWindow() {
 
-	for (WindowInfo *win = WindowList; win; win = win->next) {
-		if (this == win) {
-			return true;
-		}
-	}
 
-	return false;
-}
 
-/*
-** return the number of documents owned by this shell window
-*/
-int WindowInfo::NDocuments() {
-	WindowInfo *win;
-	int nDocument = 0;
 
-	for (win = WindowList; win; win = win->next) {
-		if (win->shell == this->shell)
-			nDocument++;
-	}
-
-	return nDocument;
-}
-
-/*
-** check if tab bar is to be shown on this window
-*/
-int WindowInfo::GetShowTabBar() {
-	if (!GetPrefTabBar())
-		return False;
-	else if (this->NDocuments() == 1)
-		return !GetPrefTabBarHideOne();
-	else
-		return True;
-}
-
-/*
-** Returns true if window is iconic (as determined by the WM_STATE property
-** on the shell window.  I think this is the most reliable way to tell,
-** but if someone has a better idea please send me a note).
-*/
-int WindowInfo::IsIconic() {
-	unsigned long *property = nullptr;
-	unsigned long nItems;
-	unsigned long leftover;
-	static Atom wmStateAtom = 0;
-	Atom actualType;
-	int actualFormat;
-	
-	if (wmStateAtom == 0) {
-		wmStateAtom = XInternAtom(XtDisplay(this->shell), "WM_STATE", False);
-	}
-		
-	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
-		return FALSE;
-	}
-
-	int result = (*property == IconicState);
-	XtFree((char *)property);
-	return result;
-}
 
 /*
 ** close all the documents in a window
 */
-int WindowInfo::CloseAllDocumentInWindow() {
-	WindowInfo *win;
+int Document::CloseAllDocumentInWindow() {
+	Document *win;
 
 	if (this->NDocuments() == 1) {
 		/* only one document in the window */
 		return CloseFileAndWindow(this, PROMPT_SBC_DIALOG_RESPONSE);
 	} else {
 		Widget winShell = this->shell;
-		WindowInfo *topDocument;
+		Document *topDocument;
 
 		/* close all _modified_ documents belong to this window */
 		for (win = WindowList; win;) {
 			if (win->shell == winShell && win->fileChanged) {
-				WindowInfo *next = win->next;
+				Document *next = win->next;
 				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
 					return False;
 				win = next;
@@ -766,7 +703,7 @@ int WindowInfo::CloseAllDocumentInWindow() {
 			/* close all non-top documents belong to this window */
 			for (win = WindowList; win;) {
 				if (win->shell == winShell && win != topDocument) {
-					WindowInfo *next = win->next;
+					Document *next = win->next;
 					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
 						return False;
 					win = next;
@@ -786,8 +723,8 @@ int WindowInfo::CloseAllDocumentInWindow() {
 /*
 ** Bring up the last active window
 */
-void WindowInfo::LastDocument() {
-	WindowInfo *win;
+void Document::LastDocument() {
+	Document *win;
 
 	for (win = WindowList; win; win = win->next)
 		if (lastFocusDocument == win)
@@ -809,7 +746,7 @@ void WindowInfo::LastDocument() {
 ** of the horizontal scrolling part would be quite easy to make it work
 ** well with rectangular selections.
 */
-void WindowInfo::MakeSelectionVisible(Widget textPane) {
+void Document::MakeSelectionVisible(Widget textPane) {
 	int left, right, rectStart, rectEnd, horizOffset;
 	bool isRect;
 	int scrollOffset, leftX, rightX, y, rows, margin;
@@ -891,8 +828,8 @@ void WindowInfo::MakeSelectionVisible(Widget textPane) {
 ** present dialog for selecting a target window to move this document
 ** into. Do nothing if there is only one shell window opened.
 */
-void WindowInfo::MoveDocumentDialog() {
-	WindowInfo *win;
+void Document::MoveDocumentDialog() {
+	Document *win;
 	int i, nList = 0, ac;
 	char tmpStr[MAXPATHLEN + 50];
 	Widget parent, dialog, listBox, moveAllOption;
@@ -905,7 +842,7 @@ void WindowInfo::MoveDocumentDialog() {
 	   the document to be moved */
 	int nWindows = NWindows();
 	auto list         = new XmString[nWindows];
-	auto shellWinList = new WindowInfo *[nWindows];
+	auto shellWinList = new Document *[nWindows];
 
 	for (win = WindowList; win; win = win->next) {
 		if (!win->IsTopDocument() || win->shell == this->shell)
@@ -997,7 +934,7 @@ void WindowInfo::MoveDocumentDialog() {
 			/* move all documents */
 			for (win = WindowList; win;) {
 				if (win != this && win->shell == this->shell) {
-					WindowInfo *next = win->next;
+					Document *next = win->next;
 					win->MoveDocument(targetWin);
 					win = next;
 				} else
@@ -1018,8 +955,8 @@ void WindowInfo::MoveDocumentDialog() {
 /*
 ** Bring up the next window by tab order
 */
-void WindowInfo::NextDocument() {
-	WindowInfo *win;
+void Document::NextDocument() {
+	Document *win;
 
 	if (!WindowList->next)
 		return;
@@ -1037,13 +974,13 @@ void WindowInfo::NextDocument() {
 /*
 ** Bring up the previous window by tab order
 */
-void WindowInfo::PreviousDocument() {
+void Document::PreviousDocument() {
 
 	if (!WindowList->next) {
 		return;
 	}
 
-	WindowInfo *win = getNextTabWindow(this, -1, GetPrefGlobalTabNavigate(), 1);
+	Document *win = getNextTabWindow(this, -1, GetPrefGlobalTabNavigate(), 1);
 	if(!win)
 		return;
 
@@ -1056,7 +993,7 @@ void WindowInfo::PreviousDocument() {
 /*
 ** raise the document and its shell window and focus depending on pref.
 */
-void WindowInfo::RaiseDocumentWindow() {
+void Document::RaiseDocumentWindow() {
 	if (!this)
 		return;
 
@@ -1070,8 +1007,8 @@ void WindowInfo::RaiseDocumentWindow() {
 ** NB: use RaiseDocumentWindow() to raise the doc and
 **     its shell window.
 */
-void WindowInfo::RaiseDocument() {
-	WindowInfo *win, *lastwin;
+void Document::RaiseDocument() {
+	Document *win, *lastwin;
 
 	if (!this || !WindowList)
 		return;
@@ -1204,7 +1141,7 @@ static Widget addTab(Widget folder, const char *string) {
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
 */
-void WindowInfo::SortTabBar() {
+void Document::SortTabBar() {
 
 	if (!GetPrefSortTabs())
 		return;
@@ -1216,15 +1153,15 @@ void WindowInfo::SortTabBar() {
 	}
 
 	/* first sort the documents */
-	std::vector<WindowInfo *> windows;
+	std::vector<Document *> windows;
 	windows.reserve(nDoc);
 	
-	for (WindowInfo *w = WindowList; w != nullptr; w = w->next) {
+	for (Document *w = WindowList; w != nullptr; w = w->next) {
 		if (this->shell == w->shell)
 			windows.push_back(w);
 	}
 	
-	std::sort(windows.begin(), windows.end(), [](const WindowInfo *a, const WindowInfo *b) {
+	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
 		if(strcmp(a->filename, b->filename) < 0) {
 			return true;
 		}
@@ -1253,8 +1190,8 @@ void WindowInfo::SortTabBar() {
 /*
 ** find which document a tab belongs to
 */
-WindowInfo *TabToWindow(Widget tab) {
-	for (WindowInfo *win = WindowList; win; win = win->next) {
+Document *TabToWindow(Widget tab) {
+	for (Document *win = WindowList; win; win = win->next) {
 		if (win->tab == tab)
 			return win;
 	}
@@ -1265,12 +1202,12 @@ WindowInfo *TabToWindow(Widget tab) {
 /*
 ** Close a document, or an editor window
 */
-void WindowInfo::CloseWindow() {
+void Document::CloseWindow() {
 	int keepWindow, state;
 	char name[MAXPATHLEN];
-	WindowInfo *win;
-	WindowInfo *topBuf = nullptr;
-	WindowInfo *nextBuf = nullptr;
+	Document *win;
+	Document *topBuf = nullptr;
+	Document *nextBuf = nullptr;
 
 	/* Free smart indent macro programs */
 	EndSmartIndent(this);
@@ -1424,7 +1361,7 @@ void WindowInfo::CloseWindow() {
 	delete this;
 }
 
-void WindowInfo::ShowWindowTabBar() {
+void Document::ShowWindowTabBar() {
 	if (GetPrefTabBar()) {
 		if (GetPrefTabBarHideOne())
 			this->ShowTabBar(this->NDocuments() > 1);
@@ -1437,8 +1374,8 @@ void WindowInfo::ShowWindowTabBar() {
 /*
 ** Check if there is already a window open for a given file
 */
-WindowInfo *FindWindowWithFile(const char *name, const char *path) {
-	WindowInfo *window;
+Document *FindWindowWithFile(const char *name, const char *path) {
+	Document *window;
 
 	/* I don't think this algorithm will work on vms so I am
 	   disabling it for now */
@@ -1472,7 +1409,7 @@ WindowInfo *FindWindowWithFile(const char *name, const char *path) {
 ** Add another independently scrollable pane to the current document,
 ** splitting the pane which currently has keyboard focus.
 */
-void WindowInfo::SplitPane() {
+void Document::SplitPane() {
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
@@ -1558,7 +1495,7 @@ void WindowInfo::SplitPane() {
 	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
 }
 
-int WindowInfo::WidgetToPaneIndex(Widget w) {
+int Document::WidgetToPaneIndex(Widget w) {
 	int i;
 	Widget text;
 	int paneIndex = 0;
@@ -1576,7 +1513,7 @@ int WindowInfo::WidgetToPaneIndex(Widget w) {
 ** Close the window pane that last had the keyboard focus.  (Actually, close
 ** the bottom pane and make it look like pane which had focus was closed)
 */
-void WindowInfo::ClosePane() {
+void Document::ClosePane() {
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
@@ -1651,12 +1588,12 @@ void WindowInfo::ClosePane() {
 /*
 ** Turn on and off the display of line numbers
 */
-void WindowInfo::ShowLineNumbers(int state) {
+void Document::ShowLineNumbers(int state) {
 	Widget text;
 	int i, marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
-	WindowInfo *win;
+	Document *win;
 	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 
 	if (this->showLineNumbers == state)
@@ -1699,7 +1636,7 @@ void WindowInfo::ShowLineNumbers(int state) {
 	this->UpdateWMSizeHints();
 }
 
-void WindowInfo::SetTabDist(int tabDist) {
+void Document::SetTabDist(int tabDist) {
 	if (this->buffer->tabDist_ != tabDist) {
 		int saveCursorPositions[MAX_PANES + 1];
 		int saveVScrollPositions[MAX_PANES + 1];
@@ -1732,7 +1669,7 @@ void WindowInfo::SetTabDist(int tabDist) {
 	}
 }
 
-void WindowInfo::SetEmTabDist(int emTabDist) {
+void Document::SetEmTabDist(int emTabDist) {
 	int i;
 
 	XtVaSetValues(this->textArea, textNemulateTabs, emTabDist, nullptr);
@@ -1744,8 +1681,8 @@ void WindowInfo::SetEmTabDist(int emTabDist) {
 /*
 ** Turn on and off the display of the statistics line
 */
-void WindowInfo::ShowStatsLine(int state) {
-	WindowInfo *win;
+void Document::ShowStatsLine(int state) {
+	Document *win;
 	Widget text;
 	int i;
 
@@ -1773,7 +1710,7 @@ void WindowInfo::ShowStatsLine(int state) {
 ** Displays and undisplays the statistics line (regardless of settings of
 ** window->showStats or window->modeMessageDisplayed)
 */
-static void showStatistics(WindowInfo *window, int state) {
+static void showStatistics(Document *window, int state) {
 	if (state) {
 		XtManageChild(window->statsLineForm);
 		showStatsForm(window);
@@ -1789,7 +1726,7 @@ static void showStatistics(WindowInfo *window, int state) {
 
 /*
 */
-static void showTabBar(WindowInfo *window, int state) {
+static void showTabBar(Document *window, int state) {
 	if (state) {
 		XtManageChild(XtParent(window->tabBar));
 		showStatsForm(window);
@@ -1801,7 +1738,7 @@ static void showTabBar(WindowInfo *window, int state) {
 
 /*
 */
-void WindowInfo::ShowTabBar(int state) {
+void Document::ShowTabBar(int state) {
 	if (XtIsManaged(XtParent(this->tabBar)) == state)
 		return;
 	showTabBar(this, state);
@@ -1811,8 +1748,8 @@ void WindowInfo::ShowTabBar(int state) {
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void WindowInfo::ShowISearchLine(int state) {
-	WindowInfo *win;
+void Document::ShowISearchLine(int state) {
+	Document *win;
 
 	if (this->showISearchLine == state)
 		return;
@@ -1832,7 +1769,7 @@ void WindowInfo::ShowISearchLine(int state) {
 ** Temporarily show and hide the incremental search line if the line is not
 ** already up.
 */
-void WindowInfo::TempShowISearch(int state) {
+void Document::TempShowISearch(int state) {
 	if (this->showISearchLine)
 		return;
 	if (XtIsManaged(this->iSearchForm) != state)
@@ -1843,7 +1780,7 @@ void WindowInfo::TempShowISearch(int state) {
 ** Put up or pop-down the incremental search line regardless of settings
 ** of showISearchLine or TempShowISearch
 */
-static void showISearch(WindowInfo *window, int state) {
+static void showISearch(Document *window, int state) {
 	if (state) {
 		XtManageChild(window->iSearchForm);
 		showStatsForm(window);
@@ -1861,7 +1798,7 @@ static void showISearch(WindowInfo *window, int state) {
 ** Show or hide the extra display area under the main menu bar which
 ** optionally contains the status line and the incremental search bar
 */
-static void showStatsForm(WindowInfo *window) {
+static void showStatsForm(Document *window) {
 	Widget statsAreaForm = XtParent(window->statsLineForm);
 	Widget mainW = XtParent(statsAreaForm);
 
@@ -1896,7 +1833,7 @@ static void showStatsForm(WindowInfo *window) {
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void WindowInfo::SetModeMessage(const char *message) {
+void Document::SetModeMessage(const char *message) {
 	/* this document may be hidden (not on top) or later made hidden,
 	   so we save a copy of the mode message, so we can restore the
 	   statsline when the document is raised to top again */
@@ -1919,7 +1856,7 @@ void WindowInfo::SetModeMessage(const char *message) {
 ** Clear special statistics line message set in SetModeMessage, returns
 ** the statistics line to its original state as set in window->showStats
 */
-void WindowInfo::ClearModeMessage() {
+void Document::ClearModeMessage() {
 	if (!this->modeMessageDisplayed)
 		return;
 
@@ -1944,7 +1881,7 @@ void WindowInfo::ClearModeMessage() {
 ** Count the windows
 */
 int NWindows(void) {
-	WindowInfo *win;
+	Document *win;
 	int n;
 
 	for (win = WindowList, n = 0; win != nullptr; win = win->next, n++)
@@ -1955,7 +1892,7 @@ int NWindows(void) {
 /*
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
-void WindowInfo::SetAutoIndent(int state) {
+void Document::SetAutoIndent(int state) {
 	int autoIndent = state == AUTO_INDENT, smartIndent = state == SMART_INDENT;
 	int i;
 
@@ -1978,7 +1915,7 @@ void WindowInfo::SetAutoIndent(int state) {
 ** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
 ** Update the menu to reflect the change of state.
 */
-void WindowInfo::SetShowMatching(int state) {
+void Document::SetShowMatching(int state) {
 	this->showMatchingStyle = state;
 	if (this->IsTopDocument()) {
 		XmToggleButtonSetState(this->showMatchingOffItem, state == NO_FLASH, False);
@@ -1990,7 +1927,7 @@ void WindowInfo::SetShowMatching(int state) {
 /*
 ** Update the "New (in X)" menu item to reflect the preferences
 */
-void WindowInfo::UpdateNewOppositeMenu(int openInTab) {
+void Document::UpdateNewOppositeMenu(int openInTab) {
 	XmString lbl;
 	if (openInTab)
 		XtVaSetValues(this->newOppositeItem, XmNlabelString, lbl = XmStringCreateSimpleEx("New Window"), XmNmnemonic, 'W', nullptr);
@@ -2012,7 +1949,7 @@ void WindowInfo::UpdateNewOppositeMenu(int openInTab) {
 ** (which shouldn't happen much in normal NEdit operation), and skip the
 ** futile effort of freeing them.
 */
-void WindowInfo::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
+void Document::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
 
 	XFontStruct *font, *oldFont;
 	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
@@ -2104,7 +2041,7 @@ void WindowInfo::SetFonts(const char *fontName, const char *italicName, const ch
 	this->UpdateMinPaneHeights();
 }
 
-void WindowInfo::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
+void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 	
 	int i, dummy;
 	
@@ -2134,7 +2071,7 @@ void WindowInfo::SetColors(const char *textFg, const char *textBg, const char *s
 /*
 ** Set insert/overstrike mode
 */
-void WindowInfo::SetOverstrike(int overstrike) {
+void Document::SetOverstrike(int overstrike) {
 
 	XtVaSetValues(this->textArea, textNoverstrike, overstrike, nullptr);
 	for (int i = 0; i < this->nPanes; i++)
@@ -2145,7 +2082,7 @@ void WindowInfo::SetOverstrike(int overstrike) {
 /*
 ** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
 */
-void WindowInfo::SetAutoWrap(int state) {
+void Document::SetAutoWrap(int state) {
 	int i;
 	int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;
 
@@ -2164,7 +2101,7 @@ void WindowInfo::SetAutoWrap(int state) {
 /*
 ** Set the auto-scroll margin
 */
-void WindowInfo::SetAutoScroll(int margin) {
+void Document::SetAutoScroll(int margin) {
 	int i;
 
 	XtVaSetValues(this->textArea, textNcursorVPadding, margin, nullptr);
@@ -2182,8 +2119,8 @@ void WindowInfo::SetAutoScroll(int margin) {
 ** To support action routine in tabbed windows, a copy of the window
 ** pointer is also store in the splitPane widget.
 */
-WindowInfo *WidgetToWindow(Widget w) {
-	WindowInfo *window = nullptr;
+Document *WidgetToWindow(Widget w) {
+	Document *window = nullptr;
 	Widget parent;
 
 	while (true) {
@@ -2221,7 +2158,7 @@ WindowInfo *WidgetToWindow(Widget w) {
 ** Change the window appearance and the window data structure to show
 ** that the file it contains has been modified
 */
-void WindowInfo::SetWindowModified(int modified) {
+void Document::SetWindowModified(int modified) {
 	if (this->fileChanged == FALSE && modified == TRUE) {
 		this->SetSensitive(this->closeItem, TRUE);
 		this->fileChanged = TRUE;
@@ -2238,7 +2175,7 @@ void WindowInfo::SetWindowModified(int modified) {
 ** Update the window title to reflect the filename, read-only, and modified
 ** status of the window data structure
 */
-void WindowInfo::UpdateWindowTitle() {
+void Document::UpdateWindowTitle() {
 
 	if (!this->IsTopDocument()) {
 		return;
@@ -2275,7 +2212,7 @@ void WindowInfo::UpdateWindowTitle() {
 ** the ReadOnly toggle button in the File menu to agree with the state in
 ** the window data structure.
 */
-void WindowInfo::UpdateWindowReadOnly() {
+void Document::UpdateWindowReadOnly() {
 	int i, state;
 
 	if (!this->IsTopDocument())
@@ -2315,7 +2252,7 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 
 
 
-static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
+static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
 
 	/* Create a text widget inside of a scrolled window widget */
 	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
@@ -2394,7 +2331,7 @@ static Widget createTextArea(Widget parent, WindowInfo *window, int rows, int co
 
 static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2427,7 +2364,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 	(void)nRestyled;
 
-	WindowInfo *window = (WindowInfo *)cbArg;
+	Document *window = (Document *)cbArg;
 	int selected = window->buffer->primary_.selected;
 
 	/* update the table of bookmarks */
@@ -2491,7 +2428,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 
@@ -2510,7 +2447,7 @@ static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	(void)callData;
 	(void)w;
@@ -2523,7 +2460,7 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 	(void)w;
 	
-	auto window   = static_cast<WindowInfo *>(clientData);
+	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<dragEndCBStruct *>(call_data);
 
 	/* restore recording of undo information */
@@ -2540,7 +2477,7 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 	
 	window = WidgetToWindow(w);
 	if (!WindowCanBeClosed(window)) {
@@ -2558,7 +2495,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	WindowInfo *win, *topWin;
+	Document *win, *topWin;
 	char geometry[MAX_GEOM_STRING_LEN];
 	int i;
 	int wasIconic = False;
@@ -2571,11 +2508,11 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   order for re-associating stored geometry information with
 	   new windows created by a restored application */
 	int nWindows = 0;
-	for (WindowInfo *win = WindowList; win != nullptr; win = win->next) {
+	for (Document *win = WindowList; win != nullptr; win = win->next) {
 		nWindows++;
 	}
 	
-	auto revWindowList = new WindowInfo *[nWindows];
+	auto revWindowList = new Document *[nWindows];
 	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--) {
 		revWindowList[i] = win;
 	}
@@ -2660,9 +2597,9 @@ void AttachSessionMgrHandler(Widget appShell) {
 /*
 ** Add a window to the the window list.
 */
-static void addToWindowList(WindowInfo *window) {
+static void addToWindowList(Document *window) {
 
-	WindowInfo *temp = WindowList;
+	Document *temp = WindowList;
 	WindowList = window;
 	window->next = temp;
 }
@@ -2670,8 +2607,8 @@ static void addToWindowList(WindowInfo *window) {
 /*
 ** Remove a window from the list of windows
 */
-static void removeFromWindowList(WindowInfo *window) {
-	WindowInfo *temp;
+static void removeFromWindowList(Document *window) {
+	Document *temp;
 
 	if (WindowList == window) {
 		WindowList = window->next;
@@ -2691,8 +2628,8 @@ static void removeFromWindowList(WindowInfo *window) {
 **
 **  (Iteration taken from NDocuments(); is there a better way to do it?)
 */
-static int updateGutterWidth(WindowInfo *window) {
-	WindowInfo *document;
+static int updateGutterWidth(Document *window) {
+	Document *document;
 	int reqCols = MIN_LINE_NUM_COLS;
 	int newColsDiff = 0;
 	int maxCols = 0;
@@ -2764,7 +2701,7 @@ static int updateGutterWidth(WindowInfo *window) {
 **  If necessary, enlarges the window and line number display area to make
 **  room for numbers.
 */
-static int updateLineNumDisp(WindowInfo *window) {
+static int updateLineNumDisp(Document *window) {
 	if (!window->showLineNumbers) {
 		return 0;
 	}
@@ -2777,7 +2714,7 @@ static int updateLineNumDisp(WindowInfo *window) {
 /*
 ** Update the optional statistics line.
 */
-void WindowInfo::UpdateStatsLine() {
+void Document::UpdateStatsLine() {
 	int line;
 	int colNum;	
 	Widget statW = this->statsLine;
@@ -2844,7 +2781,7 @@ static long getRelTimeInTenthsOfSeconds() {
 }
 
 void AllWindowsBusy(const char *message) {
-	WindowInfo *w;
+	Document *w;
 
 	if (!currentlyBusy) {
 		busyStartTime = getRelTimeInTenthsOfSeconds();
@@ -2875,7 +2812,7 @@ void AllWindowsBusy(const char *message) {
 
 void AllWindowsUnbusy(void) {
 
-	for (WindowInfo *w = WindowList; w; w = w->next) {
+	for (Document *w = WindowList; w; w = w->next) {
 		w->ClearModeMessage();
 		EndWait(w->shell);
 	}
@@ -2907,7 +2844,7 @@ static void setPaneMinHeight(Widget w, int min) {
 ** hints also makes the resize indicator show the window size in characters
 ** rather than pixels, which is very helpful to users.
 */
-void WindowInfo::UpdateWMSizeHints() {
+void Document::UpdateWMSizeHints() {
 	Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
 	int marginHeight, marginWidth, totalHeight, nCols, nRows;
 	XFontStruct *fs;
@@ -2965,7 +2902,7 @@ void WindowInfo::UpdateWMSizeHints() {
 ** Update the minimum allowable height for a split pane after a change
 ** to font or margin height.
 */
-void WindowInfo::UpdateMinPaneHeights() {
+void Document::UpdateMinPaneHeights() {
 	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 	Dimension hsbHeight, swMarginHeight, frameShadowHeight;
 	int i, marginHeight, minPaneHeight;
@@ -3035,7 +2972,7 @@ static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, un
 ** A string of at least MAX_GEOMETRY_STRING_LEN characters should be
 ** provided in the argument "geomString" to receive the result.
 */
-static void getGeometryString(WindowInfo *window, char *geomString) {
+static void getGeometryString(Document *window, char *geomString) {
 	int x, y, fontWidth, fontHeight, baseWidth, baseHeight;
 	unsigned int width, height, dummyW, dummyH, bw, depth, nChild;
 	Window parent, root, *child, w = XtWindow(window->shell);
@@ -3080,13 +3017,13 @@ static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	static_cast<WindowInfo *>(clientData)->UpdateWMSizeHints();
+	static_cast<Document *>(clientData)->UpdateWMSizeHints();
 }
 
 /*
 ** Set the backlight character class string
 */
-void WindowInfo::SetBacklightChars(char *applyBacklightTypes) {
+void Document::SetBacklightChars(char *applyBacklightTypes) {
 	int i;
 	int is_applied = XmToggleButtonGetState(this->backlightCharsItem) ? 1 : 0;
 	int do_apply = applyBacklightTypes ? 1 : 0;
@@ -3188,7 +3125,7 @@ static Widget manageToolBars(Widget toolBarsForm) {
 ** Calculate the dimension of the text area, in terms of rows & cols,
 ** as if there's only one single text pane in the window.
 */
-static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols) {
+static void getTextPaneDimension(Document *window, int *nRows, int *nCols) {
 	Widget hScrollBar;
 	Dimension hScrollBarHeight, paneHeight;
 	int marginHeight, marginWidth, totalHeight, fontHeight;
@@ -3213,12 +3150,12 @@ static void getTextPaneDimension(WindowInfo *window, int *nRows, int *nCols) {
 ** unnecessarily; hence speeding up the process of opening
 ** multiple files.
 */
-WindowInfo *WindowInfo::CreateDocument(const char *name) {
+Document *Document::CreateDocument(const char *name) {
 	Widget pane, text;
 	int nCols, nRows;
 
 	/* Allocate some memory for the new window data structure */
-	auto window = new WindowInfo(*this);
+	auto window = new Document(*this);
 
 #if 0
     /* share these dialog items with parent shell */
@@ -3405,9 +3342,9 @@ WindowInfo *WindowInfo::CreateDocument(const char *name) {
 ** tab will be the second from the left.  This is useful for getting
 ** the next tab after a tab detaches/closes and you don't want to wrap around.
 */
-static WindowInfo *getNextTabWindow(WindowInfo *window, int direction, int crossWin, int wrap) {
+static Document *getNextTabWindow(Document *window, int direction, int crossWin, int wrap) {
 	WidgetList tabList;
-	WindowInfo *win;
+	Document *win;
 	int tabCount, tabTotalCount;
 	int tabPos, nextPos;
 	int i, n;
@@ -3497,7 +3434,7 @@ static int getTabPosition(Widget tab) {
 /*
 ** update the tab label, etc. of a tab, per the states of it's document.
 */
-void WindowInfo::RefreshTabState() {
+void Document::RefreshTabState() {
 	XmString s1, tipString;
 	char labelString[MAXPATHLEN];
 	char *tag = XmFONTLIST_DEFAULT_TAG;
@@ -3533,7 +3470,7 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 
 	(void)w;
 	
-	auto window = static_cast<WindowInfo *>(clientData);
+	auto window = static_cast<Document *>(clientData);
 
 	int nDocuments = window->NDocuments();
 
@@ -3558,7 +3495,7 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 ** Refresh the menu entries per the settings of the
 ** top document.
 */
-void WindowInfo::RefreshMenuToggleStates() {
+void Document::RefreshMenuToggleStates() {
 
 	if (!this->IsTopDocument())
 		return;
@@ -3600,7 +3537,7 @@ void WindowInfo::RefreshMenuToggleStates() {
 	XtSetSensitive(this->detachDocumentItem, this->NDocuments() > 1);
 	XtSetSensitive(this->contextDetachDocumentItem, this->NDocuments() > 1);
 
-	WindowInfo *win;
+	Document *win;
 	for (win = WindowList; win; win = win->next)
 		if (win->shell != this->shell)
 			break;
@@ -3611,7 +3548,7 @@ void WindowInfo::RefreshMenuToggleStates() {
 ** Refresh the various settings/state of the shell window per the
 ** settings of the top document.
 */
-static void refreshMenuBar(WindowInfo *window) {
+static void refreshMenuBar(Document *window) {
 	window->RefreshMenuToggleStates();
 
 	/* Add/remove language specific menu items */
@@ -3624,8 +3561,8 @@ static void refreshMenuBar(WindowInfo *window) {
 /*
 ** remember the last document.
 */
-WindowInfo *WindowInfo::MarkLastDocument() {
-	WindowInfo *prev = lastFocusDocument;
+Document *Document::MarkLastDocument() {
+	Document *prev = lastFocusDocument;
 
 	if (this)
 		lastFocusDocument = this;
@@ -3636,8 +3573,8 @@ WindowInfo *WindowInfo::MarkLastDocument() {
 /*
 ** remember the active (top) document.
 */
-WindowInfo *WindowInfo::MarkActiveDocument() {
-	WindowInfo *prev = inFocusDocument;
+Document *Document::MarkActiveDocument() {
+	Document *prev = inFocusDocument;
 
 	if (this)
 		inFocusDocument = this;
@@ -3651,7 +3588,7 @@ WindowInfo *WindowInfo::MarkActiveDocument() {
 /*
 ** raise the document and its shell window and optionally focus.
 */
-void WindowInfo::RaiseFocusDocumentWindow(Boolean focus) {
+void Document::RaiseFocusDocumentWindow(Boolean focus) {
 	if (!this)
 		return;
 
@@ -3685,13 +3622,13 @@ static void hideTearOffs(Widget menuPane) {
 		XtUnmapWidget(XtParent(menuPane));
 }
 
-WindowInfo *GetTopDocument(Widget w) {
-	WindowInfo *window = WidgetToWindow(w);
+Document *GetTopDocument(Widget w) {
+	Document *window = WidgetToWindow(w);
 
 	return WidgetToWindow(window->shell);
 }
 
-static void deleteDocument(WindowInfo *window) {
+static void deleteDocument(Document *window) {
 	if (nullptr == window) {
 		return;
 	}
@@ -3702,7 +3639,7 @@ static void deleteDocument(WindowInfo *window) {
 /*
 ** refresh window state for this document
 */
-void WindowInfo::RefreshWindowStates() {
+void Document::RefreshWindowStates() {
 	if (!this->IsTopDocument())
 		return;
 
@@ -3744,7 +3681,7 @@ void WindowInfo::RefreshWindowStates() {
 	updateLineNumDisp(this);
 }
 
-static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
+static void cloneTextPanes(Document *window, Document *orgWin) {
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
@@ -3855,7 +3792,7 @@ static void cloneTextPanes(WindowInfo *window, WindowInfo *orgWin) {
 /*
 ** clone a document's states and settings into the other.
 */
-static void cloneDocument(WindowInfo *window, WindowInfo *orgWin) {
+static void cloneDocument(Document *window, Document *orgWin) {
 	char *params[4];
 	int emTabDist;
 
@@ -3991,8 +3928,8 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 /*
 ** spin off the document to a new window
 */
-WindowInfo *WindowInfo::DetachDocument() {
-	WindowInfo *win = nullptr;
+Document *Document::DetachDocument() {
+	Document *win = nullptr;
 
 	if (this->NDocuments() < 2)
 		return nullptr;
@@ -4005,7 +3942,7 @@ WindowInfo *WindowInfo::DetachDocument() {
 	}
 
 	/* Create a new this */
-	auto cloneWin = new WindowInfo(this->filename, nullptr, false);
+	auto cloneWin = new Document(this->filename, nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's
@@ -4049,8 +3986,8 @@ WindowInfo *WindowInfo::DetachDocument() {
 ** the moving document will receive certain window settings from
 ** its new host, i.e. the window size, stats and isearch lines.
 */
-WindowInfo *WindowInfo::MoveDocument(WindowInfo *toWindow) {
-	WindowInfo *win = nullptr, *cloneWin;
+Document *Document::MoveDocument(Document *toWindow) {
+	Document *win = nullptr, *cloneWin;
 
 	/* prepare to move document */
 	if (this->NDocuments() < 2) {
@@ -4103,7 +4040,7 @@ static void hideTooltip(Widget tab) {
 
 static void closeTabProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
-	CloseFileAndWindow(static_cast<WindowInfo *>(clientData), PROMPT_SBC_DIALOG_RESPONSE);
+	CloseFileAndWindow(static_cast<Document *>(clientData), PROMPT_SBC_DIALOG_RESPONSE);
 }
 
 /*
@@ -4164,28 +4101,12 @@ static void cancelTimeOut(XtIntervalId *timer) {
 	}
 }
 
-/*
-** set/clear toggle menu state if the calling document is on top.
-*/
-void WindowInfo::SetToggleButtonState(Widget w, Boolean state, Boolean notify) {
-	if (this->IsTopDocument()) {
-		XmToggleButtonSetState(w, state, notify);
-	}
-}
 
-/*
-** set/clear menu sensitivity if the calling document is on top.
-*/
-void WindowInfo::SetSensitive(Widget w, Boolean sensitive) {
-	if (this->IsTopDocument()) {
-		XtSetSensitive(w, sensitive);
-	}
-}
 
 /*
 ** Remove redundant expose events on tab bar.
 */
-void WindowInfo::CleanUpTabBarExposeQueue() {
+void Document::CleanUpTabBarExposeQueue() {
 	XEvent event;
 	XExposeEvent ev;
 	int count;

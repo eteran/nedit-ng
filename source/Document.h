@@ -1,6 +1,6 @@
 
-#ifndef WINDOW_INFO_H_
-#define WINDOW_INFO_H_
+#ifndef DOCUMENT_H_
+#define DOCUMENT_H_
 
 #include "nedit.h"
 #include "preferences.h"
@@ -13,7 +13,7 @@
 struct TextBuffer;
 struct UndoInfo;
 
-/* The WindowInfo structure holds the information on a Document. A number
+/* The Document structure holds the information on a Document. A number
    of 'tabbed' documents may reside within a shell window, hence some of
    its members are of 'shell-level'; namely the find/replace dialogs, the
    menu bar & its associated members, the components on the stats area
@@ -27,21 +27,21 @@ struct UndoInfo;
 
    Prior to the introduction of tabbed mode, each window may house only
    one document, making it effectively an 'editor window', hence the name
-   WindowInfo. This struct name has been preserved to ease the transition
+   Document. This struct name has been preserved to ease the transition
    when tabbed mode was introduced after NEdit 5.4.
 */
-struct WindowInfo {
+struct Document {
 public:
-	WindowInfo(const char *name, char *geometry, bool iconic);
-	WindowInfo(const WindowInfo &) = default;
-	WindowInfo& operator=(const WindowInfo &) = default;
+	Document(const char *name, char *geometry, bool iconic);
+	Document(const Document &) = default;
+	Document& operator=(const Document &) = default;
 
 public:
-	WindowInfo *CreateDocument(const char *name);
-	WindowInfo *DetachDocument();
-	WindowInfo *MarkActiveDocument();
-	WindowInfo *MarkLastDocument();
-	WindowInfo *MoveDocument(WindowInfo *toWindow);
+	Document *CreateDocument(const char *name);
+	Document *DetachDocument();
+	Document *MarkActiveDocument();
+	Document *MarkLastDocument();
+	Document *MoveDocument(Document *toWindow);
 	
 public:
 	bool IsTopDocument() const;
@@ -105,7 +105,7 @@ public:
 	void ClearRedoList();
 
 public:
-	WindowInfo *next;
+	Document *next;
 
 public:
 	Widget shell;                /* application shell of window */
@@ -279,6 +279,7 @@ public:
 	Widget bgMenuUndoItem;
 	Widget bgMenuRedoItem;
 
+public:
 	char filename[MAXPATHLEN];   /* name component of file being edited*/
 	char path[MAXPATHLEN];       /* path component of file being edited*/
 	unsigned fileMode;           /* permissions of file being edited */
@@ -342,7 +343,7 @@ public:
 	Atom fileClosedAtom;           /* Atom used to tell nc that the file is closed */
 	int languageMode;              /* identifies language mode currently selected in the window */
 	bool multiFileReplSelected; /* selected during last multi-window replacement operation (history) */
-	WindowInfo ** writableWindows;          /* temporary list of writable windows, used during multi-file replacements */
+	Document ** writableWindows;          /* temporary list of writable windows, used during multi-file replacements */
 	int nWritableWindows;          /* number of elements in the list */
 	Bool multiFileBusy;            /* suppresses multiple beeps/dialogs during multi-file replacements */
 	Bool replaceFailed;            /* flags replacements failures during multi-file replacements */

@@ -31,7 +31,7 @@
 #include "text.h"
 #include "nedit.h"
 #include "window.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "file.h"
 #include "preferences.h"
 #include "search.h"
@@ -87,7 +87,7 @@ struct tag {
 enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
-static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
+static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
@@ -95,8 +95,8 @@ static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static int delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
 static tag *getTag(const char *name, int search_type);
-static int findDef(WindowInfo *window, const char *value, int search_type);
-static int findAllMatches(WindowInfo *window, const char *string);
+static int findDef(Document *window, const char *value, int search_type);
+static int findAllMatches(Document *window, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
 static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char *args[]);
 static void editTaggedLocation(Widget parent, int i);
@@ -135,7 +135,7 @@ static int globVAlign;
 static int globAlignMode;
 
 /* A wrapper for calling TextDShowCalltip */
-static int tagsShowCalltip(WindowInfo *window, char *text) {
+static int tagsShowCalltip(Document *window, char *text) {
 	if (text)
 		return ShowCalltip(window, text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	else
@@ -547,7 +547,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 ** and "Unload Calltips File" menu items in the existing windows.
 */
 static void updateMenuItems(void) {
-	WindowInfo *w;
+	Document *w;
 	Boolean tipStat = FALSE, tagStat = FALSE;
 
 	if (TipsFileList)
@@ -863,7 +863,7 @@ int LookupTag(const char *name, const char **file, int *language, const char **s
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-static int findDef(WindowInfo *window, const char *value, int search_type) {
+static int findDef(Document *window, const char *value, int search_type) {
 	static char tagText[MAX_TAG_LEN + 1];
 	const char *p;
 	char message[MAX_TAG_LEN + 40];
@@ -913,7 +913,7 @@ static int findDef(WindowInfo *window, const char *value, int search_type) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-static void findDefinitionHelper(WindowInfo *window, Time time, const char *arg, int search_type) {
+static void findDefinitionHelper(Document *window, Time time, const char *arg, int search_type) {
 	if (arg) {
 		findDef(window, arg, search_type);
 	} else {
@@ -925,14 +925,14 @@ static void findDefinitionHelper(WindowInfo *window, Time time, const char *arg,
 /*
 ** See findDefHelper
 */
-void FindDefinition(WindowInfo *window, Time time, const char *arg) {
+void FindDefinition(Document *window, Time time, const char *arg) {
 	findDefinitionHelper(window, time, arg, TAG);
 }
 
 /*
 ** See findDefHelper
 */
-void FindDefCalltip(WindowInfo *window, Time time, const char *arg) {
+void FindDefCalltip(Document *window, Time time, const char *arg) {
 	/* Reset calltip parameters to reasonable defaults */
 	globAnchored = False;
 	globPos = -1;
@@ -944,7 +944,7 @@ void FindDefCalltip(WindowInfo *window, Time time, const char *arg) {
 }
 
 /* Callback function for FindDefinition */
-static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
+static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
 
 	(void)widget;
 	(void)sel;
@@ -967,7 +967,7 @@ static void findDefCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, 
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int ShowTipString(WindowInfo *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode) {
+int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode) {
 
 	if (search_type == TAG)
 		return 0;
@@ -1093,7 +1093,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 /*      Finds all matches and handles tag "collisions". Prompts user with a
         list of collided tags in the hash table and allows the user to select
         the correct one. */
-static int findAllMatches(WindowInfo *window, const char *string) {
+static int findAllMatches(Document *window, const char *string) {
 	Widget dialogParent = window->textArea;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
 	char temp[32 + 2 * MAXPATHLEN + MAXLINE];
@@ -1387,8 +1387,8 @@ static void editTaggedLocation(Widget parent, int i) {
 	        WindowList */
 	int startPos, endPos, lineNum, rows;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	WindowInfo *windowToSearch;
-	WindowInfo *parentWindow = WidgetToWindow(parent);
+	Document *windowToSearch;
+	Document *parentWindow = WidgetToWindow(parent);
 
 	ParseFilename(tagFiles[i], filename, pathname);
 	/* open the file containing the definition */

@@ -105,7 +105,7 @@ union Inst {
 	struct Symbol *sym;
 };
 
-typedef int (*BuiltInSubr)(WindowInfo *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
+typedef int (*BuiltInSubr)(Document *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
 struct NString {
 	char *rep;
@@ -158,8 +158,8 @@ struct RestartData {
 	DataValue *stackP;
 	DataValue *frameP;
 	Inst *pc;
-	WindowInfo *runWindow;
-	WindowInfo *focusWindow;
+	Document *runWindow;
+	Document *focusWindow;
 };
 
 void InitMacroGlobals(void);
@@ -198,7 +198,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 #define PERM_ALLOC_STR(xStr) (((char *)("\001" xStr)) + 1)
 
 /* Routines for executing programs */
-int ExecuteMacro(WindowInfo *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
+int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
 int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro(void);
@@ -213,9 +213,9 @@ void FreeRestartData(RestartData *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValue(RestartData *context, DataValue dv);
-WindowInfo *MacroRunWindow(void);
-WindowInfo *MacroFocusWindow(void);
-void SetMacroFocusWindow(WindowInfo *window);
+Document *MacroRunWindow(void);
+Document *MacroFocusWindow(void);
+void SetMacroFocusWindow(Document *window);
 /* function used for implicit conversion from string to number */
 int StringToNum(const char *string, int *number);
 

@@ -32,7 +32,7 @@
 #include "window.h"
 #include "menu.h"
 #include "preferences.h"
-#include "WindowInfo.h"
+#include "Document.h"
 #include "server.h"
 #include "../util/DialogF.h"
 #include "../util/fileUtils.h"
@@ -52,8 +52,8 @@
 
 static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format);
 
-static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
-static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format);
+static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
+static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
 static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -111,7 +111,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	return *lineNum == -1 && *column == -1 ? -1 : 0;
 }
 
-void GotoLineNumber(WindowInfo *window) {
+void GotoLineNumber(Document *window) {
 	char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
 	int lineNum, column, response;
 
@@ -127,11 +127,11 @@ void GotoLineNumber(WindowInfo *window) {
 	XtCallActionProc(window->lastFocus, "goto_line_number", nullptr, params, 1);
 }
 
-void GotoSelectedLineNumber(WindowInfo *window, Time time) {
+void GotoSelectedLineNumber(Document *window, Time time) {
 	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)gotoCB, window, time);
 }
 
-void OpenSelectedFile(WindowInfo *window, Time time) {
+void OpenSelectedFile(Document *window, Time time) {
 	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)fileCB, window, time);
 }
 
@@ -140,7 +140,7 @@ void OpenSelectedFile(WindowInfo *window, Time time) {
 ** (processing events) while waiting for a reply.  On failure (timeout or
 ** bad format) returns nullptr, otherwise returns the contents of the selection.
 */
-nullable_string GetAnySelectionEx(WindowInfo *window) {
+nullable_string GetAnySelectionEx(Document *window) {
 	static char waitingMarker[1] = "";
 	char *selText = waitingMarker;
 	XEvent nextEvent;
@@ -171,7 +171,7 @@ nullable_string GetAnySelectionEx(WindowInfo *window) {
 	return s;
 }
 
-static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
+static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
 
 	(void)sel;
 
@@ -228,7 +228,7 @@ static void gotoCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, cha
 	TextSetCursorPos(widget, position);
 }
 
-static void fileCB(Widget widget, WindowInfo *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
+static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
 
 	(void)widget;
 	(void)sel;
@@ -323,7 +323,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 	(*result)[*length] = '\0';
 }
 
-void SelectNumberedLine(WindowInfo *window, int lineNum) {
+void SelectNumberedLine(Document *window, int lineNum) {
 	int i, lineStart = 0, lineEnd;
 
 	/* count lines to find the start and end positions for the selection */
@@ -355,7 +355,7 @@ void SelectNumberedLine(WindowInfo *window, int lineNum) {
 	TextSetCursorPos(window->lastFocus, lineStart);
 }
 
-void MarkDialog(WindowInfo *window) {
+void MarkDialog(Document *window) {
 	char letterText[DF_MAX_PROMPT_LENGTH], *params[1];
 	int response;
 
@@ -374,7 +374,7 @@ void MarkDialog(WindowInfo *window) {
 	XtCallActionProc(window->lastFocus, "mark", nullptr, params, 1);
 }
 
-void GotoMarkDialog(WindowInfo *window, int extend) {
+void GotoMarkDialog(Document *window, int extend) {
 	char letterText[DF_MAX_PROMPT_LENGTH];
 	const char *params[2];
 	int response;
@@ -401,7 +401,7 @@ void GotoMarkDialog(WindowInfo *window, int extend) {
 ** behavior (type a character a-z) or bad behavior (do nothing or type
 ** something else).
 */
-void BeginMarkCommand(WindowInfo *window) {
+void BeginMarkCommand(Document *window) {
 	XtInsertEventHandler(window->lastFocus, KeyPressMask, False, markKeyCB, window, XtListHead);
 	window->markTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 4000, markTimeoutProc, window->lastFocus);
 }
@@ -412,7 +412,7 @@ void BeginMarkCommand(WindowInfo *window) {
 ** user behavior (type a character a-z) or bad behavior (do nothing or type
 ** something else).
 */
-void BeginGotoMarkCommand(WindowInfo *window, int extend) {
+void BeginGotoMarkCommand(Document *window, int extend) {
 	XtInsertEventHandler(window->lastFocus, KeyPressMask, False, extend ? gotoMarkExtendKeyCB : gotoMarkKeyCB, window, XtListHead);
 	window->markTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 4000, markTimeoutProc, window->lastFocus);
 }
@@ -425,7 +425,7 @@ static void markTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	Widget w = static_cast<Widget>(clientData);
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
@@ -444,7 +444,7 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Bool
 	(void)clientData;
 
 	XKeyEvent *e = (XKeyEvent *)event;
-	WindowInfo *window = WidgetToWindow(w);
+	Document *window = WidgetToWindow(w);
 	Modifiers modifiers;
 	KeySym keysym;
 	const char *params[2];
@@ -474,7 +474,7 @@ static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, B
 	processMarkEvent(w, clientData, event, continueDispatch, (String) "goto_mark", True);
 }
 
-void AddMark(WindowInfo *window, Widget widget, char label) {
+void AddMark(Document *window, Widget widget, char label) {
 	int index;
 
 	/* look for a matching mark to re-use, or advance
@@ -497,7 +497,7 @@ void AddMark(WindowInfo *window, Widget widget, char label) {
 	window->markTable[index].cursorPos = TextGetCursorPos(widget);
 }
 
-void GotoMark(WindowInfo *window, Widget w, char label, int extendSel) {
+void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	int index, oldStart, newStart, oldEnd, newEnd, cursorPos;
 	TextSelection *sel, *oldSel;
 
@@ -548,7 +548,7 @@ void GotoMark(WindowInfo *window, Widget w, char label, int extendSel) {
 ** Keep the marks in the windows book-mark table up to date across
 ** changes to the underlying buffer
 */
-void UpdateMarkTable(WindowInfo *window, int pos, int nInserted, int nDeleted) {
+void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted) {
 	int i;
 
 	for (i = 0; i < window->nMarks; i++) {

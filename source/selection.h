@@ -29,23 +29,23 @@
 
 #include "nullable_string.h"
 
-struct WindowInfo;
+struct Document;
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
-nullable_string GetAnySelectionEx(WindowInfo *window);
-void AddMark(WindowInfo *window, Widget widget, char label);
-void BeginGotoMarkCommand(WindowInfo *window, int extend);
-void BeginMarkCommand(WindowInfo *window);
-void GotoLineNumber(WindowInfo *window);
-void GotoMarkDialog(WindowInfo *window, int extend);
-void GotoMark(WindowInfo *window, Widget w, char label, int extendSel);
-void GotoSelectedLineNumber(WindowInfo *window, Time time);
-void MarkDialog(WindowInfo *window);
-void OpenSelectedFile(WindowInfo *window, Time time);
-void SelectNumberedLine(WindowInfo *window, int lineNum);
-void UpdateMarkTable(WindowInfo *window, int pos, int nInserted, int nDeleted);
+nullable_string GetAnySelectionEx(Document *window);
+void AddMark(Document *window, Widget widget, char label);
+void BeginGotoMarkCommand(Document *window, int extend);
+void BeginMarkCommand(Document *window);
+void GotoLineNumber(Document *window);
+void GotoMarkDialog(Document *window, int extend);
+void GotoMark(Document *window, Widget w, char label, int extendSel);
+void GotoSelectedLineNumber(Document *window, Time time);
+void MarkDialog(Document *window);
+void OpenSelectedFile(Document *window, Time time);
+void SelectNumberedLine(Document *window, int lineNum);
+void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted);
 
 #endif

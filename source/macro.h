@@ -37,22 +37,22 @@
 
 void RegisterMacroSubroutines(void);
 void AddLastCommandActionHook(XtAppContext context);
-void BeginLearn(WindowInfo *window);
+void BeginLearn(Document *window);
 void FinishLearn(void);
-void CancelMacroOrLearn(WindowInfo *window);
-void Replay(WindowInfo *window);
+void CancelMacroOrLearn(Document *window);
+void Replay(Document *window);
 void SafeGC(void);
-void DoMacro(WindowInfo *window, view::string_view macro, const char *errInName);
-void ResumeMacroExecution(WindowInfo *window);
-void AbortMacroCommand(WindowInfo *window);
-int MacroWindowCloseActions(WindowInfo *window);
-void RepeatDialog(WindowInfo *window);
-void RepeatMacro(WindowInfo *window, const char *command, int how);
-int ReadMacroFileEx(WindowInfo *window, const std::string &fileName, int warnNotExist);
-int ReadMacroString(WindowInfo *window, const char *string, const char *errIn);
+void DoMacro(Document *window, view::string_view macro, const char *errInName);
+void ResumeMacroExecution(Document *window);
+void AbortMacroCommand(Document *window);
+int MacroWindowCloseActions(Document *window);
+void RepeatDialog(Document *window);
+void RepeatMacro(Document *window, const char *command, int how);
+int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist);
+int ReadMacroString(Document *window, const char *string, const char *errIn);
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 std::string GetReplayMacro(void);
-void ReadMacroInitFile(WindowInfo *window);
-void ReturnShellCommandOutput(WindowInfo *window, const std::string &outText, int status);
+void ReadMacroInitFile(Document *window);
+void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
 
 #endif

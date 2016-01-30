@@ -57,11 +57,11 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload);
 int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 
 /* Routines for handling tags or tips from the current selection */
-void FindDefinition(WindowInfo *window, Time time, const char *arg);
-void FindDefCalltip(WindowInfo *window, Time time, const char *arg);
+void FindDefinition(Document *window, Time time, const char *arg);
+void FindDefCalltip(Document *window, Time time, const char *arg);
 
 /* Display (possibly finding first) a calltip.  Search type can only be
     TIP or TIP_FROM_TAG here. */
-int ShowTipString(WindowInfo *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
+int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
 #endif

@@ -49,10 +49,10 @@ std::string BgColorOfNamedStyleEx(view::string_view styleName);
 std::string ColorOfNamedStyleEx(view::string_view styleName);
 std::string WriteHighlightStringEx(void);
 std::string WriteStylesStringEx(void);
-void EditHighlightPatterns(WindowInfo *window);
+void EditHighlightPatterns(Document *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
 void UpdateLanguageModeMenu(void);
-XFontStruct *FontOfNamedStyle(WindowInfo *window, view::string_view styleName);
+XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
 
 #endif
