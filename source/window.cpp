@@ -102,10 +102,11 @@
 #include <Xm/PrimitiveP.h>
 #include <Xm/Frame.h>
 #include <Xm/CascadeB.h>
+
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
 /* extern void _XEditResCheckMessages(); */
-#endif /* EDITRES */
+#endif
 
 /* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
    (which may break in a future release) is not available */
@@ -166,8 +167,6 @@ static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
 
-static Document *inFocusDocument = nullptr;   /* where we are now */
-static Document *lastFocusDocument = nullptr; /* where we came from */
 static int DoneWithMoveDocumentDialog;
 static int updateLineNumDisp(Document *window);
 static int updateGutterWidth(Document *window);
@@ -652,32 +651,6 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	}
 }
 
-bool Document::IsTopDocument() const {
-	return this == GetTopDocument(this->shell);
-}
-
-Widget Document::GetPaneByIndex(int paneIndex) const {
-	Widget text = nullptr;
-	if (paneIndex >= 0 && paneIndex <= this->nPanes) {
-		text = (paneIndex == 0) ? this->textArea : this->textPanes[paneIndex - 1];
-	}
-	return text;
-}
-
-/*
-** make sure window is alive is kicking
-*/
-int Document::IsValidWindow() {
-
-	for (Document *win = WindowList; win; win = win->next) {
-		if (this == win) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 /*
 ** return the number of documents owned by this shell window
 */
@@ -693,43 +666,9 @@ int Document::NDocuments() {
 	return nDocument;
 }
 
-/*
-** check if tab bar is to be shown on this window
-*/
-int Document::GetShowTabBar() {
-	if (!GetPrefTabBar())
-		return False;
-	else if (this->NDocuments() == 1)
-		return !GetPrefTabBarHideOne();
-	else
-		return True;
-}
 
-/*
-** Returns true if window is iconic (as determined by the WM_STATE property
-** on the shell window.  I think this is the most reliable way to tell,
-** but if someone has a better idea please send me a note).
-*/
-int Document::IsIconic() {
-	unsigned long *property = nullptr;
-	unsigned long nItems;
-	unsigned long leftover;
-	static Atom wmStateAtom = 0;
-	Atom actualType;
-	int actualFormat;
-	
-	if (wmStateAtom == 0) {
-		wmStateAtom = XInternAtom(XtDisplay(this->shell), "WM_STATE", False);
-	}
-		
-	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
-		return FALSE;
-	}
 
-	int result = (*property == IconicState);
-	XtFree((char *)property);
-	return result;
-}
+
 
 /*
 ** close all the documents in a window
@@ -783,24 +722,7 @@ int Document::CloseAllDocumentInWindow() {
 	return True;
 }
 
-/*
-** Bring up the last active window
-*/
-void Document::LastDocument() {
-	Document *win;
 
-	for (win = WindowList; win; win = win->next)
-		if (lastFocusDocument == win)
-			break;
-
-	if (!win)
-		return;
-
-	if (this->shell == win->shell)
-		win->RaiseDocument();
-	else
-		win->RaiseFocusDocumentWindow(True);
-}
 
 /*
 ** If the selection (or cursor position if there's no selection) is not
@@ -3621,43 +3543,12 @@ static void refreshMenuBar(Document *window) {
 	DimSelectionDepUserMenuItems(window, window->wasSelected);
 }
 
-/*
-** remember the last document.
-*/
-Document *Document::MarkLastDocument() {
-	Document *prev = lastFocusDocument;
-
-	if (this)
-		lastFocusDocument = this;
-
-	return prev;
-}
-
-/*
-** remember the active (top) document.
-*/
-Document *Document::MarkActiveDocument() {
-	Document *prev = inFocusDocument;
-
-	if (this)
-		inFocusDocument = this;
-
-	return prev;
-}
 
 
 
 
-/*
-** raise the document and its shell window and optionally focus.
-*/
-void Document::RaiseFocusDocumentWindow(Boolean focus) {
-	if (!this)
-		return;
 
-	this->RaiseDocument();
-	RaiseShellWindow(this->shell, focus);
-}
+
 
 
 
@@ -4164,23 +4055,8 @@ static void cancelTimeOut(XtIntervalId *timer) {
 	}
 }
 
-/*
-** set/clear toggle menu state if the calling document is on top.
-*/
-void Document::SetToggleButtonState(Widget w, Boolean state, Boolean notify) {
-	if (this->IsTopDocument()) {
-		XmToggleButtonSetState(w, state, notify);
-	}
-}
 
-/*
-** set/clear menu sensitivity if the calling document is on top.
-*/
-void Document::SetSensitive(Widget w, Boolean sensitive) {
-	if (this->IsTopDocument()) {
-		XtSetSensitive(w, sensitive);
-	}
-}
+
 
 /*
 ** Remove redundant expose events on tab bar.
