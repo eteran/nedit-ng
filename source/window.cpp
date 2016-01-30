@@ -107,7 +107,13 @@
 /* extern void _XEditResCheckMessages(); */
 #endif /* EDITRES */
 
+/* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
+   (which may break in a future release) is not available */
+#define PANE_MIN_HEIGHT 39
 
+/* Thickness of 3D border around statistics and/or incremental search areas
+   below the main menu bar */
+#define STAT_SHADOW_THICKNESS 1
 
 /* bitmap data for the close-tab button */
 #define close_width 11
@@ -159,29 +165,19 @@ static void cloneDocument(Document *window, Document *orgWin);
 static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
+
+static Document *inFocusDocument = nullptr;   /* where we are now */
+static Document *lastFocusDocument = nullptr; /* where we came from */
 static int DoneWithMoveDocumentDialog;
 static int updateLineNumDisp(Document *window);
 static int updateGutterWidth(Document *window);
 static void deleteDocument(Document *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
-namespace {
-
-/* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
-   (which may break in a future release) is not available */
-const int PANE_MIN_HEIGHT = 39;
-
-/* Thickness of 3D border around statistics and/or incremental search areas
-   below the main menu bar */
-const int STAT_SHADOW_THICKNESS = 1;
-
-Document *inFocusDocument = nullptr;   /* where we are now */
-Document *lastFocusDocument = nullptr; /* where we came from */
-
 /* From Xt, Shell.c, "BIGSIZE" */
-const Dimension XT_IGNORE_PPOSITION = 32767;
+static const Dimension XT_IGNORE_PPOSITION = 32767;
 
-void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
+static void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
 
 	(void)dialog;
 	(void)clientData;
@@ -193,7 +189,7 @@ void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
 /*
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
-void redisplayTearOffs(Widget menuPane) {
+static void redisplayTearOffs(Widget menuPane) {
 	WidgetList itemList;
 	Widget subMenuID;
 	Cardinal nItems;
@@ -211,8 +207,6 @@ void redisplayTearOffs(Widget menuPane) {
 	/* redisplay tearoff for this menu */
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		ShowHiddenTearOff(menuPane);
-}
-
 }
 
 /*
@@ -662,11 +656,80 @@ bool Document::IsTopDocument() const {
 	return this == GetTopDocument(this->shell);
 }
 
+Widget Document::GetPaneByIndex(int paneIndex) const {
+	Widget text = nullptr;
+	if (paneIndex >= 0 && paneIndex <= this->nPanes) {
+		text = (paneIndex == 0) ? this->textArea : this->textPanes[paneIndex - 1];
+	}
+	return text;
+}
 
+/*
+** make sure window is alive is kicking
+*/
+int Document::IsValidWindow() {
 
+	for (Document *win = WindowList; win; win = win->next) {
+		if (this == win) {
+			return true;
+		}
+	}
 
+	return false;
+}
 
+/*
+** return the number of documents owned by this shell window
+*/
+int Document::NDocuments() {
+	Document *win;
+	int nDocument = 0;
 
+	for (win = WindowList; win; win = win->next) {
+		if (win->shell == this->shell)
+			nDocument++;
+	}
+
+	return nDocument;
+}
+
+/*
+** check if tab bar is to be shown on this window
+*/
+int Document::GetShowTabBar() {
+	if (!GetPrefTabBar())
+		return False;
+	else if (this->NDocuments() == 1)
+		return !GetPrefTabBarHideOne();
+	else
+		return True;
+}
+
+/*
+** Returns true if window is iconic (as determined by the WM_STATE property
+** on the shell window.  I think this is the most reliable way to tell,
+** but if someone has a better idea please send me a note).
+*/
+int Document::IsIconic() {
+	unsigned long *property = nullptr;
+	unsigned long nItems;
+	unsigned long leftover;
+	static Atom wmStateAtom = 0;
+	Atom actualType;
+	int actualFormat;
+	
+	if (wmStateAtom == 0) {
+		wmStateAtom = XInternAtom(XtDisplay(this->shell), "WM_STATE", False);
+	}
+		
+	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
+		return FALSE;
+	}
+
+	int result = (*property == IconicState);
+	XtFree((char *)property);
+	return result;
+}
 
 /*
 ** close all the documents in a window
@@ -4101,7 +4164,23 @@ static void cancelTimeOut(XtIntervalId *timer) {
 	}
 }
 
+/*
+** set/clear toggle menu state if the calling document is on top.
+*/
+void Document::SetToggleButtonState(Widget w, Boolean state, Boolean notify) {
+	if (this->IsTopDocument()) {
+		XmToggleButtonSetState(w, state, notify);
+	}
+}
 
+/*
+** set/clear menu sensitivity if the calling document is on top.
+*/
+void Document::SetSensitive(Widget w, Boolean sensitive) {
+	if (this->IsTopDocument()) {
+		XtSetSensitive(w, sensitive);
+	}
+}
 
 /*
 ** Remove redundant expose events on tab bar.
