@@ -2,13 +2,10 @@
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
 
-#include "nedit.h"
-#include "preferences.h"
-#include "../util/misc.h"
-#include "../util/fileUtils.h"
-#include <X11/Intrinsic.h>
 #include <list>
-
+#include <X11/Intrinsic.h>
+#include "nedit.h"
+#include "string_view.h"
 
 struct TextBuffer;
 struct UndoInfo;

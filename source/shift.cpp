@@ -37,6 +37,7 @@
 #include <cstring>
 #include <climits>
 #include <cctype>
+#include <algorithm>
 #include <sys/param.h>
 
 #include <Xm/Xm.h>
