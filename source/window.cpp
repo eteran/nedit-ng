@@ -135,7 +135,6 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void hideTooltip(Widget tab);
 static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height);
-static Document *getNextTabWindow(Document *window, int direction, int crossWin, int wrap);
 static Widget addTab(Widget folder, const char *string);
 static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
@@ -144,11 +143,6 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
-static void showStatistics(Document *window, int state);
-static void showISearch(Document *window, int state);
-static void showStatsForm(Document *window);
-static void addToWindowList(Document *window);
-static void removeFromWindowList(Document *window);
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void movedCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -161,15 +155,12 @@ static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
 static void getGeometryString(Document *window, char *geomString);
-static void refreshMenuBar(Document *window);
 static void cloneDocument(Document *window, Document *orgWin);
 static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
 
 static int DoneWithMoveDocumentDialog;
-static int updateLineNumDisp(Document *window);
-static int updateGutterWidth(Document *window);
 static void deleteDocument(Document *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
@@ -611,7 +602,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	this->buffer->useTabs_ = GetPrefInsertTabs();
 
 	/* add the window to the global window list, update the Windows menus */
-	addToWindowList(this);
+	this->addToWindowList();
 	InvalidateWindowMenus();
 
 	showTabBar = this->GetShowTabBar();
@@ -946,7 +937,7 @@ void Document::NextDocument() {
 	if (!WindowList->next)
 		return;
 
-	win = getNextTabWindow(this, 1, GetPrefGlobalTabNavigate(), 1);
+	win = this->getNextTabWindow(1, GetPrefGlobalTabNavigate(), 1);
 	if(!win)
 		return;
 
@@ -965,7 +956,7 @@ void Document::PreviousDocument() {
 		return;
 	}
 
-	Document *win = getNextTabWindow(this, -1, GetPrefGlobalTabNavigate(), 1);
+	Document *win = this->getNextTabWindow(-1, GetPrefGlobalTabNavigate(), 1);
 	if(!win)
 		return;
 
@@ -1261,7 +1252,7 @@ void Document::CloseWindow() {
 		this->UpdateStatsLine();
 		DetermineLanguageMode(this, True);
 		this->RefreshTabState();
-		updateLineNumDisp(this);
+		this->updateLineNumDisp();
 		return;
 	}
 
@@ -1285,7 +1276,7 @@ void Document::CloseWindow() {
 			nextBuf->RaiseDocument();
 		} else if (this->IsTopDocument()) {
 			/* need to find a successor before closing a top document */
-			nextBuf = getNextTabWindow(this, 1, 0, 0);
+			nextBuf = this->getNextTabWindow(1, 0, 0);
 			nextBuf->RaiseDocument();
 		} else {
 			topBuf = GetTopDocument(this->shell);
@@ -1293,7 +1284,7 @@ void Document::CloseWindow() {
 	}
 
 	/* remove the window from the global window list, update window menus */
-	removeFromWindowList(this);
+	this->removeFromWindowList();
 	InvalidateWindowMenus();
 	CheckCloseDim(); /* Close of window running a macro may have been disabled. */
 
@@ -1303,10 +1294,10 @@ void Document::CloseWindow() {
 	/* refresh tab bar after closing a document */
 	if (nextBuf) {
 		nextBuf->ShowWindowTabBar();
-		updateLineNumDisp(nextBuf);
+		nextBuf->updateLineNumDisp();
 	} else if (topBuf) {
 		topBuf->ShowWindowTabBar();
-		updateLineNumDisp(topBuf);
+		topBuf->updateLineNumDisp();
 	}
 
 	/* dim/undim Detach_Tab menu items */
@@ -1590,7 +1581,7 @@ void Document::ShowLineNumbers(int state) {
 	   size for the number of lines required.  To hide the line number
 	   display, set the width to zero, and contract the this width. */
 	if (state) {
-		reqCols = updateLineNumDisp(this);
+		reqCols = this->updateLineNumDisp();
 	} else {
 		XtVaGetValues(this->shell, XmNwidth, &windowWidth, nullptr);
 		XtVaGetValues(this->textArea, textNmarginWidth, &marginWidth, nullptr);
@@ -1680,7 +1671,7 @@ void Document::ShowStatsLine(int state) {
 		reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(state);
 	}
 	this->showStats = state;
-	showStatistics(this, state);
+	this->showStatistics(state);
 
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the this should synch */
@@ -1691,33 +1682,17 @@ void Document::ShowStatsLine(int state) {
 	}
 }
 
-/*
-** Displays and undisplays the statistics line (regardless of settings of
-** window->showStats or window->modeMessageDisplayed)
-*/
-static void showStatistics(Document *window, int state) {
-	if (state) {
-		XtManageChild(window->statsLineForm);
-		showStatsForm(window);
-	} else {
-		XtUnmanageChild(window->statsLineForm);
-		showStatsForm(window);
-	}
 
-	/* Tell WM that the non-expandable part of the window has changed size */
-	/* Already done in showStatsForm */
-	/* window->UpdateWMSizeHints(); */
-}
 
 /*
 */
 static void showTabBar(Document *window, int state) {
 	if (state) {
 		XtManageChild(XtParent(window->tabBar));
-		showStatsForm(window);
+		window->showStatsForm();
 	} else {
 		XtUnmanageChild(XtParent(window->tabBar));
-		showStatsForm(window);
+		window->showStatsForm();
 	}
 }
 
@@ -1739,7 +1714,7 @@ void Document::ShowISearchLine(int state) {
 	if (this->showISearchLine == state)
 		return;
 	this->showISearchLine = state;
-	showISearch(this, state);
+	this->showISearch(state);
 
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the this should synch */
@@ -1758,61 +1733,12 @@ void Document::TempShowISearch(int state) {
 	if (this->showISearchLine)
 		return;
 	if (XtIsManaged(this->iSearchForm) != state)
-		showISearch(this, state);
+		this->showISearch(state);
 }
 
-/*
-** Put up or pop-down the incremental search line regardless of settings
-** of showISearchLine or TempShowISearch
-*/
-static void showISearch(Document *window, int state) {
-	if (state) {
-		XtManageChild(window->iSearchForm);
-		showStatsForm(window);
-	} else {
-		XtUnmanageChild(window->iSearchForm);
-		showStatsForm(window);
-	}
 
-	/* Tell WM that the non-expandable part of the window has changed size */
-	/* This is already done in showStatsForm */
-	/* window->UpdateWMSizeHints(); */
-}
 
-/*
-** Show or hide the extra display area under the main menu bar which
-** optionally contains the status line and the incremental search bar
-*/
-static void showStatsForm(Document *window) {
-	Widget statsAreaForm = XtParent(window->statsLineForm);
-	Widget mainW = XtParent(statsAreaForm);
 
-	/* The very silly use of XmNcommandWindowLocation and XmNshowSeparator
-	   below are to kick the main window widget to position and remove the
-	   status line when it is managed and unmanaged.  At some Motif version
-	   level, the showSeparator trick backfires and leaves the separator
-	   shown, but fortunately the dynamic behavior is fixed, too so the
-	   workaround is no longer necessary, either.  (... the version where
-	   this occurs may be earlier than 2.1.  If the stats line shows
-	   double thickness shadows in earlier Motif versions, the #if XmVersion
-	   directive should be moved back to that earlier version) */
-	if (manageToolBars(statsAreaForm)) {
-		XtUnmanageChild(statsAreaForm); /*... will this fix Solaris 7??? */
-		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_ABOVE_WORKSPACE, nullptr);
-#if XmVersion < 2001
-		XtVaSetValues(mainW, XmNshowSeparator, True, nullptr);
-#endif
-		XtManageChild(statsAreaForm);
-		XtVaSetValues(mainW, XmNshowSeparator, False, nullptr);
-		window->UpdateStatsLine();
-	} else {
-		XtUnmanageChild(statsAreaForm);
-		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE, nullptr);
-	}
-
-	/* Tell WM that the non-expandable part of the window has changed size */
-	window->UpdateWMSizeHints();
-}
 
 /*
 ** Display a special message in the stats line (show the stats line if it
@@ -1834,7 +1760,7 @@ void Document::SetModeMessage(const char *message) {
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
 	if (!this->showStats)
-		showStatistics(this, True);
+		this->showStatistics(True);
 }
 
 /*
@@ -1856,7 +1782,7 @@ void Document::ClearModeMessage() {
 	 * Remove the stats line only if indicated by it's window state.
 	 */
 	if (!this->showStats) {
-		showStatistics(this, False);
+		this->showStatistics(False);
 	}
 	
 	this->UpdateStatsLine();
@@ -2388,7 +2314,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 		return;
 
 	/* Make sure line number display is sufficient for new data */
-	updateLineNumDisp(window);
+	window->updateLineNumDisp();
 
 	/* Save information for undoing this operation (this call also counts
 	   characters and editing operations for triggering autosave */
@@ -2579,122 +2505,13 @@ void AttachSessionMgrHandler(Widget appShell) {
 
 
 
-/*
-** Add a window to the the window list.
-*/
-static void addToWindowList(Document *window) {
 
-	Document *temp = WindowList;
-	WindowList = window;
-	window->next = temp;
-}
 
-/*
-** Remove a window from the list of windows
-*/
-static void removeFromWindowList(Document *window) {
-	Document *temp;
 
-	if (WindowList == window) {
-		WindowList = window->next;
-	} else {
-		for (temp = WindowList; temp != nullptr; temp = temp->next) {
-			if (temp->next == window) {
-				temp->next = window->next;
-				break;
-			}
-		}
-	}
-}
 
-/*
-**  Set the new gutter width in the window. Sadly, the only way to do this is
-**  to set it on every single document, so we have to iterate over them.
-**
-**  (Iteration taken from NDocuments(); is there a better way to do it?)
-*/
-static int updateGutterWidth(Document *window) {
-	Document *document;
-	int reqCols = MIN_LINE_NUM_COLS;
-	int newColsDiff = 0;
-	int maxCols = 0;
 
-	for (document = WindowList; nullptr != document; document = document->next) {
-		if (document->shell == window->shell) {
-			/*  We found ourselves a document from this window.  */
-			int lineNumCols, tmpReqCols;
-			textDisp *textD = ((TextWidget)document->textArea)->text.textD;
 
-			XtVaGetValues(document->textArea, textNlineNumCols, &lineNumCols, nullptr);
 
-			/* Is the width of the line number area sufficient to display all the
-			   line numbers in the file?  If not, expand line number field, and the
-			   window width. */
-
-			if (lineNumCols > maxCols) {
-				maxCols = lineNumCols;
-			}
-
-			tmpReqCols = textD->nBufferLines < 1 ? 1 : (int)log10((double)textD->nBufferLines + 1) + 1;
-
-			if (tmpReqCols > reqCols) {
-				reqCols = tmpReqCols;
-			}
-		}
-	}
-
-	if (reqCols != maxCols) {
-		XFontStruct *fs;
-		Dimension windowWidth;
-		short fontWidth;
-
-		newColsDiff = reqCols - maxCols;
-
-		XtVaGetValues(window->textArea, textNfont, &fs, nullptr);
-		fontWidth = fs->max_bounds.width;
-
-		XtVaGetValues(window->shell, XmNwidth, &windowWidth, nullptr);
-		XtVaSetValues(window->shell, XmNwidth, (Dimension)windowWidth + (newColsDiff * fontWidth), nullptr);
-
-		window->UpdateWMSizeHints();
-	}
-
-	for (document = WindowList; nullptr != document; document = document->next) {
-		if (document->shell == window->shell) {
-			Widget text;
-			int i;
-			int lineNumCols;
-
-			XtVaGetValues(document->textArea, textNlineNumCols, &lineNumCols, nullptr);
-
-			if (lineNumCols == reqCols) {
-				continue;
-			}
-
-			/*  Update all panes of this document.  */
-			for (i = 0; i <= document->nPanes; i++) {
-				text = (i == 0) ? document->textArea : document->textPanes[i - 1];
-				XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
-			}
-		}
-	}
-
-	return reqCols;
-}
-
-/*
-**  If necessary, enlarges the window and line number display area to make
-**  room for numbers.
-*/
-static int updateLineNumDisp(Document *window) {
-	if (!window->showLineNumbers) {
-		return 0;
-	}
-
-	/* Decide how wide the line number field has to be to display all
-	   possible line numbers */
-	return updateGutterWidth(window);
-}
 
 /*
 ** Update the optional statistics line.
@@ -3032,81 +2849,6 @@ void Document::SetBacklightChars(char *applyBacklightTypes) {
 }
 
 /*
-** perform generic management on the children (toolbars) of toolBarsForm,
-** a.k.a. statsForm, by setting the form attachment of the managed child
-** widgets per their position/order.
-**
-** You can optionally create separator after a toolbar widget with it's
-** widget name set to "TOOLBAR_SEP", which will appear below the toolbar
-** widget. These seperators will then be managed automatically by this
-** routine along with the toolbars they 'attached' to.
-**
-** It also takes care of the attachment offset settings of the child
-** widgets to keep the border lines of the parent form displayed, so
-** you don't have set them before hand.
-**
-** Note: XtManage/XtUnmange the target child (toolbar) before calling this
-**       function.
-**
-** Returns the last toolbar widget managed.
-**
-*/
-static Widget manageToolBars(Widget toolBarsForm) {
-	Widget topWidget = nullptr;
-	WidgetList children;
-	int n, nItems = 0;
-
-	XtVaGetValues(toolBarsForm, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
-
-	for (n = 0; n < nItems; n++) {
-		Widget tbar = children[n];
-
-		if (XtIsManaged(tbar)) {
-			if (topWidget) {
-				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, topWidget, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
-			} else {
-				/* the very first toolbar on top */
-				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
-			}
-
-			topWidget = tbar;
-
-			/* if the next widget is a separator, turn it on */
-			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
-				XtManageChild(children[n + 1]);
-			}
-		} else {
-			/* Remove top attachment to widget to avoid circular dependency.
-			   Attach bottom to form so that when the widget is redisplayed
-			   later, it will trigger the parent form to resize properly as
-			   if the widget is being inserted */
-			XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE, XmNbottomAttachment, XmATTACH_FORM, nullptr);
-
-			/* if the next widget is a separator, turn it off */
-			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
-				XtUnmanageChild(children[n + 1]);
-			}
-		}
-	}
-
-	if (topWidget) {
-		if (strcmp(XtName(topWidget), "TOOLBAR_SEP")) {
-			XtVaSetValues(topWidget, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-		} else {
-			/* is a separator */
-			Widget wgt;
-			XtVaGetValues(topWidget, XmNtopWidget, &wgt, nullptr);
-
-			/* don't need sep below bottom-most toolbar */
-			XtUnmanageChild(topWidget);
-			XtVaSetValues(wgt, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-		}
-	}
-
-	return topWidget;
-}
-
-/*
 ** Calculate the dimension of the text area, in terms of rows & cols,
 ** as if there's only one single text pane in the window.
 */
@@ -3308,7 +3050,7 @@ Document *Document::CreateDocument(const char *name) {
 
 	/* add the window to the global window list, update the Windows menus */
 	InvalidateWindowMenus();
-	addToWindowList(window);
+	window->addToWindowList();
 
 	/* return the shell ownership to previous tabbed doc */
 	XtVaSetValues(window->mainWin, XmNworkWindow, this->splitPane, nullptr);
@@ -3319,83 +3061,7 @@ Document *Document::CreateDocument(const char *name) {
 	return window;
 }
 
-/*
-** return the next/previous docment on the tab list.
-**
-** If <wrap> is true then the next tab of the rightmost tab will be the
-** second tab from the right, and the the previous tab of the leftmost
-** tab will be the second from the left.  This is useful for getting
-** the next tab after a tab detaches/closes and you don't want to wrap around.
-*/
-static Document *getNextTabWindow(Document *window, int direction, int crossWin, int wrap) {
-	WidgetList tabList;
-	Document *win;
-	int tabCount, tabTotalCount;
-	int tabPos, nextPos;
-	int i, n;
-	int nBuf = crossWin ? NWindows() : window->NDocuments();
 
-	if (nBuf <= 1)
-		return nullptr;
-
-	/* get the list of tabs */
-	auto tabs = new Widget[nBuf];
-	tabTotalCount = 0;
-	if (crossWin) {
-		int n, nItems;
-		WidgetList children;
-
-		XtVaGetValues(TheAppShell, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
-
-		/* get list of tabs in all windows */
-		for (n = 0; n < nItems; n++) {
-			if (strcmp(XtName(children[n]), "textShell") || ((win = WidgetToWindow(children[n])) == nullptr))
-				continue; /* skip non-text-editor windows */
-
-			XtVaGetValues(win->tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
-
-			for (i = 0; i < tabCount; i++) {
-				tabs[tabTotalCount++] = tabList[i];
-			}
-		}
-	} else {
-		/* get list of tabs in this window */
-		XtVaGetValues(window->tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
-
-		for (i = 0; i < tabCount; i++) {
-			if (TabToWindow(tabList[i])) /* make sure tab is valid */
-				tabs[tabTotalCount++] = tabList[i];
-		}
-	}
-
-	/* find the position of the tab in the tablist */
-	tabPos = 0;
-	for (n = 0; n < tabTotalCount; n++) {
-		if (tabs[n] == window->tab) {
-			tabPos = n;
-			break;
-		}
-	}
-
-	/* calculate index position of next tab */
-	nextPos = tabPos + direction;
-	if (nextPos >= nBuf) {
-		if (wrap)
-			nextPos = 0;
-		else
-			nextPos = nBuf - 2;
-	} else if (nextPos < 0) {
-		if (wrap)
-			nextPos = nBuf - 1;
-		else
-			nextPos = 1;
-	}
-
-	/* return the document where the next tab belongs to */
-	win = TabToWindow(tabs[nextPos]);
-	delete [] tabs;
-	return win;
-}
 
 /*
 ** return the integer position of a tab in the tabbar it
@@ -3529,19 +3195,6 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(this->moveDocumentItem, win != nullptr);
 }
 
-/*
-** Refresh the various settings/state of the shell window per the
-** settings of the top document.
-*/
-static void refreshMenuBar(Document *window) {
-	window->RefreshMenuToggleStates();
-
-	/* Add/remove language specific menu items */
-	UpdateUserMenus(window);
-
-	/* refresh selection-sensitive menus */
-	DimSelectionDepUserMenuItems(window, window->wasSelected);
-}
 
 
 
@@ -3590,50 +3243,7 @@ static void deleteDocument(Document *window) {
 	XtDestroyWidget(window->splitPane);
 }
 
-/*
-** refresh window state for this document
-*/
-void Document::RefreshWindowStates() {
-	if (!this->IsTopDocument())
-		return;
 
-	if (this->modeMessageDisplayed)
-		XmTextSetStringEx(this->statsLine, this->modeMessage);
-	else
-		this->UpdateStatsLine();
-		
-	this->UpdateWindowReadOnly();
-	this->UpdateWindowTitle();
-
-	/* show/hide statsline as needed */
-	if (this->modeMessageDisplayed && !XtIsManaged(this->statsLineForm)) {
-		/* turn on statline to display mode message */
-		showStatistics(this, True);
-	} else if (this->showStats && !XtIsManaged(this->statsLineForm)) {
-		/* turn on statsline since it is enabled */
-		showStatistics(this, True);
-	} else if (!this->showStats && !this->modeMessageDisplayed && XtIsManaged(this->statsLineForm)) {
-		/* turn off statsline since there's nothing to show */
-		showStatistics(this, False);
-	}
-
-	/* signal if macro/shell is running */
-	if (this->shellCmdData || this->macroCmdData)
-		BeginWait(this->shell);
-	else
-		EndWait(this->shell);
-
-	/* we need to force the statsline to reveal itself */
-	if (XtIsManaged(this->statsLineForm)) {
-		XmTextSetCursorPosition(this->statsLine, 0);    /* start of line */
-		XmTextSetCursorPosition(this->statsLine, 9000); /* end of line */
-	}
-
-	XmUpdateDisplay(this->statsLine);
-	refreshMenuBar(this);
-
-	updateLineNumDisp(this);
-}
 
 static void cloneTextPanes(Document *window, Document *orgWin) {
 	short paneHeights[MAX_PANES + 1];
@@ -3891,7 +3501,7 @@ Document *Document::DetachDocument() {
 	/* raise another document in the same shell this if the this
 	   being detached is the top document */
 	if (this->IsTopDocument()) {
-		win = getNextTabWindow(this, 1, 0, 0);
+		win = this->getNextTabWindow(1, 0, 0);
 		win->RaiseDocument();
 	}
 
@@ -3949,7 +3559,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 		XtUnmapWidget(this->shell);
 	} else if (this->IsTopDocument()) {
 		/* raise another document to replace the document being moved */
-		win = getNextTabWindow(this, 1, 0, 0);
+		win = this->getNextTabWindow(1, 0, 0);
 		win->RaiseDocument();
 	}
 
@@ -4058,32 +3668,81 @@ static void cancelTimeOut(XtIntervalId *timer) {
 
 
 
+
+
 /*
-** Remove redundant expose events on tab bar.
+** perform generic management on the children (toolbars) of toolBarsForm,
+** a.k.a. statsForm, by setting the form attachment of the managed child
+** widgets per their position/order.
+**
+** You can optionally create separator after a toolbar widget with it's
+** widget name set to "TOOLBAR_SEP", which will appear below the toolbar
+** widget. These seperators will then be managed automatically by this
+** routine along with the toolbars they 'attached' to.
+**
+** It also takes care of the attachment offset settings of the child
+** widgets to keep the border lines of the parent form displayed, so
+** you don't have set them before hand.
+**
+** Note: XtManage/XtUnmange the target child (toolbar) before calling this
+**       function.
+**
+** Returns the last toolbar widget managed.
+**
 */
-void Document::CleanUpTabBarExposeQueue() {
-	XEvent event;
-	XExposeEvent ev;
-	int count;
 
-	if(!this)
-		return;
+// TODO(eteran): temporary duplicate
+static Widget manageToolBars(Widget toolBarsForm) {
+	Widget topWidget = nullptr;
+	WidgetList children;
+	int n, nItems = 0;
 
-	/* remove redundant expose events on tab bar */
-	count = 0;
-	while (XCheckTypedWindowEvent(TheDisplay, XtWindow(this->tabBar), Expose, &event))
-		count++;
+	XtVaGetValues(toolBarsForm, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
 
-	/* now we can update tabbar */
-	if (count) {
-		ev.type = Expose;
-		ev.display = TheDisplay;
-		ev.window = XtWindow(this->tabBar);
-		ev.x = 0;
-		ev.y = 0;
-		ev.width = XtWidth(this->tabBar);
-		ev.height = XtHeight(this->tabBar);
-		ev.count = 0;
-		XSendEvent(TheDisplay, XtWindow(this->tabBar), False, ExposureMask, (XEvent *)&ev);
+	for (n = 0; n < nItems; n++) {
+		Widget tbar = children[n];
+
+		if (XtIsManaged(tbar)) {
+			if (topWidget) {
+				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, topWidget, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
+			} else {
+				/* the very first toolbar on top */
+				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
+			}
+
+			topWidget = tbar;
+
+			/* if the next widget is a separator, turn it on */
+			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
+				XtManageChild(children[n + 1]);
+			}
+		} else {
+			/* Remove top attachment to widget to avoid circular dependency.
+			   Attach bottom to form so that when the widget is redisplayed
+			   later, it will trigger the parent form to resize properly as
+			   if the widget is being inserted */
+			XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE, XmNbottomAttachment, XmATTACH_FORM, nullptr);
+
+			/* if the next widget is a separator, turn it off */
+			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
+				XtUnmanageChild(children[n + 1]);
+			}
+		}
 	}
+
+	if (topWidget) {
+		if (strcmp(XtName(topWidget), "TOOLBAR_SEP")) {
+			XtVaSetValues(topWidget, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
+		} else {
+			/* is a separator */
+			Widget wgt;
+			XtVaGetValues(topWidget, XmNtopWidget, &wgt, nullptr);
+
+			/* don't need sep below bottom-most toolbar */
+			XtUnmanageChild(topWidget);
+			XtVaSetValues(wgt, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
+		}
+	}
+
+	return topWidget;
 }

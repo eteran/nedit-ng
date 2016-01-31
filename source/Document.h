@@ -100,6 +100,17 @@ public:
 	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
 	void ClearUndoList();
 	void ClearRedoList();
+	
+//private:
+	Document *getNextTabWindow(int direction, int crossWin, int wrap);
+	void showStatistics(int state);
+	void showISearch(int state);
+	void showStatsForm();
+	void addToWindowList();
+	void removeFromWindowList();
+	void refreshMenuBar();
+	int updateLineNumDisp();
+	int updateGutterWidth();
 
 public:
 	Document *next;
