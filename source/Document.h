@@ -114,6 +114,7 @@ public:
 	void cloneDocument(Document *window);
 	void deleteDocument();
 	void getTextPaneDimension(int *nRows, int *nCols);
+	void getGeometryString(char *geomString);
 
 public:
 	Document *next;

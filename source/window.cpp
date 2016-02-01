@@ -136,9 +136,7 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 static void hideTooltip(Widget tab);
 static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height);
 static Widget addTab(Widget folder, const char *string);
-static int getTabPosition(Widget tab);
 static Widget manageToolBars(Widget toolBarsForm);
-static void hideTearOffs(Widget menuPane);
 static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData);
 static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -150,10 +148,8 @@ static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData);
 static void dragEndCB(Widget w, XtPointer clientData, XtPointer callData);
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
-static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
-static void getGeometryString(Document *window, char *geomString);
 static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
@@ -164,28 +160,7 @@ static const Dimension XT_IGNORE_PPOSITION = 32767;
 
 
 
-/*
-** Redisplay menu tearoffs previously hid by hideTearOffs()
-*/
-static void redisplayTearOffs(Widget menuPane) {
-	WidgetList itemList;
-	Widget subMenuID;
-	Cardinal nItems;
-	int n;
 
-	/* redisplay all submenu tearoffs */
-	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
-	for (n = 0; n < (int)nItems; n++) {
-		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
-			XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
-			redisplayTearOffs(subMenuID);
-		}
-	}
-
-	/* redisplay tearoff for this menu */
-	if (!XmIsMenuShell(XtParent(menuPane)))
-		ShowHiddenTearOff(menuPane);
-}
 
 /*
 ** Create a new editor window
@@ -630,90 +605,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	}
 }
 
-/*
-** Raise a tabbed document within its shell window.
-**
-** NB: use RaiseDocumentWindow() to raise the doc and
-**     its shell window.
-*/
-void Document::RaiseDocument() {
-	Document *win, *lastwin;
 
-	if (!this || !WindowList)
-		return;
-
-	lastwin = this->MarkActiveDocument();
-	if (lastwin != this && lastwin->IsValidWindow())
-		lastwin->MarkLastDocument();
-
-	/* document already on top? */
-	XtVaGetValues(this->mainWin, XmNuserData, &win, nullptr);
-	if (win == this)
-		return;
-
-	/* set the document as top document */
-	XtVaSetValues(this->mainWin, XmNuserData, this, nullptr);
-
-	/* show the new top document */
-	XtVaSetValues(this->mainWin, XmNworkWindow, this->splitPane, nullptr);
-	XtManageChild(this->splitPane);
-	XRaiseWindow(TheDisplay, XtWindow(this->splitPane));
-
-	/* Turn on syntax highlight that might have been deferred.
-	   NB: this must be done after setting the document as
-	       XmNworkWindow and managed, else the parent shell
-	   this may shrink on some this-managers such as
-	   metacity, due to changes made in UpdateWMSizeHints().*/
-	if (this->highlightSyntax && this->highlightData == nullptr)
-		StartHighlighting(this, False);
-
-	/* put away the bg menu tearoffs of last active document */
-	hideTearOffs(win->bgMenuPane);
-
-	/* restore the bg menu tearoffs of active document */
-	redisplayTearOffs(this->bgMenuPane);
-
-	/* set tab as active */
-	XmLFolderSetActiveTab(this->tabBar, getTabPosition(this->tab), False);
-
-	/* set keyboard focus. Must be done before unmanaging previous
-	   top document, else lastFocus will be reset to textArea */
-	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
-
-	/* we only manage the top document, else the next time a document
-	   is raised again, it's textpane might not resize properly.
-	   Also, somehow (bug?) XtUnmanageChild() doesn't hide the
-	   splitPane, which obscure lower part of the statsform when
-	   we toggle its components, so we need to put the document at
-	   the back */
-	XLowerWindow(TheDisplay, XtWindow(win->splitPane));
-	XtUnmanageChild(win->splitPane);
-	win->RefreshTabState();
-
-	/* now refresh this state/info. RefreshWindowStates()
-	   has a lot of work to do, so we update the screen first so
-	   the document appears to switch swiftly. */
-	XmUpdateDisplay(this->splitPane);
-	this->RefreshWindowStates();
-	this->RefreshTabState();
-
-	/* put away the bg menu tearoffs of last active document */
-	hideTearOffs(win->bgMenuPane);
-
-	/* restore the bg menu tearoffs of active document */
-	redisplayTearOffs(this->bgMenuPane);
-
-	/* Make sure that the "In Selection" button tracks the presence of a
-	   selection and that the this inherits the proper search scope. */
-	if (this->replaceDlog != nullptr && XtIsManaged(this->replaceDlog)) {
-#ifdef REPLACE_SCOPE
-		this->replaceScope = win->replaceScope;
-#endif
-		UpdateReplaceActionButtons(this);
-	}
-
-	this->UpdateWMSizeHints();
-}
 
 
 /*
@@ -819,95 +711,7 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	return nullptr;
 }
 
-/*
-** Add another independently scrollable pane to the current document,
-** splitting the pane which currently has keyboard focus.
-*/
-void Document::SplitPane() {
-	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
-	int horizOffsets[MAX_PANES + 1];
-	int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight = 0;
-	char *delimiters;
-	Widget text = nullptr;
-	textDisp *textD, *newTextD;
 
-	/* Don't create new panes if we're already at the limit */
-	if (this->nPanes >= MAX_PANES)
-		return;
-
-	/* Record the current heights, scroll positions, and insert positions
-	   of the existing panes, keyboard focus */
-	focusPane = 0;
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		insertPositions[i] = TextGetCursorPos(text);
-		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		totalHeight += paneHeights[i];
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-		if (text == this->lastFocus)
-			focusPane = i;
-	}
-
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-	XtUnmanageChild(this->splitPane);
-
-	/* Create a text widget to add to the pane and set its buffer and
-	   highlight data to be the same as the other panes in the document */
-	XtVaGetValues(this->textArea, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, textNlineNumCols, &lineNumCols, nullptr);
-	text = createTextArea(this->splitPane, this, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
-
-	TextSetBuffer(text, this->buffer);
-	if (this->highlightData)
-		AttachHighlightToWidget(text, this);
-	if (this->backlightChars) {
-		XtVaSetValues(text, textNbacklightCharTypes, this->backlightCharTypes, nullptr);
-	}
-	XtManageChild(text);
-	this->textPanes[this->nPanes++] = text;
-
-	/* Fix up the colors */
-	textD = ((TextWidget)this->textArea)->text.textD;
-	newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
-	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
-
-	/* Set the minimum pane height in the new pane */
-	this->UpdateMinPaneHeights();
-
-	/* adjust the heights, scroll positions, etc., to split the focus pane */
-	for (i = this->nPanes; i > focusPane; i--) {
-		insertPositions[i] = insertPositions[i - 1];
-		paneHeights[i] = paneHeights[i - 1];
-		topLines[i] = topLines[i - 1];
-		horizOffsets[i] = horizOffsets[i - 1];
-	}
-	paneHeights[focusPane] = paneHeights[focusPane] / 2;
-	paneHeights[focusPane + 1] = paneHeights[focusPane];
-
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-	}
-
-	/* Re-manage panedWindow to recalculate pane heights & reset selection */
-	if (this->IsTopDocument())
-		XtManageChild(this->splitPane);
-
-	/* Reset all of the heights, scroll positions, etc. */
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		TextSetCursorPos(text, insertPositions[i]);
-		TextSetScroll(text, topLines[i], horizOffsets[i]);
-		setPaneDesiredHeight(containingPane(text), totalHeight / (this->nPanes + 1));
-	}
-	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
-
-	/* Update the this manager size hints after the sizes of the panes have
-	   been set (the widget heights are not yet readable here, but they will
-	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
-}
 
 
 
@@ -1016,163 +820,6 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 
 
 
-static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
-
-	/* Create a text widget inside of a scrolled window widget */
-	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
-	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
-	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
-	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
-	
-	Widget text = XtVaCreateManagedWidget(
-		"text", 
-		textWidgetClass, 
-		frame, 
-		textNbacklightCharTypes, 
-		window->backlightCharTypes, 
-		textNrows, 
-		rows, 
-		textNcolumns, 
-		cols, 
-		textNlineNumCols, 
-		lineNumCols, 
-		textNemulateTabs, 
-		emTabDist, 
-		textNfont,
-	    GetDefaultFontStruct(window->fontList), 
-		textNhScrollBar, 
-		hScrollBar, 
-		textNvScrollBar, 
-		vScrollBar, 
-		textNreadOnly, 
-		IS_ANY_LOCKED(window->lockReasons), 
-		textNwordDelimiters, 
-		delimiters, 
-		textNwrapMargin,
-	    wrapMargin, 
-		textNautoIndent, 
-		window->indentStyle == AUTO_INDENT, 
-		textNsmartIndent, 
-		window->indentStyle == SMART_INDENT, 
-		textNautoWrap, 
-		window->wrapMode == NEWLINE_WRAP, 
-		textNcontinuousWrap,
-	    window->wrapMode == CONTINUOUS_WRAP, 
-		textNoverstrike, 
-		window->overstrike, 
-		textNhidePointer, 
-		(Boolean)GetPrefTypingHidesPointer(), 
-		textNcursorVPadding, 
-		GetVerticalAutoScroll(), 
-		nullptr);
-
-	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
-
-	/* add focus, drag, cursor tracking, and smart indent callbacks */
-	XtAddCallback(text, textNfocusCallback, focusCB, window);
-	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
-	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
-	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
-	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
-
-	/* This makes sure the text area initially has a the insert point shown
-	   ... (check if still true with the nedit text widget, probably not) */
-	XmAddTabGroup(containingPane(text));
-
-	/* compensate for Motif delete/backspace problem */
-	RemapDeleteKey(text);
-
-	/* Augment translation table for right button popup menu */
-	AddBGMenuAction(text);
-
-	/* If absolute line numbers will be needed for display in the statistics
-	   line, tell the widget to maintain them (otherwise, it's a costly
-	   operation and performance will be better without it) */
-	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats);
-
-	return text;
-}
-
-static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-
-	TextWidget textWidget = (TextWidget)w;
-
-	if (window->ignoreModify)
-		return;
-
-	/* update line and column nubers in statistics line */
-	window->UpdateStatsLine();
-
-	/* Check the character before the cursor for matchable characters */
-	FlashMatching(window, w);
-
-	/* Check for changes to read-only status and/or file modifications */
-	CheckForChangesToFile(window);
-
-	/*  This callback is not only called for focussed panes, but for newly
-	    created panes as well. So make sure that the cursor is left alone
-	    for unfocussed panes.
-	    TextWidget have no state per se about focus, so we use the related
-	    ID for the blink procedure.  */
-	if (textWidget->text.cursorBlinkProcID != 0) {
-		/*  Start blinking the caret again.  */
-		ResetCursorBlink(textWidget, False);
-	}
-}
-
-static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-
-	/* record which window pane last had the keyboard focus */
-	window->lastFocus = w;
-
-	/* update line number statistic to reflect current focus pane */
-	window->UpdateStatsLine();
-
-	/* finish off the current incremental search */
-	EndISearch(window);
-
-	/* Check for changes to read-only status and/or file modifications */
-	CheckForChangesToFile(window);
-}
-
-static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-	(void)w;
-
-	/* don't record all of the intermediate drag steps for undo */
-	window->ignoreModify = True;
-}
-
-static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
-
-	(void)w;
-	
-	auto window   = static_cast<Document *>(clientData);
-	auto callData = static_cast<dragEndCBStruct *>(call_data);
-
-	/* restore recording of undo information */
-	window->ignoreModify = False;
-
-	/* Do nothing if drag operation was canceled */
-	if (callData->nCharsInserted == 0)
-		return;
-
-	/* Save information for undoing this operation not saved while
-	   undo recording was off */
-	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
-}
-
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto window = static_cast<Document *>(clientData);
@@ -1240,7 +887,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		}
 
 		/* create a group for each window */
-		getGeometryString(topWin, geometry);
+		topWin->getGeometryString(geometry);
 		argv.push_back(XtNewStringEx("-group"));
 		argv.push_back(XtNewStringEx("-geometry"));
 		argv.push_back(XtNewStringEx(geometry));
@@ -1408,44 +1055,7 @@ static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, un
 	return pixmap;
 }
 
-/*
-** Save the position and size of a window as an X standard geometry string.
-** A string of at least MAX_GEOMETRY_STRING_LEN characters should be
-** provided in the argument "geomString" to receive the result.
-*/
-static void getGeometryString(Document *window, char *geomString) {
-	int x, y, fontWidth, fontHeight, baseWidth, baseHeight;
-	unsigned int width, height, dummyW, dummyH, bw, depth, nChild;
-	Window parent, root, *child, w = XtWindow(window->shell);
-	Display *dpy = XtDisplay(window->shell);
 
-	/* Find the width and height from the window of the shell */
-	XGetGeometry(dpy, w, &root, &x, &y, &width, &height, &bw, &depth);
-
-	/* Find the top left corner (x and y) of the window decorations.  (This
-	   is what's required in the geometry string to restore the window to it's
-	   original position, since the window manager re-parents the window to
-	   add it's title bar and menus, and moves the requested window down and
-	   to the left.)  The position is found by traversing the window hier-
-	   archy back to the window to the last parent before the root window */
-	for (;;) {
-		XQueryTree(dpy, w, &root, &parent, &child, &nChild);
-		XFree((char *)child);
-		if (parent == root)
-			break;
-		w = parent;
-	}
-	XGetGeometry(dpy, w, &root, &x, &y, &dummyW, &dummyH, &bw, &depth);
-
-	/* Use window manager size hints (set by UpdateWMSizeHints) to
-	   translate the width and height into characters, as opposed to pixels */
-	XtVaGetValues(window->shell, XmNwidthInc, &fontWidth, XmNheightInc, &fontHeight, XmNbaseWidth, &baseWidth, XmNbaseHeight, &baseHeight, nullptr);
-	width = (width - baseWidth) / fontWidth;
-	height = (height - baseHeight) / fontHeight;
-
-	/* Write the string */
-	CreateGeometryString(geomString, x, y, width, height, XValue | YValue | WidthValue | HeightValue);
-}
 
 
 
@@ -1645,28 +1255,6 @@ Document *Document::CreateDocument(const char *name) {
 }
 
 
-
-/*
-** return the integer position of a tab in the tabbar it
-** belongs to, or -1 if there's an error, somehow.
-*/
-static int getTabPosition(Widget tab) {
-	WidgetList tabList;
-	int tabCount;
-	Widget tabBar = XtParent(tab);
-
-	XtVaGetValues(tabBar, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
-
-	for (int i = 0; i < tabCount; i++) {
-		if (tab == tabList[i])
-			return i;
-	}
-
-	return -1; /* something is wrong! */
-}
-
-
-
 static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
@@ -1705,29 +1293,7 @@ static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callDa
 
 
 
-/*
-** hide all the tearoffs spawned from this menu.
-** It works recursively to close the tearoffs of the submenus
-*/
-static void hideTearOffs(Widget menuPane) {
-	WidgetList itemList;
-	Widget subMenuID;
-	Cardinal nItems;
-	int n;
 
-	/* hide all submenu tearoffs */
-	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
-	for (n = 0; n < (int)nItems; n++) {
-		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
-			XtVaGetValues(itemList[n], XmNsubMenuId, &subMenuID, nullptr);
-			hideTearOffs(subMenuID);
-		}
-	}
-
-	/* hide tearoff for this menu */
-	if (!XmIsMenuShell(XtParent(menuPane)))
-		XtUnmapWidget(XtParent(menuPane));
-}
 
 Document *GetTopDocument(Widget w) {
 	Document *window = WidgetToWindow(w);
@@ -2221,4 +1787,161 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 	/* Check if external changes have been made to file and warn user */
 	CheckForChangesToFile(window);
+}
+
+static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
+
+	/* Create a text widget inside of a scrolled window widget */
+	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
+	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
+	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
+	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
+	
+	Widget text = XtVaCreateManagedWidget(
+		"text", 
+		textWidgetClass, 
+		frame, 
+		textNbacklightCharTypes, 
+		window->backlightCharTypes, 
+		textNrows, 
+		rows, 
+		textNcolumns, 
+		cols, 
+		textNlineNumCols, 
+		lineNumCols, 
+		textNemulateTabs, 
+		emTabDist, 
+		textNfont,
+	    GetDefaultFontStruct(window->fontList), 
+		textNhScrollBar, 
+		hScrollBar, 
+		textNvScrollBar, 
+		vScrollBar, 
+		textNreadOnly, 
+		IS_ANY_LOCKED(window->lockReasons), 
+		textNwordDelimiters, 
+		delimiters, 
+		textNwrapMargin,
+	    wrapMargin, 
+		textNautoIndent, 
+		window->indentStyle == AUTO_INDENT, 
+		textNsmartIndent, 
+		window->indentStyle == SMART_INDENT, 
+		textNautoWrap, 
+		window->wrapMode == NEWLINE_WRAP, 
+		textNcontinuousWrap,
+	    window->wrapMode == CONTINUOUS_WRAP, 
+		textNoverstrike, 
+		window->overstrike, 
+		textNhidePointer, 
+		(Boolean)GetPrefTypingHidesPointer(), 
+		textNcursorVPadding, 
+		GetVerticalAutoScroll(), 
+		nullptr);
+
+	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
+
+	/* add focus, drag, cursor tracking, and smart indent callbacks */
+	XtAddCallback(text, textNfocusCallback, focusCB, window);
+	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
+	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
+	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
+	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
+
+	/* This makes sure the text area initially has a the insert point shown
+	   ... (check if still true with the nedit text widget, probably not) */
+	XmAddTabGroup(containingPane(text));
+
+	/* compensate for Motif delete/backspace problem */
+	RemapDeleteKey(text);
+
+	/* Augment translation table for right button popup menu */
+	AddBGMenuAction(text);
+
+	/* If absolute line numbers will be needed for display in the statistics
+	   line, tell the widget to maintain them (otherwise, it's a costly
+	   operation and performance will be better without it) */
+	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats);
+
+	return text;
+}
+
+static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = static_cast<Document *>(clientData);
+
+	(void)callData;
+
+	/* record which window pane last had the keyboard focus */
+	window->lastFocus = w;
+
+	/* update line number statistic to reflect current focus pane */
+	window->UpdateStatsLine();
+
+	/* finish off the current incremental search */
+	EndISearch(window);
+
+	/* Check for changes to read-only status and/or file modifications */
+	CheckForChangesToFile(window);
+}
+
+static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = static_cast<Document *>(clientData);
+
+	(void)callData;
+
+	TextWidget textWidget = (TextWidget)w;
+
+	if (window->ignoreModify)
+		return;
+
+	/* update line and column nubers in statistics line */
+	window->UpdateStatsLine();
+
+	/* Check the character before the cursor for matchable characters */
+	FlashMatching(window, w);
+
+	/* Check for changes to read-only status and/or file modifications */
+	CheckForChangesToFile(window);
+
+	/*  This callback is not only called for focussed panes, but for newly
+	    created panes as well. So make sure that the cursor is left alone
+	    for unfocussed panes.
+	    TextWidget have no state per se about focus, so we use the related
+	    ID for the blink procedure.  */
+	if (textWidget->text.cursorBlinkProcID != 0) {
+		/*  Start blinking the caret again.  */
+		ResetCursorBlink(textWidget, False);
+	}
+}
+
+static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	auto window = static_cast<Document *>(clientData);
+
+	(void)callData;
+	(void)w;
+
+	/* don't record all of the intermediate drag steps for undo */
+	window->ignoreModify = True;
+}
+
+static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
+
+	(void)w;
+	
+	auto window   = static_cast<Document *>(clientData);
+	auto callData = static_cast<dragEndCBStruct *>(call_data);
+
+	/* restore recording of undo information */
+	window->ignoreModify = False;
+
+	/* Do nothing if drag operation was canceled */
+	if (callData->nCharsInserted == 0)
+		return;
+
+	/* Save information for undoing this operation not saved while
+	   undo recording was off */
+	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
 }
