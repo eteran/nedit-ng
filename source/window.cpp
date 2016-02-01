@@ -159,9 +159,6 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 static Widget containingPane(Widget w);
 static void setPaneDesiredHeight(Widget w, int height);
 
-static void deleteDocument(Document *window);
-static void cancelTimeOut(XtIntervalId *timer);
-
 /* From Xt, Shell.c, "BIGSIZE" */
 static const Dimension XT_IGNORE_PPOSITION = 32767;
 
@@ -784,177 +781,9 @@ Document *TabToWindow(Widget tab) {
 	return nullptr;
 }
 
-/*
-** Close a document, or an editor window
-*/
-void Document::CloseWindow() {
-	int keepWindow, state;
-	char name[MAXPATHLEN];
-	Document *win;
-	Document *topBuf = nullptr;
-	Document *nextBuf = nullptr;
-
-	/* Free smart indent macro programs */
-	EndSmartIndent(this);
-
-	/* Clean up macro references to the doomed window.  If a macro is
-	   executing, stop it.  If macro is calling this (closing its own
-	   window), leave the window alive until the macro completes */
-	keepWindow = !MacroWindowCloseActions(this);
-
-	/* Kill shell sub-process and free related memory */
-	AbortShellCommand(this);
-
-	/* Unload the default tips files for this language mode if necessary */
-	UnloadLanguageModeTipsFile(this);
-
-	/* If a window is closed while it is on the multi-file replace dialog
-	   list of any other window (or even the same one), we must update those
-	   lists or we end up with dangling references. Normally, there can
-	   be only one of those dialogs at the same time (application modal),
-	   but LessTif doesn't even (always) honor application modalness, so
-	   there can be more than one dialog. */
-	RemoveFromMultiReplaceDialog(this);
-
-	/* Destroy the file closed property for this file */
-	DeleteFileClosedProperty(this);
-
-	/* Remove any possibly pending callback which might fire after the
-	   widget is gone. */
-	cancelTimeOut(&this->flashTimeoutID);
-	cancelTimeOut(&this->markTimeoutID);
-
-	/* if this is the last window, or must be kept alive temporarily because
-	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (WindowList == this && this->next == nullptr)) {
-		this->filename[0] = '\0';
-		UniqueUntitledName(name, sizeof(name));
-		CLEAR_ALL_LOCKS(this->lockReasons);
-		this->fileMode = 0;
-		this->fileUid = 0;
-		this->fileGid = 0;
-		strcpy(this->filename, name);
-		strcpy(this->path, "");
-		this->ignoreModify = TRUE;
-		this->buffer->BufSetAllEx("");
-		this->ignoreModify = FALSE;
-		this->nMarks = 0;
-		this->filenameSet = FALSE;
-		this->fileMissing = TRUE;
-		this->fileChanged = FALSE;
-		this->fileFormat = UNIX_FILE_FORMAT;
-		this->lastModTime = 0;
-		this->device = 0;
-		this->inode = 0;
-
-		StopHighlighting(this);
-		EndSmartIndent(this);
-		this->UpdateWindowTitle();
-		this->UpdateWindowReadOnly();
-		XtSetSensitive(this->closeItem, FALSE);
-		XtSetSensitive(this->readOnlyItem, TRUE);
-		XmToggleButtonSetState(this->readOnlyItem, FALSE, FALSE);
-		this->ClearUndoList();
-		this->ClearRedoList();
-		XmTextSetStringEx(this->statsLine, ""); /* resets scroll pos of stats
-		                                            line from long file names */
-		this->UpdateStatsLine();
-		DetermineLanguageMode(this, True);
-		this->RefreshTabState();
-		this->updateLineNumDisp();
-		return;
-	}
-
-	/* Free syntax highlighting patterns, if any. w/o redisplaying */
-	FreeHighlightingData(this);
-
-	/* remove the buffer modification callbacks so the buffer will be
-	   deallocated when the last text widget is destroyed */
-	this->buffer->BufRemoveModifyCB(modifiedCB, this);
-	this->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
 
 
-	/* free the undo and redo lists */
-	this->ClearUndoList();
-	this->ClearRedoList();
 
-	/* close the document/window */
-	if (this->NDocuments() > 1) {
-		if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell == this->shell) {
-			nextBuf = MacroRunWindow();
-			nextBuf->RaiseDocument();
-		} else if (this->IsTopDocument()) {
-			/* need to find a successor before closing a top document */
-			nextBuf = this->getNextTabWindow(1, 0, 0);
-			nextBuf->RaiseDocument();
-		} else {
-			topBuf = GetTopDocument(this->shell);
-		}
-	}
-
-	/* remove the window from the global window list, update window menus */
-	this->removeFromWindowList();
-	InvalidateWindowMenus();
-	CheckCloseDim(); /* Close of window running a macro may have been disabled. */
-
-	/* remove the tab of the closing document from tab bar */
-	XtDestroyWidget(this->tab);
-
-	/* refresh tab bar after closing a document */
-	if (nextBuf) {
-		nextBuf->ShowWindowTabBar();
-		nextBuf->updateLineNumDisp();
-	} else if (topBuf) {
-		topBuf->ShowWindowTabBar();
-		topBuf->updateLineNumDisp();
-	}
-
-	/* dim/undim Detach_Tab menu items */
-	win = nextBuf ? nextBuf : topBuf;
-	if (win) {
-		state = win->NDocuments() > 1;
-		XtSetSensitive(win->detachDocumentItem, state);
-		XtSetSensitive(win->contextDetachDocumentItem, state);
-	}
-
-	/* dim/undim Attach_Tab menu items */
-	state = WindowList->NDocuments() < NWindows();
-	for (win = WindowList; win; win = win->next) {
-		if (win->IsTopDocument()) {
-			XtSetSensitive(win->moveDocumentItem, state);
-			XtSetSensitive(win->contextMoveDocumentItem, state);
-		}
-	}
-
-	/* free background menu cache for document */
-	FreeUserBGMenuCache(&this->userBGMenuCache);
-
-	/* destroy the document's pane, or the window */
-	if (nextBuf || topBuf) {
-		deleteDocument(this);
-	} else {
-		/* free user menu cache for window */
-		FreeUserMenuCache(this->userMenuCache);
-
-		/* remove and deallocate all of the widgets associated with window */
-		XtFree(this->backlightCharTypes); /* we made a copy earlier on */
-		CloseAllPopupsFor(this->shell);
-		XtDestroyWidget(this->shell);
-	}
-
-	/* deallocate the window data structure */
-	delete this;
-}
-
-void Document::ShowWindowTabBar() {
-	if (GetPrefTabBar()) {
-		if (GetPrefTabBarHideOne())
-			this->ShowTabBar(this->NDocuments() > 1);
-		else
-			this->ShowTabBar(True);
-	} else
-		this->ShowTabBar(False);
-}
 
 /*
 ** Check if there is already a window open for a given file
@@ -1082,177 +911,6 @@ void Document::SplitPane() {
 
 
 
-/*
-** Close the window pane that last had the keyboard focus.  (Actually, close
-** the bottom pane and make it look like pane which had focus was closed)
-*/
-void Document::ClosePane() {
-	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
-	int horizOffsets[MAX_PANES + 1];
-	int i, focusPane;
-	Widget text;
-
-	/* Don't delete the last pane */
-	if (this->nPanes <= 0)
-		return;
-
-	/* Record the current heights, scroll positions, and insert positions
-	   of the existing panes, and the keyboard focus */
-	focusPane = 0;
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		insertPositions[i] = TextGetCursorPos(text);
-		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-		if (text == this->lastFocus)
-			focusPane = i;
-	}
-
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-	XtUnmanageChild(this->splitPane);
-
-	/* Destroy last pane, and make sure lastFocus points to an existing pane.
-	   Workaround for OM 2.1.30: text widget must be unmanaged for
-	   xmPanedWindowWidget to calculate the correct pane heights for
-	   the remaining panes, simply detroying it didn't seem enough */
-	this->nPanes--;
-	XtUnmanageChild(containingPane(this->textPanes[this->nPanes]));
-	XtDestroyWidget(containingPane(this->textPanes[this->nPanes]));
-
-	if (this->nPanes == 0)
-		this->lastFocus = this->textArea;
-	else if (focusPane > this->nPanes)
-		this->lastFocus = this->textPanes[this->nPanes - 1];
-
-	/* adjust the heights, scroll positions, etc., to make it look
-	   like the pane with the input focus was closed */
-	for (i = focusPane; i <= this->nPanes; i++) {
-		insertPositions[i] = insertPositions[i + 1];
-		paneHeights[i] = paneHeights[i + 1];
-		topLines[i] = topLines[i + 1];
-		horizOffsets[i] = horizOffsets[i + 1];
-	}
-
-	/* set the desired heights and re-manage the paned window so it will
-	   recalculate pane heights */
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-	}
-
-	if (this->IsTopDocument())
-		XtManageChild(this->splitPane);
-
-	/* Reset all of the scroll positions, insert positions, etc. */
-	for (i = 0; i <= this->nPanes; i++) {
-		text = i == 0 ? this->textArea : this->textPanes[i - 1];
-		TextSetCursorPos(text, insertPositions[i]);
-		TextSetScroll(text, topLines[i], horizOffsets[i]);
-	}
-	XmProcessTraversal(this->lastFocus, XmTRAVERSE_CURRENT);
-
-	/* Update the window manager size hints after the sizes of the panes have
-	   been set (the widget heights are not yet readable here, but they will
-	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(this->shell), 0, wmSizeUpdateProc, this);
-}
-
-/*
-** Turn on and off the display of line numbers
-*/
-void Document::ShowLineNumbers(int state) {
-	Widget text;
-	int i, marginWidth;
-	unsigned reqCols = 0;
-	Dimension windowWidth;
-	Document *win;
-	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
-
-	if (this->showLineNumbers == state)
-		return;
-	this->showLineNumbers = state;
-
-	/* Just setting this->showLineNumbers is sufficient to tell
-	   updateLineNumDisp() to expand the line number areas and the this
-	   size for the number of lines required.  To hide the line number
-	   display, set the width to zero, and contract the this width. */
-	if (state) {
-		reqCols = this->updateLineNumDisp();
-	} else {
-		XtVaGetValues(this->shell, XmNwidth, &windowWidth, nullptr);
-		XtVaGetValues(this->textArea, textNmarginWidth, &marginWidth, nullptr);
-		XtVaSetValues(this->shell, XmNwidth, windowWidth - textD->left + marginWidth, nullptr);
-
-		for (i = 0; i <= this->nPanes; i++) {
-			text = i == 0 ? this->textArea : this->textPanes[i - 1];
-			XtVaSetValues(text, textNlineNumCols, 0, nullptr);
-		}
-	}
-
-	/* line numbers panel is shell-level, hence other
-	   tabbed documents in the this should synch */
-	for (win = WindowList; win; win = win->next) {
-		if (win->shell != this->shell || win == this)
-			continue;
-
-		win->showLineNumbers = state;
-
-		for (i = 0; i <= win->nPanes; i++) {
-			text = i == 0 ? win->textArea : win->textPanes[i - 1];
-			/*  reqCols should really be cast here, but into what? XmRInt?  */
-			XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
-		}
-	}
-
-	/* Tell WM that the non-expandable part of the this has changed size */
-	this->UpdateWMSizeHints();
-}
-
-
-
-
-
-/*
-** Turn on and off the display of the statistics line
-*/
-void Document::ShowStatsLine(int state) {
-	Document *win;
-	Widget text;
-	int i;
-
-	/* In continuous wrap mode, text widgets must be told to keep track of
-	   the top line number in absolute (non-wrapped) lines, because it can
-	   be a costly calculation, and is only needed for displaying line
-	   numbers, either in the stats line, or along the left margin */
-	for (i = 0; i <= this->nPanes; i++) {
-		text = (i == 0) ? this->textArea : this->textPanes[i - 1];
-		reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(state);
-	}
-	this->showStats = state;
-	this->showStatistics(state);
-
-	/* i-search line is shell-level, hence other tabbed
-	   documents in the this should synch */
-	for (win = WindowList; win; win = win->next) {
-		if (win->shell != this->shell || win == this)
-			continue;
-		win->showStats = state;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*
@@ -1267,147 +925,13 @@ int NWindows(void) {
 	return n;
 }
 
-/*
-** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
-*/
-void Document::SetAutoIndent(int state) {
-	int autoIndent = state == AUTO_INDENT, smartIndent = state == SMART_INDENT;
-	int i;
-
-	if (this->indentStyle == SMART_INDENT && !smartIndent)
-		EndSmartIndent(this);
-	else if (smartIndent && this->indentStyle != SMART_INDENT)
-		BeginSmartIndent(this, True);
-	this->indentStyle = state;
-	XtVaSetValues(this->textArea, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	for (i = 0; i < this->nPanes; i++)
-		XtVaSetValues(this->textPanes[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	if (this->IsTopDocument()) {
-		XmToggleButtonSetState(this->smartIndentItem, smartIndent, False);
-		XmToggleButtonSetState(this->autoIndentItem, autoIndent, False);
-		XmToggleButtonSetState(this->autoIndentOffItem, state == NO_AUTO_INDENT, False);
-	}
-}
-
-/*
-** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
-** Update the menu to reflect the change of state.
-*/
-void Document::SetShowMatching(int state) {
-	this->showMatchingStyle = state;
-	if (this->IsTopDocument()) {
-		XmToggleButtonSetState(this->showMatchingOffItem, state == NO_FLASH, False);
-		XmToggleButtonSetState(this->showMatchingDelimitItem, state == FLASH_DELIMIT, False);
-		XmToggleButtonSetState(this->showMatchingRangeItem, state == FLASH_RANGE, False);
-	}
-}
 
 
 
-/*
-** Set the fonts for "window" from a font name, and updates the display.
-** Also updates window->fontList which is used for statistics line.
-**
-** Note that this leaks memory and server resources.  In previous NEdit
-** versions, fontLists were carefully tracked and freed, but X and Motif
-** have some kind of timing problem when widgets are distroyed, such that
-** fonts may not be freed immediately after widget destruction with 100%
-** safety.  Rather than kludge around this with timerProcs, I have chosen
-** to create new fontLists only when the user explicitly changes the font
-** (which shouldn't happen much in normal NEdit operation), and skip the
-** futile effort of freeing them.
-*/
-void Document::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
 
-	XFontStruct *font, *oldFont;
-	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
-	int borderWidth, borderHeight, marginWidth, marginHeight;
-	int primaryChanged, highlightChanged = False;
-	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
-	Dimension textHeight, newWindowWidth, newWindowHeight;
-	textDisp *textD = ((TextWidget)this->textArea)->text.textD;
 
-	/* Check which fonts have changed */
-	primaryChanged = strcmp(fontName, this->fontName);
-	if (strcmp(italicName, this->italicFontName))
-		highlightChanged = True;
-	if (strcmp(boldName, this->boldFontName))
-		highlightChanged = True;
-	if (strcmp(boldItalicName, this->boldItalicFontName))
-		highlightChanged = True;
-	if (!primaryChanged && !highlightChanged)
-		return;
 
-	/* Get information about the current this sizing, to be used to
-	   determine the correct this size after the font is changed */
-	XtVaGetValues(this->shell, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
-	XtVaGetValues(this->textArea, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
-	oldTextWidth = textD->width + textD->lineNumWidth;
-	oldTextHeight = textHeight - 2 * marginHeight;
-	for (i = 0; i < this->nPanes; i++) {
-		XtVaGetValues(this->textPanes[i], XmNheight, &textHeight, nullptr);
-		oldTextHeight += textHeight - 2 * marginHeight;
-	}
-	borderWidth = oldWindowWidth - oldTextWidth;
-	borderHeight = oldWindowHeight - oldTextHeight;
-	oldFontWidth = oldFont->max_bounds.width;
-	oldFontHeight = textD->ascent + textD->descent;
 
-	/* Change the fonts in the this data structure.  If the primary font
-	   didn't work, use Motif's fallback mechanism by stealing it from the
-	   statistics line.  Highlight fonts are allowed to be nullptr, which
-	   is interpreted as "use the primary font" */
-	if (primaryChanged) {
-		strcpy(this->fontName, fontName);
-		font = XLoadQueryFont(TheDisplay, fontName);
-		if(!font)
-			XtVaGetValues(this->statsLine, XmNfontList, &this->fontList, nullptr);
-		else
-			this->fontList = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
-	}
-	if (highlightChanged) {
-		strcpy(this->italicFontName, italicName);
-		this->italicFontStruct = XLoadQueryFont(TheDisplay, italicName);
-		strcpy(this->boldFontName, boldName);
-		this->boldFontStruct = XLoadQueryFont(TheDisplay, boldName);
-		strcpy(this->boldItalicFontName, boldItalicName);
-		this->boldItalicFontStruct = XLoadQueryFont(TheDisplay, boldItalicName);
-	}
-
-	/* Change the primary font in all the widgets */
-	if (primaryChanged) {
-		font = GetDefaultFontStruct(this->fontList);
-		XtVaSetValues(this->textArea, textNfont, font, nullptr);
-		for (i = 0; i < this->nPanes; i++)
-			XtVaSetValues(this->textPanes[i], textNfont, font, nullptr);
-	}
-
-	/* Change the highlight fonts, even if they didn't change, because
-	   primary font is read through the style table for syntax highlighting */
-	if (this->highlightData)
-		UpdateHighlightStyles(this);
-
-	/* Change the this manager size hints.
-	   Note: this has to be done _before_ we set the new sizes. ICCCM2
-	   compliant this managers (such as fvwm2) would otherwise resize
-	   the this twice: once because of the new sizes requested, and once
-	   because of the new size increments, resulting in an overshoot. */
-	this->UpdateWMSizeHints();
-
-	/* Use the information from the old this to re-size the this to a
-	   size appropriate for the new font, but only do so if there's only
-	   _one_ document in the this, in order to avoid growing-this bug */
-	if (this->NDocuments() == 1) {
-		fontWidth = GetDefaultFontStruct(this->fontList)->max_bounds.width;
-		fontHeight = textD->ascent + textD->descent;
-		newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
-		newWindowHeight = (oldTextHeight * fontHeight) / oldFontHeight + borderHeight;
-		XtVaSetValues(this->shell, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
-	}
-
-	/* Change the minimum pane height */
-	this->UpdateMinPaneHeights();
-}
 
 
 
@@ -1598,72 +1122,6 @@ static void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 		/*  Start blinking the caret again.  */
 		ResetCursorBlink(textWidget, False);
 	}
-}
-
-static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
-	(void)nRestyled;
-
-	Document *window = (Document *)cbArg;
-	int selected = window->buffer->primary_.selected;
-
-	/* update the table of bookmarks */
-	if (!window->ignoreModify) {
-		UpdateMarkTable(window, pos, nInserted, nDeleted);
-	}
-
-	/* Check and dim/undim selection related menu items */
-	if ((window->wasSelected && !selected) || (!window->wasSelected && selected)) {
-		window->wasSelected = selected;
-
-		/* do not refresh shell-level items (window, menu-bar etc)
-		   when motifying non-top document */
-		if (window->IsTopDocument()) {
-			XtSetSensitive(window->printSelItem, selected);
-			XtSetSensitive(window->cutItem, selected);
-			XtSetSensitive(window->copyItem, selected);
-			XtSetSensitive(window->delItem, selected);
-			/* Note we don't change the selection for items like
-			   "Open Selected" and "Find Selected".  That's because
-			   it works on selections in external applications.
-			   Desensitizing it if there's no NEdit selection
-			   disables this feature. */
-			XtSetSensitive(window->filterItem, selected);
-
-			DimSelectionDepUserMenuItems(window, selected);
-			if (window->replaceDlog != nullptr && XtIsManaged(window->replaceDlog)) {
-				UpdateReplaceActionButtons(window);
-			}
-		}
-	}
-
-	/* When the program needs to make a change to a text area without without
-	   recording it for undo or marking file as changed it sets ignoreModify */
-	if (window->ignoreModify || (nDeleted == 0 && nInserted == 0))
-		return;
-
-	/* Make sure line number display is sufficient for new data */
-	window->updateLineNumDisp();
-
-	/* Save information for undoing this operation (this call also counts
-	   characters and editing operations for triggering autosave */
-	window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
-
-	/* Trigger automatic backup if operation or character limits reached */
-	if (window->autoSave && (window->autoSaveCharCount > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount > AUTOSAVE_OP_LIMIT)) {
-		WriteBackupFile(window);
-		window->autoSaveCharCount = 0;
-		window->autoSaveOpCount = 0;
-	}
-
-	/* Indicate that the window has now been modified */
-	window->SetWindowModified(TRUE);
-
-	/* Update # of bytes, and line and col statistics */
-	window->UpdateStatsLine();
-
-	/* Check if external changes have been made to file and warn user */
-	CheckForChangesToFile(window);
 }
 
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1989,43 +1447,11 @@ static void getGeometryString(Document *window, char *geomString) {
 	CreateGeometryString(geomString, x, y, width, height, XValue | YValue | WidthValue | HeightValue);
 }
 
-/*
-** Xt timer procedure for updating size hints.  The new sizes of objects in
-** the window are not ready immediately after adding or removing panes.  This
-** is a timer routine to be invoked with a timeout of 0 to give the event
-** loop a chance to finish processing the size changes before reading them
-** out for setting the window manager size hints.
-*/
-static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
-
-	(void)id;
-
-	static_cast<Document *>(clientData)->UpdateWMSizeHints();
-}
 
 
 
-/*
-** Calculate the dimension of the text area, in terms of rows & cols,
-** as if there's only one single text pane in the window.
-*/
-static void getTextPaneDimension(Document *window, int *nRows, int *nCols) {
-	Widget hScrollBar;
-	Dimension hScrollBarHeight, paneHeight;
-	int marginHeight, marginWidth, totalHeight, fontHeight;
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
 
-	/* width is the same for panes */
-	XtVaGetValues(window->textArea, textNcolumns, nCols, nullptr);
 
-	/* we have to work out the height, as the text area may have been split */
-	XtVaGetValues(window->textArea, textNhScrollBar, &hScrollBar, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
-	XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
-	XtVaGetValues(window->splitPane, XmNheight, &paneHeight, nullptr);
-	totalHeight = paneHeight - 2 * marginHeight - hScrollBarHeight;
-	fontHeight = textD->ascent + textD->descent;
-	*nRows = totalHeight / fontHeight;
-}
 
 /*
 ** Create a new document in the shell window.
@@ -2139,7 +1565,7 @@ Document *Document::CreateDocument(const char *name) {
 	if (!window->fontList)
 		XtVaGetValues(this->statsLine, XmNfontList, &window->fontList, nullptr);
 
-	getTextPaneDimension(this, &nRows, &nCols);
+	this->getTextPaneDimension(&nRows, &nCols);
 
 	/* Create pane that actaully holds the new document. As
 	   document is created in 'background', we need to hide
@@ -2309,13 +1735,7 @@ Document *GetTopDocument(Widget w) {
 	return WidgetToWindow(window->shell);
 }
 
-static void deleteDocument(Document *window) {
-	if (!window) {
-		return;
-	}
 
-	XtDestroyWidget(window->splitPane);
-}
 
 
 
@@ -2565,56 +1985,7 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 
 
 
-/*
-** Move document to an other window.
-**
-** the moving document will receive certain window settings from
-** its new host, i.e. the window size, stats and isearch lines.
-*/
-Document *Document::MoveDocument(Document *toWindow) {
-	Document *win = nullptr, *cloneWin;
 
-	/* prepare to move document */
-	if (this->NDocuments() < 2) {
-		/* hide the this to make it look like we are moving */
-		XtUnmapWidget(this->shell);
-	} else if (this->IsTopDocument()) {
-		/* raise another document to replace the document being moved */
-		win = this->getNextTabWindow(1, 0, 0);
-		win->RaiseDocument();
-	}
-
-	/* relocate the document to target this */
-	cloneWin = toWindow->CreateDocument(this->filename);
-	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
-	this->cloneDocument(cloneWin);
-
-	/* CreateDocument() simply adds the new this's pointer to the
-	   head of WindowList. We need to adjust the detached this's
-	   pointer, so that macro functions such as focus_window("last")
-	   will travel across the documents per the sequence they're
-	   opened. The new doc will appear to replace it's former self
-	   as the old doc is closed. */
-	WindowList = cloneWin->next;
-	cloneWin->next = this->next;
-	this->next = cloneWin;
-
-	/* remove the document from the old this */
-	this->fileChanged = False;
-	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
-
-	/* some menu states might have changed when deleting document */
-	if (win) {
-		win->RefreshWindowStates();
-	}
-
-	/* this should keep the new document this fresh */
-	cloneWin->RaiseDocumentWindow();
-	cloneWin->RefreshTabState();
-	cloneWin->SortTabBar();
-
-	return cloneWin;
-}
 
 static void hideTooltip(Widget tab) {
 	Widget tooltip = XtNameToWidget(tab, "*BubbleShell");
@@ -2677,12 +2048,7 @@ static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 
 
-static void cancelTimeOut(XtIntervalId *timer) {
-	if (*timer != 0) {
-		XtRemoveTimeOut(*timer);
-		*timer = 0;
-	}
-}
+
 
 
 
@@ -2711,6 +2077,7 @@ static void cancelTimeOut(XtIntervalId *timer) {
 */
 
 // TODO(eteran): temporary duplicate
+//----------------------------------------------------------------------------------------
 static Widget manageToolBars(Widget toolBarsForm) {
 	Widget topWidget = nullptr;
 	WidgetList children;
@@ -2774,4 +2141,84 @@ Widget containingPane(Widget w) {
 
 void setPaneDesiredHeight(Widget w, int height) {
 	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.dheight = height;
+}
+
+/*
+** Xt timer procedure for updating size hints.  The new sizes of objects in
+** the window are not ready immediately after adding or removing panes.  This
+** is a timer routine to be invoked with a timeout of 0 to give the event
+** loop a chance to finish processing the size changes before reading them
+** out for setting the window manager size hints.
+*/
+static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
+
+	(void)id;
+
+	static_cast<Document *>(clientData)->UpdateWMSizeHints();
+}
+
+static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
+
+	(void)nRestyled;
+
+	Document *window = (Document *)cbArg;
+	int selected = window->buffer->primary_.selected;
+
+	/* update the table of bookmarks */
+	if (!window->ignoreModify) {
+		UpdateMarkTable(window, pos, nInserted, nDeleted);
+	}
+
+	/* Check and dim/undim selection related menu items */
+	if ((window->wasSelected && !selected) || (!window->wasSelected && selected)) {
+		window->wasSelected = selected;
+
+		/* do not refresh shell-level items (window, menu-bar etc)
+		   when motifying non-top document */
+		if (window->IsTopDocument()) {
+			XtSetSensitive(window->printSelItem, selected);
+			XtSetSensitive(window->cutItem, selected);
+			XtSetSensitive(window->copyItem, selected);
+			XtSetSensitive(window->delItem, selected);
+			/* Note we don't change the selection for items like
+			   "Open Selected" and "Find Selected".  That's because
+			   it works on selections in external applications.
+			   Desensitizing it if there's no NEdit selection
+			   disables this feature. */
+			XtSetSensitive(window->filterItem, selected);
+
+			DimSelectionDepUserMenuItems(window, selected);
+			if (window->replaceDlog != nullptr && XtIsManaged(window->replaceDlog)) {
+				UpdateReplaceActionButtons(window);
+			}
+		}
+	}
+
+	/* When the program needs to make a change to a text area without without
+	   recording it for undo or marking file as changed it sets ignoreModify */
+	if (window->ignoreModify || (nDeleted == 0 && nInserted == 0))
+		return;
+
+	/* Make sure line number display is sufficient for new data */
+	window->updateLineNumDisp();
+
+	/* Save information for undoing this operation (this call also counts
+	   characters and editing operations for triggering autosave */
+	window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
+
+	/* Trigger automatic backup if operation or character limits reached */
+	if (window->autoSave && (window->autoSaveCharCount > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount > AUTOSAVE_OP_LIMIT)) {
+		WriteBackupFile(window);
+		window->autoSaveCharCount = 0;
+		window->autoSaveOpCount = 0;
+	}
+
+	/* Indicate that the window has now been modified */
+	window->SetWindowModified(TRUE);
+
+	/* Update # of bytes, and line and col statistics */
+	window->UpdateStatsLine();
+
+	/* Check if external changes have been made to file and warn user */
+	CheckForChangesToFile(window);
 }
