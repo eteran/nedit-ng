@@ -62,21 +62,14 @@
 #include "../Xlt/BubbleButtonP.h"
 #include "../Microline/XmL/Folder.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <algorithm>
-#include <vector>
-#include <sys/stat.h>
-
-#include <sys/param.h>
-#include "../util/clearcase.h"
-
+#include <cctype>
 #include <climits>
 #include <cmath>
-#include <cctype>
 #include <ctime>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <vector>
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -107,16 +100,6 @@
 /* extern void _XEditResCheckMessages(); */
 #endif
 
-/* Initial minimum height of a pane.  Just a fallback in case setPaneMinHeight
-   (which may break in a future release) is not available */
-#define PANE_MIN_HEIGHT 39
-
-/* Thickness of 3D border around statistics and/or incremental search areas
-   below the main menu bar */
-#define STAT_SHADOW_THICKNESS 1
-
-
-
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -132,9 +115,6 @@ Document *TabToWindow(Widget tab) {
 
 	return nullptr;
 }
-
-
-
 
 
 /*
@@ -171,12 +151,6 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	return nullptr;
 }
 
-
-
-
-
-
-
 /*
 ** Count the windows
 */
@@ -188,68 +162,6 @@ int NWindows(void) {
 	}
 	return n;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-** Recover the window pointer from any widget in the window, by searching
-** up the widget hierarcy for the top level container widget where the
-** window pointer is stored in the userData field. In a tabbed window,
-** this is the window pointer of the top (active) document, which is
-** returned if w is 'shell-level' widget - menus, find/replace dialogs, etc.
-**
-** To support action routine in tabbed windows, a copy of the window
-** pointer is also store in the splitPane widget.
-*/
-Document *WidgetToWindow(Widget w) {
-	Document *window = nullptr;
-	Widget parent;
-
-	while (true) {
-		/* return window pointer of document */
-		if (XtClass(w) == xmPanedWindowWidgetClass)
-			break;
-
-		if (XtClass(w) == topLevelShellWidgetClass) {
-			WidgetList items;
-
-			/* there should be only 1 child for the shell -
-			   the main window widget */
-			XtVaGetValues(w, XmNchildren, &items, nullptr);
-			w = items[0];
-			break;
-		}
-
-		parent = XtParent(w);
-		if(!parent)
-			return nullptr;
-
-		/* make sure it is not a dialog shell */
-		if (XtClass(parent) == topLevelShellWidgetClass && XmIsMainWindow(w))
-			break;
-
-		w = parent;
-	}
-
-	XtVaGetValues(w, XmNuserData, &window, nullptr);
-
-	return window;
-}
-
-
-
 
 
 
@@ -277,10 +189,6 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 	*right = selEnd;
 	return True;
 }
-
-
-
-
 
 #ifndef NO_SESSION_RESTART
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -332,7 +240,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		WidgetList tabs;
 		int tabCount;
 
-		if (strcmp(XtName(children[n]), "textShell") || ((topWin = WidgetToWindow(children[n])) == nullptr)) {
+		if (strcmp(XtName(children[n]), "textShell") || ((topWin = Document::WidgetToWindow(children[n])) == nullptr)) {
 			continue; /* skip non-editor windows */
 		}
 
@@ -386,17 +294,6 @@ void AttachSessionMgrHandler(Widget appShell) {
 	XmAddProtocolCallback(appShell, wmpAtom, syAtom, saveYourselfCB, (XtPointer)appShell);
 }
 #endif /* NO_SESSION_RESTART */
-
-
-
-
-
-
-
-
-
-
-
 
 
 static bool currentlyBusy = false;
@@ -465,12 +362,4 @@ void AddSmallIcon(Widget shell) {
 }
 
 
-Document *GetTopDocument(Widget w) {
-	Document *window = WidgetToWindow(w);
 
-	return WidgetToWindow(window->shell);
-}
-
-
-// TODO(eteran): temporary duplicate
-//----------------------------------------------------------------------------------------

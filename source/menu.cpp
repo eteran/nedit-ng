@@ -891,7 +891,7 @@ static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
 	enum HelpTopic topic;
 	XtPointer userData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtVaGetValues(menuItem, XmNuserData, &userData, nullptr);
 	topic = (enum HelpTopic)(long) userData;
 
@@ -968,7 +968,7 @@ static HelpMenu *buildHelpMenu(
 */
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Widget menu = MENU_WIDGET(w);
-	Document *win, *window = WidgetToWindow(menu);
+	Document *win, *window = Document::WidgetToWindow(menu);
 
 	/* extract the window to be acted upon, see comment in
 	   tabMenuPostAP() for detail */
@@ -980,7 +980,7 @@ static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Widget menu = MENU_WIDGET(w);
-	Widget widget = WidgetToWindow(menu)->lastFocus;
+	Widget widget = Document::WidgetToWindow(menu)->lastFocus;
 	String action = (String)clientData;
 	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
 
@@ -995,80 +995,80 @@ static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	static const char *params[1] = {"rect"};
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "paste_clipboard", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "paste_clipboard", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_left_by_tab" : "shift_left", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_left_by_tab" : "shift_left", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_right_by_tab" : "shift_right", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_right_by_tab" : "shift_right", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void findCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void findSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void findSelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_selection", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "find_selection", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "start_incremental_find", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "start_incremental_find", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_find_same", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "replace_find_same", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1076,9 +1076,9 @@ static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 
 	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	if (event->type == KeyPress || event->type == KeyRelease)
 		BeginMarkCommand(window);
 	else
@@ -1090,11 +1090,11 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 
 	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 	int extend = event->xbutton.state & ShiftMask;
 	static const char *params[1] = {"extend"};
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	if (event->type == KeyPress || event->type == KeyRelease)
 		BeginGotoMarkCommand(window, extend);
 	else
@@ -1105,8 +1105,8 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "select_to_matching" : "goto_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "select_to_matching" : "goto_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1116,11 +1116,11 @@ static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) 
 	static const char *params[1] = {"off"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1130,11 +1130,11 @@ static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"on"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1144,11 +1144,11 @@ static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"smart"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1157,11 +1157,11 @@ static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_incremental_backup", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_incremental_backup", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void preserveCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1170,11 +1170,11 @@ static void preserveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_make_backup_copy", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_make_backup_copy", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1184,11 +1184,11 @@ static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData
 	static const char *params[1] = {NO_FLASH_STRING};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1198,11 +1198,11 @@ static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer call
 	static const char *params[1] = {FLASH_DELIMIT_STRING};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1211,11 +1211,11 @@ static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callDa
 	static const char *params[1] = {FLASH_RANGE_STRING};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1224,18 +1224,18 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
 
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_match_syntax_based", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_match_syntax_based", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	ChooseFonts(WidgetToWindow(MENU_WIDGET(w)), True);
+	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), True);
 }
 
 static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1245,11 +1245,11 @@ static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"none"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1259,11 +1259,11 @@ static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"auto"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1273,20 +1273,20 @@ static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 	static const char *params[1] = {"continuous"};
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	WrapMarginDialog(window->shell, window);
 }
 
@@ -1296,7 +1296,7 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)callData;
 
 	int applyBacklight = XmToggleButtonGetState(w);
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 	window->SetBacklightChars(applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
 }
 
@@ -1304,9 +1304,9 @@ static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	TabsPrefDialog(window->shell, window);
 }
 
@@ -1316,11 +1316,11 @@ static void statsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Widget menu = MENU_WIDGET(w);
 
-	Document *window = WidgetToWindow(menu);
+	Document *window = Document::WidgetToWindow(menu);
 	(void)window;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "set_statistics_line", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "set_statistics_line", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1412,8 +1412,8 @@ static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)w;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	ChooseFonts(WidgetToWindow(MENU_WIDGET(w)), False);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), False);
 }
 
 static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1422,8 +1422,8 @@ static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)w;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	ChooseColors(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	ChooseColors(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1483,8 +1483,8 @@ static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 	(void)callData;
 	(void)w;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	WrapMarginDialog(WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	WrapMarginDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
 }
 
 static void smartTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1522,8 +1522,8 @@ static void shellSelDefCB(Widget widget, XtPointer clientData, XtPointer callDat
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(widget))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	SelectShellDialog(WidgetToWindow(MENU_WIDGET(widget))->shell, nullptr);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(widget))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	SelectShellDialog(Document::WidgetToWindow(MENU_WIDGET(widget))->shell, nullptr);
 }
 
 static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1531,8 +1531,8 @@ static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	TabsPrefDialog(WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	TabsPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell, nullptr);
 }
 
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1653,8 +1653,8 @@ static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditHighlightPatterns(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	EditHighlightPatterns(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1662,8 +1662,8 @@ static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditSmartIndentMacros(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	EditSmartIndentMacros(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1671,7 +1671,7 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditHighlightStyles(nullptr);
 }
 
@@ -1680,7 +1680,7 @@ static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditLanguageModes();
 }
 
@@ -1689,8 +1689,8 @@ static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditShellMenu(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	EditShellMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1698,8 +1698,8 @@ static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditMacroMenu(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	EditMacroMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1707,8 +1707,8 @@ static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditBGMenu(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	EditBGMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1716,9 +1716,9 @@ static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	window->EditCustomTitleFormat();
 }
 
@@ -2250,7 +2250,7 @@ static void size24x80CB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(24, 80);
 }
 
@@ -2258,7 +2258,7 @@ static void size40x80CB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(40, 80);
 }
 
@@ -2266,7 +2266,7 @@ static void size60x80CB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(60, 80);
 }
 
@@ -2274,7 +2274,7 @@ static void size80x80CB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(80, 80);
 }
 
@@ -2282,8 +2282,8 @@ static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	RowColumnPrefDialog(WidgetToWindow(MENU_WIDGET(w))->shell);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	RowColumnPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell);
 	updateWindowSizeMenus();
 }
 
@@ -2291,8 +2291,8 @@ static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	SaveNEditPrefs(WidgetToWindow(MENU_WIDGET(w))->shell, False);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	SaveNEditPrefs(Document::WidgetToWindow(MENU_WIDGET(w))->shell, False);
 }
 
 static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2301,31 +2301,31 @@ static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	static const char *params[1] = {"\f"};
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(WidgetToWindow(MENU_WIDGET(w))->lastFocus, "insert_string", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, "insert_string", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	AbortShellCommand(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	AbortShellCommand(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	BeginLearn(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	BeginLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	FinishLearn();
 }
 
@@ -2333,23 +2333,23 @@ static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	CancelMacroOrLearn(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	CancelMacroOrLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	Replay(WidgetToWindow(MENU_WIDGET(w)));
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	Replay(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	if (!window->windowMenuValid) {
 		updateWindowMenu(window);
@@ -2361,7 +2361,7 @@ static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	updatePrevOpenMenu(window);
 }
@@ -2370,14 +2370,14 @@ static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callD
 	(void)clientData;
 	(void)callData;
 
-	updateTagsFileMenu(WidgetToWindow(MENU_WIDGET(w)));
+	updateTagsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void unloadTipsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	updateTipsFileMenu(WidgetToWindow(MENU_WIDGET(w)));
+	updateTipsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 /*
@@ -2387,7 +2387,7 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int openInTab = GetPrefOpenInTab();
 
 	if (*nArgs > 0) {
@@ -2418,7 +2418,7 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path);
 	CheckCloseDim();
@@ -2428,7 +2428,7 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	EditNewFile(window, nullptr, False, nullptr, window->path);
 	CheckCloseDim();
@@ -2440,7 +2440,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char fullname[MAXPATHLEN];
 	const char *params[2];
 	int response;
@@ -2464,7 +2464,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
 
 	if (*nArgs == 0) {
@@ -2485,7 +2485,7 @@ static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	OpenSelectedFile(WidgetToWindow(w), event->xbutton.time);
+	OpenSelectedFile(Document::WidgetToWindow(w), event->xbutton.time);
 	CheckCloseDim();
 }
 
@@ -2506,7 +2506,7 @@ static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			preResponse = NO_SBC_DIALOG_RESPONSE;
 		}
 	}
-	CloseFileAndWindow(WidgetToWindow(w), preResponse);
+	CloseFileAndWindow(Document::WidgetToWindow(w), preResponse);
 	CheckCloseDim();
 }
 
@@ -2516,7 +2516,7 @@ static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2529,7 +2529,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int response, addWrap, fileFormat;
 	char fullname[MAXPATHLEN];
 	const char *params[2];
@@ -2551,7 +2551,7 @@ static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: save_as action requires file argument\n");
 		return;
 	}
-	SaveWindowAs(WidgetToWindow(w), args[0], *nArgs == 2 && !strCaseCmp(args[1], "wrapped"));
+	SaveWindowAs(Document::WidgetToWindow(w), args[0], *nArgs == 2 && !strCaseCmp(args[1], "wrapped"));
 }
 
 static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2560,7 +2560,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int b;
 
 	/* re-reading file is irreversible, prompt the user first */
@@ -2582,7 +2582,7 @@ static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	RevertToSaved(WidgetToWindow(w));
+	RevertToSaved(Document::WidgetToWindow(w));
 }
 
 static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2591,7 +2591,7 @@ static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
 	int response;
 
@@ -2610,7 +2610,7 @@ static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2618,7 +2618,7 @@ static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: include action requires file argument\n");
 		return;
 	}
-	IncludeFile(WidgetToWindow(w), args[0]);
+	IncludeFile(Document::WidgetToWindow(w), args[0]);
 }
 
 static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2627,7 +2627,7 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *n
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
 	int response;
 
@@ -2646,7 +2646,7 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		fprintf(stderr, "nedit: load_macro_file action requires file argument\n");
 		return;
 	}
-	ReadMacroFileEx(WidgetToWindow(w), args[0], True);
+	ReadMacroFileEx(Document::WidgetToWindow(w), args[0], True);
 }
 
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2655,7 +2655,7 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
 	int response;
 
@@ -2676,7 +2676,7 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	if (!AddTagsFile(args[0], TAG)) {
-		DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File", "Error reading ctags file:\n'%s'\ntags not loaded", "OK", args[0]);
+		DialogF(DF_WARN, Document::WidgetToWindow(w)->shell, 1, "Error Reading File", "Error reading ctags file:\n'%s'\ntags not loaded", "OK", args[0]);
 	}
 }
 
@@ -2711,7 +2711,7 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
 	int response;
 
@@ -2732,7 +2732,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	if (!AddTagsFile(args[0], TIP)) {
-		DialogF(DF_WARN, WidgetToWindow(w)->shell, 1, "Error Reading File", "Error reading tips file:\n'%s'\ntips not loaded", "OK", args[0]);
+		DialogF(DF_WARN, Document::WidgetToWindow(w)->shell, 1, "Error Reading File", "Error reading tips file:\n'%s'\ntips not loaded", "OK", args[0]);
 	}
 }
 
@@ -2764,7 +2764,7 @@ static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	PrintWindow(WidgetToWindow(w), False);
+	PrintWindow(Document::WidgetToWindow(w), False);
 }
 
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2772,7 +2772,7 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	PrintWindow(WidgetToWindow(w), True);
+	PrintWindow(Document::WidgetToWindow(w), True);
 }
 
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2780,7 +2780,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (!CheckPrefsChangesSaved(window->shell))
 		return;
@@ -2839,7 +2839,7 @@ static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2852,7 +2852,7 @@ static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2865,7 +2865,7 @@ static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2878,7 +2878,7 @@ static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	window->buffer->BufSelect(0, window->buffer->BufGetLength());
 }
@@ -2889,7 +2889,7 @@ static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2902,7 +2902,7 @@ static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2915,7 +2915,7 @@ static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2928,7 +2928,7 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -2941,7 +2941,7 @@ static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	DoFindDlog(WidgetToWindow(w), searchDirection(0, args, nArgs), searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs), event->xbutton.time);
+	DoFindDlog(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs), event->xbutton.time);
 }
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2952,27 +2952,27 @@ static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: find action requires search string argument\n");
 		return;
 	}
-	SearchAndSelect(WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs));
+	SearchAndSelect(Document::WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs));
 }
 
 static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	SearchAndSelectSame(WidgetToWindow(w), searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
+	SearchAndSelectSame(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
 
-	SearchForSelected(WidgetToWindow(w), searchDirection(0, args, nArgs), searchType(0, args, nArgs), searchWrap(0, args, nArgs), event->xbutton.time);
+	SearchForSelected(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchType(0, args, nArgs), searchWrap(0, args, nArgs), event->xbutton.time);
 }
 
 static void startIncrFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	BeginISearch(WidgetToWindow(w), searchDirection(0, args, nArgs));
+	BeginISearch(Document::WidgetToWindow(w), searchDirection(0, args, nArgs));
 }
 
 static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2986,14 +2986,14 @@ static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	for (i = 1; i < (int)*nArgs; i++)
 		if (!strCaseCmp(args[i], "continued"))
 			continued = TRUE;
-	SearchAndSelectIncremental(WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs), continued);
+	SearchAndSelectIncremental(Document::WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs), continued);
 }
 
 static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3004,7 +3004,7 @@ static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3018,7 +3018,7 @@ static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3033,7 +3033,7 @@ static void replaceInSelAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3048,7 +3048,7 @@ static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3059,7 +3059,7 @@ static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window)) {
 		return;
@@ -3077,7 +3077,7 @@ static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3107,7 +3107,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		}
 	} else if (column == -1) {
 		/* User didn't specify a column */
-		SelectNumberedLine(WidgetToWindow(w), lineNum);
+		SelectNumberedLine(Document::WidgetToWindow(w), lineNum);
 		return;
 	}
 
@@ -3125,7 +3125,7 @@ static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	GotoLineNumber(WidgetToWindow(w));
+	GotoLineNumber(Document::WidgetToWindow(w));
 }
 
 static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3133,7 +3133,7 @@ static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	GotoSelectedLineNumber(WidgetToWindow(w), event->xbutton.time);
+	GotoSelectedLineNumber(Document::WidgetToWindow(w), event->xbutton.time);
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3141,7 +3141,7 @@ static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	RepeatDialog(WidgetToWindow(w));
+	RepeatDialog(Document::WidgetToWindow(w));
 }
 
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3161,7 +3161,7 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		fprintf(stderr, "nedit: repeat_macro requires method/count\n");
 		return;
 	}
-	RepeatMacro(WidgetToWindow(w), args[1], how);
+	RepeatMacro(Document::WidgetToWindow(w), args[1], how);
 }
 
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3171,7 +3171,7 @@ static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: mark action requires a single-letter label\n");
 		return;
 	}
-	AddMark(WidgetToWindow(w), w, args[0][0]);
+	AddMark(Document::WidgetToWindow(w), w, args[0][0]);
 }
 
 static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3180,7 +3180,7 @@ static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	MarkDialog(WidgetToWindow(w));
+	MarkDialog(Document::WidgetToWindow(w));
 }
 
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3191,14 +3191,14 @@ static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: goto_mark action requires a single-letter label\n");
 		return;
 	}
-	GotoMark(WidgetToWindow(w), w, args[0][0], *nArgs > 1 && !strcmp(args[1], "extend"));
+	GotoMark(Document::WidgetToWindow(w), w, args[0][0], *nArgs > 1 && !strcmp(args[1], "extend"));
 }
 
 static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	GotoMarkDialog(WidgetToWindow(w), *nArgs != 0 && !strcmp(args[0], "extend"));
+	GotoMarkDialog(Document::WidgetToWindow(w), *nArgs != 0 && !strcmp(args[0], "extend"));
 }
 
 static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3207,7 +3207,7 @@ static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *
 	(void)nArgs;
 	(void)event;
 
-	SelectToMatchingCharacter(WidgetToWindow(w));
+	SelectToMatchingCharacter(Document::WidgetToWindow(w));
 }
 
 static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3216,7 +3216,7 @@ static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 	(void)event;
 
-	GotoMatchingCharacter(WidgetToWindow(w));
+	GotoMatchingCharacter(Document::WidgetToWindow(w));
 }
 
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3224,7 +3224,7 @@ static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 	(void)event;
-	FindDefinition(WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
+	FindDefinition(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3233,7 +3233,7 @@ static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	FindDefCalltip(WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
+	FindDefCalltip(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3242,7 +3242,7 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	window->SplitPane();
 	if (window->IsTopDocument()) {
@@ -3257,7 +3257,7 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	window->ClosePane();
 	if (window->IsTopDocument()) {
@@ -3272,7 +3272,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int resp;
 
 	if (window->NDocuments() < 2)
@@ -3290,7 +3290,7 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (window->NDocuments() < 2)
 		return;
@@ -3304,7 +3304,7 @@ static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal
 	(void)nArgs;
 	(void)event;
 
-	WidgetToWindow(w)->MoveDocumentDialog();
+	Document::WidgetToWindow(w)->MoveDocumentDialog();
 }
 
 static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3313,7 +3313,7 @@ static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 	(void)event;
 
-	WidgetToWindow(w)->NextDocument();
+	Document::WidgetToWindow(w)->NextDocument();
 }
 
 static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3322,7 +3322,7 @@ static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 	(void)event;
 
-	WidgetToWindow(w)->PreviousDocument();
+	Document::WidgetToWindow(w)->PreviousDocument();
 }
 
 static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3331,7 +3331,7 @@ static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 	(void)event;
 
-	WidgetToWindow(w)->LastDocument();
+	Document::WidgetToWindow(w)->LastDocument();
 }
 
 static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3340,7 +3340,7 @@ static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3353,7 +3353,7 @@ static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3366,7 +3366,7 @@ static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3378,7 +3378,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char charCodeString[2];
 	char charCodeText[DF_MAX_PROMPT_LENGTH], dummy[DF_MAX_PROMPT_LENGTH];
 	char *params[1];
@@ -3415,7 +3415,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
 	int resp;
 	static char **cmdHistory = nullptr;
@@ -3440,7 +3440,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 }
 
 static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3456,7 +3456,7 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
 	int resp;
 	static char **cmdHistory = nullptr;
@@ -3483,7 +3483,7 @@ static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3499,7 +3499,7 @@ static void execLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (CheckReadOnly(window))
 		return;
@@ -3512,7 +3512,7 @@ static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		return;
 	}
 	HidePointerOnKeyedEvent(w, event);
-	DoNamedShellMenuCmd(WidgetToWindow(w), args[0], event->xany.send_event == MACRO_EVENT_MARKER);
+	DoNamedShellMenuCmd(Document::WidgetToWindow(w), args[0], event->xany.send_event == MACRO_EVENT_MARKER);
 }
 
 static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3531,13 +3531,13 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   is explicitly invoking another macro via the menu or an accelerator,
 	   UNLESS the macro event marker is set */
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (WidgetToWindow(w)->macroCmdData) {
+		if (Document::WidgetToWindow(w)->macroCmdData) {
 			XBell(TheDisplay, 0);
 			return;
 		}
 	}
 	HidePointerOnKeyedEvent(w, event);
-	DoNamedMacroMenuCmd(WidgetToWindow(w), args[0]);
+	DoNamedMacroMenuCmd(Document::WidgetToWindow(w), args[0]);
 }
 
 static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3547,13 +3547,13 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 	/* Same remark as for macro menu commands (see above). */
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (WidgetToWindow(w)->macroCmdData) {
+		if (Document::WidgetToWindow(w)->macroCmdData) {
 			XBell(TheDisplay, 0);
 			return;
 		}
 	}
 	HidePointerOnKeyedEvent(w, event);
-	DoNamedBGMenuCmd(WidgetToWindow(w), args[0]);
+	DoNamedBGMenuCmd(Document::WidgetToWindow(w), args[0]);
 }
 
 static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3595,7 +3595,7 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Document *nextWindow;
 	Document *tmpWindow;
 	int windowIndex;
@@ -3676,7 +3676,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Widget newFocusPane = nullptr;
 	int paneIndex;
 
@@ -3739,7 +3739,7 @@ static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal 
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	/* stats line is a shell-level item, so we toggle the button
@@ -3753,7 +3753,7 @@ static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Ca
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	/* i-search line is a shell-level item, so we toggle the button
@@ -3767,7 +3767,7 @@ static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	/* line numbers panel is a shell-level item, so we toggle the button
@@ -3781,7 +3781,7 @@ static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "off") == 0) {
 			window->SetAutoIndent(NO_AUTO_INDENT);
@@ -3801,7 +3801,7 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "none") == 0) {
 			window->SetAutoWrap(NO_WRAP);
@@ -3821,7 +3821,7 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (*nArgs > 0) {
 		int newMargin = 0;
@@ -3844,7 +3844,7 @@ static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args, Cardinal
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->highlightSyntax, "set_highlight_syntax");
@@ -3863,7 +3863,7 @@ static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal 
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->saveOldVersion, "set_make_backup_copy");
@@ -3878,7 +3878,7 @@ static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardin
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->autoSave, "set_incremental_backup");
@@ -3892,7 +3892,7 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
 		if (strcmp(args[0], NO_FLASH_STRING) == 0) {
 			window->SetShowMatching(NO_FLASH);
@@ -3922,7 +3922,7 @@ static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args, Cardina
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->matchSyntaxBased, "set_match_syntax_based");
@@ -3936,7 +3936,7 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	if(!window)
@@ -3953,7 +3953,7 @@ static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, IS_USER_LOCKED(window->lockReasons), "set_locked");
@@ -3969,7 +3969,7 @@ static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (*nArgs > 0) {
 		int newTabDist = 0;
@@ -3987,7 +3987,7 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (*nArgs > 0) {
 		int newEmTabDist = 0;
@@ -4008,7 +4008,7 @@ static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
 	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->buffer->useTabs_, "set_use_tabs");
@@ -4019,7 +4019,7 @@ static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs >= 4) {
 		window->SetFonts(args[0], args[1], args[2], args[3]);
 	} else {
@@ -4031,7 +4031,7 @@ static void setLanguageModeAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	(void)event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	if (*nArgs > 0) {
 		SetLanguageMode(window, FindLanguageMode(args[0]), FALSE);
@@ -4805,7 +4805,7 @@ static char **shiftKeyToDir(XtPointer callData) {
 }
 
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 }
 
@@ -4816,9 +4816,9 @@ static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {
 	const char *params[1];
 	Widget menu = MENU_WIDGET(w);
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	params[0] = name;
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 	CheckCloseDim();
 }
 
@@ -4829,9 +4829,9 @@ static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 	const char *params[1];
 	Widget menu = MENU_WIDGET(w);
 
-	HidePointerOnKeyedEvent(WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	params[0] = name;
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -4846,7 +4846,7 @@ static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 #endif
 
 	params[0] = name;
-	XtCallActionProc(WidgetToWindow(menu)->lastFocus, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
 }
 
 /*
@@ -4927,7 +4927,7 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)nArgs;
 	(void)args;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	/* The Motif popup handling code BLOCKS events while the menu is posted,
 	   including the matching btn-up events which complete various dragging
@@ -4991,7 +4991,7 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		wgt = XtWindowToWidget(XtDisplay(w), xbutton->subwindow);
 		window = TabToWindow(wgt);
 	} else {
-		window = WidgetToWindow(w);
+		window = Document::WidgetToWindow(w);
 	}
 	XtVaSetValues(window->tabMenuPane, XmNuserData, (XtPointer)window, nullptr);
 

@@ -1374,7 +1374,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	message[tipLen] = 0;
 
 	/* 6. Display it */
-	tagsShowCalltip(WidgetToWindow(parent), message);
+	tagsShowCalltip(Document::WidgetToWindow(parent), message);
 
 	delete [] message;
 	delete [] fileString;
@@ -1388,7 +1388,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	int startPos, endPos, lineNum, rows;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
 	Document *windowToSearch;
-	Document *parentWindow = WidgetToWindow(parent);
+	Document *parentWindow = Document::WidgetToWindow(parent);
 
 	ParseFilename(tagFiles[i], filename, pathname);
 	/* open the file containing the definition */

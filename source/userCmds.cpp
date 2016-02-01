@@ -1895,7 +1895,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int index;
 	char *params[1];
 
-	window = WidgetToWindow(MENU_WIDGET(w));
+	window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	/* get the index of the shell command and verify that it's in range */
 	XtVaGetValues(w, XmNuserData, &userData, nullptr);
@@ -1915,7 +1915,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int index;
 	char *params[1];
 
-	window = WidgetToWindow(MENU_WIDGET(w));
+	window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	/* Don't allow users to execute a macro command from the menu (or accel)
 	   if there's already a macro command executing.  NEdit can't handle

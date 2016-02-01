@@ -100,7 +100,11 @@ public:
 	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
 	void ClearUndoList();
 	void ClearRedoList();
-	
+
+public:
+	static Document *GetTopDocument(Widget w);
+	static Document *WidgetToWindow(Widget w);
+
 //private:
 	Document *getNextTabWindow(int direction, int crossWin, int wrap);
 	void showStatistics(int state);

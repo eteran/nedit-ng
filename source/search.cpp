@@ -235,7 +235,7 @@ static const char *searchTypeStrings[] = {"literal",     /* SEARCH_LITERAL      
 static Document *windowNotToClose = nullptr;
 
 Boolean WindowCanBeClosed(Document *window) {
-	if (windowNotToClose && GetTopDocument(window->shell) == GetTopDocument(windowNotToClose->shell)) {
+	if (windowNotToClose && Document::GetTopDocument(window->shell) == Document::GetTopDocument(windowNotToClose->shell)) {
 		return False;
 	}
 	return True; /* It's safe */
@@ -1958,7 +1958,7 @@ static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	SET_ONE_RSRC(window->findDlog, XmNdefaultButton, window->findBtn);
 }
 static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1967,7 +1967,7 @@ static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	SET_ONE_RSRC(window->replaceDlog, XmNdefaultButton, window->replaceBtn);
 }
 
@@ -1980,7 +1980,7 @@ static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	char title[MAXPATHLEN + 19];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
 		sprintf(title, "Replace/Find (in %s)", window->filename);
@@ -1996,7 +1996,7 @@ static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	char title[MAXPATHLEN + 11];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
 		sprintf(title, "Find (in %s)", window->filename);
@@ -2014,7 +2014,7 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2048,7 +2048,7 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[3];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2075,7 +2075,7 @@ static void replaceMultiFileCB(Widget w, XtPointer clientData, XtPointer callDat
 	auto window = static_cast<Document *>(clientData);
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	DoReplaceMultiFileDlog(window);
 }
 
@@ -2088,7 +2088,7 @@ static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call
 	auto window = static_cast<Document *>(clientData);
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	delete [] window->writableWindows;
 	window->writableWindows = nullptr;
 	window->nWritableWindows = 0;
@@ -2175,7 +2175,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	Document *writableWin;
 	Bool replaceFailed, noWritableLeft;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	nSelected = 0;
 	for (i = 0; i < window->nWritableWindows; ++i)
 		if (XmListPosSelected(window->replaceMultiFileList, i + 1))
@@ -2269,7 +2269,7 @@ static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callDat
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Set the initial focus of the dialog back to the search string	*/
 	resetReplaceTabGroup(window);
@@ -2289,7 +2289,7 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 	char policy;
 	Widget list;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	list = window->replaceMultiFileList;
 
 	/*
@@ -2322,7 +2322,7 @@ static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer ca
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	XmListDeselectAllItems(window->replaceMultiFileList);
 }
 
@@ -2333,7 +2333,7 @@ static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	uploadFileListItems(window, True); /* Replace */
 }
 
@@ -2483,7 +2483,7 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[3];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2511,7 +2511,7 @@ static void rCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Set the initial focus of the dialog back to the search string	*/
 	resetReplaceTabGroup(window);
@@ -2526,7 +2526,7 @@ static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Set the initial focus of the dialog back to the search string	*/
 	resetFindTabGroup(window);
@@ -2545,7 +2545,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[4];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2586,7 +2586,7 @@ static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[4];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Validate and fetch the find and replace strings from the dialog */
 	if (!getReplaceDlogInfo(window, &direction, searchString, replaceString, &searchType))
@@ -2655,7 +2655,7 @@ void UpdateReplaceActionButtons(Document *window) {
 ** buttons to the state of the scope radio buttons.
 */
 static void rScopeWinCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	if (XmToggleButtonGetState(window->replaceScopeWinToggle)) {
 		window->replaceScope = REPL_SCOPE_WIN;
 		UpdateReplaceActionButtons(window);
@@ -2663,7 +2663,7 @@ static void rScopeWinCB(Widget w, XtPointer clientData, XtPointer call_data) {
 }
 
 static void rScopeSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	if (XmToggleButtonGetState(window->replaceScopeSelToggle)) {
 		window->replaceScope = REPL_SCOPE_SEL;
 		UpdateReplaceActionButtons(window);
@@ -2671,7 +2671,7 @@ static void rScopeSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 }
 
 static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	if (XmToggleButtonGetState(window->replaceScopeMultiToggle)) {
 		window->replaceScope = REPL_SCOPE_MULTI;
 		UpdateReplaceActionButtons(window);
@@ -2683,7 +2683,7 @@ static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
 ** callback, depending on the state of the scope radio buttons.
 */
 static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	switch (window->replaceScope) {
 	case REPL_SCOPE_WIN:
 		replaceAllCB(w, window, callData);
@@ -2712,7 +2712,7 @@ static void rFindTextValueChangedCB(Widget w, XtPointer clientData, XtPointer ca
 
 	(void)event;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	UpdateReplaceActionButtons(window);
 }
 
@@ -2729,7 +2729,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	const char *replaceStr;
 	int searchType;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	index = window->rHistIndex;
 
 	/* only process up and down arrow keys */
@@ -2745,7 +2745,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 		return;
 	}
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* determine the strings and button settings to use */
 	if (index == 0) {
@@ -2780,7 +2780,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	index = window->rHistIndex;
 
 	/* only process up and down arrow keys */
@@ -2796,7 +2796,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 		return;
 	}
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* change only the replace field information */
 	if (index == 0)
@@ -2818,7 +2818,7 @@ static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer cal
 
 	(void)event;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	fUpdateActionButtons(window);
 }
 
@@ -2834,7 +2834,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 	const char *searchStr;
 	int searchType;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	index = window->fHistIndex;
 
 	/* only process up and down arrow keys */
@@ -2878,7 +2878,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	int searchType;
 	const char *params[4];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* fetch find string, direction and type from the dialog */
 	std::string searchString;
@@ -3130,12 +3130,12 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 
 	(void)selection;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;
 	int searchType;
 	char searchString[SEARCHMAX + 1];
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* skip if we can't get the selection data or it's too long */
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
@@ -3383,7 +3383,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 	memset(&cbdata, 0, sizeof(cbdata));
 	cbdata.event = event;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	nullable_string selText = GetAnySelectionEx(window);
 	
@@ -3408,7 +3408,7 @@ static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_da
 
 	(void)callData;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	iSearchTextSetString(w, window, "");
 }
@@ -3428,7 +3428,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 	int searchType;
 	SearchDirection direction;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
@@ -3473,7 +3473,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	SearchDirection direction;
 	int nParams;
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
@@ -3543,7 +3543,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 		return;
 	}
 
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	index = window->iSearchHistIndex;
 	*continueDispatch = FALSE;
 
@@ -5152,7 +5152,7 @@ static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->findCaseToggle);
 
@@ -5175,7 +5175,7 @@ static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->replaceCaseToggle);
 
@@ -5198,7 +5198,7 @@ static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
 	int searchCaseSense = XmToggleButtonGetState(window->iSearchCaseToggle);
 
@@ -5219,7 +5219,7 @@ static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button
@@ -5235,7 +5235,7 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button
@@ -5250,7 +5250,7 @@ static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	int searchCaseSense = XmToggleButtonGetState(w);
 
 	/* Save the state of the Case Sensitive button

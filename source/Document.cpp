@@ -762,7 +762,7 @@ void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto window = static_cast<Document *>(clientData);
 	
-	window = WidgetToWindow(w);
+	window = Document::WidgetToWindow(w);
 	if (!WindowCanBeClosed(window)) {
 		return;
 	}
@@ -796,7 +796,7 @@ void closeTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   While its actual mechanism is not well understood, we somehow
 	   managed to workaround the bug by delaying the action of closing
 	   the tab. For now. */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0, closeTabProc, GetTopDocument(mainWin));
+	XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0, closeTabProc, Document::GetTopDocument(mainWin));
 }
 
 /*
@@ -3849,6 +3849,59 @@ Document *Document::CreateDocument(const char *name) {
 	XLowerWindow(TheDisplay, XtWindow(window->splitPane));
 	XtUnmanageChild(window->splitPane);
 	XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, nullptr);
+
+	return window;
+}
+
+/*
+**
+*/
+Document *Document::GetTopDocument(Widget w) {
+	Document *window = WidgetToWindow(w);
+	return WidgetToWindow(window->shell);
+}
+
+/*
+** Recover the window pointer from any widget in the window, by searching
+** up the widget hierarcy for the top level container widget where the
+** window pointer is stored in the userData field. In a tabbed window,
+** this is the window pointer of the top (active) document, which is
+** returned if w is 'shell-level' widget - menus, find/replace dialogs, etc.
+**
+** To support action routine in tabbed windows, a copy of the window
+** pointer is also store in the splitPane widget.
+*/
+Document *Document::WidgetToWindow(Widget w) {
+	Document *window = nullptr;
+	Widget parent;
+
+	while (true) {
+		/* return window pointer of document */
+		if (XtClass(w) == xmPanedWindowWidgetClass)
+			break;
+
+		if (XtClass(w) == topLevelShellWidgetClass) {
+			WidgetList items;
+
+			/* there should be only 1 child for the shell -
+			   the main window widget */
+			XtVaGetValues(w, XmNchildren, &items, nullptr);
+			w = items[0];
+			break;
+		}
+
+		parent = XtParent(w);
+		if(!parent)
+			return nullptr;
+
+		/* make sure it is not a dialog shell */
+		if (XtClass(parent) == topLevelShellWidgetClass && XmIsMainWindow(w))
+			break;
+
+		w = parent;
+	}
+
+	XtVaGetValues(w, XmNuserData, &window, nullptr);
 
 	return window;
 }

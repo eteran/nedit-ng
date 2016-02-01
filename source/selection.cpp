@@ -425,7 +425,7 @@ static void markTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	Widget w = static_cast<Widget>(clientData);
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
@@ -444,7 +444,7 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Bool
 	(void)clientData;
 
 	XKeyEvent *e = (XKeyEvent *)event;
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	Modifiers modifiers;
 	KeySym keysym;
 	const char *params[2];

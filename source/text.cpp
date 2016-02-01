@@ -1990,7 +1990,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)args;
 	(void)nArgs;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 
 
 	int status;

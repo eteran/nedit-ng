@@ -4281,7 +4281,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)clientData;
 
-	Document *window = WidgetToWindow(MENU_WIDGET(w));
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 	const char *params[1];
 	void *mode;
 

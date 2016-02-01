@@ -352,7 +352,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	Document *window = WidgetToWindow(w);
+	Document *window = Document::WidgetToWindow(w);
 	smartIndentCBStruct *cbInfo = (smartIndentCBStruct *)callData;
 
 	if (!window->smartIndentData)
