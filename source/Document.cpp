@@ -49,8 +49,10 @@ namespace {
    below the main menu bar */
 const int STAT_SHADOW_THICKNESS = 1;
 
-Document *inFocusDocument  = nullptr;   /* where we are now */
+Document *inFocusDocument   = nullptr; /* where we are now */
 Document *lastFocusDocument = nullptr; /* where we came from */
+
+int DoneWithMoveDocumentDialog;
 
 
 /*
@@ -140,6 +142,9 @@ void setPaneDesiredHeight(Widget w, int height) {
 	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.dheight = height;
 }
 
+/*
+**
+*/
 void setPaneMinHeight(Widget w, int min) {
 	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.min = min;
 }
@@ -151,6 +156,18 @@ Widget containingPane(Widget w) {
 	/* The containing pane used to simply be the first parent, but with
 	   the introduction of an XmFrame, it's the grandparent. */
 	return XtParent(XtParent(w));
+}
+
+/*
+**
+*/
+void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer callData) {
+
+	(void)dialog;
+	(void)clientData;
+
+	auto cbs = static_cast<XmSelectionBoxCallbackStruct *>(callData);
+	DoneWithMoveDocumentDialog = cbs->reason;
 }
 
 }
@@ -1393,4 +1410,272 @@ int Document::CloseAllDocumentInWindow() {
 	}
 
 	return True;
+}
+
+/*
+** spin off the document to a new window
+*/
+Document *Document::DetachDocument() {
+	Document *win = nullptr;
+
+	if (this->NDocuments() < 2)
+		return nullptr;
+
+	/* raise another document in the same shell this if the this
+	   being detached is the top document */
+	if (this->IsTopDocument()) {
+		win = this->getNextTabWindow(1, 0, 0);
+		win->RaiseDocument();
+	}
+
+	/* Create a new this */
+	auto cloneWin = new Document(this->filename, nullptr, false);
+
+	/* CreateWindow() simply adds the new this's pointer to the
+	   head of WindowList. We need to adjust the detached this's
+	   pointer, so that macro functions such as focus_window("last")
+	   will travel across the documents per the sequence they're
+	   opened. The new doc will appear to replace it's former self
+	   as the old doc is closed. */
+	WindowList = cloneWin->next;
+	cloneWin->next = this->next;
+	this->next = cloneWin;
+
+	/* these settings should follow the detached document.
+	   must be done before cloning this, else the height
+	   of split panes may not come out correctly */
+	cloneWin->ShowISearchLine(this->showISearchLine);
+	cloneWin->ShowStatsLine(this->showStats);
+
+	/* clone the document & its pref settings */
+	this->cloneDocument(cloneWin);
+
+	/* remove the document from the old this */
+	this->fileChanged = False;
+	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
+
+	/* refresh former host this */
+	if (win) {
+		win->RefreshWindowStates();
+	}
+
+	/* this should keep the new document this fresh */
+	cloneWin->RefreshWindowStates();
+	cloneWin->RefreshTabState();
+	cloneWin->SortTabBar();
+
+	return cloneWin;
+}
+
+/*
+** present dialog for selecting a target window to move this document
+** into. Do nothing if there is only one shell window opened.
+*/
+void Document::MoveDocumentDialog() {
+	Document *win;
+	int i, nList = 0, ac;
+	char tmpStr[MAXPATHLEN + 50];
+	Widget parent, dialog, listBox, moveAllOption;
+	XmString popupTitle, s1;
+	Arg csdargs[20];
+	int *position_list;
+	int position_count;
+
+	/* get the list of available shell windows, not counting
+	   the document to be moved */
+	int nWindows = NWindows();
+	auto list         = new XmString[nWindows];
+	auto shellWinList = new Document *[nWindows];
+
+	for (win = WindowList; win; win = win->next) {
+		if (!win->IsTopDocument() || win->shell == this->shell)
+			continue;
+
+		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet ? win->path : "", win->filename);
+
+		list[nList] = XmStringCreateSimpleEx(tmpStr);
+		shellWinList[nList] = win;
+		nList++;
+	}
+
+	/* stop here if there's no other this to move to */
+	if (!nList) {
+		delete [] list;
+		delete [] shellWinList;
+		return;
+	}
+
+	/* create the dialog */
+	parent = this->shell;
+	popupTitle = XmStringCreateSimpleEx("Move Document");
+	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", this->filename);
+	s1 = XmStringCreateSimpleEx(tmpStr);
+	ac = 0;
+	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
+	ac++;
+	XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistLabelString, s1);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistItems, list);
+	ac++;
+	XtSetArg(csdargs[ac], XmNlistItemCount, nList);
+	ac++;
+	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
+	ac++;
+	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
+	ac++;
+	dialog = CreateSelectionDialog(parent, (String) "moveDocument", csdargs, ac);
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
+	XtAddCallback(dialog, XmNokCallback, moveDocumentCB, this);
+	XtAddCallback(dialog, XmNapplyCallback, moveDocumentCB, this);
+	XtAddCallback(dialog, XmNcancelCallback, moveDocumentCB, this);
+	XmStringFree(s1);
+	XmStringFree(popupTitle);
+
+	/* free the this list */
+	for (i = 0; i < nList; i++)
+		XmStringFree(list[i]);
+	delete [] list;
+
+	/* create the option box for moving all documents */
+	s1 = XmStringCreateLtoREx("Move all documents in this this");
+	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
+	XmStringFree(s1);
+
+	if (this->NDocuments() > 1)
+		XtManageChild(moveAllOption);
+
+	/* disable option if only one document in the this */
+	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
+
+	s1 = XmStringCreateLtoREx("Move");
+	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
+	XmStringFree(s1);
+
+	/* default to the first this on the list */
+	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
+	XmListSelectPos(listBox, 1, True);
+
+	/* show the dialog */
+	DoneWithMoveDocumentDialog = 0;
+	ManageDialogCenteredOnPointer(dialog);
+	while (!DoneWithMoveDocumentDialog)
+		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
+
+	/* get the this to move document into */
+	XmListGetSelectedPos(listBox, &position_list, &position_count);
+	auto targetWin = shellWinList[position_list[0] - 1];
+	XtFree((char *)position_list);
+
+	/* now move document(s) */
+	if (DoneWithMoveDocumentDialog == XmCR_OK) {
+		/* move top document */
+		if (XmToggleButtonGetState(moveAllOption)) {
+			/* move all documents */
+			for (win = WindowList; win;) {
+				if (win != this && win->shell == this->shell) {
+					Document *next = win->next;
+					win->MoveDocument(targetWin);
+					win = next;
+				} else
+					win = win->next;
+			}
+
+			/* invoking document is the last to move */
+			this->MoveDocument(targetWin);
+		} else {
+			this->MoveDocument(targetWin);
+		}
+	}
+
+	delete [] shellWinList;
+	XtDestroyWidget(dialog);
+}
+
+/*
+** If the selection (or cursor position if there's no selection) is not
+** fully shown, scroll to bring it in to view.  Note that as written,
+** this won't work well with multi-line selections.  Modest re-write
+** of the horizontal scrolling part would be quite easy to make it work
+** well with rectangular selections.
+*/
+void Document::MakeSelectionVisible(Widget textPane) {
+	int left, right, rectStart, rectEnd, horizOffset;
+	bool isRect;
+	int scrollOffset, leftX, rightX, y, rows, margin;
+	int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
+	textDisp *textD = ((TextWidget)textPane)->text.textD;
+	int topChar = TextFirstVisiblePos(textPane);
+	int lastChar = TextLastVisiblePos(textPane);
+	int targetLineNum;
+	Dimension width;
+
+	/* find out where the selection is */
+	if (!this->buffer->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
+		left = right = TextGetCursorPos(textPane);
+		isRect = False;
+	}
+
+	/* Check vertical positioning unless the selection is already shown or
+	   already covers the display.  If the end of the selection is below
+	   bottom, scroll it in to view until the end selection is scrollOffset
+	   lines from the bottom of the display or the start of the selection
+	   scrollOffset lines from the top.  Calculate a pleasing distance from the
+	   top or bottom of the window, to scroll the selection to (if scrolling is
+	   necessary), around 1/3 of the height of the window */
+	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
+		XtVaGetValues(textPane, textNrows, &rows, nullptr);
+		scrollOffset = rows / 3;
+		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		if (right > lastChar) {
+			/* End of sel. is below bottom of screen */
+			leftLineNum = topLineNum + TextDCountLines(textD, topChar, left, False);
+			targetLineNum = topLineNum + scrollOffset;
+			if (leftLineNum >= targetLineNum) {
+				/* Start of sel. is not between top & target */
+				linesToScroll = TextDCountLines(textD, lastChar, right, False) + scrollOffset;
+				if (leftLineNum - linesToScroll < targetLineNum)
+					linesToScroll = leftLineNum - targetLineNum;
+				/* Scroll start of selection to the target line */
+				TextSetScroll(textPane, topLineNum + linesToScroll, horizOffset);
+			}
+		} else if (left < topChar) {
+			/* Start of sel. is above top of screen */
+			lastLineNum = topLineNum + rows;
+			rightLineNum = lastLineNum - TextDCountLines(textD, right, lastChar, False);
+			targetLineNum = lastLineNum - scrollOffset;
+			if (rightLineNum <= targetLineNum) {
+				/* End of sel. is not between bottom & target */
+				linesToScroll = TextDCountLines(textD, left, topChar, False) + scrollOffset;
+				if (rightLineNum + linesToScroll > targetLineNum)
+					linesToScroll = targetLineNum - rightLineNum;
+				/* Scroll end of selection to the target line */
+				TextSetScroll(textPane, topLineNum - linesToScroll, horizOffset);
+			}
+		}
+	}
+
+	/* If either end of the selection off screen horizontally, try to bring it
+	   in view, by making sure both end-points are visible.  Using only end
+	   points of a multi-line selection is not a great idea, and disaster for
+	   rectangular selections, so this part of the routine should be re-written
+	   if it is to be used much with either.  Note also that this is a second
+	   scrolling operation, causing the display to jump twice.  It's done after
+	   vertical scrolling to take advantage of TextPosToXY which requires it's
+	   reqested position to be vertically on screen) */
+	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
+		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
+		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
+			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
+		else if (rightX > width - margin)
+			horizOffset += rightX - (width - margin);
+		TextSetScroll(textPane, topLineNum, horizOffset);
+	}
+
+	/* make sure that the statistics line is up to date */
+	this->UpdateStatsLine();
 }

@@ -154,27 +154,18 @@ static void setPaneMinHeight(Widget w, int min);
 static void addWindowIcon(Widget shell);
 static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
 static void getGeometryString(Document *window, char *geomString);
-static void cloneDocument(Document *window, Document *orgWin);
 static void cloneTextPanes(Document *window, Document *orgWin);
 static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
 static void setPaneDesiredHeight(Widget w, int height);
 
-static int DoneWithMoveDocumentDialog;
 static void deleteDocument(Document *window);
 static void cancelTimeOut(XtIntervalId *timer);
 
 /* From Xt, Shell.c, "BIGSIZE" */
 static const Dimension XT_IGNORE_PPOSITION = 32767;
 
-static void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer call_data) {
 
-	(void)dialog;
-	(void)clientData;
-
-	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
-	DoneWithMoveDocumentDialog = cbs->reason;
-}
 
 /*
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
@@ -641,234 +632,6 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-/*
-** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.  Note that as written,
-** this won't work well with multi-line selections.  Modest re-write
-** of the horizontal scrolling part would be quite easy to make it work
-** well with rectangular selections.
-*/
-void Document::MakeSelectionVisible(Widget textPane) {
-	int left, right, rectStart, rectEnd, horizOffset;
-	bool isRect;
-	int scrollOffset, leftX, rightX, y, rows, margin;
-	int topLineNum, lastLineNum, rightLineNum, leftLineNum, linesToScroll;
-	textDisp *textD = ((TextWidget)textPane)->text.textD;
-	int topChar = TextFirstVisiblePos(textPane);
-	int lastChar = TextLastVisiblePos(textPane);
-	int targetLineNum;
-	Dimension width;
-
-	/* find out where the selection is */
-	if (!this->buffer->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
-		left = right = TextGetCursorPos(textPane);
-		isRect = False;
-	}
-
-	/* Check vertical positioning unless the selection is already shown or
-	   already covers the display.  If the end of the selection is below
-	   bottom, scroll it in to view until the end selection is scrollOffset
-	   lines from the bottom of the display or the start of the selection
-	   scrollOffset lines from the top.  Calculate a pleasing distance from the
-	   top or bottom of the window, to scroll the selection to (if scrolling is
-	   necessary), around 1/3 of the height of the window */
-	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
-		XtVaGetValues(textPane, textNrows, &rows, nullptr);
-		scrollOffset = rows / 3;
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
-		if (right > lastChar) {
-			/* End of sel. is below bottom of screen */
-			leftLineNum = topLineNum + TextDCountLines(textD, topChar, left, False);
-			targetLineNum = topLineNum + scrollOffset;
-			if (leftLineNum >= targetLineNum) {
-				/* Start of sel. is not between top & target */
-				linesToScroll = TextDCountLines(textD, lastChar, right, False) + scrollOffset;
-				if (leftLineNum - linesToScroll < targetLineNum)
-					linesToScroll = leftLineNum - targetLineNum;
-				/* Scroll start of selection to the target line */
-				TextSetScroll(textPane, topLineNum + linesToScroll, horizOffset);
-			}
-		} else if (left < topChar) {
-			/* Start of sel. is above top of screen */
-			lastLineNum = topLineNum + rows;
-			rightLineNum = lastLineNum - TextDCountLines(textD, right, lastChar, False);
-			targetLineNum = lastLineNum - scrollOffset;
-			if (rightLineNum <= targetLineNum) {
-				/* End of sel. is not between bottom & target */
-				linesToScroll = TextDCountLines(textD, left, topChar, False) + scrollOffset;
-				if (rightLineNum + linesToScroll > targetLineNum)
-					linesToScroll = targetLineNum - rightLineNum;
-				/* Scroll end of selection to the target line */
-				TextSetScroll(textPane, topLineNum - linesToScroll, horizOffset);
-			}
-		}
-	}
-
-	/* If either end of the selection off screen horizontally, try to bring it
-	   in view, by making sure both end-points are visible.  Using only end
-	   points of a multi-line selection is not a great idea, and disaster for
-	   rectangular selections, so this part of the routine should be re-written
-	   if it is to be used much with either.  Note also that this is a second
-	   scrolling operation, causing the display to jump twice.  It's done after
-	   vertical scrolling to take advantage of TextPosToXY which requires it's
-	   reqested position to be vertically on screen) */
-	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
-		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
-		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
-			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
-		else if (rightX > width - margin)
-			horizOffset += rightX - (width - margin);
-		TextSetScroll(textPane, topLineNum, horizOffset);
-	}
-
-	/* make sure that the statistics line is up to date */
-	this->UpdateStatsLine();
-}
-
-/*
-** present dialog for selecting a target window to move this document
-** into. Do nothing if there is only one shell window opened.
-*/
-void Document::MoveDocumentDialog() {
-	Document *win;
-	int i, nList = 0, ac;
-	char tmpStr[MAXPATHLEN + 50];
-	Widget parent, dialog, listBox, moveAllOption;
-	XmString popupTitle, s1;
-	Arg csdargs[20];
-	int *position_list;
-	int position_count;
-
-	/* get the list of available shell windows, not counting
-	   the document to be moved */
-	int nWindows = NWindows();
-	auto list         = new XmString[nWindows];
-	auto shellWinList = new Document *[nWindows];
-
-	for (win = WindowList; win; win = win->next) {
-		if (!win->IsTopDocument() || win->shell == this->shell)
-			continue;
-
-		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet ? win->path : "", win->filename);
-
-		list[nList] = XmStringCreateSimpleEx(tmpStr);
-		shellWinList[nList] = win;
-		nList++;
-	}
-
-	/* stop here if there's no other this to move to */
-	if (!nList) {
-		delete [] list;
-		delete [] shellWinList;
-		return;
-	}
-
-	/* create the dialog */
-	parent = this->shell;
-	popupTitle = XmStringCreateSimpleEx("Move Document");
-	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", this->filename);
-	s1 = XmStringCreateSimpleEx(tmpStr);
-	ac = 0;
-	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	ac++;
-	XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistLabelString, s1);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItems, list);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItemCount, nList);
-	ac++;
-	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
-	ac++;
-	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
-	ac++;
-	dialog = CreateSelectionDialog(parent, (String) "moveDocument", csdargs, ac);
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(dialog, XmNokCallback, moveDocumentCB, this);
-	XtAddCallback(dialog, XmNapplyCallback, moveDocumentCB, this);
-	XtAddCallback(dialog, XmNcancelCallback, moveDocumentCB, this);
-	XmStringFree(s1);
-	XmStringFree(popupTitle);
-
-	/* free the this list */
-	for (i = 0; i < nList; i++)
-		XmStringFree(list[i]);
-	delete [] list;
-
-	/* create the option box for moving all documents */
-	s1 = XmStringCreateLtoREx("Move all documents in this this");
-	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
-	XmStringFree(s1);
-
-	if (this->NDocuments() > 1)
-		XtManageChild(moveAllOption);
-
-	/* disable option if only one document in the this */
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
-
-	s1 = XmStringCreateLtoREx("Move");
-	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
-	XmStringFree(s1);
-
-	/* default to the first this on the list */
-	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
-	XmListSelectPos(listBox, 1, True);
-
-	/* show the dialog */
-	DoneWithMoveDocumentDialog = 0;
-	ManageDialogCenteredOnPointer(dialog);
-	while (!DoneWithMoveDocumentDialog)
-		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
-
-	/* get the this to move document into */
-	XmListGetSelectedPos(listBox, &position_list, &position_count);
-	auto targetWin = shellWinList[position_list[0] - 1];
-	XtFree((char *)position_list);
-
-	/* now move document(s) */
-	if (DoneWithMoveDocumentDialog == XmCR_OK) {
-		/* move top document */
-		if (XmToggleButtonGetState(moveAllOption)) {
-			/* move all documents */
-			for (win = WindowList; win;) {
-				if (win != this && win->shell == this->shell) {
-					Document *next = win->next;
-					win->MoveDocument(targetWin);
-					win = next;
-				} else
-					win = win->next;
-			}
-
-			/* invoking document is the last to move */
-			this->MoveDocument(targetWin);
-		} else {
-			this->MoveDocument(targetWin);
-		}
-	}
-
-	delete [] shellWinList;
-	XtDestroyWidget(dialog);
-}
-
-
-
-
-
-
 
 /*
 ** Raise a tabbed document within its shell window.
@@ -2547,7 +2310,7 @@ Document *GetTopDocument(Widget w) {
 }
 
 static void deleteDocument(Document *window) {
-	if (nullptr == window) {
+	if (!window) {
 		return;
 	}
 
@@ -2667,37 +2430,37 @@ static void cloneTextPanes(Document *window, Document *orgWin) {
 /*
 ** clone a document's states and settings into the other.
 */
-static void cloneDocument(Document *window, Document *orgWin) {
+void Document::cloneDocument(Document *window) {
 	char *params[4];
 	int emTabDist;
 
-	strcpy(window->path,     orgWin->path);
-	strcpy(window->filename, orgWin->filename);
+	strcpy(window->path,     this->path);
+	strcpy(window->filename, this->filename);
 
-	window->ShowLineNumbers(orgWin->showLineNumbers);
+	window->ShowLineNumbers(this->showLineNumbers);
 
 	window->ignoreModify = True;
 
 	/* copy the text buffer */
-	auto orgDocument = orgWin->buffer->BufAsStringEx();
+	auto orgDocument = this->buffer->BufAsStringEx();
 	window->buffer->BufSetAllEx(orgDocument);
 
 	/* copy the tab preferences (here!) */
-	window->buffer->BufSetTabDistance(orgWin->buffer->tabDist_);
-	window->buffer->useTabs_ = orgWin->buffer->useTabs_;
-	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, nullptr);
+	window->buffer->BufSetTabDistance(this->buffer->tabDist_);
+	window->buffer->useTabs_ = this->buffer->useTabs_;
+	XtVaGetValues(this->textArea, textNemulateTabs, &emTabDist, nullptr);
 	window->SetEmTabDist(emTabDist);
 
 	window->ignoreModify = False;
 
 	/* transfer text fonts */
-	params[0] = orgWin->fontName;
-	params[1] = orgWin->italicFontName;
-	params[2] = orgWin->boldFontName;
-	params[3] = orgWin->boldItalicFontName;
+	params[0] = this->fontName;
+	params[1] = this->italicFontName;
+	params[2] = this->boldFontName;
+	params[3] = this->boldItalicFontName;
 	XtCallActionProc(window->textArea, "set_fonts", nullptr, params, 4);
 
-	window->SetBacklightChars(orgWin->backlightCharTypes);
+	window->SetBacklightChars(this->backlightCharTypes);
 
 	/* Clone rangeset info.
 
@@ -2706,86 +2469,86 @@ static void cloneDocument(Document *window, Document *orgWin) {
 	   else the rangesets do not be highlighted (colored) properly
 	   if syntax highlighting is on.
 	*/
-	if(orgWin->buffer->rangesetTable_) {
-		window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *orgWin->buffer->rangesetTable_);
+	if(this->buffer->rangesetTable_) {
+		window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *this->buffer->rangesetTable_);
 	} else {
 		window->buffer->rangesetTable_ = nullptr;
 	}
 
 	/* Syntax highlighting */
-	window->languageMode = orgWin->languageMode;
-	window->highlightSyntax = orgWin->highlightSyntax;
+	window->languageMode = this->languageMode;
+	window->highlightSyntax = this->highlightSyntax;
 	if (window->highlightSyntax) {
 		StartHighlighting(window, False);
 	}
 
 	/* copy states of original document */
-	window->filenameSet = orgWin->filenameSet;
-	window->fileFormat = orgWin->fileFormat;
-	window->lastModTime = orgWin->lastModTime;
-	window->fileChanged = orgWin->fileChanged;
-	window->fileMissing = orgWin->fileMissing;
-	window->lockReasons = orgWin->lockReasons;
-	window->autoSaveCharCount = orgWin->autoSaveCharCount;
-	window->autoSaveOpCount = orgWin->autoSaveOpCount;
-	window->undoMemUsed = orgWin->undoMemUsed;
-	window->lockReasons = orgWin->lockReasons;
-	window->autoSave = orgWin->autoSave;
-	window->saveOldVersion = orgWin->saveOldVersion;
-	window->wrapMode = orgWin->wrapMode;
-	window->SetOverstrike(orgWin->overstrike);
-	window->showMatchingStyle = orgWin->showMatchingStyle;
-	window->matchSyntaxBased = orgWin->matchSyntaxBased;
+	window->filenameSet = this->filenameSet;
+	window->fileFormat = this->fileFormat;
+	window->lastModTime = this->lastModTime;
+	window->fileChanged = this->fileChanged;
+	window->fileMissing = this->fileMissing;
+	window->lockReasons = this->lockReasons;
+	window->autoSaveCharCount = this->autoSaveCharCount;
+	window->autoSaveOpCount = this->autoSaveOpCount;
+	window->undoMemUsed = this->undoMemUsed;
+	window->lockReasons = this->lockReasons;
+	window->autoSave = this->autoSave;
+	window->saveOldVersion = this->saveOldVersion;
+	window->wrapMode = this->wrapMode;
+	window->SetOverstrike(this->overstrike);
+	window->showMatchingStyle = this->showMatchingStyle;
+	window->matchSyntaxBased = this->matchSyntaxBased;
 #if 0    
-    window->showStats = orgWin->showStats;
-    window->showISearchLine = orgWin->showISearchLine;
-    window->showLineNumbers = orgWin->showLineNumbers;
-    window->modeMessageDisplayed = orgWin->modeMessageDisplayed;
-    window->ignoreModify = orgWin->ignoreModify;
-    window->windowMenuValid = orgWin->windowMenuValid;
-    window->flashTimeoutID = orgWin->flashTimeoutID;
-    window->wasSelected = orgWin->wasSelected;
-    strcpy(window->fontName, orgWin->fontName);
-    strcpy(window->italicFontName, orgWin->italicFontName);
-    strcpy(window->boldFontName, orgWin->boldFontName);
-    strcpy(window->boldItalicFontName, orgWin->boldItalicFontName);
-    window->fontList = orgWin->fontList;
-    window->italicFontStruct = orgWin->italicFontStruct;
-    window->boldFontStruct = orgWin->boldFontStruct;
-    window->boldItalicFontStruct = orgWin->boldItalicFontStruct;
-    window->markTimeoutID = orgWin->markTimeoutID;
-    window->highlightData = orgWin->highlightData;
-    window->shellCmdData = orgWin->shellCmdData;
-    window->macroCmdData = orgWin->macroCmdData;
-    window->smartIndentData = orgWin->smartIndentData;
+    window->showStats = this->showStats;
+    window->showISearchLine = this->showISearchLine;
+    window->showLineNumbers = this->showLineNumbers;
+    window->modeMessageDisplayed = this->modeMessageDisplayed;
+    window->ignoreModify = this->ignoreModify;
+    window->windowMenuValid = this->windowMenuValid;
+    window->flashTimeoutID = this->flashTimeoutID;
+    window->wasSelected = this->wasSelected;
+    strcpy(window->fontName, this->fontName);
+    strcpy(window->italicFontName, this->italicFontName);
+    strcpy(window->boldFontName, this->boldFontName);
+    strcpy(window->boldItalicFontName, this->boldItalicFontName);
+    window->fontList = this->fontList;
+    window->italicFontStruct = this->italicFontStruct;
+    window->boldFontStruct = this->boldFontStruct;
+    window->boldItalicFontStruct = this->boldItalicFontStruct;
+    window->markTimeoutID = this->markTimeoutID;
+    window->highlightData = this->highlightData;
+    window->shellCmdData = this->shellCmdData;
+    window->macroCmdData = this->macroCmdData;
+    window->smartIndentData = this->smartIndentData;
 #endif
-	window->iSearchHistIndex = orgWin->iSearchHistIndex;
-	window->iSearchStartPos = orgWin->iSearchStartPos;
-	window->replaceLastRegexCase = orgWin->replaceLastRegexCase;
-	window->replaceLastLiteralCase = orgWin->replaceLastLiteralCase;
-	window->iSearchLastRegexCase = orgWin->iSearchLastRegexCase;
-	window->iSearchLastLiteralCase = orgWin->iSearchLastLiteralCase;
-	window->findLastRegexCase = orgWin->findLastRegexCase;
-	window->findLastLiteralCase = orgWin->findLastLiteralCase;
-	window->device = orgWin->device;
-	window->inode = orgWin->inode;
-	window->fileClosedAtom = orgWin->fileClosedAtom;
-	orgWin->fileClosedAtom = None;
+	window->iSearchHistIndex = this->iSearchHistIndex;
+	window->iSearchStartPos = this->iSearchStartPos;
+	window->replaceLastRegexCase = this->replaceLastRegexCase;
+	window->replaceLastLiteralCase = this->replaceLastLiteralCase;
+	window->iSearchLastRegexCase = this->iSearchLastRegexCase;
+	window->iSearchLastLiteralCase = this->iSearchLastLiteralCase;
+	window->findLastRegexCase = this->findLastRegexCase;
+	window->findLastLiteralCase = this->findLastLiteralCase;
+	window->device = this->device;
+	window->inode = this->inode;
+	window->fileClosedAtom = this->fileClosedAtom;
+	this->fileClosedAtom = None;
 
 	/* copy the text/split panes settings, cursor pos & selection */
-	cloneTextPanes(window, orgWin);
+	cloneTextPanes(window, this);
 
 	/* copy undo & redo list */
-	window->undo = cloneUndoItems(orgWin->undo);
-	window->redo = cloneUndoItems(orgWin->redo);
+	window->undo = cloneUndoItems(this->undo);
+	window->redo = cloneUndoItems(this->redo);
 
 	/* copy bookmarks */
-	window->nMarks = orgWin->nMarks;
-	memcpy(&window->markTable, &orgWin->markTable, sizeof(Bookmark) * window->nMarks);
+	window->nMarks = this->nMarks;
+	memcpy(&window->markTable, &this->markTable, sizeof(Bookmark) * window->nMarks);
 
 	/* kick start the auto-indent engine */
 	window->indentStyle = NO_AUTO_INDENT;
-	window->SetAutoIndent(orgWin->indentStyle);
+	window->SetAutoIndent(this->indentStyle);
 
 	/* synchronize window state to this document */
 	window->RefreshWindowStates();
@@ -2800,60 +2563,7 @@ static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList
 	return list;
 }
 
-/*
-** spin off the document to a new window
-*/
-Document *Document::DetachDocument() {
-	Document *win = nullptr;
 
-	if (this->NDocuments() < 2)
-		return nullptr;
-
-	/* raise another document in the same shell this if the this
-	   being detached is the top document */
-	if (this->IsTopDocument()) {
-		win = this->getNextTabWindow(1, 0, 0);
-		win->RaiseDocument();
-	}
-
-	/* Create a new this */
-	auto cloneWin = new Document(this->filename, nullptr, false);
-
-	/* CreateWindow() simply adds the new this's pointer to the
-	   head of WindowList. We need to adjust the detached this's
-	   pointer, so that macro functions such as focus_window("last")
-	   will travel across the documents per the sequence they're
-	   opened. The new doc will appear to replace it's former self
-	   as the old doc is closed. */
-	WindowList = cloneWin->next;
-	cloneWin->next = this->next;
-	this->next = cloneWin;
-
-	/* these settings should follow the detached document.
-	   must be done before cloning this, else the height
-	   of split panes may not come out correctly */
-	cloneWin->ShowISearchLine(this->showISearchLine);
-	cloneWin->ShowStatsLine(this->showStats);
-
-	/* clone the document & its pref settings */
-	cloneDocument(cloneWin, this);
-
-	/* remove the document from the old this */
-	this->fileChanged = False;
-	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
-
-	/* refresh former host this */
-	if (win) {
-		win->RefreshWindowStates();
-	}
-
-	/* this should keep the new document this fresh */
-	cloneWin->RefreshWindowStates();
-	cloneWin->RefreshTabState();
-	cloneWin->SortTabBar();
-
-	return cloneWin;
-}
 
 /*
 ** Move document to an other window.
@@ -2877,7 +2587,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	/* relocate the document to target this */
 	cloneWin = toWindow->CreateDocument(this->filename);
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
-	cloneDocument(cloneWin, this);
+	this->cloneDocument(cloneWin);
 
 	/* CreateDocument() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's

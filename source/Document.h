@@ -111,6 +111,7 @@ public:
 	void refreshMenuBar();
 	int updateLineNumDisp();
 	int updateGutterWidth();
+	void cloneDocument(Document *window);
 
 public:
 	Document *next;
