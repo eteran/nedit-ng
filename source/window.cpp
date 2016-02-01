@@ -47,7 +47,6 @@
 #include "highlight.h"
 #include "smartIndent.h"
 #include "userCmds.h"
-#include "nedit.bm"
 #include "n.bm"
 #include "windowTitle.h"
 #include "interpret.h"
@@ -116,548 +115,29 @@
    below the main menu bar */
 #define STAT_SHADOW_THICKNESS 1
 
-/* bitmap data for the close-tab button */
-#define close_width 11
-#define close_height 11
-static unsigned char close_bits[] = {0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
-/* bitmap data for the isearch-find button */
-#define isrcFind_width 11
-#define isrcFind_height 11
-static unsigned char isrcFind_bits[] = {0xe0, 0x01, 0x10, 0x02, 0xc8, 0x04, 0x08, 0x04, 0x08, 0x04, 0x00, 0x04, 0x18, 0x02, 0xdc, 0x01, 0x0e, 0x00, 0x07, 0x00, 0x03, 0x00};
-
-/* bitmap data for the isearch-clear button */
-#define isrcClear_width 11
-#define isrcClear_height 11
-static unsigned char isrcClear_bits[] = {0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x84, 0x01, 0xc4, 0x00, 0x64, 0x00, 0xc4, 0x00, 0x84, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00};
 
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void hideTooltip(Widget tab);
-static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height);
 static Widget addTab(Widget folder, const char *string);
-static Widget manageToolBars(Widget toolBarsForm);
-static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData);
-static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData);
-static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData);
 static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
 static void focusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void movedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void dragStartCB(Widget w, XtPointer clientData, XtPointer callData);
 static void dragEndCB(Widget w, XtPointer clientData, XtPointer callData);
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
-static void addWindowIcon(Widget shell);
-static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id);
-static void cloneTextPanes(Document *window, Document *orgWin);
-static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList);
 static Widget containingPane(Widget w);
-static void setPaneDesiredHeight(Widget w, int height);
+static void tabClickEH(Widget w, XtPointer clientData, XEvent *event);
 
-/* From Xt, Shell.c, "BIGSIZE" */
-static const Dimension XT_IGNORE_PPOSITION = 32767;
 
 
 
 
 
-/*
-** Create a new editor window
-*/
-Document::Document(const char *name, char *geometry, bool iconic) {
-	
-	Widget winShell;
-	Widget mainWin;
-	Widget menuBar;
-	Widget pane;
-	Widget text;
-	Widget stats;
-	Widget statsAreaForm;
-	Widget closeTabBtn;
-	Widget tabForm;
-	Pixel bgpix, fgpix;
-	Arg al[20];
-	int ac;
-	XmString s1;
-	XmFontList statsFontList;
-	Document *win;
-	char newGeometry[MAX_GEOM_STRING_LEN];
-	unsigned int rows, cols;
-	int x = 0, y = 0, bitmask, showTabBar, state;
 
-	static Pixmap isrcFind = 0;
-	static Pixmap isrcClear = 0;
-	static Pixmap closeTabPixmap = 0;
 
-	/* initialize window structure */
-	/* + Schwarzenberg: should a
-	  memset(window, 0, sizeof(Document));
-	     be added here ?
-	*/
-	this->replaceDlog = nullptr;
-	this->replaceText = nullptr;
-	this->replaceWithText = nullptr;
-	this->replaceWordToggle = nullptr;
-	this->replaceCaseToggle = nullptr;
-	this->replaceRegexToggle = nullptr;
-	this->findDlog = nullptr;
-	this->findText = nullptr;
-	this->findWordToggle = nullptr;
-	this->findCaseToggle = nullptr;
-	this->findRegexToggle = nullptr;
-	this->replaceMultiFileDlog = nullptr;
-	this->replaceMultiFilePathBtn = nullptr;
-	this->replaceMultiFileList = nullptr;
-	this->multiFileReplSelected = FALSE;
-	this->multiFileBusy = FALSE;
-	this->writableWindows = nullptr;
-	this->nWritableWindows = 0;
-	this->fileChanged = FALSE;
-	this->fileMode = 0;
-	this->fileUid = 0;
-	this->fileGid = 0;
-	this->filenameSet = FALSE;
-	this->fileFormat = UNIX_FILE_FORMAT;
-	this->lastModTime = 0;
-	this->fileMissing = True;
-	strcpy(this->filename, name);
-	this->undo = std::list<UndoInfo *>();
-	this->redo = std::list<UndoInfo *>();
-	this->nPanes = 0;
-	this->autoSaveCharCount = 0;
-	this->autoSaveOpCount = 0;
-	this->undoMemUsed = 0;
-	CLEAR_ALL_LOCKS(this->lockReasons);
-	this->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	this->autoSave = GetPrefAutoSave();
-	this->saveOldVersion = GetPrefSaveOldVersion();
-	this->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	this->overstrike = False;
-	this->showMatchingStyle = GetPrefShowMatching();
-	this->matchSyntaxBased = GetPrefMatchSyntaxBased();
-	this->showStats = GetPrefStatsLine();
-	this->showISearchLine = GetPrefISearchLine();
-	this->showLineNumbers = GetPrefLineNums();
-	this->highlightSyntax = GetPrefHighlightSyntax();
-	this->backlightCharTypes = nullptr;
-	this->backlightChars = GetPrefBacklightChars();
-	if (this->backlightChars) {
-		const char *cTypes = GetPrefBacklightCharTypes();
-		if (cTypes && this->backlightChars) {
-			this->backlightCharTypes = XtStringDup(cTypes);
-		}
-	}
-	this->modeMessageDisplayed = FALSE;
-	this->modeMessage = nullptr;
-	this->ignoreModify = FALSE;
-	this->windowMenuValid = FALSE;
-	this->flashTimeoutID = 0;
-	this->fileClosedAtom = None;
-	this->wasSelected = FALSE;
-
-	strcpy(this->fontName, GetPrefFontName());
-	strcpy(this->italicFontName, GetPrefItalicFontName());
-	strcpy(this->boldFontName, GetPrefBoldFontName());
-	strcpy(this->boldItalicFontName, GetPrefBoldItalicFontName());
-	this->colorDialog = nullptr;
-	this->fontList = GetPrefFontList();
-	this->italicFontStruct = GetPrefItalicFont();
-	this->boldFontStruct = GetPrefBoldFont();
-	this->boldItalicFontStruct = GetPrefBoldItalicFont();
-	this->fontDialog = nullptr;
-	this->nMarks = 0;
-	this->markTimeoutID = 0;
-	this->highlightData = nullptr;
-	this->shellCmdData = nullptr;
-	this->macroCmdData = nullptr;
-	this->smartIndentData = nullptr;
-	this->languageMode = PLAIN_LANGUAGE_MODE;
-	this->iSearchHistIndex = 0;
-	this->iSearchStartPos = -1;
-	this->replaceLastRegexCase = TRUE;
-	this->replaceLastLiteralCase = FALSE;
-	this->iSearchLastRegexCase = TRUE;
-	this->iSearchLastLiteralCase = FALSE;
-	this->findLastRegexCase = TRUE;
-	this->findLastLiteralCase = FALSE;
-	this->tab = nullptr;
-	this->device = 0;
-	this->inode = 0;
-
-	/* If window geometry was specified, split it apart into a window position
-	   component and a window size component.  Create a new geometry string
-	   containing the position component only.  Rows and cols are stripped off
-	   because we can't easily calculate the size in pixels from them until the
-	   whole window is put together.  Note that the preference resource is only
-	   for clueless users who decide to specify the standard X geometry
-	   application resource, which is pretty useless because width and height
-	   are the same as the rows and cols preferences, and specifying a window
-	   location will force all the windows to pile on top of one another */
-	if (geometry == nullptr || geometry[0] == '\0')
-		geometry = GetPrefGeometry();
-	if (geometry == nullptr || geometry[0] == '\0') {
-		rows = GetPrefRows();
-		cols = GetPrefCols();
-		newGeometry[0] = '\0';
-	} else {
-		bitmask = XParseGeometry(geometry, &x, &y, &cols, &rows);
-		if (bitmask == 0)
-			fprintf(stderr, "Bad window geometry specified: %s\n", geometry);
-		else {
-			if (!(bitmask & WidthValue))
-				cols = GetPrefCols();
-			if (!(bitmask & HeightValue))
-				rows = GetPrefRows();
-		}
-		CreateGeometryString(newGeometry, x, y, 0, 0, bitmask & ~(WidthValue | HeightValue));
-	}
-
-	/* Create a new toplevel shell to hold the window */
-	ac = 0;
-	XtSetArg(al[ac], XmNtitle, name);
-	ac++;
-	XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING);
-	ac++;
-	XtSetArg(al[ac], XmNiconName, name);
-	ac++;
-	XtSetArg(al[ac], XmNgeometry, newGeometry[0] == '\0' ? nullptr : newGeometry);
-	ac++;
-	XtSetArg(al[ac], XmNinitialState, iconic ? IconicState : NormalState);
-	ac++;
-
-	if (newGeometry[0] == '\0') {
-		/* Workaround to make Xt ignore Motif's bad PPosition size changes. Even
-		   though we try to remove the PPosition in RealizeWithoutForcingPosition,
-		   it is not sufficient.  Motif will recompute the size hints some point
-		   later and put PPosition back! If the window is mapped after that time,
-		   then the window will again wind up at 0, 0.  So, XEmacs does this, and
-		   now we do.
-
-		   Alternate approach, relying on ShellP.h:
-
-		   ((WMShellWidget)winShell)->shell.client_specified &= ~_XtShellPPositionOK;
-		 */
-
-		XtSetArg(al[ac], XtNx, XT_IGNORE_PPOSITION);
-		ac++;
-		XtSetArg(al[ac], XtNy, XT_IGNORE_PPOSITION);
-		ac++;
-	}
-
-	winShell = CreateWidget(TheAppShell, "textShell", topLevelShellWidgetClass, al, ac);
-	this->shell = winShell;
-
-#ifdef EDITRES
-	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
-#endif /* EDITRES */
-
-	addWindowIcon(winShell);
-
-	/* Create a MainWindow to manage the menubar and text area, set the
-	   userData resource to be used by WidgetToWindow to recover the
-	   window pointer from the widget id of any of the window's widgets */
-	XtSetArg(al[ac], XmNuserData, this);
-	ac++;
-	mainWin = XmCreateMainWindow(winShell, (String) "main", al, ac);
-	this->mainWin = mainWin;
-	XtManageChild(mainWin);
-
-	/* The statsAreaForm holds the stats line and the I-Search line. */
-	statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
-	                                 /* XmNautoUnmanage, False, */
-	                                 nullptr);
-
-	/* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
-	   the i-search bar was active, and the i-search text widget was focussed,
-	   and the window's width was resized to nearly zero.
-	   In theory, it is possible to avoid this by imposing a minimum
-	   width constraint on the nedit windows, but that width would have to
-	   be at least 30 characters, which is probably unacceptable.
-	   Amazingly, adding a top offset of 1 pixel to the toggle buttons of
-	   the i-search bar, while keeping the the top offset of the text widget
-	   to 0 seems to avoid avoid the crash. */
-
-	this->iSearchForm = XtVaCreateWidget("iSearchForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset,
-	                                       STAT_SHADOW_THICKNESS, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, STAT_SHADOW_THICKNESS, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-	if (this->showISearchLine)
-		XtManageChild(this->iSearchForm);
-
-	/* Disable keyboard traversal of the find, clear and toggle buttons.  We
-	   were doing this previously by forcing the keyboard focus back to the
-	   text widget whenever a toggle changed.  That causes an ugly focus flash
-	   on screen.  It's better just not to go there in the first place.
-	   Plus, if the user really wants traversal, it's an X resource so it
-	   can be enabled without too much pain and suffering. */
-
-	if (isrcFind == 0) {
-		isrcFind = createBitmapWithDepth(this->iSearchForm, (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
-	}
-	this->iSearchFindButton = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
-	                                                    XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
-	                                                    /* XmNleftOffset, 3, */
-	                                                    XmNleftOffset, 0, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
-	XmStringFree(s1);
-
-	this->iSearchCaseToggle = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
-	                                                    GetPrefSearch() == SEARCH_CASE_SENSE || GetPrefSearch() == SEARCH_REGEX || GetPrefSearch() == SEARCH_CASE_SENSE_WORD, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment,
-	                                                    XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
-	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
-	XmStringFree(s1);
-
-	this->iSearchRegexToggle =
-	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
-	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
-	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchCaseToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
-	XmStringFree(s1);
-
-	this->iSearchRevToggle = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, False, XmNtopAttachment, XmATTACH_FORM,
-	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
-	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchRegexToggle, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
-	XmStringFree(s1);
-
-	if (isrcClear == 0) {
-		isrcClear = createBitmapWithDepth(this->iSearchForm, (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
-	}
-	this->iSearchClearButton = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, this->iSearchForm, XmNlabelString, s1 = XmStringCreateSimpleEx("<x"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
-	                                                     XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchRevToggle, XmNrightOffset, 2, XmNtopAttachment,
-	                                                     XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
-	XmStringFree(s1);
-
-	this->iSearchText = XtVaCreateManagedWidget("iSearchText", xmTextWidgetClass, this->iSearchForm, XmNmarginHeight, 1, XmNnavigationType, XmEXCLUSIVE_TAB_GROUP, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget,
-	                                              this->iSearchFindButton, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->iSearchClearButton,
-	                                              /* XmNrightOffset, 5, */
-	                                              XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 0, /* see openmotif note above */
-	                                              XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, nullptr);
-	RemapDeleteKey(this->iSearchText);
-
-	SetISearchTextCallbacks(this);
-
-	/* create the a form to house the tab bar and close-tab button */
-	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, False, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
-	                           0, nullptr);
-
-	/* button to close top document */
-	if (closeTabPixmap == 0) {
-		closeTabPixmap = createBitmapWithDepth(tabForm, (char *)close_bits, close_width, close_height);
-	}
-	closeTabBtn = XtVaCreateManagedWidget("closeTabBtn", xmPushButtonWidgetClass, tabForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNhighlightThickness, 0, XmNlabelType, XmPIXMAP, XmNlabelPixmap, closeTabPixmap, XmNshadowThickness, 1,
-	                                      XmNtraversalOn, False, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
-	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin);
-
-	/* create the tab bar */
-	this->tabBar = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
-	                                         XmNrightOffset, 5, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, XmNtopAttachment, XmATTACH_FORM, nullptr);
-
-	this->tabMenuPane = CreateTabContextMenu(this->tabBar, this);
-	AddTabContextMenuAction(this->tabBar);
-
-	/* create an unmanaged composite widget to get the folder
-	   widget to hide the 3D shadow for the manager area.
-	   Note: this works only on the patched XmLFolder widget */
-	Widget form = XtVaCreateWidget("form", xmFormWidgetClass, this->tabBar, XmNheight, 1, XmNresizable, False, nullptr);
-
-	(void)form;
-
-	XtAddCallback(this->tabBar, XmNactivateCallback, raiseTabCB, nullptr);
-
-	this->tab = addTab(this->tabBar, name);
-
-	/* A form to hold the stats line text and line/col widgets */
-	this->statsLineForm = XtVaCreateWidget("statsLineForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNtopAttachment, this->showISearchLine ? XmATTACH_WIDGET : XmATTACH_FORM, XmNtopWidget, this->iSearchForm,
-	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, False, /*  */
-	                                         nullptr);
-
-	/* A separate display of the line/column number */
-	this->statsLineColNo = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, this->statsLineForm, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
-	                                                 False, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, /*  */
-	                                                 nullptr);
-	XmStringFree(s1);
-
-	/* Create file statistics display area.  Using a text widget rather than
-	   a label solves a layout problem with the main window, which messes up
-	   if the label is too long (we would need a resize callback to control
-	   the length when the window changed size), and allows users to select
-	   file names and line numbers.  Colors are copied from parent
-	   widget, because many users and some system defaults color text
-	   backgrounds differently from other widgets. */
-	XtVaGetValues(this->statsLineForm, XmNbackground, &bgpix, nullptr);
-	XtVaGetValues(this->statsLineForm, XmNforeground, &fgpix, nullptr);
-	stats = XtVaCreateManagedWidget("statsLine", xmTextWidgetClass, this->statsLineForm, XmNbackground, bgpix, XmNforeground, fgpix, XmNshadowThickness, 0, XmNhighlightColor, bgpix, XmNhighlightThickness,
-	                                0,                  /* must be zero, for OM (2.1.30) to
-	                                                   aligns tatsLineColNo & statsLine */
-	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1,
-	                                                   to align with statsLineColNo */
-	                                XmNscrollHorizontal, False, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, False, XmNtraversalOn, False, XmNcursorPositionVisible, False, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                /*  */
-	                                XmNtopWidget, this->statsLineColNo, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, this->statsLineColNo, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
-	                                XmNbottomWidget, this->statsLineColNo, XmNrightOffset, 3, nullptr);
-	this->statsLine = stats;
-
-	/* Give the statsLine the same font as the statsLineColNo */
-	XtVaGetValues(this->statsLineColNo, XmNfontList, &statsFontList, nullptr);
-	XtVaSetValues(this->statsLine, XmNfontList, statsFontList, nullptr);
-
-	/* Manage the statsLineForm */
-	if (this->showStats)
-		XtManageChild(this->statsLineForm);
-
-	/* If the fontList was nullptr, use the magical default provided by Motif,
-	   since it must have worked if we've gotten this far */
-	if (!this->fontList)
-		XtVaGetValues(stats, XmNfontList, &this->fontList, nullptr);
-
-	/* Create the menu bar */
-	menuBar = CreateMenuBar(mainWin, this);
-	this->menuBar = menuBar;
-	XtManageChild(menuBar);
-
-	/* Create paned window to manage split pane behavior */
-	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, nullptr);
-	this->splitPane = pane;
-	XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
-
-	/* Store a copy of document/window pointer in text pane to support
-	   action procedures. See also WidgetToWindow() for info. */
-	XtVaSetValues(pane, XmNuserData, this, nullptr);
-
-	/* Patch around Motif's most idiotic "feature", that its menu accelerators
-	   recognize Caps Lock and Num Lock as modifiers, and don't trigger if
-	   they are engaged */
-	AccelLockBugPatch(pane, this->menuBar);
-
-	/* Create the first, and most permanent text area (other panes may
-	   be added & removed, but this one will never be removed */
-	text = createTextArea(pane, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), this->showLineNumbers ? MIN_LINE_NUM_COLS : 0);
-	XtManageChild(text);
-	this->textArea = text;
-	this->lastFocus = text;
-
-	/* Set the initial colors from the globals. */
-	this->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
-	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
-
-	/* Create the right button popup menu (note: order is important here,
-	   since the translation for popping up this menu was probably already
-	   added in createTextArea, but CreateBGMenu requires this->textArea
-	   to be set so it can attach the menu to it (because menu shells are
-	   finicky about the kinds of widgets they are attached to)) */
-	this->bgMenuPane = CreateBGMenu(this);
-
-	/* cache user menus: init. user background menu cache */
-	InitUserBGMenuCache(&this->userBGMenuCache);
-
-	/* Create the text buffer rather than using the one created automatically
-	   with the text area widget.  This is done so the syntax highlighting
-	   modify callback can be called to synchronize the style buffer BEFORE
-	   the text display's callback is called upon to display a modification */
-	this->buffer = new TextBuffer;
-	this->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, this);
-
-	/* Attach the buffer to the text widget, and add callbacks for modify */
-	TextSetBuffer(text, this->buffer);
-	this->buffer->BufAddModifyCB(modifiedCB, this);
-
-	/* Designate the permanent text area as the owner for selections */
-	HandleXSelections(text);
-
-	/* Set the requested hardware tab distance and useTabs in the text buffer */
-	this->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-	this->buffer->useTabs_ = GetPrefInsertTabs();
-
-	/* add the window to the global window list, update the Windows menus */
-	this->addToWindowList();
-	InvalidateWindowMenus();
-
-	showTabBar = this->GetShowTabBar();
-	if (showTabBar)
-		XtManageChild(tabForm);
-
-	manageToolBars(statsAreaForm);
-
-	if (showTabBar || this->showISearchLine || this->showStats)
-		XtManageChild(statsAreaForm);
-
-	/* realize all of the widgets in the new window */
-	RealizeWithoutForcingPosition(winShell);
-	XmProcessTraversal(text, XmTRAVERSE_CURRENT);
-
-	/* Make close command in window menu gracefully prompt for close */
-	AddMotifCloseCallback(winShell, closeCB, this);
-
-	/* Make window resizing work in nice character heights */
-	this->UpdateWMSizeHints();
-
-	/* Set the minimum pane height for the initial text pane */
-	this->UpdateMinPaneHeights();
-
-	/* create dialogs shared by all documents in a window */
-	CreateFindDlog(this->shell, this);
-	CreateReplaceDlog(this->shell, this);
-	CreateReplaceMultiFileDlog(this);
-
-	/* dim/undim Attach_Tab menu items */
-	state = this->NDocuments() < NWindows();
-	for (win = WindowList; win; win = win->next) {
-		if (win->IsTopDocument()) {
-			XtSetSensitive(win->moveDocumentItem, state);
-			XtSetSensitive(win->contextMoveDocumentItem, state);
-		}
-	}
-}
-
-
-
-
-/*
-** ButtonPress event handler for tabs.
-*/
-static void tabClickEH(Widget w, XtPointer clientData, XEvent *event) {
-
-	(void)clientData;
-	(void)event;
-
-	/* hide the tooltip when user clicks with any button. */
-	if (BubbleButton_Timer(w)) {
-		XtRemoveTimeOut(BubbleButton_Timer(w));
-		BubbleButton_Timer(w) = (XtIntervalId) nullptr;
-	} else {
-		hideTooltip(w);
-	}
-}
-
-/*
-** add a tab to the tab bar for the new document.
-*/
-static Widget addTab(Widget folder, const char *string) {
-	Widget tooltipLabel, tab;
-	XmString s1;
-
-	s1 = XmStringCreateSimpleEx(string);
-	tab = XtVaCreateManagedWidget("tab", xrwsBubbleButtonWidgetClass, folder,
-	                              /* XmNmarginWidth, <default@nedit.c>, */
-	                              /* XmNmarginHeight, <default@nedit.c>, */
-	                              /* XmNalignment, <default@nedit.c>, */
-	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, True, XltNslidingBubble, False,
-	                              /* XltNdelay, 800,*/
-	                              /* XltNbubbleDuration, 8000,*/
-	                              nullptr);
-	XmStringFree(s1);
-
-	/* there's things to do as user click on the tab */
-	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, nullptr);
-
-	/* BubbleButton simply use reversed video for tooltips,
-	   we try to use the 'standard' color */
-	tooltipLabel = XtNameToWidget(tab, "*BubbleLabel");
-	XtVaSetValues(tooltipLabel, XmNbackground, AllocateColor(tab, GetPrefTooltipBgColor()), XmNforeground, AllocateColor(tab, NEDIT_DEFAULT_FG), nullptr);
-
-	/* put borders around tooltip. BubbleButton use
-	   transientShellWidgetClass as tooltip shell, which
-	   came without borders */
-	XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, nullptr);
-
-	return tab;
-}
 
 
 
@@ -820,17 +300,7 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 
 
 
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	auto window = static_cast<Document *>(clientData);
-	
-	window = WidgetToWindow(w);
-	if (!WindowCanBeClosed(window)) {
-		return;
-	}
-
-	CloseDocumentWindow(w, window, callData);
-}
 
 #ifndef NO_SESSION_RESTART
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1010,22 +480,8 @@ void AllWindowsUnbusy(void) {
 
 
 
-/* Add an icon to an applicaction shell widget.  addWindowIcon adds a large
-** (primary window) icon, AddSmallIcon adds a small (secondary window) icon.
-**
-** Note: I would prefer that these were not hardwired, but yhere is something
-** weird about the  XmNiconPixmap resource that prevents it from being set
-** from the defaults in the application resource database.
-*/
-static void addWindowIcon(Widget shell) {
-	static Pixmap iconPixmap = 0, maskPixmap = 0;
 
-	if (iconPixmap == 0) {
-		iconPixmap = XCreateBitmapFromData(TheDisplay, RootWindowOfScreen(XtScreen(shell)), (char *)iconBits, iconBitmapWidth, iconBitmapHeight);
-		maskPixmap = XCreateBitmapFromData(TheDisplay, RootWindowOfScreen(XtScreen(shell)), (char *)maskBits, iconBitmapWidth, iconBitmapHeight);
-	}
-	XtVaSetValues(shell, XmNiconPixmap, iconPixmap, XmNiconMask, maskPixmap, nullptr);
-}
+
 void AddSmallIcon(Widget shell) {
 	static Pixmap iconPixmap = 0, maskPixmap = 0;
 
@@ -1036,24 +492,7 @@ void AddSmallIcon(Widget shell) {
 	XtVaSetValues(shell, XmNiconPixmap, iconPixmap, XmNiconMask, maskPixmap, nullptr);
 }
 
-/*
-** Create pixmap per the widget's color depth setting.
-**
-** This fixes a BadMatch (X_CopyArea) error due to mismatching of
-** color depth between the bitmap (depth of 1) and the screen,
-** specifically on when linked to LessTif v1.2 (release 0.93.18
-** & 0.93.94 tested).  LessTif v2.x showed no such problem.
-*/
-static Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height) {
-	Pixmap pixmap;
-	Pixel fg, bg;
-	int depth;
 
-	XtVaGetValues(w, XmNforeground, &fg, XmNbackground, &bg, XmNdepth, &depth, nullptr);
-	pixmap = XCreatePixmapFromBitmapData(XtDisplay(w), RootWindowOfScreen(XtScreen(w)), (char *)data, width, height, fg, bg, depth);
-
-	return pixmap;
-}
 
 
 
@@ -1255,30 +694,7 @@ Document *Document::CreateDocument(const char *name) {
 }
 
 
-static void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	
-	auto window = static_cast<Document *>(clientData);
-
-	int nDocuments = window->NDocuments();
-
-	if (nDocuments == NWindows()) {
-		/* this is only window, then exit */
-		XtCallActionProc(WindowList->lastFocus, "exit", ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
-	} else {
-		if (nDocuments == 1) {
-			CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
-		} else {
-			int resp = 1;
-			if (GetPrefWarnExit())
-				resp = DialogF(DF_QUES, window->shell, 2, "Close Window", "Close ALL documents in this window?", "Close", "Cancel");
-
-			if (resp == 1)
-				window->CloseAllDocumentInWindow();
-		}
-	}
-}
 
 
 
@@ -1302,425 +718,14 @@ Document *GetTopDocument(Widget w) {
 }
 
 
-
-
-
-static void cloneTextPanes(Document *window, Document *orgWin) {
-	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
-	int horizOffsets[MAX_PANES + 1];
-	int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight = 0;
-	char *delimiters;
-	Widget text;
-	TextSelection sel;
-	textDisp *textD, *newTextD;
-
-	/* transfer the primary selection */
-	memcpy(&sel, &orgWin->buffer->primary_, sizeof(TextSelection));
-
-	if (sel.selected) {
-		if (sel.rectangular)
-			window->buffer->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
-		else
-			window->buffer->BufSelect(sel.start, sel.end);
-	} else
-		window->buffer->BufUnselect();
-
-	/* Record the current heights, scroll positions, and insert positions
-	   of the existing panes, keyboard focus */
-	focusPane = 0;
-	for (i = 0; i <= orgWin->nPanes; i++) {
-		text = i == 0 ? orgWin->textArea : orgWin->textPanes[i - 1];
-		insertPositions[i] = TextGetCursorPos(text);
-		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		totalHeight += paneHeights[i];
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
-		if (text == orgWin->lastFocus)
-			focusPane = i;
-	}
-
-	window->nPanes = orgWin->nPanes;
-
-	/* Copy some parameters */
-	XtVaGetValues(orgWin->textArea, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, nullptr);
-	lineNumCols = orgWin->showLineNumbers ? MIN_LINE_NUM_COLS : 0;
-	XtVaSetValues(window->textArea, textNemulateTabs, emTabDist, textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin, textNlineNumCols, lineNumCols, nullptr);
-
-	/* clone split panes, if any */
-	textD = ((TextWidget)window->textArea)->text.textD;
-	if (window->nPanes) {
-		/* Unmanage & remanage the panedWindow so it recalculates pane heights */
-		XtUnmanageChild(window->splitPane);
-
-		/* Create a text widget to add to the pane and set its buffer and
-		   highlight data to be the same as the other panes in the orgWin */
-
-		for (i = 0; i < orgWin->nPanes; i++) {
-			text = createTextArea(window->splitPane, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
-			TextSetBuffer(text, window->buffer);
-
-			if (window->highlightData)
-				AttachHighlightToWidget(text, window);
-			XtManageChild(text);
-			window->textPanes[i] = text;
-
-			/* Fix up the colors */
-			newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
-			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
-		}
-
-		/* Set the minimum pane height in the new pane */
-		window->UpdateMinPaneHeights();
-
-		for (i = 0; i <= window->nPanes; i++) {
-			text = i == 0 ? window->textArea : window->textPanes[i - 1];
-			setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-		}
-
-		/* Re-manage panedWindow to recalculate pane heights & reset selection */
-		XtManageChild(window->splitPane);
-	}
-
-	/* Reset all of the heights, scroll positions, etc. */
-	for (i = 0; i <= window->nPanes; i++) {
-		text = (i == 0) ? window->textArea : window->textPanes[i - 1];
-		TextSetCursorPos(text, insertPositions[i]);
-		TextSetScroll(text, topLines[i], horizOffsets[i]);
-
-		/* dim the cursor */
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
-		textD->TextDSetCursorStyle(DIM_CURSOR);
-		textD->TextDUnblankCursor();
-	}
-
-	/* set the focus pane */
-	// NOTE(eteran): are we sure we want "<=" here? It's of course possible that
-	//               it's correct, but it is certainly unconventional.
-	//               Notice that is is used in the above loops as well
-	for (i = 0; i <= window->nPanes; i++) {
-		text = i == 0 ? window->textArea : window->textPanes[i - 1];
-		if (i == focusPane) {
-			window->lastFocus = text;
-			XmProcessTraversal(text, XmTRAVERSE_CURRENT);
-			break;
-		}
-	}
-
-	/* Update the window manager size hints after the sizes of the panes have
-	   been set (the widget heights are not yet readable here, but they will
-	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 0, wmSizeUpdateProc, window);
-}
-
-/*
-** clone a document's states and settings into the other.
-*/
-void Document::cloneDocument(Document *window) {
-	char *params[4];
-	int emTabDist;
-
-	strcpy(window->path,     this->path);
-	strcpy(window->filename, this->filename);
-
-	window->ShowLineNumbers(this->showLineNumbers);
-
-	window->ignoreModify = True;
-
-	/* copy the text buffer */
-	auto orgDocument = this->buffer->BufAsStringEx();
-	window->buffer->BufSetAllEx(orgDocument);
-
-	/* copy the tab preferences (here!) */
-	window->buffer->BufSetTabDistance(this->buffer->tabDist_);
-	window->buffer->useTabs_ = this->buffer->useTabs_;
-	XtVaGetValues(this->textArea, textNemulateTabs, &emTabDist, nullptr);
-	window->SetEmTabDist(emTabDist);
-
-	window->ignoreModify = False;
-
-	/* transfer text fonts */
-	params[0] = this->fontName;
-	params[1] = this->italicFontName;
-	params[2] = this->boldFontName;
-	params[3] = this->boldItalicFontName;
-	XtCallActionProc(window->textArea, "set_fonts", nullptr, params, 4);
-
-	window->SetBacklightChars(this->backlightCharTypes);
-
-	/* Clone rangeset info.
-
-	   FIXME:
-	   Cloning of rangesets must be done before syntax highlighting,
-	   else the rangesets do not be highlighted (colored) properly
-	   if syntax highlighting is on.
-	*/
-	if(this->buffer->rangesetTable_) {
-		window->buffer->rangesetTable_ = new RangesetTable(window->buffer, *this->buffer->rangesetTable_);
-	} else {
-		window->buffer->rangesetTable_ = nullptr;
-	}
-
-	/* Syntax highlighting */
-	window->languageMode = this->languageMode;
-	window->highlightSyntax = this->highlightSyntax;
-	if (window->highlightSyntax) {
-		StartHighlighting(window, False);
-	}
-
-	/* copy states of original document */
-	window->filenameSet = this->filenameSet;
-	window->fileFormat = this->fileFormat;
-	window->lastModTime = this->lastModTime;
-	window->fileChanged = this->fileChanged;
-	window->fileMissing = this->fileMissing;
-	window->lockReasons = this->lockReasons;
-	window->autoSaveCharCount = this->autoSaveCharCount;
-	window->autoSaveOpCount = this->autoSaveOpCount;
-	window->undoMemUsed = this->undoMemUsed;
-	window->lockReasons = this->lockReasons;
-	window->autoSave = this->autoSave;
-	window->saveOldVersion = this->saveOldVersion;
-	window->wrapMode = this->wrapMode;
-	window->SetOverstrike(this->overstrike);
-	window->showMatchingStyle = this->showMatchingStyle;
-	window->matchSyntaxBased = this->matchSyntaxBased;
-#if 0    
-    window->showStats = this->showStats;
-    window->showISearchLine = this->showISearchLine;
-    window->showLineNumbers = this->showLineNumbers;
-    window->modeMessageDisplayed = this->modeMessageDisplayed;
-    window->ignoreModify = this->ignoreModify;
-    window->windowMenuValid = this->windowMenuValid;
-    window->flashTimeoutID = this->flashTimeoutID;
-    window->wasSelected = this->wasSelected;
-    strcpy(window->fontName, this->fontName);
-    strcpy(window->italicFontName, this->italicFontName);
-    strcpy(window->boldFontName, this->boldFontName);
-    strcpy(window->boldItalicFontName, this->boldItalicFontName);
-    window->fontList = this->fontList;
-    window->italicFontStruct = this->italicFontStruct;
-    window->boldFontStruct = this->boldFontStruct;
-    window->boldItalicFontStruct = this->boldItalicFontStruct;
-    window->markTimeoutID = this->markTimeoutID;
-    window->highlightData = this->highlightData;
-    window->shellCmdData = this->shellCmdData;
-    window->macroCmdData = this->macroCmdData;
-    window->smartIndentData = this->smartIndentData;
-#endif
-	window->iSearchHistIndex = this->iSearchHistIndex;
-	window->iSearchStartPos = this->iSearchStartPos;
-	window->replaceLastRegexCase = this->replaceLastRegexCase;
-	window->replaceLastLiteralCase = this->replaceLastLiteralCase;
-	window->iSearchLastRegexCase = this->iSearchLastRegexCase;
-	window->iSearchLastLiteralCase = this->iSearchLastLiteralCase;
-	window->findLastRegexCase = this->findLastRegexCase;
-	window->findLastLiteralCase = this->findLastLiteralCase;
-	window->device = this->device;
-	window->inode = this->inode;
-	window->fileClosedAtom = this->fileClosedAtom;
-	this->fileClosedAtom = None;
-
-	/* copy the text/split panes settings, cursor pos & selection */
-	cloneTextPanes(window, this);
-
-	/* copy undo & redo list */
-	window->undo = cloneUndoItems(this->undo);
-	window->redo = cloneUndoItems(this->redo);
-
-	/* copy bookmarks */
-	window->nMarks = this->nMarks;
-	memcpy(&window->markTable, &this->markTable, sizeof(Bookmark) * window->nMarks);
-
-	/* kick start the auto-indent engine */
-	window->indentStyle = NO_AUTO_INDENT;
-	window->SetAutoIndent(this->indentStyle);
-
-	/* synchronize window state to this document */
-	window->RefreshWindowStates();
-}
-
-static std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
-
-	std::list<UndoInfo *> list;
-	for(UndoInfo *undo : orgList) {
-		list.push_back(new UndoInfo(*undo));
-	}
-	return list;
-}
-
-
-
-
-
-static void hideTooltip(Widget tab) {
-	Widget tooltip = XtNameToWidget(tab, "*BubbleShell");
-
-	if (tooltip)
-		XtPopdown(tooltip);
-}
-
-static void closeTabProc(XtPointer clientData, XtIntervalId *id) {
-	(void)id;
-	CloseFileAndWindow(static_cast<Document *>(clientData), PROMPT_SBC_DIALOG_RESPONSE);
-}
-
-/*
-** callback to close-tab button.
-*/
-static void closeTabCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto mainWin = static_cast<Widget>(clientData);
-
-	(void)callData;
-
-	/* FIXME: XtRemoveActionHook() related coredump
-
-	   An unknown bug seems to be associated with the XtRemoveActionHook()
-	   call in FinishLearn(), which resulted in coredump if a tab was
-	   closed, in the middle of keystrokes learning, by clicking on the
-	   close-tab button.
-
-	   As evident to our accusation, the coredump may be surpressed by
-	   simply commenting out the XtRemoveActionHook() call. The bug was
-	   consistent on both Motif and Lesstif on various platforms.
-
-	   Closing the tab through either the "Close" menu or its accel key,
-	   however, was without any trouble.
-
-	   While its actual mechanism is not well understood, we somehow
-	   managed to workaround the bug by delaying the action of closing
-	   the tab. For now. */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0, closeTabProc, GetTopDocument(mainWin));
-}
-
-/*
-** callback to clicks on a tab to raise it's document.
-*/
-static void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)clientData;
-
-	XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)callData;
-	WidgetList tabList;
-	Widget tab;
-
-	XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
-	tab = tabList[cbs->pos];
-	TabToWindow(tab)->RaiseDocument();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-** perform generic management on the children (toolbars) of toolBarsForm,
-** a.k.a. statsForm, by setting the form attachment of the managed child
-** widgets per their position/order.
-**
-** You can optionally create separator after a toolbar widget with it's
-** widget name set to "TOOLBAR_SEP", which will appear below the toolbar
-** widget. These seperators will then be managed automatically by this
-** routine along with the toolbars they 'attached' to.
-**
-** It also takes care of the attachment offset settings of the child
-** widgets to keep the border lines of the parent form displayed, so
-** you don't have set them before hand.
-**
-** Note: XtManage/XtUnmange the target child (toolbar) before calling this
-**       function.
-**
-** Returns the last toolbar widget managed.
-**
-*/
-
 // TODO(eteran): temporary duplicate
 //----------------------------------------------------------------------------------------
-static Widget manageToolBars(Widget toolBarsForm) {
-	Widget topWidget = nullptr;
-	WidgetList children;
-	int n, nItems = 0;
 
-	XtVaGetValues(toolBarsForm, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
-
-	for (n = 0; n < nItems; n++) {
-		Widget tbar = children[n];
-
-		if (XtIsManaged(tbar)) {
-			if (topWidget) {
-				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, topWidget, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
-			} else {
-				/* the very first toolbar on top */
-				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
-			}
-
-			topWidget = tbar;
-
-			/* if the next widget is a separator, turn it on */
-			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
-				XtManageChild(children[n + 1]);
-			}
-		} else {
-			/* Remove top attachment to widget to avoid circular dependency.
-			   Attach bottom to form so that when the widget is redisplayed
-			   later, it will trigger the parent form to resize properly as
-			   if the widget is being inserted */
-			XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE, XmNbottomAttachment, XmATTACH_FORM, nullptr);
-
-			/* if the next widget is a separator, turn it off */
-			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
-				XtUnmanageChild(children[n + 1]);
-			}
-		}
-	}
-
-	if (topWidget) {
-		if (strcmp(XtName(topWidget), "TOOLBAR_SEP")) {
-			XtVaSetValues(topWidget, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-		} else {
-			/* is a separator */
-			Widget wgt;
-			XtVaGetValues(topWidget, XmNtopWidget, &wgt, nullptr);
-
-			/* don't need sep below bottom-most toolbar */
-			XtUnmanageChild(topWidget);
-			XtVaSetValues(wgt, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-		}
-	}
-
-	return topWidget;
-}
 
 Widget containingPane(Widget w) {
 	/* The containing pane used to simply be the first parent, but with
 	   the introduction of an XmFrame, it's the grandparent. */
 	return XtParent(XtParent(w));
-}
-
-void setPaneDesiredHeight(Widget w, int height) {
-	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.dheight = height;
-}
-
-/*
-** Xt timer procedure for updating size hints.  The new sizes of objects in
-** the window are not ready immediately after adding or removing panes.  This
-** is a timer routine to be invoked with a timeout of 0 to give the event
-** loop a chance to finish processing the size changes before reading them
-** out for setting the window manager size hints.
-*/
-static void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
-
-	(void)id;
-
-	static_cast<Document *>(clientData)->UpdateWMSizeHints();
 }
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
@@ -1944,4 +949,60 @@ static void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	/* Save information for undoing this operation not saved while
 	   undo recording was off */
 	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
+}
+
+/*
+** add a tab to the tab bar for the new document.
+*/
+static Widget addTab(Widget folder, const char *string) {
+	Widget tooltipLabel, tab;
+	XmString s1;
+
+	s1 = XmStringCreateSimpleEx(string);
+	tab = XtVaCreateManagedWidget("tab", xrwsBubbleButtonWidgetClass, folder,
+	                              /* XmNmarginWidth, <default@nedit.c>, */
+	                              /* XmNmarginHeight, <default@nedit.c>, */
+	                              /* XmNalignment, <default@nedit.c>, */
+	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, True, XltNslidingBubble, False,
+	                              /* XltNdelay, 800,*/
+	                              /* XltNbubbleDuration, 8000,*/
+	                              nullptr);
+	XmStringFree(s1);
+
+	/* there's things to do as user click on the tab */
+	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, nullptr);
+
+	/* BubbleButton simply use reversed video for tooltips,
+	   we try to use the 'standard' color */
+	tooltipLabel = XtNameToWidget(tab, "*BubbleLabel");
+	XtVaSetValues(tooltipLabel, XmNbackground, AllocateColor(tab, GetPrefTooltipBgColor()), XmNforeground, AllocateColor(tab, NEDIT_DEFAULT_FG), nullptr);
+
+	/* put borders around tooltip. BubbleButton use
+	   transientShellWidgetClass as tooltip shell, which
+	   came without borders */
+	XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, nullptr);
+
+	return tab;
+}
+
+static void hideTooltip(Widget tab) {
+	if (Widget tooltip = XtNameToWidget(tab, "*BubbleShell"))
+		XtPopdown(tooltip);
+}
+
+/*
+** ButtonPress event handler for tabs.
+*/
+static void tabClickEH(Widget w, XtPointer clientData, XEvent *event) {
+
+	(void)clientData;
+	(void)event;
+
+	/* hide the tooltip when user clicks with any button. */
+	if (BubbleButton_Timer(w)) {
+		XtRemoveTimeOut(BubbleButton_Timer(w));
+		BubbleButton_Timer(w) = (XtIntervalId) nullptr;
+	} else {
+		hideTooltip(w);
+	}
 }
