@@ -3661,3 +3661,194 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 		}
 	}
 }
+
+/*
+** Create a new document in the shell window.
+** Document are created in 'background' so that the user
+** menus, ie. the Macro/Shell/BG menus, will not be updated
+** unnecessarily; hence speeding up the process of opening
+** multiple files.
+*/
+Document *Document::CreateDocument(const char *name) {
+	Widget pane, text;
+	int nCols, nRows;
+
+	/* Allocate some memory for the new window data structure */
+	auto window = new Document(*this);
+
+#if 0
+    /* share these dialog items with parent shell */
+    window->replaceDlog = nullptr;
+    window->replaceText = nullptr;
+    window->replaceWithText = nullptr;
+    window->replaceWordToggle = nullptr;
+    window->replaceCaseToggle = nullptr;
+    window->replaceRegexToggle = nullptr;
+    window->findDlog = nullptr;
+    window->findText = nullptr;
+    window->findWordToggle = nullptr;
+    window->findCaseToggle = nullptr;
+    window->findRegexToggle = nullptr;
+    window->replaceMultiFileDlog = nullptr;
+    window->replaceMultiFilePathBtn = nullptr;
+    window->replaceMultiFileList = nullptr;
+    window->showLineNumbers = GetPrefLineNums();
+    window->showStats = GetPrefStatsLine();
+    window->showISearchLine = GetPrefISearchLine();
+#endif
+
+	window->multiFileReplSelected = FALSE;
+	window->multiFileBusy = FALSE;
+	window->writableWindows = nullptr;
+	window->nWritableWindows = 0;
+	window->fileChanged = FALSE;
+	window->fileMissing = True;
+	window->fileMode = 0;
+	window->fileUid = 0;
+	window->fileGid = 0;
+	window->filenameSet = FALSE;
+	window->fileFormat = UNIX_FILE_FORMAT;
+	window->lastModTime = 0;
+	strcpy(window->filename, name);
+	window->undo = std::list<UndoInfo *>();
+	window->redo = std::list<UndoInfo *>();
+	window->nPanes = 0;
+	window->autoSaveCharCount = 0;
+	window->autoSaveOpCount = 0;
+	window->undoMemUsed = 0;
+	CLEAR_ALL_LOCKS(window->lockReasons);
+	window->indentStyle = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+	window->autoSave = GetPrefAutoSave();
+	window->saveOldVersion = GetPrefSaveOldVersion();
+	window->wrapMode = GetPrefWrap(PLAIN_LANGUAGE_MODE);
+	window->overstrike = False;
+	window->showMatchingStyle = GetPrefShowMatching();
+	window->matchSyntaxBased = GetPrefMatchSyntaxBased();
+	window->highlightSyntax = GetPrefHighlightSyntax();
+	window->backlightCharTypes = nullptr;
+	window->backlightChars = GetPrefBacklightChars();
+	if (window->backlightChars) {
+		const char *cTypes = GetPrefBacklightCharTypes();
+		if (cTypes && window->backlightChars) {			
+			window->backlightCharTypes = XtStringDup(cTypes);
+		}
+	}
+	window->modeMessageDisplayed = FALSE;
+	window->modeMessage = nullptr;
+	window->ignoreModify = FALSE;
+	window->windowMenuValid = FALSE;
+	window->flashTimeoutID = 0;
+	window->fileClosedAtom = None;
+	window->wasSelected = FALSE;
+	strcpy(window->fontName, GetPrefFontName());
+	strcpy(window->italicFontName, GetPrefItalicFontName());
+	strcpy(window->boldFontName, GetPrefBoldFontName());
+	strcpy(window->boldItalicFontName, GetPrefBoldItalicFontName());
+	window->colorDialog = nullptr;
+	window->fontList = GetPrefFontList();
+	window->italicFontStruct = GetPrefItalicFont();
+	window->boldFontStruct = GetPrefBoldFont();
+	window->boldItalicFontStruct = GetPrefBoldItalicFont();
+	window->fontDialog = nullptr;
+	window->nMarks = 0;
+	window->markTimeoutID = 0;
+	window->highlightData = nullptr;
+	window->shellCmdData = nullptr;
+	window->macroCmdData = nullptr;
+	window->smartIndentData = nullptr;
+	window->languageMode = PLAIN_LANGUAGE_MODE;
+	window->iSearchHistIndex = 0;
+	window->iSearchStartPos = -1;
+	window->replaceLastRegexCase = TRUE;
+	window->replaceLastLiteralCase = FALSE;
+	window->iSearchLastRegexCase = TRUE;
+	window->iSearchLastLiteralCase = FALSE;
+	window->findLastRegexCase = TRUE;
+	window->findLastLiteralCase = FALSE;
+	window->tab = nullptr;
+	window->bgMenuUndoItem = nullptr;
+	window->bgMenuRedoItem = nullptr;
+	window->device = 0;
+	window->inode = 0;
+
+	if (!window->fontList)
+		XtVaGetValues(this->statsLine, XmNfontList, &window->fontList, nullptr);
+
+	this->getTextPaneDimension(&nRows, &nCols);
+
+	/* Create pane that actaully holds the new document. As
+	   document is created in 'background', we need to hide
+	   it. If we leave it unmanaged without setting it to
+	   the XmNworkWindow of the mainWin, due to a unknown
+	   bug in Motif where splitpane's scrollWindow child
+	   somehow came up with a height taller than the splitpane,
+	   the bottom part of the text editing widget is obstructed
+	   when later brought up by  RaiseDocument(). So we first
+	   manage it hidden, then unmanage it and reset XmNworkWindow,
+	   then let RaiseDocument() show it later. */
+	pane = XtVaCreateWidget("pane", xmPanedWindowWidgetClass, window->mainWin, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, XmNmappedWhenManaged, False, nullptr);
+	XtVaSetValues(window->mainWin, XmNworkWindow, pane, nullptr);
+	XtManageChild(pane);
+	window->splitPane = pane;
+
+	/* Store a copy of document/window pointer in text pane to support
+	   action procedures. See also WidgetToWindow() for info. */
+	XtVaSetValues(pane, XmNuserData, window, nullptr);
+
+	/* Patch around Motif's most idiotic "feature", that its menu accelerators
+	   recognize Caps Lock and Num Lock as modifiers, and don't trigger if
+	   they are engaged */
+	AccelLockBugPatch(pane, window->menuBar);
+
+	/* Create the first, and most permanent text area (other panes may
+	   be added & removed, but this one will never be removed */
+	text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), window->showLineNumbers ? MIN_LINE_NUM_COLS : 0);
+	XtManageChild(text);
+	window->textArea = text;
+	window->lastFocus = text;
+
+	/* Set the initial colors from the globals. */
+	window->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
+	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
+
+	/* Create the right button popup menu (note: order is important here,
+	   since the translation for popping up this menu was probably already
+	   added in createTextArea, but CreateBGMenu requires window->textArea
+	   to be set so it can attach the menu to it (because menu shells are
+	   finicky about the kinds of widgets they are attached to)) */
+	window->bgMenuPane = CreateBGMenu(window);
+
+	/* cache user menus: init. user background menu cache */
+	InitUserBGMenuCache(&window->userBGMenuCache);
+
+	/* Create the text buffer rather than using the one created automatically
+	   with the text area widget.  This is done so the syntax highlighting
+	   modify callback can be called to synchronize the style buffer BEFORE
+	   the text display's callback is called upon to display a modification */
+	window->buffer = new TextBuffer;
+	window->buffer->BufAddModifyCB(SyntaxHighlightModifyCB, window);
+
+	/* Attach the buffer to the text widget, and add callbacks for modify */
+	TextSetBuffer(text, window->buffer);
+	window->buffer->BufAddModifyCB(modifiedCB, window);
+
+	/* Designate the permanent text area as the owner for selections */
+	HandleXSelections(text);
+
+	/* Set the requested hardware tab distance and useTabs in the text buffer */
+	window->buffer->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+	window->buffer->useTabs_ = GetPrefInsertTabs();
+	window->tab = addTab(window->tabBar, name);
+
+	/* add the window to the global window list, update the Windows menus */
+	InvalidateWindowMenus();
+	window->addToWindowList();
+
+	/* return the shell ownership to previous tabbed doc */
+	XtVaSetValues(window->mainWin, XmNworkWindow, this->splitPane, nullptr);
+	XLowerWindow(TheDisplay, XtWindow(window->splitPane));
+	XtUnmanageChild(window->splitPane);
+	XtVaSetValues(window->splitPane, XmNmappedWhenManaged, True, nullptr);
+
+	return window;
+}
