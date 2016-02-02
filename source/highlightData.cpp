@@ -171,7 +171,7 @@ static struct {
 	int nPatterns;
 	HighlightPattern **patterns;
 } HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullable_string(), 0,       nullptr};
+                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, boost::none, 0,       nullptr};
 
 /* Pattern sources loaded from the .nedit file or set by the user */
 static int NPatternSets = 0;
@@ -278,7 +278,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		}
 		
 		hs->color   = *color;
-		hs->bgColor = nullable_string();
+		hs->bgColor = boost::none;
 		
 		if (SkipOptSeparator('/', &inPtr)) {
 			/* read bgColor */
@@ -1257,7 +1257,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
                         	"bgColor", silent);
     	if (hs->bgColor && hs->bgColor->empty()) {
-        	hs->bgColor = nullable_string();
+        	hs->bgColor = boost::none;
     	}
 
     	/* Verify that the background color (if present) is a valid X color spec */
@@ -1738,7 +1738,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	char *modeName;
-	PatternSet emptyPatSet = {nullable_string(), 1, 0, 0, nullptr};
+	PatternSet emptyPatSet = {boost::none, 1, 0, 0, nullptr};
 	int i, resp;
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */

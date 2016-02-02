@@ -163,7 +163,7 @@ nullable_string GetAnySelectionEx(Document *window) {
 	}
 	
 	if(!selText) {
-		return nullable_string();
+		return boost::none;
 	}
 	
 	nullable_string s = std::string(selText);

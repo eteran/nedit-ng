@@ -511,7 +511,7 @@ char *GetFileDialogDefaultPattern(void) {
 nullable_string GetFileDialogDefaultDirectoryEx(void) {
 
 	if(!DefaultDirectory) {
-		return nullable_string();
+		return boost::none;
 	}
 	
 	return XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET);
@@ -525,7 +525,7 @@ nullable_string GetFileDialogDefaultDirectoryEx(void) {
 nullable_string GetFileDialogDefaultPatternEx(void) {
 
 	if(!DefaultPattern) {
-		return nullable_string();
+		return boost::none;
 	}
 	
 	return XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET);

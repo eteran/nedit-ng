@@ -1102,35 +1102,35 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 
 	if (TempStringPrefs.shellCmds) {
 		LoadShellCmdsStringEx(*TempStringPrefs.shellCmds);
-		TempStringPrefs.shellCmds = nullable_string();
+		TempStringPrefs.shellCmds = boost::none;
 	}
 	if (TempStringPrefs.macroCmds) {
 		LoadMacroCmdsStringEx(*TempStringPrefs.macroCmds);
-		TempStringPrefs.macroCmds = nullable_string();
+		TempStringPrefs.macroCmds = boost::none;
 	}
 	if (TempStringPrefs.bgMenuCmds) {
 		LoadBGMenuCmdsStringEx(*TempStringPrefs.bgMenuCmds);
-		TempStringPrefs.bgMenuCmds = nullable_string();
+		TempStringPrefs.bgMenuCmds = boost::none;
 	}
 	if (TempStringPrefs.highlight) {
 		LoadHighlightStringEx(*TempStringPrefs.highlight, convertOld);
-		TempStringPrefs.highlight = nullable_string();
+		TempStringPrefs.highlight = boost::none;
 	}
 	if (TempStringPrefs.styles) {
 		LoadStylesStringEx(*TempStringPrefs.styles);
-		TempStringPrefs.styles = nullable_string();
+		TempStringPrefs.styles = boost::none;
 	}
 	if (TempStringPrefs.language) {
 		loadLanguageModesStringEx(*TempStringPrefs.language, fileVer);
-		TempStringPrefs.language = nullable_string();
+		TempStringPrefs.language = boost::none;
 	}
 	if (TempStringPrefs.smartIndent) {
 		LoadSmartIndentStringEx(*TempStringPrefs.smartIndent);
-		TempStringPrefs.smartIndent = nullable_string();
+		TempStringPrefs.smartIndent = boost::none;
 	}
 	if (TempStringPrefs.smartIndentCommon) {
 		LoadSmartIndentCommonStringEx(*TempStringPrefs.smartIndentCommon);
-		TempStringPrefs.smartIndentCommon = nullable_string();
+		TempStringPrefs.smartIndentCommon = boost::none;
 	}
 
 	/* translate the font names into fontLists suitable for the text widget */
@@ -4184,7 +4184,7 @@ nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldNam
 			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
-		return nullable_string();
+		return boost::none;
 	}
 	
 	if(!parsedString) {
