@@ -1545,12 +1545,12 @@ void EditHighlightPatterns(Document *window) {
 	RemapDeleteKey(HighlightDialog.nameW);
 	XtVaSetValues(nameLbl, XmNuserData, HighlightDialog.nameW, nullptr);
 
-	HighlightDialog.parentLbl = XtVaCreateManagedWidget("parentLbl", xmLabelGadgetClass, patternsForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Parent Pattern"), XmNmnemonic, 't', XmNrows, 20, XmNalignment, XmALIGNMENT_BEGINNING,
-	                                                    XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, (99 + LIST_RIGHT) / 2 + 1, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, matchBox, XmNtopOffset, BORDER, nullptr);
+	s1 = XmStringCreateSimpleEx("Parent Pattern");
+	HighlightDialog.parentLbl = XtVaCreateManagedWidget("parentLbl", xmLabelGadgetClass, patternsForm, XmNlabelString, s1, XmNmnemonic, 't', XmNrows, 20, XmNalignment, XmALIGNMENT_BEGINNING, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, (99 + LIST_RIGHT) / 2 + 1, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, matchBox, XmNtopOffset, BORDER, nullptr);
 	XmStringFree(s1);
 
-	HighlightDialog.parentW = XtVaCreateManagedWidget("parent", xmTextWidgetClass, patternsForm, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, (99 + LIST_RIGHT) / 2 + 1, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget,
-	                                                  HighlightDialog.parentLbl, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+	HighlightDialog.parentW = XtVaCreateManagedWidget("parent", xmTextWidgetClass, patternsForm, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, (99 + LIST_RIGHT) / 2 + 1, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, HighlightDialog.parentLbl, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, nullptr);
+
 	RemapDeleteKey(HighlightDialog.parentW);
 	XtVaSetValues(HighlightDialog.parentLbl, XmNuserData, HighlightDialog.parentW, nullptr);
 
@@ -2045,10 +2045,10 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.rangeW, False, False);
 		setStyleMenu("Plain");
 	} else {
-		isSubpat    = (bool)pat->subPatternOf;
+		isSubpat    = static_cast<bool>(pat->subPatternOf);
 		isDeferred  = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
-		isRange = pat->endRE != nullptr;
+		isRange = (pat->endRE != nullptr);
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
 		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
 		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE);
@@ -2249,9 +2249,8 @@ static HighlightPattern *readDialogFields(bool silent) {
 			freePatternSrc(pat, true);
 			return nullptr;
 		}
-		char *p = XmTextGetString(HighlightDialog.parentW);
-		pat->subPatternOf = p;
-		XtFree(p);
+
+		pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
 	}
 
 	/* read the styles option menu */
