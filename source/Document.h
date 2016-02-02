@@ -105,7 +105,11 @@ public:
 	static Document *GetTopDocument(Widget w);
 	static Document *WidgetToWindow(Widget w);
 
-//private:
+public:
+	int updateLineNumDisp();
+	void getGeometryString(char *geomString);	
+
+private:
 	Document *getNextTabWindow(int direction, int crossWin, int wrap);
 	void showStatistics(int state);
 	void showISearch(int state);
@@ -113,18 +117,17 @@ public:
 	void addToWindowList();
 	void removeFromWindowList();
 	void refreshMenuBar();
-	int updateLineNumDisp();
 	int updateGutterWidth();
 	void cloneDocument(Document *window);
 	void deleteDocument();
 	void getTextPaneDimension(int *nRows, int *nCols);
-	void getGeometryString(char *geomString);
 	void trimUndoList(int maxLength);
 	void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
 	void removeRedoItem();
 	void removeUndoItem();
 	void addRedoItem(UndoInfo *redo);
 	void addUndoItem(UndoInfo *undo);
+	void showTabBar(int state);
 
 public:
 	Document *next;

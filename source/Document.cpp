@@ -237,7 +237,7 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 
 	(void)nRestyled;
 
-	Document *window = (Document *)cbArg;
+	auto window = static_cast<Document *>(cbArg);
 	int selected = window->buffer->primary_.selected;
 
 	/* update the table of bookmarks */
@@ -1654,13 +1654,13 @@ void Document::SetEmTabDist(int emTabDist) {
 /*
 **
 */
-static void showTabBar(Document *window, int state) {
+void Document::showTabBar(int state) {
 	if (state) {
-		XtManageChild(XtParent(window->tabBar));
-		window->showStatsForm();
+		XtManageChild(XtParent(this->tabBar));
+		this->showStatsForm();
 	} else {
-		XtUnmanageChild(XtParent(window->tabBar));
-		window->showStatsForm();
+		XtUnmanageChild(XtParent(this->tabBar));
+		this->showStatsForm();
 	}
 }
 
@@ -1670,7 +1670,7 @@ static void showTabBar(Document *window, int state) {
 void Document::ShowTabBar(int state) {
 	if (XtIsManaged(XtParent(this->tabBar)) == state)
 		return;
-	showTabBar(this, state);
+	this->showTabBar(state);
 }
 
 /*
