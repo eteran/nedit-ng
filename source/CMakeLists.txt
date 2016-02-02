@@ -47,7 +47,6 @@ add_executable(nedit
 	textDisp.cpp
 	textDrag.cpp
 	textSel.cpp
-	undo.cpp
 	userCmds.cpp
 	window.cpp
 	windowTitle.cpp
