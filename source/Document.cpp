@@ -55,6 +55,11 @@
 
 namespace {
 
+
+// TODO(eteran): use an enum for this
+const int FORWARD = 1;
+const int REVERSE = 2;
+
 /* bitmap data for the close-tab button */
 const int close_width  = 11;
 const int close_height = 11;
@@ -815,6 +820,39 @@ void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 	TabToWindow(tab)->RaiseDocument();
 }
 
+/*
+** 
+*/
+undoTypes determineUndoType(int nInserted, int nDeleted) {
+	int textDeleted, textInserted;
+
+	textDeleted = (nDeleted > 0);
+	textInserted = (nInserted > 0);
+
+	if (textInserted && !textDeleted) {
+		/* Insert */
+		if (nInserted == 1)
+			return ONE_CHAR_INSERT;
+		else
+			return BLOCK_INSERT;
+	} else if (textInserted && textDeleted) {
+		/* Replace */
+		if (nInserted == 1)
+			return ONE_CHAR_REPLACE;
+		else
+			return BLOCK_REPLACE;
+	} else if (!textInserted && textDeleted) {
+		/* Delete */
+		if (nDeleted == 1)
+			return ONE_CHAR_DELETE;
+		else
+			return BLOCK_DELETE;
+	} else {
+		/* Nothing deleted or inserted */
+		return UNDO_NOOP;
+	}
+}
+
 }
 
 /*
@@ -954,7 +992,7 @@ int Document::IsIconic() {
 		wmStateAtom = XInternAtom(XtDisplay(this->shell), "WM_STATE", False);
 	}
 		
-	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || property == nullptr) {
+	if (XGetWindowProperty(XtDisplay(this->shell), XtWindow(this->shell), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || !property) {
 		return FALSE;
 	}
 
@@ -3014,12 +3052,12 @@ void Document::getGeometryString(char *geomString) {
 **     its shell window.
 */
 void Document::RaiseDocument() {
-	Document *win, *lastwin;
+	Document *win;
 
 	if (!this || !WindowList)
 		return;
 
-	lastwin = this->MarkActiveDocument();
+	Document *lastwin = this->MarkActiveDocument();
 	if (lastwin != this && lastwin->IsValidWindow())
 		lastwin->MarkLastDocument();
 
@@ -3905,3 +3943,375 @@ Document *Document::WidgetToWindow(Widget w) {
 
 	return window;
 }
+
+void Document::Undo() {
+
+	int restoredTextLength;
+
+	/* return if nothing to undo */
+	if (this->undo.empty()) {
+		return;
+	}
+		
+	UndoInfo *undo = this->undo.front();
+
+	/* BufReplaceEx will eventually call SaveUndoInformation.  This is mostly
+	   good because it makes accumulating redo operations easier, however
+	   SaveUndoInformation needs to know that it is being called in the context
+	   of an undo.  The inUndo field in the undo record indicates that this
+	   record is in the process of being undone. */
+	undo->inUndo = true;
+
+	/* use the saved undo information to reverse changes */
+	this->buffer->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
+
+	restoredTextLength = undo->oldText.size();
+	if (!this->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
+		/* position the cursor in the focus pane after the changed text
+		   to show the user where the undo was done */
+		TextSetCursorPos(this->lastFocus, undo->startPos + restoredTextLength);
+	}
+
+	if (GetPrefUndoModifiesSelection()) {
+		if (restoredTextLength > 0) {
+			this->buffer->BufSelect(undo->startPos, undo->startPos + restoredTextLength);
+		} else {
+			this->buffer->BufUnselect();
+		}
+	}
+	this->MakeSelectionVisible(this->lastFocus);
+
+	/* restore the file's unmodified status if the file was unmodified
+	   when the change being undone was originally made.  Also, remove
+	   the backup file, since the text in the buffer is now identical to
+	   the original file */
+	if (undo->restoresToSaved) {
+		this->SetWindowModified(False);
+		RemoveBackupFile(this);
+	}
+
+	/* free the undo record and remove it from the chain */
+	this->removeUndoItem();
+}
+
+void Document::Redo() {
+	
+	int restoredTextLength;
+
+	/* return if nothing to redo */
+	if (this->redo.empty()) {
+		return;
+	}
+	
+	UndoInfo *redo = this->redo.front();
+
+	/* BufReplaceEx will eventually call SaveUndoInformation.  To indicate
+	   to SaveUndoInformation that this is the context of a redo operation,
+	   we set the inUndo indicator in the redo record */
+	redo->inUndo = true;
+
+	/* use the saved redo information to reverse changes */
+	this->buffer->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
+
+	restoredTextLength = redo->oldText.size();
+	if (!this->buffer->primary_.selected || GetPrefUndoModifiesSelection()) {
+		/* position the cursor in the focus pane after the changed text
+		   to show the user where the undo was done */
+		TextSetCursorPos(this->lastFocus, redo->startPos + restoredTextLength);
+	}
+	if (GetPrefUndoModifiesSelection()) {
+
+		if (restoredTextLength > 0) {
+			this->buffer->BufSelect(redo->startPos, redo->startPos + restoredTextLength);
+		} else {
+			this->buffer->BufUnselect();
+		}
+	}
+	this->MakeSelectionVisible(this->lastFocus);
+
+	/* restore the file's unmodified status if the file was unmodified
+	   when the change being redone was originally made. Also, remove
+	   the backup file, since the text in the buffer is now identical to
+	   the original file */
+	if (redo->restoresToSaved) {
+		this->SetWindowModified(False);
+		RemoveBackupFile(this);
+	}
+
+	/* remove the redo record from the chain and free it */
+	this->removeRedoItem();
+}
+
+
+/*
+** Add an undo record (already allocated by the caller) to the this's undo
+** list if the item pushes the undo operation or character counts past the
+** limits, trim the undo list to an acceptable length.
+*/
+void Document::addUndoItem(UndoInfo *undo) {
+
+	/* Make the undo menu item sensitive now that there's something to undo */
+	if (this->undo.empty()) {
+		this->SetSensitive(this->undoItem, True);
+		SetBGMenuUndoSensitivity(this, True);
+	}
+
+	/* Add the item to the beginning of the list */
+	this->undo.push_front(undo);
+
+	/* Increment the operation and memory counts */
+	this->undoMemUsed += undo->oldLen;
+
+	/* Trim the list if it exceeds any of the limits */
+	if (this->undo.size() > UNDO_OP_LIMIT)
+		this->trimUndoList(UNDO_OP_TRIMTO);
+	if (this->undoMemUsed > UNDO_WORRY_LIMIT)
+		this->trimUndoList(UNDO_WORRY_TRIMTO);
+	if (this->undoMemUsed > UNDO_PURGE_LIMIT)
+		this->trimUndoList(UNDO_PURGE_TRIMTO);
+}
+
+/*
+** Add an item (already allocated by the caller) to the this's redo list.
+*/
+void Document::addRedoItem(UndoInfo *redo) {
+	/* Make the redo menu item sensitive now that there's something to redo */
+	if (this->redo.empty()) {	
+		this->SetSensitive(this->redoItem, True);
+		SetBGMenuRedoSensitivity(this, True);
+	}
+
+	/* Add the item to the beginning of the list */
+	this->redo.push_front(redo);
+}
+
+/*
+** Pop (remove and free) the current (front) undo record from the undo list
+*/
+void Document::removeUndoItem() {
+
+	if (this->undo.empty()) {
+		return;
+	}
+
+	UndoInfo *undo = this->undo.front();
+
+
+	/* Decrement the operation and memory counts */
+	this->undoMemUsed -= undo->oldLen;
+
+	/* Remove and free the item */
+	this->undo.pop_front();
+	delete undo;
+
+	/* if there are no more undo records left, dim the Undo menu item */
+	if (this->undo.empty()) {
+		this->SetSensitive(this->undoItem, False);
+		SetBGMenuUndoSensitivity(this, False);
+	}
+}
+
+/*
+** Pop (remove and free) the current (front) redo record from the redo list
+*/
+void Document::removeRedoItem() {
+	UndoInfo *redo = this->redo.front();
+
+	/* Remove and free the item */
+	this->redo.pop_front();
+	delete redo;
+
+	/* if there are no more redo records left, dim the Redo menu item */
+	if (this->redo.empty()) {
+		this->SetSensitive(this->redoItem, False);
+		SetBGMenuRedoSensitivity(this, False);
+	}
+}
+
+/*
+** Add deleted text to the beginning or end
+** of the text saved for undoing the last operation.  This routine is intended
+** for continuing of a string of one character deletes or replaces, but will
+** work with more than one character.
+*/
+void Document::appendDeletedText(view::string_view deletedText, int deletedLen, int direction) {
+	UndoInfo *undo = this->undo.front();
+
+	/* re-allocate, adding space for the new character(s) */
+	std::string comboText;
+	comboText.reserve(undo->oldLen + deletedLen);
+
+	/* copy the new character and the already deleted text to the new memory */
+	if (direction == FORWARD) {
+		comboText.append(undo->oldText);
+		comboText.append(deletedText.begin(), deletedText.end());
+	} else {
+		comboText.append(deletedText.begin(), deletedText.end());
+		comboText.append(undo->oldText);
+	}
+
+	/* keep track of the additional memory now used by the undo list */
+	this->undoMemUsed++;
+
+	/* free the old saved text and attach the new */
+	undo->oldText = comboText;
+	undo->oldLen += deletedLen;
+}
+
+/*
+** Trim records off of the END of the undo list to reduce it to length
+** maxLength
+*/
+void Document::trimUndoList(int maxLength) {
+
+	if (this->undo.empty()) {
+		return;
+	}
+	
+	auto it = this->undo.begin();
+	int i   = 1;
+	
+	/* Find last item on the list to leave intact */
+	while(it != this->undo.end() && i < maxLength) {
+		++it;
+		++i;
+	}
+
+	/* Trim off all subsequent entries */
+	while(it != this->undo.end()) {
+		UndoInfo *u = *it;
+		
+		this->undoMemUsed -= u->oldLen;
+		delete u;
+		
+		it = this->undo.erase(it);		
+	}
+}
+
+/*
+** ClearUndoList, ClearRedoList
+**
+** Functions for clearing all of the information off of the undo or redo
+** lists and adjusting the edit menu accordingly
+*/
+void Document::ClearUndoList() {
+	while (!this->undo.empty()) {
+		this->removeUndoItem();
+	}
+}
+void Document::ClearRedoList() {
+	while (!this->redo.empty()) {
+		this->removeRedoItem();
+	}
+}
+
+/*
+** SaveUndoInformation stores away the changes made to the text buffer.  As a
+** side effect, it also increments the autoSave operation and character counts
+** since it needs to do the classification anyhow.
+**
+** Note: This routine must be kept efficient.  It is called for every
+**       character typed.
+*/
+void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
+	
+	const int isUndo = (!this->undo.empty() && this->undo.front()->inUndo);
+	const int isRedo = (!this->redo.empty() && this->redo.front()->inUndo);
+
+	/* redo operations become invalid once the user begins typing or does
+	   other editing.  If this is not a redo or undo operation and a redo
+	   list still exists, clear it and dim the redo menu item */
+	if (!(isUndo || isRedo) && !this->redo.empty()) {
+		this->ClearRedoList();
+	}
+
+	/* figure out what kind of editing operation this is, and recall
+	   what the last one was */
+	const undoTypes newType = determineUndoType(nInserted, nDeleted);
+	if (newType == UNDO_NOOP) {
+		return;
+	}
+		
+		
+	UndoInfo *const currentUndo = this->undo.front();
+	
+	const undoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
+
+	/*
+	** Check for continuations of single character operations.  These are
+	** accumulated so a whole insertion or deletion can be undone, rather
+	** than just the last character that the user typed.  If the this
+	** is currently in an unmodified state, don't accumulate operations
+	** across the save, so the user can undo back to the unmodified state.
+	*/
+	if (this->fileChanged) {
+
+		/* normal sequential character insertion */
+		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
+			currentUndo->endPos++;
+			this->autoSaveCharCount++;
+			return;
+		}
+
+		/* overstrike mode replacement */
+		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
+			this->appendDeletedText(deletedText, nDeleted, FORWARD);
+			currentUndo->endPos++;
+			this->autoSaveCharCount++;
+			return;
+		}
+
+		/* forward delete */
+		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
+			this->appendDeletedText(deletedText, nDeleted, FORWARD);
+			return;
+		}
+
+		/* reverse delete */
+		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
+			this->appendDeletedText(deletedText, nDeleted, REVERSE);
+			currentUndo->startPos--;
+			currentUndo->endPos--;
+			return;
+		}
+	}
+
+	/*
+	** The user has started a new operation, create a new undo record
+	** and save the new undo data.
+	*/
+	auto undo = new UndoInfo(newType, pos, pos + nInserted);
+
+	/* if text was deleted, save it */
+	if (nDeleted > 0) {
+		undo->oldLen = nDeleted + 1; /* +1 is for null at end */
+		undo->oldText = deletedText.to_string();
+	}
+
+	/* increment the operation count for the autosave feature */
+	this->autoSaveOpCount++;
+
+	/* if the this is currently unmodified, remove the previous
+	   restoresToSaved marker, and set it on this record */
+	if (!this->fileChanged) {
+		undo->restoresToSaved = true;
+		
+		for(UndoInfo *u : this->undo) {
+			u->restoresToSaved = false;
+		}
+		
+		for(UndoInfo *u : this->redo) {
+			u->restoresToSaved = false;
+		}
+	}
+
+	/* Add the new record to the undo list  unless SaveUndoInfo is
+	   saving information generated by an Undo operation itself, in
+	   which case, add the new record to the redo list. */
+	if (isUndo) {
+		this->addRedoItem(undo);
+	} else {
+		this->addUndoItem(undo);
+	}
+}
+

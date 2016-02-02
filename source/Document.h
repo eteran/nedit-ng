@@ -119,6 +119,12 @@ public:
 	void deleteDocument();
 	void getTextPaneDimension(int *nRows, int *nCols);
 	void getGeometryString(char *geomString);
+	void trimUndoList(int maxLength);
+	void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
+	void removeRedoItem();
+	void removeUndoItem();
+	void addRedoItem(UndoInfo *redo);
+	void addUndoItem(UndoInfo *undo);
 
 public:
 	Document *next;
