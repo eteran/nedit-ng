@@ -1865,7 +1865,7 @@ void Document::UpdateWindowTitle() {
 	}
 
 	char *title = FormatWindowTitle(filename_, path_, GetClearCaseViewTag(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
-	char *iconTitle = new char[strlen(filename_) + 2]; /* strlen("*")+1 */
+	auto iconTitle = new char[strlen(filename_) + 2]; /* strlen("*")+1 */
 
 	strcpy(iconTitle, filename_);
 	if (fileChanged_) {

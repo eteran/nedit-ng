@@ -496,7 +496,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 	else
 		FileList = TipsFileList;
 
-	char *tmptagSpec = new char[strlen(tagSpec) + 1];
+	auto tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
 	removed = 1;
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
