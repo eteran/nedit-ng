@@ -244,12 +244,10 @@ bool LoadStylesStringEx(const std::string &string) {
 
 	// TODO(eteran): implement this using better algorithms
 
-	auto inString = new char[string.size() + 1];
-	strcpy(inString, string.c_str());
-
+	const char *inString = &string[0];
     const char *errMsg;
 	std::string fontStr;
-    const char *inPtr = inString;
+    const char *inPtr = &string[0];
     int i;
 
 	for (;;) {
@@ -310,19 +308,23 @@ bool LoadStylesStringEx(const std::string &string) {
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
 		
-		/* pattern set was read correctly, add/change it in the list */
-		for (int i = 0; i < NHighlightStyles; i++) {
-			if (HighlightStyles[i]->name == hs->name) {
+		
+		
+		/* pattern set was read correctly, add/change it in the list */\
+		for (i = 0; i < NHighlightStyles; i++) {
+			if (HighlightStyles[i]->name == hs->name) {			
 				delete HighlightStyles[i];
 				HighlightStyles[i] = hs;
 				break;
 			}
 		}
+		
 	
 		if (i == NHighlightStyles) {
 			HighlightStyles[NHighlightStyles++] = hs;
-			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES)
+			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES) {
 				return styleError(inString, inPtr, "maximum allowable number of styles exceeded");
+			}
 		}
 
 		/* if the string ends here, we're done */
@@ -2439,12 +2441,12 @@ static void freePatternSet(PatternSet *p) {
 */
 static int lookupNamedStyle(view::string_view styleName) {
 
-	for (int i = 0; i < NHighlightStyles; i++) {
+	for (int i = 0; i < NHighlightStyles; i++) {	
 		if (styleName == HighlightStyles[i]->name) {
 			return i;
 		}
 	}
-
+	
 	return -1;
 }
 
