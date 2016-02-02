@@ -464,9 +464,9 @@ static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		HighlightPattern *pattern = &patSet->patterns[p];
-		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name, pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -805,12 +805,15 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 }
 
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern) {
+
 	/* read the name field */
-	pattern->name = ReadSymbolicField(inPtr);
-	if (!pattern->name) {
+	nullable_string name = ReadSymbolicFieldEx(inPtr);
+	if (!name) {
 		*errMsg = "pattern name is required";
 		return False;
 	}
+	pattern->name = *name;
+	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -2182,18 +2185,19 @@ static HighlightPattern *readDialogFields(bool silent) {
 		pat->flags = COLOR_ONLY;
 
 	/* read the name field */
-	pat->name = ReadSymbolicFieldTextWidget(HighlightDialog.nameW, "highlight pattern name", silent);
-	if (!pat->name) {
+	nullable_string name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
+	if (!name) {
 		delete pat;
 		return nullptr;
 	}
+	
+	pat->name = *name;
 
-	if (strcmp(pat->name, "") == 0) {
+	if (pat->name == "") {
 		if (!silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name", "Please specify a name\nfor the pattern", "OK");
 			XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
 		}
-		XtFree((char *)pat->name);
 		delete pat;
 		return nullptr;
 	}

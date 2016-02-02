@@ -3,12 +3,12 @@
 #include "MotifHelper.h"
 #include <algorithm>
 
-HighlightPattern::HighlightPattern() : name(nullptr), startRE(nullptr), endRE(nullptr), errorRE(nullptr), subPatternOf(nullptr), flags(0) {
+HighlightPattern::HighlightPattern() : startRE(nullptr), endRE(nullptr), errorRE(nullptr), subPatternOf(nullptr), flags(0) {
 }
 
 HighlightPattern::HighlightPattern(const HighlightPattern &other) {
 
-	name         = XtNewStringEx(other.name);
+	name         = other.name;
 	startRE      = XtNewStringEx(other.startRE);
 	endRE        = XtNewStringEx(other.endRE);
 	errorRE      = XtNewStringEx(other.errorRE);

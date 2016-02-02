@@ -554,14 +554,14 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 	for (i = 0; i < nPatterns; i++) {
 		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
+			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf, patternSrc[i].name.c_str());
 			return nullptr;
 		}
 	}
 
 	for (i = 0; i < nPatterns; i++) {
 		if (!NamedStyleExists(*patternSrc[i].style)) {
-			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style->c_str(), patternSrc[i].name);
+			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style->c_str(), patternSrc[i].name.c_str());
 			return nullptr;
 		}
 	}
@@ -575,7 +575,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
 			if (parentindex == -1) {
-				DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name);
+				DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name.c_str());
 				return nullptr;
 			}
 
@@ -829,7 +829,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		compiledPats[i].userStyleIndex = IndexOfNamedStyle(*patternSrc[i].style);
 		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
-			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name);
+			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name.c_str());
 			return nullptr;
 		}
 		
@@ -1004,7 +1004,7 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 
 	if (hData && (set = hData->patternSetForWindow)) {
 		for (int i = 0; i < set->nPatterns; i++)
-			if (strcmp(set->patterns[i].name, name) == 0) {
+			if (set->patterns[i].name == name) {
 				return &set->patterns[i];
 			}
 	}
@@ -2201,7 +2201,7 @@ static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char 
 		return -1;
 	
 	for (int i = 0; i < nPats; i++) {
-		if (strcmp(patList[i].name, patName) == 0) {
+		if (patList[i].name == patName) {
 			return i;
 		}
 	}

@@ -17,7 +17,7 @@ public:
 	void swap(HighlightPattern &other);
 
 public:
-	const char *name;
+	std::string name;
 	char *startRE;
 	char *endRE;
 	char *errorRE;
