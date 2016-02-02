@@ -1736,8 +1736,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	char *modeName;
-	PatternSet *oldPatSet, *newPatSet;
-	PatternSet emptyPatSet = {nullptr, 1, 0, 0, nullptr};
+	PatternSet emptyPatSet = {nullable_string(), 1, 0, 0, nullptr};
 	int i, resp;
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */
@@ -1746,14 +1745,15 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	/* Look up the original version of the patterns being edited */
-	oldPatSet = FindPatternSet(HighlightDialog.langModeName->c_str());
-	if(!oldPatSet)
+	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName->c_str());
+	if(!oldPatSet) {
 		oldPatSet = &emptyPatSet;
+	}
 
 	/* Get the current information displayed by the dialog.  If it's bad,
 	   give the user the chance to throw it out or go back and fix it.  If
 	   it has changed, give the user the chance to apply discard or cancel. */
-	newPatSet = getDialogPatternSet();
+	PatternSet *newPatSet = getDialogPatternSet();
 
 	if(!newPatSet) {
 		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Incomplete Language Mode", "Discard incomplete entry\n"
