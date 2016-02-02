@@ -172,7 +172,7 @@ int NWindows(void) {
 ** span lines.
 */
 int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
-	int selStart, selEnd, rectStart, rectEnd, lineStart;
+	int selStart, selEnd, rectStart, rectEnd;
 	bool isRect;
 
 	/* get the character to match and its position from the selection, or
@@ -181,7 +181,7 @@ int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
 		return False;
 	if (isRect) {
-		lineStart = buf->BufStartOfLine(selStart);
+		int lineStart = buf->BufStartOfLine(selStart);
 		selStart  = buf->BufCountForwardDispChars(lineStart, rectStart);
 		selEnd    = buf->BufCountForwardDispChars(lineStart, rectEnd);
 	}

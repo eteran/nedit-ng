@@ -1540,7 +1540,7 @@ void Document::UpdateWMSizeHints() {
 	XFontStruct *fs;
 	int i, baseWidth, baseHeight, fontHeight, fontWidth;
 	Widget hScrollBar;
-	textDisp *textD = ((TextWidget)textArea_)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	/* Find the dimensions of a single character of the text font */
 	XtVaGetValues(textArea_, textNfont, &fs, nullptr);
@@ -1944,7 +1944,7 @@ void Document::SortTabBar() {
 ** to font or margin height.
 */
 void Document::UpdateMinPaneHeights() {
-	textDisp *textD = ((TextWidget)textArea_)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 	Dimension hsbHeight, swMarginHeight, frameShadowHeight;
 	int i, marginHeight, minPaneHeight;
 	Widget hScrollBar;
@@ -2035,7 +2035,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 
 	/* Update the main pane */
 	XtVaSetValues(textArea_, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-	textD = ((TextWidget)textArea_)->text.textD;
+	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 	textD->	TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	/* Update any additional panes */
 	for (i = 0; i < nPanes_; i++) {
@@ -2441,7 +2441,7 @@ void Document::ShowLineNumbers(int state) {
 	unsigned reqCols = 0;
 	Dimension windowWidth;
 	Document *win;
-	textDisp *textD = ((TextWidget)textArea_)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	if (showLineNumbers_ == state)
 		return;
@@ -2567,7 +2567,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	int primaryChanged, highlightChanged = False;
 	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
 	Dimension textHeight, newWindowWidth, newWindowHeight;
-	textDisp *textD = ((TextWidget)textArea_)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	/* Check which fonts have changed */
 	primaryChanged = strcmp(fontName, fontName_);
@@ -2908,7 +2908,7 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 	Widget hScrollBar;
 	Dimension hScrollBarHeight, paneHeight;
 	int marginHeight, marginWidth, totalHeight, fontHeight;
-	textDisp *textD = ((TextWidget)textArea_)->text.textD;
+	textDisp *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	/* width is the same for panes */
 	XtVaGetValues(textArea_, textNcolumns, nCols, nullptr);
@@ -2970,7 +2970,7 @@ void Document::SplitPane() {
 	textPanes_[nPanes_++] = text;
 
 	/* Fix up the colors */
-	textD = ((TextWidget)textArea_)->text.textD;
+	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 	newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);

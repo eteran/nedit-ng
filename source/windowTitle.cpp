@@ -838,7 +838,6 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	if (maxComp >= 0) {
-		char *pos;
 		int found = False;
 		char insert[2];
 		insert[0] = (char)('0' + maxComp);
@@ -848,7 +847,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 		do {
 			int i;
 			found = False;
-			pos = strstr(format, "%d");
+			char *pos = strstr(format, "%d");
 			if (pos) {
 				char *tmp = XtMalloc((strlen(format) + 2));
 				strncpy(tmp, format, (size_t)(pos - format + 1));
