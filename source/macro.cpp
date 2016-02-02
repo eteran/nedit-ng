@@ -5060,7 +5060,7 @@ static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, Da
 static int fillStyleResult(DataValue *result, const char **errMsg, Document *window, const char *styleName, Boolean preallocatedStyleName, Boolean includeName, int patCode, int bufferPos) {
 	DataValue DV;
 	char colorValue[20];
-	int r, g, b;
+	Color color;
 
 	/* initialize array */
 	result->tag = ARRAY_TAG;
@@ -5094,8 +5094,8 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		HighlightColorValueOfCode(window, patCode, &r, &g, &b);
-		sprintf(colorValue, "#%02x%02x%02x", r / 256, g / 256, b / 256);
+		HighlightColorValueOfCode(window, patCode, &color);
+		sprintf(colorValue, "#%02x%02x%02x", color.r / 256, color.g / 256, color.b / 256);
 		AllocNStringCpy(&DV.val.str, colorValue);
 		M_STR_ALLOC_ASSERT(DV);
 		if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
@@ -5114,8 +5114,8 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		GetHighlightBGColorOfCode(window, patCode, &r, &g, &b);
-		sprintf(colorValue, "#%02x%02x%02x", r / 256, g / 256, b / 256);
+		GetHighlightBGColorOfCode(window, patCode, &color);
+		sprintf(colorValue, "#%02x%02x%02x", color.r / 256, color.g / 256, color.b / 256);
 		AllocNStringCpy(&DV.val.str, colorValue);
 		M_STR_ALLOC_ASSERT(DV);
 		if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {

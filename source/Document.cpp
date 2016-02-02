@@ -2019,12 +2019,17 @@ void Document::SetAutoScroll(int margin) {
 */
 void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 	
-	int i, dummy;
+	int i;
+	Color dummy;
 	
-	Pixel textFgPix = AllocColor(textArea_, textFg, &dummy, &dummy, &dummy), textBgPix = AllocColor(textArea_, textBg, &dummy, &dummy, &dummy), selectFgPix = AllocColor(textArea_, selectFg, &dummy, &dummy, &dummy);
-	Pixel selectBgPix = AllocColor(textArea_, selectBg, &dummy, &dummy, &dummy), hiliteFgPix = AllocColor(textArea_, hiliteFg, &dummy, &dummy, &dummy);
-	Pixel hiliteBgPix = AllocColor(textArea_, hiliteBg, &dummy, &dummy, &dummy), lineNoFgPix = AllocColor(textArea_, lineNoFg, &dummy, &dummy, &dummy);
-	Pixel cursorFgPix = AllocColor(textArea_, cursorFg, &dummy, &dummy, &dummy);
+	Pixel textFgPix   = AllocColor(textArea_, textFg, &dummy);
+	Pixel textBgPix   = AllocColor(textArea_, textBg, &dummy);
+	Pixel selectFgPix = AllocColor(textArea_, selectFg, &dummy);
+	Pixel selectBgPix = AllocColor(textArea_, selectBg, &dummy);
+	Pixel hiliteFgPix = AllocColor(textArea_, hiliteFg, &dummy);
+	Pixel hiliteBgPix = AllocColor(textArea_, hiliteBg, &dummy);
+	Pixel lineNoFgPix = AllocColor(textArea_, lineNoFg, &dummy);
+	Pixel cursorFgPix = AllocColor(textArea_, cursorFg, &dummy);
 	
 	textDisp *textD;
 

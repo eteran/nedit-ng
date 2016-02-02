@@ -35,6 +35,7 @@
 #include "highlight.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
+#include "StyleTableEntry.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -308,7 +309,7 @@ void textDisp::TextDSetBuffer(TextBuffer *buffer) {
 **
 ** Style buffers, tables and their associated memory are managed by the caller.
 */
-void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, styleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg) {
+void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg) {
 	textD->styleBuffer           = styleBuffer;
 	textD->styleTable            = styleTable;
 	textD->nStyles               = nStyles;
@@ -1849,7 +1850,7 @@ static void drawString(textDisp *textD, int style, int x, int y, int toX, char *
 
 	if (gc == textD->styleGC) {
 		/* we have work to do */
-		styleTableEntry *styleRec;
+		StyleTableEntry *styleRec;
 		/* Set font, color, and gc depending on style.  For normal text, GCs
 		   for normal drawing, or drawing within a selection or highlight are
 		   pre-allocated and pre-configured.  For syntax highlighting, GCs are
@@ -3434,9 +3435,9 @@ static void extendRangeForStyleMods(textDisp *textD, int *start, int *end) {
 ** stderr, and return the widget's background color as a backup.
 */
 static Pixel allocBGColor(Widget w, char *colorName, int *ok) {
-	int r, g, b;
+	Color c;
 	*ok = 1;
-	return AllocColor(w, colorName, &r, &g, &b);
+	return AllocColor(w, colorName, &c);
 }
 
 static Pixel getRangesetColor(textDisp *textD, int ind, Pixel bground) {

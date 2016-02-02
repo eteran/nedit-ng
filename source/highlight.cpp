@@ -38,6 +38,7 @@
 #include "preferences.h"
 #include "Document.h"
 #include "window.h"
+#include "StyleTableEntry.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "../util/misc.h"
@@ -114,7 +115,7 @@ struct windowHighlightData {
 	highlightDataRec *pass2Patterns;
 	char *parentStyles;
 	reparseContext contextRequirements;
-	styleTableEntry *styleTable;
+	StyleTableEntry *styleTable;
 	int nStyles;
 	TextBuffer *styleBuffer;
 	PatternSet *patternSetForWindow;
@@ -147,7 +148,7 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
 static void updateWindowHeight(Document *window, int oldFontHeight);
 static int getFontHeight(Document *window);
-static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
+static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -301,7 +302,7 @@ void StopHighlighting(Document *window) {
 	oldFontHeight = getFontHeight(window);
 
 	/* Free and remove the highlight data from the window */
-	freeHighlightData((windowHighlightData *)window->highlightData_);
+	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
 	/* Remove and detach style buffer and style table from all text
@@ -328,7 +329,7 @@ void FreeHighlightingData(Document *window) {
 		return;
 
 	/* Free and remove the highlight data from the window */
-	freeHighlightData((windowHighlightData *)window->highlightData_);
+	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
 	/* The text display may make a last desperate attempt to access highlight
@@ -361,7 +362,7 @@ void RemoveWidgetHighlight(Widget widget) {
 */
 void UpdateHighlightStyles(Document *window) {
 
-	auto oldHighlightData = (windowHighlightData *)window->highlightData_;
+	auto oldHighlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	/* Do nothing if window not highlighted */
 	if (!window->highlightData_) {
@@ -553,17 +554,14 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 	for (i = 0; i < nPatterns; i++) {
 		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\n"
-			                                                     "does not match any highlight patterns in this set",
-			        "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
+			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
 			return nullptr;
 		}
 	}
 
 	for (i = 0; i < nPatterns; i++) {
 		if (!NamedStyleExists(*patternSrc[i].style)) {
-			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style",
-			        "OK", patternSrc[i].style->c_str(), patternSrc[i].name);
+			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style->c_str(), patternSrc[i].name);
 			return nullptr;
 		}
 	}
@@ -606,13 +604,21 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	HighlightPattern *p1Ptr = pass1PatternSrc;
 	HighlightPattern *p2Ptr = pass2PatternSrc;
 
-	p1Ptr->name         = p2Ptr->name         = "";
-	p1Ptr->startRE      = p2Ptr->startRE      = nullptr;
-	p1Ptr->endRE        = p2Ptr->endRE        = nullptr;
-	p1Ptr->errorRE      = p2Ptr->errorRE      = nullptr;
-	p1Ptr->style        = p2Ptr->style        = "Plain";
-	p1Ptr->subPatternOf = p2Ptr->subPatternOf = nullptr;
-	p1Ptr->flags        = p2Ptr->flags        = 0;
+	p1Ptr->name         = XtNewStringEx("");
+	p1Ptr->startRE      = nullptr;
+	p1Ptr->endRE        = nullptr;
+	p1Ptr->errorRE      = nullptr;
+	p1Ptr->style        = "Plain";
+	p1Ptr->subPatternOf = nullptr;
+	p1Ptr->flags        = 0;
+	
+	p2Ptr->name 		= XtNewStringEx("");
+	p2Ptr->startRE  	= nullptr;
+	p2Ptr->endRE		= nullptr;
+	p2Ptr->errorRE  	= nullptr;
+	p2Ptr->style		= "Plain";
+	p2Ptr->subPatternOf = nullptr;
+	p2Ptr->flags		= 0;  
 	
 	p1Ptr++;
 	p2Ptr++;
@@ -691,12 +697,12 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	}
 
 	/* Set up table for mapping colors and fonts to syntax */
-	const auto styleTable = new styleTableEntry[nPass1Patterns + nPass2Patterns + 1];
+	const auto styleTable = new StyleTableEntry[nPass1Patterns + nPass2Patterns + 1];
 
-	styleTableEntry *styleTablePtr = styleTable;
+	StyleTableEntry *styleTablePtr = styleTable;
 
-	auto setStyleTablePtr = [window](styleTableEntry *p, HighlightPattern *pat) {
-		int r, g, b;
+	auto setStyleTablePtr = [window](StyleTableEntry *p, HighlightPattern *pat) {
+		Color c;
 
 		p->highlightName = pat->name;
 		p->styleName     = *pat->style;
@@ -706,21 +712,21 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		p->isItalic      = FontOfNamedStyleIsItalic(*pat->style);
 
 		/* And now for the more physical stuff */
-		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &r, &g, &b);
-		p->red   = r;
-		p->green = g;
-		p->blue  = b;
+		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &c);
+		p->red   = c.r;
+		p->green = c.g;
+		p->blue  = c.b;
 		
 		if (!p->bgColorName.empty()) {
-			p->bgColor = AllocColor(window->textArea_, p->bgColorName.c_str(), &r, &g, &b);
-			p->bgRed   = r;
-			p->bgGreen = g;
-			p->bgBlue  = b;
+			p->bgColor = AllocColor(window->textArea_, p->bgColorName.c_str(), &c);
+			p->bgRed   = c.r;
+			p->bgGreen = c.g;
+			p->bgBlue  = c.b;
 		} else {
 			p->bgColor = p->color;
-			p->bgRed   = r;
-			p->bgGreen = g;
-			p->bgBlue  = b;
+			p->bgRed   = c.r;
+			p->bgGreen = c.g;
+			p->bgBlue  = c.b;
 		}
 
 		p->font = FontOfNamedStyle(window, *pat->style);
@@ -739,6 +745,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		styleTablePtr->underline = FALSE;
 		setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
 	}
+
 	/* explicit styles (pass 2) */
 	for (i = 1; i < nPass2Patterns; i++) {
 		styleTablePtr->underline = FALSE;
@@ -825,6 +832,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name);
 			return nullptr;
 		}
+		
 		int nSubExprs = 0;
 		if (patternSrc[i].startRE) {
 			char *ptr = patternSrc[i].startRE;
@@ -835,8 +843,9 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 				} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
 					compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
 					ptr += charsRead;
-				} else
+				} else {
 					break;
+				}
 			}
 		}
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
@@ -850,8 +859,9 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 				} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
 					compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
 					ptr += charsRead;
-				} else
+				} else {
 					break;
+				}
 			}
 		}
 		compiledPats[i].endSubexprs[nSubExprs] = -1;
@@ -988,8 +998,8 @@ static void freePatterns(highlightDataRec *patterns) {
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
-HighlightPattern *FindPatternOfWindow(Document *window, char *name) {
-	auto hData = (windowHighlightData *)window->highlightData_;
+HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
+	auto hData = static_cast<windowHighlightData *>(window->highlightData_);
 	PatternSet *set;
 
 	if (hData && (set = hData->patternSetForWindow)) {
@@ -1082,7 +1092,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 		
-		styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+		StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 		if(!entry)
 			return 0;
 			
@@ -1107,7 +1117,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
+static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	hCode -= UNFINISHED_STYLE; /* get the correct index value */
@@ -1121,57 +1131,65 @@ static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 */
 
 std::string HighlightNameOfCode(Document *window, int hCode) {
-	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->highlightName : "";
 }
 
 std::string HighlightStyleOfCode(Document *window, int hCode) {
-	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->styleName : "";
 }
 
-Pixel HighlightColorValueOfCode(Document *window, int hCode, int *r, int *g, int *b) {
-	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
+	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	if (entry) {
-		*r = entry->red;
-		*g = entry->green;
-		*b = entry->blue;
+		color->r = entry->red;
+		color->g = entry->green;
+		color->b = entry->blue;
 		return entry->color;
 	} else {
 		/* pick up foreground color of the (first) text widget of the window */
 		XColor colorDef;
 		Colormap cMap;
 		Display *display = XtDisplay(window->textArea_);
-		*r = *g = *b = 0;
+
+		color->r = 0;
+		color->g = 0;
+		color->b = 0;
+		
 		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNforeground, &colorDef.pixel, nullptr);
 		if (XQueryColor(display, cMap, &colorDef)) {
-			*r = colorDef.red;
-			*g = colorDef.green;
-			*b = colorDef.blue;
+			color->r = colorDef.red;
+			color->g = colorDef.green;
+			color->b = colorDef.blue;
 		}
 		return colorDef.pixel;
 	}
 }
 
-Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int *b) {
-	styleTableEntry *entry = styleTableEntryOfCode(window, hCode);
+Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
+	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	
 	if (entry && !entry->bgColorName.empty()) {
-		*r = entry->bgRed;
-		*g = entry->bgGreen;
-		*b = entry->bgBlue;
+		color->r = entry->bgRed;
+		color->g = entry->bgGreen;
+		color->b = entry->bgBlue;
 		return entry->bgColor;
 	} else {
 		/* pick up background color of the (first) text widget of the window */
 		XColor colorDef;
 		Colormap cMap;
 		Display *display = XtDisplay(window->textArea_);
-		*r = *g = *b = 0;
+		
+		color->r = 0;
+		color->g = 0;
+		color->b = 0;
+		
 		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNbackground, &colorDef.pixel, nullptr);
 		if (XQueryColor(display, cMap, &colorDef)) {
-			*r = colorDef.red;
-			*g = colorDef.green;
-			*b = colorDef.blue;
+			color->r = colorDef.red;
+			color->g = colorDef.green;
+			color->b = colorDef.blue;
 		}
 		return colorDef.pixel;
 	}
@@ -1814,9 +1832,8 @@ static double colorDistance(const XColor *c1, const XColor *c2) {
 ** the little hassle of creating the dummy variable.
 */
 Pixel AllocateColor(Widget w, const char *colorName) {
-	int dummy;
-
-	return AllocColor(w, colorName, &dummy, &dummy, &dummy);
+	Color dummy;
+	return AllocColor(w, colorName, &dummy);
 }
 
 /*
@@ -1826,7 +1843,7 @@ Pixel AllocateColor(Widget w, const char *colorName) {
 ** stderr, and return the widget's foreground color as a backup.
 */
 
-Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
+Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	XColor colorDef;
 	XColor *allColorDefs;
 	Display *display = XtDisplay(w);
@@ -1849,18 +1866,18 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 		fprintf(stderr, "NEdit: Color name %s not in database\n", colorName);
 		colorDef.pixel = foreground;
 		if (XQueryColor(display, cMap, &colorDef)) {
-			*r = colorDef.red;
-			*g = colorDef.green;
-			*b = colorDef.blue;
+			color->r = colorDef.red;
+			color->g = colorDef.green;
+			color->b = colorDef.blue;
 		}
 		return foreground;
 	}
 
 	/* Attempt allocation of the exact color. */
 	if (XAllocColor(display, cMap, &colorDef)) {
-		*r = colorDef.red;
-		*g = colorDef.green;
-		*b = colorDef.blue;
+		color->r = colorDef.red;
+		color->g = colorDef.green;
+		color->b = colorDef.blue;
 		return colorDef.pixel;
 	}
 
@@ -1876,9 +1893,9 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
 	if (depth > 8) { /* Oh no! */
 		colorDef.pixel = foreground;
 		if (XQueryColor(display, cMap, &colorDef)) {
-			*r = colorDef.red;
-			*g = colorDef.green;
-			*b = colorDef.blue;
+			color->r = colorDef.red;
+			color->g = colorDef.green;
+			color->b = colorDef.blue;
 		}
 		return foreground;
 	}
@@ -1917,9 +1934,9 @@ Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b) {
     printf("That's %f off\n", small);
 #endif
 
-	*r = allColorDefs[best].red;
-	*g = allColorDefs[best].green;
-	*b = allColorDefs[best].blue;
+	color->r = allColorDefs[best].red;
+	color->g = allColorDefs[best].green;
+	color->b = allColorDefs[best].blue;
 	delete [] allColorDefs;
 	return bestPixel;
 }

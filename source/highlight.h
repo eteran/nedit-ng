@@ -28,6 +28,7 @@
 #define HIGHLIGHT_H_
 
 #include "nedit.h"
+#include "Color.h"
 
 #include <X11/Intrinsic.h>
 #include <string>
@@ -46,14 +47,14 @@ struct PatternSet;
 struct HighlightPattern;
 
 bool TestHighlightPatterns(PatternSet *patSet);
-HighlightPattern *FindPatternOfWindow(Document *window, char *name);
+HighlightPattern *FindPatternOfWindow(Document *window, const char *name);
 int HighlightCodeOfPos(Document *window, int pos);
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(Document *window, int pos);
 Pixel AllocateColor(Widget w, const char *colorName);
-Pixel AllocColor(Widget w, const char *colorName, int *r, int *g, int *b);
-Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int *b);
-Pixel HighlightColorValueOfCode(Document *window, int hCode, int *r, int *g, int *b);
+Pixel AllocColor(Widget w, const char *colorName, Color *color);
+Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color);
+Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color);
 std::string HighlightNameOfCode(Document *window, int hCode);
 std::string HighlightStyleOfCode(Document *window, int hCode);
 void AttachHighlightToWidget(Widget widget, Document *window);

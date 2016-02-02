@@ -41,6 +41,7 @@
 #include "file.h"
 #include "highlight.h"
 #include "MotifHelper.h"
+#include "StyleTableEntry.h"
 #include "../util/misc.h"
 #include "../util/DialogF.h"
 #include "../util/system.h"
@@ -133,7 +134,7 @@ static int StyleUnderlines[] = {
 
 #define N_STYLES (XtNumber(StyleFonts))
 
-static styleTableEntry HelpStyleInfo[N_STYLES];
+static StyleTableEntry HelpStyleInfo[N_STYLES];
 
 /* Translation table for style codes (A, B, C, ...) to their ASCII codes.
    For systems using ASCII, this is just a one-to-one mapping, but the
@@ -328,7 +329,7 @@ static void initHelpStyles(Widget parent) {
 */
 static void loadFontsAndColors(Widget parent, int style) {
 	XFontStruct *font;
-	int r, g, b;
+	Color color;
 	if (HelpStyleInfo[STYLE_INDEX(style)].font == nullptr) {
 		font = XLoadQueryFont(XtDisplay(parent), GetPrefHelpFontName(StyleFonts[STYLE_INDEX(style)]));
 		if(!font) {
@@ -343,7 +344,7 @@ static void loadFontsAndColors(Widget parent, int style) {
 		HelpStyleInfo[STYLE_INDEX(style)].font = font;
 
 		if (style == STL_NM_LINK)
-			HelpStyleInfo[STYLE_INDEX(style)].color = AllocColor(parent, GetPrefHelpLinkColor(), &r, &g, &b);
+			HelpStyleInfo[STYLE_INDEX(style)].color = AllocColor(parent, GetPrefHelpLinkColor(), &color);
 	}
 }
 

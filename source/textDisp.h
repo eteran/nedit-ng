@@ -37,24 +37,8 @@ enum cursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY
 
 #define NO_HINT -1
 
-struct styleTableEntry {
-	std::string highlightName;
-	std::string styleName;
-	std::string colorName;
-	char isBold;
-	char isItalic;
-	unsigned short red;
-	unsigned short green;
-	unsigned short blue;
-	Pixel color;
-	Boolean underline;
-	XFontStruct *font;
-	std::string bgColorName; /* background style coloring (name may be "empty") */
-	unsigned short bgRed;
-	unsigned short bgGreen;
-	unsigned short bgBlue;
-	Pixel bgColor;
-};
+struct StyleTableEntry;
+
 
 struct graphicExposeTranslationEntry {
 	int horizontal;
@@ -145,7 +129,7 @@ public:
 	int horizOffset;             /* Horizontal scroll pos. in pixels */
 	int visibility;              /* Window visibility (see XVisibility event) */
 	int nStyles;                 /* Number of entries in styleTable */
-	styleTableEntry *styleTable; /* Table of fonts and colors for
+	StyleTableEntry *styleTable; /* Table of fonts and colors for
 	                                coloring/syntax-highlighting */
 	char unfinishedStyle;        /* Style buffer entry which triggers
 	                                on-the-fly reparsing of region */
@@ -209,7 +193,7 @@ int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
 int TextDStartOfLine(const textDisp *textD, const int pos);
 int TextDXYToCharPos(textDisp *textD, int x, int y);
 int TextDXYToPosition(textDisp *textD, int x, int y);
-void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, styleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
+void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 void TextDBlankCursor(textDisp *textD);
 void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);

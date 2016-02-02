@@ -3406,13 +3406,13 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW, Widget errorLab
 */
 static void browseFont(Widget parent, Widget fontTextW) {
 
-	int dummy;
+	Color dummy;
 
 	char *origFontName = XmTextGetString(fontTextW);
 
 	/* Get the values from the defaults */
-	Pixel fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &dummy, &dummy, &dummy);
-	Pixel bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &dummy, &dummy, &dummy);
+	Pixel fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &dummy);
+	Pixel bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &dummy);
 
 	char *newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
 	XtFree(origFontName);
