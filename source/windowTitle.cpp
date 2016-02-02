@@ -1123,14 +1123,14 @@ void Document::EditCustomTitleFormat() {
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */
-	strcpy(etDialog.path, this->path);
-	strcpy(etDialog.filename, this->filename);
+	strcpy(etDialog.path, this->path_);
+	strcpy(etDialog.filename, this->filename_);
 	strcpy(etDialog.viewTag, GetClearCaseViewTag() != nullptr ? GetClearCaseViewTag() : "viewtag");
 	strcpy(etDialog.serverName, IsServer ? GetPrefServerName() : "servername");
 	etDialog.isServer = IsServer;
-	etDialog.filenameSet = this->filenameSet;
-	etDialog.lockReasons = this->lockReasons;
-	etDialog.fileChanged = this->fileChanged;
+	etDialog.filenameSet = this->filenameSet_;
+	etDialog.lockReasons = this->lockReasons_;
+	etDialog.fileChanged = this->fileChanged_;
 
 	if (etDialog.window != this && etDialog.form) {
 		/* Destroy the dialog owned by the other this.
@@ -1145,7 +1145,7 @@ void Document::EditCustomTitleFormat() {
 
 	/* Create the dialog if it doesn't already exist */
 	if(!etDialog.form) {
-		createEditTitleDialog(this->shell);
+		createEditTitleDialog(this->shell_);
 	} else {
 		/* If the this is already up, just pop it to the top */
 		if (XtIsManaged(etDialog.form)) {

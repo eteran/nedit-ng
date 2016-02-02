@@ -108,8 +108,8 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 ** find which document a tab belongs to
 */
 Document *TabToWindow(Widget tab) {
-	for (Document *win = WindowList; win; win = win->next) {
-		if (win->tab == tab)
+	for (Document *win = WindowList; win; win = win->next_) {
+		if (win->tab_ == tab)
 			return win;
 	}
 
@@ -134,8 +134,8 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 		fullname[MAXPATHLEN] = '\0';
 
 		if (stat(fullname, &attribute) == 0) {
-			for (window = WindowList; window != nullptr; window = window->next) {
-				if (attribute.st_dev == window->device && attribute.st_ino == window->inode) {
+			for (window = WindowList; window != nullptr; window = window->next_) {
+				if (attribute.st_dev == window->device_ && attribute.st_ino == window->inode_) {
 					return window;
 				}
 			}
@@ -143,8 +143,8 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 		      whether the filename is already in use for an unsaved document.  */
 	}
 
-	for (window = WindowList; window != nullptr; window = window->next) {
-		if (!strcmp(window->filename, name) && !strcmp(window->path, path)) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
+		if (!strcmp(window->filename_, name) && !strcmp(window->path_, path)) {
 			return window;
 		}
 	}
@@ -157,7 +157,7 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 int NWindows(void) {
 	int n = 0;
 
-	for (Document *win = WindowList; win != nullptr; win = win->next) {
+	for (Document *win = WindowList; win != nullptr; win = win->next_) {
 		++n;
 	}
 	return n;
@@ -211,12 +211,12 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   order for re-associating stored geometry information with
 	   new windows created by a restored application */
 	int nWindows = 0;
-	for (Document *win = WindowList; win != nullptr; win = win->next) {
+	for (Document *win = WindowList; win != nullptr; win = win->next_) {
 		nWindows++;
 	}
 	
 	auto revWindowList = new Document *[nWindows];
-	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next, i--) {
+	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next_, i--) {
 		revWindowList[i] = win;
 	}
 
@@ -259,14 +259,14 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		}
 
 		/* add filename of each tab in window... */
-		XtVaGetValues(topWin->tabBar, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
+		XtVaGetValues(topWin->tabBar_, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
 
 		for (int i = 0; i < tabCount; i++) {
 			win = TabToWindow(tabs[i]);
-			if (win->filenameSet) {
+			if (win->filenameSet_) {
 				/* add filename */
-				auto p = new char[strlen(win->path) + strlen(win->filename) + 1];
-				sprintf(p, "%s%s", win->path, win->filename);
+				auto p = new char[strlen(win->path_) + strlen(win->filename_) + 1];
+				sprintf(p, "%s%s", win->path_, win->filename_);
 				argv.push_back(p);
 			}
 		}
@@ -316,7 +316,7 @@ void AllWindowsBusy(const char *message) {
 		busyStartTime = getRelTimeInTenthsOfSeconds();
 		modeMessageSet = False;
 
-		for (w = WindowList; w; w = w->next) {
+		for (w = WindowList; w; w = w->next_) {
 			/* We don't the display message here yet, but defer it for
 			   a while. If the wait is short, we don't want
 			   to have it flash on and off the screen.  However,
@@ -325,25 +325,25 @@ void AllWindowsBusy(const char *message) {
 			   up to the caller to make sure that this routine is called
 			   at regular intervals.
 			*/
-			BeginWait(w->shell);
+			BeginWait(w->shell_);
 		}
 	} else if (!modeMessageSet && message && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 		/* Show the mode message when we've been busy for more than a second */
-		for (w = WindowList; w; w = w->next) {
+		for (w = WindowList; w; w = w->next_) {
 			w->SetModeMessage(message);
 		}
 		modeMessageSet = True;
 	}
-	BusyWait(WindowList->shell);
+	BusyWait(WindowList->shell_);
 
 	currentlyBusy = True;
 }
 
 void AllWindowsUnbusy(void) {
 
-	for (Document *w = WindowList; w; w = w->next) {
+	for (Document *w = WindowList; w; w = w->next_) {
 		w->ClearModeMessage();
-		EndWait(w->shell);
+		EndWait(w->shell_);
 	}
 
 	currentlyBusy = False;

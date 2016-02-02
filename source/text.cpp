@@ -58,7 +58,7 @@
 #endif
 
 #ifdef UNICOS
-#define XtOffset(p_type, field) ((size_t)__INTADDR__(&(((p_type)0)->field)))
+#define XtOffset(p_type, field) ((size_t)__INTADDR_(&(((p_type)0)->field)))
 #endif
 
 /* Number of pixels of motion from the initial (grab-focus) button press
@@ -1982,7 +1982,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	TextInsertAtCursorEx(w, args[0], event, True, True);
-	(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
+	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnselect();
 }
 
 static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2012,8 +2012,8 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	TakeMotifDestination(w, e->time);
 	chars[nChars] = '\0';
 
-	if (!window->buffer->BufSubstituteNullChars(chars, nChars)) {
-		DialogF(DF_ERR, window->shell, 1, "Error", "Too much binary data", "OK");
+	if (!window->buffer_->BufSubstituteNullChars(chars, nChars)) {
+		DialogF(DF_ERR, window->shell_, 1, "Error", "Too much binary data", "OK");
 		return;
 	}
 
@@ -2049,7 +2049,7 @@ static void newlineNoIndentAP(Widget w, XEvent *event, String *args, Cardinal *n
 		return;
 	TakeMotifDestination(w, e->time);
 	simpleInsertAtCursorEx(w, "\n", event, True);
-	(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
+	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnselect();
 }
 
 static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3096,10 +3096,11 @@ static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 ** means cancel the existing selection
 */
 static void checkMoveSelectionChange(Widget w, XEvent *event, int startPos, String *args, Cardinal *nArgs) {
-	if (hasKey("extend", args, nArgs))
+	if (hasKey("extend", args, nArgs)) {
 		keyMoveExtendSelection(w, event, startPos, hasKey("rect", args, nArgs));
-	else
-		(reinterpret_cast<TextWidget>(w)->text.textD)->buffer->BufUnselect();
+	} else {
+		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnselect();
+	}
 }
 
 /*

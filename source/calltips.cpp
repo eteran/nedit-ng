@@ -48,7 +48,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 ** Pop-down a calltip if one exists, else do nothing
 */
 void KillCalltip(Document *window, int calltipID) {
-	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
+	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	TextDKillCalltip(textD, calltipID);
 }
 
@@ -68,7 +68,7 @@ void TextDKillCalltip(textDisp *textD, int calltipID) {
 ** displayed with that calltipID.
 */
 int GetCalltipID(Document *window, int calltipID) {
-	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
+	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	if (calltipID == 0)
 		return textD->calltip.ID;
 	else {
@@ -222,7 +222,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width) {
 */
 int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
-	textDisp *textD = ((TextWidget)window->lastFocus)->text.textD;
+	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
 

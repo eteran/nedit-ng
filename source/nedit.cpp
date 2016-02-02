@@ -507,7 +507,7 @@ int main(int argc, char *argv[]) {
 					window->CleanUpTabBarExposeQueue();
 
 					/* raise the last tab of previous window */
-					if (lastFile && window->shell != lastFile->shell) {
+					if (lastFile && window->shell_ != lastFile->shell_) {
 						lastFile->CleanUpTabBarExposeQueue();
 						lastFile->RaiseDocument();
 					}

@@ -251,10 +251,10 @@ void BeginSmartIndent(Document *window, int warn) {
 	static int initialized;
 
 	/* Find the window's language mode.  If none is set, warn the user */
-	modeName = LanguageModeName(window->languageMode);
+	modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell, 1, "Smart Indent", "No language-specific mode has been set for this file.\n\n"
+			DialogF(DF_WARN, window->shell_, 1, "Smart Indent", "No language-specific mode has been set for this file.\n\n"
 			                                                   "To use smart indent in this window, please select a\n"
 			                                                   "language from the Preferences -> Language Modes menu.",
 			        "OK");
@@ -266,7 +266,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	indentMacros = findIndentSpec(modeName);
 	if(!indentMacros) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell, 1, "Smart Indent", "Smart indent is not available in languagemode\n%s.\n\n"
+			DialogF(DF_WARN, window->shell_, 1, "Smart Indent", "Smart indent is not available in languagemode\n%s.\n\n"
 			                                                   "You can create new smart indent macros in the\n"
 			                                                   "Preferences -> Default Settings -> Smart Indent\n"
 			                                                   "dialog, or choose a different language mode from:\n"
@@ -301,7 +301,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	winData->newlineMacro = ParseMacro((String)indentMacros->newlineMacro, &errMsg, &stoppedAt);
 	if (!winData->newlineMacro) {
 		delete winData;
-		ParseError(window->shell, indentMacros->newlineMacro, stoppedAt, "newline macro", errMsg);
+		ParseError(window->shell_, indentMacros->newlineMacro, stoppedAt, "newline macro", errMsg);
 		return;
 	}
 	if (!indentMacros->modMacro)
@@ -311,15 +311,15 @@ void BeginSmartIndent(Document *window, int warn) {
 		if (!winData->modMacro) {
 			FreeProgram(winData->newlineMacro);
 			delete winData;
-			ParseError(window->shell, indentMacros->modMacro, stoppedAt, "smart indent modify macro", errMsg);
+			ParseError(window->shell_, indentMacros->modMacro, stoppedAt, "smart indent modify macro", errMsg);
 			return;
 		}
 	}
-	window->smartIndentData = winData;
+	window->smartIndentData_ = winData;
 }
 
 void EndSmartIndent(Document *window) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
 
 	if(!winData)
 		return;
@@ -330,7 +330,7 @@ void EndSmartIndent(Document *window) {
 	FreeProgram(winData->newlineMacro);
 	
 	delete winData;
-	window->smartIndentData = nullptr;
+	window->smartIndentData_ = nullptr;
 }
 
 /*
@@ -355,7 +355,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Document *window = Document::WidgetToWindow(w);
 	smartIndentCBStruct *cbInfo = (smartIndentCBStruct *)callData;
 
-	if (!window->smartIndentData)
+	if (!window->smartIndentData_)
 		return;
 	if (cbInfo->reason == CHAR_TYPED)
 		executeModMacro(window, cbInfo);
@@ -368,7 +368,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** structure passed by the widget
 */
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
 	/* posValue probably shouldn't be static due to re-entrance issues <slobasso> */
 	static DataValue posValue = {INT_TAG, {0}, {0}};
 	DataValue result;
@@ -400,14 +400,14 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	/* Process errors in macro execution */
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		DialogF(DF_ERR, window->shell, 1, "Smart Indent", "Error in smart indent macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
+		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
 		EndSmartIndent(window);
 		return;
 	}
 
 	/* Validate and return the result */
 	if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
-		DialogF(DF_ERR, window->shell, 1, "Smart Indent", "Smart indent macros must return\ninteger indent distance", "OK");
+		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Smart indent macros must return\ninteger indent distance", "OK");
 		EndSmartIndent(window);
 		return;
 	}
@@ -416,7 +416,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 }
 
 Boolean InSmartIndentMacros(Document *window) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
 
 	return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
 }
@@ -426,7 +426,7 @@ Boolean InSmartIndentMacros(Document *window) {
 ** structure passed by the widget
 */
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData);
+	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
 	/* args probably shouldn't be static due to future re-entrance issues <slobasso> */
 	static DataValue args[2] = {{INT_TAG, {0}, {0}}, {STRING_TAG, {0}, {0}}};
 	/* after 5.2 release remove inModCB and use new winData->inModMacro value */
@@ -459,7 +459,7 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	/* Process errors in macro execution */
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		DialogF(DF_ERR, window->shell, 1, "Smart Indent", "Error in smart indent modification macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
+		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent modification macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
 		EndSmartIndent(window);
 		return;
 	}
@@ -484,12 +484,12 @@ void EditSmartIndentMacros(Document *window) {
 	}
 
 	if (LanguageModeName(0) == nullptr) {
-		DialogF(DF_WARN, window->shell, 1, "Language Mode", "No Language Modes defined", "OK");
+		DialogF(DF_WARN, window->shell_, 1, "Language Mode", "No Language Modes defined", "OK");
 		return;
 	}
 
 	/* Decide on an initial language mode */
-	lmName = LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode);
+	lmName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 	SmartIndentDialog.langModeName = XtNewStringEx(lmName);
 
 	/* Create a form widget in an application shell */
@@ -1167,8 +1167,8 @@ static int updateSmartIndentCommonData(void) {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-	for (window = WindowList; window != nullptr; window = window->next) {
-		if (window->indentStyle == SMART_INDENT && window->languageMode != PLAIN_LANGUAGE_MODE) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
+		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			EndSmartIndent(window);
 			BeginSmartIndent(window, False);
 		}
@@ -1231,11 +1231,11 @@ static int updateSmartIndentData(void) {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-	for (window = WindowList; window != nullptr; window = window->next) {
-		lmName = LanguageModeName(window->languageMode);
+	for (window = WindowList; window != nullptr; window = window->next_) {
+		lmName = LanguageModeName(window->languageMode_);
 		if (lmName != nullptr && !strcmp(lmName, newMacros->lmName)) {
-			window->SetSensitive(window->smartIndentItem, True);
-			if (window->indentStyle == SMART_INDENT && window->languageMode != PLAIN_LANGUAGE_MODE) {
+			window->SetSensitive(window->smartIndentItem_, True);
+			if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 				EndSmartIndent(window);
 				BeginSmartIndent(window, False);
 			}

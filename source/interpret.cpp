@@ -1821,12 +1821,12 @@ static int callSubroutine(void) {
 		/* Create a fake event with a timestamp suitable for actions which need
 		   timestamps, a marker to indicate that the call was from a macro
 		   (to stop shell commands from putting up their own separate banner) */
-		Display *disp = XtDisplay(InitiatingWindow->shell);
-		Window win    = XtWindow (InitiatingWindow->shell);
+		Display *disp = XtDisplay(InitiatingWindow->shell_);
+		Window win    = XtWindow (InitiatingWindow->shell_);
 
 		key_event.type = KeyPress;
 		key_event.send_event = MACRO_EVENT_MARKER;
-		key_event.time = XtLastTimestampProcessed(XtDisplay(InitiatingWindow->shell));
+		key_event.time = XtLastTimestampProcessed(XtDisplay(InitiatingWindow->shell_));
 
 		/* The following entries are just filled in to avoid problems
 		   in strange cases, like calling "self_insert()" directly from the
@@ -1842,7 +1842,7 @@ static int callSubroutine(void) {
 
 		/* Call the action routine and check for preemption */
 		PreemptRequest = false;
-		sym->value.val.xtproc(FocusWindow->lastFocus, (XEvent *)&key_event, argList, &numArgs);
+		sym->value.val.xtproc(FocusWindow->lastFocus_, (XEvent *)&key_event, argList, &numArgs);
 		XtFree((char *)argList);
 		if (PC->func == fetchRetVal) {
 			return execError("%s does not return a value", sym->name.c_str());

@@ -235,7 +235,7 @@ static const char *searchTypeStrings[] = {"literal",     /* SEARCH_LITERAL      
 static Document *windowNotToClose = nullptr;
 
 Boolean WindowCanBeClosed(Document *window) {
-	if (windowNotToClose && Document::GetTopDocument(window->shell) == Document::GetTopDocument(windowNotToClose->shell)) {
+	if (windowNotToClose && Document::GetTopDocument(window->shell_) == Document::GetTopDocument(windowNotToClose->shell_)) {
 		return False;
 	}
 	return True; /* It's safe */
@@ -325,7 +325,7 @@ static int selectionSpansMultipleLines(Document *window) {
 	int lineWidth;
 	textDisp *textD;
 
-	if (!window->buffer->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
+	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
 		return FALSE;
 
 	/* This is kind of tricky. The perception of a line depends on the
@@ -342,17 +342,17 @@ static int selectionSpansMultipleLines(Document *window) {
 	  we also assume a multi-line selection.
 	*/
 
-	lineStartStart = window->buffer->BufStartOfLine(selStart);
-	lineStartEnd = window->buffer->BufStartOfLine(selEnd);
+	lineStartStart = window->buffer_->BufStartOfLine(selStart);
+	lineStartEnd = window->buffer_->BufStartOfLine(selEnd);
 	/* If the line starts differ, we have a "\n" in between. */
 	if (lineStartStart != lineStartEnd)
 		return TRUE;
 
-	if (window->wrapMode != CONTINUOUS_WRAP)
+	if (window->wrapMode_ != CONTINUOUS_WRAP)
 		return FALSE; /* Same line */
 
 	/* Estimate the number of characters on a line */
-	textD = ((TextWidget)window->textArea)->text.textD;
+	textD = ((TextWidget)window->textArea_)->text.textD;
 	if (textD->fontStruct->max_bounds.width > 0)
 		lineWidth = textD->width / textD->fontStruct->max_bounds.width;
 	else
@@ -372,28 +372,28 @@ static int selectionSpansMultipleLines(Document *window) {
 void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
-	if (window->replaceDlog == nullptr)
-		CreateReplaceDlog(window->shell, window);
+	if (window->replaceDlog_ == nullptr)
+		CreateReplaceDlog(window->shell_, window);
 
-	setTextField(window, time, window->replaceText);
+	setTextField(window, time, window->replaceText_);
 
 	/* If the window is already up, just pop it to the top */
-	if (XtIsManaged(window->replaceDlog)) {
-		RaiseDialogWindow(XtParent(window->replaceDlog));
+	if (XtIsManaged(window->replaceDlog_)) {
+		RaiseDialogWindow(XtParent(window->replaceDlog_));
 		return;
 	}
 
 	/* Blank the Replace with field */
-	XmTextSetStringEx(window->replaceWithText, "");
+	XmTextSetStringEx(window->replaceWithText_, "");
 
 	/* Set the initial search type */
-	initToggleButtons(searchType, window->replaceRegexToggle, window->replaceCaseToggle, &window->replaceWordToggle, &window->replaceLastLiteralCase, &window->replaceLastRegexCase);
+	initToggleButtons(searchType, window->replaceRegexToggle_, window->replaceCaseToggle_, &window->replaceWordToggle_, &window->replaceLastLiteralCase_, &window->replaceLastRegexCase_);
 
 	/* Set the initial direction based on the direction argument */
-	XmToggleButtonSetState(window->replaceRevToggle, direction == SEARCH_FORWARD ? False : True, True);
+	XmToggleButtonSetState(window->replaceRevToggle_, direction == SEARCH_FORWARD ? False : True, True);
 
 	/* Set the state of the Keep Dialog Up button */
-	XmToggleButtonSetState(window->replaceKeepBtn, keepDialogs, True);
+	XmToggleButtonSetState(window->replaceKeepBtn_, keepDialogs, True);
 
 #ifdef REPLACE_SCOPE
 	/* Set the state of the scope radio buttons to "In Window".
@@ -401,49 +401,49 @@ void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDial
 	   NOTE: due to an apparent bug in OpenMotif, the radio buttons may
 	   get stuck after resetting the scope to "In Window". Therefore we must
 	   use RadioButtonChangeState(), which contains a workaround. */
-	if (window->wasSelected) {
+	if (window->wasSelected_) {
 		/* If a selection exists, the default scope depends on the preference
 		       of the user. */
 		switch (GetPrefReplaceDefScope()) {
 		case REPL_DEF_SCOPE_SELECTION:
 			/* The user prefers selection scope, no matter what the
 			   size of the selection is. */
-			RadioButtonChangeState(window->replaceScopeSelToggle, True, True);
+			RadioButtonChangeState(window->replaceScopeSelToggle_, True, True);
 			break;
 		case REPL_DEF_SCOPE_SMART:
 			if (selectionSpansMultipleLines(window)) {
 				/* If the selection spans multiple lines, the user most
 				   likely wants to perform a replacement in the selection */
-				RadioButtonChangeState(window->replaceScopeSelToggle, True, True);
+				RadioButtonChangeState(window->replaceScopeSelToggle_, True, True);
 			} else {
 				/* It's unlikely that the user wants a replacement in a
 				   tiny selection only. */
-				RadioButtonChangeState(window->replaceScopeWinToggle, True, True);
+				RadioButtonChangeState(window->replaceScopeWinToggle_, True, True);
 			}
 			break;
 		default:
 			/* The user always wants window scope as default. */
-			RadioButtonChangeState(window->replaceScopeWinToggle, True, True);
+			RadioButtonChangeState(window->replaceScopeWinToggle_, True, True);
 			break;
 		}
 	} else {
 		/* No selection -> always choose "In Window" as default. */
-		RadioButtonChangeState(window->replaceScopeWinToggle, True, True);
+		RadioButtonChangeState(window->replaceScopeWinToggle_, True, True);
 	}
 #endif
 
 	UpdateReplaceActionButtons(window);
 
 	/* Start the search history mechanism at the current history item */
-	window->rHistIndex = 0;
+	window->rHistIndex_ = 0;
 
 	/* Display the dialog */
-	ManageDialogCenteredOnPointer(window->replaceDlog);
+	ManageDialogCenteredOnPointer(window->replaceDlog_);
 
 	/* Workaround: LessTif (as of version 0.89) needs reminding of who had
 	   the focus when the dialog was unmanaged.  When re-managed, focus is
 	   lost and events fall through to the window below. */
-	XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(window->replaceText_, XmTRAVERSE_CURRENT);
 }
 
 static void setTextField(Document *window, Time time, Widget textField) {
@@ -455,10 +455,10 @@ static void setTextField(Document *window, Time time, Widget textField) {
 		selectionInfo->done      = 0;
 		selectionInfo->window    = window;
 		selectionInfo->selection = nullptr;
-		XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
+		XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
 
 		while (selectionInfo->done == 0) {
-			XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
+			XtAppNextEvent(XtWidgetToApplicationContext(window->textArea_), &nextEvent);
 			ServerDispatchEvent(&nextEvent);
 		}
 
@@ -493,7 +493,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	}
 	/* return an empty string if the data is not of the correct format. */
 	if (*format != 8) {
-		DialogF(DF_WARN, window->shell, 1, "Invalid Format", "NEdit can't handle non 8-bit text", "OK");
+		DialogF(DF_WARN, window->shell_, 1, "Invalid Format", "NEdit can't handle non 8-bit text", "OK");
 		XtFree(value);
 		selectionInfo->selection = nullptr;
 		selectionInfo->done = 1;
@@ -509,39 +509,39 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	/* Create the dialog if it doesn't already exist */
-	if (window->findDlog == nullptr)
-		CreateFindDlog(window->shell, window);
+	if (window->findDlog_ == nullptr)
+		CreateFindDlog(window->shell_, window);
 
-	setTextField(window, time, window->findText);
+	setTextField(window, time, window->findText_);
 
 	/* If the window is already up, just pop it to the top */
-	if (XtIsManaged(window->findDlog)) {
-		RaiseDialogWindow(XtParent(window->findDlog));
+	if (XtIsManaged(window->findDlog_)) {
+		RaiseDialogWindow(XtParent(window->findDlog_));
 		return;
 	}
 
 	/* Set the initial search type */
-	initToggleButtons(searchType, window->findRegexToggle, window->findCaseToggle, &window->findWordToggle, &window->findLastLiteralCase, &window->findLastRegexCase);
+	initToggleButtons(searchType, window->findRegexToggle_, window->findCaseToggle_, &window->findWordToggle_, &window->findLastLiteralCase_, &window->findLastRegexCase_);
 
 	/* Set the initial direction based on the direction argument */
-	XmToggleButtonSetState(window->findRevToggle, direction == SEARCH_FORWARD ? False : True, True);
+	XmToggleButtonSetState(window->findRevToggle_, direction == SEARCH_FORWARD ? False : True, True);
 
 	/* Set the state of the Keep Dialog Up button */
-	XmToggleButtonSetState(window->findKeepBtn, keepDialogs, True);
+	XmToggleButtonSetState(window->findKeepBtn_, keepDialogs, True);
 
 	/* Set the state of the Find button */
 	fUpdateActionButtons(window);
 
 	/* start the search history mechanism at the current history item */
-	window->fHistIndex = 0;
+	window->fHistIndex_ = 0;
 
 	/* Display the dialog */
-	ManageDialogCenteredOnPointer(window->findDlog);
+	ManageDialogCenteredOnPointer(window->findDlog_);
 
 	/* Workaround: LessTif (as of version 0.89) needs reminding of who had
 	   the focus when the dialog was unmanaged.  When re-managed, focus is
 	   lost and events fall through to the window below. */
-	XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(window->findText_, XmTRAVERSE_CURRENT);
 }
 
 void DoReplaceMultiFileDlog(Document *window) {
@@ -558,13 +558,13 @@ void DoReplaceMultiFileDlog(Document *window) {
 		/* Set the initial focus of the dialog back to the search string */
 		resetReplaceTabGroup(window);
 		/* pop down the replace dialog */
-		if (!XmToggleButtonGetState(window->replaceKeepBtn))
+		if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 			unmanageReplaceDialogs(window);
 		return;
 	}
 
 	/* Create the dialog if it doesn't already exist */
-	if (window->replaceMultiFileDlog == nullptr)
+	if (window->replaceMultiFileDlog_ == nullptr)
 		CreateReplaceMultiFileDlog(window);
 
 	/* Raising the window doesn't make sense. It is modal, so we
@@ -576,7 +576,7 @@ void DoReplaceMultiFileDlog(Document *window) {
 	uploadFileListItems(window, False);
 
 	/* Display the dialog */
-	ManageDialogCenteredOnPointer(window->replaceMultiFileDlog);
+	ManageDialogCenteredOnPointer(window->replaceMultiFileDlog_);
 }
 
 /*
@@ -590,8 +590,8 @@ void DoReplaceMultiFileDlog(Document *window) {
 void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
 	Document *w;
 
-	for (w = WindowList; w != nullptr; w = w->next)
-		if (w->writableWindows)
+	for (w = WindowList; w != nullptr; w = w->next_)
+		if (w->writableWindows_)
 			/* A multi-file replacement dialog is up for this window */
 			checkMultiReplaceListForDoomedW(w, doomedWindow);
 }
@@ -621,7 +621,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	form = CreateFormDialog(parent, "replaceDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
-		sprintf(title, "Replace/Find (in %s)", window->filename);
+		sprintf(title, "Replace/Find (in %s)", window->filename_);
 		XtVaSetValues(XtParent(form), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(form), XmNtitle, "Replace/Find", nullptr);
@@ -785,10 +785,10 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'R');
 	argcnt++;
-	window->replaceRegexToggle = XmCreateToggleButton(searchTypeBox, (String) "regExp", args, argcnt);
+	window->replaceRegexToggle_ = XmCreateToggleButton(searchTypeBox, (String) "regExp", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->replaceRegexToggle);
-	XtAddCallback(window->replaceRegexToggle, XmNvalueChangedCallback, replaceRegExpToggleCB, window);
+	XtManageChild(window->replaceRegexToggle_);
+	XtAddCallback(window->replaceRegexToggle_, XmNvalueChangedCallback, replaceRegExpToggleCB, window);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNtraversalOn, True);
@@ -799,10 +799,10 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'C');
 	argcnt++;
-	window->replaceCaseToggle = XmCreateToggleButton(searchTypeBox, (String) "caseSensitive", args, argcnt);
+	window->replaceCaseToggle_ = XmCreateToggleButton(searchTypeBox, (String) "caseSensitive", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->replaceCaseToggle);
-	XtAddCallback(window->replaceCaseToggle, XmNvalueChangedCallback, replaceCaseToggleCB, window);
+	XtManageChild(window->replaceCaseToggle_);
+	XtAddCallback(window->replaceCaseToggle_, XmNvalueChangedCallback, replaceCaseToggleCB, window);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNtraversalOn, True);
@@ -813,9 +813,9 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'h');
 	argcnt++;
-	window->replaceWordToggle = XmCreateToggleButton(searchTypeBox, (String) "wholeWord", args, argcnt);
+	window->replaceWordToggle_ = XmCreateToggleButton(searchTypeBox, (String) "wholeWord", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->replaceWordToggle);
+	XtManageChild(window->replaceWordToggle_);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNorientation, XmHORIZONTAL);
@@ -1285,25 +1285,25 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	XtVaSetValues(form, XmNcancelButton, cancelBtn, nullptr);
 	AddDialogMnemonicHandler(form, FALSE);
 
-	window->replaceDlog = form;
-	window->replaceText = findText;
-	window->replaceWithText = replaceText;
-	window->replaceRevToggle = reverseBtn;
-	window->replaceKeepBtn = keepBtn;
-	window->replaceBtns = btnForm;
-	window->replaceBtn = replaceBtn;
-	window->replaceAndFindBtn = replaceFindBtn;
-	window->replaceFindBtn = findBtn;
-	window->replaceSearchTypeBox = searchTypeBox;
+	window->replaceDlog_ = form;
+	window->replaceText_ = findText;
+	window->replaceWithText_ = replaceText;
+	window->replaceRevToggle_ = reverseBtn;
+	window->replaceKeepBtn_ = keepBtn;
+	window->replaceBtns_ = btnForm;
+	window->replaceBtn_ = replaceBtn;
+	window->replaceAndFindBtn_ = replaceFindBtn;
+	window->replaceFindBtn_ = findBtn;
+	window->replaceSearchTypeBox_ = searchTypeBox;
 #ifdef REPLACE_SCOPE
-	window->replaceAllBtn = replaceAllBtn;
-	window->replaceScopeWinToggle = inWinBtn;
-	window->replaceScopeSelToggle = inSelBtn;
-	window->replaceScopeMultiToggle = inMultiBtn;
+	window->replaceAllBtn_ = replaceAllBtn;
+	window->replaceScopeWinToggle_ = inWinBtn;
+	window->replaceScopeSelToggle_ = inSelBtn;
+	window->replaceScopeMultiToggle_ = inMultiBtn;
 #else
-	window->replaceInWinBtn = inWinBtn;
-	window->replaceAllBtn = inMultiBtn;
-	window->replaceInSelBtn = inSelBtn;
+	window->replaceInWinBtn_ = inWinBtn;
+	window->replaceAllBtn_ = inMultiBtn;
+	window->replaceInSelBtn_ = inSelBtn;
 #endif
 }
 
@@ -1323,7 +1323,7 @@ void CreateFindDlog(Widget parent, Document *window) {
 	form = CreateFormDialog(parent, "findDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
-		sprintf(title, "Find (in %s)", window->filename);
+		sprintf(title, "Find (in %s)", window->filename_);
 		XtVaSetValues(XtParent(form), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(form), XmNtitle, "Find", nullptr);
@@ -1435,10 +1435,10 @@ void CreateFindDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'R');
 	argcnt++;
-	window->findRegexToggle = XmCreateToggleButton(searchTypeBox, (String) "regExp", args, argcnt);
+	window->findRegexToggle_ = XmCreateToggleButton(searchTypeBox, (String) "regExp", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->findRegexToggle);
-	XtAddCallback(window->findRegexToggle, XmNvalueChangedCallback, findRegExpToggleCB, window);
+	XtManageChild(window->findRegexToggle_);
+	XtAddCallback(window->findRegexToggle_, XmNvalueChangedCallback, findRegExpToggleCB, window);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNtraversalOn, True);
@@ -1449,10 +1449,10 @@ void CreateFindDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'C');
 	argcnt++;
-	window->findCaseToggle = XmCreateToggleButton(searchTypeBox, (String) "caseSensitive", args, argcnt);
+	window->findCaseToggle_ = XmCreateToggleButton(searchTypeBox, (String) "caseSensitive", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->findCaseToggle);
-	XtAddCallback(window->findCaseToggle, XmNvalueChangedCallback, findCaseToggleCB, window);
+	XtManageChild(window->findCaseToggle_);
+	XtAddCallback(window->findCaseToggle_, XmNvalueChangedCallback, findCaseToggleCB, window);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNtraversalOn, True);
@@ -1463,9 +1463,9 @@ void CreateFindDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNmnemonic, 'h');
 	argcnt++;
-	window->findWordToggle = XmCreateToggleButton(searchTypeBox, (String) "wholeWord", args, argcnt);
+	window->findWordToggle_ = XmCreateToggleButton(searchTypeBox, (String) "wholeWord", args, argcnt);
 	XmStringFree(st1);
-	XtManageChild(window->findWordToggle);
+	XtManageChild(window->findWordToggle_);
 
 	argcnt = 0;
 	XtSetArg(args[argcnt], XmNorientation, XmHORIZONTAL);
@@ -1593,13 +1593,13 @@ void CreateFindDlog(Widget parent, Document *window) {
 	XtVaSetValues(form, XmNcancelButton, cancelBtn, nullptr);
 	AddDialogMnemonicHandler(form, FALSE);
 
-	window->findDlog = form;
-	window->findText = findText;
-	window->findRevToggle = reverseBtn;
-	window->findKeepBtn = keepBtn;
-	window->findBtns = btnForm;
-	window->findBtn = findBtn;
-	window->findSearchTypeBox = searchTypeBox;
+	window->findDlog_ = form;
+	window->findText_ = findText;
+	window->findRevToggle_ = reverseBtn;
+	window->findKeepBtn_ = keepBtn;
+	window->findBtns_ = btnForm;
+	window->findBtn_ = findBtn;
+	window->findSearchTypeBox_ = searchTypeBox;
 }
 
 void CreateReplaceMultiFileDlog(Document *window) {
@@ -1623,7 +1623,7 @@ void CreateReplaceMultiFileDlog(Document *window) {
 	   as the parent, it is possible that the replace dialog _partially_
 	   covers the multi-file dialog, but this much better than the multi-file
 	   dialog being covered completely by the main window */
-	form = CreateFormDialog(window->shell, (String) "replaceMultiFileDialog", args, argcnt);
+	form = CreateFormDialog(window->shell_, (String) "replaceMultiFileDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	XtVaSetValues(XtParent(form), XmNtitle, (String) "Replace All in Multiple Documents", nullptr);
 
@@ -1891,9 +1891,9 @@ void CreateReplaceMultiFileDlog(Document *window) {
 	XtVaSetValues(form, XmNcancelButton, cancelBtn, nullptr);
 	AddDialogMnemonicHandler(form, FALSE);
 
-	window->replaceMultiFileDlog = form;
-	window->replaceMultiFileList = list;
-	window->replaceMultiFilePathBtn = pathBtn;
+	window->replaceMultiFileDlog_ = form;
+	window->replaceMultiFileList_ = list;
+	window->replaceMultiFilePathBtn_ = pathBtn;
 
 	/* Install a handler that frees the list of writable windows when
 	   the dialog is unmapped. */
@@ -1911,13 +1911,13 @@ static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWi
 	/* If the window owning the list and the doomed window are one and the
 	   same, we just close the multi-file replacement dialog. */
 	if (window == doomedWindow) {
-		XtUnmanageChild(window->replaceMultiFileDlog);
+		XtUnmanageChild(window->replaceMultiFileDlog_);
 		return;
 	}
 
 	/* Check whether the doomed window is currently listed */
-	for (i = 0; i < window->nWritableWindows; ++i) {
-		w = window->writableWindows[i];
+	for (i = 0; i < window->nWritableWindows_; ++i) {
+		w = window->writableWindows_[i];
 		if (w == doomedWindow) {
 			removeDoomedWindowFromList(window, i);
 			break;
@@ -1933,16 +1933,16 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 	int entriesToMove;
 
 	/* If the list would become empty, we remove the dialog */
-	if (window->nWritableWindows <= 1) {
-		XtUnmanageChild(window->replaceMultiFileDlog);
+	if (window->nWritableWindows_ <= 1) {
+		XtUnmanageChild(window->replaceMultiFileDlog_);
 		return;
 	}
 
-	entriesToMove = window->nWritableWindows - index - 1;
-	memmove(&(window->writableWindows[index]), &(window->writableWindows[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
-	window->nWritableWindows -= 1;
+	entriesToMove = window->nWritableWindows_ - index - 1;
+	memmove(&(window->writableWindows_[index]), &(window->writableWindows_[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
+	window->nWritableWindows_ -= 1;
 
-	XmListDeletePos(window->replaceMultiFileList, index + 1);
+	XmListDeletePos(window->replaceMultiFileList_, index + 1);
 }
 
 /*
@@ -1959,7 +1959,7 @@ static void fFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	window = Document::WidgetToWindow(w);
-	SET_ONE_RSRC(window->findDlog, XmNdefaultButton, window->findBtn);
+	SET_ONE_RSRC(window->findDlog_, XmNdefaultButton, window->findBtn_);
 }
 static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
@@ -1968,7 +1968,7 @@ static void rFocusCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	window = Document::WidgetToWindow(w);
-	SET_ONE_RSRC(window->replaceDlog, XmNdefaultButton, window->replaceBtn);
+	SET_ONE_RSRC(window->replaceDlog_, XmNdefaultButton, window->replaceBtn_);
 }
 
 /* when keeping a window up, clue the user what window it's associated with */
@@ -1983,10 +1983,10 @@ static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
-		sprintf(title, "Replace/Find (in %s)", window->filename);
-		XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, title, nullptr);
+		sprintf(title, "Replace/Find (in %s)", window->filename_);
+		XtVaSetValues(XtParent(window->replaceDlog_), XmNtitle, title, nullptr);
 	} else
-		XtVaSetValues(XtParent(window->replaceDlog), XmNtitle, "Replace/Find", nullptr);
+		XtVaSetValues(XtParent(window->replaceDlog_), XmNtitle, "Replace/Find", nullptr);
 }
 static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 
@@ -1999,10 +1999,10 @@ static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
-		sprintf(title, "Find (in %s)", window->filename);
-		XtVaSetValues(XtParent(window->findDlog), XmNtitle, title, nullptr);
+		sprintf(title, "Find (in %s)", window->filename_);
+		XtVaSetValues(XtParent(window->findDlog_), XmNtitle, title, nullptr);
 	} else
-		XtVaSetValues(XtParent(window->findDlog), XmNtitle, "Find", nullptr);
+		XtVaSetValues(XtParent(window->findDlog_), XmNtitle, "Find", nullptr);
 }
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2030,11 +2030,11 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[3] = searchTypeArg(searchType);
 	params[4] = searchWrapArg(GetPrefSearchWraps());
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, (String) "replace", callData->event, (char **)params, 5);
+	XtCallActionProc(window->lastFocus_, (String) "replace", callData->event, (char **)params, 5);
 	windowNotToClose = nullptr;
 
 	/* Pop down the dialog */
-	if (!XmToggleButtonGetState(window->replaceKeepBtn))
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 		unmanageReplaceDialogs(window);
 }
 
@@ -2062,11 +2062,11 @@ static void replaceAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[1] = replaceString;
 	params[2] = searchTypeArg(searchType);
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, (String) "replace_all", callData->event, (char **)params, 3);
+	XtCallActionProc(window->lastFocus_, (String) "replace_all", callData->event, (char **)params, 3);
 	windowNotToClose = nullptr;
 
 	/* pop down the dialog */
-	if (!XmToggleButtonGetState(window->replaceKeepBtn))
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 		unmanageReplaceDialogs(window);
 }
 
@@ -2089,9 +2089,9 @@ static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call
 	(void)callData;
 
 	window = Document::WidgetToWindow(w);
-	delete [] window->writableWindows;
-	window->writableWindows = nullptr;
-	window->nWritableWindows = 0;
+	delete [] window->writableWindows_;
+	window->writableWindows_ = nullptr;
+	window->nWritableWindows_ = 0;
 }
 
 /*
@@ -2101,7 +2101,7 @@ static int countWindows(void) {
 	int nWindows;
 	const Document *w;
 
-	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next, ++nWindows)
+	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next_, ++nWindows)
 		;
 
 	return nWindows;
@@ -2115,7 +2115,7 @@ static int countWritableWindows(void) {
 	Document *w;
 
 	nBefore = countWindows();
-	for (w = WindowList, nWritable = 0; w != nullptr; w = w->next) {
+	for (w = WindowList, nWritable = 0; w != nullptr; w = w->next_) {
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
 		   arbitrary windows in response. */
@@ -2128,7 +2128,7 @@ static int countWritableWindows(void) {
 			nWritable = 0;
 			continue;
 		}
-		if (!IS_ANY_LOCKED(w->lockReasons))
+		if (!IS_ANY_LOCKED(w->lockReasons_))
 			++nWritable;
 	}
 	return nWritable;
@@ -2144,22 +2144,22 @@ static void collectWritableWindows(Document *window) {
 	Document *w;
 	Document **windows;
 
-	delete [] window->writableWindows;
+	delete [] window->writableWindows_;
 
 	/* Make a sorted list of writable windows */
 	windows = new Document*[nWritable];
-	for (w = WindowList, i = 0; w != nullptr; w = w->next) {
-		if (!IS_ANY_LOCKED(w->lockReasons)) {
+	for (w = WindowList, i = 0; w != nullptr; w = w->next_) {
+		if (!IS_ANY_LOCKED(w->lockReasons_)) {
 			windows[i++] = w;
 		}
 	}
 
 	std::sort(windows, windows + nWritable, [](const Document *lhs, const Document *rhs) {
-		return strcmp(lhs->filename, rhs->filename) < 0;
+		return strcmp(lhs->filename_, rhs->filename_) < 0;
 	});
 
-	window->writableWindows  = windows;
-	window->nWritableWindows = nWritable;
+	window->writableWindows_  = windows;
+	window->nWritableWindows_ = nWritable;
 }
 
 static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2177,12 +2177,12 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 
 	window = Document::WidgetToWindow(w);
 	nSelected = 0;
-	for (i = 0; i < window->nWritableWindows; ++i)
-		if (XmListPosSelected(window->replaceMultiFileList, i + 1))
+	for (i = 0; i < window->nWritableWindows_; ++i)
+		if (XmListPosSelected(window->replaceMultiFileList_, i + 1))
 			++nSelected;
 
 	if (!nSelected) {
-		DialogF(DF_INF, XtParent(window->replaceMultiFileDlog), 1, "No Files", "No files selected!", "OK");
+		DialogF(DF_INF, XtParent(window->replaceMultiFileDlog_), 1, "No Files", "No files selected!", "OK");
 		return; /* Give the user another chance */
 	}
 
@@ -2192,11 +2192,11 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	/*
 	 * Protect the user against him/herself; Maybe this is a bit too much?
 	 */
-	if (DialogF(DF_QUES, window->shell, 2, "Multi-File Replacement", "Multi-file replacements are difficult to undo.\n"
+	if (DialogF(DF_QUES, window->shell_, 2, "Multi-File Replacement", "Multi-file replacements are difficult to undo.\n"
 	                                                                 "Proceed with the replacement ?",
 	            "Yes", "Cancel") != 1) {
 		/* pop down the multi-file dialog only */
-		XtUnmanageChild(window->replaceMultiFileDlog);
+		XtUnmanageChild(window->replaceMultiFileDlog_);
 
 		return;
 	}
@@ -2218,34 +2218,34 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	replaceFailed = True;
 	noWritableLeft = True;
 	/* Perform the replacements and mark the selected files (history) */
-	for (i = 0; i < window->nWritableWindows; ++i) {
-		writableWin = window->writableWindows[i];
-		if (XmListPosSelected(window->replaceMultiFileList, i + 1)) {
+	for (i = 0; i < window->nWritableWindows_; ++i) {
+		writableWin = window->writableWindows_[i];
+		if (XmListPosSelected(window->replaceMultiFileList_, i + 1)) {
 			/* First check again whether the file is still writable. If the
 			   file status has changed or the file was locked in the mean time
 			   (possible due to Lesstif modal dialog bug), we just skip the
 			   window. */
-			if (!IS_ANY_LOCKED(writableWin->lockReasons)) {
+			if (!IS_ANY_LOCKED(writableWin->lockReasons_)) {
 				noWritableLeft = False;
-				writableWin->multiFileReplSelected = True;
-				writableWin->multiFileBusy = True; /* Avoid multi-beep/dialog */
-				writableWin->replaceFailed = False;
-				XtCallActionProc(writableWin->lastFocus, "replace_all", callData->event, (char **)params, 3);
-				writableWin->multiFileBusy = False;
-				if (!writableWin->replaceFailed)
+				writableWin->multiFileReplSelected_ = True;
+				writableWin->multiFileBusy_ = True; /* Avoid multi-beep/dialog */
+				writableWin->replaceFailed_ = False;
+				XtCallActionProc(writableWin->lastFocus_, "replace_all", callData->event, (char **)params, 3);
+				writableWin->multiFileBusy_ = False;
+				if (!writableWin->replaceFailed_)
 					replaceFailed = False;
 			}
 		} else {
-			writableWin->multiFileReplSelected = False;
+			writableWin->multiFileReplSelected_ = False;
 		}
 	}
 
-	if (!XmToggleButtonGetState(window->replaceKeepBtn)) {
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_)) {
 		/* Pop down both replace dialogs. */
 		unmanageReplaceDialogs(window);
 	} else {
 		/* pow down only the file selection dialog */
-		XtUnmanageChild(window->replaceMultiFileDlog);
+		XtUnmanageChild(window->replaceMultiFileDlog_);
 	}
 
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
@@ -2253,9 +2253,9 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	if (replaceFailed) {
 		if (GetPrefSearchDlogs()) {
 			if (noWritableLeft) {
-				DialogF(DF_INF, window->shell, 1, "Read-only Files", "All selected files have become read-only.", "OK");
+				DialogF(DF_INF, window->shell_, 1, "Read-only Files", "All selected files have become read-only.", "OK");
 			} else {
-				DialogF(DF_INF, window->shell, 1, "String not found", "String was not found", "OK");
+				DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 			}
 		} else {
 			XBell(TheDisplay, 0);
@@ -2275,7 +2275,7 @@ static void rMultiFileCancelCB(Widget w, XtPointer clientData, XtPointer callDat
 	resetReplaceTabGroup(window);
 
 	/* pop down the multi-window replace dialog */
-	XtUnmanageChild(window->replaceMultiFileDlog);
+	XtUnmanageChild(window->replaceMultiFileDlog_);
 }
 
 static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2290,7 +2290,7 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 	Widget list;
 
 	window = Document::WidgetToWindow(w);
-	list = window->replaceMultiFileList;
+	list = window->replaceMultiFileList_;
 
 	/*
 	 * If the list is in extended selection mode, we can't select more
@@ -2305,9 +2305,9 @@ static void rMultiFileSelectAllCB(Widget w, XtPointer clientData, XtPointer call
 	XtVaSetValues(list, XmNselectionPolicy, XmMULTIPLE_SELECT, nullptr);
 
 	/* Is there no other way (like "select all") ? */
-	XmListDeselectAllItems(window->replaceMultiFileList); /* select toggles */
+	XmListDeselectAllItems(window->replaceMultiFileList_); /* select toggles */
 
-	for (i = 0; i < window->nWritableWindows; ++i) {
+	for (i = 0; i < window->nWritableWindows_; ++i) {
 		XmListSelectPos(list, i + 1, FALSE);
 	}
 
@@ -2323,7 +2323,7 @@ static void rMultiFileDeselectAllCB(Widget w, XtPointer clientData, XtPointer ca
 	(void)callData;
 
 	window = Document::WidgetToWindow(w);
-	XmListDeselectAllItems(window->replaceMultiFileList);
+	XmListDeselectAllItems(window->replaceMultiFileList_);
 }
 
 static void rMultiFilePathCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2352,23 +2352,23 @@ static void uploadFileListItems(Document *window, Bool replace) {
 	Document *w;
 	Widget list;
 
-	nWritable = window->nWritableWindows;
-	list = window->replaceMultiFileList;
+	nWritable = window->nWritableWindows_;
+	list = window->replaceMultiFileList_;
 
 	auto names = new XmString[nWritable];
 
-	usePathNames = XmToggleButtonGetState(window->replaceMultiFilePathBtn);
+	usePathNames = XmToggleButtonGetState(window->replaceMultiFilePathBtn_);
 
 	/* Note: the windows are sorted alphabetically by _file_ name. This
 	         order is _not_ changed when we switch to path names. That
 	         would be confusing for the user */
 
 	for (i = 0; i < nWritable; ++i) {
-		w = window->writableWindows[i];
-		if (usePathNames && window->filenameSet) {
-			sprintf(buf, "%s%s", w->path, w->filename);
+		w = window->writableWindows_[i];
+		if (usePathNames && window->filenameSet_) {
+			sprintf(buf, "%s%s", w->path_, w->filename_);
 		} else {
-			sprintf(buf, "%s", w->filename);
+			sprintf(buf, "%s", w->filename_);
 		}
 		names[i] = XmStringCreateSimpleEx(buf);
 	}
@@ -2410,7 +2410,7 @@ static void uploadFileListItems(Document *window, Bool replace) {
 		/* Pre-select the files from the last run. */
 		selectedCount = 0;
 		for (i = 0; i < nWritable; ++i) {
-			if (window->writableWindows[i]->multiFileReplSelected) {
+			if (window->writableWindows_[i]->multiFileReplSelected_) {
 				XmListSelectPos(list, i + 1, False);
 				++selectedCount;
 				/* Remember the first selected item */
@@ -2464,12 +2464,12 @@ static void uploadFileListItems(Document *window, Bool replace) {
 static void unmanageReplaceDialogs(const Document *window) {
 	/* If the replace dialog goes down, the multi-file replace dialog must
 	   go down too */
-	if (window->replaceMultiFileDlog && XtIsManaged(window->replaceMultiFileDlog)) {
-		XtUnmanageChild(window->replaceMultiFileDlog);
+	if (window->replaceMultiFileDlog_ && XtIsManaged(window->replaceMultiFileDlog_)) {
+		XtUnmanageChild(window->replaceMultiFileDlog_);
 	}
 
-	if (window->replaceDlog && XtIsManaged(window->replaceDlog)) {
-		XtUnmanageChild(window->replaceDlog);
+	if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_)) {
+		XtUnmanageChild(window->replaceDlog_);
 	}
 }
 
@@ -2497,11 +2497,11 @@ static void rInSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[1] = replaceString;
 	params[2] = searchTypeArg(searchType);
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, "replace_in_selection", callData->event, (char **)params, 3);
+	XtCallActionProc(window->lastFocus_, "replace_in_selection", callData->event, (char **)params, 3);
 	windowNotToClose = nullptr;
 
 	/* pop down the dialog */
-	if (!XmToggleButtonGetState(window->replaceKeepBtn))
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 		unmanageReplaceDialogs(window);
 }
 
@@ -2532,7 +2532,7 @@ static void fCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 	resetFindTabGroup(window);
 
 	/* pop down the dialog */
-	XtUnmanageChild(window->findDlog);
+	XtUnmanageChild(window->findDlog_);
 }
 
 static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2560,7 +2560,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, (String) "find", callData->event, (char **)params, 4);
+	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, (char **)params, 4);
 	windowNotToClose = nullptr;
 
 	/* Doctor the search history generated by the action to include the
@@ -2572,7 +2572,7 @@ static void rFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	}
 
 	/* Pop down the dialog */
-	if (!XmToggleButtonGetState(window->replaceKeepBtn))
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 		unmanageReplaceDialogs(window);
 }
 
@@ -2601,11 +2601,11 @@ static void replaceFindCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[2] = directionArg(direction);
 	params[3] = searchTypeArg(searchType);
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, (String) "replace_find", callData->event, (char **)params, 4);
+	XtCallActionProc(window->lastFocus_, (String) "replace_find", callData->event, (char **)params, 4);
 	windowNotToClose = nullptr;
 
 	/* Pop down the dialog */
-	if (!XmToggleButtonGetState(window->replaceKeepBtn))
+	if (!XmToggleButtonGetState(window->replaceKeepBtn_))
 		unmanageReplaceDialogs(window);
 }
 
@@ -2614,21 +2614,21 @@ static void rSetActionButtons(Document *window, int replaceBtn, int replaceFindB
                               int replaceInWinBtn, int replaceInSelBtn,
 #endif
                               int replaceAllBtn) {
-	XtSetSensitive(window->replaceBtn, replaceBtn);
-	XtSetSensitive(window->replaceFindBtn, replaceFindBtn);
-	XtSetSensitive(window->replaceAndFindBtn, replaceAndFindBtn);
+	XtSetSensitive(window->replaceBtn_, replaceBtn);
+	XtSetSensitive(window->replaceFindBtn_, replaceFindBtn);
+	XtSetSensitive(window->replaceAndFindBtn_, replaceAndFindBtn);
 #ifndef REPLACE_SCOPE
-	XtSetSensitive(window->replaceInWinBtn, replaceInWinBtn);
-	XtSetSensitive(window->replaceInSelBtn, replaceInSelBtn);
+	XtSetSensitive(window->replaceInWinBtn_, replaceInWinBtn);
+	XtSetSensitive(window->replaceInSelBtn_, replaceInSelBtn);
 #endif
-	XtSetSensitive(window->replaceAllBtn, replaceAllBtn);
+	XtSetSensitive(window->replaceAllBtn_, replaceAllBtn);
 }
 
 void UpdateReplaceActionButtons(Document *window) {
 	/* Is there any text in the search for field */
-	int searchText = textFieldNonEmpty(window->replaceText);
+	int searchText = textFieldNonEmpty(window->replaceText_);
 #ifdef REPLACE_SCOPE
-	switch (window->replaceScope) {
+	switch (window->replaceScope_) {
 	case REPL_SCOPE_WIN:
 		/* Enable all buttons, if there is any text in the search field. */
 		rSetActionButtons(window, searchText, searchText, searchText, searchText);
@@ -2636,7 +2636,7 @@ void UpdateReplaceActionButtons(Document *window) {
 
 	case REPL_SCOPE_SEL:
 		/* Only enable Replace All, if a selection exists and text in search field. */
-		rSetActionButtons(window, False, False, False, searchText && window->wasSelected);
+		rSetActionButtons(window, False, False, False, searchText && window->wasSelected_);
 		break;
 
 	case REPL_SCOPE_MULTI:
@@ -2645,7 +2645,7 @@ void UpdateReplaceActionButtons(Document *window) {
 		break;
 	}
 #else
-	rSetActionButtons(window, searchText, searchText, searchText, searchText, searchText && window->wasSelected, searchText && (countWritableWindows() > 1));
+	rSetActionButtons(window, searchText, searchText, searchText, searchText, searchText && window->wasSelected_, searchText && (countWritableWindows() > 1));
 #endif
 }
 
@@ -2656,24 +2656,24 @@ void UpdateReplaceActionButtons(Document *window) {
 */
 static void rScopeWinCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	window = Document::WidgetToWindow(w);
-	if (XmToggleButtonGetState(window->replaceScopeWinToggle)) {
-		window->replaceScope = REPL_SCOPE_WIN;
+	if (XmToggleButtonGetState(window->replaceScopeWinToggle_)) {
+		window->replaceScope_ = REPL_SCOPE_WIN;
 		UpdateReplaceActionButtons(window);
 	}
 }
 
 static void rScopeSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	window = Document::WidgetToWindow(w);
-	if (XmToggleButtonGetState(window->replaceScopeSelToggle)) {
-		window->replaceScope = REPL_SCOPE_SEL;
+	if (XmToggleButtonGetState(window->replaceScopeSelToggle_)) {
+		window->replaceScope_ = REPL_SCOPE_SEL;
 		UpdateReplaceActionButtons(window);
 	}
 }
 
 static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	window = Document::WidgetToWindow(w);
-	if (XmToggleButtonGetState(window->replaceScopeMultiToggle)) {
-		window->replaceScope = REPL_SCOPE_MULTI;
+	if (XmToggleButtonGetState(window->replaceScopeMultiToggle_)) {
+		window->replaceScope_ = REPL_SCOPE_MULTI;
 		UpdateReplaceActionButtons(window);
 	}
 }
@@ -2684,7 +2684,7 @@ static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
 */
 static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	window = Document::WidgetToWindow(w);
-	switch (window->replaceScope) {
+	switch (window->replaceScope_) {
 	case REPL_SCOPE_WIN:
 		replaceAllCB(w, window, callData);
 		break;
@@ -2730,7 +2730,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	int searchType;
 
 	window = Document::WidgetToWindow(w);
-	index = window->rHistIndex;
+	index = window->rHistIndex_;
 
 	/* only process up and down arrow keys */
 	if (keysym != XK_Up && keysym != XK_Down)
@@ -2759,15 +2759,15 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 	}
 
 	/* Set the buttons and fields with the selected search type */
-	initToggleButtons(searchType, window->replaceRegexToggle, window->replaceCaseToggle, &window->replaceWordToggle, &window->replaceLastLiteralCase, &window->replaceLastRegexCase);
+	initToggleButtons(searchType, window->replaceRegexToggle_, window->replaceCaseToggle_, &window->replaceWordToggle_, &window->replaceLastLiteralCase_, &window->replaceLastRegexCase_);
 
-	XmTextSetStringEx(window->replaceText, (String)searchStr);
-	XmTextSetStringEx(window->replaceWithText, (String)replaceStr);
+	XmTextSetStringEx(window->replaceText_, (String)searchStr);
+	XmTextSetStringEx(window->replaceWithText_, (String)replaceStr);
 
 	/* Set the state of the Replace, Find ... buttons */
 	UpdateReplaceActionButtons(window);
 
-	window->rHistIndex = index;
+	window->rHistIndex_ = index;
 }
 
 static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch) {
@@ -2781,7 +2781,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 	int index;
 
 	window = Document::WidgetToWindow(w);
-	index = window->rHistIndex;
+	index = window->rHistIndex_;
 
 	/* only process up and down arrow keys */
 	if (keysym != XK_Up && keysym != XK_Down)
@@ -2800,15 +2800,15 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 
 	/* change only the replace field information */
 	if (index == 0)
-		XmTextSetStringEx(window->replaceWithText, (String) "");
+		XmTextSetStringEx(window->replaceWithText_, (String) "");
 	else
-		XmTextSetStringEx(window->replaceWithText, ReplaceHistory[historyIndex(index)]);
-	window->rHistIndex = index;
+		XmTextSetStringEx(window->replaceWithText_, ReplaceHistory[historyIndex(index)]);
+	window->rHistIndex_ = index;
 }
 
 static void fUpdateActionButtons(Document *window) {
-	int buttonState = textFieldNonEmpty(window->findText);
-	XtSetSensitive(window->findBtn, buttonState);
+	int buttonState = textFieldNonEmpty(window->findText_);
+	XtSetSensitive(window->findBtn_, buttonState);
 }
 
 static void findTextValueChangedCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2835,7 +2835,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 	int searchType;
 
 	window = Document::WidgetToWindow(w);
-	index = window->fHistIndex;
+	index = window->fHistIndex_;
 
 	/* only process up and down arrow keys */
 	if (keysym != XK_Up && keysym != XK_Down)
@@ -2860,13 +2860,13 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 	}
 
 	/* Set the buttons and fields with the selected search type */
-	initToggleButtons(searchType, window->findRegexToggle, window->findCaseToggle, &window->findWordToggle, &window->findLastLiteralCase, &window->findLastRegexCase);
-	XmTextSetStringEx(window->findText, (String)searchStr);
+	initToggleButtons(searchType, window->findRegexToggle_, window->findCaseToggle_, &window->findWordToggle_, &window->findLastLiteralCase_, &window->findLastRegexCase_);
+	XmTextSetStringEx(window->findText_, (String)searchStr);
 
 	/* Set the state of the Find ... button */
 	fUpdateActionButtons(window);
 
-	window->fHistIndex = index;
+	window->fHistIndex_ = index;
 }
 
 static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -2895,12 +2895,12 @@ static void findCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	params[3] = searchWrapArg(GetPrefSearchWraps());
 	
 	windowNotToClose = window;
-	XtCallActionProc(window->lastFocus, (String) "find", callData->event, (char **)params, 4);
+	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, (char **)params, 4);
 	windowNotToClose = nullptr;
 
 	/* pop down the dialog */
-	if (!XmToggleButtonGetState(window->findKeepBtn))
-		XtUnmanageChild(window->findDlog);
+	if (!XmToggleButtonGetState(window->findKeepBtn_))
+		XtUnmanageChild(window->findDlog_);
 }
 
 /*
@@ -2916,12 +2916,12 @@ static int getReplaceDlogInfo(Document *window, SearchDirection *direction, char
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
-	char *replaceText     = XmTextGetString(window->replaceText);
-	char *replaceWithText = XmTextGetString(window->replaceWithText);
+	char *replaceText     = XmTextGetString(window->replaceText_);
+	char *replaceWithText = XmTextGetString(window->replaceWithText_);
 
-	if (XmToggleButtonGetState(window->replaceRegexToggle)) {
+	if (XmToggleButtonGetState(window->replaceRegexToggle_)) {
 		int regexDefault;
-		if (XmToggleButtonGetState(window->replaceCaseToggle)) {
+		if (XmToggleButtonGetState(window->replaceCaseToggle_)) {
 			*searchType = SEARCH_REGEX;
 			regexDefault = REDFLT_STANDARD;
 		} else {
@@ -2933,37 +2933,37 @@ static int getReplaceDlogInfo(Document *window, SearchDirection *direction, char
 		try {
 			compiledRE = new regexp(replaceText, regexDefault);
 		} catch(const regex_error &e) {
-			DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "Search String", "Please respecify the search string:\n%s", "OK", e.what());
+			DialogF(DF_WARN, XtParent(window->replaceDlog_), 1, "Search String", "Please respecify the search string:\n%s", "OK", e.what());
 			XtFree(replaceText);
 			XtFree(replaceWithText);
 			return FALSE;
 		}
 		delete compiledRE;
 	} else {
-		if (XmToggleButtonGetState(window->replaceCaseToggle)) {
-			if (XmToggleButtonGetState(window->replaceWordToggle))
+		if (XmToggleButtonGetState(window->replaceCaseToggle_)) {
+			if (XmToggleButtonGetState(window->replaceWordToggle_))
 				*searchType = SEARCH_CASE_SENSE_WORD;
 			else
 				*searchType = SEARCH_CASE_SENSE;
 		} else {
-			if (XmToggleButtonGetState(window->replaceWordToggle))
+			if (XmToggleButtonGetState(window->replaceWordToggle_))
 				*searchType = SEARCH_LITERAL_WORD;
 			else
 				*searchType = SEARCH_LITERAL;
 		}
 	}
 
-	*direction = XmToggleButtonGetState(window->replaceRevToggle) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+	*direction = XmToggleButtonGetState(window->replaceRevToggle_) ? SEARCH_BACKWARD : SEARCH_FORWARD;
 
 	/* Return strings */
 	if (strlen(replaceText) >= SEARCHMAX) {
-		DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long", "Search string too long.", "OK");
+		DialogF(DF_WARN, XtParent(window->replaceDlog_), 1, "String too long", "Search string too long.", "OK");
 		XtFree(replaceText);
 		XtFree(replaceWithText);
 		return FALSE;
 	}
 	if (strlen(replaceWithText) >= SEARCHMAX) {
-		DialogF(DF_WARN, XtParent(window->replaceDlog), 1, "String too long", "Replace string too long.", "OK");
+		DialogF(DF_WARN, XtParent(window->replaceDlog_), 1, "String too long", "Replace string too long.", "OK");
 		XtFree(replaceText);
 		XtFree(replaceWithText);
 		return FALSE;
@@ -2988,11 +2988,11 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 	regexp *compiledRE = nullptr;
 
 	/* Get the search string, search type, and direction from the dialog */
-	std::string findText = XmTextGetStringEx(window->findText);
+	std::string findText = XmTextGetStringEx(window->findText_);
 
-	if (XmToggleButtonGetState(window->findRegexToggle)) {
+	if (XmToggleButtonGetState(window->findRegexToggle_)) {
 		int regexDefault;
-		if (XmToggleButtonGetState(window->findCaseToggle)) {
+		if (XmToggleButtonGetState(window->findCaseToggle_)) {
 			*searchType = SEARCH_REGEX;
 			regexDefault = REDFLT_STANDARD;
 		} else {
@@ -3004,32 +3004,32 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 		try {
 			compiledRE = new regexp(findText, regexDefault);
 		} catch(const regex_error &e) {
-			DialogF(DF_WARN, XtParent(window->findDlog), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
+			DialogF(DF_WARN, XtParent(window->findDlog_), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
 			return FALSE;
 		}
 		delete compiledRE;
 	} else {
-		if (XmToggleButtonGetState(window->findCaseToggle)) {
-			if (XmToggleButtonGetState(window->findWordToggle))
+		if (XmToggleButtonGetState(window->findCaseToggle_)) {
+			if (XmToggleButtonGetState(window->findWordToggle_))
 				*searchType = SEARCH_CASE_SENSE_WORD;
 			else
 				*searchType = SEARCH_CASE_SENSE;
 		} else {
-			if (XmToggleButtonGetState(window->findWordToggle))
+			if (XmToggleButtonGetState(window->findWordToggle_))
 				*searchType = SEARCH_LITERAL_WORD;
 			else
 				*searchType = SEARCH_LITERAL;
 		}
 	}
 
-	*direction = XmToggleButtonGetState(window->findRevToggle) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+	*direction = XmToggleButtonGetState(window->findRevToggle_) ? SEARCH_BACKWARD : SEARCH_FORWARD;
 
 	if (isRegexType(*searchType)) {
 	}
 
 	/* Return the search string */
 	if (findText.size() >= SEARCHMAX) {
-		DialogF(DF_WARN, XtParent(window->findDlog), 1, "String too long", "Search string too long.", "OK");
+		DialogF(DF_WARN, XtParent(window->findDlog_), 1, "String too long", "Search string too long.", "OK");
 		return FALSE;
 	}
 	
@@ -3073,7 +3073,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 		selStart = -1;
 		selEnd = -1;
 		/* no selection, or no match, search relative cursor */
-		cursorPos = TextGetCursorPos(window->lastFocus);
+		cursorPos = TextGetCursorPos(window->lastFocus_);
 		if (direction == SEARCH_BACKWARD) {
 			/* use the insert position - 1 for backward searches */
 			beginPos = cursorPos - 1;
@@ -3111,9 +3111,9 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	}
 
 	/* select the text found string */
-	window->buffer->BufSelect(startPos, endPos);
-	window->MakeSelectionVisible(window->lastFocus);
-	TextSetCursorPos(window->lastFocus, endPos);
+	window->buffer_->BufSelect(startPos, endPos);
+	window->MakeSelectionVisible(window->lastFocus_);
+	TextSetCursorPos(window->lastFocus_, endPos);
 
 	return TRUE;
 }
@@ -3123,7 +3123,7 @@ void SearchForSelected(Document *window, SearchDirection direction, int searchTy
 	callData->direction = direction;
 	callData->searchType = searchType;
 	callData->searchWrap = searchWrap;
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)selectedSearchCB, callData, time);
+	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)selectedSearchCB, callData, time);
 }
 
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format) {
@@ -3140,7 +3140,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	/* skip if we can't get the selection data or it's too long */
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
 		if (GetPrefSearchDlogs())
-			DialogF(DF_WARN, window->shell, 1, "Wrong Selection", "Selection not appropriate for searching", "OK");
+			DialogF(DF_WARN, window->shell_, 1, "Wrong Selection", "Selection not appropriate for searching", "OK");
 		else
 			XBell(TheDisplay, 0);
 		XtFree((char *)callData);
@@ -3148,7 +3148,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	}
 	if (*length > SEARCHMAX) {
 		if (GetPrefSearchDlogs())
-			DialogF(DF_WARN, window->shell, 1, "Selection too long", "Selection too long", "OK");
+			DialogF(DF_WARN, window->shell_, 1, "Selection too long", "Selection too long", "OK");
 		else
 			XBell(TheDisplay, 0);
 		XtFree(value);
@@ -3191,9 +3191,9 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 ** Pop up and clear the incremental search line and prepare to search.
 */
 void BeginISearch(Document *window, SearchDirection direction) {
-	window->iSearchStartPos = -1;
-	XmTextSetStringEx(window->iSearchText, (String) "");
-	XmToggleButtonSetState(window->iSearchRevToggle, direction == SEARCH_BACKWARD, FALSE);
+	window->iSearchStartPos_ = -1;
+	XmTextSetStringEx(window->iSearchText_, (String) "");
+	XmToggleButtonSetState(window->iSearchRevToggle_, direction == SEARCH_BACKWARD, FALSE);
 	/* Note: in contrast to the replace and find dialogs, the regex and
 	   case toggles are not reset to their default state when the incremental
 	   search bar is redisplayed. I'm not sure whether this is the best
@@ -3201,7 +3201,7 @@ void BeginISearch(Document *window, SearchDirection direction) {
 	   here. But in that case, it might be appropriate to have different
 	   default search modes for i-search and replace/find. */
 	window->TempShowISearch(TRUE);
-	XmProcessTraversal(window->iSearchText, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(window->iSearchText_, XmTRAVERSE_CURRENT);
 }
 
 /*
@@ -3216,7 +3216,7 @@ void EndISearch(Document *window) {
 	   or visual glitches.  */
 
 	/* Forget the starting position used for the current run of searches */
-	window->iSearchStartPos = -1;
+	window->iSearchStartPos_ = -1;
 
 	/* Mark the end of incremental search history overwriting */
 	saveSearchHistory("", nullptr, 0, FALSE);
@@ -3226,13 +3226,13 @@ void EndISearch(Document *window) {
 }
 
 /*
-** Reset window->iSearchLastBeginPos to the resulting initial
+** Reset window->iSearchLastBeginPos_ to the resulting initial
 ** search begin position for incremental searches.
 */
 static void iSearchRecordLastBeginPos(Document *window, SearchDirection direction, int initPos) {
-	window->iSearchLastBeginPos = initPos;
+	window->iSearchLastBeginPos_ = initPos;
 	if (direction == SEARCH_BACKWARD)
-		window->iSearchLastBeginPos--;
+		window->iSearchLastBeginPos_--;
 }
 
 /*
@@ -3247,11 +3247,11 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 
 	/* If there's a search in progress, start the search from the original
 	   starting position, otherwise search from the cursor position. */
-	if (!continued || window->iSearchStartPos == -1) {
-		window->iSearchStartPos = TextGetCursorPos(window->lastFocus);
-		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos);
+	if (!continued || window->iSearchStartPos_ == -1) {
+		window->iSearchStartPos_ = TextGetCursorPos(window->lastFocus_);
+		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
 	}
-	beginPos = window->iSearchStartPos;
+	beginPos = window->iSearchStartPos_;
 
 	/* If the search string is empty, beep eventually if text wrapped
 	   back to the initial position, re-init iSearchLastBeginPos,
@@ -3260,19 +3260,19 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	if (searchString[0] == 0) {
 		int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos - 1 : beginPos;
 		iSearchTryBeepOnWrap(window, direction, beepBeginPos, beepBeginPos);
-		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos);
-		window->buffer->BufUnselect();
-		TextSetCursorPos(window->lastFocus, beginPos);
+		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
+		window->buffer_->BufUnselect();
+		TextSetCursorPos(window->lastFocus_, beginPos);
 		return true;
 	}
 
 	/* Save the string in the search history, unless we're cycling thru
 	   the search history itself, which can be detected by matching the
 	   search string with the search string of the current history index. */
-	if (!(window->iSearchHistIndex > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex)]))) {
+	if (!(window->iSearchHistIndex_ > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
 		saveSearchHistory(searchString, nullptr, searchType, TRUE);
 		/* Reset the incremental search history pointer to the beginning */
-		window->iSearchHistIndex = 1;
+		window->iSearchHistIndex_ = 1;
 	}
 
 	/* begin at insert position - 1 for backward searches */
@@ -3283,7 +3283,7 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
 		return false;
 
-	window->iSearchLastBeginPos = startPos;
+	window->iSearchLastBeginPos_ = startPos;
 
 	/* if the search matched an empty string (possible with regular exps)
 	   beginning at the start of the search, go to the next occurrence,
@@ -3292,12 +3292,12 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 		if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
 			return false;
 
-	window->iSearchLastBeginPos = startPos;
+	window->iSearchLastBeginPos_ = startPos;
 
 	/* select the text found string */
-	window->buffer->BufSelect(startPos, endPos);
-	window->MakeSelectionVisible(window->lastFocus);
-	TextSetCursorPos(window->lastFocus, endPos);
+	window->buffer_->BufSelect(startPos, endPos);
+	window->MakeSelectionVisible(window->lastFocus_);
+	TextSetCursorPos(window->lastFocus_, endPos);
 
 	return true;
 }
@@ -3322,34 +3322,34 @@ void SetISearchTextCallbacks(Document *window) {
 
 	if(!tableText)
 		tableText = XtParseTranslationTable(translationsText);
-	XtOverrideTranslations(window->iSearchText, tableText);
+	XtOverrideTranslations(window->iSearchText_, tableText);
 
 	if(!tableClear) {
 		/* make sure actions are loaded */
-		XtAppAddActions(XtWidgetToApplicationContext(window->iSearchText), actions, XtNumber(actions));
+		XtAppAddActions(XtWidgetToApplicationContext(window->iSearchText_), actions, XtNumber(actions));
 		tableClear = XtParseTranslationTable(translationsClear);
 	}
-	XtOverrideTranslations(window->iSearchClearButton, tableClear);
+	XtOverrideTranslations(window->iSearchClearButton_, tableClear);
 
-	XtAddCallback(window->iSearchText, XmNactivateCallback, iSearchTextActivateCB, window);
-	XtAddCallback(window->iSearchText, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
-	XtAddEventHandler(window->iSearchText, KeyPressMask, False, iSearchTextKeyEH, window);
+	XtAddCallback(window->iSearchText_, XmNactivateCallback, iSearchTextActivateCB, window);
+	XtAddCallback(window->iSearchText_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+	XtAddEventHandler(window->iSearchText_, KeyPressMask, False, iSearchTextKeyEH, window);
 
 	/* Attach callbacks to deal with the optional sticky case sensitivity
 	   behaviour. Do this before installing the search callbacks to make
 	   sure that the proper search parameters are taken into account. */
-	XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback, iSearchCaseToggleCB, window);
-	XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback, iSearchRegExpToggleCB, window);
+	XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchCaseToggleCB, window);
+	XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchRegExpToggleCB, window);
 
 	/* When search parameters (direction or search type), redo the search */
-	XtAddCallback(window->iSearchCaseToggle, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
-	XtAddCallback(window->iSearchRegexToggle, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
-	XtAddCallback(window->iSearchRevToggle, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+	XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+	XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+	XtAddCallback(window->iSearchRevToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
 
 	/* find button: just like pressing return */
-	XtAddCallback(window->iSearchFindButton, XmNactivateCallback, iSearchTextActivateCB, window);
+	XtAddCallback(window->iSearchFindButton_, XmNactivateCallback, iSearchTextActivateCB, window);
 	/* clear button: empty the search text widget */
-	XtAddCallback(window->iSearchClearButton, XmNactivateCallback, iSearchTextClearCB, window);
+	XtAddCallback(window->iSearchClearButton_, XmNactivateCallback, iSearchTextClearCB, window);
 }
 
 /*
@@ -3361,13 +3361,13 @@ static void iSearchTextSetString(Widget w, Document *window, const std::string &
 	(void)w;
 
 	/* remove callbacks which would be activated by emptying the text */
-	XtRemoveAllCallbacks(window->iSearchText, XmNvalueChangedCallback);
-	XtRemoveAllCallbacks(window->iSearchText, XmNactivateCallback);
+	XtRemoveAllCallbacks(window->iSearchText_, XmNvalueChangedCallback);
+	XtRemoveAllCallbacks(window->iSearchText_, XmNactivateCallback);
 	/* empty the text */
-	XmTextSetStringEx(window->iSearchText, str);
+	XmTextSetStringEx(window->iSearchText_, str);
 	/* put back the callbacks */
-	XtAddCallback(window->iSearchText, XmNactivateCallback, iSearchTextActivateCB, window);
-	XtAddCallback(window->iSearchText, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+	XtAddCallback(window->iSearchText_, XmNactivateCallback, iSearchTextActivateCB, window);
+	XtAddCallback(window->iSearchText_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
 }
 
 /*
@@ -3390,7 +3390,7 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 	iSearchTextSetString(w, window, selText ? *selText : "");
 	
 	if (selText) {
-		XmTextSetInsertionPosition(window->iSearchText, selText->size());
+		XmTextSetInsertionPosition(window->iSearchText_, selText->size());
 	}
 	
 	iSearchTextActivateCB(w, window, &cbdata);
@@ -3432,19 +3432,19 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	searchString = XmTextGetString(window->iSearchText);
-	if (XmToggleButtonGetState(window->iSearchCaseToggle)) {
-		if (XmToggleButtonGetState(window->iSearchRegexToggle))
+	searchString = XmTextGetString(window->iSearchText_);
+	if (XmToggleButtonGetState(window->iSearchCaseToggle_)) {
+		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX;
 		else
 			searchType = SEARCH_CASE_SENSE;
 	} else {
-		if (XmToggleButtonGetState(window->iSearchRegexToggle))
+		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX_NOCASE;
 		else
 			searchType = SEARCH_LITERAL;
 	}
-	direction = XmToggleButtonGetState(window->iSearchRevToggle) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+	direction = XmToggleButtonGetState(window->iSearchRevToggle_) ? SEARCH_BACKWARD : SEARCH_FORWARD;
 
 	/* Reverse the search direction if the Ctrl or Shift key was pressed */
 	if (callData->event->xbutton.state & (ShiftMask | ControlMask))
@@ -3455,7 +3455,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 	params[1] = directionArg(direction);
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
-	XtCallActionProc(window->lastFocus, (String) "find", callData->event, (char **)params, 4);
+	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, (char **)params, 4);
 	XtFree(searchString);
 }
 
@@ -3477,19 +3477,19 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	std::string searchString = XmTextGetStringEx(window->iSearchText);
-	if (XmToggleButtonGetState(window->iSearchCaseToggle)) {
-		if (XmToggleButtonGetState(window->iSearchRegexToggle))
+	std::string searchString = XmTextGetStringEx(window->iSearchText_);
+	if (XmToggleButtonGetState(window->iSearchCaseToggle_)) {
+		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX;
 		else
 			searchType = SEARCH_CASE_SENSE;
 	} else {
-		if (XmToggleButtonGetState(window->iSearchRegexToggle))
+		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX_NOCASE;
 		else
 			searchType = SEARCH_LITERAL;
 	}
-	direction = XmToggleButtonGetState(window->iSearchRevToggle) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+	direction = XmToggleButtonGetState(window->iSearchRevToggle_) ? SEARCH_BACKWARD : SEARCH_FORWARD;
 
 	/* If the search type is a regular expression, test compile it.  If it
 	   fails, silently skip it.  (This allows users to compose the expression
@@ -3515,11 +3515,11 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	params[nParams++] = directionArg(direction);
 	params[nParams++] = searchTypeArg(searchType);
 	params[nParams++] = searchWrapArg(GetPrefSearchWraps());
-	if (window->iSearchStartPos != -1) {
+	if (window->iSearchStartPos_ != -1) {
 		params[nParams++] = "continued";
 	}
 	
-	XtCallActionProc(window->lastFocus, (String) "find_incremental", callData->event, (char **)params, nParams);
+	XtCallActionProc(window->lastFocus_, (String) "find_incremental", callData->event, (char **)params, nParams);
 }
 
 /*
@@ -3544,12 +3544,12 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 	}
 
 	window = Document::WidgetToWindow(w);
-	index = window->iSearchHistIndex;
+	index = window->iSearchHistIndex_;
 	*continueDispatch = FALSE;
 
 	/* allow escape key to cancel search */
 	if (keysym == XK_Escape) {
-		XmProcessTraversal(window->lastFocus, XmTRAVERSE_CURRENT);
+		XmProcessTraversal(window->lastFocus_, XmTRAVERSE_CURRENT);
 		EndISearch(window);
 		return;
 	}
@@ -3574,12 +3574,12 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 
 	/* Set the info used in the value changed callback before calling
 	  XmTextSetStringEx(). */
-	window->iSearchHistIndex = index;
-	initToggleButtons(searchType, window->iSearchRegexToggle, window->iSearchCaseToggle, nullptr, &window->iSearchLastLiteralCase, &window->iSearchLastRegexCase);
+	window->iSearchHistIndex_ = index;
+	initToggleButtons(searchType, window->iSearchRegexToggle_, window->iSearchCaseToggle_, nullptr, &window->iSearchLastLiteralCase_, &window->iSearchLastRegexCase_);
 
 	/* Beware the value changed callback is processed as part of this call */
-	XmTextSetStringEx(window->iSearchText, searchStr);
-	XmTextSetInsertionPosition(window->iSearchText, XmTextGetLastPosition(window->iSearchText));
+	XmTextSetStringEx(window->iSearchText_, searchStr);
+	XmTextSetInsertionPosition(window->iSearchText_, XmTextGetLastPosition(window->iSearchText_));
 }
 
 /*
@@ -3596,26 +3596,26 @@ void FlashMatching(Document *window, Widget textW) {
 	int constrain;
 
 	/* if a marker is already drawn, erase it and cancel the timeout */
-	if (window->flashTimeoutID != 0) {
+	if (window->flashTimeoutID_ != 0) {
 		eraseFlash(window);
-		XtRemoveTimeOut(window->flashTimeoutID);
-		window->flashTimeoutID = 0;
+		XtRemoveTimeOut(window->flashTimeoutID_);
+		window->flashTimeoutID_ = 0;
 	}
 
 	/* no flashing required */
-	if (window->showMatchingStyle == NO_FLASH) {
+	if (window->showMatchingStyle_ == NO_FLASH) {
 		return;
 	}
 
 	/* don't flash matching characters if there's a selection */
-	if (window->buffer->primary_.selected)
+	if (window->buffer_->primary_.selected)
 		return;
 
 	/* get the character to match and the position to start from */
 	pos = TextGetCursorPos(textW) - 1;
 	if (pos < 0)
 		return;
-	c = window->buffer->BufGetCharacter(pos);
+	c = window->buffer_->BufGetCharacter(pos);
 	style = GetHighlightInfo(window, pos);
 
 	/* is the character one we want to flash? */
@@ -3628,7 +3628,7 @@ void FlashMatching(Document *window, Widget textW) {
 
 	/* constrain the search to visible text only when in single-pane mode
 	   AND using delimiter flashing (otherwise search the whole buffer) */
-	constrain = ((window->nPanes == 0) && (window->showMatchingStyle == FLASH_DELIMIT));
+	constrain = ((window->nPanes_ == 0) && (window->showMatchingStyle_ == FLASH_DELIMIT));
 
 	if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
 		startPos = constrain ? TextFirstVisiblePos(textW) : 0;
@@ -3636,7 +3636,7 @@ void FlashMatching(Document *window, Widget textW) {
 		searchPos = endPos;
 	} else {
 		startPos = pos;
-		endPos = constrain ? TextLastVisiblePos(textW) : window->buffer->BufGetLength();
+		endPos = constrain ? TextLastVisiblePos(textW) : window->buffer_->BufGetLength();
 		searchPos = startPos;
 	}
 
@@ -3644,34 +3644,34 @@ void FlashMatching(Document *window, Widget textW) {
 	if (!findMatchingChar(window, c, style, searchPos, startPos, endPos, &matchPos))
 		return;
 
-	if (window->showMatchingStyle == FLASH_DELIMIT) {
+	if (window->showMatchingStyle_ == FLASH_DELIMIT) {
 		/* Highlight either the matching character ... */
-		window->buffer->BufHighlight(matchPos, matchPos + 1);
+		window->buffer_->BufHighlight(matchPos, matchPos + 1);
 	} else {
 		/* ... or the whole range. */
 		if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
-			window->buffer->BufHighlight(matchPos, pos + 1);
+			window->buffer_->BufHighlight(matchPos, pos + 1);
 		} else {
-			window->buffer->BufHighlight(matchPos + 1, pos);
+			window->buffer_->BufHighlight(matchPos + 1, pos);
 		}
 	}
 
 	/* Set up a timer to erase the box after 1.5 seconds */
-	window->flashTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 1500, flashTimeoutProc, window);
-	window->flashPos = matchPos;
+	window->flashTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 1500, flashTimeoutProc, window);
+	window->flashPos_ = matchPos;
 }
 
 void SelectToMatchingCharacter(Document *window) {
 	int selStart, selEnd;
 	int startPos, endPos, matchPos;
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
 	if (!GetSimpleSelection(buf, &selStart, &selEnd)) {
-		selEnd = TextGetCursorPos(window->lastFocus);
-		if (window->overstrike)
+		selEnd = TextGetCursorPos(window->lastFocus_);
+		if (window->overstrike_)
 			selEnd += 1;
 		selStart = selEnd - 1;
 		if (selStart < 0) {
@@ -3697,24 +3697,24 @@ void SelectToMatchingCharacter(Document *window) {
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
 	/* select the text between the matching characters */
 	buf->BufSelect(startPos, endPos + 1);
-	window->MakeSelectionVisible(window->lastFocus);
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
+	window->MakeSelectionVisible(window->lastFocus_);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
 }
 
 void GotoMatchingCharacter(Document *window) {
 	int selStart, selEnd;
 	int matchPos;
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
 	if (!GetSimpleSelection(buf, &selStart, &selEnd)) {
-		selEnd = TextGetCursorPos(window->lastFocus);
-		if (window->overstrike)
+		selEnd = TextGetCursorPos(window->lastFocus_);
+		if (window->overstrike_)
 			selEnd += 1;
 		selStart = selEnd - 1;
 		if (selStart < 0) {
@@ -3738,18 +3738,18 @@ void GotoMatchingCharacter(Document *window) {
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
-	TextSetCursorPos(window->lastFocus, matchPos + 1);
-	window->MakeSelectionVisible(window->lastFocus);
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
+	TextSetCursorPos(window->lastFocus_, matchPos + 1);
+	window->MakeSelectionVisible(window->lastFocus_);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
 }
 
 static int findMatchingChar(Document *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
 	int nestDepth, matchIndex, direction, beginPos, pos;
 	char matchChar, c;
 	void *style = nullptr;
-	TextBuffer *buf = window->buffer;
-	int matchSyntaxBased = window->matchSyntaxBased;
+	TextBuffer *buf = window->buffer_;
+	int matchSyntaxBased = window->matchSyntaxBased_;
 
 	/* If we don't match syntax based, fake a matching style. */
 	if (!matchSyntaxBased)
@@ -3820,7 +3820,7 @@ static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	eraseFlash(static_cast<Document *>(clientData));
-	(static_cast<Document *>(clientData))->flashTimeoutID = 0;
+	static_cast<Document *>(clientData)->flashTimeoutID_ = 0;
 }
 
 /*
@@ -3828,7 +3828,7 @@ static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** character.
 */
 static void eraseFlash(Document *window) {
-	window->buffer->BufUnhighlight();
+	window->buffer_->BufUnhighlight();
 }
 
 /*
@@ -3878,7 +3878,7 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 		/* replace the text */
 		if (isRegexType(searchType)) {
 			char replaceResult[SEARCHMAX + 1];
-			const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+			const std::string foundString = window->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
 			replaceUsingREEx(
 				searchString,
@@ -3887,20 +3887,20 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 				startPos - searchExtentBW,
 				replaceResult,
 				SEARCHMAX,
-				startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1),
+				startPos == 0 ? '\0' : window->buffer_->BufGetCharacter(startPos - 1),
 				GetWindowDelimiters(window),
 				defaultRegexFlags(searchType));
 
-			window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
+			window->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
 			replaceLen = strlen(replaceResult);
 		} else {
-			window->buffer->BufReplaceEx(startPos, endPos, replaceString);
+			window->buffer_->BufReplaceEx(startPos, endPos, replaceString);
 			replaceLen = strlen(replaceString);
 		}
 
 		/* Position the cursor so the next search will work correctly based */
 		/* on the direction of the search */
-		TextSetCursorPos(window->lastFocus, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+		TextSetCursorPos(window->lastFocus_, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 		replaced = true;
 	}
 
@@ -3929,7 +3929,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	/* Otherwise, search for the string.				*/
 	if (!searchMatchesSelection(window, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 		/* get the position to start the search */
-		cursorPos = TextGetCursorPos(window->lastFocus);
+		cursorPos = TextGetCursorPos(window->lastFocus_);
 		if (direction == SEARCH_BACKWARD) {
 			/* use the insert position - 1 for backward searches */
 			beginPos = cursorPos - 1;
@@ -3946,7 +3946,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	/* replace the text */
 	if (isRegexType(searchType)) {
 		char replaceResult[SEARCHMAX];
-		const std::string foundString = window->buffer->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+		const std::string foundString = window->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 		replaceUsingREEx(
 			searchString,
 			replaceString,
@@ -3954,31 +3954,31 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 			startPos - searchExtentBW,
 			replaceResult,
 			SEARCHMAX,
-			startPos == 0 ? '\0' : window->buffer->BufGetCharacter(startPos - 1),
+			startPos == 0 ? '\0' : window->buffer_->BufGetCharacter(startPos - 1),
 			GetWindowDelimiters(window),
 			defaultRegexFlags(searchType));
 
-		window->buffer->BufReplaceEx(startPos, endPos, replaceResult);
+		window->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
 		replaceLen = strlen(replaceResult);
 	} else {
-		window->buffer->BufReplaceEx(startPos, endPos, replaceString);
+		window->buffer_->BufReplaceEx(startPos, endPos, replaceString);
 		replaceLen = strlen(replaceString);
 	}
 
 	/* after successfully completing a replace, selected text attracts
 	   attention away from the area of the replacement, particularly
 	   when the selection represents a previous search. so deselect */
-	window->buffer->BufUnselect();
+	window->buffer_->BufUnselect();
 
 	/* temporarily shut off autoShowInsertPos before setting the cursor
 	   position so MakeSelectionVisible gets a chance to place the replaced
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, False, nullptr);
-	TextSetCursorPos(window->lastFocus, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
-	window->MakeSelectionVisible(window->lastFocus);
-	XtVaSetValues(window->lastFocus, textNautoShowInsertPos, True, nullptr);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
+	TextSetCursorPos(window->lastFocus_, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+	window->MakeSelectionVisible(window->lastFocus_);
+	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
 
 	return true;
 }
@@ -4065,17 +4065,17 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
 
 	/* find out where the selection is */
-	if (!window->buffer->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		return;
 	}
 
 	/* get the selected text */
 	if (isRect) {
-		selStart = window->buffer->BufStartOfLine(selStart);
-		selEnd = window->buffer->BufEndOfLine( selEnd);
-		fileString = window->buffer->BufGetRangeEx(selStart, selEnd);
+		selStart = window->buffer_->BufStartOfLine(selStart);
+		selEnd = window->buffer_->BufEndOfLine( selEnd);
+		fileString = window->buffer_->BufGetRangeEx(selStart, selEnd);
 	} else {
-		fileString = window->buffer->BufGetSelectionTextEx();
+		fileString = window->buffer_->BufGetSelectionTextEx();
 	}
 
 	/* create a temporary buffer in which to do the replacements to hide the
@@ -4099,8 +4099,8 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 		/* if the selection is rectangular, verify that the found
 		   string is in the rectangle */
 		if (isRect) {
-			lineStart = window->buffer->BufStartOfLine(selStart + startPos);
-			if (window->buffer->BufCountDispChars(lineStart, selStart + startPos) < rectStart || window->buffer->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
+			lineStart = window->buffer_->BufStartOfLine(selStart + startPos);
+			if (window->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || window->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
 				if (fileString[endPos] == '\0')
 					break;
 				/* If the match starts before the left boundary of the
@@ -4108,7 +4108,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 				   search after the end of the (false) match, because we
 				   could miss a valid match starting between the left boundary
 				   and the end of the false match. */
-				if (window->buffer->BufCountDispChars(lineStart, selStart + startPos) < rectStart && window->buffer->BufCountDispChars(lineStart, selStart + endPos) > rectStart)
+				if (window->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && window->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart)
 					beginPos += 1;
 				else
 					beginPos = (startPos == endPos) ? endPos + 1 : endPos;
@@ -4143,7 +4143,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 				/*  The substitution failed. Primary reason for this would be
 				    a result string exceeding SEARCHMAX. */
 
-				cancelSubst = prefOrUserCancelsSubst(window->shell, TheDisplay);
+				cancelSubst = prefOrUserCancelsSubst(window->shell_, TheDisplay);
 
 				if (cancelSubst) {
 					/*  No point in trying other substitutions.  */
@@ -4173,15 +4173,15 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 			    user does not care and wants to have a faulty replacement.  */
 
 			/* replace the selected range in the real buffer */
-			window->buffer->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
+			window->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 
 			/* set the insert point at the end of the last replacement */
-			TextSetCursorPos(window->lastFocus, selStart + cursorPos + realOffset);
+			TextSetCursorPos(window->lastFocus_, selStart + cursorPos + realOffset);
 
 			/* leave non-rectangular selections selected (rect. ones after replacement
 			   are less useful since left/right positions are randomly adjusted) */
 			if (!isRect) {
-				window->buffer->BufSelect(selStart, selEnd + realOffset);
+				window->buffer_->BufSelect(selStart, selEnd + realOffset);
 			}
 		}
 	} else {
@@ -4189,11 +4189,11 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 		if (GetPrefSearchDlogs()) {
 			/* Avoid bug in Motif 1.1 by putting away search dialog
 			   before DialogF */
-			if (window->findDlog && XtIsManaged(window->findDlog) && !XmToggleButtonGetState(window->findKeepBtn))
-				XtUnmanageChild(window->findDlog);
-			if (window->replaceDlog && XtIsManaged(window->replaceDlog) && !XmToggleButtonGetState(window->replaceKeepBtn))
+			if (window->findDlog_ && XtIsManaged(window->findDlog_) && !XmToggleButtonGetState(window->findKeepBtn_))
+				XtUnmanageChild(window->findDlog_);
+			if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_) && !XmToggleButtonGetState(window->replaceKeepBtn_))
 				unmanageReplaceDialogs(window);
-			DialogF(DF_INF, window->shell, 1, "String not found", "String was not found", "OK");
+			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 		} else
 			XBell(TheDisplay, 0);
 	}
@@ -4218,30 +4218,30 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
 
 	/* view the entire text buffer from the text area widget as a string */
-	view::string_view fileString = window->buffer->BufAsStringEx();
+	view::string_view fileString = window->buffer_->BufAsStringEx();
 
 	newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimiters(window));
 
 	if(!newFileString) {
-		if (window->multiFileBusy) {
-			window->replaceFailed = TRUE; /* only needed during multi-file
+		if (window->multiFileBusy_) {
+			window->replaceFailed_ = TRUE; /* only needed during multi-file
 			                                 replacements */
 		} else if (GetPrefSearchDlogs()) {
-			if (window->findDlog && XtIsManaged(window->findDlog) && !XmToggleButtonGetState(window->findKeepBtn))
-				XtUnmanageChild(window->findDlog);
-			if (window->replaceDlog && XtIsManaged(window->replaceDlog) && !XmToggleButtonGetState(window->replaceKeepBtn))
+			if (window->findDlog_ && XtIsManaged(window->findDlog_) && !XmToggleButtonGetState(window->findKeepBtn_))
+				XtUnmanageChild(window->findDlog_);
+			if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_) && !XmToggleButtonGetState(window->replaceKeepBtn_))
 				unmanageReplaceDialogs(window);
-			DialogF(DF_INF, window->shell, 1, "String not found", "String was not found", "OK");
+			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 		} else
 			XBell(TheDisplay, 0);
 		return false;
 	}
 
 	/* replace the contents of the text widget with the substituted text */
-	window->buffer->BufReplaceEx(copyStart, copyEnd, newFileString);
+	window->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
 	/* Move the cursor to the end of the last replacement */
-	TextSetCursorPos(window->lastFocus, copyStart + replacementLen);
+	TextSetCursorPos(window->lastFocus_, copyStart + replacementLen);
 
 	XtFree(newFileString);
 	return true;
@@ -4362,11 +4362,11 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos) {
 	if (GetPrefBeepOnSearchWrap()) {
 		if (direction == SEARCH_FORWARD) {
-			if ((startPos >= beginPos && window->iSearchLastBeginPos < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos >= beginPos)) {
+			if ((startPos >= beginPos && window->iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos_ >= beginPos)) {
 				XBell(TheDisplay, 0);
 			}
 		} else {
-			if ((startPos <= beginPos && window->iSearchLastBeginPos > beginPos) || (startPos > beginPos && window->iSearchLastBeginPos <= beginPos)) {
+			if ((startPos <= beginPos && window->iSearchLastBeginPos_ > beginPos) || (startPos > beginPos && window->iSearchLastBeginPos_ <= beginPos)) {
 				XBell(TheDisplay, 0);
 			}
 		}
@@ -4379,7 +4379,7 @@ static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, in
 bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	bool found;
 	int resp;
-	int fileEnd = window->buffer->BufGetLength() - 1;
+	int fileEnd = window->buffer_->BufGetLength() - 1;
 	bool outsideBounds;
 
 	/* reject empty string */
@@ -4387,7 +4387,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 		return false;
 
 	/* get the entire text buffer from the text area widget */
-	view::string_view fileString = window->buffer->BufAsStringEx();
+	view::string_view fileString = window->buffer_->BufAsStringEx();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -4401,12 +4401,12 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 	/* search the string copied from the text area widget, and present
 	   dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
 	   an incremental search is in progress.  A parameter would be better. */
-	if (window->iSearchStartPos == -1) { /* normal search */
+	if (window->iSearchStartPos_ == -1) { /* normal search */
 		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
 		/* Avoid Motif 1.1 bug by putting away search dialog before DialogF */
-		if (window->findDlog && XtIsManaged(window->findDlog) && !XmToggleButtonGetState(window->findKeepBtn))
-			XtUnmanageChild(window->findDlog);
-		if (window->replaceDlog && XtIsManaged(window->replaceDlog) && !XmToggleButtonGetState(window->replaceKeepBtn))
+		if (window->findDlog_ && XtIsManaged(window->findDlog_) && !XmToggleButtonGetState(window->findKeepBtn_))
+			XtUnmanageChild(window->findDlog_);
+		if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_) && !XmToggleButtonGetState(window->replaceKeepBtn_))
 			unmanageReplaceDialogs(window);
 		if (!found) {
 			if (searchWrap) {
@@ -4414,7 +4414,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 					if (GetPrefBeepOnSearchWrap()) {
 						XBell(TheDisplay, 0);
 					} else if (GetPrefSearchDlogs()) {
-						resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search", "Continue search from\nbeginning of file?", "Continue", "Cancel");
+						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search from\nbeginning of file?", "Continue", "Cancel");
 						if (resp == 2) {
 							return false;
 						}
@@ -4424,7 +4424,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 					if (GetPrefBeepOnSearchWrap()) {
 						XBell(TheDisplay, 0);
 					} else if (GetPrefSearchDlogs()) {
-						resp = DialogF(DF_QUES, window->shell, 2, "Wrap Search", "Continue search\nfrom end of file?", "Continue", "Cancel");
+						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search\nfrom end of file?", "Continue", "Cancel");
 						if (resp == 2) {
 							return false;
 						}
@@ -4434,7 +4434,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 			}
 			if (!found) {
 				if (GetPrefSearchDlogs()) {
-					DialogF(DF_INF, window->shell, 1, "String not found", "String was not found", "OK");
+					DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 				} else {
 					XBell(TheDisplay, 0);
 				}
@@ -4869,10 +4869,10 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** Motif 1.1.2
 */
 static void resetFindTabGroup(Document *window) {
-	XmProcessTraversal(window->findText, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(window->findText_, XmTRAVERSE_CURRENT);
 }
 static void resetReplaceTabGroup(Document *window) {
-	XmProcessTraversal(window->replaceText, XmTRAVERSE_CURRENT);
+	XmProcessTraversal(window->replaceText_, XmTRAVERSE_CURRENT);
 }
 
 /*
@@ -4888,7 +4888,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 	bool isRect;
 
 	/* find length of selection, give up on no selection or too long */
-	if (!window->buffer->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	if (!window->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		return false;
 	}
 
@@ -4898,8 +4898,8 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 
 	/* if the selection is rectangular, don't match if it spans lines */
 	if (isRect) {
-		lineStart = window->buffer->BufStartOfLine(selStart);
-		if (lineStart != window->buffer->BufStartOfLine(selEnd)) {
+		lineStart = window->buffer_->BufStartOfLine(selStart);
+		if (lineStart != window->buffer_->BufStartOfLine(selEnd)) {
 			return false;
 		}
 	}
@@ -4912,7 +4912,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 			stringStart = 0;
 		}
 
-		string = window->buffer->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+		string = window->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
 		selLen = rectEnd - rectStart;
 		beginPos = lineStart + rectStart - stringStart;
 	} else {
@@ -4921,7 +4921,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 			stringStart = 0;
 		}
 
-		string = window->buffer->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+		string = window->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
 		selLen = selEnd - selStart;
 		beginPos = selStart - stringStart;
 	}
@@ -4945,7 +4945,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 
 	/* return the start and end of the selection */
 	if (isRect) {
-		GetSimpleSelection(window->buffer, left, right);
+		GetSimpleSelection(window->buffer_, left, right);
 	} else {
 		*left  = selStart;
 		*right = selEnd;
@@ -5025,12 +5025,12 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 	currentItemIsIncremental = isIncremental;
 
 	if (NHist == 0) {
-		for (w = WindowList; w != nullptr; w = w->next) {
+		for (w = WindowList; w != nullptr; w = w->next_) {
 			if (!w->IsTopDocument())
 				continue;
-			XtSetSensitive(w->findAgainItem, True);
-			XtSetSensitive(w->replaceFindAgainItem, True);
-			XtSetSensitive(w->replaceAgainItem, True);
+			XtSetSensitive(w->findAgainItem_, True);
+			XtSetSensitive(w->replaceFindAgainItem_, True);
+			XtSetSensitive(w->replaceAgainItem_, True);
 		}
 	}
 
@@ -5154,20 +5154,20 @@ static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callDat
 
 	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
-	int searchCaseSense = XmToggleButtonGetState(window->findCaseToggle);
+	int searchCaseSense = XmToggleButtonGetState(window->findCaseToggle_);
 
 	/* In sticky mode, restore the state of the Case Sensitive button */
 	if (GetPrefStickyCaseSenseBtn()) {
 		if (searchRegex) {
-			window->findLastLiteralCase = searchCaseSense;
-			XmToggleButtonSetState(window->findCaseToggle, window->findLastRegexCase, False);
+			window->findLastLiteralCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->findCaseToggle_, window->findLastRegexCase_, False);
 		} else {
-			window->findLastRegexCase = searchCaseSense;
-			XmToggleButtonSetState(window->findCaseToggle, window->findLastLiteralCase, False);
+			window->findLastRegexCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->findCaseToggle_, window->findLastLiteralCase_, False);
 		}
 	}
 	/* make the Whole Word button insensitive for regex searches */
-	XtSetSensitive(window->findWordToggle, !searchRegex);
+	XtSetSensitive(window->findWordToggle_, !searchRegex);
 }
 
 static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -5177,20 +5177,20 @@ static void replaceRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 
 	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
-	int searchCaseSense = XmToggleButtonGetState(window->replaceCaseToggle);
+	int searchCaseSense = XmToggleButtonGetState(window->replaceCaseToggle_);
 
 	/* In sticky mode, restore the state of the Case Sensitive button */
 	if (GetPrefStickyCaseSenseBtn()) {
 		if (searchRegex) {
-			window->replaceLastLiteralCase = searchCaseSense;
-			XmToggleButtonSetState(window->replaceCaseToggle, window->replaceLastRegexCase, False);
+			window->replaceLastLiteralCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->replaceCaseToggle_, window->replaceLastRegexCase_, False);
 		} else {
-			window->replaceLastRegexCase = searchCaseSense;
-			XmToggleButtonSetState(window->replaceCaseToggle, window->replaceLastLiteralCase, False);
+			window->replaceLastRegexCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->replaceCaseToggle_, window->replaceLastLiteralCase_, False);
 		}
 	}
 	/* make the Whole Word button insensitive for regex searches */
-	XtSetSensitive(window->replaceWordToggle, !searchRegex);
+	XtSetSensitive(window->replaceWordToggle_, !searchRegex);
 }
 
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -5200,16 +5200,16 @@ static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer call
 
 	Document *window = Document::WidgetToWindow(w);
 	int searchRegex = XmToggleButtonGetState(w);
-	int searchCaseSense = XmToggleButtonGetState(window->iSearchCaseToggle);
+	int searchCaseSense = XmToggleButtonGetState(window->iSearchCaseToggle_);
 
 	/* In sticky mode, restore the state of the Case Sensitive button */
 	if (GetPrefStickyCaseSenseBtn()) {
 		if (searchRegex) {
-			window->iSearchLastLiteralCase = searchCaseSense;
-			XmToggleButtonSetState(window->iSearchCaseToggle, window->iSearchLastRegexCase, False);
+			window->iSearchLastLiteralCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->iSearchCaseToggle_, window->iSearchLastRegexCase_, False);
 		} else {
-			window->iSearchLastRegexCase = searchCaseSense;
-			XmToggleButtonSetState(window->iSearchCaseToggle, window->iSearchLastLiteralCase, False);
+			window->iSearchLastRegexCase_ = searchCaseSense;
+			XmToggleButtonSetState(window->iSearchCaseToggle_, window->iSearchLastLiteralCase_, False);
 		}
 	}
 	/* The iSearch bar has no Whole Word button to enable/disable. */
@@ -5224,10 +5224,10 @@ static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData)
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
-	if (XmToggleButtonGetState(window->findRegexToggle))
-		window->findLastRegexCase = searchCaseSense;
+	if (XmToggleButtonGetState(window->findRegexToggle_))
+		window->findLastRegexCase_ = searchCaseSense;
 	else
-		window->findLastLiteralCase = searchCaseSense;
+		window->findLastLiteralCase_ = searchCaseSense;
 }
 
 static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -5240,10 +5240,10 @@ static void replaceCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
-	if (XmToggleButtonGetState(window->replaceRegexToggle))
-		window->replaceLastRegexCase = searchCaseSense;
+	if (XmToggleButtonGetState(window->replaceRegexToggle_))
+		window->replaceLastRegexCase_ = searchCaseSense;
 	else
-		window->replaceLastLiteralCase = searchCaseSense;
+		window->replaceLastLiteralCase_ = searchCaseSense;
 }
 
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -5255,8 +5255,8 @@ static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callDa
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
-	if (XmToggleButtonGetState(window->iSearchRegexToggle))
-		window->iSearchLastRegexCase = searchCaseSense;
+	if (XmToggleButtonGetState(window->iSearchRegexToggle_))
+		window->iSearchLastRegexCase_ = searchCaseSense;
 	else
-		window->iSearchLastLiteralCase = searchCaseSense;
+		window->iSearchLastLiteralCase_ = searchCaseSense;
 }

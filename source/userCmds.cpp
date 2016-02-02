@@ -736,21 +736,21 @@ void UpdateUserMenus(Document *window) {
 
 	/* update user menus, which are shared over all documents, only
 	   if language mode was changed */
-	if (window->userMenuCache->umcLanguageMode != window->languageMode) {
+	if (window->userMenuCache_->umcLanguageMode != window->languageMode_) {
 		updateMenu(window, SHELL_CMDS);
 		updateMenu(window, MACRO_CMDS);
 
 		/* remember language mode assigned to shared user menus */
-		window->userMenuCache->umcLanguageMode = window->languageMode;
+		window->userMenuCache_->umcLanguageMode = window->languageMode_;
 	}
 
 	/* update background menu, which is owned by a single document, only
 	   if language mode was changed */
-	if (window->userBGMenuCache.ubmcLanguageMode != window->languageMode) {
+	if (window->userBGMenuCache_.ubmcLanguageMode != window->languageMode_) {
 		updateMenu(window, BG_MENU_CMDS);
 
 		/* remember language mode assigned to background menu */
-		window->userBGMenuCache.ubmcLanguageMode = window->languageMode;
+		window->userBGMenuCache_.ubmcLanguageMode = window->languageMode_;
 	}
 }
 
@@ -772,9 +772,9 @@ void DimSelectionDepUserMenuItems(Document *window, int sensitive) {
 	if (!window->IsTopDocument())
 		return;
 
-	dimSelDepItemsInMenu(window->shellMenuPane, ShellMenuItems, NShellMenuItems, sensitive);
-	dimSelDepItemsInMenu(window->macroMenuPane, MacroMenuItems, NMacroMenuItems, sensitive);
-	dimSelDepItemsInMenu(window->bgMenuPane, BGMenuItems, NBGMenuItems, sensitive);
+	dimSelDepItemsInMenu(window->shellMenuPane_, ShellMenuItems, NShellMenuItems, sensitive);
+	dimSelDepItemsInMenu(window->macroMenuPane_, MacroMenuItems, NMacroMenuItems, sensitive);
+	dimSelDepItemsInMenu(window->bgMenuPane_, BGMenuItems, NBGMenuItems, sensitive);
 }
 
 static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nMenuItems, int sensitive) {
@@ -808,12 +808,12 @@ static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nM
 ** in the Edit menu
 */
 void SetBGMenuUndoSensitivity(Document *window, int sensitive) {
-	if (window->bgMenuUndoItem)
-		window->SetSensitive(window->bgMenuUndoItem, sensitive);
+	if (window->bgMenuUndoItem_)
+		window->SetSensitive(window->bgMenuUndoItem_, sensitive);
 }
 void SetBGMenuRedoSensitivity(Document *window, int sensitive) {
-	if (window->bgMenuRedoItem)
-		window->SetSensitive(window->bgMenuRedoItem, sensitive);
+	if (window->bgMenuRedoItem_)
+		window->SetSensitive(window->bgMenuRedoItem_, sensitive);
 }
 
 /*
@@ -976,7 +976,7 @@ void RebuildAllMenus(Document *window) {
 static void rebuildMenuOfAllWindows(int menuType) {
 	Document *w;
 
-	for (w = WindowList; w != nullptr; w = w->next)
+	for (w = WindowList; w != nullptr; w = w->next_)
 		rebuildMenu(w, menuType);
 }
 
@@ -1025,29 +1025,29 @@ static void rebuildMenu(Document *window, int menuType) {
 */
 static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu) {
 	if (menuType == SHELL_CMDS) {
-		menu->sumMenuPane = window->shellMenuPane;
+		menu->sumMenuPane = window->shellMenuPane_;
 		menu->sumNbrOfListItems = NShellMenuItems;
 		menu->sumItemList = ShellMenuItems;
 		menu->sumInfoList = ShellMenuInfo;
 		menu->sumSubMenus = &ShellSubMenus;
-		menu->sumMainMenuList = &window->userMenuCache->umcShellMenuList;
-		menu->sumMenuCreated = &window->userMenuCache->umcShellMenuCreated;
+		menu->sumMainMenuList = &window->userMenuCache_->umcShellMenuList;
+		menu->sumMenuCreated = &window->userMenuCache_->umcShellMenuCreated;
 	} else if (menuType == MACRO_CMDS) {
-		menu->sumMenuPane = window->macroMenuPane;
+		menu->sumMenuPane = window->macroMenuPane_;
 		menu->sumNbrOfListItems = NMacroMenuItems;
 		menu->sumItemList = MacroMenuItems;
 		menu->sumInfoList = MacroMenuInfo;
 		menu->sumSubMenus = &MacroSubMenus;
-		menu->sumMainMenuList = &window->userMenuCache->umcMacroMenuList;
-		menu->sumMenuCreated = &window->userMenuCache->umcMacroMenuCreated;
+		menu->sumMainMenuList = &window->userMenuCache_->umcMacroMenuList;
+		menu->sumMenuCreated = &window->userMenuCache_->umcMacroMenuCreated;
 	} else { /* BG_MENU_CMDS */
-		menu->sumMenuPane = window->bgMenuPane;
+		menu->sumMenuPane = window->bgMenuPane_;
 		menu->sumNbrOfListItems = NBGMenuItems;
 		menu->sumItemList = BGMenuItems;
 		menu->sumInfoList = BGMenuInfo;
 		menu->sumSubMenus = &BGSubMenus;
-		menu->sumMainMenuList = &window->userBGMenuCache.ubmcMenuList;
-		menu->sumMenuCreated = &window->userBGMenuCache.ubmcMenuCreated;
+		menu->sumMainMenuList = &window->userBGMenuCache_.ubmcMenuList;
+		menu->sumMenuCreated = &window->userBGMenuCache_.ubmcMenuCreated;
 	}
 	menu->sumType = menuType;
 }
@@ -1069,7 +1069,7 @@ static void updateMenu(Document *window, int menuType) {
 	selectUserMenu(window, menuType, &menu);
 
 	/* Set / reset "to be managed" flag of all info list items */
-	applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode);
+	applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode_);
 
 	/* create user menu items, if not done before */
 	if (!*menu.sumMenuCreated)
@@ -1080,11 +1080,11 @@ static void updateMenu(Document *window, int menuType) {
 
 	if (menuType == BG_MENU_CMDS) {
 		/* Set the proper sensitivity of items which may be dimmed */
-		SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem));
-		SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem));
+		SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem_));
+		SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem_));
 	}
 
-	DimSelectionDepUserMenuItems(window, window->buffer->primary_.selected);
+	DimSelectionDepUserMenuItems(window, window->buffer_->primary_.selected);
 }
 
 /*
@@ -1321,7 +1321,7 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 			/* assign accelerator if applicable */
 			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys, nullptr);
 			if (!element->umleAccLockPatchApplied) {
-				UpdateAccelLockPatch(window->splitPane, element->umleMenuItem);
+				UpdateAccelLockPatch(window->splitPane_, element->umleMenuItem);
 				element->umleAccLockPatchApplied = True;
 			}
 		}
@@ -1456,8 +1456,8 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 
 	/* Harmless kludge: undo and redo items are marked specially if found
 	   in the background menu, and used to dim/undim with edit menu */
-	window->bgMenuUndoItem = nullptr;
-	window->bgMenuRedoItem = nullptr;
+	window->bgMenuUndoItem_ = nullptr;
+	window->bgMenuRedoItem_ = nullptr;
 
 	/*
 	** Add items to the menu pane, creating hierarchical sub-menus as
@@ -1489,9 +1489,9 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 				}
 				
 				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n"))
-					window->bgMenuUndoItem = btn;
+					window->bgMenuUndoItem_ = btn;
 				else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n"))
-					window->bgMenuRedoItem = btn;
+					window->bgMenuRedoItem_ = btn;
 				/* generate accelerator keys */
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
 				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
@@ -1904,7 +1904,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	params[0] = ShellMenuItems[index]->name.str();
-	XtCallActionProc(window->lastFocus, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProc(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1925,7 +1925,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   repeat any operation, and to embed macros within eachother at any
 	   level, however, a call here with a macro running means that THE USER
 	   is explicitly invoking another macro via the menu or an accelerator. */
-	if (window->macroCmdData) {
+	if (window->macroCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -1937,7 +1937,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	params[0] = MacroMenuItems[index]->name.str();
-	XtCallActionProc(window->lastFocus, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProc(window->lastFocus_, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1949,7 +1949,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	char *params[1];
 
 	/* Same remark as for macro menu commands (see above). */
-	if (window->macroCmdData) {
+	if (window->macroCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
@@ -1961,7 +1961,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	params[0] = BGMenuItems[index]->name.str();
-	XtCallActionProc(window->lastFocus, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProc(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
 /*

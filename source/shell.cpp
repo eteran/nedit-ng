@@ -128,25 +128,25 @@ static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr
 void FilterSelection(Document *window, const std::string &command, int fromMacro) {
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData) {
+	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
 	/* Get the selection and the range in character positions that it
 	   occupies.  Beep and return if no selection */
-	std::string text = window->buffer->BufGetSelectionTextEx();
+	std::string text = window->buffer_->BufGetSelectionTextEx();
 	if (text.empty()) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 	int textLen = text.size();
-	window->buffer->BufUnsubstituteNullCharsEx(text);
-	int left  = window->buffer->primary_.start;
-	int right = window->buffer->primary_.end;
+	window->buffer_->BufUnsubstituteNullCharsEx(text);
+	int left  = window->buffer_->primary_.start;
+	int right = window->buffer_->primary_.end;
 
 	/* Issue the command and collect its output */
-	issueCommand(window, command, text, textLen, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus, left, right, fromMacro);
+	issueCommand(window, command, text, textLen, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus_, left, right, fromMacro);
 }
 
 /*
@@ -161,28 +161,28 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	char lineNumber[11];
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData) {
+	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
 	/* get the selection or the insert position */
-	pos = TextGetCursorPos(window->lastFocus);
-	if (GetSimpleSelection(window->buffer, &left, &right))
+	pos = TextGetCursorPos(window->lastFocus_);
+	if (GetSimpleSelection(window->buffer_, &left, &right))
 		flags = ACCUMULATE | REPLACE_SELECTION;
 	else
 		left = right = pos;
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path);
-	strcat(fullName, window->filename);
-	TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+	strcpy(fullName, window->path_);
+	strcat(fullName, window->filename_);
+	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
+		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
 		        "OK");
@@ -190,7 +190,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	}
 
 	/* issue the command */
-	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus, left, right, fromMacro);
+	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus_, left, right, fromMacro);
 	delete [] subsCommand;
 }
 
@@ -215,36 +215,36 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	char lineNumber[11];
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData) {
+	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
 	/* get all of the text on the line with the insert position */
-	pos = TextGetCursorPos(window->lastFocus);
-	if (!GetSimpleSelection(window->buffer, &left, &right)) {
+	pos = TextGetCursorPos(window->lastFocus_);
+	if (!GetSimpleSelection(window->buffer_, &left, &right)) {
 		left = right = pos;
-		left = window->buffer->BufStartOfLine(left);
-		right = window->buffer->BufEndOfLine( right);
+		left = window->buffer_->BufStartOfLine(left);
+		right = window->buffer_->BufEndOfLine( right);
 		insertPos = right;
 	} else
-		insertPos = window->buffer->BufEndOfLine( right);
-	std::string cmdText = window->buffer->BufGetRangeEx(left, right);
-	window->buffer->BufUnsubstituteNullCharsEx(cmdText);
+		insertPos = window->buffer_->BufEndOfLine( right);
+	std::string cmdText = window->buffer_->BufGetRangeEx(left, right);
+	window->buffer_->BufUnsubstituteNullCharsEx(cmdText);
 
 	/* insert a newline after the entire line */
-	window->buffer->BufInsertEx(insertPos, "\n");
+	window->buffer_->BufInsertEx(insertPos, "\n");
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path);
-	strcat(fullName, window->filename);
-	TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+	strcpy(fullName, window->path_);
+	strcat(fullName, window->filename_);
+	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
+		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
 		        "OK");
@@ -252,7 +252,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	}
 
 	/* issue the command */
-	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus, insertPos + 1, insertPos + 1, fromMacro);
+	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus_, insertPos + 1, insertPos + 1, fromMacro);
 	delete [] subsCommand;
 }
 
@@ -271,22 +271,22 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	Widget outWidget;
 
 	/* Can't do two shell commands at once in the same window */
-	if (window->shellCmdData) {
+	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path);
-	strcat(fullName, window->filename);
-	pos = TextGetCursorPos(window->lastFocus);
-	TextPosToLineAndCol(window->lastFocus, pos, &line, &column);
+	strcpy(fullName, window->path_);
+	strcat(fullName, window->filename_);
+	pos = TextGetCursorPos(window->lastFocus_);
+	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell, 1, "Shell Command", "Shell command is too long due to\n"
+		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
 		                                                   "line number substitutions with '#'",
 		        "OK");
@@ -297,7 +297,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
 	std::string text;
 	if (input == FROM_SELECTION) {
-		text = window->buffer->BufGetSelectionTextEx();
+		text = window->buffer_->BufGetSelectionTextEx();
 		if (text.empty()) {
 			delete [] subsCommand;
 			XBell(TheDisplay, 0);
@@ -305,12 +305,12 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_WINDOW) {
-		text = window->buffer->BufGetAllEx();
+		text = window->buffer_->BufGetAllEx();
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else if (input == FROM_EITHER) {
-		text = window->buffer->BufGetSelectionTextEx();
+		text = window->buffer_->BufGetSelectionTextEx();
 		if (text.empty()) {
-			text = window->buffer->BufGetAllEx();
+			text = window->buffer_->BufGetAllEx();
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else {
@@ -321,7 +321,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	/* If the buffer was substituting another character for ascii-nuls,
 	   put the nuls back in before exporting the text */
 	textLen = text.size();
-	window->buffer->BufUnsubstituteNullCharsEx(text);
+	window->buffer_->BufUnsubstituteNullCharsEx(text);
 
 	/* Assign the output destination.  If output is to a new window,
 	   create it, and run the command from it instead of the current
@@ -331,33 +331,33 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		flags |= OUTPUT_TO_DIALOG;
 		left = right = 0;
 	} else if (output == TO_NEW_WINDOW) {
-		EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, False, nullptr, window->path);
-		outWidget = WindowList->textArea;
+		EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, False, nullptr, window->path_);
+		outWidget = WindowList->textArea_;
 		inWindow = WindowList;
 		left = right = 0;
 		CheckCloseDim();
 	} else { /* TO_SAME_WINDOW */
-		outWidget = window->lastFocus;
+		outWidget = window->lastFocus_;
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
 				left = 0;
-				right = window->buffer->BufGetLength();
+				right = window->buffer_->BufGetLength();
 			} else if (input == FROM_SELECTION) {
-				GetSimpleSelection(window->buffer, &left, &right);
+				GetSimpleSelection(window->buffer_, &left, &right);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else if (input == FROM_EITHER) {
-				if (GetSimpleSelection(window->buffer, &left, &right))
+				if (GetSimpleSelection(window->buffer_, &left, &right))
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				else {
 					left = 0;
-					right = window->buffer->BufGetLength();
+					right = window->buffer_->BufGetLength();
 				}
 			}
 		} else {
-			if (GetSimpleSelection(window->buffer, &left, &right))
+			if (GetSimpleSelection(window->buffer_, &left, &right))
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			else
-				left = right = TextGetCursorPos(window->lastFocus);
+				left = right = TextGetCursorPos(window->lastFocus_);
 		}
 	}
 
@@ -384,7 +384,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 ** Cancel the shell command in progress
 */
 void AbortShellCommand(Document *window) {
-	if(auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData)) {
+	if(auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_)) {
 		kill(-cmdData->childPid, SIGTERM);
 		finishCmdExecution(window, True);
 	}
@@ -415,7 +415,7 @@ void AbortShellCommand(Document *window) {
 */
 static void issueCommand(Document *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
 	int stdinFD, stdoutFD, stderrFD = 0;
-	XtAppContext context = XtWidgetToApplicationContext(window->shell);
+	XtAppContext context = XtWidgetToApplicationContext(window->shell_);
 	pid_t childPid;
 
 	/* verify consistency of input parameters */
@@ -430,14 +430,14 @@ static void issueCommand(Document *window, const std::string &command, const std
 
 	/* put up a watch cursor over the waiting window */
 	if (!fromMacro)
-		BeginWait(window->shell);
+		BeginWait(window->shell_);
 
 	/* enable the cancel menu item */
 	if (!fromMacro)
-		window->SetSensitive(window->cancelShellItem, True);
+		window->SetSensitive(window->cancelShellItem_, True);
 
 	/* fork the subprocess and issue the command */
-	childPid = forkCommand(window->shell, command, window->path, &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
+	childPid = forkCommand(window->shell_, command, window->path_, &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
 
 	/* set the pipes connected to the process for non-blocking i/o */
 	if (fcntl(stdinFD, F_SETFL, O_NONBLOCK) < 0)
@@ -457,7 +457,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */
 	auto cmdData = new shellCmdInfo;
-	window->shellCmdData = cmdData;
+	window->shellCmdData_ = cmdData;
 	cmdData->flags       = flags;
 	cmdData->stdinFD     = stdinFD;
 	cmdData->stdoutFD    = stdoutFD;
@@ -509,7 +509,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 
 /*
 ** Called when the shell sub-process stdout stream has data.  Reads data into
-** the "outBufs" buffer chain in the window->shellCommandData data structure.
+** the "outBufs" buffer chain in the window->shellCommandData_ data structure.
 */
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
@@ -517,7 +517,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)source;
 
 	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	int nRead;
 
 	/* read from the process' stdout stream */
@@ -553,7 +553,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
 /*
 ** Called when the shell sub-process stderr stream has data.  Reads data into
-** the "errBufs" buffer chain in the window->shellCommandData data structure.
+** the "errBufs" buffer chain in the window->shellCommandData_ data structure.
 */
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 
@@ -561,7 +561,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)source;
 
 	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	int nRead;
 
 	/* read from the process' stderr stream */
@@ -604,7 +604,7 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 	(void)source;
 
 	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	int nWritten;
 
 	nWritten = write(cmdData->stdinFD, &cmdData->input[cmdData->inIndex], cmdData->inLength);
@@ -642,14 +642,14 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	XmString xmCancel;	
 	char message[MAX_TIMEOUT_MSG_LEN];
 
 	cmdData->bannerIsUp = True;
 
 	/* Extract accelerator text from menu PushButtons */
-	XtVaGetValues(window->cancelShellItem, XmNacceleratorText, &xmCancel, nullptr);
+	XtVaGetValues(window->cancelShellItem_, XmNacceleratorText, &xmCancel, nullptr);
 
 	/* Translate Motif string to char* */
 	std::string cCancel = GetXmStringTextEx(xmCancel);
@@ -692,7 +692,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	auto window  = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 
 	/* shouldn't happen, but it would be bad if it did */
@@ -711,7 +711,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	}
 
 	/* re-establish the timer proc (this routine) to continue processing */
-	cmdData->flushTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), OUTPUT_FLUSH_FREQ, flushTimeoutProc, clientData);
+	cmdData->flushTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), OUTPUT_FLUSH_FREQ, flushTimeoutProc, clientData);
 }
 
 /*
@@ -722,7 +722,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** user interface state.
 */
 static void finishCmdExecution(Document *window, int terminatedOnError) {
-	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData);
+	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart;
 	int resp, cancel = False, fromMacro = cmdData->fromMacro;
@@ -752,8 +752,8 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 
 	/* Clean up waiting-for-shell-command-to-complete mode */
 	if (!cmdData->fromMacro) {
-		EndWait(window->shell);
-		window->SetSensitive(window->cancelShellItem, False);
+		EndWait(window->shell_);
+		window->SetSensitive(window->cancelShellItem_, False);
 		if (cmdData->bannerIsUp) {
 			window->ClearModeMessage();
 		}
@@ -788,16 +788,16 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		if (failure && errorReport) {
 			removeTrailingNewlines(errText);
 			truncateString(errText, DF_MAX_MSG_LENGTH);
-			resp = DialogF(DF_WARN, window->shell, 2, "Warning", "%s", "Cancel", "Proceed", errText.c_str());
+			resp = DialogF(DF_WARN, window->shell_, 2, "Warning", "%s", "Cancel", "Proceed", errText.c_str());
 			cancel = resp == 1;
 		} else if (failure) {
 			truncateString(outText, DF_MAX_MSG_LENGTH - 70);
-			resp = DialogF(DF_WARN, window->shell, 2, "Command Failure", "Command reported failed exit status.\nOutput from command:\n%s", "Cancel", "Proceed", outText.c_str());
+			resp = DialogF(DF_WARN, window->shell_, 2, "Command Failure", "Command reported failed exit status.\nOutput from command:\n%s", "Cancel", "Proceed", outText.c_str());
 			cancel = resp == 1;
 		} else if (errorReport) {
 			removeTrailingNewlines(errText);
 			truncateString(errText, DF_MAX_MSG_LENGTH);
-			resp = DialogF(DF_INF, window->shell, 2, "Information", "%s", "Proceed", "Cancel", errText.c_str());
+			resp = DialogF(DF_INF, window->shell_, 2, "Information", "%s", "Proceed", "Cancel", errText.c_str());
 			cancel = resp == 2;
 		}
 
@@ -812,7 +812,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	if (cmdData->flags & OUTPUT_TO_DIALOG) {
 		removeTrailingNewlines(outText);
 		if (!outText.empty()) {
-			createOutputDialog(window->shell, outText);
+			createOutputDialog(window->shell_, outText);
 		}
 	} else if (cmdData->flags & OUTPUT_TO_STRING) {
 		ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
@@ -840,7 +840,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 
 cmdDone:
 	delete cmdData;
-	window->shellCmdData = nullptr;
+	window->shellCmdData_ = nullptr;
 	if (fromMacro)
 		ResumeMacroExecution(window);
 }

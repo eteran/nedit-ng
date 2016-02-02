@@ -111,7 +111,7 @@ static void cleanUpServerCommunication(void) {
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
 	 */
-	for (w = WindowList; w; w = w->next) {
+	for (w = WindowList; w; w = w->next_) {
 		DeleteFileClosedProperty(w);
 	}
 
@@ -193,8 +193,8 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 ** been opened.
 */
 static void deleteFileOpenProperty(Document *window) {
-	if (window->filenameSet) {
-		Atom atom = findFileOpenProperty(window->filename, window->path);
+	if (window->filenameSet_) {
+		Atom atom = findFileOpenProperty(window->filename_, window->path_);
 		deleteProperty(&atom);
 	}
 }
@@ -220,8 +220,8 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 
 /* Get hold of the property to use when closing the file. */
 static void getFileClosedProperty(Document *window) {
-	if (window->filenameSet) {
-		window->fileClosedAtom = findFileClosedProperty(window->filename, window->path);
+	if (window->filenameSet_) {
+		window->fileClosedAtom_ = findFileClosedProperty(window->filename_, window->path_);
 	}
 }
 
@@ -229,8 +229,8 @@ static void getFileClosedProperty(Document *window) {
 ** been closed.
 */
 void DeleteFileClosedProperty(Document *window) {
-	if (window->filenameSet) {
-		deleteProperty(&window->fileClosedAtom);
+	if (window->filenameSet_) {
+		deleteProperty(&window->fileClosedAtom_);
 	}
 }
 
@@ -244,7 +244,7 @@ static int isLocatedOnDesktop(Document *window, long currentDesktop) {
 	if (currentDesktop == -1)
 		return True; /* No desktop information available */
 
-	windowDesktop = QueryDesktop(TheDisplay, window->shell);
+	windowDesktop = QueryDesktop(TheDisplay, window->shell_);
 	/* Sticky windows have desktop 0xFFFFFFFF by convention */
 	if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL)
 		return True; /* Desktop matches, or window is sticky */
@@ -258,8 +258,8 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 	if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
 		/* A new window is requested, unless we find an untitled unmodified
 		    document on the current desktop */
-		for (window = WindowList; window != nullptr; window = window->next) {
-			if (window->filenameSet || window->fileChanged || window->macroCmdData) {
+		for (window = WindowList; window != nullptr; window = window->next_) {
+			if (window->filenameSet_ || window->fileChanged_ || window->macroCmdData_) {
 				continue;
 			}
 			/* No check for top document here! */
@@ -269,7 +269,7 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		}
 	} else {
 		/* Find a window on the current desktop to hold the new document */
-		for (window = WindowList; window != nullptr; window = window->next) {
+		for (window = WindowList; window != nullptr; window = window->next_) {
 			/* Avoid unnecessary property access (server round-trip) */
 			if (!window->IsTopDocument()) {
 				continue;
@@ -295,16 +295,16 @@ static void processServerCommandString(char *string) {
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (string[0] == '\0') {
-		for (window = WindowList; window != nullptr; window = window->next)
-			if (!window->filenameSet && !window->fileChanged && isLocatedOnDesktop(window, currentDesktop))
+		for (window = WindowList; window != nullptr; window = window->next_)
+			if (!window->filenameSet_ && !window->fileChanged_ && isLocatedOnDesktop(window, currentDesktop))
 				break;
 		if(!window) {
 			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
 			CheckCloseDim();
 		} else {
 			window->RaiseDocument();
-			WmClientMsg(TheDisplay, XtWindow(window->shell), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
-			XMapRaised(TheDisplay, XtWindow(window->shell));
+			WmClientMsg(TheDisplay, XtWindow(window->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
+			XMapRaised(TheDisplay, XtWindow(window->shell_));
 		}
 		return;
 	}
@@ -353,8 +353,8 @@ static void processServerCommandString(char *string) {
 		 *   choose a random window for executing the -do macro upon
 		 */
 		if (fileLen <= 0) {
-			for (window = WindowList; window != nullptr; window = window->next)
-				if (!window->filenameSet && !window->fileChanged && isLocatedOnDesktop(window, currentDesktop))
+			for (window = WindowList; window != nullptr; window = window->next_)
+				if (!window->filenameSet_ && !window->fileChanged_ && isLocatedOnDesktop(window, currentDesktop))
 					break;
 
 			if (*doCommand == '\0') {
@@ -370,8 +370,8 @@ static void processServerCommandString(char *string) {
 				Document *win = WindowList;
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
-				while (win != nullptr && win->macroCmdData) {
-					win = win->next;
+				while (win != nullptr && win->macroCmdData_) {
+					win = win->next_;
 				}
 
 				if (!win) {
@@ -410,7 +410,7 @@ static void processServerCommandString(char *string) {
 
 			if (window) {
 				window->CleanUpTabBarExposeQueue();
-				if (lastFile && window->shell != lastFile->shell) {
+				if (lastFile && window->shell_ != lastFile->shell_) {
 					lastFile->CleanUpTabBarExposeQueue();
 					lastFile->RaiseDocument();
 				}
@@ -430,13 +430,13 @@ static void processServerCommandString(char *string) {
 				window->RaiseDocument();
 
 				if (!iconicFlag) {
-					WmClientMsg(TheDisplay, XtWindow(window->shell), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
-					XMapRaised(TheDisplay, XtWindow(window->shell));
+					WmClientMsg(TheDisplay, XtWindow(window->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
+					XMapRaised(TheDisplay, XtWindow(window->shell_));
 				}
 
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
-				if (window->macroCmdData) {
+				if (window->macroCmdData_) {
 					XBell(TheDisplay, 0);
 				} else {
 					DoMacro(window, doCommand, "-do macro");

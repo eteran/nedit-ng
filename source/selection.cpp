@@ -115,7 +115,7 @@ void GotoLineNumber(Document *window) {
 	char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
 	int lineNum, column, response;
 
-	response = DialogF(DF_PROMPT, window->shell, 2, "Goto Line Number", "Goto Line (and/or Column)  Number:", lineNumText, "OK", "Cancel");
+	response = DialogF(DF_PROMPT, window->shell_, 2, "Goto Line Number", "Goto Line (and/or Column)  Number:", lineNumText, "OK", "Cancel");
 	if (response == 2)
 		return;
 
@@ -124,15 +124,15 @@ void GotoLineNumber(Document *window) {
 		return;
 	}
 	params[0] = lineNumText;
-	XtCallActionProc(window->lastFocus, "goto_line_number", nullptr, params, 1);
+	XtCallActionProc(window->lastFocus_, "goto_line_number", nullptr, params, 1);
 }
 
 void GotoSelectedLineNumber(Document *window, Time time) {
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)gotoCB, window, time);
+	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)gotoCB, window, time);
 }
 
 void OpenSelectedFile(Document *window, Time time) {
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)fileCB, window, time);
+	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)fileCB, window, time);
 }
 
 /*
@@ -147,18 +147,18 @@ nullable_string GetAnySelectionEx(Document *window) {
 
 	/* If the selection is in the window's own buffer get it from there,
 	   but substitute null characters as if it were an external selection */
-	if (window->buffer->primary_.selected) {
-		std::string text = window->buffer->BufGetSelectionTextEx();
-		window->buffer->BufUnsubstituteNullCharsEx(text);
+	if (window->buffer_->primary_.selected) {
+		std::string text = window->buffer_->BufGetSelectionTextEx();
+		window->buffer_->BufUnsubstituteNullCharsEx(text);
 		return text;
 	}
 
 	/* Request the selection value to be delivered to getAnySelectionCB */
-	XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea)));
+	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea_)));
 
 	/* Wait for the value to appear */
 	while (selText == waitingMarker) {
-		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea), &nextEvent);
+		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea_), &nextEvent);
 		ServerDispatchEvent(&nextEvent);
 	}
 	
@@ -277,7 +277,7 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 
 	/* If path name is relative, make it refer to current window's directory */
 	if (nameText[0] != '/') {
-		strcpy(filename, window->path);
+		strcpy(filename, window->path_);
 		strcat(filename, nameText);
 		strcpy(nameText, filename);
 	}
@@ -330,36 +330,36 @@ void SelectNumberedLine(Document *window, int lineNum) {
 	if (lineNum < 1)
 		lineNum = 1;
 	lineEnd = -1;
-	for (i = 1; i <= lineNum && lineEnd < window->buffer->BufGetLength(); i++) {
+	for (i = 1; i <= lineNum && lineEnd < window->buffer_->BufGetLength(); i++) {
 		lineStart = lineEnd + 1;
-		lineEnd = window->buffer->BufEndOfLine( lineStart);
+		lineEnd = window->buffer_->BufEndOfLine( lineStart);
 	}
 
 	/* highlight the line */
 	if (i > lineNum) {
 		/* Line was found */
-		if (lineEnd < window->buffer->BufGetLength()) {
-			window->buffer->BufSelect(lineStart, lineEnd + 1);
+		if (lineEnd < window->buffer_->BufGetLength()) {
+			window->buffer_->BufSelect(lineStart, lineEnd + 1);
 		} else {
 			/* Don't select past the end of the buffer ! */
-			window->buffer->BufSelect(lineStart, window->buffer->BufGetLength());
+			window->buffer_->BufSelect(lineStart, window->buffer_->BufGetLength());
 		}
 	} else {
 		/* Line was not found -> position the selection & cursor at the end
 		   without making a real selection and beep */
-		lineStart = window->buffer->BufGetLength();
-		window->buffer->BufSelect(lineStart, lineStart);
+		lineStart = window->buffer_->BufGetLength();
+		window->buffer_->BufSelect(lineStart, lineStart);
 		XBell(TheDisplay, 0);
 	}
-	window->MakeSelectionVisible(window->lastFocus);
-	TextSetCursorPos(window->lastFocus, lineStart);
+	window->MakeSelectionVisible(window->lastFocus_);
+	TextSetCursorPos(window->lastFocus_, lineStart);
 }
 
 void MarkDialog(Document *window) {
 	char letterText[DF_MAX_PROMPT_LENGTH], *params[1];
 	int response;
 
-	response = DialogF(DF_PROMPT, window->shell, 2, "Mark", "Enter a single letter label to use for recalling\n"
+	response = DialogF(DF_PROMPT, window->shell_, 2, "Mark", "Enter a single letter label to use for recalling\n"
 	                                                        "the current selection and cursor position.\n\n"
 	                                                        "(To skip this dialog, use the accelerator key,\n"
 	                                                        "followed immediately by a letter key (a-z))",
@@ -371,7 +371,7 @@ void MarkDialog(Document *window) {
 		return;
 	}
 	params[0] = letterText;
-	XtCallActionProc(window->lastFocus, "mark", nullptr, params, 1);
+	XtCallActionProc(window->lastFocus_, "mark", nullptr, params, 1);
 }
 
 void GotoMarkDialog(Document *window, int extend) {
@@ -379,7 +379,7 @@ void GotoMarkDialog(Document *window, int extend) {
 	const char *params[2];
 	int response;
 
-	response = DialogF(DF_PROMPT, window->shell, 2, "Goto Mark", "Enter the single letter label used to mark\n"
+	response = DialogF(DF_PROMPT, window->shell_, 2, "Goto Mark", "Enter the single letter label used to mark\n"
 	                                                             "the selection and/or cursor position.\n\n"
 	                                                             "(To skip this dialog, use the accelerator\n"
 	                                                             "key, followed immediately by the letter)",
@@ -392,7 +392,7 @@ void GotoMarkDialog(Document *window, int extend) {
 	}
 	params[0] = letterText;
 	params[1] = "extend";
-	XtCallActionProc(window->lastFocus, "goto_mark", nullptr, (char **)params, extend ? 2 : 1);
+	XtCallActionProc(window->lastFocus_, "goto_mark", nullptr, (char **)params, extend ? 2 : 1);
 }
 
 /*
@@ -402,8 +402,8 @@ void GotoMarkDialog(Document *window, int extend) {
 ** something else).
 */
 void BeginMarkCommand(Document *window) {
-	XtInsertEventHandler(window->lastFocus, KeyPressMask, False, markKeyCB, window, XtListHead);
-	window->markTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 4000, markTimeoutProc, window->lastFocus);
+	XtInsertEventHandler(window->lastFocus_, KeyPressMask, False, markKeyCB, window, XtListHead);
+	window->markTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 4000, markTimeoutProc, window->lastFocus_);
 }
 
 /*
@@ -413,8 +413,8 @@ void BeginMarkCommand(Document *window) {
 ** something else).
 */
 void BeginGotoMarkCommand(Document *window, int extend) {
-	XtInsertEventHandler(window->lastFocus, KeyPressMask, False, extend ? gotoMarkExtendKeyCB : gotoMarkKeyCB, window, XtListHead);
-	window->markTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell), 4000, markTimeoutProc, window->lastFocus);
+	XtInsertEventHandler(window->lastFocus_, KeyPressMask, False, extend ? gotoMarkExtendKeyCB : gotoMarkKeyCB, window, XtListHead);
+	window->markTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 4000, markTimeoutProc, window->lastFocus_);
 }
 
 /*
@@ -430,7 +430,7 @@ static void markTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkExtendKeyCB, window);
-	window->markTimeoutID = 0;
+	window->markTimeoutID_ = 0;
 }
 
 /*
@@ -456,13 +456,13 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Bool
 		string[1] = '\0';
 		params[0] = string;
 		params[1] = "extend";
-		XtCallActionProc(window->lastFocus, action, event, (char **)params, extend ? 2 : 1);
+		XtCallActionProc(window->lastFocus_, action, event, (char **)params, extend ? 2 : 1);
 		*continueDispatch = False;
 	}
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
 	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkExtendKeyCB, window);
-	XtRemoveTimeOut(window->markTimeoutID);
+	XtRemoveTimeOut(window->markTimeoutID_);
 }
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch) {
 	processMarkEvent(w, clientData, event, continueDispatch, (String) "mark", False);
@@ -480,21 +480,21 @@ void AddMark(Document *window, Widget widget, char label) {
 	/* look for a matching mark to re-use, or advance
 	   nMarks to create a new one */
 	label = toupper(label);
-	for (index = 0; index < window->nMarks; index++) {
-		if (window->markTable[index].label == label)
+	for (index = 0; index < window->nMarks_; index++) {
+		if (window->markTable_[index].label == label)
 			break;
 	}
 	if (index >= MAX_MARKS) {
 		fprintf(stderr, "no more marks allowed\n"); /* shouldn't happen */
 		return;
 	}
-	if (index == window->nMarks)
-		window->nMarks++;
+	if (index == window->nMarks_)
+		window->nMarks_++;
 
 	/* store the cursor location and selection position in the table */
-	window->markTable[index].label = label;
-	memcpy(&window->markTable[index].sel, &window->buffer->primary_, sizeof(TextSelection));
-	window->markTable[index].cursorPos = TextGetCursorPos(widget);
+	window->markTable_[index].label = label;
+	memcpy(&window->markTable_[index].sel, &window->buffer_->primary_, sizeof(TextSelection));
+	window->markTable_[index].cursorPos = TextGetCursorPos(widget);
 }
 
 void GotoMark(Document *window, Widget w, char label, int extendSel) {
@@ -503,33 +503,33 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 
 	/* look up the mark in the mark table */
 	label = toupper(label);
-	for (index = 0; index < window->nMarks; index++) {
-		if (window->markTable[index].label == label)
+	for (index = 0; index < window->nMarks_; index++) {
+		if (window->markTable_[index].label == label)
 			break;
 	}
-	if (index == window->nMarks) {
+	if (index == window->nMarks_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
 	/* reselect marked the selection, and move the cursor to the marked pos */
-	sel = &window->markTable[index].sel;
-	oldSel = &window->buffer->primary_;
-	cursorPos = window->markTable[index].cursorPos;
+	sel = &window->markTable_[index].sel;
+	oldSel = &window->buffer_->primary_;
+	cursorPos = window->markTable_[index].cursorPos;
 	if (extendSel) {
 		oldStart = oldSel->selected ? oldSel->start : TextGetCursorPos(w);
 		oldEnd = oldSel->selected ? oldSel->end : TextGetCursorPos(w);
 		newStart = sel->selected ? sel->start : cursorPos;
 		newEnd = sel->selected ? sel->end : cursorPos;
-		window->buffer->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
+		window->buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
 		if (sel->selected) {
 			if (sel->rectangular)
-				window->buffer->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+				window->buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
 			else
-				window->buffer->BufSelect(sel->start, sel->end);
+				window->buffer_->BufSelect(sel->start, sel->end);
 		} else
-			window->buffer->BufUnselect();
+			window->buffer_->BufUnselect();
 	}
 
 	/* Move the window into a pleasing position relative to the selection
@@ -540,7 +540,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	   first turn it off, set the position, then turn it back on. */
 	XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
 	TextSetCursorPos(w, cursorPos);
-	window->MakeSelectionVisible(window->lastFocus);
+	window->MakeSelectionVisible(window->lastFocus_);
 	XtVaSetValues(w, textNautoShowInsertPos, True, nullptr);
 }
 
@@ -551,9 +551,9 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted) {
 	int i;
 
-	for (i = 0; i < window->nMarks; i++) {
-		maintainSelection(&window->markTable[i].sel, pos, nInserted, nDeleted);
-		maintainPosition(&window->markTable[i].cursorPos, pos, nInserted, nDeleted);
+	for (i = 0; i < window->nMarks_; i++) {
+		maintainSelection(&window->markTable_[i].sel, pos, nInserted, nDeleted);
+		maintainPosition(&window->markTable_[i].cursorPos, pos, nInserted, nDeleted);
 	}
 }
 

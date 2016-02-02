@@ -175,7 +175,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	(void)deletedText;
 
 	Document *window = (Document *)cbArg;
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	if(!highlightData)
 		return;
@@ -211,7 +211,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 
 	/* Re-parse around the changed region */
 	if (highlightData->pass1Patterns)
-		incrementalReparse(highlightData, window->buffer, pos, nInserted, GetWindowDelimiters(window));
+		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window));
 }
 
 /*
@@ -238,28 +238,28 @@ void StartHighlighting(Document *window, int warn) {
 	}
 
 	/* Prepare for a long delay, refresh display and put up a watch cursor */
-	BeginWait(window->shell);
-	XmUpdateDisplay(window->shell);
+	BeginWait(window->shell_);
+	XmUpdateDisplay(window->shell_);
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	auto styleString = new char [window->buffer->BufGetLength() + 1];
+	auto styleString = new char [window->buffer_->BufGetLength() + 1];
 	char *stylePtr = styleString;
 	if (!highlightData->pass1Patterns) {
-		for (i = 0; i < window->buffer->BufGetLength(); i++) {
+		for (i = 0; i < window->buffer_->BufGetLength(); i++) {
 			*stylePtr++ = UNFINISHED_STYLE;
 		}
 	} else {
-		const char *bufString = window->buffer->BufAsString();
+		const char *bufString = window->buffer_->BufAsString();
 		const char *stringPtr = bufString;		
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
+		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
 	}
 	*stylePtr = '\0';
 	highlightData->styleBuffer->BufSetAllEx(styleString);
 	delete [] styleString;
 
 	/* install highlight pattern data in the window data structure */
-	window->highlightData = highlightData;
+	window->highlightData_ = highlightData;
 
 	/* Get the height of the current font in the window, to be used after
 	   highlighting is turned on to resize the window to make room for
@@ -267,9 +267,9 @@ void StartHighlighting(Document *window, int warn) {
 	oldFontHeight = getFontHeight(window);
 
 	/* Attach highlight information to text widgets in each pane */
-	AttachHighlightToWidget(window->textArea, window);
-	for (i = 0; i < window->nPanes; i++)
-		AttachHighlightToWidget(window->textPanes[i], window);
+	AttachHighlightToWidget(window->textArea_, window);
+	for (i = 0; i < window->nPanes_; i++)
+		AttachHighlightToWidget(window->textPanes_[i], window);
 
 	/* Re-size the window to fit the highlight fonts properly & tell the
 	   window manager about the potential line-height change as well */
@@ -281,8 +281,8 @@ void StartHighlighting(Document *window, int warn) {
 	   repainted. Otherwise, it is possible that the area gets moved before a
 	   repaint event is received and the area doesn't get repainted at all
 	   (eg. because of a -line command line argument that moves the text). */
-	XmUpdateDisplay(window->shell);
-	EndWait(window->shell);
+	XmUpdateDisplay(window->shell_);
+	EndWait(window->shell_);
 }
 
 /*
@@ -292,7 +292,7 @@ void StartHighlighting(Document *window, int warn) {
 void StopHighlighting(Document *window) {
 	int i, oldFontHeight;
 
-	if (!window->highlightData)
+	if (!window->highlightData_)
 		return;
 
 	/* Get the line height being used by the highlight fonts in the window,
@@ -301,14 +301,14 @@ void StopHighlighting(Document *window) {
 	oldFontHeight = getFontHeight(window);
 
 	/* Free and remove the highlight data from the window */
-	freeHighlightData((windowHighlightData *)window->highlightData);
-	window->highlightData = nullptr;
+	freeHighlightData((windowHighlightData *)window->highlightData_);
+	window->highlightData_ = nullptr;
 
 	/* Remove and detach style buffer and style table from all text
 	   display(s) of window, and redisplay without highlighting */
-	RemoveWidgetHighlight(window->textArea);
-	for (i = 0; i < window->nPanes; i++)
-		RemoveWidgetHighlight(window->textPanes[i]);
+	RemoveWidgetHighlight(window->textArea_);
+	for (i = 0; i < window->nPanes_; i++)
+		RemoveWidgetHighlight(window->textPanes_[i]);
 
 	/* Re-size the window to fit the primary font properly & tell the window
 	   manager about the potential line-height change as well */
@@ -324,18 +324,18 @@ void StopHighlighting(Document *window) {
 void FreeHighlightingData(Document *window) {
 	int i;
 
-	if (!window->highlightData)
+	if (!window->highlightData_)
 		return;
 
 	/* Free and remove the highlight data from the window */
-	freeHighlightData((windowHighlightData *)window->highlightData);
-	window->highlightData = nullptr;
+	freeHighlightData((windowHighlightData *)window->highlightData_);
+	window->highlightData_ = nullptr;
 
 	/* The text display may make a last desperate attempt to access highlight
 	   information when it is destroyed, which would be a disaster. */
-	((TextWidget)window->textArea)->text.textD->styleBuffer = nullptr;
-	for (i = 0; i < window->nPanes; i++)
-		((TextWidget)window->textPanes[i])->text.textD->styleBuffer = nullptr;
+	((TextWidget)window->textArea_)->text.textD->styleBuffer = nullptr;
+	for (i = 0; i < window->nPanes_; i++)
+		((TextWidget)window->textPanes_[i])->text.textD->styleBuffer = nullptr;
 }
 
 /*
@@ -343,7 +343,7 @@ void FreeHighlightingData(Document *window) {
 ** text widget and redisplay.
 */
 void AttachHighlightToWidget(Widget widget, Document *window) {
-	auto highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	TextDAttachHighlightData(((TextWidget)widget)->text.textD, highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
 }
@@ -361,10 +361,10 @@ void RemoveWidgetHighlight(Widget widget) {
 */
 void UpdateHighlightStyles(Document *window) {
 
-	auto oldHighlightData = (windowHighlightData *)window->highlightData;
+	auto oldHighlightData = (windowHighlightData *)window->highlightData_;
 
 	/* Do nothing if window not highlighted */
-	if (!window->highlightData) {
+	if (!window->highlightData_) {
 		return;
 	}
 
@@ -390,13 +390,13 @@ void UpdateHighlightStyles(Document *window) {
 	oldHighlightData->styleBuffer = highlightData->styleBuffer;
 	freeHighlightData(oldHighlightData);
 	highlightData->styleBuffer = styleBuffer;
-	window->highlightData = highlightData;
+	window->highlightData_ = highlightData;
 
 	/* Attach new highlight information to text widgets in each pane
 	   (and redraw) */
-	AttachHighlightToWidget(window->textArea, window);
-	for (int i = 0; i < window->nPanes; i++) {
-		AttachHighlightToWidget(window->textPanes[i], window);
+	AttachHighlightToWidget(window->textArea_, window);
+	for (int i = 0; i < window->nPanes_; i++) {
+		AttachHighlightToWidget(window->textPanes_[i], window);
 	}
 }
 
@@ -434,7 +434,7 @@ bool TestHighlightPatterns(PatternSet *patSet) {
 void *GetHighlightInfo(Document *window, int pos) {
 
 	highlightDataRec *pattern = nullptr;
-	auto highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 	if (!highlightData)
 		return nullptr;
 
@@ -489,10 +489,10 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	char *modeName;
 
 	/* Find the window's language mode.  If none is set, warn user */
-	modeName = LanguageModeName(window->languageMode);
+	modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn)
-			DialogF(DF_WARN, window->shell, 1, "Language Mode", "No language-specific mode has been set for this file.\n\n"
+			DialogF(DF_WARN, window->shell_, 1, "Language Mode", "No language-specific mode has been set for this file.\n\n"
 			                                                    "To use syntax highlighting in this window, please select a\n"
 			                                                    "language from the Preferences -> Language Modes menu.\n\n"
 			                                                    "New language modes and syntax highlighting patterns can be\n"
@@ -506,7 +506,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	patterns = FindPatternSet(modeName);
 	if(!patterns) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell, 1, "Language Mode", "Syntax highlighting is not available in language\n"
+			DialogF(DF_WARN, window->shell_, 1, "Language Mode", "Syntax highlighting is not available in language\n"
 			                                                    "mode %s.\n\n"
 			                                                    "You can create new syntax highlight patterns in the\n"
 			                                                    "Preferences -> Default Settings -> Syntax Highlighting\n"
@@ -547,13 +547,13 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 	/* Check that the styles and parent pattern names actually exist */
 	if (!NamedStyleExists("Plain")) {
-		DialogF(DF_WARN, window->shell, 1, "Highlight Style", "Highlight style \"Plain\" is missing", "OK");
+		DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Highlight style \"Plain\" is missing", "OK");
 		return nullptr;
 	}
 
 	for (i = 0; i < nPatterns; i++) {
 		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-			DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\n"
+			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\n"
 			                                                     "does not match any highlight patterns in this set",
 			        "OK", patternSrc[i].subPatternOf, patternSrc[i].name);
 			return nullptr;
@@ -562,7 +562,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 	for (i = 0; i < nPatterns; i++) {
 		if (!NamedStyleExists(*patternSrc[i].style)) {
-			DialogF(DF_WARN, window->shell, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style",
+			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style",
 			        "OK", patternSrc[i].style->c_str(), patternSrc[i].name);
 			return nullptr;
 		}
@@ -577,7 +577,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
 			if (parentindex == -1) {
-				DialogF(DF_WARN, window->shell, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name);
+				DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name);
 				return nullptr;
 			}
 
@@ -639,7 +639,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	if (nPass1Patterns == 0) {
 		pass1Pats = nullptr;
 	} else {
-		pass1Pats = compilePatterns(window->shell, pass1PatternSrc, nPass1Patterns);
+		pass1Pats = compilePatterns(window->shell_, pass1PatternSrc, nPass1Patterns);
 		if (!pass1Pats) {
 			return nullptr;
 		}
@@ -648,7 +648,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	if (nPass2Patterns == 0) {
 		pass2Pats = nullptr;
 	} else {
-		pass2Pats = compilePatterns(window->shell, pass2PatternSrc, nPass2Patterns);
+		pass2Pats = compilePatterns(window->shell_, pass2PatternSrc, nPass2Patterns);
 		if (!pass2Pats) {
 			return nullptr;
 		}
@@ -706,13 +706,13 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		p->isItalic      = FontOfNamedStyleIsItalic(*pat->style);
 
 		/* And now for the more physical stuff */
-		p->color = AllocColor(window->textArea, p->colorName.c_str(), &r, &g, &b);
+		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &r, &g, &b);
 		p->red   = r;
 		p->green = g;
 		p->blue  = b;
 		
 		if (!p->bgColorName.empty()) {
-			p->bgColor = AllocColor(window->textArea, p->bgColorName.c_str(), &r, &g, &b);
+			p->bgColor = AllocColor(window->textArea_, p->bgColorName.c_str(), &r, &g, &b);
 			p->bgRed   = r;
 			p->bgGreen = g;
 			p->bgBlue  = b;
@@ -989,7 +989,7 @@ static void freePatterns(highlightDataRec *patterns) {
 ** Find the HighlightPattern structure with a given name in the window.
 */
 HighlightPattern *FindPatternOfWindow(Document *window, char *name) {
-	auto hData = (windowHighlightData *)window->highlightData;
+	auto hData = (windowHighlightData *)window->highlightData_;
 	PatternSet *set;
 
 	if (hData && (set = hData->patternSetForWindow)) {
@@ -1006,7 +1006,7 @@ HighlightPattern *FindPatternOfWindow(Document *window, char *name) {
 ** like styleOfPos() in textDisp.c. Returns the style code or zero.
 */
 int HighlightCodeOfPos(Document *window, int pos) {
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 
@@ -1029,7 +1029,7 @@ int HighlightCodeOfPos(Document *window, int pos) {
 /* YOO: This is called form only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
@@ -1065,7 +1065,7 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 ** is used.
 */
 int StyleLengthOfCodeFromPos(Document *window, int pos) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData);
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
@@ -1108,7 +1108,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 ** hCode (if any).
 */
 static styleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
-	auto highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	hCode -= UNFINISHED_STYLE; /* get the correct index value */
 	if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
@@ -1141,9 +1141,9 @@ Pixel HighlightColorValueOfCode(Document *window, int hCode, int *r, int *g, int
 		/* pick up foreground color of the (first) text widget of the window */
 		XColor colorDef;
 		Colormap cMap;
-		Display *display = XtDisplay(window->textArea);
+		Display *display = XtDisplay(window->textArea_);
 		*r = *g = *b = 0;
-		XtVaGetValues(window->textArea, XtNcolormap, &cMap, XtNforeground, &colorDef.pixel, nullptr);
+		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNforeground, &colorDef.pixel, nullptr);
 		if (XQueryColor(display, cMap, &colorDef)) {
 			*r = colorDef.red;
 			*g = colorDef.green;
@@ -1165,9 +1165,9 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int
 		/* pick up background color of the (first) text widget of the window */
 		XColor colorDef;
 		Colormap cMap;
-		Display *display = XtDisplay(window->textArea);
+		Display *display = XtDisplay(window->textArea_);
 		*r = *g = *b = 0;
-		XtVaGetValues(window->textArea, XtNcolormap, &cMap, XtNbackground, &colorDef.pixel, nullptr);
+		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNbackground, &colorDef.pixel, nullptr);
 		if (XQueryColor(display, cMap, &colorDef)) {
 			*r = colorDef.red;
 			*g = colorDef.green;
@@ -1187,9 +1187,9 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, int *r, int *g, int
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
 static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, const int pos) {
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 	int beginParse, endParse, beginSafety, endSafety, p;
-	windowHighlightData *highlightData = (windowHighlightData *)window->highlightData;
+	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	reparseContext *context = &highlightData->contextRequirements;
 	highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
@@ -2222,11 +2222,11 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 
 	/* Decompose the window height into the part devoted to displaying
 	   text (textHeight) and the non-text part (boderHeight) */
-	XtVaGetValues(window->shell, XmNheight, &windowHeight, nullptr);
-	XtVaGetValues(window->textArea, XmNheight, &textAreaHeight, textNmarginHeight, &marginHeight, nullptr);
+	XtVaGetValues(window->shell_, XmNheight, &windowHeight, nullptr);
+	XtVaGetValues(window->textArea_, XmNheight, &textAreaHeight, textNmarginHeight, &marginHeight, nullptr);
 	textHeight = textAreaHeight - 2 * marginHeight;
-	for (i = 0; i < window->nPanes; i++) {
-		XtVaGetValues(window->textPanes[i], XmNheight, &textAreaHeight, nullptr);
+	for (i = 0; i < window->nPanes_; i++) {
+		XtVaGetValues(window->textPanes_[i], XmNheight, &textAreaHeight, nullptr);
 		textHeight += textAreaHeight - 2 * marginHeight;
 	}
 	borderHeight = windowHeight - textHeight;
@@ -2238,10 +2238,10 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 	   requests.  Our height increment is probably wrong because it is still
 	   set for the previous font.  Set the new height in advance, before
 	   attempting to resize. */
-	XtVaSetValues(window->shell, XmNheightInc, getFontHeight(window), nullptr);
+	XtVaSetValues(window->shell_, XmNheightInc, getFontHeight(window), nullptr);
 
 	/* Re-size the window */
-	XtVaSetValues(window->shell, XmNheight, newWindowHeight, nullptr);
+	XtVaSetValues(window->shell_, XmNheight, newWindowHeight, nullptr);
 }
 
 /*
@@ -2250,7 +2250,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 ** text display component
 */
 static int getFontHeight(Document *window) {
-	textDisp *textD = ((TextWidget)window->textArea)->text.textD;
+	textDisp *textD = ((TextWidget)window->textArea_)->text.textD;
 
 	return textD->ascent + textD->descent;
 }

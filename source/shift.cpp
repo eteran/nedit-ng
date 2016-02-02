@@ -80,12 +80,12 @@ void ShiftSelection(Document *window, int direction, int byTab) {
 	int origLength;
 	int emTabDist;
 	int shiftDist;
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 	std::string text;
 
 	/* get selection, if no text selected, use current insert position */
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-		cursorPos = TextGetCursorPos(window->lastFocus);
+		cursorPos = TextGetCursorPos(window->lastFocus_);
 		selStart = buf->BufStartOfLine(cursorPos);
 		selEnd = buf->BufEndOfLine(cursorPos);
 		if (selEnd < buf->BufGetLength())
@@ -94,10 +94,10 @@ void ShiftSelection(Document *window, int direction, int byTab) {
 		isRect = False;
 		text = buf->BufGetRangeEx(selStart, selEnd);
 	} else if (isRect) {
-		cursorPos = TextGetCursorPos(window->lastFocus);
+		cursorPos = TextGetCursorPos(window->lastFocus_);
 		origLength = buf->BufGetLength();
 		shiftRect(window, direction, byTab, selStart, selEnd, rectStart, rectEnd);
-		TextSetCursorPos(window->lastFocus, (cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+		TextSetCursorPos(window->lastFocus_, (cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
 		return;
 	} else {
 		selStart = buf->BufStartOfLine(selStart);
@@ -112,7 +112,7 @@ void ShiftSelection(Document *window, int direction, int byTab) {
 
 	/* shift the text by the appropriate distance */
 	if (byTab) {
-		XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
+		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
 		shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		shiftDist = 1;
@@ -127,7 +127,7 @@ void ShiftSelection(Document *window, int direction, int byTab) {
 
 static void shiftRect(Document *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
 	int offset, emTabDist;
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 
 	/* Make sure selStart and SelEnd refer to whole lines */
 	selStart = buf->BufStartOfLine(selStart);
@@ -135,7 +135,7 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 
 	/* Calculate the the left/right offset for the new rectangle */
 	if (byTab) {
-		XtVaGetValues(window->textArea, textNemulateTabs, &emTabDist, nullptr);
+		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
 		offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		offset = 1;
@@ -176,14 +176,14 @@ void DowncaseSelection(Document *window) {
 ** change to upper case, otherwise, change to lower case.
 */
 static void changeCase(Document *window, int makeUpper) {
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 	int cursorPos, start, end, rectStart, rectEnd;
 	bool isRect;
 
 	/* Get the selection.  Use character before cursor if no selection */
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		char bufChar[2] = " ";
-		cursorPos = TextGetCursorPos(window->lastFocus);
+		cursorPos = TextGetCursorPos(window->lastFocus_);
 		if (cursorPos == 0) {
 			XBell(TheDisplay, 0);
 			return;
@@ -216,12 +216,12 @@ static void changeCase(Document *window, int makeUpper) {
 }
 
 void FillSelection(Document *window) {
-	TextBuffer *buf = window->buffer;
+	TextBuffer *buf = window->buffer_;
 	int left, right, nCols, len, rectStart, rectEnd;
 	bool isRect;
 	int rightMargin, wrapMargin;
-	int insertPos = TextGetCursorPos(window->lastFocus);
-	int hasSelection = window->buffer->primary_.selected;
+	int insertPos = TextGetCursorPos(window->lastFocus_);
+	int hasSelection = window->buffer_->primary_.selected;
 	std::string text;
 
 	/* Find the range of characters and get the text to fill.  If there is a
@@ -256,7 +256,7 @@ void FillSelection(Document *window) {
 	if (hasSelection && isRect) {
 		rightMargin = rectEnd - rectStart;
 	} else {
-		XtVaGetValues(window->textArea, textNcolumns, &nCols, textNwrapMargin, &wrapMargin, nullptr);
+		XtVaGetValues(window->textArea_, textNcolumns, &nCols, textNwrapMargin, &wrapMargin, nullptr);
 		rightMargin = (wrapMargin == 0 ? nCols : wrapMargin);
 	}
 
@@ -276,9 +276,9 @@ void FillSelection(Document *window) {
 	/* Find a reasonable cursor position.  Usually insertPos is best, but
 	   if the text was indented, positions can shift */
 	if (hasSelection && isRect)
-		TextSetCursorPos(window->lastFocus, buf->cursorPosHint_);
+		TextSetCursorPos(window->lastFocus_, buf->cursorPosHint_);
 	else
-		TextSetCursorPos(window->lastFocus, insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
+		TextSetCursorPos(window->lastFocus_, insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
 }
 
 /*

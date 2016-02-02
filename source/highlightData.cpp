@@ -506,19 +506,19 @@ XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 	XFontStruct *font;
 
 	if (styleNo < 0)
-		return GetDefaultFontStruct(window->fontList);
+		return GetDefaultFontStruct(window->fontList_);
 	fontNum = HighlightStyles[styleNo]->font;
 	if (fontNum == BOLD_FONT)
-		font = window->boldFontStruct;
+		font = window->boldFontStruct_;
 	else if (fontNum == ITALIC_FONT)
-		font = window->italicFontStruct;
+		font = window->italicFontStruct_;
 	else if (fontNum == BOLD_ITALIC_FONT)
-		font = window->boldItalicFontStruct;
+		font = window->boldItalicFontStruct_;
 	else /* fontNum == PLAIN_FONT */
-		font = GetDefaultFontStruct(window->fontList);
+		font = GetDefaultFontStruct(window->fontList_);
 
 	/* If font isn't loaded, silently substitute primary font */
-	return font == nullptr ? GetDefaultFontStruct(window->fontList) : font;
+	return font == nullptr ? GetDefaultFontStruct(window->fontList_) : font;
 }
 
 int FontOfNamedStyleIsBold(view::string_view styleName) {
@@ -1306,7 +1306,7 @@ static int updateHSList(void) {
 	updateHighlightStyleMenu();
 
 	/* Redisplay highlighted windows which use changed style(s) */
-	for (window = WindowList; window != nullptr; window = window->next)
+	for (window = WindowList; window != nullptr; window = window->next_)
 		UpdateHighlightStyles(window);
 
 	/* Note that preferences have been changed */
@@ -1339,14 +1339,14 @@ void EditHighlightPatterns(Document *window) {
 	}
 
 	if (LanguageModeName(0) == nullptr) {
-		DialogF(DF_WARN, window->shell, 1, "No Language Modes", "No Language Modes available for syntax highlighting\n"
+		DialogF(DF_WARN, window->shell_, 1, "No Language Modes", "No Language Modes available for syntax highlighting\n"
 		                                                        "Add language modes under Preferenses->Language Modes",
 		        "OK");
 		return;
 	}
 
 	/* Decide on an initial language mode */
-	HighlightDialog.langModeName = XtNewStringEx(LanguageModeName(window->languageMode == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode));
+	HighlightDialog.langModeName = XtNewStringEx(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
 
 	/* Find the associated pattern set (patSet) to edit */
 	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
@@ -2300,9 +2300,9 @@ static int updatePatternSet(void) {
 
 	/* Find windows that are currently using this pattern set and
 	   re-do the highlighting */
-	for (window = WindowList; window != nullptr; window = window->next) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
 		if (patSet->nPatterns > 0) {
-			if (window->languageMode != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode) == *patSet->languageMode)) {
+			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == *patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -2311,18 +2311,18 @@ static int updatePatternSet(void) {
 					    this function or in preferences.c::reapplyLanguageMode()
 					    if the old set had no patterns, so reactivate menu entry. */
 					if (window->IsTopDocument()) {
-						XtSetSensitive(window->highlightItem, True);
+						XtSetSensitive(window->highlightItem_, True);
 					}
 
 					/*  Reactivate highlighting if it's default  */
-					window->highlightSyntax = GetPrefHighlightSyntax();
+					window->highlightSyntax_ = GetPrefHighlightSyntax();
 				}
 
-				if (window->highlightSyntax) {
+				if (window->highlightSyntax_) {
 					StopHighlighting(window);
 					if (window->IsTopDocument()) {
-						XtSetSensitive(window->highlightItem, True);
-						window->SetToggleButtonState(window->highlightItem, True, False);
+						XtSetSensitive(window->highlightItem_, True);
+						window->SetToggleButtonState(window->highlightItem_, True, False);
 					}
 					StartHighlighting(window, True);
 				}
@@ -2331,11 +2331,11 @@ static int updatePatternSet(void) {
 			/*  No pattern in pattern set. This will probably not happen much,
 			    but you never know.  */
 			StopHighlighting(window);
-			window->highlightSyntax = False;
+			window->highlightSyntax_ = False;
 
 			if (window->IsTopDocument()) {
-				XtSetSensitive(window->highlightItem, False);
-				window->SetToggleButtonState(window->highlightItem, False, False);
+				XtSetSensitive(window->highlightItem_, False);
+				window->SetToggleButtonState(window->highlightItem_, False, False);
 			}
 		}
 	}

@@ -555,13 +555,13 @@ static void updateMenuItems(void) {
 	if (TagsFileList)
 		tagStat = TRUE;
 
-	for (w = WindowList; w != nullptr; w = w->next) {
+	for (w = WindowList; w != nullptr; w = w->next_) {
 		if (!w->IsTopDocument())
 			continue;
-		XtSetSensitive(w->showTipItem, tipStat || tagStat);
-		XtSetSensitive(w->unloadTipsMenuItem, tipStat);
-		XtSetSensitive(w->findDefItem, tagStat);
-		XtSetSensitive(w->unloadTagsMenuItem, tagStat);
+		XtSetSensitive(w->showTipItem_, tipStat || tagStat);
+		XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
+		XtSetSensitive(w->findDefItem_, tagStat);
+		XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
 	}
 }
 
@@ -894,7 +894,7 @@ static int findDef(Document *window, const char *value, int search_type) {
 					sprintf(message, "No match for \"%s\" in calltips or tags.", tagName);
 					tagsShowCalltip(window, message);
 				} else {
-					DialogF(DF_WARN, window->textArea, 1, "Tags", "\"%s\" not found in tags file%s", "OK", tagName, (TagsFileList && TagsFileList->next) ? "s" : "");
+					DialogF(DF_WARN, window->textArea_, 1, "Tags", "\"%s\" not found in tags file%s", "OK", tagName, (TagsFileList && TagsFileList->next) ? "s" : "");
 				}
 			}
 		} else {
@@ -918,7 +918,7 @@ static void findDefinitionHelper(Document *window, Time time, const char *arg, i
 		findDef(window, arg, search_type);
 	} else {
 		searchMode = search_type;
-		XtGetSelectionValue(window->textArea, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)findDefCB, window, time);
+		XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)findDefCB, window, time);
 	}
 }
 
@@ -1023,7 +1023,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 		ctagsMode = 1;
 	} else if (searchString[0] == '?') {
 		dir = SEARCH_BACKWARD;
-		/* searchStartPos = window->buffer->length; */
+		/* searchStartPos = window->buffer_->length; */
 		searchStartPos = fileString.size();
 		ctagsMode = 1;
 	} else {
@@ -1094,7 +1094,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
         list of collided tags in the hash table and allows the user to select
         the correct one. */
 static int findAllMatches(Document *window, const char *string) {
-	Widget dialogParent = window->textArea;
+	Widget dialogParent = window->textArea_;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
 	char temp[32 + 2 * MAXPATHLEN + MAXLINE];
 	const char *fileToSearch, *searchString, *tagPath;
@@ -1113,7 +1113,7 @@ static int findAllMatches(Document *window, const char *string) {
 		/* Skip this tag if it has a language mode that doesn't match the
 		    current language mode, but don't skip anything if the window is in
 		    PLAIN_LANGUAGE_MODE. */
-		if (window->languageMode != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != window->languageMode) {
+		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != window->languageMode_) {
 			string = nullptr;
 			continue;
 		}
@@ -1125,7 +1125,7 @@ static int findAllMatches(Document *window, const char *string) {
 		tagPosInf[nMatches] = startPos;
 		ParseFilename(tagFiles[nMatches], filename, pathname);
 		/* Is this match in the current file?  If so, use it! */
-		if (GetPrefSmartTags() && !strcmp(window->filename, filename) && !strcmp(window->path, pathname)) {
+		if (GetPrefSmartTags() && !strcmp(window->filename_, filename) && !strcmp(window->path_, pathname)) {
 			if (nMatches) {
 				strcpy(tagFiles[0], tagFiles[nMatches]);
 				strcpy(tagSearch[0], tagSearch[nMatches]);
@@ -1135,7 +1135,7 @@ static int findAllMatches(Document *window, const char *string) {
 			break;
 		}
 		/* Is this match in the same dir. as the current file? */
-		if (!strcmp(window->path, pathname)) {
+		if (!strcmp(window->path_, pathname)) {
 			samePath++;
 			pathMatch = nMatches;
 		}
@@ -1408,21 +1408,21 @@ static void editTaggedLocation(Widget parent, int i) {
 	}
 
 	/* search for the tags file search string in the newly opened file */
-	if (!fakeRegExSearchEx(windowToSearch->buffer->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-		DialogF(DF_WARN, windowToSearch->shell, 1, "Tag Error", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
+	if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
+		DialogF(DF_WARN, windowToSearch->shell_, 1, "Tag Error", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
 		return;
 	}
 
 	/* select the matched string */
-	windowToSearch->buffer->BufSelect(startPos, endPos);
+	windowToSearch->buffer_->BufSelect(startPos, endPos);
 	windowToSearch->RaiseFocusDocumentWindow(True);
 
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */
-	lineNum = windowToSearch->buffer->BufCountLines(0, startPos);
-	XtVaGetValues(windowToSearch->lastFocus, textNrows, &rows, nullptr);
-	TextSetScroll(windowToSearch->lastFocus, lineNum - rows / 4, 0);
-	TextSetCursorPos(windowToSearch->lastFocus, endPos);
+	lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
+	XtVaGetValues(windowToSearch->lastFocus_, textNrows, &rows, nullptr);
+	TextSetScroll(windowToSearch->lastFocus_, lineNum - rows / 4, 0);
+	TextSetCursorPos(windowToSearch->lastFocus_, endPos);
 }
 
 /*      Create a Menu for user to select from the collided tags */

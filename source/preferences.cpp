@@ -1238,7 +1238,7 @@ void ImportPrefFile(const char *filename, int convertOld) {
 void SetPrefOpenInTab(int state) {
 	Document *w = WindowList;
 	setIntPref(&PrefData.openInTab, state);
-	for (; w != nullptr; w = w->next)
+	for (; w != nullptr; w = w->next_)
 		w->UpdateNewOppositeMenu(state);
 }
 
@@ -1566,7 +1566,7 @@ void SetPrefAutoScroll(int state) {
 	int margin = state ? PrefData.autoScrollVPadding : 0;
 
 	setIntPref(&PrefData.autoScroll, state);
-	for (w = WindowList; w != nullptr; w = w->next)
+	for (w = WindowList; w != nullptr; w = w->next_)
 		w->SetAutoScroll(margin);
 }
 
@@ -1728,7 +1728,7 @@ void SetPrefTitleFormat(const char *format) {
 	setStringPref(PrefData.titleFormat, format);
 
 	/* update all windows */
-	for (window = WindowList; window != nullptr; window = window->next) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
 		window->UpdateWindowTitle();
 	}
 }
@@ -1826,7 +1826,7 @@ void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 
 	/* Select the correct language mode in the sub-menu */
 	if (window->IsTopDocument()) {
-		XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, nullptr);
+		XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
 		XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
 		for (n = 0; n < (int)nItems; n++) {
 			XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
@@ -1851,7 +1851,7 @@ int FindLanguageMode(const char *languageName) {
 }
 
 /*
-** Apply language mode matching criteria and set window->languageMode to
+** Apply language mode matching criteria and set window->languageMode_ to
 ** the appropriate mode for the current file, trigger language mode
 ** specific actions (turn on/off highlighting), and update the language
 ** mode menu item.  If forceNewDefaults is true, re-establish default
@@ -1882,10 +1882,10 @@ char *LanguageModeName(int mode) {
 ** delimiter table when delimiters is nullptr).
 */
 char *GetWindowDelimiters(const Document *window) {
-	if (window->languageMode == PLAIN_LANGUAGE_MODE)
+	if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
 		return nullptr;
 	else
-		return LanguageModes[window->languageMode]->delimiters;
+		return LanguageModes[window->languageMode_]->delimiters;
 }
 
 /*
@@ -2014,9 +2014,9 @@ void TabsPrefDialog(Widget parent, Document *forWindow) {
 		useTabs = GetPrefInsertTabs();
 		tabDist = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
-		XtVaGetValues(forWindow->textArea, textNemulateTabs, &emTabDist, nullptr);
-		useTabs = forWindow->buffer->useTabs_;
-		tabDist = forWindow->buffer->BufGetTabDistance();
+		XtVaGetValues(forWindow->textArea_, textNemulateTabs, &emTabDist, nullptr);
+		useTabs = forWindow->buffer_->useTabs_;
+		tabDist = forWindow->buffer_->BufGetTabDistance();
 	}
 	emulate = emTabDist != 0;
 	SetIntText(TabDistText, tabDist);
@@ -2092,17 +2092,17 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 		params[0] = numStr;
 		sprintf(numStr, "%d", tabDist);
-		XtCallActionProc(window->textArea, "set_tab_dist", nullptr, params, 1);
+		XtCallActionProc(window->textArea_, "set_tab_dist", nullptr, params, 1);
 		params[0] = numStr;
 		sprintf(numStr, "%d", emTabDist);
-		XtCallActionProc(window->textArea, "set_em_tab_dist", nullptr, params, 1);
+		XtCallActionProc(window->textArea_, "set_em_tab_dist", nullptr, params, 1);
 		params[0] = numStr;
 		sprintf(numStr, "%d", useTabs);
-		XtCallActionProc(window->textArea, "set_use_tabs", nullptr, params, 1);
+		XtCallActionProc(window->textArea_, "set_use_tabs", nullptr, params, 1);
 		/*
 		        setTabDist(window, tabDist);
 		        setEmTabDist(window, emTabDist);
-		        window->buffer->useTabs = useTabs;
+		        window->buffer_->useTabs = useTabs;
 		*/
 	}
 	DoneWithTabsDialog = True;
@@ -2174,7 +2174,7 @@ void WrapMarginDialog(Widget parent, Document *forWindow) {
 	if(!forWindow)
 		margin = GetPrefWrapMargin();
 	else
-		XtVaGetValues(forWindow->textArea, textNwrapMargin, &margin, nullptr);
+		XtVaGetValues(forWindow->textArea_, textNwrapMargin, &margin, nullptr);
 	XmToggleButtonSetState(WrapWindowToggle, margin == 0, True);
 	if (margin != 0)
 		SetIntText(WrapText, margin);
@@ -2229,7 +2229,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 		char marginStr[25];
 		sprintf(marginStr, "%d", margin);
 		params[0] = marginStr;
-		XtCallActionProc(window->textArea, "set_wrap_margin", nullptr, params, 1);
+		XtCallActionProc(window->textArea_, "set_wrap_margin", nullptr, params, 1);
 	}
 	DoneWithWrapDialog = True;
 }
@@ -2632,26 +2632,26 @@ static int updateLMList(void) {
 	/* Fix up language mode indices in all open windows (which may change
 	   if the currently selected mode is deleted or has changed position),
 	   and update word delimiters */
-	for (window = WindowList; window != nullptr; window = window->next) {
-		if (window->languageMode != PLAIN_LANGUAGE_MODE) {
-			oldLanguageMode = window->languageMode;
-			oldModeName = LanguageModes[window->languageMode]->name;
-			window->languageMode = PLAIN_LANGUAGE_MODE;
+	for (window = WindowList; window != nullptr; window = window->next_) {
+		if (window->languageMode_ != PLAIN_LANGUAGE_MODE) {
+			oldLanguageMode = window->languageMode_;
+			oldModeName = LanguageModes[window->languageMode_]->name;
+			window->languageMode_ = PLAIN_LANGUAGE_MODE;
 			for (i = 0; i < LMDialog.nLanguageModes; i++) {
 				if (!strcmp(oldModeName, LMDialog.languageModeList[i]->name)) {
 					newDelimiters = LMDialog.languageModeList[i]->delimiters;
 					if(!newDelimiters)
 						newDelimiters = GetPrefDelimiters();
-					XtVaSetValues(window->textArea, textNwordDelimiters, newDelimiters, nullptr);
-					for (j = 0; j < window->nPanes; j++)
-						XtVaSetValues(window->textPanes[j], textNwordDelimiters, newDelimiters, nullptr);
+					XtVaSetValues(window->textArea_, textNwordDelimiters, newDelimiters, nullptr);
+					for (j = 0; j < window->nPanes_; j++)
+						XtVaSetValues(window->textPanes_[j], textNwordDelimiters, newDelimiters, nullptr);
 					/* don't forget to adapt the LM stored within the user menu cache */
-					if (window->userMenuCache->umcLanguageMode == oldLanguageMode)
-						window->userMenuCache->umcLanguageMode = i;
-					if (window->userBGMenuCache.ubmcLanguageMode == oldLanguageMode)
-						window->userBGMenuCache.ubmcLanguageMode = i;
+					if (window->userMenuCache_->umcLanguageMode == oldLanguageMode)
+						window->userMenuCache_->umcLanguageMode = i;
+					if (window->userBGMenuCache_.ubmcLanguageMode == oldLanguageMode)
+						window->userBGMenuCache_.ubmcLanguageMode = i;
 					/* update the language mode of this window (document) */
-					window->languageMode = i;
+					window->languageMode_ = i;
 					break;
 				}
 			}
@@ -2684,10 +2684,10 @@ static int updateLMList(void) {
 
 	/* Update the menus in the window menu bars and load any needed
 	    calltips files */
-	for (window = WindowList; window != nullptr; window = window->next) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
 		updateLanguageModeSubmenu(window);
-		if (window->languageMode != PLAIN_LANGUAGE_MODE && LanguageModes[window->languageMode]->defTipsFile != nullptr)
-			AddTagsFile(LanguageModes[window->languageMode]->defTipsFile, TIP);
+		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && LanguageModes[window->languageMode_]->defTipsFile != nullptr)
+			AddTagsFile(LanguageModes[window->languageMode_]->defTipsFile, TIP);
 		/* cache user menus: Rebuild all user menus of this window */
 		RebuildAllMenus(window);
 	}
@@ -3020,8 +3020,8 @@ void ChooseFonts(Document *window, int forWindow) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (window->fontDialog) {
-		RaiseDialogWindow(((fontDialog *)window->fontDialog)->shell);
+	if (window->fontDialog_) {
+		RaiseDialogWindow(((fontDialog *)window->fontDialog_)->shell);
 		return;
 	}
 
@@ -3029,7 +3029,7 @@ void ChooseFonts(Document *window, int forWindow) {
 	auto fd = new fontDialog;
 	fd->window = window;
 	fd->forWindow = forWindow;
-	window->fontDialog = (Widget)(void *) fd;
+	window->fontDialog_ = (Widget)(void *) fd;
 
 	/* Create a form widget in a dialog shell */
 	ac = 0;
@@ -3037,7 +3037,7 @@ void ChooseFonts(Document *window, int forWindow) {
 	ac++;
 	XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE);
 	ac++;
-	form = CreateFormDialog(window->shell, "choose Fonts", args, ac);
+	form = CreateFormDialog(window->shell_, "choose Fonts", args, ac);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	fd->shell = XtParent(form);
 	XtVaSetValues(fd->shell, XmNtitle, "Text Fonts", nullptr);
@@ -3147,10 +3147,10 @@ void ChooseFonts(Document *window, int forWindow) {
 
 	/* Set initial values */
 	if (forWindow) {
-		XmTextSetStringEx(fd->primaryW, window->fontName);
-		XmTextSetStringEx(fd->boldW, window->boldFontName);
-		XmTextSetStringEx(fd->italicW, window->italicFontName);
-		XmTextSetStringEx(fd->boldItalicW, window->boldItalicFontName);
+		XmTextSetStringEx(fd->primaryW, window->fontName_);
+		XmTextSetStringEx(fd->boldW, window->boldFontName_);
+		XmTextSetStringEx(fd->italicW, window->italicFontName_);
+		XmTextSetStringEx(fd->boldItalicW, window->boldItalicFontName_);
 	} else {
 		XmTextSetStringEx(fd->primaryW, GetPrefFontName());
 		XmTextSetStringEx(fd->boldW, GetPrefBoldFontName());
@@ -3273,7 +3273,7 @@ static void boldItalicBrowseCB(Widget w, XtPointer clientData, XtPointer callDat
 	(void)w;
 	(void)callData;
 
-	auto *fd = reinterpret_cast<fontDialog *>(clientData);
+	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
 	browseFont(fd->shell, fd->boldItalicW);
 }
@@ -3285,7 +3285,7 @@ static void fontDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto fd = reinterpret_cast<fontDialog *>(clientData);
 
-	fd->window->fontDialog = nullptr;
+	fd->window->fontDialog_ = nullptr;
 	delete fd;
 }
 
@@ -3441,7 +3441,7 @@ static void updateFonts(fontDialog *fd) {
 		params[1] = italicName;
 		params[2] = boldName;
 		params[3] = boldItalicName;
-		XtCallActionProc(fd->window->textArea, "set_fonts", nullptr, params, 4);
+		XtCallActionProc(fd->window->textArea_, "set_fonts", nullptr, params, 4);
 		/*
 		        SetFonts(fd->window, fontName, italicName, boldName, boldItalicName);
 		*/
@@ -3466,15 +3466,15 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	int i, wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
 	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
 	int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
-	int oldMode = window->languageMode;
+	int oldMode = window->languageMode_;
 
 	/* If the mode is the same, and changes aren't being forced (as might
 	   happen with Save As...), don't mess with already correct settings */
-	if (window->languageMode == mode && !forceDefaults)
+	if (window->languageMode_ == mode && !forceDefaults)
 		return;
 
 	/* Change the mode name stored in the window */
-	window->languageMode = mode;
+	window->languageMode_ = mode;
 
 	/* Decref oldMode's default calltips file if needed */
 	if (oldMode != PLAIN_LANGUAGE_MODE && LanguageModes[oldMode]->defTipsFile) {
@@ -3486,27 +3486,27 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 		delimiters = GetPrefDelimiters();
 	else
 		delimiters = LanguageModes[mode]->delimiters;
-	XtVaSetValues(window->textArea, textNwordDelimiters, delimiters, nullptr);
-	for (i = 0; i < window->nPanes; i++)
-		XtVaSetValues(window->textPanes[i], textNautoIndent, delimiters, nullptr);
+	XtVaSetValues(window->textArea_, textNwordDelimiters, delimiters, nullptr);
+	for (i = 0; i < window->nPanes_; i++)
+		XtVaSetValues(window->textPanes_[i], textNautoIndent, delimiters, nullptr);
 
 	/* Decide on desired values for language-specific parameters.  If a
 	   parameter was set to its default value, set it to the new default,
 	   otherwise, leave it alone */
-	wrapModeIsDef = window->wrapMode == GetPrefWrap(oldMode);
-	tabDistIsDef = window->buffer->BufGetTabDistance() == GetPrefTabDist(oldMode);
-	XtVaGetValues(window->textArea, textNemulateTabs, &oldEmTabDist, nullptr);
+	wrapModeIsDef = window->wrapMode_ == GetPrefWrap(oldMode);
+	tabDistIsDef = window->buffer_->BufGetTabDistance() == GetPrefTabDist(oldMode);
+	XtVaGetValues(window->textArea_, textNemulateTabs, &oldEmTabDist, nullptr);
 	
 	const char *oldlanguageModeName = LanguageModeName(oldMode);
 	
 	emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
-	indentStyleIsDef = window->indentStyle == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-	highlightIsDef   = window->highlightSyntax == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? oldlanguageModeName : "") == nullptr);
-	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode;
-	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer->BufGetTabDistance();
+	indentStyleIsDef = window->indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
+	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? oldlanguageModeName : "") == nullptr);
+	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode_;
+	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer_->BufGetTabDistance();
 	emTabDist        = emTabDistIsDef                                      || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
-	indentStyle      = indentStyleIsDef                                    || forceDefaults ? GetPrefAutoIndent(mode)  : window->indentStyle;
-	highlight        = highlightIsDef                                      || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax;
+	indentStyle      = indentStyleIsDef                                    || forceDefaults ? GetPrefAutoIndent(mode)  : window->indentStyle_;
+	highlight        = highlightIsDef                                      || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax_;
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
@@ -3514,8 +3514,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	haveHighlightPatterns = FindPatternSet(languageModeName ? languageModeName : "") != nullptr;
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
 	if (window->IsTopDocument()) {
-		XtSetSensitive(window->highlightItem, haveHighlightPatterns);
-		XtSetSensitive(window->smartIndentItem, haveSmartIndentMacros);
+		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
+		XtSetSensitive(window->smartIndentItem_, haveSmartIndentMacros);
 	}
 
 	/* Turn off requested options which are not available */
@@ -3524,8 +3524,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 		indentStyle = AUTO_INDENT;
 
 	/* Change highlighting */
-	window->highlightSyntax = highlight;
-	window->SetToggleButtonState(window->highlightItem, highlight, False);
+	window->highlightSyntax_ = highlight;
+	window->SetToggleButtonState(window->highlightItem_, highlight, False);
 	StopHighlighting(window);
 
 	/* we defer highlighting to RaiseDocument() if doc is hidden */
@@ -3533,9 +3533,9 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 		StartHighlighting(window, False);
 
 	/* Force a change of smart indent macros (SetAutoIndent will re-start) */
-	if (window->indentStyle == SMART_INDENT) {
+	if (window->indentStyle_ == SMART_INDENT) {
 		EndSmartIndent(window);
-		window->indentStyle = AUTO_INDENT;
+		window->indentStyle_ = AUTO_INDENT;
 	}
 
 	/* set requested wrap, indent, and tabs */
@@ -3566,7 +3566,7 @@ static int matchLanguageMode(Document *window) {
 	/*... look for an explicit mode statement first */
 
 	/* Do a regular expression search on for recognition pattern */
-	std::string first200 = window->buffer->BufGetRangeEx(0, 200);
+	std::string first200 = window->buffer_->BufGetRangeEx(0, 200);
 	for (i = 0; i < NLanguageModes; i++) {
 		if (LanguageModes[i]->recognitionExpr) {
 			if (SearchString(first200, LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
@@ -3578,10 +3578,10 @@ static int matchLanguageMode(Document *window) {
 	/* Look at file extension ("@@/" starts a ClearCase version extended path,
 	   which gets appended after the file extension, and therefore must be
 	   stripped off to recognize the extension to make ClearCase users happy) */
-	fileNameLen = strlen(window->filename);
+	fileNameLen = strlen(window->filename_);
 
-	if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename)) != nullptr)
-		fileNameLen = versionExtendedPath - window->filename;
+	if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename_)) != nullptr)
+		fileNameLen = versionExtendedPath - window->filename_;
 
 	for (i = 0; i < NLanguageModes; i++) {
 		for (j = 0; j < LanguageModes[i]->nExtensions; j++) {
@@ -3589,7 +3589,7 @@ static int matchLanguageMode(Document *window) {
 			extLen = strlen(ext);
 			start = fileNameLen - extLen;
 
-			if (start >= 0 && !strncmp(&window->filename[start], ext, extLen))
+			if (start >= 0 && !strncmp(&window->filename_[start], ext, extLen))
 				return i;
 		}
 	}
@@ -4241,7 +4241,7 @@ void SetLangModeMenu(Widget optMenu, const char *modeName) {
 void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic) {
 	XmString string = XmStringCreateSimpleEx((char *)label);
 
-	window->langModeCascade = XtVaCreateManagedWidget(name, xmCascadeButtonGadgetClass, parent, XmNlabelString, string, XmNmnemonic, mnemonic, XmNsubMenuId, nullptr, nullptr);
+	window->langModeCascade_ = XtVaCreateManagedWidget(name, xmCascadeButtonGadgetClass, parent, XmNlabelString, string, XmNmnemonic, mnemonic, XmNsubMenuId, nullptr, nullptr);
 	XmStringFree(string);
 
 	updateLanguageModeSubmenu(window);
@@ -4258,21 +4258,21 @@ static void updateLanguageModeSubmenu(Document *window) {
 	Arg args[1] = {{XmNradioBehavior, (XtArgVal)True}};
 
 	/* Destroy and re-create the menu pane */
-	XtVaGetValues(window->langModeCascade, XmNsubMenuId, &menu, nullptr);
+	XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
 	if(menu)
 		XtDestroyWidget(menu);
-	menu = CreatePulldownMenu(XtParent(window->langModeCascade), "languageModes", args, 1);
+	menu = CreatePulldownMenu(XtParent(window->langModeCascade_), "languageModes", args, 1);
 	btn =
-	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode == PLAIN_LANGUAGE_MODE, nullptr);
+	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode_ == PLAIN_LANGUAGE_MODE, nullptr);
 	XmStringFree(s1);
 	XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
 	for (i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode == i,
+		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode_ == i,
 		                              nullptr);
 		XmStringFree(s1);
 		XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
 	}
-	XtVaSetValues(window->langModeCascade, XmNsubMenuId, menu, nullptr);
+	XtVaSetValues(window->langModeCascade_, XmNsubMenuId, menu, nullptr);
 }
 
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -4292,7 +4292,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	XtVaGetValues(w, XmNuserData, &mode, nullptr);
 
 	/* If the mode didn't change, do nothing */
-	if (window->languageMode == (long)mode)
+	if (window->languageMode_ == (long)mode)
 		return;
 
 	/* redo syntax highlighting word delimiters, etc. */
@@ -4300,7 +4300,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    reapplyLanguageMode(window, (int)mode, False);
 	*/
 	params[0] = (((long)mode) == PLAIN_LANGUAGE_MODE) ? "" : LanguageModes[(long)mode]->name;
-	XtCallActionProc(window->textArea, "set_language_mode", nullptr, (char **)params, 1);
+	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, (char **)params, 1);
 }
 
 /*
@@ -5020,7 +5020,7 @@ static void updateMacroCmdsTo5dot6(void) {
 void UnloadLanguageModeTipsFile(Document *window) {
 	int mode;
 
-	mode = window->languageMode;
+	mode = window->languageMode_;
 	if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
 		DeleteTagsFile(LanguageModes[mode]->defTipsFile, TIP, False);
 	}
@@ -5156,7 +5156,7 @@ static void updateColors(colorDialog *cd) {
 	char *textFg = XmTextGetString(cd->textFgW), *textBg = XmTextGetString(cd->textBgW), *selectFg = XmTextGetString(cd->selectFgW), *selectBg = XmTextGetString(cd->selectBgW), *hiliteFg = XmTextGetString(cd->hiliteFgW),
 	     *hiliteBg = XmTextGetString(cd->hiliteBgW), *lineNoFg = XmTextGetString(cd->lineNoFgW), *cursorFg = XmTextGetString(cd->cursorFgW);
 
-	for (window = WindowList; window != nullptr; window = window->next) {
+	for (window = WindowList; window != nullptr; window = window->next_) {
 		window->SetColors(textFg, textBg, selectFg, selectBg, hiliteFg, hiliteBg, lineNoFg, cursorFg);
 	}
 
@@ -5190,7 +5190,7 @@ static void colorDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
-	cd->window->colorDialog = nullptr;
+	cd->window->colorDialog_ = nullptr;
 	XtFree((char *)cd);
 }
 
@@ -5280,14 +5280,14 @@ void ChooseColors(Document *window) {
 	Arg args[20];
 
 	/* if the dialog is already displayed, just pop it to the top and return */
-	if (window->colorDialog) {
-		RaiseDialogWindow(reinterpret_cast<colorDialog *>(window->colorDialog)->shell);
+	if (window->colorDialog_) {
+		RaiseDialogWindow(reinterpret_cast<colorDialog *>(window->colorDialog_)->shell);
 		return;
 	}
 
 	/* Create a structure for keeping track of dialog state */
 	cd = XtNew(colorDialog);
-	window->colorDialog = (Widget)(void *) cd;
+	window->colorDialog_ = (Widget)(void *) cd;
 
 	/* Create a form widget in a dialog shell */
 	ac = 0;
@@ -5295,7 +5295,7 @@ void ChooseColors(Document *window) {
 	ac++;
 	XtSetArg(args[ac], XmNresizePolicy, XmRESIZE_NONE);
 	ac++;
-	form = CreateFormDialog(window->shell, "choose colors", args, ac);
+	form = CreateFormDialog(window->shell_, "choose colors", args, ac);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	cd->shell = XtParent(form);
 	cd->window = window;
