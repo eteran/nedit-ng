@@ -30,6 +30,7 @@
 #include "highlight.h"
 #include "nedit.h"
 #include "string_view.h"
+#include "nullable_string.h"
 #include <string>
 
 struct PatternSet;
@@ -45,7 +46,7 @@ int FontOfNamedStyleIsItalic(view::string_view styleName);
 int IndexOfNamedStyle(view::string_view styleName);
 bool LMHasHighlightPatterns(view::string_view languageMode);
 PatternSet *FindPatternSet(view::string_view langModeName);
-std::string BgColorOfNamedStyleEx(view::string_view styleName);
+nullable_string BgColorOfNamedStyleEx(view::string_view styleName);
 std::string ColorOfNamedStyleEx(view::string_view styleName);
 std::string WriteHighlightStringEx(void);
 std::string WriteStylesStringEx(void);

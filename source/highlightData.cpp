@@ -92,7 +92,7 @@ static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void hsSetDisplayedCB(void *item, void *cbArg);
-static HighlightStyle *readHSDialogFields(int silent);
+static HighlightStyle *readHSDialogFields(bool silent);
 static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
@@ -247,9 +247,10 @@ bool LoadStylesStringEx(const std::string &string) {
 	auto inString = new char[string.size() + 1];
 	strcpy(inString, string.c_str());
 
-	const char *errMsg;
-	const char *inPtr = inString;
-	int i;
+    const char *errMsg;
+	std::string fontStr;
+    const char *inPtr = inString;
+    int i;
 
 	for (;;) {
 
@@ -260,70 +261,73 @@ bool LoadStylesStringEx(const std::string &string) {
 		auto hs = new HighlightStyle;
 
 		/* read style name */
-		hs->name = ReadSymbolicFieldEx(&inPtr);
-		if (hs->name.empty()) {
-			delete [] inString;
+		nullable_string name = ReadSymbolicFieldEx(&inPtr);
+		if (!name) {
 			return styleError(inString, inPtr, "style name required");
+		}		
+		hs->name = *name;
+		
+		if (!SkipDelimiter(&inPtr, &errMsg)) {
+			delete hs;
+			return styleError(inString,inPtr, errMsg);
+		}
+
+		/* read color */
+		nullable_string color = ReadSymbolicFieldEx(&inPtr);
+		if (!color) {
+			delete hs;
+			return styleError(inString,inPtr, "color name required");
+		}
+		
+		hs->color   = *color;
+		hs->bgColor = nullable_string();
+		
+		if (SkipOptSeparator('/', &inPtr)) {
+			/* read bgColor */
+			hs->bgColor = ReadSymbolicFieldEx(&inPtr); /* no error if fails */
+	
 		}
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
-			delete [] inString;
-			return styleError(inString, inPtr, errMsg);
-		}
-
-		/* read color */
-		hs->color = ReadSymbolicFieldEx(&inPtr);
-		if (hs->color.empty()) {
-			delete hs;
-			delete [] inString;
-			return styleError(inString, inPtr, "color name required");
-		}
-		hs->bgColor = std::string();
-		if (SkipOptSeparator('/', &inPtr)) {
-			/* read bgColor */
-			hs->bgColor = ReadSymbolicFieldEx(&inPtr); /* no error if fails */
-		}
-		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			delete hs;
-			delete [] inString;
-			return styleError(inString, inPtr, errMsg);
+			return styleError(inString,inPtr, errMsg);
 		}
 
 		/* read the font type */
-		std::string fontStr = ReadSymbolicFieldEx(&inPtr);
-		for (i = 0; i < N_FONT_TYPES; i++) {
-			if (fontStr == FontTypeNames[i]) {
+		// TODO(eteran): Note, assumes success!
+		fontStr = *ReadSymbolicFieldEx(&inPtr);
+		
+		
+		for (i=0; i<N_FONT_TYPES; i++) {
+			if (FontTypeNames[i] == fontStr) {
 				hs->font = i;
 				break;
 			}
 		}
+	
 		if (i == N_FONT_TYPES) {
 			delete hs;
-			delete [] inString;
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
-
+		
 		/* pattern set was read correctly, add/change it in the list */
-		for (i = 0; i < NHighlightStyles; i++) {
-			if (hs->name == HighlightStyles[i]->name) {
+		for (int i = 0; i < NHighlightStyles; i++) {
+			if (HighlightStyles[i]->name == hs->name) {
 				delete HighlightStyles[i];
 				HighlightStyles[i] = hs;
 				break;
 			}
 		}
+	
 		if (i == NHighlightStyles) {
 			HighlightStyles[NHighlightStyles++] = hs;
-			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES) {
-				delete [] inString;
+			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES)
 				return styleError(inString, inPtr, "maximum allowable number of styles exceeded");
-			}
 		}
 
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0') {
-			delete [] inString;
 			return true;
 		}
 	}
@@ -346,9 +350,9 @@ std::string WriteStylesStringEx(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
-		if (!style->bgColor.empty()) {
+		if (style->bgColor) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), *style->bgColor);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
@@ -557,12 +561,15 @@ std::string ColorOfNamedStyleEx(view::string_view styleName) {
 /*
 ** Find the background color associated with a named style.
 */
-std::string BgColorOfNamedStyleEx(view::string_view styleName) {
+nullable_string BgColorOfNamedStyleEx(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
-		return "";
+		return nullable_string("");
 	}
+	
+	// TODO(eteran): if there are no code paths where this can be "null"
+	//               better to make this a std::string instead
 	
 	return HighlightStyles[styleNo]->bgColor;
 }
@@ -1119,7 +1126,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 		return nullptr;
 
 	/* If there are no problems reading the data, just return it */
-	hs = readHSDialogFields(True);
+	hs = readHSDialogFields(true);
 	if(hs)
 		return hs;
 
@@ -1132,7 +1139,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	}
 
 	/* Do readHSDialogFields again without "silent" mode to display warning */
-	hs = readHSDialogFields(False);
+	hs = readHSDialogFields(false);
 	*abort = True;
 	return nullptr;
 }
@@ -1171,89 +1178,105 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 				}
 			}
 		}
-		XmTextSetStringEx(HSDialog.nameW, hs->name);
-		XmTextSetStringEx(HSDialog.colorW, hs->color);
-		XmTextSetStringEx(HSDialog.bgColorW, hs->bgColor);
-		RadioButtonChangeState(HSDialog.plainW, hs->font == PLAIN_FONT, False);
-		RadioButtonChangeState(HSDialog.boldW, hs->font == BOLD_FONT, False);
-		RadioButtonChangeState(HSDialog.italicW, hs->font == ITALIC_FONT, False);
+		
+		XmTextSetStringEx(HSDialog.nameW,            hs->name);
+		XmTextSetStringEx(HSDialog.colorW,           hs->color);
+		XmTextSetStringEx(HSDialog.bgColorW,         hs->bgColor ? *hs->bgColor : "");
+		RadioButtonChangeState(HSDialog.plainW,      hs->font == PLAIN_FONT, False);
+		RadioButtonChangeState(HSDialog.boldW,       hs->font == BOLD_FONT, False);
+		RadioButtonChangeState(HSDialog.italicW,     hs->font == ITALIC_FONT, False);
 		RadioButtonChangeState(HSDialog.boldItalicW, hs->font == BOLD_ITALIC_FONT, False);
 	}
 }
 
-static HighlightStyle *readHSDialogFields(int silent) {
+static HighlightStyle *readHSDialogFields(bool silent) {
 
-	Display *display = XtDisplay(HSDialog.shell);
-	int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
-	XColor rgb;
-
-	/* Allocate a language mode structure to return */
+   	/* Allocate a language mode structure to return */
 	auto hs = new HighlightStyle;
 
-	/* read the name field */
 	try {
-		hs->name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
+    	Display *display = XtDisplay(HSDialog.shell);
+    	int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
+    	XColor rgb;
 
-		if (hs->name.empty()) {
-			if (!silent) {
-				DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
-				XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
-			}
-			delete hs;
-			return nullptr;
-		}
+ 
 
-		/* read the color field */
-		hs->color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
+    	/* read the name field */
+    	nullable_string name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
+    	if (!name) {
+    		delete hs;
+    		return nullptr;
+    	}
+		
+		hs->name = *name;
 
+    	if (hs->name.empty()) {
+        	if (!silent) {
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
+            	XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
+        	}
+			
+        	delete hs;
+        	return nullptr;
+    	}
 
-		if (hs->color.empty()) {
-			if (!silent) {
-				DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
-				XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-			}
-			delete hs;
-			return nullptr;
-		}
+    	/* read the color field */
+    	nullable_string color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
+    	if (!color) {
+    		delete hs;
+    		return nullptr;
+    	}
+		
+		hs->color = *color;
 
-		/* Verify that the color is a valid X color spec */
-		if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
-			if (!silent) {
-				DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n", "OK", hs->color.c_str());
-				XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-			}
-			delete hs;
-			return nullptr;
-		}
+    	if (hs->color.empty()) {
+        	if (!silent) {
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
+            	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        	}
+        	delete hs;
+        	return nullptr;
+    	}
 
-		/* read the background color field - this may be empty */
-		try {
-			hs->bgColor = ReadSymbolicFieldTextWidgetEx(HSDialog.bgColorW, "bgColor", silent);
-		} catch(const invalid_character_error &e) {
-			hs->bgColor = std::string();
-		}
+    	/* Verify that the color is a valid X color spec */
+    	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
+        	if (!silent) {
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n",  "OK", hs->color.c_str());
+            	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        	}
+        	delete hs;
+        	return nullptr;;
+    	}
 
-		/* Verify that the background color (if present) is a valid X color spec */
-		if (!hs->bgColor.empty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.c_str(), &rgb)) {
-			if (!silent) {
-				DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.c_str());
-				XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
-			}
-			delete hs;
-			return nullptr;
-		}
+    	/* read the background color field - this may be empty */
+    	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
+                        	"bgColor", silent);
+    	if (hs->bgColor && hs->bgColor->empty()) {
+        	hs->bgColor = nullable_string();
+    	}
 
-		/* read the font buttons */
-		if (XmToggleButtonGetState(HSDialog.boldW))
-			hs->font = BOLD_FONT;
-		else if (XmToggleButtonGetState(HSDialog.italicW))
-			hs->font = ITALIC_FONT;
-		else if (XmToggleButtonGetState(HSDialog.boldItalicW))
-			hs->font = BOLD_ITALIC_FONT;
-		else
-			hs->font = PLAIN_FONT;
+    	/* Verify that the background color (if present) is a valid X color spec */
+    	if (hs->bgColor && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor->c_str(), &rgb)) {
+        	if (!silent) {
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor->c_str());
+            	XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+        	}
+			
+        	delete hs;
+        	return nullptr;;
+    	}
 
-		return hs;
+    	/* read the font buttons */
+    	if (XmToggleButtonGetState(HSDialog.boldW))
+    		hs->font = BOLD_FONT;
+    	else if (XmToggleButtonGetState(HSDialog.italicW))
+    		hs->font = ITALIC_FONT;
+    	else if (XmToggleButtonGetState(HSDialog.boldItalicW))
+    		hs->font = BOLD_ITALIC_FONT;
+    	else
+    		hs->font = PLAIN_FONT;
+
+    	return hs;
 	} catch(const invalid_character_error &e) {
 		delete hs;
 		return nullptr;	

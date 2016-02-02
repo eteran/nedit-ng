@@ -5104,7 +5104,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 	}
 
 	/* Prepare array element for background color name */
-	AllocNStringCpy(&DV.val.str, BgColorOfNamedStyleEx(styleName).c_str());
+	AllocNStringCpy(&DV.val.str, BgColorOfNamedStyleEx(styleName)->c_str());
 	M_STR_ALLOC_ASSERT(DV);
 	if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
 		M_ARRAY_INSERT_FAILURE();

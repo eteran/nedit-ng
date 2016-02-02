@@ -3907,7 +3907,7 @@ char *ReadSymbolicField(const char **inPtr) {
 ** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
 ** whitespace is compressed to single space characters.
 */
-std::string ReadSymbolicFieldEx(const char **inPtr) {
+nullable_string ReadSymbolicFieldEx(const char **inPtr) {
 
 	/* skip over initial blank space */
 	*inPtr += strspn(*inPtr, " \t");
@@ -4168,26 +4168,29 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 ** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
 ** an empty string if the text field is blank.
 */
-std::string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
+nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
 
 	/* read from the text widget */
-	char *string    = XmTextGetString(textW);
-	const char *stringPtr = string;
+	std::string string = XmTextGetStringEx(textW);
+	const char *stringPtr = &string[0];
 
 	/* parse it with the same routine used to read symbolic fields from
 	   files.  If the string is not read entirely, there are invalid
 	   characters, so warn the user if not in silent mode. */
-	std::string parsedString = ReadSymbolicFieldEx(&stringPtr);
+	nullable_string parsedString = ReadSymbolicFieldEx(&stringPtr);
 	
 	if (*stringPtr != '\0') {
-		if (!silent) {
-			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%c\" in %s", "OK", stringPtr[1], fieldName);
+		if (!silent) {		
+			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
-		XtFree(string);
-		throw invalid_character_error();
+		return nullable_string();
 	}
-	XtFree(string);
+	
+	if(!parsedString) {
+		parsedString = nullable_string("");
+	}
+	
 	return parsedString;
 }
 
