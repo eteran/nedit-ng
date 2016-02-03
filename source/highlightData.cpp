@@ -1378,7 +1378,7 @@ void EditHighlightPatterns(Document *window) {
 	}
 
 	/* Decide on an initial language mode */
-	HighlightDialog.langModeName = XtNewStringEx(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
+	HighlightDialog.langModeName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 
 	/* Find the associated pattern set (patSet) to edit */
 	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
@@ -1695,10 +1695,11 @@ static void updateHighlightStyleMenu(void) {
 	HighlightDialog.stylePulldown = createHighlightStylesMenu(XtParent(XtParent(oldMenu)));
 	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.styleOptMenu), XmNsubMenuId, HighlightDialog.stylePulldown, nullptr);
 	patIndex = ManagedListSelectedIndex(HighlightDialog.managedListW);
-	if (patIndex == -1)
+	if (patIndex == -1) {
 		setStyleMenu("Plain");
-	else
+	} else {
 		setStyleMenu(HighlightDialog.patterns[patIndex]->style->c_str());
+	}
 
 	XtDestroyWidget(oldMenu);
 }
@@ -1731,7 +1732,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		delete HighlightDialog.patterns[i];
 	}
-	
+
 	HighlightDialog.shell = nullptr;
 }
 
@@ -1783,12 +1784,12 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		delete newPatSet;
 
 	/* Free the old dialog information */
-	for (i = 0; i < HighlightDialog.nPatterns; i++) {
+	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		delete HighlightDialog.patterns[i];
 	}
 
 	/* Fill the dialog with the new language mode information */
-	HighlightDialog.langModeName = XtNewStringEx(modeName);
+	HighlightDialog.langModeName = modeName;
 	newPatSet = FindPatternSet(modeName);
 	if(!newPatSet) {
 		HighlightDialog.nPatterns = 0;
