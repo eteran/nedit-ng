@@ -831,7 +831,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		
 		int nSubExprs = 0;
 		if (patternSrc[i].startRE) {
-			char *ptr = patternSrc[i].startRE;
+			const char *ptr = patternSrc[i].startRE;
 			while (true) {
 				if (*ptr == '&') {
 					compiledPats[i].startSubexprs[nSubExprs++] = 0;
@@ -847,7 +847,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
 		nSubExprs = 0;
 		if (patternSrc[i].endRE) {
-			char *ptr = patternSrc[i].endRE;
+			const char *ptr = patternSrc[i].endRE;
 			while (true) {
 				if (*ptr == '&') {
 					compiledPats[i].endSubexprs[nSubExprs++] = 0;

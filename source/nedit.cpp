@@ -301,9 +301,9 @@ int main(int argc, char *argv[]) {
 	   XtOpenDisplay must be allowed to process some of the resource arguments
 	   with its inaccessible internal option table, but others, like -geometry
 	   and -iconic are per-window and it should not be allowed to consume them,
-	   so we temporarily masked them out. */	
+	   so we temporarily masked them out. */
 	maskArgvKeywords(argc, argv, protectedKeywords);
-	
+
 	/* X.Org 6.8 and above add support for ARGB visuals (with alpha-channel),
 	   typically with a 32-bit color depth. By default, NEdit uses the visual
 	   with the largest color depth. However, both OpenMotif and Lesstif
@@ -318,11 +318,11 @@ int main(int argc, char *argv[]) {
 	   more convenient that NEdit takes care of this. This must be done before
 	   the display is opened (empirically verified). */
 	putenv((char *)"XLIB_SKIP_ARGB_VISUALS=1");
-	
+
 	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
-	
+
 	unmaskArgvKeywords(argc, argv, protectedKeywords);
-	
+
 	if (!TheDisplay) {
 		/* Respond to -V or -version even if there is no display */
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
@@ -811,7 +811,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 		return False; /* One binding is always ok */
 
 	auto keys = new char *[maxCount];
-	
+
 	auto copy = XtNewStringEx((const char *)bindings);
 	i = 0;
 	pos2 = copy;
@@ -840,7 +840,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	}
 
 	if (count <= 1) {
-		delete [] keys; 
+		delete [] keys;
 		XtFree(copy);
 		return False; /* No conflict */
 	}
@@ -849,7 +849,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	std::sort(keys, keys + count, [](const char *key1, const char *key2) {
 		return strcmp(key1, key2) < 0;
 	});
-	
+
 	for (i = 1; i < count; ++i) {
 		if (!strcmp(keys[i - 1], keys[i])) {
 			/* Duplicate detected */
