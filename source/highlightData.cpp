@@ -122,8 +122,6 @@ static int dialogEmpty(void);
 static int updatePatternSet(void);
 static PatternSet *getDialogPatternSet(void);
 static void freeItemCB(void *item);
-static void freePatternSrc(HighlightPattern *pat, bool freeStruct);
-static void freePatternSet(PatternSet *p);
 
 /* list of available highlight styles */
 static int NHighlightStyles = 0;
@@ -397,7 +395,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 		/* Add/change the pattern set in the list */
 		for (i = 0; i < NPatternSets; i++) {
 			if (*PatternSets[i]->languageMode == *patSet->languageMode) {
-				freePatternSet(PatternSets[i]);
+				delete PatternSets[i];
 				PatternSets[i] = patSet;
 				break;
 			}
@@ -882,7 +880,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 ** Given a language mode name, determine if there is a default (built-in)
 ** pattern set available for that language mode, and if so, read it and
 ** return a new allocated copy of it.  The returned pattern set should be
-** freed by the caller with freePatternSet()
+** freed by the caller with delete
 */
 static PatternSet *readDefaultPatternSet(const char *langModeName) {
 
@@ -907,7 +905,7 @@ static bool isDefaultPatternSet(PatternSet *patSet) {
 	}
 	
 	bool retVal = *patSet == *defaultPatSet;
-	freePatternSet(defaultPatSet);
+	delete defaultPatSet;
 	return retVal;
 }
 
@@ -1731,7 +1729,7 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
-		freePatternSrc(HighlightDialog.patterns[i], true);
+		delete HighlightDialog.patterns[i];
 	}
 	
 	HighlightDialog.shell = nullptr;
@@ -1744,7 +1742,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	char *modeName;
-	PatternSet emptyPatSet = {boost::none, 1, 0, 0, nullptr};
+	PatternSet emptyPatSet;
 	int i, resp;
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */
@@ -1782,11 +1780,11 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	if(newPatSet)
-		freePatternSet(newPatSet);
+		delete newPatSet;
 
 	/* Free the old dialog information */
 	for (i = 0; i < HighlightDialog.nPatterns; i++) {
-		freePatternSrc(HighlightDialog.patterns[i], true);
+		delete HighlightDialog.patterns[i];
 	}
 
 	/* Fill the dialog with the new language mode information */
@@ -1893,15 +1891,17 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	for (psn = 0; psn < NPatternSets; psn++)
 		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
 			break;
+			
 	if (psn < NPatternSets) {
-		freePatternSet(PatternSets[psn]);
+		delete PatternSets[psn];
 		PatternSets[psn] = defaultPatSet;
-	} else
+	} else {
 		PatternSets[NPatternSets++] = defaultPatSet;
+	}
 
 	/* Free the old dialog information */
 	for (i = 0; i < HighlightDialog.nPatterns; i++) {
-		freePatternSrc(HighlightDialog.patterns[i], true);
+		delete HighlightDialog.patterns[i];
 	}
 
 	/* Update the dialog */
@@ -1938,14 +1938,14 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 	
 	if (psn < NPatternSets) {
-		freePatternSet(PatternSets[psn]);
-		memmove(&PatternSets[psn], &PatternSets[psn + 1], (NPatternSets - 1 - psn) * sizeof(PatternSet *));
+		delete PatternSets[psn];
+		std::copy_n(&PatternSets[psn + 1], (NPatternSets - 1 - psn), &PatternSets[psn]);
 		NPatternSets--;
 	}
 
 	/* Free the old dialog information */
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
-		freePatternSrc(HighlightDialog.patterns[i], true);
+		delete HighlightDialog.patterns[i];
 	}
 
 	/* Clear out the dialog */
@@ -2073,7 +2073,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 }
 
 static void freeItemCB(void *item) {
-	freePatternSrc(static_cast<HighlightPattern *>(item), true);
+	delete static_cast<HighlightPattern *>(item);
 }
 
 /*
@@ -2089,7 +2089,7 @@ static int checkHighlightDialogData(void) {
 
 	/* Compile the patterns  */
 	int result = patSet->nPatterns == 0 ? True : TestHighlightPatterns(patSet);
-	freePatternSet(patSet);
+	delete patSet;
 	return result;
 }
 
@@ -2181,8 +2181,6 @@ static HighlightPattern *readDialogFields(bool silent) {
 	Widget selectedItem;
 	int colorOnly;
 
-	/* Allocate a pattern source structure to return, zero out fields
-	   so that the whole pattern can be freed on error with freePatternSrc */
 	auto pat = new HighlightPattern;
 
 	/* read the type buttons */
@@ -2217,7 +2215,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex", "Please specify a regular\nexpression to match", "OK");
 			XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 		}
-		freePatternSrc(pat, true);
+		delete pat;
 		return nullptr;
 	}
 
@@ -2240,7 +2238,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 				        "OK");
 				XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, true);
+			delete pat;
 			return nullptr;
 		}
 	}
@@ -2252,7 +2250,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Parent Pattern", "Please specify a parent pattern", "OK");
 				XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, true);
+			delete pat;
 			return nullptr;
 		}
 
@@ -2272,7 +2270,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex", "Please specify an ending\nregular expression", "OK");
 				XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
 			}
-			freePatternSrc(pat, true);
+			delete pat;
 			return nullptr;
 		}
 	}
@@ -2328,7 +2326,7 @@ static int updatePatternSet(void) {
 		oldNum = 0;
 	} else {
 		oldNum = PatternSets[psn]->nPatterns;
-		freePatternSet(PatternSets[psn]);
+		delete PatternSets[psn];
 		PatternSets[psn] = patSet;
 	}
 
@@ -2399,41 +2397,16 @@ static PatternSet *getDialogPatternSet(void) {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	auto patSet = new PatternSet;
+	auto patSet = new PatternSet(HighlightDialog.nPatterns);
 	patSet->languageMode = HighlightDialog.langModeName;
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
-	patSet->nPatterns    = HighlightDialog.nPatterns;
-	patSet->patterns     = new HighlightPattern[HighlightDialog.nPatterns];
 	
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {		
 		patSet->patterns[i] = *(HighlightDialog.patterns[i]);
 	}
 	
 	return patSet;
-}
-
-/*
-** Free the allocated memory contained in a HighlightPattern data structure
-** If "freeStruct" is true, free the structure itself as well.
-*/
-static void freePatternSrc(HighlightPattern *pat, bool freeStruct) {
-	if(freeStruct) {
-		delete pat;
-	}
-}
-
-/*
-** Free the allocated memory contained in a PatternSet data structure
-** If "freeStruct" is true, free the structure itself as well.
-*/
-static void freePatternSet(PatternSet *p) {
-
-	for (int i = 0; i < p->nPatterns; i++)
-		freePatternSrc(&p->patterns[i], false);
-
-	delete [] p->patterns;
-	delete p;
 }
 
 /*
