@@ -439,8 +439,9 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 	const char *toDoCommand = "", *langMode = "", *geometry = "";
 	char *outPtr;
 	int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
-	int i, lineArg, nRead, opts = True;
+	int i, lineArg;
 	int fileCount = 0, group = 0, isTabbed;
+	bool opts = true;
 
 	/* Allocate a string for output, for the maximum possible length.  The
 	   maximum length is calculated by assuming every argument is a file,
@@ -491,17 +492,23 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 			copyCommandLineArg(commandLine, argv[i]);
 		} else if (opts && !strcmp(argv[i], "-line")) {
 			nextArg(argc, argv, &i);
-			nRead = sscanf(argv[i], "%d", &lineArg);
-			if (nRead != 1)
+			
+			char *end = nullptr;
+			lineArg = strtol(argv[i], &end, 10);
+			if(*end != '\0') {
 				fprintf(stderr, "nc: argument to line should be a number\n");
-			else
+			} else {
 				lineNum = lineArg;
+			}
 		} else if (opts && (*argv[i] == '+')) {
-			nRead = sscanf((argv[i] + 1), "%d", &lineArg);
-			if (nRead != 1)
+		
+			char *end = nullptr;
+			lineArg = strtol(argv[i], &end, 10);
+			if(*end != '\0') {
 				fprintf(stderr, "nc: argument to + should be a number\n");
-			else
+			} else {
 				lineNum = lineArg;
+			}
 		} else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noask"))) {
 			; /* Ignore resource-based arguments which are processed later */
 		} else if (opts && (!strcmp(argv[i], "-svrname") || !strcmp(argv[i], "-svrcmd"))) {
