@@ -829,7 +829,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 	char c;
 	char test;
 
-	if (source == nullptr || dest == nullptr) {
+	if (!source || !dest) {
 		reg_error("nullptr parm to `ConvertSubstituteRE\'");
 
 		return;
@@ -889,7 +889,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 		} else {
 			/* Ordinary character. */
 
-			if (((char *)dst - (char *)dest) >= (max - 1)) {
+			if ((dst - dest) >= (max - 1)) {
 				break;
 			} else {
 				if ((test = literal_escape(c, 1))) {

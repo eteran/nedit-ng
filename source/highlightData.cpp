@@ -97,7 +97,7 @@ static int hsDialogEmpty(void);
 static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
 static void convertOldPatternSet(PatternSet *patSet);
-static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr);
+static char *convertPatternExpr(char *patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
 static Widget createHighlightStylesMenu(Widget parent);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -466,9 +466,9 @@ static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		HighlightPattern *pattern = &patSet->patterns[p];
-		convertPatternExpr(&pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		convertPatternExpr(&pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->startRE = convertPatternExpr(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->endRE   = convertPatternExpr(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->errorRE = convertPatternExpr(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -479,27 +479,32 @@ static void convertOldPatternSet(PatternSet *patSet) {
 ** isSubsExpr.  Error messages are directed to stderr, and include the
 ** pattern set name and pattern name as passed in patSetName and patName.
 */
-static void convertPatternExpr(char **patternRE, const char *patSetName, const char *patName, int isSubsExpr) {
+static char *convertPatternExpr(char *patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
 
-	if (*patternRE == nullptr) {
-		return;
+	if (!patternRE) {
+		return nullptr;
 	}
 	
 	if (isSubsExpr) {
-		char *newRE = XtMalloc(strlen(*patternRE) + 5000);
-		ConvertSubstituteRE(*patternRE, newRE, strlen(*patternRE) + 5000);
-		XtFree(*patternRE);
-		*patternRE = XtNewStringEx(newRE);
-		XtFree(newRE);
+		// TODO(eteran): the + 5000 seems a bit wasteful
+		int bufsize = strlen(patternRE) + 5000;
+	
+		
+		char *newRE = XtMalloc(bufsize);
+		ConvertSubstituteRE(patternRE, newRE, bufsize);
+		XtFree(patternRE);
+		return newRE;
 	} else {
 		try {
-			char *newRE = ConvertRE(*patternRE);
-			XtFree(*patternRE);
-			*patternRE = newRE;
+			char *newRE = ConvertRE(patternRE);
+			XtFree(patternRE);
+			return newRE;
 		} catch(const regex_error &e) {
 			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
 		}
 	}
+	
+	return nullptr;
 }
 
 /*
@@ -2026,7 +2031,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 
 	(void)cbArg;
 
-	HighlightPattern *pat = (HighlightPattern *)item;
+	auto pat = static_cast<HighlightPattern *>(item);
 	bool isSubpat;
 	bool isDeferred;
 	bool isColorOnly;
@@ -2068,7 +2073,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 }
 
 static void freeItemCB(void *item) {
-	freePatternSrc((HighlightPattern *)item, true);
+	freePatternSrc(static_cast<HighlightPattern *>(item), true);
 }
 
 /*
@@ -2413,10 +2418,6 @@ static PatternSet *getDialogPatternSet(void) {
 ** If "freeStruct" is true, free the structure itself as well.
 */
 static void freePatternSrc(HighlightPattern *pat, bool freeStruct) {
-	XtFree(pat->startRE);
-	XtFree(pat->endRE);
-	XtFree(pat->errorRE);
-
 	if(freeStruct) {
 		delete pat;
 	}

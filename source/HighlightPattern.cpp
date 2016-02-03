@@ -6,15 +6,10 @@
 HighlightPattern::HighlightPattern() : startRE(nullptr), endRE(nullptr), errorRE(nullptr), flags(0) {
 }
 
-HighlightPattern::HighlightPattern(const HighlightPattern &other) {
-
-	name         = other.name;
+HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
 	startRE      = XtNewStringEx(other.startRE);
 	endRE        = XtNewStringEx(other.endRE);
 	errorRE      = XtNewStringEx(other.errorRE);
-	style        = other.style;
-	subPatternOf = other.subPatternOf;
-	flags        = other.flags;
 }
 
 HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
@@ -24,9 +19,28 @@ HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
 	return *this;
 }
 
+HighlightPattern::HighlightPattern(HighlightPattern &&other) : name(std::move(other.name)), style(std::move(other.style)), subPatternOf(std::move(other.subPatternOf)), flags(std::move(other.flags)) {
+	startRE = other.startRE;
+	endRE   = other.endRE;
+	errorRE = other.errorRE;
+	
+	other.startRE = nullptr;
+	other.endRE   = nullptr;
+	other.errorRE = nullptr;
+}
+
+
+HighlightPattern &HighlightPattern::operator=(HighlightPattern &&rhs) {
+	if(this != &rhs) {
+		HighlightPattern(std::move(rhs)).swap(*this);
+	}
+	return *this;
+}
+
 HighlightPattern::~HighlightPattern() {
-	// NOTE(eteran): this is a no-op FOR NOW. Ownership of these
-	// strings is a mess and needs to be cleaned up first
+	XtFree(startRE);
+	XtFree(endRE);
+	XtFree(errorRE);
 }
 
 void HighlightPattern::swap(HighlightPattern &other) {

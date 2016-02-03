@@ -11,6 +11,8 @@ public:
 	HighlightPattern();
 	HighlightPattern(const HighlightPattern &other);
 	HighlightPattern &operator=(const HighlightPattern &rhs);
+	HighlightPattern(HighlightPattern &&other);
+	HighlightPattern &operator=(HighlightPattern &&rhs);
 	~HighlightPattern();
 	
 public:
