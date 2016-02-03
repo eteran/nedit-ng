@@ -49,7 +49,7 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 			return true;
 		}
 		
-		if (AllocatedStringsDiffer(pat1->subPatternOf, pat2->subPatternOf)) {
+		if (pat1->subPatternOf != pat2->subPatternOf) {
 			return true;
 		}
 	}

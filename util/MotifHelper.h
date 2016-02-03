@@ -6,15 +6,16 @@
 #include <Xm/Text.h>
 #include <string>
 #include <cassert>
+#include "nullable_string.h"
 
-inline std::string XmTextGetStringEx(Widget widget) {
+inline nullable_string XmTextGetStringEx(Widget widget) {
 	if(char *s = XmTextGetString(widget)) {
 		std::string str(s);
 		XtFree(s);
 		return str;
 	}
 	
-	return std::string();
+	return boost::none;
 }
 
 

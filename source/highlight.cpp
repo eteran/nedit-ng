@@ -553,8 +553,8 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf, patternSrc[i].name.c_str());
+		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str()) == -1) {
+			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf->c_str(), patternSrc[i].name.c_str());
 			return nullptr;
 		}
 	}
@@ -604,20 +604,18 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	HighlightPattern *p1Ptr = pass1PatternSrc;
 	HighlightPattern *p2Ptr = pass2PatternSrc;
 
-	p1Ptr->name         = XtNewStringEx("");
+	p1Ptr->name         = "";
 	p1Ptr->startRE      = nullptr;
 	p1Ptr->endRE        = nullptr;
 	p1Ptr->errorRE      = nullptr;
 	p1Ptr->style        = "Plain";
-	p1Ptr->subPatternOf = nullptr;
 	p1Ptr->flags        = 0;
 	
-	p2Ptr->name 		= XtNewStringEx("");
+	p2Ptr->name 		= "";
 	p2Ptr->startRE  	= nullptr;
 	p2Ptr->endRE		= nullptr;
 	p2Ptr->errorRE  	= nullptr;
 	p2Ptr->style		= "Plain";
-	p2Ptr->subPatternOf = nullptr;
 	p2Ptr->flags		= 0;  
 	
 	p1Ptr++;
@@ -687,13 +685,11 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	*parentStylesPtr++ = '\0';
 	
 	for (int i = 1; i < nPass1Patterns; i++) {
-		const auto &parentName = pass1PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, parentName)].style;
+		*parentStylesPtr++ = !pass1PatternSrc[i].subPatternOf ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf->c_str())].style;
 	}
 	
 	for (int i = 1; i < nPass2Patterns; i++) {
-		const auto &parentName = pass2PatternSrc[i].subPatternOf;
-		*parentStylesPtr++ = !parentName ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, parentName)].style;
+		*parentStylesPtr++ = !pass2PatternSrc[i].subPatternOf ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf->c_str())].style;
 	}
 
 	/* Set up table for mapping colors and fonts to syntax */
@@ -801,7 +797,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		if (!patternSrc[i].subPatternOf) {
 			compiledPats[0].nSubPatterns++;
 		} else {
-			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
+			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str())].nSubPatterns++;
 		}
 	}
 
@@ -817,7 +813,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		if (!patternSrc[i].subPatternOf) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf);
+			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str());
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}
@@ -2197,11 +2193,12 @@ static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
 
 static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName) {
 
-	if(!patName)
+	if(!patName) {
 		return -1;
+	}
 	
 	for (int i = 0; i < nPats; i++) {
-		if (patList[i].name == patName) {
+		if (patList[i].name == patName) {	
 			return i;
 		}
 	}
@@ -2213,7 +2210,7 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 
 	int topIndex = index;
 	while (patList[topIndex].subPatternOf) {
-		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
+		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf->c_str());
 		if (index == topIndex)
 			return -1; /* amai: circular dependency ?! */
 	}

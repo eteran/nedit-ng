@@ -683,7 +683,7 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->style);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->subPatternOf);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "D");
@@ -851,7 +851,8 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return False;
 
 	/* read the sub-pattern-of field */
-	pattern->subPatternOf = ReadSymbolicField(inPtr);
+	pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
+	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -2050,7 +2051,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = (pat->endRE != nullptr);
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
-		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf);
+		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf ? *pat->subPatternOf : "");
 		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE);
 		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE);
 		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE);
@@ -2250,7 +2251,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 			return nullptr;
 		}
 
-		pat->subPatternOf = XmTextGetString(HighlightDialog.parentW);
+		pat->subPatternOf = XmTextGetStringEx(HighlightDialog.parentW);
 	}
 
 	/* read the styles option menu */

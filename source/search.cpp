@@ -2988,7 +2988,7 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 	regexp *compiledRE = nullptr;
 
 	/* Get the search string, search type, and direction from the dialog */
-	std::string findText = XmTextGetStringEx(window->findText_);
+	std::string findText = *XmTextGetStringEx(window->findText_);
 
 	if (XmToggleButtonGetState(window->findRegexToggle_)) {
 		int regexDefault;
@@ -3477,7 +3477,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	std::string searchString = XmTextGetStringEx(window->iSearchText_);
+	std::string searchString = *XmTextGetStringEx(window->iSearchText_);
 	if (XmToggleButtonGetState(window->iSearchCaseToggle_)) {
 		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX;

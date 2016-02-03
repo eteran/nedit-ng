@@ -420,7 +420,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 		if (dirNamePresent) /* Avoid erasing number when not active */
 		{
 			if (noOfComponents >= 0) {
-				std::string value = XmTextGetStringEx(etDialog.ndirW);
+				std::string value = *XmTextGetStringEx(etDialog.ndirW);
 				char buf[2];
 				sprintf(&buf[0], "%d", noOfComponents);
 				if (strcmp(&buf[0], value.c_str())) /* Don't overwrite unless diff. */
@@ -600,7 +600,7 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void appendToFormat(view::string_view string) {
 
-	std::string format = XmTextGetStringEx(etDialog.formatW);
+	std::string format = *XmTextGetStringEx(etDialog.formatW);
 
 	std::string buf;
 	buf.reserve(string.size() + format.size());
