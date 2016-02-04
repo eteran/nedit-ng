@@ -842,8 +842,7 @@ void AbortMacroCommand(Document *window) {
 ** process close the window when the macro is finished executing.
 */
 int MacroWindowCloseActions(Document *window) {
-	macroCmdInfo *mcd, *cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	Document *w;
+	macroCmdInfo *cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
 
 	if (MacroRecordActionHook != nullptr && MacroRecordWindow == window) {
 		FinishLearn();
@@ -853,13 +852,13 @@ int MacroWindowCloseActions(Document *window) {
 	   if macros executing in other windows have it as focus.  If so, set
 	   their focus back to the window from which they were originally run */
 	if(!cmdData) {
-		for (w = WindowList; w != nullptr; w = w->next_) {
-			mcd = (macroCmdInfo *)w->macroCmdData_;
+		Document::for_each([window](Document *w) {
+			auto mcd = static_cast<macroCmdInfo *>(w->macroCmdData_);
 			if (w == MacroRunWindow() && MacroFocusWindow() == window)
 				SetMacroFocusWindow(MacroRunWindow());
 			else if (mcd != nullptr && mcd->context->focusWindow == window)
 				mcd->context->focusWindow = mcd->context->runWindow;
-		}
+		});
 		return True;
 	}
 
@@ -1561,12 +1560,11 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		return False;
 	} else {
 		/* just use the plain name as supplied */
-		for (w = WindowList; w != nullptr; w = w->next_) {
-			sprintf(fullname, "%s%s", w->path_, w->filename_);
-			if (!strcmp(string, fullname)) {
-				break;
-			}
-		}
+		w = Document::find_if([&fullname, &string](Document *win) {
+			sprintf(fullname, "%s%s", win->path_, win->filename_);
+			return strcmp(string, fullname) == 0;
+		});
+		
 		/* didn't work? try normalizing the string passed in */
 		if(!w) {
 			strncpy(normalizedString, string, MAXPATHLEN);
@@ -1576,11 +1574,11 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 				*errMsg = "Pathname too long in focus_window()";
 				return False;
 			}
-			for (w = WindowList; w != nullptr; w = w->next_) {
-				sprintf(fullname, "%s%s", w->path_, w->filename_);
-				if (!strcmp(normalizedString, fullname))
-					break;
-			}
+			
+			w = Document::find_if([&fullname, &normalizedString](Document *win) {
+				sprintf(fullname, "%s%s", win->path_, win->filename_);
+				return strcmp(normalizedString, fullname) == 0;
+			});
 		}
 	}
 

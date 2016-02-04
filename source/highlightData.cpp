@@ -1318,7 +1318,6 @@ static int hsDialogEmpty(void) {
 ** highlight style information in HighlightStyles
 */
 static int updateHSList(void) {
-	Document *window;
 
 	/* Get the current contents of the dialog fields */
 	if (!UpdateManagedList(HSDialog.managedListW, True))
@@ -1338,8 +1337,9 @@ static int updateHSList(void) {
 	updateHighlightStyleMenu();
 
 	/* Redisplay highlighted windows which use changed style(s) */
-	for (window = WindowList; window != nullptr; window = window->next_)
+	Document::for_each([](Document *window) {
 		UpdateHighlightStyles(window);
+	});
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();
@@ -2303,7 +2303,6 @@ static int dialogEmpty(void) {
 */
 static int updatePatternSet(void) {
 	PatternSet *patSet;
-	Document *window;
 	int psn, oldNum = -1;
 
 	/* Make sure the patterns are valid and compile */
@@ -2333,7 +2332,7 @@ static int updatePatternSet(void) {
 
 	/* Find windows that are currently using this pattern set and
 	   re-do the highlighting */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([&](Document *window) {
 		if (patSet->nPatterns > 0) {
 			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == *patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
@@ -2371,7 +2370,7 @@ static int updatePatternSet(void) {
 				window->SetToggleButtonState(window->highlightItem_, False, False);
 			}
 		}
-	}
+	});
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();

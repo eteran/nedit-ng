@@ -547,7 +547,6 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 ** and "Unload Calltips File" menu items in the existing windows.
 */
 static void updateMenuItems(void) {
-	Document *w;
 	Boolean tipStat = FALSE, tagStat = FALSE;
 
 	if (TipsFileList)
@@ -555,7 +554,7 @@ static void updateMenuItems(void) {
 	if (TagsFileList)
 		tagStat = TRUE;
 
-	for (w = WindowList; w != nullptr; w = w->next_) {
+	for (Document *w = WindowList; w != nullptr; w = w->next_) {
 		if (!w->IsTopDocument())
 			continue;
 		XtSetSensitive(w->showTipItem_, tipStat || tagStat);

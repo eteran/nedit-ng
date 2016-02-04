@@ -106,14 +106,13 @@ static void deleteProperty(Atom *atom) {
 ** Exit handler.  Removes server-exists property on root window
 */
 static void cleanUpServerCommunication(void) {
-	Document *w;
 
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
 	 */
-	for (w = WindowList; w; w = w->next_) {
+	Document::for_each([](Document *w) {
 		DeleteFileClosedProperty(w);
-	}
+	});
 
 	/* Delete any per-file properties that still exist
 	 * (but that that server doesn't know about)

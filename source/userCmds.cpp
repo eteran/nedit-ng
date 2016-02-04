@@ -974,10 +974,10 @@ void RebuildAllMenus(Document *window) {
 ** Rebuild either Shell, Macro or Background menus of all editor windows.
 */
 static void rebuildMenuOfAllWindows(int menuType) {
-	Document *w;
 
-	for (w = WindowList; w != nullptr; w = w->next_)
+	Document::for_each([menuType](Document *w) {
 		rebuildMenu(w, menuType);
+	});
 }
 
 /*

@@ -1236,10 +1236,11 @@ void ImportPrefFile(const char *filename, int convertOld) {
 }
 
 void SetPrefOpenInTab(int state) {
-	Document *w = WindowList;
 	setIntPref(&PrefData.openInTab, state);
-	for (; w != nullptr; w = w->next_)
+	
+	Document::for_each([state](Document *w) {
 		w->UpdateNewOppositeMenu(state);
+	});
 }
 
 int GetPrefOpenInTab(void) {
@@ -1562,12 +1563,13 @@ int GetPrefRepositionDialogs(void) {
 }
 
 void SetPrefAutoScroll(int state) {
-	Document *w = WindowList;
 	int margin = state ? PrefData.autoScrollVPadding : 0;
 
 	setIntPref(&PrefData.autoScroll, state);
-	for (w = WindowList; w != nullptr; w = w->next_)
+	
+	Document::for_each([margin](Document *w) {
 		w->SetAutoScroll(margin);
+	});
 }
 
 int GetPrefAutoScroll(void) {
@@ -1723,14 +1725,12 @@ int GetPrefTypingHidesPointer(void) {
 }
 
 void SetPrefTitleFormat(const char *format) {
-	Document *window;
-
 	setStringPref(PrefData.titleFormat, format);
 
 	/* update all windows */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([](Document *window) {
 		window->UpdateWindowTitle();
-	}
+	});
 }
 const char *GetPrefTitleFormat(void) {
 	return PrefData.titleFormat;
@@ -2620,10 +2620,10 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg) {
 ** LanguageModes)
 */
 static int updateLMList(void) {
-	Document *window;
+
 	int oldLanguageMode;
 	char *oldModeName, *newDelimiters;
-	int i, j;
+	int j;
 
 	/* Get the current contents of the dialog fields */
 	if (!UpdateManagedList(LMDialog.managedListW, True))
@@ -2632,12 +2632,12 @@ static int updateLMList(void) {
 	/* Fix up language mode indices in all open windows (which may change
 	   if the currently selected mode is deleted or has changed position),
 	   and update word delimiters */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	for (Document *window = WindowList; window != nullptr; window = window->next_) {
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			oldLanguageMode = window->languageMode_;
 			oldModeName = LanguageModes[window->languageMode_]->name;
 			window->languageMode_ = PLAIN_LANGUAGE_MODE;
-			for (i = 0; i < LMDialog.nLanguageModes; i++) {
+			for (int i = 0; i < LMDialog.nLanguageModes; i++) {
 				if (!strcmp(oldModeName, LMDialog.languageModeList[i]->name)) {
 					newDelimiters = LMDialog.languageModeList[i]->delimiters;
 					if(!newDelimiters)
@@ -2660,7 +2660,7 @@ static int updateLMList(void) {
 
 	/* If there were any name changes, re-name dependent highlight patterns
 	   and smart-indent macros and fix up the weird rename-format names */
-	for (i = 0; i < LMDialog.nLanguageModes; i++) {
+	for (int i = 0; i < LMDialog.nLanguageModes; i++) {
 		if (strchr(LMDialog.languageModeList[i]->name, ':')) {
 			char *newName = strrchr(LMDialog.languageModeList[i]->name, ':') + 1;
 			*strchr(LMDialog.languageModeList[i]->name, ':') = '\0';
@@ -2672,9 +2672,9 @@ static int updateLMList(void) {
 	}
 
 	/* Replace the old language mode list with the new one from the dialog */
-	for (i = 0; i < NLanguageModes; i++)
+	for (int i = 0; i < NLanguageModes; i++)
 		freeLanguageModeRec(LanguageModes[i]);
-	for (i = 0; i < LMDialog.nLanguageModes; i++)
+	for (int i = 0; i < LMDialog.nLanguageModes; i++)
 		LanguageModes[i] = copyLanguageModeRec(LMDialog.languageModeList[i]);
 	NLanguageModes = LMDialog.nLanguageModes;
 
@@ -2684,13 +2684,13 @@ static int updateLMList(void) {
 
 	/* Update the menus in the window menu bars and load any needed
 	    calltips files */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([](Document *window) {
 		updateLanguageModeSubmenu(window);
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && LanguageModes[window->languageMode_]->defTipsFile != nullptr)
 			AddTagsFile(LanguageModes[window->languageMode_]->defTipsFile, TIP);
 		/* cache user menus: Rebuild all user menus of this window */
 		RebuildAllMenus(window);
-	}
+	});
 
 	/* If a syntax highlighting dialog is up, update its menu */
 	UpdateLanguageModeMenu();
@@ -5158,14 +5158,19 @@ static void showColorStatus(colorDialog *cd, Widget colorFieldW, Widget errorLab
 
 /* Update the colors in the window or in the preferences */
 static void updateColors(colorDialog *cd) {
-	Document *window;
+	
+	char *textFg = XmTextGetString(cd->textFgW);
+	char *textBg = XmTextGetString(cd->textBgW);
+	char *selectFg = XmTextGetString(cd->selectFgW);
+	char *selectBg = XmTextGetString(cd->selectBgW);
+	char *hiliteFg = XmTextGetString(cd->hiliteFgW);
+	char *hiliteBg = XmTextGetString(cd->hiliteBgW);
+	char *lineNoFg = XmTextGetString(cd->lineNoFgW);
+	char *cursorFg = XmTextGetString(cd->cursorFgW);
 
-	char *textFg = XmTextGetString(cd->textFgW), *textBg = XmTextGetString(cd->textBgW), *selectFg = XmTextGetString(cd->selectFgW), *selectBg = XmTextGetString(cd->selectBgW), *hiliteFg = XmTextGetString(cd->hiliteFgW),
-	     *hiliteBg = XmTextGetString(cd->hiliteBgW), *lineNoFg = XmTextGetString(cd->lineNoFgW), *cursorFg = XmTextGetString(cd->cursorFgW);
-
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([&](Document *window) {
 		window->SetColors(textFg, textBg, selectFg, selectBg, hiliteFg, hiliteBg, lineNoFg, cursorFg);
-	}
+	});
 
 	SetPrefColorName(TEXT_FG_COLOR, textFg);
 	SetPrefColorName(TEXT_BG_COLOR, textBg);

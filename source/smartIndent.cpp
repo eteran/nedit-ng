@@ -1149,7 +1149,6 @@ static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** apply changes to any window which is currently using the macros.
 */
 static int updateSmartIndentCommonData(void) {
-	Document *window;
 
 	/* Make sure the patterns are valid and compile */
 	if (!checkSmartIndentCommonDialogData())
@@ -1167,12 +1166,12 @@ static int updateSmartIndentCommonData(void) {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([&](Document *window) {
 		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			EndSmartIndent(window);
 			BeginSmartIndent(window, False);
 		}
-	}
+	});
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();
@@ -1203,8 +1202,6 @@ static int checkSmartIndentCommonDialogData(void) {
 ** apply changes to any window which is currently using the macros.
 */
 static int updateSmartIndentData(void) {
-	smartIndentRec *newMacros;
-	Document *window;
 	char *lmName;
 	int i;
 
@@ -1213,7 +1210,7 @@ static int updateSmartIndentData(void) {
 		return False;
 
 	/* Get the current data */
-	newMacros = getSmartIndentDialogData();
+	smartIndentRec *newMacros = getSmartIndentDialogData();
 
 	/* Find the original macros */
 	for (i = 0; i < NSmartIndentSpecs; i++)
@@ -1231,7 +1228,7 @@ static int updateSmartIndentData(void) {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	Document::for_each([&](Document *window) {
 		lmName = LanguageModeName(window->languageMode_);
 		if (lmName != nullptr && !strcmp(lmName, newMacros->lmName)) {
 			window->SetSensitive(window->smartIndentItem_, True);
@@ -1240,7 +1237,7 @@ static int updateSmartIndentData(void) {
 				BeginSmartIndent(window, False);
 			}
 		}
-	}
+	});
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();

@@ -588,12 +588,12 @@ void DoReplaceMultiFileDlog(Document *window) {
 ** modalness, so there can be more than one dialog.
 */
 void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
-	Document *w;
 
-	for (w = WindowList; w != nullptr; w = w->next_)
+	Document::for_each([doomedWindow](Document *w) {
 		if (w->writableWindows_)
 			/* A multi-file replacement dialog is up for this window */
 			checkMultiReplaceListForDoomedW(w, doomedWindow);
+	});
 }
 
 void CreateReplaceDlog(Widget parent, Document *window) {
@@ -2098,13 +2098,7 @@ static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call
 ** Count no. of windows
 */
 static int countWindows(void) {
-	int nWindows;
-	const Document *w;
-
-	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next_, ++nWindows)
-		;
-
-	return nWindows;
+	return Document::WindowCount();
 }
 
 /*
@@ -2141,18 +2135,19 @@ static int countWritableWindows(void) {
 static void collectWritableWindows(Document *window) {
 	int nWritable = countWritableWindows();
 	int i;
-	Document *w;
 	Document **windows;
 
 	delete [] window->writableWindows_;
 
 	/* Make a sorted list of writable windows */
 	windows = new Document*[nWritable];
-	for (w = WindowList, i = 0; w != nullptr; w = w->next_) {
+	
+	
+	Document::for_each([&windows, &i](Document *w) {
 		if (!IS_ANY_LOCKED(w->lockReasons_)) {
 			windows[i++] = w;
 		}
-	}
+	});
 
 	std::sort(windows, windows + nWritable, [](const Document *lhs, const Document *rhs) {
 		return strcmp(lhs->filename_, rhs->filename_) < 0;
