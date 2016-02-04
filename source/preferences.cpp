@@ -2632,7 +2632,8 @@ static int updateLMList(void) {
 	/* Fix up language mode indices in all open windows (which may change
 	   if the currently selected mode is deleted or has changed position),
 	   and update word delimiters */
-	for (Document *window = WindowList; window != nullptr; window = window->next_) {
+	   
+	Document::for_each([&](Document *window) {
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			oldLanguageMode = window->languageMode_;
 			oldModeName = LanguageModes[window->languageMode_]->name;
@@ -2656,7 +2657,7 @@ static int updateLMList(void) {
 				}
 			}
 		}
-	}
+	});
 
 	/* If there were any name changes, re-name dependent highlight patterns
 	   and smart-indent macros and fix up the weird rename-format names */

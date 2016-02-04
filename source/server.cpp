@@ -252,12 +252,11 @@ static int isLocatedOnDesktop(Document *window, long currentDesktop) {
 }
 
 static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
-	Document *window;
 
 	if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
 		/* A new window is requested, unless we find an untitled unmodified
 		    document on the current desktop */
-		for (window = WindowList; window != nullptr; window = window->next_) {
+		for (Document *window = WindowList; window != nullptr; window = window->next_) {
 			if (window->filenameSet_ || window->fileChanged_ || window->macroCmdData_) {
 				continue;
 			}
@@ -268,7 +267,7 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		}
 	} else {
 		/* Find a window on the current desktop to hold the new document */
-		for (window = WindowList; window != nullptr; window = window->next_) {
+		for (Document *window = WindowList; window != nullptr; window = window->next_) {
 			/* Avoid unnecessary property access (server round-trip) */
 			if (!window->IsTopDocument()) {
 				continue;
@@ -294,9 +293,11 @@ static void processServerCommandString(char *string) {
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (string[0] == '\0') {
-		for (window = WindowList; window != nullptr; window = window->next_)
-			if (!window->filenameSet_ && !window->fileChanged_ && isLocatedOnDesktop(window, currentDesktop))
-				break;
+
+		Document *window = Document::find_if([currentDesktop](Document *w) {
+			return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
+		});
+
 		if(!window) {
 			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
 			CheckCloseDim();
@@ -352,10 +353,11 @@ static void processServerCommandString(char *string) {
 		 *   choose a random window for executing the -do macro upon
 		 */
 		if (fileLen <= 0) {
-			for (window = WindowList; window != nullptr; window = window->next_)
-				if (!window->filenameSet_ && !window->fileChanged_ && isLocatedOnDesktop(window, currentDesktop))
-					break;
-
+			
+			Document *window = Document::find_if([currentDesktop](Document *w) {
+				return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
+			});
+			
 			if (*doCommand == '\0') {
 				if(!window) {
 					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
@@ -369,6 +371,10 @@ static void processServerCommandString(char *string) {
 				Document *win = WindowList;
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
+				   
+				   
+				// TODO(eteran): I *think* this searches for the first window
+				// where win->macroCmdData_ is "false"
 				while (win != nullptr && win->macroCmdData_) {
 					win = win->next_;
 				}

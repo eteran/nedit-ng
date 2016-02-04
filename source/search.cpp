@@ -2105,11 +2105,13 @@ static int countWindows(void) {
 ** Count no. of writable windows, but first update the status of all files.
 */
 static int countWritableWindows(void) {
-	int nWritable, nBefore, nAfter;
-	Document *w;
+	int nAfter;
 
-	nBefore = countWindows();
-	for (w = WindowList, nWritable = 0; w != nullptr; w = w->next_) {
+	int nBefore = countWindows();
+	int nWritable = 0;
+	
+	for (Document *w = WindowList; w != nullptr; w = w->next_) {
+	
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
 		   arbitrary windows in response. */
