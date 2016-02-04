@@ -293,13 +293,13 @@ void RevertToSaved(Document *window) {
 ** window a second time.
 */
 static void safeClose(Document *window) {
-	Document *p = WindowList;
-	while (p) {
-		if (p == window) {
-			window->CloseWindow();
-			return;
-		}
-		p = p->next_;
+
+	Document *win = Document::find_if([window](Document *p) {
+		return p == window;
+	});
+	
+	if(win) {
+		win->CloseWindow();
 	}
 }
 
@@ -1285,13 +1285,10 @@ void UniqueUntitledName(char *name, size_t size) {
 			snprintf(name, size, "Untitled_%d", i);
 		}
 		
-		Document *w;
-		for (w = WindowList; w != nullptr; w = w->next_) {
-			if (!strcmp(w->filename_, name)) {
-				break;
-			}
-		}
-			
+		Document *w = Document::find_if([name](Document *window) {
+			return (!strcmp(window->filename_, name));
+		});
+		
 		if(!w) {
 			break;
 		}
@@ -1306,7 +1303,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 	(void)w;
 	(void)callData;
 
-	*(Bool *)clientData = TRUE;
+	*static_cast<Bool *>(clientData) = TRUE;
 }
 
 /*

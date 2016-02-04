@@ -387,6 +387,39 @@ public:
 #endif
 	UserMenuCache *userMenuCache_;    /* cache user menus: */
 	UserBGMenuCache userBGMenuCache_; /* shell & macro menu are shared over all "tabbed" documents, while each document has its own background menu. */
+	
+public:
+	// Some algorithms to ease transition to std::list<Document>
+
+	template <class Pred>
+	static Document *find_if(Pred p) {
+		for (Document *win = WindowList; win != nullptr; win = win->next_) {
+			if (p(win)) {
+				return win;
+			}
+		}
+		
+		return nullptr;
+	}
+	
+	
+	template <class Pred>
+	static void for_each(Pred p) {
+		for (Document *win = WindowList; win != nullptr; win = win->next_) {
+			p(win);
+		}
+	}	
+	
+	static inline int WindowCount() {
+		int n = 0;
+
+		for (Document *win = WindowList; win != nullptr; win = win->next_) {
+			++n;
+		}
+		return n;	
+	}
+	
+
 };
 
 #endif

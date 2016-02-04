@@ -902,13 +902,11 @@ Document *Document::MarkActiveDocument() {
 ** Bring up the last active window
 */
 void Document::LastDocument() {
-	Document *win;
-
-	for (win = WindowList; win; win = win->next_) {
-		if (lastFocusDocument == win) {
-			break;
-		}
-	}
+	
+	
+	Document *win = Document::find_if([](Document *win) {
+		return lastFocusDocument == win;
+	});
 
 	if (!win) {
 		return;
@@ -955,13 +953,11 @@ Widget Document::GetPaneByIndex(int paneIndex) const {
 */
 int Document::IsValidWindow() {
 
-	for (Document *win = WindowList; win; win = win->next_) {
-		if (this == win) {
-			return true;
-		}
-	}
-
-	return false;
+	Document *win = Document::find_if([this](Document *win) {
+		return this == win;
+	});
+	
+	return win != nullptr;
 }
 
 /*
@@ -1294,7 +1290,8 @@ int Document::updateGutterWidth() {
 	int newColsDiff = 0;
 	int maxCols = 0;
 
-	for (document = WindowList; nullptr != document; document = document->next_) {
+
+	Document::for_each([&](Document *document) {
 		if (document->shell_ == shell_) {
 			/*  We found ourselves a document from this this.  */
 			int lineNumCols, tmpReqCols;
@@ -1316,7 +1313,7 @@ int Document::updateGutterWidth() {
 				reqCols = tmpReqCols;
 			}
 		}
-	}
+	});
 
 	if (reqCols != maxCols) {
 		XFontStruct *fs;
@@ -1334,7 +1331,7 @@ int Document::updateGutterWidth() {
 		UpdateWMSizeHints();
 	}
 
-	for (document = WindowList; nullptr != document; document = document->next_) {
+	for (document = WindowList; document != nullptr; document = document->next_) {
 		if (document->shell_ == shell_) {
 			Widget text;
 			int i;
@@ -1403,10 +1400,10 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(detachDocumentItem_, NDocuments() > 1);
 	XtSetSensitive(contextDetachDocumentItem_, NDocuments() > 1);
 
-	Document *win;
-	for (win = WindowList; win; win = win->next_)
-		if (win->shell_ != shell_)
-			break;
+	Document *win = Document::find_if([&](Document *win) {
+		return win->shell_ != shell_;
+	});
+	
 	XtSetSensitive(moveDocumentItem_, win != nullptr);
 }
 
@@ -1449,13 +1446,15 @@ void Document::RefreshTabState() {
 ** return the number of documents owned by this shell window
 */
 int Document::NDocuments() {
-	Document *win;
-	int nDocument = 0;
 
-	for (win = WindowList; win; win = win->next_) {
-		if (win->shell_ == shell_)
+	int nDocument = 0;
+	
+	Document::for_each([&](Document *win) {
+		if (win->shell_ == shell_) {
 			nDocument++;
-	}
+		}
+	});
+
 
 	return nDocument;
 }
@@ -1822,12 +1821,12 @@ void Document::PreviousDocument() {
 ** Bring up the next window by tab order
 */
 void Document::NextDocument() {
-	Document *win;
+
 
 	if (!WindowList->next_)
 		return;
 
-	win = getNextTabWindow(1, GetPrefGlobalTabNavigate(), 1);
+	Document *win = getNextTabWindow(1, GetPrefGlobalTabNavigate(), 1);
 	if(!win)
 		return;
 
@@ -1908,10 +1907,10 @@ void Document::SortTabBar() {
 	std::vector<Document *> windows;
 	windows.reserve(nDoc);
 	
-	for (Document *w = WindowList; w != nullptr; w = w->next_) {
+	Document::for_each([&](Document *w) {
 		if (shell_ == w->shell_)
-			windows.push_back(w);
-	}
+			windows.push_back(w);	
+	});
 	
 	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
 		if(strcmp(a->filename_, b->filename_) < 0) {
@@ -2053,7 +2052,6 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 ** close all the documents in a window
 */
 int Document::CloseAllDocumentInWindow() {
-	Document *win;
 
 	if (NDocuments() == 1) {
 		/* only one document in the window */
@@ -2063,7 +2061,7 @@ int Document::CloseAllDocumentInWindow() {
 		Document *topDocument;
 
 		/* close all _modified_ documents belong to this window */
-		for (win = WindowList; win;) {
+		for (Document *win = WindowList; win;) {
 			if (win->shell_ == winShell && win->fileChanged_) {
 				Document *next = win->next_;
 				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
@@ -2074,9 +2072,9 @@ int Document::CloseAllDocumentInWindow() {
 		}
 
 		/* see there's still documents left in the window */
-		for (win = WindowList; win; win = win->next_)
-			if (win->shell_ == winShell)
-				break;
+		Document *win = Document::find_if([&](Document *win) {
+			return (win->shell_ == winShell);
+		});
 
 		if (win) {
 			topDocument = GetTopDocument(winShell);
@@ -2862,13 +2860,14 @@ void Document::CloseWindow() {
 
 	/* dim/undim Attach_Tab menu items */
 	state = WindowList->NDocuments() < NWindows();
-	for (win = WindowList; win; win = win->next_) {
+	
+	Document::for_each([state](Document *win) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
-		}
-	}
-
+		}	
+	});
+	
 	/* free background menu cache for document */
 	FreeUserBGMenuCache(&userBGMenuCache_);
 
@@ -3282,7 +3281,6 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	int ac;
 	XmString s1;
 	XmFontList statsFontList;
-	Document *win;
 	char newGeometry[MAX_GEOM_STRING_LEN];
 	unsigned int rows, cols;
 	int x = 0, y = 0, bitmask, showTabBar, state;
@@ -3698,12 +3696,14 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	/* dim/undim Attach_Tab menu items */
 	state = NDocuments() < NWindows();
-	for (win = WindowList; win; win = win->next_) {
+	
+	
+	Document::for_each([state](Document *win) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
-		}
-	}
+		}	
+	});	
 }
 
 /*

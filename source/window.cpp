@@ -108,12 +108,10 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 ** find which document a tab belongs to
 */
 Document *TabToWindow(Widget tab) {
-	for (Document *win = WindowList; win; win = win->next_) {
-		if (win->tab_ == tab)
-			return win;
-	}
 
-	return nullptr;
+	return Document::find_if([tab](Document *win) {
+		return win->tab_ == tab;
+	});
 }
 
 
@@ -121,46 +119,40 @@ Document *TabToWindow(Widget tab) {
 ** Check if there is already a window open for a given file
 */
 Document *FindWindowWithFile(const char *name, const char *path) {
-	Document *window;
 
 	/* I don't think this algorithm will work on vms so I am
 	   disabling it for now */
 	if (!GetPrefHonorSymlinks()) {
 		char fullname[MAXPATHLEN + 1];
 		struct stat attribute;
-
-		strncpy(fullname, path, MAXPATHLEN);
-		strncat(fullname, name, MAXPATHLEN);
-		fullname[MAXPATHLEN] = '\0';
+		
+		snprintf(fullname, sizeof(fullname), "%s%s", path, name);
 
 		if (stat(fullname, &attribute) == 0) {
-			for (window = WindowList; window != nullptr; window = window->next_) {
-				if (attribute.st_dev == window->device_ && attribute.st_ino == window->inode_) {
-					return window;
-				}
+		
+			Document *window = Document::find_if([attribute](Document *window) {
+				return attribute.st_dev == window->device_ && attribute.st_ino == window->inode_;
+			});
+			
+			if(window) {
+				return window;
 			}
 		} /*  else:  Not an error condition, just a new file. Continue to check
 		      whether the filename is already in use for an unsaved document.  */
 	}
+		
+	Document *window = Document::find_if([name, path](Document *window) {
+		return !strcmp(window->filename_, name) && !strcmp(window->path_, path);
+	});
 
-	for (window = WindowList; window != nullptr; window = window->next_) {
-		if (!strcmp(window->filename_, name) && !strcmp(window->path_, path)) {
-			return window;
-		}
-	}
-	return nullptr;
+	return window;
 }
 
 /*
 ** Count the windows
 */
 int NWindows(void) {
-	int n = 0;
-
-	for (Document *win = WindowList; win != nullptr; win = win->next_) {
-		++n;
-	}
-	return n;
+	return Document::WindowCount();
 }
 
 
@@ -198,9 +190,8 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	Document *win, *topWin;
+	Document *topWin;
 	char geometry[MAX_GEOM_STRING_LEN];
-	int i;
 	int wasIconic = False;
 	int nItems;
 	WidgetList children;
@@ -210,15 +201,16 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   window/session manager combination which uses window creation
 	   order for re-associating stored geometry information with
 	   new windows created by a restored application */
-	int nWindows = 0;
-	for (Document *win = WindowList; win != nullptr; win = win->next_) {
-		nWindows++;
-	}
+	int nWindows = Document::WindowCount();;
 	
 	auto revWindowList = new Document *[nWindows];
-	for (win = WindowList, i = nWindows - 1; win != nullptr; win = win->next_, i--) {
+	int i = nWindows - 1;
+	
+	
+	Document::for_each([&](Document *win) {
 		revWindowList[i] = win;
-	}
+		--i;
+	});
 
 	/* Create command line arguments for restoring each window in the list */
 	std::vector<char *> argv;
@@ -262,7 +254,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		XtVaGetValues(topWin->tabBar_, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
 
 		for (int i = 0; i < tabCount; i++) {
-			win = TabToWindow(tabs[i]);
+			Document *win = TabToWindow(tabs[i]);
 			if (win->filenameSet_) {
 				/* add filename */
 				auto p = new char[strlen(win->path_) + strlen(win->filename_) + 1];
@@ -310,13 +302,12 @@ static long getRelTimeInTenthsOfSeconds() {
 }
 
 void AllWindowsBusy(const char *message) {
-	Document *w;
 
 	if (!currentlyBusy) {
 		busyStartTime = getRelTimeInTenthsOfSeconds();
 		modeMessageSet = False;
 
-		for (w = WindowList; w; w = w->next_) {
+		Document::for_each([](Document *w) {
 			/* We don't the display message here yet, but defer it for
 			   a while. If the wait is short, we don't want
 			   to have it flash on and off the screen.  However,
@@ -326,12 +317,13 @@ void AllWindowsBusy(const char *message) {
 			   at regular intervals.
 			*/
 			BeginWait(w->shell_);
-		}
+		});
 	} else if (!modeMessageSet && message && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 		/* Show the mode message when we've been busy for more than a second */
-		for (w = WindowList; w; w = w->next_) {
+		
+		Document::for_each([message](Document *w) {
 			w->SetModeMessage(message);
-		}
+		});
 		modeMessageSet = True;
 	}
 	BusyWait(WindowList->shell_);
@@ -341,10 +333,10 @@ void AllWindowsBusy(const char *message) {
 
 void AllWindowsUnbusy(void) {
 
-	for (Document *w = WindowList; w; w = w->next_) {
+	Document::for_each([](Document *w) {
 		w->ClearModeMessage();
 		EndWait(w->shell_);
-	}
+	});
 
 	currentlyBusy = False;
 	modeMessageSet = False;
