@@ -4988,7 +4988,6 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental) {
 	char *sStr, *rStr;
 	static int currentItemIsIncremental = FALSE;
-	Document *w;
 
 	/* Cancel accumulation of contiguous incremental searches (even if the
 	   information is not worthy of saving) if search is not incremental */
@@ -5020,13 +5019,13 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 	currentItemIsIncremental = isIncremental;
 
 	if (NHist == 0) {
-		for (w = WindowList; w != nullptr; w = w->next_) {
-			if (!w->IsTopDocument())
-				continue;
-			XtSetSensitive(w->findAgainItem_, True);
-			XtSetSensitive(w->replaceFindAgainItem_, True);
-			XtSetSensitive(w->replaceAgainItem_, True);
-		}
+		Document::for_each([](Document *w) {
+			if (w->IsTopDocument()) {
+				XtSetSensitive(w->findAgainItem_, True);
+				XtSetSensitive(w->replaceFindAgainItem_, True);
+				XtSetSensitive(w->replaceAgainItem_, True);
+			}
+		});
 	}
 
 	/* If there are more than MAX_SEARCH_HISTORY strings saved, recycle

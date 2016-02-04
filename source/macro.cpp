@@ -383,7 +383,6 @@ void RegisterMacroSubroutines(void) {
 
 #define MAX_LEARN_MSG_LEN ((2 * MAX_ACCEL_LEN) + 60)
 void BeginLearn(Document *window) {
-	Document *win;
 	XmString s;
 	XmString xmFinish;
 	XmString xmCancel;
@@ -394,11 +393,11 @@ void BeginLearn(Document *window) {
 		return;
 
 	/* dim the inappropriate menus and items, and undim finish and cancel */
-	for (win = WindowList; win != nullptr; win = win->next_) {
-		if (!win->IsTopDocument())
-			continue;
-		XtSetSensitive(win->learnItem_, False);
-	}
+	Document::for_each([](Document *win) {
+		if (win->IsTopDocument()) {
+			XtSetSensitive(win->learnItem_, False);
+		}
+	});
 	window->SetSensitive(window->finishLearnItem_, True);
 	XtVaSetValues(window->cancelMacroItem_, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
 	XmStringFree(s);
@@ -451,7 +450,6 @@ void AddLastCommandActionHook(XtAppContext context) {
 }
 
 void FinishLearn(void) {
-	Document *win;
 
 	/* If we're not in learn mode, return */
 	if(!MacroRecordActionHook)
@@ -468,22 +466,23 @@ void FinishLearn(void) {
 	delete MacroRecordBuf;
 
 	/* Undim the menu items dimmed during learn */
-	for (win = WindowList; win != nullptr; win = win->next_) {
-		if (!win->IsTopDocument())
-			continue;
-		XtSetSensitive(win->learnItem_, True);
-	}
+	Document::for_each([](Document *win) {
+		if (win->IsTopDocument()) {
+			XtSetSensitive(win->learnItem_, True);
+		}
+	});
 	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem_, False);
 		XtSetSensitive(MacroRecordWindow->cancelMacroItem_, False);
 	}
 
 	/* Undim the replay and paste-macro buttons */
-	for (win = WindowList; win != nullptr; win = win->next_) {
-		if (!win->IsTopDocument())
-			continue;
-		XtSetSensitive(win->replayItem_, True);
-	}
+	Document::for_each([](Document *win) {
+		if (win->IsTopDocument()) {
+			XtSetSensitive(win->replayItem_, True);
+		}
+	});
+	
 	DimPasteReplayBtns(True);
 
 	/* Clear learn-mode banner */
@@ -501,7 +500,6 @@ void CancelMacroOrLearn(Document *window) {
 }
 
 static void cancelLearn(void) {
-	Document *win;
 
 	/* If we're not in learn mode, return */
 	if(!MacroRecordActionHook)
@@ -515,11 +513,12 @@ static void cancelLearn(void) {
 	delete MacroRecordBuf;
 
 	/* Undim the menu items dimmed during learn */
-	for (win = WindowList; win != nullptr; win = win->next_) {
-		if (!win->IsTopDocument())
-			continue;
-		XtSetSensitive(win->learnItem_, True);
-	}
+	Document::for_each([](Document *win) {
+		if (win->IsTopDocument()) {
+			XtSetSensitive(win->learnItem_, True);
+		}
+	});
+	
 	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem_, False);
 		XtSetSensitive(MacroRecordWindow->cancelMacroItem_, False);

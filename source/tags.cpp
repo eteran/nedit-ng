@@ -554,14 +554,14 @@ static void updateMenuItems(void) {
 	if (TagsFileList)
 		tagStat = TRUE;
 
-	for (Document *w = WindowList; w != nullptr; w = w->next_) {
-		if (!w->IsTopDocument())
-			continue;
-		XtSetSensitive(w->showTipItem_, tipStat || tagStat);
-		XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
-		XtSetSensitive(w->findDefItem_, tagStat);
-		XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
-	}
+	Document::for_each([tipStat, tagStat](Document *w) {
+		if (w->IsTopDocument()) {
+			XtSetSensitive(w->showTipItem_, tipStat || tagStat);
+			XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
+			XtSetSensitive(w->findDefItem_, tagStat);
+			XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
+		}
+	});
 }
 
 /*
