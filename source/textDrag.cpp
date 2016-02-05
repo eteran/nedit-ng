@@ -81,11 +81,11 @@ void BeginBlockDrag(TextWidget tw) {
 	if (sel->rectangular) {
 		tw->text.dragXOffset = tw->text.btnDownX + textD->horizOffset - textD->left - sel->rectStart * fontWidth;
 	} else {
-		if (!TextDPositionToXY(textD, sel->start, &x, &y))
-			x = buf->BufCountDispChars(TextDStartOfLine(textD, sel->start), sel->start) * fontWidth + textD->left - textD->horizOffset;
+		if (!textD->TextDPositionToXY(sel->start, &x, &y))
+			x = buf->BufCountDispChars(textD->TextDStartOfLine(sel->start), sel->start) * fontWidth + textD->left - textD->horizOffset;
 		tw->text.dragXOffset = tw->text.btnDownX - x;
 	}
-	mousePos = TextDXYToPosition(textD, tw->text.btnDownX, tw->text.btnDownY);
+	mousePos = textD->TextDXYToPosition(tw->text.btnDownX, tw->text.btnDownY);
 	nLines = buf->BufCountLines(sel->start, mousePos);
 	tw->text.dragYOffset = nLines * fontHeight + (((tw->text.btnDownY - tw->text.marginHeight) % fontHeight) - fontHeight / 2);
 	tw->text.dragNLines = buf->BufCountLines(sel->start, sel->end);
@@ -252,8 +252,8 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	   continuous wrap mode, these must be calculated as if the text were
 	   not wrapped */
 	textD->TextDXYToUnconstrainedPosition(std::max<int>(0, x - dragXOffset), std::max<int>(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
-	column = TextDOffsetWrappedColumn(textD, row, column);
-	row = TextDOffsetWrappedRow(textD, row);
+	column = textD->TextDOffsetWrappedColumn(row, column);
+	row = textD->TextDOffsetWrappedRow(row);
 	insLineNum = row + textD->topLineNum - tw->text.dragYOffset / fontHeight;
 
 	/* find a common point of reference between the two buffers, from which
@@ -307,7 +307,7 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	/* Make the changes in the real buffer */
 	std::string repText = tempBuf->BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
 	delete tempBuf;
-	TextDBlankCursor(textD);
+	textD->TextDBlankCursor();
 	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	/* Store the necessary information for undoing this step */

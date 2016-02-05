@@ -599,7 +599,7 @@ static Widget createHelpPanel(enum HelpTopic topic) {
 	HelpStyleBuffers[topic] = new TextBuffer;
 	HelpStyleBuffers[topic]->BufSetAllEx(styleData);
 	XtFree(styleData);
-	TextDAttachHighlightData(((TextWidget)HelpTextPanes[topic])->text.textD, HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
+	reinterpret_cast<TextWidget>(HelpTextPanes[topic])->text.textD->TextDAttachHighlightData(HelpStyleBuffers[topic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 
 	/* This shouldn't be necessary (what's wrong in text.c?) */
 	HandleXSelections(HelpTextPanes[topic]);
@@ -941,7 +941,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 		return;
 	}
 
-	clickedPos = TextDXYToCharPos(textD, e->x, e->y);
+	clickedPos = textD->TextDXYToCharPos( e->x, e->y);
 	/* Beware of possible EBCDIC coding! Use the mapping table. */
 	if (textD->styleBuffer->BufGetCharacter(clickedPos) != (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
 		if (*nArgs == 3)
@@ -1055,13 +1055,13 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
 	   displayed text to prevent the text widget from trying to apply the
 	   old, mismatched, highlighting to the new text */
 	auto helpText = stitchEx(HelpTextPanes[newTopic], HelpText[newTopic], &styleData);
-	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, nullptr, nullptr, 0, '\0', nullptr, nullptr);
+	reinterpret_cast<TextWidget>(HelpTextPanes[newTopic])->text.textD->TextDAttachHighlightData(nullptr, nullptr, 0, '\0', nullptr, nullptr);
 	TextGetBuffer(HelpTextPanes[newTopic])->BufSetAllEx(helpText.str());
 
 	HelpStyleBuffers[newTopic]->BufSetAllEx(styleData);
 	XtFree(styleData);
 
-	TextDAttachHighlightData(((TextWidget)HelpTextPanes[newTopic])->text.textD, HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
+	reinterpret_cast<TextWidget>(HelpTextPanes[newTopic])->text.textD->TextDAttachHighlightData(HelpStyleBuffers[newTopic], HelpStyleInfo, N_STYLES, '\0', nullptr, nullptr);
 }
 
 static int findTopicFromShellWidget(Widget shellWidget) {

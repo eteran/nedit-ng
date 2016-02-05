@@ -103,7 +103,7 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
 
 	if (textD->calltip.anchored) {
 		/* Put it at the anchor position */
-		if (!TextDPositionToXY(textD, textD->calltip.pos, &rel_x, &rel_y)) {
+		if (!textD->TextDPositionToXY(textD->calltip.pos, &rel_x, &rel_y)) {
 			if (textD->calltip.alignMode == TIP_STRICT)
 				TextDKillCalltip(textD, textD->calltip.ID);
 			return;
@@ -115,7 +115,7 @@ void TextDRedrawCalltip(textDisp *textD, int calltipID) {
 			textD->calltip.pos = textD->width / 2;
 			textD->calltip.hAlign = TIP_CENTER;
 			rel_y = textD->height / 3;
-		} else if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y)) {
+		} else if (!textD->TextDPositionToXY(textD->cursorPos, &rel_x, &rel_y)) {
 			/* Window has scrolled and tip is now offscreen */
 			if (textD->calltip.alignMode == TIP_STRICT)
 				TextDKillCalltip(textD, textD->calltip.ID);
@@ -270,7 +270,7 @@ int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int 
 	} else {
 		/* Put it next to the cursor, or in the center of the window if the
 		    cursor is offscreen and mode != strict */
-		if (!TextDPositionToXY(textD, textD->cursorPos, &rel_x, &rel_y)) {
+		if (!textD->TextDPositionToXY(textD->cursorPos, &rel_x, &rel_y)) {
 			if (alignMode == TIP_STRICT) {
 				XBell(TheDisplay, 0);
 				return 0;

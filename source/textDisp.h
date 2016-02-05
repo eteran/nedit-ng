@@ -87,16 +87,37 @@ public:
 	void TextDOverstrike(const char *text);
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
-	void TextDResize(int width, int height);
-	
+	void TextDResize(int width, int height);	
 	Boolean TextDPopGraphicExposeQueueEntry();
 	int TextDCountBackwardNLines(int startPos, int nLines);
-	int TextDCountForwardNLines(const int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
+	int TextDCountForwardNLines(int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
-	int TextDEndOfLine(const int pos, const Boolean startPosIsLineStart);
+	int TextDEndOfLine(int pos, const Boolean startPosIsLineStart);
 	int TextDGetInsertPosition();
 	int TextDInSelection(int x, int y);
-	int TextDLineAndColToPos(int lineNum, int column);	
+	int TextDLineAndColToPos(int lineNum, int column);
+	int TextDMaxFontWidth(Boolean considerStyles);
+	int TextDMinFontWidth(Boolean considerStyles);
+	int TextDMoveDown(bool absolute);
+	int TextDMoveLeft();
+	int TextDMoveRight();
+	int TextDMoveUp(bool absolute);
+	int TextDOffsetWrappedColumn(int row, int column);
+	int TextDOffsetWrappedRow(int row);
+	int TextDPosOfPreferredCol(int column, int lineStartPos);
+	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
+	int TextDPositionToXY(int pos, int *x, int *y);
+	int TextDPreferredColumn(int *visLineNum, int *lineStartPos);
+	int TextDStartOfLine(int pos) const;
+	int TextDXYToCharPos(int x, int y);
+	int TextDXYToPosition(int x, int y);
+	void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
+	void TextDBlankCursor();
+	void TextDGetScroll(int *topLineNum, int *horizOffset);
+	void TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset);	
+
+public:
+	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 	
 public:
 	Widget w;
@@ -178,26 +199,5 @@ public:
 	                          hidden */
 	graphicExposeTranslationEntry *graphicsExposeQueue;
 };
-
-int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
-int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
-int TextDMoveDown(textDisp *textD, int absolute);
-int TextDMoveLeft(textDisp *textD);
-int TextDMoveRight(textDisp *textD);
-int TextDMoveUp(textDisp *textD, int absolute);
-int TextDOffsetWrappedColumn(textDisp *textD, int row, int column);
-int TextDOffsetWrappedRow(textDisp *textD, int row);
-int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos);
-int TextDPosToLineAndCol(textDisp *textD, int pos, int *lineNum, int *column);
-int TextDPositionToXY(textDisp *textD, int pos, int *x, int *y);
-int TextDPreferredColumn(textDisp *textD, int *visLineNum, int *lineStartPos);
-int TextDStartOfLine(const textDisp *textD, const int pos);
-int TextDXYToCharPos(textDisp *textD, int x, int y);
-int TextDXYToPosition(textDisp *textD, int x, int y);
-void TextDAttachHighlightData(textDisp *textD, TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
-void TextDBlankCursor(textDisp *textD);
-void TextDGetScroll(textDisp *textD, int *topLineNum, int *horizOffset);
-void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset);
-void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 
 #endif

@@ -346,14 +346,14 @@ void FreeHighlightingData(Document *window) {
 void AttachHighlightToWidget(Widget widget, Document *window) {
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
-	TextDAttachHighlightData(((TextWidget)widget)->text.textD, highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
+	reinterpret_cast<TextWidget>(widget)->text.textD->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
 }
 
 /*
 ** Remove style information from a text widget and redisplay it.
 */
 void RemoveWidgetHighlight(Widget widget) {
-	TextDAttachHighlightData(((TextWidget)widget)->text.textD, nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
+	reinterpret_cast<TextWidget>(widget)->text.textD->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /*
