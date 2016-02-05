@@ -117,7 +117,7 @@ set_property(TARGET nedit PROPERTY CXX_STANDARD 11)
 set_property(TARGET nc    PROPERTY CXX_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings")
-set(CMAKE_CXX_FLAGS "-W -Wall -pedantic") #-Wuseless-cast
+set(CMAKE_CXX_FLAGS "-W -Wall -pedantic") #-Wuseless-cast -Wold-style-cast
 
 set_target_properties(nedit nc
 	PROPERTIES

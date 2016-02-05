@@ -108,12 +108,12 @@ static PrefDescripRec PrefDescrip[] = {
 };
 
 /* Resource related command line options */
-static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", XrmoptionNoArg, (caddr_t) "False"},
-                                     {(String) "-noask", (String) ".autoStart", XrmoptionNoArg, (caddr_t) "True"},
-                                     {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, (caddr_t) nullptr},
-                                     {(String) "-svrcmd", (String) ".serverCommand", XrmoptionSepArg, (caddr_t) nullptr},
-                                     {(String) "-wait", (String) ".waitForClose", XrmoptionNoArg, (caddr_t) "True"},
-                                     {(String) "-timeout", (String) ".timeOut", XrmoptionSepArg, (caddr_t) nullptr}};
+static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", XrmoptionNoArg, (XPointer) "False"},
+                                     {(String) "-noask", (String) ".autoStart", XrmoptionNoArg, (XPointer) "True"},
+                                     {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, nullptr},
+                                     {(String) "-svrcmd", (String) ".serverCommand", XrmoptionSepArg, nullptr},
+                                     {(String) "-wait", (String) ".waitForClose", XrmoptionNoArg, (XPointer) "True"},
+                                     {(String) "-timeout", (String) ".timeOut", XrmoptionSepArg, nullptr}};
 
 /* Struct to hold info about files being opened and edited. */
 struct FileListEntry {

@@ -847,20 +847,20 @@ static PrefDescripRec PrefDescrip[] = {
     {"honorSymlinks", "HonorSymlinks", PREF_BOOLEAN, "True", &PrefData.honorSymlinks, nullptr, false}};
 
 static XrmOptionDescRec OpTable[] = {
-    {(String) "-wrap", (String) ".autoWrap", XrmoptionNoArg, (caddr_t) "Continuous"},
-    {(String) "-nowrap", (String) ".autoWrap", XrmoptionNoArg, (caddr_t) "None"},
-    {(String) "-autowrap", (String) ".autoWrap", XrmoptionNoArg, (caddr_t) "Newline"},
-    {(String) "-noautowrap", (String) ".autoWrap", XrmoptionNoArg, (caddr_t) "None"},
-    {(String) "-autoindent", (String) ".autoIndent", XrmoptionNoArg, (caddr_t) "Auto"},
-    {(String) "-noautoindent", (String) ".autoIndent", XrmoptionNoArg, (caddr_t) "False"},
-    {(String) "-autosave", (String) ".autoSave", XrmoptionNoArg, (caddr_t) "True"},
-    {(String) "-noautosave", (String) ".autoSave", XrmoptionNoArg, (caddr_t) "False"},
-    {(String) "-rows", (String) ".textRows", XrmoptionSepArg, (caddr_t) nullptr},
-    {(String) "-columns", (String) ".textCols", XrmoptionSepArg, (caddr_t) nullptr},
-    {(String) "-tabs", (String) ".tabDistance", XrmoptionSepArg, (caddr_t) nullptr},
-    {(String) "-font", (String) ".textFont", XrmoptionSepArg, (caddr_t) nullptr},
-    {(String) "-fn", (String) ".textFont", XrmoptionSepArg, (caddr_t) nullptr},
-    {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, (caddr_t) nullptr},
+    {(String) "-wrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "Continuous"},
+    {(String) "-nowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "None"},
+    {(String) "-autowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "Newline"},
+    {(String) "-noautowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "None"},
+    {(String) "-autoindent", (String) ".autoIndent", XrmoptionNoArg, (XPointer) "Auto"},
+    {(String) "-noautoindent", (String) ".autoIndent", XrmoptionNoArg, (XPointer) "False"},
+    {(String) "-autosave", (String) ".autoSave", XrmoptionNoArg, (XPointer) "True"},
+    {(String) "-noautosave", (String) ".autoSave", XrmoptionNoArg, (XPointer) "False"},
+    {(String) "-rows", (String) ".textRows", XrmoptionSepArg, nullptr},
+    {(String) "-columns", (String) ".textCols", XrmoptionSepArg, nullptr},
+    {(String) "-tabs", (String) ".tabDistance", XrmoptionSepArg, nullptr},
+    {(String) "-font", (String) ".textFont", XrmoptionSepArg, nullptr},
+    {(String) "-fn", (String) ".textFont", XrmoptionSepArg, nullptr},
+    {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, nullptr},
 };
 
 static const char HeaderText[] = "\
