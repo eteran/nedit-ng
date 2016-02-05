@@ -267,7 +267,7 @@ textDisp::~textDisp() {
 
 	delete[] this -> lineStarts;
 
-	while (TextDPopGraphicExposeQueueEntry(this)) {
+	while (this->TextDPopGraphicExposeQueueEntry()) {
 	}
 	
 	delete [] this->bgClassPixel;
@@ -493,9 +493,9 @@ void textDisp::TextDResize(int width, int height) {
 	   the top character no longer pointing at a valid line start */
 	if (this->continuousWrap && this->wrapMargin == 0 && width != oldWidth) {
 		int oldFirstChar = this->firstChar;
-		this->nBufferLines = TextDCountLines(this, 0, this->buffer->BufGetLength(), True);
+		this->nBufferLines = this->TextDCountLines(0, this->buffer->BufGetLength(), True);
 		this->firstChar = TextDStartOfLine(this, this->firstChar);
-		this->topLineNum = TextDCountLines(this, 0, this->firstChar, True) + 1;
+		this->topLineNum = this->TextDCountLines(0, this->firstChar, True) + 1;
 		redrawAll = True;
 		offsetAbsLineNum(this, oldFirstChar);
 	}
@@ -732,13 +732,13 @@ void textDisp::TextDSetWrapMode(int wrap, int wrapMargin) {
 	this->continuousWrap = wrap;
 
 	/* wrapping can change change the total number of lines, re-count */
-	this->nBufferLines = TextDCountLines(this, 0, this->buffer->BufGetLength(), True);
+	this->nBufferLines = this->TextDCountLines(0, this->buffer->BufGetLength(), True);
 
 	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
 	   can leave the character at the top no longer at a line start, and/or
 	   change the line number */
 	this->firstChar = TextDStartOfLine(this, this->firstChar);
-	this->topLineNum = TextDCountLines(this, 0, this->firstChar, True) + 1;
+	this->topLineNum = this->TextDCountLines(0, this->firstChar, True) + 1;
 	resetAbsLineNum(this);
 
 	/* update the line starts array */
@@ -757,8 +757,8 @@ void textDisp::TextDSetWrapMode(int wrap, int wrapMargin) {
 	this->TextDRedisplayRect(0, this->top, this->width + this->left, this->height);
 }
 
-int TextDGetInsertPosition(textDisp *textD) {
-	return textD->cursorPos;
+int textDisp::TextDGetInsertPosition() {
+	return this->cursorPos;
 }
 
 /*
@@ -926,7 +926,7 @@ void textDisp::TextDXYToUnconstrainedPosition(int x, int y, int *row, int *colum
 ** positioning the cursor.  This, of course, makes no sense when the font
 ** is proportional, since there are no absolute columns.
 */
-int TextDLineAndColToPos(textDisp *textD, int lineNum, int column) {
+int textDisp::TextDLineAndColToPos(int lineNum, int column) {
 	int i, lineEnd, charIndex, outIndex;
 	int lineStart = 0, charLen = 0;
 	char expandedChar[MAX_EXP_CHAR_LEN];
@@ -935,9 +935,9 @@ int TextDLineAndColToPos(textDisp *textD, int lineNum, int column) {
 	if (lineNum < 1)
 		lineNum = 1;
 	lineEnd = -1;
-	for (i = 1; i <= lineNum && lineEnd < textD->buffer->BufGetLength(); i++) {
+	for (i = 1; i <= lineNum && lineEnd < this->buffer->BufGetLength(); i++) {
 		lineStart = lineEnd + 1;
-		lineEnd = textD->buffer->BufEndOfLine(lineStart);
+		lineEnd = this->buffer->BufEndOfLine(lineStart);
 	}
 
 	/* If line is beyond end of buffer, position at last character in buffer */
@@ -951,10 +951,10 @@ int TextDLineAndColToPos(textDisp *textD, int lineNum, int column) {
 	/* Only have to count columns if column isn't zero (or negative) */
 	if (column > 0) {
 		/* Count columns, expanding each character */
-		std::string lineStr = textD->buffer->BufGetRangeEx(lineStart, lineEnd);
+		std::string lineStr = this->buffer->BufGetRangeEx(lineStart, lineEnd);
 		outIndex = 0;
 		for (i = lineStart; i < lineEnd; i++, charIndex++) {
-			charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, textD->buffer->tabDist_, textD->buffer->nullSubsChar_);
+			charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
 			if (outIndex + charLen >= column)
 				break;
 			outIndex += charLen;
@@ -1058,13 +1058,13 @@ int TextDPosToLineAndCol(textDisp *textD, int pos, int *lineNum, int *column) {
 /*
 ** Return True if position (x, y) is inside of the primary selection
 */
-int TextDInSelection(textDisp *textD, int x, int y) {
-	int row, column, pos = xyToPos(textD, x, y, CHARACTER_POS);
-	TextBuffer *buf = textD->buffer;
+int textDisp::TextDInSelection(int x, int y) {
+	int row, column, pos = xyToPos(this, x, y, CHARACTER_POS);
+	TextBuffer *buf = this->buffer;
 
-	xyToUnconstrainedPos(textD, x, y, &row, &column, CHARACTER_POS);
-	if (rangeTouchesRectSel(&buf->primary_, textD->firstChar, textD->lastChar))
-		column = TextDOffsetWrappedColumn(textD, row, column);
+	xyToUnconstrainedPos(this, x, y, &row, &column, CHARACTER_POS);
+	if (rangeTouchesRectSel(&buf->primary_, this->firstChar, this->lastChar))
+		column = TextDOffsetWrappedColumn(this, row, column);
 	return inSelection(&buf->primary_, pos, buf->BufStartOfLine(pos), column);
 }
 
@@ -1125,10 +1125,10 @@ void textDisp::TextDMakeInsertPosVisible() {
 
 	/* Find the new top line number */
 	if (cursorPos < this->firstChar) {
-		topLine -= TextDCountLines(this, cursorPos, this->firstChar, False);
+		topLine -= this->TextDCountLines(cursorPos, this->firstChar, False);
 		/* linesFromTop = 0; */
 	} else if (cursorPos > this->lastChar && !emptyLinesVisible(this)) {
-		topLine += TextDCountLines(this, this->lastChar - (wrapUsesCharacter(this, this->lastChar) ? 0 : 1), cursorPos, False);
+		topLine += this->TextDCountLines(this->lastChar - (wrapUsesCharacter(this, this->lastChar) ? 0 : 1), cursorPos, False);
 		linesFromTop = this->nVisibleLines - 1;
 	} else if (cursorPos == this->lastChar && !emptyLinesVisible(this) && !wrapUsesCharacter(this, this->lastChar)) {
 		topLine++;
@@ -1136,7 +1136,7 @@ void textDisp::TextDMakeInsertPosVisible() {
 	} else {
 		/* Avoid extra counting if cursorVPadding is disabled */
 		if (do_padding)
-			linesFromTop = TextDCountLines(this, this->firstChar, cursorPos, True);
+			linesFromTop = this->TextDCountLines(this->firstChar, cursorPos, True);
 	}
 	if (topLine < 1) {
 		fprintf(stderr, "nedit: internal consistency check tl1 failed\n");
@@ -1205,7 +1205,7 @@ int TextDPosOfPreferredCol(textDisp *textD, int column, int lineStartPos) {
 
 	newPos = textD->buffer->BufCountForwardDispChars(lineStartPos, column);
 	if (textD->continuousWrap) {
-		newPos = std::min<int>(newPos, TextDEndOfLine(textD, lineStartPos, True));
+		newPos = std::min<int>(newPos, textD->TextDEndOfLine(lineStartPos, True));
 	}
 	return (newPos);
 }
@@ -1253,12 +1253,12 @@ int TextDMoveUp(textDisp *textD, int absolute) {
 	} else if (visLineNum != -1 && visLineNum != 0) {
 		prevLineStartPos = textD->lineStarts[visLineNum - 1];
 	} else {
-		prevLineStartPos = TextDCountBackwardNLines(textD, lineStartPos, 1);
+		prevLineStartPos = textD->TextDCountBackwardNLines(lineStartPos, 1);
 	}
 
 	newPos = textD->buffer->BufCountForwardDispChars(prevLineStartPos, column);
 	if (textD->continuousWrap && !absolute)
-		newPos = std::min<int>(newPos, TextDEndOfLine(textD, prevLineStartPos, True));
+		newPos = std::min<int>(newPos, textD->TextDEndOfLine(prevLineStartPos, True));
 
 	/* move the cursor */
 	textD->TextDSetInsertPosition(newPos);
@@ -1291,12 +1291,12 @@ int TextDMoveDown(textDisp *textD, int absolute) {
 	if (absolute)
 		nextLineStartPos = textD->buffer->BufCountForwardNLines(lineStartPos, 1);
 	else
-		nextLineStartPos = TextDCountForwardNLines(textD, lineStartPos, 1, True);
+		nextLineStartPos = textD->TextDCountForwardNLines(lineStartPos, 1, True);
 
 	newPos = textD->buffer->BufCountForwardDispChars(nextLineStartPos, column);
 
 	if (textD->continuousWrap && !absolute) {
-		newPos = std::min<int>(newPos, TextDEndOfLine(textD, nextLineStartPos, True));
+		newPos = std::min<int>(newPos, textD->TextDEndOfLine(nextLineStartPos, True));
 	}
 
 	textD->TextDSetInsertPosition(newPos);
@@ -1311,14 +1311,14 @@ int TextDMoveDown(textDisp *textD, int absolute) {
 ** can pass "startPosIsLineStart" as True to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-int TextDCountLines(textDisp *textD, int startPos, int endPos, int startPosIsLineStart) {
+int textDisp::TextDCountLines(int startPos, int endPos, int startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	/* If we're not wrapping use simple (and more efficient) BufCountLines */
-	if (!textD->continuousWrap)
-		return textD->buffer->BufCountLines(startPos, endPos);
+	if (!this->continuousWrap)
+		return this->buffer->BufCountLines(startPos, endPos);
 
-	wrappedLineCounter(textD, textD->buffer, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this, this->buffer, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLines;
 }
 
@@ -1328,19 +1328,19 @@ int TextDCountLines(textDisp *textD, int startPos, int endPos, int startPosIsLin
 ** it can pass "startPosIsLineStart" as True to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-int TextDCountForwardNLines(const textDisp *textD, const int startPos, const unsigned nLines, const Boolean startPosIsLineStart) {
+int textDisp::TextDCountForwardNLines(const int startPos, const unsigned nLines, const Boolean startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	/* if we're not wrapping use more efficient BufCountForwardNLines */
-	if (!textD->continuousWrap)
-		return textD->buffer->BufCountForwardNLines(startPos, nLines);
+	if (!this->continuousWrap)
+		return this->buffer->BufCountForwardNLines(startPos, nLines);
 
 	/* wrappedLineCounter can't handle the 0 lines case */
 	if (nLines == 0)
 		return startPos;
 
 	/* use the common line counting routine to count forward */
-	wrappedLineCounter(textD, textD->buffer, startPos, textD->buffer->BufGetLength(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this, this->buffer, startPos, this->buffer->BufGetLength(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retPos;
 }
 
@@ -1360,16 +1360,16 @@ int TextDCountForwardNLines(const textDisp *textD, const int startPos, const uns
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-int TextDEndOfLine(const textDisp *textD, const int pos, const Boolean startPosIsLineStart) {
+int textDisp::TextDEndOfLine(const int pos, const Boolean startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	/* If we're not wrapping use more efficient BufEndOfLine */
-	if (!textD->continuousWrap)
-		return textD->buffer->BufEndOfLine(pos);
+	if (!this->continuousWrap)
+		return this->buffer->BufEndOfLine(pos);
 
-	if (pos == textD->buffer->BufGetLength())
+	if (pos == this->buffer->BufGetLength())
 		return pos;
-	wrappedLineCounter(textD, textD->buffer, pos, textD->buffer->BufGetLength(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this, this->buffer, pos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineEnd;
 }
 
@@ -1392,20 +1392,20 @@ int TextDStartOfLine(const textDisp *textD, const int pos) {
 ** Same as BufCountBackwardNLines, but takes in to account line breaks when
 ** wrapping is turned on.
 */
-int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines) {
-	TextBuffer *buf = textD->buffer;
+int textDisp::TextDCountBackwardNLines(int startPos, int nLines) {
+	TextBuffer *buf = this->buffer;
 	int pos, lineStart, retLines, retPos, retLineStart, retLineEnd;
 
 	/* If we're not wrapping, use the more efficient BufCountBackwardNLines */
-	if (!textD->continuousWrap)
-		return textD->buffer->BufCountBackwardNLines(startPos, nLines);
+	if (!this->continuousWrap)
+		return this->buffer->BufCountBackwardNLines(startPos, nLines);
 
 	pos = startPos;
 	while (true) {
 		lineStart = buf->BufStartOfLine(pos);
-		wrappedLineCounter(textD, textD->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(this, this->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retLines > nLines)
-			return TextDCountForwardNLines(textD, lineStart, retLines - nLines, True);
+			return this->TextDCountForwardNLines(lineStart, retLines - nLines, True);
 		nLines -= retLines;
 		pos = lineStart - 1;
 		if (pos < 0)
@@ -2233,21 +2233,21 @@ static void offsetLineStarts(textDisp *textD, int newTopLineNum) {
 	   lineStarts array) */
 	lastLineNum = oldTopLineNum + nVisLines - 1;
 	if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
-		textD->firstChar = TextDCountForwardNLines(textD, 0, newTopLineNum - 1, True);
+		textD->firstChar = textD->TextDCountForwardNLines(0, newTopLineNum - 1, True);
 		/* printf("counting forward %d lines from start\n", newTopLineNum-1);*/
 	} else if (newTopLineNum < oldTopLineNum) {
-		textD->firstChar = TextDCountBackwardNLines(textD, textD->firstChar, -lineDelta);
+		textD->firstChar = textD->TextDCountBackwardNLines(textD->firstChar, -lineDelta);
 		/* printf("counting backward %d lines from firstChar\n", -lineDelta);*/
 	} else if (newTopLineNum < lastLineNum) {
 		textD->firstChar = lineStarts[newTopLineNum - oldTopLineNum];
 		/* printf("taking new start from lineStarts[%d]\n",
 		    newTopLineNum - oldTopLineNum); */
 	} else if (newTopLineNum - lastLineNum < textD->nBufferLines - newTopLineNum) {
-		textD->firstChar = TextDCountForwardNLines(textD, lineStarts[nVisLines - 1], newTopLineNum - lastLineNum, True);
+		textD->firstChar = textD->TextDCountForwardNLines(lineStarts[nVisLines - 1], newTopLineNum - lastLineNum, True);
 		/* printf("counting forward %d lines from start of last line\n",
 		    newTopLineNum - lastLineNum); */
 	} else {
-		textD->firstChar = TextDCountBackwardNLines(textD, buf->BufGetLength(), textD->nBufferLines - newTopLineNum + 1);
+		textD->firstChar = textD->TextDCountBackwardNLines(buf->BufGetLength(), textD->nBufferLines - newTopLineNum + 1);
 		/* printf("counting backward %d lines from end\n",
 		        textD->nBufferLines - newTopLineNum + 1); */
 	}
@@ -2322,14 +2322,14 @@ static void updateLineStarts(textDisp *textD, int pos, int charsInserted, int ch
 		/* If some text remains in the window, anchor on that  */
 		if (posToVisibleLineNum(textD, pos + charsDeleted, &lineOfEnd) && ++lineOfEnd < nVisLines && lineStarts[lineOfEnd] != -1) {
 			textD->topLineNum = std::max<int>(1, textD->topLineNum + lineDelta);
-			textD->firstChar = TextDCountBackwardNLines(textD, lineStarts[lineOfEnd] + charDelta, lineOfEnd);
+			textD->firstChar = textD->TextDCountBackwardNLines(lineStarts[lineOfEnd] + charDelta, lineOfEnd);
 			/* Otherwise anchor on original line number and recount everything */
 		} else {
 			if (textD->topLineNum > textD->nBufferLines + lineDelta) {
 				textD->topLineNum = 1;
 				textD->firstChar = 0;
 			} else
-				textD->firstChar = TextDCountForwardNLines(textD, 0, textD->topLineNum - 1, True);
+				textD->firstChar = textD->TextDCountForwardNLines(0, textD->topLineNum - 1, True);
 		}
 		calcLineStarts(textD, 0, nVisLines - 1);
 		/* {   int i;
@@ -2477,7 +2477,7 @@ static void calcLastChar(textDisp *textD) {
 
 	for (i = textD->nVisibleLines - 1; i > 0 && textD->lineStarts[i] == -1; i--)
 		;
-	textD->lastChar = i < 0 ? 0 : TextDEndOfLine(textD, textD->lineStarts[i], True);
+	textD->lastChar = i < 0 ? 0 : textD->TextDEndOfLine(textD->lineStarts[i], True);
 }
 
 void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yOffset) {
@@ -2490,11 +2490,11 @@ void TextDImposeGraphicsExposeTranslation(textDisp *textD, int *xOffset, int *yO
 	}
 }
 
-Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD) {
-	graphicExposeTranslationEntry *removedGEQEntry = textD->graphicsExposeQueue;
+Boolean textDisp::TextDPopGraphicExposeQueueEntry() {
+	graphicExposeTranslationEntry *removedGEQEntry = this->graphicsExposeQueue;
 
 	if (removedGEQEntry) {
-		textD->graphicsExposeQueue = removedGEQEntry->next;
+		this->graphicsExposeQueue = removedGEQEntry->next;
 		delete removedGEQEntry;
 	}
 	return (removedGEQEntry ? True : False);
@@ -3024,7 +3024,7 @@ static void findWrapRangeEx(textDisp *textD, view::string_view deletedText, int 
 			while (visLineNum < nVisLines && lineStarts[visLineNum] < adjLineStart)
 				visLineNum++;
 			if (visLineNum < nVisLines && lineStarts[visLineNum] != -1 && lineStarts[visLineNum] == adjLineStart) {
-				countTo = TextDEndOfLine(textD, lineStart, True);
+				countTo = textD->TextDEndOfLine(lineStart, True);
 				*modRangeEnd = lineStart;
 				break;
 			}

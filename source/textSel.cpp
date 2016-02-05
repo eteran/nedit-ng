@@ -286,7 +286,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 
 	/* Insert it in the text widget */
 	if (isColumnar && !buf->primary_.selected) {
-		cursorPos = TextDGetInsertPosition(textD);
+		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = buf->BufStartOfLine(cursorPos);
 		column = buf->BufCountDispChars(cursorLineStart, cursorPos);
 		if (reinterpret_cast<TextWidget>(w)->text.overstrike) {
@@ -433,7 +433,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 
 	/* Insert it in the text widget */
 	if (isColumnar) {
-		cursorPos = TextDGetInsertPosition(textD);
+		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(reinterpret_cast<TextWidget>(w)->text.btnDownX, reinterpret_cast<TextWidget>(w)->text.btnDownY, &row, &column);
 		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);

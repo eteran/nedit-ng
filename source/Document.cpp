@@ -2319,11 +2319,11 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		TextGetScroll(textPane, &topLineNum, &horizOffset);
 		if (right > lastChar) {
 			/* End of sel. is below bottom of screen */
-			leftLineNum = topLineNum + TextDCountLines(textD, topChar, left, False);
+			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, False);
 			targetLineNum = topLineNum + scrollOffset;
 			if (leftLineNum >= targetLineNum) {
 				/* Start of sel. is not between top & target */
-				linesToScroll = TextDCountLines(textD, lastChar, right, False) + scrollOffset;
+				linesToScroll = textD->TextDCountLines(lastChar, right, False) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum)
 					linesToScroll = leftLineNum - targetLineNum;
 				/* Scroll start of selection to the target line */
@@ -2332,11 +2332,11 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		} else if (left < topChar) {
 			/* Start of sel. is above top of screen */
 			lastLineNum = topLineNum + rows;
-			rightLineNum = lastLineNum - TextDCountLines(textD, right, lastChar, False);
+			rightLineNum = lastLineNum - textD->TextDCountLines(right, lastChar, False);
 			targetLineNum = lastLineNum - scrollOffset;
 			if (rightLineNum <= targetLineNum) {
 				/* End of sel. is not between bottom & target */
-				linesToScroll = TextDCountLines(textD, left, topChar, False) + scrollOffset;
+				linesToScroll = textD->TextDCountLines(left, topChar, False) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum)
 					linesToScroll = targetLineNum - rightLineNum;
 				/* Scroll end of selection to the target line */

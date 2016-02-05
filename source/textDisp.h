@@ -89,6 +89,15 @@ public:
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDResize(int width, int height);
 	
+	Boolean TextDPopGraphicExposeQueueEntry();
+	int TextDCountBackwardNLines(int startPos, int nLines);
+	int TextDCountForwardNLines(const int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
+	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
+	int TextDEndOfLine(const int pos, const Boolean startPosIsLineStart);
+	int TextDGetInsertPosition();
+	int TextDInSelection(int x, int y);
+	int TextDLineAndColToPos(int lineNum, int column);	
+	
 public:
 	Widget w;
 	int top, left, width, height, lineNumLeft, lineNumWidth;
@@ -170,14 +179,6 @@ public:
 	graphicExposeTranslationEntry *graphicsExposeQueue;
 };
 
-Boolean TextDPopGraphicExposeQueueEntry(textDisp *textD);
-int TextDCountBackwardNLines(textDisp *textD, int startPos, int nLines);
-int TextDCountForwardNLines(const textDisp *textD, const int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
-int TextDCountLines(textDisp *textD, int startPos, int endPos, int startPosIsLineStart);
-int TextDEndOfLine(const textDisp *textD, const int pos, const Boolean startPosIsLineStart);
-int TextDGetInsertPosition(textDisp *textD);
-int TextDInSelection(textDisp *textD, int x, int y);
-int TextDLineAndColToPos(textDisp *textD, int lineNum, int column);
 int TextDMaxFontWidth(textDisp *textD, Boolean considerStyles);
 int TextDMinFontWidth(textDisp *textD, Boolean considerStyles);
 int TextDMoveDown(textDisp *textD, int absolute);

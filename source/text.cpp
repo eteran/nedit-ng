@@ -895,7 +895,7 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 		removeQueueEntry = true;
 	}
 	if (removeQueueEntry) {
-		TextDPopGraphicExposeQueueEntry(w->text.textD);
+		w->text.textD->TextDPopGraphicExposeQueueEntry();
 	}
 }
 
@@ -1071,7 +1071,7 @@ TextBuffer *TextGetBuffer(Widget w) {
 ** Translate a line number and column into a position
 */
 int TextLineAndColToPos(Widget w, int lineNum, int column) {
-	return TextDLineAndColToPos(reinterpret_cast<TextWidget>(w)->text.textD, lineNum, column);
+	return reinterpret_cast<TextWidget>(w)->text.textD->TextDLineAndColToPos(lineNum, column);
 }
 
 /*
@@ -1097,7 +1097,7 @@ int TextPosToXY(Widget w, int pos, int *x, int *y) {
 ** Return the cursor position
 */
 int TextGetCursorPos(Widget w) {
-	return TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	return reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 }
 
 /*
@@ -1231,7 +1231,7 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 	   selections wrap strangely, but this routine should rarely be used for
 	   them, and even more rarely when they need to be wrapped. */
 	replaceSel = allowPendingDelete && pendingSelection(w);
-	cursorPos = replaceSel ? buf->primary_.start : TextDGetInsertPosition(textD);
+	cursorPos = replaceSel ? buf->primary_.start : textD->TextDGetInsertPosition();
 
 	/* If the text is only one line and doesn't need to be wrapped, just insert
 	   it and be done (for efficiency only, this routine is called for each
@@ -1301,7 +1301,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
 	/* Go (displayed) line by line through the buffer, adding newlines where
 	   the text is wrapped at some character other than an existing newline */
 	int fromPos = startPos;
-	int toPos = TextDCountForwardNLines(textD, startPos, 1, False);
+	int toPos = textD->TextDCountForwardNLines(startPos, 1, False);
 	while (toPos < endPos) {
 		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
 		outPos += toPos - fromPos;
@@ -1313,7 +1313,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
 			outPos++;
 		}
 		fromPos = toPos;
-		toPos = TextDCountForwardNLines(textD, fromPos, 1, True);
+		toPos = textD->TextDCountForwardNLines(fromPos, 1, True);
 	}
 	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
 
@@ -1385,7 +1385,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   where to begin a primary selection */
 	tw->text.btnDownX = e->x;
 	tw->text.btnDownY = e->y;
-	tw->text.anchor = TextDGetInsertPosition(textD);
+	tw->text.anchor = textD->TextDGetInsertPosition();
 	textD->TextDXYToUnconstrainedPosition(e->x, e->y, &row, &column);
 	column = TextDOffsetWrappedColumn(textD, row, column);
 	tw->text.rectAnchor = column;
@@ -1470,7 +1470,7 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 			rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
 		}
 	} else {
-		anchor = TextDGetInsertPosition(textD);
+		anchor = textD->TextDGetInsertPosition();
 		anchorLineStart = buf->BufStartOfLine(anchor);
 		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
 	}
@@ -1568,7 +1568,7 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
-	if (!buf->primary_.selected || !TextDInSelection(textD, e->x, e->y)) {
+	if (!buf->primary_.selected || !textD->TextDInSelection(e->x, e->y)) {
 		secondaryStartAP(w, event, args, nArgs);
 		return;
 	}
@@ -1672,11 +1672,11 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			TextDBlankCursor(textD);
 			std::string textToCopy = buf->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
-				insertPos = TextDGetInsertPosition(textD);
+				insertPos = textD->TextDGetInsertPosition();
 				buf->BufReplaceSelectedEx(textToCopy);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else if (rectangular) {
-				insertPos = TextDGetInsertPosition(textD);
+				insertPos = textD->TextDGetInsertPosition();
 				lineStart = buf->BufStartOfLine(insertPos);
 				column = buf->BufCountDispChars(lineStart, insertPos);
 				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
@@ -1734,11 +1734,11 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		if (reinterpret_cast<TextWidget>(w)->text.motifDestOwner) {
 			std::string textToCopy = buf->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
-				insertPos = TextDGetInsertPosition(textD);
+				insertPos = textD->TextDGetInsertPosition();
 				buf->BufReplaceSelectedEx(textToCopy);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else if (rectangular) {
-				insertPos = TextDGetInsertPosition(textD);
+				insertPos = textD->TextDGetInsertPosition();
 				lineStart = buf->BufStartOfLine(insertPos);
 				column = buf->BufCountDispChars(lineStart, insertPos);
 				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
@@ -1853,7 +1853,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		return;
 	if (primary->selected && rectangular) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
-		insertPos = TextDGetInsertPosition(textD);
+		insertPos = textD->TextDGetInsertPosition();
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
 		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
@@ -1861,13 +1861,13 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
-		insertPos = TextDGetInsertPosition(textD);
+		insertPos = textD->TextDGetInsertPosition();
 		buf->BufInsertEx(insertPos, textToCopy);
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
 
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
-		if (!TextDPositionToXY(textD, TextDGetInsertPosition(textD), &tw->text.btnDownX, &tw->text.btnDownY))
+		if (!TextDPositionToXY(textD, textD->TextDGetInsertPosition(), &tw->text.btnDownX, &tw->text.btnDownY))
 			return; /* shouldn't happen */
 		InsertPrimarySelection(w, e->time, True);
 	} else
@@ -1888,7 +1888,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		return;
 	if (primary->selected && rectangular) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
-		insertPos = TextDGetInsertPosition(textD);
+		insertPos = textD->TextDGetInsertPosition();
 		col = buf->BufCountDispChars(buf->BufStartOfLine(insertPos), insertPos);
 		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
@@ -1897,14 +1897,14 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		checkAutoShowInsertPos(w);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
-		insertPos = TextDGetInsertPosition(textD);
+		insertPos = textD->TextDGetInsertPosition();
 		buf->BufInsertEx(insertPos, textToCopy);
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
 		
 		buf->BufRemoveSelected();
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
-		if (!TextDPositionToXY(textD, TextDGetInsertPosition(textD), &reinterpret_cast<TextWidget>(w)->text.btnDownX, &reinterpret_cast<TextWidget>(w)->text.btnDownY))
+		if (!TextDPositionToXY(textD, textD->TextDGetInsertPosition(), &reinterpret_cast<TextWidget>(w)->text.btnDownX, &reinterpret_cast<TextWidget>(w)->text.btnDownY))
 			return; /* shouldn't happen */
 		MovePrimarySelection(w, e->time, True);
 	} else {
@@ -1976,7 +1976,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		return;
 	if (reinterpret_cast<TextWidget>(w)->text.smartIndent) {
 		smartIndent.reason = CHAR_TYPED;
-		smartIndent.pos = TextDGetInsertPosition(textD);
+		smartIndent.pos = textD->TextDGetInsertPosition();
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped = args[0];
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
@@ -2021,7 +2021,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	   inserted character */
 	if (reinterpret_cast<TextWidget>(w)->text.smartIndent) {
 		smartIndent.reason        = CHAR_TYPED;
-		smartIndent.pos           = TextDGetInsertPosition(textD);
+		smartIndent.pos           = textD->TextDGetInsertPosition();
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = chars;
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
@@ -2070,7 +2070,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	/* Create a string containing a newline followed by auto or smart
 	   indent string */
-	int cursorPos = TextDGetInsertPosition(textD);
+	int cursorPos = textD->TextDGetInsertPosition();
 	int lineStartPos = buf->BufStartOfLine(cursorPos);
 	std::string indentStr = createIndentStringEx(tw, buf, 0, lineStartPos, cursorPos, nullptr, &column);
 
@@ -2116,7 +2116,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	   instead of the cursor position as the indent.  When replacing
 	   rectangular selections, tabs are automatically recalculated as
 	   if the inserted text began at the start of the line */
-	insertPos = pendingSelection(w) ? sel->start : TextDGetInsertPosition(textD);
+	insertPos = pendingSelection(w) ? sel->start : textD->TextDGetInsertPosition();
 	lineStart = buf->BufStartOfLine(insertPos);
 	if (pendingSelection(w) && sel->rectangular)
 		insertPos = buf->BufCountForwardDispChars(lineStart, sel->rectStart);
@@ -2171,7 +2171,7 @@ static void deleteSelectionAP(Widget w, XEvent *event, String *args, Cardinal *n
 static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	char c;
 	int silent = hasKey("nobell", args, nArgs);
 
@@ -2209,7 +2209,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2230,7 +2230,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineStart = textD->buffer->BufStartOfLine(insertPos);
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
@@ -2264,7 +2264,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineEnd = textD->buffer->BufEndOfLine(insertPos);
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
@@ -2298,7 +2298,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int endOfLine;
 	int silent = 0;
 
@@ -2306,7 +2306,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 	if (hasKey("absolute", args, nArgs))
 		endOfLine = textD->buffer->BufEndOfLine(insertPos);
 	else
-		endOfLine = TextDEndOfLine(textD, insertPos, False);
+		endOfLine = textD->TextDEndOfLine(insertPos, False);
 	cancelDrag(w);
 	if (checkReadOnly(w))
 		return;
@@ -2325,7 +2325,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XKeyEvent *e = &event->xkey;
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int startOfLine;
 	int silent = 0;
 
@@ -2350,7 +2350,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 }
 
 static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2363,7 +2363,7 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 }
 
 static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2378,7 +2378,7 @@ static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal 
 static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	int pos, insertPos = TextDGetInsertPosition(textD);
+	int pos, insertPos = textD->TextDGetInsertPosition();
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
@@ -2418,7 +2418,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	int pos, insertPos = TextDGetInsertPosition(textD);
+	int pos, insertPos = textD->TextDGetInsertPosition();
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
@@ -2440,7 +2440,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int pos, insertPos = TextDGetInsertPosition(textD);
+	int pos, insertPos = textD->TextDGetInsertPosition();
 	TextBuffer *buf = textD->buffer;
 	char c;
 	static char whiteChars[] = " \t";
@@ -2469,7 +2469,7 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 
 static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int parStart, pos, insertPos = TextDGetInsertPosition(textD);
+	int parStart, pos, insertPos = textD->TextDGetInsertPosition();
 	TextBuffer *buf = textD->buffer;
 	char c;
 	static char whiteChars[] = " \t";
@@ -2501,7 +2501,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 
 static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int stat, insertPos = TextDGetInsertPosition(textD);
+	int stat, insertPos = textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
 	cancelDrag(w);
@@ -2527,7 +2527,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
@@ -2540,7 +2540,7 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
@@ -2553,7 +2553,7 @@ static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nA
 }
 
 static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
@@ -2566,7 +2566,7 @@ static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 
 static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
@@ -2580,7 +2580,7 @@ static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *
 
 static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 
 	cancelDrag(w);
 	if (hasKey("absolute", args, nArgs))
@@ -2595,13 +2595,13 @@ static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 
 	cancelDrag(w);
 	if (hasKey("absolute", args, nArgs))
 		textD->TextDSetInsertPosition(textD->buffer->BufEndOfLine(insertPos));
 	else
-		textD->TextDSetInsertPosition(TextDEndOfLine(textD, insertPos, False));
+		textD->TextDSetInsertPosition(textD->TextDEndOfLine(insertPos, False));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
@@ -2609,7 +2609,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void beginningOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int insertPos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 	cancelDrag(w);
@@ -2627,7 +2627,7 @@ static void beginningOfFileAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int lastTopLine;
 
 	cancelDrag(w);
@@ -2648,7 +2648,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + reinterpret_cast<TextWidget>(w)->text.cursorVPadding);
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
 	int pageForwardCount = std::max<int>(1, textD->nVisibleLines - 1);
@@ -2676,7 +2676,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				return;
 			}
 			targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
-			pos = TextDCountForwardNLines(textD, insertPos, pageForwardCount, False);
+			pos = textD->TextDCountForwardNLines(insertPos, pageForwardCount, False);
 			if (maintainColumn) {
 				pos = TextDPosOfPreferredCol(textD, column, pos);
 			}
@@ -2718,7 +2718,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			targetLine = 1;
 		if (targetLine > lastTopLine)
 			targetLine = lastTopLine;
-		pos = TextDCountForwardNLines(textD, insertPos, textD->nVisibleLines - 1, False);
+		pos = textD->TextDCountForwardNLines(insertPos, textD->nVisibleLines - 1, False);
 		if (maintainColumn) {
 			pos = TextDPosOfPreferredCol(textD, column, pos);
 		}
@@ -2737,7 +2737,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
 	int pageBackwardCount = std::max<int>(1, textD->nVisibleLines - 1);
@@ -2765,7 +2765,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 				return;
 			}
 			targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
-			pos = TextDCountBackwardNLines(textD, insertPos, pageBackwardCount);
+			pos = textD->TextDCountBackwardNLines(insertPos, pageBackwardCount);
 			if (maintainColumn) {
 				pos = TextDPosOfPreferredCol(textD, column, pos);
 			}
@@ -2797,7 +2797,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		targetLine = textD->topLineNum - (textD->nVisibleLines - 1);
 		if (targetLine < 1)
 			targetLine = 1;
-		pos = TextDCountBackwardNLines(textD, insertPos, textD->nVisibleLines - 1);
+		pos = textD->TextDCountBackwardNLines(insertPos, textD->nVisibleLines - 1);
 		if (maintainColumn) {
 			pos = TextDPosOfPreferredCol(textD, column, pos);
 		}
@@ -2817,7 +2817,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int maxCharWidth = textD->fontStruct->max_bounds.width;
 	int lineStartPos, indent, pos;
 	int horizOffset;
@@ -2855,7 +2855,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = textD->buffer;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int maxCharWidth = textD->fontStruct->max_bounds.width;
 	int oldHorizOffset = textD->horizOffset;
 	int lineStartPos, indent, pos;
@@ -3115,7 +3115,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	textDisp *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *sel = &buf->primary_;
-	int newPos = TextDGetInsertPosition(textD);
+	int newPos = textD->TextDGetInsertPosition();
 	int startPos, endPos, startCol, endCol, newCol, origCol;
 	int anchor, rectAnchor, anchorLineStart;
 
@@ -3244,7 +3244,7 @@ static int deletePendingSelection(Widget w, XEvent *event) {
 */
 static int pendingSelection(Widget w) {
 	TextSelection *sel = &reinterpret_cast<TextWidget>(w)->text.textD->buffer->primary_;
-	int pos = TextDGetInsertPosition(reinterpret_cast<TextWidget>(w)->text.textD);
+	int pos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 
 	return reinterpret_cast<TextWidget>(w)->text.pendingDelete && sel->selected && pos >= sel->start && pos <= sel->end;
 }
@@ -3269,7 +3269,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 		return False;
 
 	/* Find the position of the previous tab stop */
-	insertPos = TextDGetInsertPosition(textD);
+	insertPos = textD->TextDGetInsertPosition();
 	lineStart = buf->BufStartOfLine(insertPos);
 	startIndent = buf->BufCountDispChars(lineStart, insertPos);
 	toIndent = (startIndent - 1) - ((startIndent - 1) % emTabDist);
@@ -3331,7 +3331,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 static void selectWord(Widget w, int pointerX) {
 	auto tw = reinterpret_cast<TextWidget>(w);
 	TextBuffer *buf = tw->text.textD->buffer;
-	int x, y, insertPos = TextDGetInsertPosition(tw->text.textD);
+	int x, y, insertPos = tw->text.textD->TextDGetInsertPosition();
 
 	TextPosToXY(w, insertPos, &x, &y);
 	if (pointerX < x && insertPos > 0 && buf->BufGetCharacter(insertPos - 1) != '\n')
@@ -3439,7 +3439,7 @@ static int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, 
 */
 static void selectLine(Widget w) {
 	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	int insertPos = TextDGetInsertPosition(textD);
+	int insertPos = textD->TextDGetInsertPosition();
 	int endPos, startPos;
 
 	endPos = textD->buffer->BufEndOfLine(insertPos);
