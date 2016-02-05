@@ -50,14 +50,16 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
+namespace {
+
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
-#define FILL_SHIFT 8
-#define SECONDARY_SHIFT 9
-#define PRIMARY_SHIFT 10
-#define HIGHLIGHT_SHIFT 11
-#define STYLE_LOOKUP_SHIFT 0
-#define BACKLIGHT_SHIFT 12
+const int FILL_SHIFT         = 8;
+const int SECONDARY_SHIFT    = 9;
+const int PRIMARY_SHIFT      = 10;
+const int HIGHLIGHT_SHIFT    = 11;
+const int STYLE_LOOKUP_SHIFT = 0;
+const int BACKLIGHT_SHIFT    = 12;
 
 #define FILL_MASK (1 << FILL_SHIFT)
 #define SECONDARY_MASK (1 << SECONDARY_SHIFT)
@@ -88,12 +90,14 @@
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
-#define MAX_DISP_LINE_LEN 1000
+const int MAX_DISP_LINE_LEN = 1000;
 
 /* Macro for getting the TextPart from a textD */
 #define TEXT_OF_TEXTD(t) (((TextWidget)((t)->w))->text)
 
 enum positionTypes { CURSOR_POS, CHARACTER_POS };
+
+}
 
 static void updateLineStarts(textDisp *textD, int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
 static void offsetLineStarts(textDisp *textD, int newTopLineNum);
