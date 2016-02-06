@@ -193,7 +193,7 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 */
 static void deleteFileOpenProperty(Document *window) {
 	if (window->filenameSet_) {
-		Atom atom = findFileOpenProperty(window->filename_, window->path_);
+		Atom atom = findFileOpenProperty(window->filename_.c_str(), window->path_.c_str());
 		deleteProperty(&atom);
 	}
 }
@@ -220,7 +220,7 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 /* Get hold of the property to use when closing the file. */
 static void getFileClosedProperty(Document *window) {
 	if (window->filenameSet_) {
-		window->fileClosedAtom_ = findFileClosedProperty(window->filename_, window->path_);
+		window->fileClosedAtom_ = findFileClosedProperty(window->filename_.c_str(), window->path_.c_str());
 	}
 }
 

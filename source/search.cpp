@@ -621,7 +621,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	form = CreateFormDialog(parent, "replaceDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
-		sprintf(title, "Replace/Find (in %s)", window->filename_);
+		sprintf(title, "Replace/Find (in %s)", window->filename_.c_str());
 		XtVaSetValues(XtParent(form), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(form), XmNtitle, "Replace/Find", nullptr);
@@ -1323,7 +1323,7 @@ void CreateFindDlog(Widget parent, Document *window) {
 	form = CreateFormDialog(parent, "findDialog", args, argcnt);
 	XtVaSetValues(form, XmNshadowThickness, 0, nullptr);
 	if (GetPrefKeepSearchDlogs()) {
-		sprintf(title, "Find (in %s)", window->filename_);
+		sprintf(title, "Find (in %s)", window->filename_.c_str());
 		XtVaSetValues(XtParent(form), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(form), XmNtitle, "Find", nullptr);
@@ -1983,7 +1983,7 @@ static void rKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
-		sprintf(title, "Replace/Find (in %s)", window->filename_);
+		sprintf(title, "Replace/Find (in %s)", window->filename_.c_str());
 		XtVaSetValues(XtParent(window->replaceDlog_), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(window->replaceDlog_), XmNtitle, "Replace/Find", nullptr);
@@ -1999,7 +1999,7 @@ static void fKeepCB(Widget w, XtPointer clientData, XtPointer callData) {
 	window = Document::WidgetToWindow(w);
 
 	if (XmToggleButtonGetState(w)) {
-		sprintf(title, "Find (in %s)", window->filename_);
+		sprintf(title, "Find (in %s)", window->filename_.c_str());
 		XtVaSetValues(XtParent(window->findDlog_), XmNtitle, title, nullptr);
 	} else
 		XtVaSetValues(XtParent(window->findDlog_), XmNtitle, "Find", nullptr);
@@ -2152,7 +2152,7 @@ static void collectWritableWindows(Document *window) {
 	});
 
 	std::sort(windows, windows + nWritable, [](const Document *lhs, const Document *rhs) {
-		return strcmp(lhs->filename_, rhs->filename_) < 0;
+		return lhs->filename_ < rhs->filename_;
 	});
 
 	window->writableWindows_  = windows;
@@ -2363,9 +2363,9 @@ static void uploadFileListItems(Document *window, Bool replace) {
 	for (i = 0; i < nWritable; ++i) {
 		w = window->writableWindows_[i];
 		if (usePathNames && window->filenameSet_) {
-			sprintf(buf, "%s%s", w->path_, w->filename_);
+			sprintf(buf, "%s%s", w->path_.c_str(), w->filename_.c_str());
 		} else {
-			sprintf(buf, "%s", w->filename_);
+			sprintf(buf, "%s", w->filename_.c_str());
 		}
 		names[i] = XmStringCreateSimpleEx(buf);
 	}

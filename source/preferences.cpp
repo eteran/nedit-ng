@@ -3579,10 +3579,15 @@ static int matchLanguageMode(Document *window) {
 	/* Look at file extension ("@@/" starts a ClearCase version extended path,
 	   which gets appended after the file extension, and therefore must be
 	   stripped off to recognize the extension to make ClearCase users happy) */
-	fileNameLen = strlen(window->filename_);
+	fileNameLen = window->filename_.size();
 
-	if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename_)) != nullptr)
-		fileNameLen = versionExtendedPath - window->filename_;
+
+	// TODO(eteran): this is playing some games with the c_str() that I don't think
+	//               is a good idea. It would be better if GetClearCaseVersionExtendedPath
+	//               returned string_view.
+	if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename_.c_str())) != nullptr) {
+		fileNameLen = versionExtendedPath - window->filename_.c_str();
+	}
 
 	for (i = 0; i < NLanguageModes; i++) {
 		for (j = 0; j < LanguageModes[i]->nExtensions; j++) {

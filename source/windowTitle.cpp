@@ -243,23 +243,24 @@ static void compressWindowTitle(char *title) {
 **  specified in the formatting string will be displayed.
 */
 char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const char *titleFormat) {
+
 	static char title[WINDOWTITLE_MAX_LEN];
 	char *titlePtr = title;
-	char *titleEnd = title + WINDOWTITLE_MAX_LEN - 1;
+	char *titleEnd = title + sizeof(title) - 1;
 
 	/* Flags to supress one of these if both are specified and they are identical */
-	int serverNameSeen = False;
-	int clearCaseViewTagSeen = False;
+	bool serverNameSeen = false;
+	bool clearCaseViewTagSeen = false;
 
-	int fileNamePresent = False;
-	int hostNamePresent = False;
-	int userNamePresent = False;
-	int serverNamePresent = False;
-	int clearCasePresent = False;
-	int fileStatusPresent = False;
-	int dirNamePresent = False;
+	bool fileNamePresent = false;
+	bool hostNamePresent = false;
+	bool userNamePresent = false;
+	bool serverNamePresent = false;
+	bool clearCasePresent = false;
+	bool fileStatusPresent = false;
+	bool dirNamePresent = false;
 	int noOfComponents = -1;
-	int shortStatus = False;
+	bool shortStatus = false;
 
 	*titlePtr = '\0'; /* always start with an empty string */
 
@@ -445,7 +446,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 		etDialog.suppressFormatUpdate = False;
 	}
 
-	return (title);
+	return title;
 }
 
 /* a utility that sets the values of all toggle buttons */
@@ -1122,8 +1123,8 @@ void Document::EditCustomTitleFormat() {
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */
-	strcpy(etDialog.path, this->path_);
-	strcpy(etDialog.filename, this->filename_);
+	strcpy(etDialog.path, this->path_.c_str());
+	strcpy(etDialog.filename, this->filename_.c_str());
 	strcpy(etDialog.viewTag, GetClearCaseViewTag() != nullptr ? GetClearCaseViewTag() : "viewtag");
 	strcpy(etDialog.serverName, IsServer ? GetPrefServerName() : "servername");
 	etDialog.isServer = IsServer;

@@ -1560,7 +1560,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	} else {
 		/* just use the plain name as supplied */
 		w = Document::find_if([&fullname, &string](Document *win) {
-			sprintf(fullname, "%s%s", win->path_, win->filename_);
+			sprintf(fullname, "%s%s", win->path_.c_str(), win->filename_.c_str());
 			return strcmp(string, fullname) == 0;
 		});
 		
@@ -1575,7 +1575,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 			}
 			
 			w = Document::find_if([&fullname, &normalizedString](Document *win) {
-				sprintf(fullname, "%s%s", win->path_, win->filename_);
+				sprintf(fullname, "%s%s", win->path_.c_str(), win->filename_.c_str());
 				return strcmp(normalizedString, fullname) == 0;
 			});
 		}
@@ -1598,8 +1598,8 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 
 	/* Return the name of the window */
 	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, strlen(w->path_) + strlen(w->filename_) + 1);
-	sprintf(result->val.str.rep, "%s%s", w->path_, w->filename_);
+	AllocNString(&result->val.str, w->path_.size() + w->filename_.size() + 1);
+	sprintf(result->val.str.rep, "%s%s", w->path_.c_str(), w->filename_.c_str());
 	return True;
 }
 
@@ -3734,7 +3734,7 @@ static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->filename_);
+	AllocNStringCpy(&result->val.str, window->filename_.c_str());
 	return True;
 }
 
@@ -3745,7 +3745,7 @@ static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->path_);
+	AllocNStringCpy(&result->val.str, window->path_.c_str());
 	return True;
 }
 

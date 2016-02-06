@@ -89,8 +89,6 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
 	char name[MAXPATHLEN];
 	Document *window;
-	size_t pathlen;
-	char *path;
 
 	/*... test for creatability? */
 
@@ -98,19 +96,18 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	UniqueUntitledName(name, sizeof(name));
 
 	/* create new window/document */
-	if (inWindow)
+	if (inWindow) {
 		window = inWindow->CreateDocument(name);
-	else
+	} else {
 		window = new Document(name, geometry, iconic);
+	}
 
-	path = window->path_;
-	strcpy(window->filename_, name);
-	strcpy(path, (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx().c_str());
-	pathlen = strlen(window->path_);
-
+	window->filename_ = name;
+	window->path_     = (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx();
+	
 	/* do we have a "/" at the end? if not, add one */
-	if (0 < pathlen && path[pathlen - 1] != '/' && pathlen < MAXPATHLEN - 1) {
-		strcpy(&path[pathlen], "/");
+	if (!window->path_.empty() && window->path_.back() != '/') {
+		window->path_.append("/");
 	}
 
 	window->SetWindowModified(FALSE);
@@ -127,10 +124,11 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 
 	window->ShowTabBar(window->GetShowTabBar());
 
-	if (iconic && window->IsIconic())
+	if (iconic && window->IsIconic()) {
 		window->RaiseDocument();
-	else
+	} else {
 		window->RaiseDocumentWindow();
+	}
 
 	window->SortTabBar();
 	return window;
@@ -184,9 +182,10 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 		}
 	} else {
 		/* open file in untitled document */
-		window = inWindow;
-		strcpy(window->path_, path);
-		strcpy(window->filename_, name);
+		window            = inWindow;
+		window->path_     = path;
+		window->filename_ = name;
+		
 		if (!iconic && !bgOpen) {
 			window->RaiseDocumentWindow();
 		}
@@ -242,7 +241,7 @@ void RevertToSaved(Document *window) {
 
 	/* Can't revert untitled windows */
 	if (!window->filenameSet_) {
-		DialogF(DF_WARN, window->shell_, 1, "Error", "Window '%s' was never saved, can't re-read", "OK", window->filename_);
+		DialogF(DF_WARN, window->shell_, 1, "Error", "Window '%s' was never saved, can't re-read", "OK", window->filename_.c_str());
 		return;
 	}
 
@@ -254,8 +253,9 @@ void RevertToSaved(Document *window) {
 	}
 
 	/* re-read the file, update the window title if new file is different */
-	strcpy(name, window->filename_);
-	strcpy(path, window->path_);
+	strcpy(name, window->filename_.c_str());
+	strcpy(path, window->path_.c_str());
+	
 	RemoveBackupFile(window);
 	window->ClearUndoList();
 	openFlags |= IS_USER_LOCKED(window->lockReasons_) ? PREF_READ_ONLY : 0;
@@ -315,8 +315,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	CLEAR_ALL_LOCKS(window->lockReasons_);
 
 	/* Update the window data structure */
-	strcpy(window->filename_, name);
-	strcpy(window->path_, path);
+	window->filename_    = name;
+	window->path_        = path;
 	window->filenameSet_ = TRUE;
 	window->fileMissing_ = TRUE;
 
@@ -643,7 +643,7 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 		/* up-to-date windows don't have outstanding backup files to close */
 	} else {
 		if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
-			response = DialogF(DF_WARN, window->shell_, 3, "Save File", "Save %s before closing?", "Yes", "No", "Cancel", window->filename_);
+			response = DialogF(DF_WARN, window->shell_, 3, "Save File", "Save %s before closing?", "Yes", "No", "Cancel", window->filename_.c_str());
 		} else {
 			response = preResponse;
 		}
@@ -690,7 +690,7 @@ int SaveWindow(Document *window) {
 		                                                       "To preserve the modified file, cancel this operation and\n"
 		                                                       "use Save As... to save this file under a different name,\n"
 		                                                       "or Revert to Saved to revert to the modified version.",
-		               "Continue", "Cancel", window->filename_);
+		               "Continue", "Cancel", window->filename_.c_str());
 		if (stat == 2) {
 			/* Cancel and mark file as externally modified */
 			window->lastModTime_ = 0;
@@ -737,7 +737,7 @@ int SaveWindowAs(Document *window, const char *newName, int addWrap) {
 	}
 
 	/* If the requested file is this file, just save it and return */
-	if (!strcmp(window->filename_, filename) && !strcmp(window->path_, pathname)) {
+	if (window->filename_ == filename && window->path_ == pathname) {
 		if (writeBckVersion(window))
 			return FALSE;
 		return doSave(window);
@@ -766,11 +766,12 @@ int SaveWindowAs(Document *window, const char *newName, int addWrap) {
 
 	/* Change the name of the file and save it under the new name */
 	RemoveBackupFile(window);
-	strcpy(window->filename_, filename);
-	strcpy(window->path_, pathname);
+	window->filename_ = filename;
+	window->path_     = pathname;
 	window->fileMode_ = 0;
-	window->fileUid_ = 0;
-	window->fileGid_ = 0;
+	window->fileUid_  = 0;
+	window->fileGid_  = 0;
+	
 	CLEAR_ALL_LOCKS(window->lockReasons_);
 	retVal = doSave(window);
 	window->UpdateWindowReadOnly();
@@ -802,15 +803,15 @@ static bool doSave(Document *window) {
 	int result;
 
 	/* Get the full name of the file */
-	strcpy(fullname, window->path_);
-	strcat(fullname, window->filename_);
+	strcpy(fullname, window->path_.c_str());
+	strcat(fullname, window->filename_.c_str());
 
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
 	if ((getuid() == 0) && (stat(fullname, &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
 		result = DialogF(DF_WARN, window->shell_, 2, "Writing Read-only File", "File '%s' is marked as read-only.\n"
 		                                                                      "Do you want to save anyway?",
-		                 "Save", "Cancel", window->filename_);
+		                 "Save", "Cancel", window->filename_.c_str());
 		if (result != 1) {
 			return True;
 		}
@@ -830,7 +831,7 @@ static bool doSave(Document *window) {
 	/* open the file */
 	fp = fopen(fullname, "wb");
 	if(!fp) {
-		result = DialogF(DF_WARN, window->shell_, 2, "Error saving File", "Unable to save %s:\n%s\n\nSave as a new file?", "Save As...", "Cancel", window->filename_, strerror(errno));
+		result = DialogF(DF_WARN, window->shell_, 2, "Error saving File", "Unable to save %s:\n%s\n\nSave as a new file?", "Save As...", "Cancel", window->filename_.c_str(), strerror(errno));
 
 		if (result == 1) {
 			return SaveWindowAs(window, nullptr, 0);
@@ -862,7 +863,7 @@ static bool doSave(Document *window) {
 	
 	
 	if (ferror(fp)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error saving File", "%s not saved:\n%s", "OK", window->filename_, strerror(errno));
+		DialogF(DF_ERR, window->shell_, 1, "Error saving File", "%s not saved:\n%s", "OK", window->filename_.c_str(), strerror(errno));
 		fclose(fp);
 		remove(fullname);
 		return FALSE;
@@ -916,7 +917,7 @@ int WriteBackupFile(Document *window) {
 	if ((fd = open(name.c_str(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 		DialogF(DF_WARN, window->shell_, 1, "Error writing Backup", "Unable to save backup for %s:\n%s\n"
 		                                                           "Automatic backup is now off",
-		        "OK", window->filename_, strerror(errno));
+		        "OK", window->filename_.c_str(), strerror(errno));
 		window->autoSave_ = FALSE;
 		window->SetToggleButtonState(window->autoSaveItem_, FALSE, FALSE);
 		return FALSE;
@@ -938,7 +939,7 @@ int WriteBackupFile(Document *window) {
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell_, 1, "Error saving Backup", "Error while saving backup for %s:\n%s\n"
 		                                                         "Automatic backup is now off",
-		        "OK", window->filename_, strerror(errno));
+		        "OK", window->filename_.c_str(), strerror(errno));
 		fclose(fp);
 		remove(name.c_str());
 		window->autoSave_ = FALSE;
@@ -974,10 +975,10 @@ static std::string backupFileNameEx(Document *window) {
 	
 	char buf[MAXPATHLEN];
 	if (window->filenameSet_) {
-		snprintf(buf, sizeof(buf), "%s~%s", window->path_, window->filename_);
+		snprintf(buf, sizeof(buf), "%s~%s", window->path_.c_str(), window->filename_.c_str());
 		return buf;
 	} else {
-		snprintf(buf, sizeof(buf), "~%s", window->filename_);
+		snprintf(buf, sizeof(buf), "~%s", window->filename_.c_str());
 		return PrependHomeEx(buf);
 	}
 }
@@ -1002,11 +1003,11 @@ static bool writeBckVersion(Document *window) {
 	}
 
 	/* Get the full name of the file */
-	int r = snprintf(fullname, sizeof(fullname), "%s%s", window->path_, window->filename_);
+	int r = snprintf(fullname, sizeof(fullname), "%s%s", window->path_.c_str(), window->filename_.c_str());
 
 	/* Generate name for old version */
 	if (r >= MAXPATHLEN) {
-		return bckError(window, "file name too long", window->filename_);
+		return bckError(window, "file name too long", window->filename_.c_str());
 	}
 	snprintf(bckname, sizeof(bckname), "%s.bck", fullname);
 
@@ -1056,7 +1057,7 @@ static bool writeBckVersion(Document *window) {
 			close(out_fd);
 			remove(bckname);
 			delete [] io_buffer;
-			return bckError(window, "read() error", window->filename_);
+			return bckError(window, "read() error", window->filename_.c_str());
 		}
 
 		if (bytes_read == 0) {
@@ -1187,7 +1188,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-	if (*window->path_ != '\0')
+	if (!window->path_.empty())
 		SetFileDialogDefaultDirectory(nullable_string(window->path_));
 	retVal = GetExistingFilename(window->shell_, prompt, fullname);
 	if (retVal != GFN_OK)
@@ -1214,8 +1215,8 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-	if (*window->path_ != '\0') {
-		
+
+	if (!window->path_.empty()) {
 		SetFileDialogDefaultDirectory(nullable_string(window->path_));
 	}
 
@@ -1262,7 +1263,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *
 	AddDialogMnemonicHandler(fileSB, FALSE);
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
-	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_ : nullptr);
+	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_.c_str() : nullptr);
 
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
@@ -1286,7 +1287,7 @@ void UniqueUntitledName(char *name, size_t size) {
 		}
 		
 		Document *w = Document::find_if([name](Document *window) {
-			return (!strcmp(window->filename_, name));
+			return window->filename_ == name;
 		});
 		
 		if(!w) {
@@ -1352,8 +1353,9 @@ void CheckForChangesToFile(Document *window) {
 	}
 
 	/* Get the file mode and modification time */
-	strcpy(fullname, window->path_);
-	strcat(fullname, window->filename_);
+	strcpy(fullname, window->path_.c_str());
+	strcat(fullname, window->filename_.c_str());
+	
 	if (stat(fullname, &statbuf) != 0) {
 		/* Return if we've already warned the user or we can't warn him now */
 		if (window->fileMissing_ || silent) {
@@ -1389,7 +1391,7 @@ void CheckForChangesToFile(Document *window) {
 				body = "File '%s' (or directory in its path)\n"
 				       "no longer exists.\n"
 				       "Another program may have deleted or moved it.";
-				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_);
+				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_.c_str());
 				break;
 			case EACCES:
 				/*  Search permission denied for a path component. We add
@@ -1399,7 +1401,7 @@ void CheckForChangesToFile(Document *window) {
 				body = "You no longer have access to file '%s'.\n"
 				       "Another program may have changed the permissions of\n"
 				       "one of its parent directories.";
-				resp = 1 + DialogF(DF_ERR, window->shell_, 1, title, body, "Cancel", window->filename_);
+				resp = 1 + DialogF(DF_ERR, window->shell_, 1, title, body, "Cancel", window->filename_.c_str());
 				break;
 			default:
 				/*  Everything else. This hints at an internal error (eg.
@@ -1409,7 +1411,7 @@ void CheckForChangesToFile(Document *window) {
 				       "    '%s'\n"
 				       "Please make sure that no data is lost before closing\n"
 				       "this window.";
-				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_, strerror(errno));
+				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_.c_str(), strerror(errno));
 				break;
 			}
 
@@ -1491,9 +1493,9 @@ void CheckForChangesToFile(Document *window) {
 			resp = DialogF(DF_WARN, window->shell_, 2, "File modified externally", "%s has been modified by another program.  Reload?\n\n"
 			                                                                      "WARNING: Reloading will discard changes made in this\n"
 			                                                                      "editing session!",
-			               "Reload", "Cancel", window->filename_);
+			               "Reload", "Cancel", window->filename_.c_str());
 		else
-			resp = DialogF(DF_WARN, window->shell_, 2, "File modified externally", "%s has been modified by another\nprogram.  Reload?", "Reload", "Cancel", window->filename_);
+			resp = DialogF(DF_WARN, window->shell_, 2, "File modified externally", "%s has been modified by another\nprogram.  Reload?", "Reload", "Cancel", window->filename_.c_str());
 		if (resp == 1)
 			RevertToSaved(window);
 	}
@@ -1512,8 +1514,10 @@ static int fileWasModifiedExternally(Document *window) {
 		return FALSE;
 	/* if (window->lastModTime_ == 0)
 	return FALSE; */
-	strcpy(fullname, window->path_);
-	strcat(fullname, window->filename_);
+	
+	strcpy(fullname, window->path_.c_str());
+	strcat(fullname, window->filename_.c_str());
+	
 	if (stat(fullname, &statbuf) != 0)
 		return FALSE;
 	if (window->lastModTime_ == statbuf.st_mtime)
@@ -1662,7 +1666,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	sprintf(message, "Comparing externally modified %s ...", window->filename_);
+	sprintf(message, "Comparing externally modified %s ...", window->filename_.c_str());
 	restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
 	bufPos = 0;
 	filePos = 0;

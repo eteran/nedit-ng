@@ -175,8 +175,8 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_);
-	strcat(fullName, window->filename_);
+	strcpy(fullName, window->path_.c_str());
+	strcat(fullName, window->filename_.c_str());
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
@@ -237,8 +237,8 @@ void ExecCursorLine(Document *window, int fromMacro) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_);
-	strcat(fullName, window->filename_);
+	strcpy(fullName, window->path_.c_str());
+	strcat(fullName, window->filename_.c_str());
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
@@ -278,8 +278,8 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_);
-	strcat(fullName, window->filename_);
+	strcpy(fullName, window->path_.c_str());
+	strcat(fullName, window->filename_.c_str());
 	pos = TextGetCursorPos(window->lastFocus_);
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
@@ -331,7 +331,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		flags |= OUTPUT_TO_DIALOG;
 		left = right = 0;
 	} else if (output == TO_NEW_WINDOW) {
-		EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, False, nullptr, window->path_);
+		EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, False, nullptr, window->path_.c_str());
 		outWidget = WindowList->textArea_;
 		inWindow = WindowList;
 		left = right = 0;
@@ -437,7 +437,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 		window->SetSensitive(window->cancelShellItem_, True);
 
 	/* fork the subprocess and issue the command */
-	childPid = forkCommand(window->shell_, command, window->path_, &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
+	childPid = forkCommand(window->shell_, command, window->path_.c_str(), &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
 
 	/* set the pipes connected to the process for non-blocking i/o */
 	if (fcntl(stdinFD, F_SETFL, O_NONBLOCK) < 0)

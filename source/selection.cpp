@@ -277,7 +277,7 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 
 	/* If path name is relative, make it refer to current window's directory */
 	if (nameText[0] != '/') {
-		strcpy(filename, window->path_);
+		strcpy(filename, window->path_.c_str());
 		strcat(filename, nameText);
 		strcpy(nameText, filename);
 	}

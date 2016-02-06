@@ -305,23 +305,23 @@ public:
 	Widget bgMenuRedoItem_;
 
 public:
-	char filename_[MAXPATHLEN];   /* name component of file being edited*/
-	char path_[MAXPATHLEN];       /* path component of file being edited*/
-	unsigned fileMode_;           /* permissions of file being edited */
-	uid_t fileUid_;               /* last recorded user id of the file */
-	gid_t fileGid_;               /* last recorded group id of the file */
-	int fileFormat_;              /* whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks */
-	time_t lastModTime_;          /* time of last modification to file */
-	dev_t device_;                /*  device where the file resides */
-	ino_t inode_;                 /*  file's inode  */
-	std::list<UndoInfo *> undo_;              /* info for undoing last operation */
-	std::list<UndoInfo *> redo_;              /* info for redoing last undone op */
-	TextBuffer *buffer_;          /* holds the text being edited */
-	int nPanes_;                  /* number of additional text editing areas, created by splitWindow */
-	int autoSaveCharCount_;       /* count of single characters typed since last backup file generated */
-	int autoSaveOpCount_;         /* count of editing operations "" */
-	int undoMemUsed_;             /* amount of memory (in bytes) dedicated to the undo list */
-	char fontName_[MAX_FONT_LEN]; /* names of the text fonts in use */
+	std::string filename_;             /* name component of file being edited*/
+	std::string path_;                 /* path component of file being edited*/
+	unsigned fileMode_;                /* permissions of file being edited */
+	uid_t fileUid_;                    /* last recorded user id of the file */
+	gid_t fileGid_;                    /* last recorded group id of the file */
+	int fileFormat_;                   /* whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks */
+	time_t lastModTime_;               /* time of last modification to file */
+	dev_t device_;                     /* device where the file resides */
+	ino_t inode_;                      /* file's inode  */
+	std::list<UndoInfo *> undo_;       /* info for undoing last operation */
+	std::list<UndoInfo *> redo_;       /* info for redoing last undone op */
+	TextBuffer *buffer_;               /* holds the text being edited */
+	int nPanes_;                       /* number of additional text editing areas, created by splitWindow */
+	int autoSaveCharCount_;            /* count of single characters typed since last backup file generated */
+	int autoSaveOpCount_;              /* count of editing operations "" */
+	int undoMemUsed_;                  /* amount of memory (in bytes) dedicated to the undo list */
+	char fontName_[MAX_FONT_LEN];      /* names of the text fonts in use */
 	char italicFontName_[MAX_FONT_LEN];
 	char boldFontName_[MAX_FONT_LEN];
 	char boldItalicFontName_[MAX_FONT_LEN];
@@ -332,29 +332,29 @@ public:
 	XtIntervalId flashTimeoutID_;   /* timer procedure id for getting rid of highlighted matching paren.  Non-zero val. means highlight is drawn */
 	int flashPos_;                  /* position saved for erasing matching paren highlight (if one is drawn) */
 	int wasSelected_;               /* last selection state (for dim/undim of selection related menu items */
-	bool filenameSet_;           /* is the window still "Untitled"? */
-	bool fileChanged_;           /* has window been modified? */
-	bool fileMissing_;           /* is the window's file gone? */
+	bool filenameSet_;              /* is the window still "Untitled"? */
+	bool fileChanged_;              /* has window been modified? */
+	bool fileMissing_;              /* is the window's file gone? */
 	int lockReasons_;               /* all ways a file can be locked */
-	bool autoSave_;              /* is autosave turned on? */
-	bool saveOldVersion_;        /* keep old version in filename.bck */
+	bool autoSave_;                 /* is autosave turned on? */
+	bool saveOldVersion_;           /* keep old version in filename.bck */
 	char indentStyle_;              /* whether/how to auto indent */
 	char wrapMode_;                 /* line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP */
-	bool overstrike_;            /* is overstrike mode turned on ? */
+	bool overstrike_;               /* is overstrike mode turned on ? */
 	char showMatchingStyle_;        /* How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE */
 	char matchSyntaxBased_;         /* Use syntax info to show matching */
-	bool showStats_;             /* is stats line supposed to be shown */
-	bool showISearchLine_;       /* is incr. search line to be shown */
-	bool showLineNumbers_;       /* is the line number display shown */
-	bool highlightSyntax_;       /* is syntax highlighting turned on? */
-	bool backlightChars_;        /* is char backlighting turned on? */
+	bool showStats_;                /* is stats line supposed to be shown */
+	bool showISearchLine_;          /* is incr. search line to be shown */
+	bool showLineNumbers_;          /* is the line number display shown */
+	bool highlightSyntax_;          /* is syntax highlighting turned on? */
+	bool backlightChars_;           /* is char backlighting turned on? */
 	char *backlightCharTypes_;      /* what backlighting to use */
-	bool modeMessageDisplayed_;  /* special stats line banner for learn and shell command executing modes */
+	bool modeMessageDisplayed_;     /* special stats line banner for learn and shell command executing modes */
 	char *modeMessage_;             /* stats line banner content for learn and shell command executing modes */
-	bool ignoreModify_;          /* ignore modifications to text area */
-	bool windowMenuValid_;       /* is window menu up to date? */
+	bool ignoreModify_;             /* ignore modifications to text area */
+	bool windowMenuValid_;          /* is window menu up to date? */
 	int rHistIndex_;
-	int fHistIndex_;                 /* history placeholders for */
+	int fHistIndex_;                /* history placeholders for */
 	int iSearchHistIndex_;          /*   find and replace dialogs */
 	int iSearchStartPos_;           /* start pos. of current incr. search */
 	int iSearchLastBeginPos_;       /* beg. pos. last match of current i.s.*/
@@ -367,8 +367,8 @@ public:
 	void *smartIndentData_;         /* compiled macros for smart indent */
 	Atom fileClosedAtom_;           /* Atom used to tell nc that the file is closed */
 	int languageMode_;              /* identifies language mode currently selected in the window */
-	bool multiFileReplSelected_; /* selected during last multi-window replacement operation (history) */
-	Document ** writableWindows_;          /* temporary list of writable windows, used during multi-file replacements */
+	bool multiFileReplSelected_;    /* selected during last multi-window replacement operation (history) */
+	Document ** writableWindows_;   /* temporary list of writable windows, used during multi-file replacements */
 	int nWritableWindows_;          /* number of elements in the list */
 	Bool multiFileBusy_;            /* suppresses multiple beeps/dialogs during multi-file replacements */
 	Bool replaceFailed_;            /* flags replacements failures during multi-file replacements */
@@ -418,8 +418,6 @@ public:
 		}
 		return n;	
 	}
-	
-
 };
 
 #endif

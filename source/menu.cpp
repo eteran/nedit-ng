@@ -2406,7 +2406,7 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		}
 	}
 
-	EditNewFile(openInTab ? window : nullptr, nullptr, False, nullptr, window->path_);
+	EditNewFile(openInTab ? window : nullptr, nullptr, False, nullptr, window->path_.c_str());
 	CheckCloseDim();
 }
 
@@ -2422,7 +2422,7 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	Document *window = Document::WidgetToWindow(w);
 
-	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path_);
+	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path_.c_str());
 	CheckCloseDim();
 }
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2432,7 +2432,7 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Document *window = Document::WidgetToWindow(w);
 
-	EditNewFile(window, nullptr, False, nullptr, window->path_);
+	EditNewFile(window, nullptr, False, nullptr, window->path_.c_str());
 	CheckCloseDim();
 }
 
@@ -2567,9 +2567,9 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	/* re-reading file is irreversible, prompt the user first */
 	if (window->fileChanged_) {
-		b = DialogF(DF_QUES, window->shell_, 2, "Discard Changes", "Discard changes to\n%s%s?", "OK", "Cancel", window->path_, window->filename_);
+		b = DialogF(DF_QUES, window->shell_, 2, "Discard Changes", "Discard changes to\n%s%s?", "OK", "Cancel", window->path_.c_str(), window->filename_.c_str());
 	} else {
-		b = DialogF(DF_QUES, window->shell_, 2, "Reload File", "Re-load file\n%s%s?", "Re-read", "Cancel", window->path_, window->filename_);
+		b = DialogF(DF_QUES, window->shell_, 2, "Reload File", "Re-load file\n%s%s?", "Re-read", "Cancel", window->path_.c_str(), window->filename_.c_str());
 	}
 
 	if (b != 1) {
@@ -2802,7 +2802,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		ptr += 9;
 		lineLen += 9;
 		for (Document *win = WindowList; win; win = win->next_) {
-			sprintf(filename, "%s%s", win->filename_, win->fileChanged_ ? "*" : "");
+			sprintf(filename, "%s%s", win->filename_.c_str(), win->fileChanged_ ? "*" : "");
 			title = filename;
 			titleLen = strlen(title);
 			if (ptr - exitMsg + titleLen + 30 >= DF_MAX_MSG_LENGTH) {
@@ -3280,7 +3280,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	if (window->NDocuments() < 2)
 		return;
 
-	resp = DialogF(DF_QUES, window->shell_, 2, "Detach %s?", "Detach", "Cancel", window->filename_);
+	resp = DialogF(DF_QUES, window->shell_, 2, "Detach %s?", "Detach", "Cancel", window->filename_.c_str());
 
 	if (resp == 1)
 		window->DetachDocument();
@@ -4266,14 +4266,14 @@ void AddToPrevOpenMenu(const char *filename) {
 static char *getWindowsMenuEntry(const Document *window) {
 	static char fullTitle[MAXPATHLEN * 2 + 3 + 1];
 
-	sprintf(fullTitle, "%s%s", window->filename_, window->fileChanged_ ? "*" : "");
+	sprintf(fullTitle, "%s%s", window->filename_.c_str(), window->fileChanged_ ? "*" : "");
 
 	if (GetPrefShowPathInWindowsMenu() && window->filenameSet_) {
 		strcat(fullTitle, " - ");
-		strcat(fullTitle, window->path_);
+		strcat(fullTitle, window->path_.c_str());
 	}
 
-	return (fullTitle);
+	return fullTitle;
 }
 
 /*
@@ -4300,19 +4300,19 @@ static void updateWindowMenu(const Document *window) {
 	}
 	
 	std::sort(windows, windows + nWindows, [](const Document *a, const Document *b) {
-		int rc;
+
 		/* Untitled first */
-		rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
+		int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
 		if (rc != 0) {
 			return rc < 0;
 		}
 		
-		rc = strcmp(a->filename_, b->filename_);
-		if (rc != 0) {
-			return rc < 0;
+		if(a->filename_ < b->filename_) {
+			return true;
 		}
 		
-		return strcmp(a->path_, b->path_) < 0;
+		
+		return a->path_ < b->path_;
 	});
 
 	/* if the menu is torn off, unmanage the menu pane

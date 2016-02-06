@@ -1420,9 +1420,9 @@ void Document::RefreshTabState() {
 	   "*" (modified) will change per label alignment setting */
 	XtVaGetValues(tab_, XmNalignment, &alignment, nullptr);
 	if (alignment != XmALIGNMENT_END) {
-		sprintf(labelString, "%s%s", fileChanged_ ? "*" : "", filename_);
+		sprintf(labelString, "%s%s", fileChanged_ ? "*" : "", filename_.c_str());
 	} else {
-		sprintf(labelString, "%s%s", filename_, fileChanged_ ? "*" : "");
+		sprintf(labelString, "%s%s", filename_.c_str(), fileChanged_ ? "*" : "");
 	}
 
 	/* Make the top document stand out a little more */
@@ -1433,7 +1433,7 @@ void Document::RefreshTabState() {
 
 	if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
 		strcat(labelString, " - ");
-		strcat(labelString, path_);
+		strcat(labelString, path_.c_str());
 	}
 	tipString = XmStringCreateSimpleEx(labelString);
 
@@ -1491,20 +1491,20 @@ void Document::UpdateStatsLine() {
 
 	/* Compose the string to display. If line # isn't available, leave it off */
 	int pos            = TextGetCursorPos(lastFocus_);
-	size_t string_size = strlen(filename_) + strlen(path_) + 45;
+	size_t string_size = filename_.size() + path_.size() + 45;
 	auto string        = new char[string_size];
 	const char *format = (fileFormat_ == DOS_FILE_FORMAT) ? " DOS" : (fileFormat_ == MAC_FILE_FORMAT ? " Mac" : "");
 	char slinecol[32];
 	
 	if (!TextPosToLineAndCol(lastFocus_, pos, &line, &colNum)) {
-		snprintf(string, string_size, "%s%s%s %d bytes", path_, filename_, format, buffer_->BufGetLength());
+		snprintf(string, string_size, "%s%s%s %d bytes", path_.c_str(), filename_.c_str(), format, buffer_->BufGetLength());
 		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
 		snprintf(slinecol, sizeof(slinecol), "L: %d  C: %d", line, colNum);
 		if (showLineNumbers_) {
-			snprintf(string, string_size, "%s%s%s byte %d of %d", path_, filename_, format, pos, buffer_->BufGetLength());
+			snprintf(string, string_size, "%s%s%s byte %d of %d", path_.c_str(), filename_.c_str(), format, pos, buffer_->BufGetLength());
 		} else {
-			snprintf(string, string_size, "%s%s%s %d bytes", path_, filename_, format, buffer_->BufGetLength());
+			snprintf(string, string_size, "%s%s%s %d bytes", path_.c_str(), filename_.c_str(), format, buffer_->BufGetLength());
 		}
 	}
 
@@ -1863,27 +1863,27 @@ void Document::UpdateWindowTitle() {
 		return;
 	}
 
-	char *title = FormatWindowTitle(filename_, path_, GetClearCaseViewTag(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
-	auto iconTitle = new char[strlen(filename_) + 2]; /* strlen("*")+1 */
-
-	strcpy(iconTitle, filename_);
+	char *title = FormatWindowTitle(filename_.c_str(), path_.c_str(), GetClearCaseViewTag(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
+	
+	
+	std::string iconTitle = filename_;	
 	if (fileChanged_) {
-		strcat(iconTitle, "*");
+		iconTitle.append("*");
 	}
 	
-	XtVaSetValues(shell_, XmNtitle, title, XmNiconName, iconTitle, nullptr);
+	XtVaSetValues(shell_, XmNtitle, title, XmNiconName, iconTitle.c_str(), nullptr);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
 	if (findDlog_ && XmToggleButtonGetState(findKeepBtn_)) {
-		sprintf(title, "Find (in %s)", filename_);
+		sprintf(title, "Find (in %s)", filename_.c_str());
 		XtVaSetValues(XtParent(findDlog_), XmNtitle, title, nullptr);
 	}
+	
 	if (replaceDlog_ && XmToggleButtonGetState(replaceKeepBtn_)) {
-		sprintf(title, "Replace (in %s)", filename_);
+		sprintf(title, "Replace (in %s)", filename_.c_str());
 		XtVaSetValues(XtParent(replaceDlog_), XmNtitle, title, nullptr);
 	}
-	delete [] iconTitle;
 
 	/* Update the Windows menus with the new name */
 	InvalidateWindowMenus();
@@ -1913,10 +1913,10 @@ void Document::SortTabBar() {
 	});
 	
 	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
-		if(strcmp(a->filename_, b->filename_) < 0) {
+		if(a->filename_ < b->filename_) {
 			return true;
 		}
-		return strcmp(a->path_, b->path_) < 0;
+		return a->path_ < b->path_;
 	});
 	
 	/* assign tabs to documents in sorted order */
@@ -2119,7 +2119,7 @@ Document *Document::DetachDocument() {
 	}
 
 	/* Create a new this */
-	auto cloneWin = new Document(filename_, nullptr, false);
+	auto cloneWin = new Document(filename_.c_str(), nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's
@@ -2181,7 +2181,7 @@ void Document::MoveDocumentDialog() {
 		if (!win->IsTopDocument() || win->shell_ == shell_)
 			continue;
 
-		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet_ ? win->path_ : "", win->filename_);
+		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet_ ? win->path_.c_str() : "", win->filename_.c_str());
 
 		list[nList] = XmStringCreateSimpleEx(tmpStr);
 		shellWinList[nList] = win;
@@ -2198,7 +2198,7 @@ void Document::MoveDocumentDialog() {
 	/* create the dialog */
 	parent = shell_;
 	popupTitle = XmStringCreateSimpleEx("Move Document");
-	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", filename_);
+	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", filename_.c_str());
 	s1 = XmStringCreateSimpleEx(tmpStr);
 	ac = 0;
 	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
@@ -2390,7 +2390,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	}
 
 	/* relocate the document to target this */
-	cloneWin = toWindow->CreateDocument(filename_);
+	cloneWin = toWindow->CreateDocument(filename_.c_str());
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin);
 
@@ -2777,8 +2777,8 @@ void Document::CloseWindow() {
 		fileMode_ = 0;
 		fileUid_ = 0;
 		fileGid_ = 0;
-		strcpy(filename_, name);
-		strcpy(path_, "");
+		filename_ = name;
+		path_ = "";
 		ignoreModify_ = TRUE;
 		buffer_->BufSetAllEx("");
 		ignoreModify_ = FALSE;
@@ -3145,8 +3145,8 @@ void Document::cloneDocument(Document *window) {
 	char *params[4];
 	int emTabDist;
 
-	strcpy(window->path_,     path_);
-	strcpy(window->filename_, filename_);
+	window->path_     = path_;
+	window->filename_ = filename_;
 
 	window->ShowLineNumbers(showLineNumbers_);
 
@@ -3323,7 +3323,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	fileFormat_ = UNIX_FILE_FORMAT;
 	lastModTime_ = 0;
 	fileMissing_ = True;
-	strcpy(filename_, name);
+	filename_ = name;
 	undo_ = std::list<UndoInfo *>();
 	redo_ = std::list<UndoInfo *>();
 	nPanes_ = 0;
@@ -3756,7 +3756,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->filenameSet_ = FALSE;
 	window->fileFormat_ = UNIX_FILE_FORMAT;
 	window->lastModTime_ = 0;
-	strcpy(window->filename_, name);
+	window->filename_ = name;
 	window->undo_ = std::list<UndoInfo *>();
 	window->redo_ = std::list<UndoInfo *>();
 	window->nPanes_ = 0;

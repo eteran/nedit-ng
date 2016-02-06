@@ -141,7 +141,7 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	}
 		
 	Document *window = Document::find_if([name, path](Document *window) {
-		return !strcmp(window->filename_, name) && !strcmp(window->path_, path);
+		return (window->filename_ == name) && (window->path_ == path);
 	});
 
 	return window;
@@ -256,8 +256,8 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 			Document *win = TabToWindow(tabs[i]);
 			if (win->filenameSet_) {
 				/* add filename */
-				auto p = new char[strlen(win->path_) + strlen(win->filename_) + 1];
-				sprintf(p, "%s%s", win->path_, win->filename_);
+				auto p = new char[win->path_.size() + win->filename_.size() + 1];
+				sprintf(p, "%s%s", win->path_.c_str(), win->filename_.c_str());
 				argv.push_back(p);
 			}
 		}

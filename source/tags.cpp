@@ -1124,9 +1124,9 @@ static int findAllMatches(Document *window, const char *string) {
 		tagPosInf[nMatches] = startPos;
 		ParseFilename(tagFiles[nMatches], filename, pathname);
 		/* Is this match in the current file?  If so, use it! */
-		if (GetPrefSmartTags() && !strcmp(window->filename_, filename) && !strcmp(window->path_, pathname)) {
+		if (GetPrefSmartTags() && window->filename_ == filename && window->path_ == pathname) {
 			if (nMatches) {
-				strcpy(tagFiles[0], tagFiles[nMatches]);
+				strcpy(tagFiles[0],  tagFiles[nMatches]);
 				strcpy(tagSearch[0], tagSearch[nMatches]);
 				tagPosInf[0] = tagPosInf[nMatches];
 			}
@@ -1134,7 +1134,7 @@ static int findAllMatches(Document *window, const char *string) {
 			break;
 		}
 		/* Is this match in the same dir. as the current file? */
-		if (!strcmp(window->path_, pathname)) {
+		if (window->path_ == pathname) {
 			samePath++;
 			pathMatch = nMatches;
 		}
