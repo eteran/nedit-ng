@@ -373,7 +373,7 @@ Range *RangesetTable::RangesNew(int n) {
 		    n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
 		 */
 		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		return (Range *)malloc(n * sizeof(Range));
+		return static_cast<Range *>(malloc(n * sizeof(Range)));
 	}
 
 	return nullptr;
@@ -389,7 +389,7 @@ Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
 	if (n > 0) {
 		/* see RangesNew() for comments */
 		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		return (Range *)realloc(ranges, n * sizeof(Range));
+		return static_cast<Range *>(realloc(ranges, n * sizeof(Range)));
 	} else {
 		return RangesFree(ranges);
 	}

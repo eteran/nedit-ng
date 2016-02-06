@@ -2735,8 +2735,8 @@ static void disasm(Inst *inst, int nInstr) {
 				printf("%22s ", opNames[j]);
 				if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
 					Symbol *sym = inst[i + 1].sym;
-					printf("%s", sym->name);
-					if (sym->value.tag == STRING_TAG && strncmp(sym->name, "string #", 8) == 0) {
+					printf("%s", sym->name.c_str());
+					if (sym->value.tag == STRING_TAG && strncmp(sym->name.c_str(), "string #", 8) == 0) {
 						dumpVal(sym->value);
 					}
 					++i;
@@ -2744,13 +2744,13 @@ static void disasm(Inst *inst, int nInstr) {
 					printf("to=(%d) %p", inst[i + 1].value, &inst[i + 1] + inst[i + 1].value);
 					++i;
 				} else if (j == OP_SUBR_CALL) {
-					printf("%s (%d arg)", inst[i + 1].sym->name, inst[i + 2].value);
+					printf("%s (%d arg)", inst[i + 1].sym->name.c_str(), inst[i + 2].value);
 					i += 2;
 				} else if (j == OP_BEGIN_ARRAY_ITER) {
-					printf("%s in", inst[i + 1].sym->name);
+					printf("%s in", inst[i + 1].sym->name.c_str());
 					++i;
 				} else if (j == OP_ARRAY_ITER) {
-					printf("%s = %s++ end-loop=(%d) %p", inst[i + 1].sym->name, inst[i + 2].sym->name, inst[i + 3].value, &inst[i + 3] + inst[i + 3].value);
+					printf("%s = %s++ end-loop=(%d) %p", inst[i + 1].sym->name.c_str(), inst[i + 2].sym->name.c_str(), inst[i + 3].value, &inst[i + 3] + inst[i + 3].value);
 					i += 3;
 				} else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE || j == OP_ARRAY_ASSIGN) {
 					printf("nDim=%d", inst[i + 1].value);
@@ -2760,7 +2760,7 @@ static void disasm(Inst *inst, int nInstr) {
 					printf("nDim=%d", inst[i + 2].value);
 					i += 2;
 				} else if (j == OP_PUSH_ARRAY_SYM) {
-					printf("%s", inst[++i].sym->name);
+					printf("%s", inst[++i].sym->name.c_str());
 					printf(" %s", inst[i + 1].value ? "createAndRef" : "refOnly");
 					++i;
 				}

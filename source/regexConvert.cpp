@@ -208,7 +208,7 @@ static int chunk(int paren, int *flag_param) {
 
 		emit_convert_byte('|');
 
-		Reg_Parse++;
+		++Reg_Parse;
 	} while (1);
 
 	/* Check for proper termination. */
@@ -218,7 +218,7 @@ static int chunk(int paren, int *flag_param) {
 
 	} else if (paren != NO_PAREN) {
 		emit_convert_byte(')');
-		Reg_Parse++;
+		++Reg_Parse;
 
 	} else if (paren == NO_PAREN && Reg_Parse != Reg_Parse_End) {
 		if (*Reg_Parse == ')') {
@@ -281,7 +281,7 @@ static int piece(int *flag_param) {
 		return (ret_val);
 	}
 
-	Reg_Parse++;
+	++Reg_Parse;
 
 	if (op_code == '+')
 		min_val = REG_ONE;
@@ -394,7 +394,7 @@ static int atom(int *flag_param) {
 		if (*Reg_Parse == '^') { /* Complement of range. */
 			negated = 1;
 
-			Reg_Parse++;
+			++Reg_Parse;
 		}
 
 		if (*Reg_Parse == ']' || *Reg_Parse == '-') {
@@ -410,14 +410,14 @@ static int atom(int *flag_param) {
 			buffer[head++] = '\\'; /* Escape `]' and '-' for clarity. */
 			buffer[head++] = *Reg_Parse;
 
-			Reg_Parse++;
+			++Reg_Parse;
 		}
 
 		/* Handle the rest of the class characters. */
 
 		while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') {
 			if (*Reg_Parse == '-') { /* Process a range, e.g [a-z]. */
-				Reg_Parse++;
+				++Reg_Parse;
 
 				if (*Reg_Parse == ']' || Reg_Parse == Reg_Parse_End) {
 					/* If '-' is the last character in a class it is a literal
@@ -437,7 +437,7 @@ static int atom(int *flag_param) {
 					if (*Reg_Parse == '\\') {
 						/* Handle escaped characters within a class range. */
 
-						Reg_Parse++;
+						++Reg_Parse;
 
 						if ((test = literal_escape(*Reg_Parse, 0))) {
 
@@ -500,11 +500,11 @@ static int atom(int *flag_param) {
 
 					last_emit = (uint8_t)last_value;
 
-					Reg_Parse++;
+					++Reg_Parse;
 
 				} /* End class character range code. */
 			} else if (*Reg_Parse == '\\') {
-				Reg_Parse++;
+				++Reg_Parse;
 
 				if ((test = literal_escape(*Reg_Parse, 0)) != '\0') {
 					last_emit = test;
@@ -523,7 +523,7 @@ static int atom(int *flag_param) {
 					throw regex_error("\\%c is an invalid escape sequence(1)", *Reg_Parse);
 				}
 
-				Reg_Parse++;
+				++Reg_Parse;
 
 				/* End of class escaped sequence code */
 			} else {
@@ -565,7 +565,7 @@ static int atom(int *flag_param) {
 					buffer[head++] = *Reg_Parse;
 				}
 
-				Reg_Parse++;
+				++Reg_Parse;
 			}
 		} /* End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') */
 
@@ -580,7 +580,7 @@ static int atom(int *flag_param) {
 		   delimiter (']').  Because of this, it is always safe to assume
 		   that a class HAS_WIDTH. */
 
-		Reg_Parse++;
+		++Reg_Parse;
 		*flag_param |= HAS_WIDTH | SIMPLE;
 
 		if (head == 0) {
@@ -664,7 +664,7 @@ static int atom(int *flag_param) {
 	/* Fall through to Default case to handle literal escapes. */
 
 	default:
-		Reg_Parse--; /* If we fell through from the above code, we are now
+		--Reg_Parse; /* If we fell through from the above code, we are now
 		                pointing at the back slash (\) character. */
 		{
 			const char *parse_save;
@@ -688,14 +688,14 @@ static int atom(int *flag_param) {
 							emit_convert_byte('\\');
 						}
 
-						Reg_Parse++; /* Point to escaped character */
+						++Reg_Parse; /* Point to escaped character */
 						emit_convert_byte(*Reg_Parse);
 
 					} else {
 						throw regex_error("\\%c is an invalid escape sequence(2)", *(Reg_Parse + 1));
 					}
 
-					Reg_Parse++;
+					++Reg_Parse;
 				} else {
 					/* Ordinary character */
 
@@ -720,7 +720,7 @@ static int atom(int *flag_param) {
 						emit_convert_byte(*Reg_Parse);
 					}
 
-					Reg_Parse++;
+					++Reg_Parse;
 				}
 
 				/* If next regex token is a quantifier (?, +. *, or {m,n}) and
@@ -752,9 +752,9 @@ static int atom(int *flag_param) {
 			if (len == 1)
 				*flag_param |= SIMPLE;
 		}
-	} /* END switch (*Reg_Parse++) */
+	} 
 
-	return (ret_val);
+	return ret_val;
 }
 
 /*----------------------------------------------------------------------*

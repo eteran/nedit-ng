@@ -1749,7 +1749,7 @@ std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 ** Call the stored modify callback procedure(s) for this buffer to update the
 ** changed area(s) on the screen and any other listeners.
 */
-void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) {
+void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) const {
 
 	for (const auto &pair : modifyProcs_) {
 		(pair.first)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.second);
@@ -1760,7 +1760,7 @@ void TextBuffer::callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyl
 ** Call the stored pre-delete callback procedure(s) for this buffer to update
 ** the changed area(s) on the screen and any other listeners.
 */
-void TextBuffer::callPreDeleteCBs(int pos, int nDeleted) {
+void TextBuffer::callPreDeleteCBs(int pos, int nDeleted) const {
 
 	for (const auto &pair : preDeleteProcs_) {
 		(pair.first)(pos, nDeleted, pair.second);

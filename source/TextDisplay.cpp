@@ -61,15 +61,15 @@ const int HIGHLIGHT_SHIFT    = 11;
 const int STYLE_LOOKUP_SHIFT = 0;
 const int BACKLIGHT_SHIFT    = 12;
 
-#define FILL_MASK (1 << FILL_SHIFT)
-#define SECONDARY_MASK (1 << SECONDARY_SHIFT)
-#define PRIMARY_MASK (1 << PRIMARY_SHIFT)
-#define HIGHLIGHT_MASK (1 << HIGHLIGHT_SHIFT)
-#define STYLE_LOOKUP_MASK (0xff << STYLE_LOOKUP_SHIFT)
-#define BACKLIGHT_MASK (0xff << BACKLIGHT_SHIFT)
+const int FILL_MASK         = (1 << FILL_SHIFT);
+const int SECONDARY_MASK    = (1 << SECONDARY_SHIFT);
+const int PRIMARY_MASK      = (1 << PRIMARY_SHIFT);
+const int HIGHLIGHT_MASK    = (1 << HIGHLIGHT_SHIFT);
+const int STYLE_LOOKUP_MASK = (0xff << STYLE_LOOKUP_SHIFT);
+const int BACKLIGHT_MASK    = (0xff << BACKLIGHT_SHIFT);
 
-#define RANGESET_SHIFT (20)
-#define RANGESET_MASK (0x3F << RANGESET_SHIFT)
+const int RANGESET_SHIFT = 20;
+const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
 
 /* If you use both 32-Bit Style mask layout:
    Bits +----------------+----------------+----------------+----------------+
@@ -93,9 +93,12 @@ const int BACKLIGHT_SHIFT    = 12;
 const int MAX_DISP_LINE_LEN = 1000;
 
 /* Macro for getting the TextPart from a textD */
-#define TEXT_OF_TEXTD(t) (((TextWidget)((t)->w))->text)
+#define TEXT_OF_TEXTD(t) (reinterpret_cast<TextWidget>((t)->w)->text)
 
-enum positionTypes { CURSOR_POS, CHARACTER_POS };
+enum positionTypes {
+	CURSOR_POS,
+	CHARACTER_POS
+};
 
 }
 
@@ -761,7 +764,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	this->TextDRedisplayRect(0, this->top, this->width + this->left, this->height);
 }
 
-int TextDisplay::TextDGetInsertPosition() {
+int TextDisplay::TextDGetInsertPosition() const {
 	return this->cursorPos;
 }
 
@@ -1425,7 +1428,7 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 ** the modifications are actually made.
 */
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
-	TextDisplay *textD = (TextDisplay *)cbArg;
+	auto textD = static_cast<TextDisplay *>(cbArg);
 	if (textD->continuousWrap && (textD->fixedFontWidth == -1 || textD->modifyingTabDist))
 		/* Note: we must perform this measurement, even if there is not a
 		   single character deleted; the number of "deleted" lines is the
@@ -1445,7 +1448,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 */
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 	int linesInserted, linesDeleted, startDispPos, endDispPos;
-	TextDisplay *textD = (TextDisplay *)cbArg;
+	auto textD = static_cast<TextDisplay *>(cbArg);
 	TextBuffer *buf = textD->buffer;
 	int oldFirstChar = textD->firstChar;
 	int scrolled, origCursorPos = textD->cursorPos;
@@ -2522,7 +2525,7 @@ void TextDisplay::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Bool
 			iter = iter->next;
 		}
 		if (appendEntry) {
-			iter->next = (graphicExposeTranslationEntry *)newGEQEntry;
+			iter->next = static_cast<graphicExposeTranslationEntry *>(newGEQEntry);
 		}
 	} else {
 		if (appendEntry) {
@@ -2607,7 +2610,7 @@ static void setScroll(TextDisplay *textD, int topLineNum, int horizOffset, int u
 		TextDRedrawCalltip(textD, 0);
 	}
 
-	HandleAllPendingGraphicsExposeNoExposeEvents((TextWidget)textD->w, nullptr);
+	HandleAllPendingGraphicsExposeNoExposeEvents(reinterpret_cast<TextWidget>(textD->w), nullptr);
 }
 
 /*
@@ -2739,7 +2742,7 @@ static void redrawLineNumbers(TextDisplay *textD, int clearAll) {
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 
-	TextDisplay *textD = (TextDisplay *)clientData;
+	auto textD = static_cast<TextDisplay *>(clientData);
 	int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
 	int lineDelta = newValue - textD->topLineNum;
 
@@ -2750,7 +2753,7 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 
-	TextDisplay *textD = (TextDisplay *)clientData;
+	auto textD = static_cast<TextDisplay *>(clientData);
 	int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
 
 	if (newValue == textD->horizOffset)
@@ -2765,7 +2768,9 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *conti
 	/* Record whether the window is fully visible or not.  This information
 	   is used for choosing the scrolling methodology for optimal performance,
 	   if the window is partially obscured, XCopyArea may not work */
-	((TextDisplay *)data)->visibility = ((XVisibilityEvent *)event)->state;
+	   
+	   
+	static_cast<TextDisplay *>(data)->visibility = reinterpret_cast<XVisibilityEvent *>(event)->state;
 }
 
 /*

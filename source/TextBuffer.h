@@ -122,8 +122,8 @@ private:
 	bool searchForward(int startPos, char searchChar, int *foundPos) const;
 	int insertEx(int pos, view::string_view text);
 	std::string getSelectionTextEx(TextSelection *sel);
-	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText);
-	void callPreDeleteCBs(int pos, int nDeleted);
+	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) const;
+	void callPreDeleteCBs(int pos, int nDeleted) const;
 	void deleteRange(int start, int end);
 	void deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos);
 	void findRectSelBoundariesForCopy(int lineStartPos, int rectStart, int rectEnd, int *selStart, int *selEnd);

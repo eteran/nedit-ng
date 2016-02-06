@@ -76,8 +76,8 @@ public:
 	void SetTabDist(int tabDist);
 	void SetToggleButtonState(Widget w, Boolean state, Boolean notify);	
 	void SetWindowModified(bool modified);
-	void ShowISearchLine(int state);
-	void ShowLineNumbers(int state);
+	void ShowISearchLine(bool state);
+	void ShowLineNumbers(bool state);
 	void ShowStatsLine(int state);
 	void ShowTabBar(int state);
 	void ShowWindowTabBar();

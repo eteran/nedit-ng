@@ -1677,7 +1677,7 @@ void Document::ShowTabBar(int state) {
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void Document::ShowISearchLine(int state) {
+void Document::ShowISearchLine(bool state) {
 	Document *win;
 
 	if (showISearchLine_ == state)
@@ -2436,7 +2436,7 @@ void Document::ShowWindowTabBar() {
 /*
 ** Turn on and off the display of line numbers
 */
-void Document::ShowLineNumbers(int state) {
+void Document::ShowLineNumbers(bool state) {
 	Widget text;
 	int i, marginWidth;
 	unsigned reqCols = 0;

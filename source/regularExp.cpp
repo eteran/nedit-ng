@@ -766,7 +766,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		if (*Reg_Parse != '|')
 			break;
 
-		Reg_Parse++;
+		++Reg_Parse;
 	} while (1);
 
 	/* Make a closing node, and hook it on the end. */
@@ -965,7 +965,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 		return (ret_val);
 	} else if (op_code == '{') { /* {n,m} quantifier present */
 		brace_present++;
-		Reg_Parse++;
+		++Reg_Parse;
 
 		/* This code will allow specifying a counting range in any of the
 		   following forms:
@@ -992,7 +992,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 				if ((min_max[i] == 6553UL && (*Reg_Parse - '0') <= 5) || (min_max[i] <= 6552UL)) {
 
 					min_max[i] = (min_max[i] * 10UL) + (unsigned long)(*Reg_Parse - '0');
-					Reg_Parse++;
+					++Reg_Parse;
 
 					digit_present[i]++;
 				} else {
@@ -1006,7 +1006,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 
 			if (!comma_present && *Reg_Parse == ',') {
 				comma_present++;
-				Reg_Parse++;
+				++Reg_Parse;
 			}
 		}
 
@@ -1042,13 +1042,13 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 		}
 	}
 
-	Reg_Parse++;
+	++Reg_Parse;
 
 	/* Check for a minimal matching (non-greedy or "lazy") specification. */
 
 	if (*Reg_Parse == '?') {
 		lazy = 1;
-		Reg_Parse++;
+		++Reg_Parse;
 	}
 
 	/* Avoid overhead of counting if possible */
@@ -1496,11 +1496,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 		Reg_Parse += 3;
 
 		while (*Reg_Parse != ')' && Reg_Parse != Reg_Parse_End) {
-			Reg_Parse++;
+			++Reg_Parse;
 		}
 
 		if (*Reg_Parse == ')') {
-			Reg_Parse++;
+			++Reg_Parse;
 		}
 
 		if (*Reg_Parse == ')' || *Reg_Parse == '|' || Reg_Parse == Reg_Parse_End) {
@@ -1550,38 +1550,38 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 	case '(':
 		if (*Reg_Parse == '?') { /* Special parenthetical expression */
-			Reg_Parse++;
+			++Reg_Parse;
 			range_local.lower = 0; /* Make sure it is always used */
 			range_local.upper = 0;
 
 			if (*Reg_Parse == ':') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(NO_CAPTURE, &flags_local, &range_local);
 			} else if (*Reg_Parse == '=') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(POS_AHEAD_OPEN, &flags_local, &range_local);
 			} else if (*Reg_Parse == '!') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(NEG_AHEAD_OPEN, &flags_local, &range_local);
 			} else if (*Reg_Parse == 'i') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(INSENSITIVE, &flags_local, &range_local);
 			} else if (*Reg_Parse == 'I') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(SENSITIVE, &flags_local, &range_local);
 			} else if (*Reg_Parse == 'n') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(NEWLINE, &flags_local, &range_local);
 			} else if (*Reg_Parse == 'N') {
-				Reg_Parse++;
+				++Reg_Parse;
 				ret_val = chunk(NO_NEWLINE, &flags_local, &range_local);
 			} else if (*Reg_Parse == '<') {
-				Reg_Parse++;
+				++Reg_Parse;
 				if (*Reg_Parse == '=') {
-					Reg_Parse++;
+					++Reg_Parse;
 					ret_val = chunk(POS_BEHIND_OPEN, &flags_local, &range_local);
 				} else if (*Reg_Parse == '!') {
-					Reg_Parse++;
+					++Reg_Parse;
 					ret_val = chunk(NEG_BEHIND_OPEN, &flags_local, &range_local);
 				} else {
 					throw regex_error("invalid look-behind syntax, \"(?<%c...)\"", *Reg_Parse);
@@ -1634,7 +1634,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 		if (*Reg_Parse == '^') { /* Complement of range. */
 			ret_val = emit_node(ANY_BUT);
-			Reg_Parse++;
+			++Reg_Parse;
 
 			/* All negated classes include newline unless escaped with
 			   a "(?n)" switch. */
@@ -1651,14 +1651,14 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 			last_emit = *Reg_Parse;
 			emit_byte(*Reg_Parse);
-			Reg_Parse++;
+			++Reg_Parse;
 		}
 
 		/* Handle the rest of the class characters. */
 
 		while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') {
 			if (*Reg_Parse == '-') { /* Process a range, e.g [a-z]. */
-				Reg_Parse++;
+				++Reg_Parse;
 
 				if (*Reg_Parse == ']' || Reg_Parse == Reg_Parse_End) {
 					/* If '-' is the last character in a class it is a literal
@@ -1687,7 +1687,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 						   and it would not be clear which character of the
 						   class should be treated as the "last" character. */
 
-						Reg_Parse++;
+						++Reg_Parse;
 
 						if ((test = numeric_escape(*Reg_Parse, &Reg_Parse))) {
 							last_value = (unsigned int)test;
@@ -1725,11 +1725,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 					last_emit = (uint8_t)last_value;
 
-					Reg_Parse++;
+					++Reg_Parse;
 
 				} /* End class character range code. */
 			} else if (*Reg_Parse == '\\') {
-				Reg_Parse++;
+				++Reg_Parse;
 
 				if ((test = numeric_escape(*Reg_Parse, &Reg_Parse)) != '\0') {
 					emit_class_byte(test);
@@ -1755,14 +1755,14 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 					throw regex_error("\\%c is an invalid char class escape sequence", *Reg_Parse);
 				}
 
-				Reg_Parse++;
+				++Reg_Parse;
 
 				/* End of class escaped sequence code */
 			} else {
 				emit_class_byte(*Reg_Parse); /* Ordinary class character. */
 
 				last_emit = *Reg_Parse;
-				Reg_Parse++;
+				++Reg_Parse;
 			}
 		} /* End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') */
 
@@ -1777,7 +1777,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 		   delimiter (']').  Because of this, it is always safe to assume
 		   that a class HAS_WIDTH. */
 
-		Reg_Parse++;
+		++Reg_Parse;
 		*flag_param |= HAS_WIDTH | SIMPLE;
 		range_param->lower = 1;
 		range_param->upper = 1;
@@ -1788,7 +1788,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 	case '\\':
 		if ((ret_val = shortcut_escape(*Reg_Parse, flag_param, EMIT_NODE))) {
 
-			Reg_Parse++;
+			++Reg_Parse;
 			range_param->lower = 1;
 			range_param->upper = 1;
 			break;
@@ -1798,7 +1798,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 			   or HAS_WIDTH.  For example (^|<) is neither simple nor has
 			   width.  So we don't flip bits in flag_param here. */
 
-			Reg_Parse++;
+			++Reg_Parse;
 			/* Back-references always have an unknown length */
 			range_param->lower = -1;
 			range_param->upper = -1;
@@ -1813,7 +1813,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 	   escapes. */
 
 	default:
-		Reg_Parse--; /* If we fell through from the above code, we are now
+		--Reg_Parse; /* If we fell through from the above code, we are now
 		                pointing at the back slash (\) character. */
 		{
 			const char *parse_save;
@@ -1836,7 +1836,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 				parse_save = Reg_Parse;
 
 				if (*Reg_Parse == '\\') {
-					Reg_Parse++; /* Point to escaped character */
+					++Reg_Parse; /* Point to escaped character */
 
 					if ((test = numeric_escape(*Reg_Parse, &Reg_Parse))) {
 						if (Is_Case_Insensitive) {
@@ -1849,12 +1849,12 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 					} else if (back_ref(Reg_Parse, nullptr, CHECK_ESCAPE)) {
 						/* Leave back reference for next 'atom' call */
 
-						Reg_Parse--;
+						--Reg_Parse;
 						break;
 					} else if (shortcut_escape(*Reg_Parse, nullptr, CHECK_ESCAPE)) {
 						/* Leave shortcut escape for next 'atom' call */
 
-						Reg_Parse--;
+						--Reg_Parse;
 						break;
 					} else {
 						/* None of the above calls generated an error message
@@ -1864,7 +1864,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
 					}
 
-					Reg_Parse++;
+					++Reg_Parse;
 				} else {
 					/* Ordinary character */
 
@@ -1874,7 +1874,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 						emit_byte(*Reg_Parse);
 					}
 
-					Reg_Parse++;
+					++Reg_Parse;
 				}
 
 				/* If next regex token is a quantifier (?, +. *, or {m,n}) and
@@ -2495,7 +2495,7 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 	if (emit == EMIT_NODE) {
 		if (is_cross_regex) {
-			Reg_Parse++; /* Skip past the '~' in a cross regex back reference.
+			++Reg_Parse; /* Skip past the '~' in a cross regex back reference.
 			                We only do this if we are emitting code. */
 
 			if (Is_Case_Insensitive) {

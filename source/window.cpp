@@ -189,7 +189,6 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	Document *topWin;
 	char geometry[MAX_GEOM_STRING_LEN];
 	int wasIconic = False;
 	int nItems;
@@ -230,7 +229,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	for (int n = nItems - 1; n >= 0; n--) {
 		WidgetList tabs;
 		int tabCount;
-
+		Document *topWin;
 		if (strcmp(XtName(children[n]), "textShell") || ((topWin = Document::WidgetToWindow(children[n])) == nullptr)) {
 			continue; /* skip non-editor windows */
 		}

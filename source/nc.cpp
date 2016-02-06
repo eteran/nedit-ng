@@ -383,10 +383,10 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 ** Prompt the user about starting a server, with "message", then start server
 */
 static int startServer(const char *message, const char *commandLineArgs) {
-	char c;
-
+	
 	/* prompt user whether to start server */
 	if (!Preferences.autoStart) {
+		char c;
 		printf("%s", message);
 		do {
 			c = getc(stdin);

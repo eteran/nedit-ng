@@ -562,7 +562,7 @@ void ReadMacroInitFile(Document *window) {
 		static bool initFileLoaded = false;
 	
 		if (!initFileLoaded) {
-			ReadMacroFileEx(window, autoloadName.c_str(), False);
+			ReadMacroFileEx(window, autoloadName, False);
 			initFileLoaded = true;
 		}
 	} catch(const path_error &e) {

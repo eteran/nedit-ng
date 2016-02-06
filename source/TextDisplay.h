@@ -97,7 +97,7 @@ public:
 	int TextDCountForwardNLines(int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
 	int TextDEndOfLine(int pos, const Boolean startPosIsLineStart);
-	int TextDGetInsertPosition();
+	int TextDGetInsertPosition() const;
 	int TextDInSelection(Point coord);
 	int TextDLineAndColToPos(int lineNum, int column);
 	int TextDMaxFontWidth(Boolean considerStyles);
