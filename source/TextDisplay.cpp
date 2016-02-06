@@ -1106,7 +1106,7 @@ int TextDisplay::TextDOffsetWrappedColumn(int row, int column) {
 ** newlines, rather than display wrapping, and anywhere a rectangular selection
 ** needs a row, it needs it in terms of un-wrapped lines.
 */
-int TextDisplay::TextDOffsetWrappedRow(int row) {
+int TextDisplay::TextDOffsetWrappedRow(int row) const {
 	if (!this->continuousWrap || row < 0 || row > this->nVisibleLines)
 		return row;
 	return this->buffer->BufCountLines(this->firstChar, this->lineStarts[row]);

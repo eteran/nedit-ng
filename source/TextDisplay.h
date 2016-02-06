@@ -107,7 +107,7 @@ public:
 	int TextDMoveRight();
 	int TextDMoveUp(bool absolute);
 	int TextDOffsetWrappedColumn(int row, int column);
-	int TextDOffsetWrappedRow(int row);
+	int TextDOffsetWrappedRow(int row) const;
 	int TextDPosOfPreferredCol(int column, int lineStartPos);
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
 	int TextDPositionToXY(int pos, int *x, int *y);
