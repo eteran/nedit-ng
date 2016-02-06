@@ -29,6 +29,7 @@
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"
+#include "TextDisplay.h"
 #include "Document.h"
 #include "../util/MotifHelper.h"
 #include "../util/misc.h"
@@ -48,11 +49,11 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 ** Pop-down a calltip if one exists, else do nothing
 */
 void KillCalltip(Document *window, int calltipID) {
-	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
+	TextDisplay *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	TextDKillCalltip(textD, calltipID);
 }
 
-void TextDKillCalltip(textDisp *textD, int calltipID) {
+void TextDKillCalltip(TextDisplay *textD, int calltipID) {
 	if (textD->calltip.ID == 0)
 		return;
 	if (calltipID == 0 || calltipID == textD->calltip.ID) {
@@ -68,7 +69,7 @@ void TextDKillCalltip(textDisp *textD, int calltipID) {
 ** displayed with that calltipID.
 */
 int GetCalltipID(Document *window, int calltipID) {
-	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
+	TextDisplay *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	if (calltipID == 0)
 		return textD->calltip.ID;
 	else {
@@ -87,7 +88,7 @@ static Boolean offscreenV(XWindowAttributes *screenAttr, int top, int height) {
 /*
 ** Update the position of the current calltip if one exists, else do nothing
 */
-void TextDRedrawCalltip(textDisp *textD, int calltipID) {
+void TextDRedrawCalltip(TextDisplay *textD, int calltipID) {
 	int lineHeight = textD->ascent + textD->descent;
 	Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
 	XWindowAttributes screenAttr;
@@ -222,7 +223,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width) {
 */
 int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
-	textDisp *textD = ((TextWidget)window->lastFocus_)->text.textD;
+	TextDisplay *textD = ((TextWidget)window->lastFocus_)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
 

@@ -30,7 +30,6 @@
 #include "TextBuffer.h"
 #include "textSel.h"
 #include "text.h"
-#include "textDisp.h"
 #include "Document.h"
 #include "textP.h"
 #include "UndoInfo.h"

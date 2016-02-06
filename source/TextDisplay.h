@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* textDisp.h -- Nirvana Editor Text Diplay Header File                         *
+* TextDisplay.h -- Nirvana Editor Text Diplay Header File                         *
 *                                                                              *
 * Copyright 2003 The NEdit Developers                                          *
 *                                                                              *
@@ -46,9 +46,9 @@ struct graphicExposeTranslationEntry {
 	struct graphicExposeTranslationEntry *next;
 };
 
-struct textDisp;
+class TextDisplay;
 
-typedef void (*unfinishedStyleCBProc)(const struct textDisp *, int, const void *);
+typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 
 struct calltipStruct {
 	int ID;           /* ID of displayed calltip.  Equals
@@ -60,13 +60,13 @@ struct calltipStruct {
 	int alignMode;    /* Strict or sloppy alignment */
 };
 
-struct textDisp {
+class TextDisplay {
 public:
-	textDisp(Widget widget, Widget hScrollBar, Widget vScrollBar, Position left, Position top, Position width, Position height, Position lineNumLeft, Position lineNumWidth, TextBuffer *buffer, XFontStruct *fontStruct,
+	TextDisplay(Widget widget, Widget hScrollBar, Widget vScrollBar, Position left, Position top, Position width, Position height, Position lineNumLeft, Position lineNumWidth, TextBuffer *buffer, XFontStruct *fontStruct,
                       Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel, int continuousWrap, int wrapMargin,
                       XmString bgClassString, Pixel calltipFGPixel, Pixel calltipBGPixel);
 					  
-	~textDisp();
+	~TextDisplay();
 
 public:
 	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry);
@@ -149,22 +149,15 @@ public:
 	int *lineStarts;
 	int topLineNum;              /* Line number of top displayed line
 	                            of file (first line of file is 1) */
-	int absTopLineNum;           /* In continuous wrap mode, the line
-	                        number of the top line if the text
-	                    were not wrapped (note that this is
-	                    only maintained as needed). */
-	int needAbsTopLineNum;       /* Externally settable flag to continue
-	                        maintaining absTopLineNum even if
-	                    it isn't needed for line # display */
+	int absTopLineNum;           /* In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed). */
+	int needAbsTopLineNum;       /* Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display */
 	int horizOffset;             /* Horizontal scroll pos. in pixels */
 	int visibility;              /* Window visibility (see XVisibility event) */
 	int nStyles;                 /* Number of entries in styleTable */
 	StyleTableEntry *styleTable; /* Table of fonts and colors for
 	                                coloring/syntax-highlighting */
-	char unfinishedStyle;        /* Style buffer entry which triggers
-	                                on-the-fly reparsing of region */
-	unfinishedStyleCBProc        /* Callback to parse "unfinished" */
-	    unfinishedHighlightCB;   /*     regions */
+	char unfinishedStyle;        /* Style buffer entry which triggers on-the-fly reparsing of region */
+	unfinishedStyleCBProc unfinishedHighlightCB; /* Callback to parse "unfinished" regions */
 	void *highlightCBArg;        /* Arg to unfinishedHighlightCB */
 	XFontStruct *fontStruct;     /* Font structure for primary font */
 	int ascent, descent;         /* Composite ascent and descent for primary font + all-highlight fonts */

@@ -29,7 +29,7 @@
 *                                                                              *
 *******************************************************************************/
 #include "TextBuffer.h"
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "MotifHelper.h"

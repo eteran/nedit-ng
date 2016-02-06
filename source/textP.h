@@ -28,7 +28,6 @@
 #define TEXTP_H_
 
 #include "TextBuffer.h"
-#include "textDisp.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -36,6 +35,8 @@
 #include <Xm/XmP.h>
 #include <Xm/PrimitiveP.h>
 #include <X11/CoreP.h>
+
+class TextDisplay;
 
 enum dragStates {
 	NOT_CLICKED, 
@@ -103,7 +104,7 @@ public:
 	XtCallbackList dragEndCB;
 	XtCallbackList smartIndentCB;
 	/* private state */
-	textDisp *textD;                // Pointer to display information 
+	TextDisplay *textD;                // Pointer to display information 
 	int anchor, rectAnchor;         // Anchors for drag operations and rectangular drag operations 
 	int dragState;                  // Why is the mouse being dragged and what is being acquired 
 	int multiClickState;            // How long is this multi-click sequence so far 

@@ -42,7 +42,7 @@
 #include "MotifHelper.h"
 
 #ifdef REPLACE_SCOPE
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "textP.h"
 #endif
 
@@ -317,13 +317,13 @@ static void initToggleButtons(int searchType, Widget regexToggle, Widget caseTog
 /*
 ** Checks whether a selection spans multiple lines. Used to decide on the
 ** default scope for replace dialogs.
-** This routine introduces a dependency on textDisp.h, which is not so nice,
+** This routine introduces a dependency on TextDisplay.h, which is not so nice,
 ** but I currently don't have a cleaner solution.
 */
 static int selectionSpansMultipleLines(Document *window) {
 	int selStart, selEnd, isRect, rectStart, rectEnd, lineStartStart, lineStartEnd;
 	int lineWidth;
-	textDisp *textD;
+	TextDisplay *textD;
 
 	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
 		return FALSE;

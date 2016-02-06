@@ -28,7 +28,7 @@
 
 #include "textDrag.h"
 #include "TextBuffer.h"
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "textP.h"
 
 #include <climits>
@@ -53,7 +53,7 @@ static int max3(int i1, int i2, int i3);
 ** selection)
 */
 void BeginBlockDrag(TextWidget tw) {
-	textDisp *textD = tw->text.textD;
+	TextDisplay *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
 	int fontWidth = textD->fontStruct->max_bounds.width;
@@ -140,7 +140,7 @@ void BeginBlockDrag(TextWidget tw) {
 ** for a new mouse position of (x, y)
 */
 void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
-	textDisp *textD = tw->text.textD;
+	TextDisplay *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
 	int fontWidth = textD->fontStruct->max_bounds.width;

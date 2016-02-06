@@ -44,7 +44,7 @@ add_executable(nedit
 	smartIndent.cpp
 	tags.cpp
 	text.cpp
-	textDisp.cpp
+	TextDisplay.cpp
 	textDrag.cpp
 	textSel.cpp
 	userCmds.cpp

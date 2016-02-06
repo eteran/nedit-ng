@@ -29,7 +29,7 @@
 
 #include "highlight.h"
 #include "TextBuffer.h"
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "text.h"
 #include "textP.h"
 #include "nedit.h"
@@ -127,7 +127,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn);
 static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static void freePatterns(highlightDataRec *patterns);
 static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, const int pos);
-static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg);
+static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg);
 static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
 static bool parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
@@ -1009,7 +1009,7 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 
 /*
 ** Picks up the entry in the style buffer for the position (if any). Rather
-** like styleOfPos() in textDisp.c. Returns the style code or zero.
+** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
 int HighlightCodeOfPos(Document *window, int pos) {
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
@@ -1276,7 +1276,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 /*
 ** Callback wrapper around the above function.
 */
-static void handleUnparsedRegionCB(const textDisp *textD, const int pos, const void *cbArg) {
+static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg) {
 	handleUnparsedRegion((Document *)cbArg, textD->styleBuffer, pos);
 }
 
@@ -1742,7 +1742,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 /*
 ** Incorporate changes from styleString into styleBuf, tracking changes
 ** in need of redisplay, and marking them for redisplay by the text
-** modification callback in textDisp.c.  "firstPass2Style" is necessary
+** modification callback in TextDisplay.c.  "firstPass2Style" is necessary
 ** for distinguishing pass 2 styles which compare as equal to the unfinished
 ** style in the original buffer, from pass1 styles which signal a change.
 */
@@ -2264,7 +2264,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 ** text display component
 */
 static int getFontHeight(Document *window) {
-	textDisp *textD = ((TextWidget)window->textArea_)->text.textD;
+	TextDisplay *textD = ((TextWidget)window->textArea_)->text.textD;
 
 	return textD->ascent + textD->descent;
 }

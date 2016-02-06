@@ -31,7 +31,7 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "textP.h"
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "textSel.h"
 #include "nedit.h"
 #include "search.h"
@@ -810,7 +810,7 @@ static int is_known_link(const char *link_name, int *topic, int *textPosition) {
 ** within the hyperlink text, and display the help that it links to.
 */
 static void followHyperlink(int topic, int charPosition, int newWindow) {
-	textDisp *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
+	TextDisplay *textD = ((TextWidget)HelpTextPanes[topic])->text.textD;
 	std::string link_text;
 	int link_topic;
 	int link_pos;
@@ -912,7 +912,7 @@ static void helpButtonActionAP(Widget w, XEvent *event, String *args, Cardinal *
 static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XButtonEvent *e = reinterpret_cast<XButtonEvent *>(event);
 	int topic;
-	textDisp *textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int clickedPos, newWin;
 	static int pressX = 0, pressY = 0;
 

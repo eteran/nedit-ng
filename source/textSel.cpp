@@ -29,7 +29,7 @@
 #include "textSel.h"
 #include "textP.h"
 #include "text.h"
-#include "textDisp.h"
+#include "TextDisplay.h"
 #include "TextBuffer.h"
 #include "MotifHelper.h"
 #include "../util/misc.h"
