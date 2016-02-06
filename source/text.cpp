@@ -1383,8 +1383,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	/* Record the site of the initial button press and the initial character
 	   position so subsequent motion events and clicking can decide when and
 	   where to begin a primary selection */
-	tw->text.btnDownX = e->x;
-	tw->text.btnDownY = e->y;
+	tw->text.btnDownCoord = Point{e->x, e->y};
 	tw->text.anchor = textD->TextDGetInsertPosition();
 	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	column = textD->TextDOffsetWrappedColumn(row, column);
@@ -1427,7 +1426,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
 	if (tw->text.dragState == PRIMARY_CLICKED) {
-		if (abs(e->x - tw->text.btnDownX) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownY) > SELECT_THRESHOLD)
+		if (abs(e->x - tw->text.btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownCoord.y) > SELECT_THRESHOLD)
 			tw->text.dragState = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 		else
 			return;
@@ -1552,9 +1551,8 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	/* Record the site of the initial button press and the initial character
 	   position so subsequent motion events can decide when to begin a
 	   selection, (and where the selection began) */
-	reinterpret_cast<TextWidget>(w)->text.btnDownX = e->x;
-	reinterpret_cast<TextWidget>(w)->text.btnDownY = e->y;
-	reinterpret_cast<TextWidget>(w)->text.anchor   = pos;
+	reinterpret_cast<TextWidget>(w)->text.btnDownCoord = Point{e->x, e->y};
+	reinterpret_cast<TextWidget>(w)->text.anchor       = pos;
 	
 	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	
@@ -1581,9 +1579,8 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 	/* Record the site of the initial button press and the initial character
 	   position so subsequent motion events can decide when to begin a
 	   drag, and where to drag to */
-	reinterpret_cast<TextWidget>(w)->text.btnDownX = e->x;
-	reinterpret_cast<TextWidget>(w)->text.btnDownY = e->y;
-	reinterpret_cast<TextWidget>(w)->text.dragState = CLICKED_IN_SELECTION;
+	reinterpret_cast<TextWidget>(w)->text.btnDownCoord = Point{e->x, e->y};
+	reinterpret_cast<TextWidget>(w)->text.dragState    = CLICKED_IN_SELECTION;
 }
 
 static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1599,7 +1596,7 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
 	if (tw->text.dragState == SECONDARY_CLICKED) {
-		if (abs(e->x - tw->text.btnDownX) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownY) > SELECT_THRESHOLD)
+		if (abs(e->x - tw->text.btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownCoord.y) > SELECT_THRESHOLD)
 			tw->text.dragState = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 		else
 			return;
@@ -1632,7 +1629,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	/* Decide whether the mouse has moved far enough from the
 	   initial mouse down to be considered a drag */
 	if (tw->text.dragState == CLICKED_IN_SELECTION) {
-		if (abs(e->x - tw->text.btnDownX) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownY) > SELECT_THRESHOLD)
+		if (abs(e->x - tw->text.btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - tw->text.btnDownCoord.y) > SELECT_THRESHOLD)
 			BeginBlockDrag(tw);
 		else
 			return;
@@ -1869,7 +1866,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
-		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &tw->text.btnDownX, &tw->text.btnDownY))
+		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &tw->text.btnDownCoord.x, &tw->text.btnDownCoord.y))
 			return; /* shouldn't happen */
 		InsertPrimarySelection(w, e->time, True);
 	} else
@@ -1906,7 +1903,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		buf->BufRemoveSelected();
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
-		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &reinterpret_cast<TextWidget>(w)->text.btnDownX, &reinterpret_cast<TextWidget>(w)->text.btnDownY))
+		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.x, &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.y))
 			return; /* shouldn't happen */
 		MovePrimarySelection(w, e->time, True);
 	} else {
@@ -1927,11 +1924,11 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	static Cursor panCursor = 0;
 
 	if (tw->text.dragState == MOUSE_PAN) {
-		textD->TextDSetScroll((tw->text.btnDownY - e->y + lineHeight / 2) / lineHeight, tw->text.btnDownX - e->x);
+		textD->TextDSetScroll((tw->text.btnDownCoord.y - e->y + lineHeight / 2) / lineHeight, tw->text.btnDownCoord.x - e->x);
 	} else if (tw->text.dragState == NOT_CLICKED) {
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
-		tw->text.btnDownX = e->x + horizOffset;
-		tw->text.btnDownY = e->y + topLineNum * lineHeight;
+		tw->text.btnDownCoord.x = e->x + horizOffset;
+		tw->text.btnDownCoord.y = e->y + topLineNum * lineHeight;
 		tw->text.dragState = MOUSE_PAN;
 		if (!panCursor)
 			panCursor = XCreateFontCursor(XtDisplay(w), XC_fleur);
@@ -3476,8 +3473,7 @@ static void checkAutoScroll(TextWidget w, int x, int y) {
 	}
 
 	/* Pass on the newest mouse location to the autoscroll routine */
-	w->text.mouseX = x;
-	w->text.mouseY = y;
+	w->text.mouseCoord = {x, y};
 }
 
 /*
@@ -3783,37 +3779,37 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
-	newPos = textD->TextDXYToPosition(Point{w->text.mouseX, w->text.mouseY});
+	newPos = textD->TextDXYToPosition(w->text.mouseCoord);
 	if (w->text.dragState == PRIMARY_RECT_DRAG)
-		cursorX = w->text.mouseX;
+		cursorX = w->text.mouseCoord.x;
 	else if (!textD->TextDPositionToXY(newPos, &cursorX, &y))
-		cursorX = w->text.mouseX;
+		cursorX = w->text.mouseCoord.x;
 
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
 	   for each fontHeight distance from the mouse to the text (vertical) */
 	textD->TextDGetScroll(&topLineNum, &horizOffset);
 	if (cursorX >= (int)w->core.width - w->text.marginWidth)
 		horizOffset += fontWidth;
-	else if (w->text.mouseX < textD->left)
+	else if (w->text.mouseCoord.x < textD->left)
 		horizOffset -= fontWidth;
-	if (w->text.mouseY >= (int)w->core.height - w->text.marginHeight)
-		topLineNum += 1 + ((w->text.mouseY - (int)w->core.height - w->text.marginHeight) / fontHeight) + 1;
-	else if (w->text.mouseY < w->text.marginHeight)
-		topLineNum -= 1 + ((w->text.marginHeight - w->text.mouseY) / fontHeight);
+	if (w->text.mouseCoord.y >= (int)w->core.height - w->text.marginHeight)
+		topLineNum += 1 + ((w->text.mouseCoord.y - (int)w->core.height - w->text.marginHeight) / fontHeight) + 1;
+	else if (w->text.mouseCoord.y < w->text.marginHeight)
+		topLineNum -= 1 + ((w->text.marginHeight - w->text.mouseCoord.y) / fontHeight);
 	textD->TextDSetScroll(topLineNum, horizOffset);
 
 	/* Continue the drag operation in progress.  If none is in progress
 	   (safety check) don't continue to re-establish the timer proc */
 	if (w->text.dragState == PRIMARY_DRAG) {
-		adjustSelection(w, w->text.mouseX, w->text.mouseY);
+		adjustSelection(w, w->text.mouseCoord.x, w->text.mouseCoord.y);
 	} else if (w->text.dragState == PRIMARY_RECT_DRAG) {
-		adjustSelection(w, w->text.mouseX, w->text.mouseY);
+		adjustSelection(w, w->text.mouseCoord.x, w->text.mouseCoord.y);
 	} else if (w->text.dragState == SECONDARY_DRAG) {
-		adjustSecondarySelection(w, w->text.mouseX, w->text.mouseY);
+		adjustSecondarySelection(w, w->text.mouseCoord.x, w->text.mouseCoord.y);
 	} else if (w->text.dragState == SECONDARY_RECT_DRAG) {
-		adjustSecondarySelection(w, w->text.mouseX, w->text.mouseY);
+		adjustSecondarySelection(w, w->text.mouseCoord.x, w->text.mouseCoord.y);
 	} else if (w->text.dragState == PRIMARY_BLOCK_DRAG) {
-		BlockDragSelection(w, Point{w->text.mouseX, w->text.mouseY}, USE_LAST);
+		BlockDragSelection(w, w->text.mouseCoord, USE_LAST);
 	} else {
 		w->text.autoScrollProcID = 0;
 		return;
@@ -3821,7 +3817,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	/* re-establish the timer proc (this routine) to continue processing */
 	w->text.autoScrollProcID =
-	    XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.mouseY >= w->text.marginHeight && w->text.mouseY < w->core.height - w->text.marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
+	    XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.mouseCoord.y >= w->text.marginHeight && w->text.mouseCoord.y < w->core.height - w->text.marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 	                    autoScrollTimerProc, w);
 }
 

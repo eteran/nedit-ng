@@ -79,15 +79,15 @@ void BeginBlockDrag(TextWidget tw) {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel->rectangular) {
-		tw->text.dragXOffset = tw->text.btnDownX + textD->horizOffset - textD->left - sel->rectStart * fontWidth;
+		tw->text.dragXOffset = tw->text.btnDownCoord.x + textD->horizOffset - textD->left - sel->rectStart * fontWidth;
 	} else {
 		if (!textD->TextDPositionToXY(sel->start, &x, &y))
 			x = buf->BufCountDispChars(textD->TextDStartOfLine(sel->start), sel->start) * fontWidth + textD->left - textD->horizOffset;
-		tw->text.dragXOffset = tw->text.btnDownX - x;
+		tw->text.dragXOffset = tw->text.btnDownCoord.x - x;
 	}
-	mousePos = textD->TextDXYToPosition(Point{tw->text.btnDownX, tw->text.btnDownY});
+	mousePos = textD->TextDXYToPosition(Point{tw->text.btnDownCoord.x, tw->text.btnDownCoord.y});
 	nLines = buf->BufCountLines(sel->start, mousePos);
-	tw->text.dragYOffset = nLines * fontHeight + (((tw->text.btnDownY - tw->text.marginHeight) % fontHeight) - fontHeight / 2);
+	tw->text.dragYOffset = nLines * fontHeight + (((tw->text.btnDownCoord.y - tw->text.marginHeight) % fontHeight) - fontHeight / 2);
 	tw->text.dragNLines = buf->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for

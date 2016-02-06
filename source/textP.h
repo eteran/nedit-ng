@@ -28,6 +28,7 @@
 #define TEXTP_H_
 
 #include "TextBuffer.h"
+#include "Point.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -74,8 +75,14 @@ extern TextClassRec nTextClassRec;
 struct TextPart {
 public:
 	/* resources */
-	Pixel selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel;
-	Pixel cursorFGPixel, lineNumFGPixel, calltipFGPixel, calltipBGPixel;
+	Pixel selectFGPixel;
+	Pixel selectBGPixel;
+	Pixel highlightFGPixel;
+	Pixel highlightBGPixel;
+	Pixel cursorFGPixel;
+	Pixel lineNumFGPixel;
+	Pixel calltipFGPixel;
+	Pixel calltipBGPixel;
 	XFontStruct *fontStruct;
 	Boolean pendingDelete;
 	Boolean autoShowInsertPos;
@@ -88,29 +95,34 @@ public:
 	Boolean heavyCursor;
 	Boolean readOnly;
 	Boolean hidePointer;
-	int rows, columns;
-	int marginWidth, marginHeight;
+	int rows;
+	int columns;
+	int marginWidth;
+	int marginHeight;
 	int cursorBlinkRate;
 	int wrapMargin;
 	int emulateTabs;
 	int lineNumCols;
 	char *delimiters;
 	Cardinal cursorVPadding;
-	Widget hScrollBar, vScrollBar;
+	Widget hScrollBar;
+	Widget vScrollBar;
 	XtCallbackList focusInCB;
 	XtCallbackList focusOutCB;
 	XtCallbackList cursorCB;
 	XtCallbackList dragStartCB;
 	XtCallbackList dragEndCB;
 	XtCallbackList smartIndentCB;
+	
+	
 	/* private state */
-	TextDisplay *textD;                // Pointer to display information 
+	TextDisplay *textD;             // Pointer to display information 
 	int anchor, rectAnchor;         // Anchors for drag operations and rectangular drag operations 
 	int dragState;                  // Why is the mouse being dragged and what is being acquired 
-	int multiClickState;            // How long is this multi-click sequence so far 
-	int btnDownX, btnDownY;         // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns 
+	int multiClickState;            // How long is this multi-click sequence so far 	
+	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns 	
 	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition 
-	int mouseX, mouseY;             // Last known mouse position in drag operation (for autoscroll) 
+	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll) 	
 	int selectionOwner;             // True if widget owns the selection 
 	int motifDestOwner;             // " " owns the motif destination 
 	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit 

@@ -436,10 +436,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(
-			Point{
-				reinterpret_cast<TextWidget>(w)->text.btnDownX, 
-				reinterpret_cast<TextWidget>(w)->text.btnDownY
-			},
+			reinterpret_cast<TextWidget>(w)->text.btnDownCoord,
 			&row,
 			&column);
 			
@@ -506,7 +503,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 	(void)clientData;
 
 	/* Confirm that there is a value and it is of the correct type */
-	if (*length == 0 || value == nullptr || *type != XA_STRING || *format != 8) {
+	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		XBell(XtDisplay(w), 0);
 		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
