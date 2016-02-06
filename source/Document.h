@@ -70,12 +70,12 @@ public:
 	void SetEmTabDist(int emTabDist);
 	void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
 	void SetModeMessage(const char *message);
-	void SetOverstrike(int overstrike);
+	void SetOverstrike(bool overstrike);
 	void SetSensitive(Widget w, Boolean sensitive);
 	void SetShowMatching(int state);
 	void SetTabDist(int tabDist);
 	void SetToggleButtonState(Widget w, Boolean state, Boolean notify);	
-	void SetWindowModified(int modified);
+	void SetWindowModified(bool modified);
 	void ShowISearchLine(int state);
 	void ShowLineNumbers(int state);
 	void ShowStatsLine(int state);

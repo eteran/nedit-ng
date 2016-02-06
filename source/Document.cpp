@@ -1840,14 +1840,14 @@ void Document::NextDocument() {
 ** Change the window appearance and the window data structure to show
 ** that the file it contains has been modified
 */
-void Document::SetWindowModified(int modified) {
-	if (fileChanged_ == FALSE && modified == TRUE) {
-		SetSensitive(closeItem_, TRUE);
-		fileChanged_ = TRUE;
+void Document::SetWindowModified(bool modified) {
+	if (fileChanged_ == false && modified == true) {
+		SetSensitive(closeItem_, true);
+		fileChanged_ = true;
 		UpdateWindowTitle();
 		RefreshTabState();
-	} else if (fileChanged_ == TRUE && modified == FALSE) {
-		fileChanged_ = FALSE;
+	} else if (fileChanged_ == true && modified == false) {
+		fileChanged_ = false;
 		UpdateWindowTitle();
 		RefreshTabState();
 	}
@@ -1977,11 +1977,14 @@ void Document::UpdateNewOppositeMenu(int openInTab) {
 /*
 ** Set insert/overstrike mode
 */
-void Document::SetOverstrike(int overstrike) {
+void Document::SetOverstrike(bool overstrike) {
 
 	XtVaSetValues(textArea_, textNoverstrike, overstrike, nullptr);
-	for (int i = 0; i < nPanes_; i++)
+	
+	for (int i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], textNoverstrike, overstrike, nullptr);
+	}
+	
 	overstrike_ = overstrike;
 }
 
@@ -2035,7 +2038,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 	/* Update the main pane */
 	XtVaSetValues(textArea_, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
-	textD->	TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+	textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	/* Update any additional panes */
 	for (i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
