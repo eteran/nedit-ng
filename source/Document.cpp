@@ -1293,7 +1293,7 @@ int Document::updateGutterWidth() {
 
 	Document::for_each([&](Document *document) {
 		if (document->shell_ == shell_) {
-			/*  We found ourselves a document from this this.  */
+			/*  We found ourselves a document from this window.  */
 			int lineNumCols, tmpReqCols;
 			TextDisplay *textD = ((TextWidget)document->textArea_)->text.textD;
 
@@ -2231,7 +2231,7 @@ void Document::MoveDocumentDialog() {
 	delete [] list;
 
 	/* create the option box for moving all documents */
-	s1 = XmStringCreateLtoREx("Move all documents in this this");
+	s1 = XmStringCreateLtoREx("Move all documents in this window");
 	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
 	XmStringFree(s1);
 
@@ -2571,7 +2571,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	/* Check which fonts have changed */
-	primaryChanged = strcmp(fontName, fontName_);
+	primaryChanged = fontName != fontName_;
 	if (strcmp(italicName, italicFontName_))
 		highlightChanged = True;
 	if (strcmp(boldName, boldFontName_))
@@ -2601,7 +2601,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   statistics line.  Highlight fonts are allowed to be nullptr, which
 	   is interpreted as "use the primary font" */
 	if (primaryChanged) {
-		strcpy(fontName_, fontName);
+		fontName_ = fontName;
 		font = XLoadQueryFont(TheDisplay, fontName);
 		if(!font)
 			XtVaGetValues(statsLine_, XmNfontList, &fontList_, nullptr);
@@ -3142,7 +3142,7 @@ void Document::RaiseDocument() {
 ** clone a document's states and settings into the other.
 */
 void Document::cloneDocument(Document *window) {
-	char *params[4];
+	
 	int emTabDist;
 
 	window->path_     = path_;
@@ -3165,7 +3165,8 @@ void Document::cloneDocument(Document *window) {
 	window->ignoreModify_ = False;
 
 	/* transfer text fonts */
-	params[0] = fontName_;
+	char *params[4];
+	params[0] = const_cast<char *>(fontName_.c_str());
 	params[1] = italicFontName_;
 	params[2] = boldFontName_;
 	params[3] = boldItalicFontName_;
@@ -3358,7 +3359,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	fileClosedAtom_ = None;
 	wasSelected_ = FALSE;
 
-	strcpy(fontName_, GetPrefFontName());
+	fontName_ = GetPrefFontName();
 	strcpy(italicFontName_, GetPrefItalicFontName());
 	strcpy(boldFontName_, GetPrefBoldFontName());
 	strcpy(boldItalicFontName_, GetPrefBoldItalicFontName());
@@ -3787,7 +3788,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->flashTimeoutID_ = 0;
 	window->fileClosedAtom_ = None;
 	window->wasSelected_ = FALSE;
-	strcpy(window->fontName_, GetPrefFontName());
+	window->fontName_ = GetPrefFontName();
 	strcpy(window->italicFontName_, GetPrefItalicFontName());
 	strcpy(window->boldFontName_, GetPrefBoldFontName());
 	strcpy(window->boldItalicFontName_, GetPrefBoldItalicFontName());

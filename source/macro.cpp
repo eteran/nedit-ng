@@ -4053,7 +4053,7 @@ static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->fontName_);
+	AllocNStringCpy(&result->val.str, window->fontName_.c_str());
 	return True;
 }
 
