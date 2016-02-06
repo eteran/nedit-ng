@@ -34,14 +34,15 @@
 #include <string>
 
 /* Pattern flags for modifying pattern matching behavior */
-#define PARSE_SUBPATS_FROM_START 1
-#define DEFER_PARSING 2
-#define COLOR_ONLY 4
+enum {
+	PARSE_SUBPATS_FROM_START = 1,
+	DEFER_PARSING            = 2,
+	COLOR_ONLY               = 4
+};
 
 /* Don't use plain 'A' or 'B' for style indices, it causes problems
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
 #define ASCII_A static_cast<char>(65)
-
 
 struct PatternSet;
 struct HighlightPattern;

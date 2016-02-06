@@ -7,9 +7,9 @@ HighlightPattern::HighlightPattern() : startRE(nullptr), endRE(nullptr), errorRE
 }
 
 HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
-	startRE      = XtNewStringEx(other.startRE);
-	endRE        = XtNewStringEx(other.endRE);
-	errorRE      = XtNewStringEx(other.errorRE);
+	startRE = XtNewStringEx(other.startRE);
+	endRE   = XtNewStringEx(other.endRE);
+	errorRE = XtNewStringEx(other.errorRE);
 }
 
 HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {

@@ -376,10 +376,7 @@ std::string WriteStylesStringEx(void) {
 bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 
 	// TODO(eteran): rework this to actually use a modern approach
-	auto inString = new char[string.size() + 1];
-	strcpy(inString, &string[0]);
-	
-	
+	const char *inString = &string[0];
 	const char *inPtr = inString;
 	int i;
 
@@ -388,7 +385,6 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 		/* Read each pattern set, abort on error */
 		PatternSet *patSet = readPatternSet(&inPtr, convertOld);
 		if(!patSet) {
-			delete [] inString;
 			return false;
 		}
 
@@ -403,7 +399,6 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 		if (i == NPatternSets) {
 			PatternSets[NPatternSets++] = patSet;
 			if (NPatternSets > MAX_LANGUAGE_MODES) {
-				delete [] inString;
 				return false;
 			}
 		}
@@ -411,7 +406,6 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 		/* if the string ends here, we're done */
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0') {
-			delete [] inString;
 			return true;
 		}
 	}
