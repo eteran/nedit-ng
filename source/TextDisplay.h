@@ -28,6 +28,7 @@
 #define TEXTDISP_H_
 
 #include "TextBuffer.h"
+#include "Point.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -71,7 +72,7 @@ public:
 public:
 	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry);
 	void TextDUnblankCursor();
-	void TextDXYToUnconstrainedPosition(int x, int y, int *row, int *column);
+	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	void TextDSetInsertPosition(int newPos);
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
 	void TextDSetScroll(int topLineNum, int horizOffset);
@@ -94,7 +95,7 @@ public:
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
 	int TextDEndOfLine(int pos, const Boolean startPosIsLineStart);
 	int TextDGetInsertPosition();
-	int TextDInSelection(int x, int y);
+	int TextDInSelection(Point coord);
 	int TextDLineAndColToPos(int lineNum, int column);
 	int TextDMaxFontWidth(Boolean considerStyles);
 	int TextDMinFontWidth(Boolean considerStyles);
@@ -109,8 +110,8 @@ public:
 	int TextDPositionToXY(int pos, int *x, int *y);
 	int TextDPreferredColumn(int *visLineNum, int *lineStartPos);
 	int TextDStartOfLine(int pos) const;
-	int TextDXYToCharPos(int x, int y);
-	int TextDXYToPosition(int x, int y);
+	int TextDXYToCharPos(Point coord);
+	int TextDXYToPosition(Point coord);
 	void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 	void TextDBlankCursor();
 	void TextDGetScroll(int *topLineNum, int *horizOffset);

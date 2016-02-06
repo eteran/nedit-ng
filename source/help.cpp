@@ -941,7 +941,7 @@ static void helpHyperlinkAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 		return;
 	}
 
-	clickedPos = textD->TextDXYToCharPos( e->x, e->y);
+	clickedPos = textD->TextDXYToCharPos(Point{e->x, e->y});
 	/* Beware of possible EBCDIC coding! Use the mapping table. */
 	if (textD->styleBuffer->BufGetCharacter(clickedPos) != (char)AlphabetToAsciiTable[(unsigned char)STL_NM_LINK]) {
 		if (*nArgs == 3)

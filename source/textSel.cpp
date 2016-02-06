@@ -435,7 +435,14 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	if (isColumnar) {
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
-		textD->TextDXYToUnconstrainedPosition(reinterpret_cast<TextWidget>(w)->text.btnDownX, reinterpret_cast<TextWidget>(w)->text.btnDownY, &row, &column);
+		textD->TextDXYToUnconstrainedPosition(
+			Point{
+				reinterpret_cast<TextWidget>(w)->text.btnDownX, 
+				reinterpret_cast<TextWidget>(w)->text.btnDownY
+			},
+			&row,
+			&column);
+			
 		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
 		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else

@@ -28,6 +28,7 @@
 #define NEDIT_TEXTDRAG_H_INCLUDED
 
 #include "text.h"
+#include "Point.h"
 
 enum blockDragTypes {
 	USE_LAST, 
@@ -38,7 +39,7 @@ enum blockDragTypes {
 };
 
 void BeginBlockDrag(TextWidget tw);
-void BlockDragSelection(TextWidget tw, int x, int y, int dragType);
+void BlockDragSelection(TextWidget tw, Point pos, int dragType);
 void FinishBlockDrag(TextWidget tw);
 void CancelBlockDrag(TextWidget tw);
 

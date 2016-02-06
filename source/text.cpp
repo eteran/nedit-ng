@@ -1386,7 +1386,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	tw->text.btnDownX = e->x;
 	tw->text.btnDownY = e->y;
 	tw->text.anchor = textD->TextDGetInsertPosition();
-	textD->TextDXYToUnconstrainedPosition(e->x, e->y, &row, &column);
+	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	column = textD->TextDOffsetWrappedColumn(row, column);
 	tw->text.rectAnchor = column;
 }
@@ -1404,7 +1404,7 @@ static void moveDestinationAP(Widget w, XEvent *event, String *args, Cardinal *n
 	XmProcessTraversal(w, XmTRAVERSE_CURRENT);
 
 	/* Move the cursor */
-	textD->TextDSetInsertPosition(textD->TextDXYToPosition(e->x, e->y));
+	textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
 }
@@ -1453,8 +1453,8 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	int anchor, rectAnchor, anchorLineStart, newPos, row, column;
 
 	/* Find the new anchor point for the rest of this drag operation */
-	newPos = textD->TextDXYToPosition(e->x, e->y);
-	textD->TextDXYToUnconstrainedPosition(e->x, e->y, &row, &column);
+	newPos = textD->TextDXYToPosition(Point{e->x, e->y});
+	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	column = textD->TextDOffsetWrappedColumn(row, column);
 	if (sel->selected) {
 		if (sel->rectangular) {
@@ -1539,7 +1539,7 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	int anchor, pos, row, column;
 
 	/* Find the new anchor point and make the new selection */
-	pos = textD->TextDXYToPosition(e->x, e->y);
+	pos = textD->TextDXYToPosition(Point{e->x, e->y});
 	if (sel->selected) {
 		if (abs(pos - sel->start) < abs(pos - sel->end))
 			anchor = sel->end;
@@ -1554,8 +1554,10 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	   selection, (and where the selection began) */
 	reinterpret_cast<TextWidget>(w)->text.btnDownX = e->x;
 	reinterpret_cast<TextWidget>(w)->text.btnDownY = e->y;
-	reinterpret_cast<TextWidget>(w)->text.anchor = pos;
-	textD->TextDXYToUnconstrainedPosition(e->x, e->y, &row, &column);
+	reinterpret_cast<TextWidget>(w)->text.anchor   = pos;
+	
+	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
+	
 	column = textD->TextDOffsetWrappedColumn(row, column);
 	reinterpret_cast<TextWidget>(w)->text.rectAnchor = column;
 	reinterpret_cast<TextWidget>(w)->text.dragState = SECONDARY_CLICKED;
@@ -1568,7 +1570,7 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
-	if (!buf->primary_.selected || !textD->TextDInSelection(e->x, e->y)) {
+	if (!buf->primary_.selected || !textD->TextDInSelection(Point{e->x, e->y})) {
 		secondaryStartAP(w, event, args, nArgs);
 		return;
 	}
@@ -1641,7 +1643,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	checkAutoScroll(tw, e->x, e->y);
 
 	/* Adjust the selection */
-	BlockDragSelection(tw, e->x, e->y, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
+	BlockDragSelection(tw, Point{e->x, e->y}, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
 }
 
 static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1690,10 +1692,10 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			SendSecondarySelection(w, e->time, False);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
-		textD->TextDSetInsertPosition(textD->TextDXYToPosition(e->x, e->y));
+		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 		TextInsertAtCursorEx(w, textToCopy, event, False, tw->text.autoWrapPastedText);
 	} else {
-		textD->TextDSetInsertPosition(textD->TextDXYToPosition(e->x, e->y));
+		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 		InsertPrimarySelection(w, e->time, False);
 	}
 }
@@ -1752,13 +1754,13 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			SendSecondarySelection(w, e->time, True);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetRangeEx(primary->start, primary->end);
-		textD->TextDSetInsertPosition(textD->TextDXYToPosition(e->x, e->y));
+		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 		TextInsertAtCursorEx(w, textToCopy, event, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 
 		buf->BufRemoveSelected();
 		buf->BufUnselect();
 	} else {
-		textD->TextDSetInsertPosition(textD->TextDXYToPosition(e->x, e->y));
+		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 		MovePrimarySelection(w, e->time, False);
 	}
 }
@@ -3528,11 +3530,11 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	TextDisplay *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int row, col, startCol, endCol, startPos, endPos;
-	int newPos = textD->TextDXYToPosition(x, y);
+	int newPos = textD->TextDXYToPosition(Point{x, y});
 
 	/* Adjust the selection */
 	if (tw->text.dragState == PRIMARY_RECT_DRAG) {
-		textD->TextDXYToUnconstrainedPosition(x, y, &row, &col);
+		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
 		col = textD->TextDOffsetWrappedColumn(row, col);
 		startCol = std::min<int>(tw->text.rectAnchor, col);
 		endCol = std::max<int>(tw->text.rectAnchor, col);
@@ -3561,10 +3563,10 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 	TextDisplay *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int row, col, startCol, endCol, startPos, endPos;
-	int newPos = textD->TextDXYToPosition(x, y);
+	int newPos = textD->TextDXYToPosition(Point{x, y});
 
 	if (tw->text.dragState == SECONDARY_RECT_DRAG) {
-		textD->TextDXYToUnconstrainedPosition(x, y, &row, &col);
+		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
 		col = textD->TextDOffsetWrappedColumn(row, col);
 		startCol = std::min<int>(tw->text.rectAnchor, col);
 		endCol = std::max<int>(tw->text.rectAnchor, col);
@@ -3781,7 +3783,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
-	newPos = textD->TextDXYToPosition(w->text.mouseX, w->text.mouseY);
+	newPos = textD->TextDXYToPosition(Point{w->text.mouseX, w->text.mouseY});
 	if (w->text.dragState == PRIMARY_RECT_DRAG)
 		cursorX = w->text.mouseX;
 	else if (!textD->TextDPositionToXY(newPos, &cursorX, &y))
@@ -3811,7 +3813,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	} else if (w->text.dragState == SECONDARY_RECT_DRAG) {
 		adjustSecondarySelection(w, w->text.mouseX, w->text.mouseY);
 	} else if (w->text.dragState == PRIMARY_BLOCK_DRAG) {
-		BlockDragSelection(w, w->text.mouseX, w->text.mouseY, USE_LAST);
+		BlockDragSelection(w, Point{w->text.mouseX, w->text.mouseY}, USE_LAST);
 	} else {
 		w->text.autoScrollProcID = 0;
 		return;

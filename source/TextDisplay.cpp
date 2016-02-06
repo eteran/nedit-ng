@@ -905,15 +905,15 @@ void TextDisplay::TextDOverstrikeEx(view::string_view text) {
 /*
 ** Translate window coordinates to the nearest text cursor position.
 */
-int TextDisplay::TextDXYToPosition(int x, int y) {
-	return xyToPos(this, x, y, CURSOR_POS);
+int TextDisplay::TextDXYToPosition(Point coord) {
+	return xyToPos(this, coord.x, coord.y, CURSOR_POS);
 }
 
 /*
 ** Translate window coordinates to the nearest character cell.
 */
-int TextDisplay::TextDXYToCharPos(int x, int y) {
-	return xyToPos(this, x, y, CHARACTER_POS);
+int TextDisplay::TextDXYToCharPos(Point coord) {
+	return xyToPos(this, coord.x, coord.y, CHARACTER_POS);
 }
 
 /*
@@ -921,8 +921,8 @@ int TextDisplay::TextDXYToCharPos(int x, int y) {
 ** positioning the cursor.  This, of course, makes no sense when the font
 ** is proportional, since there are no absolute columns.
 */
-void TextDisplay::TextDXYToUnconstrainedPosition(int x, int y, int *row, int *column) {
-	xyToUnconstrainedPos(this, x, y, row, column, CURSOR_POS);
+void TextDisplay::TextDXYToUnconstrainedPosition(Point coord, int *row, int *column) {
+	xyToUnconstrainedPos(this, coord.x, coord.y, row, column, CURSOR_POS);
 }
 
 /*
@@ -1062,11 +1062,13 @@ int TextDisplay::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 /*
 ** Return True if position (x, y) is inside of the primary selection
 */
-int TextDisplay::TextDInSelection(int x, int y) {
-	int row, column, pos = xyToPos(this, x, y, CHARACTER_POS);
+int TextDisplay::TextDInSelection(Point p) {
+	int row;
+	int column;
+	int pos = xyToPos(this, p.x, p.y, CHARACTER_POS);
 	TextBuffer *buf = this->buffer;
 
-	xyToUnconstrainedPos(this, x, y, &row, &column, CHARACTER_POS);
+	xyToUnconstrainedPos(this, p.x, p.y, &row, &column, CHARACTER_POS);
 	if (rangeTouchesRectSel(&buf->primary_, this->firstChar, this->lastChar))
 		column = this->TextDOffsetWrappedColumn(row, column);
 	return inSelection(&buf->primary_, pos, buf->BufStartOfLine(pos), column);

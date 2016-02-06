@@ -85,7 +85,7 @@ void BeginBlockDrag(TextWidget tw) {
 			x = buf->BufCountDispChars(textD->TextDStartOfLine(sel->start), sel->start) * fontWidth + textD->left - textD->horizOffset;
 		tw->text.dragXOffset = tw->text.btnDownX - x;
 	}
-	mousePos = textD->TextDXYToPosition(tw->text.btnDownX, tw->text.btnDownY);
+	mousePos = textD->TextDXYToPosition(Point{tw->text.btnDownX, tw->text.btnDownY});
 	nLines = buf->BufCountLines(sel->start, mousePos);
 	tw->text.dragYOffset = nLines * fontHeight + (((tw->text.btnDownY - tw->text.marginHeight) % fontHeight) - fontHeight / 2);
 	tw->text.dragNLines = buf->BufCountLines(sel->start, sel->end);
@@ -139,7 +139,7 @@ void BeginBlockDrag(TextWidget tw) {
 ** Reposition the primary-selected text that is being dragged as a block
 ** for a new mouse position of (x, y)
 */
-void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
+void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 	TextDisplay *textD = tw->text.textD;
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
@@ -251,7 +251,14 @@ void BlockDragSelection(TextWidget tw, int x, int y, int dragType) {
 	/* Find the line number and column of the insert position.  Note that in
 	   continuous wrap mode, these must be calculated as if the text were
 	   not wrapped */
-	textD->TextDXYToUnconstrainedPosition(std::max<int>(0, x - dragXOffset), std::max<int>(0, y - (tw->text.dragYOffset % fontHeight)), &row, &column);
+	textD->TextDXYToUnconstrainedPosition(
+		Point{
+			std::max<int>(0, pos.x - dragXOffset), 
+			std::max<int>(0, pos.y - (tw->text.dragYOffset % fontHeight))
+		},
+		&row, &column);
+		
+		
 	column = textD->TextDOffsetWrappedColumn(row, column);
 	row = textD->TextDOffsetWrappedRow(row);
 	insLineNum = row + textD->topLineNum - tw->text.dragYOffset / fontHeight;
