@@ -68,6 +68,9 @@ public:
                       XmString bgClassString, Pixel calltipFGPixel, Pixel calltipBGPixel);
 					  
 	~TextDisplay();
+	
+	TextDisplay(const TextDisplay &) = delete;
+	TextDisplay& operator=(const TextDisplay &) = delete;
 
 public:
 	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry);
