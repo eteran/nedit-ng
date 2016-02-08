@@ -251,12 +251,12 @@ int main(int argc, char *argv[]) {
 
 	int lineNum;
 	int nRead;
-	int fileSpecified = FALSE;
+	bool fileSpecified = false;
 	int editFlags = CREATE;
-	int gotoLine = False;
-	int macroFileRead = False;
-	int opts = True;
-	int iconic = False;
+	bool gotoLine = false;
+	bool macroFileRead = false;
+	bool opts = true;
+	bool iconic = false;
 	int tabbed = -1;
 	int group = 0;
 	int isTabbed;
@@ -359,7 +359,7 @@ int main(int argc, char *argv[]) {
 	/* Restore the original bindings ASAP such that other apps are not affected. */
 	restoreInsaneVirtualKeyBindings(invalidBindings);
 
-	XtSetMappedWhenManaged(TheAppShell, False);
+	XtSetMappedWhenManaged(TheAppShell, false);
 	XtRealizeWidget(TheAppShell);
 
 #ifndef NO_SESSION_RESTART
@@ -396,10 +396,10 @@ int main(int argc, char *argv[]) {
 			break; /* treat all remaining arguments as filenames */
 		} else if (!strcmp(argv[i], "-import")) {
 			nextArg(argc, argv, &i);
-			ImportPrefFile(argv[i], False);
+			ImportPrefFile(argv[i], false);
 		} else if (!strcmp(argv[i], "-importold")) {
 			nextArg(argc, argv, &i);
-			ImportPrefFile(argv[i], True);
+			ImportPrefFile(argv[i], true);
 		}
 	}
 
@@ -417,10 +417,10 @@ int main(int argc, char *argv[]) {
 	/* Process any command line arguments (-tags, -do, -read, -create,
 	   +<line_number>, -line, -server, and files to edit) not already
 	   processed by RestoreNEditPrefs. */
-	fileSpecified = FALSE;
+	fileSpecified = false;
 	for (int i = 1; i < argc; i++) {
 		if (opts && !strcmp(argv[i], "--")) {
-			opts = False; /* treat all remaining arguments as filenames */
+			opts = false; /* treat all remaining arguments as filenames */
 			continue;
 		} else if (opts && !strcmp(argv[i], "-tags")) {
 			nextArg(argc, argv, &i);
@@ -448,21 +448,21 @@ int main(int argc, char *argv[]) {
 			if (nRead != 1)
 				fprintf(stderr, "NEdit: argument to line should be a number\n");
 			else
-				gotoLine = True;
+				gotoLine = true;
 		} else if (opts && (*argv[i] == '+')) {
 			nRead = sscanf((argv[i] + 1), "%d", &lineNum);
 			if (nRead != 1)
 				fprintf(stderr, "NEdit: argument to + should be a number\n");
 			else
-				gotoLine = True;
+				gotoLine = true;
 		} else if (opts && !strcmp(argv[i], "-server")) {
 			IsServer = true;
 		} else if (opts && !strcmp(argv[i], "-xwarn")) {
 			XtAppSetWarningHandler(context, showWarningFilter);
 		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
-			iconic = True;
+			iconic = true;
 		} else if (opts && !strcmp(argv[i], "-noiconic")) {
-			iconic = False;
+			iconic = false;
 		} else if (opts && (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g"))) {
 			nextArg(argc, argv, &i);
 			geometry = argv[i];
@@ -501,8 +501,8 @@ int main(int argc, char *argv[]) {
 				   last file opened will be raised to restore those deferred
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
-				window = EditExistingFile(WindowList, filename, pathname, editFlags, geometry, iconic, langMode, isTabbed, True);
-				fileSpecified = TRUE;
+				window = EditExistingFile(WindowList, filename, pathname, editFlags, geometry, iconic, langMode, isTabbed, true);
+				fileSpecified = true;
 				if (window) {
 					window->CleanUpTabBarExposeQueue();
 
@@ -514,7 +514,7 @@ int main(int argc, char *argv[]) {
 
 					if (!macroFileRead) {
 						ReadMacroInitFile(WindowList);
-						macroFileRead = True;
+						macroFileRead = true;
 					}
 					if (gotoLine)
 						SelectNumberedLine(window, lineNum);
@@ -536,7 +536,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			/* -line/+n does only affect the file following this switch */
-			gotoLine = False;
+			gotoLine = false;
 		}
 	}
 
