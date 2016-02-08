@@ -137,8 +137,8 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 	XmString but_lbl_xms[NUM_BUTTONS_MAXPROMPT];
 	XmString msgstr_xms, input_string_xms, titstr_xms;
 	char msgstr_vsp[DF_MAX_MSG_LENGTH + 1];
-	char *but_lbl, *input_string = nullptr;
-	int argcount, num_but_lbls = 0, i, but_index, cancel_index = -1;
+	char *input_string = nullptr;
+	int argcount, num_but_lbls = 0, i, cancel_index = -1;
 	Arg args[256];
 	char titleCopy[MAX_TITLE_LEN];
 
@@ -183,9 +183,9 @@ unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, 
 	else
 		df.apply_up = 0;                                /* Apply button will not be managed */
 	for (argcount = 0; argcount < (int)n; ++argcount) { /* Set up button labels */
-		but_lbl = va_arg(var, char *);
+		char *but_lbl = va_arg(var, char *);
 		but_lbl_xms[num_but_lbls] = XmStringCreateLtoREx(but_lbl, XmSTRING_DEFAULT_CHARSET);
-		but_index = df.apply_up ? argcount : ((argcount == 0) ? argcount : argcount + 1);
+		int but_index = df.apply_up ? argcount : ((argcount == 0) ? argcount : argcount + 1);
 		XtSetArg(args[argcount], button_name[but_index], but_lbl_xms[num_but_lbls++]);
 		if (!strcmp(but_lbl, "Cancel") || !strcmp(but_lbl, "Dismiss"))
 			cancel_index = but_index;

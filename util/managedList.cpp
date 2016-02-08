@@ -345,7 +345,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	managedListData *ml = (managedListData *)clientData;
+	auto ml = static_cast<managedListData *>(clientData);
 	int i, ind, listPos;
 
 	/* get the selected list position and the item to be deleted */
@@ -374,7 +374,7 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 	
-	managedListData *ml = (managedListData *)clientData;
+	auto ml = static_cast<managedListData *>(clientData);
 	int i, listPos, abort = False;
 	void *item;
 
@@ -422,7 +422,7 @@ static void moveUpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 
-	managedListData *ml = (managedListData *)clientData;
+	auto ml = static_cast<managedListData *>(clientData);
 	int ind, listPos;
 	void *temp;
 
@@ -450,7 +450,7 @@ static void moveDownCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 	
-	managedListData *ml = (managedListData *)clientData;
+	auto ml = static_cast<managedListData *>(clientData);
 	int ind, listPos;
 	void *temp;
 
@@ -479,8 +479,9 @@ static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 	(void)w;
 
-	managedListData *ml = (managedListData *)clientData;
-	int ind, listPos = ((XmListCallbackStruct *)callData)->item_position;
+	auto ml = static_cast<managedListData *>(clientData);
+	int ind;
+	int listPos = ((XmListCallbackStruct *)callData)->item_position;
 
 	/* Save the current dialog fields before overwriting them.  If there's an
 	   error, force the user to go back to the old selection and fix it
