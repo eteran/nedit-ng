@@ -90,7 +90,7 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 			return true;
 		}
 		
-		if (AllocatedStringsDiffer(pat1->endRE, pat2->endRE)) {
+		if (pat1->endRE != pat2->endRE) {
 			return true;
 		}
 		

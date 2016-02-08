@@ -63,72 +63,88 @@
 #include <Xm/RowColumn.h>
 #include <Xm/SeparatoG.h>
 
+namespace {
+
 /* Maximum allowed number of styles (also limited by representation of
    styles as a byte - 'b') */
-#define MAX_HIGHLIGHT_STYLES 128
+const int MAX_HIGHLIGHT_STYLES = 128;
 
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
-#define MAX_PATTERNS 127
+const int MAX_PATTERNS = 127;
 
 /* Names for the fonts that can be used for syntax highlighting */
-#define N_FONT_TYPES 4
-enum fontTypes { PLAIN_FONT, ITALIC_FONT, BOLD_FONT, BOLD_ITALIC_FONT };
-static const char *FontTypeNames[N_FONT_TYPES] = {"Plain", "Italic", "Bold", "Bold Italic"};
+const int N_FONT_TYPES = 4;
 
-static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
-static int lookupNamedStyle(view::string_view styleName);
-static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
-static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
-static PatternSet *readDefaultPatternSet(const char *langModeName);
+enum fontTypes {
+	PLAIN_FONT, 
+	ITALIC_FONT, 
+	BOLD_FONT, 
+	BOLD_ITALIC_FONT
+};
+
+static const char *FontTypeNames[N_FONT_TYPES] = {
+	"Plain", 
+	"Italic", 
+	"Bold", 
+	"Bold Italic"
+};
+
+/* list of available highlight styles */
+int NHighlightStyles = 0;
+HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
+
+}
+
 static bool isDefaultPatternSet(PatternSet *patSet);
-static PatternSet *readPatternSet(const char **inPtr, int convertOld);
+static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
+static HighlightPattern *readDialogFields(bool silent);
+static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
+static HighlightStyle *readHSDialogFields(bool silent);
+static bool checkHighlightDialogData(void);
+static int dialogEmpty(void);
+static int hsDialogEmpty(void);
+static int lookupNamedStyle(view::string_view styleName);
+static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
+static int updateHSList(void);
+static int updatePatternSet(void);
+static PatternSet *getDialogPatternSet(void);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
+static PatternSet *readDefaultPatternSet(const char *langModeName);
+static PatternSet *readPatternSet(const char **inPtr, int convertOld);
 static std::string createPatternsString(PatternSet *patSet, const char *indentStr);
-static void setStyleByName(const char *style);
-static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
+static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
+static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
+static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void convertOldPatternSet(PatternSet *patSet);
+static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
+static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
+static void freeItemCB(void *item);
+static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
+static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData);
+static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
+static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void hsSetDisplayedCB(void *item, void *cbArg);
-static HighlightStyle *readHSDialogFields(bool silent);
-static int hsDialogEmpty(void);
-static int updateHSList(void);
+static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData);
+static void matchTypeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void okCB(Widget w, XtPointer clientData, XtPointer callData);
+static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData);
+static void restoreCB(Widget w, XtPointer clientData, XtPointer callData);
+static void setDisplayedCB(void *item, void *cbArg);
+static void setStyleByName(view::string_view style);
+static void setStyleMenu(view::string_view styleName);
+static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateHighlightStyleMenu(void);
-static void convertOldPatternSet(PatternSet *patSet);
-static char *convertPatternExpr(char *patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
+static void updateLabels(void);
+static Widget createHighlightStylesMenu(Widget parent);
 static XString convertPatternExprEx(const XString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
 
 
-static Widget createHighlightStylesMenu(Widget parent);
-static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData);
-static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData);
-static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void matchTypeCB(Widget w, XtPointer clientData, XtPointer callData);
-static int checkHighlightDialogData(void);
-static void updateLabels(void);
-static void okCB(Widget w, XtPointer clientData, XtPointer callData);
-static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
-static void restoreCB(Widget w, XtPointer clientData, XtPointer callData);
-static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
-static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
-static void setDisplayedCB(void *item, void *cbArg);
-static void setStyleMenu(const char *styleName);
-static HighlightPattern *readDialogFields(bool silent);
-static int dialogEmpty(void);
-static int updatePatternSet(void);
-static PatternSet *getDialogPatternSet(void);
-static void freeItemCB(void *item);
 
-/* list of available highlight styles */
-static int NHighlightStyles = 0;
-static HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
 
 /* Highlight styles dialog information */
 static struct {
@@ -462,46 +478,10 @@ static void convertOldPatternSet(PatternSet *patSet) {
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		HighlightPattern *pattern = &patSet->patterns[p];
 		pattern->startRE = convertPatternExprEx(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		pattern->endRE   = convertPatternExpr(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->endRE   = convertPatternExprEx(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
-
-/*
-** Convert a single regular expression, patternRE, to version 5.1 regular
-** expression syntax.  It will convert either a match expression or a
-** substitution expression, which must be specified by the setting of
-** isSubsExpr.  Error messages are directed to stderr, and include the
-** pattern set name and pattern name as passed in patSetName and patName.
-*/
-static char *convertPatternExpr(char *patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
-
-	if (!patternRE) {
-		return nullptr;
-	}
-	
-	if (isSubsExpr) {
-		// TODO(eteran): the + 5000 seems a bit wasteful
-		int bufsize = strlen(patternRE) + 5000;
-	
-		
-		char *newRE = XtMalloc(bufsize);
-		ConvertSubstituteRE(patternRE, newRE, bufsize);
-		XtFree(patternRE);
-		return newRE;
-	} else {
-		try {
-			char *newRE = ConvertRE(patternRE);
-			XtFree(patternRE);
-			return newRE;
-		} catch(const regex_error &e) {
-			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
-		}
-	}
-	
-	return nullptr;
-}
-
 
 /*
 ** Convert a single regular expression, patternRE, to version 5.1 regular
@@ -518,9 +498,7 @@ static XString convertPatternExprEx(const XString &patternRE, const char *patSet
 	
 	if (isSubsExpr) {
 		// TODO(eteran): the + 5000 seems a bit wasteful
-		int bufsize = patternRE.size() + 5000;
-	
-		
+		const int bufsize = patternRE.size() + 5000;		
 		char *newRE = XtMalloc(bufsize);
 		ConvertSubstituteRE(patternRE.str(), newRE, bufsize);
 		return XString::takeString(newRE);
@@ -705,7 +683,7 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->endRE) {
-			std::string str = MakeQuotedStringEx(pat->endRE);
+			std::string str = MakeQuotedStringEx(pat->endRE.str());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -863,7 +841,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	
 	if (**inPtr == ':') {
 		pattern->endRE = nullptr;
-	} else if (!ReadQuotedString(inPtr, errMsg, &pattern->endRE)) {
+	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->endRE)) {
 		return False;
 	}
 
@@ -1331,7 +1309,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
 /*
 ** Select a particular style in the highlight styles dialog
 */
-static void setStyleByName(const char *style) {
+static void setStyleByName(view::string_view style) {
 
 	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
 		if (HSDialog.highlightStyleList[i]->name == style) {
@@ -1734,7 +1712,7 @@ static void updateHighlightStyleMenu(void) {
 	if (patIndex == -1) {
 		setStyleMenu("Plain");
 	} else {
-		setStyleMenu(HighlightDialog.patterns[patIndex]->style->c_str());
+		setStyleMenu(*HighlightDialog.patterns[patIndex]->style);
 	}
 
 	XtDestroyWidget(oldMenu);
@@ -2095,7 +2073,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
 		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf ? *pat->subPatternOf : "");
 		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE.str());
-		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE);
+		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE.str());
 		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.str());
 		
 		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred,  False);
@@ -2104,7 +2082,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.colorPatW,  isSubpat &&  isColorOnly, False);
 		RadioButtonChangeState(HighlightDialog.simpleW,   !isRange, False);
 		RadioButtonChangeState(HighlightDialog.rangeW,     isRange, False);
-		setStyleMenu(pat->style->c_str());
+		setStyleMenu(*pat->style);
 	}
 	updateLabels();
 }
@@ -2117,15 +2095,16 @@ static void freeItemCB(void *item) {
 ** Do a test compile of the patterns currently displayed in the highlight
 ** patterns dialog, and display warning dialogs if there are problems
 */
-static int checkHighlightDialogData(void) {
+static bool checkHighlightDialogData(void) {
 
 	/* Get the pattern information from the dialog */
 	PatternSet *patSet = getDialogPatternSet();
-	if(!patSet)
-		return False;
+	if(!patSet) {
+		return false;
+	}
 
 	/* Compile the patterns  */
-	int result = patSet->nPatterns == 0 ? True : TestHighlightPatterns(patSet);
+	bool result = (patSet->nPatterns == 0) ? true : TestHighlightPatterns(patSet);
 	delete patSet;
 	return result;
 }
@@ -2142,10 +2121,8 @@ static void updateLabels(void) {
 	XmString s1;
 
 	if (XmToggleButtonGetState(HighlightDialog.colorPatW)) {
-		startLbl = "Sub-expressions to Highlight in Parent's Starting \
-Regular Expression (\\1, &, etc.)";
-		endLbl = "Sub-expressions to Highlight in Parent Pattern's Ending \
-Regular Expression";
+		startLbl = "Sub-expressions to Highlight in Parent's Starting Regular Expression (\\1, &, etc.)";
+		endLbl = "Sub-expressions to Highlight in Parent Pattern's Ending Regular Expression";
 		endSense = True;
 		errSense = False;
 		matchSense = False;
@@ -2185,7 +2162,7 @@ Regular Expression";
 ** Set the styles menu in the currently displayed highlight dialog to show
 ** a particular style
 */
-static void setStyleMenu(const char *styleName) {
+static void setStyleMenu(view::string_view styleName) {
 	int i;
 	Cardinal nItems;
 	WidgetList items;
@@ -2198,7 +2175,7 @@ static void setStyleMenu(const char *styleName) {
 	selectedItem = items[0];
 	for (i = 0; i < (int)nItems; i++) {
 		XtVaGetValues(items[i], XmNuserData, &itemStyle, nullptr);
-		if (!strcmp(itemStyle, styleName)) {
+		if (styleName == itemStyle) {
 			selectedItem = items[i];
 			break;
 		}
@@ -2311,7 +2288,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 	/* read the endRE field */
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
 		pat->endRE = XmTextGetString(HighlightDialog.endW);
-		if (!colorOnly && *pat->endRE == '\0') {
+		if (!colorOnly && pat->endRE.empty()) {
 			if (!silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex", "Please specify an ending\nregular expression", "OK");
 				XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);

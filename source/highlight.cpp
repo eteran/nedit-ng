@@ -847,7 +847,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
 		nSubExprs = 0;
 		if (patternSrc[i].endRE) {
-			const char *ptr = patternSrc[i].endRE;
+			const char *ptr = patternSrc[i].endRE.str();
 			while (true) {
 				if (*ptr == '&') {
 					compiledPats[i].endSubexprs[nSubExprs++] = 0;
@@ -877,7 +877,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		if (!patternSrc[i].endRE || compiledPats[i].colorOnly) {
 			compiledPats[i].endRE = nullptr;
 		} else {
-			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE)) == nullptr) {
+			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE.str())) == nullptr) {
 				return nullptr;
 			}
 		}
@@ -900,7 +900,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 			continue;
 		}
 		
-		length  = (compiledPats[patternNum].colorOnly || !patternSrc[patternNum].endRE)   ? 0 : strlen(patternSrc[patternNum].endRE) + 5;
+		length  = (compiledPats[patternNum].colorOnly || !patternSrc[patternNum].endRE)   ? 0 : patternSrc[patternNum].endRE.size() + 5;
 		length += (compiledPats[patternNum].colorOnly || !patternSrc[patternNum].errorRE) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 		
 		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
@@ -920,7 +920,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 			bigPattern += '(';
 			bigPattern += '?';
 			bigPattern += ':';
-			bigPattern += patternSrc[patternNum].endRE;
+			bigPattern += patternSrc[patternNum].endRE.str();
 			bigPattern += ')';
 			bigPattern += '|';
 			compiledPats[patternNum].nSubBranches++;

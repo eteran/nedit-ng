@@ -22,7 +22,7 @@ public:
 public:
 	std::string name;
 	XString startRE;
-	char *endRE;
+	XString endRE;
 	XString errorRE;
 	nullable_string style;
 	nullable_string subPatternOf;

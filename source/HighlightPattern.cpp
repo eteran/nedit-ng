@@ -6,9 +6,7 @@
 HighlightPattern::HighlightPattern() : endRE(nullptr), errorRE(nullptr), flags(0) {
 }
 
-HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), startRE(other.startRE), errorRE(other.errorRE), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
-	endRE   = XtNewStringEx(other.endRE);
-	
+HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), startRE(other.startRE), endRE(other.endRE), errorRE(other.errorRE), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
 }
 
 HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
@@ -19,8 +17,6 @@ HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
 }
 
 HighlightPattern::HighlightPattern(HighlightPattern &&other) : name(std::move(other.name)), startRE(std::move(other.startRE)), errorRE(std::move(other.errorRE)), style(std::move(other.style)), subPatternOf(std::move(other.subPatternOf)), flags(std::move(other.flags)) {
-	endRE   = other.endRE;
-	other.endRE   = nullptr;
 }
 
 
@@ -32,7 +28,6 @@ HighlightPattern &HighlightPattern::operator=(HighlightPattern &&rhs) {
 }
 
 HighlightPattern::~HighlightPattern() {
-	XtFree(endRE);
 }
 
 void HighlightPattern::swap(HighlightPattern &other) {

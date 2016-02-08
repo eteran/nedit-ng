@@ -514,6 +514,70 @@ constexpr bool operator>=(const std::basic_string<Ch, Tr> &lhs, basic_string_vie
 }
 
 
+
+template <class Ch, class Tr>
+constexpr bool operator==(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs == basic_string_view<Ch, Tr>(rhs);
+}
+
+template <class Ch, class Tr>
+constexpr bool operator!=(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs != basic_string_view<Ch, Tr>(rhs);
+}
+
+template <class Ch, class Tr>
+constexpr bool operator<(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs < basic_string_view<Ch, Tr>(rhs);
+}
+
+template <class Ch, class Tr>
+constexpr bool operator<=(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs <= basic_string_view<Ch, Tr>(rhs);
+}
+
+template <class Ch, class Tr>
+constexpr bool operator>(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs > basic_string_view<Ch, Tr>(rhs);
+}
+
+template <class Ch, class Tr>
+constexpr bool operator>=(basic_string_view<Ch, Tr> lhs, const char *rhs) noexcept {
+	return lhs >= basic_string_view<Ch, Tr>(rhs);
+}
+
+
+
+template <class Ch, class Tr>
+constexpr bool operator==(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) == rhs;
+}
+
+template <class Ch, class Tr>
+constexpr bool operator!=(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) != rhs;
+}
+
+template <class Ch, class Tr>
+constexpr bool operator<(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) < rhs;
+}
+
+template <class Ch, class Tr>
+constexpr bool operator<=(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) <= rhs;
+}
+
+template <class Ch, class Tr>
+constexpr bool operator>(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) > rhs;
+}
+
+template <class Ch, class Tr>
+constexpr bool operator>=(const char *lhs, basic_string_view<Ch, Tr> rhs) noexcept {
+	return basic_string_view<Ch, Tr>(lhs) >= rhs;
+}
+
+
 //--------------------------------------------------------------------------
 
 template <class Ch, class Tr>
