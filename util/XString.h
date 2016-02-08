@@ -5,6 +5,7 @@
 #include <memory>
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <Xm/Xm.h>
 #include "MotifHelper.h"
 
@@ -26,6 +27,7 @@ public:
 	explicit XString(const std::string &text) : ptr_(nullptr), size_(0) {
 		size_ = text.size();
 		ptr_  = XtMalloc(size_ + 1);
+		assert(ptr_);
 		std::copy(text.begin(), text.end(), ptr_);
 		ptr_[size_] = '\0';
 	}
@@ -34,6 +36,7 @@ public:
 		if(text) {
 			size_ = strlen(text);
 			ptr_  = XtMalloc(size_ + 1);
+			assert(ptr_);
 			strcpy(ptr_, text);
 		}
 	}	
@@ -42,6 +45,7 @@ public:
 		if(text) {	
 			size_ = length;	
 			ptr_  = XtMalloc(size_ + 1);
+			assert(ptr_);
 			std::copy_n(text, length, ptr_);
 			ptr_[size_] = '\0';
 		}
@@ -51,6 +55,7 @@ public:
 		if(other.ptr_) {	
 			size_ = other.size_;
 			ptr_  = XtMalloc(size_ + 1);
+			assert(ptr_);
 			std::copy(other.begin(), other.end(), ptr_);
 			ptr_[size_] = '\0';
 		}	
@@ -130,7 +135,19 @@ public:
 
 public:
 	int compare(const char *s) const {
-		assert(s);
+	
+		if(!ptr_ && !s) {
+			return 0;
+		}
+		
+		if(!ptr_ && s) {
+			return -1;
+		}
+		
+		if(ptr_ && !s) {
+			return 1;
+		}
+	
 		return strcmp(ptr_, s);
 	}
 	
@@ -139,6 +156,19 @@ public:
 	}	
 	
 	int compare(const XString &s) const {
+	
+		if(!ptr_ && !s.ptr_) {
+			return 0;
+		}
+		
+		if(!ptr_ && s.ptr_) {
+			return -1;
+		}
+		
+		if(ptr_ && !s.ptr_) {
+			return 1;
+		}	
+	
 		return strcmp(ptr_, s.ptr_);
 	}	
 	
@@ -162,6 +192,7 @@ public:
 	
 		int length = snprintf(nullptr, 0, format, args...);	
 		char *s    = XtMalloc(length + 1);
+		assert(s);
 		snprintf(s, length + 1, format, args...);	
 		
 		XString str;
@@ -191,22 +222,18 @@ inline bool operator!=(const XString &lhs, const XString &rhs) {
 }
 
 inline bool operator==(const char *lhs, const XString &rhs) {
-	assert(lhs);
 	return rhs.compare(lhs) == 0;
 }
 
 inline bool operator!=(const char *lhs, const XString &rhs) {
-	assert(lhs);
 	return rhs.compare(lhs) != 0;
 }
 
 inline bool operator==(const XString &lhs, const char *rhs) {
-	assert(rhs);
 	return lhs.compare(rhs) == 0;
 }
 
 inline bool operator!=(const XString &lhs, const char *rhs) {
-	assert(rhs);
 	return lhs.compare(rhs) != 0;
 }
 

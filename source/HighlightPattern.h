@@ -4,6 +4,7 @@
 
 #include <string>
 #include "nullable_string.h"
+#include "XString.h"
 
 /* Pattern specification structure */
 struct HighlightPattern {
