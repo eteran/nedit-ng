@@ -190,9 +190,12 @@ public:
 	// NOTE(eteran): takes ownership of the string instead of copying it
 	// and thus will free it later
 	static XString takeString(char *s) {
+	
 		XString str;
-		str.ptr_  = s;
-		str.size_ = strlen(s);
+		if(s) {
+			str.ptr_  = s;
+			str.size_ = strlen(s);
+		}
 		return str;
 	}
 	

@@ -21,7 +21,7 @@ public:
 
 public:
 	std::string name;
-	char *startRE;
+	XString startRE;
 	char *endRE;
 	XString errorRE;
 	nullable_string style;

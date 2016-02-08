@@ -461,7 +461,7 @@ static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		HighlightPattern *pattern = &patSet->patterns[p];
-		pattern->startRE = convertPatternExpr(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->startRE = convertPatternExprEx(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 		pattern->endRE   = convertPatternExpr(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
@@ -700,7 +700,7 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->startRE) {
-			std::string str = MakeQuotedStringEx(pat->startRE);
+			std::string str = MakeQuotedStringEx(pat->startRE.str());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -854,7 +854,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return False;
 
 	/* read the start pattern */
-	if (!ReadQuotedString(inPtr, errMsg, &pattern->startRE))
+	if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->startRE))
 		return False;
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
@@ -2094,7 +2094,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isRange = (pat->endRE != nullptr);
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
 		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf ? *pat->subPatternOf : "");
-		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE);
+		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE.str());
 		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE);
 		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.str());
 		
@@ -2214,7 +2214,7 @@ static void setStyleMenu(const char *styleName) {
 */
 static HighlightPattern *readDialogFields(bool silent) {
 
-	char *inPtr, *outPtr, *style;
+	char *style;
 	Widget selectedItem;
 	int colorOnly;
 
@@ -2246,8 +2246,8 @@ static HighlightPattern *readDialogFields(bool silent) {
 	}
 
 	/* read the startRE field */
-	pat->startRE = XmTextGetString(HighlightDialog.startW);
-	if (*pat->startRE == '\0') {
+	pat->startRE = XString::takeString(XmTextGetString(HighlightDialog.startW));
+	if (pat->startRE.empty()) {
 		if (!silent) {
 			DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex", "Please specify a regular\nexpression to match", "OK");
 			XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
@@ -2259,14 +2259,23 @@ static HighlightPattern *readDialogFields(bool silent) {
 	/* Make sure coloring patterns contain only sub-expression references
 	   and put it in replacement regular-expression form */
 	if (colorOnly) {
-		for (inPtr = pat->startRE, outPtr = pat->startRE; *inPtr != '\0'; inPtr++) {
-			if (*inPtr != ' ' && *inPtr != '\t') {
-				*outPtr++ = *inPtr;
+	
+		char *outStr = XtMalloc(pat->startRE.size() + 1);
+		char *outPtr = outStr;
+		
+		for(char ch : pat->startRE) {
+			if (ch != ' ' && ch != '\t') {
+				*outPtr++ = ch;
 			}
 		}
 
 		*outPtr = '\0';
-		if (strspn(pat->startRE, "&\\123456789 \t") != strlen(pat->startRE) || (*pat->startRE != '\\' && *pat->startRE != '&') || strstr(pat->startRE, "\\\\")) {
+		
+		
+		pat->startRE = XString::takeString(outStr);
+		
+		
+		if (strspn(pat->startRE.str(), "&\\123456789 \t") != pat->startRE.size() || (pat->startRE[0] != '\\' && pat->startRE[0] != '&') || strstr(pat->startRE.str(), "\\\\")) {
 			if (!silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Error", "The expression field in patterns which specify highlighting for\n"
 				                                                            "a parent, must contain only sub-expression references in regular\n"

@@ -3,11 +3,10 @@
 #include "MotifHelper.h"
 #include <algorithm>
 
-HighlightPattern::HighlightPattern() : startRE(nullptr), endRE(nullptr), errorRE(nullptr), flags(0) {
+HighlightPattern::HighlightPattern() : endRE(nullptr), errorRE(nullptr), flags(0) {
 }
 
-HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), errorRE(other.errorRE), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
-	startRE = XtNewStringEx(other.startRE);
+HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), startRE(other.startRE), errorRE(other.errorRE), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
 	endRE   = XtNewStringEx(other.endRE);
 	
 }
@@ -19,11 +18,8 @@ HighlightPattern &HighlightPattern::operator=(const HighlightPattern &rhs) {
 	return *this;
 }
 
-HighlightPattern::HighlightPattern(HighlightPattern &&other) : name(std::move(other.name)), errorRE(std::move(other.errorRE)), style(std::move(other.style)), subPatternOf(std::move(other.subPatternOf)), flags(std::move(other.flags)) {
-	startRE = other.startRE;
+HighlightPattern::HighlightPattern(HighlightPattern &&other) : name(std::move(other.name)), startRE(std::move(other.startRE)), errorRE(std::move(other.errorRE)), style(std::move(other.style)), subPatternOf(std::move(other.subPatternOf)), flags(std::move(other.flags)) {
 	endRE   = other.endRE;
-	
-	other.startRE = nullptr;
 	other.endRE   = nullptr;
 }
 
@@ -36,7 +32,6 @@ HighlightPattern &HighlightPattern::operator=(HighlightPattern &&rhs) {
 }
 
 HighlightPattern::~HighlightPattern() {
-	XtFree(startRE);
 	XtFree(endRE);
 }
 
