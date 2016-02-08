@@ -117,6 +117,9 @@ public:
 	void BufUnselect();
 	void BufUnsubstituteNullCharsEx(std::string &string) const;
 
+public:
+	bool GetSimpleSelection(int *left, int *right);
+
 private:
 	bool searchBackward(int startPos, char searchChar, int *foundPos) const;
 	bool searchForward(int startPos, char searchChar, int *foundPos) const;

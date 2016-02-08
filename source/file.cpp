@@ -512,12 +512,9 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 int IncludeFile(Document *window, const char *name) {
 	struct stat statbuf;
-	int fileLen, readLen;
-	char *fileString;
-	FILE *fp = nullptr;
 
 	/* Open the file */
-	fp = fopen(name, "rb");
+	FILE *fp = fopen(name, "rb");
 	if(!fp) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Could not open %s:\n%s", "OK", name, strerror(errno));
 		return FALSE;
@@ -535,10 +532,10 @@ int IncludeFile(Document *window, const char *name) {
 		fclose(fp);
 		return FALSE;
 	}
-	fileLen = statbuf.st_size;
+	int fileLen = statbuf.st_size;
 
 	/* allocate space for the whole contents of the file */
-	fileString = new char[fileLen + 1]; /* +1 = space for null */
+	auto fileString = new char[fileLen + 1]; /* +1 = space for null */
 	if(!fileString) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "File is too large to include", "OK");
 		fclose(fp);
@@ -546,7 +543,7 @@ int IncludeFile(Document *window, const char *name) {
 	}
 
 	/* read the file into fileString and terminate with a null */
-	readLen = fread(fileString, sizeof(char), fileLen, fp);
+	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
 		fclose(fp);
@@ -583,9 +580,9 @@ int IncludeFile(Document *window, const char *name) {
 	/* insert the contents of the file in the selection or at the insert
 	   position in the window if no selection exists */
 	if (window->buffer_->primary_.selected) {
-		window->buffer_->BufReplaceSelectedEx(fileString);
+		window->buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
 	} else {
-		window->buffer_->BufInsertEx(TextGetCursorPos(window->lastFocus_), fileString);
+		window->buffer_->BufInsertEx(TextGetCursorPos(window->lastFocus_), view::string_view(fileString, readLen));
 	}
 
 	/* release the memory that holds fileString */

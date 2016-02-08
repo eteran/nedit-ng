@@ -3666,7 +3666,7 @@ void SelectToMatchingCharacter(Document *window) {
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!GetSimpleSelection(buf, &selStart, &selEnd)) {
+	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
 		selEnd = TextGetCursorPos(window->lastFocus_);
 		if (window->overstrike_)
 			selEnd += 1;
@@ -3709,7 +3709,7 @@ void GotoMatchingCharacter(Document *window) {
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!GetSimpleSelection(buf, &selStart, &selEnd)) {
+	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
 		selEnd = TextGetCursorPos(window->lastFocus_);
 		if (window->overstrike_)
 			selEnd += 1;
@@ -4942,7 +4942,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 
 	/* return the start and end of the selection */
 	if (isRect) {
-		GetSimpleSelection(window->buffer_, left, right);
+		window->buffer_->GetSimpleSelection(left, right);
 	} else {
 		*left  = selStart;
 		*right = selEnd;

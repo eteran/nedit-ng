@@ -168,7 +168,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	/* get the selection or the insert position */
 	pos = TextGetCursorPos(window->lastFocus_);
-	if (GetSimpleSelection(window->buffer_, &left, &right))
+	if (window->buffer_->GetSimpleSelection(&left, &right))
 		flags = ACCUMULATE | REPLACE_SELECTION;
 	else
 		left = right = pos;
@@ -222,7 +222,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 
 	/* get all of the text on the line with the insert position */
 	pos = TextGetCursorPos(window->lastFocus_);
-	if (!GetSimpleSelection(window->buffer_, &left, &right)) {
+	if (!window->buffer_->GetSimpleSelection(&left, &right)) {
 		left = right = pos;
 		left = window->buffer_->BufStartOfLine(left);
 		right = window->buffer_->BufEndOfLine( right);
@@ -343,10 +343,10 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 				left = 0;
 				right = window->buffer_->BufGetLength();
 			} else if (input == FROM_SELECTION) {
-				GetSimpleSelection(window->buffer_, &left, &right);
+				window->buffer_->GetSimpleSelection(&left, &right);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else if (input == FROM_EITHER) {
-				if (GetSimpleSelection(window->buffer_, &left, &right))
+				if (window->buffer_->GetSimpleSelection(&left, &right))
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				else {
 					left = 0;
@@ -354,7 +354,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 				}
 			}
 		} else {
-			if (GetSimpleSelection(window->buffer_, &left, &right))
+			if (window->buffer_->GetSimpleSelection(&left, &right))
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			else
 				left = right = TextGetCursorPos(window->lastFocus_);

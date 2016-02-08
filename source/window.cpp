@@ -162,23 +162,26 @@ int NWindows(void) {
 ** selection issues for older routines which use selections that won't
 ** span lines.
 */
-int GetSimpleSelection(TextBuffer *buf, int *left, int *right) {
+bool TextBuffer::GetSimpleSelection(int *left, int *right) {
 	int selStart, selEnd, rectStart, rectEnd;
 	bool isRect;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
-		return False;
-	if (isRect) {
-		int lineStart = buf->BufStartOfLine(selStart);
-		selStart  = buf->BufCountForwardDispChars(lineStart, rectStart);
-		selEnd    = buf->BufCountForwardDispChars(lineStart, rectEnd);
+	if (!this->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+		return false;
 	}
-	*left = selStart;
+	
+	if (isRect) {
+		int lineStart = this->BufStartOfLine(selStart);
+		selStart  = this->BufCountForwardDispChars(lineStart, rectStart);
+		selEnd    = this->BufCountForwardDispChars(lineStart, rectEnd);
+	}
+	
+	*left  = selStart;
 	*right = selEnd;
-	return True;
+	return true;
 }
 
 #ifndef NO_SESSION_RESTART

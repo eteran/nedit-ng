@@ -29,6 +29,7 @@
 
 #include <string>
 #include "XString.h"
+#include "string_view.h"
 
 enum fileFormats {
 	UNIX_FILE_FORMAT, 
@@ -42,7 +43,7 @@ int CompressPathname(char *pathname);
 int ConvertToDosFileString(char **fileString, int *length);
 bool ConvertToDosFileStringEx(std::string &fileString);
 int ExpandTilde(char *pathname);
-int FormatOfFile(const char *fileString, int length);
+fileFormats FormatOfFile(const char *fileString, int length);
 int NormalizePathname(char *pathname);
 int ParseFilename(const char *fullname, char *filename, char *pathname);
 int ResolvePath(const char *pathIn, char *pathResolved);

@@ -29,13 +29,10 @@
 
 #include "nedit.h"
 
-struct TextBuffer;
-
 #include <X11/Intrinsic.h>
 
 Document *FindWindowWithFile(const char *name, const char *path);
 Document *TabToWindow(Widget tab);
-int GetSimpleSelection(TextBuffer *buf, int *left, int *right);
 int NWindows(void);
 void AddSmallIcon(Widget shell);
 void AllWindowsBusy(const char *message);
