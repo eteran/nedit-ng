@@ -393,7 +393,7 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 	/* Copy the rest of the line.  If the indentation has changed, preserve
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
-	std::string retabbedStr = realignTabsEx(c, postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+	std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
 
 	auto it = retabbedStr.begin();
 	auto out = outPtr;
