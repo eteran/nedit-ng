@@ -32,6 +32,8 @@
 #include "nullable_string.h"
 #include <exception>
 
+class XString;
+
 
 class invalid_character_error : public std::exception {
 public:
@@ -149,6 +151,7 @@ int GetVerticalAutoScroll(void);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);
 int ReadNumericField(const char **inPtr, int *value);
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
+int ReadQuotedStringEx(const char **inPtr, const char **errMsg, XString *string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 std::string EscapeSensitiveCharsEx(view::string_view string);

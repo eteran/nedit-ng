@@ -4012,6 +4012,62 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 }
 
 /*
+** parse an individual quoted string.  Anything between
+** double quotes is acceptable, quote characters can be escaped by "".
+** Returns allocated string "string" containing
+** argument minus quotes.  If not successful, returns False with
+** (statically allocated) message in "errMsg".
+*/
+int ReadQuotedStringEx(const char **inPtr, const char **errMsg, XString *string) {
+	char *outPtr;
+	const char *c;
+
+	/* skip over blank space */
+	*inPtr += strspn(*inPtr, " \t");
+
+	/* look for initial quote */
+	if (**inPtr != '\"') {
+		*errMsg = "expecting quoted string";
+		return False;
+	}
+	(*inPtr)++;
+
+	/* calculate max length and allocate returned string */
+	for (c = *inPtr;; c++) {
+		if (*c == '\0') {
+			*errMsg = "string not terminated";
+			return False;
+		} else if (*c == '\"') {
+			if (*(c + 1) == '\"')
+				c++;
+			else
+				break;
+		}
+	}
+
+	/* copy string up to end quote, transforming escaped quotes into quotes */
+	char *str = XtMalloc(c - *inPtr + 1);
+	outPtr = str;
+	while (true) {
+		if (**inPtr == '\"') {
+			if (*(*inPtr + 1) == '\"')
+				(*inPtr)++;
+			else
+				break;
+		}
+		*outPtr++ = *(*inPtr)++;
+	}
+	*outPtr = '\0';
+
+	/* skip end quote */
+	(*inPtr)++;
+	
+	*string = XString::takeString(str);
+	
+	return True;
+}
+
+/*
 ** Replace characters which the X resource file reader considers control
 ** characters, such that a string will read back as it appears in "string".
 ** (So far, newline characters are replaced with with \n\<newline> and

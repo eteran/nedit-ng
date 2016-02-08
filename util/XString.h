@@ -61,6 +61,11 @@ public:
 		}	
 	}
 	
+	XString& operator=(nullptr_t) {
+		XString(nullptr).swap(*this);
+		return *this;
+	}	
+	
 	XString& operator=(const XString &rhs) {
 		if(this != &rhs) {
 			XString(rhs).swap(*this);
@@ -100,6 +105,10 @@ public:
 	
 	explicit operator bool() const {
 		return ptr_ != nullptr;
+	}
+	
+	bool operator!() const {
+		return ptr_ == nullptr;
 	}
 	
 public:

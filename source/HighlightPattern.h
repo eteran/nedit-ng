@@ -23,7 +23,7 @@ public:
 	std::string name;
 	char *startRE;
 	char *endRE;
-	char *errorRE;
+	XString errorRE;
 	nullable_string style;
 	nullable_string subPatternOf;
 	int flags;

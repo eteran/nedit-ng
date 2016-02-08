@@ -98,6 +98,9 @@ static int updateHSList(void);
 static void updateHighlightStyleMenu(void);
 static void convertOldPatternSet(PatternSet *patSet);
 static char *convertPatternExpr(char *patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
+static XString convertPatternExprEx(const XString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
+
+
 static Widget createHighlightStylesMenu(Widget parent);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -460,7 +463,7 @@ static void convertOldPatternSet(PatternSet *patSet) {
 		HighlightPattern *pattern = &patSet->patterns[p];
 		pattern->startRE = convertPatternExpr(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 		pattern->endRE   = convertPatternExpr(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		pattern->errorRE = convertPatternExpr(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -497,6 +500,40 @@ static char *convertPatternExpr(char *patternRE, const char *patSetName, const c
 	}
 	
 	return nullptr;
+}
+
+
+/*
+** Convert a single regular expression, patternRE, to version 5.1 regular
+** expression syntax.  It will convert either a match expression or a
+** substitution expression, which must be specified by the setting of
+** isSubsExpr.  Error messages are directed to stderr, and include the
+** pattern set name and pattern name as passed in patSetName and patName.
+*/
+static XString convertPatternExprEx(const XString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
+
+	if (!patternRE) {
+		return XString();
+	}
+	
+	if (isSubsExpr) {
+		// TODO(eteran): the + 5000 seems a bit wasteful
+		int bufsize = patternRE.size() + 5000;
+	
+		
+		char *newRE = XtMalloc(bufsize);
+		ConvertSubstituteRE(patternRE.str(), newRE, bufsize);
+		return XString::takeString(newRE);
+	} else {
+		try {
+			char *newRE = ConvertRE(patternRE.str());
+			return XString::takeString(newRE);
+		} catch(const regex_error &e) {
+			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
+		}
+	}
+	
+	return XString();
 }
 
 /*
@@ -668,12 +705,12 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->endRE) {
-			std::string str =MakeQuotedStringEx(pat->endRE);
+			std::string str = MakeQuotedStringEx(pat->endRE);
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->errorRE) {
-			std::string str =MakeQuotedStringEx(pat->errorRE);
+			std::string str = MakeQuotedStringEx(pat->errorRE.str());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -823,18 +860,23 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return False;
 
 	/* read the end pattern */
-	if (**inPtr == ':')
+	
+	if (**inPtr == ':') {
 		pattern->endRE = nullptr;
-	else if (!ReadQuotedString(inPtr, errMsg, &pattern->endRE))
+	} else if (!ReadQuotedString(inPtr, errMsg, &pattern->endRE)) {
 		return False;
+	}
+
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
 	/* read the error pattern */
-	if (**inPtr == ':')
+	if (**inPtr == ':') {
 		pattern->errorRE = nullptr;
-	else if (!ReadQuotedString(inPtr, errMsg, &pattern->errorRE))
+	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->errorRE)) {
 		return False;
+	}
+	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -2054,7 +2096,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf ? *pat->subPatternOf : "");
 		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE);
 		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE);
-		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE);
+		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.str());
 		
 		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred,  False);
 		RadioButtonChangeState(HighlightDialog.deferredW, !isSubpat &&  isDeferred,  False);
@@ -2272,9 +2314,8 @@ static HighlightPattern *readDialogFields(bool silent) {
 
 	/* read the errorRE field */
 	if (XmToggleButtonGetState(HighlightDialog.rangeW)) {
-		pat->errorRE = XmTextGetString(HighlightDialog.errorW);
-		if (*pat->errorRE == '\0') {
-			XtFree(pat->errorRE);
+		pat->errorRE = XString::takeString(XmTextGetString(HighlightDialog.errorW));
+		if (pat->errorRE.empty()) {
 			pat->errorRE = nullptr;
 		}
 	}
