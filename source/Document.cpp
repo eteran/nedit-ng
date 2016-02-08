@@ -2800,8 +2800,7 @@ void Document::CloseWindow() {
 		XmToggleButtonSetState(readOnlyItem_, FALSE, FALSE);
 		ClearUndoList();
 		ClearRedoList();
-		XmTextSetStringEx(statsLine_, ""); /* resets scroll pos of stats
-		                                            line from long file names */
+		XmTextSetStringEx(statsLine_, ""); /* resets scroll pos of stats line from long file names */
 		UpdateStatsLine();
 		DetermineLanguageMode(this, True);
 		RefreshTabState();
