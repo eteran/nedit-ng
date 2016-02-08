@@ -866,7 +866,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	/* Compile regular expressions for all highlight patterns */
 	for (int i = 0; i < nPatterns; i++) {
 
-		if (patternSrc[i].startRE == nullptr || compiledPats[i].colorOnly) {
+		if (!patternSrc[i].startRE || compiledPats[i].colorOnly) {
 			compiledPats[i].startRE = nullptr;
 		} else {
 			if ((compiledPats[i].startRE = compileREAndWarn(dialogParent, patternSrc[i].startRE)) == nullptr) {
@@ -874,7 +874,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 			}
 		}
 		
-		if (patternSrc[i].endRE == nullptr || compiledPats[i].colorOnly) {
+		if (!patternSrc[i].endRE || compiledPats[i].colorOnly) {
 			compiledPats[i].endRE = nullptr;
 		} else {
 			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE)) == nullptr) {
@@ -882,7 +882,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 			}
 		}
 		
-		if (patternSrc[i].errorRE == nullptr) {
+		if (!patternSrc[i].errorRE) {
 			compiledPats[i].errorRE = nullptr;
 		} else {
 			if ((compiledPats[i].errorRE = compileREAndWarn(dialogParent, patternSrc[i].errorRE.str())) == nullptr) {
