@@ -27,20 +27,20 @@
 *******************************************************************************/
 
 #include "smartIndent.h"
-#include "TextBuffer.h"
-#include "nedit.h"
-#include "text.h"
-#include "preferences.h"
 #include "Document.h"
+#include "help.h"
 #include "interpret.h"
 #include "macro.h"
-#include "window.h"
-#include "parse.h"
-#include "shift.h"
-#include "help.h"
 #include "MotifHelper.h"
+#include "nedit.h"
+#include "parse.h"
+#include "preferences.h"
+#include "shift.h"
+#include "TextBuffer.h"
+#include "text.h"
 #include "../util/DialogF.h"
 #include "../util/misc.h"
+#include "window.h"
 
 #include <cstdio>
 #include <cstring>
@@ -58,9 +58,9 @@
 #include <Xm/SeparatoG.h>
 #include <Xm/PanedW.h>
 
-static char MacroEndBoundary[] = "--End-of-Macro--";
+namespace {
 
-struct smartIndentRec {
+struct SmartIndent {
 	const char *lmName;
 	const char *initMacro;
 	const char *newlineMacro;
@@ -73,6 +73,17 @@ struct windowSmartIndentData {
 	Program *modMacro;
 	int inModMacro;
 };
+
+const char MacroEndBoundary[] = "--End-of-Macro--";
+const int N_DEFAULT_INDENT_SPECS = 4;
+
+int NSmartIndentSpecs = 0;
+SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
+char *CommonMacros = nullptr;
+
+}
+
+
 
 /* Smart indent macros dialog information */
 static struct {
@@ -91,15 +102,13 @@ static struct {
 	Widget text;
 } CommonDialog = {nullptr, nullptr};
 
-static int NSmartIndentSpecs = 0;
-static smartIndentRec *SmartIndentSpecs[MAX_LANGUAGE_MODES];
-static char *CommonMacros = nullptr;
+
 
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
-static int isDefaultIndentSpec(smartIndentRec *indentSpec);
-static smartIndentRec *findIndentSpec(const char *modeName);
+static int isDefaultIndentSpec(SmartIndent *indentSpec);
+static SmartIndent *findIndentSpec(const char *modeName);
 static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -115,8 +124,8 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkSmartIndentDialogData(void);
-static smartIndentRec *getSmartIndentDialogData(void);
-static void setSmartIndentDialogData(smartIndentRec *is);
+static SmartIndent *getSmartIndentDialogData(void);
+static void setSmartIndentDialogData(SmartIndent *is);
 static void comDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void comOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -127,14 +136,13 @@ static int updateSmartIndentCommonData(void);
 static int checkSmartIndentCommonDialogData(void);
 static int updateSmartIndentData(void);
 static char *readSIMacro(const char **inPtr);
-static smartIndentRec *copyIndentSpec(smartIndentRec *is);
-static void freeIndentSpec(smartIndentRec *is);
-static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2);
+static SmartIndent *copyIndentSpec(SmartIndent *is);
+static void freeIndentSpec(SmartIndent *is);
+static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
 
-#define N_DEFAULT_INDENT_SPECS 4
-static smartIndentRec DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
+static SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
 # in the common section.  Press Common / Shared Initialization above.\n",
                                                                      "return cFindSmartIndentDist($1)\n", "if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n\
     cBraceOrPound($1, $2)\n"},
@@ -244,14 +252,13 @@ static const char DefaultCommonMacros[] =
 */
 void BeginSmartIndent(Document *window, int warn) {
 	windowSmartIndentData *winData;
-	smartIndentRec *indentMacros;
-	char *modeName;
+	SmartIndent *indentMacros;
 	const char *stoppedAt;
 	const char *errMsg;
-	static int initialized;
+	static bool initialized = false;
 
 	/* Find the window's language mode.  If none is set, warn the user */
-	modeName = LanguageModeName(window->languageMode_);
+	char *modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn) {
 			DialogF(DF_WARN, window->shell_, 1, "Smart Indent", "No language-specific mode has been set for this file.\n\n"
@@ -287,7 +294,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	if (!initialized) {
 		if (!ReadMacroString(window, CommonMacros, "smart indent common initialization macros"))
 			return;
-		initialized = True;
+		initialized = true;
 	}
 	if (indentMacros->initMacro) {
 		if (!ReadMacroString(window, indentMacros->initMacro, "smart indent initialization macro"))
@@ -325,8 +332,10 @@ void EndSmartIndent(Document *window) {
 		return;
 
 	/* Free programs and allocated data */
-	if (winData->modMacro)
+	if (winData->modMacro) {
 		FreeProgram(winData->modMacro);
+	}
+	
 	FreeProgram(winData->newlineMacro);
 	
 	delete winData;
@@ -698,8 +707,8 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	char *modeName;
 	int i, resp;
-	static smartIndentRec emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
-	smartIndentRec *oldMacros, *newMacros;
+	static SmartIndent emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
+	SmartIndent *oldMacros, *newMacros;
 
 	/* Get the newly selected mode name.  If it's the same, do nothing */
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
@@ -803,7 +812,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	int i;
-	smartIndentRec *defaultIS;
+	SmartIndent *defaultIS;
 
 	/* Find the default indent spec */
 	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
@@ -860,7 +869,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 			break;
 	if (i < NSmartIndentSpecs) {
 		freeIndentSpec(SmartIndentSpecs[i]);
-		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(smartIndentRec *));
+		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(SmartIndent *));
 		NSmartIndentSpecs--;
 	}
 
@@ -941,17 +950,17 @@ static int checkSmartIndentDialogData(void) {
 	return True;
 }
 
-static smartIndentRec *getSmartIndentDialogData(void) {
+static SmartIndent *getSmartIndentDialogData(void) {
 
-	auto is = new smartIndentRec;
+	auto is = new SmartIndent;
 	is->lmName       = XtNewStringEx(SmartIndentDialog.langModeName);
-	is->initMacro    = TextWidgetIsBlank(SmartIndentDialog.initMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
+	is->initMacro    = TextWidgetIsBlank(SmartIndentDialog.initMacro)    ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
 	is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
-	is->modMacro     = TextWidgetIsBlank(SmartIndentDialog.modMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
+	is->modMacro     = TextWidgetIsBlank(SmartIndentDialog.modMacro)     ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
 	return is;
 }
 
-static void setSmartIndentDialogData(smartIndentRec *is) {
+static void setSmartIndentDialogData(SmartIndent *is) {
 	if(!is) {
 		XmTextSetStringEx(SmartIndentDialog.initMacro, "");
 		XmTextSetStringEx(SmartIndentDialog.newlineMacro, "");
@@ -1210,7 +1219,7 @@ static int updateSmartIndentData(void) {
 		return False;
 
 	/* Get the current data */
-	smartIndentRec *newMacros = getSmartIndentDialogData();
+	SmartIndent *newMacros = getSmartIndentDialogData();
 
 	/* Find the original macros */
 	for (i = 0; i < NSmartIndentSpecs; i++)
@@ -1269,7 +1278,7 @@ int LoadSmartIndentStringEx(view::string_view string) {
 int LoadSmartIndentString(char *inString) {
 	const char *errMsg;
 	const char *inPtr = inString;
-	smartIndentRec is, *isCopy;
+	SmartIndent is, *isCopy;
 	int i;
 
 	for (;;) {
@@ -1334,7 +1343,7 @@ int LoadSmartIndentString(char *inString) {
 		}
 
 		/* create a new data structure and add/change it in the list */
-		isCopy = new smartIndentRec(is);
+		isCopy = new SmartIndent(is);
 
 		for (i = 0; i < NSmartIndentSpecs; i++) {
 			if (!strcmp(SmartIndentSpecs[i]->lmName, is.lmName)) {
@@ -1412,9 +1421,9 @@ static char *readSIMacro(const char **inPtr) {
 	return retStr;
 }
 
-static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
+static SmartIndent *copyIndentSpec(SmartIndent *is) {
 
-	auto ris = new smartIndentRec;
+	auto ris = new SmartIndent;
 	ris->lmName       = XtNewStringEx(is->lmName);
 	ris->initMacro    = XtNewStringEx(is->initMacro);
 	ris->newlineMacro = XtNewStringEx(is->newlineMacro);
@@ -1422,17 +1431,16 @@ static smartIndentRec *copyIndentSpec(smartIndentRec *is) {
 	return ris;
 }
 
-static void freeIndentSpec(smartIndentRec *is) {
+static void freeIndentSpec(SmartIndent *is) {
 
 	XtFree((char *)is->lmName);
 	XtFree((char *)is->initMacro);
 	XtFree((char *)is->newlineMacro);
-	XtFree((char *)is->modMacro);
-	// TODO(eteran): is this a memory leak? we never free is!
-	// delete is;
+	XtFree((char *)is->modMacro);	
+	delete is;
 }
 
-static int indentSpecsDiffer(smartIndentRec *is1, smartIndentRec *is2) {
+static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2) {
 	return AllocatedStringsDiffer(is1->initMacro, is2->initMacro) || AllocatedStringsDiffer(is1->newlineMacro, is2->newlineMacro) || AllocatedStringsDiffer(is1->modMacro, is2->modMacro);
 }
 
@@ -1444,7 +1452,7 @@ std::string WriteSmartIndentStringEx(void) {
 
 	auto outBuf = new TextBuffer;
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		smartIndentRec *sis = SmartIndentSpecs[i];
+		SmartIndent *sis = SmartIndentSpecs[i];
 		
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), sis->lmName);
@@ -1507,7 +1515,7 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 	buf->BufInsertEx(buf->BufGetLength(), "\n");
 }
 
-static int isDefaultIndentSpec(smartIndentRec *indentSpec) {
+static int isDefaultIndentSpec(SmartIndent *indentSpec) {
 	int i;
 
 	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++)
@@ -1516,7 +1524,7 @@ static int isDefaultIndentSpec(smartIndentRec *indentSpec) {
 	return False;
 }
 
-static smartIndentRec *findIndentSpec(const char *modeName) {
+static SmartIndent *findIndentSpec(const char *modeName) {
 	int i;
 
 	if(!modeName)
