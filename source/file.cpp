@@ -31,7 +31,6 @@
 #include "text.h"
 #include "window.h"
 #include "preferences.h"
-#include "undo.h"
 #include "menu.h"
 #include "tags.h"
 #include "server.h"

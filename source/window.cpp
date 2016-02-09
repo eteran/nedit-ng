@@ -37,7 +37,6 @@
 #include "menu.h"
 #include "file.h"
 #include "search.h"
-#include "undo.h"
 #include "preferences.h"
 #include "selection.h"
 #include "server.h"

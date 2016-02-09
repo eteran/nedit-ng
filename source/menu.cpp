@@ -34,7 +34,6 @@
 #include "window.h"
 #include "search.h"
 #include "selection.h"
-#include "undo.h"
 #include "shift.h"
 #include "help.h"
 #include "preferences.h"
