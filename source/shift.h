@@ -36,11 +36,11 @@ enum ShiftDirection {
 	SHIFT_RIGHT
 };
 
-void ShiftSelection(Document *window, int direction, int byTab);
+void ShiftSelection(Document *window, ShiftDirection direction, int byTab);
 void UpcaseSelection(Document *window);
 void DowncaseSelection(Document *window);
 void FillSelection(Document *window);
-char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
-std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars);
+char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
+std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 
 #endif

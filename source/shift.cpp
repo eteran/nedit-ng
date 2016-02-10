@@ -69,7 +69,7 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void ShiftSelection(Document *window, int direction, int byTab) {
+void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	int selStart;
 	int selEnd;
 	bool isRect;
@@ -285,7 +285,7 @@ void FillSelection(Document *window) {
 ** shift lines left and right in a multi-line text string.  Returns the
 ** shifted text in memory that must be freed by the caller with XtFree.
 */
-char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
+char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
 	char *shiftedText, *shiftedLine;
 	char *shiftedPtr;
 	const char *textPtr;
@@ -338,7 +338,7 @@ char *ShiftText(const char *text, int direction, int tabsAllowed, int tabDist, i
 ** shift lines left and right in a multi-line text string.  Returns the
 ** shifted text in memory that must be freed by the caller with XtFree.
 */
-std::string ShiftTextEx(view::string_view text, int direction, int tabsAllowed, int tabDist, int nChars) {
+std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
 	int bufLen;
 
 	/*

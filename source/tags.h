@@ -35,7 +35,7 @@
 #include <ctime>
 
 struct tagFile {
-	struct tagFile *next;
+	tagFile     *next;
 	std::string filename;
 	time_t      date;
 	bool        loaded;
