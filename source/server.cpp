@@ -110,9 +110,9 @@ static void cleanUpServerCommunication(void) {
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
 	 */
-	Document::for_each([](Document *w) {
+	for(Document *w: WindowList) {
 		DeleteFileClosedProperty(w);
-	});
+	}
 
 	/* Delete any per-file properties that still exist
 	 * (but that that server doesn't know about)
@@ -256,7 +256,7 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 	if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
 		/* A new window is requested, unless we find an untitled unmodified
 		    document on the current desktop */
-		for (Document *window = WindowList; window != nullptr; window = window->next_) {
+		for (Document *window: WindowList) {
 			if (window->filenameSet_ || window->fileChanged_ || window->macroCmdData_) {
 				continue;
 			}
@@ -267,7 +267,7 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		}
 	} else {
 		/* Find a window on the current desktop to hold the new document */
-		for (Document *window = WindowList; window != nullptr; window = window->next_) {
+		for (Document *window: WindowList) {
 			/* Avoid unnecessary property access (server round-trip) */
 			if (!window->IsTopDocument()) {
 				continue;

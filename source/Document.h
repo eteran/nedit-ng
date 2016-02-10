@@ -401,15 +401,7 @@ public:
 		
 		return nullptr;
 	}
-	
-	
-	template <class Pred>
-	static void for_each(Pred p) {
-		for (Document *win = WindowList; win != nullptr; win = win->next_) {
-			p(win);
-		}
-	}	
-	
+		
 	static inline int WindowCount() {
 		int n = 0;
 
@@ -419,5 +411,88 @@ public:
 		return n;	
 	}
 };
+
+class ConstDocumentIterator;
+
+class DocumentIterator {
+	friend class ConstDocumentIterator;
+
+public:
+	DocumentIterator()          : ptr_(nullptr)  {}
+	DocumentIterator(Document *p) : ptr_(p) {}
+	
+public:
+	DocumentIterator(const DocumentIterator &)            = default;
+	DocumentIterator& operator=(const DocumentIterator &) = default;
+
+public:
+	Document* operator->() { return ptr_; }
+	Document* operator*()  { return ptr_; }
+
+public:
+	bool operator!=(const DocumentIterator& rhs) const { return ptr_ != rhs.ptr_; }
+	bool operator==(const DocumentIterator& rhs) const { return ptr_ == rhs.ptr_; }
+
+public:
+	DocumentIterator operator++(int) { DocumentIterator t(*this); ptr_ = ptr_->next_; return t; }
+	DocumentIterator& operator++()   { ptr_ = ptr_->next_; return *this; }
+	
+public:
+	Document* ptr_;
+};
+
+
+class ConstDocumentIterator {
+	friend class DocumentIterator;
+
+public:
+	ConstDocumentIterator()          : ptr_(nullptr)  {}
+	ConstDocumentIterator(const Document *p) : ptr_(p) {}
+	ConstDocumentIterator(const DocumentIterator &it) : ptr_(it.ptr_) {}
+	
+public:
+	ConstDocumentIterator(const ConstDocumentIterator &)            = default;
+	ConstDocumentIterator& operator=(const ConstDocumentIterator &) = default;
+
+public:
+	const Document* operator->() const { return ptr_; }
+	const Document* operator*() const  { return ptr_; }
+
+public:
+	bool operator!=(const ConstDocumentIterator& rhs) const { return ptr_ != rhs.ptr_; }
+	bool operator==(const ConstDocumentIterator& rhs) const { return ptr_ == rhs.ptr_; }
+
+public:
+	ConstDocumentIterator operator++(int) { ConstDocumentIterator t(*this); ptr_ = ptr_->next_; return t; }
+	ConstDocumentIterator& operator++()   { ptr_ = ptr_->next_; return *this; }
+	
+public:
+	const Document* ptr_;
+};
+
+
+inline DocumentIterator begin(Document *win) {
+	return DocumentIterator(win);
+}
+
+inline DocumentIterator end(Document *) {
+	return DocumentIterator();
+}
+
+inline ConstDocumentIterator begin(const Document *win) {
+	return ConstDocumentIterator(win);
+}
+
+inline ConstDocumentIterator end(const Document *) {
+	return ConstDocumentIterator();
+}
+
+inline ConstDocumentIterator cbegin(const Document *win) {
+	return ConstDocumentIterator(win);
+}
+
+inline ConstDocumentIterator cend(const Document *) {
+	return ConstDocumentIterator();
+}
 
 #endif

@@ -1238,9 +1238,9 @@ void ImportPrefFile(const char *filename, int convertOld) {
 void SetPrefOpenInTab(int state) {
 	setIntPref(&PrefData.openInTab, state);
 	
-	Document::for_each([state](Document *w) {
+	for(Document *w: WindowList) {
 		w->UpdateNewOppositeMenu(state);
-	});
+	}
 }
 
 int GetPrefOpenInTab(void) {
@@ -1567,9 +1567,9 @@ void SetPrefAutoScroll(int state) {
 
 	setIntPref(&PrefData.autoScroll, state);
 	
-	Document::for_each([margin](Document *w) {
+	for(Document *w: WindowList) {
 		w->SetAutoScroll(margin);
-	});
+	}
 }
 
 int GetPrefAutoScroll(void) {
@@ -1728,9 +1728,9 @@ void SetPrefTitleFormat(const char *format) {
 	setStringPref(PrefData.titleFormat, format);
 
 	/* update all windows */
-	Document::for_each([](Document *window) {
+	for(Document *window: WindowList) {
 		window->UpdateWindowTitle();
-	});
+	}
 }
 const char *GetPrefTitleFormat(void) {
 	return PrefData.titleFormat;
@@ -2633,7 +2633,7 @@ static int updateLMList(void) {
 	   if the currently selected mode is deleted or has changed position),
 	   and update word delimiters */
 	   
-	Document::for_each([&](Document *window) {
+	for(Document *window: WindowList) {
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			oldLanguageMode = window->languageMode_;
 			oldModeName = LanguageModes[window->languageMode_]->name;
@@ -2657,7 +2657,7 @@ static int updateLMList(void) {
 				}
 			}
 		}
-	});
+	}
 
 	/* If there were any name changes, re-name dependent highlight patterns
 	   and smart-indent macros and fix up the weird rename-format names */
@@ -2685,13 +2685,13 @@ static int updateLMList(void) {
 
 	/* Update the menus in the window menu bars and load any needed
 	    calltips files */
-	Document::for_each([](Document *window) {
+	for(Document *window: WindowList) {
 		updateLanguageModeSubmenu(window);
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && LanguageModes[window->languageMode_]->defTipsFile != nullptr)
 			AddTagsFile(LanguageModes[window->languageMode_]->defTipsFile, TIP);
 		/* cache user menus: Rebuild all user menus of this window */
 		RebuildAllMenus(window);
-	});
+	}
 
 	/* If a syntax highlighting dialog is up, update its menu */
 	UpdateLanguageModeMenu();
@@ -5230,9 +5230,9 @@ static void updateColors(colorDialog *cd) {
 	char *lineNoFg = XmTextGetString(cd->lineNoFgW);
 	char *cursorFg = XmTextGetString(cd->cursorFgW);
 
-	Document::for_each([&](Document *window) {
+	for(Document *window: WindowList) {
 		window->SetColors(textFg, textBg, selectFg, selectBg, hiliteFg, hiliteBg, lineNoFg, cursorFg);
-	});
+	}
 
 	SetPrefColorName(TEXT_FG_COLOR, textFg);
 	SetPrefColorName(TEXT_BG_COLOR, textBg);

@@ -1351,9 +1351,9 @@ static int updateHSList(void) {
 	updateHighlightStyleMenu();
 
 	/* Redisplay highlighted windows which use changed style(s) */
-	Document::for_each([](Document *window) {
+	for(Document *window: WindowList) {
 		UpdateHighlightStyles(window);
-	});
+	}
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();
@@ -2353,7 +2353,7 @@ static int updatePatternSet(void) {
 
 	/* Find windows that are currently using this pattern set and
 	   re-do the highlighting */
-	Document::for_each([&](Document *window) {
+	for(Document *window: WindowList) {
 		if (patSet->nPatterns > 0) {
 			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == *patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
@@ -2391,7 +2391,7 @@ static int updatePatternSet(void) {
 				window->SetToggleButtonState(window->highlightItem_, False, False);
 			}
 		}
-	});
+	}
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();

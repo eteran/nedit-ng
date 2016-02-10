@@ -975,9 +975,9 @@ void RebuildAllMenus(Document *window) {
 */
 static void rebuildMenuOfAllWindows(int menuType) {
 
-	Document::for_each([menuType](Document *w) {
+	for(Document *w: WindowList) {
 		rebuildMenu(w, menuType);
-	});
+	}
 }
 
 /*

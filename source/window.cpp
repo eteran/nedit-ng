@@ -207,10 +207,10 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int i = nWindows - 1;
 	
 	
-	Document::for_each([&](Document *win) {
+	for(Document *win: WindowList) {
 		revWindowList[i] = win;
 		--i;
-	});
+	}
 
 	/* Create command line arguments for restoring each window in the list */
 	std::vector<char *> argv;
@@ -307,7 +307,7 @@ void AllWindowsBusy(const char *message) {
 		busyStartTime = getRelTimeInTenthsOfSeconds();
 		modeMessageSet = False;
 
-		Document::for_each([](Document *w) {
+		for(Document *w: WindowList) {
 			/* We don't the display message here yet, but defer it for
 			   a while. If the wait is short, we don't want
 			   to have it flash on and off the screen.  However,
@@ -317,13 +317,14 @@ void AllWindowsBusy(const char *message) {
 			   at regular intervals.
 			*/
 			BeginWait(w->shell_);
-		});
+		}
+		
 	} else if (!modeMessageSet && message && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 		/* Show the mode message when we've been busy for more than a second */
 		
-		Document::for_each([message](Document *w) {
+		for(Document *w: WindowList) {
 			w->SetModeMessage(message);
-		});
+		}
 		modeMessageSet = True;
 	}
 	BusyWait(WindowList->shell_);
@@ -333,10 +334,10 @@ void AllWindowsBusy(const char *message) {
 
 void AllWindowsUnbusy(void) {
 
-	Document::for_each([](Document *w) {
+	for(Document *w: WindowList) {
 		w->ClearModeMessage();
 		EndWait(w->shell_);
-	});
+	}
 
 	currentlyBusy = False;
 	modeMessageSet = False;

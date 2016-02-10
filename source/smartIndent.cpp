@@ -1175,12 +1175,12 @@ static int updateSmartIndentCommonData(void) {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-	Document::for_each([&](Document *window) {
+	for(Document *window: WindowList) {
 		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
 			EndSmartIndent(window);
 			BeginSmartIndent(window, False);
 		}
-	});
+	}
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();
@@ -1237,7 +1237,7 @@ static int updateSmartIndentData(void) {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-	Document::for_each([&](Document *window) {
+	for(Document *window: WindowList) {
 		lmName = LanguageModeName(window->languageMode_);
 		if (lmName != nullptr && !strcmp(lmName, newMacros->lmName)) {
 			window->SetSensitive(window->smartIndentItem_, True);
@@ -1246,7 +1246,7 @@ static int updateSmartIndentData(void) {
 				BeginSmartIndent(window, False);
 			}
 		}
-	});
+	}
 
 	/* Note that preferences have been changed */
 	MarkPrefsChanged();

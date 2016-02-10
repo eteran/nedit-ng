@@ -393,11 +393,12 @@ void BeginLearn(Document *window) {
 		return;
 
 	/* dim the inappropriate menus and items, and undim finish and cancel */
-	Document::for_each([](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->learnItem_, False);
 		}
-	});
+	}
+	
 	window->SetSensitive(window->finishLearnItem_, True);
 	XtVaSetValues(window->cancelMacroItem_, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
 	XmStringFree(s);
@@ -466,22 +467,23 @@ void FinishLearn(void) {
 	delete MacroRecordBuf;
 
 	/* Undim the menu items dimmed during learn */
-	Document::for_each([](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->learnItem_, True);
 		}
-	});
+	}
+	
 	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem_, False);
 		XtSetSensitive(MacroRecordWindow->cancelMacroItem_, False);
 	}
 
 	/* Undim the replay and paste-macro buttons */
-	Document::for_each([](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->replayItem_, True);
 		}
-	});
+	}
 	
 	DimPasteReplayBtns(True);
 
@@ -513,11 +515,11 @@ static void cancelLearn(void) {
 	delete MacroRecordBuf;
 
 	/* Undim the menu items dimmed during learn */
-	Document::for_each([](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->learnItem_, True);
 		}
-	});
+	}
 	
 	if (MacroRecordWindow->IsTopDocument()) {
 		XtSetSensitive(MacroRecordWindow->finishLearnItem_, False);
@@ -851,13 +853,14 @@ int MacroWindowCloseActions(Document *window) {
 	   if macros executing in other windows have it as focus.  If so, set
 	   their focus back to the window from which they were originally run */
 	if(!cmdData) {
-		Document::for_each([window](Document *w) {
+		for(Document *w: WindowList) {
 			auto mcd = static_cast<macroCmdInfo *>(w->macroCmdData_);
 			if (w == MacroRunWindow() && MacroFocusWindow() == window)
 				SetMacroFocusWindow(MacroRunWindow());
 			else if (mcd != nullptr && mcd->context->focusWindow == window)
 				mcd->context->focusWindow = mcd->context->runWindow;
-		});
+		}
+		
 		return True;
 	}
 
@@ -942,11 +945,13 @@ static void finishMacroCmdExecution(Document *window) {
 ** defers GC to the completion of the last macro out.
 */
 void SafeGC(void) {
-	Document *win;
 
-	for (win = WindowList; win != nullptr; win = win->next_)
-		if (win->macroCmdData_ != nullptr || InSmartIndentMacros(win))
+	for (Document *win: WindowList) {
+		if (win->macroCmdData_ != nullptr || InSmartIndentMacros(win)) {
 			return;
+		}
+	}
+	
 	GarbageCollectStrings();
 }
 
@@ -1199,13 +1204,14 @@ selEnd += $text_length - startLength\n}\n";
 ** learn.
 */
 static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
-	Document *window;
 	int i;
 	char *actionString;
 
 	/* Select only actions in text panes in the window for which this
 	   action hook is recording macros (from clientData). */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	auto window = begin(WindowList);
+	for (; window != end(WindowList); ++window) {
+	
 		if (window->textArea_ == w)
 			break;
 		for (i = 0; i < window->nPanes_; i++) {
@@ -1215,7 +1221,8 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 		if (i < window->nPanes_)
 			break;
 	}
-	if (window == nullptr || window != static_cast<Document *>(clientData))
+	
+	if (window == end(WindowList) || *window != static_cast<Document *>(clientData))
 		return;
 
 	/* beep on un-recordable operations which require a mouse position, to
@@ -1239,12 +1246,12 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 
 	(void)clientData;
-	Document *window;
 	int i;
 	char *actionString;
 
 	/* Find the window to which this action belongs */
-	for (window = WindowList; window != nullptr; window = window->next_) {
+	auto window = begin(WindowList);
+	for (; window != end(WindowList); ++window) {
 		if (window->textArea_ == w)
 			break;
 		for (i = 0; i < window->nPanes_; i++) {
@@ -1254,7 +1261,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 		if (i < window->nPanes_)
 			break;
 	}
-	if(!window)
+	if(window == end(WindowList))
 		return;
 
 	/* The last action is recorded for the benefit of repeating the last

@@ -589,11 +589,11 @@ void DoReplaceMultiFileDlog(Document *window) {
 */
 void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
 
-	Document::for_each([doomedWindow](Document *w) {
+	for(Document *w: WindowList) {
 		if (w->writableWindows_)
 			/* A multi-file replacement dialog is up for this window */
 			checkMultiReplaceListForDoomedW(w, doomedWindow);
-	});
+	}
 }
 
 void CreateReplaceDlog(Widget parent, Document *window) {
@@ -2110,7 +2110,7 @@ static int countWritableWindows(void) {
 	int nBefore = countWindows();
 	int nWritable = 0;
 	
-	for (Document *w = WindowList; w != nullptr; w = w->next_) {
+	for (Document *w: WindowList) {
 	
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
@@ -2145,11 +2145,11 @@ static void collectWritableWindows(Document *window) {
 	windows = new Document*[nWritable];
 	
 	
-	Document::for_each([&windows, &i](Document *w) {
+	for(Document *w: WindowList) {
 		if (!IS_ANY_LOCKED(w->lockReasons_)) {
 			windows[i++] = w;
 		}
-	});
+	}
 
 	std::sort(windows, windows + nWritable, [](const Document *lhs, const Document *rhs) {
 		return lhs->filename_ < rhs->filename_;
@@ -5021,13 +5021,13 @@ static void saveSearchHistory(const char *searchString, const char *replaceStrin
 	currentItemIsIncremental = isIncremental;
 
 	if (NHist == 0) {
-		Document::for_each([](Document *w) {
+		for(Document *w: WindowList) {
 			if (w->IsTopDocument()) {
 				XtSetSensitive(w->findAgainItem_, True);
 				XtSetSensitive(w->replaceFindAgainItem_, True);
 				XtSetSensitive(w->replaceAgainItem_, True);
 			}
-		});
+		}
 	}
 
 	/* If there are more than MAX_SEARCH_HISTORY strings saved, recycle

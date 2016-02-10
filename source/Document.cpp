@@ -1285,13 +1285,13 @@ int Document::updateLineNumDisp() {
 **  (Iteration taken from NDocuments(); is there a better way to do it?)
 */
 int Document::updateGutterWidth() {
-	Document *document;
+
 	int reqCols = MIN_LINE_NUM_COLS;
 	int newColsDiff = 0;
 	int maxCols = 0;
 
 
-	Document::for_each([&](Document *document) {
+	for(Document *document: WindowList) {
 		if (document->shell_ == shell_) {
 			/*  We found ourselves a document from this window.  */
 			int lineNumCols, tmpReqCols;
@@ -1313,7 +1313,7 @@ int Document::updateGutterWidth() {
 				reqCols = tmpReqCols;
 			}
 		}
-	});
+	}
 
 	if (reqCols != maxCols) {
 		XFontStruct *fs;
@@ -1331,7 +1331,7 @@ int Document::updateGutterWidth() {
 		UpdateWMSizeHints();
 	}
 
-	for (document = WindowList; document != nullptr; document = document->next_) {
+	for (Document *document: WindowList) {
 		if (document->shell_ == shell_) {
 			Widget text;
 			int i;
@@ -1449,12 +1449,11 @@ int Document::NDocuments() {
 
 	int nDocument = 0;
 	
-	Document::for_each([&](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->shell_ == shell_) {
 			nDocument++;
 		}
-	});
-
+	}
 
 	return nDocument;
 }
@@ -1678,7 +1677,6 @@ void Document::ShowTabBar(int state) {
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
 void Document::ShowISearchLine(bool state) {
-	Document *win;
 
 	if (showISearchLine_ == state)
 		return;
@@ -1687,7 +1685,7 @@ void Document::ShowISearchLine(bool state) {
 
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the this should synch */
-	for (win = WindowList; win; win = win->next_) {
+	for (Document *win: WindowList) {
 		if (win->shell_ != shell_ || win == this)
 			continue;
 		win->showISearchLine_ = state;
@@ -1907,10 +1905,10 @@ void Document::SortTabBar() {
 	std::vector<Document *> windows;
 	windows.reserve(nDoc);
 	
-	Document::for_each([&](Document *w) {
+	for(Document *w: WindowList) {
 		if (shell_ == w->shell_)
 			windows.push_back(w);	
-	});
+	}
 	
 	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
 		if(a->filename_ < b->filename_) {
@@ -2162,7 +2160,7 @@ Document *Document::DetachDocument() {
 ** into. Do nothing if there is only one shell window opened.
 */
 void Document::MoveDocumentDialog() {
-	Document *win;
+
 	int i, nList = 0, ac;
 	char tmpStr[MAXPATHLEN + 50];
 	Widget parent, dialog, listBox, moveAllOption;
@@ -2177,7 +2175,7 @@ void Document::MoveDocumentDialog() {
 	auto list         = new XmString[nWindows];
 	auto shellWinList = new Document *[nWindows];
 
-	for (win = WindowList; win; win = win->next_) {
+	for (Document *win: WindowList) {
 		if (!win->IsTopDocument() || win->shell_ == shell_)
 			continue;
 
@@ -2226,8 +2224,10 @@ void Document::MoveDocumentDialog() {
 	XmStringFree(popupTitle);
 
 	/* free the this list */
-	for (i = 0; i < nList; i++)
+	for (i = 0; i < nList; i++) {
 		XmStringFree(list[i]);
+	}
+	
 	delete [] list;
 
 	/* create the option box for moving all documents */
@@ -2265,7 +2265,7 @@ void Document::MoveDocumentDialog() {
 		/* move top document */
 		if (XmToggleButtonGetState(moveAllOption)) {
 			/* move all documents */
-			for (win = WindowList; win;) {
+			for (Document *win = WindowList; win;) {
 				if (win != this && win->shell_ == shell_) {
 					Document *next = win->next_;
 					win->MoveDocument(targetWin);
@@ -2441,7 +2441,6 @@ void Document::ShowLineNumbers(bool state) {
 	int i, marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
-	Document *win;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	if (showLineNumbers_ == state)
@@ -2467,7 +2466,7 @@ void Document::ShowLineNumbers(bool state) {
 
 	/* line numbers panel is shell-level, hence other
 	   tabbed documents in the this should synch */
-	for (win = WindowList; win; win = win->next_) {
+	for (Document *win: WindowList) {
 		if (win->shell_ != shell_ || win == this)
 			continue;
 
@@ -2488,7 +2487,7 @@ void Document::ShowLineNumbers(bool state) {
 ** Turn on and off the display of the statistics line
 */
 void Document::ShowStatsLine(int state) {
-	Document *win;
+
 	Widget text;
 	int i;
 
@@ -2505,7 +2504,7 @@ void Document::ShowStatsLine(int state) {
 
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the this should synch */
-	for (win = WindowList; win; win = win->next_) {
+	for (Document *win: WindowList) {
 		if (win->shell_ != shell_ || win == this)
 			continue;
 		win->showStats_ = state;
@@ -2863,12 +2862,12 @@ void Document::CloseWindow() {
 	/* dim/undim Attach_Tab menu items */
 	state = WindowList->NDocuments() < NWindows();
 	
-	Document::for_each([state](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
 		}	
-	});
+	}
 	
 	/* free background menu cache for document */
 	FreeUserBGMenuCache(&userBGMenuCache_);
@@ -3701,12 +3700,12 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	state = NDocuments() < NWindows();
 	
 	
-	Document::for_each([state](Document *win) {
+	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
 		}	
-	});	
+	}
 }
 
 /*

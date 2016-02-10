@@ -343,7 +343,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				RaiseShellWindow(window->shell_, False);
 
 				/* ask user for next action if file not found */
-				if (WindowList == window && window->next_ == nullptr) {
+				if (window == WindowList && window->next_ == nullptr) {
 					resp = DialogF(DF_WARN, window->shell_, 3, "New File", "Can't open %s:\n%s", "New File", "Cancel", "Exit NEdit", fullname, strerror(errno));
 				} else {
 					resp = DialogF(DF_WARN, window->shell_, 2, "New File", "Can't open %s:\n%s", "New File", "Cancel", fullname, strerror(errno));
