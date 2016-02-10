@@ -604,7 +604,7 @@ int CloseAllFilesAndWindows(void) {
 		 * document that gets closed, but it won't disappear; it becomes
 		 * Untitled.)
 		 */
-		if (WindowList == MacroRunWindow() && WindowList->next_) {
+		if (MacroRunWindow() == WindowList && WindowList->next_) {
 			if (!WindowList->next_->CloseAllDocumentInWindow()) {
 				return False;
 			}

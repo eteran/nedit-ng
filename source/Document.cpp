@@ -2068,8 +2068,9 @@ int Document::CloseAllDocumentInWindow() {
 				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
 					return False;
 				win = next;
-			} else
+			} else {
 				win = win->next_;
+			}
 		}
 
 		/* see there's still documents left in the window */

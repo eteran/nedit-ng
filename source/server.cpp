@@ -368,18 +368,20 @@ static void processServerCommandString(char *string) {
 						window->RaiseDocumentWindow();
 				}
 			} else {
-				Document *win = WindowList;
+				
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
 				   
 				   
 				// TODO(eteran): I *think* this searches for the first window
 				// where win->macroCmdData_ is "false"
-				while (win != nullptr && win->macroCmdData_) {
-					win = win->next_;
+				
+				auto win = begin(WindowList);
+				while (win != end(WindowList) && win->macroCmdData_) {
+					++win;
 				}
 
-				if (!win) {
+				if (win == end(WindowList)) {
 					XBell(TheDisplay, 0);
 				} else {
 					/* Raise before -do (macro could close window). */
@@ -387,7 +389,7 @@ static void processServerCommandString(char *string) {
 						win->RaiseDocument();
 					else
 						win->RaiseDocumentWindow();
-					DoMacro(win, doCommand, "-do macro");
+					DoMacro(*win, doCommand, "-do macro");
 				}
 			}
 			CheckCloseDim();

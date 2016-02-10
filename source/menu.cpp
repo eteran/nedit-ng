@@ -3597,8 +3597,6 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
-	Document *nextWindow;
-	Document *tmpWindow;
 	int windowIndex;
 	Boolean focus = GetPrefFocusOnRaise();
 
@@ -3608,17 +3606,17 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		} else if (strcmp(args[0], "first") == 0) {
 			window = WindowList;
 			if (window) {
-				nextWindow = window->next_;
+				Document *nextWindow = window->next_;
 				while (nextWindow) {
 					window = nextWindow;
 					nextWindow = nextWindow->next_;
 				}
 			}
 		} else if (strcmp(args[0], "previous") == 0) {
-			tmpWindow = window;
+			Document *tmpWindow = window;
 			window = WindowList;
 			if (window) {
-				nextWindow = window->next_;
+				Document *nextWindow = window->next_;
 				while (nextWindow != nullptr && nextWindow != tmpWindow) {
 					window = nextWindow;
 					nextWindow = nextWindow->next_;
@@ -3641,9 +3639,12 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 						window = window->next_;
 					}
 				} else if (windowIndex < 0) {
+				
+				
 					for (window = WindowList; window != nullptr; window = window->next_) {
 						++windowIndex;
 					}
+					
 					if (windowIndex >= 0) {
 						for (window = WindowList; window != nullptr && windowIndex > 0; window = window->next_) {
 							--windowIndex;
@@ -3667,6 +3668,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 			}
 		}
 	}
+
 	if (window) {
 		window->RaiseFocusDocumentWindow(focus);
 	} else {
