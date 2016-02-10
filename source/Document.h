@@ -6,6 +6,7 @@
 #include <X11/Intrinsic.h>
 #include "nedit.h"
 #include "string_view.h"
+#include <algorithm>
 
 struct TextBuffer;
 struct UndoInfo;
@@ -392,30 +393,22 @@ public:
 	// Some algorithms to ease transition to std::list<Document>
 
 	template <class Pred>
-	static Document *find_if(Pred p) {
-		for (Document *win = WindowList; win != nullptr; win = win->next_) {
-			if (p(win)) {
-				return win;
-			}
-		}
+	static Document *find_if(Pred p);
 		
-		return nullptr;
-	}
-		
-	static inline int WindowCount() {
-		int n = 0;
-
-		for (Document *win = WindowList; win != nullptr; win = win->next_) {
-			++n;
-		}
-		return n;	
-	}
+	static inline int WindowCount();
 };
 
 class ConstDocumentIterator;
 
 class DocumentIterator {
 	friend class ConstDocumentIterator;
+
+public:
+	typedef std::forward_iterator_tag iterator_category;
+	typedef Document*                 value_type;
+	typedef Document*                 pointer;
+	typedef ptrdiff_t                 difference_type;
+	typedef void                      reference;			
 
 public:
 	DocumentIterator()          : ptr_(nullptr)  {}
@@ -444,6 +437,12 @@ public:
 
 class ConstDocumentIterator {
 	friend class DocumentIterator;
+public:
+	typedef std::forward_iterator_tag iterator_category;
+	typedef const Document*           value_type;
+	typedef const Document*           pointer;
+	typedef ptrdiff_t                 difference_type;
+	typedef void                      reference;		
 
 public:
 	ConstDocumentIterator()          : ptr_(nullptr)  {}
@@ -470,7 +469,6 @@ public:
 	const Document* ptr_;
 };
 
-
 inline DocumentIterator begin(Document *win) {
 	return DocumentIterator(win);
 }
@@ -493,6 +491,27 @@ inline ConstDocumentIterator cbegin(const Document *win) {
 
 inline ConstDocumentIterator cend(const Document *) {
 	return ConstDocumentIterator();
+}
+
+
+template <class Pred>
+Document *Document::find_if(Pred p) {
+
+	auto it = std::find_if(begin(WindowList), end(WindowList), p);
+	if(it != end(WindowList)) {
+		return *it;
+	}
+
+	return nullptr;
+}
+
+inline int Document::WindowCount() {
+	int n = 0;
+	for(Document *win: WindowList) {
+		(void)win;
+		++n;
+	}
+	return n;	
 }
 
 #endif

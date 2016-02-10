@@ -1546,14 +1546,15 @@ static int maxMS(Document *window, DataValue *argList, int nArgs, DataValue *res
 static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
-	Document *w;
-	char fullname[MAXPATHLEN];
-	char normalizedString[MAXPATHLEN];
 
 	/* Read the argument representing the window to focus to, and translate
 	   it into a pointer to a real Document */
-	if (nArgs != 1)
+	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
+	}
+
+
+	Document *w;
 
 	if (!readStringArg(argList[0], &string, stringStorage, errMsg)) {
 		return False;
@@ -1566,13 +1567,15 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		return False;
 	} else {
 		/* just use the plain name as supplied */
-		w = Document::find_if([&fullname, &string](Document *win) {
-			sprintf(fullname, "%s%s", win->path_.c_str(), win->filename_.c_str());
+		w = Document::find_if([&string](Document *win) {
+			char fullname[MAXPATHLEN];
+			snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
 			return strcmp(string, fullname) == 0;
 		});
 		
 		/* didn't work? try normalizing the string passed in */
 		if(!w) {
+			char normalizedString[MAXPATHLEN];
 			strncpy(normalizedString, string, MAXPATHLEN);
 			normalizedString[MAXPATHLEN - 1] = '\0';
 			if (NormalizePathname(normalizedString) == 1) {
@@ -1581,8 +1584,9 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 				return False;
 			}
 			
-			w = Document::find_if([&fullname, &normalizedString](Document *win) {
-				sprintf(fullname, "%s%s", win->path_.c_str(), win->filename_.c_str());
+			w = Document::find_if([&normalizedString](Document *win) {
+				char fullname[MAXPATHLEN];
+				snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
 				return strcmp(normalizedString, fullname) == 0;
 			});
 		}

@@ -2788,10 +2788,13 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	/* If this is not the last window (more than one window is open),
 	   confirm with the user before exiting. */
+	   
+	// NOTE(eteran): test if the current window is the only window
 	if (GetPrefWarnExit() && !(window == WindowList && window->next_ == nullptr)) {
-		int resp, titleLen, lineLen;
-		char exitMsg[DF_MAX_MSG_LENGTH], *ptr, *title;
-		char filename[MAXPATHLEN];
+		int resp, lineLen;
+		char exitMsg[DF_MAX_MSG_LENGTH];
+		char *ptr;
+		
 
 		/* List the windows being edited and make sure the
 		   user really wants to exit */
@@ -2801,18 +2804,27 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		ptr += 9;
 		lineLen += 9;
 		for (Document *win: WindowList) {
-			sprintf(filename, "%s%s", win->filename_.c_str(), win->fileChanged_ ? "*" : "");
-			title = filename;
-			titleLen = strlen(title);
+			
+			char filename[MAXPATHLEN];
+			snprintf(filename, sizeof(filename), "%s%s", win->filename_.c_str(), win->fileChanged_ ? "*" : "");
+			
+			char *title = filename;
+			int titleLen = strlen(title);
+			
 			if (ptr - exitMsg + titleLen + 30 >= DF_MAX_MSG_LENGTH) {
 				strcpy(ptr, "...");
 				ptr += 3;
 				break;
 			}
+			
+			
+			// NOTE(eteran): test if this is the last window
 			if (lineLen + titleLen + (win->next_ == nullptr ? 5 : 2) > 50) {
 				*ptr++ = '\n';
 				lineLen = 0;
 			}
+			
+			// NOTE(eteran): test if this is the last window
 			if (win->next_ == nullptr) {
 				sprintf(ptr, "and %s.", title);
 				ptr += 5 + titleLen;
@@ -3587,6 +3599,7 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
 		return;
+
 	if (!isRect)
 		TextSetCursorPos(w, end);
 	else
@@ -3606,6 +3619,8 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		} else if (strcmp(args[0], "first") == 0) {
 			window = WindowList;
 			if (window) {
+			
+				// NOTE(eteran): i think this is looking for the last window?
 				Document *nextWindow = window->next_;
 				while (nextWindow) {
 					window = nextWindow;
@@ -3621,6 +3636,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 					window = nextWindow;
 					nextWindow = nextWindow->next_;
 				}
+				
 				if (nextWindow == nullptr && tmpWindow != WindowList) {
 					window = nullptr;
 				}
@@ -4155,8 +4171,13 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode) {
 */
 void CheckCloseDim(void) {
 
-	if(!WindowList)
+
+	// NOTE(eteran): list is empty
+	if(!WindowList) {
 		return;
+	}
+	
+	// NOTE(eteran): list has a size of 1	
 	if (WindowList->next_ == nullptr && !WindowList->filenameSet_ && !WindowList->fileChanged_) {
 		XtSetSensitive(WindowList->closeItem_, FALSE);
 		return;
@@ -4282,25 +4303,22 @@ static char *getWindowsMenuEntry(const Document *window) {
 ** all NEdit windows as determined by the global WindowList.
 */
 static void updateWindowMenu(const Document *window) {
-	Document *w;
+
 	WidgetList items;
 	Cardinal nItems;
-	int i, n, nWindows, windowIndex;
+	int n;
 
 	if (!window->IsTopDocument())
 		return;
 
 	/* Make a sorted list of windows */
-	for (w = WindowList, nWindows = 0; w != nullptr; w = w->next_, nWindows++) {
-		;
+	std::vector<Document *> windows;
+	for(Document *w: WindowList) {
+		windows.push_back(w);
+		
 	}
 	
-	auto windows = new Document *[nWindows];
-	for (w = WindowList, i = 0; w != nullptr; w = w->next_, i++) {
-		windows[i] = w;
-	}
-	
-	std::sort(windows, windows + nWindows, [](const Document *a, const Document *b) {
+	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
 
 		/* Untitled first */
 		int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
@@ -4333,8 +4351,8 @@ static void updateWindowMenu(const Document *window) {
 	/* Go thru all of the items in the menu and rename them to
 	   match the window list.  Delete any extras */
 	XtVaGetValues(window->windowMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	windowIndex = 0;
-	nWindows = NWindows();
+	int windowIndex = 0;
+	int nWindows = NWindows();
 	for (n = 0; n < (int)nItems; n++) {
 		XtPointer userData;
 		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
@@ -4364,8 +4382,6 @@ static void updateWindowMenu(const Document *window) {
 		XmStringFree(st1);
 	}
 	
-	delete [] windows;
-
 	/* if the menu is torn off, we need to manually adjust the
 	   dimension of the menuShell _before_ re-managing the menu
 	   pane, to either expose the hidden menu entries or remove
