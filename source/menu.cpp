@@ -2782,6 +2782,11 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 
 	Document *window = Document::WidgetToWindow(w);
+	
+	// NOTE(eteran): This is a bit of a cheat...
+	auto it = DocumentIterator(window);
+	
+	printf("HERE\n");
 
 	if (!CheckPrefsChangesSaved(window->shell_))
 		return;
@@ -2789,9 +2794,10 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	/* If this is not the last window (more than one window is open),
 	   confirm with the user before exiting. */
 	   
-	// NOTE(eteran): test if the current window is the only window
-	if (GetPrefWarnExit() && !(window == WindowList && window->next_ == nullptr)) {
-		int resp, lineLen;
+	// NOTE(eteran): test if the current window is NOT the only window
+	if (GetPrefWarnExit() && !(it == begin(WindowList) && std::next(it) == end(WindowList))) {
+		int resp;
+		int lineLen;
 		char exitMsg[DF_MAX_MSG_LENGTH];
 		char *ptr;
 		
@@ -2803,7 +2809,11 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		strcpy(ptr, "Editing: ");
 		ptr += 9;
 		lineLen += 9;
-		for (Document *win: WindowList) {
+		
+		// This code assembles a list of document names being edited and elides as necessary
+		for(auto it = begin(WindowList); it != end(WindowList); ++it) {
+			
+			Document *win = *it;
 			
 			char filename[MAXPATHLEN];
 			snprintf(filename, sizeof(filename), "%s%s", win->filename_.c_str(), win->fileChanged_ ? "*" : "");
@@ -2819,13 +2829,13 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			
 			
 			// NOTE(eteran): test if this is the last window
-			if (lineLen + titleLen + (win->next_ == nullptr ? 5 : 2) > 50) {
+			if (lineLen + titleLen + (std::next(it) == end(WindowList) ? 5 : 2) > 50) {
 				*ptr++ = '\n';
 				lineLen = 0;
 			}
 			
 			// NOTE(eteran): test if this is the last window
-			if (win->next_ == nullptr) {
+			if (std::next(it) == end(WindowList)) {
 				sprintf(ptr, "and %s.", title);
 				ptr += 5 + titleLen;
 				lineLen += 5 + titleLen;
@@ -2835,6 +2845,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				lineLen += 2 + titleLen;
 			}
 		}
+		
 		sprintf(ptr, "\n\nExit NEdit?");
 		resp = DialogF(DF_QUES, window->shell_, 2, "Exit", "%s", "Exit", "Cancel", exitMsg);
 		if (resp == 2)
@@ -3612,6 +3623,10 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	Document *window = Document::WidgetToWindow(w);
 	int windowIndex;
 	Boolean focus = GetPrefFocusOnRaise();
+	
+	
+	// NOTE(eteran): the list is sorted *backwards*, so all of the iteration is reverse
+	//               order here
 
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "last") == 0) {

@@ -1554,37 +1554,43 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	}
 
 
-	Document *w;
+	DocumentIterator w;
 
 	if (!readStringArg(argList[0], &string, stringStorage, errMsg)) {
 		return False;
 	} else if (!strcmp(string, "last")) {
-		w = WindowList;
+		w = begin(WindowList);
 	} else if (!strcmp(string, "next")) {
-		w = window->next_;
+		// TODO(eteran): find a better way to do this, we have a window pointer
+		//               but we really want an iterator so we can move it to the
+		//               next element. Perhaps we'll end up using an intrusive list?
+		auto it = DocumentIterator(window);
+		w = ++it;
 	} else if (strlen(string) >= MAXPATHLEN) {
 		*errMsg = "Pathname too long in focus_window()";
 		return False;
 	} else {
 		/* just use the plain name as supplied */
-		w = Document::find_if([&string](Document *win) {
+		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *win) {
 			char fullname[MAXPATHLEN];
 			snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
 			return strcmp(string, fullname) == 0;
 		});
 		
 		/* didn't work? try normalizing the string passed in */
-		if(!w) {
+		if(w == end(WindowList)) {
+			
 			char normalizedString[MAXPATHLEN];
 			strncpy(normalizedString, string, MAXPATHLEN);
 			normalizedString[MAXPATHLEN - 1] = '\0';
+			
 			if (NormalizePathname(normalizedString) == 1) {
 				/*  Something is broken with the input pathname. */
 				*errMsg = "Pathname too long in focus_window()";
 				return False;
 			}
 			
-			w = Document::find_if([&normalizedString](Document *win) {
+			w = std::find_if(begin(WindowList), end(WindowList), [&normalizedString](Document *win) {
 				char fullname[MAXPATHLEN];
 				snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
 				return strcmp(normalizedString, fullname) == 0;
@@ -1593,19 +1599,20 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	}
 
 	/* If no matching window was found, return empty string and do nothing */
-	if(!w) {
-		result->tag = STRING_TAG;
+	if(w == end(WindowList)) {
+		result->tag         = STRING_TAG;
 		result->val.str.rep = PERM_ALLOC_STR("");
 		result->val.str.len = 0;
 		return True;
 	}
 
 	/* Change the focused window to the requested one */
-	SetMacroFocusWindow(w);
+	SetMacroFocusWindow(*w);
 
 	/* turn on syntax highlight that might have been deferred */
-	if (w->highlightSyntax_ && !w->highlightData_)
-		StartHighlighting(w, False);
+	if (w->highlightSyntax_ && !w->highlightData_) {
+		StartHighlighting(*w, False);
+	}
 
 	/* Return the name of the window */
 	result->tag = STRING_TAG;

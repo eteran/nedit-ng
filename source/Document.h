@@ -412,7 +412,7 @@ public:
 
 public:
 	DocumentIterator()          : ptr_(nullptr)  {}
-	DocumentIterator(Document *p) : ptr_(p) {}
+	explicit DocumentIterator(Document *p) : ptr_(p) {}
 	
 public:
 	DocumentIterator(const DocumentIterator &)            = default;
@@ -446,8 +446,8 @@ public:
 
 public:
 	ConstDocumentIterator()          : ptr_(nullptr)  {}
-	ConstDocumentIterator(const Document *p) : ptr_(p) {}
-	ConstDocumentIterator(const DocumentIterator &it) : ptr_(it.ptr_) {}
+	explicit ConstDocumentIterator(const Document *p) : ptr_(p) {}
+	explicit ConstDocumentIterator(const DocumentIterator &it) : ptr_(it.ptr_) {}
 	
 public:
 	ConstDocumentIterator(const ConstDocumentIterator &)            = default;
