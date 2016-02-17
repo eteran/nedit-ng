@@ -1126,15 +1126,10 @@ void Document::showStatsForm() {
 	   level, the showSeparator trick backfires and leaves the separator
 	   shown, but fortunately the dynamic behavior is fixed, too so the
 	   workaround is no longer necessary, either.  (... the version where
-	   this occurs may be earlier than 2.1.  If the stats line shows
-	   double thickness shadows in earlier Motif versions, the #if XmVersion
-	   directive should be moved back to that earlier version) */
+	   this occurs may be earlier than 2.1. */
 	if (manageToolBars(statsAreaForm)) {
 		XtUnmanageChild(statsAreaForm); /*... will this fix Solaris 7??? */
 		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_ABOVE_WORKSPACE, nullptr);
-#if XmVersion < 2001
-		XtVaSetValues(mainW, XmNshowSeparator, True, nullptr);
-#endif
 		XtManageChild(statsAreaForm);
 		XtVaSetValues(mainW, XmNshowSeparator, False, nullptr);
 		UpdateStatsLine();

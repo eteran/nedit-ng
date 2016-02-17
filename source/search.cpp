@@ -63,9 +63,7 @@
 #include <Xm/Label.h>
 
 #ifdef REPLACE_SCOPE
-#if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
-#endif
 #endif
 
 #include <Xm/PushB.h>

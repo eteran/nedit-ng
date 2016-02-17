@@ -271,9 +271,6 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	XmString cDir;                    /* compound directory selected	   */
 	XmString cPattern;                /* compound filter pattern	   */
 	Widget help;                      /* help window form dialog	   */
-#if XmVersion < 1002
-	int i;
-#endif
 
 	XtAddCallback(existFileSB, XmNokCallback, existOkCB, &done_with_dialog);
 	XtAddCallback(existFileSB, XmNcancelCallback, existCancelCB, &done_with_dialog);
@@ -287,9 +284,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 
 	makeListTypeable(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST));
 	makeListTypeable(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST));
-#if XmVersion >= 1002
 	XtVaSetValues(existFileSB, XmNinitialFocus, XtParent(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST)), nullptr);
-#endif
 
 	ManageDialogCenteredOnPointer(existFileSB);
 
@@ -303,16 +298,6 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 	XtVaSetValues(existFileSB, XmNdirSearchProc, replacementDirSearchProc, XmNfileSearchProc, replacementFileSearchProc, nullptr);
 	sortWidgetList(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_DIR_LIST));
 	sortWidgetList(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST));
-#if XmVersion < 1002
-	/* To give file list initial focus, revoke default button status for
-	   the "OK" button.  Dynamic defaulting will restore it as the default
-	   button after the keyboard focus is established.  Note the voodoo
-	   below: calling XmProcess traversal extra times (a recommendation from
-	   OSF technical support) somehow succeedes in giving the file list focus */
-	XtVaSetValues(existFileSB, XmNdefaultButton, nullptr, nullptr);
-	for (i = 1; i < 30; i++)
-		XmProcessTraversal(XmFileSelectionBoxGetChild(existFileSB, XmDIALOG_LIST), XmTRAVERSE_CURRENT);
-#endif
 
 	while (!done_with_dialog)
 		XtAppProcessEvent(XtWidgetToApplicationContext(existFileSB), XtIMAll);
@@ -382,9 +367,6 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	XmString cFileString;             /* compound string for file selected */
 	XmString cDir;                    /* compound directory selected	   */
 	XmString cPattern;                /* compound filter pattern	   */
-#if XmVersion < 1002
-	int i;
-#endif
 
 	XtAddCallback(newFileSB, XmNokCallback, newFileOKCB, &done_with_dialog);
 	XtAddCallback(newFileSB, XmNcancelCallback, newFileCancelCB, &done_with_dialog);
@@ -399,21 +381,9 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 	createYesNoDialog(newFileSB);
 	createErrorDialog(newFileSB);
 	XtAddCallback(newFileSB, XmNhelpCallback, newHelpCB, (char *)help);
-#if XmVersion >= 1002
 	XtVaSetValues(newFileSB, XmNinitialFocus, XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), nullptr);
-#endif
-	ManageDialogCenteredOnPointer(newFileSB);
 
-#if XmVersion < 1002
-	/* To give filename text initial focus, revoke default button status for
-	   the "OK" button.  Dynamic defaulting will restore it as the default
-	   button after the keyboard focus is established.  Note the voodoo
-	   below: calling XmProcess traversal FOUR times (a recommendation from
-	   OSF technical support) somehow succeedes in changing the focus */
-	XtVaSetValues(newFileSB, XmNdefaultButton, nullptr, nullptr);
-	for (i = 1; i < 30; i++)
-		XmProcessTraversal(XmFileSelectionBoxGetChild(newFileSB, XmDIALOG_TEXT), XmTRAVERSE_CURRENT);
-#endif
+	ManageDialogCenteredOnPointer(newFileSB);
 
 	/* Typing in the directory list is dependent on the list being in the
 	   same form of alphabetical order expected by the character processing

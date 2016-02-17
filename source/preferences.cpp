@@ -80,11 +80,7 @@
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
 
-#if XmVersion >= 1002
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
-#else
-#define MENU_WIDGET(w) (w)
-#endif
 
 #define PREF_FILE_VERSION "5.6"
 
@@ -767,11 +763,7 @@ static PrefDescripRec PrefDescrip[] = {
     {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False", &PrefData.keepSearchDlogs, nullptr, true},
     {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True", &PrefData.searchWraps, nullptr, true},
     {"stickyCaseSenseButton", "StickyCaseSenseButton", PREF_BOOLEAN, "True", &PrefData.stickyCaseSenseBtn, nullptr, true},
-#if XmVersion < 1002 /* Flashing is annoying in 1.1 versions */
-    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "False", &PrefData.repositionDialogs, nullptr, true},
-#else
     {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True", &PrefData.repositionDialogs, nullptr, true},
-#endif
     {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False", &PrefData.autoScroll, nullptr, true},
     {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4", &PrefData.autoScrollVPadding, nullptr, false},
     {"appendLF", "AppendLF", PREF_BOOLEAN, "True", &PrefData.appendLF, nullptr, true},
@@ -2031,9 +2023,7 @@ void TabsPrefDialog(Widget parent, Document *forWindow) {
 	AddDialogMnemonicHandler(form, FALSE);
 
 /* Set the widget to get focus */
-#if XmVersion >= 1002
 	XtVaSetValues(form, XmNinitialFocus, TabDistText, nullptr);
-#endif
 
 	/* put up dialog and wait for user to press ok or cancel */
 	TabsDialogForWindow = forWindow;

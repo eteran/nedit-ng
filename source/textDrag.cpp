@@ -37,9 +37,7 @@
 #include <X11/IntrinsicP.h>
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
-#if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
-#endif
 
 static void trackModifyRange(int *rangeStart, int *modRangeEnd, int *unmodRangeEnd, int modPos, int nInserted, int nDeleted);
 static void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *rightMargin);

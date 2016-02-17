@@ -1064,10 +1064,8 @@ void RepeatDialog(Document *window) {
 	AddDialogMnemonicHandler(form, FALSE);
 
 /* Set initial focus */
-#if XmVersion >= 1002
 	XtVaSetValues(form, XmNinitialFocus, timesForm, nullptr);
 	XtVaSetValues(timesForm, XmNinitialFocus, rd->repeatText, nullptr);
-#endif
 
 	/* put up dialog */
 	rd->forWindow = window;

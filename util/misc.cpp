@@ -1835,55 +1835,6 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 **
 */
 void RadioButtonChangeState(Widget widget, bool state, bool notify) {
-/*
-  The bug only exists in OpenMotif 2.1.x/2.2.[0-2]. Since it's quite hard
-  to detect OpenMotif reliably, we make a rough cut by excluding Lesstif
-  and all Motif versions >= 2.1.x and < 2.2.3.
-*/
-
-#if XmVersion == 2001 || (XmVersion == 2002 && XmUPDATE_LEVEL < 3)
-	/* save the widget with current focus in case it moves */
-	Widget focusW, shellW = widget;
-	while (shellW && !XtIsShell(shellW)) {
-		shellW = XtParent(shellW);
-	}
-	focusW = XtGetKeyboardFocusWidget(shellW);
-
-	if (state && XtIsRealized(widget)) {
-		/*
-		   Simulate a mouse button click.
-		   The event attributes that matter are the event type and the
-		   coordinates. When the button is managed, the coordinates have to
-		   be inside the button. When the button is not managed, they have to
-		   be (0, 0) to make sure that the Select routine accepts the event.
-		*/
-		XEvent ev;
-		if (XtIsManaged(widget)) {
-			Position x, y;
-			/* Calculate the coordinates in the same way as OM. */
-			XtTranslateCoords(XtParent(widget), widget->core.x, widget->core.y, &x, &y);
-			ev.xbutton.x_root = x + widget->core.border_width;
-			ev.xbutton.y_root = y + widget->core.border_width;
-		} else {
-			ev.xbutton.x_root = 0;
-			ev.xbutton.y_root = 0;
-		}
-		/* Default button bindings:
-		      ~c<Btn1Down>: Arm()
-		      ~c<Btn1Up>: Select() Disarm() */
-		ev.xany.type = ButtonPress;
-		XtCallActionProc(widget, "Arm", &ev, nullptr, 0);
-		ev.xany.type = ButtonRelease;
-		XtCallActionProc(widget, "Select", &ev, nullptr, 0);
-		XtCallActionProc(widget, "Disarm", &ev, nullptr, 0);
-	}
-	/* restore focus to the originator */
-	if (focusW) {
-		XtSetKeyboardFocus(shellW, focusW);
-	}
-#endif /* XmVersion == 2001 || ... */
-
-
 	/* This is sufficient on non-OM platforms */
 	XmToggleButtonSetState(widget, state, notify);
 }

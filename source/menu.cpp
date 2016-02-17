@@ -75,11 +75,7 @@
 #include <Xm/RowColumn.h>
 #include <Xm/MenuShell.h>
 
-#if XmVersion >= 1002
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
-#else
-#define MENU_WIDGET(w) (w)
-#endif
 
 /* Menu modes for SGI_CUSTOM short-menus feature */
 enum menuModes { FULL, SHORT };
@@ -2786,8 +2782,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	// NOTE(eteran): This is a bit of a cheat...
 	auto it = DocumentIterator(window);
 	
-	printf("HERE\n");
-
 	if (!CheckPrefsChangesSaved(window->shell_))
 		return;
 
@@ -4866,11 +4860,7 @@ static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 	auto name = (const char *)clientData;
 
 	const char *params[1];
-#if XmVersion >= 1002
 	Widget menu = XmGetPostedFromWidget(XtParent(w)); /* If menu is torn off */
-#else
-	Widget menu = w;
-#endif
 
 	params[0] = name;
 	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);

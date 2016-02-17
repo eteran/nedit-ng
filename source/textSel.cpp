@@ -42,9 +42,7 @@
 #include <Xm/CutPaste.h>
 #include <Xm/Text.h>
 #include <X11/Xatom.h>
-#if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
-#endif
 
 #define N_SELECT_TARGETS 7
 #define N_ATOMS 11

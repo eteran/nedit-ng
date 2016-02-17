@@ -53,9 +53,7 @@
 #include <X11/cursorfont.h>
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
-#if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
-#endif
 
 #ifdef UNICOS
 #define XtOffset(p_type, field) ((size_t)__INTADDR_(&(((p_type)0)->field)))
@@ -3042,10 +3040,8 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
    it does not actually have the input focus.  The temporary solution is
    to do the comparison below, and not show the cursor when Motif says
    we don't have focus, but keep looking for the real answer */
-#if XmVersion >= 1002
 	if (widget != XmGetFocusWidget(widget))
 		return;
-#endif
 
 	/* If the timer is not already started, start it */
 	if (textwidget->text.cursorBlinkRate != 0 && textwidget->text.cursorBlinkProcID == 0) {

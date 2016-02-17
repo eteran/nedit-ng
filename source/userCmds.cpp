@@ -66,11 +66,7 @@
 #include <Xm/CascadeB.h>
 #include <Xm/MenuShell.h>
 
-#if XmVersion >= 1002
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
-#else
-#define MENU_WIDGET(w) (w)
-#endif
 
 #ifdef __cplusplus
 extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
@@ -1619,15 +1615,6 @@ static void deleteMenuItems(Widget menuPane) {
 					_XmDismissTearOff(XtParent(subMenuID), nullptr, nullptr);
 
 				deleteMenuItems(subMenuID);
-#if XmVersion < 2000
-				/* Skipping this creates a memory and server resource
-		   		   leak (though both are reclaimed on window closing).  In
-		   		   Motif 2.0 (and beyond?) there is a potential crash during
-		   		   phase 2 widget destruction in "SetCascadeField", and in
-		   		   Motif 1.2 there are free-memory reads.  I would really like
-		   		   to be able to destroy this. */
-				XtDestroyWidget(subMenuID);
-#endif
 			} else {
 				/* remove accel. before destroy or lose it forever */
 				XtVaSetValues(items[n], XmNaccelerator, nullptr, nullptr);

@@ -56,9 +56,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
-#if XmVersion >= 1002
 #include <Xm/PrimitiveP.h>
-#endif
 
 /* How much re-parsing to do when an unfinished style is encountered */
 #define PASS_2_REPARSE_CHUNK_SIZE 1000

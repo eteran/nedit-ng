@@ -1065,9 +1065,8 @@ static void changeWindowTopic(int existingTopic, enum HelpTopic newTopic) {
 }
 
 static int findTopicFromShellWidget(Widget shellWidget) {
-	int i;
 
-	for (i = 0; i < NUM_TOPICS; i++)
+	for (int i = 0; i < NUM_TOPICS; i++)
 		if (shellWidget == HelpWindows[i])
 			return i;
 	return -1;
@@ -1075,34 +1074,17 @@ static int findTopicFromShellWidget(Widget shellWidget) {
 
 static void initNavigationHistory(void) {
 	static int doInitNavigationHistory = True;
-	int i;
 
 	if (doInitNavigationHistory) {
-		for (i = 0; i < NUM_TOPICS; i++)
+		for (int i = 0; i < NUM_TOPICS; i++)
 			navHistBack[i] = navHistForw[i] = -1;
 
 		doInitNavigationHistory = False;
 	}
 }
 
-#if XmVersion == 2000
-/* amai: This function may be called before the Motif part
-         is being initialized. The following, public interface
-         is known to initialize at least xmUseVersion.
-         That interface is declared in <Xm/Xm.h> in Motif 1.2 only.
-         As for Motif 2.1 we don't need this call anymore.
-         This also holds for the Motif 2.1 version of LessTif
-         releases > 0.93.0. */
-extern void XmRegisterConverters(void);
-#endif
-
 /* Print version info to stdout */
 void PrintVersion(void) {
-	const char *text;
-
-#if XmVersion < 2001
-	XmRegisterConverters(); /* see comment above */
-#endif
-	text = getBuildInfo();
+	const char *text = getBuildInfo();
 	puts(text);
 }
