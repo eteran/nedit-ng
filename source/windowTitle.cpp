@@ -577,8 +577,9 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
-
+#if 0
 	Help(HELP_CUSTOM_TITLE_DIALOG);
+#endif
 }
 
 static void wtDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {

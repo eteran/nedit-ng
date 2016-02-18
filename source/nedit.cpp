@@ -369,8 +369,10 @@ int main(int argc, char *argv[]) {
 	/* Set up action procedures for menu item commands */
 	InstallMenuActions(context);
 
+#if 0
 	/* Add Actions for following hyperlinks in the help window */
 	InstallHelpLinkActions(context);
+#endif
 
 	/* Add actions for mouse wheel support in scrolled windows (except text area) */
 	InstallMouseWheelActions(context);

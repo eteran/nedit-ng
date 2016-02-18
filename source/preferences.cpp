@@ -2112,8 +2112,9 @@ static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)callData;
 	(void)clientData;
-
+#if 0
 	Help(HELP_TABS_DIALOG);
+#endif
 }
 
 static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData) {

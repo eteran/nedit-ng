@@ -880,8 +880,13 @@ static Widget makeHelpMenuItem(
 /*----------------------------------------------------------------------------*/
 
 static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
-
+	
+	(void)menuItem;
 	(void)clientData;
+	(void)callData;
+
+#if 0
+	
 
 	enum HelpTopic topic;
 	XtPointer userData;
@@ -891,6 +896,7 @@ static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
 	topic = (enum HelpTopic)(long) userData;
 
 	Help(topic);
+#endif
 }
 
 /*----------------------------------------------------------------------------*/

@@ -39,9 +39,9 @@
 
 struct HelpMenu /* Maintains help menu structure */
     {
-	struct HelpMenu *next;
+	HelpMenu *next;
 	int level;            /* menu level, submenu > 1               */
-	enum HelpTopic topic; /* HELP_none for submenu & separator     */
+	HelpTopic topic; /* HELP_none for submenu & separator     */
 	const char *wgtName;
 	int hideIt;           /* value which determines displayability */
 	char mnemonic;        /* '-' for separator                     */
@@ -50,9 +50,9 @@ struct HelpMenu /* Maintains help menu structure */
 
 struct Href /* Source to topic internal hyperlinks */
     {
-	struct Href *next;
+	Href *next;
 	int location;         /* position to link in topic    */
-	enum HelpTopic topic; /* target of link in this topic */
+	HelpTopic topic; /* target of link in this topic */
 	const char *source;   /* hypertext link characters    */
 };
 
@@ -67,8 +67,6 @@ extern const char *HelpTitles[];
 /*                             PROGRAM PROTOTYPES                             */
 /*============================================================================*/
 
-void Help(enum HelpTopic topic);
 void PrintVersion(void);
-void InstallHelpLinkActions(XtAppContext context);
 
-#endif /* NEDIT_HELP_H_INCLUDED */
+#endif

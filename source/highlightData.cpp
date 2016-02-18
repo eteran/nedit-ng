@@ -1987,7 +1987,9 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
+#if 0
 	Help(HELP_PATTERNS);
+#endif
 }
 
 static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData) {

@@ -894,7 +894,9 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
+#if 0
 	Help(HELP_SMART_INDENT);
+#endif
 }
 
 static int checkSmartIndentDialogData(void) {
