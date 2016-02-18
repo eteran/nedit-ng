@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Metacharacters(17)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<h1>Escaping Metacharacters</h1><div class='normal'><br>
+<br>
+In a regular expression (regex), most ordinary characters match themselves. For example, `ab%' would match anywhere `a' followed by `b' followed by `%' appeared in the text.  Other characters don't match themselves, but are metacharacters. For example, backslash is a special metacharacter which 'escapes' or changes the meaning of the character following it. Thus, to match a literal backslash would require a regular expression to have two backslashes in sequence. NEdit provides the following escape sequences so that metacharacters that are used by the regex syntax can be specified as ordinary characters. <br>
+<br>
+</div><div class='fixed normal'>     \(  \)  \-  \[  \]  \&lt;  \&gt;  \{  \}
+     \.  \|  \^  \$  \*  \+  \?  \&amp;  \\
+</div><div class='normal'><br>
+<h1>Special Control Characters</h1>
+<br>
+There are some special characters that are  difficult or impossible to type. Many of these characters can be constructed as a sort of metacharacter or sequence by preceding a literal character with a backslash. NEdit recognizes the following special character sequences: <br>
+<br>
+</div><div class='fixed normal'>     \a  alert (bell)
+     \b  backspace
+     \e  ASCII escape character (***)
+     \f  form feed (new page)
+     \n  newline
+     \r  carriage return
+     \t  horizontal tab
+     \v  vertical tab
+</div><div class='normal'><br>
+</div><div class='fixed normal'>     *** For environments that use the EBCDIC character set,
+         when compiling NEdit set the EBCDIC_CHARSET compiler
+         symbol to get the EBCDIC equivalent escape
+         character.)
+</div><div class='normal'><br>
+<h1>Octal and Hex Escape Sequences</h1>
+<br>
+Any ASCII (or EBCDIC) character, except null, can be specified by using either an octal escape or a hexadecimal escape, each beginning with \0 or \x (or \X), respectively.  For example, \052 and \X2A both specify the `*' character.  Escapes for null (\00 or \x0) are not valid and will generate an error message.  Also, any escape that exceeds \0377 or \xFF will either cause an error or have any additional character(s) interpreted literally. For example, \0777 will be interpreted as \077 (a `?' character) followed by `7' since \0777 is greater than \0377. <br>
+<br>
+An invalid digit will also end an octal or hexadecimal escape.  For example, \091 will cause an error since `9' is not within an octal escape's range of allowable digits (0-7) and truncation before the `9' yields \0 which is invalid. <br>
+<br>
+<h1>Shortcut Escape Sequences</h1>
+<br>
+NEdit defines some escape sequences that are handy shortcuts for commonly used character classes. <br>
+<br>
+</div><div class='fixed normal'>   \d  digits            0-9
+   \l  letters           a-z, A-Z, and locale dependent letters
+   \s  whitespace        \t, \r, \v, \f, and space
+   \w  word characters   letters, digits, and underscore, `_'
+</div><div class='normal'><br>
+\D, \L, \S, and \W are the same as the lowercase versions except that the resulting character class is negated.  For example, \d is equivalent to `[0-9]', while \D is equivalent to `[^0-9]'. <br>
+<br>
+These escape sequences can also be used within a character class.  For example, `[\l_]' is the same as `[a-zA-Z_]', extended with possible locale dependent letters. The escape sequences for special characters, and octal and hexadecimal escapes are also valid within a class. <br>
+<br>
+<h1>Word Delimiter Tokens</h1>
+<br>
+Although not strictly a character class, the following escape sequences behave similarly to character classes: <br>
+<br>
+</div><div class='fixed normal'>     \y   Word delimiter character
+     \Y   Not a word delimiter character
+</div><div class='normal'><br>
+The `\y' token matches any single character that is one of the characters that NEdit recognizes as a word delimiter character, while the `\Y' token matches any character that is </div><div class='italic'>not</div><div class='normal'> a word delimiter character.  Word delimiter characters are dynamic in nature, meaning that the user can change them through preference settings.  For this reason, they must be handled differently by the regular expression engine.  As a consequence of this, `\y' and `\Y' cannot be used within a character class specification. <footer>
+<a href="16.html">Previous</a>
+<a href="18.html">Next</a>
+</footer>
+</body>
+</html>
+

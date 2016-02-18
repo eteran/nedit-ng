@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Action Routines(27)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>All of the editing capabilities of NEdit are represented as a special type of subroutine, called an action routine, which can be invoked from both macros and translation table entries (see &quot;<a href="31.html">Key Binding</a>&quot; in the Customizing section of the Help menu). <br>
+<br>
+<h1>Actions Representing Menu Commands</h1>
+<br>
+</div><div class='fixed normal'>    File Menu                 Search Menu
+    -----------------------   -------------------------
+    new()                     find()
+    open()                    find_dialog()
+    open_dialog()             find_again()
+    open_selected()           find_selection()
+    close()                   replace()
+    save()                    replace_dialog()
+    save_as()                 replace_all()
+    save_as_dialog()          replace_in_selection()
+    revert_to_saved_dialog()  replace_again()
+    include_file()            goto_line_number()
+    include_file_dialog()     goto_line_number_dialog()
+    load_macro_file()         goto_selected()
+    load_macro_file_dialog()  mark()
+    load_tags_file()          mark_dialog()
+    load_tags_file_dialog()   goto_mark()
+    unload_tags_file()        goto_mark_dialog()
+    load_tips_file()          goto_matching()
+    load_tips_file_dialog()   select_to_matching()
+    unload_tips_file()        find_definition()
+    print()                   show_tip()
+    print_selection()
+    exit()                    Shell Menu
+                              -------------------------
+    Edit Menu                 filter_selection_dialog()
+    -----------------------   filter_selection()
+    undo()                    execute_command()
+    redo()                    execute_command_dialog()
+    delete()                  execute_command_line()
+    select_all()              shell_menu_command()
+    shift_left()
+    shift_left_by_tab()       Macro Menu
+    shift_right()             -------------------------
+    shift_right_by_tab()      macro_menu_command()
+    uppercase()               repeat_macro()
+    lowercase()               repeat_dialog()
+    fill_paragraph()
+    control_code_dialog()     Windows Menu
+                              -------------------------
+                              split_pane()
+                              close_pane()
+                              detach_document()
+                              move_document_dialog()
+</div><div class='normal'><br>
+An action representing a menu command is usually named the same as its corresponding menu item except that all punctuation is removed, all letters are changed to lower case, and spaces are replaced with underscores.  To present a dialog to ask the user for input, use the actions with the `_dialog` suffix. Actions without the `_dialog` suffix take the information from the routine's arguments (see below). <br>
+<br>
+<h1>Menu Action Routine Arguments</h1>
+<br>
+Arguments are text strings enclosed in quotes. Below are the menu action routines which take arguments.  Optional arguments are enclosed in []. <br>
+<br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>new</div><div class='fixed normal'>( [&quot;tab&quot; | &quot;window&quot; | &quot;prefs&quot; | &quot;opposite&quot;] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>close</div><div class='fixed normal'>( [&quot;prompt&quot; | &quot;save&quot; | &quot;nosave&quot;] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>execute_command</div><div class='fixed normal'>( shell-command )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>filter_selection</div><div class='fixed normal'>( shell-command )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>find</div><div class='fixed normal'>( search-string [, </div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>]
+       [, </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>find_again</div><div class='fixed normal'>( [</div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>find_definition</div><div class='fixed normal'>( [tag-name] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>find_dialog</div><div class='fixed normal'>( [</div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>]
+       [, </div><div class='fixed italic'>keep-dialog</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>find_selection</div><div class='fixed normal'>( [</div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>]
+       [, </div><div class='fixed italic'>non-regex-search-type</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>goto_line_number</div><div class='fixed normal'>( [</div><div class='fixed italic'>line-number</div><div class='fixed normal'>] [, </div><div class='fixed italic'>column-number</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>goto_mark</div><div class='fixed normal'>( </div><div class='fixed italic'>mark-letter</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>include_file</div><div class='fixed normal'>( </div><div class='fixed italic'>filename</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>load_tags_file</div><div class='fixed normal'>( </div><div class='fixed italic'>filename</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>macro_menu_command</div><div class='fixed normal'>( </div><div class='fixed italic'>macro-menu-item-name</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>mark</div><div class='fixed normal'>( </div><div class='fixed italic'>mark-letter</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>open</div><div class='fixed normal'>( </div><div class='fixed italic'>filename</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>replace</div><div class='fixed normal'>( search-string, replace-string,
+       [, </div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>replace_again</div><div class='fixed normal'>( [</div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>replace_all</div><div class='fixed normal'>( search-string, replace-string [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>replace_dialog</div><div class='fixed normal'>( [</div><div class='fixed italic'>search-direction</div><div class='fixed normal'>] [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>]
+       [, </div><div class='fixed italic'>keep-dialog</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>replace_in_selection</div><div class='fixed normal'>( search-string,
+       replace-string [, </div><div class='fixed italic'>search-type</div><div class='fixed normal'>] )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>save_as</div><div class='fixed normal'>( </div><div class='fixed italic'>filename</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>shell_menu_command</div><div class='fixed normal'>( </div><div class='fixed italic'>shell-menu-item-name</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>unload_tags_file</div><div class='fixed normal'>( </div><div class='fixed italic'>filename</div><div class='fixed normal'> )
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>----------- Some notes on argument types above -----------</div><div class='fixed normal'>
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>Arguments to new()</div><div class='fixed normal'>
+                   &quot;tab&quot;:      Open a new tab
+                   &quot;window&quot;:   Open a new window
+                   &quot;prefs&quot;:    Follow the user's tab/window
+                               preference
+                   &quot;opposite&quot;: Opposite of user's tab/window
+                               preference
+                   Default behaviour is &quot;prefs&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>filename</div><div class='fixed normal'>       Path names are relative to the directory from
+                   which NEdit was started. Shell interpreted
+                   wildcards and `~' are not expanded.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>keep-dialog</div><div class='fixed normal'>    Either &quot;keep&quot; or &quot;nokeep&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>mark-letter</div><div class='fixed normal'>   The mark command limits users to single letters. Inside
+                    of macros, single digits are allowed as marks. These
+                    won't interfere with marks set by the user.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>macro-menu-item-name</div><div class='fixed normal'>
+                   Name of the command exactly as specified in
+                   the Macro Menu dialogs.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>non-regex-search-type</div><div class='fixed normal'>
+                   Either &quot;literal&quot;, &quot;case&quot;, &quot;word&quot;, or
+                   &quot;caseWord&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>search-direction</div><div class='fixed normal'>
+                   Either &quot;forward&quot; or &quot;backward&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>search-type</div><div class='fixed normal'>    Either &quot;literal&quot;, &quot;case&quot;, &quot;word&quot;,
+                   &quot;caseWord&quot;, &quot;regex&quot;, or &quot;regexNoCase&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>search-wrap</div><div class='fixed normal'>    Either &quot;wrap&quot; or &quot;nowrap&quot;.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    </div><div class='fixed italic'>shell-menu-item-name</div><div class='fixed normal'>
+                   Name of the command exactly as specified in
+                   the Shell Menu dialogs.
+</div><div class='normal'><br>
+<h1>Window Preferences Actions</h1>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_auto_indent( &quot;off&quot; | &quot;on&quot; | &quot;smart&quot; )</div><div class='fixed normal'>
+</div><div class='normal'>Set auto indent mode for the current window. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_em_tab_dist( em-tab-distance )</div><div class='fixed normal'>
+</div><div class='normal'>Set the emulated tab size. An em-tab-distance value of 0 or less translates to no emulated tabs. Em-tab-distance must be smaller than 1000. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_fonts( font-name, italic-font-name, bold-font-name, bold-italic-font-name )</div><div class='fixed normal'>
+</div><div class='normal'>Set all the fonts used for the current window. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_highlight_syntax( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set syntax highlighting mode for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_incremental_backup( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set incremental backup mode for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_incremental_search_line( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Show or hide the incremental search line for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_language_mode( language-mode )</div><div class='fixed normal'>
+</div><div class='normal'>Set the language mode for the current window. If the language mode is &quot;&quot; or unrecognized, it will be set to Plain. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_locked( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>This only affects the locked status of a file, not its read-only status. Permissions are </div><div class='italic'>not</div><div class='normal'> changed. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_make_backup_copy( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set whether backup copies are made during saves for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_overtype_mode( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set overtype mode for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_show_line_numbers( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Show or hide line numbers for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_show_matching( &quot;off&quot; | &quot;delimiter&quot; | &quot;range&quot; )</div><div class='fixed normal'>
+</div><div class='normal'>Set show matching (...) mode for the current window. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_match_syntax_based( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set whether matching should be syntax based for the current window. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_statistics_line( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Show or hide the statistics line for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_tab_dist( tab-distance )</div><div class='fixed normal'>
+</div><div class='normal'>Set the size of hardware tab spacing. Tab-distance must be a value greater than 0 and no greater than 20. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_use_tabs( [0 | 1] )</div><div class='fixed normal'>
+</div><div class='normal'>Set whether tab characters are used for the current window. A value of 0 turns it off (using space characters instead) and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_wrap_margin( wrap-width )</div><div class='fixed normal'>
+</div><div class='normal'>Set the wrap width for text wrapping of the current window. A value of 0 means to wrap at window width. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>set_wrap_text( &quot;none&quot; | &quot;auto&quot; | &quot;continuous&quot; )</div><div class='fixed normal'>
+</div><div class='normal'>Set wrap text mode for the current window. <br>
+<br>
+<h1>Keyboard-Only Actions</h1>
+<br>
+In addition to the arguments listed in the call descriptions below, any routine involving cursor movement can take the argument &quot;extend&quot;, meaning, adjust the primary selection to the new cursor position. Routines which take the &quot;extend&quot; argument as well as mouse dragging operations for both primary and secondary selections can take the optional keyword &quot;rect&quot;, meaning, make the selection rectangular. Any routine that accepts the &quot;scrollbar&quot; argument will move the display but not the cursor or selection. Routines that accept the &quot;nobell&quot; argument will fail silently without beeping, when that argument is supplied. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>backward_character( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor one character to the left. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>backward_paragraph([&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the paragraph, or if the cursor is already at the beginning of a paragraph, moves the cursor to the beginning of the previous paragraph.  Paragraphs are defined as regions of text delimited by one or more blank lines. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>backward_word( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of a word, or, if the cursor is already at the beginning of a word, moves the cursor to the beginning of the previous word.  Word delimiters are user-settable, and defined by the X resource wordDelimiters. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>beginning_of_file( [&quot;scrollbar&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the file. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>beginning_of_line( [&quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the line. If &quot;absolute&quot; is given, always moves to the absolute beginning of line, regardless of the text wrapping mode. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>beginning_of_selection()</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the selection without disturbing the selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>copy_clipboard()</div><div class='fixed normal'>
+</div><div class='normal'>Copies the current selection to the clipboard. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>copy_primary()</div><div class='fixed normal'>
+</div><div class='normal'>Copies the primary selection to the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>copy_to()</div><div class='fixed normal'>
+</div><div class='normal'>If a secondary selection exists, copies the secondary selection to the cursor.  If no secondary selection exists, copies the primary selection to the pointer location. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>copy_to_or_end_drag()</div><div class='fixed normal'>
+</div><div class='normal'>Completes either a secondary selection operation, or a primary drag.  If the user is dragging the mouse to adjust a secondary selection, the selection is copied and either inserted at the cursor location, or, if pending-delete is on and a primary selection exists in the window, replaces the primary selection.  If the user is dragging a block of text (primary selection), completes the drag operation and leaves the text at its current location. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>cut_clipboard()</div><div class='fixed normal'>
+</div><div class='normal'>Deletes the text in the primary selection and places it in the clipboard. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>cut_primary()</div><div class='fixed normal'>
+</div><div class='normal'>Copies the primary selection to the cursor and deletes it at its original location. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_selection()</div><div class='fixed normal'>
+</div><div class='normal'>Deletes the contents of the primary selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_next_character( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents. Otherwise, deletes the character following the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_previous_character( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents.  Otherwise, deletes the character before the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_next_word( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents. Otherwise, deletes the word following the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_previous_word( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents. Otherwise, deletes the word before the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_to_start_of_line( [&quot;nobell&quot;, &quot;wrap&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents.  Otherwise, deletes the characters between the cursor and the start of the line. If &quot;wrap&quot; is given, deletes to the previous wrap point or beginning of line, whichever is closest. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>delete_to_end_of_line( [&quot;nobell&quot;, &quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>If a primary selection exists, deletes its contents. Otherwise, deletes the characters between the cursor and the end of the line. If &quot;absolute&quot; is given, always deletes to the absolute end of line, regardless of the text wrapping mode. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>deselect_all()</div><div class='fixed normal'>
+</div><div class='normal'>De-selects the primary selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>end_of_file( [&quot;scrollbar&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the end of the file. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>end_of_line( [&quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the end of the line.  If &quot;absolute&quot; is given, always moves to the absolute end of line, regardless of the text wrapping mode. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>end_of_selection()</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the end of the selection without disturbing the selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>exchange( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Exchange the primary and secondary selections. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>extend_adjust()</div><div class='fixed normal'>
+</div><div class='normal'>Attached mouse-movement events to begin a selection between the cursor and the mouse, or extend the primary selection to the mouse position. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>extend_end()</div><div class='fixed normal'>
+</div><div class='normal'>Completes a primary drag-selection operation. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>extend_start()</div><div class='fixed normal'>
+</div><div class='normal'>Begins a selection between the cursor and the mouse.  A drag-selection operation can be started with either extend_start or grab_focus. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>focus_pane( [relative-pane] | [positive-index] | [negative-index] )</div><div class='fixed normal'>
+</div><div class='normal'>Move the focus to the requested pane. Arguments can be specified in the form of a relative-pane (&quot;first&quot;, &quot;last&quot;, &quot;next&quot;, &quot;previous&quot;), a positive-index (numbers greater than 0, 1 is the same as &quot;first&quot;) or a negative-index (numbers less than 0, -1 is the same as &quot;last&quot;). <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>forward_character()</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor one character to the right. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>forward_paragraph( [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the next paragraph. Paragraphs are defined as regions of text delimited by one or more blank lines. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>forward_word( [&quot;tail&quot;] [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the beginning of the next word.  Word delimiters are user-settable, and defined by the X resource wordDelimiters. If the &quot;tail&quot; argument is supplied the cursor will be moved to the end of the current word or the end of the next word, if the cursor is between words. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>grab_focus()</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the mouse pointer location, and prepares for a possible drag-selection operation (bound to extend_adjust), or multi-click operation (a further grab_focus action).  If a second invocation of grab focus follows immediately, it selects a whole word, or a third, a whole line. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>insert_string( &quot;string&quot; )</div><div class='fixed normal'>
+</div><div class='normal'>If pending delete is on and the cursor is inside the selection, replaces the selection with &quot;string&quot;.  Otherwise, inserts &quot;string&quot; at the cursor location. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>key_select( &quot;direction&quot; [,&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor one character in &quot;direction&quot; (&quot;left&quot;, &quot;right&quot;, &quot;up&quot;, or &quot;down&quot;) and extends the selection.  Same as forward/backward-character(&quot;extend&quot;), or process-up/down(&quot;extend&quot;), for compatibility with previous versions. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>move-destination()</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor to the pointer location without disturbing the selection.  (This is an unusual way of working.  We left it in for compatibility with previous versions, but if you actually use this capability, please send us some mail, otherwise it is likely to disappear in the future. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>move_to()</div><div class='fixed normal'>
+</div><div class='normal'>If a secondary selection exists, deletes the contents of the secondary selection and inserts it at the cursor, or if pending-delete is on and there is a primary selection, replaces the primary selection.  If no secondary selection exists, moves the primary selection to the pointer location, deleting it from its original position. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>move_to_or_end_drag()</div><div class='fixed normal'>
+</div><div class='normal'>Completes either a secondary selection operation, or a primary drag.  If the user is dragging the mouse to adjust a secondary selection, the selection is deleted and either inserted at the cursor location, or, if pending-delete is on and a primary selection exists in the window, replaces the primary selection.  If the user is dragging a block of text (primary selection), completes the drag operation and deletes the text from its current location. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>newline()</div><div class='fixed normal'>
+</div><div class='normal'>Inserts a newline character.  If Auto Indent is on, lines up the indentation of the cursor with the current line. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>newline_and_indent()</div><div class='fixed normal'>
+</div><div class='normal'>Inserts a newline character and lines up the indentation of the cursor with the current line, regardless of the setting of Auto Indent. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>newline_no_indent()</div><div class='fixed normal'>
+</div><div class='normal'>Inserts a newline character, without automatic indentation, regardless of the setting of Auto Indent. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>next_page( [&quot;stutter&quot;] [&quot;column&quot;] [&quot;scrollbar&quot;] [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor and scroll forward one page. The parameter &quot;stutter&quot; moves the cursor to the bottom of the display, unless it is already there, otherwise it will page down. The parameter &quot;column&quot; will maintain the preferred column while moving the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>page_left( [&quot;scrollbar&quot;] [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Move the cursor and scroll left one page. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>page_right( [&quot;scrollbar&quot;] [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Move the cursor and scroll right one page. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>paste_clipboard()</div><div class='fixed normal'>
+</div><div class='normal'>Insert the contents of the clipboard at the cursor, or if pending delete is on, replace the primary selection with the contents of the clipboard. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>previous_page( [&quot;stutter&quot;] [&quot;column&quot;] [&quot;scrollbar&quot;] [&quot;nobell&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor and scroll backward one page. The parameter &quot;stutter&quot; moves the cursor to the top of the display, unless it is already there, otherwise it will page up. The parameter &quot;column&quot; will maintain the preferred column while moving the cursor. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_bdrag()</div><div class='fixed normal'>
+</div><div class='normal'>Same as secondary_or_drag_start for compatibility with previous versions. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_cancel()</div><div class='fixed normal'>
+</div><div class='normal'>Cancels the current extend_adjust, secondary_adjust, or secondary_or_drag_adjust in progress. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_down( [&quot;nobell&quot;, &quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor down one line.  If &quot;absolute&quot; is given, always moves to the next line in the text buffer, regardless of wrapping. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_return()</div><div class='fixed normal'>
+</div><div class='normal'>Same as newline for compatibility with previous versions. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_shift_down( [&quot;nobell&quot;, &quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Same as process_down(&quot;extend&quot;) for compatibility with previous versions. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_shift_up( [&quot;nobell&quot;, &quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Same as process_up(&quot;extend&quot;) for compatibility with previous versions. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_tab()</div><div class='fixed normal'>
+</div><div class='normal'>If tab emulation is turned on, inserts an emulated tab, otherwise inserts a tab character. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>process_up( [&quot;nobell&quot;, &quot;absolute&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Moves the cursor up one line.  If &quot;absolute&quot; is given, always moves to the previous line in the text buffer, regardless of wrapping. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>raise_window([relative-window] | [positive-index] | [negative-index] [, &quot;focus&quot; | &quot;nofocus&quot;])</div><div class='fixed normal'>
+</div><div class='normal'>Raise the current focused window to the front if no argument is supplied. Arguments can be specified in the form of a relative-window (&quot;first&quot;, &quot;last&quot;, &quot;next&quot;, &quot;previous&quot;), a positive-index (numbers greater than 0, 1 is the same as &quot;last&quot;) or a negative-index (numbers less than 0, -1 is the same as &quot;first&quot;). <br>
+<br>
+Moreover, it can be specified whether or not the raised window should request the X input focus. By default, it depends on the setting of the nedit.focusOnRaise resource (see the section &quot;<a href="30.html">X Resources</a>&quot;) whether or not the input focus is requested. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>scroll_down( nUnits, [&quot;lines&quot; | &quot;pages&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Scroll the display down (towards the end of the file) by a given number of units, units being lines or pages. Default units are lines. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>scroll_left( nPixels )</div><div class='fixed normal'>
+</div><div class='normal'>Scroll the display left by nPixels. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>scroll_right( nPixels )</div><div class='fixed normal'>
+</div><div class='normal'>Scroll the display right by nPixels. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>scroll_up( nUnits, [&quot;lines&quot; | &quot;pages&quot;] )</div><div class='fixed normal'>
+</div><div class='normal'>Scroll the display up (towards the beginning of the file) by a given number of units, units being lines or pages. Default units are lines. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>scroll_to_line( lineNum )</div><div class='fixed normal'>
+</div><div class='normal'>Scroll to position line number lineNum at the top of the pane.  The first line of a file is line 1. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>secondary_adjust()</div><div class='fixed normal'>
+</div><div class='normal'>Attached mouse-movement events to extend the secondary selection to the mouse position. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>secondary_or_drag_adjust()</div><div class='fixed normal'>
+</div><div class='normal'>Attached mouse-movement events to extend the secondary selection, or reposition the primary text being dragged.  Takes two optional arguments, &quot;copy&quot;, and &quot;overlay&quot;.  &quot;copy&quot; leaves a copy of the dragged text at the site at which the drag began.  &quot;overlay&quot; does the drag in overlay mode, meaning the dragged text is laid on top of the existing text, obscuring and ultimately deleting it when the drag is complete. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>secondary_or_drag_start()</div><div class='fixed normal'>
+</div><div class='normal'>To be attached to a mouse down event.  Begins drag selecting a secondary selection, or dragging the contents of the primary selection, depending on whether the mouse is pressed inside of an existing primary selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>secondary_start()</div><div class='fixed normal'>
+</div><div class='normal'>To be attached to a mouse down event.  Begin drag selecting a secondary selection. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>select_all()</div><div class='fixed normal'>
+</div><div class='normal'>Select the entire file. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>self_insert()</div><div class='fixed normal'>
+</div><div class='normal'>To be attached to a key-press event, inserts the character equivalent of the key pressed. <br>
+<br>
+<footer>
+<a href="26.html">Previous</a>
+<a href="28.html">Next</a>
+</footer>
+</body>
+</html>
+

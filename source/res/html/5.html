@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Using the Mouse(5)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>Mouse-based editing is what NEdit is all about, and learning to use the more advanced features like secondary selections and primary selection dragging will be well worth your while. <br>
+<br>
+If you don't have time to learn everything, you can get by adequately with just the left mouse button:  Clicking the left button moves the cursor. Dragging with the left button makes a selection.  Holding the shift key while clicking extends the existing selection, or begins a selection between the cursor and the mouse.  Double or triple clicking selects a whole word or a whole line. <br>
+<br>
+This section will make more sense if you also read the section called, &quot;<a href="2.html">Selecting Text</a>&quot;, which explains the terminology of selections, that is, what is meant by primary, secondary, rectangular, etc. <br>
+<br>
+<h1>Button and Modifier Key Summary</h1>
+<br>
+General meaning of mouse buttons and modifier keys: <br>
+<br>
+<h2>  Buttons</h2>
+<br>
+</div><div class='fixed normal'>      Button 1 (left)    Cursor position and primary selection
+</div><div class='normal'><br>
+</div><div class='fixed normal'>      Button 2 (middle)  Secondary selections, and dragging and
+                         copying the primary selection
+</div><div class='normal'><br>
+</div><div class='fixed normal'>      Button 3 (right)   Quick-access programmable menu and pan
+                         scrolling
+</div><div class='normal'><br>
+<h2>  Modifier keys</h2>
+<br>
+</div><div class='fixed normal'>      Shift   On primary selections, (left mouse button):
+                 Extends selection to the mouse pointer
+              On secondary and copy operations, (middle):
+                 Toggles between move and copy
+</div><div class='normal'><br>
+</div><div class='fixed normal'>      Ctrl    Makes selection rectangular or insertion
+              columnar
+</div><div class='normal'><br>
+</div><div class='fixed normal'>      Alt*    (on release) Exchange primary and secondary
+              selections.
+</div><div class='normal'><br>
+<h1>Left Mouse Button</h1>
+<br>
+The left mouse button is used to position the cursor and to make primary selections. <br>
+<br>
+</div><div class='fixed normal'>    Click         Moves the cursor
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Double Click  Selects a whole word
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Triple Click  Selects a whole line
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Quad Click    Selects the whole file
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Shift Click   Adjusts (extends or shrinks) the
+                  selection, or if there is no existing
+                  selection, begins a new selection
+                  between the cursor and the mouse.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Ctrl+Shift+   Adjusts (extends or shrinks) the
+    Click         selection rectangularly.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Drag          Selects text between where the mouse
+                  was pressed and where it was released.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Ctrl+Drag     Selects rectangle between where the
+                  mouse was pressed and where it was
+                  released.
+</div><div class='normal'><br>
+<h1>Right Mouse Button</h1>
+<br>
+The right mouse button posts a programmable menu for frequently used commands. <br>
+<br>
+</div><div class='fixed normal'>    Click/Drag    Pops up the background menu (programmed
+                  from Preferences -&gt; Default Settings -&gt;
+                  Customize Menus -&gt; Window Background).
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Ctrl+Drag     Pan scrolling.  Scrolls the window
+                  both vertically and horizontally, as if
+                  you had grabbed it with your mouse.
+</div><div class='normal'><br>
+<h1>Middle Mouse Button</h1>
+<br>
+The middle mouse button is for making secondary selections, and copying and dragging the primary selection. <br>
+<br>
+</div><div class='fixed normal'>    Click         Copies the primary selection to the
+                  clicked position.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Shift+Click   Moves the primary selection to the
+                  clicked position, deleting it from its
+                  original position.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Drag          1) Outside of the primary selection:
+                      Begins a secondary selection.
+                  2) Inside of the primary selection:
+                      Moves the selection by dragging.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Ctrl+Drag     1) Outside of the primary selection:
+                      Begins a rectangular secondary
+                      selection.
+                  2) Inside of the primary selection:
+                      Drags the selection in overlay
+                      mode (see below).
+</div><div class='normal'><br>
+When the mouse button is released after creating a secondary selection: <br>
+<br>
+</div><div class='fixed normal'>    No Modifiers  If there is a primary selection,
+                  replaces it with the secondary
+                  selection.  Otherwise, inserts the
+                  secondary selection at the cursor
+                  position.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Shift         Move the secondary selection, deleting
+                  it from its original position.  If
+                  there is a primary selection, the move
+                  will replace the primary selection
+                  with the secondary selection.
+                  Otherwise, moves the secondary
+                  selection to the cursor position.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Alt*          Exchange the primary and secondary
+                  selections.
+</div><div class='normal'><br>
+While moving the primary selection by dragging with the middle mouse button: <br>
+<br>
+</div><div class='fixed normal'>    Shift         Leaves a copy of the original
+                  selection in place rather than
+                  removing it or blanking the area.
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Ctrl          Changes from insert mode to overlay
+                  mode (see below).
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    Escape        Cancels drag in progress.
+</div><div class='normal'><br>
+Overlay Mode: Normally, dragging moves text by removing it from the selected position at the start of the drag, and inserting it at a new position relative to the mouse. When you drag a block of text over existing characters, the existing characters are displaced to the end of the selection.  In overlay mode, characters which are occluded by blocks of text being dragged are simply removed.  When dragging non-rectangular selections, overlay mode also converts the selection to rectangular form, allowing it to be dragged outside of the bounds of the existing text. <br>
+<br>
+Mouse buttons 4 and 5 are usually represented by a mouse wheel nowadays. They are used to scroll up or down in the text window. <br>
+<br>
+* The Alt key may be labeled Meta or Compose-Character on some keyboards. Some window managers, including default configurations of mwm, bind combinations of the Alt key and mouse buttons to window manager operations. In NEdit, Alt is only used on button release, so regardless of the window manager bindings for Alt-modified mouse buttons, you can still do the corresponding NEdit operation by using the Alt key AFTER the initial mouse press, so that Alt is held while you release the mouse button.  If you find this difficult or annoying, you can re-configure most window managers to skip this binding, or you can re-configure NEdit to use a different key combination. <footer>
+<a href="4.html">Previous</a>
+<a href="6.html">Next</a>
+</footer>
+</body>
+</html>
+

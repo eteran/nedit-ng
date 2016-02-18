@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Client/Server Mode(35)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>NEdit can be operated on its own, or as a two-part client/server application.  Client/server mode is useful for integrating NEdit with software development environments, mailers, and other programs; or just as a quick way to open files from the shell command line without starting a new NEdit session. <br>
+<br>
+To run NEdit in server mode, type: <br>
+<br>
+</div><div class='fixed normal'>      nedit -server
+</div><div class='normal'><br>
+NEdit can also be started in server mode via the NEdit Client program (</div><div class='bold'>nc</div><div class='normal'>) when no servers are available. <br>
+<br>
+The nc program, which is distributed along with NEdit, sends commands to an NEdit server to open files or execute editor actions. It can also be used on files that are already opened. <br>
+<br>
+Listing a file on the nc command line means: Open it if it is not already open and bring the window to the front. <br>
+<br>
+nc supports the following command line options: <br>
+<br>
+</div><div class='fixed normal'>    </div><div class='fixed bold'>nc</div><div class='fixed normal'> [</div><div class='fixed bold'>-read</div><div class='fixed normal'>] [</div><div class='fixed bold'>-create</div><div class='fixed normal'>]
+       [</div><div class='fixed bold'>-line</div><div class='fixed normal'> n | </div><div class='fixed bold'>+</div><div class='fixed normal'>n] [</div><div class='fixed bold'>-do</div><div class='fixed normal'> command] [</div><div class='fixed bold'>-lm</div><div class='fixed normal'> languagemode]
+       [</div><div class='fixed bold'>-svrname</div><div class='fixed normal'> name] [</div><div class='fixed bold'>-svrcmd</div><div class='fixed normal'> command]
+       [</div><div class='fixed bold'>-ask</div><div class='fixed normal'>] [</div><div class='fixed bold'>-noask</div><div class='fixed normal'>] [</div><div class='fixed bold'>-timeout</div><div class='fixed normal'> seconds]
+       [</div><div class='fixed bold'>-geometry</div><div class='fixed normal'> geometry | </div><div class='fixed bold'>-g</div><div class='fixed normal'> geometry] [</div><div class='fixed bold'>-icon</div><div class='fixed normal'> | </div><div class='fixed bold'>-iconic</div><div class='fixed normal'>]
+       [-</div><div class='fixed bold'>tabbed</div><div class='fixed normal'>] [-</div><div class='fixed bold'>untabbed</div><div class='fixed normal'>] [-</div><div class='fixed bold'>group</div><div class='fixed normal'>] [</div><div class='fixed bold'>-wait</div><div class='fixed normal'>]
+       [</div><div class='fixed bold'>-V</div><div class='fixed normal'> | </div><div class='fixed bold'>-version</div><div class='fixed normal'>]
+       [</div><div class='fixed bold'>-xrm</div><div class='fixed normal'> resourcestring] [</div><div class='fixed bold'>-display</div><div class='fixed normal'> [host]:server[.screen]]
+       [</div><div class='fixed bold'>-</div><div class='fixed normal'>-] [file...]
+</div><div class='normal'><br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-read</div><div class='fixed normal'>
+</div><div class='normal'>Open the file read-only regardless of its actual permissions. There is no effect if the file is already open. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-create</div><div class='fixed normal'>
+</div><div class='normal'>Don't warn about file creation when a file doesn't exist. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-line</div><div class='fixed normal'> n, </div><div class='fixed bold'>+</div><div class='fixed normal'>n
+</div><div class='normal'>Go to line number n. This will also affect files which are already open. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-do</div><div class='fixed normal'> command
+</div><div class='normal'>Execute an NEdit macro or action on the file following the -do argument on the command line. <br>
+<br>
+If you use this command without a filename, nc would randomly choose one window to focus and execute the macro in. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-lm</div><div class='fixed normal'> languagemode
+</div><div class='normal'>Initial language mode used. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-svrname</div><div class='fixed normal'> name
+</div><div class='normal'>Explicitly instructs nc which server to connect to, an instance of nedit(1) with a corresponding -svrname argument.  By naming servers, you can run several simultaneously, and direct files and commands specifically to any one. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-svrcmd</div><div class='fixed normal'> command
+</div><div class='normal'>The command which nc uses to start an NEdit server. It is also settable via the X resource `nc.serverCommand' (see <a href="30.html">X Resources</a>). Defaults to &quot;nedit -server&quot;. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-ask</div><div class='fixed normal'>, </div><div class='fixed bold'>-noask</div><div class='fixed normal'>
+</div><div class='normal'>Instructs nc to automatically start a server if one is not available.  This overrides the X resource `nc.autoStart' (see <a href="30.html">X Resources</a>). <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-timeout</div><div class='fixed normal'> seconds
+</div><div class='normal'>Basic time-out period used in communication with an NEdit server.  The default is 10 seconds. Also settable via the X resource `nc.timeOut'. <br>
+<br>
+Under rare conditions (such as a slow connection), it may be necessary to increase the time-out period. In most cases, the default is fine. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-geometry</div><div class='fixed normal'> geometry, </div><div class='fixed bold'>-g</div><div class='fixed normal'> geometry
+</div><div class='normal'>The initial size and/or location of editor windows. See <a href="34.html">NEdit Command Line</a> for details. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-icon</div><div class='fixed normal'>, </div><div class='fixed bold'>-iconic</div><div class='fixed normal'>
+</div><div class='normal'>Initial window state. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-tabbed</div><div class='fixed normal'>
+</div><div class='normal'>Open all subsequent files in new tabs. Resets -group option. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-untabbed</div><div class='fixed normal'>
+</div><div class='normal'>Open all subsequent files in new windows. Resets -group option. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-group</div><div class='fixed normal'>
+</div><div class='normal'>Open all subsequent files as tabs in a new window. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-wait</div><div class='fixed normal'>
+</div><div class='normal'>Instructs nc not to return to the shell until all files given are closed. <br>
+<br>
+Normally, nc returns once the files given in its command line are opened by the server. When this option is given, nc returns only after the last file given in this call is closed. <br>
+<br>
+Note that this option affects all files in the command line, not only the ones following this option. <br>
+<br>
+Note that nc will wait for all files given in the command line, even if the files were already opened. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-version</div><div class='fixed normal'>, </div><div class='fixed bold'>-V</div><div class='fixed normal'>
+</div><div class='normal'>Prints nc's version and build information. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-xrm</div><div class='fixed normal'> resourcestring
+</div><div class='normal'>Contains the resourcestring passed to a newly started server. This option has no effect if the server is already started. <br>
+<br>
+</div><div class='fixed normal'></div><div class='fixed bold'>-display</div><div class='fixed normal'> [&lt;host&gt;]:&lt;server&gt;[.&lt;screen&gt;]
+</div><div class='normal'>The name of the X server to use. See <a href="34.html">NEdit Command Line</a> for details. <br>
+<br>
+<h2>Command Line Arguments</h2>
+<br>
+In typical Unix style, arguments affect the files which follow them on the command line, for example: <br>
+<br>
+</div><div class='fixed normal'>      incorrect:   nc file.c -line 25
+      correct:     nc -line 25 file.c
+</div><div class='normal'><br>
+-read, -create, and -line affect all of the files which follow them on the command line. <br>
+<br>
+The -do macro is executed only once, on the next file on the line.  -do without a file following it on the command line, executes the macro on the first available window (presumably when you give a -do command without a corresponding file or window, you intend it to do something independent of the window in which it happens to execute). <br>
+<br>
+The -wait option affects all files named in the command line. <br>
+<br>
+<h2>Multiple Servers</h2>
+<br>
+Sometimes it is useful to have more than one NEdit server running, for example to keep mail and programming work separate.  The option, -svrname, to both nedit and nc, allows you to start, and communicate with, separate named servers.  A named server responds only to requests with the corresponding -svrname argument.  If you use ClearCase and are within a ClearCase view, the server name will default to the name of the view (based on the value of the CLEARCASE_ROOT environment variable). <br>
+<br>
+<h2>Communication</h2>
+<br>
+Communication between nc and nedit is done through the X display. So as long as the X Window System is set up and working properly, nc will work properly as well. nc uses the DISPLAY environment variable, the machine name and your user name to find the appropriate server, meaning, if you have several machines sharing a common file system, nc will not be able to find a server that is running on a machine with a different host name, even though it may be perfectly appropriate for editing a given file. <br>
+<br>
+The command which nc uses to start an nedit server is settable via the X resource nc.serverCommand, by default, &quot;nedit -server&quot;. <footer>
+<a href="34.html">Previous</a>
+<a href="36.html">Next</a>
+</footer>
+</body>
+</html>
+

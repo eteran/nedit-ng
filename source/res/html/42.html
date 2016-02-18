@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customize Window Title Dialog(42)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>The Customize Window Title dialog allows you to customize and test the way information will be displayed in each window's title field. <br>
+<br>
+</div><div class='bold'>Definition of the title</div><div class='normal'> <br>
+<br>
+The upper half of the dialog can be used to select the various components that should be displayed in the title. The layout can be fine-tuned by editing the printf() like format string below the component buttons: additional characters can be entered, or the order can be changed. <br>
+<br>
+The following sequences are interpreted in the format string: <br>
+<br>
+</div><div class='fixed normal'>   %c    ClearCase view tag (only relevant when NEdit is
+         used together with ClearCase)
+   %[n]d directory, with one optional numeric digit n
+         specifying the maximum number of trailing directory
+         components to display. Skipped components are
+         replaced by an ellipsis (...).
+   %f    file name, without the path name
+   %h    host name
+   %s    NEdit server name (server mode only)
+   %[*]S file status, either verbose (%S) or brief (%*S).
+         In verbose mode the file status is spelled out:
+         read-only, locked, and modified. In brief mode,
+         abbreviations and an asterisk are used for the
+         respective states: RO, LO, *.
+   %u    user name
+</div><div class='normal'><br>
+The format string and the component buttons are continously synchronized. <br>
+<br>
+The default format is: <br>
+<br>
+</div><div class='fixed normal'>    {%c} [%s] %f (%S) - %d
+</div><div class='normal'><br>
+The resulting title will only contain elements with a value. Hence, the title is compressed as follows: <br>
+<br>
+</div><div class='fixed normal'>   * Elements with no value are removed.
+   * Empty parenthesis pairs i.e. (), [] or {}, or parenthesis pairs containing only space(s), are removed.
+   * Sequences of spaces are replaced with one space.
+   * Leading spaces and dashes are removed.
+   * Trailing spaces and dashes are removed.
+</div><div class='normal'>If the server name and the ClearCase view tag are identical, only the first one specified in the format string will be displayed. <br>
+<br>
+</div><div class='bold'>Previewing the settings</div><div class='normal'> <br>
+<br>
+The lower part of the dialog can be used to test the selected title under various conditions. For some of the components that are selected for display, various states can be enforced on the preview. <br>
+<br>
+For instance, components that are not always active (such the NEdit server name) can be turned on or off in the preview. <footer>
+<a href="41.html">Previous</a>
+</footer>
+</body>
+</html>
+

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Example Regular Expressions(20)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>The following are regular expression examples which will match: <br>
+<br>
+    * An entire line.<br>
+</div><div class='fixed normal'>        ^.*$
+</div><div class='normal'><br>
+    * Blank lines.<br>
+</div><div class='fixed normal'>        ^$
+</div><div class='normal'><br>
+    * Whitespace on a line.<br>
+</div><div class='fixed normal'>        \s+
+</div><div class='normal'><br>
+    * Whitespace across lines.<br>
+</div><div class='fixed normal'>        (?n\s+)
+</div><div class='normal'><br>
+    * Whitespace that spans at least two lines. Note minimal matching `*?' quantifier.<br>
+</div><div class='fixed normal'>        (?n\s*?\n\s*)
+</div><div class='normal'><br>
+    * IP address (not robust).<br>
+</div><div class='fixed normal'>        (?:\d{1,3}(?:\.\d{1,3}){3})
+</div><div class='normal'><br>
+    * Two character US Postal state abbreviations (includes territories).<br>
+</div><div class='fixed normal'>        [ACDF-IK-PR-W][A-Z]
+</div><div class='normal'><br>
+    * Web addresses.<br>
+</div><div class='fixed normal'>        (?:http://)?www\.\S+
+</div><div class='normal'><br>
+    * Case insensitive double words across line breaks.<br>
+</div><div class='fixed normal'>        (?i(?n&lt;(\S+)\s+\1&gt;))
+</div><div class='normal'><br>
+    * Upper case words with possible punctuation.<br>
+</div><div class='fixed normal'>        &lt;[A-Z][^a-z\s]*&gt;
+</div><div class='normal'><br>
+<footer>
+<a href="19.html">Previous</a>
+<a href="21.html">Next</a>
+</footer>
+</body>
+</html>
+

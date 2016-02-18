@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Macro Language(23)</title>
+	<style>
+		body    { font-family: sans-serif; }
+		.bold   { font-weight: strong; }
+		.italic { font-style: italic; }
+		.normal { font-style: normal; font-weight: normal; }
+		.fixed  { font-family: monospace; white-space: pre; }
+		footer  { padding-top: 20px; }
+	</style>
+</head>
+<body>
+<div class='normal'>Macros can be called from Macro menu commands, window background menu commands, within the smart-indent framework, from the autoload macro file, cf. <a href="29.html">Preferences</a>, and from the command line. Macro menu and window background menu commands are defined under Preferences -&gt; Default Settings -&gt; Customize Menus.  Help on creating items in these menus can be found in the section <a href="29.html">Preferences</a>. <br>
+<br>
+NEdit's macro language is a simple interpreter with integer arithmetic, dynamic strings, and C-style looping constructs (very similar to the procedural portion of the Unix awk program).  From the macro language, you can call the same action routines which are bound to keyboard keys and menu items, as well additional subroutines for accessing and manipulating editor data, which are specific to the macro language (these are listed in the sections titled &quot;<a href="24.html">Macro Subroutines</a>&quot;, and &quot;<a href="27.html">Action Routines</a>&quot;). <br>
+<br>
+<h1>Syntax</h1>
+<br>
+An NEdit macro language program consists of a list of statements, each terminated by a newline.  Groups of statements which are executed together conditionally, such as the body of a loop, are surrounded by curly braces &quot;{}&quot;. <br>
+<br>
+Blank lines and comments are also allowed.  Comments begin with a &quot;#&quot; and end with a newline, and can appear either on a line by themselves, or at the end of a statement. <br>
+<br>
+Statements which are too long to fit on a single line may be split across several lines, by placing a backslash &quot;\&quot; character at the end of each line to be continued. <br>
+<br>
+<h1>Data Types</h1>
+<br>
+The NEdit macro language recognizes only three data types, dynamic character strings, integer values and associative arrays. In general strings and integers can be used interchangeably. If a string represents an integer value, it can be used as an integer. Integers can be compared and concatenated with strings. Arrays may contain integers, strings, or arrays. Arrays are stored key/value pairs. Keys are always stored as strings. <br>
+<br>
+<h2>Integer Constants</h2>
+<br>
+Integers are non-fractional numbers in the range of -2147483647 to 2147483647.  Integer constants must be in decimal.  For example: <br>
+<br>
+</div><div class='fixed normal'>    a = -1
+    b = 1000
+</div><div class='normal'><br>
+<h2>Character String Constants</h2>
+<br>
+Character string constants are enclosed in double quotes.  For example: <br>
+<br>
+</div><div class='fixed normal'>     a = &quot;a string&quot;
+     dialog(&quot;Hi there!&quot;, &quot;OK&quot;)
+</div><div class='normal'><br>
+Strings may also include C-language style escape sequences: <br>
+<br>
+</div><div class='fixed normal'>     \\ Backslash     \t Tab              \f Form feed
+     \&quot; Double quote  \b Backspace        \a Alert
+     \n Newline       \r Carriage return  \v Vertical tab
+</div><div class='normal'><br>
+Also allowed is the escape control character sequence: <br>
+<br>
+</div><div class='fixed normal'>     \e Escape (ASCII or EBCDIC,
+                depending on NEdit compilation settings)
+</div><div class='normal'><br>
+For example, to send output to the terminal from which NEdit was started, a newline character is necessary because, like printf, t_print requires explicit newlines, and also buffers its output on a per-line basis: <br>
+<br>
+</div><div class='fixed normal'>     t_print(&quot;a = &quot; a &quot;\n&quot;)
+</div><div class='normal'><br>
+Other characters can be expressed as backslash-escape sequences in macro strings. The format is the same as for regular expressions, described in the paragraphs headed &quot;Octal and Hex Escape Sequences&quot; of the section &quot;<a href="17.html">Metacharacters</a>&quot;, except that an octal escape sequence can start with any octal digit, not just 0, so the single character string &quot;\0033&quot; is the same as &quot;\33&quot;, &quot;\x1B&quot; and &quot;\e&quot; (for an ASCII version of NEdit). <br>
+<br>
+Note that if you want to define a regular expression in a macro string, you need to &quot;double-up&quot; the backslashes for the metacharacters with special meaning in regular expressions. For example, the expression <br>
+<br>
+</div><div class='fixed normal'>     (?N(\s|/\*(?n(?:(?!\*/).)*)\*/|//.*\n|\n)+)
+</div><div class='normal'><br>
+which matches whitespace or C/C++/Java-style comments, should be written as a macro string as <br>
+<br>
+</div><div class='fixed normal'>     &quot;(?N(\\s|/\\*(?n(?:(?!\\*/).)*)\\*/|//.*\n|\n)+)&quot;
+</div><div class='normal'><br>
+(The &quot;\n&quot;s towards the end add literal newline characters to the string. The regular expression interpretation treats the newlines as themselves. It can also interpret the sequence &quot;\\n&quot; as a newline, although the macro string here would then contain a literal backslash followed by a lowercase `N'.) <br>
+<br>
+<h1>Variables</h1>
+<br>
+Variable names must begin either with a letter (local variables), or a $ (global variables).  Beyond the first character, variables may also contain numbers and underscores `_'.  Variables are called in to existence just by setting them (no explicit declarations are necessary). <br>
+<br>
+Local variables are limited in scope to the subroutine (or menu item definition) in which they appear.  Global variables are accessible from all routines, and their values persist beyond the call which created them, until reset. <br>
+<br>
+<h2>Built-in Variables</h2>
+<br>
+NEdit has a number of permanently defined variables, which are used to access global editor information and information about the window in which the macro is executing.  These are listed along with the built in functions in the section titled &quot;<a href="24.html">Macro Subroutines</a>&quot;. <br>
+<br>
+<h1>Functions and Subroutines</h1>
+<br>
+The syntax of a function or subroutine call is: <br>
+<br>
+</div><div class='fixed normal'>     function_name(arg1, arg2, ...)
+</div><div class='normal'><br>
+where arg1, arg2, etc. represent the argument values which are passed to the routine being called.  A function or subroutine call can be on a line by itself, as above, or if it returns a value, can be invoked within a character or numeric expression: <br>
+<br>
+</div><div class='fixed normal'>     a = fn1(b, c) + fn2(d)
+     dialog(&quot;fn3 says: &quot; fn3())
+</div><div class='normal'><br>
+Arguments are passed by value.  This means that you cannot return values via the argument list, only through the function value or indirectly through agreed-upon global variables. <br>
+<br>
+<h2>Built-in Functions</h2>
+<br>
+NEdit has a wide range of built in functions which can be called from the macro language.  These routines are divided into two classes, macro-language functions, and editor action routines.  Editor action routines are more flexible, in that they may be called either from the macro language, or bound directly to keys via translation tables.  They are also limited, however, in that they cannot return values.  Macro language routines can return values, but cannot be bound to keys in translation tables. <br>
+<br>
+Nearly all of the built-in subroutines operate on an implied window, which is initially the window from which the macro was started.  To manipulate the contents of other windows, use the focus_window subroutine to change the focus to the ones you wish to modify.  focus_window can also be used to iterate over all of the currently open windows, using the special keyword names, &quot;last&quot; and &quot;next&quot;. <br>
+<br>
+For backwards compatibility, hyphenated action routine names are allowed, and most of the existing action routines names which contain underscores have an equivalent version containing hyphens ('-') instead of underscores.  Use of these names is discouraged.  The macro parser resolves the ambiguity between '-' as the subtraction/negation operator, and - as part of an action routine name by assuming subtraction unless the symbol specifically matches an action routine name. <br>
+<br>
+<h2>User Defined Functions</h2>
+<br>
+Users can define their own macro subroutines, using the define keyword: <br>
+<br>
+</div><div class='fixed normal'>     define subroutine_name {
+        &lt; body of subroutine &gt;
+     }
+</div><div class='normal'><br>
+Subroutine definitions cannot appear within other definitions, nor within macro menu item definitions.  They can only appear in (macro) files, such as the autoload macro file, cf. <a href="29.html">Preferences</a>. Macro files can be loaded with File -&gt; Load Macro File or with the load_macro_file() action. <br>
+<br>
+The arguments with which a user-defined subroutine or function was invoked, are presented as $1, $2, ... , $9 or $args[expr], where expr can be evaluated to an integer from 1 to the number of arguments.  The number of arguments can be read from $n_args or $args[]. The array $args[expr] is the only way to access arguments beyond the first 9. <br>
+<br>
+To return a value from a subroutine, and/or to exit from the subroutine before the end of the subroutine body, use the return statement: <br>
+<br>
+</div><div class='fixed normal'>     return &lt;value to return&gt;
+</div><div class='normal'><br>
+<h1>Operators and Expressions</h1>
+<br>
+Operators have the same meaning and precedence that they do in C, except for ^, which raises a number to a power (y^x means y to the x power), rather than bitwise exclusive OR.  The table below lists operators in decreasing order of precedence. <br>
+<br>
+</div><div class='fixed normal'>     Operators                Associativity
+     ()
+     ^                        right to left
+     - ! ++ --                (unary)
+     * / %                    left to right
+     + -                      left to right
+     &gt; &gt;= &lt; &lt;= == !=          left to right
+     &amp;                        left to right
+     |                        left to right
+     &amp;&amp;                       left to right
+     ||                       left to right
+     (concatenation)          left to right
+     = += -= *= /= %=, &amp;= |=  right to left
+</div><div class='normal'><br>
+The order in which operands are evaluated in an expression is undefined, except for &amp;&amp; and ||, which like C, evaluate operands left to right, but stop when further evaluation would no longer change the result. <br>
+<br>
+<h2>Numerical Operators</h2>
+<br>
+The numeric operators supported by the NEdit macro language are listed below: <br>
+<br>
+</div><div class='fixed normal'>     + addition
+     - subtraction or negation
+     * multiplication
+     / division
+     % modulo
+     ^ power
+     &amp; bitwise and
+     | bitwise or
+</div><div class='normal'><br>
+Increment (++) and decrement (--) operators can also be appended or prepended to variables within an expression.  Prepended increment/decrement operators act before the variable is evaluated.  Appended increment/decrement operators act after the variable is evaluated. <br>
+<br>
+<h2>Logical and Comparison Operators</h2>
+<br>
+Logical operations produce a result of 0 (for false) or 1 (for true).  In a logical operation, any non-zero value is recognized to mean true.  The logical and comparison operators allowed in the NEdit macro language are listed below: <br>
+<br>
+</div><div class='fixed normal'>     &amp;&amp; logical and
+     || logical or
+     !  not
+     &gt;  greater
+     &lt;  less
+     &gt;= greater or equal
+     &lt;= less or equal
+     == equal (integers and/or strings)
+     != not equal (integers and/or strings)
+</div><div class='normal'><br>
+<h2>Character String Operators</h2>
+<br>
+The &quot;operator&quot; for concatenating two strings is the absence of an operator. Adjoining character strings with no operator in between means concatenation: <br>
+<br>
+</div><div class='fixed normal'>     d = a b &quot;string&quot; c
+     t_print(&quot;the value of a is: &quot; a)
+</div><div class='normal'><br>
+Comparison between character strings is done with the == and != operators, (as with integers).  There are a number of useful built-in routines for working with character strings, which are listed in the section called &quot;<a href="24.html">Macro Subroutines</a>&quot;. <br>
+<br>
+<h2>Arrays and Array Operators</h2>
+<br>
+Arrays may contain either strings, integers, or other arrays. Arrays are associative, which means that they relate two pieces of information, the key and  the value. The key is always a string; if you use an integer it is converted to a string. <br>
+<br>
+To determine if a given key is in an array, use the 'in' keyword. <br>
+<br>
+</div><div class='fixed normal'>      if (&quot;6&quot; in x)
+          &lt;body&gt;
+</div><div class='normal'><br>
+If the left side of the in keyword is an array, the result is true if every key in the left array is in the right array. Array values are not compared. <br>
+<br>
+To iterate through all the keys of an array use the 'for' looping construct. Keys are not guaranteed in any particular order: <br>
+<br>
+</div><div class='fixed normal'>      for (aKey in x)
+          &lt;body&gt;
+</div><div class='normal'><br>
+Elements can be removed from an array using the delete command: <br>
+<br>
+</div><div class='fixed normal'>      delete x[3] # deletes element with key 3
+      delete x[]  # deletes all elements
+</div><div class='normal'><br>
+The number of elements in an array can be determined by referencing the array with no indices: <br>
+<br>
+</div><div class='fixed normal'>      dialog(&quot;array x has &quot; x[] &quot; elements&quot;, &quot;OK&quot;)
+</div><div class='normal'><br>
+Arrays can be combined with some operators. All the following operators only compare the keys of the arrays. <br>
+<br>
+</div><div class='fixed normal'>      result = x + y   (Merge arrays)
+</div><div class='normal'><br>
+The 'result' is a new array containing keys from both x and y. If duplicates are present values from y are used. <br>
+<br>
+</div><div class='fixed normal'>      result = x - y   (Remove keys)
+</div><div class='normal'><br>
+The 'result' is a new array containing all keys from x that are not in y. <br>
+<br>
+</div><div class='fixed normal'>      result = x &amp; y   (Common keys)
+</div><div class='normal'><br>
+The 'result' is a new array containing all keys which are in both x and y. The values from y are used. <br>
+<br>
+</div><div class='fixed normal'>      result = x | y   (Unique keys)
+</div><div class='normal'><br>
+The 'result' is a new array containing keys which exist in either x or y, but not both. <br>
+<br>
+When duplicate keys are encountered using the + and &amp; operators, the values from the array on the right side of the operators are used for the result. All  of the above operators are array only, meaning both the left and right sides of the operator must be arrays. The results are also arrays. <br>
+<br>
+Array keys can also contain multiple dimensions: <br>
+<br>
+</div><div class='fixed normal'>      x[1, 1, 1] = &quot;string&quot;
+</div><div class='normal'><br>
+These are used in the expected way, e.g.: <br>
+<br>
+</div><div class='fixed normal'>      for (i = 1; i &lt; 3; i++)
+      {
+          for (j = 1; j &lt; 3; j++)
+          {
+              x[i, j] = k++
+          }
+      }
+</div><div class='normal'><br>
+gives the following array: <br>
+<br>
+</div><div class='fixed normal'>      x[1, 1] = 0
+      x[1, 2] = 1
+      x[2, 1] = 2
+      x[2, 2] = 3
+</div><div class='normal'><br>
+Internally all indices are part of one string, separated by the string $sub_sep (ASCII 0x1c, 'FS'). The first key in the above example is in fact: <br>
+<br>
+</div><div class='fixed normal'>      [&quot;1&quot; $sub_sep &quot;1&quot;]
+</div><div class='normal'><br>
+If you need to extract one of the keys, you can use split(), using $sub_sep as the separator. <br>
+<br>
+You can also check for the existence of multi-dimensional array by looking for $sub_sep in the key. <br>
+<br>
+Last, you need $sub_sep if you want to use the 'in' keyword. <br>
+<br>
+</div><div class='fixed normal'>      if ((1,2) in myArray)
+      {..}
+</div><div class='normal'><br>
+doesn't work, but <br>
+<br>
+</div><div class='fixed normal'>      if ((&quot;1&quot; $sub_sep &quot;2&quot;) in myArray)
+      {..}
+</div><div class='normal'><br>
+does work. <br>
+<br>
+<h1>Looping and Conditionals</h1>
+<br>
+NEdit supports looping constructs: for and while, and conditional statements: if and else, with essentially the same syntax as C: <br>
+<br>
+</div><div class='fixed normal'>     for (&lt;init&gt;, ...; &lt;condition&gt;; &lt;increment&gt;, ...) &lt;body&gt;
+</div><div class='normal'><br>
+</div><div class='fixed normal'>     while (&lt;condition&gt;) &lt;body&gt;
+</div><div class='normal'><br>
+</div><div class='fixed normal'>     if (&lt;condition&gt;) &lt;body&gt;
+</div><div class='normal'><br>
+</div><div class='fixed normal'>     if (&lt;condition&gt;) &lt;body&gt; else &lt;body&gt;
+</div><div class='normal'><br>
+&lt;body&gt;, as in C, can be a single statement, or a list of statements enclosed in curly braces ({}).  &lt;condition&gt; is an expression which must evaluate to true for the statements in &lt;body&gt; to be executed.  for loops may also contain initialization statements, &lt;init&gt;, executed once at the beginning of the loop, and increment/decrement statements (or any arbitrary statement), which are executed at the end of the loop, before the condition is evaluated again. <br>
+<br>
+Examples: <br>
+<br>
+</div><div class='fixed normal'>    for (i=0; i&lt;100; i++)
+       j = i * 2
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    for (i=0, j=20; i&lt;20; i++, j--) {
+       k = i * j
+       t_print(i, j, k)
+    }
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    while (k &gt; 0)
+    {
+       k = k - 1
+       t_print(k)
+    }
+</div><div class='normal'><br>
+</div><div class='fixed normal'>    for (;;) {
+       if (i-- &lt; 1)
+           break
+    }
+</div><div class='normal'><br>
+Loops may contain break and continue statements.  A </div><div class='bold'>break</div><div class='normal'> statement causes an exit from the innermost loop, a </div><div class='bold'>continue</div><div class='normal'> statement transfers control to the end of the loop. <footer>
+<a href="22.html">Previous</a>
+<a href="24.html">Next</a>
+</footer>
+</body>
+</html>
+
