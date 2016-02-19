@@ -540,7 +540,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	char *delimiters;
 	Widget text;
 	TextSelection sel;
-	TextDisplay *textD, *newTextD;
+	TextDisplay *textD;
 
 	/* transfer the primary selection */
 	memcpy(&sel, &orgWin->buffer_->primary_, sizeof(TextSelection));
@@ -593,7 +593,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			window->textPanes_[i] = text;
 
 			/* Fix up the colors */
-			newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
+			auto newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}

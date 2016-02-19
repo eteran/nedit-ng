@@ -2134,7 +2134,7 @@ static int countWritableWindows(void) {
 **/
 static void collectWritableWindows(Document *window) {
 	int nWritable = countWritableWindows();
-	int i;
+	int i = 0;
 	Document **windows;
 
 	delete [] window->writableWindows_;

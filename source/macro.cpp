@@ -100,8 +100,7 @@
 #define M_FAILURE(s)                                                                                                                                                                                                                           \
 	do {                                                                                                                                                                                                                                       \
 		*errMsg = s;                                                                                                                                                                                                                           \
-		if (1)                                                                                                                                                                                                                                 \
-			return False;                                                                                                                                                                                                                      \
+		return False;                                                                                                                                                                                                                      \
 	} while (0)
 
 #define M_STR_ALLOC_ASSERT(xDV)                                                                                                                                                                                                                \
