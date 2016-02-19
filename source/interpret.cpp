@@ -64,7 +64,7 @@ const int NEEDS_CONTINUE = 2;
 
 const int N_ARGS_ARG_SYM = -1; /* special arg number meaning $n_args value */
 
-enum opStatusCodes {
+enum OpStatusCodes {
 	STAT_OK = 2, 
 	STAT_DONE, 
 	STAT_ERROR, 
@@ -712,7 +712,7 @@ Symbol *LookupSymbol(view::string_view name) {
 /*
 ** install symbol name in symbol table
 */
-Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value) {
+Symbol *InstallSymbol(const char *name, enum SymTypes type, DataValue value) {
 
 	auto s = new Symbol;
 	s->name  = name;

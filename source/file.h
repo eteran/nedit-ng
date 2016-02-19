@@ -47,7 +47,7 @@ int CloseAllFilesAndWindows(void);
 int CloseFileAndWindow(Document *window, int preResponse);
 int IncludeFile(Document *window, const char *name);
 int PromptForExistingFile(Document *window, const char *prompt, char *fullname);
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, fileFormats *fileFormat, bool *addWrap);
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
 int SaveWindowAs(Document *window, const char *newName, bool addWrap);
 int SaveWindow(Document *window);
 int WriteBackupFile(Document *window);

@@ -57,7 +57,7 @@ public:
 #define MAX_TITLE_FORMAT_LEN 50
 
 /* Identifiers for individual fonts in the help fonts list */
-enum helpFonts {
+enum HelpFonts {
 	HELP_FONT,
 	BOLD_HELP_FONT,
 	ITALIC_HELP_FONT,

@@ -416,7 +416,7 @@ const char *GetTrailingPathComponents(const char *path, int noOfComponents) {
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-fileFormats FormatOfFile(const char *fileString, int length) {
+FileFormats FormatOfFile(const char *fileString, int length) {
 	const char *p;
 	int nNewlines = 0;
 	int nReturns = 0;

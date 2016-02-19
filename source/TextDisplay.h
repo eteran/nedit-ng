@@ -34,7 +34,7 @@
 #include <X11/Xlib.h>
 #include <Xm/Xm.h>
 
-enum cursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY_CURSOR };
+enum CursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY_CURSOR };
 
 #define NO_HINT -1
 

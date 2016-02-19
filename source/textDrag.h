@@ -30,7 +30,7 @@
 #include "text.h"
 #include "Point.h"
 
-enum blockDragTypes {
+enum BlockDragTypes {
 	USE_LAST, 
 	DRAG_COPY, 
 	DRAG_MOVE, 

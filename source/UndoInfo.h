@@ -20,7 +20,7 @@
 #define UNDO_OP_LIMIT     400      /* normal limit for length of undo list */
 #define UNDO_OP_TRIMTO    200      /* size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length */
 
-enum undoTypes {
+enum UndoTypes {
 	UNDO_NOOP, 
 	ONE_CHAR_INSERT, 
 	ONE_CHAR_REPLACE, 
@@ -33,7 +33,7 @@ enum undoTypes {
 /* Record on undo list */
 struct UndoInfo {
 public:
-	UndoInfo(undoTypes undoType, int start, int end);
+	UndoInfo(UndoTypes undoType, int start, int end);
 	~UndoInfo();
 	UndoInfo(const UndoInfo &) = default;
 	UndoInfo(UndoInfo &&) = default;
@@ -41,7 +41,7 @@ public:
 	UndoInfo &operator=(UndoInfo &&) = default;
 	
 public:
-	undoTypes type;
+	UndoTypes type;
 	int startPos;
 	int endPos;
 	int oldLen;

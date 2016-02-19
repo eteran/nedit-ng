@@ -30,8 +30,8 @@
 #include "nedit.h"
 
 /* sources for command input and destinations for command output */
-enum inSrcs { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };
-enum outDests { TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG };
+enum InSrcs { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };
+enum OutDests { TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG };
 
 void FilterSelection(Document *window, const std::string &command, int fromMacro);
 void ExecShellCommand(Document *window, const std::string &command, int fromMacro);

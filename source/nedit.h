@@ -130,7 +130,7 @@ struct Bookmark {
 };
 
 /* Identifiers for the different colors that can be adjusted. */
-enum colorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };
+enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };
 
 /* cache user menus: manage mode of user menu list element */
 enum UserMenuManageMode {

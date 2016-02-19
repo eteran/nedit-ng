@@ -824,7 +824,7 @@ void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 /*
 ** 
 */
-undoTypes determineUndoType(int nInserted, int nDeleted) {
+UndoTypes determineUndoType(int nInserted, int nDeleted) {
 	int textDeleted, textInserted;
 
 	textDeleted = (nDeleted > 0);
@@ -4231,7 +4231,7 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 
 	/* figure out what kind of editing operation this is, and recall
 	   what the last one was */
-	const undoTypes newType = determineUndoType(nInserted, nDeleted);
+	const UndoTypes newType = determineUndoType(nInserted, nDeleted);
 	if (newType == UNDO_NOOP) {
 		return;
 	}
@@ -4239,7 +4239,7 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 		
 	UndoInfo *const currentUndo = undo_.front();
 	
-	const undoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
+	const UndoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
 
 	/*
 	** Check for continuations of single character operations.  These are

@@ -869,7 +869,7 @@ static Widget makeHelpMenuItem(
     menuCallbackProc callback,       /* activated when menu item selected  */
     const void *cbArg,               /* passed to activated call back      */
     int mode,                        /* SGI_CUSTOM menu option             */
-    enum HelpTopic topic             /* associated with this menu item     */
+    HelpTopic topic                  /* associated with this menu item     */
     ) {
 	Widget menuItem = createMenuItem(parent, name, label, mnemonic, callback, cbArg, mode);
 
@@ -886,14 +886,12 @@ static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 #if 0
-	
-
-	enum HelpTopic topic;
+	HelpTopic topic;
 	XtPointer userData;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtVaGetValues(menuItem, XmNuserData, &userData, nullptr);
-	topic = (enum HelpTopic)(long) userData;
+	topic = (HelpTopic)(long) userData;
 
 	Help(topic);
 #endif
@@ -2535,7 +2533,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	Document *window = Document::WidgetToWindow(w);
 	int response;
 	bool addWrap;
-	fileFormats fileFormat;
+	FileFormats fileFormat;
 	char fullname[MAXPATHLEN];
 	const char *params[2];
 

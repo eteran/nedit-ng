@@ -39,7 +39,7 @@
 
 class TextDisplay;
 
-enum dragStates {
+enum DragStates {
 	NOT_CLICKED, 
 	PRIMARY_CLICKED, 
 	SECONDARY_CLICKED, 
@@ -53,7 +53,7 @@ enum dragStates {
 	MOUSE_PAN
 };
 
-enum multiClickStates {
+enum MultiClickStates {
 	NO_CLICKS, 
 	ONE_CLICK, 
 	TWO_CLICKS, 

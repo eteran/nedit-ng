@@ -709,7 +709,7 @@ int SaveWindow(Document *window) {
 
 int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	int response, retVal;
-	fileFormats fileFormat;
+	FileFormats fileFormat;
 	char fullname[MAXPATHLEN];
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];
@@ -1202,7 +1202,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, fileFormats *fileFormat, bool *addWrap) {
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
 	int n, retVal;
 	Arg args[20];
 	XmString s1, s2;

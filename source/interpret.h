@@ -40,9 +40,9 @@
 	     events passed to action routines.  Tells                                                                                                                                                                                              \
 	     them that they were called from a macro */
 
-enum symTypes { CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM, C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM };
+enum SymTypes { CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM, C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM };
 #define N_OPS 43
-enum operations {
+enum Operations {
 	OP_RETURN_NO_VAL,
 	OP_RETURN,
 	OP_PUSH_SYM,
@@ -88,9 +88,9 @@ enum operations {
 	OP_PUSH_ARG_ARRAY
 };
 
-enum typeTags { NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG };
+enum TypeTags { NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG };
 
-enum execReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR };
+enum ExecReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR };
 
 #define ARRAY_DIM_SEP "\034"
 
@@ -116,7 +116,7 @@ struct NString {
 // TODO(eteran): we can replace this with boost::variant
 
 struct DataValue {
-	enum typeTags tag;
+	TypeTags tag;
 	
 	union {
 		int          n;
@@ -142,9 +142,9 @@ struct ArrayEntry : public rbTreeNode {
 
 /* symbol table entry */
 struct Symbol {
-	std::string   name;
-	enum symTypes type;
-	DataValue     value;
+	std::string name;
+	SymTypes    type;
+	DataValue   value;
 };
 
 struct Program {
@@ -186,7 +186,7 @@ Symbol *InstallIteratorSymbol(void);
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(view::string_view name);
-Symbol *InstallSymbol(const char *name, enum symTypes type, DataValue value);
+Symbol *InstallSymbol(const char *name, SymTypes type, DataValue value);
 Program *FinishCreatingProgram(void);
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 void StartLoopAddrList(void);
