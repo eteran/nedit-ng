@@ -28,6 +28,7 @@
 #define FILE_H_
 
 #include "nedit.h"
+#include "fileUtils.h"
 #include "string_view.h"
 
 #include <X11/Intrinsic.h>
@@ -46,8 +47,8 @@ int CloseAllFilesAndWindows(void);
 int CloseFileAndWindow(Document *window, int preResponse);
 int IncludeFile(Document *window, const char *name);
 int PromptForExistingFile(Document *window, const char *prompt, char *fullname);
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap);
-int SaveWindowAs(Document *window, const char *newName, int addWrap);
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, fileFormats *fileFormat, bool *addWrap);
+int SaveWindowAs(Document *window, const char *newName, bool addWrap);
 int SaveWindow(Document *window);
 int WriteBackupFile(Document *window);
 void CheckForChangesToFile(Document *window);

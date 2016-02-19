@@ -5,6 +5,7 @@
 #include <list>
 #include <X11/Intrinsic.h>
 #include "nedit.h"
+#include "fileUtils.h"
 #include "string_view.h"
 #include <algorithm>
 
@@ -311,7 +312,7 @@ public:
 	unsigned fileMode_;                /* permissions of file being edited */
 	uid_t fileUid_;                    /* last recorded user id of the file */
 	gid_t fileGid_;                    /* last recorded group id of the file */
-	int fileFormat_;                   /* whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks */
+	fileFormats fileFormat_;           /* whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks */
 	time_t lastModTime_;               /* time of last modification to file */
 	dev_t device_;                     /* device where the file resides */
 	ino_t inode_;                      /* file's inode  */

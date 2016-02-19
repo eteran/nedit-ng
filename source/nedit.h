@@ -54,14 +54,10 @@
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
 #define MAX_SEARCH_HISTORY 100 /* Maximum length of search string history */
-#define MAX_PANES                                                                                                                                                                                                                              \
-	6 /* Max # of ADDITIONAL text editing panes                                                                                                                                                                                                \
- that can be added to a window */
+#define MAX_PANES 6            /* Max # of ADDITIONAL text editing panes  that can be added to a window */
 
 #define AUTOSAVE_CHAR_LIMIT 80 /* set higher on VMS becaus saving is slower */
-#define AUTOSAVE_OP_LIMIT                                                                                                                                                                                                                      \
-	8                       /* number of distinct editing operations user                                                                                                                                                                      \
-                   can do before NEdit gens. new backup file */
+#define AUTOSAVE_OP_LIMIT   8  /* number of distinct editing operations user can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100    /* maximum length for a font name */
 #define MAX_COLOR_LEN 30    /* maximum length for a color name */
 #define MAX_MARKS 36        /* max. # of bookmarks (one per letter & #) */
@@ -71,14 +67,14 @@
 
 
 
-enum indentStyle       { NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT };
-enum wrapStyle         { NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP };
-enum showMatchingStyle { NO_FLASH, FLASH_DELIMIT, FLASH_RANGE };
-enum virtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
+enum IndentStyle       { NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT };
+enum WrapStyle         { NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP };
+enum ShowMatchingStyle { NO_FLASH, FLASH_DELIMIT, FLASH_RANGE };
+enum VirtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
 
 /*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
     in preferences.c  */
-enum truncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TRUNCSUBST_IGNORE };
+enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TRUNCSUBST_IGNORE };
 
 #define NO_FLASH_STRING "off"
 #define FLASH_DELIMIT_STRING "delimiter"

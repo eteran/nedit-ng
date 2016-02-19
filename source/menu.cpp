@@ -2533,7 +2533,9 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 
 	Document *window = Document::WidgetToWindow(w);
-	int response, addWrap, fileFormat;
+	int response;
+	bool addWrap;
+	fileFormats fileFormat;
 	char fullname[MAXPATHLEN];
 	const char *params[2];
 

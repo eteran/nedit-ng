@@ -707,9 +707,12 @@ int SaveWindow(Document *window) {
 	return stat;
 }
 
-int SaveWindowAs(Document *window, const char *newName, int addWrap) {
-	int response, retVal, fileFormat;
-	char fullname[MAXPATHLEN], filename[MAXPATHLEN], pathname[MAXPATHLEN];
+int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
+	int response, retVal;
+	fileFormats fileFormat;
+	char fullname[MAXPATHLEN];
+	char filename[MAXPATHLEN];
+	char pathname[MAXPATHLEN];
 	Document *otherWindow;
 
 	/* Get the new name for the file */
@@ -781,7 +784,7 @@ int SaveWindowAs(Document *window, const char *newName, int addWrap) {
 	/*  If name has changed, language mode may have changed as well, unless
 	    it's an Untitled window for which the user already set a language
 	    mode; it's probably the right one.  */
-	if (PLAIN_LANGUAGE_MODE == window->languageMode_ || window->filenameSet_) {
+	if (window->languageMode_ == PLAIN_LANGUAGE_MODE || window->filenameSet_) {
 		DetermineLanguageMode(window, False);
 	}
 	window->filenameSet_ = True;
@@ -1180,7 +1183,6 @@ void PrintString(const std::string &string, int length, Widget parent, const std
 ** (if set) as the default directory.
 */
 int PromptForExistingFile(Document *window, const char *prompt, char *fullname) {
-	int retVal;
 
 	/* Temporarily set default directory to window->path_, prompt for file,
 	   then, if the call was unsuccessful, restore the original default
@@ -1188,7 +1190,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
 	if (!window->path_.empty())
 		SetFileDialogDefaultDirectory(nullable_string(window->path_));
-	retVal = GetExistingFilename(window->shell_, prompt, fullname);
+	int retVal = GetExistingFilename(window->shell_, prompt, fullname);
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
 
@@ -1200,7 +1202,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, int *fileFormat, int *addWrap) {
+int PromptForNewFile(Document *window, const char *prompt, char *fullname, fileFormats *fileFormat, bool *addWrap) {
 	int n, retVal;
 	Arg args[20];
 	XmString s1, s2;
