@@ -367,22 +367,22 @@ static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 */
 void RegisterMacroSubroutines(void) {
 	static DataValue subrPtr = {NO_TAG, {0}, {0}}, noValue = {NO_TAG, {0}, {0}};
-	unsigned i;
 
 	/* Install symbols for built-in routines and variables, with pointers
 	   to the appropriate c routines to do the work */
-	for (i = 0; i < N_MACRO_SUBRS; i++) {
+	for (unsigned int i = 0; i < N_MACRO_SUBRS; i++) {
 		subrPtr.val.subr = MacroSubrs[i];
 		InstallSymbol(MacroSubrNames[i], C_FUNCTION_SYM, subrPtr);
 	}
-	for (i = 0; i < N_SPECIAL_VARS; i++) {
+	
+	for (unsigned int i = 0; i < N_SPECIAL_VARS; i++) {
 		subrPtr.val.subr = SpecialVars[i];
 		InstallSymbol(SpecialVarNames[i], PROC_VALUE_SYM, subrPtr);
 	}
 
 	/* Define global variables used for return values, remember their
 	   locations so they can be set without a LookupSymbol call */
-	for (i = 0; i < N_RETURN_GLOBALS; i++)
+	for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++)
 		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
@@ -539,16 +539,17 @@ static void cancelLearn(void) {
 ** Execute the learn/replay sequence stored in "window"
 */
 void Replay(Document *window) {
-	Program *prog;
-	const char *errMsg;
-	const char *stoppedAt;
-
 	/* Verify that a replay macro exists and it's not empty and that */
 	/* we're not already running a macro */
 	if (!ReplayMacro.empty() && window->macroCmdData_ == nullptr) {
+
 		/* Parse the replay macro (it's stored in text form) and compile it into
-		an executable program "prog" */
-		prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
+		   an executable program "prog" */
+		   
+		const char *errMsg;
+		const char *stoppedAt;
+
+		Program *prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
 		if(!prog) {
 			fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg);
 			return;
