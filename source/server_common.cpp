@@ -112,7 +112,7 @@ void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
 	if (atoms) {
 		int i;
 		for (i = 0; i < nProperties; i++) {
-			/* XGetAtomNames() is more efficient, but doesn't exist in X11R5. */
+			// XGetAtomNames() is more efficient, but doesn't exist in X11R5. 
 			char *name = XGetAtomName(TheDisplay, atoms[i]);
 			if (name != nullptr && strncmp(propNamePrefix, name, length) == 0) {
 				XDeleteProperty(TheDisplay, rootWindow, atoms[i]);

@@ -52,31 +52,31 @@
 
 #include <X11/Intrinsic.h>
 
-/* Utility definitions. */
+// Utility definitions. 
 
 #define NSUBEXP 50
 
 #define IS_QUANTIFIER(c) ((c) == '*' || (c) == '+' || (c) == '?')
 #define U_CHAR_AT(p) ((unsigned int)*(uint8_t *)(p))
 
-/* Flags to be passed up and down via function parameters during compile. */
+// Flags to be passed up and down via function parameters during compile. 
 
-#define WORST 0     /* Worst case. No assumptions can be made.*/
-#define HAS_WIDTH 1 /* Known never to match null string. */
-#define SIMPLE 2    /* Simple enough to be STAR/PLUS operand. */
+#define WORST 0     // Worst case. No assumptions can be made.
+#define HAS_WIDTH 1 // Known never to match null string. 
+#define SIMPLE 2    // Simple enough to be STAR/PLUS operand. 
 
-#define NO_PAREN 0 /* Only set by initial call to "chunk". */
-#define PAREN 1    /* Used for normal capturing parentheses. */
+#define NO_PAREN 0 // Only set by initial call to "chunk". 
+#define PAREN 1    // Used for normal capturing parentheses. 
 
 #define REG_ZERO 0UL
 #define REG_ONE 1UL
 
-/* Global work variables for `ConvertRE'. */
+// Global work variables for `ConvertRE'. 
 
-static view::string_view::iterator Reg_Parse;     /* Input scan ptr (scans user's regex) */
+static view::string_view::iterator Reg_Parse;     // Input scan ptr (scans user's regex) 
 static view::string_view::iterator Reg_Parse_End = nullptr;
-static int Total_Paren;              /* Parentheses, (),  counter. */
-static size_t Convert_Size;   /* Address of this used as flag. */
+static int Total_Paren;              // Parentheses, (),  counter. 
+static size_t Convert_Size;   // Address of this used as flag. 
 static char *Code_Emit_Ptr; /* When Code_Emit_Ptr is set to
                                         &Compute_Size no code is emitted.
                                         Instead, the size of code that WOULD
@@ -90,7 +90,7 @@ static const char Meta_Char[] = ".*+?[(|)^<>$";
 
 static char *Convert_Str;
 
-/* Forward declarations for functions used by `ConvertRE'. */
+// Forward declarations for functions used by `ConvertRE'. 
 
 static int alternative(int *flag_param);
 static int chunk(int paren, int *flag_param);
@@ -114,7 +114,7 @@ char *ConvertRE(view::string_view exp) {
 
 	int flags_local, pass;
 
-	/* Set up `errorText' to receive failure reports. */
+	// Set up `errorText' to receive failure reports. 
 
 
 	Code_Emit_Ptr = &Compute_Size;
@@ -141,13 +141,13 @@ char *ConvertRE(view::string_view exp) {
 		Total_Paren = 1;
 
 		if (chunk(NO_PAREN, &flags_local) == 0) {
-			return (nullptr); /* Something went wrong */
+			return (nullptr); // Something went wrong 
 		}
 		
 		emit_convert_byte('\0');
 
 		if (pass == 1) {
-			/* Allocate memory. */
+			// Allocate memory. 
 
 			Convert_Str = (char *)XtMalloc(Convert_Size);
 
@@ -175,9 +175,9 @@ static int chunk(int paren, int *flag_param) {
 	int this_branch;
 	int flags_local;
 
-	*flag_param = HAS_WIDTH; /* Tentatively. */
+	*flag_param = HAS_WIDTH; // Tentatively. 
 
-	/* Make an OPEN node, if parenthesized. */
+	// Make an OPEN node, if parenthesized. 
 
 	if (paren == PAREN) {
 		if (Total_Paren >= NSUBEXP) {
@@ -187,7 +187,7 @@ static int chunk(int paren, int *flag_param) {
 		Total_Paren++;
 	}
 
-	/* Pick up the branches, linking them together. */
+	// Pick up the branches, linking them together. 
 
 	do {
 		this_branch = alternative(&flags_local);
@@ -201,7 +201,7 @@ static int chunk(int paren, int *flag_param) {
 		if (!(flags_local & HAS_WIDTH))
 			*flag_param &= ~HAS_WIDTH;
 
-		/* Are there more alternatives to process? */
+		// Are there more alternatives to process? 
 
 		if (*Reg_Parse != '|')
 			break;
@@ -211,7 +211,7 @@ static int chunk(int paren, int *flag_param) {
 		++Reg_Parse;
 	} while (1);
 
-	/* Check for proper termination. */
+	// Check for proper termination. 
 
 	if (paren != NO_PAREN && *Reg_Parse != ')') {
 		throw regex_error("missing right parenthesis \')\'");
@@ -224,7 +224,7 @@ static int chunk(int paren, int *flag_param) {
 		if (*Reg_Parse == ')') {
 			throw regex_error("missing left parenthesis \'(\'");
 		} else {
-			throw regex_error("junk on end"); /* "Can't happen" - NOTREACHED */
+			throw regex_error("junk on end"); // "Can't happen" - NOTREACHED 
 		}
 	}
 
@@ -240,7 +240,7 @@ static int alternative(int *flag_param) {
 	int ret_val;
 	int flags_local;
 
-	*flag_param = WORST; /* Tentatively. */
+	*flag_param = WORST; // Tentatively. 
 
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
@@ -249,7 +249,7 @@ static int alternative(int *flag_param) {
 		ret_val = piece(&flags_local);
 
 		if (ret_val == 0)
-			return 0; /* Something went wrong. */
+			return 0; // Something went wrong. 
 
 		*flag_param |= flags_local & HAS_WIDTH;
 	}
@@ -271,7 +271,7 @@ static int piece(int *flag_param) {
 	ret_val = atom(&flags_local);
 
 	if (ret_val == 0)
-		return 0; /* Something went wrong. */
+		return 0; // Something went wrong. 
 
 	op_code = *Reg_Parse;
 
@@ -320,7 +320,7 @@ static int atom(int *flag_param) {
 	uint8_t test;
 	int flags_local;
 
-	*flag_param = WORST; /* Tentatively. */
+	*flag_param = WORST; // Tentatively. 
 
 	switch (*Reg_Parse++) {
 	case '^':
@@ -351,9 +351,9 @@ static int atom(int *flag_param) {
 		ret_val = chunk(PAREN, &flags_local);
 
 		if (ret_val == 0)
-			return 0; /* Something went wrong. */
+			return 0; // Something went wrong. 
 
-		/* Add HAS_WIDTH flag if it was set by call to chunk. */
+		// Add HAS_WIDTH flag if it was set by call to chunk. 
 
 		*flag_param |= flags_local & HAS_WIDTH;
 
@@ -362,15 +362,15 @@ static int atom(int *flag_param) {
 	case '\0':
 	case '|':
 	case ')':
-		throw regex_error("internal error #3, `atom\'"); /* Supposed to be  */
-	                                                /* caught earlier. */
+		throw regex_error("internal error #3, `atom\'"); // Supposed to be  
+	                                                // caught earlier. 
 	case '?':
 	case '+':
 	case '*':
 		throw regex_error("%c follows nothing", *(Reg_Parse - 1));
 
 	case '{':
-		emit_convert_byte('\\'); /* Quote braces. */
+		emit_convert_byte('\\'); // Quote braces. 
 		emit_convert_byte('{');
 
 		break;
@@ -389,9 +389,9 @@ static int atom(int *flag_param) {
 
 		buffer[0] = '\0';
 
-		/* Handle characters that can only occur at the start of a class. */
+		// Handle characters that can only occur at the start of a class. 
 
-		if (*Reg_Parse == '^') { /* Complement of range. */
+		if (*Reg_Parse == '^') { // Complement of range. 
 			negated = 1;
 
 			++Reg_Parse;
@@ -407,16 +407,16 @@ static int atom(int *flag_param) {
 				throw regex_error("too much data in [] to convert.");
 			}
 
-			buffer[head++] = '\\'; /* Escape `]' and '-' for clarity. */
+			buffer[head++] = '\\'; // Escape `]' and '-' for clarity. 
 			buffer[head++] = *Reg_Parse;
 
 			++Reg_Parse;
 		}
 
-		/* Handle the rest of the class characters. */
+		// Handle the rest of the class characters. 
 
 		while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') {
-			if (*Reg_Parse == '-') { /* Process a range, e.g [a-z]. */
+			if (*Reg_Parse == '-') { // Process a range, e.g [a-z]. 
 				++Reg_Parse;
 
 				if (*Reg_Parse == ']' || Reg_Parse == Reg_Parse_End) {
@@ -430,12 +430,12 @@ static int atom(int *flag_param) {
 						throw regex_error("too much data in [] to convert.");
 					}
 
-					buffer[head++] = '\\'; /* Escape '-' for clarity. */
+					buffer[head++] = '\\'; // Escape '-' for clarity. 
 					buffer[head++] = '-';
 
 				} else {
 					if (*Reg_Parse == '\\') {
-						/* Handle escaped characters within a class range. */
+						// Handle escaped characters within a class range. 
 
 						++Reg_Parse;
 
@@ -477,7 +477,7 @@ static int atom(int *flag_param) {
 
 								buffer[head++] = '\\';
 
-								if (test == '0') { /* Make octal escape. */
+								if (test == '0') { // Make octal escape. 
 									test = *Reg_Parse;
 									buffer[head++] = '0';
 									buffer[head++] = ('0' + (test / 64));
@@ -502,7 +502,7 @@ static int atom(int *flag_param) {
 
 					++Reg_Parse;
 
-				} /* End class character range code. */
+				} // End class character range code. 
 			} else if (*Reg_Parse == '\\') {
 				++Reg_Parse;
 
@@ -525,12 +525,12 @@ static int atom(int *flag_param) {
 
 				++Reg_Parse;
 
-				/* End of class escaped sequence code */
+				// End of class escaped sequence code 
 			} else {
 				last_emit = *Reg_Parse;
 
 				if (*Reg_Parse == '_') {
-					u_score_flag = 1; /* Emit later if we can't do `\w'. */
+					u_score_flag = 1; // Emit later if we can't do `\w'. 
 
 				} else if ((test = literal_escape(*Reg_Parse, 1))) {
 					/* Ordinary character matches an escape sequence;
@@ -542,7 +542,7 @@ static int atom(int *flag_param) {
 
 					buffer[head++] = '\\';
 
-					if (test == '0') { /* Make octal escape. */
+					if (test == '0') { // Make octal escape. 
 						test = *Reg_Parse;
 						buffer[head++] = '0';
 						buffer[head++] = ('0' + (test / 64));
@@ -567,7 +567,7 @@ static int atom(int *flag_param) {
 
 				++Reg_Parse;
 			}
-		} /* End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') */
+		} // End of while (Reg_Parse != Reg_Parse_End && *Reg_Parse != ']') 
 
 		if (*Reg_Parse != ']')
 			throw regex_error("missing right \']\'");
@@ -596,7 +596,7 @@ static int atom(int *flag_param) {
 				emit_convert_byte('^');
 		}
 
-		/* Output any shortcut escapes if we can. */
+		// Output any shortcut escapes if we can. 
 
 		while (a_z_flag || A_Z_flag || zero_nine || u_score_flag) {
 			if (a_z_flag && A_Z_flag && zero_nine && u_score_flag) {
@@ -648,7 +648,7 @@ static int atom(int *flag_param) {
 			}
 		}
 
-		/* Output our buffered class characters. */
+		// Output our buffered class characters. 
 
 		for (head = 0; buffer[head] != '\0'; head++) {
 			emit_convert_byte(buffer[head]);
@@ -659,9 +659,9 @@ static int atom(int *flag_param) {
 		}
 	}
 
-	break; /* End of character class code. */
+	break; // End of character class code. 
 
-	/* Fall through to Default case to handle literal escapes. */
+	// Fall through to Default case to handle literal escapes. 
 
 	default:
 		--Reg_Parse; /* If we fell through from the above code, we are now
@@ -672,7 +672,7 @@ static int atom(int *flag_param) {
 			int emit_diff;
 			int len = 0;
 
-			/* Loop until we find a meta character or end of regex string. */
+			// Loop until we find a meta character or end of regex string. 
 
 			for (; Reg_Parse != Reg_Parse_End && !strchr((char *)Meta_Char, (int)*Reg_Parse); len++) {
 
@@ -688,7 +688,7 @@ static int atom(int *flag_param) {
 							emit_convert_byte('\\');
 						}
 
-						++Reg_Parse; /* Point to escaped character */
+						++Reg_Parse; // Point to escaped character 
 						emit_convert_byte(*Reg_Parse);
 
 					} else {
@@ -697,7 +697,7 @@ static int atom(int *flag_param) {
 
 					++Reg_Parse;
 				} else {
-					/* Ordinary character */
+					// Ordinary character 
 
 					if ((test = literal_escape(*Reg_Parse, 1))) {
 						/* Ordinary character matches an escape sequence;
@@ -731,12 +731,12 @@ static int atom(int *flag_param) {
 				   node followed by another EXACTLY node with a 'd' operand. */
 
 				if (IS_QUANTIFIER(*Reg_Parse) && len > 0) {
-					Reg_Parse = parse_save; /* Point to previous regex token. */
+					Reg_Parse = parse_save; // Point to previous regex token. 
 					emit_diff = (Code_Emit_Ptr - emit_save);
 
 					if (Code_Emit_Ptr == &Compute_Size) {
 						Convert_Size -= emit_diff;
-					} else { /* Write over previously emitted byte. */
+					} else { // Write over previously emitted byte. 
 						Code_Emit_Ptr = emit_save;
 					}
 
@@ -786,7 +786,7 @@ static char literal_escape(char c, int action) {
 
 	static char control_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '\0'};
 
-	static char control_actual[] = {'\a', '\b', 0x1B, /* Escape character in ASCII character set. */
+	static char control_actual[] = {'\a', '\b', 0x1B, // Escape character in ASCII character set. 
 	                                         '\f', '\n', '\r', '\t', '\v', '\0'};
 
 	static char valid_escape[] = {'a', 'b', 'f', 'n', 'r', 't', 'v', '(', ')', '[', ']', '<', '>', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\"', '\0'};
@@ -810,7 +810,7 @@ static char literal_escape(char c, int action) {
 
 	if (action == 1) {
 		if (!isprint(c)) {
-			/* Signal to generate an numeric (octal) escape. */
+			// Signal to generate an numeric (octal) escape. 
 			return '0';
 		}
 	}
@@ -841,7 +841,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 	while ((c = *src++) != '\0') {
 
 		if (c == '\\') {
-			/* Process any case altering tokens, i.e \u, \U, \l, \L. */
+			// Process any case altering tokens, i.e \u, \U, \l, \L. 
 
 			if (*src == 'u' || *src == 'U' || *src == 'l' || *src == 'L') {
 				*dst++ = '\\';
@@ -861,7 +861,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 
 		} else if (c == '\\') {
 			if (*src == '0') {
-				/* Convert `\0' to `&' */
+				// Convert `\0' to `&' 
 
 				*dst++ = '&';
 				src++;
@@ -887,7 +887,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 				*dst++ = *src++;
 			}
 		} else {
-			/* Ordinary character. */
+			// Ordinary character. 
 
 			if ((dst - dest) >= (max - 1)) {
 				break;
@@ -898,7 +898,7 @@ void ConvertSubstituteRE(const char *source, char *dest, int max) {
 
 					*dst++ = '\\';
 
-					if (test == '0') { /* Make octal escape. */
+					if (test == '0') { // Make octal escape. 
 						test = c;
 						*dst++ = '0';
 						*dst++ = ('0' + (test / 64));

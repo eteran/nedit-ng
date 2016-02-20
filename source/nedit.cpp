@@ -146,14 +146,14 @@ static const char *fallbackResources[] = {
     "*XmText.background: " NEDIT_DEFAULT_TEXT_BG,                      "*XmList.foreground: " NEDIT_DEFAULT_FG,                      "*XmList.background: " NEDIT_DEFAULT_TEXT_BG,
     "*XmTextField.foreground: " NEDIT_DEFAULT_FG,                      "*XmTextField.background: " NEDIT_DEFAULT_TEXT_BG,
 
-    /* Use baseTranslations as per Xt Programmer's Manual, 10.2.12 */
+    // Use baseTranslations as per Xt Programmer's Manual, 10.2.12 
     "*XmText.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,              "*XmTextField.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,
 
     "*XmLFolder.highlightThickness: 0",                                "*XmLFolder.shadowThickness:    1",                           "*XmLFolder.maxTabWidth:        150",
     "*XmLFolder.traversalOn:        False",                            "*XmLFolder.inactiveForeground: #666",                        "*tab.alignment: XmALIGNMENT_BEGINNING",
     "*tab.marginWidth: 0",                                             "*tab.marginHeight: 1",
 
-    /* Prevent the file selection box from acting stupid. */
+    // Prevent the file selection box from acting stupid. 
     "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",                 "*XmFileSelectionBox.textAccelerators:",                      "*XmFileSelectionBox.pathMode: XmPATH_MODE_RELATIVE",
     "*XmFileSelectionBox.width: 500",                                  "*XmFileSelectionBox.height: 400",
 
@@ -265,30 +265,30 @@ int main(int argc, char *argv[]) {
 	Document *lastFile = nullptr;
 	unsigned char *invalidBindings = nullptr;
 
-	/* Save the command which was used to invoke nedit for restart command */
+	// Save the command which was used to invoke nedit for restart command 
 	ArgV0 = argv[0];
 
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
 	XtSetLanguageProc(nullptr, neditLanguageProc, nullptr);
 
-	/* Initialize X toolkit (does not open display yet) */
+	// Initialize X toolkit (does not open display yet) 
 	XtToolkitInitialize();
 	XtAppContext context = XtCreateApplicationContext();
 
-	/* Set up a warning handler to trap obnoxious Xt grab warnings */
+	// Set up a warning handler to trap obnoxious Xt grab warnings 
 	SuppressPassiveGrabWarnings();
 
-	/* Set up a handler to suppress X warning messages by default */
+	// Set up a handler to suppress X warning messages by default 
 	XtAppSetWarningHandler(context, noWarningFilter);
 
-	/* Set up default resources if no app-defaults file is found */
+	// Set up default resources if no app-defaults file is found 
 	XtAppSetFallbackResources(context, (char **)fallbackResources);
 
-	/* Allow users to change tear off menus with X resources */
+	// Allow users to change tear off menus with X resources 
 	XmRepTypeInstallTearOffModelConverter();
 
-	/* Read the preferences file and command line into a database */
+	// Read the preferences file and command line into a database 
 	XrmDatabase prefDB = CreateNEditPrefDB(&argc, argv);
 
 	/* Open the display and read X database and remaining command line args.
@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) {
 	unmaskArgvKeywords(argc, argv, protectedKeywords);
 
 	if (!TheDisplay) {
-		/* Respond to -V or -version even if there is no display */
+		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
 				PrintVersion();
@@ -329,11 +329,11 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	/* Must be done before creating widgets */
+	// Must be done before creating widgets 
 	fixupBrokenXKeysymDB();
 	patchResourcesForVisual();
 
-	/* Initialize global symbols and subroutines used in the macro language */
+	// Initialize global symbols and subroutines used in the macro language 
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
 
@@ -350,7 +350,7 @@ int main(int argc, char *argv[]) {
 	   group leader. */
 	TheAppShell = CreateShellWithBestVis((char *)APP_NAME, (char *)APP_CLASS, applicationShellWidgetClass, TheDisplay, nullptr, 0);
 
-	/* Restore the original bindings ASAP such that other apps are not affected. */
+	// Restore the original bindings ASAP such that other apps are not affected. 
 	restoreInsaneVirtualKeyBindings(invalidBindings);
 
 	XtSetMappedWhenManaged(TheAppShell, false);
@@ -360,24 +360,24 @@ int main(int argc, char *argv[]) {
 	AttachSessionMgrHandler(TheAppShell);
 #endif
 
-	/* More preference stuff */
+	// More preference stuff 
 	LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
 	SetDeleteRemap(GetPrefMapDelete());
 	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 
-	/* Set up action procedures for menu item commands */
+	// Set up action procedures for menu item commands 
 	InstallMenuActions(context);
 
 #if 0
-	/* Add Actions for following hyperlinks in the help window */
+	// Add Actions for following hyperlinks in the help window 
 	InstallHelpLinkActions(context);
 #endif
 
-	/* Add actions for mouse wheel support in scrolled windows (except text area) */
+	// Add actions for mouse wheel support in scrolled windows (except text area) 
 	InstallMouseWheelActions(context);
 
-	/* Install word delimiters for regular expression matching */
+	// Install word delimiters for regular expression matching 
 	SetREDefaultWordDelimiters(GetPrefDelimiters());
 
 	/* Read the nedit dynamic database of files for the Open Previous
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 	   which would then be out of sync with the real preference settings) */
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--")) {
-			break; /* treat all remaining arguments as filenames */
+			break; // treat all remaining arguments as filenames 
 		} else if (!strcmp(argv[i], "-import")) {
 			nextArg(argc, argv, &i);
 			ImportPrefFile(argv[i], false);
@@ -416,7 +416,7 @@ int main(int argc, char *argv[]) {
 	fileSpecified = false;
 	for (int i = 1; i < argc; i++) {
 		if (opts && !strcmp(argv[i], "--")) {
-			opts = false; /* treat all remaining arguments as filenames */
+			opts = false; // treat all remaining arguments as filenames 
 			continue;
 		} else if (opts && !strcmp(argv[i], "-tags")) {
 			nextArg(argc, argv, &i);
@@ -432,12 +432,12 @@ int main(int argc, char *argv[]) {
 			editFlags |= SUPPRESS_CREATE_WARN;
 		} else if (opts && !strcmp(argv[i], "-tabbed")) {
 			tabbed = 1;
-			group = 0; /* override -group option */
+			group = 0; // override -group option 
 		} else if (opts && !strcmp(argv[i], "-untabbed")) {
 			tabbed = 0;
-			group = 0; /* override -group option */
+			group = 0; // override -group option 
 		} else if (opts && !strcmp(argv[i], "-group")) {
-			group = 2; /* 2: start new group, 1: in group */
+			group = 2; // 2: start new group, 1: in group 
 		} else if (opts && !strcmp(argv[i], "-line")) {
 			nextArg(argc, argv, &i);
 			nRead = sscanf(argv[i], "%d", &lineNum);
@@ -466,7 +466,7 @@ int main(int argc, char *argv[]) {
 			nextArg(argc, argv, &i);
 			langMode = argv[i];
 		} else if (opts && !strcmp(argv[i], "-import")) {
-			nextArg(argc, argv, &i); /* already processed, skip */
+			nextArg(argc, argv, &i); // already processed, skip 
 		} else if (opts && (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version"))) {
 			PrintVersion();
 			exit(EXIT_SUCCESS);
@@ -483,11 +483,11 @@ int main(int argc, char *argv[]) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
 				if (group == 2) {
-					isTabbed = 0; /* start a new window for new group */
-					group = 1;    /* next file will be within group */
+					isTabbed = 0; // start a new window for new group 
+					group = 1;    // next file will be within group 
 				} else if (group == 1) {
-					isTabbed = 1; /* new tab for file in group */
-				} else {          /* not in group */
+					isTabbed = 1; // new tab for file in group 
+				} else {          // not in group 
 					isTabbed = tabbed == -1 ? GetPrefOpenInTab() : tabbed;
 				}
 
@@ -502,7 +502,7 @@ int main(int argc, char *argv[]) {
 				if (window) {
 					window->CleanUpTabBarExposeQueue();
 
-					/* raise the last tab of previous window */
+					// raise the last tab of previous window 
 					if (lastFile && window->shell_ != lastFile->shell_) {
 						lastFile->CleanUpTabBarExposeQueue();
 						lastFile->RaiseDocument();
@@ -518,32 +518,32 @@ int main(int argc, char *argv[]) {
 						DoMacro(window, toDoCommand, "-do macro");
 						toDoCommand = nullptr;
 						if (!window->IsValidWindow())
-							window = nullptr; /* window closed by macro */
+							window = nullptr; // window closed by macro 
 						if (lastFile && !lastFile->IsValidWindow())
-							lastFile = nullptr; /* window closed by macro */
+							lastFile = nullptr; // window closed by macro 
 					}
 				}
 
-				/* register last opened file for later use */
+				// register last opened file for later use 
 				if (window)
 					lastFile = window;
 			} else {
 				fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 			}
 
-			/* -line/+n does only affect the file following this switch */
+			// -line/+n does only affect the file following this switch 
 			gotoLine = false;
 		}
 	}
 
-	/* Raise the last file opened */
+	// Raise the last file opened 
 	if (lastFile) {
 		lastFile->CleanUpTabBarExposeQueue();
 		lastFile->RaiseDocument();
 	}
 	CheckCloseDim();
 
-	/* If no file to edit was specified, open a window to edit "Untitled" */
+	// If no file to edit was specified, open a window to edit "Untitled" 
 	if (!fileSpecified) {
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
 		ReadMacroInitFile(WindowList);
@@ -552,15 +552,15 @@ int main(int argc, char *argv[]) {
 			DoMacro(WindowList, toDoCommand, "-do macro");
 	}
 
-	/* Begin remembering last command invoked for "Repeat" menu item */
+	// Begin remembering last command invoked for "Repeat" menu item 
 	AddLastCommandActionHook(context);
 
-	/* Set up communication port and write ~/.nedit_server_process file */
+	// Set up communication port and write ~/.nedit_server_process file 
 	if (IsServer) {
 		InitServerCommunication();
 	}
 
-	/* Process events. */
+	// Process events. 
 	if (IsServer) {
 		ServerMainLoop(context);
 	} else {
@@ -593,7 +593,7 @@ static int checkDoMacroArg(const char *macro) {
 	tMacro[macroLen] = '\n';
 	tMacro[macroLen + 1] = '\0';
 
-	/* Do a test parse */
+	// Do a test parse 
 	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
 	delete [] tMacro;
 	if(!prog) {
@@ -739,7 +739,7 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure) {
 	if (!XSetLocaleModifiers(""))
 		XtWarning("X locale modifiers not supported, using default");
 
-	return setlocale(LC_ALL, nullptr); /* re-query in case overwritten */
+	return setlocale(LC_ALL, nullptr); // re-query in case overwritten 
 }
 
 /*
@@ -762,7 +762,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	}
 
 	if (maxCount == 1)
-		return False; /* One binding is always ok */
+		return False; // One binding is always ok 
 
 	auto keys = new char *[maxCount];
 
@@ -775,10 +775,10 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 		while (isspace((int)*pos2) || *pos2 == '\n')
 			++pos2;
 
-		if (*pos2 == '!') /* Ignore comment lines */
+		if (*pos2 == '!') // Ignore comment lines 
 		{
 			pos2 = strstr(pos2, "\n");
-			continue; /* Go to the next line */
+			continue; // Go to the next line 
 		}
 
 		if (*pos2) {
@@ -786,7 +786,7 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 			++count;
 			pos3 = strstr(pos2, ":");
 			if (pos3) {
-				*pos3++ = 0; /* Cut the string and jump to the next entry */
+				*pos3++ = 0; // Cut the string and jump to the next entry 
 				pos2 = pos3;
 			}
 			pos2 = strstr(pos2, "\n");
@@ -796,17 +796,17 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 	if (count <= 1) {
 		delete [] keys;
 		XtFree(copy);
-		return False; /* No conflict */
+		return False; // No conflict 
 	}
 
-	/* Sort the keys and look for duplicates */
+	// Sort the keys and look for duplicates 
 	std::sort(keys, keys + count, [](const char *key1, const char *key2) {
 		return strcmp(key1, key2) < 0;
 	});
 
 	for (i = 1; i < count; ++i) {
 		if (!strcmp(keys[i - 1], keys[i])) {
-			/* Duplicate detected */
+			// Duplicate detected 
 			free(keys);
 			XtFree(copy);
 			return True;
@@ -844,17 +844,17 @@ static unsigned char *sanitizeVirtualKeyBindings(void) {
 	virtKeyAtom = XInternAtom(TheDisplay, virtKeyPropName, False);
 	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
-	/* Remove the property, if it exists; we'll restore it later again */
+	// Remove the property, if it exists; we'll restore it later again 
 	if (XGetWindowProperty(TheDisplay, rootWindow, virtKeyAtom, 0, INT_MAX, True, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &insaneVirtKeyBindings) != Success || nItems == 0) {
-		return nullptr; /* No binding yet; nothing to do */
+		return nullptr; // No binding yet; nothing to do 
 	}
 
 	if (overrideBindings == VIRT_KEY_OVERRIDE_AUTO) {
 		if (!virtKeyBindingsAreInvalid(insaneVirtKeyBindings)) {
-			/* Restore the property immediately; it seems valid */
+			// Restore the property immediately; it seems valid 
 			XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8, PropModeReplace, insaneVirtKeyBindings, strlen((const char *)insaneVirtKeyBindings));
 			XFree((char *)insaneVirtKeyBindings);
-			return nullptr; /* Prevent restoration */
+			return nullptr; // Prevent restoration 
 		}
 	}
 	return insaneVirtKeyBindings;
@@ -887,7 +887,7 @@ static void showWarningFilter(String message) {
 		size_t bogusLen = strlen(*bogusMessage);
 		if (strncmp(message, *bogusMessage, bogusLen) == 0) {
 #ifdef DEBUG_LESSTIF_WARNINGS
-			/* Developers may want to see which messages are suppressed. */
+			// Developers may want to see which messages are suppressed. 
 			fprintf(stderr, "[SUPPRESSED] %s\n", message);
 #endif
 			return;
@@ -895,7 +895,7 @@ static void showWarningFilter(String message) {
 		++bogusMessage;
 	}
 
-	/* An unknown message. Keep it. */
+	// An unknown message. Keep it. 
 	fprintf(stderr, "%s\n", message);
 }
 

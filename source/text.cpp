@@ -64,7 +64,7 @@
    selection */
 #define SELECT_THRESHOLD 5
 
-/* Length of delay in milliseconds for vertical autoscrolling */
+// Length of delay in milliseconds for vertical autoscrolling 
 #define VERTICAL_SCROLL_DELAY 50
 
 static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal *num_args);
@@ -171,14 +171,14 @@ static int strCaseCmp(const char *str1, const char *str2);
 static void ringIfNecessary(Boolean silent, Widget w);
 
 static char defaultTranslations[] =
-    /* Home */
+    // Home 
     "~Shift ~Ctrl Alt<Key>osfBeginLine: last_document()\n"
 
-    /* Backspace */
+    // Backspace 
     "Ctrl<KeyPress>osfBackSpace: delete_previous_word()\n"
     "<KeyPress>osfBackSpace: delete_previous_character()\n"
 
-    /* Delete */
+    // Delete 
     "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
     "Shift Ctrl<KeyPress>osfDelete: cut_primary()\n"
@@ -186,7 +186,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfDelete: cut_clipboard()\n"
     "<KeyPress>osfDelete: delete_next_character()\n"
 
-    /* Insert */
+    // Insert 
     "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
     "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
@@ -194,14 +194,14 @@ static char defaultTranslations[] =
     "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
     "~Shift ~Ctrl<KeyPress>osfInsert: set_overtype_mode()\n"
 
-    /* Cut/Copy/Paste */
+    // Cut/Copy/Paste 
     "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
     "<KeyPress>osfCut: cut_clipboard()\n"
     "<KeyPress>osfCopy: copy_clipboard()\n"
     "<KeyPress>osfPaste: paste_clipboard()\n"
     "<KeyPress>osfPrimaryPaste: copy_primary()\n"
 
-    /* BeginLine */
+    // BeginLine 
     "Alt Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\" \"rect\")\n"
     "Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
@@ -211,7 +211,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfBeginLine: beginning_of_line()\n"
 
-    /* EndLine */
+    // EndLine 
     "Alt Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
@@ -221,7 +221,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfEndLine: end_of_line(\"extend\")\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfEndLine: end_of_line()\n"
 
-    /* Left */
+    // Left 
     "Alt Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
@@ -231,7 +231,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfLeft: key_select(\"left\")\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfLeft: backward_character()\n"
 
-    /* Right */
+    // Right 
     "Alt Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
@@ -241,7 +241,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfRight: key_select(\"right\")\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfRight: forward_character()\n"
 
-    /* Up */
+    // Up 
     "Alt Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
@@ -251,7 +251,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfUp: process_shift_up()\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfUp: process_up()\n"
 
-    /* Down */
+    // Down 
     "Alt Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
@@ -261,7 +261,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfDown: process_shift_down()\n"
     "~Alt~Shift~Ctrl~Meta<KeyPress>osfDown: process_down()\n"
 
-    /* PageUp */
+    // PageUp 
     "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
@@ -271,7 +271,7 @@ static char defaultTranslations[] =
     "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
     "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
 
-    /* PageDown */
+    // PageDown 
     "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
     "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
     "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
@@ -286,13 +286,13 @@ static char defaultTranslations[] =
        Overloading this single key gives problems, and we want to give
        priority to the normal version. */
 
-    /* PageLeft */
+    // PageLeft 
     "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
     "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
     "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
 
-    /* PageRight */
+    // PageRight 
     "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
     "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
     "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
@@ -343,7 +343,7 @@ static char defaultTranslations[] =
     "<Btn3Up>: end_drag()\n"
     "<FocusIn>: focusIn()\n"
     "<FocusOut>: focusOut()\n"
-    /* Support for mouse wheel in XFree86 */
+    // Support for mouse wheel in XFree86 
     "Shift<Btn4Down>,<Btn4Up>: scroll_up(1)\n"
     "Shift<Btn5Down>,<Btn5Up>: scroll_down(1)\n"
     "Ctrl<Btn4Down>,<Btn4Up>: scroll_up(1, pages)\n"
@@ -573,54 +573,54 @@ static XtResource resources[] = {
 };
 
 static TextClassRec textClassRec = {
-	/* CoreClassPart */
+	// CoreClassPart 
 	{
-		(WidgetClass)&xmPrimitiveClassRec, /* superclass            */
-		(String) "Text",                   /* class_name            */
-		sizeof(TextRec),                   /* widget_size           */
-		nullptr,                           /* class_initialize      */
-		nullptr,                           /* class_part_initialize */
-		FALSE,                             /* class_inited          */
-		initialize,                        /* initialize            */
-		nullptr,                           /* initialize_hook       */
-		realize,                           /* realize               */
-		actionsList,                       /* actions               */
-		XtNumber(actionsList),             /* num_actions           */
-		resources,                         /* resources             */
-		XtNumber(resources),               /* num_resources         */
-		NULLQUARK,                         /* xrm_class             */
-		TRUE,                              /* compress_motion       */
-		TRUE,                              /* compress_exposure     */
-		TRUE,                              /* compress_enterleave   */
-		FALSE,                             /* visible_interest      */
-		(XtWidgetProc)destroy,             /* destroy               */
-		(XtWidgetProc)resize,              /* resize                */
-		(XtExposeProc)redisplay,           /* expose                */
-		(XtSetValuesFunc)setValues,        /* set_values            */
-		nullptr,                           /* set_values_hook       */
-		XtInheritSetValuesAlmost,          /* set_values_almost     */
-		nullptr,                           /* get_values_hook       */
-		nullptr,                           /* accept_focus          */
-		XtVersion,                         /* version               */
-		nullptr,                           /* callback private      */
-		defaultTranslations,               /* tm_table              */
-		queryGeometry,                     /* query_geometry        */
-		nullptr,                           /* display_accelerator   */
-		nullptr,                           /* extension             */
+		(WidgetClass)&xmPrimitiveClassRec, // superclass            
+		(String) "Text",                   // class_name            
+		sizeof(TextRec),                   // widget_size           
+		nullptr,                           // class_initialize      
+		nullptr,                           // class_part_initialize 
+		FALSE,                             // class_inited          
+		initialize,                        // initialize            
+		nullptr,                           // initialize_hook       
+		realize,                           // realize               
+		actionsList,                       // actions               
+		XtNumber(actionsList),             // num_actions           
+		resources,                         // resources             
+		XtNumber(resources),               // num_resources         
+		NULLQUARK,                         // xrm_class             
+		TRUE,                              // compress_motion       
+		TRUE,                              // compress_exposure     
+		TRUE,                              // compress_enterleave   
+		FALSE,                             // visible_interest      
+		(XtWidgetProc)destroy,             // destroy               
+		(XtWidgetProc)resize,              // resize                
+		(XtExposeProc)redisplay,           // expose                
+		(XtSetValuesFunc)setValues,        // set_values            
+		nullptr,                           // set_values_hook       
+		XtInheritSetValuesAlmost,          // set_values_almost     
+		nullptr,                           // get_values_hook       
+		nullptr,                           // accept_focus          
+		XtVersion,                         // version               
+		nullptr,                           // callback private      
+		defaultTranslations,               // tm_table              
+		queryGeometry,                     // query_geometry        
+		nullptr,                           // display_accelerator   
+		nullptr,                           // extension             
 	},
-	/* Motif primitive class fields */
+	// Motif primitive class fields 
 	{
-		(XtWidgetProc)_XtInherit,           /* Primitive border_highlight   */
-		(XtWidgetProc)_XtInherit,           /* Primitive border_unhighlight */
-		nullptr, /*XtInheritTranslations,*/ /* translations                 */
-		nullptr,                            /* arm_and_activate             */
-		nullptr,                            /* get resources      		*/
-		0,                                  /* num get_resources  		*/
-		nullptr,                            /* extension                    */
+		(XtWidgetProc)_XtInherit,           // Primitive border_highlight   
+		(XtWidgetProc)_XtInherit,           // Primitive border_unhighlight 
+		nullptr, /*XtInheritTranslations,*/ // translations                 
+		nullptr,                            // arm_and_activate             
+		nullptr,                            // get resources      		
+		0,                                  // num get_resources  		
+		nullptr,                            // extension                    
 	},
-	/* Text class part */
+	// Text class part 
 	{
-		0, /* ignored	                */
+		0, // ignored	                
 	}
 };
 
@@ -646,7 +646,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	int marginWidth = new_widget->text.marginWidth;
 	int lineNumCols = new_widget->text.lineNumCols;
 	
-	/* Set the initial window size based on the rows and columns resources */
+	// Set the initial window size based on the rows and columns resources 
 	if (request->core.width == 0) {
 		new_widget->core.width = charWidth * new_widget->text.columns + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 	}
@@ -672,7 +672,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   be replaced later with TextSetBuffer) */
 	auto buf = new TextBuffer;
 
-	/* Create and initialize the text-display part of the widget */
+	// Create and initialize the text-display part of the widget 
 	textLeft = new_widget->text.marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 	new_widget->text.textD = new TextDisplay(newWidget, new_widget->text.hScrollBar, new_widget->text.vScrollBar, textLeft, new_widget->text.marginHeight, new_widget->core.width - marginWidth - textLeft,
 	                new_widget->core.height - new_widget->text.marginHeight * 2, lineNumCols == 0 ? 0 : marginWidth, lineNumCols == 0 ? 0 : lineNumCols * charWidth, buf, new_widget->text.fontStruct, new_widget->core.background_pixel,
@@ -692,7 +692,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   the initial FocusIn event will unblank it and get blinking started) */
 	new_widget->text.textD->cursorOn = false;
 
-	/* Initialize the widget variables */
+	// Initialize the widget variables 
 	new_widget->text.autoScrollProcID = 0;
 	new_widget->text.cursorBlinkProcID = 0;
 	new_widget->text.dragState = NOT_CLICKED;
@@ -702,9 +702,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	new_widget->text.motifDestOwner = false;
 	new_widget->text.emTabsBeforeCursor = 0;
 
-	/* Register the widget to the input manager */
+	// Register the widget to the input manager 
 	XmImRegister(newWidget, 0);
-	/* In case some Resources for the IC need to be set, add them below */
+	// In case some Resources for the IC need to be set, add them below 
 	XmImVaSetValues(newWidget, nullptr);
 
 	XtAddEventHandler(newWidget, GraphicsExpose, True, (XtEventHandler)redisplayGE, (Opaque) nullptr);
@@ -713,7 +713,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 		Display *theDisplay;
 		Pixmap empty_pixmap;
 		XColor black_color;
-		/* Set up the empty Cursor */
+		// Set up the empty Cursor 
 		if (empty_cursor == 0) {
 			theDisplay = XtDisplay(newWidget);
 			empty_pixmap = XCreateBitmapFromData(theDisplay, RootWindowOfScreen(XtScreen(newWidget)), empty_bits, 1, 1);
@@ -721,12 +721,12 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 			empty_cursor = XCreatePixmapCursor(theDisplay, empty_pixmap, empty_pixmap, &black_color, &black_color, 0, 0);
 		}
 
-		/* Add event handler to hide the pointer on keypresses */
+		// Add event handler to hide the pointer on keypresses 
 		XtAddEventHandler(newWidget, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
 	}
 }
 
-/* Hide the pointer while the user is typing */
+// Hide the pointer while the user is typing 
 static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
 	(void)unused;
 	(void)event;
@@ -736,7 +736,7 @@ static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean
 	ShowHidePointer(tw, True);
 }
 
-/* Restore the pointer if the mouse moves or focus changes */
+// Restore the pointer if the mouse moves or focus changes 
 static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
 	(void)unused;
 	(void)event;
@@ -750,24 +750,24 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer) {
 	if (w->text.hidePointer) {
 		if (hidePointer != w->text.textD->pointerHidden) {
 			if (hidePointer) {
-				/* Don't listen for keypresses any more */
+				// Don't listen for keypresses any more 
 				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
-				/* Switch to empty cursor */
+				// Switch to empty cursor 
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
 				w->text.textD->pointerHidden = true;
 
-				/* Listen to mouse movement, focus change, and button presses */
+				// Listen to mouse movement, focus change, and button presses 
 				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, (Opaque) nullptr);
 			} else {
-				/* Don't listen to mouse/focus events any more */
+				// Don't listen to mouse/focus events any more 
 				XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, (Opaque) nullptr);
-				/* Switch to regular cursor */
+				// Switch to regular cursor 
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
 				w->text.textD->pointerHidden = false;
 
-				/* Listen for keypresses now */
+				// Listen for keypresses now 
 				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
 			}
 		}
@@ -799,7 +799,7 @@ static void destroy(TextWidget w) {
 	XtRemoveAllCallbacks((Widget)w, textNdragStartCallback);
 	XtRemoveAllCallbacks((Widget)w, textNdragEndCallback);
 
-	/* Unregister the widget from the input manager */
+	// Unregister the widget from the input manager 
 	XmImUnregister((Widget)w);
 }
 
@@ -831,7 +831,7 @@ static void resize(TextWidget w) {
 		w->core.height = height = fs->ascent + fs->descent + marginHeight * 2;
 	}
 
-	/* Resize the text display that the widget uses to render text */
+	// Resize the text display that the widget uses to render text 
 	w->text.textD->TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
 
 	/* if the window became shorter or narrower, there may be text left
@@ -997,7 +997,7 @@ static void realize(Widget w, XtValueMask *valueMask, XSetWindowAttributes *attr
 	*valueMask |= CWBitGravity;
 	attributes->bit_gravity = NorthWestGravity;
 
-	/* Continue with realize method from superclass */
+	// Continue with realize method from superclass 
 	(xmPrimitiveClassRec.core_class.realize)(w, valueMask, attributes);
 }
 
@@ -1019,7 +1019,7 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 	answer->request_mode = CWHeight | CWWidth;
 
 	if (proposed->request_mode & CWWidth)
-		/* Accept a width no smaller than 10 chars */
+		// Accept a width no smaller than 10 chars 
 		answer->width = std::max<int>(fontWidth * 10, proposed->width);
 	else
 		answer->width = curWidth;
@@ -1218,7 +1218,7 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 	int fontWidth   = textD->fontStruct->max_bounds.width;
 	int replaceSel, singleLine, breakAt = 0;
 
-	/* Don't wrap if auto-wrap is off or suppressed, or it's just a newline */
+	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline 
 	if (!allowWrap || !tw->text.autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
 		simpleInsertAtCursorEx(w, chars, event, allowPendingDelete);
 		return;
@@ -1250,7 +1250,7 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 		return;
 	}
 
-	/* Wrap the text */
+	// Wrap the text 
 	std::string lineStartText = buf->BufGetRangeEx(lineStartPos, cursorPos);
 	std::string wrappedText = wrapTextEx(tw, lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
 
@@ -1315,7 +1315,7 @@ std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
 	}
 	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
 
-	/* return the contents of the output buffer as a string */
+	// return the contents of the output buffer as a string 
 	std::string outString = outBuf->BufGetAllEx();
 	delete outBuf;
 	return outString;
@@ -1352,7 +1352,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   widgets and in other NEdit text widgets */
 	TakeMotifDestination(w, e->time);
 
-	/* Check for possible multi-click sequence in progress */
+	// Check for possible multi-click sequence in progress 
 	if (tw->text.multiClickState != NO_CLICKS) {
 		if (e->time < lastBtnDown + XtGetMultiClickTime(XtDisplay(w))) {
 			if (tw->text.multiClickState == ONE_CLICK) {
@@ -1372,10 +1372,10 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 			tw->text.multiClickState = NO_CLICKS;
 	}
 
-	/* Clear any existing selections */
+	// Clear any existing selections 
 	textD->buffer->BufUnselect();
 
-	/* Move the cursor to the pointer location */
+	// Move the cursor to the pointer location 
 	moveDestinationAP(w, event, args, nArgs);
 
 	/* Record the site of the initial button press and the initial character
@@ -1397,10 +1397,10 @@ static void moveDestinationAP(Widget w, XEvent *event, String *args, Cardinal *n
 	XButtonEvent *e = &event->xbutton;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	/* Get input focus */
+	// Get input focus 
 	XmProcessTraversal(w, XmTRAVERSE_CURRENT);
 
-	/* Move the cursor */
+	// Move the cursor 
 	textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
@@ -1417,7 +1417,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	int dragState = tw->text.dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
 
-	/* Make sure the proper initialization was done on mouse down */
+	// Make sure the proper initialization was done on mouse down 
 	if (dragState != PRIMARY_DRAG && dragState != PRIMARY_CLICKED && dragState != PRIMARY_RECT_DRAG)
 		return;
 
@@ -1438,7 +1438,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(tw, e->x, e->y);
 
-	/* Adjust the selection and move the cursor */
+	// Adjust the selection and move the cursor 
 	adjustSelection(tw, e->x, e->y);
 }
 
@@ -1449,7 +1449,7 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	TextSelection *sel = &buf->primary_;
 	int anchor, rectAnchor, anchorLineStart, newPos, row, column;
 
-	/* Find the new anchor point for the rest of this drag operation */
+	// Find the new anchor point for the rest of this drag operation 
 	newPos = textD->TextDXYToPosition(Point{e->x, e->y});
 	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	column = textD->TextDOffsetWrappedColumn(row, column);
@@ -1474,7 +1474,7 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	reinterpret_cast<TextWidget>(w)->text.anchor = anchor;
 	reinterpret_cast<TextWidget>(w)->text.rectAnchor = rectAnchor;
 
-	/* Make the new selection */
+	// Make the new selection 
 	if (hasKey("rect", args, nArgs))
 		buf->BufRectSelect(buf->BufStartOfLine(std::min<int>(anchor, newPos)), buf->BufEndOfLine(std::max<int>(anchor, newPos)), std::min<int>(rectAnchor, column), std::max<int>(rectAnchor, column));
 	else
@@ -1484,10 +1484,10 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	   extend-start is unambiguously the start of a selection */
 	reinterpret_cast<TextWidget>(w)->text.dragState = PRIMARY_DRAG;
 
-	/* Don't do by-word or by-line adjustment, just by character */
+	// Don't do by-word or by-line adjustment, just by character 
 	reinterpret_cast<TextWidget>(w)->text.multiClickState = NO_CLICKS;
 
-	/* Move the cursor */
+	// Move the cursor 
 	textD->TextDSetInsertPosition(newPos);
 	callCursorMovementCBs(w, event);
 }
@@ -1516,7 +1516,7 @@ static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	/* If there's a calltip displayed, kill it. */
+	// If there's a calltip displayed, kill it. 
 	TextDKillCalltip(textD, 0);
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG)
@@ -1535,7 +1535,7 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	TextSelection *sel = &buf->secondary_;
 	int anchor, pos, row, column;
 
-	/* Find the new anchor point and make the new selection */
+	// Find the new anchor point and make the new selection 
 	pos = textD->TextDXYToPosition(Point{e->x, e->y});
 	if (sel->selected) {
 		if (abs(pos - sel->start) < abs(pos - sel->end))
@@ -1587,7 +1587,7 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 	int dragState = tw->text.dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
 
-	/* Make sure the proper initialization was done on mouse down */
+	// Make sure the proper initialization was done on mouse down 
 	if (dragState != SECONDARY_DRAG && dragState != SECONDARY_RECT_DRAG && dragState != SECONDARY_CLICKED)
 		return;
 
@@ -1608,7 +1608,7 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(tw, e->x, e->y);
 
-	/* Adjust the selection */
+	// Adjust the selection 
 	adjustSecondarySelection(tw, e->x, e->y);
 }
 
@@ -1637,7 +1637,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(tw, e->x, e->y);
 
-	/* Adjust the selection */
+	// Adjust the selection 
 	BlockDragSelection(tw, Point{e->x, e->y}, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
 }
 
@@ -1791,7 +1791,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	TextSelection *sec = &buf->secondary_, *primary = &buf->primary_;
 
 	int newPrimaryStart, newPrimaryEnd, secWasRect;
-	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState; /* save before endDrag */
+	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState; // save before endDrag 
 	int silent = hasKey("nobell", args, nArgs);
 
 	endDrag(w);
@@ -1811,13 +1811,13 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 
-	/* if the primary selection is in another widget, use selection routines */
+	// if the primary selection is in another widget, use selection routines 
 	if (!primary->selected) {
 		ExchangeSelections(w, e->time);
 		return;
 	}
 
-	/* Both primary and secondary are in this widget, do the exchange here */
+	// Both primary and secondary are in this widget, do the exchange here 
 	std::string primaryText = buf->BufGetSelectionTextEx();
 	std::string secText = buf->BufGetSecSelectTextEx();
 	secWasRect = sec->rectangular;
@@ -1865,7 +1865,7 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
 		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &tw->text.btnDownCoord.x, &tw->text.btnDownCoord.y))
-			return; /* shouldn't happen */
+			return; // shouldn't happen 
 		InsertPrimarySelection(w, e->time, True);
 	} else
 		InsertPrimarySelection(w, e->time, False);
@@ -1902,7 +1902,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		checkAutoShowInsertPos(w);
 	} else if (rectangular) {
 		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.x, &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.y))
-			return; /* shouldn't happen */
+			return; // shouldn't happen 
 		MovePrimarySelection(w, e->time, True);
 	} else {
 		MovePrimarySelection(w, e->time, False);
@@ -2071,7 +2071,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	int lineStartPos = buf->BufStartOfLine(cursorPos);
 	std::string indentStr = createIndentStringEx(tw, buf, 0, lineStartPos, cursorPos, nullptr, &column);
 
-	/* Insert it at the cursor */
+	// Insert it at the cursor 
 	simpleInsertAtCursorEx(w, indentStr, event, True);
 
 	if (tw->text.emulateTabs > 0) {
@@ -2102,7 +2102,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	cancelDrag(w);
 	TakeMotifDestination(w, event->xkey.time);
 
-	/* If emulated tabs are off, just insert a tab */
+	// If emulated tabs are off, just insert a tab 
 	if (emTabDist <= 0) {
 		TextInsertAtCursorEx(w, "\t", event, True, True);
 		return;
@@ -2124,11 +2124,11 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		startIndent = 0;
 	}
 
-	/* Allocate a buffer assuming all the inserted characters will be spaces */
+	// Allocate a buffer assuming all the inserted characters will be spaces 
 	std::string outStr;
 	outStr.reserve(toIndent - startIndent);
 		
-	/* Add spaces and tabs to outStr until it reaches toIndent */
+	// Add spaces and tabs to outStr until it reaches toIndent 
 	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
@@ -2142,10 +2142,10 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		}
 	}
 
-	/* Insert the emulated tab */
+	// Insert the emulated tab 
 	TextInsertAtCursorEx(w, outStr, event, True, True);
 
-	/* Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx */
+	// Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx 
 	reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor = emTabsBeforeCursor + 1;
 
 	buf->BufUnselect();
@@ -2654,7 +2654,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	maintainColumn = hasKey("column", args, nArgs);
 	cancelDrag(w);
-	if (hasKey("scrollbar", args, nArgs)) { /* scrollbar only */
+	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only 
 		targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
 
 		if (targetLine == textD->topLineNum) {
@@ -2662,9 +2662,9 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			return;
 		}
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
-	} else if (hasKey("stutter", args, nArgs)) { /* Mac style */
-		/* move to bottom line of visible area */
-		/* if already there, page down maintaining preferrred column */
+	} else if (hasKey("stutter", args, nArgs)) { // Mac style 
+		// move to bottom line of visible area 
+		// if already there, page down maintaining preferrred column 
 		targetLine = std::max<int>(std::min<int>(textD->nVisibleLines - 1, textD->nBufferLines), 0);
 		column = textD->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
@@ -2702,7 +2702,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		} else {
 			textD->cursorPreferredCol = -1;
 		}
-	} else { /* "standard" */
+	} else { // "standard" 
 		if (insertPos >= buf->BufGetLength() && textD->topLineNum == lastTopLine) {
 			ringIfNecessary(silent, w);
 			return;
@@ -2743,7 +2743,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	maintainColumn = hasKey("column", args, nArgs);
 	cancelDrag(w);
-	if (hasKey("scrollbar", args, nArgs)) { /* scrollbar only */
+	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only 
 		targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
 
 		if (targetLine == textD->topLineNum) {
@@ -2751,9 +2751,9 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 			return;
 		}
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
-	} else if (hasKey("stutter", args, nArgs)) { /* Mac style */
-		/* move to top line of visible area */
-		/* if already there, page up maintaining preferrred column if required */
+	} else if (hasKey("stutter", args, nArgs)) { // Mac style 
+		// move to top line of visible area 
+		// if already there, page up maintaining preferrred column if required 
 		targetLine = 0;
 		column = textD->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
@@ -2783,7 +2783,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		} else {
 			textD->cursorPreferredCol = -1;
 		}
-	} else { /* "standard" */
+	} else { // "standard" 
 		if (insertPos <= 0 && textD->topLineNum == 1) {
 			ringIfNecessary(silent, w);
 			return;
@@ -2910,11 +2910,11 @@ static void scrollUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
 		return;
 	if (*nArgs == 2) {
-		/* Allow both 'page' and 'pages' */
+		// Allow both 'page' and 'pages' 
 		if (strncmp(args[1], "page", 4) == 0)
 			nLines *= textD->nVisibleLines;
 
-		/* 'line' or 'lines' is the only other valid possibility */
+		// 'line' or 'lines' is the only other valid possibility 
 		else if (strncmp(args[1], "line", 4) != 0)
 			return;
 	}
@@ -2934,11 +2934,11 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
 		return;
 	if (*nArgs == 2) {
-		/* Allow both 'page' and 'pages' */
+		// Allow both 'page' and 'pages' 
 		if (strncmp(args[1], "page", 4) == 0)
 			nLines *= textD->nVisibleLines;
 
-		/* 'line' or 'lines' is the only other valid possibility */
+		// 'line' or 'lines' is the only other valid possibility 
 		else if (strncmp(args[1], "line", 4) != 0)
 			return;
 	}
@@ -3043,22 +3043,22 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
 	if (widget != XmGetFocusWidget(widget))
 		return;
 
-	/* If the timer is not already started, start it */
+	// If the timer is not already started, start it 
 	if (textwidget->text.cursorBlinkRate != 0 && textwidget->text.cursorBlinkProcID == 0) {
 		textwidget->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(widget), textwidget->text.cursorBlinkRate, cursorBlinkTimerProc, widget);
 	}
 
-	/* Change the cursor to active style */
+	// Change the cursor to active style 
 	if (textwidget->text.overstrike)
 		textD->TextDSetCursorStyle(BLOCK_CURSOR);
 	else
 		textD->TextDSetCursorStyle((textwidget->text.heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR));
 	textD->TextDUnblankCursor();
 
-	/* Notify Motif input manager that widget has focus */
+	// Notify Motif input manager that widget has focus 
 	XmImVaSetFocusValues(widget, nullptr);
 
-	/* Call any registered focus-in callbacks */
+	// Call any registered focus-in callbacks 
 	XtCallCallbacks((Widget)widget, textNfocusCallback, (XtPointer)event);
 }
 
@@ -3069,19 +3069,19 @@ static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	/* Remove the cursor blinking timer procedure */
+	// Remove the cursor blinking timer procedure 
 	if (reinterpret_cast<TextWidget>(w)->text.cursorBlinkProcID != 0)
 		XtRemoveTimeOut(reinterpret_cast<TextWidget>(w)->text.cursorBlinkProcID);
 	reinterpret_cast<TextWidget>(w)->text.cursorBlinkProcID = 0;
 
-	/* Leave a dim or destination cursor */
+	// Leave a dim or destination cursor 
 	textD->TextDSetCursorStyle(reinterpret_cast<TextWidget>(w)->text.motifDestOwner ? CARET_CURSOR : DIM_CURSOR);
 	textD->TextDUnblankCursor();
 
-	/* If there's a calltip displayed, kill it. */
+	// If there's a calltip displayed, kill it. 
 	TextDKillCalltip(textD, 0);
 
-	/* Call any registered focus-out callbacks */
+	// Call any registered focus-out callbacks 
 	XtCallCallbacks((Widget)w, textNlosingFocusCallback, (XtPointer)event);
 }
 
@@ -3121,14 +3121,14 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	TakeMotifDestination(w, e->time);
 
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
-		/* rect -> rect */
+		// rect -> rect 
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
 		startCol = std::min<int>(tw->text.rectAnchor, newCol);
 		endCol = std::max<int>(tw->text.rectAnchor, newCol);
 		startPos = buf->BufStartOfLine(std::min<int>(tw->text.anchor, newPos));
 		endPos = buf->BufEndOfLine(std::max<int>(tw->text.anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
-	} else if (sel->selected && rectangular) { /* plain -> rect */
+	} else if (sel->selected && rectangular) { // plain -> rect 
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
 		if (abs(newPos - sel->start) < abs(newPos - sel->end))
 			anchor = sel->end;
@@ -3139,7 +3139,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 		tw->text.anchor = anchor;
 		tw->text.rectAnchor = rectAnchor;
 		buf->BufRectSelect(buf->BufStartOfLine(std::min<int>(anchor, newPos)), buf->BufEndOfLine(std::max<int>(anchor, newPos)), std::min<int>(rectAnchor, newCol), std::max<int>(rectAnchor, newCol));
-	} else if (sel->selected && sel->rectangular) { /* rect -> plain */
+	} else if (sel->selected && sel->rectangular) { // rect -> plain 
 		startPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->start), sel->rectStart);
 		endPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->end), sel->rectEnd);
 		if (abs(origPos - startPos) < abs(origPos - endPos))
@@ -3147,13 +3147,13 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 		else
 			anchor = startPos;
 		buf->BufSelect(anchor, newPos);
-	} else if (sel->selected) { /* plain -> plain */
+	} else if (sel->selected) { // plain -> plain 
 		if (abs(origPos - sel->start) < abs(origPos - sel->end))
 			anchor = sel->end;
 		else
 			anchor = sel->start;
 		buf->BufSelect(anchor, newPos);
-	} else if (rectangular) { /* no sel -> rect */
+	} else if (rectangular) { // no sel -> rect 
 		origCol = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
 		startCol = std::min<int>(newCol, origCol);
@@ -3163,7 +3163,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 		tw->text.anchor = origPos;
 		tw->text.rectAnchor = origCol;
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
-	} else { /* no sel -> plain */
+	} else { // no sel -> plain 
 		tw->text.anchor = origPos;
 		tw->text.rectAnchor = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
 		buf->BufSelect(tw->text.anchor, newPos);
@@ -3263,7 +3263,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 	if (emTabDist <= 0 || emTabsBeforeCursor <= 0)
 		return False;
 
-	/* Find the position of the previous tab stop */
+	// Find the position of the previous tab stop 
 	insertPos = textD->TextDGetInsertPosition();
 	lineStart = buf->BufStartOfLine(insertPos);
 	startIndent = buf->BufCountDispChars(lineStart, insertPos);
@@ -3282,7 +3282,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 		startPos = pos + 1;
 	}
 
-	/* Just to make sure, check that we're not deleting any non-white chars */
+	// Just to make sure, check that we're not deleting any non-white chars 
 	for (pos = insertPos - 1; pos >= startPos; pos--) {
 		c = buf->BufGetCharacter(pos);
 		if (c != ' ' && c != '\t') {
@@ -3451,10 +3451,10 @@ static void selectLine(Widget w) {
 static void checkAutoScroll(TextWidget w, int x, int y) {
 	int inWindow;
 
-	/* Is the pointer in or out of the window? */
+	// Is the pointer in or out of the window? 
 	inWindow = x >= w->text.textD->left && x < w->core.width - w->text.marginWidth && y >= w->text.marginHeight && y < w->core.height - w->text.marginHeight;
 
-	/* If it's in the window, cancel the timer procedure */
+	// If it's in the window, cancel the timer procedure 
 	if (inWindow) {
 		if (w->text.autoScrollProcID != 0)
 			XtRemoveTimeOut(w->text.autoScrollProcID);
@@ -3463,12 +3463,12 @@ static void checkAutoScroll(TextWidget w, int x, int y) {
 		return;
 	}
 
-	/* If the timer is not already started, start it */
+	// If the timer is not already started, start it 
 	if (w->text.autoScrollProcID == 0) {
 		w->text.autoScrollProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), 0, autoScrollTimerProc, w);
 	}
 
-	/* Pass on the newest mouse location to the autoscroll routine */
+	// Pass on the newest mouse location to the autoscroll routine 
 	w->text.mouseCoord = {x, y};
 }
 
@@ -3524,7 +3524,7 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	int row, col, startCol, endCol, startPos, endPos;
 	int newPos = textD->TextDXYToPosition(Point{x, y});
 
-	/* Adjust the selection */
+	// Adjust the selection 
 	if (tw->text.dragState == PRIMARY_RECT_DRAG) {
 		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
 		col = textD->TextDOffsetWrappedColumn(row, col);
@@ -3546,7 +3546,7 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	} else
 		buf->BufSelect(tw->text.anchor, newPos);
 
-	/* Move the cursor */
+	// Move the cursor 
 	textD->TextDSetInsertPosition(newPos);
 	callCursorMovementCBs((Widget)tw, nullptr);
 }
@@ -3589,7 +3589,7 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 	char c;
 	std::string wrappedText;
 
-	/* Create a temporary text buffer and load it with the strings */
+	// Create a temporary text buffer and load it with the strings 
 	auto wrapBuf = new TextBuffer;
 	wrapBuf->BufInsertEx(0, startLine);
 	wrapBuf->BufInsertEx(wrapBuf->BufGetLength(), text);
@@ -3624,7 +3624,7 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 		pos++;
 	}
 
-	/* Return the wrapped text, possibly including part of startLine */
+	// Return the wrapped text, possibly including part of startLine 
 	if(!breakBefore) {
 		wrappedText = wrapBuf->BufGetRangeEx(startLineLen, wrapBuf->BufGetLength());
 	} else {
@@ -3720,7 +3720,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 		indent = smartIndent.indentRequest;
 	}
 
-	/* If smart indent wasn't used, measure the indent distance of the line */
+	// If smart indent wasn't used, measure the indent distance of the line 
 	if (indent == -1) {
 		indent = 0;
 		for (pos = lineStartPos; pos < lineEndPos; pos++) {
@@ -3734,7 +3734,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 		}
 	}
 
-	/* Allocate and create a string of tabs and spaces to achieve the indent */
+	// Allocate and create a string of tabs and spaces to achieve the indent 
 	std::string indentStr;
 	indentStr.reserve(indent + 2);
 	
@@ -3751,7 +3751,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 			*indentPtr++ = ' ';
 	}
 
-	/* Return any requested stats */
+	// Return any requested stats 
 	if(length)
 		*length = indentStr.size();
 	if(column)
@@ -3811,7 +3811,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 		return;
 	}
 
-	/* re-establish the timer proc (this routine) to continue processing */
+	// re-establish the timer proc (this routine) to continue processing 
 	w->text.autoScrollProcID =
 	    XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.mouseCoord.y >= w->text.marginHeight && w->text.mouseCoord.y < w->core.height - w->text.marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 	                    autoScrollTimerProc, w);
@@ -3826,13 +3826,13 @@ static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 	TextWidget w = (TextWidget)clientData;
 	TextDisplay *textD = w->text.textD;
 
-	/* Blink the cursor */
+	// Blink the cursor 
 	if (textD->cursorOn)
 		textD->TextDBlankCursor();
 	else
 		textD->TextDUnblankCursor();
 
-	/* re-establish the timer proc (this routine) to continue processing */
+	// re-establish the timer proc (this routine) to continue processing 
 	w->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.cursorBlinkRate, cursorBlinkTimerProc, w);
 }
 

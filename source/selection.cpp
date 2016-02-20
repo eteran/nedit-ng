@@ -73,10 +73,10 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	long tempNum;
 	int textLen;
 
-	/* Get line number */
+	// Get line number 
 	tempNum = strtol(text, &endptr, 10);
 
-	/* If user didn't specify a line number, set lineNum to -1 */
+	// If user didn't specify a line number, set lineNum to -1 
 	if (endptr == text) {
 		*lineNum = -1;
 	} else if (tempNum >= INT_MAX) {
@@ -87,14 +87,14 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 		*lineNum = tempNum;
 	}
 
-	/* Find the next digit */
+	// Find the next digit 
 	for (textLen = strlen(endptr); textLen > 0; endptr++, textLen--) {
 		if (isdigit((unsigned char)*endptr) || *endptr == '-' || *endptr == '+') {
 			break;
 		}
 	}
 
-	/* Get column */
+	// Get column 
 	if (*endptr != '\0') {
 		tempNum = strtol(endptr, nullptr, 10);
 		if (tempNum >= INT_MAX) {
@@ -153,10 +153,10 @@ nullable_string GetAnySelectionEx(Document *window) {
 		return text;
 	}
 
-	/* Request the selection value to be delivered to getAnySelectionCB */
+	// Request the selection value to be delivered to getAnySelectionCB 
 	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea_)));
 
-	/* Wait for the value to appear */
+	// Wait for the value to appear 
 	while (selText == waitingMarker) {
 		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea_), &nextEvent);
 		ServerDispatchEvent(&nextEvent);
@@ -175,11 +175,11 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 
 	(void)sel;
 
-	/* two integers and some space in between */
+	// two integers and some space in between 
 	char lineText[(TYPE_INT_STR_SIZE(int)*2) + 5];
 	int rc, lineNum, column, position, curCol;
 
-	/* skip if we can't get the selection data, or it's obviously not a number */
+	// skip if we can't get the selection data, or it's obviously not a number 
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
 		XBell(TheDisplay, 0);
 		return;
@@ -189,7 +189,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 		XtFree(value);
 		return;
 	}
-	/* should be of type text??? */
+	// should be of type text??? 
 	if (*format != 8) {
 		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
 		XBell(TheDisplay, 0);
@@ -206,7 +206,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 		return;
 	}
 
-	/* User specified column, but not line number */
+	// User specified column, but not line number 
 	if (lineNum == -1) {
 		position = TextGetCursorPos(widget);
 		if (TextPosToLineAndCol(widget, position, &lineNum, &curCol) == False) {
@@ -214,7 +214,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 			return;
 		}
 	}
-	/* User didn't specify a column */
+	// User didn't specify a column 
 	else if (column == -1) {
 		SelectNumberedLine(window, lineNum);
 		return;
@@ -249,7 +249,7 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 		XtFree(value);
 		return;
 	}
-	/* should be of type text??? */
+	// should be of type text??? 
 	if (*format != 8) {
 		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
 		XBell(TheDisplay, 0);
@@ -260,29 +260,29 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	XtFree(value);
 	nameText[*length] = '\0';
 
-	/* extract name from #include syntax */
+	// extract name from #include syntax 
 	if (sscanf(nameText, "#include \"%[^\"]\"", includeName) == 1)
 		strcpy(nameText, includeName);
 	else if (sscanf(nameText, "#include <%[^<>]>", includeName) == 1)
 		sprintf(nameText, "%s%s", includeDir, includeName);
 
-	/* strip whitespace from name */
+	// strip whitespace from name 
 	for (inPtr = nameText, outPtr = nameText; *inPtr != '\0'; inPtr++)
 		if (*inPtr != ' ' && *inPtr != '\t' && *inPtr != '\n')
 			*outPtr++ = *inPtr;
 	*outPtr = '\0';
 
-	/* Process ~ characters in name */
+	// Process ~ characters in name 
 	ExpandTilde(nameText);
 
-	/* If path name is relative, make it refer to current window's directory */
+	// If path name is relative, make it refer to current window's directory 
 	if (nameText[0] != '/') {
 		strcpy(filename, window->path_.c_str());
 		strcat(filename, nameText);
 		strcpy(nameText, filename);
 	}
 
-	/* Expand wildcards in file name. */
+	// Expand wildcards in file name. 
 
 	{
 		glob_t globbuf;
@@ -308,7 +308,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 
 	auto result = static_cast<char **>(client_data);
 
-	/* Confirm that the returned value is of the correct type */
+	// Confirm that the returned value is of the correct type 
 	if (*type != XA_STRING || *format != 8) {
 		XBell(TheDisplay, 0);
 		XtFree((char *)value);
@@ -316,7 +316,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 		return;
 	}
 
-	/* Append a null, and return the string */
+	// Append a null, and return the string 
 	*result = XtMalloc(*length + 1);
 	strncpy(*result, (char *)value, *length);
 	XtFree((char *)value);
@@ -326,7 +326,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 void SelectNumberedLine(Document *window, int lineNum) {
 	int i, lineStart = 0, lineEnd;
 
-	/* count lines to find the start and end positions for the selection */
+	// count lines to find the start and end positions for the selection 
 	if (lineNum < 1)
 		lineNum = 1;
 	lineEnd = -1;
@@ -335,13 +335,13 @@ void SelectNumberedLine(Document *window, int lineNum) {
 		lineEnd = window->buffer_->BufEndOfLine( lineStart);
 	}
 
-	/* highlight the line */
+	// highlight the line 
 	if (i > lineNum) {
-		/* Line was found */
+		// Line was found 
 		if (lineEnd < window->buffer_->BufGetLength()) {
 			window->buffer_->BufSelect(lineStart, lineEnd + 1);
 		} else {
-			/* Don't select past the end of the buffer ! */
+			// Don't select past the end of the buffer ! 
 			window->buffer_->BufSelect(lineStart, window->buffer_->BufGetLength());
 		}
 	} else {
@@ -485,13 +485,13 @@ void AddMark(Document *window, Widget widget, char label) {
 			break;
 	}
 	if (index >= MAX_MARKS) {
-		fprintf(stderr, "no more marks allowed\n"); /* shouldn't happen */
+		fprintf(stderr, "no more marks allowed\n"); // shouldn't happen 
 		return;
 	}
 	if (index == window->nMarks_)
 		window->nMarks_++;
 
-	/* store the cursor location and selection position in the table */
+	// store the cursor location and selection position in the table 
 	window->markTable_[index].label = label;
 	memcpy(&window->markTable_[index].sel, &window->buffer_->primary_, sizeof(TextSelection));
 	window->markTable_[index].cursorPos = TextGetCursorPos(widget);
@@ -501,7 +501,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	int index, oldStart, newStart, oldEnd, newEnd, cursorPos;
 	TextSelection *sel, *oldSel;
 
-	/* look up the mark in the mark table */
+	// look up the mark in the mark table 
 	label = toupper(label);
 	for (index = 0; index < window->nMarks_; index++) {
 		if (window->markTable_[index].label == label)
@@ -512,7 +512,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 		return;
 	}
 
-	/* reselect marked the selection, and move the cursor to the marked pos */
+	// reselect marked the selection, and move the cursor to the marked pos 
 	sel = &window->markTable_[index].sel;
 	oldSel = &window->buffer_->primary_;
 	cursorPos = window->markTable_[index].cursorPos;

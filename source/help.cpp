@@ -100,7 +100,7 @@ static const char *getBuildInfo(void) {
 
 
 		atexit([](){
-			/* This keeps memory leak detectors happy */
+			// This keeps memory leak detectors happy 
 			delete [] bldInfoString;
 		});
 	}
@@ -112,7 +112,7 @@ static const char *getBuildInfo(void) {
 ** Help fonts are not loaded until they're actually needed.  This function
 ** checks if the style's font is loaded, and loads it if it's not.
 */
-/* Print version info to stdout */
+// Print version info to stdout 
 void PrintVersion(void) {
 	const char *text = getBuildInfo();
 	puts(text);

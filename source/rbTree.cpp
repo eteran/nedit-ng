@@ -455,10 +455,10 @@ int rbTreeSize(rbTreeNode *base) {
 rbTreeNode *rbTreeNew(rbTreeAllocateEmptyNodeCB allocateEmptyNode) {
 	rbTreeNode *rootStorage = allocateEmptyNode();
 	if (rootStorage) {
-		rootStorage->left   = nullptr;   /* leftmost node */
-		rootStorage->right  = nullptr;  /* rightmost node */
-		rootStorage->parent = nullptr; /* root node */
-		rootStorage->color  = 0;        /* node count */
+		rootStorage->left   = nullptr;   // leftmost node 
+		rootStorage->right  = nullptr;  // rightmost node 
+		rootStorage->parent = nullptr; // root node 
+		rootStorage->color  = 0;        // node count 
 	}
 	return rootStorage;
 }

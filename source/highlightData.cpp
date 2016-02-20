@@ -73,7 +73,7 @@ const int MAX_HIGHLIGHT_STYLES = 128;
    limitations are probably much more restrictive).  */
 const int MAX_PATTERNS = 127;
 
-/* Names for the fonts that can be used for syntax highlighting */
+// Names for the fonts that can be used for syntax highlighting 
 const int N_FONT_TYPES = 4;
 
 enum fontTypes {
@@ -90,7 +90,7 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Bold Italic"
 };
 
-/* list of available highlight styles */
+// list of available highlight styles 
 int NHighlightStyles = 0;
 HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
 
@@ -146,7 +146,7 @@ static XString convertPatternExprEx(const XString &patternRE, const char *patSet
 
 
 
-/* Highlight styles dialog information */
+// Highlight styles dialog information 
 static struct {
 	Widget shell;
 	Widget nameW;
@@ -158,7 +158,7 @@ static struct {
 	int nHighlightStyles;
 } HSDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0};
 
-/* Highlight dialog information */
+// Highlight dialog information 
 static struct {
 	Widget shell;
 	Widget lmOptMenu;
@@ -190,7 +190,7 @@ static struct {
 } HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, boost::none, 0,       nullptr};
 
-/* Pattern sources loaded from the .nedit file or set by the user */
+// Pattern sources loaded from the .nedit file or set by the user 
 static int NPatternSets = 0;
 static PatternSet *PatternSets[MAX_LANGUAGE_MODES];
 
@@ -269,13 +269,13 @@ bool LoadStylesStringEx(const std::string &string) {
 
 	for (;;) {
 
-		/* skip over blank space */
+		// skip over blank space 
 		inPtr += strspn(inPtr, " \t");
 
-		/* Allocate a language mode structure in which to store the info. */
+		// Allocate a language mode structure in which to store the info. 
 		auto hs = new HighlightStyle;
 
-		/* read style name */
+		// read style name 
 		nullable_string name = ReadSymbolicFieldEx(&inPtr);
 		if (!name) {
 			return styleError(inString, inPtr, "style name required");
@@ -287,7 +287,7 @@ bool LoadStylesStringEx(const std::string &string) {
 			return styleError(inString,inPtr, errMsg);
 		}
 
-		/* read color */
+		// read color 
 		nullable_string color = ReadSymbolicFieldEx(&inPtr);
 		if (!color) {
 			delete hs;
@@ -298,8 +298,8 @@ bool LoadStylesStringEx(const std::string &string) {
 		hs->bgColor = boost::none;
 		
 		if (SkipOptSeparator('/', &inPtr)) {
-			/* read bgColor */
-			hs->bgColor = ReadSymbolicFieldEx(&inPtr); /* no error if fails */
+			// read bgColor 
+			hs->bgColor = ReadSymbolicFieldEx(&inPtr); // no error if fails 
 	
 		}
 		
@@ -308,7 +308,7 @@ bool LoadStylesStringEx(const std::string &string) {
 			return styleError(inString,inPtr, errMsg);
 		}
 
-		/* read the font type */
+		// read the font type 
 		// TODO(eteran): Note, assumes success!
 		fontStr = *ReadSymbolicFieldEx(&inPtr);
 		
@@ -344,7 +344,7 @@ bool LoadStylesStringEx(const std::string &string) {
 			}
 		}
 
-		/* if the string ends here, we're done */
+		// if the string ends here, we're done 
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0') {
 			return true;
@@ -378,7 +378,7 @@ std::string WriteStylesStringEx(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\\n\\\n");
 	}
 
-	/* Get the output, and lop off the trailing newlines */
+	// Get the output, and lop off the trailing newlines 
 	return outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
 }
 
@@ -401,13 +401,13 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 
 	for (;;) {
 
-		/* Read each pattern set, abort on error */
+		// Read each pattern set, abort on error 
 		PatternSet *patSet = readPatternSet(&inPtr, convertOld);
 		if(!patSet) {
 			return false;
 		}
 
-		/* Add/change the pattern set in the list */
+		// Add/change the pattern set in the list 
 		for (i = 0; i < NPatternSets; i++) {
 			if (*PatternSets[i]->languageMode == *patSet->languageMode) {
 				delete PatternSets[i];
@@ -422,7 +422,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 			}
 		}
 
-		/* if the string ends here, we're done */
+		// if the string ends here, we're done 
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0') {
 			return true;
@@ -461,7 +461,7 @@ std::string WriteHighlightStringEx(void) {
 		}
 	}
 
-	/* Get the output string, and lop off the trailing newline and tab */
+	// Get the output string, and lop off the trailing newline and tab 
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
 
 	/* Protect newlines and backslashes from translation by the resource
@@ -532,10 +532,10 @@ XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 		font = window->italicFontStruct_;
 	else if (fontNum == BOLD_ITALIC_FONT)
 		font = window->boldItalicFontStruct_;
-	else /* fontNum == PLAIN_FONT */
+	else // fontNum == PLAIN_FONT 
 		font = GetDefaultFontStruct(window->fontList_);
 
-	/* If font isn't loaded, silently substitute primary font */
+	// If font isn't loaded, silently substitute primary font 
 	return font == nullptr ? GetDefaultFontStruct(window->fontList_) : font;
 }
 
@@ -717,10 +717,10 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	const char *stringStart = *inPtr;
 	PatternSet patSet;
 
-	/* remove leading whitespace */
+	// remove leading whitespace 
 	*inPtr += strspn(*inPtr, " \t\n");
 
-	/* read language mode field */
+	// read language mode field 
 	patSet.languageMode = ReadSymbolicField(inPtr);
 	if (!patSet.languageMode) {
 		return highlightError(stringStart, *inPtr, "language mode must be specified");
@@ -740,22 +740,22 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return retPatSet;
 	}
 
-	/* read line context field */
+	// read line context field 
 	if (!ReadNumericField(inPtr, &patSet.lineContext))
 		return highlightError(stringStart, *inPtr, "unreadable line context field");
 	if (!SkipDelimiter(inPtr, &errMsg))
 		return highlightError(stringStart, *inPtr, errMsg);
 
-	/* read character context field */
+	// read character context field 
 	if (!ReadNumericField(inPtr, &patSet.charContext))
 		return highlightError(stringStart, *inPtr, "unreadable character context field");
 
-	/* read pattern list */
+	// read pattern list 
 	patSet.patterns = readHighlightPatterns(inPtr, True, &errMsg, &patSet.nPatterns);
 	if (!patSet.patterns)
 		return highlightError(stringStart, *inPtr, errMsg);
 
-	/* pattern set was read correctly, make an allocated copy to return */
+	// pattern set was read correctly, make an allocated copy to return 
 	auto retPatSet = new PatternSet(patSet);
 
 	/* Convert pre-5.1 pattern sets which use old regular expression
@@ -775,10 +775,10 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns) {
 	HighlightPattern *pat, *returnedList, patternList[MAX_PATTERNS];
 
-	/* skip over blank space */
+	// skip over blank space 
 	*inPtr += strspn(*inPtr, " \t\n");
 
-	/* look for initial brace */
+	// look for initial brace 
 	if (withBraces) {
 		if (**inPtr != '{') {
 			*errMsg = "pattern list must begin with \"{\"";
@@ -811,7 +811,7 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 			return nullptr;
 	}
 
-	/* allocate a more appropriately sized list to return patterns */
+	// allocate a more appropriately sized list to return patterns 
 	*nPatterns = pat - patternList;
 	returnedList = new HighlightPattern[*nPatterns];
 	std::copy_n(patternList, *nPatterns, returnedList);
@@ -820,7 +820,7 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern) {
 
-	/* read the name field */
+	// read the name field 
 	nullable_string name = ReadSymbolicFieldEx(inPtr);
 	if (!name) {
 		*errMsg = "pattern name is required";
@@ -831,13 +831,13 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read the start pattern */
+	// read the start pattern 
 	if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->startRE))
 		return False;
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read the end pattern */
+	// read the end pattern 
 	
 	if (**inPtr == ':') {
 		pattern->endRE = nullptr;
@@ -848,7 +848,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read the error pattern */
+	// read the error pattern 
 	if (**inPtr == ':') {
 		pattern->errorRE = nullptr;
 	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->errorRE)) {
@@ -858,7 +858,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read the style field */
+	// read the style field 
 	pattern->style = ReadSymbolicField(inPtr);
 	if (!pattern->style) {
 		*errMsg = "style field required in pattern";
@@ -867,13 +867,13 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read the sub-pattern-of field */
+	// read the sub-pattern-of field 
 	pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
 	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
-	/* read flags field */
+	// read flags field 
 	pattern->flags = 0;
 	for (; **inPtr != '\n' && **inPtr != '}'; (*inPtr)++) {
 		if (**inPtr == 'D')
@@ -950,7 +950,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	int ac;
 	Arg args[20];
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (HSDialog.shell) {
 		if(initialStyle)
 			setStyleByName(initialStyle);
@@ -967,7 +967,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	
 	HSDialog.nHighlightStyles = NHighlightStyles;
 
-	/* Create a form widget in an application shell */
+	// Create a form widget in an application shell 
 	ac = 0;
 	XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING);
 	ac++;
@@ -1075,18 +1075,18 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 	
 	XtVaSetValues(topLbl, XmNuserData, HSDialog.managedListW, nullptr);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* If there's a suggestion for an initial selection, make it */
+	// If there's a suggestion for an initial selection, make it 
 	if(initialStyle)
 		setStyleByName(initialStyle);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
-	/* Realize all of the widgets in the new dialog */
+	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(HSDialog.shell);
 }
 
@@ -1112,7 +1112,7 @@ static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (!updateHSList())
 		return;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	XtDestroyWidget(HSDialog.shell);
 	HSDialog.shell = nullptr;
 }
@@ -1132,7 +1132,7 @@ static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	XtDestroyWidget(HSDialog.shell);
 	HSDialog.shell = nullptr;
 }
@@ -1148,7 +1148,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	if (oldItem == nullptr && hsDialogEmpty())
 		return nullptr;
 
-	/* If there are no problems reading the data, just return it */
+	// If there are no problems reading the data, just return it 
 	hs = readHSDialogFields(true);
 	if(hs)
 		return hs;
@@ -1161,7 +1161,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 		}
 	}
 
-	/* Do readHSDialogFields again without "silent" mode to display warning */
+	// Do readHSDialogFields again without "silent" mode to display warning 
 	hs = readHSDialogFields(false);
 	*abort = True;
 	return nullptr;
@@ -1180,22 +1180,22 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HSDialog.boldItalicW, False, False);
 	} else {
 		if (hs->name == "Plain") {
-			/* you should not be able to delete the reserved style "Plain" */
+			// you should not be able to delete the reserved style "Plain" 
 			int i;
 			int others = 0;
 			int nList = HSDialog.nHighlightStyles;
 			HighlightStyle **list = HSDialog.highlightStyleList;
-			/* do we have other styles called Plain? */
+			// do we have other styles called Plain? 
 			for (i = 0; i < nList; i++) {
 				if (list[i] != hs && (list[i]->name == "Plain")) {
 					others++;
 				}
 			}
 			if (others == 0) {
-				/* this is the last style entry named "Plain" */
+				// this is the last style entry named "Plain" 
 				Widget form = (Widget)cbArg;
 				Widget deleteBtn = XtNameToWidget(form, "*delete");
-				/* disable delete button */
+				// disable delete button 
 				if (deleteBtn) {
 					XtSetSensitive(deleteBtn, False);
 				}
@@ -1214,7 +1214,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 
 static HighlightStyle *readHSDialogFields(bool silent) {
 
-   	/* Allocate a language mode structure to return */
+   	// Allocate a language mode structure to return 
 	auto hs = new HighlightStyle;
 
 	try {
@@ -1224,7 +1224,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
 
  
 
-    	/* read the name field */
+    	// read the name field 
     	nullable_string name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
     	if (!name) {
     		delete hs;
@@ -1243,7 +1243,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
         	return nullptr;
     	}
 
-    	/* read the color field */
+    	// read the color field 
     	nullable_string color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
     	if (!color) {
     		delete hs;
@@ -1261,7 +1261,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
         	return nullptr;
     	}
 
-    	/* Verify that the color is a valid X color spec */
+    	// Verify that the color is a valid X color spec 
     	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
         	if (!silent) {
             	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n",  "OK", hs->color.c_str());
@@ -1271,14 +1271,14 @@ static HighlightStyle *readHSDialogFields(bool silent) {
         	return nullptr;;
     	}
 
-    	/* read the background color field - this may be empty */
+    	// read the background color field - this may be empty 
     	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
                         	"bgColor", silent);
     	if (hs->bgColor && hs->bgColor->empty()) {
         	hs->bgColor = boost::none;
     	}
 
-    	/* Verify that the background color (if present) is a valid X color spec */
+    	// Verify that the background color (if present) is a valid X color spec 
     	if (hs->bgColor && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor->c_str(), &rgb)) {
         	if (!silent) {
             	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor->c_str());
@@ -1289,7 +1289,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
         	return nullptr;;
     	}
 
-    	/* read the font buttons */
+    	// read the font buttons 
     	if (XmToggleButtonGetState(HSDialog.boldW))
     		hs->font = BOLD_FONT;
     	else if (XmToggleButtonGetState(HSDialog.italicW))
@@ -1333,11 +1333,11 @@ static int hsDialogEmpty(void) {
 */
 static int updateHSList(void) {
 
-	/* Get the current contents of the dialog fields */
+	// Get the current contents of the dialog fields 
 	if (!UpdateManagedList(HSDialog.managedListW, True))
 		return False;
 
-	/* Replace the old highlight styles list with the new one from the dialog */
+	// Replace the old highlight styles list with the new one from the dialog 
 	for (int i = 0; i < NHighlightStyles; i++) {
 		delete HighlightStyles[i];
 	}
@@ -1347,15 +1347,15 @@ static int updateHSList(void) {
 	}
 	NHighlightStyles = HSDialog.nHighlightStyles;
 
-	/* If a syntax highlighting dialog is up, update its menu */
+	// If a syntax highlighting dialog is up, update its menu 
 	updateHighlightStyleMenu();
 
-	/* Redisplay highlighted windows which use changed style(s) */
+	// Redisplay highlighted windows which use changed style(s) 
 	for(Document *window: WindowList) {
 		UpdateHighlightStyles(window);
 	}
 
-	/* Note that preferences have been changed */
+	// Note that preferences have been changed 
 	MarkPrefsChanged();
 
 	return True;
@@ -1378,7 +1378,7 @@ void EditHighlightPatterns(Document *window) {
 	int i, n, nPatterns;
 	Arg args[20];
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (HighlightDialog.shell) {
 		RaiseDialogWindow(HighlightDialog.shell);
 		return;
@@ -1391,13 +1391,13 @@ void EditHighlightPatterns(Document *window) {
 		return;
 	}
 
-	/* Decide on an initial language mode */
+	// Decide on an initial language mode 
 	HighlightDialog.langModeName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 
-	/* Find the associated pattern set (patSet) to edit */
+	// Find the associated pattern set (patSet) to edit 
 	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
 
-	/* Copy the list of patterns to one that the user can freely edit */
+	// Copy the list of patterns to one that the user can freely edit 
 	HighlightDialog.patterns = new HighlightPattern *[MAX_PATTERNS];
 	nPatterns                = (!patSet) ? 0 : patSet->nPatterns;
 	
@@ -1407,7 +1407,7 @@ void EditHighlightPatterns(Document *window) {
 	
 	HighlightDialog.nPatterns = nPatterns;
 
-	/* Create a form widget in an application shell */
+	// Create a form widget in an application shell 
 	n = 0;
 	XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING);
 	n++;
@@ -1677,20 +1677,20 @@ void EditHighlightPatterns(Document *window) {
 	HighlightDialog.managedListW = CreateManagedList(patternsForm, (String) "list", args, n, (void **)HighlightDialog.patterns, &HighlightDialog.nPatterns, MAX_PATTERNS, 18, getDisplayedCB, nullptr, setDisplayedCB, nullptr, freeItemCB);
 	XtVaSetValues(patternsLbl, XmNuserData, HighlightDialog.managedListW, nullptr);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
-	/* Fill in the dialog information for the selected language mode */
+	// Fill in the dialog information for the selected language mode 
 	SetIntText(HighlightDialog.lineContextW, patSet == nullptr ? 1 : patSet->lineContext);
 	SetIntText(HighlightDialog.charContextW, patSet == nullptr ? 0 : patSet->charContext);
 	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
 	updateLabels();
 
-	/* Realize all of the widgets in the new dialog */
+	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(HighlightDialog.shell);
 }
 
@@ -1760,12 +1760,12 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	PatternSet emptyPatSet;
 	int i, resp;
 
-	/* Get the newly selected mode name.  If it's the same, do nothing */
+	// Get the newly selected mode name.  If it's the same, do nothing 
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
 	if ((modeName == *HighlightDialog.langModeName))
 		return;
 
-	/* Look up the original version of the patterns being edited */
+	// Look up the original version of the patterns being edited 
 	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName->c_str());
 	if(!oldPatSet) {
 		oldPatSet = &emptyPatSet;
@@ -1797,12 +1797,12 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if(newPatSet)
 		delete newPatSet;
 
-	/* Free the old dialog information */
+	// Free the old dialog information 
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		delete HighlightDialog.patterns[i];
 	}
 
-	/* Fill the dialog with the new language mode information */
+	// Fill the dialog with the new language mode information 
 	HighlightDialog.langModeName = modeName;
 	newPatSet = FindPatternSet(modeName);
 	if(!newPatSet) {
@@ -1849,11 +1849,11 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the patterns */
+	// change the patterns 
 	if (!updatePatternSet())
 		return;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	CloseAllPopupsFor(HighlightDialog.shell);
 	XtDestroyWidget(HighlightDialog.shell);
 }
@@ -1864,7 +1864,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the patterns */
+	// change the patterns 
 	updatePatternSet();
 }
 
@@ -1914,12 +1914,12 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 		PatternSets[NPatternSets++] = defaultPatSet;
 	}
 
-	/* Free the old dialog information */
+	// Free the old dialog information 
 	for (i = 0; i < HighlightDialog.nPatterns; i++) {
 		delete HighlightDialog.patterns[i];
 	}
 
-	/* Update the dialog */
+	// Update the dialog 
 	HighlightDialog.nPatterns = defaultPatSet->nPatterns;
 	for (i = 0; i < defaultPatSet->nPatterns; i++) {
 		HighlightDialog.patterns[i] = new HighlightPattern(defaultPatSet->patterns[i]);
@@ -1945,7 +1945,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 	}
 
-	/* if a stored version of the pattern set exists, delete it from the list */
+	// if a stored version of the pattern set exists, delete it from the list 
 	for (psn = 0; psn < NPatternSets; psn++) {
 		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode) {
 			break;
@@ -1958,12 +1958,12 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 		NPatternSets--;
 	}
 
-	/* Free the old dialog information */
+	// Free the old dialog information 
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
 		delete HighlightDialog.patterns[i];
 	}
 
-	/* Clear out the dialog */
+	// Clear out the dialog 
 	HighlightDialog.nPatterns = 0;
 	SetIntText(HighlightDialog.lineContextW, 1);
 	SetIntText(HighlightDialog.charContextW, 0);
@@ -1976,7 +1976,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	CloseAllPopupsFor(HighlightDialog.shell);
 	XtDestroyWidget(HighlightDialog.shell);
 }
@@ -2021,7 +2021,7 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 	if (!oldItem && dialogEmpty())
 		return nullptr;
 
-	/* If there are no problems reading the data, just return it */
+	// If there are no problems reading the data, just return it 
 	if(HighlightPattern *pat = readDialogFields(true)) {
 		return pat;
 	}
@@ -2038,7 +2038,7 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 		}
 	}
 
-	/* Do readDialogFields again without "silent" mode to display warning */
+	// Do readDialogFields again without "silent" mode to display warning 
 	readDialogFields(false);
 	*abort = True;
 	return nullptr;
@@ -2099,13 +2099,13 @@ static void freeItemCB(void *item) {
 */
 static bool checkHighlightDialogData(void) {
 
-	/* Get the pattern information from the dialog */
+	// Get the pattern information from the dialog 
 	PatternSet *patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
 
-	/* Compile the patterns  */
+	// Compile the patterns  
 	bool result = (patSet->nPatterns == 0) ? true : TestHighlightPatterns(patSet);
 	delete patSet;
 	return result;
@@ -2199,14 +2199,14 @@ static HighlightPattern *readDialogFields(bool silent) {
 
 	auto pat = new HighlightPattern;
 
-	/* read the type buttons */
+	// read the type buttons 
 	colorOnly = XmToggleButtonGetState(HighlightDialog.colorPatW);
 	if (XmToggleButtonGetState(HighlightDialog.deferredW))
 		pat->flags |= DEFER_PARSING;
 	else if (colorOnly)
 		pat->flags = COLOR_ONLY;
 
-	/* read the name field */
+	// read the name field 
 	nullable_string name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
 	if (!name) {
 		delete pat;
@@ -2224,7 +2224,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 		return nullptr;
 	}
 
-	/* read the startRE field */
+	// read the startRE field 
 	pat->startRE = XString::takeString(XmTextGetString(HighlightDialog.startW));
 	if (pat->startRE.empty()) {
 		if (!silent) {
@@ -2268,7 +2268,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 		}
 	}
 
-	/* read the parent field */
+	// read the parent field 
 	if (XmToggleButtonGetState(HighlightDialog.subPatW) || colorOnly) {
 		if (TextWidgetIsBlank(HighlightDialog.parentW)) {
 			if (!silent) {
@@ -2282,12 +2282,12 @@ static HighlightPattern *readDialogFields(bool silent) {
 		pat->subPatternOf = XmTextGetStringEx(HighlightDialog.parentW);
 	}
 
-	/* read the styles option menu */
+	// read the styles option menu 
 	XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, nullptr);
 	XtVaGetValues(selectedItem, XmNuserData, &style, nullptr);
 	pat->style = style;
 
-	/* read the endRE field */
+	// read the endRE field 
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
 		pat->endRE = XmTextGetString(HighlightDialog.endW);
 		if (!colorOnly && pat->endRE.empty()) {
@@ -2300,7 +2300,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 		}
 	}
 
-	/* read the errorRE field */
+	// read the errorRE field 
 	if (XmToggleButtonGetState(HighlightDialog.rangeW)) {
 		pat->errorRE = XString::takeString(XmTextGetString(HighlightDialog.errorW));
 		if (pat->errorRE.empty()) {
@@ -2328,16 +2328,16 @@ static int updatePatternSet(void) {
 	PatternSet *patSet;
 	int psn, oldNum = -1;
 
-	/* Make sure the patterns are valid and compile */
+	// Make sure the patterns are valid and compile 
 	if (!checkHighlightDialogData())
 		return False;
 
-	/* Get the current data */
+	// Get the current data 
 	patSet = getDialogPatternSet();
 	if(!patSet)
 		return False;
 
-	/* Find the pattern being modified */
+	// Find the pattern being modified 
 	for (psn = 0; psn < NPatternSets; psn++)
 		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
 			break;
@@ -2369,7 +2369,7 @@ static int updatePatternSet(void) {
 						XtSetSensitive(window->highlightItem_, True);
 					}
 
-					/*  Reactivate highlighting if it's default  */
+					//  Reactivate highlighting if it's default  
 					window->highlightSyntax_ = GetPrefHighlightSyntax();
 				}
 
@@ -2395,7 +2395,7 @@ static int updatePatternSet(void) {
 		}
 	}
 
-	/* Note that preferences have been changed */
+	// Note that preferences have been changed 
 	MarkPrefsChanged();
 
 	return True;
@@ -2408,11 +2408,11 @@ static int updatePatternSet(void) {
 static PatternSet *getDialogPatternSet(void) {
 	int lineContext, charContext;
 
-	/* Get the current contents of the "patterns" dialog fields */
+	// Get the current contents of the "patterns" dialog fields 
 	if (!UpdateManagedList(HighlightDialog.managedListW, True))
 		return nullptr;
 
-	/* Get the line and character context values */
+	// Get the line and character context values 
 	if (GetIntTextWarn(HighlightDialog.lineContextW, &lineContext, "context lines", True) != TEXT_READ_OK)
 		return nullptr;
 	if (GetIntTextWarn(HighlightDialog.charContextW, &charContext, "context lines", True) != TEXT_READ_OK)

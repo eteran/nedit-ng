@@ -90,7 +90,7 @@ static Atom getAtom(Display *display, int atomNum);
 void HandleXSelections(Widget w) {
 	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
-	/* Remove any existing selection handlers for other widgets */
+	// Remove any existing selection handlers for other widgets 
 	for (const auto &pair : buf->modifyProcs_) {
 		if (pair.first == modifiedCB) {
 			buf->BufRemoveModifyCB(pair.first, pair.second);
@@ -98,7 +98,7 @@ void HandleXSelections(Widget w) {
 		}
 	}
 
-	/* Add a handler with this widget as the CB arg (and thus the sel. owner) */
+	// Add a handler with this widget as the CB arg (and thus the sel. owner) 
 	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufAddModifyCB(modifiedCB, w);
 }
 
@@ -125,7 +125,7 @@ void StopHandlingXSelections(Widget w) {
 void CopyToClipboard(Widget w, Time time) {
 	long itemID = 0;
 
-	/* Get the selected text, if there's no selection, do nothing */
+	// Get the selected text, if there's no selection, do nothing 
 	std::string text = reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufGetSelectionTextEx();
 	if (text.empty()) {
 		return;
@@ -136,7 +136,7 @@ void CopyToClipboard(Widget w, Time time) {
 	int length = text.size();
 	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnsubstituteNullCharsEx(text);
 
-	/* Shut up LessTif */
+	// Shut up LessTif 
 	if (SpinClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
 		return;
 	}
@@ -282,7 +282,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 		return;
 	}
 
-	/* Insert it in the text widget */
+	// Insert it in the text widget 
 	if (isColumnar && !buf->primary_.selected) {
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = buf->BufStartOfLine(cursorPos);
@@ -309,7 +309,7 @@ void TakeMotifDestination(Widget w, Time time) {
 	if (reinterpret_cast<TextWidget>(w)->text.motifDestOwner || reinterpret_cast<TextWidget>(w)->text.readOnly)
 		return;
 
-	/* Take ownership of the MOTIF_DESTINATION selection */
+	// Take ownership of the MOTIF_DESTINATION selection 
 	if (!XtOwnSelection(w, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
 		return;
 	}
@@ -351,7 +351,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	   is really only for when the widget is destroyed to avoid a convert
 	   callback from firing at a bad time. */
 
-	/* Take ownership of the selection */
+	// Take ownership of the selection 
 	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr))
 		w->text.textD->buffer->BufUnselect();
 	else
@@ -369,7 +369,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 	Display *disp = XtDisplay(w);
 	XtAppContext context = XtWidgetToApplicationContext((Widget)w);
 
-	/* Take ownership of the secondary selection, give up if we can't */
+	// Take ownership of the secondary selection, give up if we can't 
 	if (!XtOwnSelection(w, XA_SECONDARY, time, convertSecondaryCB, loseSecondaryCB, nullptr)) {
 		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
 		return;
@@ -410,7 +410,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 	int isColumnar = *(int *)clientData;
 	int cursorLineStart, cursorPos, column, row;
 
-	/* Confirm that the returned value is of the correct type */
+	// Confirm that the returned value is of the correct type 
 	if (*type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		return;
@@ -429,7 +429,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 		return;
 	}
 
-	/* Insert it in the text widget */
+	// Insert it in the text widget 
 	if (isColumnar) {
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
@@ -462,14 +462,14 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 	int *resultFlag = (int *)clientData;
 
-	/* Confirm that the returned value is of the correct type */
+	// Confirm that the returned value is of the correct type 
 	if (*type != XA_STRING || *format != 8 || value == nullptr) {
 		XtFree((char *)value);
 		*resultFlag = UNSUCCESSFUL_INSERT;
 		return;
 	}
 
-	/* Copy the string just to make space for the null character */
+	// Copy the string just to make space for the null character 
 	std::string string(static_cast<char *>(value), *length);
 
 	/* If the string contains ascii-nul characters, substitute something
@@ -480,11 +480,11 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 		return;
 	}
 
-	/* Insert it in the text widget */
+	// Insert it in the text widget 
 	TextInsertAtCursorEx(w, string, nullptr, True, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 	*resultFlag = SUCCESSFUL_INSERT;
 
-	/* This callback is required to free the memory passed to it thru value */
+	// This callback is required to free the memory passed to it thru value 
 	XtFree((char *)value);
 }
 
@@ -500,7 +500,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 	(void)selType;
 	(void)clientData;
 
-	/* Confirm that there is a value and it is of the correct type */
+	// Confirm that there is a value and it is of the correct type 
 	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		XBell(XtDisplay(w), 0);
@@ -532,7 +532,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 	int getFmt, result = INSERT_WAITING;
 	XEvent nextEvent;
 
-	/* target is text, string, or compound text */
+	// target is text, string, or compound text 
 	if (*target == XA_STRING || *target == getAtom(display, A_TEXT) || *target == getAtom(display, A_COMPOUND_TEXT)) {
 		/* We really don't directly support COMPOUND_TEXT, but recent
 		   versions gnome-terminal incorrectly ask for it, even though
@@ -552,7 +552,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		return True;
 	}
 
-	/* target is "TARGETS", return a list of targets we can handle */
+	// target is "TARGETS", return a list of targets we can handle 
 	if (*target == getAtom(display, A_TARGETS)) {
 		targets = (Atom *)XtMalloc(sizeof(Atom) * N_SELECT_TARGETS);
 		
@@ -596,7 +596,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 		return result == SUCCESSFUL_INSERT;
 	}
 
-	/* target is "DELETE": delete primary selection */
+	// target is "DELETE": delete primary selection 
 	if (*target == getAtom(display, A_DELETE)) {
 		buf->BufRemoveSelected();
 		*length = 0;
@@ -637,7 +637,7 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 
 	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
-	/* target must be string */
+	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
 		return False;
 
@@ -680,7 +680,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *t
 	int getFmt, result = INSERT_WAITING;
 	XEvent nextEvent;
 
-	/* target is "TARGETS", return a list of targets it can handle */
+	// target is "TARGETS", return a list of targets it can handle 
 	if (*target == getAtom(display, A_TARGETS)) {
 		targets = (Atom *)XtMalloc(sizeof(Atom) * 3);
 		

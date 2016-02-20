@@ -62,7 +62,7 @@ const int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is
 const int NEEDS_BREAK    = 1;
 const int NEEDS_CONTINUE = 2;
 
-const int N_ARGS_ARG_SYM = -1; /* special arg number meaning $n_args value */
+const int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value 
 
 enum OpStatusCodes {
 	STAT_OK = 2, 
@@ -139,13 +139,13 @@ static void arrayDisposeNode(rbTreeNode *src);
 static void disasm(Inst *inst, int nInstr);
 #endif
 
-#ifdef DEBUG_ASSEMBLY /* for disassembly */
+#ifdef DEBUG_ASSEMBLY // for disassembly 
 #define DISASM(i, n) disasm(i, n)
 #else
 #define DISASM(i, n)
 #endif
 
-#ifdef DEBUG_STACK /* for run-time instruction and stack trace */
+#ifdef DEBUG_STACK // for run-time instruction and stack trace 
 static void stackdump(int n, int extra);
 #define STACKDUMP(n, x) stackdump(n, x)
 #define DISASM_RT(i, n) disasm(i, n)
@@ -154,10 +154,10 @@ static void stackdump(int n, int extra);
 #define DISASM_RT(i, n)
 #endif
 
-/* Global symbols and function definitions */
+// Global symbols and function definitions 
 static std::list<Symbol *> GlobalSymList;
 
-/* List of all memory allocated for strings */
+// List of all memory allocated for strings 
 static std::list<char *> AllocatedStrings;
 
 static std::list<ArrayEntry *> AllocatedSparseArrayEntries;
@@ -192,12 +192,12 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
                                 logicalNot,  power,          concat,     assign,   callSubroutine,     fetchRetVal,     branch,                 branchTrue, branchFalse,  branchNever, arrayRef,
                                 arrayAssign, beginArrayIter, arrayIter,  inArray,  deleteArrayElement, pushArraySymVal, arrayRefAndAssignSetup, pushArgVal, pushArgCount, pushArgArray};
 
-/* Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
+// Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
 #define FP_ARG_ARRAY_CACHE_INDEX (-1)
 #define FP_ARG_COUNT_INDEX       (-2)
 #define FP_OLD_FP_INDEX          (-3)
 #define FP_RET_PC_INDEX          (-4)
-#define FP_TO_ARGS_DIST           (4) /* should be 0 - (above index) */
+#define FP_TO_ARGS_DIST           (4) // should be 0 - (above index) 
 
 #define FP_GET_ITEM(xFrameP, xIndex) (*(xFrameP + xIndex))
 
@@ -222,7 +222,7 @@ void InitMacroGlobals(void) {
 	static char argName[3] = "$x";
 	static DataValue dv = {NO_TAG, {0}, {0}};
 
-	/* Add action routines from NEdit menus and text widget */
+	// Add action routines from NEdit menus and text widget 
 	actions = GetMenuActions(&nActions);
 	for (i = 0; i < nActions; i++) {
 		dv.val.xtproc = actions[i].proc;
@@ -234,14 +234,14 @@ void InitMacroGlobals(void) {
 		InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
 	}
 
-	/* Add subroutine argument symbols ($1, $2, ..., $9) */
+	// Add subroutine argument symbols ($1, $2, ..., $9) 
 	for (i = 0; i < 9; i++) {
 		argName[1] = '1' + i;
 		dv.val.n = i;
 		InstallSymbol(argName, ARG_SYM, dv);
 	}
 
-	/* Add special symbol $n_args */
+	// Add special symbol $n_args 
 	dv.val.n = N_ARGS_ARG_SYM;
 	InstallSymbol("$n_args", ARG_SYM, dv);
 }
@@ -349,7 +349,7 @@ int AddBranchOffset(Inst *to, const char **msg) {
 		*msg = "macro too large";
 		return 0;
 	}
-	/* Should be ptrdiff_t for branch offsets */
+	// Should be ptrdiff_t for branch offsets 
 	ProgP->value = to - ProgP;
 	ProgP++;
 
@@ -384,11 +384,11 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 		}
 	};
 
-	/* double-reverse method: reverse elements of both parts then whole lot */
-	/* eg abcdefABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba */
-	reverseCode(start, boundary); /* 1 */
-	reverseCode(boundary, end);   /* 2 */
-	reverseCode(start, end);      /* 3 */
+	// double-reverse method: reverse elements of both parts then whole lot 
+	// eg abcdefABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba 
+	reverseCode(start, boundary); // 1 
+	reverseCode(boundary, end);   // 2 
+	reverseCode(start, end);      // 3 
 }
 
 /*
@@ -470,32 +470,32 @@ int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, Da
 	context->runWindow   = window;
 	context->focusWindow = window;
 
-	/* Push arguments and call information onto the stack */
+	// Push arguments and call information onto the stack 
 	for (i = 0; i < nArgs; i++) {
 		*(context->stackP++) = args[i];
 	}
 
-	context->stackP->val.subr = nullptr; /* return PC */
+	context->stackP->val.subr = nullptr; // return PC 
 	context->stackP->tag = NO_TAG;
 	context->stackP++;
 
-	*(context->stackP++) = noValue; /* old FrameP */
+	*(context->stackP++) = noValue; // old FrameP 
 
-	context->stackP->tag = NO_TAG; /* nArgs */
+	context->stackP->tag = NO_TAG; // nArgs 
 	context->stackP->val.n = nArgs;
 	context->stackP++;
 
-	*(context->stackP++) = noValue; /* cached arg array */
+	*(context->stackP++) = noValue; // cached arg array 
 
 	context->frameP = context->stackP;
 
-	/* Initialize and make room on the stack for local variables */
+	// Initialize and make room on the stack for local variables 
 	for(Symbol *s : prog->localSymList) {
 		FP_GET_SYM_VAL(context->frameP, s) = noValue;
 		context->stackP++;
 	}
 
-	/* Begin execution, return on error or preemption */
+	// Begin execution, return on error or preemption 
 	return ContinueMacro(context, result, msg);
 }
 
@@ -521,11 +521,11 @@ int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg
 	ErrMsg = nullptr;
 	for (;;) {
 
-		/* Execute an instruction */
+		// Execute an instruction 
 		inst = PC++;
 		status = (inst->func)();
 
-		/* If error return was not STAT_OK, return to caller */
+		// If error return was not STAT_OK, return to caller 
 		if (status != STAT_OK) {
 			if (status == STAT_PREEMPT) {
 				saveContext(continuation);
@@ -570,18 +570,18 @@ void RunMacroAsSubrCall(Program *prog) {
 	/* See subroutine "callSubroutine" for a description of the stack frame
 	   for a subroutine call */
 	StackP->tag = NO_TAG;
-	StackP->val.inst = PC; /* return PC */
+	StackP->val.inst = PC; // return PC 
 	StackP++;
 
 	StackP->tag = NO_TAG;
-	StackP->val.dataval = FrameP; /* old FrameP */
+	StackP->val.dataval = FrameP; // old FrameP 
 	StackP++;
 
-	StackP->tag = NO_TAG; /* nArgs */
+	StackP->tag = NO_TAG; // nArgs 
 	StackP->val.n = 0;
 	StackP++;
 
-	*(StackP++) = noValue; /* cached arg array */
+	*(StackP++) = noValue; // cached arg array 
 
 	FrameP = StackP;
 	PC = prog->code;
@@ -743,7 +743,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	if (sym->type != LOCAL_SYM)
 		return sym;
 
-	/* Remove sym from the local symbol list */
+	// Remove sym from the local symbol list 
 	LocalSymList.erase(std::remove(LocalSymList.begin(), LocalSymList.end(), sym), LocalSymList.end());
 
 
@@ -790,7 +790,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 //#define TRACK_GARBAGE_LEAKS
 
-/* Allocate a new string buffer of length chars */
+// Allocate a new string buffer of length chars 
 char *AllocString(int length) {
 	char *mem = XtMalloc(length + 1);
 	AllocatedStrings.push_back(mem);
@@ -813,19 +813,19 @@ int AllocNString(NString *string, int length) {
 	AllocatedStrings.push_back(mem);
 
 	string->rep = mem + 1;
-	string->rep[length - 1] = '\0'; /* forced \0 */
+	string->rep[length - 1] = '\0'; // forced \0 
 	string->len = length - 1;
 	return True;
 }
 
-/* Allocate a new string buffer of length chars, and copy in the string s */
+// Allocate a new string buffer of length chars, and copy in the string s 
 char *AllocStringNCpy(const char *s, int length) {
-	char *p = AllocString(length + 1); /* add extra char for forced \0 */
+	char *p = AllocString(length + 1); // add extra char for forced \0 
 	if (!p)
 		return p;
 	if (!s)
 		s = "";
-	p[length] = '\0'; /* forced \0 */
+	p[length] = '\0'; // forced \0 
 	return strncpy(p, s, length);
 }
 
@@ -836,16 +836,16 @@ char *AllocStringNCpy(const char *s, int length) {
  * \0-terminated.
  */
 int AllocNStringNCpy(NString *string, const char *s, int length) {
-	if (!AllocNString(string, length + 1)) /* add extra char for forced \0 */
+	if (!AllocNString(string, length + 1)) // add extra char for forced \0 
 		return False;
 	if (!s)
 		s = "";
 	strncpy(string->rep, s, length);
-	string->len = strlen(string->rep); /* re-calculate! */
+	string->len = strlen(string->rep); // re-calculate! 
 	return True;
 }
 
-/* Allocate a new copy of string s */
+// Allocate a new copy of string s 
 char *AllocStringCpy(const char *s) {
 	return AllocStringNCpy(s, s ? strlen(s) : 0);
 }
@@ -886,13 +886,13 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 
 			globalSEUse->inUse = true;
 
-			/* test first because it may be read-only static string */
+			// test first because it may be read-only static string 
 			if (globalSEUse->key[-1] == 0) {
 				globalSEUse->key[-1] = 1;
 			}
 
 			if (globalSEUse->value.tag == STRING_TAG) {
-				/* test first because it may be read-only static string */
+				// test first because it may be read-only static string 
 				if (globalSEUse->value.val.str.rep[-1] == 0) {
 					globalSEUse->value.val.str.rep[-1] = 1;
 				}
@@ -911,7 +911,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 
 void GarbageCollectStrings(void) {
 
-	/* mark all strings as unreferenced */
+	// mark all strings as unreferenced 
 	for(char *p : AllocatedStrings) {
 		*p = 0;
 	}
@@ -924,7 +924,7 @@ void GarbageCollectStrings(void) {
 	   referenced */
 	for (Symbol *s: GlobalSymList) {
 		if (s->value.tag == STRING_TAG) {
-			/* test first because it may be read-only static string */
+			// test first because it may be read-only static string 
 			if (s->value.val.str.rep[-1] == 0) {
 				s->value.val.str.rep[-1] = 1;
 			}
@@ -933,7 +933,7 @@ void GarbageCollectStrings(void) {
 		}
 	}
 
-	/* Collect all of the strings which remain unreferenced */
+	// Collect all of the strings which remain unreferenced 
 	for(auto it = AllocatedStrings.begin(); it != AllocatedStrings.end(); ) {
 		char *p = *it;
 		assert(p);
@@ -1521,7 +1521,7 @@ static int eq(void) {
 	return (STAT_OK);
 }
 
-/* negated eq() call */
+// negated eq() call 
 static int ne(void) {
 	eq();
 	return logicalNot();
@@ -1680,18 +1680,18 @@ static int power(void) {
 	*/
 	if (n2 < 0 && n1 != 1 && n1 != -1) {
 		if (n1 != 0) {
-			/* since we're integer only, nearly all negative exponents result in 0 */
+			// since we're integer only, nearly all negative exponents result in 0 
 			n3 = 0;
 		} else {
-			/* allow error to occur */
+			// allow error to occur 
 			n3 = (int)pow((double)n1, (double)n2);
 		}
 	} else {
 		if ((n1 < 0) && (n2 & 1)) {
-			/* round to nearest integer for negative values*/
+			// round to nearest integer for negative values
 			n3 = (int)(pow((double)n1, (double)n2) - (double)0.5);
 		} else {
-			/* round to nearest integer for positive values*/
+			// round to nearest integer for positive values
 			n3 = (int)(pow((double)n1, (double)n2) + (double)0.5);
 		}
 	}
@@ -1760,10 +1760,10 @@ static int callSubroutine(void) {
 	if (sym->type == C_FUNCTION_SYM) {
 		DataValue result;
 
-		/* "pop" stack back to the first argument in the call stack */
+		// "pop" stack back to the first argument in the call stack 
 		StackP -= nArgs;
 
-		/* Call the function and check for preemption */
+		// Call the function and check for preemption 
 		PreemptRequest = false;
 		if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg))
 			return execError(errMsg, sym->name.c_str());
@@ -1785,19 +1785,19 @@ static int callSubroutine(void) {
 	** values which are already there.
 	*/
 	if (sym->type == MACRO_FUNCTION_SYM) {
-		StackP->tag = NO_TAG; /* return PC */
+		StackP->tag = NO_TAG; // return PC 
 		StackP->val.inst = PC;
 		StackP++;
 
-		StackP->tag = NO_TAG; /* old FrameP */
+		StackP->tag = NO_TAG; // old FrameP 
 		StackP->val.dataval = FrameP;
 		StackP++;
 
-		StackP->tag = NO_TAG; /* nArgs */
+		StackP->tag = NO_TAG; // nArgs 
 		StackP->val.n = nArgs;
 		StackP++;
 
-		*(StackP++) = noValue; /* cached arg array */
+		*(StackP++) = noValue; // cached arg array 
 
 		FrameP = StackP;
 		prog = sym->value.val.prog;
@@ -1835,12 +1835,12 @@ static int callSubroutine(void) {
 		key_event.window = key_event.root = key_event.subwindow = win;
 
 		argList = (String *)XtCalloc(nArgs, sizeof(*argList));
-		/* pop arguments off the stack and put them in the argument list */
+		// pop arguments off the stack and put them in the argument list 
 		for (i = nArgs - 1; i >= 0; i--) {
 			POP_STRING(argList[i])
 		}
 
-		/* Call the action routine and check for preemption */
+		// Call the action routine and check for preemption 
 		PreemptRequest = false;
 		sym->value.val.xtproc(FocusWindow->lastFocus_, (XEvent *)&key_event, argList, &numArgs);
 		XtFree((char *)argList);
@@ -1850,7 +1850,7 @@ static int callSubroutine(void) {
 		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
 	}
 
-	/* Calling a non subroutine symbol */
+	// Calling a non subroutine symbol 
 	return execError("%s is not a function or subroutine", sym->name.c_str());
 }
 
@@ -1863,7 +1863,7 @@ static int fetchRetVal(void) {
 	return execError("internal error: frv", nullptr);
 }
 
-/* see comments for returnValOrNone() */
+// see comments for returnValOrNone() 
 static int returnNoVal(void) {
 	return returnValOrNone(False);
 }
@@ -1887,23 +1887,23 @@ static int returnValOrNone(int valOnStack) {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(StackP - FrameP + FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST, 3);
 
-	/* return value is on the stack */
+	// return value is on the stack 
 	if (valOnStack) {
 		POP(retVal);
 	}
 
-	/* get stored return information */
+	// get stored return information 
 	nArgs = FP_GET_ARG_COUNT(FrameP);
 	newFrameP = FP_GET_OLD_FP(FrameP);
 	PC = FP_GET_RET_PC(FrameP);
 
-	/* pop past local variables */
+	// pop past local variables 
 	StackP = FrameP;
-	/* pop past function arguments */
+	// pop past function arguments 
 	StackP -= (FP_TO_ARGS_DIST + nArgs);
 	FrameP = newFrameP;
 
-	/* push returned value, if requsted */
+	// push returned value, if requsted 
 	if(!PC) {
 		if (valOnStack) {
 			PUSH(retVal);
@@ -1919,7 +1919,7 @@ static int returnValOrNone(int valOnStack) {
 		}
 	}
 
-	/* nullptr return PC indicates end of program */
+	// nullptr return PC indicates end of program 
 	return PC == nullptr ? STAT_DONE : STAT_OK;
 }
 
@@ -2122,7 +2122,7 @@ static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
 ** to allow iterators in macro language to determine they have been unlinked
 */
 static void arrayDisposeNode(rbTreeNode *src) {
-	/* Let garbage collection handle this but mark it so iterators can tell */
+	// Let garbage collection handle this but mark it so iterators can tell 
 	src->left   = nullptr;
 	src->right  = nullptr;
 	src->parent = nullptr;
@@ -2629,19 +2629,19 @@ int StringToNum(const char *string, int *number) {
 		++c;
 	}
 	if (*c) {
-		/* if everything went as expected, we should be at end, but we're not */
+		// if everything went as expected, we should be at end, but we're not 
 		return False;
 	}
 	if (number) {
 		if (sscanf(string, "%d", number) != 1) {
-			/* This case is here to support old behavior */
+			// This case is here to support old behavior 
 			*number = 0;
 		}
 	}
 	return True;
 }
 
-#ifdef DEBUG_DISASSEMBLER /* dumping values in disassembly or stack dump */
+#ifdef DEBUG_DISASSEMBLER // dumping values in disassembly or stack dump 
 static void dumpVal(DataValue dv) {
 	switch (dv.tag) {
 	case INT_TAG:
@@ -2676,54 +2676,54 @@ static void dumpVal(DataValue dv) {
 		break;
 	}
 }
-#endif /* #ifdef DEBUG_DISASSEMBLER */
+#endif // #ifdef DEBUG_DISASSEMBLER 
 
-#ifdef DEBUG_DISASSEMBLER /* For debugging code generation */
+#ifdef DEBUG_DISASSEMBLER // For debugging code generation 
 static void disasm(Inst *inst, int nInstr) {
 	static const char *opNames[N_OPS] = {
-	    "RETURN_NO_VAL",          /* returnNoVal */
-	    "RETURN",                 /* returnVal */
-	    "PUSH_SYM",               /* pushSymVal */
-	    "DUP",                    /* dupStack */
-	    "ADD",                    /* add */
-	    "SUB",                    /* subtract */
-	    "MUL",                    /* multiply */
-	    "DIV",                    /* divide */
-	    "MOD",                    /* modulo */
-	    "NEGATE",                 /* negate */
-	    "INCR",                   /* increment */
-	    "DECR",                   /* decrement */
-	    "GT",                     /* gt */
-	    "LT",                     /* lt */
-	    "GE",                     /* ge */
-	    "LE",                     /* le */
-	    "EQ",                     /* eq */
-	    "NE",                     /* ne */
-	    "BIT_AND",                /* bitAnd */
-	    "BIT_OR",                 /* bitOr */
-	    "AND",                    /* and */
-	    "OR",                     /* or */
-	    "NOT",                    /* not */
-	    "POWER",                  /* power */
-	    "CONCAT",                 /* concat */
-	    "ASSIGN",                 /* assign */
-	    "SUBR_CALL",              /* callSubroutine */
-	    "FETCH_RET_VAL",          /* fetchRetVal */
-	    "BRANCH",                 /* branch */
-	    "BRANCH_TRUE",            /* branchTrue */
-	    "BRANCH_FALSE",           /* branchFalse */
-	    "BRANCH_NEVER",           /* branchNever */
-	    "ARRAY_REF",              /* arrayRef */
-	    "ARRAY_ASSIGN",           /* arrayAssign */
-	    "BEGIN_ARRAY_ITER",       /* beginArrayIter */
-	    "ARRAY_ITER",             /* arrayIter */
-	    "IN_ARRAY",               /* inArray */
-	    "ARRAY_DELETE",           /* deleteArrayElement */
-	    "PUSH_ARRAY_SYM",         /* pushArraySymVal */
-	    "ARRAY_REF_ASSIGN_SETUP", /* arrayRefAndAssignSetup */
-	    "PUSH_ARG",               /* $arg[expr] */
-	    "PUSH_ARG_COUNT",         /* $arg[] */
-	    "PUSH_ARG_ARRAY"          /* $arg */
+	    "RETURN_NO_VAL",          // returnNoVal 
+	    "RETURN",                 // returnVal 
+	    "PUSH_SYM",               // pushSymVal 
+	    "DUP",                    // dupStack 
+	    "ADD",                    // add 
+	    "SUB",                    // subtract 
+	    "MUL",                    // multiply 
+	    "DIV",                    // divide 
+	    "MOD",                    // modulo 
+	    "NEGATE",                 // negate 
+	    "INCR",                   // increment 
+	    "DECR",                   // decrement 
+	    "GT",                     // gt 
+	    "LT",                     // lt 
+	    "GE",                     // ge 
+	    "LE",                     // le 
+	    "EQ",                     // eq 
+	    "NE",                     // ne 
+	    "BIT_AND",                // bitAnd 
+	    "BIT_OR",                 // bitOr 
+	    "AND",                    // and 
+	    "OR",                     // or 
+	    "NOT",                    // not 
+	    "POWER",                  // power 
+	    "CONCAT",                 // concat 
+	    "ASSIGN",                 // assign 
+	    "SUBR_CALL",              // callSubroutine 
+	    "FETCH_RET_VAL",          // fetchRetVal 
+	    "BRANCH",                 // branch 
+	    "BRANCH_TRUE",            // branchTrue 
+	    "BRANCH_FALSE",           // branchFalse 
+	    "BRANCH_NEVER",           // branchNever 
+	    "ARRAY_REF",              // arrayRef 
+	    "ARRAY_ASSIGN",           // arrayAssign 
+	    "BEGIN_ARRAY_ITER",       // beginArrayIter 
+	    "ARRAY_ITER",             // arrayIter 
+	    "IN_ARRAY",               // inArray 
+	    "ARRAY_DELETE",           // deleteArrayElement 
+	    "PUSH_ARRAY_SYM",         // pushArraySymVal 
+	    "ARRAY_REF_ASSIGN_SETUP", // arrayRefAndAssignSetup 
+	    "PUSH_ARG",               // $arg[expr] 
+	    "PUSH_ARG_COUNT",         // $arg[] 
+	    "PUSH_ARG_ARRAY"          // $arg 
 	};
 	int i, j;
 
@@ -2774,12 +2774,12 @@ static void disasm(Inst *inst, int nInstr) {
 		}
 	}
 }
-#endif /* #ifdef DEBUG_DISASSEMBLER */
+#endif // #ifdef DEBUG_DISASSEMBLER 
 
-#ifdef DEBUG_STACK /* for run-time stack dumping */
+#ifdef DEBUG_STACK // for run-time stack dumping 
 #define STACK_DUMP_ARG_PREFIX "Arg"
 static void stackdump(int n, int extra) {
-	/* TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... */
+	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
 	int nArgs = FP_GET_ARG_COUNT(FrameP);
 	int i, offset;
 	char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
@@ -2798,13 +2798,13 @@ static void stackdump(int n, int extra) {
 		switch (offset) {
 		case 0:
 			pos = "FrameP";
-			break; /* first local symbol value */
+			break; // first local symbol value 
 		case FP_ARG_ARRAY_CACHE_INDEX:
 			pos = "args";
-			break; /* arguments array */
+			break; // arguments array 
 		case FP_ARG_COUNT_INDEX:
 			pos = "NArgs";
-			break; /* number of arguments */
+			break; // number of arguments 
 		case FP_OLD_FP_INDEX:
 			pos = "OldFP";
 			break;
@@ -2822,4 +2822,4 @@ static void stackdump(int n, int extra) {
 		printf("\n");
 	}
 }
-#endif /* ifdef DEBUG_STACK */
+#endif // ifdef DEBUG_STACK 

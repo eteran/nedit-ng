@@ -6,13 +6,13 @@
 
 namespace {
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 static unsigned char rangeset_labels[N_RANGESETS + 1] = {58, 10, 15, 1,  27, 52, 14, 3,  61, 13, 31, 30, 45, 28, 41, 55, 33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40, 2,
                                                          21, 39, 59, 22, 60, 4,  6,  16, 29, 37, 48, 46, 54, 43, 32, 56, 51, 7,  9,  63, 5,  8,  36, 44, 26, 11, 23, 17, 53, 35, 12, 0};
 														 
 														 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 	(void)nRestyled;
@@ -71,7 +71,7 @@ static void RangesetTableListSet(RangesetTable *table) {
 static int activateRangeset(RangesetTable *table, int active) {
 
 	if (table->active[active]) {
-		return 0; /* already active */
+		return 0; // already active 
 	}
 
 	int depth = table->depth[active];
@@ -84,11 +84,11 @@ static int activateRangeset(RangesetTable *table, int active) {
 		table->depth[j] = i;
 	}
 	
-	/* insert the new one: first in order, of depth 0 */
+	// insert the new one: first in order, of depth 0 
 	table->order[0] = active;
 	table->depth[active] = 0;
 
-	/* and finally... */
+	// and finally... 
 	table->active[active] = 1;
 	table->n_set++;
 
@@ -101,7 +101,7 @@ static int deactivateRangeset(RangesetTable *table, int active) {
 	int depth;
 
 	if (!table->active[active])
-		return 0; /* already inactive */
+		return 0; // already inactive 
 
 	/* we want to start by swapping the deepest entry in order with active
 	   shuffle table->order[depth+1..n_set-1] to table->order[depth..n_set-2]
@@ -114,11 +114,11 @@ static int deactivateRangeset(RangesetTable *table, int active) {
 		table->depth[j] = i;
 	}
 	
-	/* reinsert the old one: at max (active) depth */
+	// reinsert the old one: at max (active) depth 
 	table->order[n] = active;
 	table->depth[active] = n;
 
-	/* and finally... */
+	// and finally... 
 	table->active[active] = 0;
 	table->n_set--;
 
@@ -386,7 +386,7 @@ Range *RangesetTable::RangesFree(Range *ranges) {
 Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
 
 	if (n > 0) {
-		/* see RangesNew() for comments */
+		// see RangesNew() for comments 
 		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
 		return static_cast<Range *>(realloc(ranges, n * sizeof(Range)));
 	} else {

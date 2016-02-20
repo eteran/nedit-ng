@@ -126,10 +126,10 @@ void BeginBlockDrag(TextWidget tw) {
 		}
 	}
 
-	/* Set the drag state to announce an ongoing block-drag */
+	// Set the drag state to announce an ongoing block-drag 
 	tw->text.dragState = PRIMARY_BLOCK_DRAG;
 
-	/* Call the callback announcing the start of a block drag */
+	// Call the callback announcing the start of a block drag 
 	XtCallCallbacks((Widget)tw, textNdragStartCallback, (XtPointer) nullptr);
 }
 
@@ -189,7 +189,7 @@ void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 	std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf->BufSetAllEx(text);
 
-	/* If the drag type is USE_LAST, use the last dragType applied */
+	// If the drag type is USE_LAST, use the last dragType applied 
 	if (dragType == USE_LAST)
 		dragType = tw->text.dragType;
 	overlay = dragType == DRAG_OVERLAY_MOVE || dragType == DRAG_OVERLAY_COPY;
@@ -277,11 +277,11 @@ void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 	if (insLineStart - tempStart == tempBuf->BufGetLength())
 		insLineStart = tempBuf->BufStartOfLine(insLineStart - tempStart) + tempStart;
 
-	/* Find the actual insert position */
+	// Find the actual insert position 
 	if (rectangular || overlay) {
 		insStart = insLineStart;
 		insRectStart = column;
-	} else { /* note, this will fail with proportional fonts */
+	} else { // note, this will fail with proportional fonts 
 		insStart = tempBuf->BufCountForwardDispChars(insLineStart - tempStart, column) + tempStart;
 		insRectStart = 0;
 	}
@@ -293,7 +293,7 @@ void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 		return;
 	}
 
-	/* Do the insert in the temporary buffer */
+	// Do the insert in the temporary buffer 
 	if (rectangular || overlay) {
 		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel->rectStart, origSel->rectEnd);
 		if (overlay)
@@ -309,13 +309,13 @@ void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 		insertDeleted = 0;
 	}
 
-	/* Make the changes in the real buffer */
+	// Make the changes in the real buffer 
 	std::string repText = tempBuf->BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
 	delete tempBuf;
 	textD->TextDBlankCursor();
 	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
-	/* Store the necessary information for undoing this step */
+	// Store the necessary information for undoing this step 
 	tw->text.dragInsertPos = insStart;
 	tw->text.dragRectStart = insRectStart;
 	tw->text.dragInserted = insertInserted;
@@ -325,7 +325,7 @@ void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
 	tw->text.dragSourceDeleted = sourceDeleted;
 	tw->text.dragType = dragType;
 
-	/* Reset the selection and cursor position */
+	// Reset the selection and cursor position 
 	if (rectangular || overlay) {
 		insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
 		buf->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
@@ -354,16 +354,16 @@ void FinishBlockDrag(TextWidget tw) {
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, tw->text.dragSourceDeletePos, tw->text.dragSourceInserted, tw->text.dragSourceDeleted);
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, tw->text.dragInsertPos, tw->text.dragInserted, tw->text.dragDeleted);
 
-	/* Get the original (pre-modified) range of text from saved backup buffer */
+	// Get the original (pre-modified) range of text from saved backup buffer 
 	view::string_view deletedText = tw->text.dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
 
-	/* Free the backup buffer */
+	// Free the backup buffer 
 	delete tw->text.dragOrigBuf;
 
-	/* Return to normal drag state */
+	// Return to normal drag state 
 	tw->text.dragState = NOT_CLICKED;
 
-	/* Call finish-drag calback */
+	// Call finish-drag calback 
 	dragEndCBStruct endStruct;
 	endStruct.startPos       = modRangeStart;
 	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
@@ -391,11 +391,11 @@ void CancelBlockDrag(TextWidget tw) {
 	   range. */
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, tw->text.dragInsertPos, tw->text.dragInserted, tw->text.dragDeleted);
 
-	/* Make the changes in the buffer */
+	// Make the changes in the buffer 
 	std::string repText = origBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
 	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
-	/* Reset the selection and cursor position */
+	// Reset the selection and cursor position 
 	if (origSel->rectangular)
 		buf->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
 	else
@@ -404,13 +404,13 @@ void CancelBlockDrag(TextWidget tw) {
 	XtCallCallbacks((Widget)tw, textNcursorMovementCallback, nullptr);
 	tw->text.emTabsBeforeCursor = 0;
 
-	/* Free the backup buffer */
+	// Free the backup buffer 
 	delete origBuf;
 
-	/* Indicate end of drag */
+	// Indicate end of drag 
 	tw->text.dragState = DRAG_CANCELED;
 
-	/* Call finish-drag calback */
+	// Call finish-drag calback 
 	dragEndCBStruct endStruct;	
 	endStruct.startPos       = 0;
 	endStruct.nCharsDeleted  = 0;

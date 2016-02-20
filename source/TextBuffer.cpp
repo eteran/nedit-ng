@@ -98,7 +98,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 	int len;
 	int outLen = 0;
 
-	/* rehearse the expansion to figure out length for output string */
+	// rehearse the expansion to figure out length for output string 
 	indent = startIndent;
 	for (char ch : text) {
 		if (ch == '\t') {
@@ -114,7 +114,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 		}
 	}
 
-	/* do the expansion */
+	// do the expansion 
 	std::string outStr;
 	outStr.reserve(outLen);
 
@@ -152,7 +152,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
 	int len;
 
-	/* If the tabs settings are the same, retain original tabs */
+	// If the tabs settings are the same, retain original tabs 
 	if (origIndent % tabDist == newIndent % tabDist) {
 		std::string outStr(text);
 		*newLength = outStr.size();
@@ -265,7 +265,7 @@ int addPadding(char *string, int startIndent, int toIndent, int tabDist, int use
 void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	int indent, toIndent, len, postColIndent;
 
-	/* copy the line up to "column" */
+	// copy the line up to "column" 
 	char *outPtr = outStr;
 	indent = 0;
 
@@ -293,13 +293,13 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	} else
 		postColIndent = indent;
 
-	/* If there's no text after the column and no text to insert, that's all */
+	// If there's no text after the column and no text to insert, that's all 
 	if (insLine.empty() && linePtr == line.end()) {
 		*outLen = *endOffset = outPtr - outStr;
 		return;
 	}
 
-	/* pad out to column if text is too short */
+	// pad out to column if text is too short 
 	if (indent < column) {
 		len = addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
 		outPtr += len;
@@ -318,7 +318,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 		}
 	}
 
-	/* If the original line did not extend past "column", that's all */
+	// If the original line did not extend past "column", that's all 
 	if (linePtr == line.end()) {
 		*outLen = *endOffset = outPtr - outStr;
 		return;
@@ -331,7 +331,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	outPtr += len;
 	indent = toIndent;
 
-	/* realign tabs for text beyond "column" and write it out */
+	// realign tabs for text beyond "column" and write it out 
 	std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
 
 	auto it = retabbedStr.begin();
@@ -357,7 +357,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 	int indent, preRectIndent, postRectIndent, len;
 
-	/* copy the line up to rectStart */
+	// copy the line up to rectStart 
 	char *outPtr = outStr;
 	indent = 0;
 	auto c = line.begin();
@@ -372,12 +372,12 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 	}
 	preRectIndent = indent;
 
-	/* skip the characters between rectStart and rectEnd */
+	// skip the characters between rectStart and rectEnd 
 	for (; c != line.end() && indent < rectEnd; c++)
 		indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
 	postRectIndent = indent;
 
-	/* If the line ended before rectEnd, there's nothing more to do */
+	// If the line ended before rectEnd, there's nothing more to do 
 	if (c == line.end()) {
 		*outPtr = '\0';
 		*outLen = *endOffset = outPtr - outStr;
@@ -443,7 +443,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	   outIndent accordingly. */
 	if (inIndent < rectStart && linePtr != line.end()) {
 		if (*linePtr == '\t') {
-			/* Skip past the tab */
+			// Skip past the tab 
 			linePtr++;
 			inIndent += len;
 		} else {
@@ -453,7 +453,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 		}
 	}
 
-	/* skip the characters between rectStart and rectEnd */
+	// skip the characters between rectStart and rectEnd 
 	for (; linePtr != line.end() && inIndent < rectEnd; linePtr++)
 		inIndent += TextBuffer::BufCharWidth(*linePtr, inIndent, tabDist, nullSubsChar);
 	postRectIndent = inIndent;
@@ -463,13 +463,13 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 	    the overlay, whether that's a \t or otherwise.  postRectIndent is
 	    the position at which that character is supposed to appear */
 
-	/* If there's no text after rectStart and no text to insert, that's all */
+	// If there's no text after rectStart and no text to insert, that's all 
 	if (insLine.empty() && linePtr == line.end()) {
 		*outLen = *endOffset = outPtr - outStr;
 		return;
 	}
 
-	/* pad out to rectStart if text is too short */
+	// pad out to rectStart if text is too short 
 	if (outIndent < rectStart) {
 		len = addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar);
 		outPtr += len;
@@ -487,7 +487,7 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 		}
 	}
 
-	/* If the original line did not extend past "rectStart", that's all */
+	// If the original line did not extend past "rectStart", that's all 
 	if (linePtr == line.end()) {
 		*outLen = *endOffset = outPtr - outStr;
 		return;
@@ -607,14 +607,14 @@ const char *TextBuffer::BufAsString() {
 	int leftLen = gapStart_;
 	int rightLen = bufLen - leftLen;
 
-	/* find where best to put the gap to minimise memory movement */
+	// find where best to put the gap to minimise memory movement 
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		moveGap(leftLen);
 	}
-	/* get the start position of the actual data */
+	// get the start position of the actual data 
 	text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
-	/* make sure it's null-terminated */
+	// make sure it's null-terminated 
 	text[bufLen] = 0;
 
 	return text;
@@ -635,14 +635,14 @@ view::string_view TextBuffer::BufAsStringEx() {
 	int leftLen = gapStart_;
 	int rightLen = bufLen - leftLen;
 
-	/* find where best to put the gap to minimise memory movement */
+	// find where best to put the gap to minimise memory movement 
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		moveGap(leftLen);
 	}
-	/* get the start position of the actual data */
+	// get the start position of the actual data 
 	text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
-	/* make sure it's null-terminated */
+	// make sure it's null-terminated 
 	text[bufLen] = 0;
 
 	return view::string_view(text, bufLen);
@@ -657,12 +657,12 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 
 	callPreDeleteCBs(0, length_);
 
-	/* Save information for redisplay, and get rid of the old buffer */
+	// Save information for redisplay, and get rid of the old buffer 
 	std::string deletedText = BufGetAllEx();
 	deletedLength = length_;
 	delete [] buf_;
 
-	/* Start a new buffer with a gap of PreferredGapSize in the center */
+	// Start a new buffer with a gap of PreferredGapSize in the center 
 	buf_ = new char[length + PreferredGapSize + 1];
 	buf_[length + PreferredGapSize] = '\0';
 	length_ = length;
@@ -675,10 +675,10 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 	std::fill(&buf_[gapStart_], &buf_[gapEnd_], '.');
 #endif
 
-	/* Zero all of the existing selections */
+	// Zero all of the existing selections 
 	updateSelections(0, deletedLength, 0);
 
-	/* Call the saved display routine(s) to update the screen */
+	// Call the saved display routine(s) to update the screen 
 	callModifyCBs(0, deletedLength, length, 0, deletedText);
 }
 
@@ -708,7 +708,7 @@ std::string TextBuffer::BufGetRangeEx(int start, int end) {
 	length = end - start;
 	text.reserve(length);
 
-	/* Copy the text from the buffer to the returned string */
+	// Copy the text from the buffer to the returned string 
 	if (end <= gapStart_) {
 		std::copy_n(&buf_[start], length, std::back_inserter(text));
 	} else if (start >= gapStart_) {
@@ -741,16 +741,16 @@ char TextBuffer::BufGetCharacter(int pos) const {
 void TextBuffer::BufInsertEx(int pos, view::string_view text) {
 	int nInserted;
 
-	/* if pos is not contiguous to existing text, make it */
+	// if pos is not contiguous to existing text, make it 
 	if (pos > length_)
 		pos = length_;
 	if (pos < 0)
 		pos = 0;
 
-	/* Even if nothing is deleted, we must call these callbacks */
+	// Even if nothing is deleted, we must call these callbacks 
 	callPreDeleteCBs(pos, 0);
 
-	/* insert and redisplay */
+	// insert and redisplay 
 	nInserted = insertEx(pos, text);
 	cursorPosHint_ = pos + nInserted;
 	callModifyCBs(pos, 0, nInserted, 0, std::string());
@@ -772,7 +772,7 @@ void TextBuffer::BufReplaceEx(int start, int end, view::string_view text) {
 }
 
 void TextBuffer::BufRemove(int start, int end) {
-	/* Make sure the arguments make sense */
+	// Make sure the arguments make sense 
 	if (start > end) {
 		int temp = start;
 		start = end;
@@ -788,7 +788,7 @@ void TextBuffer::BufRemove(int start, int end) {
 		end = 0;
 
 	callPreDeleteCBs(start, end - start);
-	/* Remove and redisplay */
+	// Remove and redisplay 
 	std::string deletedText = BufGetRangeEx(start, end);
 	deleteRange(start, end);
 	cursorPosHint_ = start;
@@ -809,7 +809,7 @@ void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd,
 	else if (toPos != gapStart_)
 		moveGap(toPos);
 
-	/* Insert the new text (toPos now corresponds to the start of the gap) */
+	// Insert the new text (toPos now corresponds to the start of the gap) 
 	if (fromEnd <= fromBuf->gapStart_) {
 		memcpy(&buf_[toPos], &fromBuf->buf_[fromStart], length);
 	} else if (fromStart >= fromBuf->gapStart_) {
@@ -924,10 +924,10 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	} else /* nDeletedLines == nInsertedLines */ {
 	}
 
-	/* Save a copy of the text which will be modified for the modify CBs */
+	// Save a copy of the text which will be modified for the modify CBs 
 	std::string deletedText = BufGetRangeEx(start, end);
 
-	/* Delete then insert */
+	// Delete then insert 
 	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
 	if (insText) {
 		insertColEx(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
@@ -935,7 +935,7 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	} else
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
 
-	/* Figure out how many chars were inserted and call modify callbacks */
+	// Figure out how many chars were inserted and call modify callbacks 
 	if (insertDeleted != deleteInserted + linesPadded)
 		fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
 	callModifyCBs(start, end - start, insertInserted, 0, deletedText);
@@ -990,7 +990,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 		*outPtr++ = '\n';
 	}
 	
-	/* don't leave trailing newline */
+	// don't leave trailing newline 
 	if(!textOut.empty()) {
 		textOut.pop_back();
 	}
@@ -1018,16 +1018,16 @@ void TextBuffer::BufSetTabDistance(int tabDist) {
 	   still active. */
 	callPreDeleteCBs(0, length_);
 
-	/* Change the tab setting */
+	// Change the tab setting 
 	tabDist_ = tabDist;
 
-	/* Force any display routines to redisplay everything */
+	// Force any display routines to redisplay everything 
 	auto deletedText = BufAsStringEx();
 	callModifyCBs(0, length_, length_, 0, deletedText);
 }
 
 void TextBuffer::BufCheckDisplay(int start, int end) {
-	/* just to make sure colors in the selected region are up to date */
+	// just to make sure colors in the selected region are up to date 
 	callModifyCBs(start, 0, 0, end - start, std::string());
 }
 
@@ -1057,7 +1057,7 @@ int TextBuffer::BufGetSelectionPos(int *start, int *end, bool *isRect, int *rect
 	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
-/* Same as above, but also returns TRUE for empty selections */
+// Same as above, but also returns TRUE for empty selections 
 int TextBuffer::BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {
 	return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
 }
@@ -1233,7 +1233,7 @@ int TextBuffer::BufGetExpandedChar(int pos, const int indent, char *outStr) cons
 */
 int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar) {
 
-	/* Convert tabs to spaces */
+	// Convert tabs to spaces 
 	if (c == '\t') {
 		int nSpaces = tabDist - (indent % tabDist);
 		for (int i = 0; i < nSpaces; i++) {
@@ -1254,7 +1254,7 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 		return sprintf(outStr, "<del>");
 	}
 
-	/* Otherwise, just return the character */
+	// Otherwise, just return the character 
 	*outStr = c;
 	return 1;
 }
@@ -1267,7 +1267,7 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 ** to ignore).
 */
 int TextBuffer::BufCharWidth(char c, int indent, int tabDist, char nullSubsChar) {
-	/* Note, this code must parallel that in BufExpandCharacter */
+	// Note, this code must parallel that in BufExpandCharacter 
 	if (c == nullSubsChar)
 		return 5;
 	else if (c == '\t')
@@ -1490,7 +1490,7 @@ bool TextBuffer::BufSearchBackwardEx(int startPos, view::string_view searchChars
 bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	bool histogram[256];
 
-	/* Find out what characters the string contains */
+	// Find out what characters the string contains 
 	histogramCharactersEx(view::string_view(string, length), histogram, true);
 
 	/* Does the string contain the null-substitute character?  If so, re-
@@ -1507,7 +1507,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		if (newSubsChar == '\0') {
 			return false;
 		}
-		/* bufString points to the buffer's data, so we substitute in situ */
+		// bufString points to the buffer's data, so we substitute in situ 
 		subsChars(bufString, length_, nullSubsChar_, newSubsChar);
 		nullSubsChar_ = newSubsChar;
 	}
@@ -1531,7 +1531,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	bool histogram[256];
 
-	/* Find out what characters the string contains */
+	// Find out what characters the string contains 
 	histogramCharactersEx(string, histogram, true);
 
 	/* Does the string contain the null-substitute character?  If so, re-
@@ -1549,7 +1549,7 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 		if (newSubsChar == '\0') {
 			return false;
 		}
-		/* bufString points to the buffer's data, so we substitute in situ */
+		// bufString points to the buffer's data, so we substitute in situ 
 		subsChars(bufString, length_, nullSubsChar_, newSubsChar);
 		nullSubsChar_ = newSubsChar;
 	}
@@ -1652,7 +1652,7 @@ int TextBuffer::insertEx(int pos, view::string_view text) {
 	else if (pos != gapStart_)
 		moveGap(pos);
 
-	/* Insert the new text (pos now corresponds to the start of the gap) */
+	// Insert the new text (pos now corresponds to the start of the gap) 
 	memcpy(&buf_[pos], &text[0], length);
 	gapStart_ += length;
 	length_ += length;
@@ -1732,12 +1732,12 @@ bool TextBuffer::searchBackward(int startPos, char searchChar, int *foundPos) co
 
 std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 
-	/* If there's no selection, return an allocated empty string */
+	// If there's no selection, return an allocated empty string 
 	if (!*sel) {
 		return std::string();
 	}
 
-	/* If the selection is not rectangular, return the selected range */
+	// If the selection is not rectangular, return the selected range 
 	if (sel->rectangular) {
 		return BufGetTextInRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd);
 	} else {
@@ -1773,20 +1773,20 @@ void TextBuffer::callPreDeleteCBs(int pos, int nDeleted) const {
 ** the delete).
 */
 void TextBuffer::deleteRange(int start, int end) {
-	/* if the gap is not contiguous to the area to remove, move it there */
+	// if the gap is not contiguous to the area to remove, move it there 
 	if (start > gapStart_)
 		moveGap(start);
 	else if (end < gapStart_)
 		moveGap(end);
 
-	/* expand the gap to encompass the deleted characters */
+	// expand the gap to encompass the deleted characters 
 	gapEnd_ += end - gapStart_;
 	gapStart_ -= gapStart_ - start;
 
-	/* update the length */
+	// update the length 
 	length_ -= end - start;
 
-	/* fix up any selections which might be affected by the change */
+	// fix up any selections which might be affected by the change 
 	updateSelections(start, end - start, 0);
 }
 
@@ -1828,11 +1828,11 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 		lineStart = lineEnd + 1;
 	}
 	if (outPtr != outStr) {
-		outPtr--; /* trim back off extra newline */
+		outPtr--; // trim back off extra newline 
 	}
 	*outPtr = '\0';
 
-	/* replace the text between start and end with the newly created string */
+	// replace the text between start and end with the newly created string 
 	deleteRange(start, end);
 	insertEx(start, outStr);
 	*replaceLen = outPtr - outStr;
@@ -1858,7 +1858,7 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 	int pos, width, indent = 0;
 	char c;
 
-	/* find the start of the selection */
+	// find the start of the selection 
 	for (pos = lineStartPos; pos < length_; pos++) {
 		c = BufGetCharacter(pos);
 		if (c == '\n')
@@ -1875,7 +1875,7 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 	}
 	*selStart = pos;
 
-	/* find the end */
+	// find the end 
 	for (; pos < length_; pos++) {
 		c = BufGetCharacter(pos);
 		if (c == '\n')
@@ -1959,10 +1959,10 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 		insPtr++;
 	}
 	if (outPtr != outStr)
-		outPtr--; /* trim back off extra newline */
+		outPtr--; // trim back off extra newline 
 	*outPtr = '\0';
 
-	/* replace the text between start and end with the new stuff */
+	// replace the text between start and end with the new stuff 
 	deleteRange(start, end);
 	insertEx(start, outStr);
 	*nInserted = outPtr - outStr;
@@ -2041,12 +2041,12 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 	}
 	
 	if (outPtr != outStr) {
-		outPtr--; /* trim back off extra newline */
+		outPtr--; // trim back off extra newline 
 	}
 	
 	*outPtr = '\0';
 
-	/* replace the text between start and end with the new stuff */
+	// replace the text between start and end with the new stuff 
 	deleteRange(start, end);
 	insertEx(start, outStr);
 	*nInserted = outPtr - outStr;
@@ -2071,7 +2071,7 @@ void TextBuffer::reallocateBuf(int newGapStart, int newGapLen) {
 		memcpy(newBuf, buf_, newGapStart);
 		memcpy(&newBuf[newGapEnd], &buf_[newGapStart], gapStart_ - newGapStart);
 		memcpy(&newBuf[newGapEnd + gapStart_ - newGapStart], &buf_[gapEnd_], length_ - gapStart_);
-	} else { /* newGapStart > gapStart_ */
+	} else { // newGapStart > gapStart_ 
 		memcpy(newBuf, buf_, gapStart_);
 		memcpy(&newBuf[gapStart_], &buf_[gapEnd_], newGapStart - gapStart_);
 		memcpy(&newBuf[newGapEnd], &buf_[gapEnd_ + newGapStart - gapStart_], length_ - newGapStart);
@@ -2163,12 +2163,12 @@ void TextBuffer::replaceSelectedEx(TextSelection *sel, view::string_view text) {
 
 	TextSelection oldSelection = *sel;
 	
-	/* If there's no selection, return */
+	// If there's no selection, return 
 	if (!*sel) {
 		return;
 	}
 
-	/* Do the appropriate type of replace */
+	// Do the appropriate type of replace 
 	if (sel->rectangular) {
 		BufReplaceRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd, text);
 	} else {

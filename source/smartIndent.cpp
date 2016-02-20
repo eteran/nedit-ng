@@ -85,7 +85,7 @@ char *CommonMacros = nullptr;
 
 
 
-/* Smart indent macros dialog information */
+// Smart indent macros dialog information 
 static struct {
 	Widget shell;
 	Widget lmOptMenu;
@@ -96,7 +96,7 @@ static struct {
 	char *langModeName;
 } SmartIndentDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
-/* Common smart indent macros dialog information */
+// Common smart indent macros dialog information 
 static struct {
 	Widget shell;
 	Widget text;
@@ -257,7 +257,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	const char *errMsg;
 	static bool initialized = false;
 
-	/* Find the window's language mode.  If none is set, warn the user */
+	// Find the window's language mode.  If none is set, warn the user 
 	char *modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn) {
@@ -269,7 +269,7 @@ void BeginSmartIndent(Document *window, int warn) {
 		return;
 	}
 
-	/* Look up the appropriate smart-indent macros for the language */
+	// Look up the appropriate smart-indent macros for the language 
 	indentMacros = findIndentSpec(modeName);
 	if(!indentMacros) {
 		if (warn) {
@@ -301,7 +301,7 @@ void BeginSmartIndent(Document *window, int warn) {
 			return;
 	}
 
-	/* Compile the newline and modify macros and attach them to the window */
+	// Compile the newline and modify macros and attach them to the window 
 	winData = new windowSmartIndentData;
 	winData->inNewLineMacro = 0;
 	winData->inModMacro = 0;
@@ -331,7 +331,7 @@ void EndSmartIndent(Document *window) {
 	if(!winData)
 		return;
 
-	/* Free programs and allocated data */
+	// Free programs and allocated data 
 	if (winData->modMacro) {
 		FreeProgram(winData->modMacro);
 	}
@@ -378,7 +378,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 */
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
-	/* posValue probably shouldn't be static due to re-entrance issues <slobasso> */
+	// posValue probably shouldn't be static due to re-entrance issues <slobasso> 
 	static DataValue posValue = {INT_TAG, {0}, {0}};
 	DataValue result;
 	RestartData *continuation;
@@ -392,12 +392,12 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	if (winData->inNewLineMacro)
 		return;
 
-	/* Call newline macro with the position at which to add newline/indent */
+	// Call newline macro with the position at which to add newline/indent 
 	posValue.val.n = cbInfo->pos;
 	++(winData->inNewLineMacro);
 	stat = ExecuteMacro(window, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
 
-	/* Don't allow preemption or time limit.  Must get return value */
+	// Don't allow preemption or time limit.  Must get return value 
 	while (stat == MACRO_TIME_LIMIT)
 		stat = ContinueMacro(continuation, &result, &errMsg);
 
@@ -407,14 +407,14 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	   but GC now depends on the newline macro being mandatory */
 	SafeGC();
 
-	/* Process errors in macro execution */
+	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
 		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
 		EndSmartIndent(window);
 		return;
 	}
 
-	/* Validate and return the result */
+	// Validate and return the result 
 	if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
 		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Smart indent macros must return\ninteger indent distance", "OK");
 		EndSmartIndent(window);
@@ -436,9 +436,9 @@ Boolean InSmartIndentMacros(Document *window) {
 */
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
-	/* args probably shouldn't be static due to future re-entrance issues <slobasso> */
+	// args probably shouldn't be static due to future re-entrance issues <slobasso> 
 	static DataValue args[2] = {{INT_TAG, {0}, {0}}, {STRING_TAG, {0}, {0}}};
-	/* after 5.2 release remove inModCB and use new winData->inModMacro value */
+	// after 5.2 release remove inModCB and use new winData->inModMacro value 
 	static int inModCB = False;
 	DataValue result;
 	RestartData *continuation;
@@ -466,7 +466,7 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	--(winData->inModMacro);
 	inModCB = False;
 
-	/* Process errors in macro execution */
+	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
 		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent modification macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
 		EndSmartIndent(window);
@@ -486,7 +486,7 @@ void EditSmartIndentMacros(Document *window) {
 	Arg args[20];
 	int n;
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (SmartIndentDialog.shell) {
 		RaiseDialogWindow(SmartIndentDialog.shell);
 		return;
@@ -497,11 +497,11 @@ void EditSmartIndentMacros(Document *window) {
 		return;
 	}
 
-	/* Decide on an initial language mode */
+	// Decide on an initial language mode 
 	lmName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 	SmartIndentDialog.langModeName = XtNewStringEx(lmName);
 
-	/* Create a form widget in an application shell */
+	// Create a form widget in an application shell 
 	n = 0;
 	XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING);
 	n++;
@@ -674,18 +674,18 @@ void EditSmartIndentMacros(Document *window) {
 	RemapDeleteKey(SmartIndentDialog.modMacro);
 	XtVaSetValues(modifyLbl, XmNuserData, SmartIndentDialog.modMacro, nullptr);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
-	/* Fill in the dialog information for the selected language mode */
+	// Fill in the dialog information for the selected language mode 
 	setSmartIndentDialogData(findIndentSpec(lmName));
 	SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
 
-	/* Realize all of the widgets in the new dialog */
+	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(SmartIndentDialog.shell);
 }
 
@@ -710,12 +710,12 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static SmartIndent emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
 	SmartIndent *oldMacros, *newMacros;
 
-	/* Get the newly selected mode name.  If it's the same, do nothing */
+	// Get the newly selected mode name.  If it's the same, do nothing 
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
 	if (!strcmp(modeName, SmartIndentDialog.langModeName))
 		return;
 
-	/* Find the original macros */
+	// Find the original macros 
 	for (i = 0; i < NSmartIndentSpecs; i++)
 		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
 			break;
@@ -748,7 +748,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 	freeIndentSpec(newMacros);
 
-	/* Fill the dialog with the new language mode information */
+	// Fill the dialog with the new language mode information 
 	SmartIndentDialog.langModeName = XtNewStringEx(modeName);
 	setSmartIndentDialogData(findIndentSpec(modeName));
 }
@@ -776,11 +776,11 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the macro */
+	// change the macro 
 	if (!updateSmartIndentData())
 		return;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	CloseAllPopupsFor(SmartIndentDialog.shell);
 	XtDestroyWidget(SmartIndentDialog.shell);
 }
@@ -791,7 +791,7 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the patterns */
+	// change the patterns 
 	updateSmartIndentData();
 }
 
@@ -814,7 +814,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int i;
 	SmartIndent *defaultIS;
 
-	/* Find the default indent spec */
+	// Find the default indent spec 
 	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
 		if (!strcmp(SmartIndentDialog.langModeName, DefaultIndentSpecs[i].lmName)) {
 			break;
@@ -845,7 +845,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	} else
 		SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(defaultIS);
 
-	/* Update the dialog */
+	// Update the dialog 
 	setSmartIndentDialogData(defaultIS);
 }
 
@@ -863,7 +863,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 	}
 
-	/* if a stored version of the pattern set exists, delete it from the list */
+	// if a stored version of the pattern set exists, delete it from the list 
 	for (i = 0; i < NSmartIndentSpecs; i++)
 		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
 			break;
@@ -873,7 +873,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 		NSmartIndentSpecs--;
 	}
 
-	/* Clear out the dialog */
+	// Clear out the dialog 
 	setSmartIndentDialogData(nullptr);
 }
 
@@ -883,7 +883,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	CloseAllPopupsFor(SmartIndentDialog.shell);
 	XtDestroyWidget(SmartIndentDialog.shell);
 }
@@ -905,7 +905,7 @@ static int checkSmartIndentDialogData(void) {
 	const char *stoppedAt;
 	Program *prog;
 
-	/* Check the initialization macro */
+	// Check the initialization macro 
 	if (!TextWidgetIsBlank(SmartIndentDialog.initMacro)) {
 		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
 		if (!CheckMacroString(SmartIndentDialog.shell, widgetText, "initialization macro", &stoppedAt)) {
@@ -917,7 +917,7 @@ static int checkSmartIndentDialogData(void) {
 		XtFree(widgetText);
 	}
 
-	/* Test compile the newline macro */
+	// Test compile the newline macro 
 	if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro)) {
 		DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent", "Newline macro required", "OK");
 		return False;
@@ -935,7 +935,7 @@ static int checkSmartIndentDialogData(void) {
 	XtFree(widgetText);
 	FreeProgram(prog);
 
-	/* Test compile the modify macro */
+	// Test compile the modify macro 
 	if (!TextWidgetIsBlank(SmartIndentDialog.modMacro)) {
 		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
 		prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
@@ -989,13 +989,13 @@ void EditCommonSmartIndentMacro(void) {
 	Arg args[20];
 	int n;
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (CommonDialog.shell) {
 		RaiseDialogWindow(CommonDialog.shell);
 		return;
 	}
 
-	/* Create a form widget in an application shell */
+	// Create a form widget in an application shell 
 	n = 0;
 	XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING);
 	n++;
@@ -1070,14 +1070,14 @@ void EditCommonSmartIndentMacro(void) {
 	RemapDeleteKey(CommonDialog.text);
 	XtVaSetValues(topLbl, XmNuserData, CommonDialog.text, nullptr);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
-	/* Realize all of the widgets in the new dialog */
+	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(CommonDialog.shell);
 }
 
@@ -1096,11 +1096,11 @@ static void comOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the macro */
+	// change the macro 
 	if (!updateSmartIndentCommonData())
 		return;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	XtDestroyWidget(CommonDialog.shell);
 }
 
@@ -1110,7 +1110,7 @@ static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* change the macro */
+	// change the macro 
 	updateSmartIndentCommonData();
 }
 
@@ -1136,11 +1136,11 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 	}
 
-	/* replace common macros with default */
+	// replace common macros with default 
 	XtFree(CommonMacros);
 	CommonMacros = XtNewStringEx(DefaultCommonMacros);
 
-	/* Update the dialog */
+	// Update the dialog 
 	XmTextSetStringEx(CommonDialog.text, CommonMacros);
 }
 
@@ -1150,7 +1150,7 @@ static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* pop down and destroy the dialog */
+	// pop down and destroy the dialog 
 	XtDestroyWidget(CommonDialog.shell);
 }
 
@@ -1161,11 +1161,11 @@ static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 */
 static int updateSmartIndentCommonData(void) {
 
-	/* Make sure the patterns are valid and compile */
+	// Make sure the patterns are valid and compile 
 	if (!checkSmartIndentCommonDialogData())
 		return False;
 
-	/* Get the current data */
+	// Get the current data 
 	CommonMacros = ensureNewline(XmTextGetString(CommonDialog.text));
 
 	/* Re-execute initialization macros (macros require a window to function,
@@ -1184,7 +1184,7 @@ static int updateSmartIndentCommonData(void) {
 		}
 	}
 
-	/* Note that preferences have been changed */
+	// Note that preferences have been changed 
 	MarkPrefsChanged();
 
 	return True;
@@ -1216,14 +1216,14 @@ static int updateSmartIndentData(void) {
 	char *lmName;
 	int i;
 
-	/* Make sure the patterns are valid and compile */
+	// Make sure the patterns are valid and compile 
 	if (!checkSmartIndentDialogData())
 		return False;
 
-	/* Get the current data */
+	// Get the current data 
 	SmartIndent *newMacros = getSmartIndentDialogData();
 
-	/* Find the original macros */
+	// Find the original macros 
 	for (i = 0; i < NSmartIndentSpecs; i++)
 		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
 			break;
@@ -1250,7 +1250,7 @@ static int updateSmartIndentData(void) {
 		}
 	}
 
-	/* Note that preferences have been changed */
+	// Note that preferences have been changed 
 	MarkPrefsChanged();
 
 	return True;
@@ -1285,14 +1285,14 @@ int LoadSmartIndentString(char *inString) {
 
 	for (;;) {
 
-		/* skip over blank space */
+		// skip over blank space 
 		inPtr += strspn(inPtr, " \t\n");
 
-		/* finished */
+		// finished 
 		if (*inPtr == '\0')
 			return True;
 
-		/* read language mode name */
+		// read language mode name 
 		is.lmName = ReadSymbolicField(&inPtr);
 		if (is.lmName == nullptr)
 			return siParseError(inString, inPtr, "language mode name required");
@@ -1321,7 +1321,7 @@ int LoadSmartIndentString(char *inString) {
 			return siParseError(inString, inPtr, "no end boundary to initialization macro");
 		}
 
-		/* read the newline macro */
+		// read the newline macro 
 		is.newlineMacro = readSIMacro(&inPtr);
 		if(!is.newlineMacro) {
 			XtFree((char *)is.lmName);
@@ -1329,7 +1329,7 @@ int LoadSmartIndentString(char *inString) {
 			return siParseError(inString, inPtr, "no end boundary to newline macro");
 		}
 
-		/* read the modify macro */
+		// read the modify macro 
 		is.modMacro = readSIMacro(&inPtr);
 		if(!is.modMacro) {
 			XtFree((char *)is.lmName);
@@ -1338,13 +1338,13 @@ int LoadSmartIndentString(char *inString) {
 			return siParseError(inString, inPtr, "no end boundary to modify macro");
 		}
 
-		/* if there's no mod macro, make it null so it won't be executed */
+		// if there's no mod macro, make it null so it won't be executed 
 		if (is.modMacro[0] == '\0') {
 			XtFree((char *)is.modMacro);
 			is.modMacro = nullptr;
 		}
 
-		/* create a new data structure and add/change it in the list */
+		// create a new data structure and add/change it in the list 
 		isCopy = new SmartIndent(is);
 
 		for (i = 0; i < NSmartIndentSpecs; i++) {
@@ -1373,10 +1373,10 @@ int LoadSmartIndentCommonString(char *inString) {
 	int shiftedLen;
 	char *inPtr = inString;
 
-	/* If called from -import, can replace existing ones */
+	// If called from -import, can replace existing ones 
 	XtFree(CommonMacros);
 
-	/* skip over blank space */
+	// skip over blank space 
 	inPtr += strspn(inPtr, " \t\n");
 
 	/* look for "Default" keyword, and if it's there, return the default
@@ -1386,7 +1386,7 @@ int LoadSmartIndentCommonString(char *inString) {
 		return True;
 	}
 
-	/* Remove leading tabs added by writer routine */
+	// Remove leading tabs added by writer routine 
 	CommonMacros = ShiftText(inPtr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
 	return True;
 }
@@ -1399,23 +1399,23 @@ int LoadSmartIndentCommonString(char *inString) {
 */
 static char *readSIMacro(const char **inPtr) {
 	
-	/* Strip leading newline */
+	// Strip leading newline 
 	if (**inPtr == '\n') {
 		(*inPtr)++;
 	}
 
-	/* Find the end of the macro */
+	// Find the end of the macro 
 	const char *macroEnd = strstr(*inPtr, MacroEndBoundary);
 	if(!macroEnd) {
 		return nullptr;
 	}
 
-	/* Copy the macro */
+	// Copy the macro 
 	auto macroStr = new char[macroEnd - *inPtr + 1];
 	strncpy(macroStr, *inPtr, macroEnd - *inPtr);
 	macroStr[macroEnd - *inPtr] = '\0';
 
-	/* Remove leading tabs added by writer routine */
+	// Remove leading tabs added by writer routine 
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
 	int shiftedLen;
 	char *retStr = ShiftText(macroStr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
@@ -1468,7 +1468,7 @@ std::string WriteSmartIndentStringEx(void) {
 		}
 	}
 
-	/* Get the output string, and lop off the trailing newline */
+	// Get the output string, and lop off the trailing newline 
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() > 0 ? outBuf->BufGetLength() - 1 : 0);
 	delete outBuf;
 
@@ -1485,14 +1485,14 @@ std::string WriteSmartIndentCommonStringEx(void) {
 	if(!CommonMacros)
 		return "";
 
-	/* Shift the macro over by a tab to keep .nedit file bright and clean */
+	// Shift the macro over by a tab to keep .nedit file bright and clean 
 	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
 	std::string escapedStr = EscapeSensitiveCharsEx(outStr);
 
-	/* If there's a trailing escaped newline, remove it */
+	// If there's a trailing escaped newline, remove it 
 	int len = escapedStr.size();
 	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\') {
 		escapedStr.resize(len - 2);

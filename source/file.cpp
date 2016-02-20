@@ -91,10 +91,10 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 
 	/*... test for creatability? */
 
-	/* Find a (relatively) unique name for the new file */
+	// Find a (relatively) unique name for the new file 
 	UniqueUntitledName(name, sizeof(name));
 
-	/* create new window/document */
+	// create new window/document 
 	if (inWindow) {
 		window = inWindow->CreateDocument(name);
 	} else {
@@ -104,7 +104,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	window->filename_ = name;
 	window->path_     = (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx();
 	
-	/* do we have a "/" at the end? if not, add one */
+	// do we have a "/" at the end? if not, add one 
 	if (!window->path_.empty() && window->path_.back() != '/') {
 		window->path_.append("/");
 	}
@@ -156,7 +156,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	Document *window;
 	char fullname[MAXPATHLEN];
 
-	/* first look to see if file is already displayed in a window */
+	// first look to see if file is already displayed in a window 
 	window = FindWindowWithFile(name, path);
 	if (window) {
 		if (!bgOpen) {
@@ -180,7 +180,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 			window = new Document(name, geometry, iconic);
 		}
 	} else {
-		/* open file in untitled document */
+		// open file in untitled document 
 		window            = inWindow;
 		window->path_     = path;
 		window->filename_ = name;
@@ -190,7 +190,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 		}
 	}
 
-	/* Open the file */
+	// Open the file 
 	if (!doOpen(window, name, path, flags)) {
 		/* The user may have destroyed the window instead of closing the
 		   warning dialog; don't close it twice */
@@ -200,13 +200,13 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	}
 	forceShowLineNumbers(window);
 
-	/* Decide what language mode to use, trigger language specific actions */
+	// Decide what language mode to use, trigger language specific actions 
 	if(!languageMode)
 		DetermineLanguageMode(window, True);
 	else
 		SetLanguageMode(window, FindLanguageMode(languageMode), True);
 
-	/* update tab label and tooltip */
+	// update tab label and tooltip 
 	window->RefreshTabState();
 	window->SortTabBar();
 	window->ShowTabBar(window->GetShowTabBar());
@@ -220,7 +220,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	window->UpdateWindowReadOnly();
 	window->UpdateStatsLine();
 
-	/* Add the name to the convenience menu of previously opened files */
+	// Add the name to the convenience menu of previously opened files 
 	strcpy(fullname, path);
 	strcat(fullname, name);
 	if (GetPrefAlwaysCheckRelTagsSpecs())
@@ -238,20 +238,20 @@ void RevertToSaved(Document *window) {
 	int openFlags = 0;
 	Widget text;
 
-	/* Can't revert untitled windows */
+	// Can't revert untitled windows 
 	if (!window->filenameSet_) {
 		DialogF(DF_WARN, window->shell_, 1, "Error", "Window '%s' was never saved, can't re-read", "OK", window->filename_.c_str());
 		return;
 	}
 
-	/* save insert & scroll positions of all of the panes to restore later */
+	// save insert & scroll positions of all of the panes to restore later 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
 		insertPositions[i] = TextGetCursorPos(text);
 		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
 	}
 
-	/* re-read the file, update the window title if new file is different */
+	// re-read the file, update the window title if new file is different 
 	strcpy(name, window->filename_.c_str());
 	strcpy(path, window->path_.c_str());
 	
@@ -266,7 +266,7 @@ void RevertToSaved(Document *window) {
 		if (!window->fileMissing_)
 			safeClose(window);
 		else {
-			/* Treat it like an externally modified file */
+			// Treat it like an externally modified file 
 			window->lastModTime_ = 0;
 			window->fileMissing_ = FALSE;
 		}
@@ -276,7 +276,7 @@ void RevertToSaved(Document *window) {
 	window->UpdateWindowTitle();
 	window->UpdateWindowReadOnly();
 
-	/* restore the insert and scroll positions of each pane */
+	// restore the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
@@ -310,19 +310,19 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	int fd;
 	int resp;
 
-	/* initialize lock reasons */
+	// initialize lock reasons 
 	CLEAR_ALL_LOCKS(window->lockReasons_);
 
-	/* Update the window data structure */
+	// Update the window data structure 
 	window->filename_    = name;
 	window->path_        = path;
 	window->filenameSet_ = TRUE;
 	window->fileMissing_ = TRUE;
 
-	/* Get the full name of the file */
+	// Get the full name of the file 
 	snprintf(fullname, sizeof(fullname), "%s%s", path, name);
 
-	/* Open the file */
+	// Open the file 
 	/* The only advantage of this is if you use clearcase,
 	   which messes up the mtime of files opened with r+,
 	   even if they're never actually written.
@@ -336,13 +336,13 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			}
 
 		} else if (flags & CREATE && errno == ENOENT) {
-			/* Give option to create (or to exit if this is the only window) */
+			// Give option to create (or to exit if this is the only window) 
 			if (!(flags & SUPPRESS_CREATE_WARN)) {
 				/* on Solaris 2.6, and possibly other OSes, dialog won't
 		           show if parent window is iconized. */
 				RaiseShellWindow(window->shell_, False);
 
-				/* ask user for next action if file not found */
+				// ask user for next action if file not found 
 				if (window == WindowList && window->next_ == nullptr) {
 					resp = DialogF(DF_WARN, window->shell_, 3, "New File", "Can't open %s:\n%s", "New File", "Cancel", "Exit NEdit", fullname, strerror(errno));
 				} else {
@@ -356,7 +356,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				}
 			}
 
-			/* Test if new file can be created */
+			// Test if new file can be created 
 			if ((fd = creat(fullname, 0666)) == -1) {
 				DialogF(DF_ERR, window->shell_, 1, "Error creating File", "Can't create %s:\n%s", "OK", fullname, strerror(errno));
 				return FALSE;
@@ -372,7 +372,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			window->UpdateWindowReadOnly();
 			return TRUE;
 		} else {
-			/* A true error */
+			// A true error 
 			DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Could not open %s%s:\n%s", "OK", path, name, strerror(errno));
 			return FALSE;
 		}
@@ -382,7 +382,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	   last modification to the file */
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; /* Temp. prevent check for changes. */
+		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error opening %s", "OK", name);
 		window->filenameSet_ = TRUE;
 		return FALSE;
@@ -390,7 +390,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	if (S_ISDIR(statbuf.st_mode)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; /* Temp. prevent check for changes. */
+		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Can't open directory %s", "OK", name);
 		window->filenameSet_ = TRUE;
 		return FALSE;
@@ -399,7 +399,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 #ifdef S_ISBLK
 	if (S_ISBLK(statbuf.st_mode)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; /* Temp. prevent check for changes. */
+		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Can't open block device %s", "OK", name);
 		window->filenameSet_ = TRUE;
 		return FALSE;
@@ -408,21 +408,21 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	int fileLen = statbuf.st_size;
 
-	/* Allocate space for the whole contents of the file (unfortunately) */
-	auto fileString = new char[fileLen + 1]; /* +1 = space for null */
+	// Allocate space for the whole contents of the file (unfortunately) 
+	auto fileString = new char[fileLen + 1]; // +1 = space for null 
 	if(!fileString) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; /* Temp. prevent check for changes. */
+		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
 		DialogF(DF_ERR, window->shell_, 1, "Error while opening File", "File is too large to edit", "OK");
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
 
-	/* Read the file into fileString and terminate with a null */
+	// Read the file into fileString and terminate with a null 
 	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; /* Temp. prevent check for changes. */
+		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
 		DialogF(DF_ERR, window->shell_, 1, "Error while opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
 		window->filenameSet_ = TRUE;
 		delete [] fileString;
@@ -430,11 +430,11 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	}
 	fileString[readLen] = '\0';
 
-	/* Close the file */
+	// Close the file 
 	if (fclose(fp) != 0) {
-		/* unlikely error */
+		// unlikely error 
 		DialogF(DF_WARN, window->shell_, 1, "Error while opening File", "Unable to close file", "OK");
-		/* we read it successfully, so continue */
+		// we read it successfully, so continue 
 	}
 
 	/* Any errors that happen after this point leave the window in a
@@ -448,7 +448,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	window->inode_       = statbuf.st_ino;
 	window->fileMissing_ = FALSE;
 
-	/* Detect and convert DOS and Macintosh format files */
+	// Detect and convert DOS and Macintosh format files 
 	if (GetPrefForceOSConversion()) {
 		window->fileFormat_ = FormatOfFile(fileString, readLen);
 		if (window->fileFormat_ == DOS_FILE_FORMAT) {
@@ -458,7 +458,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 		}
 	}
 
-	/* Display the file contents in the text widget */
+	// Display the file contents in the text widget 
 	window->ignoreModify_ = True;
 	window->buffer_->BufSetAllEx(view::string_view(fileString, readLen));
 	window->ignoreModify_ = False;
@@ -488,10 +488,10 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 		window->ignoreModify_ = False;
 	}
 
-	/* Release the memory that holds fileString */
+	// Release the memory that holds fileString 
 	delete [] fileString;
 
-	/* Set window title and file changed flag */
+	// Set window title and file changed flag 
 	if ((flags & PREF_READ_ONLY) != 0) {
 		SET_USER_LOCKED(window->lockReasons_, TRUE);
 	}
@@ -512,14 +512,14 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 int IncludeFile(Document *window, const char *name) {
 	struct stat statbuf;
 
-	/* Open the file */
+	// Open the file 
 	FILE *fp = fopen(name, "rb");
 	if(!fp) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Could not open %s:\n%s", "OK", name, strerror(errno));
 		return FALSE;
 	}
 
-	/* Get the length of the file */
+	// Get the length of the file 
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error opening %s", "OK", name);
 		fclose(fp);
@@ -533,15 +533,15 @@ int IncludeFile(Document *window, const char *name) {
 	}
 	int fileLen = statbuf.st_size;
 
-	/* allocate space for the whole contents of the file */
-	auto fileString = new char[fileLen + 1]; /* +1 = space for null */
+	// allocate space for the whole contents of the file 
+	auto fileString = new char[fileLen + 1]; // +1 = space for null 
 	if(!fileString) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "File is too large to include", "OK");
 		fclose(fp);
 		return FALSE;
 	}
 
-	/* read the file into fileString and terminate with a null */
+	// read the file into fileString and terminate with a null 
 	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
@@ -551,7 +551,7 @@ int IncludeFile(Document *window, const char *name) {
 	}
 	fileString[readLen] = '\0';
 
-	/* Detect and convert DOS and Macintosh format files */
+	// Detect and convert DOS and Macintosh format files 
 	switch (FormatOfFile(fileString, readLen)) {
 	case DOS_FILE_FORMAT:
 		ConvertFromDosFileString(fileString, &readLen, nullptr);
@@ -560,20 +560,20 @@ int IncludeFile(Document *window, const char *name) {
 		ConvertFromMacFileString(fileString, readLen);
 		break;
 	default:
-		/*  Default is Unix, no conversion necessary.  */
+		//  Default is Unix, no conversion necessary.  
 		break;
 	}
 
-	/* If the file contained ascii nulls, re-map them */
+	// If the file contained ascii nulls, re-map them 
 	if (!window->buffer_->BufSubstituteNullChars(fileString, readLen)) {
 		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Too much binary data in file", "OK");
 	}
 
-	/* close the file */
+	// close the file 
 	if (fclose(fp) != 0) {
-		/* unlikely error */
+		// unlikely error 
 		DialogF(DF_WARN, window->shell_, 1, "Error opening File", "Unable to close file", "OK");
-		/* we read it successfully, so continue */
+		// we read it successfully, so continue 
 	}
 
 	/* insert the contents of the file in the selection or at the insert
@@ -584,7 +584,7 @@ int IncludeFile(Document *window, const char *name) {
 		window->buffer_->BufInsertEx(TextGetCursorPos(window->lastFocus_), view::string_view(fileString, readLen));
 	}
 
-	/* release the memory that holds fileString */
+	// release the memory that holds fileString 
 	delete [] fileString;
 
 	return TRUE;
@@ -623,7 +623,7 @@ int CloseAllFilesAndWindows(void) {
 int CloseFileAndWindow(Document *window, int preResponse) {
 	int response, stat;
 
-	/* Make sure that the window is not in iconified state */
+	// Make sure that the window is not in iconified state 
 	if (window->fileChanged_)
 		window->RaiseDocumentWindow();
 
@@ -631,14 +631,14 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 	   or if the user wants to ignore external modifications then
 	   just close it.  Otherwise ask for confirmation first. */
 	if (!window->fileChanged_ &&
-	    /* Normal File */
+	    // Normal File 
 	    ((!window->fileMissing_ && window->lastModTime_ > 0) ||
-	     /* New File*/
+	     // New File
 	     (window->fileMissing_ && window->lastModTime_ == 0) ||
-	     /* File deleted/modified externally, ignored by user. */
+	     // File deleted/modified externally, ignored by user. 
 	     !GetPrefWarnFileMods())) {
 		window->CloseWindow();
-		/* up-to-date windows don't have outstanding backup files to close */
+		// up-to-date windows don't have outstanding backup files to close 
 	} else {
 		if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
 			response = DialogF(DF_WARN, window->shell_, 3, "Save File", "Save %s before closing?", "Yes", "No", "Cancel", window->filename_.c_str());
@@ -647,7 +647,7 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 		}
 
 		if (response == YES_SBC_DIALOG_RESPONSE) {
-			/* Save */
+			// Save 
 			stat = SaveWindow(window);
 			if (stat) {
 				window->CloseWindow();
@@ -655,10 +655,10 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 				return FALSE;
 			}
 		} else if (response == NO_SBC_DIALOG_RESPONSE) {
-			/* Don't Save */
+			// Don't Save 
 			RemoveBackupFile(window);
 			window->CloseWindow();
-		} else /* 3 == Cancel */
+		} else // 3 == Cancel 
 		{
 			return FALSE;
 		}
@@ -668,18 +668,18 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 
 int SaveWindow(Document *window) {
 
-	/* Try to ensure our information is up-to-date */
+	// Try to ensure our information is up-to-date 
 	CheckForChangesToFile(window);
 
 	/* Return success if the file is normal & unchanged or is a
 	    read-only file. */
 	if ((!window->fileChanged_ && !window->fileMissing_ && window->lastModTime_ > 0) || IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons_))
 		return TRUE;
-	/* Prompt for a filename if this is an Untitled window */
+	// Prompt for a filename if this is an Untitled window 
 	if (!window->filenameSet_)
 		return SaveWindowAs(window, nullptr, False);
 
-	/* Check for external modifications and warn the user */
+	// Check for external modifications and warn the user 
 	if (GetPrefWarnFileMods() && fileWasModifiedExternally(window)) {
 		int stat = DialogF(DF_WARN, window->shell_, 2, "Save File", "%s has been modified by another program.\n\n"
 		                                                       "Continuing this operation will overwrite any external\n"
@@ -690,7 +690,7 @@ int SaveWindow(Document *window) {
 		                                                       "or Revert to Saved to revert to the modified version.",
 		               "Continue", "Cancel", window->filename_.c_str());
 		if (stat == 2) {
-			/* Cancel and mark file as externally modified */
+			// Cancel and mark file as externally modified 
 			window->lastModTime_ = 0;
 			window->fileMissing_ = FALSE;
 			return FALSE;
@@ -715,7 +715,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	char pathname[MAXPATHLEN];
 	Document *otherWindow;
 
-	/* Get the new name for the file */
+	// Get the new name for the file 
 	if(!newName) {
 		response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
 		if (response != GFN_OK)
@@ -729,7 +729,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		return False;
 	}
 
-	/* Add newlines if requested */
+	// Add newlines if requested 
 	if (addWrap)
 		addWrapNewlines(window);
 
@@ -737,7 +737,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		return FALSE;
 	}
 
-	/* If the requested file is this file, just save it and return */
+	// If the requested file is this file, just save it and return 
 	if (window->filename_ == filename && window->path_ == pathname) {
 		if (writeBckVersion(window))
 			return FALSE;
@@ -762,10 +762,10 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		}
 	}
 
-	/* Destroy the file closed property for the original file */
+	// Destroy the file closed property for the original file 
 	DeleteFileClosedProperty(window);
 
-	/* Change the name of the file and save it under the new name */
+	// Change the name of the file and save it under the new name 
 	RemoveBackupFile(window);
 	window->filename_ = filename;
 	window->path_     = pathname;
@@ -778,7 +778,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	window->UpdateWindowReadOnly();
 	window->RefreshTabState();
 
-	/* Add the name to the convenience menu of previously opened files */
+	// Add the name to the convenience menu of previously opened files 
 	AddToPrevOpenMenu(fullname);
 
 	/*  If name has changed, language mode may have changed as well, unless
@@ -789,7 +789,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	}
 	window->filenameSet_ = True;
 
-	/* Update the stats line and window title with the new filename */
+	// Update the stats line and window title with the new filename 
 	window->UpdateWindowTitle();
 	window->UpdateStatsLine();
 
@@ -803,7 +803,7 @@ static bool doSave(Document *window) {
 	FILE *fp;
 	int result;
 
-	/* Get the full name of the file */
+	// Get the full name of the file 
 	strcpy(fullname, window->path_.c_str());
 	strcat(fullname, window->filename_.c_str());
 
@@ -829,7 +829,7 @@ static bool doSave(Document *window) {
 		window->buffer_->BufInsertEx(window->buffer_->BufGetLength(), "\n");
 	}
 
-	/* open the file */
+	// open the file 
 	fp = fopen(fullname, "wb");
 	if(!fp) {
 		result = DialogF(DF_WARN, window->shell_, 2, "Error saving File", "Unable to save %s:\n%s\n\nSave as a new file?", "Save As...", "Cancel", window->filename_.c_str(), strerror(errno));
@@ -840,13 +840,13 @@ static bool doSave(Document *window) {
 		return FALSE;
 	}
 
-	/* get the text buffer contents and its length */
+	// get the text buffer contents and its length 
 	std::string fileString = window->buffer_->BufGetAllEx();
 
-	/* If null characters are substituted for, put them back */
+	// If null characters are substituted for, put them back 
 	window->buffer_->BufUnsubstituteNullCharsEx(fileString);
 
-	/* If the file is to be saved in DOS or Macintosh format, reconvert */
+	// If the file is to be saved in DOS or Macintosh format, reconvert 
 	if (window->fileFormat_ == DOS_FILE_FORMAT) {
 		if (!ConvertToDosFileStringEx(fileString)) {
 			DialogF(DF_ERR, window->shell_, 1, "Out of Memory", "Out of memory!  Try\nsaving in Unix format", "OK");
@@ -859,7 +859,7 @@ static bool doSave(Document *window) {
 		ConvertToMacFileStringEx(fileString);
 	}
 
-	/* write to the file */
+	// write to the file 
 	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 	
 	
@@ -870,23 +870,23 @@ static bool doSave(Document *window) {
 		return FALSE;
 	}
 
-	/* close the file */
+	// close the file 
 	if (fclose(fp) != 0) {
 		DialogF(DF_ERR, window->shell_, 1, "Error closing File", "Error closing file:\n%s", "OK", strerror(errno));
 		return FALSE;
 	}
 
-	/* success, file was written */
+	// success, file was written 
 	window->SetWindowModified(FALSE);
 
-	/* update the modification time */
+	// update the modification time 
 	if (stat(fullname, &statbuf) == 0) {
 		window->lastModTime_ = statbuf.st_mtime;
 		window->fileMissing_ = FALSE;
 		window->device_ = statbuf.st_dev;
 		window->inode_ = statbuf.st_ino;
 	} else {
-		/* This needs to produce an error message -- the file can't be accessed! */
+		// This needs to produce an error message -- the file can't be accessed! 
 		window->lastModTime_ = 0;
 		window->fileMissing_ = TRUE;
 		window->device_ = 0;
@@ -905,7 +905,7 @@ int WriteBackupFile(Document *window) {
 	FILE *fp;
 	int fd;
 
-	/* Generate a name for the autoSave file */
+	// Generate a name for the autoSave file 
 	std::string name = backupFileNameEx(window);
 
 	/* remove the old backup file.
@@ -924,18 +924,18 @@ int WriteBackupFile(Document *window) {
 		return FALSE;
 	}
 
-	/* get the text buffer contents and its length */
+	// get the text buffer contents and its length 
 	std::string fileString = window->buffer_->BufGetAllEx();
 
-	/* If null characters are substituted for, put them back */
+	// If null characters are substituted for, put them back 
 	window->buffer_->BufUnsubstituteNullCharsEx(fileString);
 
-	/* add a terminating newline if the file doesn't already have one */
+	// add a terminating newline if the file doesn't already have one 
 	if (!fileString.empty() && fileString.back() != '\n') {
-		fileString.append("\n"); /* null terminator no longer needed */
+		fileString.append("\n"); // null terminator no longer needed 
 	}
 
-	/* write out the file */
+	// write out the file 
 	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, window->shell_, 1, "Error saving Backup", "Error while saving backup for %s:\n%s\n"
@@ -947,7 +947,7 @@ int WriteBackupFile(Document *window) {
 		return FALSE;
 	}
 
-	/* close the backup file */
+	// close the backup file 
 	if (fclose(fp) != 0) {
 		return FALSE;
 	}
@@ -960,7 +960,7 @@ int WriteBackupFile(Document *window) {
 */
 void RemoveBackupFile(Document *window) {
 
-	/* Don't delete backup files when backups aren't activated. */
+	// Don't delete backup files when backups aren't activated. 
 	if (window->autoSave_ == FALSE)
 		return;
 
@@ -998,22 +998,22 @@ static bool writeBckVersion(Document *window) {
 	
 	static const size_t IO_BUFFER_SIZE = (1024 * 1024);
 
-	/* Do only if version backups are turned on */
+	// Do only if version backups are turned on 
 	if (!window->saveOldVersion_) {
 		return false;
 	}
 
-	/* Get the full name of the file */
+	// Get the full name of the file 
 	int r = snprintf(fullname, sizeof(fullname), "%s%s", window->path_.c_str(), window->filename_.c_str());
 
-	/* Generate name for old version */
+	// Generate name for old version 
 	if (r >= MAXPATHLEN) {
 		return bckError(window, "file name too long", window->filename_.c_str());
 	}
 	snprintf(bckname, sizeof(bckname), "%s.bck", fullname);
 
-	/* Delete the old backup file */
-	/* Errors are ignored; we'll notice them later. */
+	// Delete the old backup file 
+	// Errors are ignored; we'll notice them later. 
 	remove(bckname);
 
 	/* open the file being edited.  If there are problems with the
@@ -1030,13 +1030,13 @@ static bool writeBckVersion(Document *window) {
 		return false;
 	}
 
-	/* open the destination file exclusive and with restrictive permissions. */
+	// open the destination file exclusive and with restrictive permissions. 
 	out_fd = open(bckname, O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
 	if (out_fd < 0) {
 		return bckError(window, "Error open backup file", bckname);
 	}
 
-	/* Set permissions on new file */
+	// Set permissions on new file 
 	if (fchmod(out_fd, statbuf.st_mode) != 0) {
 		close(in_fd);
 		close(out_fd);
@@ -1044,10 +1044,10 @@ static bool writeBckVersion(Document *window) {
 		return bckError(window, "fchmod() failed", bckname);
 	}
 
-	/* Allocate I/O buffer */
+	// Allocate I/O buffer 
 	auto io_buffer = new char[IO_BUFFER_SIZE];
 
-	/* copy loop */
+	// copy loop 
 	for (;;) {
 		ssize_t bytes_read;
 		ssize_t bytes_written;
@@ -1062,10 +1062,10 @@ static bool writeBckVersion(Document *window) {
 		}
 
 		if (bytes_read == 0) {
-			break; /* EOF */
+			break; // EOF 
 		}
 
-		/* write to the file */
+		// write to the file 
 		bytes_written = write(out_fd, io_buffer, (size_t)bytes_read);
 		if (bytes_written != bytes_read) {
 			close(in_fd);
@@ -1076,7 +1076,7 @@ static bool writeBckVersion(Document *window) {
 		}
 	}
 
-	/* close the input and output files */
+	// close the input and output files 
 	close(in_fd);
 	close(out_fd);
 
@@ -1123,15 +1123,15 @@ void PrintWindow(Document *window, int selectedOnly) {
 		fileString = TextGetWrappedEx(window->textArea_, 0, buf->BufGetLength());
 	}
 
-	/* If null characters are substituted for, put them back */
+	// If null characters are substituted for, put them back 
 	buf->BufUnsubstituteNullCharsEx(fileString);
 
-	/* add a terminating newline if the file doesn't already have one */
+	// add a terminating newline if the file doesn't already have one 
 	if (!fileString.empty() && fileString.back() != '\n') {
-		fileString.push_back('\n'); /* null terminator no longer needed */
+		fileString.push_back('\n'); // null terminator no longer needed 
 	}
 
-	/* Print the string */
+	// Print the string 
 	PrintString(fileString, fileString.size(), window->shell_, window->filename_);
 }
 
@@ -1141,7 +1141,7 @@ void PrintWindow(Document *window, int selectedOnly) {
 */
 void PrintString(const std::string &string, int length, Widget parent, const std::string &jobName) {
 	// TODO(eteran): get the temp directory dynamically
-	char tmpFileName[L_tmpnam] = "/tmp/nedit-XXXXXX"; /* L_tmpnam defined in stdio.h */
+	char tmpFileName[L_tmpnam] = "/tmp/nedit-XXXXXX"; // L_tmpnam defined in stdio.h 
 	int fd = mkstemp(tmpFileName);
 	if (fd < 0) {
 		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
@@ -1150,29 +1150,29 @@ void PrintString(const std::string &string, int length, Widget parent, const std
 
 	FILE *fp;
 
-	/* open the temporary file */
+	// open the temporary file 
 	if ((fp = fdopen(fd, "w")) == nullptr) {
 		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
 		return;
 	}
 
-	/* write to the file */
+	// write to the file 
 	fwrite(string.data(), sizeof(char), length, fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName.c_str(), strerror(errno));
-		fclose(fp); /* should call close(fd) in turn! */
+		fclose(fp); // should call close(fd) in turn! 
 		remove(tmpFileName);
 		return;
 	}
 
-	/* close the temporary file */
+	// close the temporary file 
 	if (fclose(fp) != 0) {
 		DialogF(DF_ERR, parent, 1, "Error while Printing", "Error closing temp. print file:\n%s", "OK", strerror(errno));
 		remove(tmpFileName);
 		return;
 	}
 
-	/* Print the temporary file, then delete it and return success */
+	// Print the temporary file, then delete it and return success 
 	PrintFile(parent, tmpFileName, jobName);
 	remove(tmpFileName);
 	return;
@@ -1325,7 +1325,7 @@ void CheckForChangesToFile(Document *window) {
 	if (!window->filenameSet_)
 		return;
 
-	/* If last check was very recent, don't impact performance */
+	// If last check was very recent, don't impact performance 
 	timestamp = XtLastTimestampProcessed(XtDisplay(window->shell_));
 	if (window == lastCheckWindow && timestamp - lastCheckTime < MOD_CHECK_INTERVAL)
 		return;
@@ -1352,12 +1352,12 @@ void CheckForChangesToFile(Document *window) {
 			silent = 1;
 	}
 
-	/* Get the file mode and modification time */
+	// Get the file mode and modification time 
 	strcpy(fullname, window->path_.c_str());
 	strcat(fullname, window->filename_.c_str());
 	
 	if (stat(fullname, &statbuf) != 0) {
-		/* Return if we've already warned the user or we can't warn him now */
+		// Return if we've already warned the user or we can't warn him now 
 		if (window->fileMissing_ || silent) {
 			return;
 		}
@@ -1375,7 +1375,7 @@ void CheckForChangesToFile(Document *window) {
 			const char *title;
 			const char *body;
 
-			/* See note below about pop-up timing and XUngrabPointer */
+			// See note below about pop-up timing and XUngrabPointer 
 			XUngrabPointer(XtDisplay(window->shell_), timestamp);
 
 			/* If the window (and the dialog) are destroyed while the dialog
@@ -1383,10 +1383,10 @@ void CheckForChangesToFile(Document *window) {
 			   avoid accessing the window afterwards. */
 			XtAddCallback(window->shell_, XmNdestroyCallback, modifiedWindowDestroyedCB, &windowIsDestroyed);
 
-			/*  Set title, message body and button to match stat()'s error.  */
+			//  Set title, message body and button to match stat()'s error.  
 			switch (errno) {
 			case ENOENT:
-				/*  A component of the path file_name does not exist.  */
+				//  A component of the path file_name does not exist.  
 				title = "File not Found";
 				body = "File '%s' (or directory in its path)\n"
 				       "no longer exists.\n"
@@ -1434,9 +1434,9 @@ void CheckForChangesToFile(Document *window) {
 			}
 		}
 
-		/* A missing or (re-)saved file can't be read-only. */
-		/*  TODO: A document without a file can be locked though.  */
-		/* Make sure that the window was not destroyed behind our back! */
+		// A missing or (re-)saved file can't be read-only. 
+		//  TODO: A document without a file can be locked though.  
+		// Make sure that the window was not destroyed behind our back! 
 		if (!windowIsDestroyed) {
 			SET_PERM_LOCKED(window->lockReasons_, False);
 			window->UpdateWindowTitle();
@@ -1479,12 +1479,12 @@ void CheckForChangesToFile(Document *window) {
 	   which is still in the process of popping down.  The workaround, below,
 	   of calling XUngrabPointer is inelegant but seems to fix the problem. */
 	if (!silent && ((window->lastModTime_ != 0 && window->lastModTime_ != statbuf.st_mtime) || window->fileMissing_)) {
-		window->lastModTime_ = 0; /* Inhibit further warnings */
+		window->lastModTime_ = 0; // Inhibit further warnings 
 		window->fileMissing_ = FALSE;
 		if (!GetPrefWarnFileMods())
 			return;
 		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname)) {
-			/* Contents hasn't changed. Update the modification time. */
+			// Contents hasn't changed. Update the modification time. 
 			window->lastModTime_ = statbuf.st_mtime;
 			return;
 		}
@@ -1594,18 +1594,18 @@ static void addWrapNewlines(Document *window) {
 	int horizOffset;
 	Widget text;
 
-	/* save the insert and scroll positions of each pane */
+	// save the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
 		insertPositions[i] = TextGetCursorPos(text);
 		TextGetScroll(text, &topLines[i], &horizOffset);
 	}
 
-	/* Modify the buffer to add wrapping */
+	// Modify the buffer to add wrapping 
 	std::string fileString = TextGetWrappedEx(window->textArea_, 0, window->buffer_->BufGetLength());
 	window->buffer_->BufSetAllEx(fileString);
 
-	/* restore the insert and scroll positions of each pane */
+	// restore the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
@@ -1650,14 +1650,14 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 	}
 
 	fileLen = statbuf.st_size;
-	/* For DOS files, we can't simply check the length */
+	// For DOS files, we can't simply check the length 
 	if (fileFormat != DOS_FILE_FORMAT) {
 		if (fileLen != buf->BufGetLength()) {
 			fclose(fp);
 			return (1);
 		}
 	} else {
-		/* If a DOS file is smaller on disk, it's certainly different */
+		// If a DOS file is smaller on disk, it's certainly different 
 		if (fileLen < buf->BufGetLength()) {
 			fclose(fp);
 			return (1);
@@ -1689,7 +1689,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 
 		nRead += offset;
 
-		/* check for on-disk file format changes, but only for the first hunk */
+		// check for on-disk file format changes, but only for the first hunk 
 		if (bufPos == 0 && fileFormat != FormatOfFile(fileString, nRead)) {
 			fclose(fp);
 			AllWindowsUnbusy();
@@ -1701,7 +1701,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 		else if (fileFormat == DOS_FILE_FORMAT)
 			ConvertFromDosFileString(fileString, &nRead, &pendingCR);
 
-		/* Beware of 0 chars ! */
+		// Beware of 0 chars ! 
 		buf->BufSubstituteNullChars(fileString, nRead);
 		rv = buf->BufCmpEx(bufPos, nRead, fileString);
 		if (rv) {

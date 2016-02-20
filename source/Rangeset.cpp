@@ -40,12 +40,12 @@
 #include <cctype>
 #include <algorithm>
 
-#define is_start(i) !((i)&1) /* true if i is even */
-#define is_end(i)    ((i)&1) /* true if i is odd */
+#define is_start(i) !((i)&1) // true if i is even 
+#define is_end(i)    ((i)&1) // true if i is odd 
 
 namespace {
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 RangesetUpdateFn rangesetInsDelMaintain;
 RangesetUpdateFn rangesetInclMaintain;
@@ -68,7 +68,7 @@ struct {
 };
 
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 
 void rangesetRefreshAllRanges(Rangeset *rangeset) {
@@ -79,7 +79,7 @@ void rangesetRefreshAllRanges(Rangeset *rangeset) {
 }
 
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 /*
 ** Find the index of the first integer in table greater than or equal to pos.
@@ -91,10 +91,10 @@ int at_or_before(int *table, int base, int len, int val) {
 	int lo, mid = 0, hi;
 
 	if (base >= len)
-		return len; /* not sure what this means! */
+		return len; // not sure what this means! 
 
-	lo = base;    /* first valid index */
-	hi = len - 1; /* last valid index */
+	lo = base;    // first valid index 
+	hi = len - 1; // last valid index 
 
 	while (lo <= hi) {
 		mid = (lo + hi) / 2;
@@ -105,7 +105,7 @@ int at_or_before(int *table, int base, int len, int val) {
 		else
 			lo = mid + 1;
 	}
-	/* if we get here, we didn't find val itself */
+	// if we get here, we didn't find val itself 
 	if (val > table[mid])
 		mid++;
 
@@ -117,45 +117,45 @@ int weighted_at_or_before(int *table, int base, int len, int val) {
 	int min, max;
 
 	if (base >= len)
-		return len; /* not sure what this means! */
+		return len; // not sure what this means! 
 
-	lo = base;    /* first valid index */
-	hi = len - 1; /* last valid index */
+	lo = base;    // first valid index 
+	hi = len - 1; // last valid index 
 
-	min = table[lo]; /* establish initial min/max */
+	min = table[lo]; // establish initial min/max 
 	max = table[hi];
 
-	if (val <= min) /* initial range checks */
-		return lo;  /* needed to avoid out-of-range mid values */
+	if (val <= min) // initial range checks 
+		return lo;  // needed to avoid out-of-range mid values 
 	else if (val > max)
 		return len;
 	else if (val == max)
 		return hi;
 
 	while (lo <= hi) {
-		/* Beware of integer overflow when multiplying large numbers! */
+		// Beware of integer overflow when multiplying large numbers! 
 		mid = lo + (int)((hi - lo) * (double)(val - min) / (max - min));
-		/* we won't worry about min == max - values should be unique */
+		// we won't worry about min == max - values should be unique 
 
 		if (val == table[mid])
 			return mid;
 		if (val < table[mid]) {
 			hi = mid - 1;
 			max = table[mid];
-		} else { /* val > table[mid] */
+		} else { // val > table[mid] 
 			lo = mid + 1;
 			min = table[mid];
 		}
 	}
 
-	/* if we get here, we didn't find val itself */
+	// if we get here, we didn't find val itself 
 	if (val > table[mid])
 		return mid + 1;
 
 	return mid;
 }
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 
 Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
@@ -163,7 +163,7 @@ Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
 	return rangeset;
 }
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 
 /*
@@ -190,10 +190,10 @@ int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
 	n *= 2;
 	last *= 2;
 
-	if (pos >= rangeTable[last])                             /* ranges[last_index].start */
-		i = weighted_at_or_before(rangeTable, last, n, pos); /* search end only */
+	if (pos >= rangeTable[last])                             // ranges[last_index].start 
+		i = weighted_at_or_before(rangeTable, last, n, pos); // search end only 
 	else
-		i = weighted_at_or_before(rangeTable, 0, last, pos); /* search front only */
+		i = weighted_at_or_before(rangeTable, 0, last, pos); // search front only 
 
 	rangeset->last_index = i / 2;
 
@@ -211,25 +211,25 @@ int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 		return 0;
 
 	if (delta != 0) {
-		if (diff > 0) { /* shuffle entries down */
+		if (diff > 0) { // shuffle entries down 
 			for (end = to + n; to < end; to++)
 				rangeTable[to] = rangeTable[to + diff] + delta;
-		} else if (diff < 0) { /* shuffle entries up */
+		} else if (diff < 0) { // shuffle entries up 
 			for (end = to, to += n; --to >= end;)
 				rangeTable[to] = rangeTable[to + diff] + delta;
-		} else { /* diff == 0: just run through */
+		} else { // diff == 0: just run through 
 			for (end = n; end--;)
 				rangeTable[to++] += delta;
 		}
 	} else {
-		if (diff > 0) { /* shuffle entries down */
+		if (diff > 0) { // shuffle entries down 
 			for (end = to + n; to < end; to++)
 				rangeTable[to] = rangeTable[to + diff];
-		} else if (diff < 0) { /* shuffle entries up */
+		} else if (diff < 0) { // shuffle entries up 
 			for (end = to, to += n; --to >= end;)
 				rangeTable[to] = rangeTable[to + diff];
 		}
-		/* else diff == 0: nothing to do */
+		// else diff == 0: nothing to do 
 	}
 
 	return n;
@@ -255,7 +255,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
-		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
+		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
 	end_del = pos + del;
 	movement = ins - del;
@@ -265,7 +265,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	j = i;
-	while (j < n && rangeTable[j] <= end_del) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
 	/* if j moved forward, we have deleted over rangeTable[i] - reduce it accordingly,
@@ -286,7 +286,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	rangeset->n_ranges = n / 2;
 	rangeset->ranges = RangesetTable::RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
-	/* final adjustments */
+	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
 }
 
@@ -306,7 +306,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
-		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
+		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
 	/* if the insert occurs at the start of a range, the following lines will
 	   extend the range, leaving the start of the range at pos. */
@@ -322,7 +322,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	j = i;
-	while (j < n && rangeTable[j] <= end_del) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
 	/* if j moved forward, we have deleted over rangeTable[i] - reduce it accordingly,
@@ -343,7 +343,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	rangeset->n_ranges = n / 2;
 	rangeset->ranges = RangesetTable::RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
-	/* final adjustments */
+	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
 }
 
@@ -364,7 +364,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
-		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
+		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
 	end_del = pos + del;
 	movement = ins - del;
@@ -374,7 +374,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	j = i;
-	while (j < n && rangeTable[j] <= end_del) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
 	/* if j moved forward, we have deleted over rangeTable[i] - reduce it accordingly,
@@ -397,7 +397,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	rangeset->n_ranges = n / 2;
 	rangeset->ranges = RangesetTable::RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
-	/* final adjustments */
+	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
 }
 
@@ -418,7 +418,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
-		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
+		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
 	/* if the insert occurs at the end of a range, the following lines will
 	   skip the range, leaving the end of the range at pos. */
@@ -434,7 +434,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	j = i;
-	while (j < n && rangeTable[j] <= end_del) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
 	/* if j moved forward, we have deleted over rangeTable[i] - reduce it accordingly,
@@ -457,7 +457,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	rangeset->n_ranges = n / 2;
 	rangeset->ranges = RangesetTable::RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
-	/* final adjustments */
+	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
 }
 
@@ -476,7 +476,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n)
-		return rangesetFixMaxpos(rangeset, ins, del); /* all beyond the end */
+		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
 	/* if the insert occurs at the end of a range, the following lines will
 	   skip the range, leaving the end of the range at pos. */
@@ -492,13 +492,13 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	j = i;
-	while (j < n && rangeTable[j] <= end_del) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
 	if (j > i)
 		rangeTable[i] = pos;
 
-	/* do we need to insert a gap? yes if pos is in a range and ins > 0 */
+	// do we need to insert a gap? yes if pos is in a range and ins > 0 
 
 	/* The logic for the next statement: if i and j are both range ends, range
 	   boundaries indicated by index values between i and j (if any) have been
@@ -507,25 +507,25 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
 	need_gap = (is_end(i) && is_end(j) && ins > 0);
 
-	/* if we've got start-end or end-start, skip rangeTable[i] */
-	if (is_start(i) != is_start(j)) { /* one is start, other is end */
+	// if we've got start-end or end-start, skip rangeTable[i] 
+	if (is_start(i) != is_start(j)) { // one is start, other is end 
 		if (is_start(i)) {
 			if (rangeTable[i] == pos)
-				rangeTable[i] = pos + ins; /* move the range start */
+				rangeTable[i] = pos + ins; // move the range start 
 		}
-		i++; /* skip to next index */
+		i++; // skip to next index 
 	}
 
 	/* values rangeTable[j] to rangeTable[n-1] must be adjusted by movement and placed in
 	   position. */
 
 	if (need_gap)
-		i += 2; /* make space for the break */
+		i += 2; // make space for the break 
 
-	/* adjust other position values: shuffle them up or down if necessary */
+	// adjust other position values: shuffle them up or down if necessary 
 	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
-	if (need_gap) { /* add the gap informations */
+	if (need_gap) { // add the gap informations 
 		rangeTable[i - 2] = pos;
 		rangeTable[i - 1] = pos + ins;
 	}
@@ -534,11 +534,11 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	rangeset->n_ranges = n / 2;
 	rangeset->ranges = RangesetTable::RangesRealloc(rangeset->ranges, rangeset->n_ranges);
 
-	/* final adjustments */
+	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
 }
 
-/* -------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------- 
 
 }
 
@@ -580,21 +580,21 @@ int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
 	}
 
 	// TODO(eteran): BUGCHECK this seems very dangerous, I think this is well into UB
-	auto ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
+	auto ranges = (int *)this->ranges; // { s1,e1, s2,e2, s3,e3,... } 
 	int len = this->n_ranges * 2;
 	int ind = at_or_before(ranges, 0, len, pos);
 
 	if (ind == len)
-		return -1; /* beyond end */
+		return -1; // beyond end 
 
-	if (ind & 1) { /* ind odd: references an end marker */
+	if (ind & 1) { // ind odd: references an end marker 
 		if (pos < ranges[ind] || (incl_end && pos == ranges[ind]))
-			return ind / 2; /* return the range index */
-	} else {                /* ind even: references start marker */
+			return ind / 2; // return the range index 
+	} else {                // ind even: references start marker 
 		if (pos == ranges[ind])
-			return ind / 2; /* return the range index */
+			return ind / 2; // return the range index 
 	}
-	return -1; /* not in any range */
+	return -1; // not in any range 
 }
 
 /*
@@ -641,19 +641,19 @@ int Rangeset::RangesetInverse() {
 	} else {
 		n = this->n_ranges * 2;
 
-		/* find out what we have */
+		// find out what we have 
 		bool has_zero = (rangeTable[0] == 0);
 		has_end = (rangeTable[n - 1] == this->maxpos);
 
-		/* fill the entry "beyond the end" with the buffer's length */
+		// fill the entry "beyond the end" with the buffer's length 
 		rangeTable[n + 1] = rangeTable[n] = this->maxpos;
 
 		if (has_zero) {
-			/* shuffle down by one */
+			// shuffle down by one 
 			rangesetShuffleToFrom(rangeTable, 0, 1, n, 0);
 			n -= 1;
 		} else {
-			/* shuffle up by one */
+			// shuffle up by one 
 			rangesetShuffleToFrom(rangeTable, 1, 0, n, 0);
 			rangeTable[0] = 0;
 			n += 1;
@@ -687,12 +687,12 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 	nPlusRanges = plusSet->n_ranges;
 
 	if (nPlusRanges == 0)
-		return nOrigRanges; /* no ranges in plusSet - nothing to do */
+		return nOrigRanges; // no ranges in plusSet - nothing to do 
 
 	newRanges = RangesetTable::RangesNew(nOrigRanges + nPlusRanges);
 
 	if (nOrigRanges == 0) {
-		/* no ranges in destination: just copy the ranges from the other set */
+		// no ranges in destination: just copy the ranges from the other set 
 		memcpy(newRanges, plusRanges, nPlusRanges * sizeof(Range));
 		RangesetTable::RangesFree(this->ranges);
 		this->ranges = newRanges;
@@ -712,24 +712,24 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 	   ranges (from this and plusSet) - don't worry, they're both consulted
 	   read-only - building the merged set in newRanges */
 
-	isOld = 1; /* true if origRanges points to a range in oldRanges[] */
+	isOld = 1; // true if origRanges points to a range in oldRanges[] 
 
 	while (nOrigRanges > 0 || nPlusRanges > 0) {
-		/* make the range with the lowest start value the origRanges range */
+		// make the range with the lowest start value the origRanges range 
 		if (nOrigRanges == 0 || (nPlusRanges > 0 && origRanges->start > plusRanges->start)) {
 			std::swap(origRanges, plusRanges);
 			std::swap(nOrigRanges, nPlusRanges);
 			isOld = !isOld;
 		}
 
-		this->n_ranges++; /* we're using a new result range */
+		this->n_ranges++; // we're using a new result range 
 
 		*newRanges = *origRanges++;
 		nOrigRanges--;
 		if (!isOld)
 			RangesetRefreshRange(newRanges->start, newRanges->end);
 
-		/* now we must cycle over plusRanges, merging in the overlapped ranges */
+		// now we must cycle over plusRanges, merging in the overlapped ranges 
 		while (nPlusRanges > 0 && newRanges->end >= plusRanges->start) {
 			do {
 				if (newRanges->end < plusRanges->end) {
@@ -754,7 +754,7 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 		newRanges++;
 	}
 
-	/* finally, forget the old rangeset values, and reallocate the new ones */
+	// finally, forget the old rangeset values, and reallocate the new ones 
 	RangesetTable::RangesFree(oldRanges);
 	this->ranges = RangesetTable::RangesRealloc(this->ranges, this->n_ranges);
 
@@ -771,22 +771,22 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
-		/* quietly sort the positions */
+		// quietly sort the positions 
 		std::swap(start, end);
 	} else if (start == end) {
-		return this->n_ranges; /* no-op - empty range == no range */
+		return this->n_ranges; // no-op - empty range == no range 
 	}
 
 	int n = 2 * this->n_ranges;
 
-	if (n == 0) { /* make sure we have space */
+	if (n == 0) { // make sure we have space 
 		this->ranges = RangesetTable::RangesNew(1);
 		rangeTable = (int *)this->ranges;
 		i = 0;
 	} else
 		i = rangesetWeightedAtOrBefore(this, start);
 
-	if (i == n) { /* beyond last range: just add it */
+	if (i == n) { // beyond last range: just add it 
 		rangeTable[n] = start;
 		rangeTable[n + 1] = end;
 		this->n_ranges++;
@@ -797,22 +797,22 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 	}
 
 	j = i;
-	while (j < n && rangeTable[j] <= end) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end) // skip j to first ind beyond changes 
 		j++;
 
 	if (i == j) {
 		if (is_start(i)) {
-			/* is_start(i): need to make a gap in range rangeTable[i-1], rangeTable[i] */
-			rangesetShuffleToFrom(rangeTable, i + 2, i, n - i, 0); /* shuffle up */
-			rangeTable[i] = start;                                 /* load up new range's limits */
+			// is_start(i): need to make a gap in range rangeTable[i-1], rangeTable[i] 
+			rangesetShuffleToFrom(rangeTable, i + 2, i, n - i, 0); // shuffle up 
+			rangeTable[i] = start;                                 // load up new range's limits 
 			rangeTable[i + 1] = end;
-			this->n_ranges++; /* we've just created a new range */
+			this->n_ranges++; // we've just created a new range 
 			this->ranges = RangesetTable::RangesRealloc(this->ranges, this->n_ranges);
 		} else {
-			return this->n_ranges; /* no change */
+			return this->n_ranges; // no change 
 		}
 	} else {
-		/* we'll be shuffling down */
+		// we'll be shuffling down 
 		if (is_start(i))
 			rangeTable[i++] = start;
 		if (is_start(j))
@@ -836,16 +836,16 @@ int Rangeset::RangesetAssignColorName(const char *color_name) {
 	char *cp;
 
 	if (color_name && color_name[0] == '\0')
-		color_name = nullptr; /* "" invalid */
+		color_name = nullptr; // "" invalid 
 
-	/* store new color name value */
+	// store new color name value 
 	if (color_name) {
 		cp = XtStringDup(color_name);
 	} else {
 		cp = nullptr;
 	}
 
-	/* free old color name value */
+	// free old color name value 
 	XtFree(this->color_name);
 
 	this->color_name = cp;
@@ -878,14 +878,14 @@ int Rangeset::RangesetAssignName(const char *name) {
 		name = nullptr;
 	}
 
-	/* store new name value */
+	// store new name value 
 	if (name) {
 		cp = XtStringDup(name);
 	} else {
 		cp = nullptr;
 	}
 
-	/* free old name value */
+	// free old name value 
 	XtFree(this->name);
 
 	this->name = cp;
@@ -932,49 +932,49 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 
 	int len = this->n_ranges;
 	if (len == 0)
-		return -1; /* no ranges */
+		return -1; // no ranges 
 
-	auto ranges = (int *)this->ranges; /* { s1,e1, s2,e2, s3,e3,... } */
+	auto ranges = (int *)this->ranges; // { s1,e1, s2,e2, s3,e3,... } 
 	int last = this->last_index;
 
-	/* try to profit from the last lookup by using its index */
+	// try to profit from the last lookup by using its index 
 	if (last >= len || last < 0) {
-		last = (len > 0) ? len - 1 : 0; /* make sure last is in range */
+		last = (len > 0) ? len - 1 : 0; // make sure last is in range 
 		this->last_index = last;
 	}
 
 	len *= 2;
 	last *= 2;
 
-	if (pos >= ranges[last]) {      /* last even: this is a start */
-		if (pos < ranges[last + 1]) /* checking an end here */
-			return last / 2;        /* no need to change this->last_index */
+	if (pos >= ranges[last]) {      // last even: this is a start 
+		if (pos < ranges[last + 1]) // checking an end here 
+			return last / 2;        // no need to change this->last_index 
 		else
-			last += 2; /* not in this range: move on */
+			last += 2; // not in this range: move on 
 
 		if (last == len)
-			return -1; /* moved on too far */
+			return -1; // moved on too far 
 
-		/* find the entry in the upper portion of ranges */
-		index = weighted_at_or_before(ranges, last, len, pos); /* search end only */
+		// find the entry in the upper portion of ranges 
+		index = weighted_at_or_before(ranges, last, len, pos); // search end only 
 	} else if (last > 0) {
-		index = weighted_at_or_before(ranges, 0, last, pos); /* search front only */
+		index = weighted_at_or_before(ranges, 0, last, pos); // search front only 
 	} else
 		index = 0;
 
 	this->last_index = index / 2;
 
 	if (index == len)
-		return -1; /* beyond end */
+		return -1; // beyond end 
 
-	if (index & 1) { /* index odd: references an end marker */
+	if (index & 1) { // index odd: references an end marker 
 		if (pos < ranges[index])
-			return index / 2; /* return the range index */
-	} else {                  /* index even: references start marker */
+			return index / 2; // return the range index 
+	} else {                  // index even: references start marker 
 		if (pos == ranges[index])
-			return index / 2; /* return the range index */
+			return index / 2; // return the range index 
 	}
-	return -1; /* not in any range */
+	return -1; // not in any range 
 }
 
 
@@ -993,9 +993,9 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 	nMinusRanges = minusSet->n_ranges;
 
 	if (nOrigRanges == 0 || nMinusRanges == 0)
-		return 0; /* no ranges in this or minusSet - nothing to do */
+		return 0; // no ranges in this or minusSet - nothing to do 
 
-	/* we must provide more space: each range in minusSet might split a range in this */
+	// we must provide more space: each range in minusSet might split a range in this 
 	newRanges = RangesetTable::RangesNew(this->n_ranges + minusSet->n_ranges);
 
 	oldRanges = origRanges;
@@ -1007,68 +1007,68 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 
 	while (nOrigRanges > 0) {
 		do {
-			/* skip all minusRanges ranges strictly in front of *origRanges */
+			// skip all minusRanges ranges strictly in front of *origRanges 
 			while (nMinusRanges > 0 && minusRanges->end <= origRanges->start) {
-				minusRanges++; /* *minusRanges in front of *origRanges: move onto next *minusRanges */
+				minusRanges++; // *minusRanges in front of *origRanges: move onto next *minusRanges 
 				nMinusRanges--;
 			}
 
 			if (nMinusRanges > 0) {
-				/* keep all origRanges ranges strictly in front of *minusRanges */
+				// keep all origRanges ranges strictly in front of *minusRanges 
 				while (nOrigRanges > 0 && origRanges->end <= minusRanges->start) {
-					*newRanges++ = *origRanges++; /* *minusRanges beyond *origRanges: save *origRanges in *newRanges */
+					*newRanges++ = *origRanges++; // *minusRanges beyond *origRanges: save *origRanges in *newRanges 
 					nOrigRanges--;
 					this->n_ranges++;
 				}
 			} else {
-				/* no more minusRanges ranges to remove - save the rest of origRanges */
+				// no more minusRanges ranges to remove - save the rest of origRanges 
 				while (nOrigRanges > 0) {
 					*newRanges++ = *origRanges++;
 					nOrigRanges--;
 					this->n_ranges++;
 				}
 			}
-		} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
+		} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); // any more non-overlaps 
 
-		/* when we get here either we're done, or we have overlap */
+		// when we get here either we're done, or we have overlap 
 		if (nOrigRanges > 0) {
 			if (minusRanges->start <= origRanges->start) {
-				/* origRanges->start inside *minusRanges */
+				// origRanges->start inside *minusRanges 
 				if (minusRanges->end < origRanges->end) {
 					RangesetRefreshRange(origRanges->start, minusRanges->end);
-					origRanges->start = minusRanges->end; /* cut off front of original *origRanges */
-					minusRanges++;                        /* dealt with this *minusRanges: move on */
+					origRanges->start = minusRanges->end; // cut off front of original *origRanges 
+					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
-					/* all *origRanges inside *minusRanges */
+					// all *origRanges inside *minusRanges 
 					RangesetRefreshRange(origRanges->start, origRanges->end);
-					origRanges++; /* all of *origRanges can be skipped */
+					origRanges++; // all of *origRanges can be skipped 
 					nOrigRanges--;
 				}
 			} else {
-				/* minusRanges->start inside *origRanges: save front, adjust or skip rest */
-				newRanges->start = origRanges->start; /* save front of *origRanges in *newRanges */
+				// minusRanges->start inside *origRanges: save front, adjust or skip rest 
+				newRanges->start = origRanges->start; // save front of *origRanges in *newRanges 
 				newRanges->end = minusRanges->start;
 				newRanges++;
 				this->n_ranges++;
 
 				if (minusRanges->end < origRanges->end) {
-					/* all *minusRanges inside *origRanges */
+					// all *minusRanges inside *origRanges 
 					RangesetRefreshRange(minusRanges->start, minusRanges->end);
-					origRanges->start = minusRanges->end; /* cut front of *origRanges upto end *minusRanges */
-					minusRanges++;                        /* dealt with this *minusRanges: move on */
+					origRanges->start = minusRanges->end; // cut front of *origRanges upto end *minusRanges 
+					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
-					/* minusRanges->end beyond *origRanges */
+					// minusRanges->end beyond *origRanges 
 					RangesetRefreshRange(minusRanges->start, origRanges->end);
-					origRanges++; /* skip rest of *origRanges */
+					origRanges++; // skip rest of *origRanges 
 					nOrigRanges--;
 				}
 			}
 		}
 	}
 
-	/* finally, forget the old rangeset values, and reallocate the new ones */
+	// finally, forget the old rangeset values, and reallocate the new ones 
 	RangesetTable::RangesFree(oldRanges);
 	this->ranges = RangesetTable::RangesRealloc(this->ranges, this->n_ranges);
 
@@ -1087,10 +1087,10 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 	auto rangeTable = (int *)this->ranges;
 
 	if (start > end) {
-		/* quietly sort the positions */
+		// quietly sort the positions 
 		std::swap(start, end);
 	} else if (start == end) {
-		return this->n_ranges; /* no-op - empty range == no range */
+		return this->n_ranges; // no-op - empty range == no range 
 	}
 
 	int n = 2 * this->n_ranges;
@@ -1098,27 +1098,27 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 	int i = rangesetWeightedAtOrBefore(this, start);
 
 	if (i == n)
-		return this->n_ranges; /* beyond last range */
+		return this->n_ranges; // beyond last range 
 
 	j = i;
-	while (j < n && rangeTable[j] <= end) /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end) // skip j to first ind beyond changes 
 		j++;
 
 	if (i == j) {
-		/* removal occurs in front of rangeTable[i] */
+		// removal occurs in front of rangeTable[i] 
 		if (is_start(i))
-			return this->n_ranges; /* no change */
+			return this->n_ranges; // no change 
 		else {
-			/* is_end(i): need to make a gap in range rangeTable[i-1], rangeTable[i] */
-			i--;                                                   /* start of current range */
-			rangesetShuffleToFrom(rangeTable, i + 2, i, n - i, 0); /* shuffle up */
-			rangeTable[i + 1] = start;                             /* change end of current range */
-			rangeTable[i + 2] = end;                               /* change start of new range */
-			this->n_ranges++;                                  /* we've just created a new range */
+			// is_end(i): need to make a gap in range rangeTable[i-1], rangeTable[i] 
+			i--;                                                   // start of current range 
+			rangesetShuffleToFrom(rangeTable, i + 2, i, n - i, 0); // shuffle up 
+			rangeTable[i + 1] = start;                             // change end of current range 
+			rangeTable[i + 2] = end;                               // change start of new range 
+			this->n_ranges++;                                  // we've just created a new range 
 			this->ranges = RangesetTable::RangesRealloc(this->ranges, this->n_ranges);
 		}
 	} else {
-		/* removal occurs in front of rangeTable[j]: we'll be shuffling down */
+		// removal occurs in front of rangeTable[j]: we'll be shuffling down 
 		if (is_end(i))
 			rangeTable[i++] = start;
 		if (is_end(j))
@@ -1145,7 +1145,7 @@ void Rangeset::RangesetEmpty() {
 	Range *ranges = this->ranges;
 
 	if (this->color_name && this->color_set > 0) {
-		/* this range is colored: we need to clear it */
+		// this range is colored: we need to clear it 
 		this->color_set = -1;
 
 		while (this->n_ranges--) {
@@ -1201,11 +1201,11 @@ void Rangeset::RangesetRefreshRange(int start, int end) {
 */
 
 void Rangeset::RangesetInit(int label, TextBuffer *buf) {
-	this->label = (unsigned char)label; /* a letter A-Z */
-	this->maxpos = 0;                   /* text buffer maxpos */
-	this->last_index = 0;               /* a place to start looking */
-	this->n_ranges = 0;                 /* how many ranges in ranges */
-	this->ranges = nullptr;          /* the ranges table */
+	this->label = (unsigned char)label; // a letter A-Z 
+	this->maxpos = 0;                   // text buffer maxpos 
+	this->last_index = 0;               // a place to start looking 
+	this->n_ranges = 0;                 // how many ranges in ranges 
+	this->ranges = nullptr;          // the ranges table 
 
 	this->color_name = nullptr;
 	this->name = nullptr;

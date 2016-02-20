@@ -82,17 +82,17 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
    is bound to an user menu item */
 #define UNKNOWN_LANGUAGE_MODE -2
 
-/* major divisions (in position units) in User Commands dialogs */
+// major divisions (in position units) in User Commands dialogs 
 #define LEFT_MARGIN_POS 1
 #define RIGHT_MARGIN_POS 99
 #define LIST_RIGHT 45
 #define SHELL_CMD_TOP 70
 #define MACRO_CMD_TOP 40
 
-/* types of current dialog and/or menu */
+// types of current dialog and/or menu 
 enum dialogTypes { SHELL_CMDS, MACRO_CMDS, BG_MENU_CMDS };
 
-/* Structure representing a menu item for shell, macro and BG menus*/
+// Structure representing a menu item for shell, macro and BG menus
 struct menuItemRec {
 	XString name;
 	unsigned int modifiers;
@@ -150,16 +150,16 @@ struct menuTreeItem {
    2.) "subMenuA>subMenuB" (hierarchical ID = {1, 2} means: el. nbr. "2" of
        "subMenuA", which itself is el. nbr. "0" of main menu) */
 struct userSubMenuInfo {
-	char *usmiName; /* hierarchical name of sub-menu */
-	int *usmiId;    /* hierarchical ID of sub-menu   */
-	int usmiIdLen;  /* length of hierarchical ID     */
+	char *usmiName; // hierarchical name of sub-menu 
+	int *usmiId;    // hierarchical ID of sub-menu   
+	int usmiIdLen;  // length of hierarchical ID     
 };
 
-/* Holds info about sub-menu structure of an user menu */
+// Holds info about sub-menu structure of an user menu 
 struct userSubMenuCache {
-	int usmcNbrOfMainMenuItems; /* number of main menu items */
-	int usmcNbrOfSubMenus;      /* number of sub-menus */
-	userSubMenuInfo *usmcInfo;  /* list of sub-menu info */
+	int usmcNbrOfMainMenuItems; // number of main menu items 
+	int usmcNbrOfSubMenus;      // number of sub-menus 
+	userSubMenuInfo *usmcInfo;  // list of sub-menu info 
 };
 
 /* Structure holding info about a single menu item.
@@ -174,12 +174,12 @@ struct userSubMenuCache {
 struct userMenuInfo {
 	char *umiName;             /* hierarchical name of menu item
 	                              (w.o. language mode info) */
-	int *umiId;                /* hierarchical ID of menu item */
-	int umiIdLen;              /* length of hierarchical ID */
-	Boolean umiIsDefault;      /* menu item is default one ("@*") */
+	int *umiId;                // hierarchical ID of menu item 
+	int umiIdLen;              // length of hierarchical ID 
+	Boolean umiIsDefault;      // menu item is default one ("@*") 
 	int umiNbrOfLanguageModes; /* number of language modes
 	                              applicable for this menu item */
-	int *umiLanguageMode;      /* list of applicable lang. modes */
+	int *umiLanguageMode;      // list of applicable lang. modes 
 	int umiDefaultIndex;       /* array index of menu item to be
 	                              used as default, if no lang. mode
 	                              matches */
@@ -192,12 +192,12 @@ struct userMenuInfo {
 struct selectedUserMenu {
 	int sumType;                   /* type of menu (shell, macro or
 	                                  background */
-	Widget sumMenuPane;            /* pane of main menu */
-	int sumNbrOfListItems;         /* number of menu items */
-	menuItemRec **sumItemList;     /* list of menu items */
-	userMenuInfo **sumInfoList;    /* list of infos about menu items */
-	userSubMenuCache *sumSubMenus; /* info about sub-menu structure */
-	UserMenuList *sumMainMenuList; /* cached info about main menu */
+	Widget sumMenuPane;            // pane of main menu 
+	int sumNbrOfListItems;         // number of menu items 
+	menuItemRec **sumItemList;     // list of menu items 
+	userMenuInfo **sumInfoList;    // list of infos about menu items 
+	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
+	UserMenuList *sumMainMenuList; // cached info about main menu 
 	Boolean *sumMenuCreated;       /* pointer to "menu created"
 	                                  indicator */
 };
@@ -217,7 +217,7 @@ static userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
 static userSubMenuCache BGSubMenus;
 static int NBGMenuItems = 0;
 
-/* Top level shells of the user-defined menu editing dialogs */
+// Top level shells of the user-defined menu editing dialogs 
 static Widget ShellCmdDialog = nullptr;
 static Widget MacroCmdDialog = nullptr;
 static Widget BGMenuCmdDialog = nullptr;
@@ -314,17 +314,17 @@ void EditShellMenu(Document *window) {
 	int ac;
 	Arg args[20];
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (ShellCmdDialog) {
 		RaiseDialogWindow(ShellCmdDialog);
 		return;
 	}
 
-	/* Create a structure for keeping track of dialog state */
+	// Create a structure for keeping track of dialog state 
 	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
-	/* Set the dialog to operate on the Shell menu */
+	// Set the dialog to operate on the Shell menu 
 	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
 	for (int i = 0; i < NShellMenuItems; i++) {
 		ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
@@ -497,23 +497,23 @@ Select \"New\" to add a new command to the menu."),
 	XtManageChild(ucd->cmdTextW);
 	MakeSingleLineTextW(ucd->cmdTextW);
 	RemapDeleteKey(ucd->cmdTextW);
-	XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); /* for mnemonic */
+	XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); // for mnemonic 
 
 	/* Disable text input for the accelerator key widget, let the
 	   event handler manage it instead */
 	disableTextW(ucd->accTextW);
 
-	/* initializs the dialog fields to match "New" list item */
+	// initializs the dialog fields to match "New" list item 
 	updateDialogFields(nullptr, ucd);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
-	/* realize all of the widgets in the new window */
+	// realize all of the widgets in the new window 
 	RealizeWithoutForcingPosition(ucd->dlogShell);
 }
 
@@ -536,7 +536,7 @@ static void editMacroOrBGMenu(Document *window, int dialogType) {
 	int ac, i;
 	Arg args[20];
 
-	/* if the dialog is already displayed, just pop it to the top and return */
+	// if the dialog is already displayed, just pop it to the top and return 
 	if (dialogType == MACRO_CMDS && MacroCmdDialog) {
 		RaiseDialogWindow(MacroCmdDialog);
 		return;
@@ -546,17 +546,17 @@ static void editMacroOrBGMenu(Document *window, int dialogType) {
 		return;
 	}
 
-	/* Create a structure for keeping track of dialog state */
+	// Create a structure for keeping track of dialog state 
 	auto ucd = new userCmdDialog;
 	ucd->window = window;
 
-	/* Set the dialog to operate on the Macro menu */
+	// Set the dialog to operate on the Macro menu 
 	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
 	if (dialogType == MACRO_CMDS) {
 		for (i = 0; i < NMacroMenuItems; i++)
 			ucd->menuItemsList[i] = copyMenuItemRec(MacroMenuItems[i]);
 		ucd->nMenuItems = NMacroMenuItems;
-	} else { /* BG_MENU_CMDS */
+	} else { // BG_MENU_CMDS 
 		for (i = 0; i < NBGMenuItems; i++)
 			ucd->menuItemsList[i] = copyMenuItemRec(BGMenuItems[i]);
 		ucd->nMenuItems = NBGMenuItems;
@@ -692,20 +692,20 @@ Select \"New\" to add a new command to the menu."),
 	AddMouseWheelSupport(ucd->cmdTextW);
 	XtManageChild(ucd->cmdTextW);
 	RemapDeleteKey(ucd->cmdTextW);
-	XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); /* for mnemonic */
+	XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); // for mnemonic 
 
 	/* Disable text input for the accelerator key widget, let the
 	   event handler manage it instead */
 	disableTextW(ucd->accTextW);
 
-	/* initializs the dialog fields to match "New" list item */
+	// initializs the dialog fields to match "New" list item 
 	updateDialogFields(nullptr, ucd);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
 	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(form, FALSE);
 
 	/* Make widgets for top level shell and paste-replay buttons available
@@ -718,7 +718,7 @@ Select \"New\" to add a new command to the menu."),
 		BGMenuPasteReplayBtn = pasteReplayBtn;
 	}
 
-	/* Realize all of the widgets in the new dialog */
+	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(ucd->dlogShell);
 }
 
@@ -736,7 +736,7 @@ void UpdateUserMenus(Document *window) {
 		updateMenu(window, SHELL_CMDS);
 		updateMenu(window, MACRO_CMDS);
 
-		/* remember language mode assigned to shared user menus */
+		// remember language mode assigned to shared user menus 
 		window->userMenuCache_->umcLanguageMode = window->languageMode_;
 	}
 
@@ -745,7 +745,7 @@ void UpdateUserMenus(Document *window) {
 	if (window->userBGMenuCache_.ubmcLanguageMode != window->languageMode_) {
 		updateMenu(window, BG_MENU_CMDS);
 
-		/* remember language mode assigned to background menu */
+		// remember language mode assigned to background menu 
 		window->userBGMenuCache_.ubmcLanguageMode = window->languageMode_;
 	}
 }
@@ -992,7 +992,7 @@ static void rebuildMenu(Document *window, int menuType) {
 	if (menuType != BG_MENU_CMDS && !window->IsTopDocument())
 		return;
 
-	/* Fetch the appropriate menu data */
+	// Fetch the appropriate menu data 
 	selectUserMenu(window, menuType, &menu);
 
 	/* dismiss user menu tearoff, to workaround the quick
@@ -1005,14 +1005,14 @@ static void rebuildMenu(Document *window, int menuType) {
 	if (!XmIsMenuShell(XtParent(menu.sumMenuPane)))
 		_XmDismissTearOff(XtParent(menu.sumMenuPane), nullptr, nullptr);
 
-	/* destroy all widgets related to menu pane */
+	// destroy all widgets related to menu pane 
 	deleteMenuItems(menu.sumMenuPane);
 
-	/* remove cached user menu info */
+	// remove cached user menu info 
 	freeUserMenuList(menu.sumMainMenuList);
 	*menu.sumMenuCreated = False;
 
-	/* re-create & cache user menu items */
+	// re-create & cache user menu items 
 	updateMenu(window, menuType);
 }
 
@@ -1036,7 +1036,7 @@ static void selectUserMenu(Document *window, int menuType, selectedUserMenu *men
 		menu->sumSubMenus = &MacroSubMenus;
 		menu->sumMainMenuList = &window->userMenuCache_->umcMacroMenuList;
 		menu->sumMenuCreated = &window->userMenuCache_->umcMacroMenuCreated;
-	} else { /* BG_MENU_CMDS */
+	} else { // BG_MENU_CMDS 
 		menu->sumMenuPane = window->bgMenuPane_;
 		menu->sumNbrOfListItems = NBGMenuItems;
 		menu->sumItemList = BGMenuItems;
@@ -1061,21 +1061,21 @@ static void selectUserMenu(Document *window, int menuType, selectedUserMenu *men
 static void updateMenu(Document *window, int menuType) {
 	selectedUserMenu menu;
 
-	/* Fetch the appropriate menu data */
+	// Fetch the appropriate menu data 
 	selectUserMenu(window, menuType, &menu);
 
-	/* Set / reset "to be managed" flag of all info list items */
+	// Set / reset "to be managed" flag of all info list items 
 	applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode_);
 
-	/* create user menu items, if not done before */
+	// create user menu items, if not done before 
 	if (!*menu.sumMenuCreated)
 		createMenuItems(window, &menu);
 
-	/* manage user menu items depending on current language mode */
+	// manage user menu items depending on current language mode 
 	manageUserMenu(&menu, window);
 
 	if (menuType == BG_MENU_CMDS) {
-		/* Set the proper sensitivity of items which may be dimmed */
+		// Set the proper sensitivity of items which may be dimmed 
 		SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem_));
 		SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem_));
 	}
@@ -1116,7 +1116,7 @@ static void resetManageMode(UserMenuList *list) {
 		element->umlePrevManageMode = element->umleManageMode;
 		element->umleManageMode = UMMM_UNMANAGE;
 
-		/* recursively reset manage mode of sub-menus */
+		// recursively reset manage mode of sub-menus 
 		if (element->umleSubMenuList)
 			resetManageMode(element->umleSubMenuList);
 	}
@@ -1141,7 +1141,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 		XtUnmanageChild(subMenu->umleSubMenuPane);
 	}
 
-	/* manage all children of sub-menu pane */
+	// manage all children of sub-menu pane 
 	XtVaGetValues(subMenu->umleSubMenuPane, XmNchildren, &widgetList, XmNnumChildren, &nWidgetListItems, nullptr);
 	XtManageChildren(widgetList, nWidgetListItems);
 
@@ -1159,10 +1159,10 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 		}
 	}
 
-	/* manage sub-menu pane widget itself */
+	// manage sub-menu pane widget itself 
 	XtManageChild(subMenu->umleMenuItem);
 
-	/* if the sub-menu is torn off, then adjust & manage the menu */
+	// if the sub-menu is torn off, then adjust & manage the menu 
 	if (!XmIsMenuShell(XtParent(subMenu->umleSubMenuPane))) {
 		manageTearOffMenu(subMenu->umleSubMenuPane);
 	}
@@ -1191,7 +1191,7 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 		XtUnmapWidget(shell);
 	}
 
-	/* unmanage all children of sub-menu pane */
+	// unmanage all children of sub-menu pane 
 	XtVaGetValues(subMenu->umleSubMenuPane, XmNchildren, &widgetList, XmNnumChildren, &nWidgetListItems, nullptr);
 	XtUnmanageChildren(widgetList, nWidgetListItems);
 
@@ -1209,7 +1209,7 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 		}
 	}
 
-	/* unmanage sub-menu pane widget itself */
+	// unmanage sub-menu pane widget itself 
 	XtUnmanageChild(subMenu->umleMenuItem);
 }
 
@@ -1221,7 +1221,7 @@ static void manageMenuWidgets(UserMenuList *list) {
 	int i;
 	UserMenuListElement *element;
 
-	/* (un)manage all elements of given user menu list */
+	// (un)manage all elements of given user menu list 
 	for (i = 0; i < list->umlNbrItems; i++) {
 		element = list->umlItems[i];
 
@@ -1251,15 +1251,15 @@ static void manageMenuWidgets(UserMenuList *list) {
 						XtUnmanageChild(element->umleSubMenuPane);
 					}
 
-					/* (un)manage menu entries of sub-menu */
+					// (un)manage menu entries of sub-menu 
 					manageMenuWidgets(element->umleSubMenuList);
 
-					/* if the sub-menu is torn off, then adjust & manage the menu */
+					// if the sub-menu is torn off, then adjust & manage the menu 
 					if (!XmIsMenuShell(XtParent(element->umleSubMenuPane))) {
 						manageTearOffMenu(element->umleSubMenuPane);
 					}
 
-					/* if the sub-menu was torn off then redisplay it */
+					// if the sub-menu was torn off then redisplay it 
 					ShowHiddenTearOff(element->umleSubMenuPane);
 				}
 			} else if (element->umleManageMode == UMMM_UNMANAGE_ALL) {
@@ -1282,7 +1282,7 @@ static void manageMenuWidgets(UserMenuList *list) {
 */
 static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 
-	/* scan all elements of this (sub-)menu */
+	// scan all elements of this (sub-)menu 
 	for (int i = 0; i < menuList->umlNbrItems; i++) {
 		UserMenuListElement *element = menuList->umlItems[i];
 
@@ -1291,7 +1291,7 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 			   from all items of that sub-menu recursively */
 			removeAccelFromMenuWidgets(element->umleSubMenuList);
 		} else if (element->umleAccKeys != nullptr && element->umleManageMode == UMMM_UNMANAGE && element->umlePrevManageMode == UMMM_MANAGE) {
-			/* remove accelerator if one was bound */
+			// remove accelerator if one was bound 
 			XtVaSetValues(element->umleMenuItem, XmNaccelerator, nullptr, nullptr);
 		}
 	}
@@ -1305,7 +1305,7 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 	int i;
 	UserMenuListElement *element;
 
-	/* scan all elements of this (sub-)menu */
+	// scan all elements of this (sub-)menu 
 	for (i = 0; i < menuList->umlNbrItems; i++) {
 		element = menuList->umlItems[i];
 
@@ -1314,7 +1314,7 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 			   to all managed items of that sub-menu recursively */
 			assignAccelToMenuWidgets(element->umleSubMenuList, window);
 		} else if (element->umleAccKeys != nullptr && element->umleManageMode == UMMM_MANAGE && element->umlePrevManageMode == UMMM_UNMANAGE) {
-			/* assign accelerator if applicable */
+			// assign accelerator if applicable 
 			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys, nullptr);
 			if (!element->umleAccLockPatchApplied) {
 				UpdateAccelLockPatch(window->splitPane_, element->umleMenuItem);
@@ -1337,7 +1337,7 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 	UserMenuListElement *currentLE;
 	UserMenuManageMode *mode;
 
-	/* reset manage mode of all items of selected user menu in window cache */
+	// reset manage mode of all items of selected user menu in window cache 
 	resetManageMode(menu->sumMainMenuList);
 
 	/* set manage mode of all items of selected user menu in window cache
@@ -1357,7 +1357,7 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 			currentLEisSubMenu = (currentLE->umleSubMenuList != nullptr);
 
 			if (info->umiToBeManaged) {
-				/* menu record needs to be managed: */
+				// menu record needs to be managed: 
 				if (*mode == UMMM_UNMANAGE) {
 					/* "mode" was not touched after reset ("init. state"):
 					   if current list element represents a sub-menu, then
@@ -1378,7 +1378,7 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 					*mode = UMMM_MANAGE;
 				}
 			} else {
-				/* menu record needs to be unmanaged: */
+				// menu record needs to be unmanaged: 
 				if (*mode == UMMM_UNMANAGE) {
 					/* "mode" was not touched after reset ("init. state"):
 					   if current list element represents a sub-menu, then
@@ -1422,7 +1422,7 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 
 	assignAccelToMenuWidgets(menu->sumMainMenuList, window);
 
-	/* if the menu is torn off, then adjust & manage the menu */
+	// if the menu is torn off, then adjust & manage the menu 
 	if (!XmIsMenuShell(XtParent(menu->sumMenuPane)))
 		manageTearOffMenu(menu->sumMenuPane);
 }
@@ -1446,7 +1446,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	char accKeysBuf[MAX_ACCEL_LEN + 5];
 	char *accKeys;
 
-	/* Allocate storage for structures to help find panes of sub-menus */
+	// Allocate storage for structures to help find panes of sub-menus 
 	auto menuTree = new menuTreeItem[menu->sumNbrOfListItems];
 	nTreeEntries = 0;
 
@@ -1488,10 +1488,10 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 					window->bgMenuUndoItem_ = btn;
 				else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n"))
 					window->bgMenuRedoItem_ = btn;
-				/* generate accelerator keys */
+				// generate accelerator keys 
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
 				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
-				/* create corresponding menu list item */
+				// create corresponding menu list item 
 				menuList->umlItems[menuList->umlNbrItems++] = allocUserMenuListElement(btn, accKeys);
 				break;
 			}
@@ -1596,27 +1596,27 @@ static void deleteMenuItems(Widget menuPane) {
 	Widget subMenuID;
 	XtPointer userData;
 
-	/* Fetch the list of children from the menu pane to delete */
+	// Fetch the list of children from the menu pane to delete 
 	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
 
-	/* make a copy because the widget alters the list as you delete widgets */
+	// make a copy because the widget alters the list as you delete widgets 
 	auto items = new Widget[nItems];
 	std::copy_n(itemList, nItems, items);
 
-	/* delete all of the widgets not marked as PERMANENT_MENU_ITEM */
+	// delete all of the widgets not marked as PERMANENT_MENU_ITEM 
 	for (size_t n = 0; n < nItems; n++) {
 		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
 		if (userData != (XtPointer)PERMANENT_MENU_ITEM) {
 			if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
 				XtVaGetValues(items[n], XmNsubMenuId, &subMenuID, nullptr);
 
-				/* prevent dangling submenu tearoffs */
+				// prevent dangling submenu tearoffs 
 				if (!XmIsMenuShell(XtParent(subMenuID)))
 					_XmDismissTearOff(XtParent(subMenuID), nullptr, nullptr);
 
 				deleteMenuItems(subMenuID);
 			} else {
-				/* remove accel. before destroy or lose it forever */
+				// remove accel. before destroy or lose it forever 
 				XtVaSetValues(items[n], XmNaccelerator, nullptr, nullptr);
 			}
 			XtDestroyWidget(items[n]);
@@ -1632,7 +1632,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto ucd = static_cast<userCmdDialog *>(clientData);
 
-	/* Mark that there's no longer a (macro, bg, or shell) dialog up */
+	// Mark that there's no longer a (macro, bg, or shell) dialog up 
 	if (ucd->dialogType == SHELL_CMDS)
 		ShellCmdDialog = nullptr;
 	else if (ucd->dialogType == MACRO_CMDS)
@@ -1652,11 +1652,11 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto ucd = static_cast<userCmdDialog *>(clientData);
 
-	/* Read the dialog fields, and update the menus */
+	// Read the dialog fields, and update the menus 
 	if (!applyDialogChanges(ucd))
 		return;
 
-	/* Mark that there's no longer a (macro, bg, or shell) dialog up */
+	// Mark that there's no longer a (macro, bg, or shell) dialog up 
 	if (ucd->dialogType == SHELL_CMDS)
 		ShellCmdDialog = nullptr;
 	else if (ucd->dialogType == MACRO_CMDS)
@@ -1731,16 +1731,16 @@ static int checkMacroText(const char *macro, Widget errorParent, Widget errFocus
 static int applyDialogChanges(userCmdDialog *ucd) {
 	int i;
 
-	/* Get the current contents of the dialog fields */
+	// Get the current contents of the dialog fields 
 	if (!UpdateManagedList(ucd->managedList, True))
 		return False;
 
-	/* Test compile the macro */
+	// Test compile the macro 
 	if (ucd->dialogType == MACRO_CMDS)
 		if (!checkMacro(ucd))
 			return False;
 
-	/* Update the menu information */
+	// Update the menu information 
 	if (ucd->dialogType == SHELL_CMDS) {
 		for (i = 0; i < NShellMenuItems; i++)
 			freeMenuItemRec(ShellMenuItems[i]);
@@ -1759,7 +1759,7 @@ static int applyDialogChanges(userCmdDialog *ucd) {
 			MacroMenuItems[i] = copyMenuItemRec(ucd->menuItemsList[i]);
 		NMacroMenuItems = ucd->nMenuItems;
 		parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
-	} else { /* BG_MENU_CMDS */
+	} else { // BG_MENU_CMDS 
 		for (i = 0; i < NBGMenuItems; i++)
 			freeMenuItemRec(BGMenuItems[i]);
 		freeUserMenuInfoList(BGMenuInfo, NBGMenuItems);
@@ -1770,10 +1770,10 @@ static int applyDialogChanges(userCmdDialog *ucd) {
 		parseMenuItemList(BGMenuItems, NBGMenuItems, BGMenuInfo, &BGSubMenus);
 	}
 
-	/* Update the menus themselves in all of the NEdit windows */
+	// Update the menus themselves in all of the NEdit windows 
 	rebuildMenuOfAllWindows(ucd->dialogType);
 
-	/* Note that preferences have been changed */
+	// Note that preferences have been changed 
 	MarkPrefsChanged();
 	return True;
 }
@@ -1833,27 +1833,27 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 	KeySym keysym = XLookupKeysym(event, 0);
 	char outStr[MAX_ACCEL_LEN];
 
-	/* Accept only real keys, not modifiers alone */
+	// Accept only real keys, not modifiers alone 
 	if (IsModifierKey(keysym))
 		return;
 
-	/* Tab key means go to the next field, don't enter */
+	// Tab key means go to the next field, don't enter 
 	if (keysym == XK_Tab)
 		return;
 
-	/* Beep and return if the modifiers are buttons or ones we don't support */
+	// Beep and return if the modifiers are buttons or ones we don't support 
 	if (event->state & ~(ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask)) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	/* Delete or backspace clears field */
+	// Delete or backspace clears field 
 	if (keysym == XK_Delete || keysym == XK_BackSpace) {
 		XmTextSetStringEx(ucd->accTextW, "");
 		return;
 	}
 
-	/* generate the string to use in the dialog field */
+	// generate the string to use in the dialog field 
 	generateAcceleratorString(outStr, event->state, keysym);
 
 	/* Reject single character accelerators (a very simple way to eliminate
@@ -1865,7 +1865,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 		return;
 	}
 
-	/* fill in the accelerator field in the dialog */
+	// fill in the accelerator field in the dialog 
 	XmTextSetStringEx(ucd->accTextW, outStr);
 }
 
@@ -1884,7 +1884,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	window = Document::WidgetToWindow(MENU_WIDGET(w));
 
-	/* get the index of the shell command and verify that it's in range */
+	// get the index of the shell command and verify that it's in range 
 	XtVaGetValues(w, XmNuserData, &userData, nullptr);
 	index = (int)userData - 10;
 	if (index < 0 || index >= NShellMenuItems)
@@ -1917,7 +1917,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 	}
 
-	/* get the index of the macro command and verify that it's in range */
+	// get the index of the macro command and verify that it's in range 
 	XtVaGetValues(w, XmNuserData, &userData, nullptr);
 	index = (int)userData - 10;
 	if (index < 0 || index >= NMacroMenuItems)
@@ -1935,13 +1935,13 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	int index;
 	char *params[1];
 
-	/* Same remark as for macro menu commands (see above). */
+	// Same remark as for macro menu commands (see above). 
 	if (window->macroCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	/* get the index of the macro command and verify that it's in range */
+	// get the index of the macro command and verify that it's in range 
 	XtVaGetValues(w, XmNuserData, &userData, nullptr);
 	index = (int)userData - 10;
 	if (index < 0 || index >= NBGMenuItems)
@@ -2054,7 +2054,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 	if ((mneText = XmTextGetString(ucd->mneTextW))) {
 		f->mnemonic = mneText == nullptr ? '\0' : mneText[0];
 		XtFree(mneText);
-		if (f->mnemonic == ':') /* colons mess up string parsing */
+		if (f->mnemonic == ':') // colons mess up string parsing 
 			f->mnemonic = '\0';
 	}
 	if ((accText = XmTextGetString(ucd->accTextW))) {
@@ -2120,19 +2120,19 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 	if (oldItem == nullptr && dialogFieldsAreEmpty(ucd))
 		return nullptr;
 
-	/* If there are no problems reading the data, just return it */
+	// If there are no problems reading the data, just return it 
 	currentFields = readDialogFields(ucd, True);
 	if(currentFields)
 		return currentFields;
 
-	/* If user might not be expecting fields to be read, give more warning */
+	// If user might not be expecting fields to be read, give more warning 
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, ucd->dlogShell, 2, "Discard Entry", "Discard incomplete entry\nfor current menu item?", "Keep", "Discard") == 2) {
 			return oldItem == nullptr ? nullptr : copyMenuItemRec((menuItemRec *)oldItem);
 		}
 	}
 
-	/* Do readDialogFields again without "silent" mode to display warning(s) */
+	// Do readDialogFields again without "silent" mode to display warning(s) 
 	readDialogFields(ucd, False);
 	*abort = True;
 	return nullptr;
@@ -2170,7 +2170,7 @@ static void disableTextW(Widget textW) {
 	<FocusOut>:	focusOut()\n\
 	<Unmap>:	unmap()\n";
 
-	/* replace the translation table with the slimmed down one above */
+	// replace the translation table with the slimmed down one above 
 	if(!emptyTable)
 		emptyTable = XtParseTranslationTable(emptyTranslations);
 	XtVaSetValues(textW, XmNtranslations, emptyTable, nullptr);
@@ -2191,15 +2191,15 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 	for (i = 0; i < nItems; i++) {
 		f = menuItems[i];
 		generateAcceleratorString(accStr, f->modifiers, f->keysym);
-		length += f->name.size() * 2; /* allow for \n & \\ expansions */
+		length += f->name.size() * 2; // allow for \n & \\ expansions 
 		length += strlen(accStr);
-		length += strlen(f->cmd) * 6; /* allow for \n & \\ expansions */
-		length += 21;                 /* number of characters added below */
+		length += strlen(f->cmd) * 6; // allow for \n & \\ expansions 
+		length += 21;                 // number of characters added below 
 	}
-	length++; /* terminating null */
+	length++; // terminating null 
 	char *outStr = XtMalloc(length);
 
-	/* write the string */
+	// write the string 
 	char *outPtr = outStr;
 	*outPtr++ = '\\';
 	*outPtr++ = '\n';
@@ -2208,11 +2208,11 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 		generateAcceleratorString(accStr, f->modifiers, f->keysym);
 		*outPtr++ = '\t';
 		
-		for (auto ch : f->name) { /* Copy the command name */
-			if (ch == '\\') {                /* changing backslashes to \\ */
+		for (auto ch : f->name) { // Copy the command name 
+			if (ch == '\\') {                // changing backslashes to "\\" 
 				*outPtr++ = '\\';
 				*outPtr++ = '\\';
-			} else if (ch == '\n') { /* changing newlines to \n */
+			} else if (ch == '\n') { // changing newlines to \n 
 				*outPtr++ = '\\';
 				*outPtr++ = 'n';
 			} else {
@@ -2259,10 +2259,10 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 		*outPtr++ = '\t';
 		*outPtr++ = '\t';
 		
-		for (auto c = f->cmd; *c != '\0'; c++) { /* Copy the command string, changing */
-			if (*c == '\\') {               /* backslashes to double backslashes */
-				*outPtr++ = '\\';           /* and newlines to backslash-n's,    */
-				*outPtr++ = '\\';           /* followed by real newlines and tab */
+		for (auto c = f->cmd; *c != '\0'; c++) { // Copy the command string, changing 
+			if (*c == '\\') {               // backslashes to double backslashes 
+				*outPtr++ = '\\';           // and newlines to backslash-n's,    
+				*outPtr++ = '\\';           // followed by real newlines and tab 
 			} else if (*c == '\n') {
 				*outPtr++ = '\\';
 				*outPtr++ = 'n';
@@ -2312,16 +2312,16 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 
 	for (;;) {
 
-		/* remove leading whitespace */
+		// remove leading whitespace 
 		while (*inPtr == ' ' || *inPtr == '\t')
 			inPtr++;
 
-		/* end of string in proper place */
+		// end of string in proper place 
 		if (*inPtr == '\0') {
 			return True;
 		}
 
-		/* read name field */
+		// read name field 
 		nameLen = strcspn(inPtr, ":");
 		if (nameLen == 0)
 			return parseError("no name field");
@@ -2333,7 +2333,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 			return parseError("end not expected");
 		inPtr++;
 
-		/* read accelerator field */
+		// read accelerator field 
 		accLen = strcspn(inPtr, ":");
 		if (accLen >= MAX_ACCEL_LEN)
 			return parseError("accelerator field too long");
@@ -2344,7 +2344,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 			return parseError("end not expected");
 		inPtr++;
 
-		/* read menemonic field */
+		// read menemonic field 
 		mneLen = strcspn(inPtr, ":");
 		if (mneLen > 1)
 			return parseError("mnemonic field too long");
@@ -2356,7 +2356,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 		if (*inPtr == '\0')
 			return parseError("end not expected");
 
-		/* read flags field */
+		// read flags field 
 		input = FROM_NONE;
 		output = TO_SAME_WINDOW;
 		repInput = False;
@@ -2391,11 +2391,11 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 		}
 		inPtr++;
 
-		/* read command field */
+		// read command field 
 		if (listType == SHELL_CMDS) {
 			if (*inPtr++ != '\n')
 				return parseError("command must begin with newline");
-			while (*inPtr == ' ' || *inPtr == '\t') /* leading whitespace */
+			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
 				inPtr++;
 			cmdLen = strcspn(inPtr, "\n");
 			if (cmdLen == 0)
@@ -2410,13 +2410,13 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 				return False;
 		}
 		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n')
-			inPtr++; /* skip trailing whitespace & newline */
+			inPtr++; // skip trailing whitespace & newline 
 
-		/* parse the accelerator field */
+		// parse the accelerator field 
 		if (!parseAcceleratorString(accStr, &modifiers, &keysym))
 			return parseError("couldn't read accelerator field");
 
-		/* create a menu item record */
+		// create a menu item record 
 		auto f = new menuItemRec;
 		f->name      = nameStr;
 		f->cmd       = cmdStr;
@@ -2429,7 +2429,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 		f->loadAfter = loadAfter;
 		f->keysym    = keysym;
 
-		/* add/replace menu record in the list */
+		// add/replace menu record in the list 
 		for (i = 0; i < *nItems; i++) {
 			if (menuItems[i]->name == f->name) {
 				freeMenuItemRec(menuItems[i]);
@@ -2462,7 +2462,7 @@ static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym
 	char keyName[20];
 	Modifiers numLockMask = GetNumLockModMask(TheDisplay);
 
-	/* if there's no accelerator, generate an empty string */
+	// if there's no accelerator, generate an empty string 
 	if (keysym == NoSymbol) {
 		*text = '\0';
 		return;
@@ -2491,7 +2491,7 @@ static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym
 	strcpy(keyName, XKeysymToString(keysym));
 	*keyName = toupper(*keyName);
 
-	/* concatenate the strings together */
+	// concatenate the strings together 
 	sprintf(text, "%s%s%s%s%s%s%s%s", shiftStr, ctrlStr, altStr, mod2Str, mod3Str, mod4Str, mod5Str, keyName);
 }
 
@@ -2509,13 +2509,13 @@ static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym)
 	const char *mod4Str = "";
 	const char *mod5Str = "";
 
-	/* if there's no accelerator, generate an empty string */
+	// if there's no accelerator, generate an empty string 
 	if (keysym == NoSymbol) {
 		*text = '\0';
 		return;
 	}
 
-	/* translate the modifiers into strings */
+	// translate the modifiers into strings 
 	if (modifiers & ShiftMask)
 		shiftStr = "Shift ";
 	if (modifiers & LockMask)
@@ -2533,7 +2533,7 @@ static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym)
 	if (modifiers & Mod5Mask)
 		mod5Str = "Mod5 ";
 
-	/* put the modifiers together with the key name */
+	// put the modifiers together with the key name 
 	sprintf(text, "%s%s%s%s%s%s%s%s<Key>%s", shiftStr, lockStr, ctrlStr, altStr, mod2Str, mod3Str, mod4Str, mod5Str, XKeysymToString(keysym));
 }
 
@@ -2546,18 +2546,18 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers, K
 	int i, nFields, inputLength = strlen(string);
 	char fields[10][MAX_ACCEL_LEN];
 
-	/* a blank field means no accelerator */
+	// a blank field means no accelerator 
 	if (inputLength == 0) {
 		*modifiers = 0;
 		*keysym = NoSymbol;
 		return True;
 	}
 
-	/* limit the string length so no field strings will overflow */
+	// limit the string length so no field strings will overflow 
 	if (inputLength > MAX_ACCEL_LEN)
 		return False;
 
-	/* divide the input into '+' separated fields */
+	// divide the input into '+' separated fields 
 	nFields = sscanf(string, "%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]+%[^+]", fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7], fields[8], fields[9]);
 	if (nFields == 0)
 		return False;
@@ -2573,7 +2573,7 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers, K
 			return False;
 	}
 
-	/* parse the modifier names from the rest of the fields */
+	// parse the modifier names from the rest of the fields 
 	*modifiers = 0;
 	for (i = 0; i < nFields - 1; i++) {
 		if (!strcmp(fields[i], "Shift"))
@@ -2582,7 +2582,7 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers, K
 			*modifiers |= LockMask;
 		else if (!strcmp(fields[i], "Ctrl"))
 			*modifiers |= ControlMask;
-		/* comparision with "Alt" for compatibility with old .nedit files*/
+		// comparision with "Alt" for compatibility with old .nedit files
 		else if (!strcmp(fields[i], "Alt"))
 			*modifiers |= Mod1Mask;
 		else if (!strcmp(fields[i], "Mod2"))
@@ -2597,7 +2597,7 @@ static int parseAcceleratorString(const char *string, unsigned int *modifiers, K
 			return False;
 	}
 
-	/* all fields successfully parsed */
+	// all fields successfully parsed 
 	return True;
 }
 
@@ -2625,7 +2625,7 @@ static char *copyMacroToEnd(const char **inPtr) {
 		return nullptr;
 	}
 
-	/* Parse the input */
+	// Parse the input 
 	prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
 	if(!prog) {
 		ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
@@ -2684,7 +2684,7 @@ static char *addTerminatingNewlineEx(char *string) {
 ** allocate an empty user (shell, macro) menu cache structure
 */
 UserMenuCache *CreateUserMenuCache(void) {
-	/* allocate some memory for the new data structure */
+	// allocate some memory for the new data structure 
 	auto cache = new UserMenuCache;
 
 	cache->umcLanguageMode = -2;
@@ -2729,7 +2729,7 @@ static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuIn
 	int i;
 	userMenuInfo *info;
 
-	/* Allocate storage for structures to keep track of sub-menus */
+	// Allocate storage for structures to keep track of sub-menus 
 	allocSubMenuCache(subMenus, nbrOfItems);
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
@@ -2739,7 +2739,7 @@ static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuIn
 		generateUserMenuId(infoList[i], subMenus);
 	}
 
-	/* 2nd pass: solve "default" dependencies */
+	// 2nd pass: solve "default" dependencies 
 	for (i = 0; i < nbrOfItems; i++) {
 		info = infoList[i];
 
@@ -2761,7 +2761,7 @@ static int getSubMenuDepth(const char *menuName) {
 	const char *subSep;
 	int depth = 0;
 
-	/* determine sub-menu depth by counting '>' of given "menuName" */
+	// determine sub-menu depth by counting '>' of given "menuName" 
 	subSep = menuName;
 	while ((subSep = strchr(subSep, '>'))) {
 		depth++;
@@ -2781,7 +2781,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
 	int subMenuDepth;
 	int idSize;
 
-	/* allocate a new user menu info element */
+	// allocate a new user menu info element 
 	auto newInfo = new userMenuInfo;
 
 	/* determine sub-menu depth and allocate some memory
@@ -2794,7 +2794,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
 	newInfo->umiId = (int *)XtMalloc(idSize);
 	memset(newInfo->umiId, 0, idSize);
 
-	/* init. remaining parts of user menu info element */
+	// init. remaining parts of user menu info element 
 	newInfo->umiIdLen = 0;
 	newInfo->umiIsDefault = False;
 	newInfo->umiNbrOfLanguageModes = 0;
@@ -2802,7 +2802,7 @@ static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
 	newInfo->umiDefaultIndex = -1;
 	newInfo->umiToBeManaged = False;
 
-	/* assign language mode info to new user menu info element */
+	// assign language mode info to new user menu info element 
 	parseMenuItemName(item->name.str(), newInfo);
 
 	return newInfo;
@@ -2829,9 +2829,9 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 			return;
 		}
 
-		/* setup a list of all language modes related to given menu item */
+		// setup a list of all language modes related to given menu item 
 		while (atPtr) {
-			/* extract language mode name after "@" sign */
+			// extract language mode name after "@" sign 
 			for (endPtr = atPtr + 1; isalnum((unsigned char)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++)
 				;
 
@@ -2849,7 +2849,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 			nbrLM++;
 			*endPtr = c;
 
-			/* look for next "@" */
+			// look for next "@" 
 			atPtr = strchr(endPtr, '@');
 		}
 
@@ -2911,7 +2911,7 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus) {
 		subSep++;
 	}
 
-	/* remember position of menu item within final (sub) menu */
+	// remember position of menu item within final (sub) menu 
 	info->umiId[subMenuDepth] = *menuIdx;
 	info->umiIdLen = subMenuDepth + 1;
 	(*menuIdx)++;

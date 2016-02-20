@@ -60,17 +60,17 @@ namespace {
 const int FORWARD = 1;
 const int REVERSE = 2;
 
-/* bitmap data for the close-tab button */
+// bitmap data for the close-tab button 
 const int close_width  = 11;
 const int close_height = 11;
 static unsigned char close_bits[] = {0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
-/* bitmap data for the isearch-find button */
+// bitmap data for the isearch-find button 
 const int isrcFind_width  = 11;
 const int isrcFind_height = 11;
 static unsigned char isrcFind_bits[] = {0xe0, 0x01, 0x10, 0x02, 0xc8, 0x04, 0x08, 0x04, 0x08, 0x04, 0x00, 0x04, 0x18, 0x02, 0xdc, 0x01, 0x0e, 0x00, 0x07, 0x00, 0x03, 0x00};
 
-/* bitmap data for the isearch-clear button */
+// bitmap data for the isearch-clear button 
 const int isrcClear_width  = 11;
 const int isrcClear_height = 11;
 static unsigned char isrcClear_bits[] = {0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x84, 0x01, 0xc4, 0x00, 0x64, 0x00, 0xc4, 0x00, 0x84, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00};
@@ -83,11 +83,11 @@ const int STAT_SHADOW_THICKNESS = 1;
    (which may break in a future release) is not available */
 const int PANE_MIN_HEIGHT = 39;
 
-/* From Xt, Shell.c, "BIGSIZE" */
+// From Xt, Shell.c, "BIGSIZE" 
 const Dimension XT_IGNORE_PPOSITION = 32767;
 
-Document *inFocusDocument   = nullptr; /* where we are now */
-Document *lastFocusDocument = nullptr; /* where we came from */
+Document *inFocusDocument   = nullptr; // where we are now 
+Document *lastFocusDocument = nullptr; // where we came from 
 
 int DoneWithMoveDocumentDialog;
 
@@ -126,13 +126,13 @@ Widget manageToolBars(Widget toolBarsForm) {
 			if (topWidget) {
 				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, topWidget, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
 			} else {
-				/* the very first toolbar on top */
+				// the very first toolbar on top 
 				XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_NONE, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopOffset, STAT_SHADOW_THICKNESS, XmNrightOffset, STAT_SHADOW_THICKNESS, nullptr);
 			}
 
 			topWidget = tbar;
 
-			/* if the next widget is a separator, turn it on */
+			// if the next widget is a separator, turn it on 
 			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
 				XtManageChild(children[n + 1]);
 			}
@@ -143,7 +143,7 @@ Widget manageToolBars(Widget toolBarsForm) {
 			   if the widget is being inserted */
 			XtVaSetValues(tbar, XmNtopAttachment, XmATTACH_NONE, XmNbottomAttachment, XmATTACH_FORM, nullptr);
 
-			/* if the next widget is a separator, turn it off */
+			// if the next widget is a separator, turn it off 
 			if (n + 1 < nItems && !strcmp(XtName(children[n + 1]), "TOOLBAR_SEP")) {
 				XtUnmanageChild(children[n + 1]);
 			}
@@ -154,11 +154,11 @@ Widget manageToolBars(Widget toolBarsForm) {
 		if (strcmp(XtName(topWidget), "TOOLBAR_SEP")) {
 			XtVaSetValues(topWidget, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
 		} else {
-			/* is a separator */
+			// is a separator 
 			Widget wgt;
 			XtVaGetValues(topWidget, XmNtopWidget, &wgt, nullptr);
 
-			/* don't need sep below bottom-most toolbar */
+			// don't need sep below bottom-most toolbar 
 			XtUnmanageChild(topWidget);
 			XtVaSetValues(wgt, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
 		}
@@ -240,12 +240,12 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 	auto window = static_cast<Document *>(cbArg);
 	int selected = window->buffer_->primary_.selected;
 
-	/* update the table of bookmarks */
+	// update the table of bookmarks 
 	if (!window->ignoreModify_) {
 		UpdateMarkTable(window, pos, nInserted, nDeleted);
 	}
 
-	/* Check and dim/undim selection related menu items */
+	// Check and dim/undim selection related menu items 
 	if ((window->wasSelected_ && !selected) || (!window->wasSelected_ && selected)) {
 		window->wasSelected_ = selected;
 
@@ -275,27 +275,27 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 	if (window->ignoreModify_ || (nDeleted == 0 && nInserted == 0))
 		return;
 
-	/* Make sure line number display is sufficient for new data */
+	// Make sure line number display is sufficient for new data 
 	window->updateLineNumDisp();
 
 	/* Save information for undoing this operation (this call also counts
 	   characters and editing operations for triggering autosave */
 	window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
-	/* Trigger automatic backup if operation or character limits reached */
+	// Trigger automatic backup if operation or character limits reached 
 	if (window->autoSave_ && (window->autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
 		WriteBackupFile(window);
 		window->autoSaveCharCount_ = 0;
 		window->autoSaveOpCount_ = 0;
 	}
 
-	/* Indicate that the window has now been modified */
+	// Indicate that the window has now been modified 
 	window->SetWindowModified(TRUE);
 
-	/* Update # of bytes, and line and col statistics */
+	// Update # of bytes, and line and col statistics 
 	window->UpdateStatsLine();
 
-	/* Check if external changes have been made to file and warn user */
+	// Check if external changes have been made to file and warn user 
 	CheckForChangesToFile(window);
 }
 
@@ -305,16 +305,16 @@ void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	/* record which window pane last had the keyboard focus */
+	// record which window pane last had the keyboard focus 
 	window->lastFocus_ = w;
 
-	/* update line number statistic to reflect current focus pane */
+	// update line number statistic to reflect current focus pane 
 	window->UpdateStatsLine();
 
-	/* finish off the current incremental search */
+	// finish off the current incremental search 
 	EndISearch(window);
 
-	/* Check for changes to read-only status and/or file modifications */
+	// Check for changes to read-only status and/or file modifications 
 	CheckForChangesToFile(window);
 }
 
@@ -329,13 +329,13 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (window->ignoreModify_)
 		return;
 
-	/* update line and column nubers in statistics line */
+	// update line and column nubers in statistics line 
 	window->UpdateStatsLine();
 
-	/* Check the character before the cursor for matchable characters */
+	// Check the character before the cursor for matchable characters 
 	FlashMatching(window, w);
 
-	/* Check for changes to read-only status and/or file modifications */
+	// Check for changes to read-only status and/or file modifications 
 	CheckForChangesToFile(window);
 
 	/*  This callback is not only called for focussed panes, but for newly
@@ -344,7 +344,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
 	if (textWidget->text.cursorBlinkProcID != 0) {
-		/*  Start blinking the caret again.  */
+		//  Start blinking the caret again.  
 		ResetCursorBlink(textWidget, False);
 	}
 }
@@ -356,7 +356,7 @@ void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)w;
 
-	/* don't record all of the intermediate drag steps for undo */
+	// don't record all of the intermediate drag steps for undo 
 	window->ignoreModify_ = True;
 }
 
@@ -367,10 +367,10 @@ void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto window   = static_cast<Document *>(clientData);
 	auto callData = static_cast<dragEndCBStruct *>(call_data);
 
-	/* restore recording of undo information */
+	// restore recording of undo information 
 	window->ignoreModify_ = False;
 
-	/* Do nothing if drag operation was canceled */
+	// Do nothing if drag operation was canceled 
 	if (callData->nCharsInserted == 0)
 		return;
 
@@ -381,7 +381,7 @@ void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 
 Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
 
-	/* Create a text widget inside of a scrolled window widget */
+	// Create a text widget inside of a scrolled window widget 
 	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
 	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
 	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
@@ -431,7 +431,7 @@ Widget createTextArea(Widget parent, Document *window, int rows, int cols, int e
 
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
-	/* add focus, drag, cursor tracking, and smart indent callbacks */
+	// add focus, drag, cursor tracking, and smart indent callbacks 
 	XtAddCallback(text, textNfocusCallback, focusCB, window);
 	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
 	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
@@ -442,10 +442,10 @@ Widget createTextArea(Widget parent, Document *window, int rows, int cols, int e
 	   ... (check if still true with the nedit text widget, probably not) */
 	XmAddTabGroup(containingPane(text));
 
-	/* compensate for Motif delete/backspace problem */
+	// compensate for Motif delete/backspace problem 
 	RemapDeleteKey(text);
 
-	/* Augment translation table for right button popup menu */
+	// Augment translation table for right button popup menu 
 	AddBGMenuAction(text);
 
 	/* If absolute line numbers will be needed for display in the statistics
@@ -466,7 +466,7 @@ void hideTearOffs(Widget menuPane) {
 	Cardinal nItems;
 	int n;
 
-	/* hide all submenu tearoffs */
+	// hide all submenu tearoffs 
 	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
 	for (n = 0; n < (int)nItems; n++) {
 		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
@@ -475,7 +475,7 @@ void hideTearOffs(Widget menuPane) {
 		}
 	}
 
-	/* hide tearoff for this menu */
+	// hide tearoff for this menu 
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		XtUnmapWidget(XtParent(menuPane));
 }
@@ -489,7 +489,7 @@ void redisplayTearOffs(Widget menuPane) {
 	Cardinal nItems;
 	int n;
 
-	/* redisplay all submenu tearoffs */
+	// redisplay all submenu tearoffs 
 	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
 	for (n = 0; n < (int)nItems; n++) {
 		if (XtClass(itemList[n]) == xmCascadeButtonWidgetClass) {
@@ -498,7 +498,7 @@ void redisplayTearOffs(Widget menuPane) {
 		}
 	}
 
-	/* redisplay tearoff for this menu */
+	// redisplay tearoff for this menu 
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		ShowHiddenTearOff(menuPane);
 }
@@ -520,7 +520,7 @@ int getTabPosition(Widget tab) {
 		}
 	}
 
-	return -1; /* something is wrong! */
+	return -1; // something is wrong! 
 }
 
 std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
@@ -542,7 +542,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	TextSelection sel;
 	TextDisplay *textD;
 
-	/* transfer the primary selection */
+	// transfer the primary selection 
 	memcpy(&sel, &orgWin->buffer_->primary_, sizeof(TextSelection));
 
 	if (sel.selected) {
@@ -569,15 +569,15 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 
 	window->nPanes_ = orgWin->nPanes_;
 
-	/* Copy some parameters */
+	// Copy some parameters 
 	XtVaGetValues(orgWin->textArea_, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, nullptr);
 	lineNumCols = orgWin->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0;
 	XtVaSetValues(window->textArea_, textNemulateTabs, emTabDist, textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin, textNlineNumCols, lineNumCols, nullptr);
 
-	/* clone split panes, if any */
+	// clone split panes, if any 
 	textD = ((TextWidget)window->textArea_)->text.textD;
 	if (window->nPanes_) {
-		/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+		// Unmanage & remanage the panedWindow so it recalculates pane heights 
 		XtUnmanageChild(window->splitPane_);
 
 		/* Create a text widget to add to the pane and set its buffer and
@@ -592,13 +592,13 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			XtManageChild(text);
 			window->textPanes_[i] = text;
 
-			/* Fix up the colors */
+			// Fix up the colors 
 			auto newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}
 
-		/* Set the minimum pane height in the new pane */
+		// Set the minimum pane height in the new pane 
 		window->UpdateMinPaneHeights();
 
 		for (i = 0; i <= window->nPanes_; i++) {
@@ -606,23 +606,23 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 		}
 
-		/* Re-manage panedWindow to recalculate pane heights & reset selection */
+		// Re-manage panedWindow to recalculate pane heights & reset selection 
 		XtManageChild(window->splitPane_);
 	}
 
-	/* Reset all of the heights, scroll positions, etc. */
+	// Reset all of the heights, scroll positions, etc. 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
 		TextSetScroll(text, topLines[i], horizOffsets[i]);
 
-		/* dim the cursor */
+		// dim the cursor 
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextDSetCursorStyle(DIM_CURSOR);
 		textD->TextDUnblankCursor();
 	}
 
-	/* set the focus pane */
+	// set the focus pane 
 	// NOTE(eteran): are we sure we want "<=" here? It's of course possible that
 	//               it's correct, but it is certainly unconventional.
 	//               Notice that is is used in the above loops as well
@@ -671,7 +671,7 @@ void tabClickEH(Widget w, XtPointer clientData, XEvent *event) {
 	(void)clientData;
 	(void)event;
 
-	/* hide the tooltip when user clicks with any button. */
+	// hide the tooltip when user clicks with any button. 
 	if (BubbleButton_Timer(w)) {
 		XtRemoveTimeOut(BubbleButton_Timer(w));
 		BubbleButton_Timer(w) = (XtIntervalId) nullptr;
@@ -689,16 +689,16 @@ Widget addTab(Widget folder, const char *string) {
 
 	s1 = XmStringCreateSimpleEx(string);
 	tab = XtVaCreateManagedWidget("tab", xrwsBubbleButtonWidgetClass, folder,
-	                              /* XmNmarginWidth, <default@nedit.c>, */
-	                              /* XmNmarginHeight, <default@nedit.c>, */
-	                              /* XmNalignment, <default@nedit.c>, */
+	                              // XmNmarginWidth, <default@nedit.c>, 
+	                              // XmNmarginHeight, <default@nedit.c>, 
+	                              // XmNalignment, <default@nedit.c>, 
 	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, True, XltNslidingBubble, False,
-	                              /* XltNdelay, 800,*/
-	                              /* XltNbubbleDuration, 8000,*/
+	                              // XltNdelay, 800,
+	                              // XltNbubbleDuration, 8000,
 	                              nullptr);
 	XmStringFree(s1);
 
-	/* there's things to do as user click on the tab */
+	// there's things to do as user click on the tab 
 	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, nullptr);
 
 	/* BubbleButton simply use reversed video for tooltips,
@@ -747,7 +747,7 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 	int nDocuments = window->NDocuments();
 
 	if (nDocuments == NWindows()) {
-		/* this is only window, then exit */
+		// this is only window, then exit 
 		XtCallActionProc(WindowList->lastFocus_, "exit", ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
 	} else {
 		if (nDocuments == 1) {
@@ -831,25 +831,25 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 	textInserted = (nInserted > 0);
 
 	if (textInserted && !textDeleted) {
-		/* Insert */
+		// Insert 
 		if (nInserted == 1)
 			return ONE_CHAR_INSERT;
 		else
 			return BLOCK_INSERT;
 	} else if (textInserted && textDeleted) {
-		/* Replace */
+		// Replace 
 		if (nInserted == 1)
 			return ONE_CHAR_REPLACE;
 		else
 			return BLOCK_REPLACE;
 	} else if (!textInserted && textDeleted) {
-		/* Delete */
+		// Delete 
 		if (nDeleted == 1)
 			return ONE_CHAR_DELETE;
 		else
 			return BLOCK_DELETE;
 	} else {
-		/* Nothing deleted or inserted */
+		// Nothing deleted or inserted 
 		return UNDO_NOOP;
 	}
 }
@@ -1017,7 +1017,7 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 	if (nBuf <= 1)
 		return nullptr;
 
-	/* get the list of tabs */
+	// get the list of tabs 
 	auto tabs = new Widget[nBuf];
 	tabTotalCount = 0;
 	if (crossWin) {
@@ -1026,10 +1026,10 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 
 		XtVaGetValues(TheAppShell, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
 
-		/* get list of tabs in all windows */
+		// get list of tabs in all windows 
 		for (n = 0; n < nItems; n++) {
 			if (strcmp(XtName(children[n]), "textShell") || ((win = WidgetToWindow(children[n])) == nullptr))
-				continue; /* skip non-text-editor windows */
+				continue; // skip non-text-editor windows 
 
 			XtVaGetValues(win->tabBar_, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
 
@@ -1038,16 +1038,16 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 			}
 		}
 	} else {
-		/* get list of tabs in this window */
+		// get list of tabs in this window 
 		XtVaGetValues(tabBar_, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
 
 		for (i = 0; i < tabCount; i++) {
-			if (TabToWindow(tabList[i])) /* make sure tab is valid */
+			if (TabToWindow(tabList[i])) // make sure tab is valid 
 				tabs[tabTotalCount++] = tabList[i];
 		}
 	}
 
-	/* find the position of the tab in the tablist */
+	// find the position of the tab in the tablist 
 	tabPos = 0;
 	for (n = 0; n < tabTotalCount; n++) {
 		if (tabs[n] == tab_) {
@@ -1056,7 +1056,7 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 		}
 	}
 
-	/* calculate index position of next tab */
+	// calculate index position of next tab 
 	nextPos = tabPos + direction;
 	if (nextPos >= nBuf) {
 		if (wrap)
@@ -1070,7 +1070,7 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 			nextPos = 1;
 	}
 
-	/* return the document where the next tab belongs to */
+	// return the document where the next tab belongs to 
 	win = TabToWindow(tabs[nextPos]);
 	delete [] tabs;
 	return win;
@@ -1089,9 +1089,9 @@ void Document::showStatistics(int state) {
 		showStatsForm();
 	}
 
-	/* Tell WM that the non-expandable part of the this has changed size */
-	/* Already done in showStatsForm */
-	/* UpdateWMSizeHints(); */
+	// Tell WM that the non-expandable part of the this has changed size 
+	// Already done in showStatsForm 
+	// UpdateWMSizeHints(); 
 }
 
 /*
@@ -1107,9 +1107,9 @@ void Document::showISearch(int state) {
 		showStatsForm();
 	}
 
-	/* Tell WM that the non-expandable part of the this has changed size */
-	/* This is already done in showStatsForm */
-	/* UpdateWMSizeHints(); */
+	// Tell WM that the non-expandable part of the this has changed size 
+	// This is already done in showStatsForm 
+	// UpdateWMSizeHints(); 
 }
 
 /*
@@ -1138,7 +1138,7 @@ void Document::showStatsForm() {
 		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_BELOW_WORKSPACE, nullptr);
 	}
 
-	/* Tell WM that the non-expandable part of the this has changed size */
+	// Tell WM that the non-expandable part of the this has changed size 
 	UpdateWMSizeHints();
 }
 
@@ -1181,12 +1181,12 @@ void Document::CleanUpTabBarExposeQueue() {
 	if(!this)
 		return;
 
-	/* remove redundant expose events on tab bar */
+	// remove redundant expose events on tab bar 
 	count = 0;
 	while (XCheckTypedWindowEvent(TheDisplay, XtWindow(tabBar_), Expose, &event))
 		count++;
 
-	/* now we can update tabbar */
+	// now we can update tabbar 
 	if (count) {
 		ev.type = Expose;
 		ev.display = TheDisplay;
@@ -1215,28 +1215,28 @@ void Document::RefreshWindowStates() {
 	UpdateWindowReadOnly();
 	UpdateWindowTitle();
 
-	/* show/hide statsline as needed */
+	// show/hide statsline as needed 
 	if (modeMessageDisplayed_ && !XtIsManaged(statsLineForm_)) {
-		/* turn on statline to display mode message */
+		// turn on statline to display mode message 
 		showStatistics(True);
 	} else if (showStats_ && !XtIsManaged(statsLineForm_)) {
-		/* turn on statsline since it is enabled */
+		// turn on statsline since it is enabled 
 		showStatistics(True);
 	} else if (!showStats_ && !modeMessageDisplayed_ && XtIsManaged(statsLineForm_)) {
-		/* turn off statsline since there's nothing to show */
+		// turn off statsline since there's nothing to show 
 		showStatistics(False);
 	}
 
-	/* signal if macro/shell is running */
+	// signal if macro/shell is running 
 	if (shellCmdData_ || macroCmdData_)
 		BeginWait(shell_);
 	else
 		EndWait(shell_);
 
-	/* we need to force the statsline to reveal itself */
+	// we need to force the statsline to reveal itself 
 	if (XtIsManaged(statsLineForm_)) {
-		XmTextSetCursorPosition(statsLine_, 0);    /* start of line */
-		XmTextSetCursorPosition(statsLine_, 9000); /* end of line */
+		XmTextSetCursorPosition(statsLine_, 0);    // start of line 
+		XmTextSetCursorPosition(statsLine_, 9000); // end of line 
 	}
 
 	XmUpdateDisplay(statsLine_);
@@ -1252,10 +1252,10 @@ void Document::RefreshWindowStates() {
 void Document::refreshMenuBar() {
 	RefreshMenuToggleStates();
 
-	/* Add/remove language specific menu items */
+	// Add/remove language specific menu items 
 	UpdateUserMenus(this);
 
-	/* refresh selection-sensitive menus */
+	// refresh selection-sensitive menus 
 	DimSelectionDepUserMenuItems(this, wasSelected_);
 }
 
@@ -1288,7 +1288,7 @@ int Document::updateGutterWidth() {
 
 	for(Document *document: WindowList) {
 		if (document->shell_ == shell_) {
-			/*  We found ourselves a document from this window.  */
+			//  We found ourselves a document from this window.  
 			int lineNumCols, tmpReqCols;
 			TextDisplay *textD = ((TextWidget)document->textArea_)->text.textD;
 
@@ -1338,7 +1338,7 @@ int Document::updateGutterWidth() {
 				continue;
 			}
 
-			/*  Update all panes of this document.  */
+			//  Update all panes of this document.  
 			for (i = 0; i <= document->nPanes_; i++) {
 				text = (i == 0) ? document->textArea_ : document->textPanes_[i - 1];
 				XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
@@ -1358,10 +1358,10 @@ void Document::RefreshMenuToggleStates() {
 	if (!IsTopDocument())
 		return;
 
-	/* File menu */
+	// File menu 
 	XtSetSensitive(printSelItem_, wasSelected_);
 
-	/* Edit menu */
+	// Edit menu 
 	XtSetSensitive(undoItem_, !undo_.empty());
 	XtSetSensitive(redoItem_, !redo_.empty());
 	XtSetSensitive(printSelItem_, wasSelected_);
@@ -1369,7 +1369,7 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(copyItem_, wasSelected_);
 	XtSetSensitive(delItem_, wasSelected_);
 
-	/* Preferences menu */
+	// Preferences menu 
 	XmToggleButtonSetState(statsLineItem_, showStats_, False);
 	XmToggleButtonSetState(iSearchLineItem_, showISearchLine_, False);
 	XmToggleButtonSetState(lineNumsItem_, showLineNumbers_, False);
@@ -1389,7 +1389,7 @@ void Document::RefreshMenuToggleStates() {
 	SetShowMatching(showMatchingStyle_);
 	SetLanguageMode(this, languageMode_, FALSE);
 
-	/* Windows Menu */
+	// Windows Menu 
 	XtSetSensitive(splitPaneItem_, nPanes_ < MAX_PANES);
 	XtSetSensitive(closePaneItem_, nPanes_ > 0);
 	XtSetSensitive(detachDocumentItem_, NDocuments() > 1);
@@ -1420,7 +1420,7 @@ void Document::RefreshTabState() {
 		sprintf(labelString, "%s%s", filename_.c_str(), fileChanged_ ? "*" : "");
 	}
 
-	/* Make the top document stand out a little more */
+	// Make the top document stand out a little more 
 	if (IsTopDocument())
 		tag = (String) "BOLD";
 
@@ -1483,7 +1483,7 @@ void Document::UpdateStatsLine() {
 		return;
 	}
 
-	/* Compose the string to display. If line # isn't available, leave it off */
+	// Compose the string to display. If line # isn't available, leave it off 
 	int pos            = TextGetCursorPos(lastFocus_);
 	size_t string_size = filename_.size() + path_.size() + 45;
 	auto string        = new char[string_size];
@@ -1502,19 +1502,19 @@ void Document::UpdateStatsLine() {
 		}
 	}
 
-	/* Update the line/column number */
+	// Update the line/column number 
 	xmslinecol = XmStringCreateSimpleEx(slinecol);
 	XtVaSetValues(statsLineColNo_, XmNlabelString, xmslinecol, nullptr);
 	XmStringFree(xmslinecol);
 
-	/* Don't clobber the line if there's a special message being displayed */
+	// Don't clobber the line if there's a special message being displayed 
 	if (!modeMessageDisplayed_) {
-		/* Change the text in the stats line */
+		// Change the text in the stats line 
 		XmTextReplace(statW, 0, XmTextGetLastPosition(statW), string);
 	}
 	delete [] string;
 
-	/* Update the line/col display */
+	// Update the line/col display 
 	xmslinecol = XmStringCreateSimpleEx(slinecol);
 	XtVaSetValues(statsLineColNo_, XmNlabelString, xmslinecol, nullptr);
 	XmStringFree(xmslinecol);
@@ -1535,7 +1535,7 @@ void Document::UpdateWMSizeHints() {
 	Widget hScrollBar;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
-	/* Find the dimensions of a single character of the text font */
+	// Find the dimensions of a single character of the text font 
 	XtVaGetValues(textArea_, textNfont, &fs, nullptr);
 	fontHeight = textD->ascent + textD->descent;
 	fontWidth = fs->max_bounds.width;
@@ -1570,7 +1570,7 @@ void Document::UpdateWMSizeHints() {
 	baseWidth = shellWidth - nCols * fontWidth;
 	baseHeight = shellHeight - nRows * fontHeight;
 
-	/* Set the size hints in the shell widget */
+	// Set the size hints in the shell widget 
 	XtVaSetValues(shell_, XmNwidthInc, fs->max_bounds.width, XmNheightInc, fontHeight, XmNbaseWidth, baseWidth, XmNbaseHeight, baseHeight, XmNminWidth, baseWidth + fontWidth, XmNminHeight,
 	              baseHeight + (1 + nPanes_) * fontHeight, nullptr);
 
@@ -1877,7 +1877,7 @@ void Document::UpdateWindowTitle() {
 		XtVaSetValues(XtParent(replaceDlog_), XmNtitle, title, nullptr);
 	}
 
-	/* Update the Windows menus with the new name */
+	// Update the Windows menus with the new name 
 	InvalidateWindowMenus();
 }
 
@@ -1889,13 +1889,13 @@ void Document::SortTabBar() {
 	if (!GetPrefSortTabs())
 		return;
 
-	/* need more than one tab to sort */
+	// need more than one tab to sort 
 	const int nDoc = NDocuments();
 	if (nDoc < 2) {
 		return;
 	}
 
-	/* first sort the documents */
+	// first sort the documents 
 	std::vector<Document *> windows;
 	windows.reserve(nDoc);
 	
@@ -1911,7 +1911,7 @@ void Document::SortTabBar() {
 		return a->path_ < b->path_;
 	});
 	
-	/* assign tabs to documents in sorted order */
+	// assign tabs to documents in sorted order 
 	WidgetList tabList;
 	int tabCount;	
 	XtVaGetValues(tabBar_, XmNtabWidgetList, &tabList, XmNtabCount, &tabCount, nullptr);
@@ -1920,7 +1920,7 @@ void Document::SortTabBar() {
 		if (tabList[i]->core.being_destroyed)
 			continue;
 
-		/* set tab as active */
+		// set tab as active 
 		if (windows[j]->IsTopDocument())
 			XmLFolderSetActiveTab(tabBar_, i, False);
 
@@ -1940,7 +1940,7 @@ void Document::UpdateMinPaneHeights() {
 	int i, marginHeight, minPaneHeight;
 	Widget hScrollBar;
 
-	/* find the minimum allowable size for a pane */
+	// find the minimum allowable size for a pane 
 	XtVaGetValues(textArea_, textNhScrollBar, &hScrollBar, nullptr);
 	XtVaGetValues(containingPane(textArea_), XmNscrolledWindowMarginHeight, &swMarginHeight, nullptr);
 	XtVaGetValues(XtParent(textArea_), XmNshadowThickness, &frameShadowHeight, nullptr);
@@ -1948,7 +1948,7 @@ void Document::UpdateMinPaneHeights() {
 	XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, nullptr);
 	minPaneHeight = textD->ascent + textD->descent + marginHeight * 2 + swMarginHeight * 2 + hsbHeight + 2 * frameShadowHeight;
 
-	/* Set it in all of the widgets in the this */
+	// Set it in all of the widgets in the this 
 	setPaneMinHeight(containingPane(textArea_), minPaneHeight);
 	for (i = 0; i < nPanes_; i++)
 		setPaneMinHeight(containingPane(textPanes_[i]), minPaneHeight);
@@ -2027,18 +2027,18 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 	
 	TextDisplay *textD;
 
-	/* Update the main pane */
+	// Update the main pane 
 	XtVaSetValues(textArea_, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 	textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
-	/* Update any additional panes */
+	// Update any additional panes 
 	for (i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 		textD = ((TextWidget)textPanes_[i])->text.textD;
 		textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	}
 
-	/* Redo any syntax highlighting */
+	// Redo any syntax highlighting 
 	if (highlightData_)
 		UpdateHighlightStyles(this);
 }
@@ -2049,13 +2049,13 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 int Document::CloseAllDocumentInWindow() {
 
 	if (NDocuments() == 1) {
-		/* only one document in the window */
+		// only one document in the window 
 		return CloseFileAndWindow(this, PROMPT_SBC_DIALOG_RESPONSE);
 	} else {
 		Widget winShell = shell_;
 		Document *topDocument;
 
-		/* close all _modified_ documents belong to this window */
+		// close all _modified_ documents belong to this window 
 		for (Document *win = WindowList; win;) {
 			if (win->shell_ == winShell && win->fileChanged_) {
 				Document *next = win->next_;
@@ -2067,7 +2067,7 @@ int Document::CloseAllDocumentInWindow() {
 			}
 		}
 
-		/* see there's still documents left in the window */
+		// see there's still documents left in the window 
 		Document *win = Document::find_if([&](Document *win) {
 			return (win->shell_ == winShell);
 		});
@@ -2075,7 +2075,7 @@ int Document::CloseAllDocumentInWindow() {
 		if (win) {
 			topDocument = GetTopDocument(winShell);
 
-			/* close all non-top documents belong to this window */
+			// close all non-top documents belong to this window 
 			for (win = WindowList; win;) {
 				if (win->shell_ == winShell && win != topDocument) {
 					Document *next = win->next_;
@@ -2086,7 +2086,7 @@ int Document::CloseAllDocumentInWindow() {
 					win = win->next_;
 			}
 
-			/* close the last document and its window */
+			// close the last document and its window 
 			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
 				return False;
 		}
@@ -2111,7 +2111,7 @@ Document *Document::DetachDocument() {
 		win->RaiseDocument();
 	}
 
-	/* Create a new this */
+	// Create a new this 
 	auto cloneWin = new Document(filename_.c_str(), nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
@@ -2130,19 +2130,19 @@ Document *Document::DetachDocument() {
 	cloneWin->ShowISearchLine(showISearchLine_);
 	cloneWin->ShowStatsLine(showStats_);
 
-	/* clone the document & its pref settings */
+	// clone the document & its pref settings 
 	cloneDocument(cloneWin);
 
-	/* remove the document from the old this */
+	// remove the document from the old this 
 	fileChanged_ = False;
 	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
-	/* refresh former host this */
+	// refresh former host this 
 	if (win) {
 		win->RefreshWindowStates();
 	}
 
-	/* this should keep the new document this fresh */
+	// this should keep the new document this fresh 
 	cloneWin->RefreshWindowStates();
 	cloneWin->RefreshTabState();
 	cloneWin->SortTabBar();
@@ -2181,14 +2181,14 @@ void Document::MoveDocumentDialog() {
 		nList++;
 	}
 
-	/* stop here if there's no other this to move to */
+	// stop here if there's no other this to move to 
 	if (!nList) {
 		delete [] list;
 		delete [] shellWinList;
 		return;
 	}
 
-	/* create the dialog */
+	// create the dialog 
 	parent = shell_;
 	popupTitle = XmStringCreateSimpleEx("Move Document");
 	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", filename_.c_str());
@@ -2218,14 +2218,14 @@ void Document::MoveDocumentDialog() {
 	XmStringFree(s1);
 	XmStringFree(popupTitle);
 
-	/* free the this list */
+	// free the this list 
 	for (i = 0; i < nList; i++) {
 		XmStringFree(list[i]);
 	}
 	
 	delete [] list;
 
-	/* create the option box for moving all documents */
+	// create the option box for moving all documents 
 	s1 = XmStringCreateLtoREx("Move all documents in this window");
 	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
 	XmStringFree(s1);
@@ -2233,33 +2233,33 @@ void Document::MoveDocumentDialog() {
 	if (NDocuments() > 1)
 		XtManageChild(moveAllOption);
 
-	/* disable option if only one document in the this */
+	// disable option if only one document in the this 
 	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
 
 	s1 = XmStringCreateLtoREx("Move");
 	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
 	XmStringFree(s1);
 
-	/* default to the first this on the list */
+	// default to the first this on the list 
 	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
 	XmListSelectPos(listBox, 1, True);
 
-	/* show the dialog */
+	// show the dialog 
 	DoneWithMoveDocumentDialog = 0;
 	ManageDialogCenteredOnPointer(dialog);
 	while (!DoneWithMoveDocumentDialog)
 		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
 
-	/* get the this to move document into */
+	// get the this to move document into 
 	XmListGetSelectedPos(listBox, &position_list, &position_count);
 	auto targetWin = shellWinList[position_list[0] - 1];
 	XtFree((char *)position_list);
 
-	/* now move document(s) */
+	// now move document(s) 
 	if (DoneWithMoveDocumentDialog == XmCR_OK) {
-		/* move top document */
+		// move top document 
 		if (XmToggleButtonGetState(moveAllOption)) {
-			/* move all documents */
+			// move all documents 
 			for (Document *win = WindowList; win;) {
 				if (win != this && win->shell_ == shell_) {
 					Document *next = win->next_;
@@ -2269,7 +2269,7 @@ void Document::MoveDocumentDialog() {
 					win = win->next_;
 			}
 
-			/* invoking document is the last to move */
+			// invoking document is the last to move 
 			MoveDocument(targetWin);
 		} else {
 			MoveDocument(targetWin);
@@ -2298,7 +2298,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	int targetLineNum;
 	Dimension width;
 
-	/* find out where the selection is */
+	// find out where the selection is 
 	if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
 		left = right = TextGetCursorPos(textPane);
 		isRect = False;
@@ -2316,28 +2316,28 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		scrollOffset = rows / 3;
 		TextGetScroll(textPane, &topLineNum, &horizOffset);
 		if (right > lastChar) {
-			/* End of sel. is below bottom of screen */
+			// End of sel. is below bottom of screen 
 			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, False);
 			targetLineNum = topLineNum + scrollOffset;
 			if (leftLineNum >= targetLineNum) {
-				/* Start of sel. is not between top & target */
+				// Start of sel. is not between top & target 
 				linesToScroll = textD->TextDCountLines(lastChar, right, False) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum)
 					linesToScroll = leftLineNum - targetLineNum;
-				/* Scroll start of selection to the target line */
+				// Scroll start of selection to the target line 
 				TextSetScroll(textPane, topLineNum + linesToScroll, horizOffset);
 			}
 		} else if (left < topChar) {
-			/* Start of sel. is above top of screen */
+			// Start of sel. is above top of screen 
 			lastLineNum = topLineNum + rows;
 			rightLineNum = lastLineNum - textD->TextDCountLines(right, lastChar, False);
 			targetLineNum = lastLineNum - scrollOffset;
 			if (rightLineNum <= targetLineNum) {
-				/* End of sel. is not between bottom & target */
+				// End of sel. is not between bottom & target 
 				linesToScroll = textD->TextDCountLines(left, topChar, False) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum)
 					linesToScroll = targetLineNum - rightLineNum;
-				/* Scroll end of selection to the target line */
+				// Scroll end of selection to the target line 
 				TextSetScroll(textPane, topLineNum - linesToScroll, horizOffset);
 			}
 		}
@@ -2361,7 +2361,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		TextSetScroll(textPane, topLineNum, horizOffset);
 	}
 
-	/* make sure that the statistics line is up to date */
+	// make sure that the statistics line is up to date 
 	UpdateStatsLine();
 }
 
@@ -2374,17 +2374,17 @@ void Document::MakeSelectionVisible(Widget textPane) {
 Document *Document::MoveDocument(Document *toWindow) {
 	Document *win = nullptr, *cloneWin;
 
-	/* prepare to move document */
+	// prepare to move document 
 	if (NDocuments() < 2) {
-		/* hide the this to make it look like we are moving */
+		// hide the this to make it look like we are moving 
 		XtUnmapWidget(shell_);
 	} else if (IsTopDocument()) {
-		/* raise another document to replace the document being moved */
+		// raise another document to replace the document being moved 
 		win = getNextTabWindow(1, 0, 0);
 		win->RaiseDocument();
 	}
 
-	/* relocate the document to target this */
+	// relocate the document to target this 
 	cloneWin = toWindow->CreateDocument(filename_.c_str());
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin);
@@ -2399,16 +2399,16 @@ Document *Document::MoveDocument(Document *toWindow) {
 	cloneWin->next_ = next_;
 	next_ = cloneWin;
 
-	/* remove the document from the old this */
+	// remove the document from the old this 
 	fileChanged_ = False;
 	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
-	/* some menu states might have changed when deleting document */
+	// some menu states might have changed when deleting document 
 	if (win) {
 		win->RefreshWindowStates();
 	}
 
-	/* this should keep the new document this fresh */
+	// this should keep the new document this fresh 
 	cloneWin->RaiseDocumentWindow();
 	cloneWin->RefreshTabState();
 	cloneWin->SortTabBar();
@@ -2469,12 +2469,12 @@ void Document::ShowLineNumbers(bool state) {
 
 		for (i = 0; i <= win->nPanes_; i++) {
 			text = i == 0 ? win->textArea_ : win->textPanes_[i - 1];
-			/*  reqCols should really be cast here, but into what? XmRInt?  */
+			//  reqCols should really be cast here, but into what? XmRInt?  
 			XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
 		}
 	}
 
-	/* Tell WM that the non-expandable part of the this has changed size */
+	// Tell WM that the non-expandable part of the this has changed size 
 	UpdateWMSizeHints();
 }
 
@@ -2564,7 +2564,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	Dimension textHeight, newWindowWidth, newWindowHeight;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
-	/* Check which fonts have changed */
+	// Check which fonts have changed 
 	primaryChanged = fontName != fontName_;
 	if (strcmp(italicName, italicFontName_))
 		highlightChanged = True;
@@ -2611,7 +2611,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 		boldItalicFontStruct_ = XLoadQueryFont(TheDisplay, boldItalicName);
 	}
 
-	/* Change the primary font in all the widgets */
+	// Change the primary font in all the widgets 
 	if (primaryChanged) {
 		font = GetDefaultFontStruct(fontList_);
 		XtVaSetValues(textArea_, textNfont, font, nullptr);
@@ -2642,7 +2642,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 		XtVaSetValues(shell_, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
 	}
 
-	/* Change the minimum pane height */
+	// Change the minimum pane height 
 	UpdateMinPaneHeights();
 }
 
@@ -2657,7 +2657,7 @@ void Document::ClosePane() {
 	int i, focusPane;
 	Widget text;
 
-	/* Don't delete the last pane */
+	// Don't delete the last pane 
 	if (nPanes_ <= 0)
 		return;
 
@@ -2673,7 +2673,7 @@ void Document::ClosePane() {
 			focusPane = i;
 	}
 
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+	// Unmanage & remanage the panedWindow so it recalculates pane heights 
 	XtUnmanageChild(splitPane_);
 
 	/* Destroy last pane, and make sure lastFocus points to an existing pane.
@@ -2708,7 +2708,7 @@ void Document::ClosePane() {
 	if (IsTopDocument())
 		XtManageChild(splitPane_);
 
-	/* Reset all of the scroll positions, insert positions, etc. */
+	// Reset all of the scroll positions, insert positions, etc. 
 	for (i = 0; i <= nPanes_; i++) {
 		text = i == 0 ? textArea_ : textPanes_[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
@@ -2732,7 +2732,7 @@ void Document::CloseWindow() {
 	Document *topBuf = nullptr;
 	Document *nextBuf = nullptr;
 
-	/* Free smart indent macro programs */
+	// Free smart indent macro programs 
 	EndSmartIndent(this);
 
 	/* Clean up macro references to the doomed window.  If a macro is
@@ -2740,10 +2740,10 @@ void Document::CloseWindow() {
 	   window), leave the window alive until the macro completes */
 	keepWindow = !MacroWindowCloseActions(this);
 
-	/* Kill shell sub-process and free related memory */
+	// Kill shell sub-process and free related memory 
 	AbortShellCommand(this);
 
-	/* Unload the default tips files for this language mode if necessary */
+	// Unload the default tips files for this language mode if necessary 
 	UnloadLanguageModeTipsFile(this);
 
 	/* If a window is closed while it is on the multi-file replace dialog
@@ -2754,7 +2754,7 @@ void Document::CloseWindow() {
 	   there can be more than one dialog. */
 	RemoveFromMultiReplaceDialog(this);
 
-	/* Destroy the file closed property for this file */
+	// Destroy the file closed property for this file 
 	DeleteFileClosedProperty(this);
 
 	/* Remove any possibly pending callback which might fire after the
@@ -2794,7 +2794,7 @@ void Document::CloseWindow() {
 		XmToggleButtonSetState(readOnlyItem_, FALSE, FALSE);
 		ClearUndoList();
 		ClearRedoList();
-		XmTextSetStringEx(statsLine_, ""); /* resets scroll pos of stats line from long file names */
+		XmTextSetStringEx(statsLine_, ""); // resets scroll pos of stats line from long file names 
 		UpdateStatsLine();
 		DetermineLanguageMode(this, True);
 		RefreshTabState();
@@ -2802,7 +2802,7 @@ void Document::CloseWindow() {
 		return;
 	}
 
-	/* Free syntax highlighting patterns, if any. w/o redisplaying */
+	// Free syntax highlighting patterns, if any. w/o redisplaying 
 	FreeHighlightingData(this);
 
 	/* remove the buffer modification callbacks so the buffer will be
@@ -2811,17 +2811,17 @@ void Document::CloseWindow() {
 	buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
 
 
-	/* free the undo and redo lists */
+	// free the undo and redo lists 
 	ClearUndoList();
 	ClearRedoList();
 
-	/* close the document/window */
+	// close the document/window 
 	if (NDocuments() > 1) {
 		if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
 			nextBuf = MacroRunWindow();
 			nextBuf->RaiseDocument();
 		} else if (IsTopDocument()) {
-			/* need to find a successor before closing a top document */
+			// need to find a successor before closing a top document 
 			nextBuf = getNextTabWindow(1, 0, 0);
 			nextBuf->RaiseDocument();
 		} else {
@@ -2829,15 +2829,15 @@ void Document::CloseWindow() {
 		}
 	}
 
-	/* remove the window from the global window list, update window menus */
+	// remove the window from the global window list, update window menus 
 	removeFromWindowList();
 	InvalidateWindowMenus();
-	CheckCloseDim(); /* Close of window running a macro may have been disabled. */
+	CheckCloseDim(); // Close of window running a macro may have been disabled. 
 
-	/* remove the tab of the closing document from tab bar */
+	// remove the tab of the closing document from tab bar 
 	XtDestroyWidget(tab_);
 
-	/* refresh tab bar after closing a document */
+	// refresh tab bar after closing a document 
 	if (nextBuf) {
 		nextBuf->ShowWindowTabBar();
 		nextBuf->updateLineNumDisp();
@@ -2846,7 +2846,7 @@ void Document::CloseWindow() {
 		topBuf->updateLineNumDisp();
 	}
 
-	/* dim/undim Detach_Tab menu items */
+	// dim/undim Detach_Tab menu items 
 	win = nextBuf ? nextBuf : topBuf;
 	if (win) {
 		state = win->NDocuments() > 1;
@@ -2854,7 +2854,7 @@ void Document::CloseWindow() {
 		XtSetSensitive(win->contextDetachDocumentItem_, state);
 	}
 
-	/* dim/undim Attach_Tab menu items */
+	// dim/undim Attach_Tab menu items 
 	state = WindowList->NDocuments() < NWindows();
 	
 	for(Document *win: WindowList) {
@@ -2864,23 +2864,23 @@ void Document::CloseWindow() {
 		}	
 	}
 	
-	/* free background menu cache for document */
+	// free background menu cache for document 
 	FreeUserBGMenuCache(&userBGMenuCache_);
 
-	/* destroy the document's pane, or the window */
+	// destroy the document's pane, or the window 
 	if (nextBuf || topBuf) {
 		deleteDocument();
 	} else {
-		/* free user menu cache for window */
+		// free user menu cache for window 
 		FreeUserMenuCache(userMenuCache_);
 
-		/* remove and deallocate all of the widgets associated with window */
-		XtFree(backlightCharTypes_); /* we made a copy earlier on */
+		// remove and deallocate all of the widgets associated with window 
+		XtFree(backlightCharTypes_); // we made a copy earlier on 
 		CloseAllPopupsFor(shell_);
 		XtDestroyWidget(shell_);
 	}
 
-	/* deallocate the window data structure */
+	// deallocate the window data structure 
 	delete this;
 }
 
@@ -2905,10 +2905,10 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 	int marginHeight, marginWidth, totalHeight, fontHeight;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
-	/* width is the same for panes */
+	// width is the same for panes 
 	XtVaGetValues(textArea_, textNcolumns, nCols, nullptr);
 
-	/* we have to work out the height, as the text area may have been split */
+	// we have to work out the height, as the text area may have been split 
 	XtVaGetValues(textArea_, textNhScrollBar, &hScrollBar, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
 	XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
 	XtVaGetValues(splitPane_, XmNheight, &paneHeight, nullptr);
@@ -2930,7 +2930,7 @@ void Document::SplitPane() {
 	Widget text = nullptr;
 	TextDisplay *textD, *newTextD;
 
-	/* Don't create new panes if we're already at the limit */
+	// Don't create new panes if we're already at the limit 
 	if (nPanes_ >= MAX_PANES)
 		return;
 
@@ -2947,7 +2947,7 @@ void Document::SplitPane() {
 			focusPane = i;
 	}
 
-	/* Unmanage & remanage the panedWindow so it recalculates pane heights */
+	// Unmanage & remanage the panedWindow so it recalculates pane heights 
 	XtUnmanageChild(splitPane_);
 
 	/* Create a text widget to add to the pane and set its buffer and
@@ -2964,16 +2964,16 @@ void Document::SplitPane() {
 	XtManageChild(text);
 	textPanes_[nPanes_++] = text;
 
-	/* Fix up the colors */
+	// Fix up the colors 
 	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 	newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
-	/* Set the minimum pane height in the new pane */
+	// Set the minimum pane height in the new pane 
 	UpdateMinPaneHeights();
 
-	/* adjust the heights, scroll positions, etc., to split the focus pane */
+	// adjust the heights, scroll positions, etc., to split the focus pane 
 	for (i = nPanes_; i > focusPane; i--) {
 		insertPositions[i] = insertPositions[i - 1];
 		paneHeights[i] = paneHeights[i - 1];
@@ -2988,11 +2988,11 @@ void Document::SplitPane() {
 		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 	}
 
-	/* Re-manage panedWindow to recalculate pane heights & reset selection */
+	// Re-manage panedWindow to recalculate pane heights & reset selection 
 	if (IsTopDocument())
 		XtManageChild(splitPane_);
 
-	/* Reset all of the heights, scroll positions, etc. */
+	// Reset all of the heights, scroll positions, etc. 
 	for (i = 0; i <= nPanes_; i++) {
 		text = i == 0 ? textArea_ : textPanes_[i - 1];
 		TextSetCursorPos(text, insertPositions[i]);
@@ -3018,7 +3018,7 @@ void Document::getGeometryString(char *geomString) {
 	Window parent, root, *child, w = XtWindow(shell_);
 	Display *dpy = XtDisplay(shell_);
 
-	/* Find the width and height from the this of the shell */
+	// Find the width and height from the this of the shell 
 	XGetGeometry(dpy, w, &root, &x, &y, &width, &height, &bw, &depth);
 
 	/* Find the top left corner (x and y) of the this decorations.  (This
@@ -3042,7 +3042,7 @@ void Document::getGeometryString(char *geomString) {
 	width = (width - baseWidth) / fontWidth;
 	height = (height - baseHeight) / fontHeight;
 
-	/* Write the string */
+	// Write the string 
 	CreateGeometryString(geomString, x, y, width, height, XValue | YValue | WidthValue | HeightValue);
 }
 
@@ -3062,15 +3062,15 @@ void Document::RaiseDocument() {
 	if (lastwin != this && lastwin->IsValidWindow())
 		lastwin->MarkLastDocument();
 
-	/* document already on top? */
+	// document already on top? 
 	XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
 	if (win == this)
 		return;
 
-	/* set the document as top document */
+	// set the document as top document 
 	XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
 
-	/* show the new top document */
+	// show the new top document 
 	XtVaSetValues(mainWin_, XmNworkWindow, splitPane_, nullptr);
 	XtManageChild(splitPane_);
 	XRaiseWindow(TheDisplay, XtWindow(splitPane_));
@@ -3083,13 +3083,13 @@ void Document::RaiseDocument() {
 	if (highlightSyntax_ && highlightData_ == nullptr)
 		StartHighlighting(this, False);
 
-	/* put away the bg menu tearoffs of last active document */
+	// put away the bg menu tearoffs of last active document 
 	hideTearOffs(win->bgMenuPane_);
 
-	/* restore the bg menu tearoffs of active document */
+	// restore the bg menu tearoffs of active document 
 	redisplayTearOffs(bgMenuPane_);
 
-	/* set tab as active */
+	// set tab as active 
 	XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), False);
 
 	/* set keyboard focus. Must be done before unmanaging previous
@@ -3113,10 +3113,10 @@ void Document::RaiseDocument() {
 	RefreshWindowStates();
 	RefreshTabState();
 
-	/* put away the bg menu tearoffs of last active document */
+	// put away the bg menu tearoffs of last active document 
 	hideTearOffs(win->bgMenuPane_);
 
-	/* restore the bg menu tearoffs of active document */
+	// restore the bg menu tearoffs of active document 
 	redisplayTearOffs(bgMenuPane_);
 
 	/* Make sure that the "In Selection" button tracks the presence of a
@@ -3145,11 +3145,11 @@ void Document::cloneDocument(Document *window) {
 
 	window->ignoreModify_ = True;
 
-	/* copy the text buffer */
+	// copy the text buffer 
 	auto orgDocument = buffer_->BufAsStringEx();
 	window->buffer_->BufSetAllEx(orgDocument);
 
-	/* copy the tab preferences (here!) */
+	// copy the tab preferences (here!) 
 	window->buffer_->BufSetTabDistance(buffer_->tabDist_);
 	window->buffer_->useTabs_ = buffer_->useTabs_;
 	XtVaGetValues(textArea_, textNemulateTabs, &emTabDist, nullptr);
@@ -3157,7 +3157,7 @@ void Document::cloneDocument(Document *window) {
 
 	window->ignoreModify_ = False;
 
-	/* transfer text fonts */
+	// transfer text fonts 
 	char *params[4];
 	params[0] = const_cast<char *>(fontName_.c_str());
 	params[1] = italicFontName_;
@@ -3180,14 +3180,14 @@ void Document::cloneDocument(Document *window) {
 		window->buffer_->rangesetTable_ = nullptr;
 	}
 
-	/* Syntax highlighting */
+	// Syntax highlighting 
 	window->languageMode_ = languageMode_;
 	window->highlightSyntax_ = highlightSyntax_;
 	if (window->highlightSyntax_) {
 		StartHighlighting(window, False);
 	}
 
-	/* copy states of original document */
+	// copy states of original document 
 	window->filenameSet_ = filenameSet_;
 	window->fileFormat_ = fileFormat_;
 	window->lastModTime_ = lastModTime_;
@@ -3240,22 +3240,22 @@ void Document::cloneDocument(Document *window) {
 	window->fileClosedAtom_ = fileClosedAtom_;
 	fileClosedAtom_ = None;
 
-	/* copy the text/split panes settings, cursor pos & selection */
+	// copy the text/split panes settings, cursor pos & selection 
 	cloneTextPanes(window, this);
 
-	/* copy undo & redo list */
+	// copy undo & redo list 
 	window->undo_ = cloneUndoItems(undo_);
 	window->redo_ = cloneUndoItems(redo_);
 
-	/* copy bookmarks */
+	// copy bookmarks 
 	window->nMarks_ = nMarks_;
 	memcpy(&window->markTable_, &markTable_, sizeof(Bookmark) * window->nMarks_);
 
-	/* kick start the auto-indent engine */
+	// kick start the auto-indent engine 
 	window->indentStyle_ = NO_AUTO_INDENT;
 	window->SetAutoIndent(indentStyle_);
 
-	/* synchronize window state to this document */
+	// synchronize window state to this document 
 	window->RefreshWindowStates();
 }
 
@@ -3286,7 +3286,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	static Pixmap isrcClear = 0;
 	static Pixmap closeTabPixmap = 0;
 
-	/* initialize window structure */
+	// initialize window structure 
 	/* + Schwarzenberg: should a
 	  memset(window, 0, sizeof(Document));
 	     be added here ?
@@ -3409,7 +3409,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 		CreateGeometryString(newGeometry, x, y, 0, 0, bitmask & ~(WidthValue | HeightValue));
 	}
 
-	/* Create a new toplevel shell to hold the window */
+	// Create a new toplevel shell to hold the window 
 	ac = 0;
 	XtSetArg(al[ac], XmNtitle, name);
 	ac++;
@@ -3446,7 +3446,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 #ifdef EDITRES
 	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
-#endif /* EDITRES */
+#endif // EDITRES 
 
 	addWindowIcon(winShell);
 
@@ -3459,9 +3459,9 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	mainWin_ = mainWin;
 	XtManageChild(mainWin);
 
-	/* The statsAreaForm holds the stats line and the I-Search line. */
+	// The statsAreaForm holds the stats line and the I-Search line. 
 	statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
-	                                 /* XmNautoUnmanage, False, */
+	                                 // XmNautoUnmanage, False, 
 	                                 nullptr);
 
 	/* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
@@ -3491,24 +3491,24 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	}
 	iSearchFindButton_ = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
 	                                                    XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
-	                                                    /* XmNleftOffset, 3, */
+	                                                    // XmNleftOffset, 3, 
 	                                                    XmNleftOffset, 0, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
 
 	iSearchCaseToggle_ = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
 	                                                    GetPrefSearch() == SEARCH_CASE_SENSE || GetPrefSearch() == SEARCH_REGEX || GetPrefSearch() == SEARCH_CASE_SENSE_WORD, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment,
-	                                                    XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
+	                                                    XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
 	iSearchRegexToggle_ =
 	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
-	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
+	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchCaseToggle_, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
 	iSearchRevToggle_ = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, False, XmNtopAttachment, XmATTACH_FORM,
-	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, /* see openmotif note above */
+	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRegexToggle_, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
 	XmStringFree(s1);
 
@@ -3522,18 +3522,18 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	iSearchText_ = XtVaCreateManagedWidget("iSearchText", xmTextWidgetClass, iSearchForm_, XmNmarginHeight, 1, XmNnavigationType, XmEXCLUSIVE_TAB_GROUP, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget,
 	                                              iSearchFindButton_, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchClearButton_,
-	                                              /* XmNrightOffset, 5, */
-	                                              XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 0, /* see openmotif note above */
+	                                              // XmNrightOffset, 5, 
+	                                              XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 0, // see openmotif note above 
 	                                              XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, nullptr);
 	RemapDeleteKey(iSearchText_);
 
 	SetISearchTextCallbacks(this);
 
-	/* create the a form to house the tab bar and close-tab button */
+	// create the a form to house the tab bar and close-tab button 
 	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, False, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
 	                           0, nullptr);
 
-	/* button to close top document */
+	// button to close top document 
 	if (closeTabPixmap == 0) {
 		closeTabPixmap = createBitmapWithDepth(tabForm, (char *)close_bits, close_width, close_height);
 	}
@@ -3541,7 +3541,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	                                      XmNtraversalOn, False, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
 	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin);
 
-	/* create the tab bar */
+	// create the tab bar 
 	tabBar_ = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
 	                                         XmNrightOffset, 5, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, XmNtopAttachment, XmATTACH_FORM, nullptr);
 
@@ -3559,14 +3559,14 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	tab_ = addTab(tabBar_, name);
 
-	/* A form to hold the stats line text and line/col widgets */
+	// A form to hold the stats line text and line/col widgets 
 	statsLineForm_ = XtVaCreateWidget("statsLineForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNtopAttachment, showISearchLine_ ? XmATTACH_WIDGET : XmATTACH_FORM, XmNtopWidget, iSearchForm_,
-	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, False, /*  */
+	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, False, //  
 	                                         nullptr);
 
-	/* A separate display of the line/column number */
+	// A separate display of the line/column number 
 	statsLineColNo_ = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, statsLineForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
-	                                                 False, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, /*  */
+	                                                 False, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, //  
 	                                                 nullptr);
 	XmStringFree(s1);
 
@@ -3584,16 +3584,16 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	                                                   aligns tatsLineColNo & statsLine */
 	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1,
 	                                                   to align with statsLineColNo */
-	                                XmNscrollHorizontal, False, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, False, XmNtraversalOn, False, XmNcursorPositionVisible, False, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                /*  */
-	                                XmNtopWidget, statsLineColNo_, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, statsLineColNo_, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, /*  */
+	                                XmNscrollHorizontal, False, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, False, XmNtraversalOn, False, XmNcursorPositionVisible, False, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                //  
+	                                XmNtopWidget, statsLineColNo_, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, statsLineColNo_, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, //  
 	                                XmNbottomWidget, statsLineColNo_, XmNrightOffset, 3, nullptr);
 	statsLine_ = stats;
 
-	/* Give the statsLine the same font as the statsLineColNo */
+	// Give the statsLine the same font as the statsLineColNo 
 	XtVaGetValues(statsLineColNo_, XmNfontList, &statsFontList, nullptr);
 	XtVaSetValues(statsLine_, XmNfontList, statsFontList, nullptr);
 
-	/* Manage the statsLineForm */
+	// Manage the statsLineForm 
 	if (showStats_)
 		XtManageChild(statsLineForm_);
 
@@ -3602,12 +3602,12 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	if (!fontList_)
 		XtVaGetValues(stats, XmNfontList, &fontList_, nullptr);
 
-	/* Create the menu bar */
+	// Create the menu bar 
 	menuBar = CreateMenuBar(mainWin, this);
 	menuBar_ = menuBar;
 	XtManageChild(menuBar);
 
-	/* Create paned window to manage split pane behavior */
+	// Create paned window to manage split pane behavior 
 	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, nullptr);
 	splitPane_ = pane;
 	XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
@@ -3628,7 +3628,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	textArea_ = text;
 	lastFocus_ = text;
 
-	/* Set the initial colors from the globals. */
+	// Set the initial colors from the globals. 
 	SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
 	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
 
@@ -3639,7 +3639,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	   finicky about the kinds of widgets they are attached to)) */
 	bgMenuPane_ = CreateBGMenu(this);
 
-	/* cache user menus: init. user background menu cache */
+	// cache user menus: init. user background menu cache 
 	InitUserBGMenuCache(&userBGMenuCache_);
 
 	/* Create the text buffer rather than using the one created automatically
@@ -3649,18 +3649,18 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	buffer_ = new TextBuffer;
 	buffer_->BufAddModifyCB(SyntaxHighlightModifyCB, this);
 
-	/* Attach the buffer to the text widget, and add callbacks for modify */
+	// Attach the buffer to the text widget, and add callbacks for modify 
 	TextSetBuffer(text, buffer_);
 	buffer_->BufAddModifyCB(modifiedCB, this);
 
-	/* Designate the permanent text area as the owner for selections */
+	// Designate the permanent text area as the owner for selections 
 	HandleXSelections(text);
 
-	/* Set the requested hardware tab distance and useTabs in the text buffer */
+	// Set the requested hardware tab distance and useTabs in the text buffer 
 	buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
 	buffer_->useTabs_ = GetPrefInsertTabs();
 
-	/* add the window to the global window list, update the Windows menus */
+	// add the window to the global window list, update the Windows menus 
 	addToWindowList();
 	InvalidateWindowMenus();
 
@@ -3673,25 +3673,25 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	if (showTabBar || showISearchLine_ || showStats_)
 		XtManageChild(statsAreaForm);
 
-	/* realize all of the widgets in the new window */
+	// realize all of the widgets in the new window 
 	RealizeWithoutForcingPosition(winShell);
 	XmProcessTraversal(text, XmTRAVERSE_CURRENT);
 
-	/* Make close command in window menu gracefully prompt for close */
+	// Make close command in window menu gracefully prompt for close 
 	AddMotifCloseCallback(winShell, closeCB, this);
 
-	/* Make window resizing work in nice character heights */
+	// Make window resizing work in nice character heights 
 	UpdateWMSizeHints();
 
-	/* Set the minimum pane height for the initial text pane */
+	// Set the minimum pane height for the initial text pane 
 	UpdateMinPaneHeights();
 
-	/* create dialogs shared by all documents in a window */
+	// create dialogs shared by all documents in a window 
 	CreateFindDlog(shell_, this);
 	CreateReplaceDlog(shell_, this);
 	CreateReplaceMultiFileDlog(this);
 
-	/* dim/undim Attach_Tab menu items */
+	// dim/undim Attach_Tab menu items 
 	state = NDocuments() < NWindows();
 	
 	
@@ -3714,11 +3714,11 @@ Document *Document::CreateDocument(const char *name) {
 	Widget pane, text;
 	int nCols, nRows;
 
-	/* Allocate some memory for the new window data structure */
+	// Allocate some memory for the new window data structure 
 	auto window = new Document(*this);
 
 #if 0
-    /* share these dialog items with parent shell */
+    // share these dialog items with parent shell 
     window->replaceDlog_ = nullptr;
     window->replaceText_ = nullptr;
     window->replaceWithText_ = nullptr;
@@ -3848,7 +3848,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->textArea_ = text;
 	window->lastFocus_ = text;
 
-	/* Set the initial colors from the globals. */
+	// Set the initial colors from the globals. 
 	window->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
 	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
 
@@ -3859,7 +3859,7 @@ Document *Document::CreateDocument(const char *name) {
 	   finicky about the kinds of widgets they are attached to)) */
 	window->bgMenuPane_ = CreateBGMenu(window);
 
-	/* cache user menus: init. user background menu cache */
+	// cache user menus: init. user background menu cache 
 	InitUserBGMenuCache(&window->userBGMenuCache_);
 
 	/* Create the text buffer rather than using the one created automatically
@@ -3869,23 +3869,23 @@ Document *Document::CreateDocument(const char *name) {
 	window->buffer_ = new TextBuffer;
 	window->buffer_->BufAddModifyCB(SyntaxHighlightModifyCB, window);
 
-	/* Attach the buffer to the text widget, and add callbacks for modify */
+	// Attach the buffer to the text widget, and add callbacks for modify 
 	TextSetBuffer(text, window->buffer_);
 	window->buffer_->BufAddModifyCB(modifiedCB, window);
 
-	/* Designate the permanent text area as the owner for selections */
+	// Designate the permanent text area as the owner for selections 
 	HandleXSelections(text);
 
-	/* Set the requested hardware tab distance and useTabs in the text buffer */
+	// Set the requested hardware tab distance and useTabs in the text buffer 
 	window->buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
 	window->buffer_->useTabs_ = GetPrefInsertTabs();
 	window->tab_ = addTab(window->tabBar_, name);
 
-	/* add the window to the global window list, update the Windows menus */
+	// add the window to the global window list, update the Windows menus 
 	InvalidateWindowMenus();
 	window->addToWindowList();
 
-	/* return the shell ownership to previous tabbed doc */
+	// return the shell ownership to previous tabbed doc 
 	XtVaSetValues(window->mainWin_, XmNworkWindow, splitPane_, nullptr);
 	XLowerWindow(TheDisplay, XtWindow(window->splitPane_));
 	XtUnmanageChild(window->splitPane_);
@@ -3917,7 +3917,7 @@ Document *Document::WidgetToWindow(Widget w) {
 	Widget parent;
 
 	while (true) {
-		/* return window pointer of document */
+		// return window pointer of document 
 		if (XtClass(w) == xmPanedWindowWidgetClass)
 			break;
 
@@ -3935,7 +3935,7 @@ Document *Document::WidgetToWindow(Widget w) {
 		if(!parent)
 			return nullptr;
 
-		/* make sure it is not a dialog shell */
+		// make sure it is not a dialog shell 
 		if (XtClass(parent) == topLevelShellWidgetClass && XmIsMainWindow(w))
 			break;
 
@@ -3951,7 +3951,7 @@ void Document::Undo() {
 
 	int restoredTextLength;
 
-	/* return if nothing to undo */
+	// return if nothing to undo 
 	if (undo_.empty()) {
 		return;
 	}
@@ -3965,7 +3965,7 @@ void Document::Undo() {
 	   record is in the process of being undone. */
 	undo->inUndo = true;
 
-	/* use the saved undo information to reverse changes */
+	// use the saved undo information to reverse changes 
 	buffer_->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
 
 	restoredTextLength = undo->oldText.size();
@@ -3993,7 +3993,7 @@ void Document::Undo() {
 		RemoveBackupFile(this);
 	}
 
-	/* free the undo record and remove it from the chain */
+	// free the undo record and remove it from the chain 
 	removeUndoItem();
 }
 
@@ -4001,7 +4001,7 @@ void Document::Redo() {
 	
 	int restoredTextLength;
 
-	/* return if nothing to redo */
+	// return if nothing to redo 
 	if (redo_.empty()) {
 		return;
 	}
@@ -4013,7 +4013,7 @@ void Document::Redo() {
 	   we set the inUndo indicator in the redo record */
 	redo->inUndo = true;
 
-	/* use the saved redo information to reverse changes */
+	// use the saved redo information to reverse changes 
 	buffer_->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
 
 	restoredTextLength = redo->oldText.size();
@@ -4041,7 +4041,7 @@ void Document::Redo() {
 		RemoveBackupFile(this);
 	}
 
-	/* remove the redo record from the chain and free it */
+	// remove the redo record from the chain and free it 
 	removeRedoItem();
 }
 
@@ -4053,19 +4053,19 @@ void Document::Redo() {
 */
 void Document::addUndoItem(UndoInfo *undo) {
 
-	/* Make the undo menu item sensitive now that there's something to undo */
+	// Make the undo menu item sensitive now that there's something to undo 
 	if (undo_.empty()) {
 		SetSensitive(undoItem_, True);
 		SetBGMenuUndoSensitivity(this, True);
 	}
 
-	/* Add the item to the beginning of the list */
+	// Add the item to the beginning of the list 
 	undo_.push_front(undo);
 
-	/* Increment the operation and memory counts */
+	// Increment the operation and memory counts 
 	undoMemUsed_ += undo->oldLen;
 
-	/* Trim the list if it exceeds any of the limits */
+	// Trim the list if it exceeds any of the limits 
 	if (undo_.size() > UNDO_OP_LIMIT)
 		trimUndoList(UNDO_OP_TRIMTO);
 	if (undoMemUsed_ > UNDO_WORRY_LIMIT)
@@ -4078,13 +4078,13 @@ void Document::addUndoItem(UndoInfo *undo) {
 ** Add an item (already allocated by the caller) to the this's redo list.
 */
 void Document::addRedoItem(UndoInfo *redo) {
-	/* Make the redo menu item sensitive now that there's something to redo */
+	// Make the redo menu item sensitive now that there's something to redo 
 	if (redo_.empty()) {	
 		SetSensitive(redoItem_, True);
 		SetBGMenuRedoSensitivity(this, True);
 	}
 
-	/* Add the item to the beginning of the list */
+	// Add the item to the beginning of the list 
 	redo_.push_front(redo);
 }
 
@@ -4100,14 +4100,14 @@ void Document::removeUndoItem() {
 	UndoInfo *undo = undo_.front();
 
 
-	/* Decrement the operation and memory counts */
+	// Decrement the operation and memory counts 
 	undoMemUsed_ -= undo->oldLen;
 
-	/* Remove and free the item */
+	// Remove and free the item 
 	undo_.pop_front();
 	delete undo;
 
-	/* if there are no more undo records left, dim the Undo menu item */
+	// if there are no more undo records left, dim the Undo menu item 
 	if (undo_.empty()) {
 		SetSensitive(undoItem_, False);
 		SetBGMenuUndoSensitivity(this, False);
@@ -4120,11 +4120,11 @@ void Document::removeUndoItem() {
 void Document::removeRedoItem() {
 	UndoInfo *redo = redo_.front();
 
-	/* Remove and free the item */
+	// Remove and free the item 
 	redo_.pop_front();
 	delete redo;
 
-	/* if there are no more redo records left, dim the Redo menu item */
+	// if there are no more redo records left, dim the Redo menu item 
 	if (redo_.empty()) {
 		SetSensitive(redoItem_, False);
 		SetBGMenuRedoSensitivity(this, False);
@@ -4140,11 +4140,11 @@ void Document::removeRedoItem() {
 void Document::appendDeletedText(view::string_view deletedText, int deletedLen, int direction) {
 	UndoInfo *undo = undo_.front();
 
-	/* re-allocate, adding space for the new character(s) */
+	// re-allocate, adding space for the new character(s) 
 	std::string comboText;
 	comboText.reserve(undo->oldLen + deletedLen);
 
-	/* copy the new character and the already deleted text to the new memory */
+	// copy the new character and the already deleted text to the new memory 
 	if (direction == FORWARD) {
 		comboText.append(undo->oldText);
 		comboText.append(deletedText.begin(), deletedText.end());
@@ -4153,10 +4153,10 @@ void Document::appendDeletedText(view::string_view deletedText, int deletedLen, 
 		comboText.append(undo->oldText);
 	}
 
-	/* keep track of the additional memory now used by the undo list */
+	// keep track of the additional memory now used by the undo list 
 	undoMemUsed_++;
 
-	/* free the old saved text and attach the new */
+	// free the old saved text and attach the new 
 	undo->oldText = comboText;
 	undo->oldLen += deletedLen;
 }
@@ -4174,13 +4174,13 @@ void Document::trimUndoList(int maxLength) {
 	auto it = undo_.begin();
 	int i   = 1;
 	
-	/* Find last item on the list to leave intact */
+	// Find last item on the list to leave intact 
 	while(it != undo_.end() && i < maxLength) {
 		++it;
 		++i;
 	}
 
-	/* Trim off all subsequent entries */
+	// Trim off all subsequent entries 
 	while(it != undo_.end()) {
 		UndoInfo *u = *it;
 		
@@ -4249,14 +4249,14 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 	*/
 	if (fileChanged_) {
 
-		/* normal sequential character insertion */
+		// normal sequential character insertion 
 		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
 			currentUndo->endPos++;
 			autoSaveCharCount_++;
 			return;
 		}
 
-		/* overstrike mode replacement */
+		// overstrike mode replacement 
 		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
 			appendDeletedText(deletedText, nDeleted, FORWARD);
 			currentUndo->endPos++;
@@ -4264,13 +4264,13 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 			return;
 		}
 
-		/* forward delete */
+		// forward delete 
 		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
 			appendDeletedText(deletedText, nDeleted, FORWARD);
 			return;
 		}
 
-		/* reverse delete */
+		// reverse delete 
 		if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
 			appendDeletedText(deletedText, nDeleted, REVERSE);
 			currentUndo->startPos--;
@@ -4285,13 +4285,13 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 	*/
 	auto undo = new UndoInfo(newType, pos, pos + nInserted);
 
-	/* if text was deleted, save it */
+	// if text was deleted, save it 
 	if (nDeleted > 0) {
-		undo->oldLen = nDeleted + 1; /* +1 is for null at end */
+		undo->oldLen = nDeleted + 1; // +1 is for null at end 
 		undo->oldText = deletedText.to_string();
 	}
 
-	/* increment the operation count for the autosave feature */
+	// increment the operation count for the autosave feature 
 	autoSaveOpCount_++;
 
 	/* if the this is currently unmodified, remove the previous

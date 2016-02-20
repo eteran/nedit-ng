@@ -58,7 +58,7 @@
 #include <Xm/XmP.h>
 #include <Xm/PrimitiveP.h>
 
-/* How much re-parsing to do when an unfinished style is encountered */
+// How much re-parsing to do when an unfinished style is encountered 
 #define PASS_2_REPARSE_CHUNK_SIZE 1000
 
 /* Initial forward expansion of parsing region in incremental reparsing,
@@ -83,7 +83,7 @@
    by a context requirement of 1 line and 0 characters */
 #define CAN_CROSS_LINE_BOUNDARIES(contextRequirements) (contextRequirements->nLines != 1 || contextRequirements->nChars != 0)
 
-/* "Compiled" version of pattern specification */
+// "Compiled" version of pattern specification 
 struct highlightDataRec {
 	regexp *startRE;
 	regexp *endRE;
@@ -95,12 +95,12 @@ struct highlightDataRec {
 	int endSubexprs[NSUBEXP + 1];
 	int flags;
 	int nSubPatterns;
-	int nSubBranches; /* Number of top-level branches of subPatternRE */
+	int nSubBranches; // Number of top-level branches of subPatternRE 
 	long userStyleIndex;
 	struct highlightDataRec **subPatterns;
 };
 
-/* Context requirements for incremental reparsing of a pattern set */
+// Context requirements for incremental reparsing of a pattern set 
 struct reparseContext {
 	int nLines;
 	int nChars;
@@ -208,7 +208,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	   changes that are already scheduled for redraw */
 	highlightData->styleBuffer->BufSelect(pos, pos + nInserted);
 
-	/* Re-parse around the changed region */
+	// Re-parse around the changed region 
 	if (highlightData->pass1Patterns)
 		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window));
 }
@@ -230,13 +230,13 @@ void StartHighlighting(Document *window, int warn) {
 		return;
 	}
 
-	/* Compile the patterns */
+	// Compile the patterns 
 	highlightData = createHighlightData(window, patterns);
 	if(!highlightData) {
 		return;
 	}
 
-	/* Prepare for a long delay, refresh display and put up a watch cursor */
+	// Prepare for a long delay, refresh display and put up a watch cursor 
 	BeginWait(window->shell_);
 	XmUpdateDisplay(window->shell_);
 
@@ -257,7 +257,7 @@ void StartHighlighting(Document *window, int warn) {
 	highlightData->styleBuffer->BufSetAllEx(styleString);
 	delete [] styleString;
 
-	/* install highlight pattern data in the window data structure */
+	// install highlight pattern data in the window data structure 
 	window->highlightData_ = highlightData;
 
 	/* Get the height of the current font in the window, to be used after
@@ -265,7 +265,7 @@ void StartHighlighting(Document *window, int warn) {
 	   additional highlight fonts which may be sized differently */
 	oldFontHeight = getFontHeight(window);
 
-	/* Attach highlight information to text widgets in each pane */
+	// Attach highlight information to text widgets in each pane 
 	AttachHighlightToWidget(window->textArea_, window);
 	for (i = 0; i < window->nPanes_; i++)
 		AttachHighlightToWidget(window->textPanes_[i], window);
@@ -299,7 +299,7 @@ void StopHighlighting(Document *window) {
 	   back to the line height of the primary font */
 	oldFontHeight = getFontHeight(window);
 
-	/* Free and remove the highlight data from the window */
+	// Free and remove the highlight data from the window 
 	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
@@ -326,7 +326,7 @@ void FreeHighlightingData(Document *window) {
 	if (!window->highlightData_)
 		return;
 
-	/* Free and remove the highlight data from the window */
+	// Free and remove the highlight data from the window 
 	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
@@ -362,19 +362,19 @@ void UpdateHighlightStyles(Document *window) {
 
 	auto oldHighlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
-	/* Do nothing if window not highlighted */
+	// Do nothing if window not highlighted 
 	if (!window->highlightData_) {
 		return;
 	}
 
-	/* Find the pattern set for the window's current language mode */
+	// Find the pattern set for the window's current language mode 
 	PatternSet *patterns = findPatternsForWindow(window, False);
 	if(!patterns) {
 		StopHighlighting(window);
 		return;
 	}
 
-	/* Build new patterns */
+	// Build new patterns 
 	windowHighlightData *highlightData = createHighlightData(window, patterns);
 	if(!highlightData) {
 		StopHighlighting(window);
@@ -437,10 +437,10 @@ void *GetHighlightInfo(Document *window, int pos) {
 	if (!highlightData)
 		return nullptr;
 
-	/* Be careful with signed/unsigned conversions. NO conversion here! */
+	// Be careful with signed/unsigned conversions. NO conversion here! 
 	int style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
 
-	/* Beware of unparsed regions. */
+	// Beware of unparsed regions. 
 	if (style == UNFINISHED_STYLE) {
 		handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 		style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
@@ -487,7 +487,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	PatternSet *patterns;
 	char *modeName;
 
-	/* Find the window's language mode.  If none is set, warn user */
+	// Find the window's language mode.  If none is set, warn user 
 	modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn)
@@ -501,7 +501,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 		return nullptr;
 	}
 
-	/* Look up the appropriate pattern for the language */
+	// Look up the appropriate pattern for the language 
 	patterns = FindPatternSet(modeName);
 	if(!patterns) {
 		if (warn) {
@@ -539,12 +539,12 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	highlightDataRec *pass1Pats;
 	highlightDataRec *pass2Pats;
 
-	/* The highlighting code can't handle empty pattern sets, quietly say no */
+	// The highlighting code can't handle empty pattern sets, quietly say no 
 	if (nPatterns == 0) {
 		return nullptr;
 	}
 
-	/* Check that the styles and parent pattern names actually exist */
+	// Check that the styles and parent pattern names actually exist 
 	if (!NamedStyleExists("Plain")) {
 		DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Highlight style \"Plain\" is missing", "OK");
 		return nullptr;
@@ -637,7 +637,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		nPass2Patterns = 0;
 	}
 
-	/* Compile patterns */
+	// Compile patterns 
 	if (nPass1Patterns == 0) {
 		pass1Pats = nullptr;
 	} else {
@@ -675,7 +675,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	for (i = 1; i < nPass2Patterns; i++)
 		pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
 
-	/* Create table for finding parent styles */
+	// Create table for finding parent styles 
 	char *parentStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 2);
 	parentStylesPtr = parentStyles;
 	
@@ -690,7 +690,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		*parentStylesPtr++ = !pass2PatternSrc[i].subPatternOf ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf->c_str())].style;
 	}
 
-	/* Set up table for mapping colors and fonts to syntax */
+	// Set up table for mapping colors and fonts to syntax 
 	const auto styleTable = new StyleTableEntry[nPass1Patterns + nPass2Patterns + 1];
 
 	StyleTableEntry *styleTablePtr = styleTable;
@@ -705,7 +705,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		p->isBold        = FontOfNamedStyleIsBold(*pat->style);
 		p->isItalic      = FontOfNamedStyleIsItalic(*pat->style);
 
-		/* And now for the more physical stuff */
+		// And now for the more physical stuff 
 		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &c);
 		p->red   = c.r;
 		p->green = c.g;
@@ -726,34 +726,34 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		p->font = FontOfNamedStyle(window, *pat->style);
 	};
 
-	/* PLAIN_STYLE (pass 1) */
+	// PLAIN_STYLE (pass 1) 
 	styleTablePtr->underline = FALSE;
 	setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
-	/* PLAIN_STYLE (pass 2) */
+	// PLAIN_STYLE (pass 2) 
 	styleTablePtr->underline = FALSE;
 	setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
-	/* explicit styles (pass 1) */
+	// explicit styles (pass 1) 
 	for (i = 1; i < nPass1Patterns; i++) {
 		styleTablePtr->underline = FALSE;
 		setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
 	}
 
-	/* explicit styles (pass 2) */
+	// explicit styles (pass 2) 
 	for (i = 1; i < nPass2Patterns; i++) {
 		styleTablePtr->underline = FALSE;
 		setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
 	}
 
-	/* Free the temporary sorted pattern source list */
+	// Free the temporary sorted pattern source list 
 	delete[] pass1PatternSrc;
 	delete[] pass2PatternSrc;
 
-	/* Create the style buffer */
+	// Create the style buffer 
 	auto styleBuf = new TextBuffer;
 
-	/* Collect all of the highlighting information in a single structure */
+	// Collect all of the highlighting information in a single structure 
 	auto highlightData = new windowHighlightData;
 	highlightData->pass1Patterns              = pass1Pats;
 	highlightData->pass2Patterns              = pass2Pats;
@@ -785,7 +785,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	auto compiledPats = new highlightDataRec[nPatterns + 1];
 	compiledPats[nPatterns].style = 0;
 
-	/* Build the tree of parse expressions */
+	// Build the tree of parse expressions 
 	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].nSubPatterns = 0;
 		compiledPats[i].nSubBranches = 0;
@@ -861,7 +861,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		compiledPats[i].endSubexprs[nSubExprs] = -1;
 	}
 
-	/* Compile regular expressions for all highlight patterns */
+	// Compile regular expressions for all highlight patterns 
 	for (int i = 0; i < nPatterns; i++) {
 
 		if (!patternSrc[i].startRE || compiledPats[i].colorOnly) {
@@ -960,7 +960,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		}
 	}
 
-	/* Copy remaining parameters from pattern template to compiled tree */
+	// Copy remaining parameters from pattern template to compiled tree 
 	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].flags = patternSrc[i].flags;
 	}
@@ -1017,7 +1017,7 @@ int HighlightCodeOfPos(Document *window, int pos) {
 	if (styleBuf) {
 		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (hCode == UNFINISHED_STYLE) {
-			/* encountered "unfinished" style, trigger parsing */
+			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
@@ -1043,7 +1043,7 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 		if (!hCode)
 			return 0;
 		if (hCode == UNFINISHED_STYLE) {
-			/* encountered "unfinished" style, trigger parsing */
+			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
@@ -1051,11 +1051,11 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 			*checkCode = hCode;
 		while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
 			if (hCode == UNFINISHED_STYLE) {
-				/* encountered "unfinished" style, trigger parsing, then loop */
+				// encountered "unfinished" style, trigger parsing, then loop 
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 			} else {
-				/* advance the position and get the new code */
+				// advance the position and get the new code 
 				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
 			}
 		}
@@ -1081,7 +1081,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 			return 0;
 			
 		if (hCode == UNFINISHED_STYLE) {
-			/* encountered "unfinished" style, trigger parsing */
+			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
@@ -1094,11 +1094,11 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 			
 		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && entry->styleName == checkStyleName)) {
 			if (hCode == UNFINISHED_STYLE) {
-				/* encountered "unfinished" style, trigger parsing, then loop */
+				// encountered "unfinished" style, trigger parsing, then loop 
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
 				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 			} else {
-				/* advance the position and get the new code */
+				// advance the position and get the new code 
 				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
 			}
 		}
@@ -1114,7 +1114,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
-	hCode -= UNFINISHED_STYLE; /* get the correct index value */
+	hCode -= UNFINISHED_STYLE; // get the correct index value 
 	if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
 		return nullptr;
 	return &highlightData->styleTable[hCode];
@@ -1142,7 +1142,7 @@ Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
 		color->b = entry->blue;
 		return entry->color;
 	} else {
-		/* pick up foreground color of the (first) text widget of the window */
+		// pick up foreground color of the (first) text widget of the window 
 		XColor colorDef;
 		Colormap cMap;
 		Display *display = XtDisplay(window->textArea_);
@@ -1170,7 +1170,7 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 		color->b = entry->bgBlue;
 		return entry->bgColor;
 	} else {
-		/* pick up background color of the (first) text widget of the window */
+		// pick up background color of the (first) text widget of the window 
 		XColor colorDef;
 		Colormap cMap;
 		Display *display = XtDisplay(window->textArea_);
@@ -1248,7 +1248,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 		}
 	}
 
-	/* Copy the buffer range into a string */
+	// Copy the buffer range into a string 
 	/* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
 	        beginParse, endParse, beginSafety, endSafety); */
 			
@@ -1261,7 +1261,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 	char *styleString     = &styleStr[0];
 	char *stylePtr        = &styleStr[0];
 
-	/* Parse it with pass 2 patterns */
+	// Parse it with pass 2 patterns 
 	prevChar = getPrevChar(buf, beginSafety);
 	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, false, GetWindowDelimiters(window), string, nullptr);
 
@@ -1339,7 +1339,7 @@ static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *b
 			}
 			parseInStyle = parentStyleOf(parentStyles, parseInStyle);
 
-			/* One context distance beyond last style changed means we're done */
+			// One context distance beyond last style changed means we're done 
 		} else if (lastModified(styleBuf) <= lastMod) {
 			return;
 
@@ -1374,7 +1374,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	int modStart, modEnd, beginSafety, beginStyle, p, style;
 	int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : (unsigned char)pass2Patterns[1].style;
 
-	/* Begin parsing one context distance back (or to the last style change) */
+	// Begin parsing one context distance back (or to the last style change) 
 	beginStyle = pass1Patterns->style;
 	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
@@ -1407,7 +1407,7 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	else
 		endSafety = std::min<int>(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
 
-	/* copy the buffer range into a string */
+	// copy the buffer range into a string 
 	
 	std::string str      = buf->BufGetRangeEx(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
@@ -1415,18 +1415,18 @@ static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *p
 	char *string      = &str[0];
 	char *styleString = &styleStr[0];
 
-	/* Parse it with pass 1 patterns */
-	/* printf("parsing from %d thru %d\n", beginSafety, endSafety); */
+	// Parse it with pass 1 patterns 
+	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
 	char prevChar         = getPrevChar(buf, beginParse);
 	const char *stringPtr = &string[beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
 	parseString(pass1Patterns, &stringPtr, &stylePtr, endParse - beginParse, &prevChar, false, delimiters, string, nullptr);
 
-	/* On non top-level patterns, parsing can end early */
+	// On non top-level patterns, parsing can end early 
 	endParse = std::min<int>(endParse, stringPtr - string + beginSafety);
 
-	/* If there are no pass 2 patterns, we're done */
+	// If there are no pass 2 patterns, we're done 
 	if (!pass2Patterns)
 		goto parseDone;
 
@@ -1539,8 +1539,8 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
 		int subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
-		/* Combination of all sub-patterns and end pattern matched */
-		/* printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); */
+		// Combination of all sub-patterns and end pattern matched 
+		// printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); 
 		const char *startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
@@ -1590,7 +1590,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 		}
 
 		int i;
-		/* Figure out which sub-pattern matched */
+		// Figure out which sub-pattern matched 
 		for (i = 0; i < pattern->nSubPatterns; i++) {
 			subPat = pattern->subPatterns[i];
 			if (subPat->colorOnly) {
@@ -1605,11 +1605,11 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 			return false;
 		}
 
-		/* the sub-pattern is a simple match, just color it */
+		// the sub-pattern is a simple match, just color it 
 		if (!subPat->subPatternRE) {
 			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);
 
-			/* Parse the remainder of the sub-pattern */
+			// Parse the remainder of the sub-pattern 
 		} else if (subPat->endRE) {
 			/* The pattern is a starting/ending type of pattern, proceed with
 			   the regular hierarchical parsing. */
@@ -1617,10 +1617,10 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 			/* If parsing should start after the start pattern, advance
 			   to that point (this is currently always the case) */
 			if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/
+				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], // subPat->startRE->endp[0],
 				                subPat->style, prevChar);
 
-			/* Parse to the end of the subPattern */
+			// Parse to the end of the subPattern 
 			parseString(subPat, &stringPtr, &stylePtr, length - (stringPtr - *string), prevChar, False, delimiters, lookBehindTo, match_till);
 		} else {
 			/* If the parent pattern is not a start/end pattern, the
@@ -1629,7 +1629,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 			   that they do not exceed the parent's ending boundary.
 			   Without that restriction, matching becomes unstable. */
 
-			/* Parse to the end of the subPattern */
+			// Parse to the end of the subPattern 
 			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
 		}
 
@@ -1677,7 +1677,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 		fillStyleString(&stringPtr, &stylePtr, *string + length, pattern->style, prevChar);
 	}
 
-	/* Advance the string and style pointers to the end of the parsed text */
+	// Advance the string and style pointers to the end of the parsed text 
 	*string      = stringPtr;
 	*styleString = stylePtr;
 	return pattern->endRE == nullptr;
@@ -1708,7 +1708,7 @@ static void passTwoParseString(highlightDataRec *pattern, char *string, char *st
 			stylePtr = &styleString[parseStart - string];
 			temp = *parseEnd;
 			*parseEnd = '\0';
-			/* printf("pass2 parsing %d chars\n", strlen(stringPtr)); */
+			// printf("pass2 parsing %d chars\n", strlen(stringPtr)); 
 			parseString(pattern, &stringPtr, &stylePtr, std::min<int>(parseEnd - parseStart, length - (parseStart - string)), prevChar, False, delimiters, lookBehindTo, match_till);
 			*parseEnd = temp;
 			inParseRegion = False;
@@ -1749,7 +1749,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 	int pos, modStart, modEnd, minPos = INT_MAX, maxPos = 0;
 	TextSelection *sel = &styleBuf->primary_;
 
-	/* Skip the range already marked for redraw */
+	// Skip the range already marked for redraw 
 	if (sel->selected) {
 		modStart = sel->start;
 		modEnd = sel->end;
@@ -1779,7 +1779,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 		}
 	}
 
-	/* Make the modification */
+	// Make the modification 
 	styleBuf->BufReplaceEx(startPos, endPos, styleString);
 
 	/* Mark or extend the range that needs to be redrawn.  Even if no
@@ -1816,7 +1816,7 @@ static double colorDistance(const XColor *c1, const XColor *c2) {
 	double tgreen = c1->green / scale - c2->green / scale;
 	double tblue = c1->blue / scale - c2->blue / scale;
 
-	/* use square Euclidian distance */
+	// use square Euclidian distance 
 	return tred * tred + tgreen * tgreen + tblue * tblue;
 }
 
@@ -1846,16 +1846,16 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	double small = 1.0e9;
 	int depth;
 	unsigned int ncolors;
-	unsigned long i, best = 0; /* pixel value */
+	unsigned long i, best = 0; // pixel value 
 
 	/* Get the correct colormap for compatability with the "best" visual
 	   feature in 5.2.  Default visual of screen is no good here. */
 
 	XtVaGetValues(w, XtNcolormap, &cMap, XtNdepth, &depth, XtNforeground, &foreground, nullptr);
 
-	bestPixel = foreground; /* Our last fallback */
+	bestPixel = foreground; // Our last fallback 
 
-	/* First, check for valid syntax */
+	// First, check for valid syntax 
 	if (!XParseColor(display, cMap, colorName, &colorDef)) {
 		fprintf(stderr, "NEdit: Color name %s not in database\n", colorName);
 		colorDef.pixel = foreground;
@@ -1867,7 +1867,7 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 		return foreground;
 	}
 
-	/* Attempt allocation of the exact color. */
+	// Attempt allocation of the exact color. 
 	if (XAllocColor(display, cMap, &colorDef)) {
 		color->r = colorDef.red;
 		color->g = colorDef.green;
@@ -1875,7 +1875,7 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 		return colorDef.pixel;
 	}
 
-/* ---------- Allocation failed, the colormap may be full. ---------- */
+// ---------- Allocation failed, the colormap may be full. ---------- 
 
 #if 0
     printf("Couldn't allocate %d %d %d\n", colorDef.red, colorDef.green, colorDef.blue);
@@ -1884,7 +1884,7 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	/* We can't do the nearest-match on other than 8 bit visuals because
 	   it just takes too long.  */
 
-	if (depth > 8) { /* Oh no! */
+	if (depth > 8) { // Oh no! 
 		colorDef.pixel = foreground;
 		if (XQueryColor(display, cMap, &colorDef)) {
 			color->r = colorDef.red;
@@ -1894,7 +1894,7 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 		return foreground;
 	}
 
-	/* Get the entire colormap so we can find the closest one. */
+	// Get the entire colormap so we can find the closest one. 
 	ncolors = (1 << depth);
 	allColorDefs = new XColor[ncolors];
 	memset(allColorDefs, 0, ncolors * sizeof(XColor));
@@ -1904,7 +1904,7 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 
 	XQueryColors(display, cMap, allColorDefs, ncolors);
 
-	/* Scan through each color, looking for the closest one. */
+	// Scan through each color, looking for the closest one. 
 	for (i = 0; i < ncolors; i++) {
 		double dist = colorDistance(&allColorDefs[i], &colorDef);
 
@@ -2011,7 +2011,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlig
 	highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
 	reparseContext *context = &highlightData->contextRequirements;
 
-	/* We must begin at least one context distance back from the change */
+	// We must begin at least one context distance back from the change 
 	*pos = backwardOneContext(buf, context, *pos);
 
 	/* If the new position is outside of any styles or at the beginning of
@@ -2046,7 +2046,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlig
 	runningStyle = startStyle;
 	for (i = *pos - 1;; i--) {
 
-		/* The start of the buffer is certainly a safe place to parse from */
+		// The start of the buffer is certainly a safe place to parse from 
 		if (i == 0) {
 			*pos = 0;
 			return PLAIN_STYLE;
@@ -2089,7 +2089,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlig
 				*pos = i + 1;
 				return parentStyle;
 			} else {
-				/* Switch to the new style */
+				// Switch to the new style 
 				runningStyle = style;
 			}
 		}
@@ -2210,7 +2210,7 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 	while (patList[topIndex].subPatternOf) {
 		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf->c_str());
 		if (index == topIndex)
-			return -1; /* amai: circular dependency ?! */
+			return -1; // amai: circular dependency ?! 
 	}
 	return topIndex;
 }
@@ -2243,7 +2243,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 	}
 	borderHeight = windowHeight - textHeight;
 
-	/* Calculate a new window height appropriate for the new font */
+	// Calculate a new window height appropriate for the new font 
 	newWindowHeight = (textHeight * getFontHeight(window)) / oldFontHeight + borderHeight;
 
 	/* Many window managers enforce window size increments even on client resize
@@ -2252,7 +2252,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 	   attempting to resize. */
 	XtVaSetValues(window->shell_, XmNheightInc, getFontHeight(window), nullptr);
 
-	/* Re-size the window */
+	// Re-size the window 
 	XtVaSetValues(window->shell_, XmNheight, newWindowHeight, nullptr);
 }
 

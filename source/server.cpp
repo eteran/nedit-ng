@@ -72,7 +72,7 @@ static Atom ServerExistsAtom = 0;
 void InitServerCommunication(void) {
 	Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
-	/* Create the server property atoms on the current DISPLAY. */
+	// Create the server property atoms on the current DISPLAY. 
 	CreateServerPropertyAtoms(GetPrefServerName(), &ServerExistsAtom, &ServerRequestAtom);
 
 	/* Pay attention to PropertyChangeNotify events on the root window.
@@ -86,7 +86,7 @@ void InitServerCommunication(void) {
 	   try and wait for their timeouts to expire) */
 	XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)"True", 4);
 
-	/* Set up exit handler for cleaning up server-exists property */
+	// Set up exit handler for cleaning up server-exists property 
 	atexit(cleanUpServerCommunication);
 }
 
@@ -148,11 +148,11 @@ static void processServerCommand(void) {
 	unsigned char *propValue;
 	int getFmt;
 
-	/* Get the value of the property, and delete it from the root window */
+	// Get the value of the property, and delete it from the root window 
 	if (XGetWindowProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), ServerRequestAtom, 0, INT_MAX, True, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &propValue) != Success || getFmt != 8)
 		return;
 
-	/* Invoke the command line processor on the string to process the request */
+	// Invoke the command line processor on the string to process the request 
 	processServerCommandString((char *)propValue);
 	XFree(propValue);
 }
@@ -174,7 +174,7 @@ Boolean ServerDispatchEvent(XEvent *event) {
 	return XtDispatchEvent(event);
 }
 
-/* Try to find existing 'FileOpen' property atom for path. */
+// Try to find existing 'FileOpen' property atom for path. 
 static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 	char path[MAXPATHLEN];
 	Atom atom;
@@ -203,7 +203,7 @@ static void deleteFileOpenProperty2(const char *filename, const char *pathname) 
 	deleteProperty(&atom);
 }
 
-/* Try to find existing 'FileClosed' property atom for path. */
+// Try to find existing 'FileClosed' property atom for path. 
 static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 	char path[MAXPATHLEN];
 	Atom atom;
@@ -213,11 +213,11 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 
 	strcpy(path, pathname);
 	strcat(path, filename);
-	atom = CreateServerFileClosedAtom(GetPrefServerName(), path, True); /* don't create */
+	atom = CreateServerFileClosedAtom(GetPrefServerName(), path, True); // don't create 
 	return (atom);
 }
 
-/* Get hold of the property to use when closing the file. */
+// Get hold of the property to use when closing the file. 
 static void getFileClosedProperty(Document *window) {
 	if (window->filenameSet_) {
 		window->fileClosedAtom_ = findFileClosedProperty(window->filename_.c_str(), window->path_.c_str());
@@ -241,12 +241,12 @@ static void deleteFileClosedProperty2(const char *filename, const char *pathname
 static int isLocatedOnDesktop(Document *window, long currentDesktop) {
 	long windowDesktop;
 	if (currentDesktop == -1)
-		return True; /* No desktop information available */
+		return True; // No desktop information available 
 
 	windowDesktop = QueryDesktop(TheDisplay, window->shell_);
-	/* Sticky windows have desktop 0xFFFFFFFF by convention */
+	// Sticky windows have desktop 0xFFFFFFFF by convention 
 	if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL)
-		return True; /* Desktop matches, or window is sticky */
+		return True; // Desktop matches, or window is sticky 
 
 	return False;
 }
@@ -260,15 +260,15 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 			if (window->filenameSet_ || window->fileChanged_ || window->macroCmdData_) {
 				continue;
 			}
-			/* No check for top document here! */
+			// No check for top document here! 
 			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window;
 			}
 		}
 	} else {
-		/* Find a window on the current desktop to hold the new document */
+		// Find a window on the current desktop to hold the new document 
 		for (Document *window: WindowList) {
-			/* Avoid unnecessary property access (server round-trip) */
+			// Avoid unnecessary property access (server round-trip) 
 			if (!window->IsTopDocument()) {
 				continue;
 			}
@@ -278,7 +278,7 @@ static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		}
 	}
 
-	return nullptr; /* No window found on current desktop -> create new window */
+	return nullptr; // No window found on current desktop -> create new window 
 }
 
 static void processServerCommandString(char *string) {
@@ -384,7 +384,7 @@ static void processServerCommandString(char *string) {
 				if (win == end(WindowList)) {
 					XBell(TheDisplay, 0);
 				} else {
-					/* Raise before -do (macro could close window). */
+					// Raise before -do (macro could close window). 
 					if (iconicFlag)
 						win->RaiseDocument();
 					else
@@ -456,7 +456,7 @@ static void processServerCommandString(char *string) {
 				}
 			}
 
-			/* register the last file opened for later use */
+			// register the last file opened for later use 
 			if (window) {
 				lastFile = window;
 				lastIconic = iconicFlag;
@@ -467,7 +467,7 @@ static void processServerCommandString(char *string) {
 		}
 	}
 
-	/* Raise the last file opened */
+	// Raise the last file opened 
 	if (lastFile) {
 		lastFile->CleanUpTabBarExposeQueue();
 		if (lastIconic)

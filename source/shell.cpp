@@ -61,14 +61,14 @@
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 
-/* Tuning parameters */
-#define IO_BUF_SIZE 4096       /* size of buffers for collecting cmd output */
-#define MAX_OUT_DIALOG_ROWS 30 /* max height of dialog for command output */
-#define MAX_OUT_DIALOG_COLS 80 /* max width of dialog for command output */
-#define OUTPUT_FLUSH_FREQ	1000 /* how often (msec) to flush output buffers when process is taking too long */
-#define BANNER_WAIT_TIME	6000 /* how long to wait (msec) before putting up Shell Command Executing... banner */
+// Tuning parameters 
+#define IO_BUF_SIZE 4096       // size of buffers for collecting cmd output 
+#define MAX_OUT_DIALOG_ROWS 30 // max height of dialog for command output 
+#define MAX_OUT_DIALOG_COLS 80 // max width of dialog for command output 
+#define OUTPUT_FLUSH_FREQ	1000 // how often (msec) to flush output buffers when process is taking too long 
+#define BANNER_WAIT_TIME	6000 // how long to wait (msec) before putting up Shell Command Executing... banner 
 
-/* flags for issueCommand */
+// flags for issueCommand 
 #define ACCUMULATE 1
 #define ERROR_DIALOGS 2
 #define REPLACE_SELECTION 4
@@ -76,7 +76,7 @@
 #define OUTPUT_TO_DIALOG 16
 #define OUTPUT_TO_STRING 32
 
-/* element of a buffer list for collecting output from shell processes */
+// element of a buffer list for collecting output from shell processes 
 struct bufElem {
 	int length;
 	char contents[IO_BUF_SIZE];
@@ -127,7 +127,7 @@ static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr
 */
 void FilterSelection(Document *window, const std::string &command, int fromMacro) {
 
-	/* Can't do two shell commands at once in the same window */
+	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
@@ -145,7 +145,7 @@ void FilterSelection(Document *window, const std::string &command, int fromMacro
 	int left  = window->buffer_->primary_.start;
 	int right = window->buffer_->primary_.end;
 
-	/* Issue the command and collect its output */
+	// Issue the command and collect its output 
 	issueCommand(window, command, text, textLen, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus_, left, right, fromMacro);
 }
 
@@ -160,13 +160,13 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	int pos, line, column;
 	char lineNumber[11];
 
-	/* Can't do two shell commands at once in the same window */
+	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	/* get the selection or the insert position */
+	// get the selection or the insert position 
 	pos = TextGetCursorPos(window->lastFocus_);
 	if (window->buffer_->GetSimpleSelection(&left, &right))
 		flags = ACCUMULATE | REPLACE_SELECTION;
@@ -189,7 +189,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 		return;
 	}
 
-	/* issue the command */
+	// issue the command 
 	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus_, left, right, fromMacro);
 	delete [] subsCommand;
 }
@@ -200,7 +200,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 */
 void ShellCmdToMacroString(Document *window, const std::string &command, const std::string &input) {
 
-	/* fork the command and begin processing input/output */
+	// fork the command and begin processing input/output 
 	issueCommand(window, command, input, input.size(), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
 }
 
@@ -214,13 +214,13 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	int pos, line, column;
 	char lineNumber[11];
 
-	/* Can't do two shell commands at once in the same window */
+	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	/* get all of the text on the line with the insert position */
+	// get all of the text on the line with the insert position 
 	pos = TextGetCursorPos(window->lastFocus_);
 	if (!window->buffer_->GetSimpleSelection(&left, &right)) {
 		left = right = pos;
@@ -232,7 +232,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	std::string cmdText = window->buffer_->BufGetRangeEx(left, right);
 	window->buffer_->BufUnsubstituteNullCharsEx(cmdText);
 
-	/* insert a newline after the entire line */
+	// insert a newline after the entire line 
 	window->buffer_->BufInsertEx(insertPos, "\n");
 
 	/* Substitute the current file name for % and the current line number
@@ -251,7 +251,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 		return;
 	}
 
-	/* issue the command */
+	// issue the command 
 	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus_, insertPos + 1, insertPos + 1, fromMacro);
 	delete [] subsCommand;
 }
@@ -270,7 +270,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	Document *inWindow = window;
 	Widget outWidget;
 
-	/* Can't do two shell commands at once in the same window */
+	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
 		XBell(TheDisplay, 0);
 		return;
@@ -314,7 +314,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 	} else {
-		/* FROM_NONE */
+		// FROM_NONE 
 		text = std::string();
 	}
 
@@ -336,7 +336,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		inWindow = WindowList;
 		left = right = 0;
 		CheckCloseDim();
-	} else { /* TO_SAME_WINDOW */
+	} else { // TO_SAME_WINDOW 
 		outWidget = window->lastFocus_;
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
@@ -361,7 +361,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		}
 	}
 
-	/* If the command requires the file be saved first, save it */
+	// If the command requires the file be saved first, save it 
 	if (saveFirst) {
 		if (!SaveWindow(window)) {
 			if (input != FROM_NONE)
@@ -375,7 +375,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	if (loadAfter)
 		flags |= RELOAD_FILE_AFTER;
 
-	/* issue the command */
+	// issue the command 
 	issueCommand(inWindow, subsCommand, text, textLen, flags, outWidget, left, right, fromMacro);
 	delete [] subsCommand;
 }
@@ -418,7 +418,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	XtAppContext context = XtWidgetToApplicationContext(window->shell_);
 	pid_t childPid;
 
-	/* verify consistency of input parameters */
+	// verify consistency of input parameters 
 	if ((flags & ERROR_DIALOGS || flags & REPLACE_SELECTION || flags & OUTPUT_TO_STRING) && !(flags & ACCUMULATE))
 		return;
 
@@ -428,18 +428,18 @@ static void issueCommand(Document *window, const std::string &command, const std
 	if (fromMacro)
 		window = MacroRunWindow();
 
-	/* put up a watch cursor over the waiting window */
+	// put up a watch cursor over the waiting window 
 	if (!fromMacro)
 		BeginWait(window->shell_);
 
-	/* enable the cancel menu item */
+	// enable the cancel menu item 
 	if (!fromMacro)
 		window->SetSensitive(window->cancelShellItem_, True);
 
-	/* fork the subprocess and issue the command */
+	// fork the subprocess and issue the command 
 	childPid = forkCommand(window->shell_, command, window->path_.c_str(), &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
 
-	/* set the pipes connected to the process for non-blocking i/o */
+	// set the pipes connected to the process for non-blocking i/o 
 	if (fcntl(stdinFD, F_SETFL, O_NONBLOCK) < 0)
 		perror("nedit: Internal error (fcntl)");
 	if (fcntl(stdoutFD, F_SETFL, O_NONBLOCK) < 0)
@@ -449,7 +449,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 			perror("nedit: Internal error (fcntl2)");
 	}
 
-	/* if there's nothing to write to the process' stdin, close it now */
+	// if there's nothing to write to the process' stdin, close it now 
 	if(input.empty()) {
 		close(stdinFD);
 	}
@@ -472,21 +472,21 @@ static void issueCommand(Document *window, const std::string &command, const std
 	cmdData->rightPos    = replaceRight;
 	cmdData->inLength    = inputLen;
 
-	/* Set up timer proc for putting up banner when process takes too long */
+	// Set up timer proc for putting up banner when process takes too long 
 	if (fromMacro) {
 		cmdData->bannerTimeoutID = 0;
 	} else {
 		cmdData->bannerTimeoutID = XtAppAddTimeOut(context, BANNER_WAIT_TIME, bannerTimeoutProc, window);
 	}
 
-	/* Set up timer proc for flushing output buffers periodically */
+	// Set up timer proc for flushing output buffers periodically 
 	if ((flags & ACCUMULATE) || !textW) {
 		cmdData->flushTimeoutID = 0;
 	} else {
 		cmdData->flushTimeoutID = XtAppAddTimeOut(context, OUTPUT_FLUSH_FREQ, flushTimeoutProc, window);
 	}
 
-	/* set up callbacks for activity on the file descriptors */
+	// set up callbacks for activity on the file descriptors 
 	cmdData->stdoutInputID = XtAppAddInput(context, stdoutFD, (XtPointer)XtInputReadMask, stdoutReadProc, window);
 	if(!input.empty()) {
 		cmdData->stdinInputID = XtAppAddInput(context, stdinFD, (XtPointer)XtInputWriteMask, stdinWriteProc, window);
@@ -520,12 +520,12 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	int nRead;
 
-	/* read from the process' stdout stream */
+	// read from the process' stdout stream 
 	auto buf = new bufElem;
 	nRead = read(cmdData->stdoutFD, buf->contents, IO_BUF_SIZE);
 
-	/* error in read */
-	if (nRead == -1) { /* error */
+	// error in read 
+	if (nRead == -1) { // error 
 		if (errno != EWOULDBLOCK && errno != EAGAIN) {
 			perror("nedit: Error reading shell command output");
 			delete buf;
@@ -545,7 +545,7 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id) {
 		return;
 	}
 
-	/* characters were read successfully, add buf to linked list of buffers */
+	// characters were read successfully, add buf to linked list of buffers 
 	buf->length = nRead;
 	
 	cmdData->outBufs.push_front(buf);
@@ -564,11 +564,11 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	int nRead;
 
-	/* read from the process' stderr stream */
+	// read from the process' stderr stream 
 	auto buf = new bufElem;
 	nRead = read(cmdData->stderrFD, buf->contents, IO_BUF_SIZE);
 
-	/* error in read */
+	// error in read 
 	if (nRead == -1) {
 		if (errno != EWOULDBLOCK && errno != EAGAIN) {
 			perror("nedit: Error reading shell command error stream");
@@ -589,7 +589,7 @@ static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id) {
 		return;
 	}
 
-	/* characters were read successfully, add buf to linked list of buffers */
+	// characters were read successfully, add buf to linked list of buffers 
 	buf->length = nRead;
 	cmdData->errBufs.push_front(buf);
 }
@@ -648,16 +648,16 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	cmdData->bannerIsUp = True;
 
-	/* Extract accelerator text from menu PushButtons */
+	// Extract accelerator text from menu PushButtons 
 	XtVaGetValues(window->cancelShellItem_, XmNacceleratorText, &xmCancel, nullptr);
 
-	/* Translate Motif string to char* */
+	// Translate Motif string to char* 
 	std::string cCancel = GetXmStringTextEx(xmCancel);
 
-	/* Free Motif String */
+	// Free Motif String 
 	XmStringFree(xmCancel);
 
-	/* Create message */
+	// Create message 
 	if (cCancel.empty()) {
 		strncpy(message, "Shell Command in Progress", MAX_TIMEOUT_MSG_LEN);
 		message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
@@ -695,7 +695,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	TextBuffer *buf = TextGetBuffer(cmdData->textW);
 
-	/* shouldn't happen, but it would be bad if it did */
+	// shouldn't happen, but it would be bad if it did 
 	if (!cmdData->textW)
 		return;
 
@@ -710,7 +710,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 			fprintf(stderr, "nedit: Too much binary data\n");
 	}
 
-	/* re-establish the timer proc (this routine) to continue processing */
+	// re-establish the timer proc (this routine) to continue processing 
 	cmdData->flushTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), OUTPUT_FLUSH_FREQ, flushTimeoutProc, clientData);
 }
 
@@ -729,7 +729,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	std::string errText;
 	std::string outText;
 
-	/* Cancel any pending i/o on the file descriptors */
+	// Cancel any pending i/o on the file descriptors 
 	if (cmdData->stdoutInputID != 0)
 		XtRemoveInput(cmdData->stdoutInputID);
 	if (cmdData->stdinInputID != 0)
@@ -737,20 +737,20 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	if (cmdData->stderrInputID != 0)
 		XtRemoveInput(cmdData->stderrInputID);
 
-	/* Close any file descriptors remaining open */
+	// Close any file descriptors remaining open 
 	close(cmdData->stdoutFD);
 	if (cmdData->flags & ERROR_DIALOGS)
 		close(cmdData->stderrFD);
 	if (cmdData->inIndex != -1)
 		close(cmdData->stdinFD);
 
-	/* Cancel pending timeouts */
+	// Cancel pending timeouts 
 	if (cmdData->flushTimeoutID != 0)
 		XtRemoveTimeOut(cmdData->flushTimeoutID);
 	if (cmdData->bannerTimeoutID != 0)
 		XtRemoveTimeOut(cmdData->bannerTimeoutID);
 
-	/* Clean up waiting-for-shell-command-to-complete mode */
+	// Clean up waiting-for-shell-command-to-complete mode 
 	if (!cmdData->fromMacro) {
 		EndWait(window->shell_);
 		window->SetSensitive(window->cancelShellItem_, False);
@@ -759,7 +759,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		}
 	}
 
-	/* If the process was killed or became inaccessable, give up */
+	// If the process was killed or became inaccessable, give up 
 	if (terminatedOnError) {
 		freeBufListEx(cmdData->outBufs);
 		freeBufListEx(cmdData->errBufs);
@@ -775,7 +775,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		errText = coalesceOutputEx(cmdData->errBufs);
 	}
 
-	/* Wait for the child process to complete and get its return status */
+	// Wait for the child process to complete and get its return status 
 	waitpid(cmdData->childPid, &status, 0);
 
 	/* Present error and stderr-information dialogs.  If a command returned
@@ -834,7 +834,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		}
 	}
 
-	/* If the command requires the file to be reloaded afterward, reload it */
+	// If the command requires the file to be reloaded afterward, reload it 
 	if (cmdData->flags & RELOAD_FILE_AFTER)
 		RevertToSaved(window);
 
@@ -888,7 +888,7 @@ static pid_t forkCommand(Widget parent, const std::string &command, const char *
 		childStderrFD = pipeFDs[1];
 	}
 
-	/* Fork the process */
+	// Fork the process 
 	childPid = fork();
 
 	/*
@@ -896,7 +896,7 @@ static pid_t forkCommand(Widget parent, const std::string &command, const char *
 	** child ends of the pipes and execute the command
 	*/
 	if (childPid == 0) {
-		/* close the parent end of the pipes in the child process   */
+		// close the parent end of the pipes in the child process   
 		close(*stdinFD);
 		close(*stdoutFD);
 		if(stderrFD)
@@ -938,20 +938,20 @@ static pid_t forkCommand(Widget parent, const std::string &command, const char *
 			}
 		}
 
-		/* execute the command using the shell specified by preferences */
+		// execute the command using the shell specified by preferences 
 		execlp(GetPrefShell(), GetPrefShell(), "-c", command.c_str(), nullptr);
 
-		/* if we reach here, execlp failed */
+		// if we reach here, execlp failed 
 		fprintf(stderr, "Error starting shell: %s\n", GetPrefShell());
 		exit(EXIT_FAILURE);
 	}
 
-	/* Parent process context, check if fork succeeded */
+	// Parent process context, check if fork succeeded 
 	if (childPid == -1) {
 		DialogF(DF_ERR, parent, 1, "Shell Command", "Error starting shell command process\n(fork failed)", "OK");
 	}
 
-	/* close the child ends of the pipes */
+	// close the child ends of the pipes 
 	close(childStdinFD);
 	close(childStdoutFD);
 	if(stderrFD)
@@ -969,7 +969,7 @@ static std::string coalesceOutputEx(std::list<bufElem *> &bufList) {
 
 	int length = 0;
 
-	/* find the total length of data read */
+	// find the total length of data read 
 	for(bufElem *buf : bufList) {
 		length += buf->length;
 	}
@@ -977,9 +977,9 @@ static std::string coalesceOutputEx(std::list<bufElem *> &bufList) {
 	std::string outBuf;
 	outBuf.reserve(length);
 
-	/* allocate contiguous memory for returning data */
+	// allocate contiguous memory for returning data 
 
-	/* copy the buffers into the output bufElem */
+	// copy the buffers into the output bufElem 
 	auto outPtr = std::back_inserter(outBuf);
 	
 	for(auto it = bufList.rbegin(); it != bufList.rend(); ++it) {
@@ -1021,7 +1021,7 @@ static void createOutputDialog(Widget parent, const std::string &text) {
 	Widget form, textW, button;
 	XmString st1;
 
-	/* measure the width and height of the text to determine size for dialog */
+	// measure the width and height of the text to determine size for dialog 
 	measureText(text.c_str(), MAX_OUT_DIALOG_COLS, &rows, &cols, &wrapped);
 	if (rows > MAX_OUT_DIALOG_ROWS) {
 		rows = MAX_OUT_DIALOG_ROWS;
@@ -1096,7 +1096,7 @@ static void createOutputDialog(Widget parent, const std::string &text) {
 	ac++;
 	textW = XmCreateScrolledText(form, (String) "outText", al, ac);
 	AddMouseWheelSupport(textW);
-	MakeSingleLineTextW(textW); /* Binds <Return> to activate() */
+	MakeSingleLineTextW(textW); // Binds <Return> to activate() 
 	XtManageChild(textW);
 
 	XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", nullptr);
@@ -1135,10 +1135,10 @@ static void measureText(view::string_view text, int wrapWidth, int *rows, int *c
 
 		if (ch == '\t') {
 			col += 8 - (col % 8);
-			wrapCol = 0; /* Tabs at end of line are not drawn when wrapped */
+			wrapCol = 0; // Tabs at end of line are not drawn when wrapped 
 		} else if (ch == ' ') {
 			col++;
-			wrapCol = 0; /* Spaces at end of line are not drawn when wrapped */
+			wrapCol = 0; // Spaces at end of line are not drawn when wrapped 
 		} else {
 			col++;
 			wrapCol = 1;

@@ -95,7 +95,7 @@
 
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
-/* extern void _XEditResCheckMessages(); */
+// extern void _XEditResCheckMessages(); 
 #endif
 
 extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
@@ -212,7 +212,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		--i;
 	}
 
-	/* Create command line arguments for restoring each window in the list */
+	// Create command line arguments for restoring each window in the list 
 	std::vector<char *> argv;
 	argv.push_back(XtNewStringEx(ArgV0));
 	
@@ -225,7 +225,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		}
 	}
 
-	/* editor windows are popup-shell children of top-level appShell */
+	// editor windows are popup-shell children of top-level appShell 
 	XtVaGetValues(appShell, XmNchildren, &children, XmNnumChildren, &nItems, nullptr);
 
 	for (int n = nItems - 1; n >= 0; n--) {
@@ -233,10 +233,10 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		int tabCount;
 		Document *topWin;
 		if (strcmp(XtName(children[n]), "textShell") || ((topWin = Document::WidgetToWindow(children[n])) == nullptr)) {
-			continue; /* skip non-editor windows */
+			continue; // skip non-editor windows 
 		}
 
-		/* create a group for each window */
+		// create a group for each window 
 		topWin->getGeometryString(geometry);
 		argv.push_back(XtNewStringEx("-group"));
 		argv.push_back(XtNewStringEx("-geometry"));
@@ -250,13 +250,13 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 			wasIconic = False;
 		}
 
-		/* add filename of each tab in window... */
+		// add filename of each tab in window... 
 		XtVaGetValues(topWin->tabBar_, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
 
 		for (int i = 0; i < tabCount; i++) {
 			Document *win = TabToWindow(tabs[i]);
 			if (win->filenameSet_) {
-				/* add filename */
+				// add filename 
 				auto p = new char[win->path_.size() + win->filename_.size() + 1];
 				sprintf(p, "%s%s", win->path_.c_str(), win->filename_.c_str());
 				argv.push_back(p);
@@ -266,7 +266,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	delete [] revWindowList;
 
-	/* Set the window's WM_COMMAND property to the created command line */
+	// Set the window's WM_COMMAND property to the created command line 
 	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());
 	for (char *p : argv) {
 		delete [] p;
@@ -285,7 +285,7 @@ void AttachSessionMgrHandler(Widget appShell) {
 	
 	XmAddProtocolCallback(appShell, wmpAtom, syAtom, saveYourselfCB, (XtPointer)appShell);
 }
-#endif /* NO_SESSION_RESTART */
+#endif // NO_SESSION_RESTART 
 
 
 static bool currentlyBusy = false;
@@ -320,7 +320,7 @@ void AllWindowsBusy(const char *message) {
 		}
 		
 	} else if (!modeMessageSet && message && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
-		/* Show the mode message when we've been busy for more than a second */
+		// Show the mode message when we've been busy for more than a second 
 		
 		for(Document *w: WindowList) {
 			w->SetModeMessage(message);

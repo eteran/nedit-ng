@@ -83,7 +83,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	TextBuffer *buf = window->buffer_;
 	std::string text;
 
-	/* get selection, if no text selected, use current insert position */
+	// get selection, if no text selected, use current insert position 
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		cursorPos = TextGetCursorPos(window->lastFocus_);
 		selStart = buf->BufStartOfLine(cursorPos);
@@ -110,7 +110,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 		text = buf->BufGetRangeEx(selStart, selEnd);
 	}
 
-	/* shift the text by the appropriate distance */
+	// shift the text by the appropriate distance 
 	if (byTab) {
 		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
 		shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
@@ -129,11 +129,11 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 	int offset, emTabDist;
 	TextBuffer *buf = window->buffer_;
 
-	/* Make sure selStart and SelEnd refer to whole lines */
+	// Make sure selStart and SelEnd refer to whole lines 
 	selStart = buf->BufStartOfLine(selStart);
 	selEnd   = buf->BufEndOfLine(selEnd);
 
-	/* Calculate the the left/right offset for the new rectangle */
+	// Calculate the the left/right offset for the new rectangle 
 	if (byTab) {
 		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
 		offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
@@ -151,12 +151,12 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 	std::string text = buf->BufGetRangeEx(selStart, selEnd);
 	tempBuf->BufSetAllEx(text);
 
-	/* Do the shift in the temporary buffer */
+	// Do the shift in the temporary buffer 
 	text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
 	tempBuf->BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
 	tempBuf->BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
 
-	/* Make the change in the real buffer */
+	// Make the change in the real buffer 
 	buf->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 	buf->BufRectSelect(selStart, selStart + tempBuf->BufGetLength(), rectStart + offset, rectEnd + offset);
 	delete tempBuf;
@@ -180,7 +180,7 @@ static void changeCase(Document *window, int makeUpper) {
 	int cursorPos, start, end, rectStart, rectEnd;
 	bool isRect;
 
-	/* Get the selection.  Use character before cursor if no selection */
+	// Get the selection.  Use character before cursor if no selection 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		char bufChar[2] = " ";
 		cursorPos = TextGetCursorPos(window->lastFocus_);
@@ -260,10 +260,10 @@ void FillSelection(Document *window) {
 		rightMargin = (wrapMargin == 0 ? nCols : wrapMargin);
 	}
 
-	/* Fill the text */
+	// Fill the text 
 	std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, &len, False);
 
-	/* Replace the text in the window */
+	// Replace the text in the window 
 	if (hasSelection && isRect) {
 		buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
 		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLinesEx(filledText) - 1)), rectStart, rectEnd);
@@ -318,14 +318,14 @@ char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int
 			shiftedPtr += strlen(shiftedLine);
 			XtFree(shiftedLine);
 			if (*textPtr == '\0') {
-				/* terminate string & exit loop at end of text */
+				// terminate string & exit loop at end of text 
 				*shiftedPtr = '\0';
 				break;
 			} else {
-				/* move the newline from text to shifted text */
+				// move the newline from text to shifted text 
 				*shiftedPtr++ = *textPtr++;
 			}
-			/* start line over */
+			// start line over 
 			lineStartPtr = textPtr;
 		} else
 			textPtr++;
@@ -377,13 +377,13 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
 			if (textPtr == text.end()) {
-				/* terminate string & exit loop at end of text */
+				// terminate string & exit loop at end of text 
 				break;
 			} else {
-				/* move the newline from text to shifted text */
+				// move the newline from text to shifted text 
 				*shiftedPtr++ = *textPtr++;
 			}
-			/* start line over */
+			// start line over 
 			lineStartPtr = textPtr;
 		} else
 			textPtr++;
@@ -404,29 +404,29 @@ static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int 
 	whiteWidth = 0;
 	while (true) {
 		if (*lineInPtr == '\0' || (lineInPtr - line) >= lineLen) {
-			/* nothing on line, wipe it out */
+			// nothing on line, wipe it out 
 			*lineOut = '\0';
 			return lineOut;
 		} else if (*lineInPtr == ' ') {
-			/* white space continues with tab, advance to next tab stop */
+			// white space continues with tab, advance to next tab stop 
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
 		} else if (*lineInPtr == '\t') {
-			/* white space continues with tab, advance to next tab stop */
+			// white space continues with tab, advance to next tab stop 
 			whiteWidth = nextTab(whiteWidth, tabDist);
 			*lineOutPtr++ = *lineInPtr++;
 		} else {
-			/* end of white space, add nChars of space */
+			// end of white space, add nChars of space 
 			for (i = 0; i < nChars; i++) {
 				*lineOutPtr++ = ' ';
 				whiteWidth++;
-				/* if we're now at a tab stop, change last 8 spaces to a tab */
+				// if we're now at a tab stop, change last 8 spaces to a tab 
 				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
 					lineOutPtr -= tabDist;
 					*lineOutPtr++ = '\t';
 				}
 			}
-			/* move remainder of line */
+			// move remainder of line 
 			while (*lineInPtr != '\0' && (lineInPtr - line) < lineLen)
 				*lineOutPtr++ = *lineInPtr++;
 			*lineOutPtr = '\0';
@@ -447,22 +447,22 @@ static std::string shiftLineRightEx(view::string_view line, int lineLen, int tab
 	whiteWidth = 0;
 	while (true) {
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
-			/* nothing on line, wipe it out */
+			// nothing on line, wipe it out 
 			return lineOut;
 		} else if (*lineInPtr == ' ') {
-			/* white space continues with tab, advance to next tab stop */
+			// white space continues with tab, advance to next tab stop 
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
 		} else if (*lineInPtr == '\t') {
-			/* white space continues with tab, advance to next tab stop */
+			// white space continues with tab, advance to next tab stop 
 			whiteWidth = nextTab(whiteWidth, tabDist);
 			*lineOutPtr++ = *lineInPtr++;
 		} else {
-			/* end of white space, add nChars of space */
+			// end of white space, add nChars of space 
 			for (i = 0; i < nChars; i++) {
 				*lineOutPtr++ = ' ';
 				whiteWidth++;
-				/* if we're now at a tab stop, change last 8 spaces to a tab */
+				// if we're now at a tab stop, change last 8 spaces to a tab 
 				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
 				
 					lineOut.resize(lineOut.size() - tabDist);
@@ -472,7 +472,7 @@ static std::string shiftLineRightEx(view::string_view line, int lineLen, int tab
 				}
 			}
 			
-			/* move remainder of line */
+			// move remainder of line 
 			while (lineInPtr != line.end() && (lineInPtr - line.begin()) < lineLen) {
 				*lineOutPtr++ = *lineInPtr++;
 			}
@@ -495,25 +495,25 @@ static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChar
 	lastWhiteWidth = 0;
 	while (true) {
 		if (*lineInPtr == '\0' || (lineInPtr - line) >= lineLen) {
-			/* nothing on line, wipe it out */
+			// nothing on line, wipe it out 
 			*lineOut = '\0';
 			return lineOut;
 		} else if (*lineInPtr == ' ') {
-			/* white space continues with space, advance one character */
+			// white space continues with space, advance one character 
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
 		} else if (*lineInPtr == '\t') {
-			/* white space continues with tab, advance to next tab stop	    */
-			/* save the position, though, in case we need to remove the tab */
+			// white space continues with tab, advance to next tab stop	    
+			// save the position, though, in case we need to remove the tab 
 			lastWhiteWidth = whiteWidth;
 			whiteWidth = nextTab(whiteWidth, tabDist);
 			*lineOutPtr++ = *lineInPtr++;
 		} else {
-			/* end of white space, remove nChars characters */
+			// end of white space, remove nChars characters 
 			for (i = 1; i <= nChars; i++) {
 				if (lineOutPtr > lineOut) {
 					if (*(lineOutPtr - 1) == ' ') {
-						/* end of white space is a space, just remove it */
+						// end of white space is a space, just remove it 
 						lineOutPtr--;
 					} else {
 						/* end of white space is a tab, remove it and add
@@ -528,10 +528,10 @@ static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChar
 					}
 				}
 			}
-			/* move remainder of line */
+			// move remainder of line 
 			while (*lineInPtr != '\0' && (lineInPtr - line) < lineLen)
 				*lineOutPtr++ = *lineInPtr++;
-			/* add a null */
+			// add a null 
 			*lineOutPtr = '\0';
 			return lineOut;
 		}
@@ -607,7 +607,7 @@ static int findLeftMarginEx(In first, In last, int length, int tabDist) {
 			inMargin = true;
 			break;
 		default:
-			/* non-whitespace */
+			// non-whitespace 
 			if (col < leftMargin && inMargin) {
 				leftMargin = col;
 			}
@@ -616,7 +616,7 @@ static int findLeftMarginEx(In first, In last, int length, int tabDist) {
 		}
 	}
 
-	/* if no non-white text is found, the leftMargin will never be set */
+	// if no non-white text is found, the leftMargin will never be set 
 	if (leftMargin == INT_MAX) {
 		return 0;
 	}
@@ -636,7 +636,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	char ch;
 	int len;
 
-	/* Create a buffer to accumulate the filled paragraphs */
+	// Create a buffer to accumulate the filled paragraphs 
 	auto buf = new TextBuffer;
 	buf->BufSetAllEx(text);
 
@@ -647,7 +647,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	int paraStart = 0;
 	for (;;) {
 
-		/* Skip over white space */
+		// Skip over white space 
 		while (paraStart < buf->BufGetLength()) {
 			ch = buf->BufGetCharacter(paraStart);
 			if (ch != ' ' && ch != '\t' && ch != '\n')
@@ -660,7 +660,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		
 		paraStart = buf->BufStartOfLine(paraStart);
 
-		/* Find the end of the paragraph */
+		// Find the end of the paragraph 
 		paraEnd = findParagraphEnd(buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
@@ -681,17 +681,17 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		int firstLineIndent  = findLeftMarginEx(paraText.begin(), paraText.end(), firstLineLen, tabDist);
 		int leftMargin       = findLeftMarginEx(secondLineStart,  paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
 
-		/* Fill the paragraph */
+		// Fill the paragraph 
 		std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar, &len);
 
-		/* Replace it in the buffer */
+		// Replace it in the buffer 
 		buf->BufReplaceEx(paraStart, fillEnd, filledText);
 
-		/* move on to the next paragraph */
+		// move on to the next paragraph 
 		paraStart += len;
 	}
 
-	/* Free the buffer and return its contents */
+	// Free the buffer and return its contents 
 	std::string filledText = buf->BufGetAllEx();
 	*filledLen = buf->BufGetLength();
 	delete buf;
@@ -710,7 +710,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 	int col, cleanedLen, indentLen, leadIndentLen, nLines = 1;
 	int inWhitespace;
 
-	/* remove leading spaces, convert newlines to spaces */
+	// remove leading spaces, convert newlines to spaces 
 	char *cleanedText = XtMalloc(text.size() + 1);
 	char *outPtr = cleanedText;
 	int inMargin = True;
@@ -767,15 +767,15 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 	}
 	nLines++;
 
-	/* produce a string to prepend to lines to indent them to the left margin */
+	// produce a string to prepend to lines to indent them to the left margin 
 	leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs, &leadIndentLen);
 	indentString = makeIndentString(leftMargin, tabDist, allowTabs, &indentLen);
 
-	/* allocate memory for the finished string */
+	// allocate memory for the finished string 
 	outText = XtMalloc((cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1));
 	outPtr = outText;
 
-	/* prepend the indent string to each line of the filled text */
+	// prepend the indent string to each line of the filled text 
 	strncpy(outPtr, leadIndentStr, leadIndentLen);
 	outPtr += leadIndentLen;
 	for (char *c = cleanedText; *c != '\0'; c++) {
@@ -786,12 +786,12 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 		}
 	}
 
-	/* convert any trailing space to newline.  Add terminating null */
+	// convert any trailing space to newline.  Add terminating null 
 	if (*(outPtr - 1) == ' ')
 		*(outPtr - 1) = '\n';
 	*outPtr = '\0';
 
-	/* clean up, return result */
+	// clean up, return result 
 	XtFree(cleanedText);
 	XtFree(leadIndentStr);
 	XtFree(indentString);

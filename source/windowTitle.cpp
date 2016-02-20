@@ -107,7 +107,7 @@ char *safeCharAdd(char *dest, char *destEnd, char c) {
 
 
 
-/* Customize window title dialog information */
+// Customize window title dialog information 
 static struct {
 	Widget form;
 	Widget shell;
@@ -157,7 +157,7 @@ static struct {
 ** Also remove leading and trailing spaces and dashes.
 */
 static void compressWindowTitle(char *title) {
-	/* Compress the title */
+	// Compress the title 
 	int modified;
 	do {
 		char *sourcePtr = title;
@@ -166,22 +166,22 @@ static void compressWindowTitle(char *title) {
 
 		modified = False;
 
-		/* Remove leading spaces and dashes */
+		// Remove leading spaces and dashes 
 		while (c == ' ' || c == '-') {
 			c = *sourcePtr++;
 		}
 
-		/* Remove empty constructs */
+		// Remove empty constructs 
 		while (c != '\0') {
 			switch (c) {
-			/* remove sequences */
+			// remove sequences 
 			case ' ':
 			case '-':
 				sourcePtr = removeSequence(sourcePtr, c);
-				*destPtr++ = c; /* leave one */
+				*destPtr++ = c; // leave one 
 				break;
 
-			/* remove empty paranthesis pairs */
+			// remove empty paranthesis pairs 
 			case '(':
 				if (*sourcePtr == ')') {
 					modified = True;
@@ -217,7 +217,7 @@ static void compressWindowTitle(char *title) {
 			*destPtr = '\0';
 		}
 
-		/* Remove trailing spaces and dashes */
+		// Remove trailing spaces and dashes 
 		while (destPtr-- > title) {
 			if (*destPtr != ' ' && *destPtr != '-')
 				break;
@@ -248,7 +248,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	char *titlePtr = title;
 	char *titleEnd = title + sizeof(title) - 1;
 
-	/* Flags to supress one of these if both are specified and they are identical */
+	// Flags to supress one of these if both are specified and they are identical 
 	bool serverNameSeen = false;
 	bool clearCaseViewTagSeen = false;
 
@@ -262,7 +262,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	int noOfComponents = -1;
 	bool shortStatus = false;
 
-	*titlePtr = '\0'; /* always start with an empty string */
+	*titlePtr = '\0'; // always start with an empty string 
 
 	while (*titleFormat != '\0' && titlePtr < titleEnd) {
 		char c = *titleFormat++;
@@ -273,7 +273,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				break;
 			}
 			switch (c) {
-			case 'c': /* ClearCase view tag */
+			case 'c': // ClearCase view tag 
 				clearCasePresent = True;
 				if (clearCaseViewTag) {
 					if (serverNameSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
@@ -283,9 +283,9 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				}
 				break;
 
-			case 's': /* server name */
+			case 's': // server name 
 				serverNamePresent = True;
-				if (isServer && serverName[0] != '\0') { /* only applicable for servers */
+				if (isServer && serverName[0] != '\0') { // only applicable for servers 
 					if (clearCaseViewTagSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, serverName);
 						serverNameSeen = True;
@@ -293,14 +293,14 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				}
 				break;
 
-			case 'd': /* directory without any limit to no. of components */
+			case 'd': // directory without any limit to no. of components 
 				dirNamePresent = True;
 				if (filenameSet) {
 					titlePtr = safeStrCpy(titlePtr, titleEnd, path);
 				}
 				break;
 
-			case '0': /* directory with limited no. of components */
+			case '0': // directory with limited no. of components 
 			case '1':
 			case '2':
 			case '3':
@@ -313,12 +313,12 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				if (*titleFormat == 'd') {
 					dirNamePresent = True;
 					noOfComponents = c - '0';
-					titleFormat++; /* delete the argument */
+					titleFormat++; // delete the argument 
 
 					if (filenameSet) {
 						const char *trailingPath = GetTrailingPathComponents(path, noOfComponents);
 
-						/* prefix with ellipsis if components were skipped */
+						// prefix with ellipsis if components were skipped 
 						if (trailingPath > path) {
 							titlePtr = safeStrCpy(titlePtr, titleEnd, "...");
 						}
@@ -327,17 +327,17 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				}
 				break;
 
-			case 'f': /* file name */
+			case 'f': // file name 
 				fileNamePresent = True;
 				titlePtr = safeStrCpy(titlePtr, titleEnd, filename);
 				break;
 
-			case 'h': /* host name */
+			case 'h': // host name 
 				hostNamePresent = True;
 				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHostEx().c_str());
 				break;
 
-			case 'S': /* file status */
+			case 'S': // file status 
 				fileStatusPresent = True;
 				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
 					titlePtr = safeStrCpy(titlePtr, titleEnd, "read only, modified");
@@ -351,16 +351,16 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 					titlePtr = safeStrCpy(titlePtr, titleEnd, "modified");
 				break;
 
-			case 'u': /* user name */
+			case 'u': // user name 
 				userNamePresent = True;
 				titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserNameEx().c_str());
 				break;
 
-			case '%': /* escaped % */
+			case '%': // escaped % 
 				titlePtr = safeCharAdd(titlePtr, titleEnd, '%');
 				break;
 
-			case '*': /* short file status ? */
+			case '*': // short file status ? 
 				fileStatusPresent = True;
 				if (*titleFormat && *titleFormat == 'S') {
 					++titleFormat;
@@ -377,7 +377,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 						titlePtr = safeStrCpy(titlePtr, titleEnd, "*");
 					break;
 				}
-			/* fall-through */
+			// fall-through 
 			default:
 				titlePtr = safeCharAdd(titlePtr, titleEnd, c);
 				break;
@@ -390,11 +390,11 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	compressWindowTitle(title);
 
 	if (title[0] == 0) {
-		sprintf(&title[0], "<empty>"); /* For preview purposes only */
+		sprintf(&title[0], "<empty>"); // For preview purposes only 
 	}
 
 	if (etDialog.form) {
-		/* Prevent recursive callback loop */
+		// Prevent recursive callback loop 
 		etDialog.suppressFormatUpdate = True;
 
 		/* Sync radio buttons with format string (in case the user entered
@@ -414,24 +414,24 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 			XmToggleButtonSetState(etDialog.shortStatusW, shortStatus, False);
 		}
 
-		/* Directory components are also sensitive to presence of dir */
+		// Directory components are also sensitive to presence of dir 
 		XtSetSensitive(etDialog.ndirW, dirNamePresent);
 		XtSetSensitive(etDialog.mdirW, dirNamePresent);
 
-		if (dirNamePresent) /* Avoid erasing number when not active */
+		if (dirNamePresent) // Avoid erasing number when not active 
 		{
 			if (noOfComponents >= 0) {
 				std::string value = *XmTextGetStringEx(etDialog.ndirW);
 				char buf[2];
 				sprintf(&buf[0], "%d", noOfComponents);
-				if (strcmp(&buf[0], value.c_str())) /* Don't overwrite unless diff. */
+				if (strcmp(&buf[0], value.c_str())) // Don't overwrite unless diff. 
 					SetIntText(etDialog.ndirW, noOfComponents);
 			} else {
 				XmTextSetStringEx(etDialog.ndirW, "");
 			}
 		}
 
-		/* Enable/disable test buttons, depending on presence of codes */
+		// Enable/disable test buttons, depending on presence of codes 
 		XtSetSensitive(etDialog.oFileChangedW, fileStatusPresent);
 		XtSetSensitive(etDialog.oFileReadOnlyW, fileStatusPresent);
 		XtSetSensitive(etDialog.oFileLockedW, fileStatusPresent && !IS_PERM_LOCKED(etDialog.lockReasons));
@@ -449,13 +449,13 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	return title;
 }
 
-/* a utility that sets the values of all toggle buttons */
+// a utility that sets the values of all toggle buttons 
 static void setToggleButtons(void) {
 	XmToggleButtonSetState(etDialog.oDirW, etDialog.filenameSet == True, False);
 	XmToggleButtonSetState(etDialog.oFileChangedW, etDialog.fileChanged == True, False);
 	XmToggleButtonSetState(etDialog.oFileReadOnlyW, IS_PERM_LOCKED(etDialog.lockReasons), False);
 	XmToggleButtonSetState(etDialog.oFileLockedW, IS_USER_LOCKED(etDialog.lockReasons), False);
-	/* Read-only takes precedence on locked */
+	// Read-only takes precedence on locked 
 	XtSetSensitive(etDialog.oFileLockedW, !IS_PERM_LOCKED(etDialog.lockReasons));
 
 	XmToggleButtonSetState(etDialog.oCcViewTagW, GetClearCaseViewTag() != nullptr, False);
@@ -480,7 +480,7 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData) 
 	const char *serverName;
 
 	if (etDialog.suppressFormatUpdate) {
-		return; /* Prevent recursive feedback */
+		return; // Prevent recursive feedback 
 	}
 
 	format = XmTextGetString(etDialog.formatW);
@@ -545,8 +545,8 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	char *format = XmTextGetString(etDialog.formatW);
 
-	/* pop down the dialog */
-	/*    XtUnmanageChild(etDialog.form); */
+	// pop down the dialog 
+	//    XtUnmanageChild(etDialog.form); 
 
 	if (strcmp(format, GetPrefTitleFormat()) != 0) {
 		SetPrefTitleFormat(format);
@@ -560,7 +560,7 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	/* pop down the dialog */
+	// pop down the dialog 
 	XtUnmanageChild(etDialog.form);
 }
 
@@ -587,7 +587,7 @@ static void wtDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	if (w == etDialog.form) /* Prevent disconnecting the replacing dialog */
+	if (w == etDialog.form) // Prevent disconnecting the replacing dialog 
 		etDialog.form = nullptr;
 }
 
@@ -596,7 +596,7 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	if (etDialog.form == w) /* Prevent destroying the replacing dialog */
+	if (etDialog.form == w) // Prevent destroying the replacing dialog 
 		XtDestroyWidget(etDialog.form);
 }
 
@@ -617,7 +617,7 @@ static void removeFromFormat(const char *string) {
 	char *format = XmTextGetString(etDialog.formatW);
 	char *pos;
 
-	/* There can be multiple occurences */
+	// There can be multiple occurences 
 	while ((pos = strstr(format, string))) {
 		/* If the string is preceded or followed by a brace, include
 		   the brace(s) for removal */
@@ -644,16 +644,16 @@ static void removeFromFormat(const char *string) {
 			if (pre == ' ' && post == ' ') {
 				end += 1;
 			} else if (pre == ' ' && post == (char)0) {
-				/* Remove (1) trailing space */
+				// Remove (1) trailing space 
 				start -= 1;
 			}
 		}
 
-		/* Contract the string: move end to start */
+		// Contract the string: move end to start 
 		strcpy(start, end);
 	}
 
-	/* Remove leading and trailing space */
+	// Remove leading and trailing space 
 	pos = format;
 	while (*pos == ' ')
 		++pos;
@@ -745,7 +745,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 	format = XmTextGetString(etDialog.formatW);
 
 	if (XmToggleButtonGetState(etDialog.shortStatusW)) {
-		/* Find all %S occurrences and replace them by %*S */
+		// Find all %S occurrences and replace them by %*S 
 		do {
 			pos = strstr(format, "%S");
 			if (pos) {
@@ -759,7 +759,7 @@ static void toggleShortStatusCB(Widget w, XtPointer clientData, XtPointer callDa
 			}
 		} while (pos);
 	} else {
-		/* Replace all %*S occurences by %S */
+		// Replace all %*S occurences by %S 
 		do {
 			pos = strstr(format, "%*S");
 			if (pos) {
@@ -797,7 +797,7 @@ static void toggleDirectoryCB(Widget w, XtPointer clientData, XtPointer callData
 			if (sscanf(value, "%d", &maxComp) > 0) {
 				sprintf(&buf[0], " %%%dd ", maxComp);
 			} else {
-				sprintf(&buf[0], " %%d "); /* Should not be necessary */
+				sprintf(&buf[0], " %%d "); // Should not be necessary 
 			}
 		} else {
 			sprintf(&buf[0], " %%d ");
@@ -833,7 +833,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (*value) {
 		if (sscanf(value, "%d", &maxComp) <= 0) {
-			/* Don't allow non-digits to be entered */
+			// Don't allow non-digits to be entered 
 			XBell(XtDisplay(w), 0);
 			XmTextSetStringEx(etDialog.ndirW, "");
 		}
@@ -843,9 +843,9 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 		int found = False;
 		char insert[2];
 		insert[0] = (char)('0' + maxComp);
-		insert[1] = (char)0; /* '0' digit and 0 char ! */
+		insert[1] = (char)0; // '0' digit and 0 char ! 
 
-		/* Find all %d and %nd occurrences and replace them by the new value */
+		// Find all %d and %nd occurrences and replace them by the new value 
 		do {
 			int i;
 			found = False;
@@ -876,7 +876,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 	} else {
 		int found = True;
 
-		/* Replace all %nd occurences by %d */
+		// Replace all %nd occurences by %d 
 		do {
 			int i;
 			found = False;
@@ -928,7 +928,7 @@ static void createEditTitleDialog(Widget parent) {
 
 	etDialog.shell = XtParent(etDialog.form);
 
-	/* Definition form */
+	// Definition form 
 	selectFrame = XtVaCreateManagedWidget("selectionFrame", xmFrameWidgetClass, etDialog.form, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LEFT_MARGIN_POS, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, V_MARGIN,
 	                                      XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, nullptr);
 
@@ -981,7 +981,7 @@ static void createEditTitleDialog(Widget parent) {
 	                                         etDialog.ccW, nullptr);
 	XtAddCallback(etDialog.ndirW, XmNvalueChangedCallback, enterMaxDirCB, nullptr);
 	RemapDeleteKey(etDialog.ndirW);
-	XtVaSetValues(etDialog.mdirW, XmNuserData, etDialog.ndirW, nullptr); /* mnemonic processing */
+	XtVaSetValues(etDialog.mdirW, XmNuserData, etDialog.ndirW, nullptr); // mnemonic processing 
 
 	XtVaGetValues(etDialog.ndirW, XmNheight, &textHeight, nullptr);
 	XtVaSetValues(etDialog.dirW, XmNheight, textHeight, nullptr);
@@ -1083,7 +1083,7 @@ static void createEditTitleDialog(Widget parent) {
 	XtAddCallback(etDialog.oDirW, XmNvalueChangedCallback, formatChangedCB, nullptr);
 	XmStringFree(s1);
 
-	/* Button box */
+	// Button box 
 	buttonForm = XtVaCreateManagedWidget("buttonForm", xmFormWidgetClass, etDialog.form, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LEFT_MARGIN_POS, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, previewFrame, XmNtopOffset,
 	                                     V_MARGIN, XmNbottomOffset, V_MARGIN, XmNbottomAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, nullptr);
 
@@ -1109,11 +1109,11 @@ static void createEditTitleDialog(Widget parent) {
 	XtAddCallback(helpBtn, XmNactivateCallback, helpCB, nullptr);
 	XmStringFree(s1);
 
-	/* Set initial default button */
+	// Set initial default button 
 	XtVaSetValues(etDialog.form, XmNdefaultButton, applyBtn, nullptr);
 	XtVaSetValues(etDialog.form, XmNcancelButton, closeBtn, nullptr);
 
-	/* Handle mnemonic selection of buttons and focus to dialog */
+	// Handle mnemonic selection of buttons and focus to dialog 
 	AddDialogMnemonicHandler(etDialog.form, FALSE);
 
 	etDialog.suppressFormatUpdate = FALSE;
@@ -1144,29 +1144,29 @@ void Document::EditCustomTitleFormat() {
 
 	etDialog.window = this;
 
-	/* Create the dialog if it doesn't already exist */
+	// Create the dialog if it doesn't already exist 
 	if(!etDialog.form) {
 		createEditTitleDialog(this->shell_);
 	} else {
-		/* If the this is already up, just pop it to the top */
+		// If the this is already up, just pop it to the top 
 		if (XtIsManaged(etDialog.form)) {
 
 			RaiseDialogWindow(XtParent(etDialog.form));
 
-			/* force update of the dialog */
+			// force update of the dialog 
 			setToggleButtons();
 			formatChangedCB(nullptr, nullptr, nullptr);
 			return;
 		}
 	}
 
-	/* set initial value of format field */
+	// set initial value of format field 
 	XmTextSetStringEx(etDialog.formatW, GetPrefTitleFormat());
 
-	/* force update of the dialog */
+	// force update of the dialog 
 	setToggleButtons();
 	formatChangedCB(nullptr, nullptr, nullptr);
 
-	/* put up dialog and wait for user to press ok or cancel */
+	// put up dialog and wait for user to press ok or cancel 
 	ManageDialogCenteredOnPointer(etDialog.form);
 }
