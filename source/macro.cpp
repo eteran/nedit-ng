@@ -87,13 +87,19 @@
 #include <Xm/Text.h>
 #include <Xm/Separator.h>
 
+namespace {
+
 /* Maximum number of actions in a macro and args in
    an action (to simplify the reader) */
-#define MAX_MACRO_ACTIONS 1024
-#define MAX_ACTION_ARGS 40
+const int MAX_MACRO_ACTIONS = 1024;
+const int MAX_ACTION_ARGS   = 40;
 
 /* How long to wait (msec) before putting up Macro Command banner */
-#define BANNER_WAIT_TIME 6000
+const int BANNER_WAIT_TIME = 6000;
+
+}
+
+
 
 /* The following definitions cause an exit from the macro with a message */
 /* added if (1) to remove compiler warnings on solaris */
