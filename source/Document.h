@@ -48,12 +48,12 @@ public:
 	int GetShowTabBar();
 	int IsIconic();
 	int IsValidWindow();
-	int NDocuments();
+	int NDocuments() const;
 	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();
 	void ClosePane();
 	void CloseWindow();	
-	void LastDocument();
+	void LastDocument() const;
 	void MakeSelectionVisible(Widget textPane);
 	void MoveDocumentDialog();
 	void NextDocument();
@@ -73,10 +73,10 @@ public:
 	void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
 	void SetModeMessage(const char *message);
 	void SetOverstrike(bool overstrike);
-	void SetSensitive(Widget w, Boolean sensitive);
+	void SetSensitive(Widget w, Boolean sensitive) const;
 	void SetShowMatching(int state);
 	void SetTabDist(int tabDist);
-	void SetToggleButtonState(Widget w, Boolean state, Boolean notify);	
+	void SetToggleButtonState(Widget w, Boolean state, Boolean notify) const;	
 	void SetWindowModified(bool modified);
 	void ShowISearchLine(bool state);
 	void ShowLineNumbers(bool state);
@@ -93,7 +93,7 @@ public:
 	void UpdateWindowTitle();
 	void UpdateWMSizeHints();
 	Widget GetPaneByIndex(int paneIndex) const;
-	int WidgetToPaneIndex(Widget w);
+	int WidgetToPaneIndex(Widget w) const;
 	void EditCustomTitleFormat();
 	
 public:
@@ -117,7 +117,7 @@ private:
 	void showISearch(int state);
 	void showStatsForm();
 	void addToWindowList();
-	void removeFromWindowList();
+	void removeFromWindowList() const;
 	void refreshMenuBar();
 	int updateGutterWidth();
 	void cloneDocument(Document *window);

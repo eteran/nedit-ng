@@ -859,7 +859,7 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 /*
 ** set/clear menu sensitivity if the calling document is on top.
 */
-void Document::SetSensitive(Widget w, Boolean sensitive) {
+void Document::SetSensitive(Widget w, Boolean sensitive) const {
 	if (IsTopDocument()) {
 		XtSetSensitive(w, sensitive);
 	}
@@ -868,7 +868,7 @@ void Document::SetSensitive(Widget w, Boolean sensitive) {
 /*
 ** set/clear toggle menu state if the calling document is on top.
 */
-void Document::SetToggleButtonState(Widget w, Boolean state, Boolean notify) {
+void Document::SetToggleButtonState(Widget w, Boolean state, Boolean notify) const {
 	if (IsTopDocument()) {
 		XmToggleButtonSetState(w, state, notify);
 	}
@@ -901,7 +901,7 @@ Document *Document::MarkActiveDocument() {
 /*
 ** Bring up the last active window
 */
-void Document::LastDocument() {
+void Document::LastDocument() const {
 	
 	
 	Document *win = Document::find_if([](Document *win) {
@@ -1155,7 +1155,7 @@ void Document::addToWindowList() {
 /*
 ** Remove a this from the list of windows
 */
-void Document::removeFromWindowList() {
+void Document::removeFromWindowList() const {
 	Document *temp;
 
 	if (WindowList == this) {
@@ -1440,7 +1440,7 @@ void Document::RefreshTabState() {
 /*
 ** return the number of documents owned by this shell window
 */
-int Document::NDocuments() {
+int Document::NDocuments() const {
 
 	int nDocument = 0;
 	
@@ -1584,12 +1584,11 @@ void Document::UpdateWMSizeHints() {
 /*
 **
 */
-int Document::WidgetToPaneIndex(Widget w) {
-	int i;
+int Document::WidgetToPaneIndex(Widget w) const {
 	Widget text;
 	int paneIndex = 0;
 
-	for (i = 0; i <= nPanes_; ++i) {
+	for (int i = 0; i <= nPanes_; ++i) {
 		text = (i == 0) ? textArea_ : textPanes_[i - 1];
 		if (text == w) {
 			paneIndex = i;
