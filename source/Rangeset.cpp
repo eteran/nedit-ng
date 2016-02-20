@@ -610,7 +610,7 @@ int Rangeset::RangesetGetColorValid(Pixel *color) {
 ** Get number of ranges in rangeset.
 */
 
-int Rangeset::RangesetGetNRanges() {
+int Rangeset::RangesetGetNRanges() const {
 	return this ? this->n_ranges : 0;
 }
 
@@ -622,7 +622,7 @@ int Rangeset::RangesetGetNRanges() {
 */
 
 int Rangeset::RangesetInverse() {
-	int n, has_zero, has_end;
+	int n, has_end;
 
 	if (!this)
 		return -1;
@@ -642,7 +642,7 @@ int Rangeset::RangesetInverse() {
 		n = this->n_ranges * 2;
 
 		/* find out what we have */
-		has_zero = (rangeTable[0] == 0);
+		bool has_zero = (rangeTable[0] == 0);
 		has_end = (rangeTable[n - 1] == this->maxpos);
 
 		/* fill the entry "beyond the end" with the buffer's length */
@@ -665,7 +665,7 @@ int Rangeset::RangesetInverse() {
 	}
 
 	this->n_ranges = n / 2;
-	this->ranges = RangesetTable::RangesRealloc((Range *)rangeTable, this->n_ranges);
+	this->ranges = RangesetTable::RangesRealloc(reinterpret_cast<Range *>(rangeTable), this->n_ranges);
 
 	RangesetRefreshRange(0, this->maxpos);
 	return this->n_ranges;
@@ -1143,15 +1143,14 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 
 void Rangeset::RangesetEmpty() {
 	Range *ranges = this->ranges;
-	int start, end;
 
 	if (this->color_name && this->color_set > 0) {
 		/* this range is colored: we need to clear it */
 		this->color_set = -1;
 
 		while (this->n_ranges--) {
-			start = ranges[this->n_ranges].start;
-			end = ranges[this->n_ranges].end;
+			int start = ranges[this->n_ranges].start;
+			int end = ranges[this->n_ranges].end;
 			RangesetRefreshRange(start, end);
 		}
 	}

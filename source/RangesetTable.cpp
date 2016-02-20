@@ -98,7 +98,7 @@ static int activateRangeset(RangesetTable *table, int active) {
 }
 
 static int deactivateRangeset(RangesetTable *table, int active) {
-	int depth, j;
+	int depth;
 
 	if (!table->active[active])
 		return 0; /* already inactive */
@@ -110,7 +110,7 @@ static int deactivateRangeset(RangesetTable *table, int active) {
 	int n = table->n_set - 1;
 
 	for (int i = depth; i < n; i++) {
-		j = table->order[i] = table->order[i + 1];
+		int j = table->order[i] = table->order[i + 1];
 		table->depth[j] = i;
 	}
 	
@@ -224,7 +224,6 @@ char *RangesetTable::RangesetTableGetColorName(int index) {
 */
 
 int RangesetTable::RangesetFindIndex(int label, int must_be_active) {
-	int i;
 	unsigned char *p_label;
 
 	if (label == 0) {
@@ -234,7 +233,7 @@ int RangesetTable::RangesetFindIndex(int label, int must_be_active) {
 	if (this) {
 		p_label = (unsigned char *)strchr((char *)rangeset_labels, label);
 		if (p_label) {
-			i = p_label - rangeset_labels;
+			int i = p_label - rangeset_labels;
 			if (!must_be_active || this->active[i])
 				return i;
 		}

@@ -58,7 +58,7 @@ public:
 	int RangesetFindRangeNo(int index, int *start, int *end);
 	int RangesetFindRangeOfPos(int pos, int incl_end);
 	int RangesetGetColorValid(Pixel *color);
-	int RangesetGetNRanges();
+	int RangesetGetNRanges() const;
 	int RangesetInverse();
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
