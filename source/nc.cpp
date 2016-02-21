@@ -77,7 +77,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow
 Display *TheDisplay;
 XtAppContext AppContext;
 static Atom currentWaitForAtom;
-static Atom noAtom = (Atom)(-1);
+static Atom noAtom = static_cast<Atom>(-1);
 
 static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                                   "           [-line n | +n] [-do command] [-lm languagemode]\n"

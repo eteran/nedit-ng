@@ -35,84 +35,84 @@
 #include <X11/Xlib.h>
 
 /* Resource strings */
-#define textNfont (String)"font"
-#define textCFont (String)"Font"
-#define textNrows (String)"rows"
-#define textCRows (String)"Rows"
-#define textNcolumns (String)"columns"
-#define textCColumns (String)"Columns"
-#define textNmarginWidth (String)"marginWidth"
-#define textCMarginWidth (String)"MarginWidth"
-#define textNmarginHeight (String)"marginHeight"
-#define textCMarginHeight (String)"MarginHeight"
-#define textNselectForeground (String)"selectForeground"
-#define textCSelectForeground (String)"SelectForeground"
-#define textNselectBackground (String)"selectBackground"
-#define textCSelectBackground (String)"SelectBackground"
-#define textNhighlightForeground (String)"highlightForeground"
-#define textCHighlightForeground (String)"HighlightForeground"
-#define textNhighlightBackground (String)"highlightBackground"
-#define textCHighlightBackground (String)"HighlightBackground"
-#define textNcursorForeground (String)"cursorForeground"
-#define textCCursorForeground (String)"CursorForeground"
-#define textNlineNumForeground (String)"lineNumForeground"
-#define textCLineNumForeground (String)"LineNumForeground"
-#define textNcalltipForeground (String)"calltipForeground"
-#define textCcalltipForeground (String)"CalltipForeground"
-#define textNcalltipBackground (String)"calltipBackground"
-#define textCcalltipBackground (String)"CalltipBackground"
-#define textNpendingDelete (String)"pendingDelete"
-#define textCPendingDelete (String)"PendingDelete"
-#define textNhScrollBar (String)"hScrollBar"
-#define textCHScrollBar (String)"HScrollBar"
-#define textNvScrollBar (String)"vScrollBar"
-#define textCVScrollBar (String)"VScrollBar"
-#define textNlineNumCols (String)"lineNumCols"
-#define textCLineNumCols (String)"LineNumCols"
-#define textNautoShowInsertPos (String)"autoShowInsertPos"
-#define textCAutoShowInsertPos (String)"AutoShowInsertPos"
-#define textNautoWrapPastedText (String)"autoWrapPastedText"
-#define textCAutoWrapPastedText (String)"AutoWrapPastedText"
-#define textNwordDelimiters (String)"wordDelimiters"
-#define textCWordDelimiters (String)"WordDelimiters"
-#define textNblinkRate (String)"blinkRate"
-#define textCBlinkRate (String)"BlinkRate"
-#define textNfocusCallback (String)"focusCallback"
-#define textCFocusCallback (String)"FocusCallback"
-#define textNlosingFocusCallback (String)"losingFocusCallback"
-#define textCLosingFocusCallback (String)"LosingFocusCallback"
-#define textNcursorMovementCallback (String)"cursorMovementCallback"
-#define textCCursorMovementCallback (String)"CursorMovementCallback"
-#define textNdragStartCallback (String)"dragStartCallback"
-#define textCDragStartCallback (String)"DragStartCallback"
-#define textNdragEndCallback (String)"dragEndCallback"
-#define textCDragEndCallback (String)"DragEndCallback"
-#define textNsmartIndentCallback (String)"smartIndentCallback"
-#define textCSmartIndentCallback (String)"SmartIndentCallback"
-#define textNautoWrap (String)"autoWrap"
-#define textCAutoWrap (String)"AutoWrap"
-#define textNcontinuousWrap (String)"continuousWrap"
-#define textCContinuousWrap (String)"ContinuousWrap"
-#define textNwrapMargin (String)"wrapMargin"
-#define textCWrapMargin (String)"WrapMargin"
-#define textNautoIndent (String)"autoIndent"
-#define textCAutoIndent (String)"AutoIndent"
-#define textNsmartIndent (String)"smartIndent"
-#define textCSmartIndent (String)"SmartIndent"
-#define textNoverstrike (String)"overstrike"
-#define textCOverstrike (String)"Overstrike"
-#define textNheavyCursor (String)"heavyCursor"
-#define textCHeavyCursor (String)"HeavyCursor"
-#define textNreadOnly (String)"readOnly"
-#define textCReadOnly (String)"ReadOnly"
-#define textNhidePointer (String)"hidePointer"
-#define textCHidePointer (String)"HidePointer"
-#define textNemulateTabs (String)"emulateTabs"
-#define textCEmulateTabs (String)"EmulateTabs"
-#define textNcursorVPadding (String)"cursorVPadding"
-#define textCCursorVPadding (String)"CursorVPadding"
-#define textNbacklightCharTypes (String)"backlightCharTypes"
-#define textCBacklightCharTypes (String)"BacklightCharTypes"
+#define textNfont const_cast<char *>("font")
+#define textCFont const_cast<char *>("Font")
+#define textNrows const_cast<char *>("rows")
+#define textCRows const_cast<char *>("Rows")
+#define textNcolumns const_cast<char *>("columns")
+#define textCColumns const_cast<char *>("Columns")
+#define textNmarginWidth const_cast<char *>("marginWidth")
+#define textCMarginWidth const_cast<char *>("MarginWidth")
+#define textNmarginHeight const_cast<char *>("marginHeight")
+#define textCMarginHeight const_cast<char *>("MarginHeight")
+#define textNselectForeground const_cast<char *>("selectForeground")
+#define textCSelectForeground const_cast<char *>("SelectForeground")
+#define textNselectBackground const_cast<char *>("selectBackground")
+#define textCSelectBackground const_cast<char *>("SelectBackground")
+#define textNhighlightForeground const_cast<char *>("highlightForeground")
+#define textCHighlightForeground const_cast<char *>("HighlightForeground")
+#define textNhighlightBackground const_cast<char *>("highlightBackground")
+#define textCHighlightBackground const_cast<char *>("HighlightBackground")
+#define textNcursorForeground const_cast<char *>("cursorForeground")
+#define textCCursorForeground const_cast<char *>("CursorForeground")
+#define textNlineNumForeground const_cast<char *>("lineNumForeground")
+#define textCLineNumForeground const_cast<char *>("LineNumForeground")
+#define textNcalltipForeground const_cast<char *>("calltipForeground")
+#define textCcalltipForeground const_cast<char *>("CalltipForeground")
+#define textNcalltipBackground const_cast<char *>("calltipBackground")
+#define textCcalltipBackground const_cast<char *>("CalltipBackground")
+#define textNpendingDelete const_cast<char *>("pendingDelete")
+#define textCPendingDelete const_cast<char *>("PendingDelete")
+#define textNhScrollBar const_cast<char *>("hScrollBar")
+#define textCHScrollBar const_cast<char *>("HScrollBar")
+#define textNvScrollBar const_cast<char *>("vScrollBar")
+#define textCVScrollBar const_cast<char *>("VScrollBar")
+#define textNlineNumCols const_cast<char *>("lineNumCols")
+#define textCLineNumCols const_cast<char *>("LineNumCols")
+#define textNautoShowInsertPos const_cast<char *>("autoShowInsertPos")
+#define textCAutoShowInsertPos const_cast<char *>("AutoShowInsertPos")
+#define textNautoWrapPastedText const_cast<char *>("autoWrapPastedText")
+#define textCAutoWrapPastedText const_cast<char *>("AutoWrapPastedText")
+#define textNwordDelimiters const_cast<char *>("wordDelimiters")
+#define textCWordDelimiters const_cast<char *>("WordDelimiters")
+#define textNblinkRate const_cast<char *>("blinkRate")
+#define textCBlinkRate const_cast<char *>("BlinkRate")
+#define textNfocusCallback const_cast<char *>("focusCallback")
+#define textCFocusCallback const_cast<char *>("FocusCallback")
+#define textNlosingFocusCallback const_cast<char *>("losingFocusCallback")
+#define textCLosingFocusCallback const_cast<char *>("LosingFocusCallback")
+#define textNcursorMovementCallback const_cast<char *>("cursorMovementCallback")
+#define textCCursorMovementCallback const_cast<char *>("CursorMovementCallback")
+#define textNdragStartCallback const_cast<char *>("dragStartCallback")
+#define textCDragStartCallback const_cast<char *>("DragStartCallback")
+#define textNdragEndCallback const_cast<char *>("dragEndCallback")
+#define textCDragEndCallback const_cast<char *>("DragEndCallback")
+#define textNsmartIndentCallback const_cast<char *>("smartIndentCallback")
+#define textCSmartIndentCallback const_cast<char *>("SmartIndentCallback")
+#define textNautoWrap const_cast<char *>("autoWrap")
+#define textCAutoWrap const_cast<char *>("AutoWrap")
+#define textNcontinuousWrap const_cast<char *>("continuousWrap")
+#define textCContinuousWrap const_cast<char *>("ContinuousWrap")
+#define textNwrapMargin const_cast<char *>("wrapMargin")
+#define textCWrapMargin const_cast<char *>("WrapMargin")
+#define textNautoIndent const_cast<char *>("autoIndent")
+#define textCAutoIndent const_cast<char *>("AutoIndent")
+#define textNsmartIndent const_cast<char *>("smartIndent")
+#define textCSmartIndent const_cast<char *>("SmartIndent")
+#define textNoverstrike const_cast<char *>("overstrike")
+#define textCOverstrike const_cast<char *>("Overstrike")
+#define textNheavyCursor const_cast<char *>("heavyCursor")
+#define textCHeavyCursor const_cast<char *>("HeavyCursor")
+#define textNreadOnly const_cast<char *>("readOnly")
+#define textCReadOnly const_cast<char *>("ReadOnly")
+#define textNhidePointer const_cast<char *>("hidePointer")
+#define textCHidePointer const_cast<char *>("HidePointer")
+#define textNemulateTabs const_cast<char *>("emulateTabs")
+#define textCEmulateTabs const_cast<char *>("EmulateTabs")
+#define textNcursorVPadding const_cast<char *>("cursorVPadding")
+#define textCCursorVPadding const_cast<char *>("CursorVPadding")
+#define textNbacklightCharTypes const_cast<char *>("backlightCharTypes")
+#define textCBacklightCharTypes const_cast<char *>("BacklightCharTypes")
 
 extern WidgetClass textWidgetClass;
 

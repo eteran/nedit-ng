@@ -84,7 +84,7 @@ char *removeSequence(char *sourcePtr, char c) {
 ** size buffer so that we don't get any memory overruns.
 */
 char *safeStrCpy(char *dest, char *destEnd, const char *source) {
-	int len = (int)strlen(source);
+	int len = strlen(source);
 	if (len <= (destEnd - dest)) {
 		strcpy(dest, source);
 		return (dest + len);
@@ -643,7 +643,7 @@ static void removeFromFormat(const char *string) {
 			   space */
 			if (pre == ' ' && post == ' ') {
 				end += 1;
-			} else if (pre == ' ' && post == (char)0) {
+			} else if (pre == ' ' && post == '\0') {
 				// Remove (1) trailing space 
 				start -= 1;
 			}
@@ -663,7 +663,7 @@ static void removeFromFormat(const char *string) {
 	while (pos >= format && *pos == ' ') {
 		--pos;
 	}
-	*(pos + 1) = (char)0;
+	*(pos + 1) = '\0';
 
 	XmTextSetStringEx(etDialog.formatW, format);
 	XtFree(format);
@@ -843,7 +843,7 @@ static void enterMaxDirCB(Widget w, XtPointer clientData, XtPointer callData) {
 		int found = False;
 		char insert[2];
 		insert[0] = (char)('0' + maxComp);
-		insert[1] = (char)0; // '0' digit and 0 char ! 
+		insert[1] = '\0'; // '0' digit and 0 char ! 
 
 		// Find all %d and %nd occurrences and replace them by the new value 
 		do {

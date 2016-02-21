@@ -324,7 +324,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	TextWidget textWidget = (TextWidget)w;
+	auto textWidget = reinterpret_cast<TextWidget>(w);
 
 	if (window->ignoreModify_)
 		return;
