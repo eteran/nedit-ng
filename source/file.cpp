@@ -450,7 +450,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	// Detect and convert DOS and Macintosh format files 
 	if (GetPrefForceOSConversion()) {
-		window->fileFormat_ = FormatOfFile(fileString, readLen);
+		window->fileFormat_ = FormatOfFileEx(view::string_view(fileString, readLen));
 		if (window->fileFormat_ == DOS_FILE_FORMAT) {
 			ConvertFromDosFileString(fileString, &readLen, nullptr);
 		} else if (window->fileFormat_ == MAC_FILE_FORMAT) {
@@ -552,7 +552,7 @@ int IncludeFile(Document *window, const char *name) {
 	fileString[readLen] = '\0';
 
 	// Detect and convert DOS and Macintosh format files 
-	switch (FormatOfFile(fileString, readLen)) {
+	switch (FormatOfFileEx(view::string_view(fileString, readLen))) {
 	case DOS_FILE_FORMAT:
 		ConvertFromDosFileString(fileString, &readLen, nullptr);
 		break;
@@ -1690,7 +1690,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first hunk 
-		if (bufPos == 0 && fileFormat != FormatOfFile(fileString, nRead)) {
+		if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
 			fclose(fp);
 			AllWindowsUnbusy();
 			return (1);

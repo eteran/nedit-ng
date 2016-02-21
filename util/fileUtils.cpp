@@ -416,15 +416,18 @@ const char *GetTrailingPathComponents(const char *path, int noOfComponents) {
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-FileFormats FormatOfFile(const char *fileString, int length) {
+FileFormats FormatOfFileEx(view::string_view fileString) {
+
+
 	const char *p;
 	int nNewlines = 0;
 	int nReturns = 0;
+	int length = fileString.size();
 
-	for (p = fileString; length-- != 0 && p < fileString + FORMAT_SAMPLE_CHARS; p++) {
+	for (p = fileString.begin(); length-- != 0 && p < fileString.begin() + FORMAT_SAMPLE_CHARS; p++) {
 		if (*p == '\n') {
 			nNewlines++;
-			if (p == fileString || *(p - 1) != '\r')
+			if (p == fileString.begin() || *(p - 1) != '\r')
 				return UNIX_FILE_FORMAT;
 			if (nNewlines >= FORMAT_SAMPLE_LINES)
 				return DOS_FILE_FORMAT;
@@ -436,6 +439,7 @@ FileFormats FormatOfFile(const char *fileString, int length) {
 	if (nReturns > 0)
 		return MAC_FILE_FORMAT;
 	return UNIX_FILE_FORMAT;
+
 }
 
 /*
@@ -480,50 +484,7 @@ void ConvertFromMacFileString(char *fileString, int length) {
 	}
 }
 
-/*
-** Converts a string (which may represent the entire contents of the file) from
-** Unix to DOS format.  String is re-allocated (with malloc), and length is
-** modified.  If allocation fails, which it may, because this can potentially
-** be a huge hunk of memory, returns FALSE and no conversion is done.
-**
-** This could be done more efficiently by asking doSave to allocate some
-** extra memory for this, and only re-allocating if it wasn't enough.  If
-** anyone cares about the performance or the potential for running out of
-** memory on a save, it should probably be redone.
-*/
-int ConvertToDosFileString(char **fileString, int *length) {
-	char *outPtr;
-	char *inPtr = *fileString;
-	int inLength = *length;
-	int outLength = 0;
 
-	/* How long a string will we need? */
-	while (inPtr < *fileString + inLength) {
-		if (*inPtr == '\n')
-			outLength++;
-		inPtr++;
-		outLength++;
-	}
-
-	/* Allocate the new string */
-	auto outString = XtMalloc(outLength + 1);
-	if(!outString)
-		return FALSE;
-
-	/* Do the conversion, free the old string */
-	inPtr = *fileString;
-	outPtr = outString;
-	while (inPtr < *fileString + inLength) {
-		if (*inPtr == '\n')
-			*outPtr++ = '\r';
-		*outPtr++ = *inPtr++;
-	}
-	*outPtr = '\0';
-	XtFree(*fileString);
-	*fileString = outString;
-	*length = outLength;
-	return TRUE;
-}
 
 /*
 ** Converts a string (which may represent the entire contents of the file) from
@@ -570,20 +531,6 @@ bool ConvertToDosFileStringEx(std::string &fileString) {
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
 */
-void ConvertToMacFileString(char *fileString, int length) {
-	char *inPtr = fileString;
-
-	while (inPtr < fileString + length) {
-		if (*inPtr == '\n')
-			*inPtr = '\r';
-		inPtr++;
-	}
-}
-
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from Unix to Macintosh format.
-*/
 void ConvertToMacFileStringEx(std::string &fileString) {
 
 	std::transform(fileString.begin(), fileString.end(), fileString.begin(), [](char ch) {
@@ -604,8 +551,7 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	struct stat statbuf;
 	FILE *fp;
-	int fileLen, readLen;
-	int format;
+	int readLen;
 
 	/* Read the whole file into fileString */
 	if ((fp = fopen(fileName.c_str(), "r")) == nullptr) {
@@ -617,7 +563,7 @@ XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 		return XString();
 	}
 	
-	fileLen = statbuf.st_size;
+	int fileLen = statbuf.st_size;
 	/* +1 = space for null
 	** +1 = possible additional \n
 	*/
@@ -632,7 +578,7 @@ XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	fileString[readLen] = '\0';
 
 	/* Convert linebreaks? */
-	format = FormatOfFile(fileString, readLen);
+	FileFormats format = FormatOfFileEx(view::string_view(fileString, readLen));
 	if (format == DOS_FILE_FORMAT) {
 		char pendingCR;
 		ConvertFromDosFileString(fileString, &readLen, &pendingCR);

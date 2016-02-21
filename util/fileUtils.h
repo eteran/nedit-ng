@@ -40,16 +40,14 @@ enum FileFormats {
 XString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
 const char *GetTrailingPathComponents(const char *path, int noOfComponents);
 int CompressPathname(char *pathname);
-int ConvertToDosFileString(char **fileString, int *length);
 bool ConvertToDosFileStringEx(std::string &fileString);
 int ExpandTilde(char *pathname);
-FileFormats FormatOfFile(const char *fileString, int length);
+FileFormats FormatOfFileEx(view::string_view fileString);
 int NormalizePathname(char *pathname);
 int ParseFilename(const char *fullname, char *filename, char *pathname);
 int ResolvePath(const char *pathIn, char *pathResolved);
 void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);
-void ConvertToMacFileString(char *fileString, int length);
 void ConvertToMacFileStringEx(std::string &fileString);
 
 #endif
