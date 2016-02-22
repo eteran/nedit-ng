@@ -4234,9 +4234,8 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 	if (newType == UNDO_NOOP) {
 		return;
 	}
-		
-		
-	UndoInfo *const currentUndo = undo_.front();
+
+	UndoInfo *const currentUndo = undo_.empty() ? nullptr : undo_.front();
 	
 	const UndoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
 

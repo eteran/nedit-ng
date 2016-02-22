@@ -223,7 +223,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width) {
 */
 int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
-	TextDisplay *textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
 
