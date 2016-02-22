@@ -45,7 +45,7 @@ struct HelpMenu /* Maintains help menu structure */
 	const char *wgtName;
 	int hideIt;           /* value which determines displayability */
 	char mnemonic;        /* '-' for separator                     */
-	const char *subTitle; /* title for sub menu, or NULL           */
+	const char *subTitle; /* title for sub menu, or nullptr           */
 };
 
 struct Href /* Source to topic internal hyperlinks */

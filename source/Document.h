@@ -185,8 +185,8 @@ public:
 	Widget replaceMultiFileDlog_; /* Replace in multiple files */
 	Widget replaceMultiFileList_;
 	Widget replaceMultiFilePathBtn_;
-	Widget fontDialog_;   /* NULL, unless font dialog is up */
-	Widget colorDialog_;  /* NULL, unless color dialog is up */
+	Widget fontDialog_;   /* nullptr, unless font dialog is up */
+	Widget colorDialog_;  /* nullptr, unless color dialog is up */
 	Widget readOnlyItem_; /* menu bar settable widgets... */
 	Widget autoSaveItem_;
 	Widget saveLastItem_;
@@ -364,7 +364,7 @@ public:
 	XtIntervalId markTimeoutID_;    /* backup timer for mark event handler*/
 	Bookmark markTable_[MAX_MARKS]; /* marked locations in window */
 	void *highlightData_;           /* info for syntax highlighting */
-	void *shellCmdData_;            /* when a shell command is executing, info. about it, otherwise, NULL */
+	void *shellCmdData_;            /* when a shell command is executing, info. about it, otherwise, nullptr */
 	void *macroCmdData_;            /* same for macro commands */
 	void *smartIndentData_;         /* compiled macros for smart indent */
 	Atom fileClosedAtom_;           /* Atom used to tell nc that the file is closed */
