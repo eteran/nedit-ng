@@ -34,9 +34,11 @@
 #include <X11/Intrinsic.h>
 
 /* flags for EditExistingFile */
-#define CREATE 1
-#define SUPPRESS_CREATE_WARN 2
-#define PREF_READ_ONLY 4
+enum EditFlags {
+	CREATE               = 1,
+	SUPPRESS_CREATE_WARN = 2,
+	PREF_READ_ONLY       = 4
+};
 
 #define PROMPT_SBC_DIALOG_RESPONSE 0
 #define YES_SBC_DIALOG_RESPONSE 1
