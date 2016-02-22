@@ -2112,7 +2112,7 @@ static void freeMenuItemRec(menuItemRec *item) {
 ** Callbacks for managed-list operations
 */
 static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, void *cbArg) {
-	userCmdDialog *ucd = (userCmdDialog *)cbArg;
+	auto ucd = static_cast<userCmdDialog *>(cbArg);
 	menuItemRec *currentFields;
 
 	/* If the dialog is currently displaying the "new" entry and the

@@ -443,7 +443,7 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Bool
 
 	(void)clientData;
 
-	XKeyEvent *e = (XKeyEvent *)event;
+	auto e = reinterpret_cast<XKeyEvent *>(event);
 	Document *window = Document::WidgetToWindow(w);
 	Modifiers modifiers;
 	KeySym keysym;

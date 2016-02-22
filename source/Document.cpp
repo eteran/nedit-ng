@@ -812,7 +812,7 @@ void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)clientData;
 
-	XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)callData;
+	auto cbs = static_cast<XmLFolderCallbackStruct *>(callData);
 	WidgetList tabList;
 	Widget tab;
 

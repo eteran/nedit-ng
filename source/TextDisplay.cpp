@@ -3492,7 +3492,7 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 	Pixel bgClassPixel[256];
 	int class_no = 0;
 	char *semicol;
-	char *s = (char *)str;
+	auto s = (char *)str;
 	size_t was_semicol;
 	int lo, hi, dummy;
 	char *pos;

@@ -173,7 +173,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	(void)nRestyled;
 	(void)deletedText;
 
-	Document *window = (Document *)cbArg;
+	auto window = static_cast<Document *>(cbArg);
 	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
 
 	if(!highlightData)

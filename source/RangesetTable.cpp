@@ -223,7 +223,7 @@ char *RangesetTable::RangesetTableGetColorName(int index) {
 ** Find a range set given its label in the table.
 */
 
-int RangesetTable::RangesetFindIndex(int label, int must_be_active) {
+int RangesetTable::RangesetFindIndex(int label, int must_be_active) const {
 	unsigned char *p_label;
 
 	if (label == 0) {
@@ -251,13 +251,12 @@ int RangesetTable::RangesetFindIndex(int label, int must_be_active) {
 
 int RangesetTable::RangesetIndex1ofPos(int pos, int needs_color) {
 	int i;
-	Rangeset *rangeset;
 
 	if (!this)
 		return 0;
 
 	for (i = 0; i < this->n_set; i++) {
-		rangeset = &this->set[(int)this->order[i]];
+		Rangeset *rangeset = &this->set[(int)this->order[i]];
 		if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
 			if (needs_color && rangeset->color_set >= 0 && rangeset->color_name)
 				return this->order[i] + 1;
@@ -292,7 +291,7 @@ int RangesetTable::RangesetTableGetColorValid(int index, Pixel *color) {
 ** Return the number of rangesets that are inactive
 */
 
-int RangesetTable::nRangesetsAvailable() {
+int RangesetTable::nRangesetsAvailable() const {
 	return (N_RANGESETS - this->n_set);
 }
 
@@ -302,14 +301,12 @@ unsigned char *RangesetTable::RangesetGetList() {
 }
 
 void RangesetTable::RangesetTableUpdatePos(int pos, int ins, int del) {
-	int i;
-	Rangeset *p;
 
 	if (!this || (ins == 0 && del == 0))
 		return;
 
-	for (i = 0; i < this->n_set; i++) {
-		p = &this->set[(int)this->order[i]];
+	for (int i = 0; i < this->n_set; i++) {
+		Rangeset *p = &this->set[(int)this->order[i]];
 		p->update_fn(p, pos, ins, del);
 	}
 }

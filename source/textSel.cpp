@@ -460,7 +460,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 	(void)selType;
 
 	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
-	int *resultFlag = (int *)clientData;
+	auto resultFlag = static_cast<int *>(clientData);
 
 	// Confirm that the returned value is of the correct type 
 	if (*type != XA_STRING || *format != 8 || value == nullptr) {

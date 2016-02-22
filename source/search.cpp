@@ -3126,7 +3126,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	(void)selection;
 
 	Document *window = Document::WidgetToWindow(w);
-	SearchSelectedCallData *callDataItems = (SearchSelectedCallData *)callData;
+	auto callDataItems = static_cast<SearchSelectedCallData *>(callData);
 	int searchType;
 	char searchString[SEARCHMAX + 1];
 

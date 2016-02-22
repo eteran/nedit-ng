@@ -1563,7 +1563,7 @@ static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	int resp;
-	int *addWrap = (int *)clientData;
+	auto addWrap = static_cast<int *>(clientData);
 
 	if (XmToggleButtonGetState(w)) {
 		resp = DialogF(DF_WARN, w, 2, "Add Wrap", "This operation adds permanent line breaks to\n"

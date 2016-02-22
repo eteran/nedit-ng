@@ -1168,7 +1168,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 }
 
 static void hsSetDisplayedCB(void *item, void *cbArg) {
-	HighlightStyle *hs = (HighlightStyle *)item;
+	auto hs = static_cast<HighlightStyle *>(item);
 
 	if(!item) {
 		XmTextSetStringEx(HSDialog.nameW, "");

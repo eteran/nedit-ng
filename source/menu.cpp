@@ -4994,7 +4994,7 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	(void)args;
 
 	Document *window;
-	XButtonPressedEvent *xbutton = (XButtonPressedEvent *)event;
+	auto xbutton = reinterpret_cast<XButtonPressedEvent *>(event);
 	Widget wgt;
 
 	/* Determine if the context menu was called from tabs or gutter,

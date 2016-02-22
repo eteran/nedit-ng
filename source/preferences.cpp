@@ -2754,7 +2754,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg) {
 
 	(void)cbArg;
 
-	languageModeRec *lm = (languageModeRec *)item;
+	auto lm = static_cast<languageModeRec *>(item);
 	char *extStr;
 
 	if(!item) {

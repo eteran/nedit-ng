@@ -3272,7 +3272,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 				// verify tmp is big enough then tab-expand old_p into tmp 
 				if (l > tmp_len) {
 
-					char *new_tmp = (char *)realloc(tmp, (tmp_len = l) + 1);
+					char *new_tmp = static_cast<char *>(realloc(tmp, (tmp_len = l) + 1));
 					assert(new_tmp);
 					tmp = new_tmp;
 				}

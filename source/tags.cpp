@@ -1216,7 +1216,7 @@ static void findAllCB(Widget parent, XtPointer clientData, XtPointer call_data) 
 	int i;
 	
 
-	XmSelectionBoxCallbackStruct *cbs = (XmSelectionBoxCallbackStruct *)call_data;
+	auto cbs = static_cast<XmSelectionBoxCallbackStruct *>(call_data);
 	if (cbs->reason == XmCR_NO_MATCH) {
 		return;
 	}

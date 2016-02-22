@@ -12,9 +12,9 @@ public:
 	
 public:
 	char *RangesetTableGetColorName(int index);
-	int nRangesetsAvailable();
+	int nRangesetsAvailable() const;
 	int RangesetCreate();
-	int RangesetFindIndex(int label, int must_be_active);
+	int RangesetFindIndex(int label, int must_be_active) const;
 	int RangesetIndex1ofPos(int pos, int needs_color);
 	int RangesetTableAssignColorPixel(int index, Pixel color, int ok);	
 	int RangesetTableGetColorValid(int index, Pixel *color);
