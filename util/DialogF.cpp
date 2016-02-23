@@ -128,7 +128,7 @@ static void createMnemonics(Widget w);
 * but_pressed = DialogF (DF_PROMPT, toplevel, 0, "New %s",                     *
 *             new_sub_category, categories[i]);                                *
 */
-unsigned DialogF(int dialog_type, Widget parent, unsigned n, const char *title, const char *msgstr, ...) /* variable # arguments */
+unsigned DialogF(DialogType dialog_type, Widget parent, unsigned n, const char *title, const char *msgstr, ...) /* variable # arguments */
 {
 	va_list var;
 
