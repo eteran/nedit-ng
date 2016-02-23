@@ -32,11 +32,14 @@
 #include <cstring>
 #include <cstdlib>
 
-#include <X11/Intrinsic.h>
 
-static bool ClearCaseViewTagFound   = false;
-static char *ClearCaseViewRoot      = nullptr;
-static const char *ClearCaseViewTag = nullptr;
+namespace {
+
+bool ClearCaseViewTagFound    = false;
+const char *ClearCaseViewRoot = nullptr;
+const char *ClearCaseViewTag  = nullptr;
+
+}
 
 const char *GetClearCaseVersionExtendedPath(const char *fullname) {
 	return (strstr(fullname, "@@/"));
@@ -54,12 +57,11 @@ const char *GetClearCaseVersionExtendedPath(const char *fullname) {
 const char *GetClearCaseViewTag(void) {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
-		const char *envPtr = getenv("CLEARCASE_ROOT");
-		if (envPtr) {
-			const char *tagPtr;
+		if (const char *envPtr = getenv("CLEARCASE_ROOT")) {
+
 			ClearCaseViewRoot = XtStringDup(envPtr);
 
-			tagPtr = strrchr(ClearCaseViewRoot, '/');
+			const char *tagPtr = strrchr(ClearCaseViewRoot, '/');
 			if (tagPtr) {
 				ClearCaseViewTag = ++tagPtr;
 			}
