@@ -564,7 +564,12 @@ int main(int argc, char *argv[]) {
 	if (IsServer) {
 		ServerMainLoop(context);
 	} else {
-		XtAppMainLoop(context);
+		for (;;) {
+			XtAppProcessEvent(context, XtIMAll);
+			if (XtAppGetExitFlag(context)) {
+				break;
+			}
+		}
 	}
 }
 
