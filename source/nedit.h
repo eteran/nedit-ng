@@ -121,6 +121,7 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 
 struct UndoInfo;
 struct Document;
+struct UserMenuListElement;
 
 /* Element in bookmark table */
 struct Bookmark {
@@ -132,35 +133,7 @@ struct Bookmark {
 /* Identifiers for the different colors that can be adjusted. */
 enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };
 
-/* cache user menus: manage mode of user menu list element */
-enum UserMenuManageMode {
-	UMMM_UNMANAGE,     /* user menu item is unmanaged */
-	UMMM_UNMANAGE_ALL, /* user menu item is a sub menu and is
-                          completely unmanaged (including nested
-                          sub menus) */
-	UMMM_MANAGE,       /* user menu item is managed; menu items
-                          of potential sub menu are (un)managed
-                          individually */
-	UMMM_MANAGE_ALL    /* user menu item is a sub menu and is
-                          completely managed */
-};
 
-struct UserMenuList;
-
-/* structure representing one user menu item */
-struct UserMenuListElement {
-	UserMenuManageMode umleManageMode;     /* current manage mode */
-	UserMenuManageMode umlePrevManageMode; /* previous manage mode */
-	char *umleAccKeys;                     /* accelerator keys of item */
-	Boolean umleAccLockPatchApplied;       /* indicates, if accelerator
-	                                          lock patch is applied */
-	Widget umleMenuItem;                   /* menu item represented by
-	                                          this element */
-	Widget umleSubMenuPane;                /* holds menu pane, if item
-	                                          represents a sub menu */
-	struct UserMenuList *umleSubMenuList;  /* elements of sub menu, if
-	                                           item represents a sub menu */
-};
 
 /* structure holding a list of user menu items */
 struct UserMenuList {
@@ -172,12 +145,10 @@ struct UserMenuList {
    shared over all "tabbed" documents (needed to manage/unmanage this
    user definable menus when language mode changes) */
 struct UserMenuCache {
-	int umcLanguageMode;           /* language mode applied for shared
-	                                  user menus */
-	Boolean umcShellMenuCreated;   /* indicating, if all shell menu items
-	                                  were created */
-	Boolean umcMacroMenuCreated;   /* indicating, if all macro menu items
-	                                  were created */
+	int umcLanguageMode;           /* language mode applied for shared user menus */
+	Boolean umcShellMenuCreated;   /* indicating, if all shell menu items were created */
+	Boolean umcMacroMenuCreated;   /* indicating, if all macro menu items were created */
+	
 	UserMenuList umcShellMenuList; /* list of all shell menu items */
 	UserMenuList umcMacroMenuList; /* list of all macro menu items */
 };
@@ -186,10 +157,8 @@ struct UserMenuCache {
    owned by each document individually (needed to manage/unmanage this
    user definable menu when language mode changes) */
 struct UserBGMenuCache {
-	int ubmcLanguageMode;      /* language mode applied for background
-	                              user menu */
-	Boolean ubmcMenuCreated;   /* indicating, if all background menu
-	                              items were created */
+	int ubmcLanguageMode;      /* language mode applied for background user menu */
+	Boolean ubmcMenuCreated;   /* indicating, if all background menu items were created */
 	UserMenuList ubmcMenuList; /* list of all background menu items */
 };
 

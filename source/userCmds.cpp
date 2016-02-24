@@ -28,6 +28,7 @@
 
 #include "userCmds.h"
 #include "TextBuffer.h"
+#include "UserMenuListElement.h"
 #include "text.h"
 #include "nedit.h"
 #include "preferences.h"
