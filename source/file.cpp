@@ -37,13 +37,13 @@
 #include "interpret.h"
 #include "Document.h"
 #include "MotifHelper.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
-#include "../util/printUtils.h"
-#include "../util/utils.h"
-#include "../util/nullable_string.h"
+#include "misc.h"
+#include "DialogF.h"
+#include "fileUtils.h"
+#include "getfiles.h"
+#include "printUtils.h"
+#include "utils.h"
+#include "nullable_string.h"
 
 #include <cerrno>
 #include <climits>

@@ -43,15 +43,15 @@
 #include "windowTitle.h"
 #include "server.h"
 #include "tags.h"
-#include "../util/MotifHelper.h"
-#include "../util/prefFile.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/managedList.h"
-#include "../util/fontsel.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "../util/nullable_string.h"
+#include "MotifHelper.h"
+#include "prefFile.h"
+#include "misc.h"
+#include "DialogF.h"
+#include "managedList.h"
+#include "fontsel.h"
+#include "fileUtils.h"
+#include "utils.h"
+#include "nullable_string.h"
 
 #include <cctype>
 #include <pwd.h>
@@ -62,7 +62,7 @@
 #include <sys/stat.h>
 
 #include <sys/param.h>
-#include "../util/clearcase.h"
+#include "clearcase.h"
 
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>

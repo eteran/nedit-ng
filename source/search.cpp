@@ -46,8 +46,8 @@
 #include "textP.h"
 #endif
 
-#include "../util/DialogF.h"
-#include "../util/misc.h"
+#include "DialogF.h"
+#include "misc.h"
 
 #include <algorithm>
 #include <cstdlib>

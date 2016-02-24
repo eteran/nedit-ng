@@ -40,9 +40,10 @@
 #include "interpret.h"
 #include "parse.h"
 #include "MotifHelper.h"
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/managedList.h"
+#include "DialogF.h"
+#include "misc.h"
+#include "managedList.h"
+#include "MenuItem.h"
 #include "XString.h"
 
 #include <cstdio>
@@ -92,20 +93,6 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 // types of current dialog and/or menu 
 enum dialogTypes { SHELL_CMDS, MACRO_CMDS, BG_MENU_CMDS };
 
-// Structure representing a menu item for shell, macro and BG menus
-struct menuItemRec {
-	XString name;
-	unsigned int modifiers;
-	KeySym keysym;
-	char mnemonic;
-	char input;
-	char output;
-	char repInput;
-	char saveFirst;
-	char loadAfter;
-	char *cmd;
-};
-
 /* Structure for widgets and flags associated with shell command,
    macro command and BG command editing dialogs */
 struct userCmdDialog {
@@ -115,7 +102,7 @@ struct userCmdDialog {
 	Widget loadAfterBtn, selInpBtn, winInpBtn, eitherInpBtn, noInpBtn;
 	Widget repInpBtn, sameOutBtn, dlogOutBtn, winOutBtn, dlogShell;
 	Widget managedList;
-	menuItemRec **menuItemsList;
+	MenuItem **menuItemsList;
 	int nMenuItems;
 };
 
@@ -194,7 +181,7 @@ struct selectedUserMenu {
 	                                  background */
 	Widget sumMenuPane;            // pane of main menu 
 	int sumNbrOfListItems;         // number of menu items 
-	menuItemRec **sumItemList;     // list of menu items 
+	MenuItem **sumItemList;     // list of menu items 
 	userMenuInfo **sumInfoList;    // list of infos about menu items 
 	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
 	UserMenuList *sumMainMenuList; // cached info about main menu 
@@ -204,15 +191,15 @@ struct selectedUserMenu {
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
-static menuItemRec *ShellMenuItems[MAX_ITEMS_PER_MENU];
+static MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
 static userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
 static userSubMenuCache ShellSubMenus;
 static int NShellMenuItems = 0;
-static menuItemRec *MacroMenuItems[MAX_ITEMS_PER_MENU];
+static MenuItem *MacroMenuItems[MAX_ITEMS_PER_MENU];
 static userMenuInfo *MacroMenuInfo[MAX_ITEMS_PER_MENU];
 static userSubMenuCache MacroSubMenus;
 static int NMacroMenuItems = 0;
-static menuItemRec *BGMenuItems[MAX_ITEMS_PER_MENU];
+static MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
 static userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
 static userSubMenuCache BGSubMenus;
 static int NBGMenuItems = 0;
@@ -228,13 +215,13 @@ static Widget MacroPasteReplayBtn = nullptr;
 static Widget BGMenuPasteReplayBtn = nullptr;
 
 static void editMacroOrBGMenu(Document *window, int dialogType);
-static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nMenuItems, int sensitive);
+static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
 static void rebuildMenuOfAllWindows(int menuType);
 static void rebuildMenu(Document *window, int menuType);
 static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const XString &hierName);
 static char *copySubstring(const char *string, int length);
 static XString copySubstringEx(const char *string, int length);
-static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f, int index, XtCallbackProc cbRtn, XtPointer cbArg);
+static Widget createUserMenuItem(Widget menuPane, char *name, MenuItem *f, int index, XtCallbackProc cbRtn, XtPointer cbArg);
 static Widget createUserSubMenuEx(Widget parent, const XString &label, Widget *menuItem);
 static void deleteMenuItems(Widget menuPane);
 static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu);
@@ -264,27 +251,27 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accFocusCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accLoseFocusCB(Widget w, XtPointer clientData, XtPointer callData);
-static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd);
-static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent);
-static menuItemRec *copyMenuItemRec(menuItemRec *item);
-static void freeMenuItemRec(menuItemRec *item);
+static void updateDialogFields(MenuItem *f, userCmdDialog *ucd);
+static MenuItem *readDialogFields(userCmdDialog *ucd, int silent);
+static MenuItem *copyMenuItemRec(MenuItem *item);
+static void freeMenuItemRec(MenuItem *item);
 static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, void *cbArg);
 static void setDialogDataCB(void *item, void *cbArg);
 static void freeItemCB(void *item);
 static int dialogFieldsAreEmpty(userCmdDialog *ucd);
 static void disableTextW(Widget textW);
-static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listType);
-static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems, int listType);
-static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType);
+static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType);
+static nullable_string writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType);
+static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType);
 static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
 static int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
 static char *addTerminatingNewlineEx(char *string) ;
-static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus);
+static void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus);
 static int getSubMenuDepth(const char *menuName);
-static userMenuInfo *parseMenuItemRec(menuItemRec *item);
+static userMenuInfo *parseMenuItemRec(MenuItem *item);
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
 static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus);
 static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *hierName);
@@ -325,7 +312,7 @@ void EditShellMenu(Document *window) {
 	ucd->window = window;
 
 	// Set the dialog to operate on the Shell menu 
-	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
+	ucd->menuItemsList = new MenuItem *[MAX_ITEMS_PER_MENU];
 	for (int i = 0; i < NShellMenuItems; i++) {
 		ucd->menuItemsList[i] = copyMenuItemRec(ShellMenuItems[i]);
 	}
@@ -551,7 +538,7 @@ static void editMacroOrBGMenu(Document *window, int dialogType) {
 	ucd->window = window;
 
 	// Set the dialog to operate on the Macro menu 
-	ucd->menuItemsList = new menuItemRec *[MAX_ITEMS_PER_MENU];
+	ucd->menuItemsList = new MenuItem *[MAX_ITEMS_PER_MENU];
 	if (dialogType == MACRO_CMDS) {
 		for (i = 0; i < NMacroMenuItems; i++)
 			ucd->menuItemsList[i] = copyMenuItemRec(MacroMenuItems[i]);
@@ -773,7 +760,7 @@ void DimSelectionDepUserMenuItems(Document *window, int sensitive) {
 	dimSelDepItemsInMenu(window->bgMenuPane_, BGMenuItems, NBGMenuItems, sensitive);
 }
 
-static void dimSelDepItemsInMenu(Widget menuPane, menuItemRec **menuList, int nMenuItems, int sensitive) {
+static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive) {
 	WidgetList items;
 	Widget subMenu;
 	XtPointer userData;
@@ -1434,7 +1421,7 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	Widget btn, subPane, newSubPane;
 	int n;
-	menuItemRec *item;
+	MenuItem *item;
 	int nTreeEntries;
 	char *namePtr, *subSep, *fullName;
 	int menuType = menu->sumType;
@@ -1553,7 +1540,7 @@ static XString copySubstringEx(const char *string, int length) {
 	return XString(string, length);
 }
 
-static Widget createUserMenuItem(Widget menuPane, char *name, menuItemRec *f, int index, XtCallbackProc cbRtn, XtPointer cbArg) {
+static Widget createUserMenuItem(Widget menuPane, char *name, MenuItem *f, int index, XtCallbackProc cbRtn, XtPointer cbArg) {
 	XmString st1, st2;
 	char accText[MAX_ACCEL_LEN];
 	Widget btn;
@@ -1690,7 +1677,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static int checkMacro(userCmdDialog *ucd) {
-	menuItemRec *f;
+	MenuItem *f;
 
 	f = readDialogFields(ucd, False);
 	if(!f)
@@ -1956,7 +1943,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** command or macro dialog to agree with the currently selected item in the
 ** menu item list.
 */
-static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
+static void updateDialogFields(MenuItem *f, userCmdDialog *ucd) {
 	char mneString[2], accString[MAX_ACCEL_LEN];
 
 	/* fill in the name, accelerator, mnemonic, and command fields of the
@@ -2002,11 +1989,11 @@ static void updateDialogFields(menuItemRec *f, userCmdDialog *ucd) {
 
 /*
 ** Read the name, accelerator, mnemonic, and command fields from the shell or
-** macro commands dialog into a newly allocated menuItemRec.  Returns a
-** pointer to the new menuItemRec structure as the function value, or nullptr on
+** macro commands dialog into a newly allocated MenuItem.  Returns a
+** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
+static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 	char *cmdText, *mneText, *accText;
 
 	auto nameTextTemp = XmTextGetString(ucd->nameTextW);
@@ -2047,7 +2034,7 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 		}
 	}
 
-	auto f = new menuItemRec;
+	auto f = new MenuItem;
 	f->name = nameText;
 	f->cmd  = cmdText;
 
@@ -2092,9 +2079,9 @@ static menuItemRec *readDialogFields(userCmdDialog *ucd, int silent) {
 /*
 ** Copy a menu item record, and its associated memory
 */
-static menuItemRec *copyMenuItemRec(menuItemRec *item) {
+static MenuItem *copyMenuItemRec(MenuItem *item) {
 
-	auto newItem = new menuItemRec(*item);
+	auto newItem = new MenuItem(*item);
 	newItem->name = XString(item->name);
 	newItem->cmd  = XtStringDup(item->cmd);
 	return newItem;
@@ -2103,7 +2090,7 @@ static menuItemRec *copyMenuItemRec(menuItemRec *item) {
 /*
 ** Free a menu item record, and its associated memory
 */
-static void freeMenuItemRec(menuItemRec *item) {
+static void freeMenuItemRec(MenuItem *item) {
 	XtFree(item->cmd);
 	delete item;
 }
@@ -2113,7 +2100,7 @@ static void freeMenuItemRec(menuItemRec *item) {
 */
 static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, void *cbArg) {
 	auto ucd = static_cast<userCmdDialog *>(cbArg);
-	menuItemRec *currentFields;
+	MenuItem *currentFields;
 
 	/* If the dialog is currently displaying the "new" entry and the
 	   fields are empty, that's just fine */
@@ -2128,7 +2115,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 	// If user might not be expecting fields to be read, give more warning 
 	if (!explicitRequest) {
 		if (DialogF(DF_WARN, ucd->dlogShell, 2, "Discard Entry", "Discard incomplete entry\nfor current menu item?", "Keep", "Discard") == 2) {
-			return oldItem == nullptr ? nullptr : copyMenuItemRec((menuItemRec *)oldItem);
+			return oldItem == nullptr ? nullptr : copyMenuItemRec((MenuItem *)oldItem);
 		}
 	}
 
@@ -2139,7 +2126,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 }
 
 static void setDialogDataCB(void *item, void *cbArg) {
-	updateDialogFields((menuItemRec *)item, (userCmdDialog *)cbArg);
+	updateDialogFields((MenuItem *)item, (userCmdDialog *)cbArg);
 }
 
 static int dialogFieldsAreEmpty(userCmdDialog *ucd) {
@@ -2149,7 +2136,7 @@ static int dialogFieldsAreEmpty(userCmdDialog *ucd) {
 }
 
 static void freeItemCB(void *item) {
-	freeMenuItemRec((menuItemRec *)item);
+	freeMenuItemRec((MenuItem *)item);
 }
 
 /*
@@ -2176,9 +2163,9 @@ static void disableTextW(Widget textW) {
 	XtVaSetValues(textW, XmNtranslations, emptyTable, nullptr);
 }
 
-static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listType) {
+static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType) {
 	char accStr[MAX_ACCEL_LEN];
-	menuItemRec *f;
+	MenuItem *f;
 	int i, length;
 
 	/* determine the max. amount of memory needed for the returned string
@@ -2290,7 +2277,7 @@ static char *writeMenuItemString(menuItemRec **menuItems, int nItems, int listTy
 }
 
 
-static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems, int listType) {
+static nullable_string writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType) {
 
 	nullable_string str;
 	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
@@ -2300,7 +2287,7 @@ static nullable_string writeMenuItemStringEx(menuItemRec **menuItems, int nItems
 	return str;
 }
 
-static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int *nItems, int listType) {
+static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType) {
 
 	char *cmdStr;
 	const char *inPtr = inString;
@@ -2417,7 +2404,7 @@ static int loadMenuItemString(const char *inString, menuItemRec **menuItems, int
 			return parseError("couldn't read accelerator field");
 
 		// create a menu item record 
-		auto f = new menuItemRec;
+		auto f = new MenuItem;
 		f->name      = nameStr;
 		f->cmd       = cmdStr;
 		f->mnemonic  = mneChar;
@@ -2725,7 +2712,7 @@ void FreeUserBGMenuCache(UserBGMenuCache *cache) {
 ** Parse given menu item list and setup a user menu info list for
 ** management of user menu.
 */
-static void parseMenuItemList(menuItemRec **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus) {
+static void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus) {
 	int i;
 	userMenuInfo *info;
 
@@ -2776,7 +2763,7 @@ static int getSubMenuDepth(const char *menuName) {
 ** Parse a singe menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
-static userMenuInfo *parseMenuItemRec(menuItemRec *item) {
+static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 
 	int subMenuDepth;
 	int idSize;

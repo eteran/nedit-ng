@@ -41,10 +41,10 @@
 #include "StyleTableEntry.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/MotifHelper.h"
-#include "../util/XString.h"
+#include "misc.h"
+#include "DialogF.h"
+#include "MotifHelper.h"
+#include "XString.h"
 
 #include <cstdio>
 #include <climits>

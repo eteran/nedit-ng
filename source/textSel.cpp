@@ -32,7 +32,7 @@
 #include "TextDisplay.h"
 #include "TextBuffer.h"
 #include "MotifHelper.h"
-#include "../util/misc.h"
+#include "misc.h"
 
 #include <cstdio>
 #include <cstring>

@@ -28,12 +28,12 @@
 *******************************************************************************/
 
 #include "macro.h"
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
-#include "../util/nullable_string.h"
+#include "DialogF.h"
+#include "fileUtils.h"
+#include "getfiles.h"
+#include "misc.h"
+#include "utils.h"
+#include "nullable_string.h"
 #include "MotifHelper.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"

@@ -38,10 +38,10 @@
 #include "selection.h"
 #include "calltips.h"
 #include "MotifHelper.h"
-#include "../util/DialogF.h"
-#include "../util/fileUtils.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
+#include "DialogF.h"
+#include "fileUtils.h"
+#include "misc.h"
+#include "utils.h"
 
 #include <cstdio>
 #include <cstdlib>

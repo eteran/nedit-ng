@@ -36,9 +36,9 @@
 #include "file.h"
 #include "macro.h"
 #include "interpret.h"
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/MotifHelper.h"
+#include "DialogF.h"
+#include "misc.h"
+#include "MotifHelper.h"
 #include "menu.h"
 
 #include <algorithm>

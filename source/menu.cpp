@@ -48,11 +48,11 @@
 #include "windowTitle.h"
 #include "MotifHelper.h"
 #include "Document.h"
-#include "../util/getfiles.h"
-#include "../util/DialogF.h"
-#include "../util/misc.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
+#include "getfiles.h"
+#include "DialogF.h"
+#include "misc.h"
+#include "fileUtils.h"
+#include "utils.h"
 #include "../Xlt/BubbleButton.h"
 
 #include <algorithm>

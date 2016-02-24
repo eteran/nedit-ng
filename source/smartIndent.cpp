@@ -38,8 +38,8 @@
 #include "shift.h"
 #include "TextBuffer.h"
 #include "text.h"
-#include "../util/DialogF.h"
-#include "../util/misc.h"
+#include "DialogF.h"
+#include "misc.h"
 #include "window.h"
 
 #include <cstdio>

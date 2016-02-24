@@ -27,10 +27,10 @@
 *******************************************************************************/
 
 #include "server_common.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "../util/prefFile.h"
-#include "../util/system.h"
+#include "fileUtils.h"
+#include "utils.h"
+#include "prefFile.h"
+#include "system.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -44,7 +44,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <pwd.h>
-#include "../util/clearcase.h"
+#include "clearcase.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>

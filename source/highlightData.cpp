@@ -41,10 +41,10 @@
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "../util/misc.h"
-#include "../util/DialogF.h"
-#include "../util/managedList.h"
-#include "../util/memory.h"
+#include "misc.h"
+#include "DialogF.h"
+#include "managedList.h"
+#include "memory.h"
 
 #include <cstdio>
 #include <cstring>
