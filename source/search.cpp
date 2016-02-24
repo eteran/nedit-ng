@@ -504,6 +504,8 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	selectionInfo->done = 1;
 }
 
+
+
 void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
 
 	// Create the dialog if it doesn't already exist 

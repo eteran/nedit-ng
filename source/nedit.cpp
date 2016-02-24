@@ -30,6 +30,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+#include "QtMotif.h"
 #include "nedit.h"
 #include "file.h"
 #include "preferences.h"
@@ -271,10 +273,13 @@ int main(int argc, char *argv[]) {
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
 	XtSetLanguageProc(nullptr, neditLanguageProc, nullptr);
-
+	
 	// Initialize X toolkit (does not open display yet) 
 	XtToolkitInitialize();
 	XtAppContext context = XtCreateApplicationContext();
+
+	QtMotif integrator( APP_CLASS, context );
+	QApplication app( argc, argv );
 
 	// Set up a warning handler to trap obnoxious Xt grab warnings 
 	SuppressPassiveGrabWarnings();
@@ -564,12 +569,16 @@ int main(int argc, char *argv[]) {
 	if (IsServer) {
 		ServerMainLoop(context);
 	} else {
+		app.setQuitOnLastWindowClosed(false);
+		return app.exec();
+	#if 0
 		for (;;) {
 			XtAppProcessEvent(context, XtIMAll);
 			if (XtAppGetExitFlag(context)) {
 				break;
 			}
 		}
+	#endif
 	}
 }
 

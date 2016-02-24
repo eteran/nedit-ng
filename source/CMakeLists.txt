@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+#set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTORCC ON)
 
 find_package(Motif REQUIRED)
 find_package(X11 REQUIRED)
 find_package(BISON REQUIRED)
 find_package(Boost 1.35 REQUIRED)
+find_package(Qt4 4.6.0 REQUIRED QtCore QtGui)
 
 find_library(LibM m)
 
@@ -14,7 +18,25 @@ find_library(LibM m)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
+QT4_WRAP_CPP( MOC_SOURCES
+	QtMotif.h
+	QtMotifDialog.h
+	QtMotifWidget.h
+	QtXtWidget.h
+)
+
 add_executable(nedit
+
+	${MOC_SOURCES}
+	QtMotif.cpp
+	QtMotifDialog.cpp
+	QtMotifWidget.cpp
+	QtXtWidget.cpp
+	QtMotif.h
+	QtMotifDialog.h
+	QtMotifWidget.h
+	QtXtWidget.h
+
 	Document.cpp
 	PatternSet.cpp
 	Rangeset.cpp
@@ -94,7 +116,9 @@ target_link_libraries(nedit LINK_PUBLIC
 	${LibM}
 	${MOTIF_LIBRARIES}
 	${X11_LIBRARIES}
-	${X11_Xt_LIB})
+	${X11_Xt_LIB}
+	Qt4::QtGui
+)
 
 add_executable(nc
 	nc.cpp
