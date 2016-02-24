@@ -2,6 +2,10 @@
 #ifndef USER_MENU_LIST_ELEMENT_H_
 #define USER_MENU_LIST_ELEMENT_H_
 
+#include <vector>
+#include <X11/Intrinsic.h>
+#include <Xm/Xm.h>
+
 // cache user menus: manage mode of user menu list element
 enum UserMenuManageMode {
 	UMMM_UNMANAGE,     // user menu item is unmanaged
@@ -10,14 +14,16 @@ enum UserMenuManageMode {
 	UMMM_MANAGE_ALL    // user menu item is a sub menu and is completely managed
 };
 
-struct UserMenuList;
+struct UserMenuListElement;
+
+typedef std::vector<UserMenuListElement*> UserMenuList;
 
 // structure representing one user menu item
 struct UserMenuListElement {
 	UserMenuManageMode umleManageMode;     //current manage mode
 	UserMenuManageMode umlePrevManageMode; // previous manage mode
 	char *umleAccKeys;                     // accelerator keys of item
-	Boolean umleAccLockPatchApplied;       // indicates, if accelerator lock patch is applied
+	bool umleAccLockPatchApplied;          // indicates, if accelerator lock patch is applied
 	Widget umleMenuItem;                   // menu item represented by this element
 	Widget umleSubMenuPane;                // holds menu pane, if item represents a sub menu
 	UserMenuList *umleSubMenuList;         // elements of sub menu, if item represents a sub menu

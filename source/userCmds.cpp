@@ -160,34 +160,27 @@ struct userSubMenuCache {
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
 struct userMenuInfo {
-	char *umiName;             /* hierarchical name of menu item
-	                              (w.o. language mode info) */
+	char *umiName;             // hierarchical name of menu item (w.o. language mode info)
 	int *umiId;                // hierarchical ID of menu item 
 	int umiIdLen;              // length of hierarchical ID 
 	Boolean umiIsDefault;      // menu item is default one ("@*") 
-	int umiNbrOfLanguageModes; /* number of language modes
-	                              applicable for this menu item */
+	int umiNbrOfLanguageModes; // number of language modes applicable for this menu item
 	int *umiLanguageMode;      // list of applicable lang. modes 
-	int umiDefaultIndex;       /* array index of menu item to be
-	                              used as default, if no lang. mode
-	                              matches */
-	Boolean umiToBeManaged;    /* indicates, that menu item needs
-	                              to be managed */
+	int umiDefaultIndex;       // array index of menu item to be used as default, if no lang. mode matches
+	Boolean umiToBeManaged;    // indicates, that menu item needs to be managed
 };
 
 /* Structure holding info about a selected user menu (shell, macro or
    background) */
 struct selectedUserMenu {
-	int sumType;                   /* type of menu (shell, macro or
-	                                  background */
+	int sumType;                   // type of menu (shell, macro or background
 	Widget sumMenuPane;            // pane of main menu 
 	int sumNbrOfListItems;         // number of menu items 
-	MenuItem **sumItemList;     // list of menu items 
+	MenuItem **sumItemList;        // list of menu items 
 	userMenuInfo **sumInfoList;    // list of infos about menu items 
 	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
 	UserMenuList *sumMainMenuList; // cached info about main menu 
-	Boolean *sumMenuCreated;       /* pointer to "menu created"
-	                                  indicator */
+	Boolean *sumMenuCreated;       // pointer to "menu created" indicator
 };
 
 /* Descriptions of the current user programmed menu items for re-generating
@@ -285,11 +278,9 @@ static void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems);
 static void freeUserMenuInfo(userMenuInfo *info);
 static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
 static void freeSubMenuCache(userSubMenuCache *subMenus);
-static void allocUserMenuList(UserMenuList *list, int nbrOfItems);
 static void freeUserMenuList(UserMenuList *list);
 static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys);
 static void freeUserMenuListElement(UserMenuListElement *element);
-static UserMenuList *allocUserSubMenuList(int nbrOfItems);
 static void freeUserSubMenuList(UserMenuList *list);
 
 /*
@@ -1096,8 +1087,7 @@ static void manageTearOffMenu(Widget menuPane) {
 */
 static void resetManageMode(UserMenuList *list) {
 
-	for (int i = 0; i < list->umlNbrItems; i++) {
-		UserMenuListElement *element = list->umlItems[i];
+	for (auto &&element : *list) {
 
 		/* remember current manage mode before reset it to
 		   "unmanaged" */
@@ -1115,7 +1105,7 @@ static void resetManageMode(UserMenuList *list) {
 ** Manage all menu widgets of given user sub-menu list.
 */
 static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
-	int i;
+
 	UserMenuList *subMenuList;
 	UserMenuListElement *element;
 	WidgetList widgetList;
@@ -1137,8 +1127,8 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 	   sub-menu */
 	subMenuList = subMenu->umleSubMenuList;
 
-	for (i = 0; i < subMenuList->umlNbrItems; i++) {
-		element = subMenuList->umlItems[i];
+	for (size_t i = 0; i < subMenuList->size(); i++) {
+		element = subMenuList->at(i);
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue managing
@@ -1165,7 +1155,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 ** Unmanage all menu widgets of given user sub-menu list.
 */
 static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
-	int i;
+
 	Widget shell;
 	UserMenuList *subMenuList;
 	UserMenuListElement *element;
@@ -1187,8 +1177,8 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 	   sub-menu */
 	subMenuList = subMenu->umleSubMenuList;
 
-	for (i = 0; i < subMenuList->umlNbrItems; i++) {
-		element = subMenuList->umlItems[i];
+	for (size_t i = 0; i < subMenuList->size(); i++) {
+		element = subMenuList->at(i);
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue unmanaging
@@ -1206,12 +1196,9 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 ** Manage / unmanage menu widgets according to given user menu list.
 */
 static void manageMenuWidgets(UserMenuList *list) {
-	int i;
-	UserMenuListElement *element;
 
 	// (un)manage all elements of given user menu list 
-	for (i = 0; i < list->umlNbrItems; i++) {
-		element = list->umlItems[i];
+	for (auto &&element : *list) {
 
 		if (element->umlePrevManageMode != element->umleManageMode || element->umleManageMode == UMMM_MANAGE) {
 			/* previous and current manage mode differ OR
@@ -1271,8 +1258,8 @@ static void manageMenuWidgets(UserMenuList *list) {
 static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 
 	// scan all elements of this (sub-)menu 
-	for (int i = 0; i < menuList->umlNbrItems; i++) {
-		UserMenuListElement *element = menuList->umlItems[i];
+	for (size_t i = 0; i < menuList->size(); i++) {
+		UserMenuListElement *element = menuList->at(i);
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue removing accelerators
@@ -1290,12 +1277,10 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 ** Assign accelerators to all managed items of given user (sub-)menu list.
 */
 static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
-	int i;
-	UserMenuListElement *element;
 
 	// scan all elements of this (sub-)menu 
-	for (i = 0; i < menuList->umlNbrItems; i++) {
-		element = menuList->umlItems[i];
+	for (size_t i = 0; i < menuList->size(); i++) {
+		UserMenuListElement *element = menuList->at(i);
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue assigning accelerators
@@ -1306,7 +1291,7 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys, nullptr);
 			if (!element->umleAccLockPatchApplied) {
 				UpdateAccelLockPatch(window->splitPane_, element->umleMenuItem);
-				element->umleAccLockPatchApplied = True;
+				element->umleAccLockPatchApplied = true;
 			}
 		}
 	}
@@ -1317,9 +1302,8 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 ** (Un)Manage all items of selected user menu.
 */
 static void manageUserMenu(selectedUserMenu *menu, Document *window) {
-	int n, i;
-	int *id;
-	Boolean currentLEisSubMenu;
+
+	bool currentLEisSubMenu;
 	userMenuInfo *info;
 	UserMenuList *menuList;
 	UserMenuListElement *currentLE;
@@ -1330,17 +1314,17 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 
 	/* set manage mode of all items of selected user menu in window cache
 	   according to the "to be managed" indication of the info list */
-	for (n = 0; n < menu->sumNbrOfListItems; n++) {
+	for (int n = 0; n < menu->sumNbrOfListItems; n++) {
 		info = menu->sumInfoList[n];
 
 		menuList = menu->sumMainMenuList;
-		id = info->umiId;
+		int *id = info->umiId;
 
 		/* select all menu list items belonging to menu record "info" using
 		   hierarchical ID of current menu info (e.g. id = {3} means:
 		   4th element of main menu; {0} = 1st element etc.)*/
-		for (i = 0; i < info->umiIdLen; i++) {
-			currentLE = menuList->umlItems[*id];
+		for (int i = 0; i < info->umiIdLen; i++) {
+			currentLE = menuList->at(*id);
 			mode = &currentLE->umleManageMode;
 			currentLEisSubMenu = (currentLE->umleSubMenuList != nullptr);
 
@@ -1447,7 +1431,8 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	** Add items to the menu pane, creating hierarchical sub-menus as
 	** necessary
 	*/
-	allocUserMenuList(menu->sumMainMenuList, subMenus->usmcNbrOfMainMenuItems);
+	menu->sumMainMenuList->clear();
+	
 	for (n = 0; n < menu->sumNbrOfListItems; n++) {
 		item = menu->sumItemList[n];
 		info = menu->sumInfoList[n];
@@ -1480,7 +1465,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
 				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
 				// create corresponding menu list item 
-				menuList->umlItems[menuList->umlNbrItems++] = allocUserMenuListElement(btn, accKeys);
+				menuList->push_back(allocUserMenuListElement(btn, accKeys));
 				break;
 			}
 			
@@ -1496,11 +1481,11 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 				menuTree[nTreeEntries++].menuPane = newSubPane;
 
 				currentLE = allocUserMenuListElement(btn, nullptr);
-				menuList->umlItems[menuList->umlNbrItems++] = currentLE;
+				menuList->push_back(currentLE);
 				currentLE->umleSubMenuPane = newSubPane;
-				currentLE->umleSubMenuList = allocUserSubMenuList(subMenuInfo->usmiId[subMenuInfo->usmiIdLen]);
+				currentLE->umleSubMenuList = new UserMenuList;
 			} else {
-				currentLE = menuList->umlItems[subMenuInfo->usmiId[subMenuDepth]];
+				currentLE = menuList->at(subMenuInfo->usmiId[subMenuDepth]);
 			}
 			
 			subPane = newSubPane;
@@ -2678,10 +2663,8 @@ UserMenuCache *CreateUserMenuCache(void) {
 	cache->umcLanguageMode = -2;
 	cache->umcShellMenuCreated = False;
 	cache->umcMacroMenuCreated = False;
-	cache->umcShellMenuList.umlNbrItems = 0;
-	cache->umcShellMenuList.umlItems = nullptr;
-	cache->umcMacroMenuList.umlNbrItems = 0;
-	cache->umcMacroMenuList.umlItems = nullptr;
+	cache->umcShellMenuList.clear();
+	cache->umcMacroMenuList.clear();
 
 	return cache;
 }
@@ -2700,8 +2683,7 @@ void FreeUserMenuCache(UserMenuCache *cache) {
 void InitUserBGMenuCache(UserBGMenuCache *cache) {
 	cache->ubmcLanguageMode = -2;
 	cache->ubmcMenuCreated = False;
-	cache->ubmcMenuList.umlNbrItems = 0;
-	cache->ubmcMenuList.umlItems = nullptr;
+	cache->ubmcMenuList.clear();
 }
 
 void FreeUserBGMenuCache(UserBGMenuCache *cache) {
@@ -2746,11 +2728,11 @@ static void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo 
 ** menu name.
 */
 static int getSubMenuDepth(const char *menuName) {
-	const char *subSep;
+
 	int depth = 0;
 
 	// determine sub-menu depth by counting '>' of given "menuName" 
-	subSep = menuName;
+	const char *subSep = menuName;
 	while ((subSep = strchr(subSep, '>'))) {
 		depth++;
 		subSep++;
@@ -2766,9 +2748,6 @@ static int getSubMenuDepth(const char *menuName) {
 */
 static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 
-	int subMenuDepth;
-	int idSize;
-
 	// allocate a new user menu info element 
 	auto newInfo = new userMenuInfo;
 
@@ -2776,11 +2755,9 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 	   for hierarchical ID; init. ID with {0,.., 0} */
 	newInfo->umiName = stripLanguageModeEx(item->name);
 
-	subMenuDepth = getSubMenuDepth(newInfo->umiName);
-	idSize = sizeof(int) * (subMenuDepth + 1);
+	int subMenuDepth = getSubMenuDepth(newInfo->umiName);
 
-	newInfo->umiId = (int *)XtMalloc(idSize);
-	memset(newInfo->umiId, 0, idSize);
+	newInfo->umiId = new int[subMenuDepth + 1]();
 
 	// init. remaining parts of user menu info element 
 	newInfo->umiIdLen = 0;
@@ -2858,7 +2835,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 ** position within 1st sub-menu etc.
 */
 static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus) {
-	int idSize;
+
 	char *hierName, *subSep;
 	int subMenuDepth = 0;
 	int *menuIdx = &subMenus->usmcNbrOfMainMenuItems;
@@ -2882,9 +2859,10 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus) {
 			curSubMenu = &subMenus->usmcInfo[subMenus->usmcNbrOfSubMenus];
 			subMenus->usmcNbrOfSubMenus++;
 			curSubMenu->usmiName = hierName;
-			idSize = sizeof(int) * (subMenuDepth + 2);
-			curSubMenu->usmiId = (int *)XtMalloc(idSize);
-			memcpy(curSubMenu->usmiId, info->umiId, idSize);
+
+			curSubMenu->usmiId = new int[subMenuDepth + 2];			
+			std::copy_n(info->umiId, subMenuDepth + 2, curSubMenu->usmiId);
+			
 			curSubMenu->usmiIdLen = subMenuDepth + 1;
 		} else {
 			/* sub-menu info already stored before: takeover its
@@ -3023,7 +3001,7 @@ static void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems) {
 static void freeUserMenuInfo(userMenuInfo *info) {
 
 
-	XtFree((char *)info->umiId);
+	delete [] info->umiId;
 
 	if (info->umiNbrOfLanguageModes != 0)
 		XtFree((char *)info->umiLanguageMode);
@@ -3042,31 +3020,22 @@ static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems) {
 }
 
 static void freeSubMenuCache(userSubMenuCache *subMenus) {
-	int i;
 
-	for (i = 0; i < subMenus->usmcNbrOfSubMenus; i++) {
+	for (int i = 0; i < subMenus->usmcNbrOfSubMenus; i++) {
 		XtFree(subMenus->usmcInfo[i].usmiName);
-		XtFree((char *)subMenus->usmcInfo[i].usmiId);
+		delete [] subMenus->usmcInfo[i].usmiId;
 	}
 
 	delete [] subMenus->usmcInfo;
 }
 
-static void allocUserMenuList(UserMenuList *list, int nbrOfItems) {
-	list->umlNbrItems = 0;
-	list->umlItems = new UserMenuListElement *[nbrOfItems];
-}
-
 static void freeUserMenuList(UserMenuList *list) {
-	int i;
 
-	for (i = 0; i < list->umlNbrItems; i++)
-		freeUserMenuListElement(list->umlItems[i]);
+	for (auto &&element : *list) {
+		freeUserMenuListElement(element);
+	}
 
-	list->umlNbrItems = 0;
-
-	delete [] list->umlItems;
-	list->umlItems = nullptr;
+	list->clear();
 }
 
 static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys) {
@@ -3076,7 +3045,7 @@ static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accK
 	element->umleManageMode          = UMMM_UNMANAGE;
 	element->umlePrevManageMode      = UMMM_UNMANAGE;
 	element->umleAccKeys             = accKeys;
-	element->umleAccLockPatchApplied = False;
+	element->umleAccLockPatchApplied = false;
 	element->umleMenuItem            = menuItem;
 	element->umleSubMenuPane         = nullptr;
 	element->umleSubMenuList         = nullptr;
@@ -3089,15 +3058,9 @@ static void freeUserMenuListElement(UserMenuListElement *element) {
 		freeUserSubMenuList(element->umleSubMenuList);
 
 	XtFree(element->umleAccKeys);
-	
 	delete element;
 }
 
-static UserMenuList *allocUserSubMenuList(int nbrOfItems) {
-	auto list = new UserMenuList;
-	allocUserMenuList(list, nbrOfItems);
-	return list;
-}
 
 static void freeUserSubMenuList(UserMenuList *list) {
 	freeUserMenuList(list);
