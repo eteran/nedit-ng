@@ -135,14 +135,6 @@ struct Bookmark {
 enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };
 
 
-/* structure holding a list of user menu items */
-#if 0
-struct UserMenuList {
-	int umlNbrItems;
-	UserMenuListElement **umlItems;
-};
-#endif
-
 /* structure holding cache info about Shell and Macro menus, which are
    shared over all "tabbed" documents (needed to manage/unmanage this
    user definable menus when language mode changes) */
