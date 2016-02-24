@@ -24,8 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_INTERPRET_H_INCLUDED
-#define NEDIT_INTERPRET_H_INCLUDED
+#ifndef INTERPRET_H_
+#define INTERPRET_H_
 
 #include "nedit.h"
 #include "rbTree.h"
@@ -102,13 +102,13 @@ struct Symbol;
 union Inst {
 	int (*func)(void);
 	int value;
-	struct Symbol *sym;
+	Symbol *sym;
 };
 
 typedef int (*BuiltInSubr)(Document *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
 struct NString {
-	char *rep;
+	char *rep;s
 	size_t len;
 };
 
@@ -219,4 +219,4 @@ void SetMacroFocusWindow(Document *window);
 /* function used for implicit conversion from string to number */
 int StringToNum(const char *string, int *number);
 
-#endif /* NEDIT_INTERPRET_H_INCLUDED */
+#endif

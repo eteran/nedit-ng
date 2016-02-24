@@ -7,7 +7,7 @@
 #include "XString.h"
 
 /* Pattern specification structure */
-struct HighlightPattern {
+class HighlightPattern {
 public:
 	HighlightPattern();
 	HighlightPattern(const HighlightPattern &other);

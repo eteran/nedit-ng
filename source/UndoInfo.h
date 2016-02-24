@@ -31,7 +31,7 @@ enum UndoTypes {
 };
 
 /* Record on undo list */
-struct UndoInfo {
+class UndoInfo {
 public:
 	UndoInfo(UndoTypes undoType, int start, int end);
 	~UndoInfo();

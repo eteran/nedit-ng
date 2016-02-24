@@ -69,26 +69,26 @@
 
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
 
-#ifdef __cplusplus
 extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
-#else
-extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
-#endif
+
+namespace {
 
 /* max. number of user programmable menu commands allowed per each of the
    macro, shell, and background menus */
-#define MAX_ITEMS_PER_MENU 400
+const int MAX_ITEMS_PER_MENU = 400;
 
 /* indicates, that an unknown (i.e. not existing) language mode
    is bound to an user menu item */
-#define UNKNOWN_LANGUAGE_MODE -2
+const int UNKNOWN_LANGUAGE_MODE = -2;
 
 // major divisions (in position units) in User Commands dialogs 
-#define LEFT_MARGIN_POS 1
-#define RIGHT_MARGIN_POS 99
-#define LIST_RIGHT 45
-#define SHELL_CMD_TOP 70
-#define MACRO_CMD_TOP 40
+const int LEFT_MARGIN_POS  = 1;
+const int RIGHT_MARGIN_POS = 99;
+const int LIST_RIGHT       = 45;
+const int SHELL_CMD_TOP    = 70;
+const int MACRO_CMD_TOP    = 40;
+
+}
 
 // types of current dialog and/or menu 
 enum dialogTypes { SHELL_CMDS, MACRO_CMDS, BG_MENU_CMDS };
