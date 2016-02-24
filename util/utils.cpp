@@ -195,7 +195,7 @@ std::string GetUserNameEx(void) {
 ** VMS links case-insensitively.
 */
 std::string GetNameOfHostEx(void) {
-	char hostname[MAXNODENAMELEN + 1];
+	static char hostname[MAXNODENAMELEN + 1];
 	static bool hostnameFound = false;
 
 	if (!hostnameFound) {
@@ -206,9 +206,11 @@ std::string GetNameOfHostEx(void) {
 			perror("nedit: uname() failed ");
 			exit(EXIT_FAILURE);
 		}
+				
 		strcpy(hostname, nameStruct.nodename);
 		hostnameFound = true;
 	}
+	
 	return hostname;
 }
 
