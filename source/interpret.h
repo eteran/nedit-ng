@@ -108,7 +108,7 @@ union Inst {
 typedef int (*BuiltInSubr)(Document *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
 struct NString {
-	char *rep;s
+	char *rep;
 	size_t len;
 };
 
