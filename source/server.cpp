@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "server.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -382,7 +384,7 @@ static void processServerCommandString(char *string) {
 				}
 
 				if (win == end(WindowList)) {
-					XBell(TheDisplay, 0);
+					QApplication::beep();
 				} else {
 					// Raise before -do (macro could close window). 
 					if (iconicFlag)
@@ -444,7 +446,7 @@ static void processServerCommandString(char *string) {
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
 				if (window->macroCmdData_) {
-					XBell(TheDisplay, 0);
+					QApplication::beep();
 				} else {
 					DoMacro(window, doCommand, "-do macro");
 					/* in case window is closed by macro functions

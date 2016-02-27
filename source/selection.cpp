@@ -24,6 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "selection.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -120,7 +122,7 @@ void GotoLineNumber(Document *window) {
 		return;
 
 	if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	params[0] = lineNumText;
@@ -181,18 +183,18 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 
 	// skip if we can't get the selection data, or it's obviously not a number 
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	if (((size_t)*length) > sizeof(lineText) - 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		return;
 	}
 	// should be of type text??? 
 	if (*format != 8) {
 		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		return;
 	}
@@ -202,7 +204,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	rc = StringToLineAndCol(lineText, &lineNum, &column);
 	XtFree(value);
 	if (rc == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -210,7 +212,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	if (lineNum == -1) {
 		position = TextGetCursorPos(widget);
 		if (TextPosToLineAndCol(widget, position, &lineNum, &curCol) == False) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 	}
@@ -222,7 +224,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 
 	position = TextLineAndColToPos(widget, lineNum, column);
 	if (position == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	TextSetCursorPos(widget, position);
@@ -241,18 +243,18 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	/* get the string, or skip if we can't get the selection data, or it's
 	   obviously not a file name */
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	if (*length > MAXPATHLEN || *length == 0) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		return;
 	}
 	// should be of type text??? 
 	if (*format != 8) {
 		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		return;
 	}
@@ -291,7 +293,7 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 		glob(nameText, GLOB_NOCHECK, nullptr, &globbuf);
 		for (i = 0; i < (int)globbuf.gl_pathc; i++) {
 			if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
-				XBell(TheDisplay, 0);
+				QApplication::beep();
 			else
 				EditExistingFile(GetPrefOpenInTab() ? window : nullptr, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 		}
@@ -310,7 +312,7 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 
 	// Confirm that the returned value is of the correct type 
 	if (*type != XA_STRING || *format != 8) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree((char *)value);
 		*result = nullptr;
 		return;
@@ -349,7 +351,7 @@ void SelectNumberedLine(Document *window, int lineNum) {
 		   without making a real selection and beep */
 		lineStart = window->buffer_->BufGetLength();
 		window->buffer_->BufSelect(lineStart, lineStart);
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 	}
 	window->MakeSelectionVisible(window->lastFocus_);
 	TextSetCursorPos(window->lastFocus_, lineStart);
@@ -367,7 +369,7 @@ void MarkDialog(Document *window) {
 	if (response == 2)
 		return;
 	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	params[0] = letterText;
@@ -387,7 +389,7 @@ void GotoMarkDialog(Document *window, int extend) {
 	if (response == 2)
 		return;
 	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	params[0] = letterText;
@@ -508,7 +510,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 			break;
 	}
 	if (index == window->nMarks_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 

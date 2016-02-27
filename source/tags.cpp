@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "tags.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -898,11 +900,11 @@ static int findDef(Document *window, const char *value, int search_type) {
 			}
 		} else {
 			fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		}
 	} else {
 		fprintf(stderr, "NEdit: Tag Length too long.\n");
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 	}
 	return status;
 }
@@ -952,7 +954,7 @@ static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, ch
 
 	// skip if we can't get the selection data, or it's obviously too long 
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 	} else {
 		findDef(window, value, searchMode);
 	}
@@ -1084,7 +1086,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 		return TRUE;
 	} else {
 		// startPos, endPos left untouched by SearchString if search failed. 
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return FALSE;
 	}
 }
@@ -1102,7 +1104,7 @@ static int findAllMatches(Document *window, const char *string) {
 
 	// verify that the string is reasonable as a tag 
 	if (*string == '\0' || strlen(string) > MAX_TAG_LEN) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return -1;
 	}
 	tagName = string;
@@ -1228,7 +1230,7 @@ static void findAllCB(Widget parent, XtPointer clientData, XtPointer call_data) 
 
 	std::string eptr = XmStringGetLtoREx(cbs->value, XmFONTLIST_DEFAULT_TAG);
 	if ((i = stoi(eptr) - 1) < 0) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 

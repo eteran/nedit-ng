@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "file.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -1111,7 +1113,7 @@ void PrintWindow(Document *window, int selectedOnly) {
 	   wrapping newlines if necessary to make it match the displayed text */
 	if (selectedOnly) {
 		if (!sel->selected) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 		if (sel->rectangular) {
@@ -1534,7 +1536,7 @@ static int fileWasModifiedExternally(Document *window) {
 */
 int CheckReadOnly(Document *window) {
 	if (IS_ANY_LOCKED(window->lockReasons_)) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return True;
 	}
 	return False;

@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "search.h"
 #include "regularExp.h"
 #include "TextBuffer.h"
@@ -2255,7 +2257,7 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 				DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 			}
 		} else {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		}
 	}
 }
@@ -2738,7 +2740,7 @@ static void rFindArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boole
 
 	// if the index is out of range, beep and return 
 	if (index != 0 && historyIndex(index) == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -2789,7 +2791,7 @@ static void replaceArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boo
 
 	// if the index is out of range, beep and return 
 	if (index != 0 && historyIndex(index) == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -2843,7 +2845,7 @@ static void findArrowKeyCB(Widget w, XtPointer clientData, XEvent *Event, Boolea
 
 	// if the index is out of range, beep and return 
 	if (index != 0 && historyIndex(index) == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -3036,7 +3038,7 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 
 bool SearchAndSelectSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return FALSE;
 	}
 
@@ -3103,7 +3105,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 
 	// if matched text is already selected, just beep 
 	if (selStart == startPos && selEnd == endPos) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return FALSE;
 	}
 
@@ -3139,7 +3141,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 		if (GetPrefSearchDlogs())
 			DialogF(DF_WARN, window->shell_, 1, "Wrong Selection", "Selection not appropriate for searching", "OK");
 		else
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		XtFree((char *)callData);
 		return;
 	}
@@ -3147,13 +3149,13 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 		if (GetPrefSearchDlogs())
 			DialogF(DF_WARN, window->shell_, 1, "Selection too long", "Selection too long", "OK");
 		else
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		XtFree(value);
 		XtFree((char *)callData);
 		return;
 	}
 	if (*length == 0) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		XtFree((char *)callData);
 		return;
@@ -3161,7 +3163,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	// should be of type text??? 
 	if (*format != 8) {
 		fprintf(stderr, "NEdit: can't handle non 8-bit text\n");
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		XtFree(value);
 		XtFree((char *)callData);
 		return;
@@ -3556,7 +3558,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 
 	// if the index is out of range, beep and return 
 	if (index != 0 && historyIndex(index) == -1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -3672,18 +3674,18 @@ void SelectToMatchingCharacter(Document *window) {
 			selEnd += 1;
 		selStart = selEnd - 1;
 		if (selStart < 0) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 	}
 	if ((selEnd - selStart) != 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
 	// Search for it in the buffer 
 	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	startPos = (matchPos > selStart) ? selStart : matchPos;
@@ -3715,18 +3717,18 @@ void GotoMatchingCharacter(Document *window) {
 			selEnd += 1;
 		selStart = selEnd - 1;
 		if (selStart < 0) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 	}
 	if ((selEnd - selStart) != 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
 	// Search for it in the buffer 
 	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -3834,7 +3836,7 @@ static void eraseFlash(Document *window) {
 */
 bool ReplaceSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return FALSE;
 	}
 
@@ -3847,7 +3849,7 @@ bool ReplaceSame(Document *window, SearchDirection direction, int searchWrap) {
 */
 bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap) {
 	if (NHist < 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return FALSE;
 	}
 
@@ -4192,7 +4194,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 				unmanageReplaceDialogs(window);
 			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 		} else
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 	}
 
 	delete tempBuf;
@@ -4230,7 +4232,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 				unmanageReplaceDialogs(window);
 			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 		} else
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		return false;
 	}
 
@@ -4360,11 +4362,11 @@ static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, in
 	if (GetPrefBeepOnSearchWrap()) {
 		if (direction == SEARCH_FORWARD) {
 			if ((startPos >= beginPos && window->iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos_ >= beginPos)) {
-				XBell(TheDisplay, 0);
+				QApplication::beep();
 			}
 		} else {
 			if ((startPos <= beginPos && window->iSearchLastBeginPos_ > beginPos) || (startPos > beginPos && window->iSearchLastBeginPos_ <= beginPos)) {
-				XBell(TheDisplay, 0);
+				QApplication::beep();
 			}
 		}
 	}
@@ -4409,7 +4411,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 			if (searchWrap) {
 				if (direction == SEARCH_FORWARD && beginPos != 0) {
 					if (GetPrefBeepOnSearchWrap()) {
-						XBell(TheDisplay, 0);
+						QApplication::beep();
 					} else if (GetPrefSearchDlogs()) {
 						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search from\nbeginning of file?", "Continue", "Cancel");
 						if (resp == 2) {
@@ -4419,7 +4421,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 					found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
 				} else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
 					if (GetPrefBeepOnSearchWrap()) {
-						XBell(TheDisplay, 0);
+						QApplication::beep();
 					} else if (GetPrefSearchDlogs()) {
 						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search\nfrom end of file?", "Continue", "Cancel");
 						if (resp == 2) {
@@ -4433,7 +4435,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 				if (GetPrefSearchDlogs()) {
 					DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
 				} else {
-					XBell(TheDisplay, 0);
+					QApplication::beep();
 				}
 			}
 		}
@@ -4449,7 +4451,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 		if (found) {
 			iSearchTryBeepOnWrap(window, direction, beginPos, *startPos);
 		} else
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 	}
 
 	return found;

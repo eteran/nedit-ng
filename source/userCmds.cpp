@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "userCmds.h"
 #include "TextBuffer.h"
 #include "UserMenuListElement.h"
@@ -1816,7 +1818,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 
 	// Beep and return if the modifiers are buttons or ones we don't support 
 	if (event->state & ~(ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask)) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -1834,7 +1836,7 @@ static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event) {
 	   they're supposed to type the actual keys, not the name.  This scheme
 	   is not rigorous and still allows accelerators like Comma. */
 	if (strlen(outStr) == 1) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -1886,7 +1888,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   level, however, a call here with a macro running means that THE USER
 	   is explicitly invoking another macro via the menu or an accelerator. */
 	if (window->macroCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -1910,7 +1912,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Same remark as for macro menu commands (see above). 
 	if (window->macroCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 

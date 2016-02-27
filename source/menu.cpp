@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QStringList>
@@ -3444,7 +3445,7 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	}
 
 	if (!window->buffer_->primary_.selected) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -3559,7 +3560,7 @@ static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   UNLESS the macro event marker is set */
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
 		if (Document::WidgetToWindow(w)->macroCmdData_) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 	}
@@ -3575,7 +3576,7 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	// Same remark as for macro menu commands (see above). 
 	if (event->xany.send_event != MACRO_EVENT_MARKER) {
 		if (Document::WidgetToWindow(w)->macroCmdData_) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 	}
@@ -3706,7 +3707,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	if (window) {
 		window->RaiseFocusDocumentWindow(focus);
 	} else {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 	}
 }
 
@@ -3750,7 +3751,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 			window->lastFocus_ = newFocusPane;
 			XmProcessTraversal(window->lastFocus_, XmTRAVERSE_CURRENT);
 		} else {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 		}
 	} else {
 		fprintf(stderr, "nedit: focus_pane requires argument\n");

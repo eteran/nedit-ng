@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "shift.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -185,7 +187,7 @@ static void changeCase(Document *window, int makeUpper) {
 		char bufChar[2] = " ";
 		cursorPos = TextGetCursorPos(window->lastFocus_);
 		if (cursorPos == 0) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 		*bufChar = buf->BufGetCharacter(cursorPos - 1);
@@ -232,7 +234,7 @@ void FillSelection(Document *window) {
 		left = findParagraphStart(buf, insertPos);
 		right = findParagraphEnd(buf, insertPos);
 		if (left == right) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 		text = buf->BufGetRangeEx(left, right);

@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "shell.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -134,7 +136,7 @@ void FilterSelection(Document *window, const std::string &command, int fromMacro
 
 	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -142,7 +144,7 @@ void FilterSelection(Document *window, const std::string &command, int fromMacro
 	   occupies.  Beep and return if no selection */
 	std::string text = window->buffer_->BufGetSelectionTextEx();
 	if (text.empty()) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 	window->buffer_->BufUnsubstituteNullCharsEx(text);
@@ -166,7 +168,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -220,7 +222,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 
 	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -276,7 +278,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 
 	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
-		XBell(TheDisplay, 0);
+		QApplication::beep();
 		return;
 	}
 
@@ -304,7 +306,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		text = window->buffer_->BufGetSelectionTextEx();
 		if (text.empty()) {
 			delete [] subsCommand;
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return;
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;

@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+
 #include "text.h"
 #include "textP.h"
 #include "calltips.h"
@@ -264,7 +266,7 @@ int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int 
 		// Put it at the specified position 
 		// If position is not displayed, return 0 
 		if (pos < textD->firstChar || pos > textD->lastChar) {
-			XBell(TheDisplay, 0);
+			QApplication::beep();
 			return 0;
 		}
 		textD->calltip.pos = pos;
@@ -273,7 +275,7 @@ int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int 
 		    cursor is offscreen and mode != strict */
 		if (!textD->TextDPositionToXY(textD->cursorPos, &rel_x, &rel_y)) {
 			if (alignMode == TIP_STRICT) {
-				XBell(TheDisplay, 0);
+				QApplication::beep();
 				return 0;
 			}
 			textD->calltip.pos = -1;
