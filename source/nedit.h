@@ -161,7 +161,6 @@ struct UserBGMenuCache {
 extern Document *WindowList;
 extern Display *TheDisplay;
 extern Widget TheAppShell;
-extern const char *ArgV0;
 extern bool IsServer;
 
 #endif

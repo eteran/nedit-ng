@@ -269,9 +269,6 @@ int main(int argc, char *argv[]) {
 	Document *lastFile = nullptr;
 	unsigned char *invalidBindings = nullptr;
 
-	// Save the command which was used to invoke nedit for restart command 
-	ArgV0 = argv[0];
-
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
 	XtSetLanguageProc(nullptr, neditLanguageProc, nullptr);

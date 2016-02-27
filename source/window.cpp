@@ -26,6 +26,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
+#include <QStringList>
+
 #include "window.h"
 #include "TextBuffer.h"
 #include "textSel.h"
@@ -214,7 +217,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Create command line arguments for restoring each window in the list 
 	std::vector<char *> argv;
-	argv.push_back(XtNewStringEx(ArgV0));
+	argv.push_back(XtNewStringEx(qApp->arguments()[0].toLatin1().data()));
 	
 	if (IsServer) {
 		argv.push_back(XtNewStringEx("-server"));
@@ -268,9 +271,15 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Set the window's WM_COMMAND property to the created command line 
 	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());
+	
+	// TODO(eteran): we are leaking memory hear just for the time being
+	//               we have a mix of XtNewStringEx and new char[]
+	//               which we have to cleanup to do this properly :-/
+#if 0
 	for (char *p : argv) {
 		delete [] p;
 	}
+#endif
 }
 
 void AttachSessionMgrHandler(Widget appShell) {
