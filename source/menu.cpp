@@ -26,6 +26,10 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QStringList>
+
 #include "menu.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -3404,34 +3408,26 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 	Document *window = Document::WidgetToWindow(w);
 	char charCodeString[2];
-	char charCodeText[DF_MAX_PROMPT_LENGTH], dummy[DF_MAX_PROMPT_LENGTH];
 	char *params[1];
-	int charCode, nRead, response;
 
 	if (CheckReadOnly(window))
 		return;
+		
+		
+	bool ok;
+	int n = QInputDialog::getInt(nullptr /*parent */, QLatin1String("Insert Ctrl Code"), QLatin1String("ASCII Character Code:"), 0, 0, 255, 1, &ok);
+	if(ok) {
+		charCodeString[0] = static_cast<unsigned char>(n);
+		charCodeString[1] = '\0';
+		params[0] = charCodeString;
 
-	response = DialogF(DF_PROMPT, window->shell_, 2, "Insert Ctrl Code", "ASCII Character Code:", charCodeText, "OK", "Cancel");
+		if (!window->buffer_->BufSubstituteNullChars(charCodeString, 1)) {
+			QMessageBox::critical(nullptr /* parent */, QLatin1String("Error"), QLatin1String("Too much binary data"));
+			return;
+		}
 
-	if (response == 2)
-		return;
-	/* If we don't scan for a trailing string invalid input
-	   would be accepted sometimes. */
-	nRead = sscanf(charCodeText, "%i%s", &charCode, dummy);
-	if (nRead != 1 || charCode < 0 || charCode > 255) {
-		XBell(TheDisplay, 0);
-		return;
+		XtCallActionProc(w, "insert_string", event, params, 1);
 	}
-	charCodeString[0] = (unsigned char)charCode;
-	charCodeString[1] = '\0';
-	params[0] = charCodeString;
-
-	if (!window->buffer_->BufSubstituteNullChars(charCodeString, 1)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error", "Too much binary data", "OK");
-		return;
-	}
-
-	XtCallActionProc(w, "insert_string", event, params, 1);
 }
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3440,26 +3436,33 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)nArgs;
 
 	Document *window = Document::WidgetToWindow(w);
-	char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
-	int resp;
-	static char **cmdHistory = nullptr;
-	static int nHistoryCmds = 0;
+	
+	static QStringList cmdHistory;
 
-	if (CheckReadOnly(window))
+	if (CheckReadOnly(window)) {
 		return;
+	}
+
 	if (!window->buffer_->primary_.selected) {
 		XBell(TheDisplay, 0);
 		return;
 	}
 
-	SetDialogFPromptHistory(cmdHistory, nHistoryCmds);
+	bool ok;
+	QString cmdText = QInputDialog::getItem(nullptr /*parent */, QLatin1String("Filter Selection"), QLatin1String("Shell command:"), cmdHistory, 0, true, &ok);
 
-	resp = DialogF(DF_PROMPT, window->shell_, 2, "Filter Selection", "Shell command:   (use up arrow key to recall previous)", cmdText, "OK", "Cancel");
-
-	if (resp == 2)
+	if(!ok) {
 		return;
-	AddToHistoryList(cmdText, &cmdHistory, &nHistoryCmds);
-	params[0] = cmdText;
+	}
+	
+	static char cmd[DF_MAX_PROMPT_LENGTH];
+	strcpy(cmd, cmdText.toLatin1().data());
+
+	cmdHistory << cmdText;
+	
+	char *params[1];
+	params[0] = cmd;
+	
 	XtCallActionProc(w, "filter_selection", event, params, 1);
 }
 

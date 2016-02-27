@@ -86,27 +86,32 @@ struct bufElem {
    information for controling and communicating with the process */
 struct shellCmdInfo {
 	int flags;
-	int stdinFD, stdoutFD, stderrFD;
+	int stdinFD;
+	int stdoutFD;
+	int stderrFD;
 	pid_t childPid;
-	XtInputId stdinInputID, stdoutInputID, stderrInputID;
+	XtInputId stdinInputID;
+	XtInputId stdoutInputID;
+	XtInputId stderrInputID;
 	std::list<bufElem *> outBufs;
 	std::list<bufElem *> errBufs;
 	std::string input;
 	int inIndex;
 	Widget textW;
-	int leftPos, rightPos;
+	int leftPos;
+	int rightPos;
 	int inLength;
 	XtIntervalId bannerTimeoutID, flushTimeoutID;
 	char bannerIsUp;
 	char fromMacro;
 };
 
-static void issueCommand(Document *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
+static void issueCommand(Document *window, const std::string &command, const std::string &input, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
 static void finishCmdExecution(Document *window, int terminatedOnError);
-static pid_t forkCommand(Widget parent, const std::string &command, const char *cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD);
+static pid_t forkCommand(Widget parent, const std::string &command, const std::string &cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD);
 static std::string coalesceOutputEx(std::list<bufElem *> &bufList);
 static void freeBufListEx(std::list<bufElem *> &bufList);
 static void removeTrailingNewlines(std::string &string);
@@ -140,13 +145,12 @@ void FilterSelection(Document *window, const std::string &command, int fromMacro
 		XBell(TheDisplay, 0);
 		return;
 	}
-	int textLen = text.size();
 	window->buffer_->BufUnsubstituteNullCharsEx(text);
 	int left  = window->buffer_->primary_.start;
 	int right = window->buffer_->primary_.end;
 
 	// Issue the command and collect its output 
-	issueCommand(window, command, text, textLen, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus_, left, right, fromMacro);
+	issueCommand(window, command, text, ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION, window->lastFocus_, left, right, fromMacro);
 }
 
 /*
@@ -190,7 +194,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	}
 
 	// issue the command 
-	issueCommand(window, subsCommand, std::string(), 0, flags, window->lastFocus_, left, right, fromMacro);
+	issueCommand(window, subsCommand, std::string(), flags, window->lastFocus_, left, right, fromMacro);
 	delete [] subsCommand;
 }
 
@@ -201,7 +205,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 void ShellCmdToMacroString(Document *window, const std::string &command, const std::string &input) {
 
 	// fork the command and begin processing input/output 
-	issueCommand(window, command, input, input.size(), ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
+	issueCommand(window, command, input, ACCUMULATE | OUTPUT_TO_STRING, nullptr, 0, 0, True);
 }
 
 /*
@@ -252,7 +256,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	}
 
 	// issue the command 
-	issueCommand(window, subsCommand, std::string(), 0, 0, window->lastFocus_, insertPos + 1, insertPos + 1, fromMacro);
+	issueCommand(window, subsCommand, std::string(), 0, window->lastFocus_, insertPos + 1, insertPos + 1, fromMacro);
 	delete [] subsCommand;
 }
 
@@ -264,7 +268,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
 	char *subsCommand, fullName[MAXPATHLEN];
-	int left = 0, right = 0, textLen;
+	int left = 0, right = 0;
 	int pos, line, column;
 	char lineNumber[11];
 	Document *inWindow = window;
@@ -320,7 +324,6 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 
 	/* If the buffer was substituting another character for ascii-nuls,
 	   put the nuls back in before exporting the text */
-	textLen = text.size();
 	window->buffer_->BufUnsubstituteNullCharsEx(text);
 
 	/* Assign the output destination.  If output is to a new window,
@@ -376,7 +379,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		flags |= RELOAD_FILE_AFTER;
 
 	// issue the command 
-	issueCommand(inWindow, subsCommand, text, textLen, flags, outWidget, left, right, fromMacro);
+	issueCommand(inWindow, subsCommand, text, flags, outWidget, left, right, fromMacro);
 	delete [] subsCommand;
 }
 
@@ -413,7 +416,7 @@ void AbortShellCommand(Document *window) {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-static void issueCommand(Document *window, const std::string &command, const std::string &input, int inputLen, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
+static void issueCommand(Document *window, const std::string &command, const std::string &input, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
 	int stdinFD, stdoutFD, stderrFD = 0;
 	XtAppContext context = XtWidgetToApplicationContext(window->shell_);
 	pid_t childPid;
@@ -470,7 +473,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	cmdData->fromMacro   = fromMacro;
 	cmdData->leftPos     = replaceLeft;
 	cmdData->rightPos    = replaceRight;
-	cmdData->inLength    = inputLen;
+	cmdData->inLength    = input.size();
 
 	// Set up timer proc for putting up banner when process takes too long 
 	if (fromMacro) {
@@ -853,7 +856,7 @@ cmdDone:
 ** stderr.  The function value returns the pid of the new subprocess, or -1
 ** if an error occured.
 */
-static pid_t forkCommand(Widget parent, const std::string &command, const char *cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD) {
+static pid_t forkCommand(Widget parent, const std::string &command, const std::string &cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD) {
 	int childStdoutFD, childStdinFD, childStderrFD, pipeFDs[2];
 	int dupFD;
 	pid_t childPid;
@@ -932,8 +935,8 @@ static pid_t forkCommand(Widget parent, const std::string &command, const char *
 
 		/* change the current working directory to the directory of the
 		    current file. */
-		if (cmdDir[0] != 0) {
-			if (chdir(cmdDir) == -1) {
+		if (!cmdDir.empty()) {
+			if (chdir(cmdDir.c_str()) == -1) {
 				perror("chdir to directory of current file failed");
 			}
 		}
