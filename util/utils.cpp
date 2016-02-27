@@ -21,6 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QDir>
+#include <QHostInfo>
+
 #include "utils.h"
 
 #include <cstdlib>
@@ -108,47 +111,14 @@ bool isRegFile(const char *file) {
 /* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
 std::string GetCurrentDirEx(void) {
-	char curdir[MAXPATHLEN];
-
-	if (!getcwd(curdir, sizeof(curdir))) {
-		perror("nedit: getcwd() fails");
-		strcpy(curdir, ".");
-	}
-	return curdir;
+	return QDir::currentPath().toStdString();
 }
 
 /* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
 std::string GetHomeDirEx(void) {
-
-	static char homedir[MAXPATHLEN] = "";
-	if (homedir[0] != '\0') {
-		return homedir;
-	}
-	
-	const char *ptr = getenv("HOME");
-	if (!ptr) {
-		struct passwd *passwdEntry = getpwuid(getuid());
-		if (passwdEntry && *(passwdEntry->pw_dir)) {
-			ptr = passwdEntry->pw_dir;
-		} else {
-			/* This is really serious, so just exit. */
-			perror("nedit: getpwuid() failed ");
-			exit(EXIT_FAILURE);
-		}
-	}
-	
-	strncpy(homedir, ptr, sizeof(homedir) - 1);
-	homedir[sizeof(homedir) - 1] = '\0';
-	
-	/* Fix trailing slash */
-	size_t len = strlen(homedir);
-	if (len > 1 && homedir[len - 1] == '/') {
-		homedir[len - 1] = '\0';
-	}
-	
-	return homedir;
+	return QDir::homePath().toStdString();
 }
 
 /*
@@ -169,21 +139,20 @@ std::string GetUserNameEx(void) {
 		return userName;
 	}
 
-	const struct passwd *passwdEntry = getpwuid(getuid());
-	if (!passwdEntry) {
-		/* This is really serious, but sometimes username service
-		   is misconfigured through no fault of the user.  Be nice
-		   and let the user start nc anyway. */
-		perror("nedit: getpwuid() failed - reverting to $USER");
-		return getenv("USER");
-	} else {
-	
+	if(const struct passwd *passwdEntry = getpwuid(getuid())) {
 		// NOTE(eteran): so, this is effecively a one time memory leak.
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
 		userName = strdup(passwdEntry->pw_name);
-		return userName;
+		return userName;	
 	}
+	
+	/* This is really serious, but sometimes username service
+	   is misconfigured through no fault of the user.  Be nice
+	   and let the user start nc anyway. */
+	perror("nedit: getpwuid() failed - reverting to $USER");
+	return getenv("USER");
+
 }
 
 
@@ -195,23 +164,7 @@ std::string GetUserNameEx(void) {
 ** VMS links case-insensitively.
 */
 std::string GetNameOfHostEx(void) {
-	static char hostname[MAXNODENAMELEN + 1];
-	static bool hostnameFound = false;
-
-	if (!hostnameFound) {
-		struct utsname nameStruct;
-		int rc = uname(&nameStruct);
-		if (rc < 0) {
-			/* Shouldn't ever happen, so we better exit() here */
-			perror("nedit: uname() failed ");
-			exit(EXIT_FAILURE);
-		}
-				
-		strcpy(hostname, nameStruct.nodename);
-		hostnameFound = true;
-	}
-	
-	return hostname;
+	return QHostInfo::localHostName().toStdString();
 }
 
 /*
@@ -246,10 +199,9 @@ std::string GetRCFileNameEx(int type) {
 	static bool namesDetermined = false;
 
 	if (!namesDetermined) {
-		char *nedit_home;
-		int i;
+		char *const nedit_home = getenv("NEDIT_HOME");
 
-		if ((nedit_home = getenv("NEDIT_HOME")) == nullptr) {
+		if (nedit_home == nullptr) {
 			/*  No NEDIT_HOME */
 
 			/* Let's try if ~/.nedit is a regular file or not. */
@@ -257,7 +209,7 @@ std::string GetRCFileNameEx(int type) {
 			buildFilePath(legacyFile, GetHomeDirEx().c_str(), hiddenFileNames[NEDIT_RC]);
 			if (isRegFile(legacyFile)) {
 				/* This is a legacy setup with rc files in $HOME */
-				for (i = 0; i < N_FILE_TYPES; i++) {
+				for (int i = 0; i < N_FILE_TYPES; i++) {
 					buildFilePath(rcFiles[i], GetHomeDirEx().c_str(), hiddenFileNames[i]);
 				}
 			} else {
@@ -276,7 +228,7 @@ std::string GetRCFileNameEx(int type) {
 				}
 
 				/* All set for DEFAULT_NEDIT_HOME, let's copy the names */
-				for (i = 0; i < N_FILE_TYPES; i++) {
+				for (int i = 0; i < N_FILE_TYPES; i++) {
 					buildFilePath(rcFiles[i], defaultNEditHome, plainFileNames[i]);
 				}
 			}
@@ -293,7 +245,7 @@ std::string GetRCFileNameEx(int type) {
 			}
 
 			/* All set for NEDIT_HOME, let's copy the names */
-			for (i = 0; i < N_FILE_TYPES; i++) {
+			for (int i = 0; i < N_FILE_TYPES; i++) {
 				buildFilePath(rcFiles[i], nedit_home, plainFileNames[i]);
 			}
 		}

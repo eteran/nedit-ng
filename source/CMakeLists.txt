@@ -107,7 +107,9 @@ add_executable(nedit
 include_directories(nedit
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
-	${X11_Xt_INCLUDE_PATH})
+	${X11_Xt_INCLUDE_PATH}
+	${QT_QTCORE_INCLUDE_DIR}
+	${QT_QTGUI_INCLUDE_DIR})	
 
 target_link_libraries(nedit LINK_PUBLIC
 	Xlt
@@ -126,7 +128,9 @@ add_executable(nc
 
 include_directories(nc
 	${X11_INCLUDE_DIR}
-	${X11_Xt_INCLUDE_PATH})
+	${X11_Xt_INCLUDE_PATH}
+	${QT_QTCORE_INCLUDE_DIR}
+	${QT_QTGUI_INCLUDE_DIR})
 
 target_link_libraries(nc LINK_PUBLIC
 	NUtil
