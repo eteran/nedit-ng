@@ -54,7 +54,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap);
 int SaveWindow(Document *window);
 int WriteBackupFile(Document *window);
 void CheckForChangesToFile(Document *window);
-void PrintString(const std::string &string, int length, Widget parent, const std::string &jobName);
+void PrintString(const std::string &string, Widget parent, const std::string &jobName);
 void PrintWindow(Document *window, int selectedOnly);
 void RemoveBackupFile(Document *window);
 void RevertToSaved(Document *window);

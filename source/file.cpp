@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QDesktopServices>
 
 #include "file.h"
 #include "TextBuffer.h"
@@ -305,7 +306,7 @@ static void safeClose(Document *window) {
 }
 
 static int doOpen(Document *window, const char *name, const char *path, int flags) {
-	char fullname[MAXPATHLEN];
+
 	struct stat statbuf;
 	char *c;
 	FILE *fp = nullptr;
@@ -322,7 +323,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	window->fileMissing_ = TRUE;
 
 	// Get the full name of the file 
-	snprintf(fullname, sizeof(fullname), "%s%s", path, name);
+	const std::string fullname = window->FullPath();
 
 	// Open the file 
 	/* The only advantage of this is if you use clearcase,
@@ -332,8 +333,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	   this is now the default.
 	*/
 	{
-		if ((fp = fopen(fullname, "r"))) {
-			if (access(fullname, W_OK) != 0) {
+		if ((fp = fopen(fullname.c_str(), "r"))) {
+			if (access(fullname.c_str(), W_OK) != 0) {
 				SET_PERM_LOCKED(window->lockReasons_, TRUE);
 			}
 
@@ -346,9 +347,9 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 				// ask user for next action if file not found 
 				if (window == WindowList && window->next_ == nullptr) {
-					resp = DialogF(DF_WARN, window->shell_, 3, "New File", "Can't open %s:\n%s", "New File", "Cancel", "Exit NEdit", fullname, strerror(errno));
+					resp = DialogF(DF_WARN, window->shell_, 3, "New File", "Can't open %s:\n%s", "New File", "Cancel", "Exit NEdit", fullname.c_str(), strerror(errno));
 				} else {
-					resp = DialogF(DF_WARN, window->shell_, 2, "New File", "Can't open %s:\n%s", "New File", "Cancel", fullname, strerror(errno));
+					resp = DialogF(DF_WARN, window->shell_, 2, "New File", "Can't open %s:\n%s", "New File", "Cancel", fullname.c_str(), strerror(errno));
 				}
 
 				if (resp == 2) {
@@ -359,12 +360,12 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			}
 
 			// Test if new file can be created 
-			if ((fd = creat(fullname, 0666)) == -1) {
-				DialogF(DF_ERR, window->shell_, 1, "Error creating File", "Can't create %s:\n%s", "OK", fullname, strerror(errno));
+			if ((fd = creat(fullname.c_str(), 0666)) == -1) {
+				DialogF(DF_ERR, window->shell_, 1, "Error creating File", "Can't create %s:\n%s", "OK", fullname.c_str(), strerror(errno));
 				return FALSE;
 			} else {
 				close(fd);
-				remove(fullname);
+				remove(fullname.c_str());
 			}
 
 			window->SetWindowModified(FALSE);
@@ -992,7 +993,7 @@ static std::string backupFileNameEx(Document *window) {
 ** True if backup fails and user requests that the new file not be written.
 */
 static bool writeBckVersion(Document *window) {
-	char fullname[MAXPATHLEN];
+
 	char bckname[MAXPATHLEN];
 	struct stat statbuf;
 	int in_fd;
@@ -1006,13 +1007,13 @@ static bool writeBckVersion(Document *window) {
 	}
 
 	// Get the full name of the file 
-	int r = snprintf(fullname, sizeof(fullname), "%s%s", window->path_.c_str(), window->filename_.c_str());
+	std::string fullname = window->FullPath();
 
 	// Generate name for old version 
-	if (r >= MAXPATHLEN) {
+	if (fullname.size() >= MAXPATHLEN) {
 		return bckError(window, "file name too long", window->filename_.c_str());
 	}
-	snprintf(bckname, sizeof(bckname), "%s.bck", fullname);
+	snprintf(bckname, sizeof(bckname), "%s.bck", fullname.c_str());
 
 	// Delete the old backup file 
 	// Errors are ignored; we'll notice them later. 
@@ -1020,7 +1021,7 @@ static bool writeBckVersion(Document *window) {
 
 	/* open the file being edited.  If there are problems with the
 	   old file, don't bother the user, just skip the backup */
-	in_fd = open(fullname, O_RDONLY);
+	in_fd = open(fullname.c_str(), O_RDONLY);
 	if (in_fd < 0) {
 		return false;
 	}
@@ -1134,32 +1135,37 @@ void PrintWindow(Document *window, int selectedOnly) {
 	}
 
 	// Print the string 
-	PrintString(fileString, fileString.size(), window->shell_, window->filename_);
+	PrintString(fileString, window->shell_, window->filename_);
 }
 
 /*
 ** Print a string (length is required).  parent is the dialog parent, for
 ** error dialogs, and jobName is the print title.
 */
-void PrintString(const std::string &string, int length, Widget parent, const std::string &jobName) {
-	// TODO(eteran): get the temp directory dynamically
-	char tmpFileName[L_tmpnam] = "/tmp/nedit-XXXXXX"; // L_tmpnam defined in stdio.h 
+void PrintString(const std::string &string, Widget parent, const std::string &jobName) {
+
+	QString tempDir = QDesktopServices::storageLocation(QDesktopServices::TempLocation);
+
+	// L_tmpnam defined in stdio.h 
+	char tmpFileName[L_tmpnam];
+	snprintf(tmpFileName, sizeof(tmpFileName), "%s/nedit-XXXXXX", qPrintable(tempDir));
+	
 	int fd = mkstemp(tmpFileName);
 	if (fd < 0) {
 		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
 		return;
 	}
 
-	FILE *fp;
+	FILE *const fp = fdopen(fd, "w");
 
 	// open the temporary file 
-	if ((fp = fdopen(fd, "w")) == nullptr) {
+	if (fp == nullptr) {
 		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
 		return;
 	}
 
 	// write to the file 
-	fwrite(string.data(), sizeof(char), length, fp);
+	fwrite(string.data(), sizeof(char), string.size(), fp);
 	if (ferror(fp)) {
 		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName.c_str(), strerror(errno));
 		fclose(fp); // should call close(fd) in turn! 
