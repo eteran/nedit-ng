@@ -62,11 +62,11 @@ inline XmString XmStringCreateSimpleEx(const std::string &text) {
 }
 
 //------------------------------------------------------------------------------
-inline XmString XmStringCreateLtoREx(const char *text, char *tag) {
-	return XmStringCreateLtoR(const_cast<char *>(text), tag);
+inline XmString XmStringCreateLtoREx(const char *text, const char *tag) {
+	return XmStringCreateLtoR(const_cast<char *>(text), const_cast<char *>(tag));
 }
 
-inline XmString XmStringCreateLtoREx(const std::string &text, char *tag) {
+inline XmString XmStringCreateLtoREx(const std::string &text, const char *tag) {
 	return XmStringCreateLtoREx(text.c_str(), tag);
 }
 

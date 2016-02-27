@@ -1408,7 +1408,7 @@ void Document::RefreshMenuToggleStates() {
 void Document::RefreshTabState() {
 	XmString s1, tipString;
 	char labelString[MAXPATHLEN];
-	char *tag = XmFONTLIST_DEFAULT_TAG;
+	const char *tag = XmFONTLIST_DEFAULT_TAG;
 	unsigned char alignment;
 
 	/* Set tab label to document's filename. Position of
