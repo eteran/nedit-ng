@@ -31,6 +31,8 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QX11Info>
+
 #include "QtMotif.h"
 #include "nedit.h"
 #include "file.h"
@@ -278,8 +280,10 @@ int main(int argc, char *argv[]) {
 	XtToolkitInitialize();
 	XtAppContext context = XtCreateApplicationContext();
 
-	QtMotif integrator( APP_CLASS, context );
-	QApplication app( argc, argv );
+	QtMotif integrator(APP_CLASS, context);
+	
+	// TODO(eteran): support non-X11 instance for things like -version again
+	QApplication app(argc, argv);
 
 	// Set up a warning handler to trap obnoxious Xt grab warnings 
 	SuppressPassiveGrabWarnings();
