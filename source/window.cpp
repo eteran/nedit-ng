@@ -260,9 +260,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 			Document *win = TabToWindow(tabs[i]);
 			if (win->filenameSet_) {
 				// add filename 
-				auto p = new char[win->path_.size() + win->filename_.size() + 1];
-				sprintf(p, "%s%s", win->path_.c_str(), win->filename_.c_str());
-				argv.push_back(p);
+				argv.push_back(XtNewStringEx(win->FullPath()));
 			}
 		}
 	}
@@ -272,14 +270,9 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Set the window's WM_COMMAND property to the created command line 
 	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());
 	
-	// TODO(eteran): we are leaking memory hear just for the time being
-	//               we have a mix of XtNewStringEx and new char[]
-	//               which we have to cleanup to do this properly :-/
-#if 0
 	for (char *p : argv) {
-		delete [] p;
+		XtFree(p);
 	}
-#endif
 }
 
 void AttachSessionMgrHandler(Widget appShell) {

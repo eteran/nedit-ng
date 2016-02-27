@@ -95,6 +95,7 @@ public:
 	Widget GetPaneByIndex(int paneIndex) const;
 	int WidgetToPaneIndex(Widget w) const;
 	void EditCustomTitleFormat();
+	std::string FullPath() const;
 	
 public:
 	void Undo();

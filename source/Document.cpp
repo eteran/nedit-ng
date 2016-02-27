@@ -4317,3 +4317,8 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 	}
 }
 
+std::string Document::FullPath() const {
+	char fullPath[MAXPATHLEN + 1];
+	snprintf(fullPath, sizeof(fullPath), "%s%s", path_.c_str(), filename_.c_str());
+	return fullPath;
+}
