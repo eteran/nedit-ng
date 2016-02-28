@@ -252,15 +252,15 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	bool serverNameSeen = false;
 	bool clearCaseViewTagSeen = false;
 
-	bool fileNamePresent = false;
-	bool hostNamePresent = false;
-	bool userNamePresent = false;
+	bool fileNamePresent   = false;
+	bool hostNamePresent   = false;
+	bool userNamePresent   = false;
 	bool serverNamePresent = false;
-	bool clearCasePresent = false;
+	bool clearCasePresent  = false;
 	bool fileStatusPresent = false;
-	bool dirNamePresent = false;
-	int noOfComponents = -1;
-	bool shortStatus = false;
+	bool dirNamePresent    = false;
+	int noOfComponents     = -1;
+	bool shortStatus       = false;
 
 	*titlePtr = '\0'; // always start with an empty string 
 
@@ -274,7 +274,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 			}
 			switch (c) {
 			case 'c': // ClearCase view tag 
-				clearCasePresent = True;
+				clearCasePresent = true;
 				if (clearCaseViewTag) {
 					if (serverNameSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, clearCaseViewTag);
@@ -284,7 +284,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				break;
 
 			case 's': // server name 
-				serverNamePresent = True;
+				serverNamePresent = true;
 				if (isServer && serverName[0] != '\0') { // only applicable for servers 
 					if (clearCaseViewTagSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, serverName);
