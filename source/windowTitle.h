@@ -33,6 +33,6 @@
 
 #include <X11/Intrinsic.h>
 
-char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const char *titleFormat);
+char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, view::string_view titleFormat);
 
 #endif

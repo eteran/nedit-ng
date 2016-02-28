@@ -242,7 +242,7 @@ static void compressWindowTitle(char *title) {
 **  if the ClearCase view tag and server name are identical, only the first one
 **  specified in the formatting string will be displayed.
 */
-char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const char *titleFormat) {
+char *FormatWindowTitle(const char *filename, const char *path, const char *clearCaseViewTag, const char *serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, view::string_view titleFormat) {
 
 	static char title[WINDOWTITLE_MAX_LEN];
 	char *titlePtr = title;
@@ -263,22 +263,28 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 	bool shortStatus       = false;
 
 	*titlePtr = '\0'; // always start with an empty string 
+	
+	
+	auto format_it = titleFormat.begin();
 
-	while (*titleFormat != '\0' && titlePtr < titleEnd) {
-		char c = *titleFormat++;
+	while (format_it != titleFormat.end() && titlePtr < titleEnd) {
+		char c = *format_it++;
 		if (c == '%') {
-			c = *titleFormat++;
-			if (c == '\0') {
+			
+			if (format_it == titleFormat.end()) {
 				titlePtr = safeCharAdd(titlePtr, titleEnd, '%');
 				break;
 			}
+			
+			c = *format_it++;
+			
 			switch (c) {
 			case 'c': // ClearCase view tag 
 				clearCasePresent = true;
 				if (clearCaseViewTag) {
 					if (serverNameSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, clearCaseViewTag);
-						clearCaseViewTagSeen = True;
+						clearCaseViewTagSeen = true;
 					}
 				}
 				break;
@@ -288,13 +294,13 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				if (isServer && serverName[0] != '\0') { // only applicable for servers 
 					if (clearCaseViewTagSeen == False || strcmp(serverName, clearCaseViewTag) != 0) {
 						titlePtr = safeStrCpy(titlePtr, titleEnd, serverName);
-						serverNameSeen = True;
+						serverNameSeen = true;
 					}
 				}
 				break;
 
 			case 'd': // directory without any limit to no. of components 
-				dirNamePresent = True;
+				dirNamePresent = true;
 				if (filenameSet) {
 					titlePtr = safeStrCpy(titlePtr, titleEnd, path);
 				}
@@ -310,10 +316,10 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 			case '7':
 			case '8':
 			case '9':
-				if (*titleFormat == 'd') {
+				if (*format_it == 'd') {
 					dirNamePresent = True;
 					noOfComponents = c - '0';
-					titleFormat++; // delete the argument 
+					format_it++; // delete the argument 
 
 					if (filenameSet) {
 						const char *trailingPath = GetTrailingPathComponents(path, noOfComponents);
@@ -328,17 +334,17 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				break;
 
 			case 'f': // file name 
-				fileNamePresent = True;
+				fileNamePresent = true;
 				titlePtr = safeStrCpy(titlePtr, titleEnd, filename);
 				break;
 
 			case 'h': // host name 
-				hostNamePresent = True;
+				hostNamePresent = true;
 				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHostEx().c_str());
 				break;
 
 			case 'S': // file status 
-				fileStatusPresent = True;
+				fileStatusPresent = true;
 				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
 					titlePtr = safeStrCpy(titlePtr, titleEnd, "read only, modified");
 				else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
@@ -361,10 +367,10 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 				break;
 
 			case '*': // short file status ? 
-				fileStatusPresent = True;
-				if (*titleFormat && *titleFormat == 'S') {
-					++titleFormat;
-					shortStatus = True;
+				fileStatusPresent = true;
+				if (format_it != titleFormat.end() && *format_it == 'S') {
+					++format_it;
+					shortStatus = true;
 					if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
 						titlePtr = safeStrCpy(titlePtr, titleEnd, "RO*");
 					else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
@@ -389,7 +395,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 
 	compressWindowTitle(title);
 
-	if (title[0] == 0) {
+	if (title[0] == '\0') {
 		sprintf(&title[0], "<empty>"); // For preview purposes only 
 	}
 
@@ -474,16 +480,14 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData) 
 	(void)clientData;
 	(void)callData;
 
-	char *format;
 	int filenameSet = XmToggleButtonGetState(etDialog.oDirW);
-	char *title;
 	const char *serverName;
 
 	if (etDialog.suppressFormatUpdate) {
 		return; // Prevent recursive feedback 
 	}
 
-	format = XmTextGetString(etDialog.formatW);
+	nullable_string format = XmTextGetStringEx(etDialog.formatW);
 
 	if (XmToggleButtonGetState(etDialog.oServerEqualViewW) && XmToggleButtonGetState(etDialog.ccW)) {
 		serverName = etDialog.viewTag;
@@ -491,10 +495,17 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData) 
 		serverName = XmToggleButtonGetState(etDialog.oServerNameW) ? etDialog.serverName : "";
 	}
 
-	title = FormatWindowTitle(etDialog.filename, etDialog.filenameSet == True ? etDialog.path : "/a/very/long/path/used/as/example/",
+	char *title = FormatWindowTitle(
+		etDialog.filename, 
+		etDialog.filenameSet == True ? etDialog.path : "/a/very/long/path/used/as/example/", 
+		XmToggleButtonGetState(etDialog.oCcViewTagW) ? etDialog.viewTag : nullptr, 
+		serverName, 
+		etDialog.isServer, 
+		filenameSet, 
+		etDialog.lockReasons, 
+		XmToggleButtonGetState(etDialog.oFileChangedW), 
+		*format);
 
-	                          XmToggleButtonGetState(etDialog.oCcViewTagW) ? etDialog.viewTag : nullptr, serverName, etDialog.isServer, filenameSet, etDialog.lockReasons, XmToggleButtonGetState(etDialog.oFileChangedW), format);
-	XtFree(format);
 	XmTextFieldSetString(etDialog.previewW, title);
 }
 
