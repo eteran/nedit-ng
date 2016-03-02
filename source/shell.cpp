@@ -27,6 +27,8 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QMessageBox>
+#include <QPushButton>
 
 #include "shell.h"
 #include "TextBuffer.h"
@@ -188,10 +190,9 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
-		                                                   "line number substitutions with '#'",
-		        "OK");
+		                                                   "line number substitutions with '#'"));
 		return;
 	}
 
@@ -250,10 +251,9 @@ void ExecCursorLine(Document *window, int fromMacro) {
 
 	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
-		                                                   "line number substitutions with '#'",
-		        "OK");
+		                                                   "line number substitutions with '#'"));
 		return;
 	}
 
@@ -292,10 +292,9 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
 	if(!subsCommand) {
-		DialogF(DF_ERR, window->shell_, 1, "Shell Command", "Shell command is too long due to\n"
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
-		                                                   "line number substitutions with '#'",
-		        "OK");
+		                                                   "line number substitutions with '#'"));
 		return;
 	}
 
@@ -730,7 +729,8 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart;
-	int resp, cancel = False, fromMacro = cmdData->fromMacro;
+	bool cancel = false;
+	int fromMacro = cmdData->fromMacro;
 	std::string errText;
 	std::string outText;
 
@@ -793,17 +793,43 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		if (failure && errorReport) {
 			removeTrailingNewlines(errText);
 			truncateString(errText, DF_MAX_MSG_LENGTH);
-			resp = DialogF(DF_WARN, window->shell_, 2, "Warning", "%s", "Cancel", "Proceed", errText.c_str());
-			cancel = resp == 1;
+			
+			QMessageBox msgBox;
+			msgBox.setWindowTitle(QLatin1String("Warning"));
+			msgBox.setText(QString::fromStdString(errText));
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setStandardButtons(QMessageBox::Cancel);
+			auto accept = new QPushButton(QLatin1String("Proceed"));
+			msgBox.addButton(accept, QMessageBox::AcceptRole);
+			msgBox.setDefaultButton(accept);
+			cancel = (msgBox.exec() == QMessageBox::Cancel);
+			
 		} else if (failure) {
 			truncateString(outText, DF_MAX_MSG_LENGTH - 70);
-			resp = DialogF(DF_WARN, window->shell_, 2, "Command Failure", "Command reported failed exit status.\nOutput from command:\n%s", "Cancel", "Proceed", outText.c_str());
-			cancel = resp == 1;
+			
+			QMessageBox msgBox;
+			msgBox.setWindowTitle(QLatin1String("Command Failure"));
+			msgBox.setText(QString(QLatin1String("Command reported failed exit status.\nOutput from command:\n%1")).arg(QString::fromStdString(outText)));
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setStandardButtons(QMessageBox::Cancel);
+			auto accept = new QPushButton(QLatin1String("Proceed"));
+			msgBox.addButton(accept, QMessageBox::AcceptRole);
+			msgBox.setDefaultButton(accept);
+			cancel = (msgBox.exec() == QMessageBox::Cancel);				
+
 		} else if (errorReport) {
 			removeTrailingNewlines(errText);
 			truncateString(errText, DF_MAX_MSG_LENGTH);
-			resp = DialogF(DF_INF, window->shell_, 2, "Information", "%s", "Proceed", "Cancel", errText.c_str());
-			cancel = resp == 2;
+			
+			QMessageBox msgBox;
+			msgBox.setWindowTitle(QLatin1String("Information"));
+			msgBox.setText(QString::fromStdString(errText));
+			msgBox.setIcon(QMessageBox::Information);
+			msgBox.setStandardButtons(QMessageBox::Cancel);
+			auto accept = new QPushButton(QLatin1String("Proceed"));
+			msgBox.addButton(accept, QMessageBox::AcceptRole);
+			msgBox.setDefaultButton(accept);
+			cancel = (msgBox.exec() == QMessageBox::Cancel);
 		}
 
 		if (cancel) {
@@ -859,6 +885,9 @@ cmdDone:
 ** if an error occured.
 */
 static pid_t forkCommand(Widget parent, const std::string &command, const std::string &cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD) {
+
+	(void)parent;
+
 	int childStdoutFD, childStdinFD, childStderrFD, pipeFDs[2];
 	int dupFD;
 	pid_t childPid;
@@ -953,7 +982,7 @@ static pid_t forkCommand(Widget parent, const std::string &command, const std::s
 
 	// Parent process context, check if fork succeeded 
 	if (childPid == -1) {
-		DialogF(DF_ERR, parent, 1, "Shell Command", "Error starting shell command process\n(fork failed)", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Error starting shell command process\n(fork failed)"));
 	}
 
 	// close the child ends of the pipes 

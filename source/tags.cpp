@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QMessageBox>
 
 #include "tags.h"
 #include "TextBuffer.h"
@@ -40,7 +41,6 @@
 #include "selection.h"
 #include "calltips.h"
 #include "MotifHelper.h"
-#include "DialogF.h"
 #include "fileUtils.h"
 #include "misc.h"
 #include "utils.h"
@@ -59,14 +59,18 @@
 #include <Xm/SelectioB.h>
 #include <X11/Xatom.h>
 
-#define MAXLINE 2048
-#define MAX_TAG_LEN 256
-#define MAXDUPTAGS 100
-#define MAX_TAG_INCLUDE_RECURSION_LEVEL 5
+namespace {
+
+const int MAXLINE                         = 2048;
+const int MAX_TAG_LEN                     = 256;
+const int MAXDUPTAGS                      = 100;
+const int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
 /* Take this many lines when making a tip from a tag.
    (should probably be a language-dependent option, but...) */
-#define TIP_DEFAULT_LINES 4
+const int TIP_DEFAULT_LINES = 4;
+
+}
 
 struct tag {
 	struct tag *next;
@@ -895,7 +899,7 @@ static int findDef(Document *window, const char *value, int search_type) {
 					sprintf(message, "No match for \"%s\" in calltips or tags.", tagName);
 					tagsShowCalltip(window, message);
 				} else {
-					DialogF(DF_WARN, window->textArea_, 1, "Tags", "\"%s\" not found in tags file%s", "OK", tagName, (TagsFileList && TagsFileList->next) ? "s" : "");
+					QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("\"%1\" not found in tags file%2")).arg(tagName, (TagsFileList && TagsFileList->next) ? "s" : ""));
 				}
 			}
 		} else {
@@ -1141,7 +1145,7 @@ static int findAllMatches(Document *window, const char *string) {
 			pathMatch = nMatches;
 		}
 		if (++nMatches >= MAXDUPTAGS) {
-			DialogF(DF_WARN, dialogParent, 1, "Tags", "Too many duplicate tags, first %d shown", "OK", MAXDUPTAGS);
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("Too many duplicate tags, first %1 shown")).arg(MAXDUPTAGS));
 			break;
 		}
 		// Tell LookupTag to look for more definitions of the same tag: 
@@ -1289,22 +1293,24 @@ static void showMatchingCalltip(Widget parent, int i) {
 	NormalizePathname(tagFiles[i]);
 	fp = fopen(tagFiles[i], "r");
 	if(!fp) {
-		DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s", "OK", tagFiles[i]);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(tagFiles[i]));
 		return;
 	}
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		DialogF(DF_ERR, parent, 1, "Error opening File", "Error opening %s", "OK", tagFiles[i]);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(tagFiles[i]));
 		return;
 	}
 
 	// 2. Read the target file 
 	// Allocate space for the whole contents of the file (unfortunately) 
 	fileLen = statbuf.st_size;
-	fileString = new char[fileLen + 1]; // +1 = space for null 
+	fileString = new char[fileLen + 1]; // +1 = space for null
+	
+	// TODO(eteran): catch the allocation failure!
 	if(!fileString) {
 		fclose(fp);
-		DialogF(DF_ERR, parent, 1, "File too large", "File is too large to load", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("File too large"), QLatin1String("File is too large to load"));
 		return;
 	}
 
@@ -1312,7 +1318,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	readLen = fread(fileString, 1, fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
-		DialogF(DF_ERR, parent, 1, "Error reading File", "Error reading %s", "OK", tagFiles[i]);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(tagFiles[i]));
 		delete [] fileString;
 		return;
 	}
@@ -1321,7 +1327,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	// Close the file 
 	if (fclose(fp) != 0) {
 		// unlikely error 
-		DialogF(DF_WARN, parent, 1, "Error closing File", "Unable to close file", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error closing File"), QLatin1String("Unable to close file"));
 		// we read it successfully, so continue 
 	}
 
@@ -1329,14 +1335,14 @@ static void showMatchingCalltip(Widget parent, int i) {
 	if (!*(tagSearch[i])) {
 		// It's a line number, just go for it 
 		if ((moveAheadNLines(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
-			DialogF(DF_ERR, parent, 1, "Tags Error", "%s\n not long enough for definition to be on line %d", "OK", tagFiles[i], tagPosInf[i]);
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(tagFiles[i]).arg(tagPosInf[i]));
 			delete [] fileString;
 			return;
 		}
 	} else {
 		startPos = tagPosInf[i];
 		if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
-			DialogF(DF_WARN, parent, 1, "Tag not found", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName).arg(tagFiles[i]));
 			delete [] fileString;
 			return;
 		}
@@ -1365,9 +1371,11 @@ static void showMatchingCalltip(Widget parent, int i) {
 	}
 	// 5. Copy the calltip to a string 
 	tipLen = endPos - startPos;
-	auto message = new char[tipLen + 1]; // +1 = space for null 
+	auto message = new char[tipLen + 1]; // +1 = space for null
+	
+	// TODO(eteran): catch the allocation failure!
 	if(!message) {
-		DialogF(DF_ERR, parent, 1, "Out of Memory", "Can't allocate memory for calltip message", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Can't allocate memory for calltip message"));
 		delete [] fileString;
 		return;
 	}
@@ -1396,7 +1404,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	EditExistingFile(parentWindow, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 	windowToSearch = FindWindowWithFile(filename, pathname);
 	if(!windowToSearch) {
-		DialogF(DF_WARN, parent, 1, "File not found", "File %s not found", "OK", tagFiles[i]);
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(tagFiles[i]));
 		return;
 	}
 
@@ -1410,7 +1418,7 @@ static void editTaggedLocation(Widget parent, int i) {
 
 	// search for the tags file search string in the newly opened file 
 	if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-		DialogF(DF_WARN, windowToSearch->shell_, 1, "Tag Error", "Definition for %s\nnot found in %s", "OK", tagName, tagFiles[i]);
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName).arg(tagFiles[i]));
 		return;
 	}
 
