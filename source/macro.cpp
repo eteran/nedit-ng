@@ -3626,7 +3626,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 	beginPos = 0;
 	lastEnd = 0;
 	indexNum = 0;
-	strLength = strlen(sourceStr);
+	strLength = sourceStrLen;
 	found = 1;
 	while (found && beginPos < strLength) {
 		sprintf(indexStr, "%d", indexNum);
@@ -3636,7 +3636,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 			return (False);
 		}
 		strcpy(allocIndexStr, indexStr);
-		found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType, False, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+		found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
 		elementEnd = found ? foundStart : strLength;
 		elementLen = elementEnd - lastEnd;
 		element.tag = STRING_TAG;
@@ -3699,7 +3699,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 			   The '\n' gets added in the lines above, but we still have to
 			   verify whether the pattern also matches the end of the string,
 			   and add an empty chunk in case it does. */
-			found = SearchString(sourceStr, splitStr, SEARCH_FORWARD, searchType, False, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+			found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
 			if (found) {
 				++indexNum;
 				sprintf(indexStr, "%d", indexNum);
