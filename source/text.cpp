@@ -24,6 +24,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "text.h"
 #include "textP.h"
 #include "TextBuffer.h"
@@ -33,7 +35,6 @@
 #include "nedit.h"
 #include "Document.h"
 #include "calltips.h"
-#include "../util/DialogF.h"
 #include "window.h"
 #include "../util/memory.h"
 
@@ -2010,7 +2011,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	chars[nChars] = '\0';
 
 	if (!window->buffer_->BufSubstituteNullChars(chars, nChars)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error", "Too much binary data", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error"), QLatin1String("Too much binary data"));
 		return;
 	}
 

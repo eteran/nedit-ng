@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QMessageBox>
 
 #include "userCmds.h"
 #include "TextBuffer.h"
@@ -1660,7 +1661,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	auto ucd = static_cast<userCmdDialog *>(clientData);
 
 	if (checkMacro(ucd)) {
-		DialogF(DF_INF, ucd->dlogShell, 1, "Macro", "Macro compiled without error", "OK");
+		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro"), QLatin1String("Macro compiled without error"));
 	}
 }
 
@@ -1989,7 +1990,7 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 	
 	if (nameText.empty()) {
 		if (!silent) {
-			DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry", "Please specify a name\nfor the menu item", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Menu Entry"), QLatin1String("Please specify a name\nfor the menu item"));
 			XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
 		}
 		return nullptr;
@@ -1997,7 +1998,7 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 
 	if (strchr(nameText.str(), ':')) {
 		if (!silent) {
-			DialogF(DF_WARN, ucd->dlogShell, 1, "Menu Entry", "Menu item names may not\ncontain colon (:) characters", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Menu Entry"), QLatin1String("Menu item names may not\ncontain colon (:) characters"));
 			XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
 		}
 		return nullptr;
@@ -2006,7 +2007,7 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 	cmdText = XmTextGetString(ucd->cmdTextW);
 	if (cmdText == nullptr || *cmdText == '\0') {
 		if (!silent) {
-			DialogF(DF_WARN, ucd->dlogShell, 1, "Command to Execute", "Please specify %s to execute", "OK", ucd->dialogType == SHELL_CMDS ? "shell command" : "macro command(s)");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Command to Execute"), QString(QLatin1String("Please specify %1 to execute")).arg(ucd->dialogType == SHELL_CMDS ? QLatin1String("shell command") : QLatin1String("macro command(s)")));
 			XmProcessTraversal(ucd->cmdTextW, XmTRAVERSE_CURRENT);
 		}
 		XtFree(cmdText);

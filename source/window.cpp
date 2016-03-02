@@ -59,7 +59,6 @@
 #include "../util/fileUtils.h"
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
-#include "../util/DialogF.h"
 #include "../Xlt/BubbleButtonP.h"
 #include "../Microline/XmL/Folder.h"
 

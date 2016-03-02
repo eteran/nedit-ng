@@ -25,6 +25,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QInputDialog>
 
 #include "selection.h"
 #include "TextBuffer.h"
@@ -115,17 +116,28 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 
 void GotoLineNumber(Document *window) {
 	char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
-	int lineNum, column, response;
+	int lineNum;
+	int column;
 
-	response = DialogF(DF_PROMPT, window->shell_, 2, "Goto Line Number", "Goto Line (and/or Column)  Number:", lineNumText, "OK", "Cancel");
-	if (response == 2)
+
+	bool ok;
+	QString text = QInputDialog::getText(nullptr /*parent*/, QLatin1String("Goto Line Number"), QLatin1String("Goto Line (and/or Column)  Number:"), QLineEdit::Normal, QString(), &ok);
+
+	if (!ok)
 		return;
 
 	if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
 		QApplication::beep();
 		return;
 	}
+	
+	// TODO(eteran): this is temporary, until we have a better mechanism for this
+	snprintf(lineNumText, sizeof(lineNumText), "%s", text.toLatin1().data());
+	
 	params[0] = lineNumText;
+	
+	// NOTE(eteran): XtCallActionProc seems to be roughly equivalent to Q_EMIT
+	//               given a similarly connected signal/slot
 	XtCallActionProc(window->lastFocus_, "goto_line_number", nullptr, params, 1);
 }
 

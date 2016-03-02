@@ -1,4 +1,6 @@
 
+#include <QMessageBox>
+
 #include "Document.h"
 #include "file.h"
 #include "highlight.h"
@@ -24,7 +26,6 @@
 
 #include "../Microline/XmL/Folder.h"
 #include "../util/clearcase.h"
-#include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 #include "../util/misc.h"
 #include "../Xlt/BubbleButton.h"
@@ -748,19 +749,23 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (nDocuments == NWindows()) {
 		// this is only window, then exit 
-		XtCallActionProc(WindowList->lastFocus_, "exit", ((XmAnyCallbackStruct *)callData)->event, nullptr, 0);
+		XtCallActionProc(WindowList->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 	} else {
 		if (nDocuments == 1) {
 			CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
 		} else {
-			int resp = 1;
-			if (GetPrefWarnExit())
-				resp = DialogF(DF_QUES, window->shell_, 2, "Close Window", "Close ALL documents in this window?", "Close", "Cancel");
+			int resp = QMessageBox::Cancel;
+			if (GetPrefWarnExit()) {			
+				// TODO(eteran): this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
+				resp = QMessageBox::question(nullptr /*parent*/, QLatin1String("Close Window"), QLatin1String("Close ALL documents in this window?"), QMessageBox::Cancel, QMessageBox::Close);
+			}
 
-			if (resp == 1)
+			if (resp == QMessageBox::Close) {
 				window->CloseAllDocumentInWindow();
+			}
 		}
 	}
+	
 }
 
 

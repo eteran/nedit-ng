@@ -35,7 +35,6 @@
 #include "MotifHelper.h"
 #include "../util/prefFile.h"
 #include "../util/misc.h"
-#include "../util/DialogF.h"
 #include "../util/utils.h"
 #include "../util/fileUtils.h"
 

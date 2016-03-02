@@ -2584,6 +2584,19 @@ static unsigned long greedy(uint8_t *p, long max);
 static void adjustcase(char *str, int len, char chgcase);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 
+namespace {
+
+bool isDelimiter(int ch) {
+	unsigned int n = static_cast<unsigned int>(ch);
+	if(n < Current_Delimiters.size()) {
+		return Current_Delimiters[n];
+	}
+	
+	return false;
+}
+
+}
+
 
 //------------------------------------------------------------------------------
 // Name: execute
@@ -3103,14 +3116,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				if (Reg_Input == Start_Of_String) {
 					prev_is_delim = Prev_Is_Delim;
 				} else {
-					prev_is_delim = Current_Delimiters[static_cast<int>(*(Reg_Input - 1))];
+					prev_is_delim = isDelimiter(*(Reg_Input - 1));
 				}
 				if (prev_is_delim) {
 					int current_is_delim;
 					if (AT_END_OF_STRING(Reg_Input)) {
 						current_is_delim = Succ_Is_Delim;
 					} else {
-						current_is_delim = Current_Delimiters[static_cast<int>(*Reg_Input)];
+						current_is_delim = isDelimiter(*Reg_Input);
 					}
 					if (!current_is_delim)
 						break;
@@ -3127,14 +3140,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				if (Reg_Input == Start_Of_String) {
 					prev_is_delim = Prev_Is_Delim;
 				} else {
-					prev_is_delim = Current_Delimiters[static_cast<int>(*(Reg_Input - 1))];
+					prev_is_delim = isDelimiter(*(Reg_Input - 1));
 				}
 				if (!prev_is_delim) {
 					int current_is_delim;
 					if (AT_END_OF_STRING(Reg_Input)) {
 						current_is_delim = Succ_Is_Delim;
 					} else {
-						current_is_delim = Current_Delimiters[static_cast<int>(*Reg_Input)];
+						current_is_delim = isDelimiter(*Reg_Input);
 					}
 					if (current_is_delim)
 						break;
@@ -3150,12 +3163,12 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			if (Reg_Input == Start_Of_String) {
 				prev_is_delim = Prev_Is_Delim;
 			} else {
-				prev_is_delim = Current_Delimiters[static_cast<int>(*(Reg_Input - 1))];
+				prev_is_delim = isDelimiter(*(Reg_Input - 1));
 			}
 			if (AT_END_OF_STRING(Reg_Input)) {
 				current_is_delim = Succ_Is_Delim;
 			} else {
-				current_is_delim = Current_Delimiters[static_cast<int>(*Reg_Input)];
+				current_is_delim = isDelimiter(*Reg_Input);
 			}
 			if (!(prev_is_delim ^ current_is_delim))
 				break;
@@ -3164,7 +3177,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			MATCH_RETURN(0);
 
 		case IS_DELIM: // \y (A word delimiter character.) 
-			if (Current_Delimiters[static_cast<int>(*Reg_Input)] && !AT_END_OF_STRING(Reg_Input)) {
+			if (isDelimiter(*Reg_Input) && !AT_END_OF_STRING(Reg_Input)) {
 				Reg_Input++;
 				break;
 			}
@@ -3172,7 +3185,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			MATCH_RETURN(0);
 
 		case NOT_DELIM: // \Y (NOT a word delimiter character.) 
-			if (!Current_Delimiters[static_cast<int>(*Reg_Input)] && !AT_END_OF_STRING(Reg_Input)) {
+			if (!isDelimiter(*Reg_Input) && !AT_END_OF_STRING(Reg_Input)) {
 				Reg_Input++;
 				break;
 			}
@@ -3760,7 +3773,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 	case IS_DELIM: /* \y (not a word delimiter char)
 	                   NOTE: '\n' and '\0' are always word delimiters. */
 
-		while (count < max_cmp && Current_Delimiters[static_cast<int>(*input_str)] && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && isDelimiter(*input_str) && !AT_END_OF_STRING(input_str)) {
 			count++;
 			input_str++;
 		}
@@ -3770,7 +3783,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 	case NOT_DELIM: /* \Y (not a word delimiter char)
 	                   NOTE: '\n' and '\0' are always word delimiters. */
 
-		while (count < max_cmp && !Current_Delimiters[static_cast<int>(*input_str)] && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && !isDelimiter(*input_str) && !AT_END_OF_STRING(input_str)) {
 			count++;
 			input_str++;
 		}

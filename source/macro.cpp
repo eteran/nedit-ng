@@ -27,8 +27,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "macro.h"
-#include "DialogF.h"
 #include "fileUtils.h"
 #include "getfiles.h"
 #include "misc.h"
@@ -260,7 +261,7 @@ static int wrongNArgsErr(const char **errMsg);
 static int tooFewArgsErr(const char **errMsg);
 static int strCaseCmp(char *str1, char *str2);
 static int readIntArg(DataValue dv, int *result, const char **errMsg);
-static bool readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg);
+static bool readStringArg(DataValue dv, char **result, int *string_length, char *stringStorage, const char **errMsg);
 static bool readStringArgEx(DataValue dv, std::string *result, const char **errMsg);
 static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int versionMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -589,7 +590,7 @@ int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotEx
 	auto fileString = ReadAnyTextFileEx(fileName, True);
 	if (!fileString) {
 		if (errno != ENOENT || warnNotExist) {
-			DialogF(DF_ERR, window->shell_, 1, "Read Macro", "Error reading macro file %s: %s", "OK", fileName.c_str(), strerror(errno));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(fileName.c_str(), strerror(errno)));
 		}
 		return False;
 	}
@@ -788,7 +789,7 @@ static void runMacro(Document *window, Program *prog) {
 
 	if (stat == MACRO_ERROR) {
 		finishMacroCmdExecution(window);
-		DialogF(DF_ERR, window->shell_, 1, "Macro Error", "Error executing macro: %s", "OK", errMsg);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(errMsg));
 		return;
 	}
 
@@ -1010,7 +1011,7 @@ void RepeatDialog(Document *window) {
 	int cmdNameLen;
 
 	if(!LastCommand) {
-		DialogF(DF_WARN, window->shell_, 1, "Repeat Macro", "No previous commands or learn/\nreplay sequences to repeat", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Repeat Macro"), QLatin1String("No previous commands or learn/\nreplay sequences to repeat"));
 		return;
 	}
 
@@ -1104,7 +1105,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
 	// Find out from the dialog how to repeat the command 
 	if (XmToggleButtonGetState(rd->inSelToggle)) {
 		if (!rd->forWindow->buffer_->primary_.selected) {
-			DialogF(DF_WARN, rd->shell, 1, "Repeat Macro", "No selection in window to repeat within", "OK");
+			QMessageBox::warning(nullptr /*parent */, QLatin1String("Repeat Macro"), QLatin1String("No selection in window to repeat within"));
 			XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
 			return False;
 		}
@@ -1422,7 +1423,7 @@ static Boolean continueWorkProc(XtPointer clientData) {
 	stat = ContinueMacro(cmdData->context, &result, &errMsg);
 	if (stat == MACRO_ERROR) {
 		finishMacroCmdExecution(window);
-		DialogF(DF_ERR, window->shell_, 1, "Macro Error", "Error executing macro: %s", "OK", errMsg);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(errMsg));
 		return True;
 	} else if (stat == MACRO_DONE) {
 		finishMacroCmdExecution(window);
@@ -1497,13 +1498,18 @@ static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	char *string;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
-
-	if (nArgs != 1)
+	int len;
+	
+	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+	}
+
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
 		return False;
-	result->tag = INT_TAG;
-	result->val.n = strlen(string);
+	}
+
+	result->tag   = INT_TAG;
+	result->val.n = len;
 	return True;
 }
 
@@ -1550,6 +1556,7 @@ static int maxMS(Document *window, DataValue *argList, int nArgs, DataValue *res
 static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
+	int len;
 
 	/* Read the argument representing the window to focus to, and translate
 	   it into a pointer to a real Document */
@@ -1560,7 +1567,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 
 	DocumentIterator w;
 
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg)) {
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
 		return False;
 	} else if (!strcmp(string, "last")) {
 		w = begin(WindowList);
@@ -1852,11 +1859,12 @@ static int validNumberMS(Document *window, DataValue *argList, int nArgs, DataVa
 
 	char *string;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
+	int len;
 
 	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
 	}
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg)) {
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
 		return False;
 	}
 
@@ -1879,19 +1887,23 @@ static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, D
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *string;
 	char *replStr;
+	int string_len;
+	int replStr_len;
 
 	// Validate arguments and convert to int 
 	if (nArgs != 4)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage[1], errMsg))
+	if (!readStringArg(argList[0], &string, &string_len, stringStorage[1], errMsg))
 		return False;
 	if (!readIntArg(argList[1], &from, errMsg))
 		return False;
 	if (!readIntArg(argList[2], &to, errMsg))
 		return False;
-	if (!readStringArg(argList[3], &replStr, stringStorage[1], errMsg))
+	if (!readStringArg(argList[3], &replStr, &replStr_len, stringStorage[1], errMsg))
 		return False;
-	length = strlen(string);
+	
+	length = string_len;
+	
 	if (from < 0)
 		from = 0;
 	if (from > length)
@@ -1901,13 +1913,11 @@ static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, D
 	if (to > length)
 		to = length;
 	if (from > to) {
-		int temp = from;
-		from = to;
-		to = temp;
+		std::swap(from, to);
 	}
 
 	// Allocate a new string and do the replacement 
-	replaceLen = strlen(replStr);
+	replaceLen = replStr_len;
 	outLen = length - (to - from) + replaceLen;
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, outLen + 1);
@@ -1928,15 +1938,16 @@ static int substringMS(Document *window, DataValue *argList, int nArgs, DataValu
 	int from, to, length;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
+	int len;
 
 	// Validate arguments and convert to int 
 	if (nArgs != 2 && nArgs != 3)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
 		return False;
 	if (!readIntArg(argList[1], &from, errMsg))
 		return False;
-	length = to = strlen(string);
+	length = to = len;
 	if (nArgs == 3)
 		if (!readIntArg(argList[2], &to, errMsg))
 			return False;
@@ -1967,13 +1978,14 @@ static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	int i, length;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
+	int len;
 
 	// Validate arguments and convert to int 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
 		return False;
-	length = strlen(string);
+	length = len;
 
 	// Allocate a new string and copy an uppercased version of the string it 
 	result->tag = STRING_TAG;
@@ -1989,13 +2001,14 @@ static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	int i, length;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
+	int len;
 
 	// Validate arguments and convert to int 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
 		return False;
-	length = strlen(string);
+	length = len;
 
 	// Allocate a new string and copy an lowercased version of the string it 
 	result->tag = STRING_TAG;
@@ -2011,11 +2024,12 @@ static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, 
 	int stat;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
+	int len;
 
 	// Get the string argument 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
 		return False;
 
 	/* Use the XmClipboard routines to copy the text to the clipboard.
@@ -2025,7 +2039,7 @@ static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, 
 	XmStringFree(s);
 	if (stat != ClipboardSuccess)
 		return True;
-	if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea_), itemID, (String) "STRING", string, strlen(string), 0, nullptr) != ClipboardSuccess) {
+	if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea_), itemID, (String) "STRING", string, len, 0, nullptr) != ClipboardSuccess) {
 		SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea_), itemID);
 		return True;
 	}
@@ -2090,11 +2104,12 @@ static int readFileMS(Document *window, DataValue *argList, int nArgs, DataValue
 	struct stat statbuf;
 	FILE *fp;
 	int readLen;
+	int len;
 
 	// Validate arguments and convert to int 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &name, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &name, &len, stringStorage, errMsg))
 		return False;
 
 	// Read the whole file into an allocated string 
@@ -2165,13 +2180,15 @@ static int writeOrAppendFile(int append, Document *window, DataValue *argList, i
 	char *name;
 	char *string;
 	FILE *fp;
+	int len;
+	int nameLen;
 
 	// Validate argument 
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage[1], errMsg))
+	if (!readStringArg(argList[0], &string, &len, stringStorage[1], errMsg))
 		return False;
-	if (!readStringArg(argList[1], &name, stringStorage[0], errMsg))
+	if (!readStringArg(argList[1], &name, &nameLen, stringStorage[0], errMsg))
 		return False;
 
 	// open the file 
@@ -2182,7 +2199,7 @@ static int writeOrAppendFile(int append, Document *window, DataValue *argList, i
 	}
 
 	// write the string to the file 
-	fwrite(string, sizeof(char), strlen(string), fp);
+	fwrite(string, sizeof(char), len, fp);
 	if (ferror(fp)) {
 		fclose(fp);
 		result->tag = INT_TAG;
@@ -2247,13 +2264,15 @@ static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataV
 	char *string;
 	char *searchStr;
 	SearchDirection direction;
+	int stringLen;
+	int searchStrLen;
 
 	// Validate arguments and convert to proper types 
 	if (nArgs < 3)
 		return tooFewArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage[0], errMsg))
+	if (!readStringArg(argList[0], &string, &stringLen, stringStorage[0], errMsg))
 		return False;
-	if (!readStringArg(argList[1], &searchStr, stringStorage[1], errMsg))
+	if (!readStringArg(argList[1], &searchStr, &searchStrLen, stringStorage[1], errMsg))
 		return False;
 	if (!readIntArg(argList[2], &beginPos, errMsg))
 		return False;
@@ -2286,7 +2305,7 @@ static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataV
 	}
 
 	if (!skipSearch)
-		found = SearchString(string, searchStr, direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+		found = SearchString(view::string_view(string, stringLen), searchStr, direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
 
 	// Return the results 
 	ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2316,19 +2335,24 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 	char *replacedStr;
 	int searchType = SEARCH_LITERAL, copyStart, copyEnd;
 	int replacedLen, replaceEnd, force = False, i;
+	int stringLen;
+	int searchStrLen;
+	int replaceStrLen;
+	int argStrLen;
+	
 
 	// Validate arguments and convert to proper types 
 	if (nArgs < 3 || nArgs > 5)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &string, stringStorage[0], errMsg))
+	if (!readStringArg(argList[0], &string, &stringLen, stringStorage[0], errMsg))
 		return False;
-	if (!readStringArg(argList[1], &searchStr, stringStorage[1], errMsg))
+	if (!readStringArg(argList[1], &searchStr, &searchStrLen, stringStorage[1], errMsg))
 		return False;
-	if (!readStringArg(argList[2], &replaceStr, stringStorage[2], errMsg))
+	if (!readStringArg(argList[2], &replaceStr, &replaceStrLen, stringStorage[2], errMsg))
 		return False;
 	for (i = 3; i < nArgs; i++) {
 		// Read the optional search type and force arguments 
-		if (!readStringArg(argList[i], &argStr, stringStorage[2], errMsg))
+		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage[2], errMsg))
 			return False;
 		if (!StringToSearchType(argStr, &searchType)) {
 			// It's not a search type.  is it "copy"? 
@@ -2375,12 +2399,13 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
 	int i;
 	char *argStr;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
+	int argStrLen;
 
 	*wrap = False;
 	*searchDirection = SEARCH_FORWARD;
 	*searchType = SEARCH_LITERAL;
 	for (i = 0; i < nArgs; i++) {
-		if (!readStringArg(argList[i], &argStr, stringStorage, errMsg))
+		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage, errMsg))
 			return False;
 		else if (!strcmp(argStr, "wrap"))
 			*wrap = True;
@@ -2487,11 +2512,12 @@ static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
 	char *string;
 	int i;
+	int stringLen;
 
 	if (nArgs == 0)
 		return tooFewArgsErr(errMsg);
 	for (i = 0; i < nArgs; i++) {
-		if (!readStringArg(argList[i], &string, stringStorage, errMsg))
+		if (!readStringArg(argList[i], &string, &stringLen, stringStorage, errMsg))
 			return False;
 		printf("%s%s", string, i == nArgs - 1 ? "" : " ");
 	}
@@ -2510,11 +2536,12 @@ static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *name;
 	const char *value;
+	int nameLen;
 
 	// Get name of variable to get 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &name, stringStorage[0], errMsg)) {
+	if (!readStringArg(argList[0], &name, &nameLen, stringStorage[0], errMsg)) {
 		*errMsg = "argument to %s must be a string";
 		return False;
 	}
@@ -2532,12 +2559,14 @@ static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *cmdString;
 	char *inputString;
+	int cmdStringLen;
+	int inputStringLen;
 
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
-	if (!readStringArg(argList[0], &cmdString, stringStorage[0], errMsg))
+	if (!readStringArg(argList[0], &cmdString, &cmdStringLen, stringStorage[0], errMsg))
 		return False;
-	if (!readStringArg(argList[1], &inputString, stringStorage[1], errMsg))
+	if (!readStringArg(argList[1], &inputString, &inputStringLen, stringStorage[1], errMsg))
 		return False;
 
 	/* Shell command execution requires that the macro be suspended, so
@@ -2585,6 +2614,8 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	long i;
 	int nBtns;
 	XmString s1, s2;
+	int messageLen;
+	int btnLabelLen;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -2604,13 +2635,13 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 		*errMsg = "%s subroutine called with no arguments";
 		return False;
 	}
-	if (!readStringArg(argList[0], &message, stringStorage, errMsg)) {
+	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg)) {
 		return False;
 	}
 
 	// check that all button labels can be read 
 	for (i = 1; i < nArgs; i++) {
-		if (!readStringArg(argList[i], &btnLabel, btnStorage, errMsg)) {
+		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg)) {
 			return False;
 		}
 	}
@@ -2622,7 +2653,7 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	} else {
 		nBtns = nArgs - 1;
 		argList++;
-		readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 	}
 
 	// Create the message box dialog widget and its dialog shell parent 
@@ -2656,7 +2687,7 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	// Add user specified buttons (1st is already done) 
 	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
 		XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
 		XmStringFree(s1);
@@ -2737,6 +2768,8 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	XmString s1, s2;
 	Arg al[20];
 	int ac;
+	int messageLen;
+	int btnLabelLen;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -2756,12 +2789,12 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 		*errMsg = "%s subroutine called with no arguments";
 		return False;
 	}
-	if (!readStringArg(argList[0], &message, stringStorage, errMsg)) {
+	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg)) {
 		return False;
 	}
 	// check that all button labels can be read 
 	for (i = 1; i < nArgs; i++) {
-		if (!readStringArg(argList[i], &btnLabel, stringStorage, errMsg)) {
+		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, stringStorage, errMsg)) {
 			return False;
 		}
 	}
@@ -2771,7 +2804,7 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	} else {
 		nBtns = nArgs - 1;
 		argList++;
-		readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 	}
 
 	// Create the selection box dialog widget and its dialog shell parent 
@@ -2808,7 +2841,7 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	   added, that's what the separator below is for */
 	XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
 	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
 		XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
 		XmStringFree(s1);
@@ -2930,6 +2963,8 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	Boolean anchored = False, lookup = True;
 	int mode = -1, i;
 	int anchorPos, hAlign = TIP_LEFT, vAlign = TIP_BELOW, alignMode = TIP_SLOPPY;
+	int tipTextLen;
+	int txtArgLen;
 
 	// Read and check the string 
 	if (nArgs < 1) {
@@ -2942,7 +2977,7 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	}
 
 	// Read the tip text or key 
-	if (!readStringArg(argList[0], &tipText, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &tipText, &tipTextLen, stringStorage, errMsg))
 		return False;
 
 	// Read the anchor position (-1 for unanchored) 
@@ -2957,7 +2992,7 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	// Any further args are directives for relative positioning 
 	for (i = 2; i < nArgs; ++i) {
-		if (!readStringArg(argList[i], &txtArg, stringStorage, errMsg)) {
+		if (!readStringArg(argList[i], &txtArg, &txtArgLen, stringStorage, errMsg)) {
 			return False;
 		}
 		switch (txtArg[0]) {
@@ -3078,7 +3113,12 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	char *filter = (String) "";
 	char *defaultName = (String) "";
 	int gfnResult;
-
+	int titleLen;
+	int modeLen;
+	int defaultPathLen;
+	int filterLen;
+	int defaultNameLen;
+	
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
 	window = MacroRunWindow();
@@ -3090,26 +3130,26 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	}
 
 	//  Get the argument list.  
-	if (nArgs > 0 && !readStringArg(argList[0], &title, stringStorage[0], errMsg)) {
+	if (nArgs > 0 && !readStringArg(argList[0], &title, &titleLen, stringStorage[0], errMsg)) {
 		return False;
 	}
 
-	if (nArgs > 1 && !readStringArg(argList[1], &mode, stringStorage[1], errMsg)) {
+	if (nArgs > 1 && !readStringArg(argList[1], &mode, &modeLen, stringStorage[1], errMsg)) {
 		return False;
 	}
 	if (strcmp(mode, "exist") != 0 && strcmp(mode, "new") != 0) {
 		M_FAILURE("Invalid value for mode in %s");
 	}
 
-	if (nArgs > 2 && !readStringArg(argList[2], &defaultPath, stringStorage[2], errMsg)) {
+	if (nArgs > 2 && !readStringArg(argList[2], &defaultPath, &defaultPathLen, stringStorage[2], errMsg)) {
 		return False;
 	}
 
-	if (nArgs > 3 && !readStringArg(argList[3], &filter, stringStorage[3], errMsg)) {
+	if (nArgs > 3 && !readStringArg(argList[3], &filter, &filterLen, stringStorage[3], errMsg)) {
 		return False;
 	}
 
-	if (nArgs > 4 && !readStringArg(argList[4], &defaultName, stringStorage[4], errMsg)) {
+	if (nArgs > 4 && !readStringArg(argList[4], &defaultName, &defaultNameLen, stringStorage[4], errMsg)) {
 		return False;
 	}
 
@@ -3180,6 +3220,9 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	int tabDist;
 	Arg al[20];
 	int ac;
+	int messageLen;
+	int textLen;
+	int btnLabelLen;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -3200,10 +3243,10 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 		return False;
 	}
 
-	if (!readStringArg(argList[0], &message, stringStorage, errMsg))
+	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg))
 		return False;
 
-	if (!readStringArg(argList[1], &text, textStorage, errMsg))
+	if (!readStringArg(argList[1], &text, &textLen, textStorage, errMsg))
 		return False;
 
 	if (!text || text[0] == '\0') {
@@ -3213,7 +3256,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 
 	// check that all button labels can be read 
 	for (i = 2; i < nArgs; i++)
-		if (!readStringArg(argList[i], &btnLabel, btnStorage, errMsg))
+		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg))
 			return False;
 
 	// pick up the first button 
@@ -3223,7 +3266,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	} else {
 		nBtns = nArgs - 2;
 		argList += 2;
-		readStringArg(argList[0], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 	}
 
 	// count the lines in the text - add one for unterminated last line 
@@ -3356,7 +3399,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	   added, that's what the separator below is for */
 	XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
 	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, btnStorage, errMsg);
+		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
 		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
 		XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
 		XmStringFree(s1);
@@ -3493,16 +3536,19 @@ static int stringCompareMS(Document *window, DataValue *argList, int nArgs, Data
 	int considerCase = True;
 	int i;
 	int compareResult;
+	int leftStrLen;
+	int rightStrLen;
+	int argStrLen;
 
 	if (nArgs < 2) {
 		return (wrongNArgsErr(errMsg));
 	}
-	if (!readStringArg(argList[0], &leftStr, stringStorage[0], errMsg))
+	if (!readStringArg(argList[0], &leftStr, &leftStrLen, stringStorage[0], errMsg))
 		return False;
-	if (!readStringArg(argList[1], &rightStr, stringStorage[1], errMsg))
+	if (!readStringArg(argList[1], &rightStr, &rightStrLen, stringStorage[1], errMsg))
 		return False;
 	for (i = 2; i < nArgs; ++i) {
-		if (!readStringArg(argList[i], &argStr, stringStorage[2], errMsg))
+		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage[2], errMsg))
 			return False;
 		else if (!strcmp(argStr, "case"))
 			considerCase = True;
@@ -3543,15 +3589,18 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 	char indexStr[TYPE_INT_STR_SIZE(int)], *allocIndexStr;
 	DataValue element;
 	int elementLen;
+	int sourceStrLen;
+	int splitStrLen;
+	int typeSplitStrLen;
 
 	if (nArgs < 2) {
 		return (wrongNArgsErr(errMsg));
 	}
-	if (!readStringArg(argList[0], &sourceStr, stringStorage[0], errMsg)) {
+	if (!readStringArg(argList[0], &sourceStr, &sourceStrLen, stringStorage[0], errMsg)) {
 		*errMsg = "first argument must be a string: %s";
 		return (False);
 	}
-	if (!readStringArg(argList[1], &splitStr, stringStorage[1], errMsg)) {
+	if (!readStringArg(argList[1], &splitStr, &splitStrLen, stringStorage[1], errMsg)) {
 		splitStr = nullptr;
 	} else {
 		if (splitStr[0] == 0) {
@@ -3562,7 +3611,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 		*errMsg = "second argument must be a non-empty string: %s";
 		return (False);
 	}
-	if (nArgs > 2 && readStringArg(argList[2], &typeSplitStr, stringStorage[2], errMsg)) {
+	if (nArgs > 2 && readStringArg(argList[2], &typeSplitStr, &typeSplitStrLen, stringStorage[2], errMsg)) {
 		if (!StringToSearchType(typeSplitStr, &searchType)) {
 			*errMsg = "unrecognized argument to %s";
 			return (False);
@@ -4475,12 +4524,13 @@ static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, 
 	char indexStr[TYPE_INT_STR_SIZE(int)];
 	int nRangesets, i, insertIndex = 0;
 	DataValue element;
+	int nameLen;
 
 	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readStringArg(argList[0], &name, stringStorage[0], errMsg)) {
+	if (!readStringArg(argList[0], &name, &nameLen, stringStorage[0], errMsg)) {
 		M_FAILURE("First parameter is not a name string in %s");
 	}
 
@@ -4930,6 +4980,7 @@ static int rangesetSetColorMS(Document *window, DataValue *argList, int nArgs, D
 	Rangeset *rangeset;
 	char *color_name;
 	int label = 0;
+	int color_nameLen;
 
 	if (nArgs != 2) {
 		return wrongNArgsErr(errMsg);
@@ -4950,7 +5001,7 @@ static int rangesetSetColorMS(Document *window, DataValue *argList, int nArgs, D
 
 	color_name = (String) "";
 	if (rangeset) {
-		if (!readStringArg(argList[1], &color_name, stringStorage[0], errMsg)) {
+		if (!readStringArg(argList[1], &color_name, &color_nameLen, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a color name string in %s");
 		}
 	}
@@ -4971,6 +5022,7 @@ static int rangesetSetNameMS(Document *window, DataValue *argList, int nArgs, Da
 	TextBuffer *buffer = window->buffer_;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	int label = 0;
+	int nameLen;
 
 	if (nArgs != 2) {
 		return wrongNArgsErr(errMsg);
@@ -4991,7 +5043,7 @@ static int rangesetSetNameMS(Document *window, DataValue *argList, int nArgs, Da
 
 	char *name = (String) "";
 	if (rangeset) {
-		if (!readStringArg(argList[1], &name, stringStorage[0], errMsg)) {
+		if (!readStringArg(argList[1], &name, &nameLen, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a valid name string in %s");
 		}
 	}
@@ -5015,6 +5067,7 @@ static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, Da
 	char *update_fn_name;
 	int ok;
 	int label = 0;
+	int update_fn_nameLen;
 
 	if (nArgs < 1 || nArgs > 2) {
 		return wrongNArgsErr(errMsg);
@@ -5036,7 +5089,7 @@ static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, Da
 	update_fn_name = (String) "";
 	if (rangeset) {
 		if (nArgs == 2) {
-			if (!readStringArg(argList[1], &update_fn_name, stringStorage[0], errMsg)) {
+			if (!readStringArg(argList[1], &update_fn_name, &update_fn_nameLen, stringStorage[0], errMsg)) {
 				M_FAILURE("Second parameter is not a string in %s");
 			}
 		}
@@ -5178,6 +5231,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 static int getStyleByNameMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *styleName;
+	int styleNameLen;
 
 	// Validate number of arguments 
 	if (nArgs != 1) {
@@ -5188,7 +5242,7 @@ static int getStyleByNameMS(Document *window, DataValue *argList, int nArgs, Dat
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
 
-	if (!readStringArg(argList[0], &styleName, stringStorage[0], errMsg)) {
+	if (!readStringArg(argList[0], &styleName, &styleNameLen, stringStorage[0], errMsg)) {
 		M_FAILURE("First parameter is not a string in %s");
 	}
 
@@ -5314,6 +5368,7 @@ static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, D
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	char *patternName = nullptr;
 	HighlightPattern *pattern;
+	int patternNameLen;
 
 	// Begin of building the result. 
 	result->tag = ARRAY_TAG;
@@ -5324,7 +5379,7 @@ static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, D
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readStringArg(argList[0], &patternName, stringStorage[0], errMsg)) {
+	if (!readStringArg(argList[0], &patternName, &patternNameLen, stringStorage[0], errMsg)) {
 		M_FAILURE("First parameter is not a string in %s");
 	}
 
@@ -5447,13 +5502,15 @@ typeError:
 ** is converted, write the string in the space provided by "stringStorage",
 ** which must be large enough to handle ints of the maximum size.
 */
-static bool readStringArg(DataValue dv, char **result, char *stringStorage, const char **errMsg) {
+static bool readStringArg(DataValue dv, char **result, int *string_length, char *stringStorage, const char **errMsg) {
 	if (dv.tag == STRING_TAG) {
 		*result = dv.val.str.rep;
+		*string_length = dv.val.str.len;
 		return true;
 	} else if (dv.tag == INT_TAG) {
 		sprintf(stringStorage, "%d", dv.val.n);
 		*result = stringStorage;
+		*string_length = strlen(stringStorage);
 		return true;
 	}
 	*errMsg = "%s called with unknown object";
