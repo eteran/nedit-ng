@@ -27,6 +27,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "highlight.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
@@ -491,13 +493,12 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn)
-			DialogF(DF_WARN, window->shell_, 1, "Language Mode", "No language-specific mode has been set for this file.\n\n"
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No language-specific mode has been set for this file.\n\n"
 			                                                    "To use syntax highlighting in this window, please select a\n"
 			                                                    "language from the Preferences -> Language Modes menu.\n\n"
 			                                                    "New language modes and syntax highlighting patterns can be\n"
 			                                                    "added via Preferences -> Default Settings -> Language Modes,\n"
-			                                                    "and Preferences -> Default Settings -> Syntax Highlighting.",
-			        "OK");
+			                                                    "and Preferences -> Default Settings -> Syntax Highlighting."));
 		return nullptr;
 	}
 
@@ -505,13 +506,12 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	patterns = FindPatternSet(modeName);
 	if(!patterns) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell_, 1, "Language Mode", "Syntax highlighting is not available in language\n"
-			                                                    "mode %s.\n\n"
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QString(QLatin1String("Syntax highlighting is not available in language\n"
+			                                                    "mode %1.\n\n"
 			                                                    "You can create new syntax highlight patterns in the\n"
 			                                                    "Preferences -> Default Settings -> Syntax Highlighting\n"
 			                                                    "dialog, or choose a different language mode from:\n"
-			                                                    "Preferences -> Language Mode.",
-			        "OK", modeName);
+			                                                    "Preferences -> Language Mode.")).arg(modeName));
 			return nullptr;
 		}
 	}

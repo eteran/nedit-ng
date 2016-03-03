@@ -2570,31 +2570,20 @@ static int lmDeleteConfirmCB(int itemIndex, void *cbArg) {
 
 	(void)cbArg;
 
-	int i;
-
 	// Allow duplicate names to be deleted regardless of dependencies 
-	for (i = 0; i < LMDialog.nLanguageModes; i++)
+	for (int i = 0; i < LMDialog.nLanguageModes; i++)
 		if (i != itemIndex && !strcmp(LMDialog.languageModeList[i]->name, LMDialog.languageModeList[itemIndex]->name))
 			return True;
 
 	// don't allow deletion if data will be lost 
 	if (LMHasHighlightPatterns(LMDialog.languageModeList[itemIndex]->name)) {
-		DialogF(DF_WARN, LMDialog.shell, 1, "Patterns exist", "This language mode has syntax highlighting\n"
-		                                                      "patterns defined.  Please delete the patterns\n"
-		                                                      "first, in Preferences -> Default Settings ->\n"
-		                                                      "Syntax Highlighting, before proceeding here.",
-		        "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Patterns exist"), QLatin1String("This language mode has syntax highlighting\npatterns defined.  Please delete the patterns\nfirst, in Preferences -> Default Settings ->\nSyntax Highlighting, before proceeding here."));
 		return False;
 	}
 
 	// don't allow deletion if data will be lost 
 	if (LMHasSmartIndentMacros(LMDialog.languageModeList[itemIndex]->name)) {
-		DialogF(DF_WARN, LMDialog.shell, 1, "Smart Indent Macros exist", "This language mode has smart indent macros\n"
-		                                                                 "defined.  Please delete the macros first,\n"
-		                                                                 "in Preferences -> Default Settings ->\n"
-		                                                                 "Auto Indent -> Program Smart Indent,\n"
-		                                                                 "before proceeding here.",
-		        "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Smart Indent Macros exist"), QLatin1String("This language mode has smart indent macros\ndefined.  Please delete the macros first,\nin Preferences -> Default Settings ->\nAuto Indent -> Program Smart Indent,\nbefore proceeding here."));
 		return False;
 	}
 
@@ -2791,7 +2780,7 @@ static void lmSetDisplayedCB(void *item, void *cbArg) {
 }
 
 static void lmFreeItemCB(void *item) {
-	freeLanguageModeRec((languageModeRec *)item);
+	freeLanguageModeRec(static_cast<languageModeRec *>(item));
 }
 
 static void freeLanguageModeRec(languageModeRec *lm) {
