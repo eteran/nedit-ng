@@ -27,6 +27,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "highlightData.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -1235,7 +1237,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
 
     	if (hs->name.empty()) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Highlight Style", "Please specify a name\nfor the highlight style", "OK");
+            	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Highlight Style"), QLatin1String("Please specify a name\nfor the highlight style"));
             	XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
         	}
 			
@@ -1254,7 +1256,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
 
     	if (hs->color.empty()) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Style Color", "Please specify a color\nfor the highlight style", "OK");
+            	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Style Color"), QLatin1String("Please specify a color\nfor the highlight style"));
             	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         	}
         	delete hs;
@@ -2217,7 +2219,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 
 	if (pat->name == "") {
 		if (!silent) {
-			DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Name", "Please specify a name\nfor the pattern", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Pattern Name"), QLatin1String("Please specify a name\nfor the pattern"));
 			XmProcessTraversal(HighlightDialog.nameW, XmTRAVERSE_CURRENT);
 		}
 		delete pat;
@@ -2228,7 +2230,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 	pat->startRE = XString::takeString(XmTextGetString(HighlightDialog.startW));
 	if (pat->startRE.empty()) {
 		if (!silent) {
-			DialogF(DF_WARN, HighlightDialog.shell, 1, "Matching Regex", "Please specify a regular\nexpression to match", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Matching Regex"), QLatin1String("Please specify a regular\nexpression to match"));
 			XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 		}
 		delete pat;
@@ -2272,7 +2274,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 	if (XmToggleButtonGetState(HighlightDialog.subPatW) || colorOnly) {
 		if (TextWidgetIsBlank(HighlightDialog.parentW)) {
 			if (!silent) {
-				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Parent Pattern", "Please specify a parent pattern", "OK");
+				QMessageBox::warning(nullptr /*parent*/, QLatin1String("Specify Parent Pattern"), QLatin1String("Please specify a parent pattern"));
 				XmProcessTraversal(HighlightDialog.parentW, XmTRAVERSE_CURRENT);
 			}
 			delete pat;
@@ -2292,7 +2294,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 		pat->endRE = XmTextGetString(HighlightDialog.endW);
 		if (!colorOnly && pat->endRE.empty()) {
 			if (!silent) {
-				DialogF(DF_WARN, HighlightDialog.shell, 1, "Specify Regex", "Please specify an ending\nregular expression", "OK");
+				QMessageBox::warning(nullptr /*parent*/, QLatin1String("Specify Regex"), QLatin1String("Please specify an ending\nregular expression"));
 				XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
 			}
 			delete pat;

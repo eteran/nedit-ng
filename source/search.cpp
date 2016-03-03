@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QMessageBox>
 
 #include "search.h"
 #include "regularExp.h"
@@ -493,7 +494,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	}
 	// return an empty string if the data is not of the correct format. 
 	if (*format != 8) {
-		DialogF(DF_WARN, window->shell_, 1, "Invalid Format", "NEdit can't handle non 8-bit text", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Invalid Format"), QLatin1String("NEdit can't handle non 8-bit text"));
 		XtFree(value);
 		selectionInfo->selection = nullptr;
 		selectionInfo->done = 1;
@@ -2252,9 +2253,9 @@ static void rMultiFileReplaceCB(Widget w, XtPointer clientData, XtPointer call_d
 	if (replaceFailed) {
 		if (GetPrefSearchDlogs()) {
 			if (noWritableLeft) {
-				DialogF(DF_INF, window->shell_, 1, "Read-only Files", "All selected files have become read-only.", "OK");
+				QMessageBox::information(nullptr /*parent*/, QLatin1String("Read-only Files"), QLatin1String("All selected files have become read-only."));
 			} else {
-				DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
+				QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
 			}
 		} else {
 			QApplication::beep();
@@ -3139,7 +3140,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	// skip if we can't get the selection data or it's too long 
 	if (*type == XT_CONVERT_FAIL || value == nullptr) {
 		if (GetPrefSearchDlogs())
-			DialogF(DF_WARN, window->shell_, 1, "Wrong Selection", "Selection not appropriate for searching", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Wrong Selection"), QLatin1String("Selection not appropriate for searching"));
 		else
 			QApplication::beep();
 		XtFree((char *)callData);
@@ -3147,7 +3148,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	}
 	if (*length > SEARCHMAX) {
 		if (GetPrefSearchDlogs())
-			DialogF(DF_WARN, window->shell_, 1, "Selection too long", "Selection too long", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Selection too long"), QLatin1String("Selection too long"));
 		else
 			QApplication::beep();
 		XtFree(value);
@@ -4192,7 +4193,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 				XtUnmanageChild(window->findDlog_);
 			if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_) && !XmToggleButtonGetState(window->replaceKeepBtn_))
 				unmanageReplaceDialogs(window);
-			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
+			QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
 		} else
 			QApplication::beep();
 	}
@@ -4230,7 +4231,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 				XtUnmanageChild(window->findDlog_);
 			if (window->replaceDlog_ && XtIsManaged(window->replaceDlog_) && !XmToggleButtonGetState(window->replaceKeepBtn_))
 				unmanageReplaceDialogs(window);
-			DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
+			QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
 		} else
 			QApplication::beep();
 		return false;
@@ -4433,7 +4434,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 			}
 			if (!found) {
 				if (GetPrefSearchDlogs()) {
-					DialogF(DF_INF, window->shell_, 1, "String not found", "String was not found", "OK");
+					QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
 				} else {
 					QApplication::beep();
 				}

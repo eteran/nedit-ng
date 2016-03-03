@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "smartIndent.h"
 #include "Document.h"
 #include "help.h"
@@ -416,7 +418,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	// Validate and return the result 
 	if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
-		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Smart indent macros must return\ninteger indent distance", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QLatin1String("Smart indent macros must return\ninteger indent distance"));
 		EndSmartIndent(window);
 		return;
 	}
@@ -493,7 +495,7 @@ void EditSmartIndentMacros(Document *window) {
 	}
 
 	if (LanguageModeName(0) == nullptr) {
-		DialogF(DF_WARN, window->shell_, 1, "Language Mode", "No Language Modes defined", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
 		return;
 	}
 
@@ -802,7 +804,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	if (checkSmartIndentDialogData())
-		DialogF(DF_INF, SmartIndentDialog.shell, 1, "Macro compiled", "Macros compiled without error", "OK");
+		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro compiled"), QLatin1String("Macros compiled without error"));
 }
 
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -919,7 +921,7 @@ static int checkSmartIndentDialogData(void) {
 
 	// Test compile the newline macro 
 	if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro)) {
-		DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent", "Newline macro required", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Smart Indent"), QLatin1String("Newline macro required"));
 		return False;
 	}
 
@@ -1121,7 +1123,7 @@ static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	if (checkSmartIndentCommonDialogData()) {
-		DialogF(DF_INF, CommonDialog.shell, 1, "Macro compiled", "Macros compiled without error", "OK");
+		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro compiled"), QLatin1String("Macros compiled without error"));
 	}
 }
 

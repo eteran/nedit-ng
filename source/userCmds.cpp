@@ -2115,7 +2115,7 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 }
 
 static void setDialogDataCB(void *item, void *cbArg) {
-	updateDialogFields((MenuItem *)item, (userCmdDialog *)cbArg);
+	updateDialogFields(static_cast<MenuItem *>(item), static_cast<userCmdDialog *>(cbArg));
 }
 
 static int dialogFieldsAreEmpty(userCmdDialog *ucd) {

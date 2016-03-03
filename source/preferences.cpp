@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -1199,13 +1201,7 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 
 		PrefsHaveChanged = false;
 	} catch(const path_error &e) {
-		DialogF(
-			DF_WARN, 
-			parent, 
-			1, 
-			"Error saving Preferences", 
-			"Unable to save preferences: Cannot determine filename.", 
-			"OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
 	}
 }
 
@@ -2055,7 +2051,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN) {
-		DialogF(DF_WARN, TabDistText, 1, "Tab Spacing", "Tab spacing out of range", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tab Spacing"), QLatin1String("Tab spacing out of range"));
 		return;
 	}
 
@@ -2065,7 +2061,7 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 			return;
 
 		if (emTabDist <= 0 || tabDist >= 1000) {
-			DialogF(DF_WARN, EmTabText, 1, "Tab Spacing", "Emulated tab spacing out of range", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tab Spacing"), QLatin1String("Emulated tab spacing out of range"));
 			return;
 		}
 	} else
@@ -2207,7 +2203,7 @@ static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 			return;
 
 		if (margin <= 0 || margin >= 1000) {
-			DialogF(DF_WARN, WrapText, 1, "Wrap Margin", "Wrap margin out of range", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Wrap Margin"), QLatin1String("Wrap margin out of range"));
 			return;
 		}
 	}
@@ -2864,7 +2860,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 	if (*lm->name == '\0') {
 		if (!silent) {
-			DialogF(DF_WARN, LMDialog.shell, 1, "Language Mode Name", "Please specify a name\nfor the language mode", "OK");
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode Name"), QLatin1String("Please specify a name\nfor the language mode"));
 			XmProcessTraversal(LMDialog.nameW, XmTRAVERSE_CURRENT);
 		}
 		freeLanguageModeRec(lm);
@@ -5267,7 +5263,7 @@ static void colorOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	if (!verifyAllColors(cd)) {
-		DialogF(DF_ERR, w, 1, "Invalid Colors", "All colors must be valid to proceed.", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Invalid Colors"), QLatin1String("All colors must be valid to proceed."));
 		return;
 	}
 	updateColors(cd);
@@ -5284,7 +5280,7 @@ static void colorApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	colorDialog *cd = static_cast<colorDialog *>(clientData);
 
 	if (!verifyAllColors(cd)) {
-		DialogF(DF_ERR, w, 1, "Invalid Colors", "All colors must be valid to be applied.", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Invalid Colors"), QLatin1String("All colors must be valid to be applied."));
 		return;
 	}
 	updateColors(cd);

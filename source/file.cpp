@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QDesktopServices>
+#include <QMessageBox>
 
 #include "file.h"
 #include "TextBuffer.h"
@@ -416,7 +417,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if(!fileString) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		DialogF(DF_ERR, window->shell_, 1, "Error while opening File", "File is too large to edit", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error while opening File"), QLatin1String("File is too large to edit"));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -436,7 +437,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	// Close the file 
 	if (fclose(fp) != 0) {
 		// unlikely error 
-		DialogF(DF_WARN, window->shell_, 1, "Error while opening File", "Unable to close file", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error while opening File"), QLatin1String("Unable to close file"));
 		// we read it successfully, so continue 
 	}
 
@@ -539,7 +540,7 @@ int IncludeFile(Document *window, const char *name) {
 	// allocate space for the whole contents of the file 
 	auto fileString = new char[fileLen + 1]; // +1 = space for null 
 	if(!fileString) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "File is too large to include", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QLatin1String("File is too large to include"));
 		fclose(fp);
 		return FALSE;
 	}
@@ -569,13 +570,13 @@ int IncludeFile(Document *window, const char *name) {
 
 	// If the file contained ascii nulls, re-map them 
 	if (!window->buffer_->BufSubstituteNullChars(fileString, readLen)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Too much binary data in file", "OK");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QLatin1String("Too much binary data in file"));
 	}
 
 	// close the file 
 	if (fclose(fp) != 0) {
 		// unlikely error 
-		DialogF(DF_WARN, window->shell_, 1, "Error opening File", "Unable to close file", "OK");
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error opening File"), QLatin1String("Unable to close file"));
 		// we read it successfully, so continue 
 	}
 
@@ -852,7 +853,7 @@ static bool doSave(Document *window) {
 	// If the file is to be saved in DOS or Macintosh format, reconvert 
 	if (window->fileFormat_ == DOS_FILE_FORMAT) {
 		if (!ConvertToDosFileStringEx(fileString)) {
-			DialogF(DF_ERR, window->shell_, 1, "Out of Memory", "Out of memory!  Try\nsaving in Unix format", "OK");
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Out of memory!  Try\nsaving in Unix format"));
 
 			// NOTE(eteran): fixes resource leak error
 			fclose(fp);
