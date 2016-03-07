@@ -263,10 +263,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	char *modeName = LanguageModeName(window->languageMode_);
 	if(!modeName) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell_, 1, "Smart Indent", "No language-specific mode has been set for this file.\n\n"
-			                                                   "To use smart indent in this window, please select a\n"
-			                                                   "language from the Preferences -> Language Modes menu.",
-			        "OK");
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QLatin1String("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
 		}
 		return;
 	}
@@ -275,12 +272,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	indentMacros = findIndentSpec(modeName);
 	if(!indentMacros) {
 		if (warn) {
-			DialogF(DF_WARN, window->shell_, 1, "Smart Indent", "Smart indent is not available in languagemode\n%s.\n\n"
-			                                                   "You can create new smart indent macros in the\n"
-			                                                   "Preferences -> Default Settings -> Smart Indent\n"
-			                                                   "dialog, or choose a different language mode from:\n"
-			                                                   "Preferences -> Language Mode.",
-			        "OK", modeName);
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(modeName));
 		}
 		return;
 	}
@@ -411,7 +403,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent macro:\n%1")).arg(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted"));
 		EndSmartIndent(window);
 		return;
 	}
@@ -470,14 +462,16 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		DialogF(DF_ERR, window->shell_, 1, "Smart Indent", "Error in smart indent modification macro:\n%s", "OK", stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted");
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent modification macro:\n%1")).arg(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted"));
 		EndSmartIndent(window);
 		return;
 	}
 }
 
 void EditSmartIndentMacros(Document *window) {
-#define BORDER 4
+
+	static const int BORDER = 4;
+
 	Widget form, lmOptMenu, lmForm, lmBtn;
 	Widget okBtn, applyBtn, checkBtn, deleteBtn, commonBtn;
 	Widget closeBtn, helpBtn, restoreBtn, pane;
@@ -727,9 +721,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   or cancel */
 	newMacros = getSmartIndentDialogData();
 	if (indentSpecsDiffer(oldMacros, newMacros)) {
-		resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3, "Smart Indent", "Smart indent macros for language mode\n"
-		                                                                    "%s were changed.  Apply changes?",
-		               "Apply", "Discard", "Cancel", SmartIndentDialog.langModeName);
+		resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3, "Smart Indent", "Smart indent macros for language mode\n%s were changed.  Apply changes?", "Apply", "Discard", "Cancel", SmartIndentDialog.langModeName);
 
 		if (resp == 3) {
 			SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
@@ -824,15 +816,12 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	if (i == N_DEFAULT_INDENT_SPECS) {
-		DialogF(DF_WARN, SmartIndentDialog.shell, 1, "Smart Indent", "There are no default indent macros\nfor language mode %s", "OK", SmartIndentDialog.langModeName);
+		QMessageBox::warning(nullptr /*SmartIndentDialog.shell*/, QLatin1String("Smart Indent"), QString(QLatin1String("There are no default indent macros\nfor language mode %1")).arg(SmartIndentDialog.langModeName));
 		return;
 	}
 	defaultIS = &DefaultIndentSpecs[i];
 
-	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\n"
-	                                                                    "all changes to smart indent macros\n"
-	                                                                    "for language mode %s?",
-	            "Discard", "Cancel", SmartIndentDialog.langModeName) == 2) {
+	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %s?" "Discard", "Cancel", SmartIndentDialog.langModeName) == 2) {
 		return;
 	}
 
@@ -859,9 +848,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int i;
 
-	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Delete Macros", "Are you sure you want to delete smart indent\n"
-	                                                                  "macros for language mode %s?",
-	            "Yes, Delete", "Cancel", SmartIndentDialog.langModeName) == 2) {
+	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Delete Macros", "Are you sure you want to delete smart indent\nmacros for language mode %s?", "Yes, Delete", "Cancel", SmartIndentDialog.langModeName) == 2) {
 		return;
 	}
 
@@ -1132,9 +1119,7 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	if (DialogF(DF_WARN, CommonDialog.shell, 2, "Discard Changes", "Are you sure you want to discard all\n"
-	                                                               "changes to common smart indent macros",
-	            "Discard", "Cancel") == 2) {
+	if (DialogF(DF_WARN, CommonDialog.shell, 2, "Discard Changes", "Are you sure you want to discard all\nchanges to common smart indent macros", "Discard", "Cancel") == 2) {
 		return;
 	}
 

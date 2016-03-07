@@ -26,9 +26,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
 #include "managedList.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "MotifHelper.h"
 
 #include <cstdio>
@@ -384,7 +384,7 @@ static void copyCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return; /* can't copy "new" */
 
 	if ((*ml->nItems) == ml->maxItems) {
-		DialogF(DF_ERR, shellOfWidget(ml->listW), 1, "Limits exceeded", "Cannot copy item.\nToo many items in list.", "OK");
+		QMessageBox::critical(nullptr /*shellOfWidget(ml->listW)*/, QLatin1String("Limits exceeded"), QLatin1String("Cannot copy item.\nToo many items in list."));
 		return;
 	}
 
@@ -542,7 +542,7 @@ static int incorporateDialogData(managedListData *ml, int listPos, int is_explic
 	   modify the entry with the text fields from the dialog */
 	if (listPos == 1) {
 		if ((*ml->nItems) == ml->maxItems) {
-			DialogF(DF_ERR, shellOfWidget(ml->listW), 1, "Limits exceeded", "Cannot add new item.\nToo many items in list.", "OK");
+			QMessageBox::critical(nullptr /*shellOfWidget(ml->listW)*/, QLatin1String("Limits exceeded"), QLatin1String("Cannot add new item.\nToo many items in list."));
 			return False;
 		}
 		ml->itemList[(*ml->nItems)++] = item;

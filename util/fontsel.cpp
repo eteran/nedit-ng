@@ -26,9 +26,10 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "fontsel.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "MotifHelper.h"
 #include "XString.h"
 
@@ -1078,7 +1079,7 @@ static void choiceMade(xfselControlBlkType *ctrlBlk) {
 		XmTextSetStringEx(ctrlBlk->fontNameField, ctrlBlk->fontName);
 		dispSample(ctrlBlk);
 	} else {
-		DialogF(DF_ERR, ctrlBlk->form, 1, "Font Specification", "Invalid Font Specification", "OK");
+		QMessageBox::critical(nullptr /*ctrlBlk->form*/, QLatin1String("Font Specification"), QLatin1String("Invalid Font Specification"));
 	}
 }
 
@@ -1149,7 +1150,7 @@ static void okAction(Widget widget, XtPointer controlBlock, XtPointer callData) 
 	XtFree(fontPattern);
 
 	if (i != 1) {
-		DialogF(DF_ERR, ctrlBlk->okButton, 1, "Font Specification", "Invalid Font Specification", "OK");
+		QMessageBox::critical(nullptr /*ctrlBlk->okButton*/, QLatin1String("Font Specification"), QLatin1String("Invalid Font Specification"));
 		XFreeFontNames(fontName);
 	} else {
 		XtFree(ctrlBlk->fontName);

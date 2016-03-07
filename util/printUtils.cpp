@@ -32,8 +32,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "printUtils.h"
-#include "DialogF.h"
 #include "misc.h"
 #include "prefFile.h"
 #include "MotifHelper.h"
@@ -708,7 +709,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	   from the output stream of the command. */
 	pipe = popen(command, "r");
 	if(!pipe) {
-		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", strerror(errno));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(strerror(errno)));
 		return;
 	}
 
@@ -726,7 +727,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	}
 
 	if (pclose(pipe)) {
-		DialogF(DF_WARN, widget, 1, "Print Error", "Unable to Print:\n%s", "OK", errorString);
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(errorString));
 		return;
 	}
 

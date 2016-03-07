@@ -26,8 +26,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QMessageBox>
+
 #include "misc.h"
-#include "DialogF.h"
 #include "MotifHelper.h"
 
 #include <cstdlib>
@@ -1096,11 +1097,10 @@ int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warn
 		return result;
 	valueStr = XmTextGetString(text);
 
-	if (result == TEXT_IS_BLANK) {
-		DialogF(DF_ERR, text, 1, "Warning", "Please supply %s value", "OK", fieldName);
-	} else /* TEXT_NOT_NUMBER */
-	{
-		DialogF(DF_ERR, text, 1, "Warning", "Can't read %s value: \"%s\"", "OK", fieldName, valueStr);
+	if (result == TEXT_IS_BLANK) {		
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply %1 value")).arg(fieldName));
+	} else /* TEXT_NOT_NUMBER */ {	
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read %1 value: \"%2\"")).arg(fieldName, valueStr));
 	}
 
 	XtFree(valueStr);
@@ -1116,11 +1116,10 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
 		return result;
 	valueStr = XmTextGetString(text);
 
-	if (result == TEXT_IS_BLANK) {
-		DialogF(DF_ERR, text, 1, "Warning", "Please supply a value for %s", "OK", fieldName);
-	} else /* TEXT_NOT_NUMBER */
-	{
-		DialogF(DF_ERR, text, 1, "Warning", "Can't read integer value \"%s\" in %s", "OK", valueStr, fieldName);
+	if (result == TEXT_IS_BLANK) {	
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply a value for %1")).arg(fieldName));
+	} else /* TEXT_NOT_NUMBER */ {
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read integer value \"%1\" in %2")).arg(valueStr, fieldName));
 	}
 
 	XtFree(valueStr);

@@ -104,12 +104,13 @@ add_executable(nedit
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet27.inc
 	${BISON_parser_OUTPUT_SOURCE})
 
+include(${QT_USE_FILE})
+
 include_directories(nedit
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH}
-	${QT_QTCORE_INCLUDE_DIR}
-	${QT_QTGUI_INCLUDE_DIR})	
+)	
 
 target_link_libraries(nedit LINK_PUBLIC
 	Xlt

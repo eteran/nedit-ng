@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt4 4.6.0 REQUIRED QtCore QtNetwork)
+find_package(Qt4 4.6.0 REQUIRED QtCore QtGui QtNetwork)
 
 add_library (NUtil 
 	DialogF.cpp 
@@ -16,11 +16,12 @@ add_library (NUtil
 	utils.cpp 
 	clearcase.cpp)
 
+include(${QT_USE_FILE})
+
+message(${QT_USE_FILE})
+
 target_include_directories (NUtil PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 
-	${QT_QTCORE_INCLUDE_DIR}
-	${QT_QTNETWORK_INCLUDE_DIR}
-	/usr/include/qt4/
 )
 
 target_link_libraries(NUtil LINK_PUBLIC
