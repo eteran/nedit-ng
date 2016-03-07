@@ -377,7 +377,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			return TRUE;
 		} else {
 			// A true error 
-			DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Could not open %s%s:\n%s", "OK", path, name, strerror(errno));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1%2:\n%3")).arg(path, name, strerror(errno)));
 			return FALSE;
 		}
 	}
@@ -387,7 +387,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error opening %s", "OK", name);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(name));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -395,7 +395,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (S_ISDIR(statbuf.st_mode)) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Can't open directory %s", "OK", name);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(name));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -404,7 +404,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (S_ISBLK(statbuf.st_mode)) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Can't open block device %s", "OK", name);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open block device %1")).arg(name));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -519,19 +519,19 @@ int IncludeFile(Document *window, const char *name) {
 	// Open the file 
 	FILE *fp = fopen(name, "rb");
 	if(!fp) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Could not open %s:\n%s", "OK", name, strerror(errno));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1:\n%2")).arg(name, strerror(errno)));
 		return FALSE;
 	}
 
 	// Get the length of the file 
 	if (fstat(fileno(fp), &statbuf) != 0) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error opening %s", "OK", name);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(name));
 		fclose(fp);
 		return FALSE;
 	}
 
 	if (S_ISDIR(statbuf.st_mode)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Can't open directory %s", "OK", name);
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(name));
 		fclose(fp);
 		return FALSE;
 	}
