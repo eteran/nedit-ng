@@ -73,7 +73,7 @@ const int TIP_DEFAULT_LINES = 4;
 
 }
 
-struct tag;
+struct Tag;
 
 
 
@@ -94,7 +94,7 @@ static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
 static bool delTag(int index);
-static tag *getTag(const char *name, int search_type);
+static Tag *getTag(const char *name, int search_type);
 static int findDef(Document *window, const char *value, int search_type);
 static int findAllMatches(Document *window, const char *string);
 static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
@@ -110,9 +110,9 @@ static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int 
 static int loadTipsFile(const std::string &tipsFile, int index, int recLevel);
 
 
-struct tag {
+struct Tag {
 public:
-	tag(const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
+	Tag(const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
 		this->name         = rcs_strdup(name);
 		this->file         = rcs_strdup(file);
 		this->language     = language;
@@ -121,7 +121,7 @@ public:
 		this->path         = rcs_strdup(path);
 	}
 	
-	~tag() {
+	~Tag() {
 		rcs_free(this->name);
 		rcs_free(this->file);
 		rcs_free(this->searchString);
@@ -129,7 +129,7 @@ public:
 	}
 	
 public:
-	struct tag *next;
+	struct Tag *next;
 	const char *path;
 	const char *name;
 	const char *file;
@@ -141,14 +141,14 @@ public:
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
-static tag **Tags = nullptr;
+static Tag **Tags = nullptr;
 static const int DefTagHashSize = 10000;
 
 // list of loaded tags files 
 tagFile *TagsFileList = nullptr;
 
 // Hash table of calltip tags 
-static tag **Tips = nullptr;
+static Tag **Tips = nullptr;
 tagFile *TipsFileList = nullptr;
 
 /* These are all transient global variables -- they don't hold any state
@@ -188,10 +188,10 @@ static size_t hashAddr(const char *key) {
 	return std::hash<std::string>()(key);
 }
 
-static tag *getTagFromTable(tag **table, const char *name) {
+static Tag *getTagFromTable(Tag **table, const char *name) {
 
 	static char lastName[MAXLINE];
-	static tag *t;
+	static Tag *t;
 	
 	if(!table) {
 		return nullptr;
@@ -217,8 +217,8 @@ static tag *getTagFromTable(tag **table, const char *name) {
 	return nullptr;
 }
 
-//      Retrieve a tag structure from the hash table 
-static tag *getTag(const char *name, int search_type) {
+//      Retrieve a Tag structure from the hash table 
+static Tag *getTag(const char *name, int search_type) {
 
 	if (search_type == TIP) {
 		return getTagFromTable(Tips, name);
@@ -237,17 +237,17 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	const size_t addr = hashAddr(name) % DefTagHashSize;
 	
 	char newfile[MAXPATHLEN];
-	tag **table;
+	Tag **table;
 
 	if (searchMode == TIP) {
 		if(!Tips) {
-			Tips = new tag*[DefTagHashSize];
+			Tips = new Tag*[DefTagHashSize];
 			std::fill_n(Tips, DefTagHashSize, nullptr);
 		}
 		table = Tips;
 	} else {
 		if(!Tags) {
-			Tags = new tag*[DefTagHashSize];
+			Tags = new Tag*[DefTagHashSize];
 			std::fill_n(Tags, DefTagHashSize, nullptr);
 		}
 		table = Tags;
@@ -262,7 +262,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	NormalizePathname(newfile);
 
 	for (
-		tag *t = table[addr]; 
+		Tag *t = table[addr]; 
 		t; 
 		t = t->next) {
 		if (strcmp(name, t->name))
@@ -288,7 +288,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	
 
 	
-	tag *t = new tag(name, file, lang, search, posInf, path);
+	auto t = new Tag(name, file, lang, search, posInf, path);
 	t->index = index;
 	t->next = table[addr];
 	table[addr] = t;
@@ -308,11 +308,11 @@ static bool delTag(int index) {
 }
  
 static bool delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index) {
-	tag *t, *last;
+	Tag *t, *last;
 	int del = 0;
 	size_t start;
 	size_t finish;
-	tag **table;
+	Tag **table;
 
 	if (searchMode == TIP)
 		table = Tips;
@@ -853,7 +853,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 		}
 	}
 
-	if(tag *t = getTag(name, search_type)) {
+	if(Tag *t = getTag(name, search_type)) {
 		*file         = t->file;
 		*language     = t->language;
 		*searchString = t->searchString;
@@ -1765,7 +1765,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 
 // A struct for describing a calltip alias 
 struct tf_alias {
-	char *dest;
+	std::string dest;
 	char *sources;
 	struct tf_alias *next;
 };
@@ -1781,8 +1781,7 @@ static tf_alias *new_alias(const char *dest, char *sources) {
 	auto alias = new tf_alias;
 
 	// Fill it in 
-	alias->dest = new char[strlen(dest) + 1];
-	strcpy(alias->dest, dest);
+	alias->dest = dest;
 	alias->sources = sources;
 	return alias;
 }
@@ -1792,7 +1791,6 @@ static void free_alias_list(tf_alias *alias) {
 
 	while (alias) {
 		tf_alias *tmp_alias = alias->next;
-		delete [] alias->dest;
 		delete [] alias->sources;
 		delete alias;
 		alias = tmp_alias;
@@ -1907,15 +1905,13 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	// Now resolve any aliases 
 	tmp_alias = aliases;
 	while (tmp_alias) {
-		tag *t;
-		char *src;
-		t = getTag(tmp_alias->dest, TIP);
+		Tag *t = getTag(tmp_alias->dest.c_str(), TIP);
 		if (!t) {
 			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
 			                "  in calltips file:\n   \"%s\"\n",
-			        tmp_alias->dest, resolvedTipsFile);
+			        tmp_alias->dest.c_str(), resolvedTipsFile);
 		} else {
-			for (src = strtok(tmp_alias->sources, ":"); src; src = strtok(nullptr, ":"))
+			for (char *src = strtok(tmp_alias->sources, ":"); src; src = strtok(nullptr, ":"))
 				addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath, index);
 		}
 		tmp_alias = tmp_alias->next;
