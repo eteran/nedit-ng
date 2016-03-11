@@ -118,7 +118,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel);
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
 static tag **Tags = nullptr;
-static int DefTagHashSize = 10000;
+static const int DefTagHashSize = 10000;
 
 // list of loaded tags files 
 tagFile *TagsFileList = nullptr;
@@ -161,45 +161,31 @@ static tagFile *setFileListHead(tagFile *t, int file_type) {
 
 //      Compute hash address from a string key 
 static size_t hashAddr(const char *key) {
-	size_t s = strlen(key);
-	size_t a = 0;
-	size_t x = 0;
-	size_t i;
-
-	for (i = 0; (i + 3) < s; i += 4) {
-		memcpy(&a, &key[i], sizeof(a));
-		x += a;
-	}
-
-	for (a = 1; i < (s + 1); i++, a *= 256) {
-		x += key[i] * a;
-	}
-
-	return x;
+	return std::hash<std::string>()(key);
 }
 
 static tag *getTagFromTable(tag **table, const char *name) {
 
 	static char lastName[MAXLINE];
 	static tag *t;
-	static int addr;
 	
 	if(!table) {
 		return nullptr;
 	}
 
 	if (name) {
-		addr = hashAddr(name) % DefTagHashSize;
+		size_t addr = hashAddr(name) % DefTagHashSize;
 		t = table[addr];
 		strcpy(lastName, name);
 	} else if (t) {
 		name = lastName;
 		t = t->next;
-	} else
+	} else {
 		return nullptr;
-
+	}
+	
 	for (; t; t = t->next) {
-		if (!strcmp(name, t->name)) {
+		if (strcmp(name, t->name) == 0) {
 			return t;
 		}
 	}
@@ -224,18 +210,22 @@ static tag *getTag(const char *name, int search_type) {
 **
 */
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
-	int addr = hashAddr(name) % DefTagHashSize;
-	tag *t;
+	const size_t addr = hashAddr(name) % DefTagHashSize;
+	
 	char newfile[MAXPATHLEN];
 	tag **table;
 
 	if (searchMode == TIP) {
-		if(!Tips)
+		if(!Tips) {
 			Tips = new tag*[DefTagHashSize];
+			std::fill_n(Tips, DefTagHashSize, nullptr);
+		}
 		table = Tips;
 	} else {
-		if(!Tags)
+		if(!Tags) {
 			Tags = new tag*[DefTagHashSize];
+			std::fill_n(Tags, DefTagHashSize, nullptr);
+		}
 		table = Tags;
 	}
 
@@ -247,7 +237,10 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
 	NormalizePathname(newfile);
 
-	for (t = table[addr]; t; t = t->next) {
+	for (
+		tag *t = table[addr]; 
+		t; 
+		t = t->next) {
 		if (strcmp(name, t->name))
 			continue;
 		if (lang != t->language)
@@ -262,13 +255,16 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 			char tmpfile[MAXPATHLEN];
 			snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path, t->file);
 			NormalizePathname(tmpfile);
-			if (strcmp(newfile, tmpfile))
+			if (strcmp(newfile, tmpfile)) {
 				continue;
+			}
 		}
 		return 0;
 	}
+	
 
-	t = new tag;
+	
+	tag *t = new tag();
 	setTag(t, name, file, lang, search, posInf, path);
 	t->index = index;
 	t->next = table[addr];
@@ -285,7 +281,9 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
  */
 static int delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index) {
 	tag *t, *last;
-	int start, finish, i, del = 0;
+	int del = 0;
+	size_t start, finish;
+	size_t i;
 	tag **table;
 
 	if (searchMode == TIP)
@@ -1517,7 +1515,7 @@ static struct rcs_stats RcsStats;
 */
 
 static const char *rcs_strdup(const char *str) {
-	int bucket;
+
 	size_t len;
 	struct rcs *rp;
 	struct rcs *prev = nullptr;
@@ -1527,7 +1525,7 @@ static const char *rcs_strdup(const char *str) {
 	if(!str)
 		return nullptr;
 
-	bucket = hashAddr(str) % RCS_SIZE;
+	size_t bucket = hashAddr(str) % RCS_SIZE;
 	len = strlen(str);
 
 	RcsStats.talloc++;
@@ -1562,7 +1560,7 @@ static const char *rcs_strdup(const char *str) {
 		RcsStats.tbyteshared += len;
 	} else // Doesn't exist, conjure up a new one. 
 	{
-		auto newrcs = new rcs;
+		auto newrcs = new rcs();
 		newrcs->string = new char[len + 1];
 
 
@@ -1588,14 +1586,14 @@ static const char *rcs_strdup(const char *str) {
 */
 
 static void rcs_free(const char *rcs_str) {
-	int bucket;
+
 	struct rcs *rp;
 	struct rcs *prev = nullptr;
 
 	if (rcs_str == nullptr)
 		return;
 
-	bucket = hashAddr(rcs_str) % RCS_SIZE;
+	size_t bucket = hashAddr(rcs_str) % RCS_SIZE;
 
 	// find it in hash 
 	for (rp = Rcs[bucket]; rp; rp = rp->next) {
