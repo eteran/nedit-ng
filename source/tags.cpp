@@ -49,6 +49,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <unordered_map>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -72,16 +73,9 @@ const int TIP_DEFAULT_LINES = 4;
 
 }
 
-struct tag {
-	struct tag *next;
-	const char *path;
-	const char *name;
-	const char *file;
-	int language;
-	const char *searchString; // see comment below 
-	int posInf;               // see comment below 
-	short index;
-};
+struct tag;
+
+
 
 /*
 **  contents of                   tag->searchString   | tag->posInf
@@ -94,12 +88,12 @@ enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
 static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
-static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *tag);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
 static void updateMenuItems(void);
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
-static int delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
+static bool delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
+static bool delTag(int index);
 static tag *getTag(const char *name, int search_type);
 static int findDef(Document *window, const char *value, int search_type);
 static int findAllMatches(Document *window, const char *string);
@@ -114,6 +108,36 @@ static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
 static int loadTipsFile(const std::string &tipsFile, int index, int recLevel);
+
+
+struct tag {
+public:
+	tag(const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
+		this->name         = rcs_strdup(name);
+		this->file         = rcs_strdup(file);
+		this->language     = language;
+		this->searchString = rcs_strdup(searchString);
+		this->posInf       = posInf;
+		this->path         = rcs_strdup(path);
+	}
+	
+	~tag() {
+		rcs_free(this->name);
+		rcs_free(this->file);
+		rcs_free(this->searchString);
+		rcs_free(this->path);  
+	}
+	
+public:
+	struct tag *next;
+	const char *path;
+	const char *name;
+	const char *file;
+	int language;
+	const char *searchString; // see comment below 
+	int posInf;               // see comment below 
+	short index;
+};
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
@@ -264,8 +288,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	
 
 	
-	tag *t = new tag();
-	setTag(t, name, file, lang, search, posInf, path);
+	tag *t = new tag(name, file, lang, search, posInf, path);
 	t->index = index;
 	t->next = table[addr];
 	table[addr] = t;
@@ -279,11 +302,16 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
  *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
      lang = -2 is also an invalid match)
  */
-static int delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index) {
+ 
+static bool delTag(int index) {
+	return delTag(nullptr, nullptr, -2, nullptr, -2, index);
+}
+ 
+static bool delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index) {
 	tag *t, *last;
 	int del = 0;
-	size_t start, finish;
-	size_t i;
+	size_t start;
+	size_t finish;
 	tag **table;
 
 	if (searchMode == TIP)
@@ -292,14 +320,16 @@ static int delTag(const char *name, const char *file, int lang, const char *sear
 		table = Tags;
 
 	if(!table)
-		return FALSE;
+		return false;
+		
 	if (name)
 		start = finish = hashAddr(name) % DefTagHashSize;
 	else {
 		start = 0;
 		finish = DefTagHashSize;
 	}
-	for (i = start; i < finish; i++) {
+	
+	for (size_t i = start; i < finish; i++) {
 		for (last = nullptr, t = table[i]; t; last = t, t = t ? t->next : table[i]) {
 			if (name && strcmp(name, t->name))
 				continue;
@@ -317,10 +347,7 @@ static int delTag(const char *name, const char *file, int lang, const char *sear
 				last->next = t->next;
 			else
 				table[i] = t->next;
-			rcs_free(t->name);
-			rcs_free(t->file);
-			rcs_free(t->searchString);
-			rcs_free(t->path);
+
 			delete t;
 			t = nullptr;
 			del++;
@@ -520,7 +547,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 			}
 
 			if (t->loaded) {
-				delTag(nullptr, nullptr, -2, nullptr, -2, t->index);
+				delTag(t->index);
 			}
 
 			if (last) {
@@ -800,7 +827,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 					}
 				}
 				// tags file has been modified, delete it's entries and reload it 
-				delTag(nullptr, nullptr, -2, nullptr, -2, tf->index);
+				delTag(tf->index);
 			}
 
 			// If we get here we have to try to (re-) load the tags file 
@@ -987,16 +1014,6 @@ int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boole
 		return tagsShowCalltip(window, text);
 	else
 		return findDef(window, text, search_type);
-}
-
-// store all of the info into a pre-allocated tags struct 
-static void setTag(tag *t, const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
-	t->name         = rcs_strdup(name);
-	t->file         = rcs_strdup(file);
-	t->language     = language;
-	t->searchString = rcs_strdup(searchString);
-	t->posInf       = posInf;
-	t->path         = rcs_strdup(path);
 }
 
 /*
@@ -1490,22 +1507,7 @@ static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char
    This could really benefit from using a real hash table.
 */
 
-#define RCS_SIZE 10000
-
-struct rcs;
-
-struct rcs_stats {
-	int talloc, tshar, tgiveup, tbytes, tbyteshared;
-};
-
-struct rcs {
-	struct rcs *next;
-	char *string;
-	int usage;
-};
-
-static struct rcs *Rcs[RCS_SIZE];
-static struct rcs_stats RcsStats;
+std::unordered_map<std::string, int> Rcs;
 
 /*
 ** Take a normal string, create a shared string from it if need be,
@@ -1516,68 +1518,14 @@ static struct rcs_stats RcsStats;
 
 static const char *rcs_strdup(const char *str) {
 
-	size_t len;
-	struct rcs *rp;
-	struct rcs *prev = nullptr;
-
-	char *newstr = nullptr;
-
-	if(!str)
-		return nullptr;
-
-	size_t bucket = hashAddr(str) % RCS_SIZE;
-	len = strlen(str);
-
-	RcsStats.talloc++;
-
-#if 0  
-    /* Don't share if it won't save space.
-    
-       Doesn't save anything - if we have lots of small-size objects,
-       it's beneifical to share them.  We don't know until we make a full
-       count.  My tests show that it's better to leave this out.  */
-    if (len <= sizeof(struct rcs))
-    {
-        new_str = strdup(str); /* GET RID OF strdup() IF EVER ENABLED (not ANSI) */ 
-        RcsStats.tgiveup++;
-        return;
-    }
-#endif
-
-	// Find it in hash 
-	for (rp = Rcs[bucket]; rp; rp = rp->next) {
-		if (!strcmp(str, rp->string))
-			break;
-		prev = rp;
+	auto it = Rcs.find(str);
+	if(it != Rcs.end()) {
+		it->second++;
+		return it->first.c_str();
+	} else {
+		auto pair = Rcs.emplace(str, 1);
+		return pair.first->first.c_str();
 	}
-
-	if (rp) // It exists, return it and bump ref ct 
-	{
-		rp->usage++;
-		newstr = rp->string;
-
-		RcsStats.tshar++;
-		RcsStats.tbyteshared += len;
-	} else // Doesn't exist, conjure up a new one. 
-	{
-		auto newrcs = new rcs();
-		newrcs->string = new char[len + 1];
-
-
-		strcpy(newrcs->string, str);
-		newrcs->usage = 1;
-		newrcs->next = nullptr;
-
-		if (Rcs[bucket])
-			prev->next = newrcs;
-		else
-			Rcs[bucket] = newrcs;
-
-		newstr = newrcs->string;
-	}
-
-	RcsStats.tbytes += len;
-	return newstr;
 }
 
 /*
@@ -1587,47 +1535,14 @@ static const char *rcs_strdup(const char *str) {
 
 static void rcs_free(const char *rcs_str) {
 
-	struct rcs *rp;
-	struct rcs *prev = nullptr;
-
-	if (rcs_str == nullptr)
-		return;
-
-	size_t bucket = hashAddr(rcs_str) % RCS_SIZE;
-
-	// find it in hash 
-	for (rp = Rcs[bucket]; rp; rp = rp->next) {
-		if (rcs_str == rp->string)
-			break;
-		prev = rp;
-	}
-
-	if (rp) // It's a shared string, decrease ref count 
-	{
-		rp->usage--;
-
-		if (rp->usage < 0) // D'OH! 
-		{
-			fprintf(stderr, "NEdit: internal error deallocating shared string.");
-			return;
+	auto it = Rcs.find(rcs_str);
+	if(it != Rcs.end()) {
+		it->second--;
+		if(it->second == 0) {
+			Rcs.erase(it);
 		}
-
-		if (rp->usage == 0) // Last one- free the storage 
-		{
-			delete []rp->string;
-			
-			if (prev) {
-				prev->next = rp->next;
-			} else {
-				Rcs[bucket] = rp->next;
-			}
-			
-			delete rp;
-		}
-	} else // Doesn't appear to be a shared string 
-	{
+	} else {
 		fprintf(stderr, "NEdit: attempt to free a non-shared string.");
-		return;
 	}
 }
 
