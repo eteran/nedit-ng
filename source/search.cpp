@@ -2989,7 +2989,7 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 	regexp *compiledRE = nullptr;
 
 	// Get the search string, search type, and direction from the dialog 
-	std::string findText = *XmTextGetStringEx(window->findText_);
+	QString findText = XmTextGetStringEx(window->findText_);
 
 	if (XmToggleButtonGetState(window->findRegexToggle_)) {
 		int regexDefault;
@@ -3003,7 +3003,7 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			compiledRE = new regexp(findText, regexDefault);
+			compiledRE = new regexp(findText.toStdString(), regexDefault);
 		} catch(const regex_error &e) {
 			DialogF(DF_WARN, XtParent(window->findDlog_), 1, "Regex Error", "Please respecify the search string:\n%s", "OK", e.what());
 			return FALSE;
@@ -3034,7 +3034,7 @@ static int getFindDlogInfoEx(Document *window, SearchDirection *direction, std::
 		return FALSE;
 	}
 	
-	*searchString = findText;
+	*searchString = findText.toStdString();
 	return TRUE;
 }
 
@@ -3478,7 +3478,8 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	std::string searchString = *XmTextGetStringEx(window->iSearchText_);
+	QString searchString = XmTextGetStringEx(window->iSearchText_);
+	
 	if (XmToggleButtonGetState(window->iSearchCaseToggle_)) {
 		if (XmToggleButtonGetState(window->iSearchRegexToggle_))
 			searchType = SEARCH_REGEX;
@@ -3499,7 +3500,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	if (isRegexType(searchType)) {
 		regexp *compiledRE = nullptr;
 		try {
-			compiledRE = new regexp(searchString, defaultRegexFlags(searchType));
+			compiledRE = new regexp(searchString.toStdString(), defaultRegexFlags(searchType));
 		} catch(const regex_error &e) {
 			return;
 		}
@@ -3512,7 +3513,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   as "continued" so the search routine knows to re-start the search
 	   from the original starting position */
 	nParams = 0;
-	params[nParams++] = searchString.c_str(); // TODO(eteran): is this OK?
+	params[nParams++] = searchString.toLatin1().data(); // TODO(eteran): is this OK?
 	params[nParams++] = directionArg(direction);
 	params[nParams++] = searchTypeArg(searchType);
 	params[nParams++] = searchWrapArg(GetPrefSearchWraps());

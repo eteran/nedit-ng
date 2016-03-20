@@ -1,7 +1,7 @@
 
+#include "MotifHelper.h"
 #include "RangesetTable.h"
 #include "TextBuffer.h"
-#include "MotifHelper.h"
 #include <string>
 
 namespace {

@@ -71,7 +71,6 @@ static void updateListWidgetItem(managedListData *ml, int listPos);
 static void listSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
 static int selectedListPosition(managedListData *ml);
 static void selectItem(Widget listW, int itemIndex, int updateDialog);
-static Widget shellOfWidget(Widget w);
 
 /*
 ** Create a user interface to help manage a list of arbitrary data records
@@ -647,14 +646,4 @@ static void selectItem(Widget listW, int itemIndex, int updateDialog) {
 		XmListSetPos(listW, selection);
 	else if (selection >= topPos + nVisible)
 		XmListSetPos(listW, selection - nVisible + 1);
-}
-
-static Widget shellOfWidget(Widget w) {
-	while (1) {
-		if (!w)
-			return nullptr;
-		if (XtIsSubclass(w, shellWidgetClass))
-			return w;
-		w = XtParent(w);
-	}
 }

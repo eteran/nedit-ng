@@ -26,12 +26,14 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "MotifHelper.h"
 #include "interpret.h"
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "menu.h"
 #include "text.h"
 #include "Document.h"
+#include "window.h"
 
 #include <algorithm>
 #include <cassert>
@@ -46,8 +48,6 @@
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
-
-#include "window.h"
 
 namespace {
 

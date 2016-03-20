@@ -27,9 +27,9 @@
 #ifndef GETFILES_H_
 #define GETFILES_H_
 
-#include <X11/Intrinsic.h>
 #include <string>
 #include "nullable_string.h"
+#include <X11/Intrinsic.h>
 
 #define GFN_OK 1     /* Get Filename OK constant     */
 #define GFN_CANCEL 2 /* Get Filename Cancel constant */

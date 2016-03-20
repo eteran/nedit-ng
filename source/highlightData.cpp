@@ -2292,9 +2292,9 @@ static HighlightPattern *readDialogFields(bool silent) {
 			return nullptr;
 		}
 
-		nullable_string s = XmTextGetStringEx(HighlightDialog.parentW);
-		if(s) {
-			pat->subPatternOf = QString::fromStdString(*s);
+		QString s = XmTextGetStringEx(HighlightDialog.parentW);
+		if(!s.isNull()) {
+			pat->subPatternOf = s;
 		}
 	}
 

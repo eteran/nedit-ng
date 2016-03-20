@@ -30,11 +30,12 @@
 
 #include "text.h"
 #include "textP.h"
+#include "MotifHelper.h"
 #include "calltips.h"
 #include "TextDisplay.h"
 #include "Document.h"
-#include "../util/MotifHelper.h"
-#include "../util/misc.h"
+
+#include "misc.h"
 
 #include <cstdio>
 #include <cstdlib>

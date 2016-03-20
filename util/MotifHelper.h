@@ -2,20 +2,22 @@
 #ifndef MOTIF_HELPER_H_
 #define MOTIF_HELPER_H_
 
-#include <Xm/Xm.h>
-#include <Xm/Text.h>
+#include <QString>
 #include <string>
 #include <cassert>
+#include <Xm/Xm.h>
+#include <Xm/Text.h>
+
 #include "nullable_string.h"
 
-inline nullable_string XmTextGetStringEx(Widget widget) {
+inline QString XmTextGetStringEx(Widget widget) {
 	if(char *s = XmTextGetString(widget)) {
-		std::string str(s);
+		QString str = QLatin1String(s);
 		XtFree(s);
 		return str;
 	}
 	
-	return boost::none;
+	return QString();
 }
 
 

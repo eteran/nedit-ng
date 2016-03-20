@@ -29,10 +29,11 @@
 *                                                                              *
 *******************************************************************************/
 #include "TextBuffer.h"
+#include "MotifHelper.h"
 #include "TextDisplay.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
-#include "MotifHelper.h"
+
 
 #include <cstdio>
 #include <cstdlib>

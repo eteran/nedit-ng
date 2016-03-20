@@ -2,12 +2,13 @@
 #ifndef XSTRING_H_
 #define XSTRING_H_
 
+#include "MotifHelper.h"
 #include <memory>
 #include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <Xm/Xm.h>
-#include "MotifHelper.h"
+
 
 // NOTE(eteran): this does more copies than necessary, we could do reference
 //               counting, but we would rather this be "obviously" correct

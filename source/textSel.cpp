@@ -26,12 +26,12 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "MotifHelper.h"
 #include "textSel.h"
 #include "textP.h"
 #include "text.h"
 #include "TextDisplay.h"
 #include "TextBuffer.h"
-#include "MotifHelper.h"
 #include "misc.h"
 
 #include <cstdio>

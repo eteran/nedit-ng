@@ -3162,8 +3162,8 @@ static void fillFromPrimaryCB(Widget w, XtPointer clientData, XtPointer callData
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error?!
 	}
-	std::string primaryName = *XmTextGetStringEx(fd->primaryW);
-	if (!compiledRE->execute(primaryName)) {
+	QString primaryName = XmTextGetStringEx(fd->primaryW);
+	if (!compiledRE->execute(primaryName.toStdString())) {
 		XBell(XtDisplay(fd->shell), 0);
 		delete compiledRE;
 		return;
@@ -4213,8 +4213,9 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
 
 	// read from the text widget 
-	std::string string = *XmTextGetStringEx(textW);
-	const char *stringPtr = &string[0];
+	QString string = XmTextGetStringEx(textW);
+	const std::string string_copy = string.toStdString();
+	const char *stringPtr = &string_copy[0];
 
 	/* parse it with the same routine used to read symbolic fields from
 	   files.  If the string is not read entirely, there are invalid

@@ -26,8 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "DialogF.h"
 #include "MotifHelper.h"
+#include "DialogF.h"
 #include "misc.h"
 
 #include <cstdio>

@@ -427,10 +427,10 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 		if (dirNamePresent) // Avoid erasing number when not active 
 		{
 			if (noOfComponents >= 0) {
-				std::string value = *XmTextGetStringEx(etDialog.ndirW);
+				QString value = XmTextGetStringEx(etDialog.ndirW);
 				char buf[2];
 				sprintf(&buf[0], "%d", noOfComponents);
-				if (strcmp(&buf[0], value.c_str())) // Don't overwrite unless diff. 
+				if (strcmp(&buf[0], value.toLatin1().data())) // Don't overwrite unless diff. 
 					SetIntText(etDialog.ndirW, noOfComponents);
 			} else {
 				XmTextSetStringEx(etDialog.ndirW, "");
@@ -487,7 +487,7 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData) 
 		return; // Prevent recursive feedback 
 	}
 
-	nullable_string format = XmTextGetStringEx(etDialog.formatW);
+	QString format = XmTextGetStringEx(etDialog.formatW);
 
 	if (XmToggleButtonGetState(etDialog.oServerEqualViewW) && XmToggleButtonGetState(etDialog.ccW)) {
 		serverName = etDialog.viewTag;
@@ -504,7 +504,7 @@ static void formatChangedCB(Widget w, XtPointer clientData, XtPointer callData) 
 		filenameSet, 
 		etDialog.lockReasons, 
 		XmToggleButtonGetState(etDialog.oFileChangedW), 
-		*format);
+		format.toLatin1().data());
 
 	XmTextFieldSetString(etDialog.previewW, title);
 }
@@ -613,12 +613,12 @@ static void wtUnmapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void appendToFormat(view::string_view string) {
 
-	std::string format = *XmTextGetStringEx(etDialog.formatW);
+	QString format = XmTextGetStringEx(etDialog.formatW);
 
 	std::string buf;
 	buf.reserve(string.size() + format.size());
 	
-	buf.append(format);
+	buf.append(format.toStdString());
 	buf.append(string.begin(), string.end());
 	
 	XmTextSetStringEx(etDialog.formatW, buf);

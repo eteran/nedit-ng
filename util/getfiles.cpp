@@ -43,10 +43,10 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "MotifHelper.h"
 #include "getfiles.h"
 #include "fileUtils.h"
 #include "misc.h"
-#include "MotifHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
