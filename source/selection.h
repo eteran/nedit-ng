@@ -27,15 +27,14 @@
 #ifndef SELECTION_H_
 #define SELECTION_H_
 
-#include "nullable_string.h"
-
+class QString;
 struct Document;
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
-nullable_string GetAnySelectionEx(Document *window);
+QString GetAnySelectionEx(Document *window);
 void AddMark(Document *window, Widget widget, char label);
 void BeginGotoMarkCommand(Document *window, int extend);
 void BeginMarkCommand(Document *window);

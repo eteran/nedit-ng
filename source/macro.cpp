@@ -34,7 +34,6 @@
 #include "getfiles.h"
 #include "misc.h"
 #include "utils.h"
-#include "nullable_string.h"
 #include "MotifHelper.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
@@ -1833,12 +1832,12 @@ static int getSelectionMS(Document *window, DataValue *argList, int nArgs, DataV
 			return false;
 		}
 		
-		nullable_string text = GetAnySelectionEx(window);
-		if (!text) {
-			text = std::string("");
+		QString text = GetAnySelectionEx(window);
+		if (text.isNull()) {
+			text = QLatin1String("");
 		}
 		
-		selText = *text;
+		selText = text.toStdString();
 	} else {
 		selText = window->buffer_->BufGetSelectionTextEx();
 		window->buffer_->BufUnsubstituteNullCharsEx(selText);

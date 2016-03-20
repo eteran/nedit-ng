@@ -3386,12 +3386,12 @@ static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Ca
 
 	Document *window = Document::WidgetToWindow(w);
 
-	nullable_string selText = GetAnySelectionEx(window);
+	QString selText = GetAnySelectionEx(window);
 	
-	iSearchTextSetString(w, window, selText ? *selText : "");
+	iSearchTextSetString(w, window, !selText.isNull() ? selText.toStdString() : "");
 	
-	if (selText) {
-		XmTextSetInsertionPosition(window->iSearchText_, selText->size());
+	if (!selText.isNull()) {
+		XmTextSetInsertionPosition(window->iSearchText_, selText.size());
 	}
 	
 	iSearchTextActivateCB(w, window, &cbdata);

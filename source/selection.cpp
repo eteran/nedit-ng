@@ -26,6 +26,7 @@
 
 #include <QApplication>
 #include <QInputDialog>
+#include <QString>
 
 #include "selection.h"
 #include "TextBuffer.h"
@@ -154,7 +155,7 @@ void OpenSelectedFile(Document *window, Time time) {
 ** (processing events) while waiting for a reply.  On failure (timeout or
 ** bad format) returns nullptr, otherwise returns the contents of the selection.
 */
-nullable_string GetAnySelectionEx(Document *window) {
+QString GetAnySelectionEx(Document *window) {
 	static char waitingMarker[1] = "";
 	char *selText = waitingMarker;
 	XEvent nextEvent;
@@ -164,7 +165,7 @@ nullable_string GetAnySelectionEx(Document *window) {
 	if (window->buffer_->primary_.selected) {
 		std::string text = window->buffer_->BufGetSelectionTextEx();
 		window->buffer_->BufUnsubstituteNullCharsEx(text);
-		return text;
+		return QString::fromStdString(text);
 	}
 
 	// Request the selection value to be delivered to getAnySelectionCB 
@@ -177,10 +178,10 @@ nullable_string GetAnySelectionEx(Document *window) {
 	}
 	
 	if(!selText) {
-		return boost::none;
+		return QString();
 	}
 	
-	nullable_string s = std::string(selText);
+	QString s = QLatin1String(selText);
 	XtFree(selText);
 	return s;
 }
