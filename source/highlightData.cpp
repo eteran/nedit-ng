@@ -47,7 +47,6 @@
 #include "DialogF.h"
 #include "managedList.h"
 #include "memory.h"
-#include "nullable_string.h"
 
 #include <cstdio>
 #include <cstring>
@@ -187,11 +186,11 @@ static struct {
 	Widget endLbl;
 	Widget errorLbl;
 	Widget matchLbl;
-	nullable_string langModeName;
+	QString langModeName;
 	int nPatterns;
 	HighlightPattern **patterns;
-} HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, boost::none, 0,       nullptr};
+} HighlightDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,   nullptr, nullptr, nullptr,
+                     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, QString(), 0,       nullptr};
 
 // Pattern sources loaded from the .nedit file or set by the user 
 static int NPatternSets = 0;
@@ -622,7 +621,7 @@ bool LMHasHighlightPatterns(view::string_view languageMode) {
 	if (FindPatternSet(languageMode) != nullptr)
 		return true;
 		
-	return HighlightDialog.shell != nullptr && languageMode == *HighlightDialog.langModeName && HighlightDialog.nPatterns != 0;
+	return HighlightDialog.shell != nullptr && languageMode == HighlightDialog.langModeName.toStdString() && HighlightDialog.nPatterns != 0;
 }
 
 /*
@@ -640,8 +639,8 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 	}
 	
 	if (HighlightDialog.shell) {
-		if (*HighlightDialog.langModeName == oldName) {
-			HighlightDialog.langModeName = newName.to_string();
+		if (HighlightDialog.langModeName.toStdString() == oldName) {
+			HighlightDialog.langModeName = QString::fromStdString(newName.to_string());
 		}
 	}
 }
@@ -1409,10 +1408,10 @@ void EditHighlightPatterns(Document *window) {
 	}
 
 	// Decide on an initial language mode 
-	HighlightDialog.langModeName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
+	HighlightDialog.langModeName = QLatin1String(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
 
 	// Find the associated pattern set (patSet) to edit 
-	patSet = FindPatternSet(HighlightDialog.langModeName->c_str());
+	patSet = FindPatternSet(HighlightDialog.langModeName.toLatin1().data());
 
 	// Copy the list of patterns to one that the user can freely edit 
 	HighlightDialog.patterns = new HighlightPattern *[MAX_PATTERNS];
@@ -1704,7 +1703,7 @@ void EditHighlightPatterns(Document *window) {
 	// Fill in the dialog information for the selected language mode 
 	SetIntText(HighlightDialog.lineContextW, patSet == nullptr ? 1 : patSet->lineContext);
 	SetIntText(HighlightDialog.charContextW, patSet == nullptr ? 0 : patSet->charContext);
-	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
+	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 	updateLabels();
 
 	// Realize all of the widgets in the new dialog 
@@ -1748,7 +1747,7 @@ void UpdateLanguageModeMenu(void) {
 	oldMenu = HighlightDialog.lmPulldown;
 	HighlightDialog.lmPulldown = CreateLanguageModeMenu(XtParent(XtParent(oldMenu)), langModeCB, nullptr);
 	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.lmOptMenu), XmNsubMenuId, HighlightDialog.lmPulldown, nullptr);
-	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
+	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 
 	XtDestroyWidget(oldMenu);
 }
@@ -1779,11 +1778,11 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Get the newly selected mode name.  If it's the same, do nothing 
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
-	if ((modeName == *HighlightDialog.langModeName))
+	if ((modeName == HighlightDialog.langModeName.toStdString()))
 		return;
 
 	// Look up the original version of the patterns being edited 
-	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName->c_str());
+	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName.toLatin1().data());
 	if(!oldPatSet) {
 		oldPatSet = &emptyPatSet;
 	}
@@ -1797,13 +1796,13 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Incomplete Language Mode", "Discard incomplete entry\n"
 		                                                                           "for current language mode?",
 		            "Keep", "Discard") == 1) {
-			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
+			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 			return;
 		}
 	} else if (oldPatSet != newPatSet) {
-		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName->c_str());
+		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName.toLatin1().data());
 		if (resp == 3) {
-			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName->c_str());
+			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 			return;
 		}
 		if (resp == 1) {
@@ -1820,7 +1819,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	// Fill the dialog with the new language mode information 
-	HighlightDialog.langModeName = modeName;
+	HighlightDialog.langModeName = QLatin1String(modeName);
 	newPatSet = FindPatternSet(modeName);
 	if(!newPatSet) {
 		HighlightDialog.nPatterns = 0;
@@ -1905,23 +1904,23 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	PatternSet *defaultPatSet;
 	int i, psn;
 
-	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName->c_str());
+	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName.toLatin1().data());
 	if(!defaultPatSet) {
-		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName->c_str());
+		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName.toLatin1().data());
 		return;
 	}
 
 	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\n"
 	                                                                  "all changes to syntax highlighting\n"
 	                                                                  "patterns for language mode %s?",
-	            "Discard", "Cancel", HighlightDialog.langModeName->c_str()) == 2) {
+	            "Discard", "Cancel", HighlightDialog.langModeName.toLatin1().data()) == 2) {
 		return;
 	}
 
 	/* if a stored version of the pattern set exists, replace it, if it
 	   doesn't, add a new one */
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString())
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode)
 			break;
 			
 	if (psn < NPatternSets) {
@@ -1958,13 +1957,13 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern", "Are you sure you want to delete\n"
 	                                                                 "syntax highlighting patterns for\n"
 	                                                                 "language mode %s?",
-	            "Yes, Delete", "Cancel", HighlightDialog.langModeName->c_str()) == 2) {
+	            "Yes, Delete", "Cancel", HighlightDialog.langModeName.toLatin1().data()) == 2) {
 		return;
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list 
 	for (psn = 0; psn < NPatternSets; psn++) {
-		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString()) {
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode) {
 			break;
 		}
 	}
@@ -2359,7 +2358,7 @@ static int updatePatternSet(void) {
 
 	// Find the pattern being modified 
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString())
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode)
 			break;
 
 	/* If it's a new pattern, add it at the end, otherwise free the
@@ -2441,7 +2440,7 @@ static PatternSet *getDialogPatternSet(void) {
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
 	auto patSet = new PatternSet(HighlightDialog.nPatterns);
-	patSet->languageMode = QString::fromStdString(*HighlightDialog.langModeName);
+	patSet->languageMode = HighlightDialog.langModeName;
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	
