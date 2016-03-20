@@ -27,8 +27,8 @@
 #ifndef GETFILES_H_
 #define GETFILES_H_
 
+#include <QString>
 #include <string>
-#include "nullable_string.h"
 #include <X11/Intrinsic.h>
 
 enum {
@@ -40,10 +40,10 @@ int GetExistingFilename(Widget parent, const char *promptString, char *filename)
 int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);
 int HandleCustomExistFileSB(Widget existFileSB, char *filename);
 int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName);
-nullable_string GetFileDialogDefaultDirectoryEx(void);
-nullable_string GetFileDialogDefaultPatternEx(void);
-void SetFileDialogDefaultDirectory(nullable_string dir);
-void SetFileDialogDefaultPattern(nullable_string pattern);
+QString GetFileDialogDefaultDirectoryEx(void);
+QString GetFileDialogDefaultPatternEx(void);
+void SetFileDialogDefaultDirectory(const QString &dir);
+void SetFileDialogDefaultPattern(const QString &pattern);
 void SetGetEFTextFieldRemoval(int state);
 
 #endif

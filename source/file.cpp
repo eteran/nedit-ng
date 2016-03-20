@@ -48,7 +48,6 @@
 #include "getfiles.h"
 #include "printUtils.h"
 #include "utils.h"
-#include "nullable_string.h"
 
 #include <cerrno>
 #include <climits>
@@ -1225,7 +1224,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
 	if (!window->path_.empty())
-		SetFileDialogDefaultDirectory(nullable_string(window->path_));
+		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
 	int retVal = GetExistingFilename(window->shell_, prompt, fullname);
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
@@ -1253,7 +1252,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
 
 	if (!window->path_.empty()) {
-		SetFileDialogDefaultDirectory(nullable_string(window->path_));
+		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
 	}
 
 	/* Present a file selection dialog with an added field for requesting

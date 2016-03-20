@@ -478,13 +478,13 @@ char *GetFileDialogDefaultPattern(void) {
 ** Can return nullptr if no default directory has been set (meaning
 ** use the application's current working directory).
 */
-nullable_string GetFileDialogDefaultDirectoryEx(void) {
+QString GetFileDialogDefaultDirectoryEx(void) {
 
 	if(!DefaultDirectory) {
-		return boost::none;
+		return QString();
 	}
 	
-	return XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET);
+	return QString::fromStdString(XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET));
 }
 
 /*
@@ -492,13 +492,13 @@ nullable_string GetFileDialogDefaultDirectoryEx(void) {
 ** Can return nullptr if no default pattern has been set (meaning use
 ** a pattern matching all files in the directory).
 */
-nullable_string GetFileDialogDefaultPatternEx(void) {
+QString GetFileDialogDefaultPatternEx(void) {
 
 	if(!DefaultPattern) {
-		return boost::none;
+		return QString();
 	}
 	
-	return XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET);
+	return QString::fromStdString(XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET));
 }
 
 /*
@@ -506,12 +506,12 @@ nullable_string GetFileDialogDefaultPatternEx(void) {
 ** "dir" can be passed as nullptr to clear the current default directory
 ** and use the application's working directory instead.
 */
-void SetFileDialogDefaultDirectory(nullable_string dir) {
+void SetFileDialogDefaultDirectory(const QString &dir) {
 	if (DefaultDirectory) {
 		XmStringFree(DefaultDirectory);
 	}
 	
-	DefaultDirectory = (!dir) ? nullptr : XmStringCreateSimpleEx(*dir);
+	DefaultDirectory = (dir.isNull()) ? nullptr : XmStringCreateSimpleEx(dir.toStdString());
 }
 
 /*
@@ -519,12 +519,12 @@ void SetFileDialogDefaultDirectory(nullable_string dir) {
 ** "pattern" can be passed as nullptr as the equivalent a pattern matching
 ** all files in the directory.
 */
-void SetFileDialogDefaultPattern(nullable_string pattern) {
+void SetFileDialogDefaultPattern(const QString &pattern) {
 	if (DefaultPattern) {
 		XmStringFree(DefaultPattern);
 	}
 	
-	DefaultPattern = (!pattern) ? nullptr : XmStringCreateSimpleEx(*pattern);
+	DefaultPattern = (pattern.isNull()) ? nullptr : XmStringCreateSimpleEx(pattern.toStdString());
 }
 
 /*

@@ -3160,15 +3160,15 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	//  Set default directory (saving original for later)  
 	auto orgDefaultPath = GetFileDialogDefaultDirectoryEx();
 	if ('\0' != defaultPath[0]) {
-		SetFileDialogDefaultDirectory(nullable_string(defaultPath));
+		SetFileDialogDefaultDirectory(QLatin1String(defaultPath));
 	} else {
-		SetFileDialogDefaultDirectory(nullable_string(window->path_));
+		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
 	}
 
 	//  Set filter (saving original for later)  
 	auto orgFilter = GetFileDialogDefaultPatternEx();
 	if (filter[0] != '\0') {
-		SetFileDialogDefaultPattern(nullable_string(filter));
+		SetFileDialogDefaultPattern(QString::fromStdString(filter));
 	}
 
 	/*  Fork to one of the worker methods from util/getfiles.c.
