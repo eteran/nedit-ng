@@ -551,8 +551,8 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str()) == -1) {
-			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf->c_str(), patternSrc[i].name.c_str());
+		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {
+			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf.toLatin1().data(), patternSrc[i].name.c_str());
 			return nullptr;
 		}
 	}
@@ -568,7 +568,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	   individual flags had to be correct and were checked here, but dialog now
 	   shows this setting only on top patterns which is much less confusing) */
 	for (i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf) {
+		if (!patternSrc[i].subPatternOf.isNull()) {
 			int parentindex;
 
 			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
@@ -683,11 +683,11 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	*parentStylesPtr++ = '\0';
 	
 	for (int i = 1; i < nPass1Patterns; i++) {
-		*parentStylesPtr++ = !pass1PatternSrc[i].subPatternOf ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf->c_str())].style;
+		*parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf.toLatin1().data())].style;
 	}
 	
 	for (int i = 1; i < nPass2Patterns; i++) {
-		*parentStylesPtr++ = !pass2PatternSrc[i].subPatternOf ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf->c_str())].style;
+		*parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf.toLatin1().data())].style;
 	}
 
 	// Set up table for mapping colors and fonts to syntax 
@@ -792,10 +792,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	}
 	
 	for (int i = 1; i < nPatterns; i++) {
-		if (!patternSrc[i].subPatternOf) {
+		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].nSubPatterns++;
 		} else {
-			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str())].nSubPatterns++;
+			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data())].nSubPatterns++;
 		}
 	}
 
@@ -808,10 +808,10 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	}
 
 	for (int i = 1; i < nPatterns; i++) {
-		if (!patternSrc[i].subPatternOf) {
+		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf->c_str());
+			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data());
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}
@@ -2207,8 +2207,8 @@ static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char 
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index) {
 
 	int topIndex = index;
-	while (patList[topIndex].subPatternOf) {
-		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf->c_str());
+	while (!patList[topIndex].subPatternOf.isNull()) {
+		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf.toLatin1().data());
 		if (index == topIndex)
 			return -1; // amai: circular dependency ?! 
 	}

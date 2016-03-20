@@ -697,8 +697,8 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->style.toStdString());
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (pat->subPatternOf)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->subPatternOf);
+		if (!pat->subPatternOf.isNull())
+			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf.toStdString());
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->flags & DEFER_PARSING)
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "D");
@@ -862,20 +862,24 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return False;
 
 	// read the style field 
-	const char *s = ReadSymbolicField(inPtr);
+	if(const char *s = ReadSymbolicField(inPtr)) {
+		pattern->style = QLatin1String(s);
+	}
 	
-	if (!s) {
+	if (pattern->style.isNull()) {
 		*errMsg = "style field required in pattern";
 		return False;
 	}
 	
-	pattern->style = QLatin1String(s);
+	
 	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
 	// read the sub-pattern-of field 
-	pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
+	if(const char *s = ReadSymbolicField(inPtr)) {	
+		pattern->subPatternOf = QLatin1String(s);
+	}
 	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
@@ -2077,12 +2081,12 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.rangeW, False, False);
 		setStyleMenu("Plain");
 	} else {
-		isSubpat    = static_cast<bool>(pat->subPatternOf);
+		isSubpat    = !pat->subPatternOf.isNull();
 		isDeferred  = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
 		isRange = (pat->endRE != nullptr);
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
-		XmTextSetStringEx(HighlightDialog.parentW, pat->subPatternOf ? *pat->subPatternOf : "");
+		XmTextSetStringEx(HighlightDialog.parentW, !pat->subPatternOf.isNull() ? pat->subPatternOf.toStdString() : "");
 		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE.str());
 		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE.str());
 		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.str());
@@ -2288,7 +2292,10 @@ static HighlightPattern *readDialogFields(bool silent) {
 			return nullptr;
 		}
 
-		pat->subPatternOf = XmTextGetStringEx(HighlightDialog.parentW);
+		nullable_string s = XmTextGetStringEx(HighlightDialog.parentW);
+		if(s) {
+			pat->subPatternOf = QString::fromStdString(*s);
+		}
 	}
 
 	// read the styles option menu 

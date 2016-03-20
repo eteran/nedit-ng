@@ -4,7 +4,6 @@
 
 #include <string>
 #include <QString>
-#include "nullable_string.h"
 
 struct HighlightStyle {
 	std::string name;

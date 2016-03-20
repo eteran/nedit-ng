@@ -4,7 +4,6 @@
 
 #include <QString>
 #include <string>
-#include "nullable_string.h"
 #include "XString.h"
 
 /* Pattern specification structure */
@@ -26,7 +25,7 @@ public:
 	XString endRE;
 	XString errorRE;
 	QString style;
-	nullable_string subPatternOf;
+	QString subPatternOf;
 	int flags;
 };
 
