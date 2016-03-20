@@ -297,11 +297,14 @@ bool LoadStylesStringEx(const std::string &string) {
 		}
 		
 		hs->color   = *color;
-		hs->bgColor = boost::none;
+		hs->bgColor = QString();
 		
 		if (SkipOptSeparator('/', &inPtr)) {
-			// read bgColor 
-			hs->bgColor = ReadSymbolicFieldEx(&inPtr); // no error if fails 
+			// read bgColor
+			nullable_string s = ReadSymbolicFieldEx(&inPtr); // no error if fails 
+			if(s) {
+				hs->bgColor = QString::fromStdString(*s);
+			}
 	
 		}
 		
@@ -371,9 +374,9 @@ std::string WriteStylesStringEx(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
-		if (style->bgColor) {
+		if (!style->bgColor.isNull()) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), *style->bgColor);
+			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor.toStdString());
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
@@ -584,14 +587,7 @@ QString BgColorOfNamedStyleEx(view::string_view styleName) {
 		return QLatin1String("");
 	}
 	
-	// TODO(eteran): if there are no code paths where this can be "null"
-	//               better to make this a std::string instead
-	
-	if(HighlightStyles[styleNo]->bgColor) {
-		return QString::fromStdString(*HighlightStyles[styleNo]->bgColor);	
-	}
-	
-	return QString();
+	return HighlightStyles[styleNo]->bgColor;	
 	
 }
 
@@ -1211,7 +1207,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		
 		XmTextSetStringEx(HSDialog.nameW,            hs->name);
 		XmTextSetStringEx(HSDialog.colorW,           hs->color);
-		XmTextSetStringEx(HSDialog.bgColorW,         hs->bgColor ? *hs->bgColor : "");
+		XmTextSetStringEx(HSDialog.bgColorW,         !hs->bgColor.isNull() ? hs->bgColor.toStdString() : "");
 		RadioButtonChangeState(HSDialog.plainW,      hs->font == PLAIN_FONT, False);
 		RadioButtonChangeState(HSDialog.boldW,       hs->font == BOLD_FONT, False);
 		RadioButtonChangeState(HSDialog.italicW,     hs->font == ITALIC_FONT, False);
@@ -1278,17 +1274,19 @@ static HighlightStyle *readHSDialogFields(bool silent) {
         	return nullptr;;
     	}
 
-    	// read the background color field - this may be empty 
-    	hs->bgColor = ReadSymbolicFieldTextWidget(HSDialog.bgColorW,
-                        	"bgColor", silent);
-    	if (hs->bgColor && hs->bgColor->empty()) {
-        	hs->bgColor = boost::none;
+    	// read the background color field - this may be empty
+		if(const char *s = ReadSymbolicFieldTextWidget(HSDialog.bgColorW, "bgColor", silent)) {
+	    	hs->bgColor = QLatin1String(s);
+		}
+		
+    	if (!hs->bgColor.isNull() && hs->bgColor.isEmpty()) {
+        	hs->bgColor = QString();
     	}
 
     	// Verify that the background color (if present) is a valid X color spec 
-    	if (hs->bgColor && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor->c_str(), &rgb)) {
+    	if (!hs->bgColor.isNull() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor->c_str());
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.toLatin1().data());
             	XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
         	}
 			
