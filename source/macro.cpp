@@ -590,7 +590,7 @@ int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotEx
 	auto fileString = ReadAnyTextFileEx(fileName, True);
 	if (!fileString) {
 		if (errno != ENOENT || warnNotExist) {
-			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(fileName.c_str(), strerror(errno)));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QLatin1String(strerror(errno))));
 		}
 		return False;
 	}
@@ -789,7 +789,7 @@ static void runMacro(Document *window, Program *prog) {
 
 	if (stat == MACRO_ERROR) {
 		finishMacroCmdExecution(window);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(errMsg));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
 		return;
 	}
 
@@ -1423,7 +1423,7 @@ static Boolean continueWorkProc(XtPointer clientData) {
 	stat = ContinueMacro(cmdData->context, &result, &errMsg);
 	if (stat == MACRO_ERROR) {
 		finishMacroCmdExecution(window);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(errMsg));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
 		return True;
 	} else if (stat == MACRO_DONE) {
 		finishMacroCmdExecution(window);

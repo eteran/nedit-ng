@@ -257,7 +257,7 @@ void QtXtWidget::init(const char* name, WidgetClass widget_class,
 QtXtWidget::QtXtWidget(const char* name, Widget parent, bool managed)
     : QWidget( 0 ), xtw( 0 )
 {
-    setObjectName(name);
+    setObjectName(QString::fromUtf8(name));
     init(name, qWidgetClass, parent, 0, 0, 0, managed);
     Arg reqargs[20];
     Cardinal nargs=0;
@@ -288,7 +288,7 @@ QtXtWidget::QtXtWidget(const char* name, WidgetClass widget_class,
 		     bool managed)
     : QWidget( parent ), xtw( 0 )
 {
-    setObjectName(name);
+    setObjectName(QString::fromUtf8(name));
     if ( !parent )
 	init(name, widget_class, 0, 0, args, num_args, managed);
     else if ( parent->inherits("QtXtWidget") )

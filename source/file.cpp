@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include <QPushButton>
 
 #include "file.h"
 #include "TextBuffer.h"
@@ -244,7 +245,7 @@ void RevertToSaved(Document *window) {
 
 	// Can't revert untitled windows 
 	if (!window->filenameSet_) {
-		DialogF(DF_WARN, window->shell_, 1, "Error", "Window '%s' was never saved, can't re-read", "OK", window->filename_.c_str());
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error"), QString(QLatin1String("Window '%1' was never saved, can't re-read")).arg(QString::fromStdString(window->filename_)));
 		return;
 	}
 
@@ -309,7 +310,6 @@ static void safeClose(Document *window) {
 static int doOpen(Document *window, const char *name, const char *path, int flags) {
 
 	struct stat statbuf;
-	char *c;
 	FILE *fp = nullptr;
 	int fd;
 	int resp;
@@ -345,24 +345,42 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				/* on Solaris 2.6, and possibly other OSes, dialog won't
 		           show if parent window is iconized. */
 				RaiseShellWindow(window->shell_, False);
+				
+				QMessageBox msgbox(nullptr /*parent*/);
+				QAbstractButton  *exitButton;
 
 				// ask user for next action if file not found 
 				if (window == WindowList && window->next_ == nullptr) {
-					resp = DialogF(DF_WARN, window->shell_, 3, "New File", "Can't open %s:\n%s", "New File", "Cancel", "Exit NEdit", fullname.c_str(), strerror(errno));
+					
+					msgbox.setIcon(QMessageBox::Warning);
+					msgbox.setWindowTitle(QLatin1String("New File"));
+					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
+					msgbox.addButton(QLatin1String("New File"), QMessageBox::AcceptRole);
+					msgbox.addButton(QMessageBox::Cancel);
+					exitButton = msgbox.addButton(QLatin1String("Exit NEdit"), QMessageBox::RejectRole);
+					resp = msgbox.exec();
+					
 				} else {
-					resp = DialogF(DF_WARN, window->shell_, 2, "New File", "Can't open %s:\n%s", "New File", "Cancel", fullname.c_str(), strerror(errno));
+				
+					msgbox.setIcon(QMessageBox::Warning);
+					msgbox.setWindowTitle(QLatin1String("New File"));
+					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
+					msgbox.addButton(QLatin1String("New File"), QMessageBox::AcceptRole);
+					msgbox.addButton(QMessageBox::Cancel);
+					exitButton = nullptr;
+					resp = msgbox.exec();				
 				}
 
-				if (resp == 2) {
+				if (resp == QMessageBox::Cancel) {
 					return FALSE;
-				} else if (resp == 3) {
+				} else if (msgbox.clickedButton() == exitButton) {
 					exit(EXIT_SUCCESS);
 				}
 			}
 
 			// Test if new file can be created 
 			if ((fd = creat(fullname.c_str(), 0666)) == -1) {
-				DialogF(DF_ERR, window->shell_, 1, "Error creating File", "Can't create %s:\n%s", "OK", fullname.c_str(), strerror(errno));
+				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error creating File"), QString(QLatin1String("Can't create %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
 				return FALSE;
 			} else {
 				close(fd);
@@ -377,7 +395,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			return TRUE;
 		} else {
 			// A true error 
-			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1%2:\n%3")).arg(path, name, strerror(errno)));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1%2:\n%3")).arg(QLatin1String(path), QLatin1String(name), QLatin1String(strerror(errno))));
 			return FALSE;
 		}
 	}
@@ -387,7 +405,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(name));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(name)));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -395,7 +413,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (S_ISDIR(statbuf.st_mode)) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(name));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(QLatin1String(name)));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -404,7 +422,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (S_ISBLK(statbuf.st_mode)) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open block device %1")).arg(name));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open block device %1")).arg(QLatin1String(name)));
 		window->filenameSet_ = TRUE;
 		return FALSE;
 	}
@@ -427,7 +445,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	if (ferror(fp)) {
 		fclose(fp);
 		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
-		DialogF(DF_ERR, window->shell_, 1, "Error while opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error while opening File"), QString(QLatin1String("Error reading %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
 		window->filenameSet_ = TRUE;
 		delete [] fileString;
 		return FALSE;
@@ -473,14 +491,23 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	   the user, make the file read-only, and force a substitution */
 	if (window->buffer_->BufGetLength() != readLen) {
 		if (!window->buffer_->BufSubstituteNullChars(fileString, readLen)) {
-			resp = DialogF(DF_ERR, window->shell_, 2, "Error while opening File", "Too much binary data in file.  You may view\nit, but not modify or re-save its contents.",
-			               "View", "Cancel");
-			if (resp == 2) {
+		
+		
+				
+			QMessageBox msgbox(nullptr /*parent*/);
+			msgbox.setIcon(QMessageBox::Critical);
+			msgbox.setWindowTitle(QLatin1String("Error while opening File"));
+			msgbox.setText(QLatin1String("Too much binary data in file.  You may view\nit, but not modify or re-save its contents."));
+			msgbox.addButton(QLatin1String("View"), QMessageBox::AcceptRole);
+			msgbox.addButton(QMessageBox::Cancel);
+			int resp = msgbox.exec();
+			
+			if (resp == QMessageBox::Cancel) {
 				return FALSE;
 			}
 
 			SET_TMBD_LOCKED(window->lockReasons_, TRUE);
-			for (c = fileString; c < &fileString[readLen]; c++) {
+			for (char *c = fileString; c < &fileString[readLen]; c++) {
 				if (*c == '\0') {
 					*c = (char)0xfe;
 				}
@@ -519,19 +546,19 @@ int IncludeFile(Document *window, const char *name) {
 	// Open the file 
 	FILE *fp = fopen(name, "rb");
 	if(!fp) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1:\n%2")).arg(name, strerror(errno)));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
 		return FALSE;
 	}
 
 	// Get the length of the file 
 	if (fstat(fileno(fp), &statbuf) != 0) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(name));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(name)));
 		fclose(fp);
 		return FALSE;
 	}
 
 	if (S_ISDIR(statbuf.st_mode)) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(name));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(QLatin1String(name)));
 		fclose(fp);
 		return FALSE;
 	}
@@ -548,7 +575,7 @@ int IncludeFile(Document *window, const char *name) {
 	// read the file into fileString and terminate with a null 
 	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error opening File", "Error reading %s:\n%s", "OK", name, strerror(errno));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error reading %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
 		fclose(fp);
 		delete [] fileString;
 		return FALSE;

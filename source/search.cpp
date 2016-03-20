@@ -484,6 +484,7 @@ static void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selecti
 	(void)selection;
 
 	Document *window = selectionInfo->window;
+	(void)window;
 
 	// return an empty string if we can't get the selection data 
 	if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == nullptr || *length == 0) {

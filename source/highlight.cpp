@@ -511,7 +511,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 			                                                    "You can create new syntax highlight patterns in the\n"
 			                                                    "Preferences -> Default Settings -> Syntax Highlighting\n"
 			                                                    "dialog, or choose a different language mode from:\n"
-			                                                    "Preferences -> Language Mode.")).arg(modeName));
+			                                                    "Preferences -> Language Mode.")).arg(QLatin1String(modeName)));
 			return nullptr;
 		}
 	}

@@ -18,8 +18,6 @@ add_library (NUtil
 
 include(${QT_USE_FILE})
 
-message(${QT_USE_FILE})
-
 target_include_directories (NUtil PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 
 )

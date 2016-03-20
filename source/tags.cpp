@@ -924,7 +924,7 @@ static int findDef(Document *window, const char *value, int search_type) {
 					sprintf(message, "No match for \"%s\" in calltips or tags.", tagName);
 					tagsShowCalltip(window, message);
 				} else {
-					QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("\"%1\" not found in tags file%2")).arg(tagName, (TagsFileList && TagsFileList->next) ? "s" : ""));
+					QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("\"%1\" not found in tags file%2")).arg(QLatin1String(tagName), QLatin1String((TagsFileList && TagsFileList->next) ? "s" : "")));
 				}
 			}
 		} else {
@@ -1308,12 +1308,12 @@ static void showMatchingCalltip(Widget parent, int i) {
 	NormalizePathname(tagFiles[i]);
 	fp = fopen(tagFiles[i], "r");
 	if(!fp) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(tagFiles[i]));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(tagFiles[i])));
 		return;
 	}
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(tagFiles[i]));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(tagFiles[i])));
 		return;
 	}
 
@@ -1333,7 +1333,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 	readLen = fread(fileString, 1, fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(tagFiles[i]));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(QLatin1String(tagFiles[i])));
 		delete [] fileString;
 		return;
 	}
@@ -1350,14 +1350,14 @@ static void showMatchingCalltip(Widget parent, int i) {
 	if (!*(tagSearch[i])) {
 		// It's a line number, just go for it 
 		if ((moveAheadNLines(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
-			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(tagFiles[i]).arg(tagPosInf[i]));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(QLatin1String(tagFiles[i])).arg(tagPosInf[i]));
 			delete [] fileString;
 			return;
 		}
 	} else {
 		startPos = tagPosInf[i];
 		if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
-			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName).arg(tagFiles[i]));
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QLatin1String(tagName)).arg(QLatin1String(tagFiles[i])));
 			delete [] fileString;
 			return;
 		}
@@ -1419,7 +1419,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	EditExistingFile(parentWindow, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 	windowToSearch = FindWindowWithFile(filename, pathname);
 	if(!windowToSearch) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(tagFiles[i]));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QLatin1String(tagFiles[i])));
 		return;
 	}
 
@@ -1433,7 +1433,7 @@ static void editTaggedLocation(Widget parent, int i) {
 
 	// search for the tags file search string in the newly opened file 
 	if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName).arg(tagFiles[i]));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QLatin1String(tagName)).arg(QLatin1String(tagFiles[i])));
 		return;
 	}
 

@@ -1098,9 +1098,9 @@ int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warn
 	valueStr = XmTextGetString(text);
 
 	if (result == TEXT_IS_BLANK) {		
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply %1 value")).arg(fieldName));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply %1 value")).arg(QLatin1String(fieldName)));
 	} else /* TEXT_NOT_NUMBER */ {	
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read %1 value: \"%2\"")).arg(fieldName, valueStr));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read %1 value: \"%2\"")).arg(QLatin1String(fieldName), QLatin1String(valueStr)));
 	}
 
 	XtFree(valueStr);
@@ -1117,9 +1117,9 @@ int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank
 	valueStr = XmTextGetString(text);
 
 	if (result == TEXT_IS_BLANK) {	
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply a value for %1")).arg(fieldName));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply a value for %1")).arg(QLatin1String(fieldName)));
 	} else /* TEXT_NOT_NUMBER */ {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read integer value \"%1\" in %2")).arg(valueStr, fieldName));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read integer value \"%1\" in %2")).arg(QLatin1String(valueStr), QLatin1String(fieldName)));
 	}
 
 	XtFree(valueStr);

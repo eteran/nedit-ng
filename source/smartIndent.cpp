@@ -272,7 +272,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	indentMacros = findIndentSpec(modeName);
 	if(!indentMacros) {
 		if (warn) {
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(modeName));
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(QLatin1String(modeName)));
 		}
 		return;
 	}
@@ -403,7 +403,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent macro:\n%1")).arg(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted"));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent macro:\n%1")).arg(QLatin1String(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted")));
 		EndSmartIndent(window);
 		return;
 	}
@@ -462,7 +462,7 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 
 	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent modification macro:\n%1")).arg(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted"));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent modification macro:\n%1")).arg(QLatin1String(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted")));
 		EndSmartIndent(window);
 		return;
 	}
@@ -816,7 +816,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 
 	if (i == N_DEFAULT_INDENT_SPECS) {
-		QMessageBox::warning(nullptr /*SmartIndentDialog.shell*/, QLatin1String("Smart Indent"), QString(QLatin1String("There are no default indent macros\nfor language mode %1")).arg(SmartIndentDialog.langModeName));
+		QMessageBox::warning(nullptr /*SmartIndentDialog.shell*/, QLatin1String("Smart Indent"), QString(QLatin1String("There are no default indent macros\nfor language mode %1")).arg(QLatin1String(SmartIndentDialog.langModeName)));
 		return;
 	}
 	defaultIS = &DefaultIndentSpecs[i];

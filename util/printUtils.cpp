@@ -709,7 +709,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	   from the output stream of the command. */
 	pipe = popen(command, "r");
 	if(!pipe) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(strerror(errno)));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(QLatin1String(strerror(errno))));
 		return;
 	}
 
@@ -727,7 +727,7 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 	}
 
 	if (pclose(pipe)) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(errorString));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Print Error"), QString(QLatin1String("Unable to Print:\n%1")).arg(QLatin1String(errorString)));
 		return;
 	}
 
