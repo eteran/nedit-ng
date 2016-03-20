@@ -5389,7 +5389,7 @@ static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, D
 		return True;
 	}
 
-	return fillPatternResult(result, errMsg, window, patternName, (argList[0].tag == STRING_TAG), False, const_cast<char *>(pattern->style->c_str()), -1);
+	return fillPatternResult(result, errMsg, window, patternName, (argList[0].tag == STRING_TAG), False, pattern->style.toLatin1().data(), -1);
 }
 
 /*

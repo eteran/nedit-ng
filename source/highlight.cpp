@@ -558,8 +558,8 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (!NamedStyleExists(*patternSrc[i].style)) {
-			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style->c_str(), patternSrc[i].name.c_str());
+		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {
+			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style.toLatin1().data(), patternSrc[i].name.c_str());
 			return nullptr;
 		}
 	}
@@ -606,14 +606,14 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	p1Ptr->startRE      = nullptr;
 	p1Ptr->endRE        = nullptr;
 	p1Ptr->errorRE      = nullptr;
-	p1Ptr->style        = "Plain";
+	p1Ptr->style        = QLatin1String("Plain");
 	p1Ptr->flags        = 0;
 	
 	p2Ptr->name 		= "";
 	p2Ptr->startRE  	= nullptr;
 	p2Ptr->endRE		= nullptr;
 	p2Ptr->errorRE  	= nullptr;
-	p2Ptr->style		= "Plain";
+	p2Ptr->style		= QLatin1String("Plain");
 	p2Ptr->flags		= 0;  
 	
 	p1Ptr++;
@@ -699,11 +699,11 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		Color c;
 
 		p->highlightName = pat->name;
-		p->styleName     = *pat->style;
-		p->colorName     = ColorOfNamedStyleEx(*pat->style);
-		p->bgColorName   = BgColorOfNamedStyleEx(*pat->style);
-		p->isBold        = FontOfNamedStyleIsBold(*pat->style);
-		p->isItalic      = FontOfNamedStyleIsItalic(*pat->style);
+		p->styleName     = pat->style.toStdString();
+		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
+		p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
+		p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
+		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
 
 		// And now for the more physical stuff 
 		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &c);
@@ -723,7 +723,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 			p->bgBlue  = c.b;
 		}
 
-		p->font = FontOfNamedStyle(window, *pat->style);
+		p->font = FontOfNamedStyle(window, pat->style.toStdString());
 	};
 
 	// PLAIN_STYLE (pass 1) 
@@ -820,7 +820,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	   just colors and fonts for sub-expressions of the parent pattern */
 	for (int i = 0; i < nPatterns; i++) {
 		compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
-		compiledPats[i].userStyleIndex = IndexOfNamedStyle(*patternSrc[i].style);
+		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
 		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
 			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name.c_str());

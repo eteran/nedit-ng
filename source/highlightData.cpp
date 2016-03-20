@@ -695,7 +695,7 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->style);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->style.toStdString());
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (pat->subPatternOf)
 			outBuf->BufInsertEx(outBuf->BufGetLength(), *pat->subPatternOf);
@@ -862,11 +862,15 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return False;
 
 	// read the style field 
-	pattern->style = ReadSymbolicField(inPtr);
-	if (!pattern->style) {
+	const char *s = ReadSymbolicField(inPtr);
+	
+	if (!s) {
 		*errMsg = "style field required in pattern";
 		return False;
 	}
+	
+	pattern->style = QLatin1String(s);
+	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
 
@@ -1717,7 +1721,7 @@ static void updateHighlightStyleMenu(void) {
 	if (patIndex == -1) {
 		setStyleMenu("Plain");
 	} else {
-		setStyleMenu(*HighlightDialog.patterns[patIndex]->style);
+		setStyleMenu(HighlightDialog.patterns[patIndex]->style.toStdString());
 	}
 
 	XtDestroyWidget(oldMenu);
@@ -2089,7 +2093,7 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HighlightDialog.colorPatW,  isSubpat &&  isColorOnly, False);
 		RadioButtonChangeState(HighlightDialog.simpleW,   !isRange, False);
 		RadioButtonChangeState(HighlightDialog.rangeW,     isRange, False);
-		setStyleMenu(*pat->style);
+		setStyleMenu(pat->style.toStdString());
 	}
 	updateLabels();
 }
@@ -2290,7 +2294,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 	// read the styles option menu 
 	XtVaGetValues(HighlightDialog.styleOptMenu, XmNmenuHistory, &selectedItem, nullptr);
 	XtVaGetValues(selectedItem, XmNuserData, &style, nullptr);
-	pat->style = style;
+	pat->style = QLatin1String(style);
 
 	// read the endRE field 
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {

@@ -2,6 +2,7 @@
 #ifndef HIGHLIGHT_PATTERN_H_
 #define HIGHLIGHT_PATTERN_H_
 
+#include <QString>
 #include <string>
 #include "nullable_string.h"
 #include "XString.h"
@@ -24,7 +25,7 @@ public:
 	XString startRE;
 	XString endRE;
 	XString errorRE;
-	nullable_string style;
+	QString style;
 	nullable_string subPatternOf;
 	int flags;
 };

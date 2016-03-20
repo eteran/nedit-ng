@@ -1,7 +1,8 @@
 
 #include "PatternSet.h"
-#include "preferences.h" // for AllocatedStringsDiffer
 #include "HighlightPattern.h"
+#include "preferences.h" // for AllocatedStringsDiffer
+
 #include <algorithm>
 
 //------------------------------------------------------------------------------
