@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QString>
 
 #include "preferences.h"
 #include "TextBuffer.h"
@@ -53,7 +54,6 @@
 #include "fontsel.h"
 #include "fileUtils.h"
 #include "utils.h"
-#include "nullable_string.h"
 
 #include <cctype>
 #include <pwd.h>
@@ -3889,7 +3889,7 @@ char *ReadSymbolicField(const char **inPtr) {
 ** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
 ** whitespace is compressed to single space characters.
 */
-nullable_string ReadSymbolicFieldEx(const char **inPtr) {
+QString ReadSymbolicFieldEx(const char **inPtr) {
 
 	// skip over initial blank space 
 	*inPtr += strspn(*inPtr, " \t");
@@ -3903,7 +3903,7 @@ nullable_string ReadSymbolicFieldEx(const char **inPtr) {
 	
 	int len = *inPtr - strStart;
 	if (len == 0) {
-		return boost::none;
+		return QString();
 	}
 	
 	std::string outStr;
@@ -3928,10 +3928,10 @@ nullable_string ReadSymbolicFieldEx(const char **inPtr) {
 	}
 	
 	if(outStr.empty()) {
-		return boost::none;
+		return QString();
 	}
 	
-	return outStr;
+	return QString::fromStdString(outStr);
 }
 
 /*
@@ -4210,7 +4210,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 ** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
 ** an empty string if the text field is blank.
 */
-nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
+QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
 
 	// read from the text widget 
 	QString string = XmTextGetStringEx(textW);
@@ -4220,18 +4220,18 @@ nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldNam
 	/* parse it with the same routine used to read symbolic fields from
 	   files.  If the string is not read entirely, there are invalid
 	   characters, so warn the user if not in silent mode. */
-	nullable_string parsedString = ReadSymbolicFieldEx(&stringPtr);
+	QString parsedString = ReadSymbolicFieldEx(&stringPtr);
 	
 	if (*stringPtr != '\0') {
 		if (!silent) {		
 			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
-		return boost::none;
+		return QString();
 	}
 	
-	if(!parsedString) {
-		parsedString = nullable_string("");
+	if(parsedString.isNull()) {
+		parsedString = QLatin1String("");
 	}
 	
 	return parsedString;

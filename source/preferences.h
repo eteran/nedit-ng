@@ -29,9 +29,9 @@
 
 #include "nedit.h"
 #include "string_view.h"
-#include "nullable_string.h"
 #include <exception>
 
+class QString;
 class XString;
 
 
@@ -156,8 +156,8 @@ int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 std::string EscapeSensitiveCharsEx(view::string_view string);
 std::string MakeQuotedStringEx(view::string_view string);
-nullable_string ReadSymbolicFieldEx(const char **inPtr);
-nullable_string ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
+QString ReadSymbolicFieldEx(const char **inPtr);
+QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
 void ChooseColors(Document *window);
 void ChooseFonts(Document *window, int forWindow);
 void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic);

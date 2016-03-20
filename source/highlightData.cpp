@@ -47,6 +47,7 @@
 #include "DialogF.h"
 #include "managedList.h"
 #include "memory.h"
+#include "nullable_string.h"
 
 #include <cstdio>
 #include <cstring>
@@ -265,7 +266,7 @@ bool LoadStylesStringEx(const std::string &string) {
 
 	const char *inString = &string[0];
     const char *errMsg;
-	std::string fontStr;
+	QString fontStr;
     const char *inPtr = &string[0];
     int i;
 
@@ -278,11 +279,11 @@ bool LoadStylesStringEx(const std::string &string) {
 		auto hs = new HighlightStyle;
 
 		// read style name 
-		nullable_string name = ReadSymbolicFieldEx(&inPtr);
-		if (!name) {
+		QString name = ReadSymbolicFieldEx(&inPtr);
+		if (name.isNull()) {
 			return styleError(inString, inPtr, "style name required");
 		}		
-		hs->name = *name;
+		hs->name = name.toStdString();
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
@@ -290,20 +291,20 @@ bool LoadStylesStringEx(const std::string &string) {
 		}
 
 		// read color 
-		nullable_string color = ReadSymbolicFieldEx(&inPtr);
-		if (!color) {
+		QString color = ReadSymbolicFieldEx(&inPtr);
+		if (color.isNull()) {
 			delete hs;
 			return styleError(inString,inPtr, "color name required");
 		}
 		
-		hs->color   = *color;
+		hs->color   = color.toStdString();
 		hs->bgColor = QString();
 		
 		if (SkipOptSeparator('/', &inPtr)) {
 			// read bgColor
-			nullable_string s = ReadSymbolicFieldEx(&inPtr); // no error if fails 
-			if(s) {
-				hs->bgColor = QString::fromStdString(*s);
+			QString s = ReadSymbolicFieldEx(&inPtr); // no error if fails 
+			if(!s.isNull()) {
+				hs->bgColor = s;
 			}
 	
 		}
@@ -315,11 +316,11 @@ bool LoadStylesStringEx(const std::string &string) {
 
 		// read the font type 
 		// TODO(eteran): Note, assumes success!
-		fontStr = *ReadSymbolicFieldEx(&inPtr);
+		fontStr = ReadSymbolicFieldEx(&inPtr);
 		
 		
-		for (i=0; i<N_FONT_TYPES; i++) {
-			if (FontTypeNames[i] == fontStr) {
+		for (i = 0; i < N_FONT_TYPES; i++) {
+			if (FontTypeNames[i] == fontStr.toStdString()) {
 				hs->font = i;
 				break;
 			}
@@ -827,12 +828,12 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern) {
 
 	// read the name field 
-	nullable_string name = ReadSymbolicFieldEx(inPtr);
-	if (!name) {
+	QString name = ReadSymbolicFieldEx(inPtr);
+	if (name.isNull()) {
 		*errMsg = "pattern name is required";
 		return False;
 	}
-	pattern->name = *name;
+	pattern->name = name.toStdString();
 	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return False;
@@ -1239,13 +1240,13 @@ static HighlightStyle *readHSDialogFields(bool silent) {
  
 
     	// read the name field 
-    	nullable_string name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
-    	if (!name) {
+    	QString name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
+    	if (name.isNull()) {
     		delete hs;
     		return nullptr;
     	}
 		
-		hs->name = *name;
+		hs->name = name.toStdString();
 
     	if (hs->name.empty()) {
         	if (!silent) {
@@ -1258,13 +1259,13 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     	}
 
     	// read the color field 
-    	nullable_string color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
-    	if (!color) {
+    	QString color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
+    	if (color.isNull()) {
     		delete hs;
     		return nullptr;
     	}
 		
-		hs->color = *color;
+		hs->color = color.toStdString();
 
     	if (hs->color.empty()) {
         	if (!silent) {
@@ -2223,13 +2224,13 @@ static HighlightPattern *readDialogFields(bool silent) {
 		pat->flags = COLOR_ONLY;
 
 	// read the name field 
-	nullable_string name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
-	if (!name) {
+	QString name = ReadSymbolicFieldTextWidgetEx(HighlightDialog.nameW, "highlight pattern name", silent);
+	if (name.isNull()) {
 		delete pat;
 		return nullptr;
 	}
 	
-	pat->name = *name;
+	pat->name = name.toStdString();
 
 	if (pat->name == "") {
 		if (!silent) {
