@@ -27,9 +27,10 @@
 #ifndef USER_CMDS_H_
 #define USER_CMDS_H_
 
+#include <QString>
 #include "nedit.h"
 #include "string_view.h"
-#include "nullable_string.h"
+
 
 int DoNamedBGMenuCmd(Document *window, const char *itemName);
 int DoNamedMacroMenuCmd(Document *window, const char *itemName);
@@ -40,9 +41,9 @@ int LoadMacroCmdsString(const char *inString);
 int LoadMacroCmdsStringEx(view::string_view inString);
 int LoadShellCmdsString(const char *inString);
 int LoadShellCmdsStringEx(view::string_view inString);
-nullable_string WriteBGMenuCmdsStringEx(void);
-nullable_string WriteMacroCmdsStringEx(void);
-nullable_string WriteShellCmdsStringEx(void);
+QString WriteBGMenuCmdsStringEx(void);
+QString WriteMacroCmdsStringEx(void);
+QString WriteShellCmdsStringEx(void);
 UserMenuCache *CreateUserMenuCache(void);
 void DimPasteReplayBtns(int sensitive);
 void DimSelectionDepUserMenuItems(Document *window, int sensitive);

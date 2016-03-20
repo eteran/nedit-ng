@@ -302,14 +302,14 @@ static struct prefData {
 /* Temporary storage for preferences strings which are discarded after being
    read */
 static struct {
-	nullable_string shellCmds;
-	nullable_string macroCmds;
-	nullable_string bgMenuCmds;
-	nullable_string highlight;
-	nullable_string language;
-	nullable_string styles;
-	nullable_string smartIndent;
-	nullable_string smartIndentCommon;
+	QString shellCmds;
+	QString macroCmds;
+	QString bgMenuCmds;
+	QString highlight;
+	QString language;
+	QString styles;
+	QString smartIndent;
+	QString smartIndentCommon;
 } TempStringPrefs;
 
 // preference descriptions for SavePreferences and RestorePreferences. 
@@ -966,7 +966,7 @@ static int updateLMList(void);
 static languageModeRec *copyLanguageModeRec(languageModeRec *lm);
 static languageModeRec *readLMDialogFields(int silent);
 static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr);
-static std::string WriteLanguageModesStringEx(void);
+static QString WriteLanguageModesStringEx(void);
 static void freeLanguageModeRec(languageModeRec *lm);
 static void lmApplyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lmCloseCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -1094,37 +1094,37 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
 
-	if (TempStringPrefs.shellCmds) {
-		LoadShellCmdsStringEx(*TempStringPrefs.shellCmds);
-		TempStringPrefs.shellCmds = boost::none;
+	if (!TempStringPrefs.shellCmds.isNull()) {
+		LoadShellCmdsStringEx(TempStringPrefs.shellCmds.toStdString());
+		TempStringPrefs.shellCmds = QString();
 	}
-	if (TempStringPrefs.macroCmds) {
-		LoadMacroCmdsStringEx(*TempStringPrefs.macroCmds);
-		TempStringPrefs.macroCmds = boost::none;
+	if (!TempStringPrefs.macroCmds.isNull()) {
+		LoadMacroCmdsStringEx(TempStringPrefs.macroCmds.toStdString());
+		TempStringPrefs.macroCmds = QString();
 	}
-	if (TempStringPrefs.bgMenuCmds) {
-		LoadBGMenuCmdsStringEx(*TempStringPrefs.bgMenuCmds);
-		TempStringPrefs.bgMenuCmds = boost::none;
+	if (!TempStringPrefs.bgMenuCmds.isNull()) {
+		LoadBGMenuCmdsStringEx(TempStringPrefs.bgMenuCmds.toStdString());
+		TempStringPrefs.bgMenuCmds = QString();
 	}
-	if (TempStringPrefs.highlight) {
-		LoadHighlightStringEx(*TempStringPrefs.highlight, convertOld);
-		TempStringPrefs.highlight = boost::none;
+	if (!TempStringPrefs.highlight.isNull()) {
+		LoadHighlightStringEx(TempStringPrefs.highlight.toStdString(), convertOld);
+		TempStringPrefs.highlight = QString();
 	}
-	if (TempStringPrefs.styles) {
-		LoadStylesStringEx(*TempStringPrefs.styles);
-		TempStringPrefs.styles = boost::none;
+	if (!TempStringPrefs.styles.isNull()) {
+		LoadStylesStringEx(TempStringPrefs.styles.toStdString());
+		TempStringPrefs.styles = QString();
 	}
-	if (TempStringPrefs.language) {
-		loadLanguageModesStringEx(*TempStringPrefs.language, fileVer);
-		TempStringPrefs.language = boost::none;
+	if (!TempStringPrefs.language.isNull()) {
+		loadLanguageModesStringEx(TempStringPrefs.language.toStdString(), fileVer);
+		TempStringPrefs.language = QString();
 	}
-	if (TempStringPrefs.smartIndent) {
-		LoadSmartIndentStringEx(*TempStringPrefs.smartIndent);
-		TempStringPrefs.smartIndent = boost::none;
+	if (!TempStringPrefs.smartIndent.isNull()) {
+		LoadSmartIndentStringEx(TempStringPrefs.smartIndent.toStdString());
+		TempStringPrefs.smartIndent = QString();
 	}
-	if (TempStringPrefs.smartIndentCommon) {
-		LoadSmartIndentCommonStringEx(*TempStringPrefs.smartIndentCommon);
-		TempStringPrefs.smartIndentCommon = boost::none;
+	if (!TempStringPrefs.smartIndentCommon.isNull()) {
+		LoadSmartIndentCommonStringEx(TempStringPrefs.smartIndentCommon.toStdString());
+		TempStringPrefs.smartIndentCommon = QString();
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
@@ -3723,7 +3723,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 	} // End for(;;) 
 }
 
-static std::string WriteLanguageModesStringEx(void) {
+static QString WriteLanguageModesStringEx(void) {
 	char *str;
 	char numBuf[25];
 
@@ -3773,7 +3773,7 @@ static std::string WriteLanguageModesStringEx(void) {
 	// Get the output, and lop off the trailing newline 
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - 1);
 	delete outBuf;
-	return EscapeSensitiveCharsEx(outStr);
+	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 
 static char *createExtString(char **extensions, int nExtensions) {
@@ -4441,10 +4441,10 @@ static void updatePatternsTo5dot1(void) {
 	const char *vhdlAnchorExpr = "^[ \t]*VHDL:";
 	
 	
-	std::string newHighlight   = *TempStringPrefs.highlight;
-	std::string newStyles      = *TempStringPrefs.styles;
-	std::string newLanguage    = *TempStringPrefs.language;
-	std::string newSmartIndent = *TempStringPrefs.smartIndent;
+	std::string newHighlight   = TempStringPrefs.highlight.toStdString();
+	std::string newStyles      = TempStringPrefs.styles.toStdString();
+	std::string newLanguage    = TempStringPrefs.language.toStdString();
+	std::string newSmartIndent = TempStringPrefs.smartIndent.toStdString();
 
 	/* Add new patterns if there aren't already existing patterns with
 	   the same name.  If possible, insert before VHDL in language mode
@@ -4502,10 +4502,10 @@ static void updatePatternsTo5dot1(void) {
 		}
 	}
 	
-	TempStringPrefs.smartIndent = newSmartIndent;
-	TempStringPrefs.language    = newLanguage;
-	TempStringPrefs.styles      = newStyles;
-	TempStringPrefs.highlight   = newHighlight;
+	TempStringPrefs.smartIndent = QString::fromStdString(newSmartIndent);
+	TempStringPrefs.language    = QString::fromStdString(newLanguage);
+	TempStringPrefs.styles      = QString::fromStdString(newStyles);
+	TempStringPrefs.highlight   = QString::fromStdString(newHighlight);
 }
 
 static void updatePatternsTo5dot2(void) {
@@ -4537,9 +4537,9 @@ static void updatePatternsTo5dot2(void) {
 	const char *reStyle = "Regex:#009944:Bold";
 	const char *wrnStyle = "Warning:brown2:Italic";
 	
-	std::string newHighlight = *TempStringPrefs.highlight;
-	std::string newStyles    = *TempStringPrefs.styles;
-	std::string newLanguage  = *TempStringPrefs.language;
+	std::string newHighlight = TempStringPrefs.highlight.toStdString();
+	std::string newStyles    = TempStringPrefs.styles.toStdString();
+	std::string newLanguage  = TempStringPrefs.language.toStdString();
 
 	/* First upgrade modified language modes, only if the user hasn't
 	   altered the default 5.1 definitions. */
@@ -4582,9 +4582,9 @@ static void updatePatternsTo5dot2(void) {
 		newStyles = spliceStringEx(newStyles, ptrStyle, "^[ \t]*Regex:");
 		
 	
-	TempStringPrefs.language  = newLanguage;
-	TempStringPrefs.styles    = newStyles;		
-	TempStringPrefs.highlight = newHighlight;
+	TempStringPrefs.language  = QString::fromStdString(newLanguage);
+	TempStringPrefs.styles    = QString::fromStdString(newStyles);
+	TempStringPrefs.highlight = QString::fromStdString(newHighlight);
 }
 
 static void updatePatternsTo5dot3(void) {
@@ -4600,8 +4600,8 @@ static void updatePatternsTo5dot4(void) {
 	const char *pyLm5dot4 = "Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
 	const char *xrLm5dot4 = "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
 
-	std::string newStyles   = *TempStringPrefs.styles;
-	std::string newLanguage = *TempStringPrefs.language;
+	std::string newStyles   = TempStringPrefs.styles.toStdString();
+	std::string newLanguage = TempStringPrefs.language.toStdString();
 
 	/* Upgrade modified language modes, only if the user hasn't
 	   altered the default 5.3 definitions. */
@@ -4615,8 +4615,8 @@ static void updatePatternsTo5dot4(void) {
 		newStyles = spliceStringEx(newStyles, "Identifier2:SteelBlue:Plain", "^[ \t]*Subroutine:");
 	}
 	
-	TempStringPrefs.language  = newLanguage;
-	TempStringPrefs.styles    = newStyles;
+	TempStringPrefs.language  = QString::fromStdString(newLanguage);
+	TempStringPrefs.styles    = QString::fromStdString(newStyles);
 }
 
 static void updatePatternsTo5dot6(void) {
@@ -4627,8 +4627,8 @@ static void updatePatternsTo5dot6(void) {
 	                      "\\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::\\n",
 	                      "X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n", nullptr};
 
-	std::string newStyles   = *TempStringPrefs.styles;
-	std::string newLanguage = *TempStringPrefs.language;
+	std::string newStyles   = TempStringPrefs.styles.toStdString();
+	std::string newLanguage = TempStringPrefs.language.toStdString();
 
 	/* Upgrade modified language modes, only if the user hasn't
 	   altered the default 5.5 definitions. */
@@ -4647,8 +4647,8 @@ static void updatePatternsTo5dot6(void) {
 		newStyles = spliceStringEx(newStyles, "Operator:dark blue:Bold", "^[ \t]*Bracket:");
 	}
 		
-	TempStringPrefs.styles   = newStyles;
-	TempStringPrefs.language = newLanguage;
+	TempStringPrefs.styles   = QString::fromStdString(newStyles);
+	TempStringPrefs.language = QString::fromStdString(newLanguage);
 }
 
 /*
@@ -4806,14 +4806,18 @@ static int caseReplaceEx(std::string *inString, const char *expr, const char *re
 ** (inclusive). Returns the length of the replacement.
 */
 static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd) {
-	if (caseFind(*TempStringPrefs.macroCmds, oldText)) {
+	
+	std::string macroCmds = TempStringPrefs.macroCmds.toStdString();
+	
+	if (caseFind(macroCmds, oldText)) {
 		const char *start = strstr(PrefDescrip[2].defaultString, newStart);
 
 		if (start) {
 			const char *end = strstr(start, newEnd);
 			if (end) {
 				int length = (int)(end - start) + strlen(newEnd);
-				caseReplaceEx(&*TempStringPrefs.macroCmds, oldText, start, length);
+				caseReplaceEx(&macroCmds, oldText, start, length);
+				TempStringPrefs.macroCmds = QString::fromStdString(macroCmds);
 				return length;
 			}
 		}
@@ -4828,7 +4832,7 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 */
 static void updateShellCmdsTo5dot3(void) {
 
-	if (!TempStringPrefs.shellCmds)
+	if (TempStringPrefs.shellCmds.isNull())
 		return;
 
 	/* Count number of '#'. If there are '#' characters in the non-command
@@ -4837,8 +4841,8 @@ static void updateShellCmdsTo5dot3(void) {
 	*/
 	int nHash = 0;
 	
-	for(char ch: *TempStringPrefs.shellCmds) {
-		if (ch == '#') {
+	for(QChar ch: TempStringPrefs.shellCmds) {
+		if (ch == QLatin1Char('#')) {
 			nHash++;
 		}
 	}
@@ -4848,47 +4852,51 @@ static void updateShellCmdsTo5dot3(void) {
 		return;
 	}
 
-	char *newString = XtMalloc(TempStringPrefs.shellCmds->size() + 1 + nHash);
+	std::string newString;
+	newString.reserve(TempStringPrefs.shellCmds.size() + nHash);
+	
+	std::string shellCmds = TempStringPrefs.shellCmds.toStdString();
 
-	char *cOld = &(*TempStringPrefs.shellCmds)[0]; // TODO(eteran): probably a better approach to this..
-	char *cNew  = newString;
-	int isCmd   = 0;
-	char *pCol  = nullptr;
-	char *pNL   = nullptr;
+	char *cOld = &shellCmds[0]; // TODO(eteran): probably a better approach to this..
+	auto cNew  = std::back_inserter(newString);
+	bool isCmd = false;
+	char *pCol = nullptr;
+	char *pNL  = nullptr;
 
 	/* Copy all characters from TempStringPrefs.shellCmds into newString
 	** and duplicate '#' in command parts. A simple check for really beeing
 	** inside a command part (starting with '\n', between the the two last
 	** '\n' a colon ':' must have been found) is preformed.
 	*/
-	while (*cOld) {
+	while (*cOld != '\0') {
 		/* actually every 2nd line is a command. We additionally
 		** check if there is a colon ':' in the previous line.
 		*/
 		if (*cOld == '\n') {
-			if ((pCol > pNL) && !isCmd)
-				isCmd = 1;
-			else
-				isCmd = 0;
+			if ((pCol > pNL) && !isCmd) {
+				isCmd = true;
+			} else {
+				isCmd = false;
+			}
+			
 			pNL = cOld;
 		}
 
-		if (!isCmd && *cOld == ':')
+		if (!isCmd && *cOld == ':') {
 			pCol = cOld;
+		}
 
 		// Duplicate hashes if we're in a command part 
-		if (isCmd && *cOld == '#')
+		if (isCmd && *cOld == '#') {
 			*cNew++ = '#';
+		}
 
 		// Copy every character 
 		*cNew++ = *cOld++;
 	}
 
-	// Terminate new preferences string 
-	*cNew = 0;
-
 	// exchange the string 
-	TempStringPrefs.shellCmds = newString;
+	TempStringPrefs.shellCmds = QString::fromStdString(newString);
 }
 
 static void updateShellCmdsTo5dot4(void) {
@@ -4898,21 +4906,29 @@ static void updateShellCmdsTo5dot4(void) {
 #else
 	const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"lines,\" \\$wc\\[2\\] \"words,\" \\$wc\\[3\\] \"characters\"\\n";
 	const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
-#endif // __FreeBSD__ 
+#endif
 
-	if (regexFind(*TempStringPrefs.shellCmds, wc5dot3))
-		regexReplaceEx(&*TempStringPrefs.shellCmds, wc5dot3, wc5dot4);
 
-	return;
+	std::string shellCmds = TempStringPrefs.shellCmds.toStdString();
+
+	if (regexFind(shellCmds, wc5dot3)) {
+		regexReplaceEx(&shellCmds, wc5dot3, wc5dot4);
+	}
+	
+	TempStringPrefs.shellCmds = QString::fromStdString(shellCmds);
 }
 
 static void updateMacroCmdsTo5dot5(void) {
 	const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
 	const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
-	if (regexFind(*TempStringPrefs.macroCmds, uc5dot4))
-		regexReplaceEx(&*TempStringPrefs.macroCmds, uc5dot4, uc5dot5);
-
-	return;
+	
+	std::string macroCmds = TempStringPrefs.macroCmds.toStdString();
+	
+	if (regexFind(macroCmds, uc5dot4)) {
+		regexReplaceEx(&macroCmds, uc5dot4, uc5dot5);
+	}
+	
+	TempStringPrefs.macroCmds = QString::fromStdString(macroCmds);
 }
 
 static void updateMacroCmdsTo5dot6(void) {

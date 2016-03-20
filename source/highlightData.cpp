@@ -362,7 +362,7 @@ bool LoadStylesStringEx(const std::string &string) {
 ** all of the highlight styles information from the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-std::string WriteStylesStringEx(void) {
+QString WriteStylesStringEx(void) {
 	int i;
 	HighlightStyle *style;
 
@@ -384,7 +384,7 @@ std::string WriteStylesStringEx(void) {
 	}
 
 	// Get the output, and lop off the trailing newlines 
-	return outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4));
+	return QString::fromStdString(outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4)));
 }
 
 /*
@@ -440,7 +440,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 ** containing all of the highlight pattern information from the stored
 ** highlight pattern list (PatternSets) for this NEdit session.
 */
-std::string WriteHighlightStringEx(void) {
+QString WriteHighlightStringEx(void) {
 
 	bool written = false;
 	auto outBuf = memory::make_unique<TextBuffer>();
@@ -471,7 +471,7 @@ std::string WriteHighlightStringEx(void) {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	return EscapeSensitiveCharsEx(outStr);
+	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 
 /*

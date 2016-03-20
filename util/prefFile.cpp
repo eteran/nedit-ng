@@ -131,7 +131,7 @@ bool stringToPref(const char *string, PrefDescripRec *rsrcDescrip) {
 		}
 	case PREF_STD_STRING:
 		{
-			*(rsrcDescrip->valueAddr.string) = string;
+			*(rsrcDescrip->valueAddr.string) = QLatin1String(string);
 			return true;
 		}
 	default:
@@ -353,7 +353,7 @@ bool SavePreferences(Display *display, const char *fullName, const char *fileHea
 				fprintf(fp, "%s", *rsrcDescrip[i].valueAddr.str_ptr);
 				break;
 			case PREF_STD_STRING:
-				fprintf(fp, "%s", (*rsrcDescrip[i].valueAddr.string)->c_str());
+				fprintf(fp, "%s", (*rsrcDescrip[i].valueAddr.string).toLatin1().data());
 				break;				
 			case PREF_ENUM:
 				{

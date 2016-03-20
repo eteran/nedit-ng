@@ -3,7 +3,6 @@
 #define USER_MENU_LIST_ELEMENT_H_
 
 #include <vector>
-#include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 
 // cache user menus: manage mode of user menu list element

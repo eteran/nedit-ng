@@ -27,8 +27,8 @@
 #ifndef SMART_INDENT_H_
 #define SMART_INDENT_H_
 
+#include <QString>
 #include "nedit.h"
-
 #include <X11/Intrinsic.h>
 
 Boolean InSmartIndentMacros(Document *window);
@@ -36,8 +36,8 @@ int LMHasSmartIndentMacros(const char *languageMode);
 int LoadSmartIndentCommonStringEx(view::string_view string);
 int LoadSmartIndentStringEx(view::string_view string);
 int SmartIndentMacrosAvailable(char *languageMode);
-std::string WriteSmartIndentCommonStringEx(void);
-std::string WriteSmartIndentStringEx(void);
+QString  WriteSmartIndentCommonStringEx(void);
+QString WriteSmartIndentStringEx(void);
 void BeginSmartIndent(Document *window, int warn);
 void EditCommonSmartIndentMacro(void);
 void EditSmartIndentMacros(Document *window);

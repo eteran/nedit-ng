@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "prefFile.h"
 #include "windowTitle.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -33,17 +34,17 @@
 #include "help.h"
 #include "Document.h"
 #include "MotifHelper.h"
-#include "../util/prefFile.h"
-#include "../util/misc.h"
-#include "../util/utils.h"
-#include "../util/fileUtils.h"
+#include "misc.h"
+#include "utils.h"
+#include "fileUtils.h"
+#include "clearcase.h"
 
 #include <cstdlib>
 #include <cstdio>
 #include <cctype>
 #include <cstring>
 #include <sys/param.h>
-#include "../util/clearcase.h"
+
 
 #include <Xm/Xm.h>
 #include <Xm/SelectioB.h>

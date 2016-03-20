@@ -1437,7 +1437,7 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 	return ParseError(nullptr, stringStart, stoppedAt, "smart indent specification", message);
 }
 
-std::string WriteSmartIndentStringEx(void) {
+QString WriteSmartIndentStringEx(void) {
 
 	auto outBuf = new TextBuffer;
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
@@ -1461,27 +1461,27 @@ std::string WriteSmartIndentStringEx(void) {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	return EscapeSensitiveCharsEx(outStr);
+	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 
-std::string WriteSmartIndentCommonStringEx(void) {
+QString WriteSmartIndentCommonStringEx(void) {
 
 	if (!strcmp(CommonMacros, DefaultCommonMacros))
-		return "Default";
+		return QLatin1String("Default");
 
 	if(!CommonMacros)
-		return "";
+		return QLatin1String("");
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean 
 	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	std::string escapedStr = EscapeSensitiveCharsEx(outStr);
+	QString escapedStr = QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 
 	// If there's a trailing escaped newline, remove it 
 	int len = escapedStr.size();
-	if (len > 1 && escapedStr[len - 1] == '\n' && escapedStr[len - 2] == '\\') {
+	if (len > 1 && escapedStr[len - 1] == QLatin1Char('\n') && escapedStr[len - 2] == QLatin1Char('\\')) {
 		escapedStr.resize(len - 2);
 	}
 	

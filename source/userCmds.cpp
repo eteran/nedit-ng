@@ -258,7 +258,7 @@ static void freeItemCB(void *item);
 static int dialogFieldsAreEmpty(userCmdDialog *ucd);
 static void disableTextW(Widget textW);
 static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType);
-static nullable_string writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType);
+static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType);
 static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType);
 static void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
@@ -800,7 +800,7 @@ void SetBGMenuRedoSensitivity(Document *window, int sensitive) {
 ** can be read by LoadShellCmdsString, rather, it is what needs to be written
 ** to a resource file such that it will read back in that form.
 */
-nullable_string WriteShellCmdsStringEx(void) {
+QString WriteShellCmdsStringEx(void) {
 	return writeMenuItemStringEx(ShellMenuItems, NShellMenuItems, SHELL_CMDS);
 }
 
@@ -812,11 +812,11 @@ nullable_string WriteShellCmdsStringEx(void) {
 ** in that form.
 */
 
-nullable_string WriteMacroCmdsStringEx(void) {
+QString WriteMacroCmdsStringEx(void) {
 	return writeMenuItemStringEx(MacroMenuItems, NMacroMenuItems, MACRO_CMDS);
 }
 
-nullable_string WriteBGMenuCmdsStringEx(void) {
+QString WriteBGMenuCmdsStringEx(void) {
 	return writeMenuItemStringEx(BGMenuItems, NBGMenuItems, BG_MENU_CMDS);
 }
 
@@ -2266,11 +2266,11 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 }
 
 
-static nullable_string writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType) {
+static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType) {
 
-	nullable_string str;
+	QString str;
 	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
-		str = std::string(s);
+		str = QLatin1String(s);
 		XtFree(s);
 	}
 	return str;
