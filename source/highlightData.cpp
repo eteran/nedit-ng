@@ -414,7 +414,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 
 		// Add/change the pattern set in the list 
 		for (i = 0; i < NPatternSets; i++) {
-			if (*PatternSets[i]->languageMode == *patSet->languageMode) {
+			if (PatternSets[i]->languageMode == patSet->languageMode) {
 				delete PatternSets[i];
 				PatternSets[i] = patSet;
 				break;
@@ -452,7 +452,7 @@ QString WriteHighlightStringEx(void) {
 		}
 		
 		written = true;		
-		outBuf->BufInsertEx(outBuf->BufGetLength(), *patSet->languageMode);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode.toStdString());
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		if (isDefaultPatternSet(patSet))
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
@@ -482,9 +482,9 @@ static void convertOldPatternSet(PatternSet *patSet) {
 
 	for (int p = 0; p < patSet->nPatterns; p++) {
 		HighlightPattern *pattern = &patSet->patterns[p];
-		pattern->startRE = convertPatternExprEx(pattern->startRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		pattern->endRE   = convertPatternExprEx(pattern->endRE,   patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
-		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode->c_str(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->startRE = convertPatternExprEx(pattern->startRE, patSet->languageMode.toLatin1().data(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->endRE   = convertPatternExprEx(pattern->endRE,   patSet->languageMode.toLatin1().data(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
+		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode.toLatin1().data(), pattern->name.c_str(), pattern->flags & COLOR_ONLY);
 	}
 }
 
@@ -605,7 +605,7 @@ bool NamedStyleExists(view::string_view styleName) {
 PatternSet *FindPatternSet(view::string_view langModeName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
-		if (langModeName == *PatternSets[i]->languageMode) {
+		if (langModeName == PatternSets[i]->languageMode.toStdString()) {
 			return PatternSets[i];
 		}
 	}
@@ -633,8 +633,8 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 
 	for (int i = 0; i < NPatternSets; i++) {
 	
-		if (*PatternSets[i]->languageMode == oldName) {
-			PatternSets[i]->languageMode = newName.to_string();
+		if (PatternSets[i]->languageMode.toStdString() == oldName) {
+			PatternSets[i]->languageMode = QString::fromStdString(newName.to_string());
 		}
 	}
 	
@@ -724,8 +724,11 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	*inPtr += strspn(*inPtr, " \t\n");
 
 	// read language mode field 
-	patSet.languageMode = ReadSymbolicField(inPtr);
-	if (!patSet.languageMode) {
+	if(const char *s = ReadSymbolicField(inPtr)) {
+		patSet.languageMode = QLatin1String(s);
+	}
+	
+	if (patSet.languageMode.isNull()) {
 		return highlightError(stringStart, *inPtr, "language mode must be specified");
 	}
 
@@ -737,7 +740,7 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode->c_str());
+		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode.toLatin1().data());
 		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
@@ -924,7 +927,7 @@ static PatternSet *readDefaultPatternSet(const char *langModeName) {
 */
 static bool isDefaultPatternSet(PatternSet *patSet) {
 
-	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode->c_str());
+	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode.toLatin1().data());
 	if(!defaultPatSet) {
 		return False;
 	}
@@ -1917,7 +1920,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/* if a stored version of the pattern set exists, replace it, if it
 	   doesn't, add a new one */
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString())
 			break;
 			
 	if (psn < NPatternSets) {
@@ -1960,7 +1963,7 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// if a stored version of the pattern set exists, delete it from the list 
 	for (psn = 0; psn < NPatternSets; psn++) {
-		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode) {
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString()) {
 			break;
 		}
 	}
@@ -2355,7 +2358,7 @@ static int updatePatternSet(void) {
 
 	// Find the pattern being modified 
 	for (psn = 0; psn < NPatternSets; psn++)
-		if (HighlightDialog.langModeName == *PatternSets[psn]->languageMode)
+		if (HighlightDialog.langModeName == PatternSets[psn]->languageMode.toStdString())
 			break;
 
 	/* If it's a new pattern, add it at the end, otherwise free the
@@ -2373,7 +2376,7 @@ static int updatePatternSet(void) {
 	   re-do the highlighting */
 	for(Document *window: WindowList) {
 		if (patSet->nPatterns > 0) {
-			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == *patSet->languageMode)) {
+			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode.toStdString())) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -2437,7 +2440,7 @@ static PatternSet *getDialogPatternSet(void) {
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
 	auto patSet = new PatternSet(HighlightDialog.nPatterns);
-	patSet->languageMode = HighlightDialog.langModeName;
+	patSet->languageMode = QString::fromStdString(*HighlightDialog.langModeName);
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	

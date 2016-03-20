@@ -2,7 +2,7 @@
 #ifndef PATTERN_SET_H_
 #define PATTERN_SET_H_
 
-#include "nullable_string.h"
+#include <QString>
 
 struct HighlightPattern;
 
@@ -23,10 +23,10 @@ public:
 	void swap(PatternSet &other);
 
 public:
-	nullable_string languageMode;
-	int lineContext;
-	int charContext;
-	int nPatterns;
+	QString           languageMode;
+	int               lineContext;
+	int               charContext;
+	int               nPatterns;
 	HighlightPattern *patterns;
 };
 
