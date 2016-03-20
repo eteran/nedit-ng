@@ -8,8 +8,6 @@
 #include <Xm/Xm.h>
 #include <Xm/Text.h>
 
-#include "nullable_string.h"
-
 inline QString XmTextGetStringEx(Widget widget) {
 	if(char *s = XmTextGetString(widget)) {
 		QString str = QLatin1String(s);
