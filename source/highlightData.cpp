@@ -577,17 +577,22 @@ std::string ColorOfNamedStyleEx(view::string_view styleName) {
 /*
 ** Find the background color associated with a named style.
 */
-nullable_string BgColorOfNamedStyleEx(view::string_view styleName) {
+QString BgColorOfNamedStyleEx(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
-		return nullable_string("");
+		return QLatin1String("");
 	}
 	
 	// TODO(eteran): if there are no code paths where this can be "null"
 	//               better to make this a std::string instead
 	
-	return HighlightStyles[styleNo]->bgColor;
+	if(HighlightStyles[styleNo]->bgColor) {
+		return QString::fromStdString(*HighlightStyles[styleNo]->bgColor);	
+	}
+	
+	return QString();
+	
 }
 
 /*

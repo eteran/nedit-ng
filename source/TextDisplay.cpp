@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "StyleTableEntry.h"
 #include "TextDisplay.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -35,7 +36,7 @@
 #include "highlight.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
-#include "StyleTableEntry.h"
+
 
 #include <cstdio>
 #include <cstdlib>
@@ -1882,7 +1883,7 @@ static void drawString(TextDisplay *textD, int style, int x, int y, int toX, cha
 		   5 Backlight (if NOT fill), 6 DefaultBackground */
 		bground = style & PRIMARY_MASK ? textD->selectBGPixel : style & HIGHLIGHT_MASK ? textD->highlightBGPixel : style & RANGESET_MASK
 		                                                                                                               ? getRangesetColor(textD, (style & RANGESET_MASK) >> RANGESET_SHIFT, bground)
-		                                                                                                               : (styleRec && styleRec->bgColorName) ? styleRec->bgColor : (style & BACKLIGHT_MASK) && !(style & FILL_MASK)
+		                                                                                                               : (styleRec && !styleRec->bgColorName.isNull()) ? styleRec->bgColor : (style & BACKLIGHT_MASK) && !(style & FILL_MASK)
 		                                                                                                                                                                             ? textD->bgClassPixel[(style >> BACKLIGHT_SHIFT) & 0xff]
 		                                                                                                                                                                             : textD->bgPixel;
 		if (fground == bground) // B&W kludge 

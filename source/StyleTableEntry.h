@@ -2,9 +2,9 @@
 #ifndef STYLE_TABLE_ENTRY_H_
 #define STYLE_TABLE_ENTRY_H_
 
+#include <QString>
 #include <string>
 #include <cstdint>
-#include "nullable_string.h"
 #include <X11/Intrinsic.h>
 
 struct StyleTableEntry {
@@ -19,7 +19,7 @@ struct StyleTableEntry {
 	Pixel       color;
 	bool        underline;
 	XFontStruct *font;
-	nullable_string bgColorName; /* background style coloring (name may be "empty") */
+	QString bgColorName; /* background style coloring (name may be "empty") */
 	uint16_t    bgRed;
 	uint16_t    bgGreen;
 	uint16_t    bgBlue;

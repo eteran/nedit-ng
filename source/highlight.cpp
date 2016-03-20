@@ -711,8 +711,8 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 		p->green = c.g;
 		p->blue  = c.b;
 		
-		if (p->bgColorName) {
-			p->bgColor = AllocColor(window->textArea_, p->bgColorName->c_str(), &c);
+		if (!p->bgColorName.isNull()) {
+			p->bgColor = AllocColor(window->textArea_, p->bgColorName.toLatin1().data(), &c);
 			p->bgRed   = c.r;
 			p->bgGreen = c.g;
 			p->bgBlue  = c.b;
@@ -1164,7 +1164,7 @@ Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
 Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	
-	if (entry && entry->bgColorName) {
+	if (entry && !entry->bgColorName.isNull()) {
 		color->r = entry->bgRed;
 		color->g = entry->bgGreen;
 		color->b = entry->bgBlue;
