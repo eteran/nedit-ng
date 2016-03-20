@@ -7,7 +7,7 @@
 #include "interpret.h"
 #include "macro.h"
 #include "menu.h"
-#include "nedit.bm"
+#include "res/nedit.bm"
 #include "preferences.h"
 #include "RangesetTable.h"
 #include "search.h"

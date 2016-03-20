@@ -48,7 +48,7 @@
 #include "highlight.h"
 #include "smartIndent.h"
 #include "userCmds.h"
-#include "n.bm"
+#include "res/n.bm"
 #include "windowTitle.h"
 #include "interpret.h"
 #include "RangesetTable.h"
