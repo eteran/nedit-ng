@@ -586,8 +586,8 @@ int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotEx
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	auto fileString = ReadAnyTextFileEx(fileName, True);
-	if (!fileString) {
+	QString fileString = ReadAnyTextFileEx(fileName, True);
+	if (fileString.isNull()) {
 		if (errno != ENOENT || warnNotExist) {
 			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QLatin1String(strerror(errno))));
 		}
@@ -595,7 +595,7 @@ int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotEx
 	}
 
 	// Parse fileString 
-	return readCheckMacroString(window->shell_, fileString.str(), window, fileName.c_str(), nullptr);
+	return readCheckMacroString(window->shell_, fileString.toLatin1().data(), window, fileName.c_str(), nullptr);
 }
 
 /*

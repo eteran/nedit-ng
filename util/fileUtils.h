@@ -28,8 +28,9 @@
 #define FILEUTILS_H_
 
 #include <string>
-#include "XString.h"
 #include "string_view.h"
+
+class QString;
 
 enum FileFormats {
 	UNIX_FILE_FORMAT, 
@@ -37,7 +38,7 @@ enum FileFormats {
 	MAC_FILE_FORMAT
 };
 
-XString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
+QString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
 const char *GetTrailingPathComponents(const char *path, int noOfComponents);
 int CompressPathname(char *pathname);
 bool ConvertToDosFileStringEx(std::string &fileString);

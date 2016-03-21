@@ -1212,9 +1212,9 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 void ImportPrefFile(const char *filename, int convertOld) {
 	XrmDatabase db;
 
-	auto fileString = ReadAnyTextFileEx(filename, False);
-	if (fileString) {
-		db = XrmGetStringDatabase(fileString.str());
+	QString fileString = ReadAnyTextFileEx(filename, False);
+	if (!fileString.isNull()) {
+		db = XrmGetStringDatabase(fileString.toLatin1().data());
 		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 		translatePrefFormats(convertOld, -1);
 		ImportedFile = XtNewStringEx(filename);
@@ -3994,57 +3994,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 ** argument minus quotes.  If not successful, returns False with
 ** (statically allocated) message in "errMsg".
 */
-int ReadQuotedStringEx(const char **inPtr, const char **errMsg, XString *string) {
-	char *outPtr;
-	const char *c;
-
-	// skip over blank space 
-	*inPtr += strspn(*inPtr, " \t");
-
-	// look for initial quote 
-	if (**inPtr != '\"') {
-		*errMsg = "expecting quoted string";
-		return False;
-	}
-	(*inPtr)++;
-
-	// calculate max length and allocate returned string 
-	for (c = *inPtr;; c++) {
-		if (*c == '\0') {
-			*errMsg = "string not terminated";
-			return False;
-		} else if (*c == '\"') {
-			if (*(c + 1) == '\"')
-				c++;
-			else
-				break;
-		}
-	}
-
-	// copy string up to end quote, transforming escaped quotes into quotes 
-	char *str = XtMalloc(c - *inPtr + 1);
-	outPtr = str;
-	while (true) {
-		if (**inPtr == '\"') {
-			if (*(*inPtr + 1) == '\"')
-				(*inPtr)++;
-			else
-				break;
-		}
-		*outPtr++ = *(*inPtr)++;
-	}
-	*outPtr = '\0';
-
-	// skip end quote 
-	(*inPtr)++;
-	
-	*string = XString::takeString(str);
-	
-	return True;
-}
-
 int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string) {
-	char *outPtr;
 	const char *c;
 
 	// skip over blank space 
@@ -4070,9 +4020,12 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 		}
 	}
 
-	// copy string up to end quote, transforming escaped quotes into quotes 
-	char *str = XtMalloc(c - *inPtr + 1);
-	outPtr = str;
+	// copy string up to end quote, transforming escaped quotes into quotes
+	QString str;
+	str.reserve(c - *inPtr);
+	
+	auto outPtr = std::back_inserter(str);
+
 	while (true) {
 		if (**inPtr == '\"') {
 			if (*(*inPtr + 1) == '\"')
@@ -4080,16 +4033,13 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 			else
 				break;
 		}
-		*outPtr++ = *(*inPtr)++;
+		*outPtr++ = QLatin1Char(*(*inPtr)++);
 	}
-	*outPtr = '\0';
 
 	// skip end quote 
 	(*inPtr)++;
 	
-	*string = QLatin1String(str);
-	XtFree(str);
-	
+	*string = str;
 	return True;
 }
 

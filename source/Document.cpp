@@ -1,6 +1,7 @@
 
 #include <QMessageBox>
 
+#include "MotifHelper.h"
 #include "Document.h"
 #include "file.h"
 #include "highlight.h"

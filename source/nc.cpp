@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-
+#include "XString.h"
 #include "prefFile.h"
 #include "fileUtils.h"
 #include "utils.h"

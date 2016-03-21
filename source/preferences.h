@@ -151,7 +151,6 @@ int GetVerticalAutoScroll(void);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);
 int ReadNumericField(const char **inPtr, int *value);
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
-int ReadQuotedStringEx(const char **inPtr, const char **errMsg, XString *string);
 int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);

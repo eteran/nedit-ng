@@ -28,6 +28,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QString>
 #include "fileUtils.h"
 #include "utils.h"
 
@@ -548,19 +549,19 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 **
 ** Force a terminating \n, if this is requested
 */
-XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
+QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	struct stat statbuf;
 	FILE *fp;
 	int readLen;
 
 	/* Read the whole file into fileString */
 	if ((fp = fopen(fileName.c_str(), "r")) == nullptr) {
-		return XString();
+		return QString();
 	}
 	
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		return XString();
+		return QString();
 	}
 	
 	int fileLen = statbuf.st_size;
@@ -572,7 +573,7 @@ XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	if (ferror(fp)) {
 		XtFree(fileString);
 		fclose(fp);
-		return XString();
+		return QString();
 	}
 	fclose(fp);
 	fileString[readLen] = '\0';
@@ -591,6 +592,8 @@ XString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 		fileString[readLen] = '\n';
 		fileString[readLen + 1] = '\0';
 	}
-
-	return XString::takeString(fileString);
+	
+	QString ret = QString::fromLatin1(fileString, readLen);
+	XtFree(fileString);
+	return ret;
 }
