@@ -247,7 +247,7 @@ int NormalizePathname(char *pathname) {
 		strcpy(oldPathname, pathname);
 		
 		/* get the working directory and prepend to the path */
-		strcpy(pathname, GetCurrentDirEx().c_str());
+		strcpy(pathname, GetCurrentDirEx().toLatin1().data());
 
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things

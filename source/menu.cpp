@@ -4564,7 +4564,7 @@ static char neditDBBadFilenameChars[] = "\n";
 void WriteNEditDB(void) {
 
 	try {
-		std::string fullName = GetRCFileNameEx(NEDIT_HISTORY);
+		QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
 		FILE *fp;
 		int i;
 		static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
@@ -4575,7 +4575,7 @@ void WriteNEditDB(void) {
 		}
 
 		// open the file 
-		if ((fp = fopen(fullName.c_str(), "w")) == nullptr) {
+		if ((fp = fopen(fullName.toLatin1().data(), "w")) == nullptr) {
 			return;
 		}
 
@@ -4632,7 +4632,7 @@ void ReadNEditDB(void) {
 
 	/* Don't move this check ahead of the previous statements. PrevOpen
 	   must be initialized at all times. */
-	std::string fullName;
+	QString fullName;
 	try {
 		fullName = GetRCFileNameEx(NEDIT_HISTORY);
 	} catch(const path_error &e) {
@@ -4641,7 +4641,7 @@ void ReadNEditDB(void) {
 
 	/*  Stat history file to see whether someone touched it after this
 	    session last changed it.  */
-	if (stat(fullName.c_str(), &attribute) == 0) {
+	if (stat(fullName.toLatin1().data(), &attribute) == 0) {
 		if (lastNeditdbModTime >= attribute.st_mtime) {
 			//  Do nothing, history file is unchanged.  
 			return;
@@ -4658,7 +4658,7 @@ void ReadNEditDB(void) {
 	}
 
 	// open the file 
-	if ((fp = fopen(fullName.c_str(), "r")) == nullptr) {
+	if ((fp = fopen(fullName.toLatin1().data(), "r")) == nullptr) {
 		return;
 	}
 

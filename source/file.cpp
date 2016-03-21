@@ -106,7 +106,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	}
 
 	window->filename_ = name;
-	window->path_     = (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx();
+	window->path_     = (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx().toStdString();
 	
 	// do we have a "/" at the end? if not, add one 
 	if (!window->path_.empty() && window->path_.back() != '/') {
@@ -1010,7 +1010,7 @@ static std::string backupFileNameEx(Document *window) {
 		return buf;
 	} else {
 		snprintf(buf, sizeof(buf), "~%s", window->filename_.c_str());
-		return PrependHomeEx(buf);
+		return PrependHomeEx(buf).toStdString();
 	}
 }
 

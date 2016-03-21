@@ -566,11 +566,11 @@ void Replay(Document *window) {
 void ReadMacroInitFile(Document *window) {
 
 	try {
-		const std::string autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
+		const QString autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
 		static bool initFileLoaded = false;
 	
 		if (!initFileLoaded) {
-			ReadMacroFileEx(window, autoloadName, False);
+			ReadMacroFileEx(window, autoloadName.toStdString(), False);
 			initFileLoaded = true;
 		}
 	} catch(const path_error &e) {

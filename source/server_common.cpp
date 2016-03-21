@@ -25,14 +25,15 @@
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
+
+#include "utils.h"
+#include "nedit.h"
+#include "server_common.h"
+
 #include <cstdio>
 #include <Xm/Xm.h>
 #include <sys/types.h>
 #include <sys/param.h>
-
-#include "nedit.h"
-#include "server_common.h"
-#include "../util/utils.h"
 
 /*
  * Create the server property atoms for the server with serverName.
@@ -49,12 +50,12 @@
  */
 void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn) {
 	char propName[20 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN];
-	std::string userName = GetUserNameEx();
-	std::string hostName = GetNameOfHostEx();
+	QString userName = GetUserNameEx();
+	QString hostName = GetNameOfHostEx();
 
-	snprintf(propName, sizeof(propName), "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
+	snprintf(propName, sizeof(propName), "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
 	*serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
-	snprintf(propName, sizeof(propName), "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.c_str(), userName.c_str(), serverName);
+	snprintf(propName, sizeof(propName), "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
 	*serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
 }
 
@@ -77,23 +78,21 @@ void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomRet
  */
 Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
 	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 7];
-	std::string userName = GetUserNameEx();
-	std::string hostName = GetNameOfHostEx();
-	Atom atom;
+	QString userName = GetUserNameEx();
+	QString hostName = GetNameOfHostEx();
 
-	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.c_str(), userName.c_str(), serverName, path);
-	atom = XInternAtom(TheDisplay, propName, False);
+	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
+	Atom atom = XInternAtom(TheDisplay, propName, False);
 	return (atom);
 }
 
 Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exist) {
 	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 9];
-	std::string userName = GetUserNameEx();
-	std::string hostName = GetNameOfHostEx();
-	Atom atom;
+	QString userName = GetUserNameEx();
+	QString hostName = GetNameOfHostEx();
 
-	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.c_str(), userName.c_str(), serverName, path);
-	atom = XInternAtom(TheDisplay, propName, only_if_exist);
+	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
+	Atom atom = XInternAtom(TheDisplay, propName, only_if_exist);
 	return (atom);
 }
 
@@ -103,9 +102,9 @@ Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool o
  */
 void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
 	char propNamePrefix[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1];
-	std::string userName = GetUserNameEx();
-	std::string hostName = GetNameOfHostEx();
-	int length = snprintf(propNamePrefix, sizeof(propNamePrefix), "NEDIT_FILE_%s_%s_%s_", hostName.c_str(), userName.c_str(), serverName);
+	QString userName = GetUserNameEx();
+	QString hostName = GetNameOfHostEx();
+	int length = snprintf(propNamePrefix, sizeof(propNamePrefix), "NEDIT_FILE_%s_%s_%s_", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
 
 	int nProperties;
 	Atom *atoms = XListProperties(TheDisplay, rootWindow, &nProperties);

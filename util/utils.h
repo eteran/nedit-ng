@@ -27,6 +27,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#include <QString>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -34,12 +35,12 @@
 #include "string_view.h"
 #include "path_error.h"
 
-std::string GetCurrentDirEx();
-std::string GetHomeDirEx();
-std::string GetNameOfHostEx();
-std::string GetRCFileNameEx(int type);
-std::string GetUserNameEx();
-std::string PrependHomeEx(view::string_view filename);
+QString GetCurrentDirEx();
+QString GetHomeDirEx();
+QString GetNameOfHostEx();
+QString GetRCFileNameEx(int type);
+QString GetUserNameEx();
+QString PrependHomeEx(view::string_view filename);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
 enum {

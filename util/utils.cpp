@@ -110,22 +110,22 @@ bool isRegFile(const char *file) {
 
 /* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
-std::string GetCurrentDirEx(void) {
-	return QDir::currentPath().toStdString();
+QString GetCurrentDirEx(void) {
+	return QDir::currentPath();
 }
 
 /* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
-std::string GetHomeDirEx(void) {
-	return QDir::homePath().toStdString();
+QString GetHomeDirEx(void) {
+	return QDir::homePath();
 }
 
 /*
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
 */
-std::string GetUserNameEx(void) {
+QString GetUserNameEx(void) {
 	/* cuserid has apparently been dropped from the ansi C standard, and if
 	   strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
 	   to cuserid fail to compile.  Older versions of nedit try to use the
@@ -136,7 +136,7 @@ std::string GetUserNameEx(void) {
 	static char *userName = nullptr;
 
 	if (userName) {
-		return userName;
+		return QLatin1String(userName);
 	}
 
 	if(const struct passwd *passwdEntry = getpwuid(getuid())) {
@@ -144,14 +144,14 @@ std::string GetUserNameEx(void) {
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
 		userName = strdup(passwdEntry->pw_name);
-		return userName;	
+		return QLatin1String(userName);
 	}
 	
 	/* This is really serious, but sometimes username service
 	   is misconfigured through no fault of the user.  Be nice
 	   and let the user start nc anyway. */
 	perror("nedit: getpwuid() failed - reverting to $USER");
-	return getenv("USER");
+	return QLatin1String(qgetenv("USER"));
 
 }
 
@@ -163,21 +163,21 @@ std::string GetUserNameEx(void) {
 ** linking conflict on VMS with the standard gethostname function, because
 ** VMS links case-insensitively.
 */
-std::string GetNameOfHostEx(void) {
-	return QHostInfo::localHostName().toStdString();
+QString GetNameOfHostEx(void) {
+	return QHostInfo::localHostName();
 }
 
 /*
 ** Create a path: $HOME/filename
 ** Return "" if it doesn't fit into the buffer
 */
-std::string PrependHomeEx(view::string_view filename) {
+QString PrependHomeEx(view::string_view filename) {
 
 	// TODO(eteran): there is likely a way to make this more efficient
 	//               and make less copies
-	std::string path = GetHomeDirEx();
-	path.append("/");
-	path.append(filename.to_string());
+	QString path = GetHomeDirEx();
+	path.append(QLatin1String("/"));
+	path.append(QString::fromStdString(filename.to_string()));
 	return path;
 }
 
@@ -193,7 +193,7 @@ std::string PrependHomeEx(view::string_view filename) {
 **      - Pointer to a static array containing the file name
 **
 */
-std::string GetRCFileNameEx(int type) {
+QString GetRCFileNameEx(int type) {
 	
 	static char rcFiles[N_FILE_TYPES][MAXPATHLEN + 1];
 	static bool namesDetermined = false;
@@ -206,17 +206,17 @@ std::string GetRCFileNameEx(int type) {
 
 			/* Let's try if ~/.nedit is a regular file or not. */
 			char legacyFile[MAXPATHLEN + 1];
-			buildFilePath(legacyFile, GetHomeDirEx().c_str(), hiddenFileNames[NEDIT_RC]);
+			buildFilePath(legacyFile, GetHomeDirEx().toLatin1().data(), hiddenFileNames[NEDIT_RC]);
 			if (isRegFile(legacyFile)) {
 				/* This is a legacy setup with rc files in $HOME */
 				for (int i = 0; i < N_FILE_TYPES; i++) {
-					buildFilePath(rcFiles[i], GetHomeDirEx().c_str(), hiddenFileNames[i]);
+					buildFilePath(rcFiles[i], GetHomeDirEx().toLatin1().data(), hiddenFileNames[i]);
 				}
 			} else {
 				/* ${HOME}/.nedit does not exist as a regular file. */
 				/* FIXME: Devices, sockets and fifos are ignored for now. */
 				char defaultNEditHome[MAXPATHLEN + 1];
-				buildFilePath(defaultNEditHome, GetHomeDirEx().c_str(), DEFAULT_NEDIT_HOME);
+				buildFilePath(defaultNEditHome, GetHomeDirEx().toLatin1().data(), DEFAULT_NEDIT_HOME);
 				if (!isDir(defaultNEditHome)) {
 					/* Create DEFAULT_NEDIT_HOME */
 					if (mkdir(defaultNEditHome, 0777) != 0) {
@@ -253,5 +253,5 @@ std::string GetRCFileNameEx(int type) {
 		namesDetermined = true;
 	}
 
-	return rcFiles[type];
+	return QLatin1String(rcFiles[type]);
 }

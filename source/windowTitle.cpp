@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "prefFile.h"
+#include "utils.h"
 #include "windowTitle.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -35,7 +36,6 @@
 #include "Document.h"
 #include "MotifHelper.h"
 #include "misc.h"
-#include "utils.h"
 #include "fileUtils.h"
 #include "clearcase.h"
 
@@ -340,7 +340,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 
 			case 'h': // host name 
 				hostNamePresent = true;
-				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHostEx().c_str());
+				titlePtr = safeStrCpy(titlePtr, titleEnd, GetNameOfHostEx().toLatin1().data());
 				break;
 
 			case 'S': // file status 
@@ -359,7 +359,7 @@ char *FormatWindowTitle(const char *filename, const char *path, const char *clea
 
 			case 'u': // user name 
 				userNamePresent = True;
-				titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserNameEx().c_str());
+				titlePtr = safeStrCpy(titlePtr, titleEnd, GetUserNameEx().toLatin1().data());
 				break;
 
 			case '%': // escaped % 

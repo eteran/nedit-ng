@@ -992,8 +992,8 @@ XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut) {
 
 	// NOTE(eteran): mimic previous bahavior here of passing null when nedit.rc lookup fails
 	try {
-		const std::string filename = GetRCFileNameEx(NEDIT_RC);
-		return CreatePreferencesDatabase(filename.c_str(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+		const QString filename = GetRCFileNameEx(NEDIT_RC);
+		return CreatePreferencesDatabase(filename.toLatin1().data(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
 	} catch(const path_error &e) {
 		return CreatePreferencesDatabase(nullptr, APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
 	}
@@ -1165,7 +1165,7 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 
 void SaveNEditPrefs(Widget parent, int quietly) {
 	try {
-		std::string prefFileName = GetRCFileNameEx(NEDIT_RC);
+		QString prefFileName = GetRCFileNameEx(NEDIT_RC);
 
 		if (!quietly) {
 			if (DialogF(DF_INF, parent, 2, "Save Preferences", ImportedFile == nullptr ? "Default preferences will be saved in the file:\n"
@@ -1176,7 +1176,7 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		                                                                            	 "%s\n"
 		                                                                            	 "SAVING WILL INCORPORATE SETTINGS\n"
 		                                                                            	 "FROM FILE: %s",
-		            	"OK", "Cancel", prefFileName.c_str(), ImportedFile) == 2) {
+		            	"OK", "Cancel", prefFileName.toLatin1().data(), ImportedFile) == 2) {
 				return;
 			}
 		}
@@ -1195,8 +1195,8 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
 		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
 
-		if (!SavePreferences(XtDisplay(parent), prefFileName.c_str(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
-			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.c_str());
+		if (!SavePreferences(XtDisplay(parent), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
+			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.toLatin1().data());
 		}
 
 		PrefsHaveChanged = false;

@@ -391,7 +391,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		if (windowPath && *windowPath) {
 			snprintf(pathName, sizeof(pathName), "%s/%s", windowPath, filename);
 		} else {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
 		}
 
 		NormalizePathname(pathName);
@@ -462,7 +462,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	strcpy(tmptagSpec, tagSpec);
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
 		} else {
 			strcpy(pathName, filename);
 		}
@@ -532,7 +532,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 	removed = 1;
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().c_str(), filename);
+			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
 		} else {
 			strcpy(pathName, filename);
 		}
