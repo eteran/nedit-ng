@@ -32,8 +32,6 @@
 #include <exception>
 
 class QString;
-class XString;
-
 
 class invalid_character_error : public std::exception {
 public:

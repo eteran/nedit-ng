@@ -4,7 +4,6 @@
 
 #include <QString>
 #include <string>
-#include "XString.h"
 
 /* Pattern specification structure */
 class HighlightPattern {
