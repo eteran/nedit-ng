@@ -2,12 +2,12 @@
 #ifndef MENU_ITEM_H_
 #define MENU_ITEM_H_
 
-#include "XString.h"
+#include <QString>
 #include <X11/keysym.h>
 
 // Structure representing a menu item for shell, macro and BG menus
 struct MenuItem {
-	XString name;
+	QString name;
 	unsigned int modifiers;
 	KeySym keysym;
 	char mnemonic;

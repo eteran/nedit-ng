@@ -26,7 +26,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "XString.h"
 #include "prefFile.h"
 #include "fileUtils.h"
 #include "utils.h"
@@ -398,9 +397,9 @@ static int startServer(const char *message, const char *commandLineArgs) {
 	}
 
 	// start the server 
-	auto commandLine = XString::format("%s %s&", Preferences.serverCmd, commandLineArgs);
+	auto commandLine = QString(QLatin1String("%1 %2&")).arg(QLatin1String(Preferences.serverCmd)).arg(QLatin1String(commandLineArgs));
 	
-	int sysrc = system(commandLine.str());
+	int sysrc = system(commandLine.toLatin1().data());
 
 	return (sysrc == 0) ? 0 : -1;
 }

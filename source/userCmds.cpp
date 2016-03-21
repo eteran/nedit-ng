@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QString>
 
 #include "userCmds.h"
 #include "TextBuffer.h"
@@ -48,7 +49,6 @@
 #include "misc.h"
 #include "managedList.h"
 #include "MenuItem.h"
-#include "XString.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -113,7 +113,7 @@ struct userCmdDialog {
 /* Structure for keeping track of hierarchical sub-menus during user-menu
    creation */
 struct menuTreeItem {
-	XString name;
+	QString name;
 	Widget  menuPane;
 };
 
@@ -215,11 +215,11 @@ static void editMacroOrBGMenu(Document *window, int dialogType);
 static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
 static void rebuildMenuOfAllWindows(int menuType);
 static void rebuildMenu(Document *window, int menuType);
-static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const XString &hierName);
+static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const QString &hierName);
 static char *copySubstring(const char *string, int length);
-static XString copySubstringEx(const char *string, int length);
+static QString copySubstringEx(const char *string, int length);
 static Widget createUserMenuItem(Widget menuPane, char *name, MenuItem *f, int index, XtCallbackProc cbRtn, XtPointer cbArg);
-static Widget createUserSubMenuEx(Widget parent, const XString &label, Widget *menuItem);
+static Widget createUserSubMenuEx(Widget parent, const QString &label, Widget *menuItem);
 static void deleteMenuItems(Widget menuPane);
 static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu);
 static void updateMenu(Document *window, int menuType);
@@ -272,8 +272,8 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item);
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
 static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus);
 static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *hierName);
-static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const XString &hierName);
-static char *stripLanguageModeEx(const XString &menuItemName);
+static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const QString &hierName);
+static char *stripLanguageModeEx(const QString &menuItemName);
 static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx);
 static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems, int languageMode);
 static int doesLanguageModeMatch(userMenuInfo *info, int languageMode);
@@ -898,7 +898,7 @@ int DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 	int i;
 
 	for (i = 0; i < NShellMenuItems; i++) {
-		if (ShellMenuItems[i]->name == itemName) {
+		if (ShellMenuItems[i]->name == QLatin1String(itemName)) {
 			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
 				return False;
 			DoShellMenuCmd(window, ShellMenuItems[i]->cmd, ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
@@ -917,7 +917,7 @@ int DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 	int i;
 
 	for (i = 0; i < NMacroMenuItems; i++) {
-		if (MacroMenuItems[i]->name == itemName) {
+		if (MacroMenuItems[i]->name == QLatin1String(itemName)) {
 			DoMacro(window, MacroMenuItems[i]->cmd, "macro menu command");
 			return True;
 		}
@@ -929,7 +929,7 @@ int DoNamedBGMenuCmd(Document *window, const char *itemName) {
 	int i;
 
 	for (i = 0; i < NBGMenuItems; i++) {
-		if (BGMenuItems[i]->name == itemName) {
+		if (BGMenuItems[i]->name == QLatin1String(itemName)) {
 			DoMacro(window, BGMenuItems[i]->cmd, "background menu macro");
 			return True;
 		}
@@ -1506,7 +1506,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 /*
 ** Find the widget corresponding to a hierarchical menu name (a>b>c...)
 */
-static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const XString &hierName) {
+static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const QString &hierName) {
 
 	for (int i = 0; i < nTreeEntries; i++) {
 		if (hierName == menuTree[i].name) {
@@ -1525,8 +1525,8 @@ static char *copySubstring(const char *string, int length) {
 	return retStr;
 }
 
-static XString copySubstringEx(const char *string, int length) {
-	return XString(string, length);
+static QString copySubstringEx(const char *string, int length) {
+	return QString::fromLatin1(string, length);
 }
 
 static Widget createUserMenuItem(Widget menuPane, char *name, MenuItem *f, int index, XtCallbackProc cbRtn, XtPointer cbArg) {
@@ -1550,13 +1550,13 @@ static Widget createUserMenuItem(Widget menuPane, char *name, MenuItem *f, int i
 ** removed later if the menu is redefined.  Returns the menu pane of the
 ** new sub-menu.
 */
-static Widget createUserSubMenuEx(Widget parent, const XString &label, Widget *menuItem) {
+static Widget createUserSubMenuEx(Widget parent, const QString &label, Widget *menuItem) {
 	Widget menuPane;	
 	static Arg args[1] = {{XmNuserData, (XtArgVal)TEMPORARY_MENU_ITEM}};
 
 	menuPane = CreatePulldownMenu(parent, (String) "userPulldown", args, 1);
 	
-	XmString st1 = label.toXmString();
+	XmString st1 = XmStringCreateSimple(label.toLatin1().data());
 	*menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent, XmNlabelString, st1, XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XmStringFree(st1);
 	return menuPane;
@@ -1866,7 +1866,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NShellMenuItems)
 		return;
 
-	params[0] = ShellMenuItems[index]->name.str();
+	params[0] = ShellMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1899,7 +1899,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NMacroMenuItems)
 		return;
 
-	params[0] = MacroMenuItems[index]->name.str();
+	params[0] = MacroMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1923,7 +1923,7 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NBGMenuItems)
 		return;
 
-	params[0] = BGMenuItems[index]->name.str();
+	params[0] = BGMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1955,7 +1955,7 @@ static void updateDialogFields(MenuItem *f, userCmdDialog *ucd) {
 		mneString[1] = '\0';
 		generateAcceleratorString(accString, f->modifiers, f->keysym);
 		
-		XmTextSetStringEx(ucd->nameTextW, f->name.str());
+		XmTextSetStringEx(ucd->nameTextW, f->name.toStdString());
 		XmTextSetStringEx(ucd->cmdTextW,  f->cmd);
 		XmTextSetStringEx(ucd->accTextW,  accString);
 		XmTextSetStringEx(ucd->mneTextW,  mneString);
@@ -1983,12 +1983,13 @@ static void updateDialogFields(MenuItem *f, userCmdDialog *ucd) {
 ** failure.
 */
 static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
-	char *cmdText, *mneText, *accText;
+	char *cmdText;
+	char *mneText;
+	char *accText;
 
-	auto nameTextTemp = XmTextGetString(ucd->nameTextW);
-	auto nameText = XString::takeString(nameTextTemp);
+	QString nameText = XmTextGetStringEx(ucd->nameTextW);
 	
-	if (nameText.empty()) {
+	if (nameText.isEmpty()) {
 		if (!silent) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Menu Entry"), QLatin1String("Please specify a name\nfor the menu item"));
 			XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
@@ -1996,7 +1997,7 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 		return nullptr;
 	}
 
-	if (strchr(nameText.str(), ':')) {
+	if (strchr(nameText.toLatin1().data(), ':')) {
 		if (!silent) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Menu Entry"), QLatin1String("Menu item names may not\ncontain colon (:) characters"));
 			XmProcessTraversal(ucd->nameTextW, XmTRAVERSE_CURRENT);
@@ -2071,7 +2072,7 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 static MenuItem *copyMenuItemRec(MenuItem *item) {
 
 	auto newItem = new MenuItem(*item);
-	newItem->name = XString(item->name);
+	newItem->name = item->name;
 	newItem->cmd  = XtStringDup(item->cmd);
 	return newItem;
 }
@@ -2185,14 +2186,14 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 		*outPtr++ = '\t';
 		
 		for (auto ch : f->name) { // Copy the command name 
-			if (ch == '\\') {                // changing backslashes to "\\" 
+			if (ch == QLatin1Char('\\')) {                // changing backslashes to "\\" 
 				*outPtr++ = '\\';
 				*outPtr++ = '\\';
-			} else if (ch == '\n') { // changing newlines to \n 
+			} else if (ch == QLatin1Char('\n')) { // changing newlines to \n 
 				*outPtr++ = '\\';
 				*outPtr++ = 'n';
 			} else {
-				*outPtr++ = ch;
+				*outPtr++ = ch.toLatin1();
 			}
 		}
 		
@@ -2394,7 +2395,7 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 
 		// create a menu item record 
 		auto f = new MenuItem;
-		f->name      = nameStr;
+		f->name      = QLatin1String(nameStr);
 		f->cmd       = cmdStr;
 		f->mnemonic  = mneChar;
 		f->modifiers = modifiers;
@@ -2771,7 +2772,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 	newInfo->umiToBeManaged = False;
 
 	// assign language mode info to new user menu info element 
-	parseMenuItemName(item->name.str(), newInfo);
+	parseMenuItemName(item->name.toLatin1().data(), newInfo);
 
 	return newInfo;
 }
@@ -2905,10 +2906,10 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *
 ** Cache user menus:
 ** Find info corresponding to a hierarchical menu name (a>b>c...)
 */
-static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const XString &hierName) {
+static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const QString &hierName) {
 
 	for (int i = 0; i < subMenus->usmcNbrOfSubMenus; i++) {
-		if (hierName == subMenus->usmcInfo[i].usmiName) {
+		if (hierName == QLatin1String(subMenus->usmcInfo[i].usmiName)) {
 			return &subMenus->usmcInfo[i];
 		}
 	}
@@ -2921,12 +2922,14 @@ static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const XStr
 ** Returns an allocated copy of menuItemName stripped of language mode
 ** parts (i.e. parts starting with "@").
 */
-static char *stripLanguageModeEx(const XString &menuItemName) {
+static char *stripLanguageModeEx(const QString &menuItemName) {
 	
-	if(const char *firstAtPtr = strchr(menuItemName.str(), '@')) {
-		return copySubstring(menuItemName.str(), firstAtPtr - menuItemName.str());
+	QByteArray latin1 = menuItemName.toLatin1();
+	
+	if(const char *firstAtPtr = strchr(latin1.data(), '@')) {
+		return copySubstring(latin1.data(), firstAtPtr - latin1.data());
 	} else {
-		return XtNewStringEx(menuItemName.str());
+		return XtNewStringEx(latin1.data());
 	}
 }
 
