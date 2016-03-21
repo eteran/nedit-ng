@@ -143,7 +143,7 @@ QString GetUserNameEx(void) {
 		// NOTE(eteran): so, this is effecively a one time memory leak.
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
-		userName = strdup(passwdEntry->pw_name);
+		userName = qstrdup(passwdEntry->pw_name);
 		return QLatin1String(userName);
 	}
 	
