@@ -143,7 +143,7 @@ static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData);
 static void updateHighlightStyleMenu(void);
 static void updateLabels(void);
 static Widget createHighlightStylesMenu(Widget parent);
-static XString convertPatternExprEx(const XString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
+static QString convertPatternExprEx(const QString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
 
 
 
@@ -495,28 +495,32 @@ static void convertOldPatternSet(PatternSet *patSet) {
 ** isSubsExpr.  Error messages are directed to stderr, and include the
 ** pattern set name and pattern name as passed in patSetName and patName.
 */
-static XString convertPatternExprEx(const XString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
+static QString convertPatternExprEx(const QString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
 
-	if (!patternRE) {
-		return XString();
+	if (patternRE.isNull()) {
+		return QString();
 	}
 	
 	if (isSubsExpr) {
 		// TODO(eteran): the + 5000 seems a bit wasteful
 		const int bufsize = patternRE.size() + 5000;		
 		char *newRE = XtMalloc(bufsize);
-		ConvertSubstituteRE(patternRE.str(), newRE, bufsize);
-		return XString::takeString(newRE);
+		ConvertSubstituteRE(patternRE.toLatin1().data(), newRE, bufsize);
+		QString s = QLatin1String(newRE);
+		XtFree(newRE);
+		return s;
 	} else {
 		try {
-			char *newRE = ConvertRE(patternRE.str());
-			return XString::takeString(newRE);
+			char *newRE = ConvertRE(patternRE.toLatin1().data());
+			QString s = QLatin1String(newRE);
+			XtFree(newRE);
+			return s;
 		} catch(const regex_error &e) {
 			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
 		}
 	}
 	
-	return XString();
+	return QString();
 }
 
 /*
@@ -680,18 +684,18 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 		outBuf->BufInsertEx(outBuf->BufGetLength(), indentStr);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (pat->startRE) {
-			std::string str = MakeQuotedStringEx(pat->startRE.str());
+		if (!pat->startRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat->startRE.toStdString());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (pat->endRE) {
-			std::string str = MakeQuotedStringEx(pat->endRE.str());
+		if (!pat->endRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat->endRE.toStdString());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		if (pat->errorRE) {
-			std::string str = MakeQuotedStringEx(pat->errorRE.str());
+		if (!pat->errorRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat->errorRE.toStdString());
 			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
 		}
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
@@ -846,7 +850,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	// read the end pattern 
 	
 	if (**inPtr == ':') {
-		pattern->endRE = nullptr;
+		pattern->endRE = QString();
 	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->endRE)) {
 		return False;
 	}
@@ -856,7 +860,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 
 	// read the error pattern 
 	if (**inPtr == ':') {
-		pattern->errorRE = nullptr;
+		pattern->errorRE = QString();
 	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->errorRE)) {
 		return False;
 	}
@@ -2087,12 +2091,12 @@ static void setDisplayedCB(void *item, void *cbArg) {
 		isSubpat    = !pat->subPatternOf.isNull();
 		isDeferred  = pat->flags & DEFER_PARSING;
 		isColorOnly = pat->flags & COLOR_ONLY;
-		isRange = (pat->endRE != nullptr);
+		isRange = (!pat->endRE.isNull());
 		XmTextSetStringEx(HighlightDialog.nameW,   pat->name);
 		XmTextSetStringEx(HighlightDialog.parentW, !pat->subPatternOf.isNull() ? pat->subPatternOf.toStdString() : "");
-		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE.str());
-		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE.str());
-		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.str());
+		XmTextSetStringEx(HighlightDialog.startW,  pat->startRE.toStdString());
+		XmTextSetStringEx(HighlightDialog.endW,    pat->endRE.toStdString());
+		XmTextSetStringEx(HighlightDialog.errorW,  pat->errorRE.toStdString());
 		
 		RadioButtonChangeState(HighlightDialog.topLevelW, !isSubpat && !isDeferred,  False);
 		RadioButtonChangeState(HighlightDialog.deferredW, !isSubpat &&  isDeferred,  False);
@@ -2241,8 +2245,8 @@ static HighlightPattern *readDialogFields(bool silent) {
 	}
 
 	// read the startRE field 
-	pat->startRE = XString::takeString(XmTextGetString(HighlightDialog.startW));
-	if (pat->startRE.empty()) {
+	pat->startRE = XmTextGetStringEx(HighlightDialog.startW);
+	if (pat->startRE.isEmpty()) {
 		if (!silent) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Matching Regex"), QLatin1String("Please specify a regular\nexpression to match"));
 			XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
@@ -2255,22 +2259,21 @@ static HighlightPattern *readDialogFields(bool silent) {
 	   and put it in replacement regular-expression form */
 	if (colorOnly) {
 	
-		char *outStr = XtMalloc(pat->startRE.size() + 1);
-		char *outPtr = outStr;
+		QString outStr;
+		outStr.reserve(pat->startRE.size());
+	
+		auto outPtr = std::back_inserter(outStr);
 		
-		for(char ch : pat->startRE) {
-			if (ch != ' ' && ch != '\t') {
+		for(QChar ch : pat->startRE) {
+			if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 				*outPtr++ = ch;
 			}
 		}
-
-		*outPtr = '\0';
+			
+		pat->startRE = outStr;
 		
 		
-		pat->startRE = XString::takeString(outStr);
-		
-		
-		if (strspn(pat->startRE.str(), "&\\123456789 \t") != pat->startRE.size() || (pat->startRE[0] != '\\' && pat->startRE[0] != '&') || strstr(pat->startRE.str(), "\\\\")) {
+		if (strspn(pat->startRE.toLatin1().data(), "&\\123456789 \t") != pat->startRE.size() || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(pat->startRE.toLatin1().data(), "\\\\")) {
 			if (!silent) {
 				DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Error", "The expression field in patterns which specify highlighting for\n"
 				                                                            "a parent, must contain only sub-expression references in regular\n"
@@ -2308,8 +2311,8 @@ static HighlightPattern *readDialogFields(bool silent) {
 
 	// read the endRE field 
 	if (colorOnly || XmToggleButtonGetState(HighlightDialog.rangeW)) {
-		pat->endRE = XmTextGetString(HighlightDialog.endW);
-		if (!colorOnly && pat->endRE.empty()) {
+		pat->endRE = XmTextGetStringEx(HighlightDialog.endW);
+		if (!colorOnly && pat->endRE.isEmpty()) {
 			if (!silent) {
 				QMessageBox::warning(nullptr /*parent*/, QLatin1String("Specify Regex"), QLatin1String("Please specify an ending\nregular expression"));
 				XmProcessTraversal(HighlightDialog.endW, XmTRAVERSE_CURRENT);
@@ -2321,9 +2324,9 @@ static HighlightPattern *readDialogFields(bool silent) {
 
 	// read the errorRE field 
 	if (XmToggleButtonGetState(HighlightDialog.rangeW)) {
-		pat->errorRE = XString::takeString(XmTextGetString(HighlightDialog.errorW));
-		if (pat->errorRE.empty()) {
-			pat->errorRE = nullptr;
+		pat->errorRE = XmTextGetStringEx(HighlightDialog.errorW);
+		if (pat->errorRE.isEmpty()) {
+			pat->errorRE = QString();
 		}
 	}
 	return pat;

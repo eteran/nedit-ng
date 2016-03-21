@@ -21,9 +21,9 @@ public:
 
 public:
 	std::string name;
-	XString startRE;
-	XString endRE;
-	XString errorRE;
+	QString startRE;
+	QString endRE;
+	QString errorRE;
 	QString style;
 	QString subPatternOf;
 	int flags;

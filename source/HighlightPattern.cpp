@@ -1,9 +1,8 @@
 
 #include "HighlightPattern.h"
-#include "MotifHelper.h"
 #include <algorithm>
 
-HighlightPattern::HighlightPattern() : endRE(nullptr), errorRE(nullptr), flags(0) {
+HighlightPattern::HighlightPattern() : flags(0) {
 }
 
 HighlightPattern::HighlightPattern(const HighlightPattern &other) : name(other.name), startRE(other.startRE), endRE(other.endRE), errorRE(other.errorRE), style(other.style), subPatternOf(other.subPatternOf), flags(other.flags) {
