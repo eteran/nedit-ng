@@ -38,7 +38,6 @@
 #include "misc.h"
 #include "prefFile.h"
 #include "MotifHelper.h"
-#include "XString.h"
 
 #include <cctype>
 #include <cerrno>
@@ -624,14 +623,14 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 	if (CopiesOption[0] == '\0') {
 		copiesArg[0] = '\0';
 	} else {
-		auto str = XString::takeString(XmTextGetString(Text1));
-		if (str.empty()) {
+		const QString str = XmTextGetStringEx(Text1);
+		if (str.isEmpty()) {
 			copiesArg[0] = '\0';
 		} else {
-			if (sscanf(str.str(), "%d", &nCopies) != 1) {
+			if (sscanf(str.toLatin1().data(), "%d", &nCopies) != 1) {
 				copiesArg[0] = '\0';
 			} else {
-				sprintf(copiesArg, " %s%s", CopiesOption, str.str());
+				sprintf(copiesArg, " %s%s", CopiesOption, str.toLatin1().data());
 			}
 		}
 	}
@@ -639,22 +638,22 @@ static void updatePrintCmd(Widget w, XtPointer client_data, XtPointer call_data)
 	if (QueueOption[0] == '\0') {
 		queueArg[0] = '\0';
 	} else {
-		auto str = XString::takeString(XmTextGetString(Text2));
-		if (str.empty()) {
+		const QString str = XmTextGetStringEx(Text2);
+		if (str.isEmpty()) {
 			queueArg[0] = '\0';
 		} else {
-			sprintf(queueArg, " %s%s", QueueOption, str.str());
+			sprintf(queueArg, " %s%s", QueueOption, str.toLatin1().data());
 		}
 	}
 	
 	if (HostOption[0] == '\0') {
 		hostArg[0] = '\0';
 	} else {
-		auto str = XString::takeString(XmTextGetString(Text3));
-		if (str.empty()) {
+		const QString str = XmTextGetStringEx(Text3);
+		if (str.isEmpty()) {
 			hostArg[0] = '\0';
 		} else {
-			sprintf(hostArg, " %s%s", HostOption, str.str());
+			sprintf(hostArg, " %s%s", HostOption, str.toLatin1().data());
 		}
 	}
 	
@@ -699,10 +698,10 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 
 	{
 		/* get the print command from the command text area */
-		auto str = XString::takeString(XmTextGetString(Text4));
+		const QString str = XmTextGetStringEx(Text4);
 	
 		/* add the file name and output redirection to the print command */
-		sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str.str());
+		sprintf(command, "cat %s | %s 2>&1", PrintFileName.c_str(), str.toLatin1().data());
 	}
 	
 	/* Issue the print command using a popen call and recover error messages
@@ -733,20 +732,20 @@ static void printButtonCB(Widget widget, XtPointer client_data, XtPointer call_d
 
 	/* Print command succeeded, so retain the current print parameters */
 	if (CopiesOption[0] != '\0') {
-		auto str = XString::takeString(XmTextGetString(Text1));
-		strcpy(Copies, str.str());
+		const QString str = XmTextGetStringEx(Text1);
+		strcpy(Copies, str.toLatin1().data());
 	}
 	if (QueueOption[0] != '\0') {
-		auto str = XString::takeString(XmTextGetString(Text2));
-		strcpy(Queue, str.str());
+		const QString str = XmTextGetStringEx(Text2);
+		strcpy(Queue, str.toLatin1().data());
 	}
 	if (HostOption[0] != '\0') {
-		auto str = XString::takeString(XmTextGetString(Text3));
-		strcpy(Host, str.str());
+		const QString str = XmTextGetStringEx(Text3);
+		strcpy(Host, str.toLatin1().data());
 	}
 	
-	auto str = XString::takeString(XmTextGetString(Text4));
-	strcpy(CmdText, str.str());
+	const QString str = XmTextGetStringEx(Text4);
+	strcpy(CmdText, str.toLatin1().data());
 
 	/* Pop down the dialog */
 	DoneWithDialog = true;
