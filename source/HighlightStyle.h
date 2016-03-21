@@ -7,7 +7,7 @@
 
 struct HighlightStyle {
 	std::string name;
-	std::string color;
+	QString     color;
 	QString     bgColor;
 	int         font;
 };

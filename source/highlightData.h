@@ -48,7 +48,7 @@ int IndexOfNamedStyle(view::string_view styleName);
 bool LMHasHighlightPatterns(view::string_view languageMode);
 PatternSet *FindPatternSet(view::string_view langModeName);
 QString BgColorOfNamedStyleEx(view::string_view styleName);
-std::string ColorOfNamedStyleEx(view::string_view styleName);
+QString ColorOfNamedStyleEx(view::string_view styleName);
 QString WriteHighlightStringEx(void);
 QString WriteStylesStringEx(void);
 void EditHighlightPatterns(Document *window);

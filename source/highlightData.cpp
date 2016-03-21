@@ -296,7 +296,7 @@ bool LoadStylesStringEx(const std::string &string) {
 			return styleError(inString,inPtr, "color name required");
 		}
 		
-		hs->color   = color.toStdString();
+		hs->color   = color;
 		hs->bgColor = QString();
 		
 		if (SkipOptSeparator('/', &inPtr)) {
@@ -373,7 +373,7 @@ QString WriteStylesStringEx(void) {
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color.toStdString());
 		if (!style->bgColor.isNull()) {
 			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
 			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor.toStdString());
@@ -567,11 +567,11 @@ int FontOfNamedStyleIsItalic(view::string_view styleName) {
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
-std::string ColorOfNamedStyleEx(view::string_view styleName) {
+QString ColorOfNamedStyleEx(view::string_view styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
-		return "black";
+		return QLatin1String("black");
 	}
 		
 	return HighlightStyles[styleNo]->color;
@@ -1217,7 +1217,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		}
 		
 		XmTextSetStringEx(HSDialog.nameW,            hs->name);
-		XmTextSetStringEx(HSDialog.colorW,           hs->color);
+		XmTextSetStringEx(HSDialog.colorW,           hs->color.toStdString());
 		XmTextSetStringEx(HSDialog.bgColorW,         !hs->bgColor.isNull() ? hs->bgColor.toStdString() : "");
 		RadioButtonChangeState(HSDialog.plainW,      hs->font == PLAIN_FONT, False);
 		RadioButtonChangeState(HSDialog.boldW,       hs->font == BOLD_FONT, False);
@@ -1264,9 +1264,9 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     		return nullptr;
     	}
 		
-		hs->color = color.toStdString();
+		hs->color = color;
 
-    	if (hs->color.empty()) {
+    	if (hs->color.isEmpty()) {
         	if (!silent) {
             	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Style Color"), QLatin1String("Please specify a color\nfor the highlight style"));
             	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
@@ -1276,9 +1276,9 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     	}
 
     	// Verify that the color is a valid X color spec 
-    	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.c_str(), &rgb)) {
+    	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n",  "OK", hs->color.c_str());
+            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n",  "OK", hs->color.toLatin1().data());
             	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         	}
         	delete hs;

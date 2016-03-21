@@ -5155,7 +5155,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 	}
 
 	// insert color name 
-	AllocNStringCpy(&DV.val.str, ColorOfNamedStyleEx(styleName).c_str());
+	AllocNStringCpy(&DV.val.str, ColorOfNamedStyleEx(styleName).toLatin1().data());
 	M_STR_ALLOC_ASSERT(DV);
 	if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
 		M_ARRAY_INSERT_FAILURE();

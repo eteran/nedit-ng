@@ -700,7 +700,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 		p->highlightName = pat->name;
 		p->styleName     = pat->style.toStdString();
-		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
+		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString()).toStdString();
 		p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
 		p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
 		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
