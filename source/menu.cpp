@@ -2215,8 +2215,6 @@ static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer ca
 	(void)clientData;
 	(void)callData;
 
-	Document *win;
-
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
 		SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
@@ -2234,8 +2232,6 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
 
 	(void)clientData;
 	(void)callData;
-
-	Document *win;
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {

@@ -322,7 +322,8 @@ static void initToggleButtons(int searchType, Widget regexToggle, Widget caseTog
 ** but I currently don't have a cleaner solution.
 */
 static int selectionSpansMultipleLines(Document *window) {
-	int selStart, selEnd, isRect, rectStart, rectEnd, lineStartStart, lineStartEnd;
+	int selStart, selEnd, rectStart, rectEnd, lineStartStart, lineStartEnd;
+	bool isRect;
 	int lineWidth;
 	TextDisplay *textD;
 
@@ -900,7 +901,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNradioAlwaysOne, True);
 	argcnt++;
-	scopeForm = XmCreateRowColumn(form, "scope", args, argcnt);
+	scopeForm = XmCreateRowColumn(form, const_cast<char *>("scope"), args, argcnt);
 	XtManageChild(scopeForm);
 	XmAddTabGroup(scopeForm);
 
@@ -921,7 +922,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNrightAttachment, XmATTACH_NONE);
 	argcnt++;
-	inWinBtn = XmCreateToggleButton(scopeForm, "inWindow", args, argcnt);
+	inWinBtn = XmCreateToggleButton(scopeForm, const_cast<char *>("inWindow"), args, argcnt);
 	XtAddCallback(inWinBtn, XmNvalueChangedCallback, rScopeWinCB, window);
 	XmStringFree(st1);
 	XtManageChild(inWinBtn);
@@ -945,7 +946,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNleftWidget, inWinBtn);
 	argcnt++;
-	inSelBtn = XmCreateToggleButton(scopeForm, "inSel", args, argcnt);
+	inSelBtn = XmCreateToggleButton(scopeForm, const_cast<char *>("inSel"), args, argcnt);
 	XtAddCallback(inSelBtn, XmNvalueChangedCallback, rScopeSelCB, window);
 	XmStringFree(st1);
 	XtManageChild(inSelBtn);
@@ -969,7 +970,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNleftWidget, inSelBtn);
 	argcnt++;
-	inMultiBtn = XmCreateToggleButton(scopeForm, "multiFile", args, argcnt);
+	inMultiBtn = XmCreateToggleButton(scopeForm, const_cast<char *>("multiFile"), args, argcnt);
 	XtAddCallback(inMultiBtn, XmNvalueChangedCallback, rScopeMultiCB, window);
 	XmStringFree(st1);
 	XtManageChild(inMultiBtn);
@@ -1245,7 +1246,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	argcnt++;
 	XtSetArg(args[argcnt], XmNtopOffset, defaultBtnOffset);
 	argcnt++;
-	replaceAllBtn = XmCreatePushButton(btnForm, "all", args, argcnt);
+	replaceAllBtn = XmCreatePushButton(btnForm, const_cast<char *>("all"), args, argcnt);
 	XtAddCallback(replaceAllBtn, XmNactivateCallback, replaceAllScopeCB, window);
 	XmStringFree(st1);
 	XtManageChild(replaceAllBtn);
@@ -2655,24 +2656,40 @@ void UpdateReplaceActionButtons(Document *window) {
 ** The next 3 callback adapt the sensitivity of the replace dialog push
 ** buttons to the state of the scope radio buttons.
 */
-static void rScopeWinCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = Document::WidgetToWindow(w);
+static void rScopeWinCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)callData;
+	(void)clientData;
+
+	Document *window = Document::WidgetToWindow(w);
+	
 	if (XmToggleButtonGetState(window->replaceScopeWinToggle_)) {
 		window->replaceScope_ = REPL_SCOPE_WIN;
 		UpdateReplaceActionButtons(window);
 	}
 }
 
-static void rScopeSelCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = Document::WidgetToWindow(w);
+static void rScopeSelCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+
+	(void)callData;
+	(void)clientData;
+	
+	Document *window = Document::WidgetToWindow(w);
+	
 	if (XmToggleButtonGetState(window->replaceScopeSelToggle_)) {
 		window->replaceScope_ = REPL_SCOPE_SEL;
 		UpdateReplaceActionButtons(window);
 	}
 }
 
-static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = Document::WidgetToWindow(w);
+static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)callData;
+	(void)clientData;
+
+	Document *window = Document::WidgetToWindow(w);
+	
 	if (XmToggleButtonGetState(window->replaceScopeMultiToggle_)) {
 		window->replaceScope_ = REPL_SCOPE_MULTI;
 		UpdateReplaceActionButtons(window);
@@ -2683,8 +2700,12 @@ static void rScopeMultiCB(Widget w, XtPointer clientData, XtPointer call_data) {
 ** This routine dispatches a push on the replace-all button to the appropriate
 ** callback, depending on the state of the scope radio buttons.
 */
-static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer call_data) {
-	window = Document::WidgetToWindow(w);
+static void replaceAllScopeCB(Widget w, XtPointer clientData, XtPointer callData) {
+
+	(void)clientData;
+	
+	Document *window = Document::WidgetToWindow(w);
+	
 	switch (window->replaceScope_) {
 	case REPL_SCOPE_WIN:
 		replaceAllCB(w, window, callData);
