@@ -723,12 +723,13 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 					*file = 0; // invalidate 
 					return 0;
 				}
-				strcpy(incPath, tagPath);
-				strcat(incPath, file);
+				
+				sprintf(incPath, "%s%s", tagPath, file);
+
 				CompressPathname(incPath);
-				return (loadTagsFile(incPath, index, recLevel + 1));
+				return loadTagsFile(incPath, index, recLevel + 1);
 			} else {
-				return (loadTagsFile(file, index, recLevel + 1));
+				return loadTagsFile(file, index, recLevel + 1);
 			}
 		}
 	}

@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QStringList>
+#include <QString>
 
 #include "window.h"
 #include "TextBuffer.h"
@@ -122,12 +123,12 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	/* I don't think this algorithm will work on vms so I am
 	   disabling it for now */
 	if (!GetPrefHonorSymlinks()) {
-		char fullname[MAXPATHLEN + 1];
 		struct stat attribute;
 		
-		snprintf(fullname, sizeof(fullname), "%s%s", path, name);
+		QString fullname = QString(QLatin1String("%1%2")).arg(QLatin1String(path), QLatin1String(name));
+		
 
-		if (stat(fullname, &attribute) == 0) {
+		if (stat(fullname.toLatin1().data(), &attribute) == 0) {
 		
 			Document *window = Document::find_if([attribute](Document *window) {
 				return attribute.st_dev == window->device_ && attribute.st_ino == window->inode_;
