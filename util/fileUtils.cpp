@@ -276,8 +276,7 @@ int NormalizePathname(char *pathname) {
 **  FIXME: Change return value to False and True.
 */
 int CompressPathname(char *pathname) {
-	char *buf, *inPtr, *outPtr;
-	struct stat statbuf;
+
 
 	/* (Added by schwarzenberg)
 	** replace multiple slashes by a single slash
@@ -286,37 +285,41 @@ int CompressPathname(char *pathname) {
 	**  that begins with two successive slashes may be interpreted in an
 	**  implementation-dependent manner"
 	*/
-	inPtr = pathname;
-	buf = (char *)malloc(strlen(pathname) + 2);
-	outPtr = buf;
-	*outPtr++ = *inPtr++;
-	while (*inPtr) {
-		*outPtr = *inPtr++;
-		if ('/' == *outPtr) {
-			while ('/' == *inPtr) {
-				inPtr++;
+	char *in  = pathname;
+	char *out = pathname;
+	
+	*out++ = *in++;	
+	while(*in != '\0') {
+		const char ch = *in++;
+		*out++ = ch;
+		if (ch == '/') {
+			while(*in == '/') {
+				++in;
 			}
 		}
-		outPtr++;
-	}
-	*outPtr = 0;
-	strcpy(pathname, buf);
+	}	
+	*out = '\0';
+
 
 	/* compress out . and .. */
-	inPtr = pathname;
-	outPtr = buf;
+	auto buf = new char[strlen(pathname) + 2];
+	char *inPtr = pathname;
+	char *outPtr = buf;
+	
 	/* copy initial / */
 	copyThruSlash(&outPtr, &inPtr);
 	while (inPtr) {
 		/* if the next component is "../", remove previous component */
 		if (compareThruSlash(inPtr, "../")) {
 			*outPtr = 0;
-/* If the ../ is at the beginning, or if the previous component
-   is a symbolic link, preserve the ../.  It is not valid to
-   compress ../ when the previous component is a symbolic link
-   because ../ is relative to where the link points.  If there's
-   no S_ISLNK macro, assume system does not do symbolic links. */
+		
+			/* If the ../ is at the beginning, or if the previous component
+			   is a symbolic link, preserve the ../.  It is not valid to
+			   compress ../ when the previous component is a symbolic link
+			   because ../ is relative to where the link points.  If there's
+			   no S_ISLNK macro, assume system does not do symbolic links. */
 #ifdef S_ISLNK
+			struct stat statbuf;
 			if (outPtr - 1 == buf || (lstat(buf, &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
 				copyThruSlash(&outPtr, &inPtr);
 			} else
@@ -334,14 +337,15 @@ int CompressPathname(char *pathname) {
 			copyThruSlash(&outPtr, &inPtr);
 		}
 	}
+
 	/* updated pathname with the new value */
 	if (strlen(buf) > MAXPATHLEN) {
 		fprintf(stderr, "nedit: CompressPathname(): file name too long %s\n", pathname);
-		free(buf);
+		delete [] buf;
 		return 1;
 	} else {
 		strcpy(pathname, buf);
-		free(buf);
+		delete [] buf;
 		return 0;
 	}
 }
