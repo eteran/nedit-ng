@@ -1161,15 +1161,16 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		QString prefFileName = GetRCFileNameEx(NEDIT_RC);
 
 		if (!quietly) {
-			if (DialogF(DF_INF, parent, 2, "Save Preferences", ImportedFile == nullptr ? "Default preferences will be saved in the file:\n"
-		                                                                            	 "%s\n"
-		                                                                            	 "NEdit automatically loads this file\n"
-		                                                                            	 "each time it is started."
-		                                                                        	   : "Default preferences will be saved in the file:\n"
-		                                                                            	 "%s\n"
-		                                                                            	 "SAVING WILL INCORPORATE SETTINGS\n"
-		                                                                            	 "FROM FILE: %s",
-		            	"OK", "Cancel", prefFileName.toLatin1().data(), ImportedFile) == 2) {
+		
+		
+			int resp = QMessageBox::information(nullptr /*parent*/, QLatin1String("Save Preferences"), 
+				ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
+				                        : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)), 
+					QMessageBox::Ok | QMessageBox::Cancel);
+		
+		
+		
+			if(resp == QMessageBox::Cancel) {
 				return;
 			}
 		}
@@ -1189,7 +1190,7 @@ void SaveNEditPrefs(Widget parent, int quietly) {
 		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
 
 		if (!SavePreferences(XtDisplay(parent), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
-			DialogF(DF_WARN, parent, 1, "Save Preferences", "Unable to save preferences in %s", "OK", prefFileName.toLatin1().data());
+			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
 		}
 
 		PrefsHaveChanged = false;

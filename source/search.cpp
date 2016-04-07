@@ -1548,9 +1548,10 @@ static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *displa
 	case TRUNCSUBST_FAIL:
 		//  fail the operation and pop up a dialog informing the user  
 		XBell((Display *)display, 0);
-		DialogF(DF_INF, parent, 1, "Substitution Failed", "The result length of the substitution exceeded an internal limit.\n"
-		                                                  "The substitution is canceled.",
-		        "OK");
+		
+		QMessageBox::information(nullptr /* parent */, QLatin1String("Substitution Failed"), QLatin1String("The result length of the substitution exceeded an internal limit.\n"
+		                                                                                                   "The substitution is canceled."));
+
 		cancel = True;
 		break;
 
@@ -1724,8 +1725,8 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	} else {
 		//  Nothing found, tell the user about it  
 		if (GetPrefSearchDlogs()) {
-			/* Avoid bug in Motif 1.1 by putting away search dialog
-			   before DialogF */
+
+			// Avoid bug in Motif 1.1 by putting away search dialog before Dialogs
 			if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
 				if(!dialog->keepDialog()) {
 					dialog->hide();
@@ -1957,7 +1958,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 	if (window->iSearchStartPos_ == -1) { // normal search 
 		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
 		
-		// Avoid Motif 1.1 bug by putting away search dialog before DialogF
+		// Avoid Motif 1.1 bug by putting away search dialog before Dialogs
 		if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
 			if(!dialog->keepDialog()) {		
 				dialog->hide();
