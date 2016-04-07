@@ -27,9 +27,18 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QBoxLayout>
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QDesktopServices>
+#include <QFileDialog>
+#include <QGridLayout>
+#include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QtDebug>
+
 
 #include "file.h"
 #include "TextBuffer.h"
@@ -739,11 +748,103 @@ int SaveWindow(Document *window) {
 
 int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	int response, retVal;
-	FileFormats fileFormat;
 	char fullname[MAXPATHLEN];
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];
 	Document *otherWindow;
+
+#if 1
+	if(!newName) {
+		QFileDialog dialog(nullptr /*parent*/, QLatin1String("Save File As"));
+		dialog.setFileMode(QFileDialog::AnyFile);
+		dialog.setAcceptMode(QFileDialog::AcceptSave);
+		dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
+
+		if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+			if(layout->rowCount() == 4 && layout->columnCount() == 3) {
+				auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
+				auto unixCheck = new QRadioButton(QLatin1String("&Unix"));
+				auto dosCheck  = new QRadioButton(QLatin1String("D&OS"));
+				auto macCheck  = new QRadioButton(QLatin1String("&Macintosh"));
+
+				switch(window->fileFormat_) {
+				case DOS_FILE_FORMAT:
+					dosCheck->setChecked(true);
+					break;			
+				case MAC_FILE_FORMAT:
+					macCheck->setChecked(true);
+					break;
+				case UNIX_FILE_FORMAT:
+					unixCheck->setChecked(true);
+					break;
+				}
+
+				auto group = new QButtonGroup();
+				group->addButton(unixCheck);
+				group->addButton(dosCheck);
+				group->addButton(macCheck);
+
+				boxLayout->addWidget(unixCheck);
+				boxLayout->addWidget(dosCheck);
+				boxLayout->addWidget(macCheck);
+
+				int row = layout->rowCount();
+
+				layout->addWidget(new QLabel(QLatin1String("Format: ")), row, 0, 1, 1);
+				layout->addLayout(boxLayout, row, 1, 1, 1, Qt::AlignLeft);
+				
+				++row;
+
+				auto wrapCheck = new QCheckBox(QLatin1String("&Add line breaks where wrapped"));
+#if 0	
+				// TODO(eteran): implement this once this is hoisted into a QObject
+				//               since Qt4 doesn't support lambda based connections							
+				QObject::connect(wrapCheck, &QCheckBox::toggled, [&](bool checked) {
+					if(checked) {
+						int ret = QMessageBox::information(nullptr, QLatin1String("Add Wrap"), 
+							QLatin1String("This operation adds permanent line breaks to\n"
+							"match the automatic wrapping done by the\n"
+							"Continuous Wrap mode Preferences Option.\n\n"
+							"*** This Option is Irreversable ***\n\n"
+							"Once newlines are inserted, continuous wrapping\n"
+							"will no longer work automatically on these lines"),
+							QMessageBox::Ok, QMessageBox::Cancel);
+							
+						if(ret != QMessageBox::Ok) {
+							wrapCheck->setChecked(false);
+						}
+					}
+				});
+#endif
+				
+				if (window->wrapMode_ == CONTINUOUS_WRAP) {			
+					layout->addWidget(wrapCheck, row, 1, 1, 1);
+				}
+
+				if(dialog.exec()) {
+					if(dosCheck->isChecked()) {
+						window->fileFormat_ = DOS_FILE_FORMAT;
+					} else if(macCheck->isChecked()) {
+						window->fileFormat_ = MAC_FILE_FORMAT;
+					} else if(unixCheck->isChecked()) {
+						window->fileFormat_ = UNIX_FILE_FORMAT;
+					}
+					
+					addWrap = wrapCheck->isChecked();					
+					strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+				} else {
+					return FALSE;
+				}
+
+			}
+		}
+	} else {
+		strcpy(fullname, newName);
+	}
+#else
+
+	FileFormats fileFormat;
 
 	// Get the new name for the file 
 	if(!newName) {
@@ -758,6 +859,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	if (NormalizePathname(fullname) == 1) {
 		return False;
 	}
+#endif
 
 	// Add newlines if requested 
 	if (addWrap)
@@ -825,6 +927,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 
 	window->SortTabBar();
 	return retVal;
+
 }
 
 static bool doSave(Document *window) {
@@ -1223,13 +1326,29 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-	if (!window->path_.empty())
+	if (!window->path_.empty()) {
 		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
+	}
+	
+#if 1
+	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
+	if(dialog.exec()) {
+		strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+		return GFN_OK;
+	}
+
+	SetFileDialogDefaultDirectory(savedDefaultDir);
+	return GFN_CANCEL;
+#else
 	int retVal = GetExistingFilename(window->shell_, prompt, fullname);
-	if (retVal != GFN_OK)
+	if (retVal != GFN_OK) {
 		SetFileDialogDefaultDirectory(savedDefaultDir);
+	}
 
 	return retVal;
+#endif
 }
 
 /*
