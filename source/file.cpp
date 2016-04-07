@@ -759,7 +759,8 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		dialog.setFileMode(QFileDialog::AnyFile);
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
 		dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
-
+		dialog.setOptions(QFileDialog::DontUseNativeDialog);
+		
 		if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
 			if(layout->rowCount() == 4 && layout->columnCount() == 3) {
 				auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
@@ -1332,6 +1333,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	
 #if 1
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
+	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
 	if(dialog.exec()) {
