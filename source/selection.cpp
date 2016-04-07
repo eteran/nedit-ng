@@ -38,7 +38,6 @@
 #include "preferences.h"
 #include "Document.h"
 #include "server.h"
-#include "../util/DialogF.h"
 #include "../util/fileUtils.h"
 
 #include <cstdlib>
@@ -116,6 +115,9 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 }
 
 void GotoLineNumber(Document *window) {
+
+	const int DF_MAX_PROMPT_LENGTH = 2048;
+
 	char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
 	int lineNum;
 	int column;
@@ -371,40 +373,69 @@ void SelectNumberedLine(Document *window, int lineNum) {
 }
 
 void MarkDialog(Document *window) {
-	char letterText[DF_MAX_PROMPT_LENGTH], *params[1];
-	int response;
 
-	response = DialogF(DF_PROMPT, window->shell_, 2, "Mark", "Enter a single letter label to use for recalling\n"
-	                                                        "the current selection and cursor position.\n\n"
-	                                                        "(To skip this dialog, use the accelerator key,\n"
-	                                                        "followed immediately by a letter key (a-z))",
-	                   letterText, "OK", "Cancel");
-	if (response == 2)
+	const int DF_MAX_PROMPT_LENGTH = 2048;
+
+	char letterText[DF_MAX_PROMPT_LENGTH];
+	char *params[1];
+		
+	bool ok;
+	QString result = QInputDialog::getText(
+		nullptr /*window->shell_*/, 
+		QLatin1String("Mark"), 
+		QLatin1String("Enter a single letter label to use for recalling\n"
+		              "the current selection and cursor position.\n\n"
+		              "(To skip this dialog, use the accelerator key,\n"
+		              "followed immediately by a letter key (a-z))"), 
+		QLineEdit::Normal, 
+		QString(),
+		&ok);
+		
+	if(!ok) {
 		return;
+	}
+	
+	strcpy(letterText, result.toLatin1().data());
+
 	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
 		QApplication::beep();
 		return;
 	}
+	
 	params[0] = letterText;
 	XtCallActionProc(window->lastFocus_, "mark", nullptr, params, 1);
 }
 
 void GotoMarkDialog(Document *window, int extend) {
+
+	const int DF_MAX_PROMPT_LENGTH = 2048;
+
 	char letterText[DF_MAX_PROMPT_LENGTH];
 	const char *params[2];
-	int response;
-
-	response = DialogF(DF_PROMPT, window->shell_, 2, "Goto Mark", "Enter the single letter label used to mark\n"
-	                                                             "the selection and/or cursor position.\n\n"
-	                                                             "(To skip this dialog, use the accelerator\n"
-	                                                             "key, followed immediately by the letter)",
-	                   letterText, "OK", "Cancel");
-	if (response == 2)
+	
+	bool ok;
+	QString result = QInputDialog::getText(
+		nullptr /*window->shell_*/, 
+		QLatin1String("Goto Mark"), 
+		QLatin1String("Enter the single letter label used to mark\n"
+		              "the selection and/or cursor position.\n\n"
+		              "(To skip this dialog, use the accelerator\n"
+		              "key, followed immediately by the letter)"), 
+		QLineEdit::Normal, 
+		QString(),
+		&ok);
+		
+	if(!ok) {
 		return;
+	}
+	
+	strcpy(letterText, result.toLatin1().data());	
+
 	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
 		QApplication::beep();
 		return;
 	}
+	
 	params[0] = letterText;
 	params[1] = "extend";
 	XtCallActionProc(window->lastFocus_, "goto_mark", nullptr, (char **)params, extend ? 2 : 1);

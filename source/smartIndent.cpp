@@ -40,7 +40,6 @@
 #include "shift.h"
 #include "TextBuffer.h"
 #include "text.h"
-#include "DialogF.h"
 #include "misc.h"
 #include "window.h"
 
@@ -702,7 +701,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	char *modeName;
-	int i, resp;
+	int i;
 	static SmartIndent emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
 	SmartIndent *oldMacros, *newMacros;
 
@@ -712,21 +711,25 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	// Find the original macros 
-	for (i = 0; i < NSmartIndentSpecs; i++)
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
+	for (i = 0; i < NSmartIndentSpecs; i++) {
+		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName)) {
 			break;
-	oldMacros = i == NSmartIndentSpecs ? &emptyIndentSpec : SmartIndentSpecs[i];
+		}
+	}
+	
+	oldMacros = (i == NSmartIndentSpecs ? &emptyIndentSpec : SmartIndentSpecs[i]);
 
 	/* Check if the macros have changed, if so allow user to apply, discard,
 	   or cancel */
 	newMacros = getSmartIndentDialogData();
 	if (indentSpecsDiffer(oldMacros, newMacros)) {
-		resp = DialogF(DF_QUES, SmartIndentDialog.shell, 3, "Smart Indent", "Smart indent macros for language mode\n%s were changed.  Apply changes?", "Apply", "Discard", "Cancel", SmartIndentDialog.langModeName);
-
-		if (resp == 3) {
+		
+		int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent macros for language mode\n%1 were changed.  Apply changes?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Discard | QMessageBox::Apply | QMessageBox::Cancel);
+		
+		if (resp == QMessageBox::Cancel) {
 			SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
 			return;
-		} else if (resp == 1) {
+		} else if (resp == QMessageBox::Apply) {
 			if (checkSmartIndentDialogData()) {
 				if (oldMacros == &emptyIndentSpec) {
 					SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(newMacros);
@@ -821,7 +824,9 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 	defaultIS = &DefaultIndentSpecs[i];
 
-	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %s?" "Discard", "Cancel", SmartIndentDialog.langModeName) == 2) {
+	
+	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Discard Changes"), QString(QLatin1String("Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %1?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Discard | QMessageBox::Cancel);
+	if(resp == QMessageBox::Cancel) {
 		return;
 	}
 
@@ -848,14 +853,21 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int i;
 
-	if (DialogF(DF_WARN, SmartIndentDialog.shell, 2, "Delete Macros", "Are you sure you want to delete smart indent\nmacros for language mode %s?", "Yes, Delete", "Cancel", SmartIndentDialog.langModeName) == 2) {
+
+	// TODO(eteran): originally was "Yes, Delete"
+	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Delete Macros"), QString(QLatin1String("Are you sure you want to delete smart indent\nmacros for language mode %1?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Yes | QMessageBox::Cancel);
+	if(resp == QMessageBox::Cancel) {
 		return;
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list 
-	for (i = 0; i < NSmartIndentSpecs; i++)
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
+	for (i = 0; i < NSmartIndentSpecs; i++) {
+		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName)) {
 			break;
+		}
+	}
+			
+			
 	if (i < NSmartIndentSpecs) {
 		freeIndentSpec(SmartIndentSpecs[i]);
 		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(SmartIndent *));
@@ -1119,7 +1131,9 @@ static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 
-	if (DialogF(DF_WARN, CommonDialog.shell, 2, "Discard Changes", "Are you sure you want to discard all\nchanges to common smart indent macros", "Discard", "Cancel") == 2) {
+
+	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Discard Changes"), QLatin1String("Are you sure you want to discard all\nchanges to common smart indent macros"), QMessageBox::Discard | QMessageBox::Cancel);
+	if(resp == QMessageBox::Cancel) {
 		return;
 	}
 

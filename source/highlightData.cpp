@@ -1282,7 +1282,8 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     	// Verify that the color is a valid X color spec 
     	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X color specification: %s\n",  "OK", hs->color.toLatin1().data());
+			
+				QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X color specification: %1\n")).arg(hs->color));
             	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
         	}
         	delete hs;
@@ -1301,7 +1302,8 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     	// Verify that the background color (if present) is a valid X color spec 
     	if (!hs->bgColor.isNull() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
         	if (!silent) {
-            	DialogF(DF_WARN, HSDialog.shell, 1, "Invalid Color", "Invalid X background color specification: %s\n", "OK", hs->bgColor.toLatin1().data());
+			
+				QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X background color specification: %1\n")).arg(hs->bgColor));
             	XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
         	}
 			
@@ -1405,9 +1407,10 @@ void EditHighlightPatterns(Document *window) {
 	}
 
 	if (LanguageModeName(0) == nullptr) {
-		DialogF(DF_WARN, window->shell_, 1, "No Language Modes", "No Language Modes available for syntax highlighting\n"
-		                                                        "Add language modes under Preferenses->Language Modes",
-		        "OK");
+	
+		QMessageBox::warning(nullptr /* window->shell_ */, QLatin1String("No Language Modes"), 
+			QLatin1String("No Language Modes available for syntax highlighting\n"
+			              "Add language modes under Preferenses->Language Modes"));
 		return;
 	}
 
@@ -1895,7 +1898,7 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	if (checkHighlightDialogData()) {
-		DialogF(DF_INF, HighlightDialog.shell, 1, "Pattern compiled", "Patterns compiled without error", "OK");
+		QMessageBox::information(nullptr /* HighlightDialog.shell */, QLatin1String("Pattern compiled"), QLatin1String("Patterns compiled without error"));
 	}
 }
 
@@ -1910,7 +1913,7 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	defaultPatSet = readDefaultPatternSet(HighlightDialog.langModeName.toLatin1().data());
 	if(!defaultPatSet) {
-		DialogF(DF_WARN, HighlightDialog.shell, 1, "No Default Pattern", "There is no default pattern set\nfor language mode %s", "OK", HighlightDialog.langModeName.toLatin1().data());
+		QMessageBox::warning(nullptr /* HighlightDialog.shell */, QLatin1String("No Default Pattern"), QString(QLatin1String("There is no default pattern set\nfor language mode %1")).arg(HighlightDialog.langModeName));
 		return;
 	}
 
@@ -2275,11 +2278,13 @@ static HighlightPattern *readDialogFields(bool silent) {
 		
 		if (strspn(pat->startRE.toLatin1().data(), "&\\123456789 \t") != pat->startRE.size() || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(pat->startRE.toLatin1().data(), "\\\\")) {
 			if (!silent) {
-				DialogF(DF_WARN, HighlightDialog.shell, 1, "Pattern Error", "The expression field in patterns which specify highlighting for\n"
-				                                                            "a parent, must contain only sub-expression references in regular\n"
-				                                                            "expression replacement form (&\\1\\2 etc.).  See Help -> Regular\n"
-				                                                            "Expressions and Help -> Syntax Highlighting for more information",
-				        "OK");
+			
+				QMessageBox::warning(nullptr /* HighlightDialog.shell */, QLatin1String("Pattern Error"), 
+					QLatin1String("The expression field in patterns which specify highlighting for "
+					               "a parent, must contain only sub-expression references in regular "
+					               "expression replacement form (&\\1\\2 etc.).  See Help -> Regular "
+					               "Expressions and Help -> Syntax Highlighting for more information"));
+			
 				XmProcessTraversal(HighlightDialog.startW, XmTRAVERSE_CURRENT);
 			}
 			delete pat;
