@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QString>
 
@@ -45,7 +46,6 @@
 #include "interpret.h"
 #include "parse.h"
 #include "MotifHelper.h"
-#include "DialogF.h"
 #include "misc.h"
 #include "managedList.h"
 #include "MenuItem.h"
@@ -2104,7 +2104,17 @@ static void *getDialogDataCB(void *oldItem, int explicitRequest, int *abort, voi
 
 	// If user might not be expecting fields to be read, give more warning 
 	if (!explicitRequest) {
-		if (DialogF(DF_WARN, ucd->dlogShell, 2, "Discard Entry", "Discard incomplete entry\nfor current menu item?", "Keep", "Discard") == 2) {
+	
+		QMessageBox messageBox(nullptr /*ucd->dlogShell*/);
+		messageBox.setWindowTitle(QLatin1String("Discard Entry"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QLatin1String("Discard incomplete entry\nfor current menu item?"));
+		QPushButton *buttonKeep    = messageBox.addButton(QLatin1String("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard"), QMessageBox::AcceptRole);
+		Q_UNUSED(buttonKeep);
+		
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonDiscard) {
 			return oldItem == nullptr ? nullptr : copyMenuItemRec((MenuItem *)oldItem);
 		}
 	}

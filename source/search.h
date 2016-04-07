@@ -28,11 +28,10 @@
 #define SEARCH_H_
 
 #include "nedit.h"
+#include "SearchDirection.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
-
-enum SearchDirection { SEARCH_FORWARD, SEARCH_BACKWARD };
 
 Boolean WindowCanBeClosed(Document *window);
 bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, int searchType);
@@ -52,7 +51,6 @@ void CreateReplaceDlog(Widget parent, Document *window);
 void CreateReplaceMultiFileDlog(Document *window);
 void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time);
 void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time);
-void DoReplaceMultiFileDlog(Document *window);
 void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
 void GotoMatchingCharacter(Document *window);
@@ -61,7 +59,6 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 void SearchForSelected(Document *window, SearchDirection direction, int searchWrap, int searchType, Time time);
 void SelectToMatchingCharacter(Document *window);
 void SetISearchTextCallbacks(Document *window);
-void UpdateReplaceActionButtons(Document *window);
 
 /*
 ** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE
@@ -81,15 +78,10 @@ enum SearchType {
 	N_SEARCH_TYPES /* must be last in enum SearchType */
 };
 
-#ifdef REPLACE_SCOPE
-/* Scope on which the replace operations apply */
-enum ReplaceScope { REPL_SCOPE_WIN, REPL_SCOPE_SEL, REPL_SCOPE_MULTI };
-
 /* Default scope if selection exists when replace dialog pops up.
    "Smart" means "In Selection" if the selection spans more than
    one line; "In Window" otherwise. */
 enum ReplaceAllDefaultScope { REPL_DEF_SCOPE_WINDOW, REPL_DEF_SCOPE_SELECTION, REPL_DEF_SCOPE_SMART };
-#endif
 
 /*
 ** Returns a pointer to the string describing the search type for search
@@ -111,4 +103,26 @@ int StringToSearchType(const char *string, int *searchType);
 */
 extern int NHist;
 
-#endif /* NEDIT_SEARCH_H_INCLUDED */
+struct SelectionInfo {
+	int done;
+	Document *window;
+	char *selection;
+};
+
+// TODO(eteran): temporarily exposing these publically
+const char *directionArg(SearchDirection direction);
+const char *searchTypeArg(int searchType);
+const char *searchWrapArg(int searchWrap);
+int countWritableWindows(void);
+int historyIndex(int nCycles);
+int isRegexType(int searchType);
+void resetFindTabGroup(Document *window);
+void resetReplaceTabGroup(Document *window);
+void unmanageReplaceDialogs(const Document *window);
+
+extern char *SearchHistory[MAX_SEARCH_HISTORY];
+extern char *ReplaceHistory[MAX_SEARCH_HISTORY];
+extern int SearchTypeHistory[MAX_SEARCH_HISTORY];
+extern Document *windowNotToClose;
+
+#endif

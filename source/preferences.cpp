@@ -28,6 +28,7 @@
 
 #include <QMessageBox>
 #include <QString>
+#include "ui/DialogWrapMargin.h"
 
 #include "preferences.h"
 #include "TextBuffer.h"
@@ -888,11 +889,6 @@ static int DoneWithTabsDialog;
 static Document *TabsDialogForWindow;
 static Widget TabDistText, EmTabText, EmTabToggle, UseTabsToggle, EmTabLabel;
 
-// Module-global variables for Wrap Margin dialog 
-static int DoneWithWrapDialog;
-static Document *WrapDialogForWindow;
-static Widget WrapText, WrapTextLabel, WrapWindowToggle;
-
 //  Module-global variables for shell selection dialog  
 static int DoneWithShellSelDialog = False;
 
@@ -905,9 +901,6 @@ static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData);
 static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData);
-static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData);
 static void shellSelCancelCB(Widget widgget, XtPointer clientData, XtPointer callData);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
@@ -2129,117 +2122,24 @@ static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** Present the user a dialog for setting wrap margin.
 */
 void WrapMarginDialog(Widget parent, Document *forWindow) {
-	Widget form, selBox;
-	Arg selBoxArgs[2];
-	XmString s1;
+
+	Q_UNUSED(parent);
+
+	auto dialog = new DialogWrapMargin(forWindow, nullptr /*parent*/);
+	
 	int margin;
-
-	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, "wrapMargin", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, wrapOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, wrapCancelCB, nullptr);
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
-	XtVaSetValues(XtParent(selBox), XmNtitle, "Wrap Margin", nullptr);
-
-	form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
-
-	WrapWindowToggle = XtVaCreateManagedWidget("wrapWindowToggle", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Wrap and Fill at width of window"), XmNmnemonic, 'W', XmNtopAttachment, XmATTACH_FORM,
-	                                           XmNleftAttachment, XmATTACH_FORM, nullptr);
-	XmStringFree(s1);
-	XtAddCallback(WrapWindowToggle, XmNvalueChangedCallback, wrapWindowCB, nullptr);
-	WrapText = XtVaCreateManagedWidget("wrapText", xmTextWidgetClass, form, XmNcolumns, 5, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, WrapWindowToggle, XmNrightAttachment, XmATTACH_FORM, nullptr);
-	RemapDeleteKey(WrapText);
-	WrapTextLabel =
-	    XtVaCreateManagedWidget("wrapMarginLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Margin for Wrap and Fill"), XmNmnemonic, 'M', XmNuserData, WrapText, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget,
-	                            WrapWindowToggle, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, WrapText, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, WrapText, nullptr);
-	XmStringFree(s1);
-
 	// Set default value 
-	if(!forWindow)
+	if(!forWindow) {
 		margin = GetPrefWrapMargin();
-	else
+	} else {
 		XtVaGetValues(forWindow->textArea_, textNwrapMargin, &margin, nullptr);
-	XmToggleButtonSetState(WrapWindowToggle, margin == 0, True);
-	if (margin != 0)
-		SetIntText(WrapText, margin);
-	XtSetSensitive(WrapText, margin != 0);
-	XtSetSensitive(WrapTextLabel, margin != 0);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-	// put up dialog and wait for user to press ok or cancel 
-	WrapDialogForWindow = forWindow;
-	DoneWithWrapDialog = False;
-	ManageDialogCenteredOnPointer(selBox);
-	while (!DoneWithWrapDialog) {
-		XEvent event;
-		XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
-		ServerDispatchEvent(&event);
 	}
-
-	XtDestroyWidget(selBox);
-}
-
-static void wrapOKCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	int wrapAtWindow, margin, stat;
-	Document *window = WrapDialogForWindow;
-
-	// get the values that the user entered and make sure they're ok 
-	wrapAtWindow = XmToggleButtonGetState(WrapWindowToggle);
-	if (wrapAtWindow)
-		margin = 0;
-	else {
-		stat = GetIntTextWarn(WrapText, &margin, "wrap Margin", True);
-		if (stat != TEXT_READ_OK)
-			return;
-
-		if (margin <= 0 || margin >= 1000) {
-			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Wrap Margin"), QLatin1String("Wrap margin out of range"));
-			return;
-		}
-	}
-
-	// Set the value in either the requested window or default preferences 
-	if(!WrapDialogForWindow)
-		SetPrefWrapMargin(margin);
-	else {
-		char *params[1];
-		char marginStr[25];
-		sprintf(marginStr, "%d", margin);
-		params[0] = marginStr;
-		XtCallActionProc(window->textArea_, "set_wrap_margin", nullptr, params, 1);
-	}
-	DoneWithWrapDialog = True;
-}
-
-static void wrapCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	DoneWithWrapDialog = True;
-}
-
-static void wrapWindowCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	int wrapAtWindow = XmToggleButtonGetState(w);
-
-	XtSetSensitive(WrapTextLabel, !wrapAtWindow);
-	XtSetSensitive(WrapText, !wrapAtWindow);
+	
+	dialog->ui.checkWrapAndFill->setChecked(margin == 0);
+	dialog->ui.spinWrapAndFill->setValue(margin);
+	
+	dialog->exec();
+	delete dialog;
 }
 
 /*

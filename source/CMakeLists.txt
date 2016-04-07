@@ -18,16 +18,42 @@ find_library(LibM m)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
-QT4_WRAP_CPP( MOC_SOURCES
+QT4_WRAP_CPP(MOC_SOURCES
 	QtMotif.h
 	QtMotifDialog.h
 	QtMotifWidget.h
 	QtXtWidget.h
+	
+	ui/DialogFind.h
+	ui/DialogReplace.h
+	ui/DialogMultiReplace.h
+	ui/DialogWrapMargin.h
 )
+
+set(UI_FILES
+	ui/DialogFind.ui
+	ui/DialogFonts.ui
+	ui/DialogLanguageModes.ui
+	ui/DialogMoveDocument.ui
+	ui/DialogReplace.ui
+	ui/DialogReplaceScope.ui
+	ui/DialogTabs.ui
+	ui/DialogWrapMargin.ui
+	ui/DialogMultiReplace.ui
+)
+		
+qt4_wrap_ui(UI_H ${UI_FILES})		
 
 add_executable(nedit
 
 	${MOC_SOURCES}
+	${UI_H}
+	
+	ui/DialogFind.cpp
+	ui/DialogReplace.cpp
+	ui/DialogMultiReplace.cpp
+	ui/DialogWrapMargin.cpp
+	
 	QtMotif.cpp
 	QtMotifDialog.cpp
 	QtMotifWidget.cpp
@@ -145,8 +171,8 @@ set_property(TARGET nc    PROPERTY C_STANDARD 99)
 set_property(TARGET nedit PROPERTY CXX_STANDARD 11)
 set_property(TARGET nc    PROPERTY CXX_STANDARD 11)
 
-set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings") # -ffunction-sections -fdata-sections
-set(CMAKE_CXX_FLAGS "-W -Wall -pedantic ") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
+set(CMAKE_C_FLAGS "-Wc++-compat -Wwrite-strings -Wunused") # -ffunction-sections -fdata-sections
+set(CMAKE_CXX_FLAGS "-W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
 
 # SET_TARGET_PROPERTIES(nedit PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
 

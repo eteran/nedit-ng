@@ -887,8 +887,8 @@ static Widget makeHelpMenuItem(
 static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
 	
 	(void)menuItem;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 #if 0
 	HelpTopic topic;
@@ -995,7 +995,7 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"rect"};
 
@@ -1005,7 +1005,7 @@ static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_left_by_tab" : "shift_left", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
@@ -1013,7 +1013,7 @@ static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_right_by_tab" : "shift_right", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
@@ -1021,7 +1021,7 @@ static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void findCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1029,7 +1029,7 @@ static void findCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void findSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1037,7 +1037,7 @@ static void findSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void findSelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_selection", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1045,7 +1045,7 @@ static void findSelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "start_incremental_find", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1053,7 +1053,7 @@ static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1061,7 +1061,7 @@ static void replaceCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1069,7 +1069,7 @@ static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_find_same", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
@@ -1077,7 +1077,7 @@ static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
@@ -1091,7 +1091,7 @@ static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
@@ -1107,7 +1107,7 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "select_to_matching" : "goto_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
@@ -1115,7 +1115,7 @@ static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"off"};
 	Widget menu = MENU_WIDGET(w);
@@ -1129,7 +1129,7 @@ static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"on"};
 	Widget menu = MENU_WIDGET(w);
@@ -1143,7 +1143,7 @@ static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"smart"};
 	Widget menu = MENU_WIDGET(w);
@@ -1157,7 +1157,7 @@ static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Widget menu = MENU_WIDGET(w);
 
@@ -1170,7 +1170,7 @@ static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void preserveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Widget menu = MENU_WIDGET(w);
 
@@ -1183,7 +1183,7 @@ static void preserveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {NO_FLASH_STRING};
 	Widget menu = MENU_WIDGET(w);
@@ -1197,7 +1197,7 @@ static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {FLASH_DELIMIT_STRING};
 	Widget menu = MENU_WIDGET(w);
@@ -1211,7 +1211,7 @@ static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer call
 
 static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 	static const char *params[1] = {FLASH_RANGE_STRING};
 	Widget menu = MENU_WIDGET(w);
 
@@ -1224,7 +1224,7 @@ static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Widget menu = MENU_WIDGET(w);
 
@@ -1236,15 +1236,15 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
 }
 
 static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), True);
 }
 
 static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"none"};
 	Widget menu = MENU_WIDGET(w);
@@ -1258,7 +1258,7 @@ static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"auto"};
 	Widget menu = MENU_WIDGET(w);
@@ -1272,7 +1272,7 @@ static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	static const char *params[1] = {"continuous"};
 	Widget menu = MENU_WIDGET(w);
@@ -1286,7 +1286,7 @@ static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -1296,8 +1296,8 @@ static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int applyBacklight = XmToggleButtonGetState(w);
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
@@ -1306,7 +1306,7 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -1316,7 +1316,7 @@ static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void statsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
+	Q_UNUSED(clientData);
 
 	Widget menu = MENU_WIDGET(w);
 
@@ -1329,9 +1329,9 @@ static void statsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefAutoIndent(NO_AUTO_INDENT);
@@ -1346,9 +1346,9 @@ static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callDat
 
 static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefAutoIndent(AUTO_INDENT);
@@ -1363,9 +1363,9 @@ static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefAutoIndent(SMART_INDENT);
@@ -1380,9 +1380,9 @@ static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1398,9 +1398,9 @@ static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1414,9 +1414,9 @@ static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), False);
@@ -1424,9 +1424,9 @@ static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	ChooseColors(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1434,9 +1434,9 @@ static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWrap(NO_WRAP);
@@ -1451,9 +1451,9 @@ static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void newlineWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWrap(NEWLINE_WRAP);
@@ -1468,9 +1468,9 @@ static void newlineWrapDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void contWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWrap(CONTINUOUS_WRAP);
@@ -1485,9 +1485,9 @@ static void contWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	WrapMarginDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, nullptr);
@@ -1495,9 +1495,9 @@ static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void smartTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	SetPrefSmartTags(True);
 	for(Document *win: WindowList) {
@@ -1510,9 +1510,9 @@ static void smartTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void showAllTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	SetPrefSmartTags(False);
 	for(Document *win: WindowList) {
@@ -1525,8 +1525,8 @@ static void showAllTagsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void shellSelDefCB(Widget widget, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(widget))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	SelectShellDialog(Document::WidgetToWindow(MENU_WIDGET(widget))->shell_, nullptr);
@@ -1534,8 +1534,8 @@ static void shellSelDefCB(Widget widget, XtPointer clientData, XtPointer callDat
 
 static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	TabsPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, nullptr);
@@ -1543,9 +1543,9 @@ static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefShowMatching(NO_FLASH);
@@ -1560,9 +1560,9 @@ static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callD
 
 static void showMatchingDelimitDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefShowMatching(FLASH_DELIMIT);
@@ -1577,9 +1577,9 @@ static void showMatchingDelimitDefCB(Widget w, XtPointer clientData, XtPointer c
 
 static void showMatchingRangeDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefShowMatching(FLASH_RANGE);
@@ -1594,8 +1594,8 @@ static void showMatchingRangeDefCB(Widget w, XtPointer clientData, XtPointer cal
 
 static void matchSyntaxBasedDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1609,8 +1609,8 @@ static void matchSyntaxBasedDefCB(Widget w, XtPointer clientData, XtPointer call
 
 static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1624,9 +1624,9 @@ static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void highlightOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefHighlightSyntax(False);
@@ -1640,9 +1640,9 @@ static void highlightOffDefCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void highlightDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
-	(void)w;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
+	Q_UNUSED(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefHighlightSyntax(True);
@@ -1656,8 +1656,8 @@ static void highlightDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditHighlightPatterns(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1665,8 +1665,8 @@ static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditSmartIndentMacros(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1674,8 +1674,8 @@ static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditHighlightStyles(nullptr);
@@ -1683,8 +1683,8 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditLanguageModes();
@@ -1692,8 +1692,8 @@ static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditShellMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1701,8 +1701,8 @@ static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditMacroMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1710,8 +1710,8 @@ static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditBGMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
@@ -1719,8 +1719,8 @@ static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -1730,8 +1730,8 @@ static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1745,8 +1745,8 @@ static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1760,8 +1760,8 @@ static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer call
 
 static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1775,8 +1775,8 @@ static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callD
 
 static void searchWrapsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1790,8 +1790,8 @@ static void searchWrapsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1804,8 +1804,8 @@ static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1820,8 +1820,8 @@ static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void reposDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1836,8 +1836,8 @@ static void reposDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void autoScrollDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1852,8 +1852,8 @@ static void autoScrollDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void modWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1869,8 +1869,8 @@ static void modWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void modWarnRealDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 	
 	int state = XmToggleButtonGetState(w);
 
@@ -1884,8 +1884,8 @@ static void modWarnRealDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void exitWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1899,8 +1899,8 @@ static void exitWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void openInTabDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1913,8 +1913,8 @@ static void openInTabDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1930,8 +1930,8 @@ static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1947,8 +1947,8 @@ static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void toolTipsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1963,8 +1963,8 @@ static void toolTipsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void tabNavigateDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -1978,8 +1978,8 @@ static void tabNavigateDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -2006,8 +2006,8 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -2021,8 +2021,8 @@ static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -2036,8 +2036,8 @@ static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData)
 
 static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -2051,8 +2051,8 @@ static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int state = XmToggleButtonGetState(w);
 
@@ -2067,8 +2067,8 @@ static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer cal
 
 static void searchLiteralCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2088,8 +2088,8 @@ static void searchLiteralCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 static void searchCaseSenseCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2109,8 +2109,8 @@ static void searchCaseSenseCB(Widget w, XtPointer clientData, XtPointer callData
 
 static void searchLiteralWordCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2130,8 +2130,8 @@ static void searchLiteralWordCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void searchCaseSenseWordCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2151,8 +2151,8 @@ static void searchCaseSenseWordCB(Widget w, XtPointer clientData, XtPointer call
 
 static void searchRegexCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2172,8 +2172,8 @@ static void searchRegexCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void searchRegexNoCaseCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2194,8 +2194,8 @@ static void searchRegexNoCaseCB(Widget w, XtPointer clientData, XtPointer callDa
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2212,8 +2212,8 @@ static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callD
 
 static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2230,8 +2230,8 @@ static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer ca
 
 static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// Set the preference and make the other windows' menus agree 
 	if (XmToggleButtonGetState(w)) {
@@ -2249,40 +2249,40 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
 
 static void size24x80CB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(24, 80);
 }
 
 static void size40x80CB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(40, 80);
 }
 
 static void size60x80CB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(60, 80);
 }
 
 static void size80x80CB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	setWindowSizeDefault(80, 80);
 }
 
 static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	RowColumnPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_);
@@ -2290,16 +2290,16 @@ static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	SaveNEditPrefs(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, False);
 }
 
 static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	static const char *params[1] = {"\f"};
 
@@ -2308,48 +2308,48 @@ static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	AbortShellCommand(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	BeginLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	FinishLearn();
 }
 
 static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	CancelMacroOrLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	Replay(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -2360,8 +2360,8 @@ static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -2369,15 +2369,15 @@ static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 
 static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	updateTagsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void unloadTipsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	updateTipsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
@@ -2417,8 +2417,8 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 */
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2427,8 +2427,8 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2439,8 +2439,8 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char fullname[MAXPATHLEN];
@@ -2463,8 +2463,8 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -2484,8 +2484,8 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	OpenSelectedFile(Document::WidgetToWindow(w), event->xbutton.time);
 	CheckCloseDim();
@@ -2494,8 +2494,8 @@ static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	int preResponse = PROMPT_SBC_DIALOG_RESPONSE;
 
@@ -2515,8 +2515,8 @@ static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2528,8 +2528,8 @@ static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	int response;
@@ -2561,8 +2561,8 @@ static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	int b;
@@ -2583,8 +2583,8 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	RevertToSaved(Document::WidgetToWindow(w));
 }
@@ -2592,8 +2592,8 @@ static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
@@ -2611,8 +2611,8 @@ static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2628,8 +2628,8 @@ static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
@@ -2656,8 +2656,8 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
@@ -2672,7 +2672,8 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
+	Q_UNUSED(w);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: load_tags_file action requires file argument\n");
@@ -2680,14 +2681,14 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	if (!AddTagsFile(args[0], TAG)) {
-		DialogF(DF_WARN, Document::WidgetToWindow(w)->shell_, 1, "Error Reading File", "Error reading ctags file:\n'%s'\ntags not loaded", "OK", args[0]);
+		QMessageBox::warning(nullptr /*Document::WidgetToWindow(w)->shell_*/, QLatin1String("Error Reading File"), QString(QLatin1String("Error reading ctags file:\n'%1'\ntags not loaded")).arg(QLatin1String(args[0])));
 	}
 }
 
 static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)w;
+	Q_UNUSED(w);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: unload_tags_file action requires file argument\n");
@@ -2712,8 +2713,8 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char filename[MAXPATHLEN], *params[1];
@@ -2741,7 +2742,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)w;
+	Q_UNUSED(w);
 	(void)event;
 
 	if (*nArgs == 0) {
@@ -2765,24 +2766,24 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	PrintWindow(Document::WidgetToWindow(w), False);
 }
 
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	PrintWindow(Document::WidgetToWindow(w), True);
 }
 
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	
@@ -2861,8 +2862,8 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2874,8 +2875,8 @@ static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2887,8 +2888,8 @@ static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2900,8 +2901,8 @@ static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2911,8 +2912,8 @@ static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2924,8 +2925,8 @@ static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2937,8 +2938,8 @@ static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2950,8 +2951,8 @@ static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2963,8 +2964,8 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	DoFindDlog(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs), event->xbutton.time);
 }
@@ -3147,24 +3148,24 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	GotoLineNumber(Document::WidgetToWindow(w));
 }
 
 static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	GotoSelectedLineNumber(Document::WidgetToWindow(w), event->xbutton.time);
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	RepeatDialog(Document::WidgetToWindow(w));
 }
@@ -3202,8 +3203,8 @@ static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	MarkDialog(Document::WidgetToWindow(w));
 }
@@ -3228,8 +3229,8 @@ static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	SelectToMatchingCharacter(Document::WidgetToWindow(w));
@@ -3237,8 +3238,8 @@ static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *
 
 static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	GotoMatchingCharacter(Document::WidgetToWindow(w));
@@ -3246,16 +3247,16 @@ static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 	FindDefinition(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	FindDefCalltip(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
@@ -3263,8 +3264,8 @@ static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3278,8 +3279,8 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3293,8 +3294,8 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3311,8 +3312,8 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 
 static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3325,8 +3326,8 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document::WidgetToWindow(w)->MoveDocumentDialog();
@@ -3334,8 +3335,8 @@ static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal
 
 static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document::WidgetToWindow(w)->NextDocument();
@@ -3343,8 +3344,8 @@ static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document::WidgetToWindow(w)->PreviousDocument();
@@ -3352,8 +3353,8 @@ static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document::WidgetToWindow(w)->LastDocument();
@@ -3361,8 +3362,8 @@ static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3374,8 +3375,8 @@ static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3387,8 +3388,8 @@ static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
@@ -3400,8 +3401,8 @@ static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char charCodeString[2];
@@ -3429,8 +3430,8 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	
@@ -3477,8 +3478,8 @@ static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 	char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
@@ -3504,8 +3505,8 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3520,8 +3521,8 @@ static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void execLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)args;
-	(void)nArgs;
+	Q_UNUSED(args);
+	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3582,8 +3583,8 @@ static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)nArgs;
-	(void)args;
+	Q_UNUSED(nArgs)
+	Q_UNUSED(args);
 	(void)event;
 
 	TextBuffer *buf = TextGetBuffer(w);
@@ -3600,8 +3601,8 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 
 static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)nArgs;
-	(void)args;
+	Q_UNUSED(nArgs)
+	Q_UNUSED(args);
 	(void)event;
 
 	TextBuffer *buf = TextGetBuffer(w);
@@ -4947,8 +4948,8 @@ void AddBGMenuAction(Widget widget) {
 
 static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)nArgs;
-	(void)args;
+	Q_UNUSED(nArgs)
+	Q_UNUSED(args);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -4990,8 +4991,8 @@ void AddTabContextMenuAction(Widget widget) {
 */
 static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)nArgs;
-	(void)args;
+	Q_UNUSED(nArgs)
+	Q_UNUSED(args);
 
 	Document *window;
 	auto xbutton = reinterpret_cast<XButtonPressedEvent *>(event);
@@ -5034,7 +5035,7 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 */
 static void tearoffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event) {
 
-	(void)w;
+	Q_UNUSED(w);
 
 	Widget shell = static_cast<Widget>(clientData);
 	XWMHints *wmHints;

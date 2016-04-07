@@ -2,12 +2,17 @@
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
 
+#include <QPointer>
 #include <list>
 #include <X11/Intrinsic.h>
 #include "nedit.h"
 #include "fileUtils.h"
 #include "string_view.h"
 #include <algorithm>
+
+class QDialog;
+class DialogReplace;
+class DialogReplaceScope;
 
 struct TextBuffer;
 struct UndoInfo;
@@ -134,6 +139,9 @@ private:
 
 public:
 	Document *next_;
+	
+public:
+	DialogReplace *getDialogReplace() const;
 
 public:
 	Widget shell_;                /* application shell of window */
@@ -155,37 +163,14 @@ public:
 	Widget menuBar_;     /* the main menu bar */
 	Widget tabBar_;      /* tab bar for tabbed window */
 	Widget tab_;         /* tab for this document */
-	Widget replaceDlog_; /* replace dialog */
-	Widget replaceText_; /* replace dialog settable widgets... */
-	Widget replaceWithText_;
-	Widget replaceCaseToggle_;
-	Widget replaceWordToggle_;
-	Widget replaceRegexToggle_;
-	Widget replaceRevToggle_;
-	Widget replaceKeepBtn_;
-	Widget replaceBtns_;
-	Widget replaceBtn_;
-	Widget replaceAllBtn_;
-#ifndef REPLACE_SCOPE
-	Widget replaceInWinBtn_;
-	Widget replaceInSelBtn_;
+
+#if 0
+	QPointer<QDialog> dialogFind_;
+	QPointer<QDialog> dialogReplace_;
+#else
+	QDialog* dialogFind_;
+	QDialog* dialogReplace_;
 #endif
-	Widget replaceSearchTypeBox_;
-	Widget replaceFindBtn_;
-	Widget replaceAndFindBtn_;
-	Widget findDlog_; /* find dialog */
-	Widget findText_; /* find dialog settable widgets... */
-	Widget findCaseToggle_;
-	Widget findWordToggle_;
-	Widget findRegexToggle_;
-	Widget findRevToggle_;
-	Widget findKeepBtn_;
-	Widget findBtns_;
-	Widget findBtn_;
-	Widget findSearchTypeBox_;
-	Widget replaceMultiFileDlog_; /* Replace in multiple files */
-	Widget replaceMultiFileList_;
-	Widget replaceMultiFilePathBtn_;
 	Widget fontDialog_;   /* nullptr, unless font dialog is up */
 	Widget colorDialog_;  /* nullptr, unless color dialog is up */
 	Widget readOnlyItem_; /* menu bar settable widgets... */
@@ -373,21 +358,11 @@ public:
 	bool multiFileReplSelected_;    /* selected during last multi-window replacement operation (history) */
 	Document ** writableWindows_;   /* temporary list of writable windows, used during multi-file replacements */
 	int nWritableWindows_;          /* number of elements in the list */
-	Bool multiFileBusy_;            /* suppresses multiple beeps/dialogs during multi-file replacements */
-	Bool replaceFailed_;            /* flags replacements failures during multi-file replacements */
-	Bool replaceLastRegexCase_;     /* last state of the case sense button in regex mode for replace dialog */
-	Bool replaceLastLiteralCase_;   /* idem, for literal mode */
-	Bool iSearchLastRegexCase_;     /* idem, for regex mode in incremental search bar */
-	Bool iSearchLastLiteralCase_;   /* idem, for literal mode */
-	Bool findLastRegexCase_;        /* idem, for regex mode in find dialog */
-	Bool findLastLiteralCase_;      /* idem, for literal mode */
+	bool multiFileBusy_;            /* suppresses multiple beeps/dialogs during multi-file replacements */
+	bool replaceFailed_;            /* flags replacements failures during multi-file replacements */
+	bool iSearchLastRegexCase_;     /* idem, for regex mode in incremental search bar */
+	bool iSearchLastLiteralCase_;   /* idem, for literal mode */
 
-#ifdef REPLACE_SCOPE
-	int replaceScope_;               /* Current scope for replace dialog */
-	Widget replaceScopeWinToggle_;   /* Scope for replace = window */
-	Widget replaceScopeSelToggle_;   /* Scope for replace = selection */
-	Widget replaceScopeMultiToggle_; /* Scope for replace = multiple files */
-#endif
 	UserMenuCache *userMenuCache_;    /* cache user menus: */
 	UserBGMenuCache userBGMenuCache_; /* shell & macro menu are shared over all "tabbed" documents, while each document has its own background menu. */
 	

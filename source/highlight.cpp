@@ -44,7 +44,6 @@
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "MotifHelper.h"
 
 #include <cstdio>
@@ -545,20 +544,20 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 	// Check that the styles and parent pattern names actually exist 
 	if (!NamedStyleExists("Plain")) {
-		DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Highlight style \"Plain\" is missing", "OK");
+		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
 		return nullptr;
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {
-			DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Parent field \"%s\" in pattern \"%s\"\ndoes not match any highlight patterns in this set", "OK", patternSrc[i].subPatternOf.toLatin1().data(), patternSrc[i].name.c_str());
+		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {				
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(QString::fromStdString(patternSrc[i].name)));
 			return nullptr;
 		}
 	}
 
 	for (i = 0; i < nPatterns; i++) {
-		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {
-			DialogF(DF_WARN, window->shell_, 1, "Highlight Style", "Style \"%s\" named in pattern \"%s\"\ndoes not match any existing style", "OK", patternSrc[i].style.toLatin1().data(), patternSrc[i].name.c_str());
+		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {				
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(QString::fromStdString(patternSrc[i].name)));
 			return nullptr;
 		}
 	}
@@ -568,11 +567,10 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	   shows this setting only on top patterns which is much less confusing) */
 	for (i = 0; i < nPatterns; i++) {
 		if (!patternSrc[i].subPatternOf.isNull()) {
-			int parentindex;
 
-			parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
+			int parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
 			if (parentindex == -1) {
-				DialogF(DF_WARN, window->shell_, 1, "Parent Pattern", "Pattern \"%s\" does not have valid parent", "OK", patternSrc[i].name.c_str());
+				QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Pattern \"%1\" does not have valid parent")).arg(QString::fromStdString(patternSrc[i].name)));
 				return nullptr;
 			}
 
@@ -821,8 +819,8 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 		compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
 		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
 		
-		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
-			DialogF(DF_WARN, dialogParent, 1, "Color-only Pattern", "Color-only pattern \"%s\" may not have subpatterns", "OK", patternSrc[i].name.c_str());
+		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {		
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(QString::fromStdString(patternSrc[i].name)));
 			return nullptr;
 		}
 		
@@ -1948,13 +1946,16 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 */
 static regexp *compileREAndWarn(Widget parent, view::string_view re) {
 
+	Q_UNUSED(parent);
+
 	try {
 		return new regexp(re, REDFLT_STANDARD);
 	} catch(const regex_error &e) {
-		size_t maxLength = DF_MAX_MSG_LENGTH - strlen(e.what()) - 60;
+	
+		// NOTE(eteran): was DF_MAX_MSG_LENGTH (2047 + 1024)
+		const size_t maxLength = 4096;
 
-		/* Prevent buffer overflow in DialogF. If the re is too long,
-		truncate it and append ... */
+		/* Prevent buffer overflow. If the re is too long, truncate it and append ... */
 		std::string boundedRe = re.to_string();
 				
 		if (boundedRe.size() > maxLength) {
@@ -1962,7 +1963,7 @@ static regexp *compileREAndWarn(Widget parent, view::string_view re) {
 			boundedRe.append("...");
 		}
 
-		DialogF(DF_WARN, parent, 1, "Error in Regex", "Error in syntax highlighting regular expression:\n%s\n%s", "OK", boundedRe.c_str(), e.what());
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QLatin1String(e.what())));
 		return nullptr;
 	}
 	
@@ -1973,11 +1974,13 @@ static int parentStyleOf(const char *parentStyles, int style) {
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2) {
-	int p;
 
-	for (p = parentStyleOf(parentStyles, style2); p != '\0'; p = parentStyleOf(parentStyles, p))
-		if (style1 == p)
+	for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
+		if (style1 == p) {
 			return TRUE;
+		}
+	}
+	
 	return FALSE;
 }
 

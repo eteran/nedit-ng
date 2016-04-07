@@ -742,7 +742,7 @@ void ManageDialogCenteredOnPointer(Widget dialogChild) {
 }
 
 /*
-** Cause dialogs created by libNUtil.a routines (such as DialogF),
+** Cause dialogs created by libNUtil.a routines,
 ** and dialogs which use ManageDialogCenteredOnPointer to pop up
 ** over the pointer (state = True), or pop up in their default
 ** positions (state = False)

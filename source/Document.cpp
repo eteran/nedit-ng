@@ -1,6 +1,9 @@
 
 #include <QMessageBox>
 
+#include "ui/DialogFind.h"
+#include "ui/DialogReplace.h"
+
 #include "MotifHelper.h"
 #include "Document.h"
 #include "file.h"
@@ -266,8 +269,8 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 			XtSetSensitive(window->filterItem_, selected);
 
 			DimSelectionDepUserMenuItems(window, selected);
-			if (window->replaceDlog_ != nullptr && XtIsManaged(window->replaceDlog_)) {
-				UpdateReplaceActionButtons(window);
+			if(auto dialog = window->getDialogReplace()) {
+				dialog->UpdateReplaceActionButtons();
 			}
 		}
 	}
@@ -1162,12 +1165,11 @@ void Document::addToWindowList() {
 ** Remove a this from the list of windows
 */
 void Document::removeFromWindowList() const {
-	Document *temp;
 
 	if (WindowList == this) {
 		WindowList = next_;
 	} else {
-		for (temp = WindowList; temp != nullptr; temp = temp->next_) {
+		for (Document *temp = WindowList; temp != nullptr; temp = temp->next_) {
 			if (temp->next_ == this) {
 				temp->next_ = next_;
 				break;
@@ -1873,14 +1875,18 @@ void Document::UpdateWindowTitle() {
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
-	if (findDlog_ && XmToggleButtonGetState(findKeepBtn_)) {
-		sprintf(title, "Find (in %s)", filename_.c_str());
-		XtVaSetValues(XtParent(findDlog_), XmNtitle, title, nullptr);
+	if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
+		if(dialog->keepDialog()) {
+			sprintf(title, "Find (in %s)", filename_.c_str());
+			dialog->setWindowTitle(QLatin1String(title));
+		}
 	}
 	
-	if (replaceDlog_ && XmToggleButtonGetState(replaceKeepBtn_)) {
-		sprintf(title, "Replace (in %s)", filename_.c_str());
-		XtVaSetValues(XtParent(replaceDlog_), XmNtitle, title, nullptr);
+	if(auto dialog = getDialogReplace()) {
+		if(dialog->keepDialog()) {	
+			sprintf(title, "Replace (in %s)", filename_.c_str());
+			dialog->setWindowTitle(QLatin1String(title));
+		}
 	}
 
 	// Update the Windows menus with the new name 
@@ -2888,6 +2894,15 @@ void Document::CloseWindow() {
 
 	// deallocate the window data structure 
 	delete this;
+#if 1
+	// TODO(eteran): why did I need to add this?!?
+	//               looking above, RaiseDocument (which triggers the update)
+	//               is called before removeFromWindowList, so I'm not 100% sure
+	//               it ever worked without this...
+	if(auto dialog = getDialogReplace()) {
+		dialog->UpdateReplaceActionButtons();
+	}
+#endif	
 }
 
 /*
@@ -3124,14 +3139,11 @@ void Document::RaiseDocument() {
 
 	// restore the bg menu tearoffs of active document 
 	redisplayTearOffs(bgMenuPane_);
-
+	
 	/* Make sure that the "In Selection" button tracks the presence of a
 	   selection and that the this inherits the proper search scope. */
-	if (replaceDlog_ != nullptr && XtIsManaged(replaceDlog_)) {
-#ifdef REPLACE_SCOPE
-		replaceScope_ = win->replaceScope_;
-#endif
-		UpdateReplaceActionButtons(this);
+	if(auto dialog = getDialogReplace()) {
+		dialog->UpdateReplaceActionButtons();
 	}
 
 	UpdateWMSizeHints();
@@ -3192,6 +3204,8 @@ void Document::cloneDocument(Document *window) {
 	if (window->highlightSyntax_) {
 		StartHighlighting(window, False);
 	}
+	
+	// TODO(eteran): clone the find dialogs as well
 
 	// copy states of original document 
 	window->filenameSet_ = filenameSet_;
@@ -3210,7 +3224,7 @@ void Document::cloneDocument(Document *window) {
 	window->SetOverstrike(overstrike_);
 	window->showMatchingStyle_ = showMatchingStyle_;
 	window->matchSyntaxBased_ = matchSyntaxBased_;
-#if 0    
+#if 0
     window->showStats_ = showStats_;
     window->showISearchLine_ = showISearchLine_;
     window->showLineNumbers_ = showLineNumbers_;
@@ -3219,7 +3233,7 @@ void Document::cloneDocument(Document *window) {
     window->windowMenuValid_ = windowMenuValid_;
     window->flashTimeoutID_ = flashTimeoutID_;
     window->wasSelected_ = wasSelected_;
-    strcpy(window->fontName_, fontName_);
+    window->fontName_ = fontName_;
     strcpy(window->italicFontName_, italicFontName_);
     strcpy(window->boldFontName_, boldFontName_);
     strcpy(window->boldItalicFontName_, boldItalicFontName_);
@@ -3235,12 +3249,9 @@ void Document::cloneDocument(Document *window) {
 #endif
 	window->iSearchHistIndex_ = iSearchHistIndex_;
 	window->iSearchStartPos_ = iSearchStartPos_;
-	window->replaceLastRegexCase_ = replaceLastRegexCase_;
-	window->replaceLastLiteralCase_ = replaceLastLiteralCase_;
 	window->iSearchLastRegexCase_ = iSearchLastRegexCase_;
 	window->iSearchLastLiteralCase_ = iSearchLastLiteralCase_;
-	window->findLastRegexCase_ = findLastRegexCase_;
-	window->findLastLiteralCase_ = findLastLiteralCase_;
+
 	window->device_ = device_;
 	window->inode_ = inode_;
 	window->fileClosedAtom_ = fileClosedAtom_;
@@ -3297,20 +3308,10 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	  memset(window, 0, sizeof(Document));
 	     be added here ?
 	*/
-	replaceDlog_ = nullptr;
-	replaceText_ = nullptr;
-	replaceWithText_ = nullptr;
-	replaceWordToggle_ = nullptr;
-	replaceCaseToggle_ = nullptr;
-	replaceRegexToggle_ = nullptr;
-	findDlog_ = nullptr;
-	findText_ = nullptr;
-	findWordToggle_ = nullptr;
-	findCaseToggle_ = nullptr;
-	findRegexToggle_ = nullptr;
-	replaceMultiFileDlog_ = nullptr;
-	replaceMultiFilePathBtn_ = nullptr;
-	replaceMultiFileList_ = nullptr;
+	
+	dialogFind_    = nullptr;
+	dialogReplace_ = nullptr;
+
 	multiFileReplSelected_ = FALSE;
 	multiFileBusy_ = FALSE;
 	writableWindows_ = nullptr;
@@ -3377,12 +3378,9 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	languageMode_ = PLAIN_LANGUAGE_MODE;
 	iSearchHistIndex_ = 0;
 	iSearchStartPos_ = -1;
-	replaceLastRegexCase_ = TRUE;
-	replaceLastLiteralCase_ = FALSE;
 	iSearchLastRegexCase_ = TRUE;
 	iSearchLastLiteralCase_ = FALSE;
-	findLastRegexCase_ = TRUE;
-	findLastLiteralCase_ = FALSE;
+
 	tab_ = nullptr;
 	device_ = 0;
 	inode_ = 0;
@@ -3692,11 +3690,6 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	// Set the minimum pane height for the initial text pane 
 	UpdateMinPaneHeights();
 
-	// create dialogs shared by all documents in a window 
-	CreateFindDlog(shell_, this);
-	CreateReplaceDlog(shell_, this);
-	CreateReplaceMultiFileDlog(this);
-
 	// dim/undim Attach_Tab menu items 
 	state = NDocuments() < NWindows();
 	
@@ -3725,20 +3718,10 @@ Document *Document::CreateDocument(const char *name) {
 
 #if 0
     // share these dialog items with parent shell 
-    window->replaceDlog_ = nullptr;
-    window->replaceText_ = nullptr;
-    window->replaceWithText_ = nullptr;
-    window->replaceWordToggle_ = nullptr;
-    window->replaceCaseToggle_ = nullptr;
-    window->replaceRegexToggle_ = nullptr;
-    window->findDlog_ = nullptr;
-    window->findText_ = nullptr;
-    window->findWordToggle_ = nullptr;
-    window->findCaseToggle_ = nullptr;
-    window->findRegexToggle_ = nullptr;
-    window->replaceMultiFileDlog_ = nullptr;
-    window->replaceMultiFilePathBtn_ = nullptr;
-    window->replaceMultiFileList_ = nullptr;
+
+	window->dialogFind_ = nullptr;
+	window->dialogReplace_ = nullptr;
+
     window->showLineNumbers_ = GetPrefLineNums();
     window->showStats_ = GetPrefStatsLine();
     window->showISearchLine_ = GetPrefISearchLine();
@@ -3806,12 +3789,8 @@ Document *Document::CreateDocument(const char *name) {
 	window->languageMode_ = PLAIN_LANGUAGE_MODE;
 	window->iSearchHistIndex_ = 0;
 	window->iSearchStartPos_ = -1;
-	window->replaceLastRegexCase_ = TRUE;
-	window->replaceLastLiteralCase_ = FALSE;
 	window->iSearchLastRegexCase_ = TRUE;
 	window->iSearchLastLiteralCase_ = FALSE;
-	window->findLastRegexCase_ = TRUE;
-	window->findLastLiteralCase_ = FALSE;
 	window->tab_ = nullptr;
 	window->bgMenuUndoItem_ = nullptr;
 	window->bgMenuRedoItem_ = nullptr;
@@ -4328,3 +4307,9 @@ std::string Document::FullPath() const {
 	snprintf(fullPath, sizeof(fullPath), "%s%s", path_.c_str(), filename_.c_str());
 	return fullPath;
 }
+
+
+DialogReplace *Document::getDialogReplace() const {
+	return qobject_cast<DialogReplace *>(dialogReplace_);
+}
+

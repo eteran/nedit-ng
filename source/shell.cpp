@@ -40,7 +40,6 @@
 #include "file.h"
 #include "macro.h"
 #include "interpret.h"
-#include "DialogF.h"
 #include "misc.h"
 #include "MotifHelper.h"
 #include "menu.h"
@@ -789,6 +788,8 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	if (cmdData->flags & ERROR_DIALOGS) {
 		failure = WIFEXITED(status) && WEXITSTATUS(status) != 0;
 		errorReport = !errText.empty();
+		
+		static const int DF_MAX_MSG_LENGTH = 4096;
 
 		if (failure && errorReport) {
 			removeTrailingNewlines(errText);
