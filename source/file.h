@@ -41,8 +41,8 @@ enum EditFlags {
 };
 
 #define PROMPT_SBC_DIALOG_RESPONSE 0
-#define YES_SBC_DIALOG_RESPONSE 1
-#define NO_SBC_DIALOG_RESPONSE 2
+#define YES_SBC_DIALOG_RESPONSE    1
+#define NO_SBC_DIALOG_RESPONSE     2
 
 int CheckReadOnly(Document *window);
 int CloseAllFilesAndWindows(void);

@@ -28,6 +28,7 @@
 
 #include <QMessageBox>
 #include <QString>
+#include <QPushButton>
 #include "ui/DialogWrapMargin.h"
 
 #include "preferences.h"
@@ -2426,10 +2427,10 @@ static void lmDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	(void)clientData;
 
-	int i;
-
-	for (i = 0; i < LMDialog.nLanguageModes; i++)
+	for (int i = 0; i < LMDialog.nLanguageModes; i++) {
 		freeLanguageModeRec(LMDialog.languageModeList[i]);
+	}
+
 	delete [] LMDialog.languageModeList;
 }
 
@@ -2550,10 +2551,14 @@ static int updateLMList(void) {
 	}
 
 	// Replace the old language mode list with the new one from the dialog 
-	for (int i = 0; i < NLanguageModes; i++)
+	for (int i = 0; i < NLanguageModes; i++) {
 		freeLanguageModeRec(LanguageModes[i]);
-	for (int i = 0; i < LMDialog.nLanguageModes; i++)
+	}
+	
+	for (int i = 0; i < LMDialog.nLanguageModes; i++) {
 		LanguageModes[i] = copyLanguageModeRec(LMDialog.languageModeList[i]);
+	}
+	
 	NLanguageModes = LMDialog.nLanguageModes;
 
 	/* Update user menu info to update language mode dependencies of
@@ -2625,7 +2630,18 @@ static void *lmGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
 	if (!explicitRequest) {
-		if (DialogF(DF_WARN, LMDialog.shell, 2, "Discard Language Mode", "Discard incomplete entry\nfor current language mode?", "Keep", "Discard") == 2) {
+	
+		QMessageBox messageBox(nullptr /*LMDialog.shell*/);
+		messageBox.setWindowTitle(QLatin1String("Discard Language Mode"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QLatin1String("Discard incomplete entry\nfor current language mode?"));
+		
+		QPushButton *buttonKeep    = messageBox.addButton(QLatin1String("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard"), QMessageBox::AcceptRole);
+		Q_UNUSED(buttonKeep);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonDiscard) {
 			return oldItem == nullptr ? nullptr : copyLanguageModeRec((languageModeRec *)oldItem);
 		}
 	}
@@ -2690,8 +2706,9 @@ static void freeLanguageModeRec(languageModeRec *lm) {
 	XtFree(lm->recognitionExpr);
 	XtFree(lm->defTipsFile);
 	XtFree(lm->delimiters);
-	for (int i = 0; i < lm->nExtensions; i++)
+	for (int i = 0; i < lm->nExtensions; i++) {
 		XtFree(lm->extensions[i]);
+	}
 
 	delete [] lm->extensions;
 	delete lm;
@@ -2775,7 +2792,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 		} catch(const regex_error &e) {
 			if (!silent) {
-				DialogF(DF_WARN, LMDialog.shell, 1, "Regex", "Recognition expression:\n%s", "OK", e.what());
+				QMessageBox::warning(nullptr /*LMDialog.shell*/, QLatin1String("Regex"), QString(QLatin1String("Recognition expression:\n%1")).arg(QLatin1String(e.what())));
 				XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
 			}
 			freeLanguageModeRec(lm);
@@ -2795,15 +2812,14 @@ static languageModeRec *readLMDialogFields(int silent) {
 		// Ensure that AddTagsFile will work 
 		if (AddTagsFile(lm->defTipsFile, TIP) == FALSE) {
 			if (!silent) {
-				DialogF(DF_WARN, LMDialog.shell, 1, "Error reading Calltips", "Can't read default calltips file(s):\n  \"%s\"\n", "OK", lm->defTipsFile);
+				QMessageBox::warning(nullptr /*LMDialog.shell*/, QLatin1String("Error reading Calltips"), QString(QLatin1String("Can't read default calltips file(s):\n  \"%1\"\n")).arg(QLatin1String(lm->defTipsFile)));
 				XmProcessTraversal(LMDialog.recogW, XmTRAVERSE_CURRENT);
 			}
 			freeLanguageModeRec(lm);
 			return nullptr;
-		} else if (DeleteTagsFile(lm->defTipsFile, TIP, False) == FALSE)
-			fprintf(stderr, "nedit: Internal error: Trouble deleting "
-			                "calltips file(s):\n  \"%s\"\n",
-			        lm->defTipsFile);
+		} else if (DeleteTagsFile(lm->defTipsFile, TIP, False) == FALSE) {
+			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", lm->defTipsFile);
+		}
 	}
 
 	// read tab spacing field 
@@ -2817,7 +2833,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 		if (lm->tabDist <= 0 || lm->tabDist > 100) {
 			if (!silent) {
-				DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing", "Invalid tab spacing: %d", "OK", lm->tabDist);
+				QMessageBox::warning(nullptr /*LMDialog.shell*/, QLatin1String("Invalid Tab Spacing"), QString(QLatin1String("Invalid tab spacing: %1")).arg(lm->tabDist));
 				XmProcessTraversal(LMDialog.tabW, XmTRAVERSE_CURRENT);
 			}
 			freeLanguageModeRec(lm);
@@ -2836,7 +2852,7 @@ static languageModeRec *readLMDialogFields(int silent) {
 
 		if (lm->emTabDist < 0 || lm->emTabDist > 100) {
 			if (!silent) {
-				DialogF(DF_WARN, LMDialog.shell, 1, "Invalid Tab Spacing", "Invalid emulated tab spacing: %d", "OK", lm->emTabDist);
+				QMessageBox::warning(nullptr /*LMDialog.shell*/, QLatin1String("Invalid Tab Spacing"), QString(QLatin1String("Invalid emulated tab spacing: %1")).arg(lm->emTabDist));
 				XmProcessTraversal(LMDialog.emTabW, XmTRAVERSE_CURRENT);
 			}
 			freeLanguageModeRec(lm);
@@ -4088,9 +4104,10 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 	parsedString = ReadSymbolicField(&stringPtr);
 	if (*stringPtr != '\0') {
 		if (!silent) {		
-			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
+			QMessageBox::warning(nullptr /*textW*/, QLatin1String("Invalid Character"), QString(QLatin1String("Invalid character \"%1\" in %2")).arg(QLatin1Char(stringPtr[1])).arg(QLatin1String(fieldName)));
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
+		
 		XtFree(string);
 		XtFree(parsedString);
 		return nullptr;
@@ -4124,8 +4141,8 @@ QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int s
 	QString parsedString = ReadSymbolicFieldEx(&stringPtr);
 	
 	if (*stringPtr != '\0') {
-		if (!silent) {		
-			DialogF(DF_WARN, textW, 1, "Invalid Character", "Invalid character \"%s\" in %c", "OK", stringPtr[1], fieldName);
+		if (!silent) {
+			QMessageBox::warning(nullptr /*textW*/, QLatin1String("Invalid Character"), QString(QLatin1String("Invalid character \"%1\" in %2")).arg(QLatin1Char(stringPtr[1])).arg(QLatin1String(fieldName)));
 			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
 		}
 		return QString();
@@ -4284,8 +4301,10 @@ int SkipOptSeparator(char separator, const char **inPtr) {
 ** error is, and returns False;
 */
 static int modeError(languageModeRec *lm, const char *stringStart, const char *stoppedAt, const char *message) {
-	if(lm)
+	if(lm) {
 		freeLanguageModeRec(lm);
+	}
+
 	return ParseError(nullptr, stringStart, stoppedAt, "language mode specification", message);
 }
 
@@ -4320,7 +4339,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 	if(!toDialog) {
 		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
 	} else {
-		DialogF(DF_WARN, toDialog, 1, "Parse Error", "%s in %s:\n%s", "OK", message, errorIn, errorLine);
+		QMessageBox::warning(nullptr /*toDialog*/, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(QLatin1String(message)).arg(QLatin1String(errorIn)).arg(QLatin1String(errorLine)));
 	}
 	
 	delete [] errorLine;

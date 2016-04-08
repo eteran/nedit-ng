@@ -663,8 +663,9 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 	int response, stat;
 
 	// Make sure that the window is not in iconified state 
-	if (window->fileChanged_)
+	if (window->fileChanged_) {
 		window->RaiseDocumentWindow();
+	}
 
 	/* If the window is a normal & unmodified file or an empty new file,
 	   or if the user wants to ignore external modifications then
@@ -680,12 +681,28 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 		// up-to-date windows don't have outstanding backup files to close 
 	} else {
 		if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
-			response = DialogF(DF_WARN, window->shell_, 3, "Save File", "Save %s before closing?", "Yes", "No", "Cancel", window->filename_.c_str());
+		
+			int resp = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Save File"), QString(QLatin1String("Save %1 before closing?")).arg(QString::fromStdString(window->filename_)), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			
+			// TODO(eteran): factor out the need for this mapping...
+			switch(resp) {
+			case QMessageBox::Yes:
+				response = 1;
+				break;
+			case QMessageBox::No:
+				response = 2;
+				break;
+			case QMessageBox::Cancel:
+				response = 3;
+				break;
+			}
+
 		} else {
 			response = preResponse;
 		}
-
-		if (response == YES_SBC_DIALOG_RESPONSE) {
+		
+		switch(response) {
+		case YES_SBC_DIALOG_RESPONSE:
 			// Save 
 			stat = SaveWindow(window);
 			if (stat) {
@@ -693,13 +710,15 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 			} else {
 				return FALSE;
 			}
-		} else if (response == NO_SBC_DIALOG_RESPONSE) {
+			break;
+			
+		case NO_SBC_DIALOG_RESPONSE:
 			// Don't Save 
 			RemoveBackupFile(window);
 			window->CloseWindow();
-		} else // 3 == Cancel 
-		{
-			return FALSE;
+			break;
+		default:
+			return FALSE;			
 		}
 	}
 	return TRUE;
@@ -944,9 +963,7 @@ static bool doSave(Document *window) {
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
 	if ((getuid() == 0) && (stat(fullname, &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
-		result = DialogF(DF_WARN, window->shell_, 2, "Writing Read-only File", "File '%s' is marked as read-only.\n"
-		                                                                      "Do you want to save anyway?",
-		                 "Save", "Cancel", window->filename_.c_str());
+		result = DialogF(DF_WARN, window->shell_, 2, "Writing Read-only File", "File '%s' is marked as read-only.\nDo you want to save anyway?", "Save", "Cancel", window->filename_.c_str());
 		if (result != 1) {
 			return True;
 		}
@@ -998,7 +1015,7 @@ static bool doSave(Document *window) {
 	
 	
 	if (ferror(fp)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error saving File", "%s not saved:\n%s", "OK", window->filename_.c_str(), strerror(errno));
+		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
 		remove(fullname);
 		return FALSE;
@@ -1006,7 +1023,7 @@ static bool doSave(Document *window) {
 
 	// close the file 
 	if (fclose(fp) != 0) {
-		DialogF(DF_ERR, window->shell_, 1, "Error closing File", "Error closing file:\n%s", "OK", strerror(errno));
+		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error closing File"), QString(QLatin1String("Error closing file:\n%1")).arg(QLatin1String(strerror(errno))));
 		return FALSE;
 	}
 
@@ -1050,9 +1067,8 @@ int WriteBackupFile(Document *window) {
 	    permissions was somewhat of a security hole, because permissions were
 	    independent of those of the original file being edited */
 	if ((fd = open(name.c_str(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
-		DialogF(DF_WARN, window->shell_, 1, "Error writing Backup", "Unable to save backup for %s:\n%s\n"
-		                                                           "Automatic backup is now off",
-		        "OK", window->filename_.c_str(), strerror(errno));
+	
+		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error writing Backup"), QString(QLatin1String("Unable to save backup for %1:\n%2\nAutomatic backup is now off")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));		
 		window->autoSave_ = FALSE;
 		window->SetToggleButtonState(window->autoSaveItem_, FALSE, FALSE);
 		return FALSE;

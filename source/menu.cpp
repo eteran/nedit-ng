@@ -30,6 +30,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QStringList>
+#include <QPushButton>
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -2730,6 +2731,7 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
+	(void)w;
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: load_tips_file action requires file argument\n");
@@ -2737,7 +2739,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	if (!AddTagsFile(args[0], TIP)) {
-		DialogF(DF_WARN, Document::WidgetToWindow(w)->shell_, 1, "Error Reading File", "Error reading tips file:\n'%s'\ntips not loaded", "OK", args[0]);
+		QMessageBox::warning(nullptr /*Document::WidgetToWindow(w)->shell_*/, QLatin1String("Error Reading File"), QString(QLatin1String("Error reading tips file:\n'%1'\ntips not loaded")).arg(QLatin1String(args[0])));
 	}
 }
 
@@ -2798,7 +2800,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	   
 	// NOTE(eteran): test if the current window is NOT the only window
 	if (GetPrefWarnExit() && !(it == begin(WindowList) && std::next(it) == end(WindowList))) {
-		int resp;
 		int lineLen;
 		char exitMsg[DF_MAX_MSG_LENGTH];
 		char *ptr;
@@ -2849,9 +2850,19 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		}
 		
 		sprintf(ptr, "\n\nExit NEdit?");
-		resp = DialogF(DF_QUES, window->shell_, 2, "Exit", "%s", "Exit", "Cancel", exitMsg);
-		if (resp == 2)
+		
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("Exit"));
+		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setText(QString(QLatin1String("%1")).arg(QLatin1String(exitMsg)));
+		QPushButton *buttonExit   = messageBox.addButton(QLatin1String("Exit"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonExit);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonCancel) {
 			return;
+		}
 	}
 
 	// Close all files and exit when the last one is closed 
@@ -3092,7 +3103,7 @@ static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	}
 
 	if (*nArgs < 2) {
-		DialogF(DF_WARN, window->shell_, 1, "Error in replace_find", "replace_find action requires search and replace string arguments", "OK");
+		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error in replace_find"), QLatin1String("replace_find action requires search and replace string arguments"));
 		return;
 	}
 
@@ -3299,15 +3310,25 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	(void)event;
 
 	Document *window = Document::WidgetToWindow(w);
-	int resp;
 
 	if (window->NDocuments() < 2)
 		return;
 
-	resp = DialogF(DF_QUES, window->shell_, 2, "Detach %s?", "Detach", "Cancel", window->filename_.c_str());
 
-	if (resp == 1)
-		window->DetachDocument();
+	QMessageBox messageBox(nullptr /*window->shell_*/);
+	messageBox.setWindowTitle(QLatin1String("Detach"));
+	messageBox.setIcon(QMessageBox::Question);
+	messageBox.setText(QString(QLatin1String("Detach %1?")).arg(QString::fromStdString(window->filename_)));
+	QPushButton *buttonDetach   = messageBox.addButton(QLatin1String("Cancel"), QMessageBox::AcceptRole);
+	QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+	Q_UNUSED(buttonDetach);
+
+	messageBox.exec();
+	if(messageBox.clickedButton() == buttonCancel) {
+		return;
+	}
+
+	window->DetachDocument();
 }
 
 static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
