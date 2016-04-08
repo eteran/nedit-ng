@@ -2561,23 +2561,45 @@ static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	int b;
 
 	// re-reading file is irreversible, prompt the user first 
 	if (window->fileChanged_) {
-		b = DialogF(DF_QUES, window->shell_, 2, "Discard Changes", "Discard changes to\n%s%s?", "OK", "Cancel", window->path_.c_str(), window->filename_.c_str());
+	
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("Discard Changes"));
+		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setText(QString(QLatin1String("Discard changes to\n%1%2?")).arg(QString::fromStdString(window->path_)).arg(QString::fromStdString(window->filename_)));
+		QPushButton *buttonOk   = messageBox.addButton(QMessageBox::Ok);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonOk);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonCancel) {
+			return;
+		}
+		
 	} else {
-		b = DialogF(DF_QUES, window->shell_, 2, "Reload File", "Re-load file\n%s%s?", "Re-read", "Cancel", window->path_.c_str(), window->filename_.c_str());
+	
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("Reload File"));
+		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setText(QString(QLatin1String("Re-load file\n%1%2?")).arg(QString::fromStdString(window->path_)).arg(QString::fromStdString(window->filename_)));
+		QPushButton *buttonOk   = messageBox.addButton(QLatin1String("Re-read"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonOk);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonCancel) {
+			return;
+		}	
 	}
 
-	if (b != 1) {
-		return;
-	}
+	
 	XtCallActionProc(window->lastFocus_, "revert_to_saved", event, nullptr, 0);
 }
 
@@ -3515,12 +3537,13 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	                                                               "%% expands to current filename, # to line number)",
 	               cmdText, "OK", "Cancel");
 
-	if (resp == 2)
+	if (resp == 2) {
 		return;
+	}
+	
 	AddToHistoryList(cmdText, &cmdHistory, &nHistoryCmds);
 	params[0] = cmdText;
 	XtCallActionProc(w, "execute_command", event, params, 1);
-	;
 }
 
 static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
