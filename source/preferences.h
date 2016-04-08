@@ -98,7 +98,7 @@ char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silen
 const char *GetPrefShell(void);
 const char *GetPrefTitleFormat(void);
 int AllocatedStringsDiffer(const char *s1, const char *s2);
-int CheckPrefsChangesSaved(Widget dialogParent);
+bool CheckPrefsChangesSaved(Widget dialogParent);
 int FindLanguageMode(const char *languageName);
 int GetPrefAlwaysCheckRelTagsSpecs(void);
 int GetPrefAppendLF(void);

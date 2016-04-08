@@ -51,7 +51,6 @@
 #include "MotifHelper.h"
 #include "prefFile.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "managedList.h"
 #include "fontsel.h"
 #include "fileUtils.h"
@@ -1755,24 +1754,37 @@ void MarkPrefsChanged(void) {
 ** to re-save.  Returns False if user requests cancelation of Exit (or whatever
 ** operation triggered this call to be made).
 */
-int CheckPrefsChangesSaved(Widget dialogParent) {
-	int resp;
+bool CheckPrefsChangesSaved(Widget dialogParent) {
 
 	if (!PrefsHaveChanged)
 		return True;
 
-	resp = DialogF(DF_WARN, dialogParent, 3, "Default Preferences", ImportedFile == nullptr ? "Default Preferences have changed.\n"
-	                                                                                          "Save changes to NEdit preference file?"
-	                                                                                        : "Default Preferences have changed.  SAVING \n"
-	                                                                                          "CHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s",
-	               "Save", "Don't Save", "Cancel", ImportedFile);
-	if (resp == 2)
-		return True;
-	if (resp == 3)
-		return False;
 
-	SaveNEditPrefs(dialogParent, True);
-	return True;
+	QMessageBox messageBox(nullptr /*dialogParent*/);
+	messageBox.setWindowTitle(QLatin1String("Default Preferences"));
+	messageBox.setIcon(QMessageBox::Question);
+	
+	
+	messageBox.setText((ImportedFile == nullptr)
+		? QString(QLatin1String("Default Preferences have changed.\nSave changes to NEdit preference file?"))
+		: QString(QLatin1String("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s")).arg(QLatin1String(ImportedFile)));
+	
+	
+	QPushButton *buttonSave     = messageBox.addButton(QLatin1String("Save"), QMessageBox::AcceptRole);
+	QPushButton *buttonDontSave = messageBox.addButton(QLatin1String("Don't Save"), QMessageBox::AcceptRole);
+	QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+	Q_UNUSED(buttonCancel);
+
+	messageBox.exec();
+	if(messageBox.clickedButton() == buttonSave) {
+		SaveNEditPrefs(dialogParent, True);
+		return true;
+	} else if(messageBox.clickedButton() == buttonDontSave) {
+		return true;
+	} else {
+		return false;
+	}
+
 }
 
 /*
@@ -2193,7 +2205,6 @@ static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData
 	Widget shellSelDialog = static_cast<Widget>(clientData);
 	String shellName = XtMalloc(MAXPATHLEN);
 	struct stat attribute;
-	unsigned dlgResult;
 
 	//  Leave with a warning if the dialog is not up.  
 	if (!XtIsRealized(shellSelDialog)) {
@@ -2205,8 +2216,8 @@ static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData
 	shellName = XmTextGetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT));
 
 	if (stat(shellName, &attribute) == -1) {
-		dlgResult = DialogF(DF_WARN, shellSelDialog, 2, "Command Shell", "The selected shell is not available.\nDo you want to use it anyway?", "OK", "Cancel");
-		if (dlgResult != 1) {
+		int resp = QMessageBox::warning(nullptr /*shellSelDialog*/, QLatin1String("Command Shell"), QLatin1String("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
+		if(resp == QMessageBox::Cancel) {
 			return;
 		}
 	}

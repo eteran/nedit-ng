@@ -3314,12 +3314,11 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	if (window->NDocuments() < 2)
 		return;
 
-
 	QMessageBox messageBox(nullptr /*window->shell_*/);
 	messageBox.setWindowTitle(QLatin1String("Detach"));
 	messageBox.setIcon(QMessageBox::Question);
 	messageBox.setText(QString(QLatin1String("Detach %1?")).arg(QString::fromStdString(window->filename_)));
-	QPushButton *buttonDetach   = messageBox.addButton(QLatin1String("Cancel"), QMessageBox::AcceptRole);
+	QPushButton *buttonDetach   = messageBox.addButton(QLatin1String("Detach"), QMessageBox::AcceptRole);
 	QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 	Q_UNUSED(buttonDetach);
 
