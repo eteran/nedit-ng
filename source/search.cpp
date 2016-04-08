@@ -54,7 +54,6 @@
 #include "textP.h"
 #endif
 
-#include "DialogF.h"
 #include "misc.h"
 
 #include <algorithm>
@@ -81,7 +80,7 @@ int SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display);
+static bool prefOrUserCancelsSubst(const Widget parent, const Display *display);
 static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -1535,14 +1534,16 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 **
 **  The result is either predetermined by the resource or the user's choice.
 */
-static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *display) {
-	Boolean cancel = True;
-	unsigned confirmResult = 0;
+static bool prefOrUserCancelsSubst(const Widget parent, const Display *display) {
+
+	Q_UNUSED(parent);
+	
+	bool cancel = true;
 
 	switch (GetPrefTruncSubstitution()) {
 	case TRUNCSUBST_SILENT:
 		//  silently fail the operation  
-		cancel = True;
+		cancel = true;
 		break;
 
 	case TRUNCSUBST_FAIL:
@@ -1552,21 +1553,30 @@ static Boolean prefOrUserCancelsSubst(const Widget parent, const Display *displa
 		QMessageBox::information(nullptr /* parent */, QLatin1String("Substitution Failed"), QLatin1String("The result length of the substitution exceeded an internal limit.\n"
 		                                                                                                   "The substitution is canceled."));
 
-		cancel = True;
+		cancel = true;
 		break;
 
 	case TRUNCSUBST_WARN:
 		//  pop up dialog and ask for confirmation  
 		XBell((Display *)display, 0);
-		confirmResult = DialogF(DF_WARN, parent, 2, "Substitution Failed", "The result length of the substitution exceeded an internal limit.\n"
-		                                                                   "Executing the substitution will result in loss of data.",
-		                        "Lose Data", "Cancel");
-		cancel = (confirmResult != 1);
+				
+		{		
+			QMessageBox messageBox(nullptr /*parent*/);
+			messageBox.setWindowTitle(QLatin1String("Substitution Failed"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(QLatin1String("The result length of the substitution exceeded an internal limit.\nExecuting the substitution will result in loss of data."));
+			QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
+			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+			Q_UNUSED(buttonLose);
+
+			messageBox.exec();
+			cancel = (messageBox.clickedButton() == buttonCancel);		
+		}				
 		break;
 
 	case TRUNCSUBST_IGNORE:
 		//  silently conclude the operation; THIS WILL DESTROY DATA.  
-		cancel = False;
+		cancel = false;
 		break;
 	}
 
@@ -1932,7 +1942,6 @@ static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, in
 */
 bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	bool found;
-	int resp;
 	int fileEnd = window->buffer_->BufGetLength() - 1;
 	bool outsideBounds;
 
@@ -1975,9 +1984,18 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 				if (direction == SEARCH_FORWARD && beginPos != 0) {
 					if (GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
-					} else if (GetPrefSearchDlogs()) {
-						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search from\nbeginning of file?", "Continue", "Cancel");
-						if (resp == 2) {
+					} else if (GetPrefSearchDlogs()) {	
+													
+						QMessageBox messageBox(nullptr /*window->shell_*/);
+						messageBox.setWindowTitle(QLatin1String("Wrap Search"));
+						messageBox.setIcon(QMessageBox::Question);
+						messageBox.setText(QLatin1String("Continue search from\nbeginning of file?"));
+						QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
+						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+						Q_UNUSED(buttonContinue);
+
+						messageBox.exec();
+						if(messageBox.clickedButton() == buttonCancel) {
 							return false;
 						}
 					}
@@ -1986,8 +2004,17 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 					if (GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
 					} else if (GetPrefSearchDlogs()) {
-						resp = DialogF(DF_QUES, window->shell_, 2, "Wrap Search", "Continue search\nfrom end of file?", "Continue", "Cancel");
-						if (resp == 2) {
+						
+						QMessageBox messageBox(nullptr /*window->shell_*/);
+						messageBox.setWindowTitle(QLatin1String("Wrap Search"));
+						messageBox.setIcon(QMessageBox::Question);
+						messageBox.setText(QLatin1String("Continue search\nfrom end of file?"));
+						QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
+						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+						Q_UNUSED(buttonContinue);
+
+						messageBox.exec();
+						if(messageBox.clickedButton() == buttonCancel) {
 							return false;
 						}
 					}
