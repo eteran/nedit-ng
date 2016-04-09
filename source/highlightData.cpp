@@ -28,6 +28,7 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QPushButton>
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -1110,9 +1111,9 @@ from the list on the left.  Select \"New\" to add a new style to the list."),
 
 static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
 		delete HSDialog.highlightStyleList[i];
@@ -1123,9 +1124,9 @@ static void hsDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	if (!updateHSList())
 		return;
@@ -1137,18 +1138,18 @@ static void hsOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void hsApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	updateHSList();
 }
 
 static void hsCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// pop down and destroy the dialog 
 	XtDestroyWidget(HSDialog.shell);
@@ -1174,7 +1175,16 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
 	if (!explicitRequest) {
-		if (DialogF(DF_WARN, HSDialog.shell, 2, "Incomplete Style", "Discard incomplete entry\nfor current highlight style?", "Keep", "Discard") == 2) {
+		QMessageBox messageBox(nullptr /*ucd->dlogShell*/);
+		messageBox.setWindowTitle(QLatin1String("Incomplete Style"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QLatin1String("Discard incomplete entry\nfor current highlight style?"));
+		QPushButton *buttonKeep    = messageBox.addButton(QLatin1String("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard"), QMessageBox::AcceptRole);
+		Q_UNUSED(buttonKeep);
+		
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonDiscard) {	
 			return oldItem == nullptr ? nullptr : new HighlightStyle(*(HighlightStyle *)oldItem);
 		}
 	}
@@ -1761,9 +1771,9 @@ void UpdateLanguageModeMenu(void) {
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 
 	for (int i = 0; i < HighlightDialog.nPatterns; i++) {
@@ -1775,13 +1785,13 @@ static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	char *modeName;
 	PatternSet emptyPatSet;
-	int i, resp;
+	int i;
 
 	// Get the newly selected mode name.  If it's the same, do nothing 
 	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
@@ -1800,19 +1810,35 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	PatternSet *newPatSet = getDialogPatternSet();
 
 	if(!newPatSet) {
-		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Incomplete Language Mode", "Discard incomplete entry\n"
-		                                                                           "for current language mode?",
-		            "Keep", "Discard") == 1) {
+		QMessageBox messageBox(nullptr /*HighlightDialog.shell*/);
+		messageBox.setWindowTitle(QLatin1String("Incomplete Language Mode"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QLatin1String("Discard incomplete entry\nfor current language mode?"));
+		QPushButton *buttonKeep    = messageBox.addButton(QLatin1String("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard"), QMessageBox::AcceptRole);
+		Q_UNUSED(buttonDiscard);
+		
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonKeep) {
 			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 			return;
 		}
 	} else if (oldPatSet != newPatSet) {
-		resp = DialogF(DF_WARN, HighlightDialog.shell, 3, "Language Mode", "Apply changes for language mode %s?", "Apply Changes", "Discard Changes", "Cancel", HighlightDialog.langModeName.toLatin1().data());
-		if (resp == 3) {
+		QMessageBox messageBox(nullptr /*HighlightDialog.shell*/);
+		messageBox.setWindowTitle(QLatin1String("Language Mode"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QString(QLatin1String("Apply changes for language mode %1?")).arg(HighlightDialog.langModeName));
+		QPushButton *buttonApply   = messageBox.addButton(QLatin1String("Apply Changes"), QMessageBox::AcceptRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard Changes"), QMessageBox::RejectRole);
+		QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonDiscard);
+
+		
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonCancel) {
 			SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 			return;
-		}
-		if (resp == 1) {
+		} else if (messageBox.clickedButton() == buttonApply) {
 			updatePatternSet();
 		}
 	}
@@ -1845,18 +1871,18 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	EditLanguageModes();
 }
 
 static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	Widget selectedItem;
 	char *style;
@@ -1868,9 +1894,9 @@ static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// change the patterns 
 	if (!updatePatternSet())
@@ -1883,9 +1909,9 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// change the patterns 
 	updatePatternSet();
@@ -1893,9 +1919,9 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	if (checkHighlightDialogData()) {
 		QMessageBox::information(nullptr /* HighlightDialog.shell */, QLatin1String("Pattern compiled"), QLatin1String("Patterns compiled without error"));
@@ -1904,9 +1930,9 @@ static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	PatternSet *defaultPatSet;
 	int i, psn;
@@ -1955,9 +1981,9 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	int psn;
 
@@ -1995,9 +2021,9 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	// pop down and destroy the dialog 
 	CloseAllPopupsFor(HighlightDialog.shell);
@@ -2006,9 +2032,9 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 #if 0
 	Help(HELP_PATTERNS);
@@ -2017,18 +2043,18 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 static void patTypeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	updateLabels();
 }
 
 static void matchTypeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
+	Q_UNUSED(w);
+	Q_UNUSED(clientData);
+	Q_UNUSED(callData);
 
 	updateLabels();
 }
@@ -2052,7 +2078,16 @@ static void *getDisplayedCB(void *oldItem, int explicitRequest, int *abort, void
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
 	if (!explicitRequest) {
-		if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Entry", "Discard incomplete entry\nfor current pattern?", "Keep", "Discard") == 2) {
+		QMessageBox messageBox(nullptr /*HighlightDialog.shell*/);
+		messageBox.setWindowTitle(QLatin1String("Discard Entry"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QLatin1String("Discard incomplete entry\nfor current pattern?"));
+		QPushButton *buttonKeep    = messageBox.addButton(QLatin1String("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QLatin1String("Discard"), QMessageBox::AcceptRole);
+		Q_UNUSED(buttonKeep);
+		
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonDiscard) {
 			if(!oldItem) {
 				return nullptr;
 			}
