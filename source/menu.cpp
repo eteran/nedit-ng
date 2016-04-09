@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QStringList>
 #include <QPushButton>
+#include "ui/DialogExecuteCommand.h"
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -55,7 +56,6 @@
 #include "MotifHelper.h"
 #include "Document.h"
 #include "getfiles.h"
-#include "DialogF.h"
 #include "misc.h"
 #include "fileUtils.h"
 #include "utils.h"
@@ -2811,6 +2811,8 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Document *window = Document::WidgetToWindow(w);
 	
+	const int DF_MAX_MSG_LENGTH = 2048;
+	
 	// NOTE(eteran): This is a bit of a cheat...
 	auto it = DocumentIterator(window);
 	
@@ -3474,6 +3476,8 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
+	
+	const int DF_MAX_PROMPT_LENGTH = 2048;
 
 	Document *window = Document::WidgetToWindow(w);
 	
@@ -3522,28 +3526,30 @@ static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
+	
+	static DialogExecuteCommand *dialog = nullptr;
 
 	Document *window = Document::WidgetToWindow(w);
-	char *params[1], cmdText[DF_MAX_PROMPT_LENGTH];
-	int resp;
-	static char **cmdHistory = nullptr;
-	static int nHistoryCmds = 0;
+	char *params[1];
 
 	if (CheckReadOnly(window))
 		return;
-	SetDialogFPromptHistory(cmdHistory, nHistoryCmds);
-
-	resp = DialogF(DF_PROMPT, window->shell_, 2, "Execute Command", "Shell command:   (use up arrow key to recall previous;\n"
-	                                                               "%% expands to current filename, # to line number)",
-	               cmdText, "OK", "Cancel");
-
-	if (resp == 2) {
+		
+	if(!dialog) {
+		dialog = new DialogExecuteCommand(nullptr /*window->shell_ */);
+	}
+	
+	int r = dialog->exec();
+	if(!r) {
 		return;
 	}
 	
-	AddToHistoryList(cmdText, &cmdHistory, &nHistoryCmds);
-	params[0] = cmdText;
-	XtCallActionProc(w, "execute_command", event, params, 1);
+	QString commandText = dialog->ui.textCommand->text();
+	if(!commandText.isEmpty()) {
+		QByteArray commandString = commandText.toLatin1();
+		params[0] = commandString.data();
+		XtCallActionProc(w, "execute_command", event, params, 1);	
+	}
 }
 
 static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

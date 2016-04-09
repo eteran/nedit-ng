@@ -36,7 +36,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="editCommand"/>
+    <widget class="QLineEdit" name="textCommand"/>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -74,8 +74,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>editCommand</tabstop>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>textCommand</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -86,12 +85,12 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>224</x>
-     <y>134</y>
+     <x>221</x>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
-     <x>157</x>
-     <y>147</y>
+     <x>163</x>
+     <y>92</y>
     </hint>
    </hints>
   </connection>
@@ -102,12 +101,12 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>292</x>
-     <y>134</y>
+     <x>327</x>
+     <y>119</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>147</y>
+     <x>329</x>
+     <y>92</y>
     </hint>
    </hints>
   </connection>
