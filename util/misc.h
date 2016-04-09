@@ -69,7 +69,6 @@ void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo);
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void AddMouseWheelSupport(Widget w);
-void AddToHistoryList(char *newItem, char ***historyList, int *nItems);
 void BeginWait(Widget topCursorWidget);
 void BusyWait(Widget anyWidget);
 void CloseAllPopupsFor(Widget shell);

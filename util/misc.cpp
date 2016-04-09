@@ -1212,34 +1212,6 @@ static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *co
 }
 
 /*
-** Copies a string on to the end of history list, which may be reallocated
-** to make room.  If historyList grows beyond its internally set boundary
-** for size (HISTORY_LIST_MAX), it is trimmed back to a smaller size
-** (HISTORY_LIST_TRIM_TO).  Before adding to the list, checks if the item
-** is a duplicate of the last item.  If so, it is not added.
-*/
-void AddToHistoryList(char *newItem, char ***historyList, int *nItems) {
-	char **newList;
-	int i;
-
-	if (*nItems != 0 && !strcmp(newItem, **historyList))
-		return;
-	if (*nItems == HISTORY_LIST_MAX) {
-		for (i = HISTORY_LIST_TRIM_TO; i < HISTORY_LIST_MAX; i++)
-			XtFree((*historyList)[i]);
-		*nItems = HISTORY_LIST_TRIM_TO;
-	}
-	newList = (char **)XtMalloc(sizeof(char *) * (*nItems + 1));
-	for (i = 0; i < *nItems; i++)
-		newList[i + 1] = (*historyList)[i];
-	if (*nItems != 0 && *historyList)
-		XtFree((char *)*historyList);
-	(*nItems)++;
-	newList[0] = XtNewStringEx(newItem);
-	*historyList = newList;
-}
-
-/*
 ** BeginWait/EndWait
 **
 ** Display/Remove a watch cursor over topCursorWidget and its descendents
