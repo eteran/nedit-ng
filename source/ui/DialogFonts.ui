@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>314</height>
+    <width>697</width>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,19 +28,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFontComboBox" name="fontComboBox">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <property name="fontFilters">
-         <set>QFontComboBox::MonospacedFonts|QFontComboBox::ProportionalFonts</set>
-        </property>
-        <property name="currentFont">
-         <font>
-          <family>Courier</family>
-         </font>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="editFontPrimary"/>
       </item>
      </layout>
     </widget>
@@ -86,19 +74,7 @@
        </widget>
       </item>
       <item row="2" column="1" colspan="2">
-       <widget class="QFontComboBox" name="fontComboBox_2">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <property name="fontFilters">
-         <set>QFontComboBox::MonospacedFonts|QFontComboBox::ProportionalFonts</set>
-        </property>
-        <property name="currentFont">
-         <font>
-          <family>Courier</family>
-         </font>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="editFontItalic"/>
       </item>
       <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="label_2">
@@ -115,19 +91,7 @@
        </widget>
       </item>
       <item row="4" column="1" colspan="2">
-       <widget class="QFontComboBox" name="fontComboBox_3">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <property name="fontFilters">
-         <set>QFontComboBox::MonospacedFonts|QFontComboBox::ProportionalFonts</set>
-        </property>
-        <property name="currentFont">
-         <font>
-          <family>Courier</family>
-         </font>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="editFontBold"/>
       </item>
       <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="label_3">
@@ -144,19 +108,7 @@
        </widget>
       </item>
       <item row="6" column="1" colspan="2">
-       <widget class="QFontComboBox" name="fontComboBox_4">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <property name="fontFilters">
-         <set>QFontComboBox::MonospacedFonts|QFontComboBox::ProportionalFonts</set>
-        </property>
-        <property name="currentFont">
-         <font>
-          <family>Courier</family>
-         </font>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="editFontBoldItalic"/>
       </item>
      </layout>
     </widget>
