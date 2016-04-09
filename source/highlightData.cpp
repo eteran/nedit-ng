@@ -45,7 +45,6 @@
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "managedList.h"
 #include "memory.h"
 
@@ -1942,11 +1941,9 @@ static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
 		QMessageBox::warning(nullptr /* HighlightDialog.shell */, QLatin1String("No Default Pattern"), QString(QLatin1String("There is no default pattern set\nfor language mode %1")).arg(HighlightDialog.langModeName));
 		return;
 	}
-
-	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Discard Changes", "Are you sure you want to discard\n"
-	                                                                  "all changes to syntax highlighting\n"
-	                                                                  "patterns for language mode %s?",
-	            "Discard", "Cancel", HighlightDialog.langModeName.toLatin1().data()) == 2) {
+	
+	int resp = QMessageBox::warning(nullptr /*HighlightDialog.shell*/, QLatin1String("Discard Changes"), QString(QLatin1String("Are you sure you want to discard\nall changes to syntax highlighting\npatterns for language mode %1?")).arg(HighlightDialog.langModeName), QMessageBox::Discard | QMessageBox::Cancel);
+	if (resp == QMessageBox::Cancel) {
 		return;
 	}
 
@@ -1987,10 +1984,16 @@ static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int psn;
 
-	if (DialogF(DF_WARN, HighlightDialog.shell, 2, "Delete Pattern", "Are you sure you want to delete\n"
-	                                                                 "syntax highlighting patterns for\n"
-	                                                                 "language mode %s?",
-	            "Yes, Delete", "Cancel", HighlightDialog.langModeName.toLatin1().data()) == 2) {
+	QMessageBox messageBox(nullptr /*HighlightDialog.shell*/);
+	messageBox.setWindowTitle(QLatin1String("Delete Pattern"));
+	messageBox.setIcon(QMessageBox::Warning);
+	messageBox.setText(QString(QLatin1String("Are you sure you want to delete\nsyntax highlighting patterns for\nlanguage mode %1?")).arg(HighlightDialog.langModeName));
+	QPushButton *buttonYes     = messageBox.addButton(QLatin1String("Yes, Delete"), QMessageBox::AcceptRole);
+	QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
+	Q_UNUSED(buttonYes);
+
+	messageBox.exec();
+	if (messageBox.clickedButton() == buttonCancel) {
 		return;
 	}
 
