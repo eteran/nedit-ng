@@ -1,12 +1,12 @@
 
 #include <QKeyEvent>
 #include <QtDebug>
-#include "DialogExecuteCommand.h"
+#include "DialogFilter.h"
 
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), historyIndex_(0) {
+DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
 	
 	// seed the history with a blank string, makes later logic simpler
@@ -16,14 +16,14 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) :
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-DialogExecuteCommand::~DialogExecuteCommand() {
+DialogFilter::~DialogFilter() {
 }
 	
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
-	if(ui.textCommand->hasFocus()) {
+void DialogFilter::keyPressEvent(QKeyEvent *event) {
+	if(ui.textFilter->hasFocus()) {
 		int index = historyIndex_;
 
 		// only process up and down arrow keys 
@@ -41,7 +41,7 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 			return;
 		}
 
-		ui.textCommand->setText(history_[index]);
+		ui.textFilter->setText(history_[index]);
 		historyIndex_ = index;
 	}
 
@@ -52,18 +52,18 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-void DialogExecuteCommand::showEvent(QShowEvent *event) {
+void DialogFilter::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	historyIndex_ = 0;
-	ui.textCommand->setText(QString());
+	ui.textFilter->setText(QString());
 }
 
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-void DialogExecuteCommand::on_buttonBox_accepted() {
+void DialogFilter::on_buttonBox_accepted() {
 
-	QString s = ui.textCommand->text();
+	QString s = ui.textFilter->text();
 	if(!s.isEmpty()) {
 		history_ << s;
 	}

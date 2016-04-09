@@ -29,6 +29,7 @@ QT4_WRAP_CPP(MOC_SOURCES
 	ui/DialogMultiReplace.h
 	ui/DialogWrapMargin.h
 	ui/DialogExecuteCommand.h
+	ui/DialogFilter.h
 )
 
 set(UI_FILES
@@ -42,6 +43,7 @@ set(UI_FILES
 	ui/DialogWrapMargin.ui
 	ui/DialogMultiReplace.ui
 	ui/DialogExecuteCommand.ui
+	ui/DialogFilter.ui
 )
 		
 qt4_wrap_ui(UI_H ${UI_FILES})		
@@ -56,6 +58,7 @@ add_executable(nedit
 	ui/DialogMultiReplace.cpp
 	ui/DialogWrapMargin.cpp
 	ui/DialogExecuteCommand.cpp
+	ui/DialogFilter.cpp
 	
 	QtMotif.cpp
 	QtMotifDialog.cpp

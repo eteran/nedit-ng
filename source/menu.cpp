@@ -32,6 +32,7 @@
 #include <QStringList>
 #include <QPushButton>
 #include "ui/DialogExecuteCommand.h"
+#include "ui/DialogFilter.h"
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -3477,37 +3478,35 @@ static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 	
-	const int DF_MAX_PROMPT_LENGTH = 2048;
+	static DialogFilter *dialog = nullptr;
 
 	Document *window = Document::WidgetToWindow(w);
-	
-	static QStringList cmdHistory;
+	char *params[1];
 
 	if (CheckReadOnly(window)) {
 		return;
 	}
-
+	
 	if (!window->buffer_->primary_.selected) {
 		QApplication::beep();
 		return;
+	}	
+		
+	if(!dialog) {
+		dialog = new DialogFilter(nullptr /*window->shell_ */);
 	}
-
-	bool ok;
-	QString cmdText = QInputDialog::getItem(nullptr /*parent */, QLatin1String("Filter Selection"), QLatin1String("Shell command:"), cmdHistory, 0, true, &ok);
-
-	if(!ok) {
+	
+	int r = dialog->exec();
+	if(!r) {
 		return;
 	}
 	
-	static char cmd[DF_MAX_PROMPT_LENGTH];
-	strcpy(cmd, cmdText.toLatin1().data());
-
-	cmdHistory << cmdText;
-	
-	char *params[1];
-	params[0] = cmd;
-	
-	XtCallActionProc(w, "filter_selection", event, params, 1);
+	QString filterText = dialog->ui.textFilter->text();
+	if(!filterText.isEmpty()) {
+		QByteArray filterString = filterText.toLatin1();
+		params[0] = filterString.data();
+		XtCallActionProc(w, "filter_selection", event, params, 1);
+	}
 }
 
 static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
