@@ -2276,7 +2276,7 @@ static HighlightPattern *readDialogFields(bool silent) {
 		pat->startRE = outStr;
 		
 		
-		if (strspn(pat->startRE.toLatin1().data(), "&\\123456789 \t") != pat->startRE.size() || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(pat->startRE.toLatin1().data(), "\\\\")) {
+		if (strspn(pat->startRE.toLatin1().data(), "&\\123456789 \t") != static_cast<size_t>(pat->startRE.size()) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(pat->startRE.toLatin1().data(), "\\\\")) {
 			if (!silent) {
 			
 				QMessageBox::warning(nullptr /* HighlightDialog.shell */, QLatin1String("Pattern Error"), 
