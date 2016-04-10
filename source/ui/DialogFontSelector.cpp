@@ -8,13 +8,12 @@
 #include <QString>
 #include "MotifHelper.h"
 
-#define DELIM '-'
-#define NUM_COMPONENTS_FONT_NAME 14
-
 namespace {
-const int MAX_NUM_FONTS       = 32767;
-const int MAX_ENTRIES_IN_LIST = 5000;
-const int TEMP_BUF_SIZE       = 256;
+const char DELIM = '-';
+const int MAX_NUM_FONTS            = 32767;
+const int MAX_ENTRIES_IN_LIST      = 5000;
+const int TEMP_BUF_SIZE            = 256;
+const int NUM_COMPONENTS_FONT_NAME = 14;
 
 /*  gets a specific substring from a string */
 void getStringComponent(const char *inStr, int pos, char *outStr) {
@@ -164,8 +163,8 @@ DialogFontSelector::DialogFontSelector(Widget parentWidget, int showPropFont, co
 	setupScrollLists(NONE); // update scroll lists
 
 	QPalette pal = ui.editSample->palette();
-	pal.setColor(QPalette::WindowText, foreground);
-	pal.setColor(QPalette::Window, background);
+	pal.setColor(QPalette::Text, foreground);
+	pal.setColor(QPalette::Base, background);
 	ui.editSample->setPalette(pal);
 
 	// set the default sample

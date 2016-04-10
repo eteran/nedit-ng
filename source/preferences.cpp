@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QPushButton>
+#include <QtDebug>
 #include "ui/DialogFontSelector.h"
 #include "ui/DialogWrapMargin.h"
 
@@ -3323,8 +3324,8 @@ static void browseFont(Widget parent, Widget fontTextW) {
 	Q_UNUSED(fgPixel);
 	Q_UNUSED(bgPixel);
 
-	QColor foreground((fgColor.r / 65535.0) * 255.0, (fgColor.g / 65535.0) * 255.0, (fgColor.b / 65535.0) * 255.0);
-	QColor background((bgColor.r / 65535.0) * 255.0, (bgColor.g / 65535.0) * 255.0, (bgColor.b / 65535.0) * 255.0);
+	QColor foreground(fgColor.r / 256, fgColor.g / 256, fgColor.b / 256);
+	QColor background(bgColor.r / 256, bgColor.g / 256, bgColor.b / 256);
 	
 	auto dialog = new DialogFontSelector(parent, PREF_FIXED, origFontName, foreground, background, nullptr);
 	int r = dialog->exec();
