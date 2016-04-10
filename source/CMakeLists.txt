@@ -31,6 +31,7 @@ QT4_WRAP_CPP(MOC_SOURCES
 	ui/DialogExecuteCommand.h
 	ui/DialogFilter.h
 	ui/DialogFontSelector.h
+	ui/ListWidget.h
 )
 
 set(UI_FILES
@@ -62,6 +63,7 @@ add_executable(nedit
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFontSelector.cpp
+	ui/ListWidget.cpp
 	
 	QtMotif.cpp
 	QtMotifDialog.cpp
@@ -142,6 +144,7 @@ add_executable(nedit
 include(${QT_USE_FILE})
 
 include_directories(nedit
+	${CMAKE_CURRENT_SOURCE_DIR}/ui
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH}

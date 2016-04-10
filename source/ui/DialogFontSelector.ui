@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>433</height>
+    <width>713</width>
+    <height>484</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listFonts"/>
+        <widget class="ListWidget" name="listFonts"/>
        </item>
       </layout>
      </item>
@@ -40,7 +40,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listStyles"/>
+        <widget class="ListWidget" name="listStyles"/>
        </item>
       </layout>
      </item>
@@ -54,7 +54,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listSizes"/>
+        <widget class="ListWidget" name="listSizes"/>
        </item>
       </layout>
      </item>
@@ -130,6 +130,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ListWidget</class>
+   <extends>QListWidget</extends>
+   <header>ListWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

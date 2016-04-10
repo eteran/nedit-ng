@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QPushButton>
+#include "ui/DialogFontSelector.h"
 #include "ui/DialogWrapMargin.h"
 
 #include "preferences.h"
@@ -52,7 +53,6 @@
 #include "prefFile.h"
 #include "misc.h"
 #include "managedList.h"
-#include "fontsel.h"
 #include "fileUtils.h"
 #include "utils.h"
 
@@ -3311,23 +3311,34 @@ static int showFontStatus(fontDialog *fd, Widget fontTextFieldW, Widget errorLab
 */
 static void browseFont(Widget parent, Widget fontTextW) {
 
-	Color dummy;
+	Color fgColor;
+	Color bgColor;
 
 	char *origFontName = XmTextGetString(fontTextW);
 
 	// Get the values from the defaults 
-	Pixel fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &dummy);
-	Pixel bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &dummy);
-
-	char *newFontName = FontSel(parent, PREF_FIXED, origFontName, fgPixel, bgPixel);
-	XtFree(origFontName);
+	Pixel fgPixel = AllocColor(parent, GetPrefColorName(TEXT_FG_COLOR), &fgColor);
+	Pixel bgPixel = AllocColor(parent, GetPrefColorName(TEXT_BG_COLOR), &bgColor);
 	
-	if (!newFontName) {
+	Q_UNUSED(fgPixel);
+	Q_UNUSED(bgPixel);
+
+	QColor foreground((fgColor.r / 65535.0) * 255.0, (fgColor.g / 65535.0) * 255.0, (fgColor.b / 65535.0) * 255.0);
+	QColor background((bgColor.r / 65535.0) * 255.0, (bgColor.g / 65535.0) * 255.0, (bgColor.b / 65535.0) * 255.0);
+	
+	auto dialog = new DialogFontSelector(parent, PREF_FIXED, origFontName, foreground, background, nullptr);
+	int r = dialog->exec();
+	
+	QString newFont;
+	if(r) {
+		newFont = dialog->ui.editFontName->text();		
+	}
+	
+	if(newFont.isEmpty()) {
 		return;
 	}
 	
-	XmTextSetStringEx(fontTextW, newFontName);
-	XtFree(newFontName);
+	XmTextSetStringEx(fontTextW, newFont.toLatin1().data());
 }
 
 /*
