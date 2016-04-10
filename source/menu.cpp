@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include "ui/DialogExecuteCommand.h"
 #include "ui/DialogFilter.h"
+#include "ui/DialogTabs.h"
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -1313,7 +1314,10 @@ static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	TabsPrefDialog(window->shell_, window);
+
+	auto dialog = new DialogTabs(window);
+	dialog->exec();
+	delete dialog;
 }
 
 static void statsCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1540,7 +1544,10 @@ static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	TabsPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, nullptr);
+	
+	auto dialog = new DialogTabs(nullptr);
+	dialog->exec();
+	delete dialog;
 }
 
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {

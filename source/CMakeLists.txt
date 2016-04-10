@@ -24,29 +24,30 @@ QT4_WRAP_CPP(MOC_SOURCES
 	QtMotifWidget.h
 	QtXtWidget.h
 	
-	ui/DialogFind.h
-	ui/DialogReplace.h
-	ui/DialogMultiReplace.h
-	ui/DialogWrapMargin.h
 	ui/DialogExecuteCommand.h
 	ui/DialogFilter.h
+	ui/DialogFind.h
 	ui/DialogFontSelector.h
+	ui/DialogMultiReplace.h
+	ui/DialogReplace.h
+	ui/DialogTabs.h
+	ui/DialogWrapMargin.h
 	ui/ListWidget.h
 )
 
 set(UI_FILES
+	ui/DialogExecuteCommand.ui
+	ui/DialogFilter.ui
 	ui/DialogFind.ui
+	ui/DialogFontSelector.ui
 	ui/DialogFonts.ui
 	ui/DialogLanguageModes.ui
 	ui/DialogMoveDocument.ui
-	ui/DialogReplace.ui
+	ui/DialogMultiReplace.ui
 	ui/DialogReplaceScope.ui
+	ui/DialogReplace.ui
 	ui/DialogTabs.ui
 	ui/DialogWrapMargin.ui
-	ui/DialogMultiReplace.ui
-	ui/DialogExecuteCommand.ui
-	ui/DialogFilter.ui
-	ui/DialogFontSelector.ui
 )
 		
 qt4_wrap_ui(UI_H ${UI_FILES})		
@@ -56,15 +57,16 @@ add_executable(nedit
 	${MOC_SOURCES}
 	${UI_H}
 	
-	ui/DialogFind.cpp
-	ui/DialogReplace.cpp
-	ui/DialogMultiReplace.cpp
-	ui/DialogWrapMargin.cpp
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
+	ui/DialogFind.cpp
 	ui/DialogFontSelector.cpp
+	ui/DialogMultiReplace.cpp
+	ui/DialogReplace.cpp
+	ui/DialogTabs.cpp
+	ui/DialogWrapMargin.cpp
 	ui/ListWidget.cpp
-	
+
 	QtMotif.cpp
 	QtMotifDialog.cpp
 	QtMotifWidget.cpp

@@ -885,11 +885,6 @@ static char *ImportedFile = nullptr;
 static int DoneWithSizeDialog;
 static Widget RowText, ColText;
 
-// Module-global variables for Tabs dialog 
-static int DoneWithTabsDialog;
-static Document *TabsDialogForWindow;
-static Widget TabDistText, EmTabText, EmTabToggle, UseTabsToggle, EmTabLabel;
-
 //  Module-global variables for shell selection dialog  
 static int DoneWithShellSelDialog = False;
 
@@ -898,10 +893,6 @@ static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
 static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
 static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData);
-static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData);
 static void shellSelCancelCB(Widget widgget, XtPointer clientData, XtPointer callData);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
@@ -1962,176 +1953,6 @@ static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 	DoneWithSizeDialog = True;
 }
 
-/*
-** Present the user a dialog for setting tab related preferences, either as
-** defaults, or for a specific window (pass "forWindow" as nullptr to set default
-** preference, or a window to set preferences for the specific window.
-*/
-void TabsPrefDialog(Widget parent, Document *forWindow) {
-	Widget form, selBox;
-	Arg selBoxArgs[2];
-	XmString s1;
-	int emulate, emTabDist, useTabs, tabDist;
-
-	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, tabsOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, tabsCancelCB, nullptr);
-	XtAddCallback(selBox, XmNhelpCallback, tabsHelpCB, nullptr);
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
-	XtVaSetValues(XtParent(selBox), XmNtitle, "Tabs", nullptr);
-
-	form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
-
-	TabDistText = XtVaCreateManagedWidget("tabDistText", xmTextWidgetClass, form, XmNcolumns, 7, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, nullptr);
-	RemapDeleteKey(TabDistText);
-	XtVaCreateManagedWidget("tabDistLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Tab spacing (for hardware tab characters)"), XmNmnemonic, 'T', XmNuserData, TabDistText, XmNtopAttachment, XmATTACH_FORM,
-	                        XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, TabDistText, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, TabDistText, nullptr);
-	XmStringFree(s1);
-
-	EmTabText = XtVaCreateManagedWidget("emTabText", xmTextWidgetClass, form, XmNcolumns, 7, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, TabDistText, XmNrightAttachment, XmATTACH_OPPOSITE_WIDGET, XmNrightWidget, TabDistText, nullptr);
-	RemapDeleteKey(EmTabText);
-	EmTabLabel = XtVaCreateManagedWidget("emTabLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Emulated tab spacing"), XmNmnemonic, 's', XmNuserData, EmTabText, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget,
-	                                     TabDistText, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, EmTabText, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, EmTabText, nullptr);
-	XmStringFree(s1);
-	EmTabToggle = XtVaCreateManagedWidget("emTabToggle", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Emulate tabs"), XmNmnemonic, 'E', XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, TabDistText,
-	                                      XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, EmTabText, nullptr);
-	XmStringFree(s1);
-	XtAddCallback(EmTabToggle, XmNvalueChangedCallback, emTabsCB, nullptr);
-	UseTabsToggle = XtVaCreateManagedWidget("useTabsToggle", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Use tab characters in padding and emulated tabs"), XmNmnemonic, 'U', XmNtopAttachment,
-	                                        XmATTACH_WIDGET, XmNtopWidget, EmTabText, XmNtopOffset, 5, XmNleftAttachment, XmATTACH_FORM, nullptr);
-	XmStringFree(s1);
-
-	// Set default values 
-	if(!forWindow) {
-		emTabDist = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
-		useTabs = GetPrefInsertTabs();
-		tabDist = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
-	} else {
-		XtVaGetValues(forWindow->textArea_, textNemulateTabs, &emTabDist, nullptr);
-		useTabs = forWindow->buffer_->useTabs_;
-		tabDist = forWindow->buffer_->BufGetTabDistance();
-	}
-	emulate = emTabDist != 0;
-	SetIntText(TabDistText, tabDist);
-	XmToggleButtonSetState(EmTabToggle, emulate, True);
-	if (emulate)
-		SetIntText(EmTabText, emTabDist);
-	XmToggleButtonSetState(UseTabsToggle, useTabs, False);
-	XtSetSensitive(EmTabText, emulate);
-	XtSetSensitive(EmTabLabel, emulate);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-// Set the widget to get focus 
-	XtVaSetValues(form, XmNinitialFocus, TabDistText, nullptr);
-
-	// put up dialog and wait for user to press ok or cancel 
-	TabsDialogForWindow = forWindow;
-	DoneWithTabsDialog = False;
-	ManageDialogCenteredOnPointer(selBox);
-	while (!DoneWithTabsDialog) {
-		XEvent event;
-		XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
-		ServerDispatchEvent(&event);
-	}
-
-	XtDestroyWidget(selBox);
-}
-
-static void tabsOKCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	int emulate, useTabs, stat, tabDist, emTabDist;
-	Document *window = TabsDialogForWindow;
-
-	// get the values that the user entered and make sure they're ok 
-	emulate = XmToggleButtonGetState(EmTabToggle);
-	useTabs = XmToggleButtonGetState(UseTabsToggle);
-	stat = GetIntTextWarn(TabDistText, &tabDist, "tab spacing", True);
-	if (stat != TEXT_READ_OK)
-		return;
-
-	if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tab Spacing"), QLatin1String("Tab spacing out of range"));
-		return;
-	}
-
-	if (emulate) {
-		stat = GetIntTextWarn(EmTabText, &emTabDist, "emulated tab spacing", True);
-		if (stat != TEXT_READ_OK)
-			return;
-
-		if (emTabDist <= 0 || tabDist >= 1000) {
-			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tab Spacing"), QLatin1String("Emulated tab spacing out of range"));
-			return;
-		}
-	} else
-		emTabDist = 0;
-
-	// Set the value in either the requested window or default preferences 
-	if(!TabsDialogForWindow) {
-		SetPrefTabDist(tabDist);
-		SetPrefEmTabDist(emTabDist);
-		SetPrefInsertTabs(useTabs);
-	} else {
-		char *params[1];
-		char numStr[25];
-
-		params[0] = numStr;
-		sprintf(numStr, "%d", tabDist);
-		XtCallActionProc(window->textArea_, "set_tab_dist", nullptr, params, 1);
-		params[0] = numStr;
-		sprintf(numStr, "%d", emTabDist);
-		XtCallActionProc(window->textArea_, "set_em_tab_dist", nullptr, params, 1);
-		params[0] = numStr;
-		sprintf(numStr, "%d", useTabs);
-		XtCallActionProc(window->textArea_, "set_use_tabs", nullptr, params, 1);
-		/*
-		        setTabDist(window, tabDist);
-		        setEmTabDist(window, emTabDist);
-		        window->buffer_->useTabs = useTabs;
-		*/
-	}
-	DoneWithTabsDialog = True;
-}
-
-static void tabsCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	DoneWithTabsDialog = True;
-}
-
-static void tabsHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-#if 0
-	Help(HELP_TABS_DIALOG);
-#endif
-}
-
-static void emTabsCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	int state = XmToggleButtonGetState(w);
-
-	XtSetSensitive(EmTabLabel, state);
-	XtSetSensitive(EmTabText, state);
-}
 
 /*
 ** Present the user a dialog for setting wrap margin.

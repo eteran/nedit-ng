@@ -22,17 +22,17 @@
     </widget>
    </item>
    <item row="0" column="2">
-    <widget class="QLineEdit" name="tabSpacing"/>
+    <widget class="QLineEdit" name="editTabSpacing"/>
    </item>
    <item row="1" column="0">
-    <widget class="QCheckBox" name="emulateTabs">
+    <widget class="QCheckBox" name="checkEmulateTabs">
      <property name="text">
       <string>&amp;Emulate tabs</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="labelEmulatedTabSpacing">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -42,14 +42,14 @@
     </widget>
    </item>
    <item row="1" column="2">
-    <widget class="QLineEdit" name="emulatedTabSpacing">
+    <widget class="QLineEdit" name="editEmulatedTabSpacing">
      <property name="enabled">
       <bool>false</bool>
      </property>
     </widget>
    </item>
    <item row="2" column="0" colspan="3">
-    <widget class="QCheckBox" name="useTabsInPadding">
+    <widget class="QCheckBox" name="checkUseTabsInPadding">
      <property name="text">
       <string>&amp;Use tab characters in padding and emulated tabs</string>
      </property>
@@ -77,29 +77,13 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>DialogTabs</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>222</x>
-     <y>99</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>113</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>DialogTabs</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>290</x>
-     <y>105</y>
+     <x>296</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
