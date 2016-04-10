@@ -54,6 +54,7 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPos(Document *window, int pos);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, Color *color);
+Pixel AllocColor(Widget w, const char *colorName);
 Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color);
 Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color);
 std::string HighlightNameOfCode(Document *window, int hCode);

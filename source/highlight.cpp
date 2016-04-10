@@ -704,20 +704,11 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 		// And now for the more physical stuff 
 		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &c);
-		p->red   = c.r;
-		p->green = c.g;
-		p->blue  = c.b;
 		
 		if (!p->bgColorName.isNull()) {
 			p->bgColor = AllocColor(window->textArea_, p->bgColorName.toLatin1().data(), &c);
-			p->bgRed   = c.r;
-			p->bgGreen = c.g;
-			p->bgBlue  = c.b;
 		} else {
 			p->bgColor = p->color;
-			p->bgRed   = c.r;
-			p->bgGreen = c.g;
-			p->bgBlue  = c.b;
 		}
 
 		p->font = FontOfNamedStyle(window, pat->style.toStdString());
@@ -1136,9 +1127,6 @@ std::string HighlightStyleOfCode(Document *window, int hCode) {
 Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	if (entry) {
-		color->r = entry->red;
-		color->g = entry->green;
-		color->b = entry->blue;
 		return entry->color;
 	} else {
 		// pick up foreground color of the (first) text widget of the window 
@@ -1164,9 +1152,6 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	
 	if (entry && !entry->bgColorName.isNull()) {
-		color->r = entry->bgRed;
-		color->g = entry->bgGreen;
-		color->b = entry->bgBlue;
 		return entry->bgColor;
 	} else {
 		// pick up background color of the (first) text widget of the window 
@@ -1841,11 +1826,13 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	XColor *allColorDefs;
 	Display *display = XtDisplay(w);
 	Colormap cMap;
-	Pixel foreground, bestPixel;
+	Pixel foreground;
+	Pixel bestPixel;
 	double small = 1.0e9;
 	int depth;
 	unsigned int ncolors;
-	unsigned long i, best = 0; // pixel value 
+	unsigned long i;
+	unsigned long best = 0; // pixel value 
 
 	/* Get the correct colormap for compatability with the "best" visual
 	   feature in 5.2.  Default visual of screen is no good here. */
@@ -1917,13 +1904,12 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	   the shortest distances here.  We could sort the map in order
 	   of decreasing distances and loop through it until one works. */
 
-	if (XAllocColor(display, cMap, &allColorDefs[best]))
+	if (XAllocColor(display, cMap, &allColorDefs[best])) {
 		bestPixel = allColorDefs[best].pixel;
+	}
 
 #if 0
-    printf("Got %d %d %d, ", allColorDefs[best].red,
-                             allColorDefs[best].green,
-                             allColorDefs[best].blue);
+    printf("Got %d %d %d, ", allColorDefs[best].red, allColorDefs[best].green, allColorDefs[best].blue);
     printf("That's %f off\n", small);
 #endif
 
@@ -1932,6 +1918,11 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	color->b = allColorDefs[best].blue;
 	delete [] allColorDefs;
 	return bestPixel;
+}
+
+Pixel AllocColor(Widget w, const char *colorName) {
+	Color dummy;
+	return AllocColor(w, colorName, &dummy);
 }
 
 /*

@@ -2026,16 +2026,15 @@ void Document::SetAutoScroll(int margin) {
 void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 	
 	int i;
-	Color dummy;
 	
-	Pixel textFgPix   = AllocColor(textArea_, textFg, &dummy);
-	Pixel textBgPix   = AllocColor(textArea_, textBg, &dummy);
-	Pixel selectFgPix = AllocColor(textArea_, selectFg, &dummy);
-	Pixel selectBgPix = AllocColor(textArea_, selectBg, &dummy);
-	Pixel hiliteFgPix = AllocColor(textArea_, hiliteFg, &dummy);
-	Pixel hiliteBgPix = AllocColor(textArea_, hiliteBg, &dummy);
-	Pixel lineNoFgPix = AllocColor(textArea_, lineNoFg, &dummy);
-	Pixel cursorFgPix = AllocColor(textArea_, cursorFg, &dummy);
+	Pixel textFgPix   = AllocColor(textArea_, textFg);
+	Pixel textBgPix   = AllocColor(textArea_, textBg);
+	Pixel selectFgPix = AllocColor(textArea_, selectFg);
+	Pixel selectBgPix = AllocColor(textArea_, selectBg);
+	Pixel hiliteFgPix = AllocColor(textArea_, hiliteFg);
+	Pixel hiliteBgPix = AllocColor(textArea_, hiliteBg);
+	Pixel lineNoFgPix = AllocColor(textArea_, lineNoFg);
+	Pixel cursorFgPix = AllocColor(textArea_, cursorFg);
 	
 	TextDisplay *textD;
 

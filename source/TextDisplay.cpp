@@ -3447,9 +3447,8 @@ static void extendRangeForStyleMods(TextDisplay *textD, int *start, int *end) {
 ** stderr, and return the widget's background color as a backup.
 */
 static Pixel allocBGColor(Widget w, char *colorName, int *ok) {
-	Color c;
 	*ok = 1;
-	return AllocColor(w, colorName, &c);
+	return AllocColor(w, colorName);
 }
 
 static Pixel getRangesetColor(TextDisplay *textD, int ind, Pixel bground) {

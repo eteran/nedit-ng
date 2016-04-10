@@ -13,16 +13,10 @@ struct StyleTableEntry {
 	std::string colorName;
 	bool        isBold;
 	bool        isItalic;
-	uint16_t    red;
-	uint16_t    green;
-	uint16_t    blue;
 	Pixel       color;
 	bool        underline;
 	XFontStruct *font;
 	QString bgColorName; /* background style coloring (name may be "empty") */
-	uint16_t    bgRed;
-	uint16_t    bgGreen;
-	uint16_t    bgBlue;
 	Pixel       bgColor;
 };
 
