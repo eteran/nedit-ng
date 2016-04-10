@@ -11,7 +11,6 @@ add_library (NUtil
 	misc.cpp 
 	fileUtils.cpp 
 	prefFile.cpp 
-	fontsel.cpp 
 	managedList.cpp 
 	utils.cpp 
 	clearcase.cpp)

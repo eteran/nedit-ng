@@ -1809,11 +1809,11 @@ static double colorDistance(const XColor *c1, const XColor *c2) {
 	   the coordinates differently, e.g, prefer to match hue over
 	   brightness. */
 
-	static const double scale = 65535;
+	static const double scale = 65535.0;
 
-	double tred = c1->red / scale - c2->red / scale;
+	double tred   = c1->red   / scale - c2->red   / scale;
 	double tgreen = c1->green / scale - c2->green / scale;
-	double tblue = c1->blue / scale - c2->blue / scale;
+	double tblue  = c1->blue  / scale - c2->blue  / scale;
 
 	// use square Euclidian distance 
 	return tred * tred + tgreen * tgreen + tblue * tblue;
