@@ -52,7 +52,6 @@
 #include "Document.h"
 #include "MotifHelper.h"
 #include "misc.h"
-#include "DialogF.h"
 #include "fileUtils.h"
 #include "getfiles.h"
 #include "printUtils.h"
@@ -85,7 +84,7 @@
 #define MOD_CHECK_INTERVAL 3000
 
 static bool writeBckVersion(Document *window);
-static int bckError(Document *window, const char *errString, const char *file);
+static bool bckError(Document *window, const char *errString, const char *file);
 static int cmpWinAgainstFile(Document *window, const char *fileName);
 static int doOpen(Document *window, const char *name, const char *path, int flags);
 static bool doSave(Document *window);
@@ -739,15 +738,24 @@ int SaveWindow(Document *window) {
 
 	// Check for external modifications and warn the user 
 	if (GetPrefWarnFileMods() && fileWasModifiedExternally(window)) {
-		int stat = DialogF(DF_WARN, window->shell_, 2, "Save File", "%s has been modified by another program.\n\n"
-		                                                       "Continuing this operation will overwrite any external\n"
-		                                                       "modifications to the file since it was opened in NEdit,\n"
-		                                                       "and your work or someone else's may potentially be lost.\n\n"
-		                                                       "To preserve the modified file, cancel this operation and\n"
-		                                                       "use Save As... to save this file under a different name,\n"
-		                                                       "or Revert to Saved to revert to the modified version.",
-		               "Continue", "Cancel", window->filename_.c_str());
-		if (stat == 2) {
+	
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("Save File"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QString(QLatin1String("%1 has been modified by another program.\n\n"
+		                                         "Continuing this operation will overwrite any external\n"
+		                                         "modifications to the file since it was opened in NEdit,\n"
+		                                         "and your work or someone else's may potentially be lost.\n\n"
+		                                         "To preserve the modified file, cancel this operation and\n"
+		                                         "use Save As... to save this file under a different name,\n"
+		                                         "or Revert to Saved to revert to the modified version.")).arg(QString::fromStdString(window->filename_)));
+
+		QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonContinue);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonCancel) {
 			// Cancel and mark file as externally modified 
 			window->lastModTime_ = 0;
 			window->fileMissing_ = FALSE;
@@ -766,13 +774,12 @@ int SaveWindow(Document *window) {
 }
 
 int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
-	int response, retVal;
+	int  retVal;
 	char fullname[MAXPATHLEN];
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];
 	Document *otherWindow;
 
-#if 1
 	if(!newName) {
 		QFileDialog dialog(nullptr /*parent*/, QLatin1String("Save File As"));
 		dialog.setFileMode(QFileDialog::AnyFile);
@@ -862,24 +869,6 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	} else {
 		strcpy(fullname, newName);
 	}
-#else
-
-	FileFormats fileFormat;
-
-	// Get the new name for the file 
-	if(!newName) {
-		response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
-		if (response != GFN_OK)
-			return FALSE;
-		window->fileFormat_ = fileFormat;
-	} else {
-		strcpy(fullname, newName);
-	}
-
-	if (NormalizePathname(fullname) == 1) {
-		return False;
-	}
-#endif
 
 	// Add newlines if requested 
 	if (addWrap)
@@ -902,11 +891,20 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	   doing the dialog, check again whether the window still exists. */
 	otherWindow = FindWindowWithFile(filename, pathname);
 	if (otherWindow) {
-		response = DialogF(DF_WARN, window->shell_, 2, "File open", "%s is open in another NEdit window", "Cancel", "Close Other Window", filename);
+	
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("File open"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QString(QLatin1String("%1 is open in another NEdit window")).arg(QLatin1String(filename)));
+		QPushButton *buttonCloseOther = messageBox.addButton(QLatin1String("Close Other Window"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel     = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonCloseOther);
 
-		if (response == 1) {
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonCancel) {
 			return FALSE;
-		}
+		}	
+	
 		if (otherWindow == FindWindowWithFile(filename, pathname)) {
 			if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
 				return FALSE;
@@ -954,7 +952,6 @@ static bool doSave(Document *window) {
 	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	FILE *fp;
-	int result;
 
 	// Get the full name of the file 
 	strcpy(fullname, window->path_.c_str());
@@ -963,9 +960,10 @@ static bool doSave(Document *window) {
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
 	if ((getuid() == 0) && (stat(fullname, &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
-		result = DialogF(DF_WARN, window->shell_, 2, "Writing Read-only File", "File '%s' is marked as read-only.\nDo you want to save anyway?", "Save", "Cancel", window->filename_.c_str());
-		if (result != 1) {
-			return True;
+	
+		int result = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Writing Read-only File"), QString(QLatin1String("File '%1' is marked as read-only.\nDo you want to save anyway?")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+		if (result != QMessageBox::Save) {
+			return true;
 		}
 	}
 
@@ -983,11 +981,21 @@ static bool doSave(Document *window) {
 	// open the file 
 	fp = fopen(fullname, "wb");
 	if(!fp) {
-		result = DialogF(DF_WARN, window->shell_, 2, "Error saving File", "Unable to save %s:\n%s\n\nSave as a new file?", "Save As...", "Cancel", window->filename_.c_str(), strerror(errno));
+	
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setWindowTitle(QLatin1String("Error saving File"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(QString(QLatin1String("Unable to save %1:\n%1\n\nSave as a new file?")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
 
-		if (result == 1) {
+		QPushButton *buttonSaveAs = messageBox.addButton(QLatin1String("Save As..."), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonCancel);
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonSaveAs) {
 			return SaveWindowAs(window, nullptr, 0);
-		}
+		}	
+
 		return FALSE;
 	}
 
@@ -1087,10 +1095,8 @@ int WriteBackupFile(Document *window) {
 
 	// write out the file 
 	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
-	if (ferror(fp)) {
-		DialogF(DF_ERR, window->shell_, 1, "Error saving Backup", "Error while saving backup for %s:\n%s\n"
-		                                                         "Automatic backup is now off",
-		        "OK", window->filename_.c_str(), strerror(errno));
+	if (ferror(fp)) {	
+		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving Backup"), QString(QLatin1String("Error while saving backup for %1:\n%2\nAutomatic backup is now off")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
 		remove(name.c_str());
 		window->autoSave_ = FALSE;
@@ -1239,17 +1245,30 @@ static bool writeBckVersion(Document *window) {
 ** Error processing for writeBckVersion, gives the user option to cancel
 ** the subsequent save, or continue and optionally turn off versioning
 */
-static int bckError(Document *window, const char *errString, const char *file) {
-	int resp;
+static bool bckError(Document *window, const char *errString, const char *file) {
 
-	resp = DialogF(DF_ERR, window->shell_, 3, "Error writing Backup", "Couldn't write .bck (last version) file.\n%s: %s", "Cancel Save", "Turn off Backups", "Continue", file, errString);
-	if (resp == 1)
-		return TRUE;
-	if (resp == 2) {
+	QMessageBox messageBox(nullptr /*window->shell_*/);
+	messageBox.setWindowTitle(QLatin1String("Error writing Backup"));
+	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.setText(QString(QLatin1String("Couldn't write .bck (last version) file.\n%1: %2")).arg(QLatin1String(file)).arg(QLatin1String(errString)));
+
+	QPushButton *buttonCancelSave = messageBox.addButton(QLatin1String("Cancel Save"),      QMessageBox::RejectRole);
+	QPushButton *buttonTurnOff    = messageBox.addButton(QLatin1String("Turn off Backups"), QMessageBox::AcceptRole);
+	QPushButton *buttonContinue   = messageBox.addButton(QLatin1String("Continue"),         QMessageBox::AcceptRole);
+
+	Q_UNUSED(buttonContinue);
+
+	messageBox.exec();
+	if(messageBox.clickedButton() == buttonCancelSave) {
+		return true;
+	}
+
+	if(messageBox.clickedButton() == buttonTurnOff) {
 		window->saveOldVersion_ = FALSE;
 		window->SetToggleButtonState(window->saveLastItem_, FALSE, FALSE);
 	}
-	return FALSE;
+
+	return false;
 }
 
 void PrintWindow(Document *window, int selectedOnly) {
@@ -1299,7 +1318,7 @@ void PrintString(const std::string &string, Widget parent, const std::string &jo
 	
 	int fd = mkstemp(tmpFileName);
 	if (fd < 0) {
-		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error while Printing"), QString(QLatin1String("Unable to write file for printing:\n%1")).arg(QLatin1String(strerror(errno))));
 		return;
 	}
 
@@ -1307,14 +1326,14 @@ void PrintString(const std::string &string, Widget parent, const std::string &jo
 
 	// open the temporary file 
 	if (fp == nullptr) {
-		DialogF(DF_WARN, parent, 1, "Error while Printing", "Unable to write file for printing:\n%s", "OK", strerror(errno));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error while Printing"), QString(QLatin1String("Unable to write file for printing:\n%1")).arg(QLatin1String(strerror(errno))));
 		return;
 	}
 
 	// write to the file 
 	fwrite(string.data(), sizeof(char), string.size(), fp);
 	if (ferror(fp)) {
-		DialogF(DF_ERR, parent, 1, "Error while Printing", "%s not printed:\n%s", "OK", jobName.c_str(), strerror(errno));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error while Printing"), QString(QLatin1String("%1 not printed:\n%2")).arg(QString::fromStdString(jobName)).arg(QLatin1String(strerror(errno))));
 		fclose(fp); // should call close(fd) in turn! 
 		remove(tmpFileName);
 		return;
@@ -1322,7 +1341,7 @@ void PrintString(const std::string &string, Widget parent, const std::string &jo
 
 	// close the temporary file 
 	if (fclose(fp) != 0) {
-		DialogF(DF_ERR, parent, 1, "Error while Printing", "Error closing temp. print file:\n%s", "OK", strerror(errno));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error while Printing"), QString(QLatin1String("Error closing temp. print file:\n%1")).arg(QLatin1String(strerror(errno))));
 		remove(tmpFileName);
 		return;
 	}
@@ -1490,17 +1509,20 @@ void CheckForChangesToFile(Document *window) {
 	struct stat statbuf;
 	Time timestamp;
 	FILE *fp;
-	int resp, silent = 0;
+	int silent = 0;
 	XWindowAttributes winAttr;
 	Boolean windowIsDestroyed = False;
 
-	if (!window->filenameSet_)
+	if (!window->filenameSet_) {
 		return;
+	}
 
 	// If last check was very recent, don't impact performance 
 	timestamp = XtLastTimestampProcessed(XtDisplay(window->shell_));
-	if (window == lastCheckWindow && timestamp - lastCheckTime < MOD_CHECK_INTERVAL)
+	if (window == lastCheckWindow && timestamp - lastCheckTime < MOD_CHECK_INTERVAL) {
 		return;
+	}
+	
 	lastCheckWindow = window;
 	lastCheckTime = timestamp;
 
@@ -1544,8 +1566,7 @@ void CheckForChangesToFile(Document *window) {
 		/* Warn the user, if they like to be warned (Maybe this should be its
 		    own preference setting: GetPrefWarnFileDeleted()) */
 		if (GetPrefWarnFileMods()) {
-			const char *title;
-			const char *body;
+			bool save = false;
 
 			// See note below about pop-up timing and XUngrabPointer 
 			XUngrabPointer(XtDisplay(window->shell_), timestamp);
@@ -1558,32 +1579,25 @@ void CheckForChangesToFile(Document *window) {
 			//  Set title, message body and button to match stat()'s error.  
 			switch (errno) {
 			case ENOENT:
-				//  A component of the path file_name does not exist.  
-				title = "File not Found";
-				body = "File '%s' (or directory in its path)\n"
-				       "no longer exists.\n"
-				       "Another program may have deleted or moved it.";
-				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_.c_str());
+				{
+					// A component of the path file_name does not exist. 
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Found"), QString(QLatin1String("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
+				}
 				break;
 			case EACCES:
-				/*  Search permission denied for a path component. We add
-				    one to the response because Re-Save wouldn't really
-				    make sense here.  */
-				title = "Permission Denied";
-				body = "You no longer have access to file '%s'.\n"
-				       "Another program may have changed the permissions of\n"
-				       "one of its parent directories.";
-				resp = 1 + DialogF(DF_ERR, window->shell_, 1, title, body, "Cancel", window->filename_.c_str());
+				{
+					// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Permission Denied"), QString(QLatin1String("You no longer have access to file '%1'.\nAnother program may have changed the permissions of\none of its parent directories.")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
+				}
 				break;
 			default:
-				/*  Everything else. This hints at an internal error (eg.
-				    ENOTDIR) or at some bad state at the host.  */
-				title = "File not Accessible";
-				body = "Error while checking the status of file '%s':\n"
-				       "    '%s'\n"
-				       "Please make sure that no data is lost before closing\n"
-				       "this window.";
-				resp = DialogF(DF_ERR, window->shell_, 2, title, body, "Save", "Cancel", window->filename_.c_str(), strerror(errno));
+				{
+					// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Accessible"), QString(QLatin1String("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing\nthis window.")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))), QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
+				}
 				break;
 			}
 
@@ -1591,18 +1605,8 @@ void CheckForChangesToFile(Document *window) {
 				XtRemoveCallback(window->shell_, XmNdestroyCallback, modifiedWindowDestroyedCB, &windowIsDestroyed);
 			}
 
-			switch (resp) {
-			case 1:
+			if(save) {
 				SaveWindow(window);
-				break;
-				/*  Good idea, but this leads to frequent crashes, see
-				    SF#1578869. Reinsert this if circumstances change by
-				    uncommenting this part and inserting a "Close" button
-				    before each Cancel button above.
-				case 2:
-				    CloseWindow(window);
-				    return;
-				*/
 			}
 		}
 
@@ -1660,16 +1664,27 @@ void CheckForChangesToFile(Document *window) {
 			window->lastModTime_ = statbuf.st_mtime;
 			return;
 		}
+
 		XUngrabPointer(XtDisplay(window->shell_), timestamp);
-		if (window->fileChanged_)
-			resp = DialogF(DF_WARN, window->shell_, 2, "File modified externally", "%s has been modified by another program.  Reload?\n\n"
-			                                                                      "WARNING: Reloading will discard changes made in this\n"
-			                                                                      "editing session!",
-			               "Reload", "Cancel", window->filename_.c_str());
-		else
-			resp = DialogF(DF_WARN, window->shell_, 2, "File modified externally", "%s has been modified by another\nprogram.  Reload?", "Reload", "Cancel", window->filename_.c_str());
-		if (resp == 1)
+
+		QMessageBox messageBox(nullptr /*window->shell_*/);
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setWindowTitle(QLatin1String("File modified externally"));
+		QPushButton *buttonReload = messageBox.addButton(QLatin1String("Reload"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+
+		Q_UNUSED(buttonCancel);
+
+		if (window->fileChanged_) {			
+			messageBox.setText(QString(QLatin1String("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this\nediting session!")).arg(QString::fromStdString(window->filename_)));
+		} else {
+			messageBox.setText(QString(QLatin1String("%1 has been modified by another\nprogram.  Reload?")).arg(QString::fromStdString(window->filename_)));
+		}
+		
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonReload) {
 			RevertToSaved(window);
+		}
 	}
 }
 
@@ -1734,18 +1749,20 @@ static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
-	int resp;
 	auto addWrap = static_cast<int *>(clientData);
 
 	if (XmToggleButtonGetState(w)) {
-		resp = DialogF(DF_WARN, w, 2, "Add Wrap", "This operation adds permanent line breaks to\n"
-		                                          "match the automatic wrapping done by the\n"
-		                                          "Continuous Wrap mode Preferences Option.\n\n"
-		                                          "*** This Option is Irreversable ***\n\n"
-		                                          "Once newlines are inserted, continuous wrapping\n"
-		                                          "will no longer work automatically on these lines",
-		               "OK", "Cancel");
-		if (resp == 2) {
+	
+		int resp = QMessageBox::warning(nullptr /*w*/, QLatin1String("Add Wrap"), 
+			QLatin1String("This operation adds permanent line breaks to\n"
+						  "match the automatic wrapping done by the\n"
+						  "Continuous Wrap mode Preferences Option.\n\n"
+						  "*** This Option is Irreversable ***\n\n"
+						  "Once newlines are inserted, continuous wrapping\n"
+						  "will no longer work automatically on these lines"), 
+			QMessageBox::Ok | QMessageBox::Cancel);
+	
+		if (resp == QMessageBox::Cancel) {
 			XmToggleButtonSetState(w, False, False);
 			*addWrap = False;
 		} else {
