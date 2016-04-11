@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Text Fonts</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -21,7 +21,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QToolButton" name="toolButton">
+       <widget class="QToolButton" name="buttonPrimaryFont">
         <property name="text">
          <string>...</string>
         </property>
@@ -40,7 +40,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="buttonFill">
         <property name="text">
          <string>&amp;Fill Highlight Fonts from Primary</string>
         </property>
@@ -67,7 +67,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QToolButton" name="toolButton_2">
+       <widget class="QToolButton" name="buttonFontItalic">
         <property name="text">
          <string>...</string>
         </property>
@@ -84,7 +84,7 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QToolButton" name="toolButton_3">
+       <widget class="QToolButton" name="buttonFontBold">
         <property name="text">
          <string>...</string>
         </property>
@@ -101,7 +101,7 @@
        </widget>
       </item>
       <item row="6" column="0">
-       <widget class="QToolButton" name="toolButton_4">
+       <widget class="QToolButton" name="buttonFontBoldItalic">
         <property name="text">
          <string>...</string>
         </property>
@@ -119,7 +119,10 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

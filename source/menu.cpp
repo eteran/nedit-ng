@@ -34,6 +34,7 @@
 #include "ui/DialogExecuteCommand.h"
 #include "ui/DialogFilter.h"
 #include "ui/DialogTabs.h"
+#include "ui/DialogFonts.h"
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -1242,6 +1243,10 @@ static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
+	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), true);
+	dialog->exec();
+	delete dialog;
+
 	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), True);
 }
 
@@ -1425,6 +1430,12 @@ static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(w);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	
+	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), false);
+	dialog->exec();
+	delete dialog;	
+	
+	
 	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), False);
 }
 
