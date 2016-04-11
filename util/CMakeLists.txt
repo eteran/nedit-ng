@@ -5,7 +5,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt4 4.6.0 REQUIRED QtCore QtGui QtNetwork)
 
 add_library (NUtil 
-	DialogF.cpp 
 	getfiles.cpp 
 	printUtils.cpp 
 	misc.cpp 
