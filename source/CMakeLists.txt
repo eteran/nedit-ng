@@ -23,7 +23,7 @@ QT4_WRAP_CPP(MOC_SOURCES
 	QtMotifDialog.h
 	QtMotifWidget.h
 	QtXtWidget.h
-	
+
 	ui/DialogExecuteCommand.h
 	ui/DialogFilter.h
 	ui/DialogFind.h
@@ -50,14 +50,14 @@ set(UI_FILES
 	ui/DialogTabs.ui
 	ui/DialogWrapMargin.ui
 )
-		
-qt4_wrap_ui(UI_H ${UI_FILES})		
+
+qt4_wrap_ui(UI_H ${UI_FILES})
 
 add_executable(nedit
 
 	${MOC_SOURCES}
 	${UI_H}
-	
+
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
@@ -152,7 +152,7 @@ include_directories(nedit
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH}
-)	
+)
 
 target_link_libraries(nedit LINK_PUBLIC
 	Xlt

@@ -13,11 +13,11 @@ class DialogExecuteCommand : public QDialog {
 public:
 	DialogExecuteCommand(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogExecuteCommand();
-	
+
 protected:
 	virtual void keyPressEvent(QKeyEvent *event) override;
 	virtual void showEvent(QShowEvent *event) override;
-	
+
 private Q_SLOTS:
 	void on_buttonBox_accepted();
 
