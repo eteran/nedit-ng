@@ -866,18 +866,12 @@ static bool PrefsHaveChanged = false;
    preferences on top of the defaults.  Contains name of file loaded */
 static char *ImportedFile = nullptr;
 
-// Module-global variables to support Initial Window Size... dialog 
-static int DoneWithSizeDialog;
-static Widget RowText, ColText;
-
 //  Module-global variables for shell selection dialog  
 static int DoneWithShellSelDialog = False;
 
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
-static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData);
 static void shellSelCancelCB(Widget widgget, XtPointer clientData, XtPointer callData);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
@@ -1841,85 +1835,6 @@ char *GetWindowDelimiters(const Document *window) {
 	else
 		return LanguageModes[window->languageMode_]->delimiters;
 }
-
-/*
-** Put up a dialog for selecting a custom initial window size
-*/
-void RowColumnPrefDialog(Widget parent) {
-	Widget form, selBox, topLabel;
-	Arg selBoxArgs[2];
-	XmString s1;
-
-	XtSetArg(selBoxArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	XtSetArg(selBoxArgs[1], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(parent, "customSize", selBoxArgs, 2);
-	XtAddCallback(selBox, XmNokCallback, sizeOKCB, nullptr);
-	XtAddCallback(selBox, XmNcancelCallback, sizeCancelCB, nullptr);
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
-	XtVaSetValues(XtParent(selBox), XmNtitle, "Initial Window Size", nullptr);
-
-	form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
-
-	topLabel = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Enter desired size in rows\nand columns of characters:"), nullptr);
-	XmStringFree(s1);
-
-	RowText = XtVaCreateManagedWidget("rows", xmTextWidgetClass, form, XmNcolumns, 3, XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION, XmNtopWidget, topLabel, XmNleftPosition,
-	                                  5, XmNrightPosition, 45, nullptr);
-	RemapDeleteKey(RowText);
-
-	XtVaCreateManagedWidget("xLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("x"), XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION,
-	                        XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNtopWidget, topLabel, XmNbottomWidget, RowText, XmNleftPosition, 45, XmNrightPosition, 55, nullptr);
-	XmStringFree(s1);
-
-	ColText = XtVaCreateManagedWidget("cols", xmTextWidgetClass, form, XmNcolumns, 3, XmNtopAttachment, XmATTACH_WIDGET, XmNleftAttachment, XmATTACH_POSITION, XmNrightAttachment, XmATTACH_POSITION, XmNtopWidget, topLabel, XmNleftPosition,
-	                                  55, XmNrightPosition, 95, nullptr);
-	RemapDeleteKey(ColText);
-
-	// put up dialog and wait for user to press ok or cancel 
-	DoneWithSizeDialog = False;
-	ManageDialogCenteredOnPointer(selBox);
-	while (!DoneWithSizeDialog) {
-		XEvent event;
-		XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
-		ServerDispatchEvent(&event);
-	}
-
-	XtDestroyWidget(selBox);
-}
-
-static void sizeOKCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	int rowValue, colValue, stat;
-
-	// get the values that the user entered and make sure they're ok 
-	stat = GetIntTextWarn(RowText, &rowValue, "number of rows", True);
-	if (stat != TEXT_READ_OK)
-		return;
-	stat = GetIntTextWarn(ColText, &colValue, "number of columns", True);
-	if (stat != TEXT_READ_OK)
-		return;
-
-	// set the corresponding preferences and dismiss the dialog 
-	SetPrefRows(rowValue);
-	SetPrefCols(colValue);
-	DoneWithSizeDialog = True;
-}
-
-static void sizeCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	DoneWithSizeDialog = True;
-}
-
 
 /*
 ** Present the user a dialog for setting wrap margin.

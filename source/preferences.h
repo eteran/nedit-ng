@@ -163,7 +163,6 @@ void EditLanguageModes(void);
 void ImportPrefFile(const char *filename, int convertOld);
 void MarkPrefsChanged(void);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
-void RowColumnPrefDialog(Widget parent);
 void SaveNEditPrefs(Widget parent, int quietly);
 void SelectShellDialog(Widget parent, Document *forWindow);
 void SetLangModeMenu(Widget optMenu, const char *modeName);

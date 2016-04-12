@@ -33,6 +33,7 @@ QT4_WRAP_CPP(MOC_SOURCES
 	ui/DialogTabs.h
 	ui/DialogWrapMargin.h
 	ui/DialogFonts.h
+	ui/DialogWindowSize.h
 	ui/ListWidget.h
 )
 
@@ -49,6 +50,7 @@ set(UI_FILES
 	ui/DialogReplace.ui
 	ui/DialogTabs.ui
 	ui/DialogWrapMargin.ui
+	ui/DialogWindowSize.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -68,6 +70,7 @@ add_executable(nedit
 	ui/DialogWrapMargin.cpp
 	ui/DialogFonts.cpp
 	ui/ListWidget.cpp
+	ui/DialogWindowSize.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp

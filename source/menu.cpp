@@ -35,6 +35,7 @@
 #include "ui/DialogFilter.h"
 #include "ui/DialogTabs.h"
 #include "ui/DialogFonts.h"
+#include "ui/DialogWindowSize.h"
 
 #include "menu.h"
 #include "TextBuffer.h"
@@ -2300,7 +2301,12 @@ static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	RowColumnPrefDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_);
+	
+	
+	auto dialog = new DialogWindowSize(nullptr /*Document::WidgetToWindow(MENU_WIDGET(w))->shell_*/);
+	dialog->exec();
+	delete dialog;
+	
 	updateWindowSizeMenus();
 }
 
