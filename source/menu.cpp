@@ -1246,8 +1246,6 @@ static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
 	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), true);
 	dialog->exec();
 	delete dialog;
-
-	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), True);
 }
 
 static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1433,10 +1431,7 @@ static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	
 	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), false);
 	dialog->exec();
-	delete dialog;	
-	
-	
-	ChooseFonts(Document::WidgetToWindow(MENU_WIDGET(w)), False);
+	delete dialog;
 }
 
 static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {

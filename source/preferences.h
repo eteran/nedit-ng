@@ -157,7 +157,6 @@ std::string MakeQuotedStringEx(view::string_view string);
 QString ReadSymbolicFieldEx(const char **inPtr);
 QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
 void ChooseColors(Document *window);
-void ChooseFonts(Document *window, int forWindow);
 void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic);
 void DetermineLanguageMode(Document *window, int forceNewDefaults);
 void EditLanguageModes(void);

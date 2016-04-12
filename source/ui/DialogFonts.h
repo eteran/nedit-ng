@@ -39,6 +39,7 @@ private:
 	void updateFonts();
 	FontStatus checkFontStatus(const QString &font);
 	FontStatus showFontStatus(const QString &font, QLabel *errorLabel);
+	void browseFont(QLineEdit *lineEdit);
 
 private:
 	Ui::DialogFonts ui;

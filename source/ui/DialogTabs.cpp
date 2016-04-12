@@ -67,6 +67,10 @@ void DialogTabs::on_buttonBox_accepted() {
 	bool emulate = ui.checkEmulateTabs->isChecked();
 	bool useTabs = ui.checkUseTabsInPadding->isChecked();	
 	int tabDist  = ui.editTabSpacing->text().toInt(&ok);
+
+	if(ui.editTabSpacing->text().isEmpty()) {
+		QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for tab spacing"));
+	}
 	
 	if(!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(ui.editTabSpacing->text()));
@@ -79,9 +83,14 @@ void DialogTabs::on_buttonBox_accepted() {
 	}
 
 	if (emulate) {
+	
+		if(ui.editEmulatedTabSpacing->text().isEmpty()) {
+			QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for emulated tab spacing"));
+		}	
+	
 		emTabDist = ui.editEmulatedTabSpacing->text().toInt(&ok);
 		if (!ok) {
-			QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(ui.editTabSpacing->text()));
+			QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(ui.editEmulatedTabSpacing->text()));
 			return;
 		}
 

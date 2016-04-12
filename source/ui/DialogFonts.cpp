@@ -2,9 +2,12 @@
 #include <QPushButton>
 #include <QtDebug>
 #include "DialogFonts.h"
+#include "DialogFontSelector.h"
 #include "Document.h"
 #include "preferences.h"
 #include "regularExp.h"
+#include "Color.h"
+#include "highlight.h" // for AllocColor
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 
@@ -31,12 +34,7 @@ DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::
 		ui.editFontBold->setText(QLatin1String(GetPrefBoldFontName()));
 		ui.editFontItalic->setText(QLatin1String(GetPrefItalicFontName()));
 		ui.editFontBoldItalic->setText(QLatin1String(GetPrefBoldItalicFontName()));
-	}
-	
-	// make sure we show the correct status values to start
-	showFontStatus(ui.editFontItalic->text(),     ui.labelItalicError);
-	showFontStatus(ui.editFontBold->text(),       ui.labelBoldError);
-	showFontStatus(ui.editFontBoldItalic->text(), ui.labelBoldItalicError);	
+	}	
 }
 
 //------------------------------------------------------------------------------
@@ -49,36 +47,28 @@ DialogFonts::~DialogFonts() {
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonPrimaryFont_clicked() {
-#if 0
-	browseFont(fd->shell, fd->primaryW);
-#endif
+	browseFont(ui.editFontPrimary);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFontItalic_clicked() {
-#if 0
-	browseFont(fd->shell, fd->italicW);
-#endif
+	browseFont(ui.editFontItalic);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFontBold_clicked() {
-#if 0
-	browseFont(fd->shell, fd->boldW);
-#endif
+	browseFont(ui.editFontBold);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFontBoldItalic_clicked() {
-#if 0
-	browseFont(fd->shell, fd->boldItalicW);
-#endif
+	browseFont(ui.editFontBoldItalic);
 }
 
 //------------------------------------------------------------------------------
@@ -89,11 +79,11 @@ void DialogFonts::on_buttonFill_clicked() {
 	// TODO(eteran): use QString::replace with QRegExp
 
 	char modifiedFontName[MAX_FONT_LEN];
-	const char *const searchString            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
+	const char searchString[]            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
 	
-	const char *const italicReplaceString     = "\\1-\\2-o-\\4";
-	const char *const boldReplaceString       = "\\1-bold-\\3-\\4";
-	const char *const boldItalicReplaceString = "\\1-bold-o-\\4";
+	const char italicReplaceString[]     = "\\1-\\2-o-\\4";
+	const char boldReplaceString[]       = "\\1-bold-\\3-\\4";
+	const char boldItalicReplaceString[] = "\\1-bold-o-\\4";
 	regexp *compiledRE;
 
 	/* Match the primary font agains RE pattern for font names.  If it
@@ -105,7 +95,8 @@ void DialogFonts::on_buttonFill_clicked() {
 	}
 
 	QString primaryName = ui.editFontPrimary->text();
-	if (!compiledRE->execute(primaryName.toStdString())) {
+	std::string primaryNameString = primaryName.toStdString();
+	if (!compiledRE->execute(primaryNameString)) {
 		QApplication::beep();
 		delete compiledRE;
 		return;
@@ -205,7 +196,6 @@ void DialogFonts::on_editFontBoldItalic_textChanged(const QString &text) {
 	showFontStatus(text, ui.labelBoldItalicError);
 }
 
-
 /*
 ** Update the error label for a font text field to reflect its validity and degree
 ** of agreement with the currently selected primary font
@@ -288,4 +278,39 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 	}
 
 	return GOOD_FONT;
+}
+
+/*
+** Put up a font selector panel to set the font name in the text widget "fontTextW"
+*/
+void DialogFonts::browseFont(QLineEdit *lineEdit) {
+
+	Color fgColor;
+	Color bgColor;
+
+	QString origFontName = lineEdit->text();
+
+	// Get the values from the defaults 
+	Pixel fgPixel = AllocColor(window_->shell_, GetPrefColorName(TEXT_FG_COLOR), &fgColor);
+	Pixel bgPixel = AllocColor(window_->shell_, GetPrefColorName(TEXT_BG_COLOR), &bgColor);
+	
+	Q_UNUSED(fgPixel);
+	Q_UNUSED(bgPixel);
+
+	QColor foreground(fgColor.r / 256, fgColor.g / 256, fgColor.b / 256);
+	QColor background(bgColor.r / 256, bgColor.g / 256, bgColor.b / 256);
+	
+	auto dialog = new DialogFontSelector(window_->shell_, PREF_FIXED, origFontName.toLatin1().data(), foreground, background, this);
+	int r = dialog->exec();
+	
+	QString newFont;
+	if(r) {
+		newFont = dialog->ui.editFontName->text();		
+	}
+	
+	if(newFont.isEmpty()) {
+		return;
+	}
+	
+	lineEdit->setText(newFont);
 }
