@@ -3,7 +3,10 @@
 #define DIALOG_LANGUAGE_MODES_H_
 
 #include <QDialog>
+#include <QVector>
 #include "ui_DialogLanguageModes.h"
+
+class languageModeRec;
 
 class DialogLanguageModes : public QDialog {
 public:
@@ -16,9 +19,11 @@ private Q_SLOTS:
 	void on_buttonBox_accepted();
 	void on_buttonUp_clicked();
 	void on_buttonDown_clicked();
+	void on_listLanguages_itemSelectionChanged();
 	
 private:
-	Ui::DialogLanguageModes ui;
+	Ui::DialogLanguageModes    ui;
+	QVector<languageModeRec *> languageModes_;
 };
 
 #endif
