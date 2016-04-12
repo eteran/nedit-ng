@@ -47,9 +47,7 @@
         <string>&amp;Replace</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace">
-         <normaloff/>
-        </iconset>
+        <iconset theme="edit-find-replace"/>
        </property>
       </widget>
      </item>
@@ -59,9 +57,7 @@
         <string>&amp;Select All</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-select-all">
-         <normaloff/>
-        </iconset>
+        <iconset theme="edit-select-all"/>
        </property>
       </widget>
      </item>
@@ -78,9 +74,7 @@
         <string>&amp;Cancel</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-cancel">
-         <normaloff/>
-        </iconset>
+        <iconset theme="dialog-cancel"/>
        </property>
       </widget>
      </item>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>706</width>
-    <height>590</height>
+    <width>770</width>
+    <height>638</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,50 +32,42 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="buttonDelete">
          <property name="text">
           <string>Delete</string>
          </property>
          <property name="icon">
-          <iconset theme="edit-delete">
-           <normaloff/>
-          </iconset>
+          <iconset theme="edit-delete"/>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="buttonCopy">
          <property name="text">
           <string>Copy</string>
          </property>
          <property name="icon">
-          <iconset theme="edit-copy">
-           <normaloff/>
-          </iconset>
+          <iconset theme="edit-copy"/>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="butonUp">
          <property name="text">
           <string>Move</string>
          </property>
          <property name="icon">
-          <iconset theme="go-down">
-           <normaloff/>
-          </iconset>
+          <iconset theme="go-up"/>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="buttonDown">
          <property name="text">
           <string>Move</string>
          </property>
          <property name="icon">
-          <iconset theme="go-up">
-           <normaloff/>
-          </iconset>
+          <iconset theme="go-down"/>
          </property>
         </widget>
        </item>
@@ -95,33 +87,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget">
-       <item>
-        <property name="text">
-         <string>New</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Ada</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Awk</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>C++</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>C</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="QListWidget" name="listLanguages"/>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -136,7 +102,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
+        <widget class="QLineEdit" name="editName"/>
        </item>
        <item>
         <widget class="QLabel" name="label_3">
@@ -149,7 +115,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_2"/>
+        <widget class="QLineEdit" name="editExtensions"/>
        </item>
        <item>
         <widget class="QLabel" name="label_5">
@@ -162,7 +128,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_3"/>
+        <widget class="QLineEdit" name="editRegex"/>
        </item>
        <item>
         <widget class="QLabel" name="label_4">
@@ -175,7 +141,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_4"/>
+        <widget class="QLineEdit" name="editCallTips"/>
        </item>
        <item>
         <spacer name="verticalSpacer_2">
@@ -210,7 +176,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_5"/>
+         <widget class="QLineEdit" name="editDelimiters"/>
         </item>
        </layout>
       </item>
@@ -224,7 +190,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_6"/>
+         <widget class="QLineEdit" name="editTabSpacing"/>
         </item>
         <item>
          <spacer name="horizontalSpacer">
@@ -242,12 +208,12 @@
         <item>
          <widget class="QLabel" name="label_8">
           <property name="text">
-           <string>Alternative emulated hardware tab </string>
+           <string>Alternative emulated tab spacing</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_7"/>
+         <widget class="QLineEdit" name="editEmulatedTabSpacing"/>
         </item>
        </layout>
       </item>
@@ -261,7 +227,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QRadioButton" name="radioButton">
+          <widget class="QRadioButton" name="radioIndentDefault">
            <property name="text">
             <string>&amp;Default indent style</string>
            </property>
@@ -271,21 +237,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_3">
+          <widget class="QRadioButton" name="radioIndentNone">
            <property name="text">
             <string>&amp;No automatic indent</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_5">
+          <widget class="QRadioButton" name="radioIndentAuto">
            <property name="text">
             <string>&amp;Auto-indent</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_7">
+          <widget class="QRadioButton" name="radioIndentSmart">
            <property name="text">
             <string>&amp;Smart-indent</string>
            </property>
@@ -304,7 +270,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QRadioButton" name="radioButton_2">
+          <widget class="QRadioButton" name="radioWrapDefault">
            <property name="text">
             <string>&amp;Default wrap style</string>
            </property>
@@ -314,21 +280,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_4">
+          <widget class="QRadioButton" name="radioWrapNone">
            <property name="text">
             <string>&amp;No wrapping</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_9">
+          <widget class="QRadioButton" name="radioWrapAuto">
            <property name="text">
             <string>&amp;Auto newline wrap</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="radioButton_10">
+          <widget class="QRadioButton" name="radioWrapContinuous">
            <property name="text">
             <string>&amp;Continuous wrap</string>
            </property>
@@ -356,29 +322,13 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>DialogLanguageModes</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>DialogLanguageModes</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>322</x>
+     <y>631</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

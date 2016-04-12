@@ -165,9 +165,7 @@
         <string>Replace</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace">
-         <normaloff/>
-        </iconset>
+        <iconset theme="edit-find-replace"/>
        </property>
        <property name="shortcut">
         <string>Return</string>
@@ -183,9 +181,7 @@
         <string>&amp;Find</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find">
-         <normaloff/>
-        </iconset>
+        <iconset theme="edit-find"/>
        </property>
       </widget>
      </item>
@@ -209,9 +205,7 @@
         <string>Cancel</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-cancel">
-         <normaloff/>
-        </iconset>
+        <iconset theme="dialog-cancel"/>
        </property>
        <property name="shortcut">
         <string>Esc</string>

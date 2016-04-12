@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>412</width>
-    <height>147</height>
+    <width>424</width>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -138,9 +138,7 @@
         <string>Find</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find">
-         <normaloff/>
-        </iconset>
+        <iconset theme="edit-find"/>
        </property>
        <property name="shortcut">
         <string>Return</string>

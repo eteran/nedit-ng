@@ -18,7 +18,7 @@ find_library(LibM m)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
-QT4_WRAP_CPP(MOC_SOURCES
+qt4_wrap_cpp(MOC_SOURCES
 	QtMotif.h
 	QtMotifDialog.h
 	QtMotifWidget.h
@@ -28,12 +28,13 @@ QT4_WRAP_CPP(MOC_SOURCES
 	ui/DialogFilter.h
 	ui/DialogFind.h
 	ui/DialogFontSelector.h
+	ui/DialogFonts.h
+	ui/DialogLanguageModes.h
 	ui/DialogMultiReplace.h
 	ui/DialogReplace.h
 	ui/DialogTabs.h
-	ui/DialogWrapMargin.h
-	ui/DialogFonts.h
 	ui/DialogWindowSize.h
+	ui/DialogWrapMargin.h
 	ui/ListWidget.h
 )
 
@@ -49,8 +50,8 @@ set(UI_FILES
 	ui/DialogReplaceScope.ui
 	ui/DialogReplace.ui
 	ui/DialogTabs.ui
-	ui/DialogWrapMargin.ui
 	ui/DialogWindowSize.ui
+	ui/DialogWrapMargin.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -63,24 +64,21 @@ add_executable(nedit
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
+	ui/DialogFonts.cpp
 	ui/DialogFontSelector.cpp
+	ui/DialogLanguageModes.cpp
 	ui/DialogMultiReplace.cpp
 	ui/DialogReplace.cpp
 	ui/DialogTabs.cpp
-	ui/DialogWrapMargin.cpp
-	ui/DialogFonts.cpp
-	ui/ListWidget.cpp
 	ui/DialogWindowSize.cpp
+	ui/DialogWrapMargin.cpp
+	ui/ListWidget.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
-	QtMotif.h
-	QtMotifDialog.h
-	QtMotifWidget.h
-	QtXtWidget.h
-
+	
 	Document.cpp
 	PatternSet.cpp
 	Rangeset.cpp
