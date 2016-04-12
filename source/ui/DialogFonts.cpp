@@ -32,6 +32,11 @@ DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::
 		ui.editFontItalic->setText(QLatin1String(GetPrefItalicFontName()));
 		ui.editFontBoldItalic->setText(QLatin1String(GetPrefBoldItalicFontName()));
 	}
+	
+	// make sure we show the correct status values to start
+	showFontStatus(ui.editFontItalic->text(),     ui.labelItalicError);
+	showFontStatus(ui.editFontBold->text(),       ui.labelBoldError);
+	showFontStatus(ui.editFontBoldItalic->text(), ui.labelBoldItalicError);	
 }
 
 //------------------------------------------------------------------------------
@@ -81,8 +86,11 @@ void DialogFonts::on_buttonFontBoldItalic_clicked() {
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFill_clicked() {
 
+	// TODO(eteran): use QString::replace with QRegExp
+
 	char modifiedFontName[MAX_FONT_LEN];
 	const char *const searchString            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
+	
 	const char *const italicReplaceString     = "\\1-\\2-o-\\4";
 	const char *const boldReplaceString       = "\\1-bold-\\3-\\4";
 	const char *const boldItalicReplaceString = "\\1-bold-o-\\4";
@@ -169,41 +177,32 @@ void DialogFonts::updateFonts() {
 //------------------------------------------------------------------------------
 void DialogFonts::on_editFontPrimary_textChanged(const QString &text) {
 	Q_UNUSED(text);
-#if 0
-	showFontStatus(fd, fd->italicW, fd->italicErrW);
-	showFontStatus(fd, fd->boldW, fd->boldErrW);
-	showFontStatus(fd, fd->boldItalicW, fd->boldItalicErrW);
-#endif
+
+	showFontStatus(ui.editFontItalic->text(),     ui.labelItalicError);
+	showFontStatus(ui.editFontBold->text(),       ui.labelBoldError);
+	showFontStatus(ui.editFontBoldItalic->text(), ui.labelBoldItalicError);
+
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_editFontItalic_textChanged(const QString &text) {
-	Q_UNUSED(text);
-#if 0
-	showFontStatus(fd, fd->italicW, fd->italicErrW);
-#endif
+	showFontStatus(text, ui.labelItalicError);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_editFontBold_textChanged(const QString &text) {
-	Q_UNUSED(text);
-#if 0
-	showFontStatus(fd, fd->boldW, fd->boldErrW);
-#endif
+	showFontStatus(text, ui.labelBoldError);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_editFontBoldItalic_textChanged(const QString &text) {
-	Q_UNUSED(text);
-#if 0
-	showFontStatus(fd, fd->boldItalicW, fd->boldItalicErrW);
-#endif
+	showFontStatus(text, ui.labelBoldItalicError);
 }
 
 
@@ -274,7 +273,7 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 		return BAD_PRIMARY;
 	}
 
-	const int primaryWidth = primaryFont->min_bounds.width;
+	const int primaryWidth  = primaryFont->min_bounds.width;
 	const int primaryHeight = primaryFont->ascent + primaryFont->descent;
 	XFreeFont(display, primaryFont);
 
