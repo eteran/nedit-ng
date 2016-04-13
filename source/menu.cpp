@@ -3829,6 +3829,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void ACTION_BOOL_PARAM_OR_TOGGLE(Boolean &newState, Cardinal numArgs, String *argvVal, Boolean oValue, const char *actionName) {
+	
 	if (numArgs > 0) {
 		int intState;
 
@@ -3836,6 +3837,7 @@ static void ACTION_BOOL_PARAM_OR_TOGGLE(Boolean &newState, Cardinal numArgs, Str
 			newState = (intState != 0);
 		} else {
 			fprintf(stderr, "nedit: %s requires 0 or 1 argument\n", actionName);
+			newState = false;
 			return;
 		}
 	} else {

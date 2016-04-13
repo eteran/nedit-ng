@@ -698,8 +698,10 @@ QList<QtMotif::TimerInfo> QtMotif::registeredTimers(QObject *object) const
 void qmotif_wakeup_handler(XtPointer, int *readPFD, XtInputId *)
 {
     char buf[256];
-    if (readPFD)
-        read(*readPFD, buf, 256);
+    if (readPFD) {
+        int n = read(*readPFD, buf, 256);
+		Q_UNUSED(n);
+	}
 }
 
 /*! \reimp
@@ -708,7 +710,8 @@ void QtMotif::wakeUp()
 {
     if (d->wakeUpPipe[1]) {
         // write to a pipe to wake up the Xt event loop
-        write(d->wakeUpPipe[1], "w", 1);
+        int n = write(d->wakeUpPipe[1], "w", 1);
+		Q_UNUSED(n);
     }
 }
 

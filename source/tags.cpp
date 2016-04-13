@@ -1807,12 +1807,13 @@ static void free_alias_list(tf_alias *alias) {
 static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char header[MAXLINE];
-	char *body;
+	
 	char *tipIncFile;
 	char tipPath[MAXPATHLEN];
 	char resolvedTipsFile[MAXPATHLEN + 1];
 	int nTipsAdded = 0, langMode = PLAIN_LANGUAGE_MODE, oldLangMode;
-	int currLine = 0, code, blkLine;
+	int currLine = 0;
+	int code;	
 	tf_alias *aliases = nullptr, *tmp_alias;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
@@ -1835,6 +1836,8 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 		return 0;
 
 	while (1) {
+		int blkLine = 0;
+		char *body = nullptr;
 		code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
 		if (code == TF_ERROR_EOF) {
 			fprintf(stderr, "nedit: Warning: unexpected EOF in calltips file.\n");

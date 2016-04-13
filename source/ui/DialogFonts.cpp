@@ -84,7 +84,7 @@ void DialogFonts::on_buttonFill_clicked() {
 	const char italicReplaceString[]     = "\\1-\\2-o-\\4";
 	const char boldReplaceString[]       = "\\1-bold-\\3-\\4";
 	const char boldItalicReplaceString[] = "\\1-bold-o-\\4";
-	regexp *compiledRE;
+	regexp *compiledRE = nullptr;
 
 	/* Match the primary font agains RE pattern for font names.  If it
 	   doesn't match, we can't generate highlight font names, so return */

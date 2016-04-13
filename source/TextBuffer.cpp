@@ -1799,7 +1799,9 @@ void TextBuffer::deleteRange(int start, int end) {
 ** routines which need to position the cursor after a delete operation)
 */
 void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos) {
-	int nLines, lineStart, lineEnd, len, endOffset;
+
+	int len;
+	int endOffset = 0;
 
 	/* allocate a buffer for the replacement string large enough to hold
 	   possibly expanded tabs as well as an additional  MAX_EXP_CHAR_LEN * 2
@@ -1807,7 +1809,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	   the edges of the selection */
 	start = BufStartOfLine(start);
 	end = BufEndOfLine(end);
-	nLines = BufCountLines(start, end) + 1;
+	int nLines = BufCountLines(start, end) + 1;
 	
 	std::string text = BufGetRangeEx(start, end);
 	std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_, &len);
@@ -1816,10 +1818,10 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
-	lineStart = start;
+	int lineStart = start;
 	char *outPtr = outStr;
 	while (lineStart <= length_ && lineStart <= end) {
-		lineEnd = BufEndOfLine(lineStart);
+		int lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
 		deleteRectFromLine(line.c_str(), rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
@@ -1827,6 +1829,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 		*outPtr++ = '\n';
 		lineStart = lineEnd + 1;
 	}
+	
 	if (outPtr != outStr) {
 		outPtr--; // trim back off extra newline 
 	}

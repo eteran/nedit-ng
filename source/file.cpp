@@ -693,6 +693,7 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 				response = 2;
 				break;
 			case QMessageBox::Cancel:
+			default:			
 				response = 3;
 				break;
 			}

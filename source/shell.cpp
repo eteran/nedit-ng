@@ -417,7 +417,9 @@ void AbortShellCommand(Document *window) {
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
 static void issueCommand(Document *window, const std::string &command, const std::string &input, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro) {
-	int stdinFD, stdoutFD, stderrFD = 0;
+	int stdinFD  = 0;
+	int stdoutFD = 0;
+	int stderrFD = 0;
 	XtAppContext context = XtWidgetToApplicationContext(window->shell_);
 	pid_t childPid;
 
