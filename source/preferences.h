@@ -160,7 +160,6 @@ QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int s
 void ChooseColors(Document *window);
 void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic);
 void DetermineLanguageMode(Document *window, int forceNewDefaults);
-void EditLanguageModes(void);
 void ImportPrefFile(const char *filename, int convertOld);
 void MarkPrefsChanged(void);
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);

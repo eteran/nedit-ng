@@ -36,6 +36,7 @@
 #include "ui/DialogTabs.h"
 #include "ui/DialogFonts.h"
 #include "ui/DialogWindowSize.h"
+#include "ui/DialogLanguageModes.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -1705,7 +1706,10 @@ static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(callData);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditLanguageModes();
+
+	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
+	dialog->show();
+
 }
 
 static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {

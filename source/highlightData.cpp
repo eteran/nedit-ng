@@ -29,6 +29,7 @@
 
 #include <QMessageBox>
 #include <QPushButton>
+#include "ui/DialogLanguageModes.h"
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -1874,7 +1875,8 @@ static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	EditLanguageModes();
+	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
+	dialog->show();
 }
 
 static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData) {

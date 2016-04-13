@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include "ui/DialogLanguageModes.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -757,7 +758,9 @@ static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
-	EditLanguageModes();
+	
+	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
+	dialog->show();
 }
 
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {

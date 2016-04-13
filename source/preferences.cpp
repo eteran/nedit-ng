@@ -1893,14 +1893,6 @@ static void shellSelCancelCB(Widget w, XtPointer clientData, XtPointer callData)
 	DoneWithShellSelDialog = True;
 }
 
-/*
-** Present a dialog for editing language mode information
-*/
-void EditLanguageModes(void) {
-	auto dialog = new DialogLanguageModes();
-	dialog->show();
-}
-
 void freeLanguageModeRec(LanguageMode *lm) {
 
 	XtFree(lm->name);
