@@ -848,10 +848,11 @@ static int foundTag(const char *tagfilename, const char *tagname, char *result) 
 			
 			char line[512];
 			
-			fgets(line, sizeof(line), tfile);
-			if (sscanf(line, tagformat, result) != 0) {
-				fclose(tfile);
-				return True;
+			if(fgets(line, sizeof(line), tfile)) {
+				if (sscanf(line, tagformat, result) != 0) {
+					fclose(tfile);
+					return True;
+				}
 			}
 		}
 		fclose(tfile);
