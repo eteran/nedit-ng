@@ -32,6 +32,7 @@
 #include <exception>
 
 class QString;
+class LanguageMode;
 
 class invalid_character_error : public std::exception {
 public:
@@ -227,5 +228,11 @@ XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut);
 void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope(void);
 #endif
+
+extern int NLanguageModes;
+extern LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
+LanguageMode *copyLanguageModeRec(LanguageMode *lm);
+void freeLanguageModeRec(LanguageMode *lm);
+void updateLanguageModeSubmenu(Document *window);
 
 #endif

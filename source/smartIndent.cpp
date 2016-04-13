@@ -27,6 +27,8 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 
 #include "smartIndent.h"
 #include "Document.h"

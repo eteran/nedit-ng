@@ -1,8 +1,9 @@
 
 #include <QMessageBox>
-
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 
 #include "MotifHelper.h"
 #include "Document.h"

@@ -38,7 +38,8 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QtDebug>
-
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 
 #include "file.h"
 #include "TextBuffer.h"

@@ -36,6 +36,8 @@
 #include "ui/DialogTabs.h"
 #include "ui/DialogFonts.h"
 #include "ui/DialogWindowSize.h"
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 
 #include "menu.h"
 #include "TextBuffer.h"

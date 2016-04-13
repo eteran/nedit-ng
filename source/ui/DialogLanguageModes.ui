@@ -37,7 +37,9 @@
           <string>Delete</string>
          </property>
          <property name="icon">
-          <iconset theme="edit-delete"/>
+          <iconset theme="edit-delete">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -47,7 +49,9 @@
           <string>Copy</string>
          </property>
          <property name="icon">
-          <iconset theme="edit-copy"/>
+          <iconset theme="edit-copy">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -57,7 +61,9 @@
           <string>Move</string>
          </property>
          <property name="icon">
-          <iconset theme="go-up"/>
+          <iconset theme="go-up">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -67,7 +73,9 @@
           <string>Move</string>
          </property>
          <property name="icon">
-          <iconset theme="go-down"/>
+          <iconset theme="go-down">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -312,7 +320,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>

@@ -28,6 +28,8 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 
 #include "macro.h"
 #include "fileUtils.h"

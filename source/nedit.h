@@ -67,9 +67,6 @@
 #define APP_CLASS "NEdit"   /* application class for loading resources */
 
 
-
-enum IndentStyle       { NO_AUTO_INDENT, AUTO_INDENT, SMART_INDENT };
-enum WrapStyle         { NO_WRAP, NEWLINE_WRAP, CONTINUOUS_WRAP };
 enum ShowMatchingStyle { NO_FLASH, FLASH_DELIMIT, FLASH_RANGE };
 enum VirtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
 
