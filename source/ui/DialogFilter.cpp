@@ -4,7 +4,7 @@
 #include "DialogFilter.h"
 
 //------------------------------------------------------------------------------
-// name: 
+// Name: 
 //------------------------------------------------------------------------------
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
@@ -14,13 +14,13 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 }
 
 //------------------------------------------------------------------------------
-// name: 
+// Name: 
 //------------------------------------------------------------------------------
 DialogFilter::~DialogFilter() {
 }
 	
 //------------------------------------------------------------------------------
-// name: 
+// Name: 
 //------------------------------------------------------------------------------
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	if(ui.textFilter->hasFocus()) {
@@ -50,7 +50,7 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 
 
 //------------------------------------------------------------------------------
-// name: 
+// Name: 
 //------------------------------------------------------------------------------
 void DialogFilter::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
@@ -59,7 +59,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
 }
 
 //------------------------------------------------------------------------------
-// name: 
+// Name: 
 //------------------------------------------------------------------------------
 void DialogFilter::on_buttonBox_accepted() {
 

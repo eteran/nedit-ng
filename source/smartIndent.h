@@ -46,5 +46,6 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
 
-
+extern char *CommonMacros;
+extern const char DefaultCommonMacros[];
 #endif 

@@ -28,6 +28,8 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QString>
+#include <QWidget>
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -156,6 +158,7 @@ static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos);
+static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
 static int escapeStringChars(char *fromString, char *toString);
@@ -617,6 +620,10 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }
 
+int CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
+	return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
+}
+
 /*
 ** Parse and optionally execute a macro string including macro definitions.
 ** Report parsing errors in a dialog posted over dialogParent, using the
@@ -625,6 +632,18 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 ** runWindow is passed as nullptr, does parse only.  If errPos is non-null,
 ** returns a pointer to the error location in the string.
 */
+static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos) {
+
+	Q_UNUSED(dialogParent);
+	
+	QByteArray str = string.toLatin1();
+	const char *p = str.data();
+	const char *e = nullptr;
+	int r = readCheckMacroString(nullptr, p, runWindow, errIn.toLatin1().data(), &e);
+	*errPos = (e - p);
+	return r;
+}
+
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos) {
 	const char *stoppedAt;
 	const char *inPtr;

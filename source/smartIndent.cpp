@@ -28,6 +28,7 @@
 
 #include <QMessageBox>
 #include "ui/DialogLanguageModes.h"
+#include "ui/DialogSmartIndentEdit.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -83,9 +84,11 @@ const int N_DEFAULT_INDENT_SPECS = 4;
 
 int NSmartIndentSpecs = 0;
 SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
-char *CommonMacros = nullptr;
+
 
 }
+
+char *CommonMacros = nullptr;
 
 
 
@@ -241,7 +244,7 @@ define matlabNewlineMacro\n\
 ",
                                                                      "return matlabNewlineMacro($1)\n", nullptr}};
 
-static const char DefaultCommonMacros[] = 
+const char DefaultCommonMacros[] = 
 #include "DefaultCommonMacros.inc"
 ;
 
@@ -768,6 +771,10 @@ static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
+	
+	
+	auto dialog = new DialogSmartIndentEdit(nullptr /*parent */);
+	dialog->show();
 
 	EditCommonSmartIndentMacro();
 }

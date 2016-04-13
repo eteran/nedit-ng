@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>DialogSmartIndentEdit</class>
+ <widget class="QDialog" name="DialogSmartIndentEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -44,7 +44,8 @@
         <string>OK</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok"/>
+        <iconset theme="dialog-ok">
+        </iconset>
        </property>
       </widget>
      </item>
@@ -54,7 +55,8 @@
         <string>Apply</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok-apply"/>
+        <iconset theme="dialog-ok-apply">
+        </iconset>
        </property>
       </widget>
      </item>
@@ -78,7 +80,8 @@
         <string>Close</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-close"/>
+        <iconset theme="dialog-close">
+        </iconset>
        </property>
       </widget>
      </item>
@@ -87,5 +90,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonClose</sender>
+   <signal>clicked()</signal>
+   <receiver>DialogSmartIndentEdit</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>681</x>
+     <y>454</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>730</x>
+     <y>423</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
