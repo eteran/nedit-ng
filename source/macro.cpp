@@ -30,6 +30,8 @@
 #include <QMessageBox>
 #include <QString>
 #include <QWidget>
+#include <QStack>
+#include <QtDebug>
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -158,7 +160,7 @@ static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos);
-static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos);
+static bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
 static int escapeStringChars(char *fromString, char *toString);
@@ -620,7 +622,7 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }
 
-int CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
+bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
 	return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
 }
 
@@ -632,16 +634,147 @@ int CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStri
 ** runWindow is passed as nullptr, does parse only.  If errPos is non-null,
 ** returns a pointer to the error location in the string.
 */
-static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos) {
 
-	Q_UNUSED(dialogParent);
-	
-	QByteArray str = string.toLatin1();
-	const char *p = str.data();
+Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt) {
+	QByteArray str = expr.toLatin1();
+	const char *ptr = str.data();
+	const char *msg = nullptr;
 	const char *e = nullptr;
-	int r = readCheckMacroString(nullptr, p, runWindow, errIn.toLatin1().data(), &e);
-	*errPos = (e - p);
-	return r;
+	Program *p = ParseMacro(ptr + index, &msg, &e);
+	*message = QLatin1String(msg);
+	*stoppedAt = (e - ptr);
+	return p;
+}
+
+
+static bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos) {
+
+	int stoppedAt;
+	QString errMsg;
+	Program *prog;
+	Symbol *sym;
+	DataValue subrPtr;
+	QStack<Program *> progStack;
+
+	int inPtr = 0;
+	while (inPtr != string.size()) {
+
+		// skip over white space and comments 
+		while (inPtr != string.size() && (string[inPtr] == QLatin1Char(' ') || string[inPtr] == QLatin1Char('\t') || string[inPtr] == QLatin1Char('\n') || string[inPtr] == QLatin1Char('#'))) {
+			if (string[inPtr] == QLatin1Char('#')) {
+				while (inPtr != string.size() && string[inPtr] != QLatin1Char('\n')) {
+					inPtr++;
+				}
+			} else {
+				inPtr++;
+			}
+		}
+		
+		if (inPtr == string.size()) {
+			break;
+		}
+
+		// look for define keyword, and compile and store defined routines 
+		if (string.mid(inPtr, 6) == QLatin1String("define") && (string[inPtr + 6] == QLatin1Char(' ') || string[inPtr + 6] == QLatin1Char('\t'))) {
+			
+			inPtr += 6;                                                         // skip "define"
+			inPtr = string.indexOf(QRegExp(QLatin1String("[^ \t\n]")), inPtr); // skip whitespace
+			
+			QString subrName;
+			auto namePtr = std::back_inserter(subrName);
+			
+			while ((isalnum(static_cast<unsigned char>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_'))) {
+				*namePtr++ = string[inPtr++];
+			}
+			
+			if (isalnum(static_cast<unsigned char>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_')) {
+				return ParseErrorEx(dialogParent, string, inPtr, errIn, QLatin1String("subroutine name too long"));
+			}
+			
+			
+			inPtr = string.indexOf(QRegExp(QLatin1String("[^ \t\n]")), inPtr); // skip whitespace
+			if (string[inPtr] != QLatin1Char('{')) {
+				if(errPos) {
+					*errPos = stoppedAt;
+				}
+				
+				return ParseErrorEx(dialogParent, string, inPtr, errIn, QLatin1String("expected '{'"));
+			}
+			
+			
+			prog = ParseMacroEx(string, inPtr, &errMsg, &stoppedAt);
+			if(!prog) {
+				if(errPos)
+					*errPos = stoppedAt;
+				return ParseErrorEx(dialogParent, string, stoppedAt, errIn, errMsg);
+			}
+			if (runWindow) {
+				sym = LookupSymbol(subrName.toLatin1().data());
+				if(!sym) {
+					subrPtr.val.prog = prog;
+					subrPtr.tag = NO_TAG;
+					sym = InstallSymbol(subrName.toLatin1().data(), MACRO_FUNCTION_SYM, subrPtr);
+				} else {
+					if (sym->type == MACRO_FUNCTION_SYM)
+						FreeProgram(sym->value.val.prog);
+					else
+						sym->type = MACRO_FUNCTION_SYM;
+					sym->value.val.prog = prog;
+				}
+			}
+			inPtr = stoppedAt;
+
+			/* Parse and execute immediate (outside of any define) macro commands
+			   and WAIT for them to finish executing before proceeding.  Note that
+			   the code below is not perfect.  If you interleave code blocks with
+			   definitions in a file which is loaded from another macro file, it
+			   will probably run the code blocks in reverse order! */
+		} else {
+			prog = ParseMacroEx(string, inPtr, &errMsg, &stoppedAt);
+			if(!prog) {
+				if (errPos) {
+					*errPos = stoppedAt;
+				}
+
+				return ParseErrorEx(dialogParent, string, stoppedAt, errIn, errMsg);
+			}
+
+			if (runWindow) {
+				XEvent nextEvent;
+				if (!runWindow->macroCmdData_) {
+					runMacro(runWindow, prog);
+					while (runWindow->macroCmdData_) {
+						XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell_), &nextEvent);
+						ServerDispatchEvent(&nextEvent);
+					}
+				} else {
+					/*  If we come here this means that the string was parsed
+					    from within another macro via load_macro_file(). In
+					    this case, plain code segments outside of define
+					    blocks are rolled into one Program each and put on
+					    the stack. At the end, the stack is unrolled, so the
+					    plain Programs would be executed in the wrong order.
+
+					    So we don't hand the Programs over to the interpreter
+					    just yet (via RunMacroAsSubrCall()), but put it on a
+					    stack of our own, reversing order once again.   */
+					progStack.push(prog);
+				}
+			}
+			inPtr = stoppedAt;
+		}
+	}
+
+	//  Unroll reversal stack for macros loaded from macros.  
+	while (!progStack.empty()) {
+
+		prog = progStack.top();
+		progStack.pop();
+
+		RunMacroAsSubrCall(prog);
+	}
+
+	return true;
 }
 
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos) {

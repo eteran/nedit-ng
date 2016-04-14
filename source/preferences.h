@@ -31,6 +31,7 @@
 #include "string_view.h"
 #include <exception>
 
+class QWidget;
 class QString;
 class LanguageMode;
 
@@ -148,6 +149,9 @@ int GetPrefWrap(int langMode);
 int GetPrefWrapMargin(void);
 int GetVerticalAutoScroll(void);
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);
+bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, const QString &errorIn, const QString message);
+
+
 int ReadNumericField(const char **inPtr, int *value);
 int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
 int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);

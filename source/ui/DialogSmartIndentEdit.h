@@ -13,6 +13,7 @@ public:
 
 private:
 	bool checkSmartIndentCommonDialogData();
+	bool updateSmartIndentCommonData();
 	QString ensureNewline(const QString &string);
 
 private Q_SLOTS:

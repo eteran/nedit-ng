@@ -1,9 +1,14 @@
 
 #include <QMessageBox>
 #include "DialogSmartIndentEdit.h"
+#include "IndentStyle.h"
+
 #include "smartIndent.h"
 #include "MotifHelper.h"
 #include "macro.h"
+#include "preferences.h"
+#include "Document.h"
+
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -24,12 +29,18 @@ DialogSmartIndentEdit::~DialogSmartIndentEdit() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndentEdit::on_buttonOK_clicked() {
+	// change the macro 
+	if(updateSmartIndentCommonData()) {
+		accept();
+	}
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndentEdit::on_buttonApply_clicked() {
+	// change the macro 
+	updateSmartIndentCommonData();
 }
 
 //------------------------------------------------------------------------------
@@ -69,13 +80,12 @@ bool DialogSmartIndentEdit::checkSmartIndentCommonDialogData() {
 		QString widgetText = ensureNewline(code);
 		int stoppedAt;
 		if (!CheckMacroStringEx(this, widgetText, tr("macros"), &stoppedAt)) {
-
-			QTextCursor cursor;
+			QTextCursor cursor = ui.editCode->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editCode->setTextCursor(cursor);
+			ui.editCode->setFocus();
 			return false;
 		}
-
 	}
 	return true;
 }
@@ -99,4 +109,45 @@ QString DialogSmartIndentEdit::ensureNewline(const QString &string) {
 	}
 	
 	return string + QLatin1Char('\n');
+}
+
+/*
+** Update the smart indent macros being edited in the dialog
+** with the information that the dialog is currently displaying, and
+** apply changes to any window which is currently using the macros.
+*/
+bool DialogSmartIndentEdit::updateSmartIndentCommonData() {
+
+	// Make sure the patterns are valid and compile 
+	if (!checkSmartIndentCommonDialogData()) {
+		return false;
+	}
+
+
+	QString code = ui.editCode->toPlainText();
+
+	// Get the current data 
+	CommonMacros = XtStringDup(ensureNewline(code).toLatin1().data());
+
+	/* Re-execute initialization macros (macros require a window to function,
+	   since user could theoretically execute an action routine, but it
+	   probably won't be referenced in a smart indent initialization) */
+	if (!ReadMacroString(WindowList, CommonMacros, "common macros")) {
+		return false;
+	}
+
+	/* Find windows that are currently using smart indent and
+	   re-initialize the smart indent macros (in case they have initialization
+	   data which depends on common data) */
+	for(Document *window: WindowList) {
+		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
+			EndSmartIndent(window);
+			BeginSmartIndent(window, False);
+		}
+	}
+
+	// Note that preferences have been changed 
+	MarkPrefsChanged();
+
+	return true;
 }

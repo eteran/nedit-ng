@@ -2895,6 +2895,34 @@ static int modeError(LanguageMode *lm, const char *stringStart, const char *stop
 ** to stderr, or displayed in a dialog.  For stderr, pass toDialog as nullptr.
 ** For a dialog, pass the dialog parent in toDialog.
 */
+
+bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString message) {
+	int nNonWhite = 0;
+	int c;
+
+	for (c = stoppedAt; c >= 0; c--) {
+		if (c == 0) {
+			break;
+		} else if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
+			break;
+		} else if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
+			nNonWhite++;
+		}
+	}
+	
+	int len = stoppedAt - c + (stoppedAt == string.size() ? 0 : 1);
+
+	QString errorLine = QString(QLatin1String("%1<==")).arg(string.mid(c, len));
+
+	if(!toDialog) {
+		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message.toLatin1().data(), errorIn.toLatin1().data(), errorLine.toLatin1().data());
+	} else {
+		QMessageBox::warning(toDialog, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(message).arg(errorIn).arg(errorLine));
+	}
+	
+	return false;
+}
+
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message) {
 	int len;
 	int nNonWhite = 0;

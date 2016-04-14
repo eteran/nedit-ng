@@ -103,14 +103,6 @@ static struct {
 	char *langModeName;
 } SmartIndentDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
-// Common smart indent macros dialog information 
-static struct {
-	Widget shell;
-	Widget text;
-} CommonDialog = {nullptr, nullptr};
-
-
-
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
@@ -133,14 +125,6 @@ static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkSmartIndentDialogData(void);
 static SmartIndent *getSmartIndentDialogData(void);
 static void setSmartIndentDialogData(SmartIndent *is);
-static void comDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData);
-static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData);
-static int updateSmartIndentCommonData(void);
-static int checkSmartIndentCommonDialogData(void);
 static int updateSmartIndentData(void);
 static char *readSIMacro(const char **inPtr);
 static SmartIndent *copyIndentSpec(SmartIndent *is);
@@ -763,7 +747,7 @@ static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	
 	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
-	dialog->show();
+	dialog->exec();
 }
 
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -774,9 +758,7 @@ static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	
 	
 	auto dialog = new DialogSmartIndentEdit(nullptr /*parent */);
-	dialog->show();
-
-	EditCommonSmartIndentMacro();
+	dialog->exec();
 }
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -991,233 +973,6 @@ static void setSmartIndentDialogData(SmartIndent *is) {
 		else
 			XmTextSetStringEx(SmartIndentDialog.modMacro, is->modMacro);
 	}
-}
-
-void EditCommonSmartIndentMacro(void) {
-#define VERT_BORDER 4
-	Widget form, topLbl;
-	Widget okBtn, applyBtn, checkBtn;
-	Widget closeBtn, restoreBtn;
-	XmString s1;
-	Arg args[20];
-	int n;
-
-	// if the dialog is already displayed, just pop it to the top and return 
-	if (CommonDialog.shell) {
-		RaiseDialogWindow(CommonDialog.shell);
-		return;
-	}
-
-	// Create a form widget in an application shell 
-	n = 0;
-	XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING);
-	n++;
-	XtSetArg(args[n], XmNiconName, "NEdit Common Smart Indent Macros");
-	n++;
-	XtSetArg(args[n], XmNtitle, "Common Smart Indent Macros");
-	n++;
-	CommonDialog.shell = CreateWidget(TheAppShell, "smartIndent", topLevelShellWidgetClass, args, n);
-	AddSmallIcon(CommonDialog.shell);
-	form = XtVaCreateManagedWidget("editCommonSIMacros", xmFormWidgetClass, CommonDialog.shell, XmNautoUnmanage, False, XmNresizePolicy, XmRESIZE_NONE, nullptr);
-	XtAddCallback(form, XmNdestroyCallback, comDestroyCB, nullptr);
-	AddMotifCloseCallback(CommonDialog.shell, comCloseCB, nullptr);
-
-	topLbl = XtVaCreateManagedWidget("topLbl", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Common Definitions for Smart Indent Macros"), XmNmnemonic, 'C', XmNtopAttachment, XmATTACH_FORM, XmNtopOffset,
-	                                 VERT_BORDER, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, nullptr);
-
-	okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("OK"), XmNmarginWidth, BUTTON_WIDTH_MARGIN, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 6, XmNrightAttachment,
-	                                XmATTACH_POSITION, XmNrightPosition, 18, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, VERT_BORDER, nullptr);
-	XtAddCallback(okBtn, XmNactivateCallback, comOKCB, nullptr);
-	XmStringFree(s1);
-
-	applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Apply"), XmNmnemonic, 'y', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 22, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 35, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, VERT_BORDER, nullptr);
-	XtAddCallback(applyBtn, XmNactivateCallback, comApplyCB, nullptr);
-	XmStringFree(s1);
-
-	checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Check"), XmNmnemonic, 'k', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 39, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 52, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, VERT_BORDER, nullptr);
-	XtAddCallback(checkBtn, XmNactivateCallback, comCheckCB, nullptr);
-	XmStringFree(s1);
-
-	restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Restore Default"), XmNmnemonic, 'f', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 56,
-	                                     XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 77, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, VERT_BORDER, nullptr);
-	XtAddCallback(restoreBtn, XmNactivateCallback, comRestoreCB, nullptr);
-	XmStringFree(s1);
-
-	closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Close"), XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 81, XmNrightAttachment, XmATTACH_POSITION,
-	                                   XmNrightPosition, 94, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, VERT_BORDER, nullptr);
-	XtAddCallback(closeBtn, XmNactivateCallback, comCloseCB, nullptr);
-	XmStringFree(s1);
-
-	n = 0;
-	XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT);
-	n++;
-	XtSetArg(args[n], XmNrows, 24);
-	n++;
-	XtSetArg(args[n], XmNcolumns, 80);
-	n++;
-	XtSetArg(args[n], XmNvalue, CommonMacros);
-	n++;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET);
-	n++;
-	XtSetArg(args[n], XmNtopWidget, topLbl);
-	n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION);
-	n++;
-	XtSetArg(args[n], XmNleftPosition, 1);
-	n++;
-	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION);
-	n++;
-	XtSetArg(args[n], XmNrightPosition, 99);
-	n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET);
-	n++;
-	XtSetArg(args[n], XmNbottomWidget, okBtn);
-	n++;
-	XtSetArg(args[n], XmNbottomOffset, VERT_BORDER);
-	n++;
-	CommonDialog.text = XmCreateScrolledText(form, (String) "commonText", args, n);
-	AddMouseWheelSupport(CommonDialog.text);
-	XtManageChild(CommonDialog.text);
-	RemapDeleteKey(CommonDialog.text);
-	XtVaSetValues(topLbl, XmNuserData, CommonDialog.text, nullptr);
-
-	// Set initial default button 
-	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
-	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-	// Realize all of the widgets in the new dialog 
-	RealizeWithoutForcingPosition(CommonDialog.shell);
-}
-
-static void comDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	CommonDialog.shell = nullptr;
-}
-
-static void comOKCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// change the macro 
-	if (!updateSmartIndentCommonData())
-		return;
-
-	// pop down and destroy the dialog 
-	XtDestroyWidget(CommonDialog.shell);
-}
-
-static void comApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// change the macro 
-	updateSmartIndentCommonData();
-}
-
-static void comCheckCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	if (checkSmartIndentCommonDialogData()) {
-		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro compiled"), QLatin1String("Macros compiled without error"));
-	}
-}
-
-static void comRestoreCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-
-	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Discard Changes"), QLatin1String("Are you sure you want to discard all\nchanges to common smart indent macros"), QMessageBox::Discard | QMessageBox::Cancel);
-	if(resp == QMessageBox::Cancel) {
-		return;
-	}
-
-	// replace common macros with default 
-	XtFree(CommonMacros);
-	CommonMacros = XtNewStringEx(DefaultCommonMacros);
-
-	// Update the dialog 
-	XmTextSetStringEx(CommonDialog.text, CommonMacros);
-}
-
-static void comCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// pop down and destroy the dialog 
-	XtDestroyWidget(CommonDialog.shell);
-}
-
-/*
-** Update the smart indent macros being edited in the dialog
-** with the information that the dialog is currently displaying, and
-** apply changes to any window which is currently using the macros.
-*/
-static int updateSmartIndentCommonData(void) {
-
-	// Make sure the patterns are valid and compile 
-	if (!checkSmartIndentCommonDialogData())
-		return False;
-
-	// Get the current data 
-	CommonMacros = ensureNewline(XmTextGetString(CommonDialog.text));
-
-	/* Re-execute initialization macros (macros require a window to function,
-	   since user could theoretically execute an action routine, but it
-	   probably won't be referenced in a smart indent initialization) */
-	if (!ReadMacroString(WindowList, CommonMacros, "common macros"))
-		return False;
-
-	/* Find windows that are currently using smart indent and
-	   re-initialize the smart indent macros (in case they have initialization
-	   data which depends on common data) */
-	for(Document *window: WindowList) {
-		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
-			EndSmartIndent(window);
-			BeginSmartIndent(window, False);
-		}
-	}
-
-	// Note that preferences have been changed 
-	MarkPrefsChanged();
-
-	return True;
-}
-
-static int checkSmartIndentCommonDialogData(void) {
-	char *widgetText;
-	const char *stoppedAt;
-
-	if (!TextWidgetIsBlank(CommonDialog.text)) {
-		widgetText = ensureNewline(XmTextGetString(CommonDialog.text));
-		if (!CheckMacroString(CommonDialog.shell, widgetText, "macros", &stoppedAt)) {
-			XmTextSetInsertionPosition(CommonDialog.text, stoppedAt - widgetText);
-			XmProcessTraversal(CommonDialog.text, XmTRAVERSE_CURRENT);
-			XtFree(widgetText);
-			return False;
-		}
-		XtFree(widgetText);
-	}
-	return True;
 }
 
 /*
