@@ -1,6 +1,6 @@
 
 #include "DialogSmartIndent.h"
-#include "DialogSmartIndentEdit.h"
+#include "DialogSmartIndentCommon.h"
 #include "DialogLanguageModes.h"
 #include "SmartIndent.h"
 #include "LanguageMode.h"
@@ -49,7 +49,7 @@ void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonCommon_clicked() {
-	auto dialog = new DialogSmartIndentEdit(this);
+	auto dialog = new DialogSmartIndentCommon(this);
 	dialog->exec();
 	delete dialog;
 }

@@ -28,7 +28,7 @@
 
 #include <QMessageBox>
 #include "ui/DialogLanguageModes.h"
-#include "ui/DialogSmartIndentEdit.h"
+#include "ui/DialogSmartIndentCommon.h"
 #include "ui/DialogSmartIndent.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -772,7 +772,7 @@ static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	
 	
-	auto dialog = new DialogSmartIndentEdit(nullptr /*parent */);
+	auto dialog = new DialogSmartIndentCommon(nullptr /*parent */);
 	dialog->exec();
 }
 

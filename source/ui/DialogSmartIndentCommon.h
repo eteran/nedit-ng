@@ -1,15 +1,15 @@
 
-#ifndef DIALOG_SMART_INDENT_EDIT_H_
-#define DIALOG_SMART_INDENT_EDIT_H_
+#ifndef DIALOG_SMART_INDENT_COMMON_H_
+#define DIALOG_SMART_INDENT_COMMON_H_
 
 #include <QDialog>
-#include "ui_DialogSmartIndentEdit.h"
+#include "ui_DialogSmartIndentCommon.h"
 
-class DialogSmartIndentEdit : public QDialog {
+class DialogSmartIndentCommon : public QDialog {
 	Q_OBJECT
 public:
-	DialogSmartIndentEdit(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogSmartIndentEdit();
+	DialogSmartIndentCommon(QWidget *parent = 0, Qt::WindowFlags f = 0);
+	virtual ~DialogSmartIndentCommon();
 
 private:
 	bool checkSmartIndentCommonDialogData();
@@ -23,7 +23,7 @@ private Q_SLOTS:
 	void on_buttonRestore_clicked();
 
 public:
-	Ui::DialogSmartIndentEdit ui;
+	Ui::DialogSmartIndentCommon ui;
 };
 
 #endif

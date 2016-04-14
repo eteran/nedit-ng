@@ -1,6 +1,6 @@
 
 #include <QMessageBox>
-#include "DialogSmartIndentEdit.h"
+#include "DialogSmartIndentCommon.h"
 #include "IndentStyle.h"
 
 #include "smartIndent.h"
@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndentEdit::DialogSmartIndentEdit(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
 	ui.editCode->setPlainText(QLatin1String(CommonMacros));
@@ -22,13 +22,13 @@ DialogSmartIndentEdit::DialogSmartIndentEdit(QWidget *parent, Qt::WindowFlags f)
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndentEdit::~DialogSmartIndentEdit() {
+DialogSmartIndentCommon::~DialogSmartIndentCommon() {
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndentEdit::on_buttonOK_clicked() {
+void DialogSmartIndentCommon::on_buttonOK_clicked() {
 	// change the macro 
 	if(updateSmartIndentCommonData()) {
 		accept();
@@ -38,7 +38,7 @@ void DialogSmartIndentEdit::on_buttonOK_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndentEdit::on_buttonApply_clicked() {
+void DialogSmartIndentCommon::on_buttonApply_clicked() {
 	// change the macro 
 	updateSmartIndentCommonData();
 }
@@ -46,7 +46,7 @@ void DialogSmartIndentEdit::on_buttonApply_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndentEdit::on_buttonCheck_clicked() {
+void DialogSmartIndentCommon::on_buttonCheck_clicked() {
 	if (checkSmartIndentCommonDialogData()) {
 		QMessageBox::information(this, tr("Macro compiled"), tr("Macros compiled without error"));
 	}
@@ -55,7 +55,7 @@ void DialogSmartIndentEdit::on_buttonCheck_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndentEdit::on_buttonRestore_clicked() {
+void DialogSmartIndentCommon::on_buttonRestore_clicked() {
 	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all\nchanges to common smart indent macros"), QMessageBox::Discard | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
@@ -72,7 +72,7 @@ void DialogSmartIndentEdit::on_buttonRestore_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-bool DialogSmartIndentEdit::checkSmartIndentCommonDialogData() {
+bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 
 	QString code = ui.editCode->toPlainText();
 	
@@ -97,7 +97,7 @@ bool DialogSmartIndentEdit::checkSmartIndentCommonDialogData() {
 ** for statements, but the text widget doesn't force it like the NEdit text
 ** buffer does, so this might avoid some confusion.)
 */
-QString DialogSmartIndentEdit::ensureNewline(const QString &string) {
+QString DialogSmartIndentCommon::ensureNewline(const QString &string) {
 
 	if(string.isNull()) {
 		return QString();
@@ -116,7 +116,7 @@ QString DialogSmartIndentEdit::ensureNewline(const QString &string) {
 ** with the information that the dialog is currently displaying, and
 ** apply changes to any window which is currently using the macros.
 */
-bool DialogSmartIndentEdit::updateSmartIndentCommonData() {
+bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 
 	// Make sure the patterns are valid and compile 
 	if (!checkSmartIndentCommonDialogData()) {
