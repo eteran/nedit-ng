@@ -1556,7 +1556,7 @@ static Widget createUserSubMenuEx(Widget parent, const QString &label, Widget *m
 
 	menuPane = CreatePulldownMenu(parent, (String) "userPulldown", args, 1);
 	
-	XmString st1 = XmStringCreateSimple(label.toLatin1().data());
+	XmString st1 = XmStringCreateSimpleEx(label);
 	*menuItem = XtVaCreateWidget("userCascade", xmCascadeButtonWidgetClass, parent, XmNlabelString, st1, XmNsubMenuId, menuPane, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 	XmStringFree(st1);
 	return menuPane;

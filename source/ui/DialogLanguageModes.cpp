@@ -212,7 +212,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		return nullptr;
 	}
 	
-	lm->name = XtStringDup(name.toLatin1().data());
+	lm->name = XtStringDup(name);
 	
 	// read the extension list field 
 	QString extStr      = ui.editExtensions->text().simplified();
@@ -221,7 +221,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	lm->nExtensions = extList.size();
 	int i = 0;
 	for(QString ext : extList) {
-		lm->extensions[i] = XtStringDup(ext.toLatin1().data());
+		lm->extensions[i] = XtStringDup(ext);
 		++i;
 	}
 	
@@ -310,7 +310,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// read delimiters string 
 	QString delimiters = ui.editDelimiters->text();
 	if(!delimiters.isEmpty()) {
-		lm->delimiters = XtStringDup(delimiters.toLatin1().data());
+		lm->delimiters = XtStringDup(delimiters);
 	}
 	
 	// read indent style 

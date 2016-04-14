@@ -14,8 +14,19 @@ public:
 	DialogSmartIndent(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSmartIndent();
 
+public:
+	void updateLanguageModes();
+	
 private:
 	void setSmartIndentDialogData(SmartIndent *is);
+	bool updateSmartIndentData();
+	bool checkSmartIndentDialogData();
+	SmartIndent *getSmartIndentDialogData();
+	QString ensureNewline(const QString &string);
+	
+
+public Q_SLOTS:
+	void setLanguageMode(const QString &s);
 
 private Q_SLOTS:
 	void on_buttonCommon_clicked();
@@ -30,6 +41,7 @@ private Q_SLOTS:
 
 public:
 	Ui::DialogSmartIndent ui;
+	QString               languageMode_;
 };
 
 #endif

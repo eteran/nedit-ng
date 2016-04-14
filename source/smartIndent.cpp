@@ -100,6 +100,11 @@ static struct {
 	char *langModeName;
 } SmartIndentDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
+
+DialogSmartIndent *SmartIndentDlg = nullptr;
+
+
+
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
@@ -456,21 +461,19 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 void EditSmartIndentMacros(Document *window) {
 
 
-#if 0
-	// TODO(eteran): if the dialog is already displayed, just pop it to the top and return 
-	if (dialog) {
-		dialog->raise();
+	if (SmartIndentDlg) {
+		SmartIndentDlg->raise();
 		return;
 	}
-#endif
+
 	if (LanguageModeName(0) == nullptr) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
 		return;
 	}	
 	
 	
-	auto dialog = new DialogSmartIndent(window, nullptr /*parent*/);
-	dialog->show();
+	SmartIndentDlg = new DialogSmartIndent(window, nullptr /*parent*/);
+	SmartIndentDlg->show();
 	
 
 
@@ -761,8 +764,8 @@ static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 	(void)callData;
 	
-	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
-	dialog->exec();
+	DialogLanguageModes dialog;
+	dialog.exec();
 }
 
 static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -772,8 +775,8 @@ static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 	
 	
-	auto dialog = new DialogSmartIndentCommon(nullptr /*parent */);
-	dialog->exec();
+	DialogSmartIndentCommon dialog;
+	dialog.exec();
 }
 
 static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1382,6 +1385,11 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void UpdateLangModeMenuSmartIndent(void) {
+
+	if(SmartIndentDlg) {
+		SmartIndentDlg->updateLanguageModes();
+	}
+
 	Widget oldMenu;
 
 	if (SmartIndentDialog.shell == nullptr)
@@ -1393,4 +1401,7 @@ void UpdateLangModeMenuSmartIndent(void) {
 	SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
 
 	XtDestroyWidget(oldMenu);
+	
+	
+
 }

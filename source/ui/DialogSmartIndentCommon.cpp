@@ -126,7 +126,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	QString code = ui.editCode->toPlainText();
 
 	// Get the current data 
-	CommonMacros = XtStringDup(ensureNewline(code).toLatin1().data());
+	CommonMacros = XtStringDup(ensureNewline(code));
 
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it

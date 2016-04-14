@@ -52,6 +52,14 @@ inline char *XtStringDup(const std::string &text) {
 	return s;
 }
 
+inline char *XtStringDup(QString text) {
+	char *s = XtMalloc(text.size() + 1);
+	if(s) {
+		strcpy(s, text.toLatin1().data());
+	}	
+	return s;
+}
+
 //------------------------------------------------------------------------------
 inline XmString XmStringCreateSimpleEx(const char *text) {
 	return XmStringCreateSimple(const_cast<char *>(text));
@@ -59,6 +67,10 @@ inline XmString XmStringCreateSimpleEx(const char *text) {
 
 inline XmString XmStringCreateSimpleEx(const std::string &text) {
 	return XmStringCreateSimpleEx(text.c_str());
+}
+
+inline XmString XmStringCreateSimpleEx(QString text) {
+	return XmStringCreateSimpleEx(text.toLatin1().data());
 }
 
 //------------------------------------------------------------------------------
@@ -93,6 +105,10 @@ inline void XmTextSetStringEx(Widget widget, const std::string &value) {
 }
 
 //------------------------------------------------------------------------------
+inline String XtNewStringEx(QString string) {
+	return XtNewString(string.toLatin1().data());
+}
+
 inline String XtNewStringEx(const std::string &string) {
 	return XtNewString(const_cast<char *>(string.c_str()));
 }

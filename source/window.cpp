@@ -216,7 +216,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Create command line arguments for restoring each window in the list 
 	std::vector<char *> argv;
-	argv.push_back(XtNewStringEx(qApp->arguments()[0].toLatin1().data()));
+	argv.push_back(XtNewStringEx(qApp->arguments()[0]));
 	
 	if (IsServer) {
 		argv.push_back(XtNewStringEx("-server"));
