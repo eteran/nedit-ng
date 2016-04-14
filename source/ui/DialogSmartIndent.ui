@@ -73,7 +73,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QLabel" name="label_2">
@@ -83,11 +83,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="editInit"/>
+        <widget class="QPlainTextEdit" name="editInit">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -121,11 +127,17 @@
         </layout>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="editNewline"/>
+        <widget class="QPlainTextEdit" name="editNewline">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -159,7 +171,13 @@
         </layout>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="editTypeIn"/>
+        <widget class="QPlainTextEdit" name="editTypeIn">
+         <property name="font">
+          <font>
+           <family>Monospace</family>
+          </font>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -173,7 +191,9 @@
         <string>OK</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok"/>
+        <iconset theme="dialog-ok">
+         <normaloff/>
+        </iconset>
        </property>
        <property name="default">
         <bool>true</bool>
@@ -186,7 +206,9 @@
         <string>Appl&amp;y</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok-apply"/>
+        <iconset theme="dialog-ok-apply">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -203,7 +225,9 @@
         <string>&amp;Delete</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-delete"/>
+        <iconset theme="edit-delete">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -213,7 +237,9 @@
         <string>Restore De&amp;faults</string>
        </property>
        <property name="icon">
-        <iconset theme="kt-restore-defaults"/>
+        <iconset theme="kt-restore-defaults">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -223,7 +249,9 @@
         <string>Close</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-close"/>
+        <iconset theme="dialog-close">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -233,7 +261,9 @@
         <string>&amp;Help</string>
        </property>
        <property name="icon">
-        <iconset theme="help-contents"/>
+        <iconset theme="help-contents">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -246,15 +276,15 @@
   <connection>
    <sender>buttonClose</sender>
    <signal>clicked()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>DialogSmartIndent</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>574</x>
-     <y>435</y>
+     <x>582</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
-     <x>585</x>
+     <x>564</x>
      <y>411</y>
     </hint>
    </hints>

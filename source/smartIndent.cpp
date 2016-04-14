@@ -29,8 +29,10 @@
 #include <QMessageBox>
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogSmartIndentEdit.h"
+#include "ui/DialogSmartIndent.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+#include "SmartIndent.h"
 
 #include "smartIndent.h"
 #include "Document.h"
@@ -63,14 +65,9 @@
 #include <Xm/SeparatoG.h>
 #include <Xm/PanedW.h>
 
-namespace {
 
-struct SmartIndent {
-	const char *lmName;
-	const char *initMacro;
-	const char *newlineMacro;
-	const char *modMacro;
-};
+
+namespace {
 
 struct windowSmartIndentData {
 	Program *newlineMacro;
@@ -107,7 +104,6 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
 static int isDefaultIndentSpec(SmartIndent *indentSpec);
-static SmartIndent *findIndentSpec(const char *modeName);
 static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -458,6 +454,25 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 }
 
 void EditSmartIndentMacros(Document *window) {
+
+
+#if 0
+	// TODO(eteran): if the dialog is already displayed, just pop it to the top and return 
+	if (dialog) {
+		dialog->raise();
+		return;
+	}
+#endif
+	if (LanguageModeName(0) == nullptr) {
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
+		return;
+	}	
+	
+	
+	auto dialog = new DialogSmartIndent(window, nullptr /*parent*/);
+	dialog->show();
+	
+
 
 	static const int BORDER = 4;
 
@@ -1294,7 +1309,7 @@ static int isDefaultIndentSpec(SmartIndent *indentSpec) {
 	return False;
 }
 
-static SmartIndent *findIndentSpec(const char *modeName) {
+SmartIndent *findIndentSpec(const char *modeName) {
 	int i;
 
 	if(!modeName)

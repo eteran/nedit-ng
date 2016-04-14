@@ -123,7 +123,6 @@ bool DialogSmartIndentEdit::updateSmartIndentCommonData() {
 		return false;
 	}
 
-
 	QString code = ui.editCode->toPlainText();
 
 	// Get the current data 

@@ -24,12 +24,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef SMART_INDENT_H_
-#define SMART_INDENT_H_
+#ifndef X_SMART_INDENT_H_
+#define X_SMART_INDENT_H_
 
-#include <QString>
 #include "nedit.h"
 #include <X11/Intrinsic.h>
+
+class QString;
+class SmartIndent;
 
 Boolean InSmartIndentMacros(Document *window);
 int LMHasSmartIndentMacros(const char *languageMode);
@@ -45,6 +47,8 @@ void EndSmartIndent(Document *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
+
+SmartIndent *findIndentSpec(const char *modeName);
 
 extern char *CommonMacros;
 extern const char DefaultCommonMacros[];
