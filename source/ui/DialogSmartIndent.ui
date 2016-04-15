@@ -120,7 +120,7 @@
          <item>
           <widget class="QLabel" name="label_6">
            <property name="text">
-            <string>($ is insert position, return indent request or -1)</string>
+            <string>($1 is insert position, return indent request or -1)</string>
            </property>
           </widget>
          </item>
@@ -164,7 +164,7 @@
          <item>
           <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>($ is position, $2 is character to be inserted)</string>
+            <string>($1 is position, $2 is character to be inserted)</string>
            </property>
           </widget>
          </item>

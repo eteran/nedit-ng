@@ -53,20 +53,6 @@
 #include <cstring>
 #include <climits>
 
-#include <Xm/Xm.h>
-#include <sys/param.h>
-
-#include <Xm/Xm.h>
-#include <Xm/Form.h>
-#include <Xm/Text.h>
-#include <Xm/LabelG.h>
-#include <Xm/PushB.h>
-#include <Xm/RowColumn.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/PanedW.h>
-
-
-
 namespace {
 
 struct windowSmartIndentData {
@@ -84,136 +70,140 @@ int NSmartIndentSpecs = 0;
 SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
 char *CommonMacros = nullptr;
 
-
-
-// Smart indent macros dialog information 
-static struct {
-	Widget shell;
-	Widget lmOptMenu;
-	Widget lmPulldown;
-	Widget initMacro;
-	Widget newlineMacro;
-	Widget modMacro;
-	char *langModeName;
-} SmartIndentDialog = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-
-
 DialogSmartIndent *SmartIndentDlg = nullptr;
-
-
 
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
 static int isDefaultIndentSpec(SmartIndent *indentSpec);
-static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
-static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
-
-static int checkSmartIndentDialogData(void);
-static SmartIndent *getSmartIndentDialogData(void);
-static void setSmartIndentDialogData(SmartIndent *is);
 
 static char *readSIMacro(const char **inPtr);
 static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
 
-SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
-# in the common section.  Press Common / Shared Initialization above.\n",
-                                                                     "return cFindSmartIndentDist($1)\n", "if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n\
-    cBraceOrPound($1, $2)\n"},
-                                                                    {"C++", "# C++ Macros and tuning parameters are shared with C, and are declared\n\
-# in the common section.  Press Common / Shared Initialization above.\n",
-                                                                     "return cFindSmartIndentDist($1)\n", "if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n\
-    cBraceOrPound($1, $2)\n"},
-                                                                    {"Python", "# Number of characters in a normal indent level.  May be a number, or the\n\
-# string \"default\", meaning, guess the value from the current tab settings.\n\
-$pyIndentDist = \"default\"\n",
-                                                                     "if (get_range($1-1, $1) != \":\")\n\
-    return -1\n\
-return measureIndent($1) + defaultIndent($pyIndentDist)\n",
-                                                                     nullptr},
-                                                                    {"Matlab", "# Number of spaces to indent \"case\" statements\n\
-$caseDepth = 2\n\
-define matlabNewlineMacro\n\
-{\n\
-   if (!$em_tab_dist)\n\
-        tabsize = $tab_dist\n\
-   else\n\
-        tabsize = $em_tab_dist\n\
-   startLine = startOfLine($1)\n\
-   indentLevel = measureIndent($1)\n\
-\n\
-   # If this line is continued on next, return default:\n\
-   lastLine = get_range(startLine, $1)\n\
-   if (search_string(lastLine, \"...\", 0) != -1) {\n\
-      if ($n_args == 2)\n\
-         return matlabNewlineMacro(startLine - 1, 1)\n\
-      else {\n\
-         return -1\n\
-      }\n\
-   }\n\
-\n\
-   # Correct the indentLevel if this was a continued line.\n\
-   while (startLine > 1)\n\
-   {\n\
-      endLine = startLine - 1\n\
-      startLine = startOfLine(endLine)\n\
-      lastLine = get_range(startLine, endLine)\n\
-      # No \"...\" means we've found the root\n\
-      if (search_string(lastLine, \"...\", 0) == -1) {\n\
-         startLine = endLine + 1\n\
-         break\n\
-      }\n\
-   }\n\
-   indentLevel = measureIndent(startLine)\n\
-\n\
-   # Get the first word of the indentLevel line\n\
-   FWend = search(\">|\\n\", startLine + indentLevel, \"regex\")\n\
-   # This search fails on EOF\n\
-   if (FWend == -1)\n\
-      FWend = $1\n\
-\n\
-   firstWord = get_range(startLine + indentLevel, FWend)\n\
-\n\
-   # How shall we change the indent level based on the first word?\n\
-   if (search_string(firstWord, \\\n\
-         \"<for>|<function>|<if>|<switch>|<try>|<while>\", 0, \"regex\") == 0) {\n\
-      return indentLevel + tabsize\n\
-   }\n\
-   else if ((firstWord == \"end\") || (search_string(firstWord, \\\n\
-            \"<case>|<catch>|<else>|<elseif>|<otherwise>\", 0, \"regex\") == 0)) {\n\
-      # Get the last indent level \n\
-      if (startLine > 0) # avoid infinite loop\n\
-	 last_indent = matlabNewlineMacro(startLine - 1, 1)\n\
-      else\n\
-         last_indent = indentLevel\n\
-\n\
-      # Re-indent this line\n\
-      if ($n_args == 1) {\n\
-         if (firstWord == \"case\" || firstWord == \"otherwise\")\n\
-            replace_range(startLine, startLine + indentLevel, \\\n\
-                          makeIndentString(last_indent - tabsize + $caseDepth))\n\
-         else\n\
-            replace_range(startLine, startLine + indentLevel, \\\n\
-                          makeIndentString(last_indent - tabsize))\n\
-      }\n\
-\n\
-      if (firstWord == \"end\") {\n\
-         return max(last_indent - tabsize, 0)\n\
-      }\n\
-      else {\n\
-         return last_indent\n\
-      }\n\
-   } \n\
-   else {\n\
-      return indentLevel\n\
-   }\n\
-}\n\
-",
-                                                                     "return matlabNewlineMacro($1)\n", nullptr}};
+SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
+	{
+		"C"
+		,
+		"# C Macros and tuning parameters are shared with C++, and are declared\n"
+		"# in the common section.  Press Common / Shared Initialization above.\n"
+		,
+		"return cFindSmartIndentDist($1)\n"
+		,
+		"if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+		"    cBraceOrPound($1, $2)\n"
+	},{
+		"C++"
+		,
+		"# C++ Macros and tuning parameters are shared with C, and are declared\n"
+		"# in the common section.  Press Common / Shared Initialization above.\n"
+		,
+		"return cFindSmartIndentDist($1)\n"
+		,
+		"if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+		"    cBraceOrPound($1, $2)\n"
+	},{
+		"Python"
+		,
+		"# Number of characters in a normal indent level.  May be a number, or the\n"
+		"# string \"default\", meaning, guess the value from the current tab settings.\n"
+		"$pyIndentDist = \"default\"\n"
+		,
+		"if (get_range($1-1, $1) != \":\")\n"
+		"    return -1\n"
+		"return measureIndent($1) + defaultIndent($pyIndentDist)\n"
+		,
+		nullptr
+	},{
+		"Matlab"
+		,
+		"# Number of spaces to indent \"case\" statements\n"
+		"$caseDepth = 2\n"
+		"define matlabNewlineMacro\n"
+		"{\n"
+		"   if (!$em_tab_dist)\n"
+		"        tabsize = $tab_dist\n"
+		"   else\n"
+		"        tabsize = $em_tab_dist\n"
+		"   startLine = startOfLine($1)\n"
+		"   indentLevel = measureIndent($1)\n"
+		"\n"
+		"   # If this line is continued on next, return default:\n"
+		"   lastLine = get_range(startLine, $1)\n"
+		"   if (search_string(lastLine, \"...\", 0) != -1) {\n"
+		"      if ($n_args == 2)\n"
+		"         return matlabNewlineMacro(startLine - 1, 1)\n"
+		"      else {\n"
+		"         return -1\n"
+		"      }\n"
+		"   }\n"
+		"\n"
+		"   # Correct the indentLevel if this was a continued line.\n"
+		"   while (startLine > 1)\n"
+		"   {\n"
+		"      endLine = startLine - 1\n"
+		"      startLine = startOfLine(endLine)\n"
+		"      lastLine = get_range(startLine, endLine)\n"
+		"      # No \"...\" means we've found the root\n"
+		"      if (search_string(lastLine, \"...\", 0) == -1) {\n"
+		"         startLine = endLine + 1\n"
+		"         break\n"
+		"      }\n"
+		"   }\n"
+		"   indentLevel = measureIndent(startLine)\n"
+		"\n"
+		"   # Get the first word of the indentLevel line\n"
+		"   FWend = search(\">|\\n\", startLine + indentLevel, \"regex\")\n"
+		"   # This search fails on EOF\n"
+		"   if (FWend == -1)\n"
+		"      FWend = $1\n"
+		"\n"
+		"   firstWord = get_range(startLine + indentLevel, FWend)\n"
+		"\n"
+		"   # How shall we change the indent level based on the first word?\n"
+		"   if (search_string(firstWord, \\\n"
+		"         \"<for>|<function>|<if>|<switch>|<try>|<while>\", 0, \"regex\") == 0) {\n"
+		"      return indentLevel + tabsize\n"
+		"   }\n"
+		"   else if ((firstWord == \"end\") || (search_string(firstWord, \\\n"
+		"            \"<case>|<catch>|<else>|<elseif>|<otherwise>\", 0, \"regex\") == 0)) {\n"
+		"      # Get the last indent level \n"
+		"      if (startLine > 0) # avoid infinite loop\n"
+		"	 last_indent = matlabNewlineMacro(startLine - 1, 1)\n"
+		"      else\n"
+		"         last_indent = indentLevel\n"
+		"\n"
+		"      # Re-indent this line\n"
+		"      if ($n_args == 1) {\n"
+		"         if (firstWord == \"case\" || firstWord == \"otherwise\")\n"
+		"            replace_range(startLine, startLine + indentLevel, \\\n"
+		"                          makeIndentString(last_indent - tabsize + $caseDepth))\n"
+		"         else\n"
+		"            replace_range(startLine, startLine + indentLevel, \\\n"
+		"                          makeIndentString(last_indent - tabsize))\n"
+		"      }\n"
+		"\n"
+		"      if (firstWord == \"end\") {\n"
+		"         return max(last_indent - tabsize, 0)\n"
+		"      }\n"
+		"      else {\n"
+		"         return last_indent\n"
+		"      }\n"
+		"   } \n"
+		"   else {\n"
+		"      return indentLevel\n"
+		"   }\n"
+		"}\n"
+		,
+		"return matlabNewlineMacro($1)\n"
+		,
+		nullptr
+	}
+};
+
 
 const char DefaultCommonMacros[] = 
 #include "DefaultCommonMacros.inc"
@@ -448,6 +438,7 @@ void EditSmartIndentMacros(Document *window) {
 
 
 	if (SmartIndentDlg) {
+		SmartIndentDlg->show();
 		SmartIndentDlg->raise();
 		return;
 	}
@@ -460,360 +451,6 @@ void EditSmartIndentMacros(Document *window) {
 	
 	SmartIndentDlg = new DialogSmartIndent(window, nullptr /*parent*/);
 	SmartIndentDlg->show();
-	
-
-#if 0
-	static const int BORDER = 4;
-
-	Widget form, lmOptMenu, lmForm, lmBtn;
-	Widget okBtn, applyBtn, checkBtn, deleteBtn, commonBtn;
-	Widget closeBtn, helpBtn, restoreBtn, pane;
-	Widget initForm, newlineForm, modifyForm;
-	Widget initLbl, newlineLbl, modifyLbl;
-	XmString s1;
-	char *lmName;
-	Arg args[20];
-	int n;
-
-	// if the dialog is already displayed, just pop it to the top and return 
-	if (SmartIndentDialog.shell) {
-		RaiseDialogWindow(SmartIndentDialog.shell);
-		return;
-	}
-
-	if (LanguageModeName(0) == nullptr) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
-		return;
-	}
-
-	// Decide on an initial language mode 
-	lmName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
-	SmartIndentDialog.langModeName = XtNewStringEx(lmName);
-
-	// Create a form widget in an application shell 
-	n = 0;
-	XtSetArg(args[n], XmNdeleteResponse, XmDO_NOTHING);
-	n++;
-	XtSetArg(args[n], XmNiconName, "NEdit Smart Indent Macros");
-	n++;
-	XtSetArg(args[n], XmNtitle, "Program Smart Indent Macros");
-	n++;
-	SmartIndentDialog.shell = CreateWidget(TheAppShell, "smartIndent", topLevelShellWidgetClass, args, n);
-	AddSmallIcon(SmartIndentDialog.shell);
-	form = XtVaCreateManagedWidget("editSmartIndentMacros", xmFormWidgetClass, SmartIndentDialog.shell, XmNautoUnmanage, False, XmNresizePolicy, XmRESIZE_NONE, nullptr);
-	XtAddCallback(form, XmNdestroyCallback, destroyCB, nullptr);
-	AddMotifCloseCallback(SmartIndentDialog.shell, closeCB, nullptr);
-
-	lmForm = XtVaCreateManagedWidget("lmForm", xmFormWidgetClass, form, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 1, XmNrightAttachment, XmATTACH_POSITION,
-	                                 XmNrightPosition, 99, nullptr);
-
-	SmartIndentDialog.lmPulldown = CreateLanguageModeMenu(lmForm, langModeCB, nullptr);
-	n = 0;
-	XtSetArg(args[n], XmNspacing, 0);
-	n++;
-	XtSetArg(args[n], XmNmarginWidth, 0);
-	n++;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION);
-	n++;
-	XtSetArg(args[n], XmNleftPosition, 50);
-	n++;
-	XtSetArg(args[n], XmNsubMenuId, SmartIndentDialog.lmPulldown);
-	n++;
-	lmOptMenu = XmCreateOptionMenu(lmForm, (String) "langModeOptMenu", args, n);
-	XtManageChild(lmOptMenu);
-	SmartIndentDialog.lmOptMenu = lmOptMenu;
-
-	XtVaCreateManagedWidget("lmLbl", xmLabelGadgetClass, lmForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Language Mode:"), XmNmnemonic, 'L', XmNuserData, XtParent(SmartIndentDialog.lmOptMenu), XmNalignment, XmALIGNMENT_END,
-	                        XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 50, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, XmNbottomWidget, lmOptMenu, nullptr);
-	XmStringFree(s1);
-
-	lmBtn = XtVaCreateManagedWidget("lmBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = XmStringCreateLtoREx("Add / Modify\nLanguage Mode..."), XmNmnemonic, 'A', XmNrightAttachment, XmATTACH_FORM, XmNtopAttachment, XmATTACH_FORM,
-	                                nullptr);
-	XtAddCallback(lmBtn, XmNactivateCallback, lmDialogCB, nullptr);
-	XmStringFree(s1);
-
-	commonBtn = XtVaCreateManagedWidget("commonBtn", xmPushButtonWidgetClass, lmForm, XmNlabelString, s1 = XmStringCreateLtoREx("Common / Shared\nInitialization..."), XmNmnemonic, 'C', XmNleftAttachment, XmATTACH_FORM, XmNtopAttachment,
-	                                    XmATTACH_FORM, nullptr);
-	XtAddCallback(commonBtn, XmNactivateCallback, commonDialogCB, nullptr);
-	XmStringFree(s1);
-
-	okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("OK"), XmNmarginWidth, BUTTON_WIDTH_MARGIN, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment,
-	                                XmATTACH_POSITION, XmNrightPosition, 13, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(okBtn, XmNactivateCallback, okCB, nullptr);
-	XmStringFree(s1);
-
-	applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Apply"), XmNmnemonic, 'y', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 13, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 26, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(applyBtn, XmNactivateCallback, applyCB, nullptr);
-	XmStringFree(s1);
-
-	checkBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Check"), XmNmnemonic, 'k', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 26, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 39, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(checkBtn, XmNactivateCallback, checkCB, nullptr);
-	XmStringFree(s1);
-
-	deleteBtn = XtVaCreateManagedWidget("delete", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Delete"), XmNmnemonic, 'D', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 39, XmNrightAttachment,
-	                                    XmATTACH_POSITION, XmNrightPosition, 52, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(deleteBtn, XmNactivateCallback, deleteCB, nullptr);
-	XmStringFree(s1);
-
-	restoreBtn = XtVaCreateManagedWidget("restore", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Restore Defaults"), XmNmnemonic, 'f', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 52,
-	                                     XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 73, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(restoreBtn, XmNactivateCallback, restoreCB, nullptr);
-	XmStringFree(s1);
-
-	closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Close"), XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 73, XmNrightAttachment, XmATTACH_POSITION,
-	                                   XmNrightPosition, 86, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(closeBtn, XmNactivateCallback, closeCB, nullptr);
-	XmStringFree(s1);
-
-	helpBtn = XtVaCreateManagedWidget("help", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateSimpleEx("Help"), XmNmnemonic, 'H', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 86, XmNrightAttachment,
-	                                  XmATTACH_POSITION, XmNrightPosition, 99, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, BORDER, nullptr);
-	XtAddCallback(helpBtn, XmNactivateCallback, helpCB, nullptr);
-	XmStringFree(s1);
-
-	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, form, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 99, XmNtopAttachment, XmATTACH_WIDGET,
-	                               XmNtopWidget, lmForm, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, okBtn, nullptr);
-	/* XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False,
-	XmNspacing, 3, XmNsashIndent, -2, */
-
-	initForm = XtVaCreateManagedWidget("initForm", xmFormWidgetClass, pane, nullptr);
-	initLbl = XtVaCreateManagedWidget("initLbl", xmLabelGadgetClass, initForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Language Specific Initialization Macro Commands and Definitions"), XmNmnemonic, 'I', nullptr);
-	XmStringFree(s1);
-	n = 0;
-	XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT);
-	n++;
-	XtSetArg(args[n], XmNrows, 5);
-	n++;
-	XtSetArg(args[n], XmNcolumns, 80);
-	n++;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET);
-	n++;
-	XtSetArg(args[n], XmNtopWidget, initLbl);
-	n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM);
-	n++;
-	SmartIndentDialog.initMacro = XmCreateScrolledText(initForm, (String) "initMacro", args, n);
-	AddMouseWheelSupport(SmartIndentDialog.initMacro);
-	XtManageChild(SmartIndentDialog.initMacro);
-	RemapDeleteKey(SmartIndentDialog.initMacro);
-	XtVaSetValues(initLbl, XmNuserData, SmartIndentDialog.initMacro, nullptr);
-
-	newlineForm = XtVaCreateManagedWidget("newlineForm", xmFormWidgetClass, pane, nullptr);
-	newlineLbl = XtVaCreateManagedWidget("newlineLbl", xmLabelGadgetClass, newlineForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Newline Macro"), XmNmnemonic, 'N', nullptr);
-	XmStringFree(s1);
-	XtVaCreateManagedWidget("newlineArgsLbl", xmLabelGadgetClass, newlineForm, XmNalignment, XmALIGNMENT_END, XmNlabelString, s1 = XmStringCreateSimpleEx("($1 is insert position, return indent request or -1)"), XmNrightAttachment,
-	                        XmATTACH_FORM, nullptr);
-	XmStringFree(s1);
-	n = 0;
-	XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT);
-	n++;
-	XtSetArg(args[n], XmNrows, 5);
-	n++;
-	XtSetArg(args[n], XmNcolumns, 80);
-	n++;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET);
-	n++;
-	XtSetArg(args[n], XmNtopWidget, newlineLbl);
-	n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM);
-	n++;
-	SmartIndentDialog.newlineMacro = XmCreateScrolledText(newlineForm, (String) "newlineMacro", args, n);
-	AddMouseWheelSupport(SmartIndentDialog.newlineMacro);
-	XtManageChild(SmartIndentDialog.newlineMacro);
-	RemapDeleteKey(SmartIndentDialog.newlineMacro);
-	XtVaSetValues(newlineLbl, XmNuserData, SmartIndentDialog.newlineMacro, nullptr);
-
-	modifyForm = XtVaCreateManagedWidget("modifyForm", xmFormWidgetClass, pane, nullptr);
-	modifyLbl = XtVaCreateManagedWidget("modifyLbl", xmLabelGadgetClass, modifyForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Type-in Macro"), XmNmnemonic, 'M', nullptr);
-	XmStringFree(s1);
-	XtVaCreateManagedWidget("modifyArgsLbl", xmLabelGadgetClass, modifyForm, XmNalignment, XmALIGNMENT_END, XmNlabelString, s1 = XmStringCreateSimpleEx("($1 is position, $2 is character to be inserted)"), XmNrightAttachment, XmATTACH_FORM,
-	                        nullptr);
-	XmStringFree(s1);
-	n = 0;
-	XtSetArg(args[n], XmNeditMode, XmMULTI_LINE_EDIT);
-	n++;
-	XtSetArg(args[n], XmNrows, 5);
-	n++;
-	XtSetArg(args[n], XmNcolumns, 80);
-	n++;
-	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET);
-	n++;
-	XtSetArg(args[n], XmNtopWidget, modifyLbl);
-	n++;
-	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM);
-	n++;
-	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM);
-	n++;
-	SmartIndentDialog.modMacro = XmCreateScrolledText(modifyForm, (String) "modifyMacro", args, n);
-	AddMouseWheelSupport(SmartIndentDialog.modMacro);
-	XtManageChild(SmartIndentDialog.modMacro);
-	RemapDeleteKey(SmartIndentDialog.modMacro);
-	XtVaSetValues(modifyLbl, XmNuserData, SmartIndentDialog.modMacro, nullptr);
-
-	// Set initial default button 
-	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
-	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-	// Fill in the dialog information for the selected language mode 
-	setSmartIndentDialogData(findIndentSpec(lmName));
-	SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
-
-	// Realize all of the widgets in the new dialog 
-	RealizeWithoutForcingPosition(SmartIndentDialog.shell);
-#endif
-}
-
-static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	char *modeName;
-	int i;
-	static SmartIndent emptyIndentSpec = {nullptr, nullptr, nullptr, nullptr};
-	SmartIndent *oldMacros, *newMacros;
-
-	// Get the newly selected mode name.  If it's the same, do nothing 
-	XtVaGetValues(w, XmNuserData, &modeName, nullptr);
-	if (!strcmp(modeName, SmartIndentDialog.langModeName))
-		return;
-
-	// Find the original macros 
-	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName)) {
-			break;
-		}
-	}
-	
-	oldMacros = (i == NSmartIndentSpecs ? &emptyIndentSpec : SmartIndentSpecs[i]);
-
-	/* Check if the macros have changed, if so allow user to apply, discard,
-	   or cancel */
-	newMacros = getSmartIndentDialogData();
-	if (indentSpecsDiffer(oldMacros, newMacros)) {
-		
-		int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent macros for language mode\n%1 were changed.  Apply changes?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Discard | QMessageBox::Apply | QMessageBox::Cancel);
-		
-		if (resp == QMessageBox::Cancel) {
-			SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
-			return;
-		} else if (resp == QMessageBox::Apply) {
-			if (checkSmartIndentDialogData()) {
-				if (oldMacros == &emptyIndentSpec) {
-					SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(newMacros);
-				} else {
-					freeIndentSpec(oldMacros);
-					SmartIndentSpecs[i] = copyIndentSpec(newMacros);
-				}
-			} else {
-				SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
-				return;
-			}
-		}
-	}
-	freeIndentSpec(newMacros);
-
-	// Fill the dialog with the new language mode information 
-	SmartIndentDialog.langModeName = XtNewStringEx(modeName);
-	setSmartIndentDialogData(findIndentSpec(modeName));
-}
-
-static int checkSmartIndentDialogData(void) {
-	char *widgetText;
-	const char *errMsg;
-	const char *stoppedAt;
-	Program *prog;
-
-	// Check the initialization macro 
-	if (!TextWidgetIsBlank(SmartIndentDialog.initMacro)) {
-		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
-		if (!CheckMacroString(SmartIndentDialog.shell, widgetText, "initialization macro", &stoppedAt)) {
-			XmTextSetInsertionPosition(SmartIndentDialog.initMacro, stoppedAt - widgetText);
-			XmProcessTraversal(SmartIndentDialog.initMacro, XmTRAVERSE_CURRENT);
-			XtFree(widgetText);
-			return False;
-		}
-		XtFree(widgetText);
-	}
-
-	// Test compile the newline macro 
-	if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro)) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Smart Indent"), QLatin1String("Newline macro required"));
-		return False;
-	}
-
-	widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
-	prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-	if(!prog) {
-		ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "newline macro", errMsg);
-		XmTextSetInsertionPosition(SmartIndentDialog.newlineMacro, stoppedAt - widgetText);
-		XmProcessTraversal(SmartIndentDialog.newlineMacro, XmTRAVERSE_CURRENT);
-		XtFree(widgetText);
-		return False;
-	}
-	XtFree(widgetText);
-	FreeProgram(prog);
-
-	// Test compile the modify macro 
-	if (!TextWidgetIsBlank(SmartIndentDialog.modMacro)) {
-		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
-		prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-		if(!prog) {
-			ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "modify macro", errMsg);
-			XmTextSetInsertionPosition(SmartIndentDialog.modMacro, stoppedAt - widgetText);
-			XmProcessTraversal(SmartIndentDialog.modMacro, XmTRAVERSE_CURRENT);
-			XtFree(widgetText);
-			return False;
-		}
-		XtFree(widgetText);
-		FreeProgram(prog);
-	}
-	return True;
-}
-
-static SmartIndent *getSmartIndentDialogData(void) {
-
-	auto is = new SmartIndent;
-	is->lmName       = XtNewStringEx(SmartIndentDialog.langModeName);
-	is->initMacro    = TextWidgetIsBlank(SmartIndentDialog.initMacro)    ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
-	is->newlineMacro = TextWidgetIsBlank(SmartIndentDialog.newlineMacro) ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
-	is->modMacro     = TextWidgetIsBlank(SmartIndentDialog.modMacro)     ? nullptr : ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
-	return is;
-}
-
-static void setSmartIndentDialogData(SmartIndent *is) {
-	if(!is) {
-		XmTextSetStringEx(SmartIndentDialog.initMacro, "");
-		XmTextSetStringEx(SmartIndentDialog.newlineMacro, "");
-		XmTextSetStringEx(SmartIndentDialog.modMacro, "");
-	} else {
-		if (!is->initMacro)
-			XmTextSetStringEx(SmartIndentDialog.initMacro, "");
-		else
-			XmTextSetStringEx(SmartIndentDialog.initMacro, is->initMacro);
-		XmTextSetStringEx(SmartIndentDialog.newlineMacro, is->newlineMacro);
-		if (!is->modMacro)
-			XmTextSetStringEx(SmartIndentDialog.modMacro, "");
-		else
-			XmTextSetStringEx(SmartIndentDialog.modMacro, is->modMacro);
-	}
 }
 
 static int loadDefaultIndentSpec(const char *lmName) {
@@ -834,7 +471,8 @@ int LoadSmartIndentStringEx(const QString &string) {
 int LoadSmartIndentString(char *inString) {
 	const char *errMsg;
 	const char *inPtr = inString;
-	SmartIndent is, *isCopy;
+	SmartIndent is;
+	SmartIndent *isCopy;
 	int i;
 
 	for (;;) {
@@ -977,25 +615,6 @@ static char *readSIMacro(const char **inPtr) {
 	return retStr;
 }
 
-SmartIndent *copyIndentSpec(SmartIndent *is) {
-
-	auto ris = new SmartIndent;
-	ris->lmName       = XtNewStringEx(is->lmName);
-	ris->initMacro    = XtNewStringEx(is->initMacro);
-	ris->newlineMacro = XtNewStringEx(is->newlineMacro);
-	ris->modMacro     = XtNewStringEx(is->modMacro);
-	return ris;
-}
-
-void freeIndentSpec(SmartIndent *is) {
-
-	XtFree((char *)is->lmName);
-	XtFree((char *)is->initMacro);
-	XtFree((char *)is->newlineMacro);
-	XtFree((char *)is->modMacro);	
-	delete is;
-}
-
 static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2) {
 	return AllocatedStringsDiffer(is1->initMacro, is2->initMacro) || AllocatedStringsDiffer(is1->newlineMacro, is2->newlineMacro) || AllocatedStringsDiffer(is1->modMacro, is2->modMacro);
 }
@@ -1093,37 +712,16 @@ SmartIndent *findIndentSpec(const char *modeName) {
 }
 
 /*
-** If "string" is not terminated with a newline character,  return a
-** reallocated string which does end in a newline (otherwise, just pass on
-** string as function value).  (The macro language requires newline terminators
-** for statements, but the text widget doesn't force it like the NEdit text
-** buffer does, so this might avoid some confusion.)
-*/
-static char *ensureNewline(char *string) {
-	char *newString;
-	int length;
-
-	if(!string)
-		return nullptr;
-	length = strlen(string);
-	if (length == 0 || string[length - 1] == '\n')
-		return string;
-	newString = XtMalloc(length + 2);
-	strcpy(newString, string);
-	newString[length] = '\n';
-	newString[length + 1] = '\0';
-	XtFree(string);
-	return newString;
-}
-
-/*
 ** Returns True if there are smart indent macros, or potential macros
 ** not yet committed in the smart indent dialog for a language mode,
 */
 int LMHasSmartIndentMacros(const char *languageMode) {
-	if (findIndentSpec(languageMode) != nullptr)
-		return True;
-	return SmartIndentDialog.shell != nullptr && !strcmp(SmartIndentDialog.langModeName, languageMode);
+	if (findIndentSpec(languageMode) != nullptr) {
+		return true;
+	}
+	
+	
+	return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(QLatin1String(languageMode));
 }
 
 /*
@@ -1132,18 +730,16 @@ int LMHasSmartIndentMacros(const char *languageMode) {
 ** currently being edited in the dialog.
 */
 void RenameSmartIndentMacros(const char *oldName, const char *newName) {
-	int i;
 
-	for (i = 0; i < NSmartIndentSpecs; i++) {
+	for (int i = 0; i < NSmartIndentSpecs; i++) {
 		if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
 			XtFree((char *)SmartIndentSpecs[i]->lmName);
 			SmartIndentSpecs[i]->lmName = XtNewStringEx(newName);
 		}
 	}
-	if (SmartIndentDialog.shell) {
-		if (!strcmp(SmartIndentDialog.langModeName, oldName)) {
-			XtFree(SmartIndentDialog.langModeName);
-			SmartIndentDialog.langModeName = XtNewStringEx(newName);
+	if (SmartIndentDlg) {
+		if(SmartIndentDlg->languageMode_ == QLatin1String(oldName)) {
+			SmartIndentDlg->languageMode_ = QLatin1String(newName);
 		}
 	}
 }
@@ -1157,19 +753,4 @@ void UpdateLangModeMenuSmartIndent(void) {
 	if(SmartIndentDlg) {
 		SmartIndentDlg->updateLanguageModes();
 	}
-
-	Widget oldMenu;
-
-	if (SmartIndentDialog.shell == nullptr)
-		return;
-
-	oldMenu = SmartIndentDialog.lmPulldown;
-	SmartIndentDialog.lmPulldown = CreateLanguageModeMenu(XtParent(XtParent(oldMenu)), langModeCB, nullptr);
-	XtVaSetValues(XmOptionButtonGadget(SmartIndentDialog.lmOptMenu), XmNsubMenuId, SmartIndentDialog.lmPulldown, nullptr);
-	SetLangModeMenu(SmartIndentDialog.lmOptMenu, SmartIndentDialog.langModeName);
-
-	XtDestroyWidget(oldMenu);
-	
-	
-
 }

@@ -16,6 +16,7 @@ public:
 
 public:
 	void updateLanguageModes();
+	bool hasSmartIndentMacros(const QString &languageMode) const;
 	
 private:
 	void setSmartIndentDialogData(SmartIndent *is);

@@ -49,8 +49,6 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
 
-SmartIndent *copyIndentSpec(SmartIndent *is);
-void freeIndentSpec(SmartIndent *is);
 SmartIndent *findIndentSpec(const char *modeName);
 
 extern char *CommonMacros;

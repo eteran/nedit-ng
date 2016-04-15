@@ -85,6 +85,7 @@ add_executable(nedit
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
+	SmartIndent.cpp
 	Document.cpp
 	PatternSet.cpp
 	Rangeset.cpp
