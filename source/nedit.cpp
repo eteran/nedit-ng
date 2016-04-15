@@ -35,31 +35,31 @@
 
 #include "QtMotif.h"
 #include "nedit.h"
+#include "Document.h"
 #include "file.h"
+#include "fileUtils.h"
+#include "getfiles.h"
+#include "help.h"
+#include "interpret.h"
+#include "macro.h"
+#include "menu.h"
+#include "misc.h"
+#include "MotifHelper.h"
+#include "parse.h"
 #include "preferences.h"
+#include "printUtils.h"
 #include "regularExp.h"
 #include "selection.h"
-#include "tags.h"
-#include "menu.h"
-#include "macro.h"
 #include "server.h"
-#include "interpret.h"
-#include "Document.h"
-#include "parse.h"
-#include "help.h"
-#include "../util/misc.h"
-#include "../util/printUtils.h"
-#include "../util/fileUtils.h"
-#include "../util/getfiles.h"
-#include "../util/MotifHelper.h"
+#include "tags.h"
 
+#include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-#include <algorithm>
 
 #include <X11/Xlocale.h>
 #include <X11/Intrinsic.h>
