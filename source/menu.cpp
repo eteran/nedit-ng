@@ -1246,10 +1246,12 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
 static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
-
-	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), true);
-	dialog->exec();
-	delete dialog;
+	
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
+	window->dialogFonts_ = new DialogFonts(window, true);
+	window->dialogFonts_->exec();
+	delete window->dialogFonts_;
+	window->dialogFonts_ = nullptr;
 }
 
 static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1428,14 +1430,15 @@ static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
 
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
+	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
+
+	HidePointerOnKeyedEvent(window->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	
-	auto dialog = new DialogFonts(Document::WidgetToWindow(MENU_WIDGET(w)), false);
-	dialog->exec();
-	delete dialog;
+	window->dialogFonts_ = new DialogFonts(window, false);
+	window->dialogFonts_->exec();
+	delete window->dialogFonts_;
+	window->dialogFonts_ = nullptr;
 }
 
 static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {

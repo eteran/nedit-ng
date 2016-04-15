@@ -3364,11 +3364,12 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	strcpy(boldFontName_, GetPrefBoldFontName());
 	strcpy(boldItalicFontName_, GetPrefBoldItalicFontName());
 	colorDialog_ = nullptr;
+	dialogColors_ = nullptr;
 	fontList_ = GetPrefFontList();
 	italicFontStruct_ = GetPrefItalicFont();
 	boldFontStruct_ = GetPrefBoldFont();
 	boldItalicFontStruct_ = GetPrefBoldItalicFont();
-	fontDialog_ = nullptr;
+	dialogFonts_ = nullptr;
 	nMarks_ = 0;
 	markTimeoutID_ = 0;
 	highlightData_ = nullptr;
@@ -3775,11 +3776,12 @@ Document *Document::CreateDocument(const char *name) {
 	strcpy(window->boldFontName_, GetPrefBoldFontName());
 	strcpy(window->boldItalicFontName_, GetPrefBoldItalicFontName());
 	window->colorDialog_ = nullptr;
+	window->dialogColors_ = nullptr;
 	window->fontList_ = GetPrefFontList();
 	window->italicFontStruct_ = GetPrefItalicFont();
 	window->boldFontStruct_ = GetPrefBoldFont();
 	window->boldItalicFontStruct_ = GetPrefBoldItalicFont();
-	window->fontDialog_ = nullptr;
+	window->dialogFonts_ = nullptr;
 	window->nMarks_ = 0;
 	window->markTimeoutID_ = 0;
 	window->highlightData_ = nullptr;

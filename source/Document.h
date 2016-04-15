@@ -13,6 +13,7 @@
 class QDialog;
 class DialogReplace;
 class DialogReplaceScope;
+class DialogColors;
 class UndoInfo;
 
 struct TextBuffer;
@@ -165,14 +166,12 @@ public:
 	Widget tabBar_;      /* tab bar for tabbed window */
 	Widget tab_;         /* tab for this document */
 
-#if 0
-	QPointer<QDialog> dialogFind_;
-	QPointer<QDialog> dialogReplace_;
-#else
+	// TODO(eteran): probably want to use QPointer or similar here
 	QDialog* dialogFind_;
 	QDialog* dialogReplace_;
-#endif
-	Widget fontDialog_;   /* nullptr, unless font dialog is up */
+	QDialog* dialogColors_;
+	QDialog* dialogFonts_; /* nullptr, unless font dialog is up */
+
 	Widget colorDialog_;  /* nullptr, unless color dialog is up */
 	Widget readOnlyItem_; /* menu bar settable widgets... */
 	Widget autoSaveItem_;

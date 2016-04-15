@@ -33,6 +33,7 @@
 #include "ui/DialogFontSelector.h"
 #include "ui/DialogWrapMargin.h"
 #include "ui/DialogLanguageModes.h"
+#include "ui/DialogColors.h"
 #include "LanguageMode.h"
 
 #include "preferences.h"
@@ -3868,6 +3869,18 @@ static Widget addColorGroup(Widget parent, const char *name, char mnemonic, cons
  * Code for the dialog itself
  */
 void ChooseColors(Document *window) {
+
+	if(window->dialogColors_) {
+		window->dialogColors_->show();
+		window->dialogColors_->raise();
+		return;
+	}
+	
+	window->dialogColors_ = new DialogColors(window);
+	window->dialogColors_->show();
+	
+
+
 	Widget form, tmpW, topW, infoLbl;
 	Widget okBtn, applyBtn, closeBtn;
 	colorDialog *cd;
@@ -3901,9 +3914,7 @@ void ChooseColors(Document *window) {
 
 	// Information label 
 	infoLbl = XtVaCreateManagedWidget("infoLbl", xmLabelGadgetClass, form, XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment, XmATTACH_POSITION,
-	                                  XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("Colors can be entered as names (e.g. red, blue) or "
-	                                                                                                                                           "as RGB triples\nin the format #RRGGBB, where each digit "
-	                                                                                                                                           "is in the range 0-f.",
+	                                  XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("Colors can be entered as names (e.g. red, blue) or as RGB triples\nin the format #RRGGBB, where each digit is in the range 0-f.",
 	                                                                                                                                  XmFONTLIST_DEFAULT_TAG),
 	                                  nullptr);
 	XmStringFree(s1);
@@ -3923,8 +3934,7 @@ void ChooseColors(Document *window) {
 	tmpW = addColorGroup(form, "cursorFg", 'C', "Cursor Color", &(cd->cursorFgW), &(cd->cursorFgErrW), tmpW, 51, 99, cursorFgModifiedCB, cd);
 
 	tmpW = XtVaCreateManagedWidget("infoLbl", xmLabelGadgetClass, form, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, tmpW, XmNtopOffset, MARGIN_SPACING, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 1, XmNrightAttachment,
-	                               XmATTACH_POSITION, XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("NOTE: Foreground colors only apply when syntax highlighting "
-	                                                                                                                                                           "is DISABLED.\n",
+	                               XmATTACH_POSITION, XmNrightPosition, 99, XmNalignment, XmALIGNMENT_CENTER, XmNlabelString, s1 = XmStringCreateLtoREx("NOTE: Foreground colors only apply when syntax highlighting is DISABLED.\n",
 	                                                                                                                                                  XmFONTLIST_DEFAULT_TAG),
 	                               nullptr);
 	XmStringFree(s1);
