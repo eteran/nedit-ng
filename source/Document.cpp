@@ -3363,7 +3363,6 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	strcpy(italicFontName_, GetPrefItalicFontName());
 	strcpy(boldFontName_, GetPrefBoldFontName());
 	strcpy(boldItalicFontName_, GetPrefBoldItalicFontName());
-	colorDialog_ = nullptr;
 	dialogColors_ = nullptr;
 	fontList_ = GetPrefFontList();
 	italicFontStruct_ = GetPrefItalicFont();
@@ -3711,96 +3710,102 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 ** multiple files.
 */
 Document *Document::CreateDocument(const char *name) {
-	Widget pane, text;
-	int nCols, nRows;
+
+	int nCols;
+	int nRows;
 
 	// Allocate some memory for the new window data structure 
 	auto window = new Document(*this);
 
 #if 0
     // share these dialog items with parent shell 
-
-	window->dialogFind_ = nullptr;
+	window->dialogFind_    = nullptr;
 	window->dialogReplace_ = nullptr;
 
     window->showLineNumbers_ = GetPrefLineNums();
-    window->showStats_ = GetPrefStatsLine();
+    window->showStats_       = GetPrefStatsLine();
     window->showISearchLine_ = GetPrefISearchLine();
 #endif
 
 	window->multiFileReplSelected_ = FALSE;
-	window->multiFileBusy_ = FALSE;
-	window->writableWindows_ = nullptr;
-	window->nWritableWindows_ = 0;
-	window->fileChanged_ = FALSE;
-	window->fileMissing_ = True;
-	window->fileMode_ = 0;
-	window->fileUid_ = 0;
-	window->fileGid_ = 0;
-	window->filenameSet_ = FALSE;
-	window->fileFormat_ = UNIX_FILE_FORMAT;
-	window->lastModTime_ = 0;
-	window->filename_ = name;
-	window->undo_ = std::list<UndoInfo *>();
-	window->redo_ = std::list<UndoInfo *>();
-	window->nPanes_ = 0;
-	window->autoSaveCharCount_ = 0;
-	window->autoSaveOpCount_ = 0;
-	window->undoMemUsed_ = 0;
+	window->multiFileBusy_         = FALSE;
+	window->writableWindows_       = nullptr;
+	window->nWritableWindows_      = 0;
+	window->fileChanged_           = FALSE;
+	window->fileMissing_           = True;
+	window->fileMode_              = 0;
+	window->fileUid_               = 0;
+	window->fileGid_               = 0;
+	window->filenameSet_           = FALSE;
+	window->fileFormat_            = UNIX_FILE_FORMAT;
+	window->lastModTime_           = 0;
+	window->filename_              = name;
+	window->undo_                  = std::list<UndoInfo *>();
+	window->redo_                  = std::list<UndoInfo *>();
+	window->nPanes_                = 0;
+	window->autoSaveCharCount_     = 0;
+	window->autoSaveOpCount_       = 0;
+	window->undoMemUsed_           = 0;
+	
 	CLEAR_ALL_LOCKS(window->lockReasons_);
-	window->indentStyle_ = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	window->autoSave_ = GetPrefAutoSave();
-	window->saveOldVersion_ = GetPrefSaveOldVersion();
-	window->wrapMode_ = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	window->overstrike_ = False;
-	window->showMatchingStyle_ = GetPrefShowMatching();
-	window->matchSyntaxBased_ = GetPrefMatchSyntaxBased();
-	window->highlightSyntax_ = GetPrefHighlightSyntax();
-	window->backlightCharTypes_ = nullptr;
-	window->backlightChars_ = GetPrefBacklightChars();
+	
+	window->indentStyle_           = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+	window->autoSave_              = GetPrefAutoSave();
+	window->saveOldVersion_        = GetPrefSaveOldVersion();
+	window->wrapMode_              = GetPrefWrap(PLAIN_LANGUAGE_MODE);
+	window->overstrike_            = False;
+	window->showMatchingStyle_     = GetPrefShowMatching();
+	window->matchSyntaxBased_      = GetPrefMatchSyntaxBased();
+	window->highlightSyntax_       = GetPrefHighlightSyntax();
+	window->backlightCharTypes_    = nullptr;
+	window->backlightChars_        = GetPrefBacklightChars();
+	
 	if (window->backlightChars_) {
 		const char *cTypes = GetPrefBacklightCharTypes();
 		if (cTypes && window->backlightChars_) {			
 			window->backlightCharTypes_ = XtStringDup(cTypes);
 		}
 	}
-	window->modeMessageDisplayed_ = FALSE;
-	window->modeMessage_ = nullptr;
-	window->ignoreModify_ = FALSE;
-	window->windowMenuValid_ = FALSE;
-	window->flashTimeoutID_ = 0;
-	window->fileClosedAtom_ = None;
-	window->wasSelected_ = FALSE;
-	window->fontName_ = GetPrefFontName();
+	
+	window->modeMessageDisplayed_  = FALSE;
+	window->modeMessage_           = nullptr;
+	window->ignoreModify_          = FALSE;
+	window->windowMenuValid_       = FALSE;
+	window->flashTimeoutID_        = 0;
+	window->fileClosedAtom_        = None;
+	window->wasSelected_           = FALSE;
+	window->fontName_              = GetPrefFontName();
+	
 	strcpy(window->italicFontName_, GetPrefItalicFontName());
 	strcpy(window->boldFontName_, GetPrefBoldFontName());
 	strcpy(window->boldItalicFontName_, GetPrefBoldItalicFontName());
-	window->colorDialog_ = nullptr;
-	window->dialogColors_ = nullptr;
-	window->fontList_ = GetPrefFontList();
-	window->italicFontStruct_ = GetPrefItalicFont();
-	window->boldFontStruct_ = GetPrefBoldFont();
-	window->boldItalicFontStruct_ = GetPrefBoldItalicFont();
-	window->dialogFonts_ = nullptr;
-	window->nMarks_ = 0;
-	window->markTimeoutID_ = 0;
-	window->highlightData_ = nullptr;
-	window->shellCmdData_ = nullptr;
-	window->macroCmdData_ = nullptr;
-	window->smartIndentData_ = nullptr;
-	window->languageMode_ = PLAIN_LANGUAGE_MODE;
-	window->iSearchHistIndex_ = 0;
-	window->iSearchStartPos_ = -1;
-	window->iSearchLastRegexCase_ = TRUE;
-	window->iSearchLastLiteralCase_ = FALSE;
-	window->tab_ = nullptr;
-	window->bgMenuUndoItem_ = nullptr;
-	window->bgMenuRedoItem_ = nullptr;
-	window->device_ = 0;
-	window->inode_ = 0;
+	
+	window->dialogColors_          = nullptr;
+	window->fontList_              = GetPrefFontList();
+	window->italicFontStruct_      = GetPrefItalicFont();
+	window->boldFontStruct_        = GetPrefBoldFont();
+	window->boldItalicFontStruct_  = GetPrefBoldItalicFont();
+	window->dialogFonts_           = nullptr;
+	window->nMarks_                = 0;
+	window->markTimeoutID_         = 0;
+	window->highlightData_         = nullptr;
+	window->shellCmdData_          = nullptr;
+	window->macroCmdData_          = nullptr;
+	window->smartIndentData_       = nullptr;
+	window->languageMode_          = PLAIN_LANGUAGE_MODE;
+	window->iSearchHistIndex_      = 0;
+	window->iSearchStartPos_       = -1;
+	window->iSearchLastRegexCase_  = TRUE;
+	window->iSearchLastLiteralCase_= FALSE;
+	window->tab_                   = nullptr;
+	window->bgMenuUndoItem_        = nullptr;
+	window->bgMenuRedoItem_        = nullptr;
+	window->device_                = 0;
+	window->inode_                 = 0;
 
-	if (!window->fontList_)
+	if (!window->fontList_) {
 		XtVaGetValues(statsLine_, XmNfontList, &window->fontList_, nullptr);
+	}
 
 	getTextPaneDimension(&nRows, &nCols);
 
@@ -3814,7 +3819,7 @@ Document *Document::CreateDocument(const char *name) {
 	   when later brought up by  RaiseDocument(). So we first
 	   manage it hidden, then unmanage it and reset XmNworkWindow,
 	   then let RaiseDocument() show it later. */
-	pane = XtVaCreateWidget("pane", xmPanedWindowWidgetClass, window->mainWin_, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, XmNmappedWhenManaged, False, nullptr);
+	Widget pane = XtVaCreateWidget("pane", xmPanedWindowWidgetClass, window->mainWin_, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, XmNmappedWhenManaged, False, nullptr);
 	XtVaSetValues(window->mainWin_, XmNworkWindow, pane, nullptr);
 	XtManageChild(pane);
 	window->splitPane_ = pane;
@@ -3830,14 +3835,22 @@ Document *Document::CreateDocument(const char *name) {
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	Widget text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(text);
-	window->textArea_ = text;
+
+	window->textArea_  = text;
 	window->lastFocus_ = text;
 
 	// Set the initial colors from the globals. 
-	window->SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
-	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
+	window->SetColors(
+		GetPrefColorName(TEXT_FG_COLOR), 
+		GetPrefColorName(TEXT_BG_COLOR), 
+		GetPrefColorName(SELECT_FG_COLOR), 
+		GetPrefColorName(SELECT_BG_COLOR), 
+		GetPrefColorName(HILITE_FG_COLOR), 
+		GetPrefColorName(HILITE_BG_COLOR),
+		GetPrefColorName(LINENO_FG_COLOR), 
+		GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Create the right button popup menu (note: order is important here,
 	   since the translation for popping up this menu was probably already

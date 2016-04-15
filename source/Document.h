@@ -172,7 +172,6 @@ public:
 	QDialog* dialogColors_;
 	QDialog* dialogFonts_; /* nullptr, unless font dialog is up */
 
-	Widget colorDialog_;  /* nullptr, unless color dialog is up */
 	Widget readOnlyItem_; /* menu bar settable widgets... */
 	Widget autoSaveItem_;
 	Widget saveLastItem_;
