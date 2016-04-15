@@ -10,6 +10,8 @@
 #include "Document.h"
 #include "preferences.h"
 #include "MotifHelper.h"
+#include "macro.h"
+#include "interpret.h"
 
 
 //------------------------------------------------------------------------------
@@ -25,8 +27,6 @@ DialogSmartIndent::DialogSmartIndent(Document *window, QWidget *parent, Qt::Wind
 
 	// Fill in the dialog information for the selected language mode 
 	setSmartIndentDialogData(findIndentSpec(languageMode_.toLatin1().data()));
-	
-
 }
 
 //------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ void DialogSmartIndent::setSmartIndentDialogData(SmartIndent *is) {
 	if(!is) {
 		ui.editInit->setPlainText(QString());
 		ui.editNewline->setPlainText(QString());
-		ui.editTypeIn->setPlainText(QString());
+		ui.editModMacro->setPlainText(QString());
 	} else {
 		if (!is->initMacro) {
 			ui.editInit->setPlainText(QString());
@@ -217,9 +217,9 @@ void DialogSmartIndent::setSmartIndentDialogData(SmartIndent *is) {
 		ui.editNewline->setPlainText(QLatin1String(is->newlineMacro));
 
 		if (!is->modMacro) {
-			ui.editTypeIn->setPlainText(QString());
+			ui.editModMacro->setPlainText(QString());
 		} else {
-			ui.editTypeIn->setPlainText(QLatin1String(is->modMacro));
+			ui.editModMacro->setPlainText(QLatin1String(is->modMacro));
 		}
 	}
 }
@@ -284,57 +284,74 @@ bool DialogSmartIndent::updateSmartIndentData() {
 // Name: 
 //------------------------------------------------------------------------------
 bool DialogSmartIndent::checkSmartIndentDialogData() {
-#if 0
-	char *widgetText;
-	const char *errMsg;
-	const char *stoppedAt;
-	Program *prog;
+
+
+
+
+/*
+ ui.editModMacro->toPlainText().isNull() 
+*/
+
+
+
 
 	// Check the initialization macro 
-	if (!TextWidgetIsBlank(SmartIndentDialog.initMacro)) {
-		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.initMacro));
-		if (!CheckMacroString(SmartIndentDialog.shell, widgetText, "initialization macro", &stoppedAt)) {
-			XmTextSetInsertionPosition(SmartIndentDialog.initMacro, stoppedAt - widgetText);
-			XmProcessTraversal(SmartIndentDialog.initMacro, XmTRAVERSE_CURRENT);
-			XtFree(widgetText);
-			return False;
+	QString initText = ui.editInit->toPlainText();
+	if (!initText.isEmpty()) {
+		QString widgetText = ensureNewline(initText);
+		int stoppedAt = 0;
+		if (!CheckMacroStringEx(this, widgetText, tr("initialization macro"), &stoppedAt)) {
+			QTextCursor cursor = ui.editInit->textCursor();
+			cursor.setPosition(stoppedAt);
+			ui.editInit->setTextCursor(cursor);
+			ui.editInit->setFocus();		
+			return false;
 		}
-		XtFree(widgetText);
 	}
-
+	
 	// Test compile the newline macro 
-	if (TextWidgetIsBlank(SmartIndentDialog.newlineMacro)) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Smart Indent"), QLatin1String("Newline macro required"));
-		return False;
+	QString newlineText = ui.editNewline->toPlainText();
+	if (newlineText.isEmpty()) {
+		QMessageBox::warning(this, tr("Smart Indent"), tr("Newline macro required"));
+		return false;
+	}
+	
+	QString widgetText = ensureNewline(newlineText);
+	QString errMsg;
+	int stoppedAt = 0;
+	Program *prog = ParseMacroEx(widgetText, 0, &errMsg, &stoppedAt);
+	if(!prog) {
+		ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);	
+		QTextCursor cursor = ui.editNewline->textCursor();
+		cursor.setPosition(stoppedAt);
+		ui.editNewline->setTextCursor(cursor);
+		ui.editNewline->setFocus();		
+		return false;
 	}
 
-	widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.newlineMacro));
-	prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-	if(!prog) {
-		ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "newline macro", errMsg);
-		XmTextSetInsertionPosition(SmartIndentDialog.newlineMacro, stoppedAt - widgetText);
-		XmProcessTraversal(SmartIndentDialog.newlineMacro, XmTRAVERSE_CURRENT);
-		XtFree(widgetText);
-		return False;
-	}
-	XtFree(widgetText);
 	FreeProgram(prog);
 
+
 	// Test compile the modify macro 
-	if (!TextWidgetIsBlank(SmartIndentDialog.modMacro)) {
-		widgetText = ensureNewline(XmTextGetString(SmartIndentDialog.modMacro));
-		prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
+	QString modMacroText = ui.editModMacro->toPlainText();
+	if (!modMacroText.isEmpty()) {
+		QString widgetText = ensureNewline(modMacroText);
+		QString errMsg;
+		int stoppedAt = 0;
+		Program *prog = ParseMacroEx(widgetText, 0, &errMsg, &stoppedAt);
+
 		if(!prog) {
-			ParseError(SmartIndentDialog.shell, widgetText, stoppedAt, "modify macro", errMsg);
-			XmTextSetInsertionPosition(SmartIndentDialog.modMacro, stoppedAt - widgetText);
-			XmProcessTraversal(SmartIndentDialog.modMacro, XmTRAVERSE_CURRENT);
-			XtFree(widgetText);
-			return False;
+			ParseErrorEx(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
+			QTextCursor cursor = ui.editModMacro->textCursor();
+			cursor.setPosition(stoppedAt);
+			ui.editModMacro->setTextCursor(cursor);
+			ui.editModMacro->setFocus();	
+			return false;
 		}
-		XtFree(widgetText);
+		
 		FreeProgram(prog);
 	}
-#endif
+
 	return true;
 }
 
@@ -347,7 +364,7 @@ SmartIndent *DialogSmartIndent::getSmartIndentDialogData() {
 	is->lmName       = XtNewStringEx(languageMode_.toStdString());
 	is->initMacro    = ui.editInit->toPlainText().isNull()    ? nullptr : XtStringDup(ensureNewline(ui.editInit->toPlainText()).toStdString());
 	is->newlineMacro = ui.editNewline->toPlainText().isNull() ? nullptr : XtStringDup(ensureNewline(ui.editNewline->toPlainText()).toStdString());
-	is->modMacro     = ui.editTypeIn->toPlainText().isNull()  ? nullptr : XtStringDup(ensureNewline(ui.editTypeIn->toPlainText()).toStdString());
+	is->modMacro     = ui.editModMacro->toPlainText().isNull()  ? nullptr : XtStringDup(ensureNewline(ui.editModMacro->toPlainText()).toStdString());
 	return is;
 }
 

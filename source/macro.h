@@ -34,6 +34,7 @@
 
 class QString;
 class QWidget;
+class Program;
 
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
@@ -58,5 +59,6 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 std::string GetReplayMacro(void);
 void ReadMacroInitFile(Document *window);
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
+Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt);
 
 #endif

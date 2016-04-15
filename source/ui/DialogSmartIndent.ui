@@ -171,7 +171,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="editTypeIn">
+        <widget class="QPlainTextEdit" name="editModMacro">
          <property name="font">
           <font>
            <family>Monospace</family>
