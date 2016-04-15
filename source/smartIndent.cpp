@@ -827,14 +827,8 @@ static int loadDefaultIndentSpec(const char *lmName) {
 	return False;
 }
 
-int LoadSmartIndentStringEx(view::string_view string) {
-	auto buffer = new char[string.size() + 1];
-	std::copy(string.begin(), string.end(), buffer);
-	buffer[string.size()] = '\0';
-	int r = LoadSmartIndentString(buffer);
-	delete [] buffer;
-	return r;
-
+int LoadSmartIndentStringEx(const QString &string) {
+	return LoadSmartIndentString(string.toLatin1().data());
 }
 
 int LoadSmartIndentString(char *inString) {

@@ -37,7 +37,7 @@ class SmartIndent;
 Boolean InSmartIndentMacros(Document *window);
 int LMHasSmartIndentMacros(const char *languageMode);
 int LoadSmartIndentCommonStringEx(view::string_view string);
-int LoadSmartIndentStringEx(view::string_view string);
+int LoadSmartIndentStringEx(const QString &string);
 int SmartIndentMacrosAvailable(char *languageMode);
 QString  WriteSmartIndentCommonStringEx(void);
 QString WriteSmartIndentStringEx(void);

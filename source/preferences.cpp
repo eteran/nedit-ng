@@ -1017,7 +1017,7 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 		TempStringPrefs.language = QString();
 	}
 	if (!TempStringPrefs.smartIndent.isNull()) {
-		LoadSmartIndentStringEx(TempStringPrefs.smartIndent.toStdString());
+		LoadSmartIndentStringEx(TempStringPrefs.smartIndent);
 		TempStringPrefs.smartIndent = QString();
 	}
 	if (!TempStringPrefs.smartIndentCommon.isNull()) {
