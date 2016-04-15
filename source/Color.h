@@ -4,10 +4,14 @@
 
 #include <cstdint>
 
+class QColor;
+
 struct Color {
 	uint16_t r;
 	uint16_t g;
 	uint16_t b;
 };
+
+QColor toQColor(const Color &c);
 
 #endif

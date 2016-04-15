@@ -66,7 +66,7 @@ void DialogColors::chooseColor(QLineEdit *edit) {
 	Color c;
 	AllocColor(window_->shell_, name.toLatin1().data(), &c);
 
-	QColor initColor(c.r / 256, c.g / 256, c.b / 256);
+	QColor initColor = toQColor(c);
 	QColor color = QColorDialog::getColor(initColor, this);
 	if(color.isValid()) {
 		edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));

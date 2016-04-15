@@ -297,8 +297,8 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
 	Q_UNUSED(fgPixel);
 	Q_UNUSED(bgPixel);
 
-	QColor foreground(fgColor.r / 256, fgColor.g / 256, fgColor.b / 256);
-	QColor background(bgColor.r / 256, bgColor.g / 256, bgColor.b / 256);
+	QColor foreground = toQColor(fgColor);
+	QColor background = toQColor(bgColor);
 	
 	auto dialog = new DialogFontSelector(window_->shell_, PREF_FIXED, origFontName.toLatin1().data(), foreground, background, this);
 	int r = dialog->exec();
