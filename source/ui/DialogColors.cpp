@@ -1,6 +1,7 @@
 
 #include "DialogColors.h"
 #include <QColorDialog>
+#include <QMessageBox>
 
 #include "preferences.h"
 #include "Document.h"
@@ -23,7 +24,6 @@ DialogColors::DialogColors(Document *window, QWidget *parent, Qt::WindowFlags f)
     ui.labelErrorMatchBG->setVisible(false);
     ui.labelErrorCursor->setVisible(false);
 
-	
 	ui.editFG->setText(QLatin1String(GetPrefColorName(TEXT_FG_COLOR)));
 	ui.editBG->setText(QLatin1String(GetPrefColorName(TEXT_BG_COLOR)));
 	ui.editSelectionFG->setText(QLatin1String(GetPrefColorName(SELECT_FG_COLOR)));
@@ -195,3 +195,77 @@ void DialogColors::on_editCursor_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorCursor);
 }
 
+//------------------------------------------------------------------------------
+// Name: on_buttonBox_clicked
+//------------------------------------------------------------------------------
+void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
+	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+		if (!verifyAllColors()) {
+			QMessageBox::critical(this, tr("Invalid Colors"), tr("All colors must be valid to be applied."));
+			return;
+		}
+		updateColors();
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_buttonBox_accepted
+//------------------------------------------------------------------------------
+void DialogColors::on_buttonBox_accepted() {
+	if (!verifyAllColors()) {
+		QMessageBox::critical(this, tr("Invalid Colors"), tr("All colors must be valid to proceed."));
+		return;
+	}
+	updateColors();
+	accept();
+}
+
+/*
+ * Helper functions for validating colors
+ */
+bool DialogColors::verifyAllColors() {
+
+	// Maybe just check for empty strings in error widgets instead? 
+	return  checkColorStatus(ui.editFG->text()) &&
+			checkColorStatus(ui.editBG->text()) &&
+			checkColorStatus(ui.editSelectionFG->text()) &&
+			checkColorStatus(ui.editSelectionBG->text()) &&
+			checkColorStatus(ui.editMatchFG->text()) &&
+			checkColorStatus(ui.editMatchBG->text()) &&
+			checkColorStatus(ui.editLineNumbers->text()) &&
+			checkColorStatus(ui.editCursor->text());
+}
+
+// Update the colors in the window or in the preferences 
+void DialogColors::updateColors() {
+	
+	QString textFg   = ui.editFG->text();
+	QString textBg   = ui.editBG->text();
+	QString selectFg = ui.editSelectionFG->text();
+	QString selectBg = ui.editSelectionBG->text();
+	QString hiliteFg = ui.editMatchFG->text();
+	QString hiliteBg = ui.editMatchBG->text();
+	QString lineNoFg = ui.editLineNumbers->text();
+	QString cursorFg = ui.editCursor->text();
+
+	for(Document *window: WindowList) {
+		window->SetColors(
+			textFg.toLatin1().data(),
+			textBg.toLatin1().data(),
+			selectFg.toLatin1().data(),
+			selectBg.toLatin1().data(),
+			hiliteFg.toLatin1().data(),
+			hiliteBg.toLatin1().data(),
+			lineNoFg.toLatin1().data(), 
+			cursorFg.toLatin1().data());
+	}
+
+	SetPrefColorName(TEXT_FG_COLOR, textFg.toLatin1().data());
+	SetPrefColorName(TEXT_BG_COLOR, textBg.toLatin1().data());
+	SetPrefColorName(SELECT_FG_COLOR, selectFg.toLatin1().data());
+	SetPrefColorName(SELECT_BG_COLOR, selectBg.toLatin1().data());
+	SetPrefColorName(HILITE_FG_COLOR, hiliteFg.toLatin1().data());
+	SetPrefColorName(HILITE_BG_COLOR, hiliteBg.toLatin1().data());
+	SetPrefColorName(LINENO_FG_COLOR, lineNoFg.toLatin1().data());
+	SetPrefColorName(CURSOR_FG_COLOR, cursorFg.toLatin1().data());
+}
