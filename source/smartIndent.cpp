@@ -691,9 +691,8 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 }
 
 static int isDefaultIndentSpec(SmartIndent *indentSpec) {
-	int i;
 
-	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++)
+	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++)
 		if (!strcmp(indentSpec->lmName, DefaultIndentSpecs[i].lmName))
 			return !indentSpecsDiffer(indentSpec, &DefaultIndentSpecs[i]);
 	return False;
@@ -739,7 +738,7 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 	}
 	if (SmartIndentDlg) {
 		if(SmartIndentDlg->languageMode_ == QLatin1String(oldName)) {
-			SmartIndentDlg->languageMode_ = QLatin1String(newName);
+			SmartIndentDlg->setLanguageMode(QLatin1String(newName));
 		}
 	}
 }
