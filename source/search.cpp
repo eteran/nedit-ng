@@ -93,10 +93,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 static bool searchMatchesSelection(Document *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow);
 static void eraseFlash(Document *window);
-static void findCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
-static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchRecordLastBeginPos(Document *window, SearchDirection direction, int initPos);
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);

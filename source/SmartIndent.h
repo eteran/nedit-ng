@@ -2,7 +2,8 @@
 #ifndef SMART_INDENT_H_
 #define SMART_INDENT_H_
 
-struct SmartIndent {
+class SmartIndent {
+public:
 	const char *lmName;
 	const char *initMacro;
 	const char *newlineMacro;

@@ -28,7 +28,7 @@
 #define SELECTION_H_
 
 class QString;
-struct Document;
+class Document;
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>

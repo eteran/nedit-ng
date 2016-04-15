@@ -13,9 +13,10 @@
 class QDialog;
 class DialogReplace;
 class DialogReplaceScope;
+class UndoInfo;
 
 struct TextBuffer;
-struct UndoInfo;
+
 
 /* The Document structure holds the information on a Document. A number
    of 'tabbed' documents may reside within a shell window, hence some of
@@ -34,7 +35,7 @@ struct UndoInfo;
    Document. This struct name has been preserved to ease the transition
    when tabbed mode was introduced after NEdit 5.4.
 */
-struct Document {
+class Document {
 public:
 	Document(const char *name, char *geometry, bool iconic);
 	Document(const Document &) = default;

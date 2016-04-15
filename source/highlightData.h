@@ -27,14 +27,14 @@
 #ifndef HIGHLIGHT_DATA_H_
 #define HIGHLIGHT_DATA_H_
 
-#include <QString>
 #include "highlight.h"
 #include "nedit.h"
 #include "string_view.h"
 #include <string>
 
 
-struct PatternSet;
+class PatternSet;
+class QString;
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>

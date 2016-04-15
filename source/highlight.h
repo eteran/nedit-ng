@@ -44,8 +44,8 @@ enum {
    with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
 #define ASCII_A static_cast<char>(65)
 
-struct PatternSet;
-struct HighlightPattern;
+class PatternSet;
+class HighlightPattern;
 
 bool TestHighlightPatterns(PatternSet *patSet);
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name);

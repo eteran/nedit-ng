@@ -77,14 +77,11 @@ struct windowSmartIndentData {
 };
 
 const char MacroEndBoundary[] = "--End-of-Macro--";
-const int N_DEFAULT_INDENT_SPECS = 4;
-
-int NSmartIndentSpecs = 0;
-SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
-
 
 }
 
+int NSmartIndentSpecs = 0;
+SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
 char *CommonMacros = nullptr;
 
 
@@ -112,29 +109,18 @@ static int isDefaultIndentSpec(SmartIndent *indentSpec);
 static char *ensureNewline(char *string);
 static int loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
-static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData);
-static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData);
-static void okCB(Widget w, XtPointer clientData, XtPointer callData);
-static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
-static void restoreCB(Widget w, XtPointer clientData, XtPointer callData);
-static void deleteCB(Widget w, XtPointer clientData, XtPointer callData);
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void helpCB(Widget w, XtPointer clientData, XtPointer callData);
+
 static int checkSmartIndentDialogData(void);
 static SmartIndent *getSmartIndentDialogData(void);
 static void setSmartIndentDialogData(SmartIndent *is);
-static int updateSmartIndentData(void);
+
 static char *readSIMacro(const char **inPtr);
-static SmartIndent *copyIndentSpec(SmartIndent *is);
-static void freeIndentSpec(SmartIndent *is);
 static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
 
-static SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
+SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {{"C", "# C Macros and tuning parameters are shared with C++, and are declared\n\
 # in the common section.  Press Common / Shared Initialization above.\n",
                                                                      "return cFindSmartIndentDist($1)\n", "if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n\
     cBraceOrPound($1, $2)\n"},
@@ -476,7 +462,7 @@ void EditSmartIndentMacros(Document *window) {
 	SmartIndentDlg->show();
 	
 
-
+#if 0
 	static const int BORDER = 4;
 
 	Widget form, lmOptMenu, lmForm, lmBtn;
@@ -690,16 +676,7 @@ void EditSmartIndentMacros(Document *window) {
 
 	// Realize all of the widgets in the new dialog 
 	RealizeWithoutForcingPosition(SmartIndentDialog.shell);
-}
-
-static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	XtFree(SmartIndentDialog.langModeName);
-	SmartIndentDialog.shell = nullptr;
+#endif
 }
 
 static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -756,160 +733,6 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Fill the dialog with the new language mode information 
 	SmartIndentDialog.langModeName = XtNewStringEx(modeName);
 	setSmartIndentDialogData(findIndentSpec(modeName));
-}
-
-static void lmDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-	
-	DialogLanguageModes dialog;
-	dialog.exec();
-}
-
-static void commonDialogCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-	
-	
-	DialogSmartIndentCommon dialog;
-	dialog.exec();
-}
-
-static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// change the macro 
-	if (!updateSmartIndentData())
-		return;
-
-	// pop down and destroy the dialog 
-	CloseAllPopupsFor(SmartIndentDialog.shell);
-	XtDestroyWidget(SmartIndentDialog.shell);
-}
-
-static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// change the patterns 
-	updateSmartIndentData();
-}
-
-static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	if (checkSmartIndentDialogData())
-		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro compiled"), QLatin1String("Macros compiled without error"));
-}
-
-static void restoreCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	int i;
-	SmartIndent *defaultIS;
-
-	// Find the default indent spec 
-	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (!strcmp(SmartIndentDialog.langModeName, DefaultIndentSpecs[i].lmName)) {
-			break;
-		}
-	}
-
-	if (i == N_DEFAULT_INDENT_SPECS) {
-		QMessageBox::warning(nullptr /*SmartIndentDialog.shell*/, QLatin1String("Smart Indent"), QString(QLatin1String("There are no default indent macros\nfor language mode %1")).arg(QLatin1String(SmartIndentDialog.langModeName)));
-		return;
-	}
-	defaultIS = &DefaultIndentSpecs[i];
-
-	
-	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Discard Changes"), QString(QLatin1String("Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %1?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Discard | QMessageBox::Cancel);
-	if(resp == QMessageBox::Cancel) {
-		return;
-	}
-
-	/* if a stored version of the indent macros exist, replace them, if not,
-	   add a new one */
-	for (i = 0; i < NSmartIndentSpecs; i++)
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
-			break;
-	if (i < NSmartIndentSpecs) {
-		freeIndentSpec(SmartIndentSpecs[i]);
-		SmartIndentSpecs[i] = copyIndentSpec(defaultIS);
-	} else
-		SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(defaultIS);
-
-	// Update the dialog 
-	setSmartIndentDialogData(defaultIS);
-}
-
-static void deleteCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	int i;
-
-
-	// TODO(eteran): originally was "Yes, Delete"
-	int resp = QMessageBox::question(nullptr /* SmartIndentDialog.shell */, QLatin1String("Delete Macros"), QString(QLatin1String("Are you sure you want to delete smart indent\nmacros for language mode %1?")).arg(QLatin1String(SmartIndentDialog.langModeName)), QMessageBox::Yes | QMessageBox::Cancel);
-	if(resp == QMessageBox::Cancel) {
-		return;
-	}
-
-	// if a stored version of the pattern set exists, delete it from the list 
-	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName)) {
-			break;
-		}
-	}
-			
-			
-	if (i < NSmartIndentSpecs) {
-		freeIndentSpec(SmartIndentSpecs[i]);
-		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(SmartIndent *));
-		NSmartIndentSpecs--;
-	}
-
-	// Clear out the dialog 
-	setSmartIndentDialogData(nullptr);
-}
-
-static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	// pop down and destroy the dialog 
-	CloseAllPopupsFor(SmartIndentDialog.shell);
-	XtDestroyWidget(SmartIndentDialog.shell);
-}
-
-static void helpCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-#if 0
-	Help(HELP_SMART_INDENT);
-#endif
 }
 
 static int checkSmartIndentDialogData(void) {
@@ -991,55 +814,6 @@ static void setSmartIndentDialogData(SmartIndent *is) {
 		else
 			XmTextSetStringEx(SmartIndentDialog.modMacro, is->modMacro);
 	}
-}
-
-/*
-** Update the smart indent macros being edited in the dialog
-** with the information that the dialog is currently displaying, and
-** apply changes to any window which is currently using the macros.
-*/
-static int updateSmartIndentData(void) {
-	char *lmName;
-	int i;
-
-	// Make sure the patterns are valid and compile 
-	if (!checkSmartIndentDialogData())
-		return False;
-
-	// Get the current data 
-	SmartIndent *newMacros = getSmartIndentDialogData();
-
-	// Find the original macros 
-	for (i = 0; i < NSmartIndentSpecs; i++)
-		if (!strcmp(SmartIndentDialog.langModeName, SmartIndentSpecs[i]->lmName))
-			break;
-
-	/* If it's a new language, add it at the end, otherwise free the
-	   existing macros and replace it */
-	if (i == NSmartIndentSpecs) {
-		SmartIndentSpecs[NSmartIndentSpecs++] = newMacros;
-	} else {
-		freeIndentSpec(SmartIndentSpecs[i]);
-		SmartIndentSpecs[i] = newMacros;
-	}
-
-	/* Find windows that are currently using this indent specification and
-	   re-do the smart indent macros */
-	for(Document *window: WindowList) {
-		lmName = LanguageModeName(window->languageMode_);
-		if (lmName != nullptr && !strcmp(lmName, newMacros->lmName)) {
-			window->SetSensitive(window->smartIndentItem_, True);
-			if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
-				EndSmartIndent(window);
-				BeginSmartIndent(window, False);
-			}
-		}
-	}
-
-	// Note that preferences have been changed 
-	MarkPrefsChanged();
-
-	return True;
 }
 
 static int loadDefaultIndentSpec(const char *lmName) {
@@ -1209,7 +983,7 @@ static char *readSIMacro(const char **inPtr) {
 	return retStr;
 }
 
-static SmartIndent *copyIndentSpec(SmartIndent *is) {
+SmartIndent *copyIndentSpec(SmartIndent *is) {
 
 	auto ris = new SmartIndent;
 	ris->lmName       = XtNewStringEx(is->lmName);
@@ -1219,7 +993,7 @@ static SmartIndent *copyIndentSpec(SmartIndent *is) {
 	return ris;
 }
 
-static void freeIndentSpec(SmartIndent *is) {
+void freeIndentSpec(SmartIndent *is) {
 
 	XtFree((char *)is->lmName);
 	XtFree((char *)is->initMacro);

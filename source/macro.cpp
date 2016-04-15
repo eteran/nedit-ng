@@ -95,11 +95,6 @@
 
 namespace {
 
-/* Maximum number of actions in a macro and args in
-   an action (to simplify the reader) */
-const int MAX_MACRO_ACTIONS = 1024;
-const int MAX_ACTION_ARGS   = 40;
-
 // How long to wait (msec) before putting up Macro Command banner 
 const int BANNER_WAIT_TIME = 6000;
 

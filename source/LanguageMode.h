@@ -7,7 +7,8 @@
 #include "WrapStyle.h"
 #include "IndentStyle.h"
 
-struct LanguageMode {
+class LanguageMode {
+public:
 	char *name;
 	int nExtensions;
 	char **extensions;

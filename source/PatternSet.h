@@ -4,10 +4,10 @@
 
 #include <QString>
 
-struct HighlightPattern;
+class HighlightPattern;
 
 /* Header for a set of patterns */
-struct PatternSet {
+class PatternSet {
 public:
 	PatternSet();
 	explicit PatternSet(int patternCount);

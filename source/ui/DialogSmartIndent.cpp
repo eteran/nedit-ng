@@ -4,6 +4,7 @@
 #include "DialogLanguageModes.h"
 #include "SmartIndent.h"
 #include "LanguageMode.h"
+#include <QMessageBox>
 
 #include "smartIndent.h"
 #include "Document.h"
@@ -89,6 +90,12 @@ void DialogSmartIndent::on_buttonLanguageMode_clicked() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonOK_clicked() {
+	// change the macro 
+	if (!updateSmartIndentData()) {
+		return;
+	}
+	
+	accept();
 }
 
 //------------------------------------------------------------------------------
@@ -102,24 +109,99 @@ void DialogSmartIndent::on_buttonApply_clicked() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonCheck_clicked() {
+	if (checkSmartIndentDialogData()) {
+		QMessageBox::information(this, tr("Macro compiled"), tr("Macros compiled without error"));
+	}
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonDelete_clicked() {
+	int i;
+
+
+	// TODO(eteran): originally was "Yes, Delete"
+	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent\nmacros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
+	if(resp == QMessageBox::Cancel) {
+		return;
+	}
+
+	// if a stored version of the pattern set exists, delete it from the list 
+	for (i = 0; i < NSmartIndentSpecs; i++) {
+		if (languageMode_ == QLatin1String(SmartIndentSpecs[i]->lmName)) {
+			break;
+		}
+	}
+			
+			
+	if (i < NSmartIndentSpecs) {
+		freeIndentSpec(SmartIndentSpecs[i]);
+		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(SmartIndent *));
+		NSmartIndentSpecs--;
+	}
+
+	// Clear out the dialog 
+	setSmartIndentDialogData(nullptr);
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonRestore_clicked() {
+
+
+
+	int i;
+	SmartIndent *defaultIS;
+
+	// Find the default indent spec 
+	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
+		if (languageMode_ == QLatin1String(DefaultIndentSpecs[i].lmName)) {
+			break;
+		}
+	}
+
+	if (i == N_DEFAULT_INDENT_SPECS) {
+		QMessageBox::warning(this, tr("Smart Indent"), tr("There are no default indent macros\nfor language mode %1").arg(languageMode_));
+		return;
+	}
+	defaultIS = &DefaultIndentSpecs[i];
+
+	
+	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
+	if(resp == QMessageBox::Cancel) {
+		return;
+	}
+
+	/* if a stored version of the indent macros exist, replace them, if not,
+	   add a new one */
+	for (i = 0; i < NSmartIndentSpecs; i++) {
+		if (languageMode_ == QLatin1String(SmartIndentSpecs[i]->lmName)) {
+			break;
+		}
+	}
+
+	
+	if (i < NSmartIndentSpecs) {
+		freeIndentSpec(SmartIndentSpecs[i]);
+		SmartIndentSpecs[i] = copyIndentSpec(defaultIS);
+	} else {
+		SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(defaultIS);
+	}
+
+
+	// Update the dialog 
+	setSmartIndentDialogData(defaultIS);
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonHelp_clicked() {
+#if 0
+	Help(HELP_SMART_INDENT);
+#endif
 }
 
 //------------------------------------------------------------------------------

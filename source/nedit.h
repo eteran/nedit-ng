@@ -117,8 +117,8 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
-struct UndoInfo;
-struct Document;
+class UndoInfo;
+class Document;
 struct UserMenuListElement;
 
 /* Element in bookmark table */

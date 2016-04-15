@@ -28,6 +28,7 @@
 #define X_SMART_INDENT_H_
 
 #include "nedit.h"
+#include "preferences.h"
 #include <X11/Intrinsic.h>
 
 class QString;
@@ -48,8 +49,15 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
 
+SmartIndent *copyIndentSpec(SmartIndent *is);
+void freeIndentSpec(SmartIndent *is);
 SmartIndent *findIndentSpec(const char *modeName);
 
 extern char *CommonMacros;
 extern const char DefaultCommonMacros[];
+
+#define N_DEFAULT_INDENT_SPECS 4
+extern int NSmartIndentSpecs;
+extern SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
+extern SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
 #endif 

@@ -11,7 +11,6 @@
 namespace {
 const char DELIM = '-';
 const int MAX_NUM_FONTS            = 32767;
-const int MAX_ENTRIES_IN_LIST      = 5000;
 const int TEMP_BUF_SIZE            = 256;
 const int NUM_COMPONENTS_FONT_NAME = 14;
 
