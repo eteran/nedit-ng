@@ -3297,7 +3297,11 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	XmFontList statsFontList;
 	char newGeometry[MAX_GEOM_STRING_LEN];
 	unsigned int rows, cols;
-	int x = 0, y = 0, bitmask, showTabBar, state;
+	int x = 0;
+	int y = 0;
+	int bitmask;
+	int showTabBar;
+	int state;
 
 	static Pixmap isrcFind = 0;
 	static Pixmap isrcClear = 0;
@@ -3313,77 +3317,80 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	dialogReplace_ = nullptr;
 
 	multiFileReplSelected_ = FALSE;
-	multiFileBusy_ = FALSE;
-	writableWindows_ = nullptr;
-	nWritableWindows_ = 0;
-	fileChanged_ = FALSE;
-	fileMode_ = 0;
-	fileUid_ = 0;
-	fileGid_ = 0;
-	filenameSet_ = FALSE;
-	fileFormat_ = UNIX_FILE_FORMAT;
-	lastModTime_ = 0;
-	fileMissing_ = True;
-	filename_ = name;
-	undo_ = std::list<UndoInfo *>();
-	redo_ = std::list<UndoInfo *>();
-	nPanes_ = 0;
-	autoSaveCharCount_ = 0;
-	autoSaveOpCount_ = 0;
-	undoMemUsed_ = 0;
+	multiFileBusy_         = FALSE;
+	writableWindows_       = nullptr;
+	nWritableWindows_      = 0;
+	fileChanged_           = FALSE;
+	fileMode_              = 0;
+	fileUid_               = 0;
+	fileGid_               = 0;
+	filenameSet_           = FALSE;
+	fileFormat_            = UNIX_FILE_FORMAT;
+	lastModTime_           = 0;
+	fileMissing_           = True;
+	filename_              = name;
+	undo_                  = std::list<UndoInfo *>();
+	redo_                  = std::list<UndoInfo *>();
+	nPanes_                = 0;
+	autoSaveCharCount_     = 0;
+	autoSaveOpCount_       = 0;
+	undoMemUsed_           = 0;
+	
 	CLEAR_ALL_LOCKS(lockReasons_);
-	indentStyle_ = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	autoSave_ = GetPrefAutoSave();
-	saveOldVersion_ = GetPrefSaveOldVersion();
-	wrapMode_ = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	overstrike_ = False;
-	showMatchingStyle_ = GetPrefShowMatching();
-	matchSyntaxBased_ = GetPrefMatchSyntaxBased();
-	showStats_ = GetPrefStatsLine();
-	showISearchLine_ = GetPrefISearchLine();
-	showLineNumbers_ = GetPrefLineNums();
-	highlightSyntax_ = GetPrefHighlightSyntax();
+	
+	indentStyle_        = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+	autoSave_           = GetPrefAutoSave();
+	saveOldVersion_     = GetPrefSaveOldVersion();
+	wrapMode_           = GetPrefWrap(PLAIN_LANGUAGE_MODE);
+	overstrike_         = false;
+	showMatchingStyle_  = GetPrefShowMatching();
+	matchSyntaxBased_   = GetPrefMatchSyntaxBased();
+	showStats_          = GetPrefStatsLine();
+	showISearchLine_    = GetPrefISearchLine();
+	showLineNumbers_    = GetPrefLineNums();
+	highlightSyntax_    = GetPrefHighlightSyntax();
 	backlightCharTypes_ = nullptr;
-	backlightChars_ = GetPrefBacklightChars();
+	backlightChars_     = GetPrefBacklightChars();
+	
 	if (backlightChars_) {
 		const char *cTypes = GetPrefBacklightCharTypes();
 		if (cTypes && backlightChars_) {
 			backlightCharTypes_ = XtStringDup(cTypes);
 		}
 	}
-	modeMessageDisplayed_ = FALSE;
-	modeMessage_ = nullptr;
-	ignoreModify_ = FALSE;
-	windowMenuValid_ = FALSE;
-	flashTimeoutID_ = 0;
-	fileClosedAtom_ = None;
-	wasSelected_ = FALSE;
-
-	fontName_ = GetPrefFontName();
+	modeMessageDisplayed_   = false;
+	modeMessage_            = nullptr;
+	ignoreModify_           = false;
+	windowMenuValid_        = false;
+	flashTimeoutID_         = 0;
+	fileClosedAtom_         = None;
+	wasSelected_            = false;
+	fontName_               = GetPrefFontName();
+	
 	strcpy(italicFontName_, GetPrefItalicFontName());
 	strcpy(boldFontName_, GetPrefBoldFontName());
 	strcpy(boldItalicFontName_, GetPrefBoldItalicFontName());
-	dialogColors_ = nullptr;
-	fontList_ = GetPrefFontList();
-	italicFontStruct_ = GetPrefItalicFont();
-	boldFontStruct_ = GetPrefBoldFont();
-	boldItalicFontStruct_ = GetPrefBoldItalicFont();
-	dialogFonts_ = nullptr;
-	nMarks_ = 0;
-	markTimeoutID_ = 0;
-	highlightData_ = nullptr;
-	shellCmdData_ = nullptr;
-	macroCmdData_ = nullptr;
-	smartIndentData_ = nullptr;
-	languageMode_ = PLAIN_LANGUAGE_MODE;
-	iSearchHistIndex_ = 0;
-	iSearchStartPos_ = -1;
-	iSearchLastRegexCase_ = TRUE;
-	iSearchLastLiteralCase_ = FALSE;
-
-	tab_ = nullptr;
-	device_ = 0;
-	inode_ = 0;
+	
+	dialogColors_           = nullptr;
+	fontList_               = GetPrefFontList();
+	italicFontStruct_       = GetPrefItalicFont();
+	boldFontStruct_         = GetPrefBoldFont();
+	boldItalicFontStruct_   = GetPrefBoldItalicFont();
+	dialogFonts_            = nullptr;
+	nMarks_                 = 0;
+	markTimeoutID_          = 0;
+	highlightData_          = nullptr;
+	shellCmdData_           = nullptr;
+	macroCmdData_           = nullptr;
+	smartIndentData_        = nullptr;
+	languageMode_           = PLAIN_LANGUAGE_MODE;
+	iSearchHistIndex_       = 0;
+	iSearchStartPos_        = -1;
+	iSearchLastRegexCase_   = true;
+	iSearchLastLiteralCase_ = false;
+	tab_                    = nullptr;
+	device_                 = 0;
+	inode_                  = 0;
 
 	/* If window geometry was specified, split it apart into a window position
 	   component and a window size component.  Create a new geometry string
@@ -3394,8 +3401,10 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	   application resource, which is pretty useless because width and height
 	   are the same as the rows and cols preferences, and specifying a window
 	   location will force all the windows to pile on top of one another */
-	if (geometry == nullptr || geometry[0] == '\0')
+	if (geometry == nullptr || geometry[0] == '\0') {
 		geometry = GetPrefGeometry();
+	}
+	
 	if (geometry == nullptr || geometry[0] == '\0') {
 		rows = GetPrefRows();
 		cols = GetPrefCols();
@@ -3450,7 +3459,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 #ifdef EDITRES
 	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
-#endif // EDITRES 
+#endif
 
 	addWindowIcon(winShell);
 

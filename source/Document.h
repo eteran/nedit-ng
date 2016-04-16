@@ -318,7 +318,7 @@ public:
 	XFontStruct *boldItalicFontStruct_;
 	XtIntervalId flashTimeoutID_;   /* timer procedure id for getting rid of highlighted matching paren.  Non-zero val. means highlight is drawn */
 	int flashPos_;                  /* position saved for erasing matching paren highlight (if one is drawn) */
-	int wasSelected_;               /* last selection state (for dim/undim of selection related menu items */
+	bool wasSelected_;              /* last selection state (for dim/undim of selection related menu items */
 	bool filenameSet_;              /* is the window still "Untitled"? */
 	bool fileChanged_;              /* has window been modified? */
 	bool fileMissing_;              /* is the window's file gone? */
