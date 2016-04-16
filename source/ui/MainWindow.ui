@@ -1,0 +1,1027 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>837</width>
+    <height>576</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="incrementalSearchFrame">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QToolButton" name="buttonIFind">
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset theme="edit-find">
+           <normaloff/>
+          </iconset>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::NoArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="editIFind">
+         <property name="placeholderText">
+          <string>Incremental Search</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkIFindReverse">
+         <property name="text">
+          <string>Rev</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkIFindRegex">
+         <property name="text">
+          <string>RegExp</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkIFindCase">
+         <property name="text">
+          <string>Case</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Tab 1</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>837</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_New"/>
+    <addaction name="action_New_Window"/>
+    <addaction name="action_Open"/>
+    <addaction name="action_Open_Selected"/>
+    <addaction name="action_Open_Previous"/>
+    <addaction name="separator"/>
+    <addaction name="action_Close"/>
+    <addaction name="action_Save"/>
+    <addaction name="action_Save_As"/>
+    <addaction name="action_Revert_to_Saved"/>
+    <addaction name="separator"/>
+    <addaction name="action_Include_File"/>
+    <addaction name="action_Load_Macro_File"/>
+    <addaction name="action_Load_Tags_File"/>
+    <addaction name="action_Unload_Tags_File"/>
+    <addaction name="action_Load_Calltips_File"/>
+    <addaction name="action_Unload_Calltips_File"/>
+    <addaction name="separator"/>
+    <addaction name="action_Print"/>
+    <addaction name="action_Print_Selection"/>
+    <addaction name="separator"/>
+    <addaction name="action_Exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="action_Undo"/>
+    <addaction name="action_Redo"/>
+    <addaction name="separator"/>
+    <addaction name="action_Cut"/>
+    <addaction name="action_Copy"/>
+    <addaction name="action_Paste"/>
+    <addaction name="action_Paste_Column"/>
+    <addaction name="action_Delete"/>
+    <addaction name="action_Select_All"/>
+    <addaction name="separator"/>
+    <addaction name="action_Shift_Left"/>
+    <addaction name="action_Shift_Right"/>
+    <addaction name="action_Lower_case"/>
+    <addaction name="action_Upper_case"/>
+    <addaction name="action_Fill_Paragraph"/>
+    <addaction name="separator"/>
+    <addaction name="action_Insert_Form_Feed"/>
+    <addaction name="action_Insert_Ctrl_Code"/>
+   </widget>
+   <widget class="QMenu" name="menu_Search">
+    <property name="title">
+     <string>&amp;Search</string>
+    </property>
+    <addaction name="action_Find"/>
+    <addaction name="action_Find_Again"/>
+    <addaction name="action_Find_Selection"/>
+    <addaction name="action_Find_Incremental"/>
+    <addaction name="action_Replace"/>
+    <addaction name="action_Replace_Find_Again"/>
+    <addaction name="action_Replace_Again"/>
+    <addaction name="separator"/>
+    <addaction name="action_Goto_Line_Number"/>
+    <addaction name="action_Goto_Selected"/>
+    <addaction name="separator"/>
+    <addaction name="action_Mark"/>
+    <addaction name="action_Goto_Mark"/>
+    <addaction name="separator"/>
+    <addaction name="action_Goto_Matching"/>
+    <addaction name="action_Find_Definition"/>
+    <addaction name="action_Show_Calltip"/>
+   </widget>
+   <widget class="QMenu" name="menu_Preferences">
+    <property name="title">
+     <string>&amp;Preferences</string>
+    </property>
+    <widget class="QMenu" name="menu_Show_Matching">
+     <property name="title">
+      <string>Show &amp;Matching (..)</string>
+     </property>
+     <addaction name="action_Off"/>
+     <addaction name="action_Delimeter"/>
+     <addaction name="action_Range"/>
+     <addaction name="separator"/>
+     <addaction name="action_Syntax_Based"/>
+    </widget>
+    <widget class="QMenu" name="menu_Default_Settings">
+     <property name="title">
+      <string>&amp;Default Settings</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_Wrap">
+     <property name="title">
+      <string>&amp;Wrap</string>
+     </property>
+     <addaction name="action_None"/>
+     <addaction name="action_Auto_Newline"/>
+     <addaction name="action_Continuous"/>
+     <addaction name="separator"/>
+     <addaction name="action_Wrap_Margin"/>
+    </widget>
+    <widget class="QMenu" name="menu_Auto_Indent">
+     <property name="title">
+      <string>&amp;Auto Indent</string>
+     </property>
+     <addaction name="action_Indent_Off"/>
+     <addaction name="action_Indent_On"/>
+     <addaction name="action_Smart"/>
+    </widget>
+    <addaction name="menu_Default_Settings"/>
+    <addaction name="action_Save_Defaults"/>
+    <addaction name="separator"/>
+    <addaction name="action_Statistics_Line"/>
+    <addaction name="action_Incremental_Search_Line"/>
+    <addaction name="action_Show_Line_Numbers"/>
+    <addaction name="action_Language_Mode"/>
+    <addaction name="menu_Auto_Indent"/>
+    <addaction name="menu_Wrap"/>
+    <addaction name="action_Tab_Stops"/>
+    <addaction name="action_Text_Fonts"/>
+    <addaction name="action_Highlight_Syntax"/>
+    <addaction name="action_Apply_Backlighting"/>
+    <addaction name="action_Make_Backup_Copy"/>
+    <addaction name="action_Incremental_Backup"/>
+    <addaction name="menu_Show_Matching"/>
+    <addaction name="separator"/>
+    <addaction name="action_Overtype"/>
+    <addaction name="action_Read_Only"/>
+   </widget>
+   <widget class="QMenu" name="menu_Shell">
+    <property name="title">
+     <string>She&amp;ll</string>
+    </property>
+    <addaction name="action_Execute_Command"/>
+    <addaction name="action_Execute_Command_Line"/>
+    <addaction name="action_Filter_Selection"/>
+    <addaction name="action_Cancel_Shell_Command"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_Macro">
+    <property name="title">
+     <string>Ma&amp;cro</string>
+    </property>
+    <addaction name="action_Learn_Keystrokes"/>
+    <addaction name="action_Finish_Learn"/>
+    <addaction name="action_Cancel_Learn"/>
+    <addaction name="action_Replay_Keystrokes"/>
+    <addaction name="action_Repeat"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_Windows">
+    <property name="title">
+     <string>&amp;Windows</string>
+    </property>
+    <addaction name="action_Split_Pane"/>
+    <addaction name="action_Close_Pane"/>
+    <addaction name="separator"/>
+    <addaction name="action_Detach_Tab"/>
+    <addaction name="action_Move_Tab_To"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_About"/>
+    <addaction name="action_About_Qt"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_Search"/>
+   <addaction name="menu_Preferences"/>
+   <addaction name="menu_Shell"/>
+   <addaction name="menu_Macro"/>
+   <addaction name="menu_Windows"/>
+   <addaction name="separator"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <action name="action_New">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_New_Window">
+   <property name="text">
+    <string>New &amp;Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="action_Open">
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Open_Selected">
+   <property name="text">
+    <string>Open Selecte&amp;d</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_Open_Previous">
+   <property name="text">
+    <string>Open &amp;Previous</string>
+   </property>
+  </action>
+  <action name="action_Close">
+   <property name="text">
+    <string>&amp;Close</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_Save_As">
+   <property name="text">
+    <string>Save &amp;As...</string>
+   </property>
+  </action>
+  <action name="action_Revert_to_Saved">
+   <property name="text">
+    <string>&amp;Revert to Saved</string>
+   </property>
+  </action>
+  <action name="action_Include_File">
+   <property name="text">
+    <string>&amp;Include File...</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+I</string>
+   </property>
+  </action>
+  <action name="action_Load_Macro_File">
+   <property name="text">
+    <string>Load &amp;Macro File...</string>
+   </property>
+  </action>
+  <action name="action_Load_Tags_File">
+   <property name="text">
+    <string>Load Ta&amp;gs File...</string>
+   </property>
+  </action>
+  <action name="action_Unload_Tags_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Unload Tags File</string>
+   </property>
+  </action>
+  <action name="action_Load_Calltips_File">
+   <property name="text">
+    <string>Load Calltips &amp;File...</string>
+   </property>
+  </action>
+  <action name="action_Unload_Calltips_File">
+   <property name="text">
+    <string>Unload Calltips Fil&amp;e</string>
+   </property>
+  </action>
+  <action name="action_Print">
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_Print_Selection">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Print Se&amp;lection...</string>
+   </property>
+  </action>
+  <action name="action_Exit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="action_Undo">
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="action_Redo">
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="action_Cut">
+   <property name="text">
+    <string>Cu&amp;t</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="action_Copy">
+   <property name="text">
+    <string>&amp;Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="action_Paste">
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="action_Paste_Column">
+   <property name="text">
+    <string>Pa&amp;ste Column</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="action_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Delete</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="action_Select_All">
+   <property name="text">
+    <string>Select &amp;All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_Shift_Left">
+   <property name="text">
+    <string>Shift &amp;Left</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+9</string>
+   </property>
+  </action>
+  <action name="action_Shift_Right">
+   <property name="text">
+    <string>Shift Ri&amp;ght</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="action_Lower_case">
+   <property name="text">
+    <string>Lo&amp;wer-case</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+6</string>
+   </property>
+  </action>
+  <action name="action_Upper_case">
+   <property name="text">
+    <string>Upp&amp;er-case</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+6</string>
+   </property>
+  </action>
+  <action name="action_Fill_Paragraph">
+   <property name="text">
+    <string>&amp;Fill Paragraph</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
+  </action>
+  <action name="action_Insert_Form_Feed">
+   <property name="text">
+    <string>&amp;Insert Form Feed</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+L</string>
+   </property>
+  </action>
+  <action name="action_Insert_Ctrl_Code">
+   <property name="text">
+    <string>I&amp;nsert Ctrl Code...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+I</string>
+   </property>
+  </action>
+  <action name="action_Find">
+   <property name="text">
+    <string>&amp;Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="action_Find_Again">
+   <property name="text">
+    <string>F&amp;ind Again</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="action_Find_Selection">
+   <property name="text">
+    <string>Find &amp;Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="action_Find_Incremental">
+   <property name="text">
+    <string>Fi&amp;nd Incremental</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="action_Replace">
+   <property name="text">
+    <string>&amp;Replace...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_Replace_Find_Again">
+   <property name="text">
+    <string>Replace Find &amp;Again</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="action_Replace_Again">
+   <property name="text">
+    <string>Re&amp;place Again</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+T</string>
+   </property>
+  </action>
+  <action name="action_Goto_Line_Number">
+   <property name="text">
+    <string>Goto &amp;Line Number...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="action_Goto_Selected">
+   <property name="text">
+    <string>&amp;Goto Selected</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="action_Mark">
+   <property name="text">
+    <string>Mar&amp;k</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+M</string>
+   </property>
+  </action>
+  <action name="action_Goto_Mark">
+   <property name="text">
+    <string>G&amp;oto Mark</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+G</string>
+   </property>
+  </action>
+  <action name="action_Goto_Matching">
+   <property name="text">
+    <string>Goto &amp;Matching (..)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_Find_Definition">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Find &amp;Definition</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="action_Show_Calltip">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Calltip</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+'</string>
+   </property>
+  </action>
+  <action name="action_Execute_Command">
+   <property name="text">
+    <string>&amp;Execute Command</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+X</string>
+   </property>
+  </action>
+  <action name="action_Execute_Command_Line">
+   <property name="text">
+    <string>E&amp;xecute Command Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="action_Filter_Selection">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Filter Selection...</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+R</string>
+   </property>
+  </action>
+  <action name="action_Cancel_Shell_Command">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Cancel Shell Command</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="action_Split_Pane">
+   <property name="text">
+    <string>&amp;Split Pane</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
+  </action>
+  <action name="action_Close_Pane">
+   <property name="text">
+    <string>&amp;Close Pane</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="action_Detach_Tab">
+   <property name="text">
+    <string>&amp;Detach Tab</string>
+   </property>
+  </action>
+  <action name="action_Move_Tab_To">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Move Tab To...</string>
+   </property>
+  </action>
+  <action name="action_About_Qt">
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
+  <action name="action_Indent">
+   <property name="text">
+    <string>Indent</string>
+   </property>
+  </action>
+  <action name="action_Unindent">
+   <property name="text">
+    <string>Unindent</string>
+   </property>
+  </action>
+  <action name="action_Save_Defaults">
+   <property name="text">
+    <string>Sa&amp;ve Defaults...</string>
+   </property>
+  </action>
+  <action name="action_Statistics_Line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Statistics Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+A</string>
+   </property>
+  </action>
+  <action name="action_Incremental_Search_Line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Incremental Search Line</string>
+   </property>
+  </action>
+  <action name="action_Show_Line_Numbers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Line &amp;Numbers</string>
+   </property>
+  </action>
+  <action name="action_Language_Mode">
+   <property name="text">
+    <string>&amp;Language Mode</string>
+   </property>
+  </action>
+  <action name="action_Tab_Stops">
+   <property name="text">
+    <string>&amp;Tab Stops...</string>
+   </property>
+  </action>
+  <action name="action_Text_Fonts">
+   <property name="text">
+    <string>Text &amp;Fonts...</string>
+   </property>
+  </action>
+  <action name="action_Highlight_Syntax">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Highlight Syntax</string>
+   </property>
+  </action>
+  <action name="action_Apply_Backlighting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Apply Backli&amp;ghting</string>
+   </property>
+  </action>
+  <action name="action_Make_Backup_Copy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mak&amp;e Backup Copy (*.bck)</string>
+   </property>
+  </action>
+  <action name="action_Incremental_Backup">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Incremental &amp;Backup</string>
+   </property>
+  </action>
+  <action name="action_Overtype">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Overtype</string>
+   </property>
+   <property name="shortcut">
+    <string>Ins</string>
+   </property>
+  </action>
+  <action name="action_Read_Only">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Read Onl&amp;y</string>
+   </property>
+  </action>
+  <action name="action_Off">
+   <property name="text">
+    <string>&amp;Off</string>
+   </property>
+  </action>
+  <action name="action_Delimeter">
+   <property name="text">
+    <string>&amp;Delimeter</string>
+   </property>
+  </action>
+  <action name="action_Range">
+   <property name="text">
+    <string>&amp;Range</string>
+   </property>
+  </action>
+  <action name="action_Syntax_Based">
+   <property name="text">
+    <string>&amp;Syntax Based</string>
+   </property>
+  </action>
+  <action name="action_None">
+   <property name="text">
+    <string>&amp;None</string>
+   </property>
+  </action>
+  <action name="action_Auto_Newline">
+   <property name="text">
+    <string>&amp;Auto Newline</string>
+   </property>
+  </action>
+  <action name="action_Continuous">
+   <property name="text">
+    <string>&amp;Continuous</string>
+   </property>
+  </action>
+  <action name="action_Wrap_Margin">
+   <property name="text">
+    <string>&amp;Wrap Margin...</string>
+   </property>
+  </action>
+  <action name="action_Indent_Off">
+   <property name="text">
+    <string>&amp;Off</string>
+   </property>
+  </action>
+  <action name="action_Indent_On">
+   <property name="text">
+    <string>O&amp;n</string>
+   </property>
+  </action>
+  <action name="action_Smart">
+   <property name="text">
+    <string>&amp;Smart</string>
+   </property>
+  </action>
+  <action name="action_Learn_Keystrokes">
+   <property name="text">
+    <string>&amp;Learn Keystrokes</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+K</string>
+   </property>
+  </action>
+  <action name="action_Finish_Learn">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Finish Learn</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+K</string>
+   </property>
+  </action>
+  <action name="action_Cancel_Learn">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Cancel Learn</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="action_Replay_Keystrokes">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Replay &amp;Keystrokes</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="action_Repeat">
+   <property name="text">
+    <string>&amp;Repeat...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="action_Complete_Word">
+   <property name="text">
+    <string>Complete Word</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+D</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About nedit-ng</string>
+   </property>
+  </action>
+  <action name="action_Find_Again_Backwards">
+   <property name="text">
+    <string>Find Again Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Find Again Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+G</string>
+   </property>
+  </action>
+  <action name="action_Find_Selection_Backwards">
+   <property name="text">
+    <string>Find Selection Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Find Selection Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+H</string>
+   </property>
+  </action>
+  <action name="action_Highlight_To_Matching">
+   <property name="text">
+    <string>Highlight_To_Matching</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight_To_Matching</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+M</string>
+   </property>
+  </action>
+  <action name="action_Find_Backwards">
+   <property name="text">
+    <string>Find Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Find Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="action_Replace_Backwards">
+   <property name="text">
+    <string>Replace Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Replace Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
+   </property>
+  </action>
+  <action name="action_Replace_Again_Backwards">
+   <property name="text">
+    <string>Replace Again Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Replace Again Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_Replace_Find_Again_Backwards">
+   <property name="text">
+    <string>Replace Find Again Backwards</string>
+   </property>
+   <property name="toolTip">
+    <string>Replace Find Again Backwards</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

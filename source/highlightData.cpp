@@ -1000,8 +1000,7 @@ void EditHighlightStyles(const char *initialStyle) {
 	XtAddCallback(form, XmNdestroyCallback, hsDestroyCB, nullptr);
 	AddMotifCloseCallback(HSDialog.shell, hsCloseCB, nullptr);
 
-	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("To modify the properties of an existing highlight style, select the name\n\
-from the list on the left.  Select \"New\" to add a new style to the list."),
+	topLbl = XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("To modify the properties of an existing highlight style, select the name\nfrom the list on the left.  Select \"New\" to add a new style to the list."),
 	                                 XmNmnemonic, 'N', XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, HS_LEFT_MARGIN_POS, XmNrightAttachment, XmATTACH_POSITION,
 	                                 XmNrightPosition, HS_RIGHT_MARGIN_POS, nullptr);
 	XmStringFree(s1);

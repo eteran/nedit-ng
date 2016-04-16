@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
+#include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -3282,12 +3283,10 @@ void Document::cloneDocument(Document *window) {
 Document::Document(const char *name, char *geometry, bool iconic) {
 	
 	Widget winShell;
-	Widget mainWin;
 	Widget menuBar;
 	Widget pane;
 	Widget text;
 	Widget stats;
-	Widget statsAreaForm;
 	Widget closeTabBtn;
 	Widget tabForm;
 	Pixel bgpix, fgpix;
@@ -3468,12 +3467,20 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	   window pointer from the widget id of any of the window's widgets */
 	XtSetArg(al[ac], XmNuserData, this);
 	ac++;
-	mainWin = XmCreateMainWindow(winShell, (String) "main", al, ac);
+	Widget mainWin = XmCreateMainWindow(winShell, (String) "main", al, ac);
 	mainWin_ = mainWin;
 	XtManageChild(mainWin);
+	
+#if 0
+	// TODO(eteran): this is an experiement in making a Qt main window along side
+	// the typical one...
+	auto win = new MainWindow();
+	win->show();
+#endif
+	
 
 	// The statsAreaForm holds the stats line and the I-Search line. 
-	statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
+	Widget statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
 	                                 // XmNautoUnmanage, False, 
 	                                 nullptr);
 
@@ -3489,8 +3496,9 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	iSearchForm_ = XtVaCreateWidget("iSearchForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, STAT_SHADOW_THICKNESS, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset,
 	                                       STAT_SHADOW_THICKNESS, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, STAT_SHADOW_THICKNESS, XmNbottomOffset, STAT_SHADOW_THICKNESS, nullptr);
-	if (showISearchLine_)
+	if (showISearchLine_) {
 		XtManageChild(iSearchForm_);
+	}
 
 	/* Disable keyboard traversal of the find, clear and toggle buttons.  We
 	   were doing this previously by forcing the keyboard focus back to the
