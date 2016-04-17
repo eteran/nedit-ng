@@ -68,6 +68,8 @@
 
 namespace {
 
+const int MAX_HIGHLIGHT_STYLES = 256;
+
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
 const int MAX_PATTERNS = 127;
@@ -85,8 +87,7 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 }
 
 // list of available highlight styles 
-int NHighlightStyles = 0;
-HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
+QList<HighlightStyle *> HighlightStyles;
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -323,7 +324,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		
 		
 		/* pattern set was read correctly, add/change it in the list */\
-		for (i = 0; i < NHighlightStyles; i++) {
+		for (i = 0; i < HighlightStyles.size(); i++) {
 			if (HighlightStyles[i]->name == hs->name) {			
 				delete HighlightStyles[i];
 				HighlightStyles[i] = hs;
@@ -332,11 +333,8 @@ bool LoadStylesStringEx(const std::string &string) {
 		}
 		
 	
-		if (i == NHighlightStyles) {
-			HighlightStyles[NHighlightStyles++] = hs;
-			if (NHighlightStyles > MAX_HIGHLIGHT_STYLES) {
-				return styleError(inString, inPtr, "maximum allowable number of styles exceeded");
-			}
+		if (i == HighlightStyles.size()) {
+			HighlightStyles.push_back(hs);
 		}
 
 		// if the string ends here, we're done 
@@ -358,7 +356,7 @@ QString WriteStylesStringEx(void) {
 
 	auto outBuf = memory::make_unique<TextBuffer>();
 
-	for (i = 0; i < NHighlightStyles; i++) {
+	for (i = 0; i < HighlightStyles.size(); i++) {
 		style = HighlightStyles[i];
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
@@ -646,9 +644,10 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 static Widget createHighlightStylesMenu(Widget parent) {
 
 	Widget menu = CreatePulldownMenu(parent, "highlightStyles", nullptr, 0);
-	for (int i = 0; i < NHighlightStyles; i++) {
 	
-		XmString s1 = XmStringCreateSimpleEx(HighlightStyles[i]->name);
+	for(HighlightStyle *style : HighlightStyles) {
+	
+		XmString s1 = XmStringCreateSimpleEx(style->name);
 	
 		XtVaCreateManagedWidget(
 			"highlightStyles", 
@@ -657,7 +656,7 @@ static Widget createHighlightStylesMenu(Widget parent) {
 			XmNlabelString, 
 			s1,
 			XmNuserData, 
-			HighlightStyles[i]->name.data(), // NOTE(eteran): is this safe? will it be invalidated at some point?
+			style->name.data(), // NOTE(eteran): is this safe? will it be invalidated at some point?
 			nullptr);
 			
 		XmStringFree(s1);
@@ -969,11 +968,11 @@ void EditHighlightStyles(const char *initialStyle) {
 	/* Copy the list of highlight style information to one that the user
 	   can freely edit (via the dialog and managed-list code) */
 	HSDialog.highlightStyleList = new HighlightStyle *[MAX_HIGHLIGHT_STYLES];
-	for (int i = 0; i < NHighlightStyles; i++) {
+	for (int i = 0; i < HighlightStyles.size(); i++) {
 		HSDialog.highlightStyleList[i] = new HighlightStyle(*HighlightStyles[i]);
 	}
 	
-	HSDialog.nHighlightStyles = NHighlightStyles;
+	HSDialog.nHighlightStyles = HighlightStyles.size();
 
 	// Create a form widget in an application shell 
 	ac = 0;
@@ -1356,14 +1355,12 @@ static int updateHSList(void) {
 		return False;
 
 	// Replace the old highlight styles list with the new one from the dialog 
-	for (int i = 0; i < NHighlightStyles; i++) {
-		delete HighlightStyles[i];
-	}
+	qDeleteAll(HighlightStyles);
+	HighlightStyles.clear();
 	
 	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
-		HighlightStyles[i] = new HighlightStyle(*HSDialog.highlightStyleList[i]);
+		HighlightStyles.push_back(new HighlightStyle(*HSDialog.highlightStyleList[i]));
 	}
-	NHighlightStyles = HSDialog.nHighlightStyles;
 
 	// If a syntax highlighting dialog is up, update its menu 
 	updateHighlightStyleMenu();
@@ -2491,7 +2488,7 @@ static PatternSet *getDialogPatternSet(void) {
 */
 static int lookupNamedStyle(view::string_view styleName) {
 
-	for (int i = 0; i < NHighlightStyles; i++) {	
+	for (int i = 0; i < HighlightStyles.size(); i++) {
 		if (HighlightStyles[i]->name == styleName.to_string()) {
 			return i;
 		}

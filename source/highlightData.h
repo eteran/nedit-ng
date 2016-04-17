@@ -31,6 +31,7 @@
 #include "nedit.h"
 #include "string_view.h"
 #include <string>
+#include <QList>
 
 
 class PatternSet;
@@ -58,12 +59,7 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 void UpdateLanguageModeMenu(void);
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
 
-/* Maximum allowed number of styles (also limited by representation of
-   styles as a byte - 'b') */
-#define MAX_HIGHLIGHT_STYLES 128
-
 // list of available highlight styles 
-extern int NHighlightStyles;
-extern HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
+extern QList<HighlightStyle *> HighlightStyles;
 
 #endif

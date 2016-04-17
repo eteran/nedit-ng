@@ -13,8 +13,8 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 	ui.setupUi(this);
 	
 	// Copy the list of highlight style information to one that the user can freely edit
-	for (int i = 0; i < NHighlightStyles; i++) {
-		styles_.push_back(new HighlightStyle(*HighlightStyles[i]));
+	for (HighlightStyle *style: HighlightStyles) {
+		styles_.push_back(new HighlightStyle(*style));
 	}
 
 	ui.listStyles->addItem(tr("New"));
