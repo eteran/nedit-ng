@@ -214,9 +214,9 @@ int main(int argc, char **argv) {
 	   but different contents (and therefore can't be edited in the same nedit
 	   session). This should have no bad side-effects for non-clearcase users */
 	if (Preferences.serverName[0] == '\0') {
-		const char *viewTag = GetClearCaseViewTag();
-		if (viewTag != nullptr && strlen(viewTag) < MAXPATHLEN) {
-			strcpy(Preferences.serverName, viewTag);
+		const QString viewTag = GetClearCaseViewTag();
+		if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
+			strcpy(Preferences.serverName, viewTag.toLatin1().data());
 		}
 	}
 

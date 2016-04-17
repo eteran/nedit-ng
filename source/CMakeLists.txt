@@ -24,6 +24,8 @@ qt4_wrap_cpp(MOC_SOURCES
 	QtMotifWidget.h
 	QtXtWidget.h
 
+	ui/DialogColors.h
+	ui/DialogDrawingStyles.h
 	ui/DialogExecuteCommand.h
 	ui/DialogFilter.h
 	ui/DialogFind.h
@@ -32,18 +34,19 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogLanguageModes.h
 	ui/DialogMultiReplace.h
 	ui/DialogReplace.h
-	ui/DialogTabs.h
-	ui/DialogWindowSize.h
-	ui/DialogWrapMargin.h
 	ui/DialogSmartIndentCommon.h
 	ui/DialogSmartIndent.h
-	ui/DialogColors.h
-	ui/DialogDrawingStyles.h
-	ui/MainWindow.h
+	ui/DialogTabs.h
+	ui/DialogWindowSize.h
+	ui/DialogWindowTitle.h
+	ui/DialogWrapMargin.h
 	ui/ListWidget.h
+	ui/MainWindow.h
 )
 
 set(UI_FILES
+	ui/DialogColors.ui
+	ui/DialogDrawingStyles.ui
 	ui/DialogExecuteCommand.ui
 	ui/DialogFilter.ui
 	ui/DialogFind.ui
@@ -54,14 +57,13 @@ set(UI_FILES
 	ui/DialogMultiReplace.ui
 	ui/DialogReplaceScope.ui
 	ui/DialogReplace.ui
-	ui/DialogTabs.ui
-	ui/DialogWindowSize.ui
-	ui/DialogWrapMargin.ui
 	ui/DialogSmartIndentCommon.ui
 	ui/DialogSmartIndent.ui	
-	ui/DialogColors.ui
+	ui/DialogTabs.ui
+	ui/DialogWindowSize.ui
+	ui/DialogWindowTitle.ui
+	ui/DialogWrapMargin.ui
 	ui/MainWindow.ui
-	ui/DialogDrawingStyles.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -71,6 +73,8 @@ add_executable(nedit
 	${MOC_SOURCES}
 	${UI_H}
 
+	ui/DialogColors.cpp
+	ui/DialogDrawingStyles.cpp
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
@@ -79,15 +83,14 @@ add_executable(nedit
 	ui/DialogLanguageModes.cpp
 	ui/DialogMultiReplace.cpp
 	ui/DialogReplace.cpp
-	ui/DialogTabs.cpp
-	ui/DialogWindowSize.cpp
-	ui/DialogWrapMargin.cpp
-	ui/ListWidget.cpp
 	ui/DialogSmartIndentCommon.cpp
 	ui/DialogSmartIndent.cpp
-	ui/DialogColors.cpp
+	ui/DialogTabs.cpp
+	ui/DialogWindowSize.cpp
+	ui/DialogWindowTitle.cpp
+	ui/DialogWrapMargin.cpp
+	ui/ListWidget.cpp
 	ui/MainWindow.cpp
-	ui/DialogDrawingStyles.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp

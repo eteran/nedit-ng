@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>735</width>
+    <width>504</width>
     <height>525</height>
    </rect>
   </property>
@@ -30,7 +30,7 @@
       <item>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkFileName">
           <property name="text">
            <string>&amp;File Name (%f)</string>
           </property>
@@ -40,7 +40,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QCheckBox" name="checkBox_5">
+         <widget class="QCheckBox" name="checkHostName">
           <property name="text">
            <string>&amp;Host name (%h)</string>
           </property>
@@ -49,7 +49,7 @@
         <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkFileStatus">
             <property name="text">
              <string>File &amp;status (%S)</string>
             </property>
@@ -59,7 +59,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_16">
+           <widget class="QCheckBox" name="checkBrief">
             <property name="text">
              <string>&amp;brief</string>
             </property>
@@ -68,14 +68,14 @@
          </layout>
         </item>
         <item row="1" column="1">
-         <widget class="QCheckBox" name="checkBox_6">
+         <widget class="QCheckBox" name="checkUserName">
           <property name="text">
            <string>&amp;User name (%u)</string>
           </property>
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QCheckBox" name="checkBox_3">
+         <widget class="QCheckBox" name="checkClearCase">
           <property name="text">
            <string>&amp;Clearcase view tag (%c)</string>
           </property>
@@ -85,7 +85,7 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QCheckBox" name="checkBox_7">
+         <widget class="QCheckBox" name="checkServerName">
           <property name="text">
            <string>NEdit &amp;server name (%s)</string>
           </property>
@@ -97,7 +97,7 @@
         <item row="3" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QCheckBox" name="checkBox_9">
+           <widget class="QCheckBox" name="checkDirectory">
             <property name="text">
              <string>&amp;Directory (%d), max components</string>
             </property>
@@ -107,7 +107,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_2"/>
+           <widget class="QLineEdit" name="editDirectory"/>
           </item>
          </layout>
         </item>
@@ -136,7 +136,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit">
+         <widget class="QLineEdit" name="editFormat">
           <property name="text">
            <string>{%c} [%s] %f (%S) - %d</string>
           </property>
@@ -154,7 +154,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLineEdit" name="lineEdit_3">
+       <widget class="QLineEdit" name="editPreview">
         <property name="text">
          <string>Untitled</string>
         </property>
@@ -170,21 +170,21 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QCheckBox" name="checkBox_4">
+         <widget class="QCheckBox" name="checkFileModified">
           <property name="text">
            <string>File m&amp;odified</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_8">
+         <widget class="QCheckBox" name="checkFileReadOnly">
           <property name="text">
            <string>File read o&amp;nly</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_10">
+         <widget class="QCheckBox" name="checkFileLocked">
           <property name="text">
            <string>Fi&amp;le locked</string>
           </property>
@@ -208,7 +208,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QCheckBox" name="checkBox_11">
+         <widget class="QCheckBox" name="checkServerNamePresent">
           <property name="text">
            <string>Ser&amp;ver name present</string>
           </property>
@@ -232,14 +232,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QCheckBox" name="checkBox_12">
+         <widget class="QCheckBox" name="checkCCViewTagPresent">
           <property name="text">
            <string>CC vie&amp;w tag present</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_13">
+         <widget class="QCheckBox" name="checkServerEqualsCC">
           <property name="text">
            <string>Server name e&amp;quals CC view tag</string>
           </property>
@@ -263,7 +263,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
-         <widget class="QCheckBox" name="checkBox_15">
+         <widget class="QCheckBox" name="checkDirectoryPresent">
           <property name="text">
            <string>D&amp;irectory present</string>
           </property>
@@ -314,22 +314,6 @@
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>DialogWindowTitle</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>

@@ -27,23 +27,29 @@
 *******************************************************************************/
 
 #include "clearcase.h"
-#include "MotifHelper.h"
-
-#include <cstring>
-#include <cstdlib>
+#include <QString>
 
 
 namespace {
 
-bool ClearCaseViewTagFound    = false;
-const char *ClearCaseViewRoot = nullptr;
-const char *ClearCaseViewTag  = nullptr;
+bool ClearCaseViewTagFound = false;
+QString ClearCaseViewRoot;
+QString ClearCaseViewTag;
 
 }
 
-const char *GetClearCaseVersionExtendedPath(const char *fullname) {
-	return (strstr(fullname, "@@/"));
+int GetClearCaseVersionExtendedPathIndex(const QString &fullname) {
+	return fullname.indexOf(QLatin1String("@@/"));
 }
+
+QString GetClearCaseVersionExtendedPath(const QString &fullname) {
+	int n = fullname.indexOf(QLatin1String("@@/"));
+	if(n == -1) {
+		return QString();
+	}
+	return fullname.mid(n);
+}
+
 
 /*
 ** Return a string showing the ClearCase view tag.  If ClearCase is not in
@@ -54,16 +60,16 @@ const char *GetClearCaseVersionExtendedPath(const char *fullname) {
 ** that it doesn't impact non-clearcase users, so it is not conditionally
 ** compiled. (Thanks to Max Vohlken)
 */
-const char *GetClearCaseViewTag(void) {
+QString GetClearCaseViewTag() {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
-		if (const char *envPtr = getenv("CLEARCASE_ROOT")) {
+		if (const char *envPtr = qgetenv("CLEARCASE_ROOT")) {
 
-			ClearCaseViewRoot = XtStringDup(envPtr);
+			ClearCaseViewRoot = QLatin1String(envPtr);
 
-			const char *tagPtr = strrchr(ClearCaseViewRoot, '/');
-			if (tagPtr) {
-				ClearCaseViewTag = ++tagPtr;
+			const int tagPtr = ClearCaseViewRoot.lastIndexOf(QLatin1Char('/'));
+			if (tagPtr != -1) {
+				ClearCaseViewTag = ClearCaseViewRoot.mid(tagPtr + 1);
 			}
 		}
 	}
@@ -71,6 +77,5 @@ const char *GetClearCaseViewTag(void) {
 	 * well say that we have found it.
 	 */
 	ClearCaseViewTagFound = true;
-
 	return ClearCaseViewTag;
 }

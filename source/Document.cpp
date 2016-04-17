@@ -1865,7 +1865,8 @@ void Document::UpdateWindowTitle() {
 		return;
 	}
 
-	char *title = FormatWindowTitle(filename_.c_str(), path_.c_str(), GetClearCaseViewTag(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
+	QString clearCaseTag = GetClearCaseViewTag();
+	char *title = FormatWindowTitle(filename_.c_str(), path_.c_str(), clearCaseTag.toLatin1().data(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
 	
 	
 	std::string iconTitle = filename_;	

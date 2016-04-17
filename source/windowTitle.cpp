@@ -26,6 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "ui/DialogWindowTitle.h"
+
 #include "prefFile.h"
 #include "utils.h"
 #include "windowTitle.h"
@@ -464,10 +466,12 @@ static void setToggleButtons(void) {
 	// Read-only takes precedence on locked 
 	XtSetSensitive(etDialog.oFileLockedW, !IS_PERM_LOCKED(etDialog.lockReasons));
 
-	XmToggleButtonSetState(etDialog.oCcViewTagW, GetClearCaseViewTag() != nullptr, False);
+	QString ccTag = GetClearCaseViewTag();
+
+	XmToggleButtonSetState(etDialog.oCcViewTagW, !ccTag.isNull(), False);
 	XmToggleButtonSetState(etDialog.oServerNameW, etDialog.isServer, False);
 
-	if (GetClearCaseViewTag() != nullptr && etDialog.isServer && GetPrefServerName()[0] != '\0' && strcmp(GetClearCaseViewTag(), GetPrefServerName()) == 0) {
+	if (!ccTag.isNull() && etDialog.isServer && GetPrefServerName()[0] != '\0' && ccTag == QLatin1String(GetPrefServerName())) {
 		XmToggleButtonSetState(etDialog.oServerEqualViewW, True, False);
 	} else {
 		XmToggleButtonSetState(etDialog.oServerEqualViewW, False, False);
@@ -922,6 +926,8 @@ static void createEditTitleDialog(Widget parent) {
 	Dimension shadowThickness;
 	Dimension radioHeight, textHeight;
 	Pixel background;
+	
+	QString ccTag = GetClearCaseViewTag();
 
 	int ac = 0;
 	XtSetArg(args[ac], XmNautoUnmanage, False);
@@ -1074,7 +1080,7 @@ static void createEditTitleDialog(Widget parent) {
 	etDialog.oCcViewTagW = XtVaCreateManagedWidget("ccViewTagSet", xmToggleButtonWidgetClass, previewBox, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, RADIO_INDENT, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget,
 	                                               etDialog.oServerNameW, XmNlabelString, s1 = XmStringCreateSimpleEx("CC view tag present"),
 
-	                                               XmNset, GetClearCaseViewTag() != nullptr,
+	                                               XmNset, !ccTag.isNull(),
 
 	                                               XmNmnemonic, 'w', nullptr);
 
@@ -1131,13 +1137,20 @@ static void createEditTitleDialog(Widget parent) {
 }
 
 void Document::EditCustomTitleFormat() {
+
+	auto dialog = new DialogWindowTitle(this);
+	dialog->exec();
+	delete dialog;
+
+
 	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */
+	QString ccTag = GetClearCaseViewTag();
 	strcpy(etDialog.path, this->path_.c_str());
 	strcpy(etDialog.filename, this->filename_.c_str());
-	strcpy(etDialog.viewTag, GetClearCaseViewTag() != nullptr ? GetClearCaseViewTag() : "viewtag");
+	strcpy(etDialog.viewTag, !ccTag.isNull() ? ccTag.toLatin1().data() : "viewtag");
 	strcpy(etDialog.serverName, IsServer ? GetPrefServerName() : "servername");
 	etDialog.isServer = IsServer;
 	etDialog.filenameSet = this->filenameSet_;

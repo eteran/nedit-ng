@@ -27,7 +27,10 @@
 #ifndef CLEARCASE_H_
 #define CLEARCASE_H_
 
-const char *GetClearCaseVersionExtendedPath(const char *fullname);
-const char *GetClearCaseViewTag(void);
+class QString;
+
+QString GetClearCaseVersionExtendedPath(const QString &fullname);
+int GetClearCaseVersionExtendedPathIndex(const QString &fullname);
+QString GetClearCaseViewTag();
 
 #endif

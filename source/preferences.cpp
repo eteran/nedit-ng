@@ -1998,7 +1998,6 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 static int matchLanguageMode(Document *window) {
 	char *ext;
 	int i, j, fileNameLen, extLen, beginPos, endPos, start;
-	const char *versionExtendedPath;
 
 	/*... look for an explicit mode statement first */
 
@@ -2021,8 +2020,9 @@ static int matchLanguageMode(Document *window) {
 	// TODO(eteran): this is playing some games with the c_str() that I don't think
 	//               is a good idea. It would be better if GetClearCaseVersionExtendedPath
 	//               returned string_view.
-	if ((versionExtendedPath = GetClearCaseVersionExtendedPath(window->filename_.c_str())) != nullptr) {
-		fileNameLen = versionExtendedPath - window->filename_.c_str();
+	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(QString::fromStdString(window->filename_));
+	if (versionExtendedPathIndex != -1) {
+		fileNameLen = versionExtendedPathIndex;
 	}
 
 	for (i = 0; i < NLanguageModes; i++) {
