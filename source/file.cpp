@@ -167,8 +167,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 */
 Document *EditExistingFile(Document *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
 	Document *window;
-	char fullname[MAXPATHLEN];
-
+	
 	// first look to see if file is already displayed in a window 
 	window = FindWindowWithFile(name, path);
 	if (window) {
@@ -234,10 +233,13 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	window->UpdateStatsLine();
 
 	// Add the name to the convenience menu of previously opened files 
-	strcpy(fullname, path);
-	strcat(fullname, name);
-	if (GetPrefAlwaysCheckRelTagsSpecs())
+	char fullname[MAXPATHLEN];
+	snprintf(fullname, sizeof(fullname), "%s%s", path, name);
+	
+	if (GetPrefAlwaysCheckRelTagsSpecs()) {
 		AddRelTagsFile(GetPrefTagFile(), path, TAG);
+	}
+	
 	AddToPrevOpenMenu(fullname);
 
 	return window;
@@ -951,17 +953,16 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 }
 
 static bool doSave(Document *window) {
-	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	FILE *fp;
 
 	// Get the full name of the file 
-	strcpy(fullname, window->path_.c_str());
-	strcat(fullname, window->filename_.c_str());
+	
+	std::string fullname = window->FullPath();
 
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
-	if ((getuid() == 0) && (stat(fullname, &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+	if ((getuid() == 0) && (stat(fullname.c_str(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
 	
 		int result = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Writing Read-only File"), QString(QLatin1String("File '%1' is marked as read-only.\nDo you want to save anyway?")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
 		if (result != QMessageBox::Save) {
@@ -983,7 +984,7 @@ static bool doSave(Document *window) {
 	}
 
 	// open the file 
-	fp = fopen(fullname, "wb");
+	fp = fopen(fullname.c_str(), "wb");
 	if(!fp) {
 	
 		QMessageBox messageBox(nullptr /*window->shell_*/);
@@ -1029,7 +1030,7 @@ static bool doSave(Document *window) {
 	if (ferror(fp)) {
 		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
-		remove(fullname);
+		remove(fullname.c_str());
 		return FALSE;
 	}
 
@@ -1043,7 +1044,7 @@ static bool doSave(Document *window) {
 	window->SetWindowModified(FALSE);
 
 	// update the modification time 
-	if (stat(fullname, &statbuf) == 0) {
+	if (stat(fullname.c_str(), &statbuf) == 0) {
 		window->lastModTime_ = statbuf.st_mtime;
 		window->fileMissing_ = FALSE;
 		window->device_ = statbuf.st_dev;
@@ -1509,7 +1510,6 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 void CheckForChangesToFile(Document *window) {
 	static Document *lastCheckWindow = nullptr;
 	static Time lastCheckTime = 0;
-	char fullname[MAXPATHLEN];
 	struct stat statbuf;
 	Time timestamp;
 	FILE *fp;
@@ -1550,11 +1550,10 @@ void CheckForChangesToFile(Document *window) {
 			silent = 1;
 	}
 
-	// Get the file mode and modification time 
-	strcpy(fullname, window->path_.c_str());
-	strcat(fullname, window->filename_.c_str());
+	// Get the file mode and modification time
+	std::string fullname = window->FullPath();
 	
-	if (stat(fullname, &statbuf) != 0) {
+	if (stat(fullname.c_str(), &statbuf) != 0) {
 		// Return if we've already warned the user or we can't warn him now 
 		if (window->fileMissing_ || silent) {
 			return;
@@ -1631,13 +1630,13 @@ void CheckForChangesToFile(Document *window) {
 		window->fileMode_ = statbuf.st_mode;
 		window->fileUid_ = statbuf.st_uid;
 		window->fileGid_ = statbuf.st_gid;
-		if ((fp = fopen(fullname, "r"))) {
+		if ((fp = fopen(fullname.c_str(), "r"))) {
 			int readOnly;
 			fclose(fp);
 #ifndef DONT_USE_ACCESS
-			readOnly = access(fullname, W_OK) != 0;
+			readOnly = access(fullname.c_str(), W_OK) != 0;
 #else
-			if (((fp = fopen(fullname, "r+")) != nullptr)) {
+			if (((fp = fopen(fullname.c_str(), "r+")) != nullptr)) {
 				readOnly = FALSE;
 				fclose(fp);
 			} else
@@ -1663,7 +1662,7 @@ void CheckForChangesToFile(Document *window) {
 		window->fileMissing_ = FALSE;
 		if (!GetPrefWarnFileMods())
 			return;
-		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname)) {
+		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.c_str())) {
 			// Contents hasn't changed. Update the modification time. 
 			window->lastModTime_ = statbuf.st_mtime;
 			return;
@@ -1697,25 +1696,27 @@ void CheckForChangesToFile(Document *window) {
 ** to nedit.  This should return FALSE if the file has been deleted or is
 ** unavailable.
 */
-static int fileWasModifiedExternally(Document *window) {
-	char fullname[MAXPATHLEN];
+static int fileWasModifiedExternally(Document *window) {	
 	struct stat statbuf;
 
-	if (!window->filenameSet_)
-		return FALSE;
-	/* if (window->lastModTime_ == 0)
-	return FALSE; */
-	
-	strcpy(fullname, window->path_.c_str());
-	strcat(fullname, window->filename_.c_str());
-	
-	if (stat(fullname, &statbuf) != 0)
-		return FALSE;
-	if (window->lastModTime_ == statbuf.st_mtime)
-		return FALSE;
-	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname)) {
+	if (!window->filenameSet_) {
 		return FALSE;
 	}
+	
+	std::string fullname = window->FullPath();
+	
+	if (stat(fullname.c_str(), &statbuf) != 0) {
+		return FALSE;
+	}
+	
+	if (window->lastModTime_ == statbuf.st_mtime) {
+		return FALSE;
+	}
+	
+	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.c_str())) {
+		return FALSE;
+	}
+	
 	return TRUE;
 }
 
