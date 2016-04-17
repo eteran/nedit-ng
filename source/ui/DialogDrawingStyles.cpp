@@ -20,7 +20,7 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 #endif
 	ui.listStyles->addItem(tr("New"));
 	for(HighlightStyle *style : styles_) {
-		ui.listStyles->addItem(style->name);
+		ui.listStyles->addItem(QString::fromStdString(style->name));
 	}
 	ui.listStyles->setCurrentRow(0);
 }
@@ -129,7 +129,7 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 
 		HighlightStyle *style = styles_[i];
 		
-		ui.editName->setText(style->name);
+		ui.editName->setText(QString::fromStdString(style->name));
 		ui.editColorFG->setText(style->color);
 		ui.editColorBG->setText(style->bgColor);
 		
@@ -179,7 +179,7 @@ void DialogDrawingStyles::on_editName_textChanged(const QString &text) {
 
 	QListWidgetItem *const selection = selections[0];
 	const int i = ui.listStyles->row(selection) - 1;
-	styles_[i]->name = text;
+	styles_[i]->name = text.toStdString();
 }
 
 //------------------------------------------------------------------------------
