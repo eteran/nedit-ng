@@ -35,7 +35,6 @@
 
 class PatternSet;
 class QString;
-class HighlightStyle;
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -57,10 +56,5 @@ void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
 void UpdateLanguageModeMenu(void);
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
-
-// list of available highlight styles 
-#define MAX_HIGHLIGHT_STYLES 128
-extern int NHighlightStyles;
-extern HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
 
 #endif

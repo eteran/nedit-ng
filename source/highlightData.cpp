@@ -30,7 +30,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include "ui/DialogLanguageModes.h"
-#include "ui/DialogDrawingStyles.h"
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -69,6 +68,10 @@
 
 namespace {
 
+/* Maximum allowed number of styles (also limited by representation of
+   styles as a byte - 'b') */
+const int MAX_HIGHLIGHT_STYLES = 128;
+
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
 const int MAX_PATTERNS = 127;
@@ -83,11 +86,11 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Bold Italic"
 };
 
-}
-
 // list of available highlight styles 
 int NHighlightStyles = 0;
 HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
+
+}
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -949,12 +952,6 @@ static bool styleError(const char *stringStart, const char *stoppedAt, const cha
 ** Present a dialog for editing highlight style information
 */
 void EditHighlightStyles(const char *initialStyle) {
-
-
-	auto dialog = new DialogDrawingStyles();
-	dialog->exec();
-	delete dialog;
-
 #define HS_LIST_RIGHT 60
 #define HS_LEFT_MARGIN_POS 1
 #define HS_RIGHT_MARGIN_POS 99

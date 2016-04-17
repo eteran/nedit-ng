@@ -1,21 +1,23 @@
 
+#include <QtDebug>
 #include "DialogDrawingStyles.h"
 #include "HighlightStyle.h"
 #include "highlightData.h"
-
+#include "preferences.h"
+#include "Document.h"
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: DialogDrawingStyles
 //------------------------------------------------------------------------------
 DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
-	
+#if 0	
 	// Copy the list of highlight style information to one that the user can freely edit
 	for (int i = 0; i < NHighlightStyles; i++) {
 		styles_.push_back(new HighlightStyle(*HighlightStyles[i]));
 	}
-	
+#endif
 	ui.listStyles->addItem(tr("New"));
 	for(HighlightStyle *style : styles_) {
 		ui.listStyles->addItem(style->name);
@@ -24,10 +26,25 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: ~DialogDrawingStyles
 //------------------------------------------------------------------------------
 DialogDrawingStyles::~DialogDrawingStyles() {
 	qDeleteAll(styles_);
+}
+
+//------------------------------------------------------------------------------
+// Name: setStyleByName
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::setStyleByName(const QString &name) {
+
+	qDebug() << "HERE: " << name;
+
+	QList<QListWidgetItem *> items = ui.listStyles->findItems(name, Qt::MatchFixedString);
+	if(items.size() != 1) {
+		return;
+	}
+	
+	items[0]->setSelected(true);
 }
 
 //------------------------------------------------------------------------------
@@ -37,7 +54,7 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: on_buttonDelete_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonDelete_clicked() {
 
@@ -90,7 +107,7 @@ void DialogDrawingStyles::on_buttonDown_clicked() {
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: on_listStyles_itemSelectionChanged
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 
@@ -149,4 +166,167 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 			ui.buttonCopy  ->setEnabled(true);					
 		}		
 	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_editName_textChanged
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_editName_textChanged(const QString &text) {
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	const int i = ui.listStyles->row(selection) - 1;
+	styles_[i]->name = text;
+}
+
+//------------------------------------------------------------------------------
+// Name: on_editColorFG_textChanged
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_editColorFG_textChanged(const QString &text) {
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	const int i = ui.listStyles->row(selection) - 1;
+	styles_[i]->color = text;
+}
+
+//------------------------------------------------------------------------------
+// Name: on_editColorBG_textChanged
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_editColorBG_textChanged(const QString &text) {
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	const int i = ui.listStyles->row(selection) - 1;
+	styles_[i]->bgColor = text;
+}
+
+//------------------------------------------------------------------------------
+// Name: on_radioPlain_toggled
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_radioPlain_toggled(bool checked) {
+	if(checked) {
+		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+		if(selections.size() != 1) {
+			return;
+		}
+
+		QListWidgetItem *const selection = selections[0];
+		const int i = ui.listStyles->row(selection) - 1;	
+		styles_[i]->font = PLAIN_FONT;
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_radioBold_toggled
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_radioBold_toggled(bool checked) {
+	if(checked) {
+		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+		if(selections.size() != 1) {
+			return;
+		}
+
+		QListWidgetItem *const selection = selections[0];
+		const int i = ui.listStyles->row(selection) - 1;
+		styles_[i]->font = BOLD_FONT;
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_radioItalic_toggled
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_radioItalic_toggled(bool checked) {
+	if(checked) {
+		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+		if(selections.size() != 1) {
+			return;
+		}
+
+		QListWidgetItem *const selection = selections[0];
+		const int i = ui.listStyles->row(selection) - 1;
+		styles_[i]->font = ITALIC_FONT;
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_radioBoldItalic_toggled
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_radioBoldItalic_toggled(bool checked) {
+	if(checked) {
+		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+		if(selections.size() != 1) {
+			return;
+		}
+
+		QListWidgetItem *const selection = selections[0];
+		const int i = ui.listStyles->row(selection) - 1;
+
+		HighlightStyle *style = styles_[i];	
+
+		style->font = BOLD_ITALIC_FONT;
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_buttonBox_accepted
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_buttonBox_accepted() {
+
+	if (!updateHSList()) {
+		return;
+	}
+	
+	accept();
+}
+
+
+//------------------------------------------------------------------------------
+// Name: on_buttonBox_clicked
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
+	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+		updateHSList();
+	}
+}
+
+
+/*
+** Apply the changes made in the highlight styles dialog to the stored
+** highlight style information in HighlightStyles
+*/
+bool DialogDrawingStyles::updateHSList() {
+
+#if 0
+	// Replace the old highlight styles list with the new one from the dialog 
+	for (int i = 0; i < NHighlightStyles; i++) {
+		delete HighlightStyles[i];
+	}
+
+	for (int i = 0; i < styles_.size(); ++i) {
+		HighlightStyles[i] = new HighlightStyle(*styles_[i]);
+	}
+	NHighlightStyles = styles_.size();
+
+	// If a syntax highlighting dialog is up, update its menu 
+	updateHighlightStyleMenu();
+
+	// Redisplay highlighted windows which use changed style(s) 
+	for(Document *window: WindowList) {
+		UpdateHighlightStyles(window);
+	}
+
+	// Note that preferences have been changed 
+	MarkPrefsChanged();
+#endif
+	return true;
 }
