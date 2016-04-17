@@ -117,6 +117,7 @@ public:
 	void BufUnhighlight();
 	void BufUnselect();
 	void BufUnsubstituteNullCharsEx(std::string &string) const;
+	bool BufIsEmpty() const;
 
 public:
 	bool GetSimpleSelection(int *left, int *right);

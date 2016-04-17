@@ -2203,3 +2203,7 @@ int TextBuffer::BufGetLength() const {
 void TextBuffer::BufAppendEx(view::string_view text) {
 	BufInsertEx(BufGetLength(), text);
 }
+
+bool TextBuffer::BufIsEmpty() const {
+	return BufGetLength() == 0;
+}

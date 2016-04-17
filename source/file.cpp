@@ -976,7 +976,9 @@ static bool doSave(Document *window) {
 	         changes. If the file is created for the first time, it has
 	         zero size on disk, and the check would falsely conclude that the
 	         file has changed on disk, and would pop up a warning dialog */
-	if (window->buffer_->BufGetCharacter(window->buffer_->BufGetLength() - 1) != '\n' && window->buffer_->BufGetLength() != 0 && GetPrefAppendLF()) {
+	// TODO(eteran): this seems to be broken for an empty buffer
+	//               it is going to read the buffer at index -1 :-/
+	if (window->buffer_->BufGetCharacter(window->buffer_->BufGetLength() - 1) != '\n' && !window->buffer_->BufIsEmpty() && GetPrefAppendLF()) {
 		window->buffer_->BufAppendEx("\n");
 	}
 
