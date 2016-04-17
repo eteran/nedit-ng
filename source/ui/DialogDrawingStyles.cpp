@@ -12,12 +12,11 @@
 DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
-#if 0	
 	// Copy the list of highlight style information to one that the user can freely edit
 	for (int i = 0; i < NHighlightStyles; i++) {
 		styles_.push_back(new HighlightStyle(*HighlightStyles[i]));
 	}
-#endif
+
 	ui.listStyles->addItem(tr("New"));
 	for(HighlightStyle *style : styles_) {
 		ui.listStyles->addItem(QString::fromStdString(style->name));
@@ -117,9 +116,9 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 	}
 
 	QListWidgetItem *const selection = selections[0];
-	QString styleName = selection->text();
+	styleName_ = selection->text();
 
-	if(styleName == tr("New")) {
+	if(styleName_ == tr("New")) {
 		ui.buttonUp    ->setEnabled(false);
 		ui.buttonDown  ->setEnabled(false);
 		ui.buttonDelete->setEnabled(false);

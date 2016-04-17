@@ -68,10 +68,6 @@
 
 namespace {
 
-/* Maximum allowed number of styles (also limited by representation of
-   styles as a byte - 'b') */
-const int MAX_HIGHLIGHT_STYLES = 128;
-
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
 const int MAX_PATTERNS = 127;
@@ -86,11 +82,11 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Bold Italic"
 };
 
+}
+
 // list of available highlight styles 
 int NHighlightStyles = 0;
 HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
-
-}
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -1152,17 +1148,15 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 
 	(void)cbArg;
 
-	HighlightStyle *hs;
-
 	/* If the dialog is currently displaying the "new" entry and the
 	   fields are empty, that's just fine */
 	if (oldItem == nullptr && hsDialogEmpty())
 		return nullptr;
 
 	// If there are no problems reading the data, just return it 
-	hs = readHSDialogFields(true);
-	if(hs)
+	if(HighlightStyle *hs = readHSDialogFields(true)) {
 		return hs;
+	}
 
 	/* If there are problems, and the user didn't ask for the fields to be
 	   read, give more warning */
@@ -1182,7 +1176,7 @@ static void *hsGetDisplayedCB(void *oldItem, int explicitRequest, int *abort, vo
 	}
 
 	// Do readHSDialogFields again without "silent" mode to display warning 
-	hs = readHSDialogFields(false);
+	readHSDialogFields(false);
 	*abort = True;
 	return nullptr;
 }

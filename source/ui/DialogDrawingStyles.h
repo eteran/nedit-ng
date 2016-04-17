@@ -38,7 +38,8 @@ private:
 
 private:
 	Ui::DialogDrawingStyles ui;
-	QList<HighlightStyle *>  styles_;
+	QList<HighlightStyle *> styles_;
+	QString                 styleName_;
 };
 
 #endif
