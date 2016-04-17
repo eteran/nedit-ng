@@ -1690,8 +1690,9 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 				return TF_ERROR_EOF;
 			}
 			rstrip(line, line);
-			if (i)
+			if (i) {
 				strcat(*body, ":");
+			}
 			strcat(*body, line);
 		}
 		// fprintf(stderr, "Finished include/alias at line %i\n", *currLine); 

@@ -162,9 +162,13 @@ void FilterSelection(Document *window, const std::string &command, int fromMacro
 ** selection.
 */
 void ExecShellCommand(Document *window, const std::string &command, int fromMacro) {
-	int left, right, flags = 0;
-	char *subsCommand, fullName[MAXPATHLEN];
-	int pos, line, column;
+	int left;
+	int right;
+	int flags = 0;
+	char *subsCommand;
+	int pos;
+	int line;
+	int column;
 	char lineNumber[11];
 
 	// Can't do two shell commands at once in the same window 
@@ -182,12 +186,12 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_.c_str());
-	strcat(fullName, window->filename_.c_str());
+	std::string fullName = window->FullPath();
+	
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
-	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
+	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.c_str(), lineNumber);
 	if(!subsCommand) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
