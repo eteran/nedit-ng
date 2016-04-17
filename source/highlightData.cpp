@@ -358,17 +358,17 @@ QString WriteStylesStringEx(void) {
 
 	for (i = 0; i < HighlightStyles.size(); i++) {
 		style = HighlightStyles[i];
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color.toStdString());
+		outBuf->BufAppendEx("\t");
+		outBuf->BufAppendEx(style->name);
+		outBuf->BufAppendEx(":");
+		outBuf->BufAppendEx(style->color.toStdString());
 		if (!style->bgColor.isNull()) {
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "/");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), style->bgColor.toStdString());
+			outBuf->BufAppendEx("/");
+			outBuf->BufAppendEx(style->bgColor.toStdString());
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), FontTypeNames[style->font]);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\\n\\\n");
+		outBuf->BufAppendEx(":");
+		outBuf->BufAppendEx(FontTypeNames[style->font]);
+		outBuf->BufAppendEx("\\n\\\n");
 	}
 
 	// Get the output, and lop off the trailing newlines 
@@ -440,17 +440,17 @@ QString WriteHighlightStringEx(void) {
 		}
 		
 		written = true;		
-		outBuf->BufInsertEx(outBuf->BufGetLength(), patSet->languageMode.toStdString());
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(patSet->languageMode.toStdString());
+		outBuf->BufAppendEx(":");
 		if (isDefaultPatternSet(patSet))
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "Default\n\t");
+			outBuf->BufAppendEx("Default\n\t");
 		else {
-			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->lineContext));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), std::to_string(patSet->charContext));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "{\n");
-			outBuf->BufInsertEx(outBuf->BufGetLength(), createPatternsString(patSet, "\t\t"));
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "\t}\n\t");
+			outBuf->BufAppendEx(std::to_string(patSet->lineContext));
+			outBuf->BufAppendEx(":");
+			outBuf->BufAppendEx(std::to_string(patSet->charContext));
+			outBuf->BufAppendEx("{\n");
+			outBuf->BufAppendEx(createPatternsString(patSet, "\t\t"));
+			outBuf->BufAppendEx("\t}\n\t");
 		}
 	}
 
@@ -670,36 +670,36 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 
 	for (int pn = 0; pn < patSet->nPatterns; pn++) {
 		HighlightPattern *pat = &patSet->patterns[pn];
-		outBuf->BufInsertEx(outBuf->BufGetLength(), indentStr);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->name);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(indentStr);
+		outBuf->BufAppendEx(pat->name);
+		outBuf->BufAppendEx(":");
 		if (!pat->startRE.isNull()) {
 			std::string str = MakeQuotedStringEx(pat->startRE.toStdString());
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (!pat->endRE.isNull()) {
 			std::string str = MakeQuotedStringEx(pat->endRE.toStdString());
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (!pat->errorRE.isNull()) {
 			std::string str = MakeQuotedStringEx(pat->errorRE.toStdString());
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), pat->style.toStdString());
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
+		outBuf->BufAppendEx(pat->style.toStdString());
+		outBuf->BufAppendEx(":");
 		if (!pat->subPatternOf.isNull())
-			outBuf->BufInsertEx(outBuf->BufGetLength(), pat->subPatternOf.toStdString());
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+			outBuf->BufAppendEx(pat->subPatternOf.toStdString());
+		outBuf->BufAppendEx(":");
 		if (pat->flags & DEFER_PARSING)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "D");
+			outBuf->BufAppendEx("D");
 		if (pat->flags & PARSE_SUBPATS_FROM_START)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "R");
+			outBuf->BufAppendEx("R");
 		if (pat->flags & COLOR_ONLY)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), "C");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\n");
+			outBuf->BufAppendEx("C");
+		outBuf->BufAppendEx("\n");
 	}
 	return outBuf->BufGetAllEx();
 }

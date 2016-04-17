@@ -2198,3 +2198,8 @@ void TextBuffer::updateSelections(int pos, int nDeleted, int nInserted) {
 int TextBuffer::BufGetLength() const {
 	return length_;
 }
+
+
+void TextBuffer::BufAppendEx(view::string_view text) {
+	BufInsertEx(BufGetLength(), text);
+}

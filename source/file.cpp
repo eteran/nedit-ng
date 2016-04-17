@@ -977,7 +977,7 @@ static bool doSave(Document *window) {
 	         zero size on disk, and the check would falsely conclude that the
 	         file has changed on disk, and would pop up a warning dialog */
 	if (window->buffer_->BufGetCharacter(window->buffer_->BufGetLength() - 1) != '\n' && window->buffer_->BufGetLength() != 0 && GetPrefAppendLF()) {
-		window->buffer_->BufInsertEx(window->buffer_->BufGetLength(), "\n");
+		window->buffer_->BufAppendEx("\n");
 	}
 
 	// open the file 

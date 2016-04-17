@@ -2190,44 +2190,44 @@ static QString WriteLanguageModesStringEx(void) {
 	auto outBuf = new TextBuffer;
 
 	for (int i = 0; i < NLanguageModes; i++) {
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), LanguageModes[i]->name);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
+		outBuf->BufAppendEx("\t");
+		outBuf->BufAppendEx(LanguageModes[i]->name);
+		outBuf->BufAppendEx(":");
+		outBuf->BufAppendEx(str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
 		XtFree(str);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->recognitionExpr) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), AutoIndentTypes[LanguageModes[i]->indentStyle]);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+			outBuf->BufAppendEx(AutoIndentTypes[LanguageModes[i]->indentStyle]);
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP)
-			outBuf->BufInsertEx(outBuf->BufGetLength(), AutoWrapTypes[LanguageModes[i]->wrapStyle]);
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+			outBuf->BufAppendEx(AutoWrapTypes[LanguageModes[i]->wrapStyle]);
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->tabDist);
-			outBuf->BufInsertEx(outBuf->BufGetLength(), numBuf);
+			outBuf->BufAppendEx(numBuf);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->emTabDist);
-			outBuf->BufInsertEx(outBuf->BufGetLength(), numBuf);
+			outBuf->BufAppendEx(numBuf);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->delimiters) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters);
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
-		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
+		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->defTipsFile) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile);
-			outBuf->BufInsertEx(outBuf->BufGetLength(), str);
+			outBuf->BufAppendEx(str);
 		}
 
-		outBuf->BufInsertEx(outBuf->BufGetLength(), "\n");
+		outBuf->BufAppendEx("\n");
 	}
 
 	// Get the output, and lop off the trailing newline 

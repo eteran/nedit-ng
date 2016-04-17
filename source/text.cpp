@@ -3593,7 +3593,7 @@ static std::string wrapTextEx(TextWidget tw, view::string_view startLine, view::
 	// Create a temporary text buffer and load it with the strings 
 	auto wrapBuf = new TextBuffer;
 	wrapBuf->BufInsertEx(0, startLine);
-	wrapBuf->BufInsertEx(wrapBuf->BufGetLength(), text);
+	wrapBuf->BufAppendEx(text);
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the

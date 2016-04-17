@@ -94,6 +94,7 @@ public:
 	void BufHighlight(int start, int end);
 	void BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufInsertEx(int pos, view::string_view text);
+	void BufAppendEx(view::string_view text);
 	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufRectHighlight(int start, int end, int rectStart, int rectEnd);
 	void BufRectSelect(int start, int end, int rectStart, int rectEnd);

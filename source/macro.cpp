@@ -1388,7 +1388,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	// Record the action and its parameters 
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString) {
-		MacroRecordBuf->BufInsertEx(MacroRecordBuf->BufGetLength(), actionString);
+		MacroRecordBuf->BufAppendEx(actionString);
 		XtFree(actionString);
 	}
 }
