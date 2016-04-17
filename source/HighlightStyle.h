@@ -2,14 +2,20 @@
 #ifndef HIGHLIGHT_STYLE_H_
 #define HIGHLIGHT_STYLE_H_
 
-#include <string>
 #include <QString>
 
+enum FontType {
+	PLAIN_FONT, 
+	ITALIC_FONT, 
+	BOLD_FONT, 
+	BOLD_ITALIC_FONT
+};
+
 struct HighlightStyle {
-	std::string name;
-	QString     color;
-	QString     bgColor;
-	int         font;
+	QString name;
+	QString color;
+	QString bgColor;
+	int     font;
 };
 
 #endif

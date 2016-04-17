@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>611</width>
-    <height>442</height>
+    <width>608</width>
+    <height>408</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
@@ -121,18 +121,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QLineEdit" name="editColorFG"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="buttonColorFG">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QLineEdit" name="editColorFG"/>
        </item>
        <item>
         <widget class="QLabel" name="label_4">
@@ -142,18 +131,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLineEdit" name="editColorBG"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="buttonColorBG">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QLineEdit" name="editColorBG"/>
        </item>
        <item>
         <widget class="QLabel" name="label_5">

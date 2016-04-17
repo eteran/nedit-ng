@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include "ui/DialogLanguageModes.h"
+#include "ui/DialogDrawingStyles.h"
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -68,23 +69,12 @@
 
 namespace {
 
-/* Maximum allowed number of styles (also limited by representation of
-   styles as a byte - 'b') */
-const int MAX_HIGHLIGHT_STYLES = 128;
-
 /* Maximum number of patterns allowed in a pattern set (regular expression
    limitations are probably much more restrictive).  */
 const int MAX_PATTERNS = 127;
 
 // Names for the fonts that can be used for syntax highlighting 
 const int N_FONT_TYPES = 4;
-
-enum fontTypes {
-	PLAIN_FONT, 
-	ITALIC_FONT, 
-	BOLD_FONT, 
-	BOLD_ITALIC_FONT
-};
 
 static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Plain", 
@@ -93,11 +83,11 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Bold Italic"
 };
 
+}
+
 // list of available highlight styles 
 int NHighlightStyles = 0;
 HighlightStyle *HighlightStyles[MAX_HIGHLIGHT_STYLES];
-
-}
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -283,7 +273,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		if (name.isNull()) {
 			return styleError(inString, inPtr, "style name required");
 		}		
-		hs->name = name.toStdString();
+		hs->name = name;
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
@@ -372,7 +362,7 @@ QString WriteStylesStringEx(void) {
 	for (i = 0; i < NHighlightStyles; i++) {
 		style = HighlightStyles[i];
 		outBuf->BufInsertEx(outBuf->BufGetLength(), "\t");
-		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name);
+		outBuf->BufInsertEx(outBuf->BufGetLength(), style->name.toStdString());
 		outBuf->BufInsertEx(outBuf->BufGetLength(), ":");
 		outBuf->BufInsertEx(outBuf->BufGetLength(), style->color.toStdString());
 		if (!style->bgColor.isNull()) {
@@ -959,6 +949,12 @@ static bool styleError(const char *stringStart, const char *stoppedAt, const cha
 ** Present a dialog for editing highlight style information
 */
 void EditHighlightStyles(const char *initialStyle) {
+
+
+	auto dialog = new DialogDrawingStyles();
+	dialog->exec();
+	delete dialog;
+
 #define HS_LIST_RIGHT 60
 #define HS_LEFT_MARGIN_POS 1
 #define HS_RIGHT_MARGIN_POS 99
@@ -1206,7 +1202,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 		RadioButtonChangeState(HSDialog.italicW, False, False);
 		RadioButtonChangeState(HSDialog.boldItalicW, False, False);
 	} else {
-		if (hs->name == "Plain") {
+		if (hs->name == QLatin1String("Plain")) {
 			// you should not be able to delete the reserved style "Plain" 
 			int i;
 			int others = 0;
@@ -1214,7 +1210,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 			HighlightStyle **list = HSDialog.highlightStyleList;
 			// do we have other styles called Plain? 
 			for (i = 0; i < nList; i++) {
-				if (list[i] != hs && (list[i]->name == "Plain")) {
+				if (list[i] != hs && (list[i]->name == QLatin1String("Plain"))) {
 					others++;
 				}
 			}
@@ -1229,7 +1225,7 @@ static void hsSetDisplayedCB(void *item, void *cbArg) {
 			}
 		}
 		
-		XmTextSetStringEx(HSDialog.nameW,            hs->name);
+		XmTextSetStringEx(HSDialog.nameW,            hs->name.toStdString());
 		XmTextSetStringEx(HSDialog.colorW,           hs->color.toStdString());
 		XmTextSetStringEx(HSDialog.bgColorW,         !hs->bgColor.isNull() ? hs->bgColor.toStdString() : "");
 		RadioButtonChangeState(HSDialog.plainW,      hs->font == PLAIN_FONT, False);
@@ -1258,9 +1254,9 @@ static HighlightStyle *readHSDialogFields(bool silent) {
     		return nullptr;
     	}
 		
-		hs->name = name.toStdString();
+		hs->name = name;
 
-    	if (hs->name.empty()) {
+    	if (hs->name.isEmpty()) {
         	if (!silent) {
             	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Highlight Style"), QLatin1String("Please specify a name\nfor the highlight style"));
             	XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
@@ -1343,7 +1339,7 @@ static HighlightStyle *readHSDialogFields(bool silent) {
 static void setStyleByName(view::string_view style) {
 
 	for (int i = 0; i < HSDialog.nHighlightStyles; i++) {
-		if (HSDialog.highlightStyleList[i]->name == style) {
+		if (HSDialog.highlightStyleList[i]->name == QString::fromStdString(style.to_string())) {
 			SelectManagedListItem(HSDialog.managedListW, i);
 			break;
 		}
@@ -2505,7 +2501,7 @@ static PatternSet *getDialogPatternSet(void) {
 static int lookupNamedStyle(view::string_view styleName) {
 
 	for (int i = 0; i < NHighlightStyles; i++) {	
-		if (styleName == HighlightStyles[i]->name) {
+		if (HighlightStyles[i]->name == QString::fromStdString(styleName.to_string())) {
 			return i;
 		}
 	}

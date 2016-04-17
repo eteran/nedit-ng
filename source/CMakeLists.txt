@@ -38,6 +38,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogSmartIndentCommon.h
 	ui/DialogSmartIndent.h
 	ui/DialogColors.h
+	ui/DialogDrawingStyles.h
 	ui/MainWindow.h
 	ui/ListWidget.h
 )
@@ -60,6 +61,7 @@ set(UI_FILES
 	ui/DialogSmartIndent.ui	
 	ui/DialogColors.ui
 	ui/MainWindow.ui
+	ui/DialogDrawingStyles.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -85,6 +87,7 @@ add_executable(nedit
 	ui/DialogSmartIndent.cpp
 	ui/DialogColors.cpp
 	ui/MainWindow.cpp
+	ui/DialogDrawingStyles.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp
