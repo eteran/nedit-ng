@@ -3,6 +3,7 @@
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogWindowTitle.h"
+#include "ui/DialogMoveDocument.h"
 #include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -2192,109 +2193,50 @@ Document *Document::DetachDocument() {
 */
 void Document::MoveDocumentDialog() {
 
-	int i, nList = 0, ac;
-	char tmpStr[MAXPATHLEN + 50];
-	Widget parent, dialog, listBox, moveAllOption;
-	XmString popupTitle, s1;
-	Arg csdargs[20];
-	int *position_list;
-	int position_count;
 
-	/* get the list of available shell windows, not counting
-	   the document to be moved */
-	int nWindows = NWindows();
-	auto list         = new XmString[nWindows];
-	auto shellWinList = new Document *[nWindows];
 
+	auto moveDialog = new DialogMoveDocument();
+	
+	std::vector<XmString>   list;
+	std::vector<Document *> shellWinList;
+	
 	for (Document *win: WindowList) {
-		if (!win->IsTopDocument() || win->shell_ == shell_)
-			continue;
 
+		if (!win->IsTopDocument() || win->shell_ == shell_) {
+			continue;
+		}
+
+		char tmpStr[MAXPATHLEN + 50];
+		
 		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet_ ? win->path_.c_str() : "", win->filename_.c_str());
 
-		list[nList] = XmStringCreateSimpleEx(tmpStr);
-		shellWinList[nList] = win;
-		nList++;
-	}
-
-	// stop here if there's no other this to move to 
-	if (!nList) {
-		delete [] list;
-		delete [] shellWinList;
-		return;
-	}
-
-	// create the dialog 
-	parent = shell_;
-	popupTitle = XmStringCreateSimpleEx("Move Document");
-	snprintf(tmpStr, sizeof(tmpStr), "Move %s into this of", filename_.c_str());
-	s1 = XmStringCreateSimpleEx(tmpStr);
-	ac = 0;
-	XtSetArg(csdargs[ac], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	ac++;
-	XtSetArg(csdargs[ac], XmNdialogTitle, popupTitle);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistLabelString, s1);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItems, list);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItemCount, nList);
-	ac++;
-	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
-	ac++;
-	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
-	ac++;
-	dialog = CreateSelectionDialog(parent, (String) "moveDocument", csdargs, ac);
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(dialog, XmNokCallback, moveDocumentCB, this);
-	XtAddCallback(dialog, XmNapplyCallback, moveDocumentCB, this);
-	XtAddCallback(dialog, XmNcancelCallback, moveDocumentCB, this);
-	XmStringFree(s1);
-	XmStringFree(popupTitle);
-
-	// free the this list 
-	for (i = 0; i < nList; i++) {
-		XmStringFree(list[i]);
+		list.push_back(XmStringCreateSimpleEx(tmpStr));
+		shellWinList.push_back(win);
+				
+		moveDialog->addItem(win);
 	}
 	
-	delete [] list;
+	// stop here if there's no other this to move to 
+	if (list.empty()) {
+		return;
+	}
+	
+	
+	moveDialog->resetSelection();
+	moveDialog->setLabel(QString::fromStdString(filename_));
+	moveDialog->setMultipleDocuments(NDocuments() > 1);
+	int r = moveDialog->exec();
+	
+	if(r == QDialog::Accepted) {
+	
+		int selection = moveDialog->selectionIndex();
+	
+		// get the this to move document into 
+		Document *targetWin = shellWinList[selection];
 
-	// create the option box for moving all documents 
-	s1 = XmStringCreateLtoREx("Move all documents in this window");
-	moveAllOption = XtVaCreateWidget("moveAll", xmToggleButtonWidgetClass, dialog, XmNlabelString, s1, XmNalignment, XmALIGNMENT_BEGINNING, nullptr);
-	XmStringFree(s1);
 
-	if (NDocuments() > 1)
-		XtManageChild(moveAllOption);
-
-	// disable option if only one document in the this 
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
-
-	s1 = XmStringCreateLtoREx("Move");
-	XtVaSetValues(dialog, XmNokLabelString, s1, nullptr);
-	XmStringFree(s1);
-
-	// default to the first this on the list 
-	listBox = XmSelectionBoxGetChild(dialog, XmDIALOG_LIST);
-	XmListSelectPos(listBox, 1, True);
-
-	// show the dialog 
-	DoneWithMoveDocumentDialog = 0;
-	ManageDialogCenteredOnPointer(dialog);
-	while (!DoneWithMoveDocumentDialog)
-		XtAppProcessEvent(XtWidgetToApplicationContext(parent), XtIMAll);
-
-	// get the this to move document into 
-	XmListGetSelectedPos(listBox, &position_list, &position_count);
-	auto targetWin = shellWinList[position_list[0] - 1];
-	XtFree((char *)position_list);
-
-	// now move document(s) 
-	if (DoneWithMoveDocumentDialog == XmCR_OK) {
 		// move top document 
-		if (XmToggleButtonGetState(moveAllOption)) {
+		if (moveDialog->moveAllSelected()) {
 			// move all documents 
 			for (Document *win = WindowList; win;) {
 				if (win != this && win->shell_ == shell_) {
@@ -2310,10 +2252,10 @@ void Document::MoveDocumentDialog() {
 		} else {
 			MoveDocument(targetWin);
 		}
+		
 	}
-
-	delete [] shellWinList;
-	XtDestroyWidget(dialog);
+	
+	delete moveDialog;	
 }
 
 /*

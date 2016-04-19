@@ -40,6 +40,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogWindowSize.h
 	ui/DialogWindowTitle.h
 	ui/DialogWrapMargin.h
+	ui/DialogMoveDocument.h
 	ui/ListWidget.h
 	ui/MainWindow.h
 )
@@ -89,6 +90,7 @@ add_executable(nedit
 	ui/DialogWindowSize.cpp
 	ui/DialogWindowTitle.cpp
 	ui/DialogWrapMargin.cpp
+	ui/DialogMoveDocument.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
 
