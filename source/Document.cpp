@@ -1881,7 +1881,7 @@ void Document::UpdateWindowTitle() {
 
 	QString title = DialogWindowTitle::FormatWindowTitle(
 		QString::fromStdString(filename_), 
-		path_.c_str(), 
+		QString::fromStdString(path_),
 		clearCaseTag, 
 		QLatin1String(GetPrefServerName()),
 		IsServer, 

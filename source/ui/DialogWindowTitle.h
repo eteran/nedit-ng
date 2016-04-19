@@ -36,16 +36,16 @@ private Q_SLOTS:
 	void on_editFormat_textChanged(const QString &text);
 
 public:
-	static QString FormatWindowTitle(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat);
+	static QString FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat);
 
 private:
 	static QString compressWindowTitle(const QString &title);
-	static QString FormatWindowTitleInternal(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat, UpdateState *state);
+	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state);
 
 private:
 	void setToggleButtons();
 	void formatChangedCB();
-	QString FormatWindowTitleEx(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat);
+	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat);
 	void removeFromFormat(const QString &string);
 	void appendToFormat(const QString &string);
 

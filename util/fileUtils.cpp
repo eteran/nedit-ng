@@ -398,19 +398,20 @@ static void copyThruSlash(char **toString, char **fromString) {
 /*
 ** Return the trailing 'n' no. of path components
 */
-const char *GetTrailingPathComponents(const char *path, int noOfComponents) {
+QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
+	
 	/* Start from the rear */
-	const char *ptr = path + strlen(path);
+	int index = path.size();
 	int count = 0;
 
-	while (--ptr > path) {
-		if (*ptr == '/') {
+	while (--index > 0) {
+		if (path[index] == QLatin1Char('/')) {
 			if (count++ == noOfComponents) {
 				break;
 			}
 		}
 	}
-	return (ptr);
+	return path.mid(index);
 }
 
 /*

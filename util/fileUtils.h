@@ -39,7 +39,7 @@ enum FileFormats {
 };
 
 QString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
-const char *GetTrailingPathComponents(const char *path, int noOfComponents);
+QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
 int CompressPathname(char *pathname);
 bool ConvertToDosFileStringEx(std::string &fileString);
 int ExpandTilde(char *pathname);
