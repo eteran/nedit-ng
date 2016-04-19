@@ -493,21 +493,6 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 
 
 /*
-** Callback that frees the list of windows the multi-file replace
-** dialog is unmapped.
-**/
-static void freeWritableWindowsCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-	(void)callData;
-
-	window = Document::WidgetToWindow(w);
-	delete [] window->writableWindows_;
-	window->writableWindows_ = nullptr;
-	window->nWritableWindows_ = 0;
-}
-
-/*
 ** Count no. of windows
 */
 static int countWindows(void) {

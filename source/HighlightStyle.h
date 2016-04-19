@@ -12,7 +12,8 @@ enum FontType {
 	BOLD_ITALIC_FONT
 };
 
-struct HighlightStyle {
+class HighlightStyle {
+public:
 	std::string name; // not QString yet for Motif List Widget needs
 	QString color;
 	QString bgColor;

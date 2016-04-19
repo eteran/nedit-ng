@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
+#include "ui/DialogWindowTitle.h"
 #include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -27,7 +28,6 @@
 #include "UndoInfo.h"
 #include "userCmds.h"
 #include "window.h" // There are a few global functions found here... for now
-#include "windowTitle.h"
 #include "textSel.h"
 
 #include "../Microline/XmL/Folder.h"
@@ -891,6 +891,8 @@ void Document::SetToggleButtonState(Widget w, Boolean state, Boolean notify) con
 Document *Document::MarkLastDocument() {
 	Document *prev = lastFocusDocument;
 
+	Q_ASSERT(this);
+
 	if (this)
 		lastFocusDocument = this;
 
@@ -902,6 +904,8 @@ Document *Document::MarkLastDocument() {
 */
 Document *Document::MarkActiveDocument() {
 	Document *prev = inFocusDocument;
+	
+	Q_ASSERT(this);
 
 	if (this)
 		inFocusDocument = this;
@@ -934,6 +938,9 @@ void Document::LastDocument() const {
 ** raise the document and its shell window and optionally focus.
 */
 void Document::RaiseFocusDocumentWindow(Boolean focus) {
+
+	Q_ASSERT(this);
+
 	if (!this)
 		return;
 
@@ -1187,6 +1194,8 @@ void Document::CleanUpTabBarExposeQueue() {
 	XEvent event;
 	XExposeEvent ev;
 	int count;
+
+	Q_ASSERT(this);
 
 	if(!this)
 		return;
@@ -1467,6 +1476,9 @@ int Document::NDocuments() const {
 ** raise the document and its shell window and focus depending on pref.
 */
 void Document::RaiseDocumentWindow() {
+
+	Q_ASSERT(this);
+
 	if (!this)
 		return;
 
@@ -1866,7 +1878,17 @@ void Document::UpdateWindowTitle() {
 	}
 
 	QString clearCaseTag = GetClearCaseViewTag();
-	char *title = FormatWindowTitle(filename_.c_str(), path_.c_str(), clearCaseTag.toLatin1().data(), GetPrefServerName(), IsServer, filenameSet_, lockReasons_, fileChanged_, GetPrefTitleFormat());
+
+	QString title = DialogWindowTitle::FormatWindowTitle(
+		QString::fromStdString(filename_), 
+		path_.c_str(), 
+		clearCaseTag, 
+		QLatin1String(GetPrefServerName()),
+		IsServer, 
+		filenameSet_, 
+		lockReasons_, 
+		fileChanged_, 
+		QLatin1String(GetPrefTitleFormat()));
 	
 	
 	std::string iconTitle = filename_;	
@@ -1874,21 +1896,21 @@ void Document::UpdateWindowTitle() {
 		iconTitle.append("*");
 	}
 	
-	XtVaSetValues(shell_, XmNtitle, title, XmNiconName, iconTitle.c_str(), nullptr);
+	XtVaSetValues(shell_, XmNtitle, title.toLatin1().data(), XmNiconName, iconTitle.c_str(), nullptr);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
 	if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
 		if(dialog->keepDialog()) {
-			sprintf(title, "Find (in %s)", filename_.c_str());
-			dialog->setWindowTitle(QLatin1String(title));
+			title = QString(QLatin1String("Find (in %1)")).arg(QString::fromStdString(filename_));
+			dialog->setWindowTitle(title);
 		}
 	}
 	
 	if(auto dialog = getDialogReplace()) {
-		if(dialog->keepDialog()) {	
-			sprintf(title, "Replace (in %s)", filename_.c_str());
-			dialog->setWindowTitle(QLatin1String(title));
+		if(dialog->keepDialog()) {		
+			title = QString(QLatin1String("Replace (in %1)")).arg(QString::fromStdString(filename_));
+			dialog->setWindowTitle(title);
 		}
 	}
 
@@ -2911,6 +2933,9 @@ void Document::CloseWindow() {
 **
 */
 void Document::deleteDocument() {
+
+	Q_ASSERT(this);
+
 	if (!this) {
 		return;
 	}
@@ -3077,6 +3102,8 @@ void Document::getGeometryString(char *geomString) {
 */
 void Document::RaiseDocument() {
 	Document *win;
+	
+	Q_ASSERT(this);
 
 	if (!this || !WindowList)
 		return;
@@ -4346,3 +4373,10 @@ DialogReplace *Document::getDialogReplace() const {
 	return qobject_cast<DialogReplace *>(dialogReplace_);
 }
 
+
+void Document::EditCustomTitleFormat() {
+
+	auto dialog = new DialogWindowTitle(this);
+	dialog->exec();
+	delete dialog;
+}

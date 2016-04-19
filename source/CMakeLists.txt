@@ -133,7 +133,6 @@ add_executable(nedit
 	textSel.cpp
 	userCmds.cpp
 	window.cpp
-	windowTitle.cpp
 	HighlightPattern.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultCommonMacros.inc
 	${CMAKE_CURRENT_BINARY_DIR}/DefaultPatternSet00.inc

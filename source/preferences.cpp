@@ -50,7 +50,6 @@
 #include "help.h"
 #include "regularExp.h"
 #include "smartIndent.h"
-#include "windowTitle.h"
 #include "server.h"
 #include "tags.h"
 #include "MotifHelper.h"
@@ -2016,10 +2015,6 @@ static int matchLanguageMode(Document *window) {
 	   stripped off to recognize the extension to make ClearCase users happy) */
 	fileNameLen = window->filename_.size();
 
-
-	// TODO(eteran): this is playing some games with the c_str() that I don't think
-	//               is a good idea. It would be better if GetClearCaseVersionExtendedPath
-	//               returned string_view.
 	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(QString::fromStdString(window->filename_));
 	if (versionExtendedPathIndex != -1) {
 		fileNameLen = versionExtendedPathIndex;

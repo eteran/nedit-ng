@@ -59,7 +59,6 @@
 #include "highlightData.h"
 #include "interpret.h"
 #include "smartIndent.h"
-#include "windowTitle.h"
 #include "MotifHelper.h"
 #include "Document.h"
 #include "getfiles.h"

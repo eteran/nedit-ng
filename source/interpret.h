@@ -96,7 +96,7 @@ enum ExecReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR 
 
 struct DataValue;
 struct ArrayEntry;
-struct Program;
+class Program;
 struct Symbol;
 
 union Inst {
@@ -147,7 +147,8 @@ struct Symbol {
 	DataValue   value;
 };
 
-struct Program {
+class Program {
+public:
 	std::list<Symbol *> localSymList;
 	Inst *code;
 };
