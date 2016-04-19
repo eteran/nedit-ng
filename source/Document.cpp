@@ -7,6 +7,7 @@
 #include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+#include "RangesetTable.h"
 
 #include "MotifHelper.h"
 #include "Document.h"
@@ -17,7 +18,6 @@
 #include "menu.h"
 #include "res/nedit.bm"
 #include "preferences.h"
-#include "RangesetTable.h"
 #include "search.h"
 #include "selection.h"
 #include "server.h"

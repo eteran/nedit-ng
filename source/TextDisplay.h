@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* TextDisplay.h -- Nirvana Editor Text Diplay Header File                         *
+* TextDisplay.h -- Nirvana Editor Text Diplay Header File                      *
 *                                                                              *
 * Copyright 2003 The NEdit Developers                                          *
 *                                                                              *

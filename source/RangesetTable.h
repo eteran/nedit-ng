@@ -4,7 +4,7 @@
 
 #include "Rangeset.h"
 
-struct RangesetTable {
+class RangesetTable {
 public:
 	explicit RangesetTable(TextBuffer *buffer);	
 	RangesetTable(TextBuffer *buffer, const RangesetTable &other); // for "cloning"
