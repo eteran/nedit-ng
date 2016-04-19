@@ -31,12 +31,11 @@
 #include "window.h" // There are a few global functions found here... for now
 #include "textSel.h"
 
-#include "../Microline/XmL/Folder.h"
-#include "../util/clearcase.h"
-#include "../util/fileUtils.h"
-#include "../util/misc.h"
-#include "../Xlt/BubbleButton.h"
-#include "../Xlt/BubbleButtonP.h"
+#include "Folder.h"
+#include "clearcase.h"
+#include "misc.h"
+#include "BubbleButton.h"
+#include "BubbleButtonP.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -2193,11 +2192,8 @@ Document *Document::DetachDocument() {
 */
 void Document::MoveDocumentDialog() {
 
-
-
-	auto moveDialog = new DialogMoveDocument();
+	auto dialog = new DialogMoveDocument();
 	
-	std::vector<XmString>   list;
 	std::vector<Document *> shellWinList;
 	
 	for (Document *win: WindowList) {
@@ -2206,45 +2202,42 @@ void Document::MoveDocumentDialog() {
 			continue;
 		}
 
-		char tmpStr[MAXPATHLEN + 50];
-		
-		snprintf(tmpStr, sizeof(tmpStr), "%s%s", win->filenameSet_ ? win->path_.c_str() : "", win->filename_.c_str());
-
-		list.push_back(XmStringCreateSimpleEx(tmpStr));
-		shellWinList.push_back(win);
-				
-		moveDialog->addItem(win);
+		shellWinList.push_back(win);				
+		dialog->addItem(win);
 	}
 	
 	// stop here if there's no other this to move to 
-	if (list.empty()) {
+	if (shellWinList.empty()) {
+		delete dialog;	
 		return;
 	}
 	
 	
-	moveDialog->resetSelection();
-	moveDialog->setLabel(QString::fromStdString(filename_));
-	moveDialog->setMultipleDocuments(NDocuments() > 1);
-	int r = moveDialog->exec();
+	// reset the dialog and display it
+	dialog->resetSelection();
+	dialog->setLabel(QString::fromStdString(filename_));
+	dialog->setMultipleDocuments(NDocuments() > 1);
+	int r = dialog->exec();
 	
 	if(r == QDialog::Accepted) {
 	
-		int selection = moveDialog->selectionIndex();
+		int selection = dialog->selectionIndex();
 	
 		// get the this to move document into 
 		Document *targetWin = shellWinList[selection];
 
 
 		// move top document 
-		if (moveDialog->moveAllSelected()) {
+		if (dialog->moveAllSelected()) {
 			// move all documents 
 			for (Document *win = WindowList; win;) {
 				if (win != this && win->shell_ == shell_) {
 					Document *next = win->next_;
 					win->MoveDocument(targetWin);
 					win = next;
-				} else
+				} else {
 					win = win->next_;
+				}
 			}
 
 			// invoking document is the last to move 
@@ -2255,7 +2248,7 @@ void Document::MoveDocumentDialog() {
 		
 	}
 	
-	delete moveDialog;	
+	delete dialog;	
 }
 
 /*
