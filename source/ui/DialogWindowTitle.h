@@ -7,6 +7,7 @@
 #include "ui_DialogWindowTitle.h"
 
 class Document;
+struct UpdateState;
 
 class DialogWindowTitle : public QDialog {
 	Q_OBJECT
@@ -39,6 +40,7 @@ public:
 
 private:
 	static QString compressWindowTitle(const QString &title);
+	static QString FormatWindowTitleInternal(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat, UpdateState *state);
 
 private:
 	void setToggleButtons();

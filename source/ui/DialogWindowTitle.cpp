@@ -8,27 +8,17 @@
 #include "nedit.h"
 #include "utils.h"
 
-
-#if 0
-<widget class="QCheckBox" name="checkFileName">   == fileW
-<widget class="QCheckBox" name="checkHostName">   == hostW
-<widget class="QCheckBox" name="checkFileStatus"> == statusW
-<widget class="QCheckBox" name="checkBrief">      == shortStatusW
-<widget class="QCheckBox" name="checkUserName">   == nameW
-<widget class="QCheckBox" name="checkClearCase">  == ccW
-<widget class="QCheckBox" name="checkServerName"> == serverW
-<widget class="QCheckBox" name="checkDirectory">  == dirW
-<widget class="QLineEdit" name="editDirectory">   == ndirW
-
-<widget class="QCheckBox" name="checkFileModified">      == oFileChangedW
-<widget class="QCheckBox" name="checkFileReadOnly">      == oFileReadOnlyW
-<widget class="QCheckBox" name="checkFileLocked">        == oFileLockedW
-<widget class="QCheckBox" name="checkServerNamePresent"> == oServerNameW
-<widget class="QCheckBox" name="checkClearCasePresent">  == oCcViewTagW
-<widget class="QCheckBox" name="checkServerEqualsCC">    == oServerEqualViewW
-<widget class="QCheckBox" name="checkDirectoryPresent">  == oDirW
-#endif
-
+struct UpdateState {
+	bool fileNamePresent;
+	bool hostNamePresent;
+	bool userNamePresent;
+	bool serverNamePresent;
+	bool clearCasePresent;
+	bool fileStatusPresent;
+	bool dirNamePresent;
+	bool shortStatus;
+	int noOfComponents;
+};
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -149,139 +139,8 @@ void DialogWindowTitle::formatChangedCB() {
 // Name: 
 //------------------------------------------------------------------------------
 QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat) {
-	QString title;
-
-	// Flags to supress one of these if both are specified and they are identical 
-	bool serverNameSeen = false;
-	bool clearCaseViewTagSeen = false;
-
-	int noOfComponents     = -1;
-
-	auto format_it = titleFormat.begin();
-
-	while (format_it != titleFormat.end()) {
-		QChar c = *format_it++;
-		if (c == QLatin1Char('%')) {
-			
-			if (format_it == titleFormat.end()) {
-				title.push_back(QLatin1Char('%'));
-				break;
-			}
-			
-			c = *format_it++;
-			
-			switch (c.toLatin1()) {
-			case 'c': // ClearCase view tag 
-				if (!clearCaseViewTag.isNull()) {
-					if (!serverNameSeen || serverName != clearCaseViewTag) {
-						title.append(clearCaseViewTag);
-						clearCaseViewTagSeen = true;
-					}
-				}
-				break;
-
-			case 's': // server name 
-				if (isServer && !serverName.isEmpty()) { // only applicable for servers 
-					if (!clearCaseViewTagSeen || serverName != clearCaseViewTag) {
-						title.append(serverName);
-						serverNameSeen = true;
-					}
-				}
-				break;
-
-			case 'd': // directory without any limit to no. of components 
-				if (filenameSet) {
-					title.append(QLatin1String(path));
-				}
-				break;
-
-			case '0': // directory with limited no. of components 
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				if (*format_it == QLatin1Char('d')) {
-					noOfComponents = c.toLatin1() - '0';
-					format_it++; // delete the argument 
-
-					if (filenameSet) {
-						const char *trailingPath = GetTrailingPathComponents(path, noOfComponents);
-
-						// prefix with ellipsis if components were skipped 
-						if (trailingPath > path) {
-							title.append(QLatin1String("..."));
-						}
-						title.append(QLatin1String(trailingPath));
-					}
-				}
-				break;
-
-			case 'f': // file name 
-				title.append(filename);
-				break;
-
-			case 'h': // host name 
-				title.append(GetNameOfHostEx());
-				break;
-
-			case 'S': // file status 
-				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
-					title.append(tr("read only, modified"));
-				else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
-					title.append(tr("read only"));
-				else if (IS_USER_LOCKED(lockReasons) && fileChanged)
-					title.append(tr("locked, modified"));
-				else if (IS_USER_LOCKED(lockReasons))
-					title.append(tr("locked"));
-				else if (fileChanged)
-					title.append(tr("modified"));
-				break;
-
-			case 'u': // user name 
-				title.append(GetUserNameEx());
-				break;
-
-			case '%': // escaped % 
-				title.append(QLatin1Char('%'));
-				break;
-
-			case '*': // short file status ? 
-				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
-					++format_it;
-					if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
-						title.append(tr("RO*"));
-					else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
-						title.append(tr("RO"));
-					else if (IS_USER_LOCKED(lockReasons) && fileChanged)
-						title.append(tr("LO*"));
-					else if (IS_USER_LOCKED(lockReasons))
-						title.append(tr("LO"));
-					else if (fileChanged)
-						title.append(tr("*"));
-					break;
-				}
-			// fall-through 
-			default:
-				title.append(c);
-				break;
-			}
-		} else {
-			title.append(c);
-		}
-	}
-
-	title = compressWindowTitle(title);
-
-	if (title.isEmpty()) {
-		title = tr("<empty>"); // For preview purposes only 
-	}
-
-	return title;
+	return FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, nullptr);
+	
 }
 
 /*
@@ -302,188 +161,42 @@ QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const char
 */
 QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat) {
 
-	QString title;
 
-	// Flags to supress one of these if both are specified and they are identical 
-	bool serverNameSeen = false;
-	bool clearCaseViewTagSeen = false;
-
-	bool fileNamePresent   = false;
-	bool hostNamePresent   = false;
-	bool userNamePresent   = false;
-	bool serverNamePresent = false;
-	bool clearCasePresent  = false;
-	bool fileStatusPresent = false;
-	bool dirNamePresent    = false;
-	int noOfComponents     = -1;
-	bool shortStatus       = false;
-
-	auto format_it = titleFormat.begin();
-
-	while (format_it != titleFormat.end()) {
-		QChar c = *format_it++;
-		if (c == QLatin1Char('%')) {
-			
-			if (format_it == titleFormat.end()) {
-				title.push_back(QLatin1Char('%'));
-				break;
-			}
-			
-			c = *format_it++;
-			
-			switch (c.toLatin1()) {
-			case 'c': // ClearCase view tag 
-				clearCasePresent = true;
-				if (!clearCaseViewTag.isNull()) {
-					if (!serverNameSeen || serverName != clearCaseViewTag) {
-						title.append(clearCaseViewTag);
-						clearCaseViewTagSeen = true;
-					}
-				}
-				break;
-
-			case 's': // server name 
-				serverNamePresent = true;
-				if (isServer && !serverName.isEmpty()) { // only applicable for servers 
-					if (!clearCaseViewTagSeen || serverName != clearCaseViewTag) {
-						title.append(serverName);
-						serverNameSeen = true;
-					}
-				}
-				break;
-
-			case 'd': // directory without any limit to no. of components 
-				dirNamePresent = true;
-				if (filenameSet) {
-					title.append(QLatin1String(path));
-				}
-				break;
-
-			case '0': // directory with limited no. of components 
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				if (*format_it == QLatin1Char('d')) {
-					dirNamePresent = true;
-					noOfComponents = c.toLatin1() - '0';
-					format_it++; // delete the argument 
-
-					if (filenameSet) {
-						const char *trailingPath = GetTrailingPathComponents(path, noOfComponents);
-
-						// prefix with ellipsis if components were skipped 
-						if (trailingPath > path) {
-							title.append(QLatin1String("..."));
-						}
-						title.append(QLatin1String(trailingPath));
-					}
-				}
-				break;
-
-			case 'f': // file name 
-				fileNamePresent = true;
-				title.append(filename);
-				break;
-
-			case 'h': // host name 
-				hostNamePresent = true;
-				title.append(GetNameOfHostEx());
-				break;
-
-			case 'S': // file status 
-				fileStatusPresent = true;
-				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
-					title.append(tr("read only, modified"));
-				else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
-					title.append(tr("read only"));
-				else if (IS_USER_LOCKED(lockReasons) && fileChanged)
-					title.append(tr("locked, modified"));
-				else if (IS_USER_LOCKED(lockReasons))
-					title.append(tr("locked"));
-				else if (fileChanged)
-					title.append(tr("modified"));
-				break;
-
-			case 'u': // user name 
-				userNamePresent = true;
-				title.append(GetUserNameEx());
-				break;
-
-			case '%': // escaped % 
-				title.append(QLatin1Char('%'));
-				break;
-
-			case '*': // short file status ? 
-				fileStatusPresent = true;
-				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
-					++format_it;
-					shortStatus = true;
-					if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
-						title.append(tr("RO*"));
-					else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
-						title.append(tr("RO"));
-					else if (IS_USER_LOCKED(lockReasons) && fileChanged)
-						title.append(tr("LO*"));
-					else if (IS_USER_LOCKED(lockReasons))
-						title.append(tr("LO"));
-					else if (fileChanged)
-						title.append(tr("*"));
-					break;
-				}
-			// fall-through 
-			default:
-				title.append(c);
-				break;
-			}
-		} else {
-			title.append(c);
-		}
-	}
-
-	title = compressWindowTitle(title);
-
-	if (title.isEmpty()) {
-		title = tr("<empty>"); // For preview purposes only 
-	}
+	UpdateState state;
+	QString title = FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, &state);
 
 	// Prevent recursive callback loop 
 	suppressFormatUpdate_ = true;
 
 	/* Sync radio buttons with format string (in case the user entered
 	   the format manually) */
-	ui.checkFileName->setChecked(fileNamePresent);
-	ui.checkFileStatus->setChecked(fileStatusPresent);
-	ui.checkServerName->setChecked(serverNamePresent);
-	ui.checkClearCase->setChecked(clearCasePresent);
+	ui.checkFileName->setChecked(state.fileNamePresent);
+	ui.checkFileStatus->setChecked(state.fileStatusPresent);
+	ui.checkServerName->setChecked(state.serverNamePresent);
+	ui.checkClearCase->setChecked(state.clearCasePresent);
 
-	ui.checkDirectory->setChecked(dirNamePresent);
-	ui.checkHostName->setChecked(hostNamePresent);
-	ui.checkUserName->setChecked(userNamePresent);
+	ui.checkDirectory->setChecked(state.dirNamePresent);
+	ui.checkHostName->setChecked(state.hostNamePresent);
+	ui.checkUserName->setChecked(state.userNamePresent);
 
-	ui.checkBrief->setEnabled(fileStatusPresent);
+	ui.checkBrief->setEnabled(state.fileStatusPresent);
 
 
-	if (fileStatusPresent) {
-		ui.checkBrief->setChecked(shortStatus);
+	if (state.fileStatusPresent) {
+		ui.checkBrief->setChecked(state.shortStatus);
 	}
 
 	// Directory components are also sensitive to presence of dir 
-	ui.editDirectory->setEnabled(dirNamePresent);
-	ui.labelDirectory->setEnabled(dirNamePresent);
+	ui.editDirectory->setEnabled(state.dirNamePresent);
+	ui.labelDirectory->setEnabled(state.dirNamePresent);
 
 	// Avoid erasing number when not active 
-	if (dirNamePresent)  {
+	if (state.dirNamePresent)  {
 
-		if (noOfComponents >= 0) {
+		if (state.noOfComponents >= 0) {
 
 			QString value = ui.editDirectory->text();
-			QString comp  = tr("%1").arg(noOfComponents);
+			QString comp  = tr("%1").arg(state.noOfComponents);
 
 			// Don't overwrite unless diff. 
 			if (value != comp) {
@@ -495,13 +208,13 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const ch
 	}
 
 	// Enable/disable test buttons, depending on presence of codes 
-	ui.checkFileModified->setEnabled(fileStatusPresent);
-	ui.checkFileReadOnly->setEnabled(fileStatusPresent);
-	ui.checkFileLocked->setEnabled(fileStatusPresent && !IS_PERM_LOCKED(lockReasons_));
-	ui.checkServerNamePresent->setEnabled(serverNamePresent);
-	ui.checkClearCasePresent->setEnabled(clearCasePresent);
-	ui.checkServerEqualsCC->setEnabled(clearCasePresent && serverNamePresent);
-	ui.checkDirectoryPresent->setEnabled(dirNamePresent);
+	ui.checkFileModified->setEnabled(state.fileStatusPresent);
+	ui.checkFileReadOnly->setEnabled(state.fileStatusPresent);
+	ui.checkFileLocked->setEnabled(state.fileStatusPresent && !IS_PERM_LOCKED(lockReasons_));
+	ui.checkServerNamePresent->setEnabled(state.serverNamePresent);
+	ui.checkClearCasePresent->setEnabled(state.clearCasePresent);
+	ui.checkServerEqualsCC->setEnabled(state.clearCasePresent && state.serverNamePresent);
+	ui.checkDirectoryPresent->setEnabled(state.dirNamePresent);
 	suppressFormatUpdate_ = false;
 
 	return title;
@@ -836,4 +549,170 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 	}
 
 	ui.editFormat->setText(format);
+}
+
+QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const char *path, const QString &clearCaseViewTag, const QString &serverName, int isServer, int filenameSet, int lockReasons, int fileChanged, const QString &titleFormat, UpdateState *state) {
+	QString title;
+
+	// Flags to supress one of these if both are specified and they are identical 
+	bool serverNameSeen = false;
+	bool clearCaseViewTagSeen = false;
+
+	bool fileNamePresent   = false;
+	bool hostNamePresent   = false;
+	bool userNamePresent   = false;
+	bool serverNamePresent = false;
+	bool clearCasePresent  = false;
+	bool fileStatusPresent = false;
+	bool dirNamePresent    = false;
+	int noOfComponents     = -1;
+	bool shortStatus       = false;
+
+	auto format_it = titleFormat.begin();
+
+	while (format_it != titleFormat.end()) {
+		QChar c = *format_it++;
+		if (c == QLatin1Char('%')) {
+			
+			if (format_it == titleFormat.end()) {
+				title.push_back(QLatin1Char('%'));
+				break;
+			}
+			
+			c = *format_it++;
+			
+			switch (c.toLatin1()) {
+			case 'c': // ClearCase view tag 
+				clearCasePresent = true;
+				if (!clearCaseViewTag.isNull()) {
+					if (!serverNameSeen || serverName != clearCaseViewTag) {
+						title.append(clearCaseViewTag);
+						clearCaseViewTagSeen = true;
+					}
+				}
+				break;
+
+			case 's': // server name 
+				serverNamePresent = true;
+				if (isServer && !serverName.isEmpty()) { // only applicable for servers 
+					if (!clearCaseViewTagSeen || serverName != clearCaseViewTag) {
+						title.append(serverName);
+						serverNameSeen = true;
+					}
+				}
+				break;
+
+			case 'd': // directory without any limit to no. of components 
+				dirNamePresent = true;
+				if (filenameSet) {
+					title.append(QLatin1String(path));
+				}
+				break;
+
+			case '0': // directory with limited no. of components 
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				if (*format_it == QLatin1Char('d')) {
+					dirNamePresent = true;
+					noOfComponents = c.toLatin1() - '0';
+					format_it++; // delete the argument 
+
+					if (filenameSet) {
+						const char *trailingPath = GetTrailingPathComponents(path, noOfComponents);
+
+						// prefix with ellipsis if components were skipped 
+						if (trailingPath > path) {
+							title.append(QLatin1String("..."));
+						}
+						title.append(QLatin1String(trailingPath));
+					}
+				}
+				break;
+
+			case 'f': // file name 
+				fileNamePresent = true;
+				title.append(filename);
+				break;
+
+			case 'h': // host name 
+				hostNamePresent = true;
+				title.append(GetNameOfHostEx());
+				break;
+
+			case 'S': // file status 
+				fileStatusPresent = true;
+				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
+					title.append(tr("read only, modified"));
+				else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
+					title.append(tr("read only"));
+				else if (IS_USER_LOCKED(lockReasons) && fileChanged)
+					title.append(tr("locked, modified"));
+				else if (IS_USER_LOCKED(lockReasons))
+					title.append(tr("locked"));
+				else if (fileChanged)
+					title.append(tr("modified"));
+				break;
+
+			case 'u': // user name 
+				userNamePresent = true;
+				title.append(GetUserNameEx());
+				break;
+
+			case '%': // escaped % 
+				title.append(QLatin1Char('%'));
+				break;
+
+			case '*': // short file status ? 
+				fileStatusPresent = true;
+				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
+					++format_it;
+					shortStatus = true;
+					if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
+						title.append(tr("RO*"));
+					else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
+						title.append(tr("RO"));
+					else if (IS_USER_LOCKED(lockReasons) && fileChanged)
+						title.append(tr("LO*"));
+					else if (IS_USER_LOCKED(lockReasons))
+						title.append(tr("LO"));
+					else if (fileChanged)
+						title.append(tr("*"));
+					break;
+				}
+			// fall-through 
+			default:
+				title.append(c);
+				break;
+			}
+		} else {
+			title.append(c);
+		}
+	}
+
+	title = DialogWindowTitle::compressWindowTitle(title);
+
+	if (title.isEmpty()) {
+		title = tr("<empty>"); // For preview purposes only 
+	}
+	
+	if(state) {
+		state->fileNamePresent   = fileNamePresent;
+		state->hostNamePresent   = hostNamePresent;
+		state->userNamePresent   = userNamePresent;
+		state->serverNamePresent = serverNamePresent;
+		state->clearCasePresent  = clearCasePresent;
+		state->fileStatusPresent = fileStatusPresent; 
+		state->dirNamePresent    = dirNamePresent;
+		state->shortStatus       = shortStatus;
+		state->noOfComponents    = noOfComponents;
+	}
+
+	return title;
 }
