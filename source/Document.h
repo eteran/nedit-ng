@@ -39,6 +39,8 @@ struct TextBuffer;
 class Document {
 public:
 	Document(const char *name, char *geometry, bool iconic);
+	
+private:
 	Document(const Document &) = default;
 	Document& operator=(const Document &) = default;
 
@@ -51,10 +53,10 @@ public:
 	
 public:
 	bool IsTopDocument() const;
-	int CloseAllDocumentInWindow();
-	int GetShowTabBar();
-	int IsIconic();
-	int IsValidWindow();
+	bool CloseAllDocumentInWindow();
+	bool GetShowTabBar();
+	bool IsIconic();
+	bool IsValidWindow();
 	int NDocuments() const;
 	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();

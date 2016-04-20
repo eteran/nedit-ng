@@ -297,7 +297,7 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 	}
 
 	// Indicate that the window has now been modified 
-	window->SetWindowModified(TRUE);
+	window->SetWindowModified(true);
 
 	// Update # of bytes, and line and col statistics 
 	window->UpdateStatsLine();
@@ -352,7 +352,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    ID for the blink procedure.  */
 	if (textWidget->text.cursorBlinkProcID != 0) {
 		//  Start blinking the caret again.  
-		ResetCursorBlink(textWidget, False);
+		ResetCursorBlink(textWidget, false);
 	}
 }
 
@@ -364,7 +364,7 @@ void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 
 	// don't record all of the intermediate drag steps for undo 
-	window->ignoreModify_ = True;
+	window->ignoreModify_ = true;
 }
 
 void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
@@ -375,7 +375,7 @@ void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	auto callData = static_cast<dragEndCBStruct *>(call_data);
 
 	// restore recording of undo information 
-	window->ignoreModify_ = False;
+	window->ignoreModify_ = false;
 
 	// Do nothing if drag operation was canceled 
 	if (callData->nCharsInserted == 0)
@@ -699,14 +699,14 @@ Widget addTab(Widget folder, const char *string) {
 	                              // XmNmarginWidth, <default@nedit.c>, 
 	                              // XmNmarginHeight, <default@nedit.c>, 
 	                              // XmNalignment, <default@nedit.c>, 
-	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, True, XltNslidingBubble, False,
+	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, true, XltNslidingBubble, false,
 	                              // XltNdelay, 800,
 	                              // XltNbubbleDuration, 8000,
 	                              nullptr);
 	XmStringFree(s1);
 
 	// there's things to do as user click on the tab 
-	XtAddEventHandler(tab, ButtonPressMask, False, (XtEventHandler)tabClickEH, nullptr);
+	XtAddEventHandler(tab, ButtonPressMask, false, (XtEventHandler)tabClickEH, nullptr);
 
 	/* BubbleButton simply use reversed video for tooltips,
 	   we try to use the 'standard' color */
@@ -930,7 +930,7 @@ void Document::LastDocument() const {
 	if (shell_ == win->shell_) {
 		win->RaiseDocument();
 	} else {
-		win->RaiseFocusDocumentWindow(True);
+		win->RaiseFocusDocumentWindow(true);
 	}
 }
 
@@ -969,7 +969,7 @@ Widget Document::GetPaneByIndex(int paneIndex) const {
 /*
 ** make sure window is alive is kicking
 */
-int Document::IsValidWindow() {
+bool Document::IsValidWindow() {
 
 	Document *win = Document::find_if([this](Document *win) {
 		return this == win;
@@ -981,13 +981,13 @@ int Document::IsValidWindow() {
 /*
 ** check if tab bar is to be shown on this window
 */
-int Document::GetShowTabBar() {
+bool Document::GetShowTabBar() {
 	if (!GetPrefTabBar())
-		return False;
+		return false;
 	else if (NDocuments() == 1)
 		return !GetPrefTabBarHideOne();
 	else
-		return True;
+		return true;
 }
 
 /*
@@ -995,7 +995,7 @@ int Document::GetShowTabBar() {
 ** on the shell window.  I think this is the most reliable way to tell,
 ** but if someone has a better idea please send me a note).
 */
-int Document::IsIconic() {
+bool  Document::IsIconic() {
 	unsigned long *property = nullptr;
 	unsigned long nItems;
 	unsigned long leftover;
@@ -1004,11 +1004,11 @@ int Document::IsIconic() {
 	int actualFormat;
 	
 	if (wmStateAtom == 0) {
-		wmStateAtom = XInternAtom(XtDisplay(shell_), "WM_STATE", False);
+		wmStateAtom = XInternAtom(XtDisplay(shell_), "WM_STATE", false);
 	}
 		
-	if (XGetWindowProperty(XtDisplay(shell_), XtWindow(shell_), wmStateAtom, 0L, 1L, False, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || !property) {
-		return FALSE;
+	if (XGetWindowProperty(XtDisplay(shell_), XtWindow(shell_), wmStateAtom, 0L, 1L, false, wmStateAtom, &actualType, &actualFormat, &nItems, &leftover, (unsigned char **)&property) != Success || nItems != 1 || !property) {
+		return false;
 	}
 
 	int result = (*property == IconicState);
@@ -1149,7 +1149,7 @@ void Document::showStatsForm() {
 		XtUnmanageChild(statsAreaForm); /*... will this fix Solaris 7??? */
 		XtVaSetValues(mainW, XmNcommandWindowLocation, XmCOMMAND_ABOVE_WORKSPACE, nullptr);
 		XtManageChild(statsAreaForm);
-		XtVaSetValues(mainW, XmNshowSeparator, False, nullptr);
+		XtVaSetValues(mainW, XmNshowSeparator, false, nullptr);
 		UpdateStatsLine();
 	} else {
 		XtUnmanageChild(statsAreaForm);
@@ -1215,7 +1215,7 @@ void Document::CleanUpTabBarExposeQueue() {
 		ev.width = XtWidth(tabBar_);
 		ev.height = XtHeight(tabBar_);
 		ev.count = 0;
-		XSendEvent(TheDisplay, XtWindow(tabBar_), False, ExposureMask, (XEvent *)&ev);
+		XSendEvent(TheDisplay, XtWindow(tabBar_), false, ExposureMask, (XEvent *)&ev);
 	}
 }
 
@@ -1237,13 +1237,13 @@ void Document::RefreshWindowStates() {
 	// show/hide statsline as needed 
 	if (modeMessageDisplayed_ && !XtIsManaged(statsLineForm_)) {
 		// turn on statline to display mode message 
-		showStatistics(True);
+		showStatistics(true);
 	} else if (showStats_ && !XtIsManaged(statsLineForm_)) {
 		// turn on statsline since it is enabled 
-		showStatistics(True);
+		showStatistics(true);
 	} else if (!showStats_ && !modeMessageDisplayed_ && XtIsManaged(statsLineForm_)) {
 		// turn off statsline since there's nothing to show 
-		showStatistics(False);
+		showStatistics(false);
 	}
 
 	// signal if macro/shell is running 
@@ -1389,24 +1389,24 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(delItem_, wasSelected_);
 
 	// Preferences menu 
-	XmToggleButtonSetState(statsLineItem_, showStats_, False);
-	XmToggleButtonSetState(iSearchLineItem_, showISearchLine_, False);
-	XmToggleButtonSetState(lineNumsItem_, showLineNumbers_, False);
-	XmToggleButtonSetState(highlightItem_, highlightSyntax_, False);
+	XmToggleButtonSetState(statsLineItem_, showStats_, false);
+	XmToggleButtonSetState(iSearchLineItem_, showISearchLine_, false);
+	XmToggleButtonSetState(lineNumsItem_, showLineNumbers_, false);
+	XmToggleButtonSetState(highlightItem_, highlightSyntax_, false);
 	XtSetSensitive(highlightItem_, languageMode_ != PLAIN_LANGUAGE_MODE);
-	XmToggleButtonSetState(backlightCharsItem_, backlightChars_, False);
-	XmToggleButtonSetState(saveLastItem_, saveOldVersion_, False);
-	XmToggleButtonSetState(autoSaveItem_, autoSave_, False);
-	XmToggleButtonSetState(overtypeModeItem_, overstrike_, False);
-	XmToggleButtonSetState(matchSyntaxBasedItem_, matchSyntaxBased_, False);
-	XmToggleButtonSetState(readOnlyItem_, IS_USER_LOCKED(lockReasons_), False);
+	XmToggleButtonSetState(backlightCharsItem_, backlightChars_, false);
+	XmToggleButtonSetState(saveLastItem_, saveOldVersion_, false);
+	XmToggleButtonSetState(autoSaveItem_, autoSave_, false);
+	XmToggleButtonSetState(overtypeModeItem_, overstrike_, false);
+	XmToggleButtonSetState(matchSyntaxBasedItem_, matchSyntaxBased_, false);
+	XmToggleButtonSetState(readOnlyItem_, IS_USER_LOCKED(lockReasons_), false);
 
 	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
 
 	SetAutoIndent(indentStyle_);
 	SetAutoWrap(wrapMode_);
 	SetShowMatching(showMatchingStyle_);
-	SetLanguageMode(this, languageMode_, FALSE);
+	SetLanguageMode(this, languageMode_, false);
 
 	// Windows Menu 
 	XtSetSensitive(splitPaneItem_, nPanes_ < MAX_PANES);
@@ -1629,7 +1629,7 @@ void Document::SetTabDist(int tabDist) {
 		int saveHScrollPositions[MAX_PANES + 1];
 		int paneIndex;
 
-		ignoreModify_ = True;
+		ignoreModify_ = true;
 
 		for (paneIndex = 0; paneIndex <= nPanes_; ++paneIndex) {
 			Widget w = GetPaneByIndex(paneIndex);
@@ -1651,7 +1651,7 @@ void Document::SetTabDist(int tabDist) {
 			TextSetScroll(w, saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
 		}
 
-		ignoreModify_ = False;
+		ignoreModify_ = false;
 	}
 }
 
@@ -1727,7 +1727,7 @@ void Document::SetModeMessage(const char *message) {
 	/* this document may be hidden (not on top) or later made hidden,
 	   so we save a copy of the mode message, so we can restore the
 	   statsline when the document is raised to top again */
-	modeMessageDisplayed_ = True;
+	modeMessageDisplayed_ = true;
 	XtFree(modeMessage_);
 	modeMessage_ = XtNewStringEx(message);
 
@@ -1739,7 +1739,7 @@ void Document::SetModeMessage(const char *message) {
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
 	if (!showStats_)
-		showStatistics(True);
+		showStatistics(true);
 }
 
 /*
@@ -1750,7 +1750,7 @@ void Document::ClearModeMessage() {
 	if (!modeMessageDisplayed_)
 		return;
 
-	modeMessageDisplayed_ = False;
+	modeMessageDisplayed_ = false;
 	XtFree(modeMessage_);
 	modeMessage_ = nullptr;
 
@@ -1761,7 +1761,7 @@ void Document::ClearModeMessage() {
 	 * Remove the stats line only if indicated by it's window state.
 	 */
 	if (!showStats_) {
-		showStatistics(False);
+		showStatistics(false);
 	}
 	
 	UpdateStatsLine();
@@ -1790,7 +1790,7 @@ void Document::SetBacklightChars(char *applyBacklightTypes) {
 	for (i = 0; i < nPanes_; i++)
 		XtVaSetValues(textPanes_[i], textNbacklightCharTypes, backlightCharTypes_, nullptr);
 	if (is_applied != do_apply)
-		SetToggleButtonState(backlightCharsItem_, do_apply, False);
+		SetToggleButtonState(backlightCharsItem_, do_apply, false);
 }
 
 /*
@@ -1808,7 +1808,7 @@ void Document::UpdateWindowReadOnly() {
 	XtVaSetValues(textArea_, textNreadOnly, state, nullptr);
 	for (i = 0; i < nPanes_; i++)
 		XtVaSetValues(textPanes_[i], textNreadOnly, state, nullptr);
-	XmToggleButtonSetState(readOnlyItem_, state, FALSE);
+	XmToggleButtonSetState(readOnlyItem_, state, false);
 	XtSetSensitive(readOnlyItem_, !IS_ANY_LOCKED_IGNORING_USER(lockReasons_));
 }
 
@@ -1828,7 +1828,7 @@ void Document::PreviousDocument() {
 	if (shell_ == win->shell_)
 		win->RaiseDocument();
 	else
-		win->RaiseFocusDocumentWindow(True);
+		win->RaiseFocusDocumentWindow(true);
 }
 
 /*
@@ -1847,7 +1847,7 @@ void Document::NextDocument() {
 	if (shell_ == win->shell_)
 		win->RaiseDocument();
 	else
-		win->RaiseFocusDocumentWindow(True);
+		win->RaiseFocusDocumentWindow(true);
 }
 
 /*
@@ -1959,7 +1959,7 @@ void Document::SortTabBar() {
 
 		// set tab as active 
 		if (windows[j]->IsTopDocument())
-			XmLFolderSetActiveTab(tabBar_, i, False);
+			XmLFolderSetActiveTab(tabBar_, i, false);
 
 		windows[j]->tab_ = tabList[i];
 		windows[j]->RefreshTabState();
@@ -2029,9 +2029,9 @@ void Document::SetAutoWrap(int state) {
 	wrapMode_ = state;
 
 	if (IsTopDocument()) {
-		XmToggleButtonSetState(newlineWrapItem_, autoWrap, False);
-		XmToggleButtonSetState(continuousWrapItem_, contWrap, False);
-		XmToggleButtonSetState(noWrapItem_, state == NO_WRAP, False);
+		XmToggleButtonSetState(newlineWrapItem_, autoWrap, false);
+		XmToggleButtonSetState(continuousWrapItem_, contWrap, false);
+		XmToggleButtonSetState(noWrapItem_, state == NO_WRAP, false);
 	}
 }
 
@@ -2082,7 +2082,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 /*
 ** close all the documents in a window
 */
-int Document::CloseAllDocumentInWindow() {
+bool Document::CloseAllDocumentInWindow() {
 
 	if (NDocuments() == 1) {
 		// only one document in the window 
@@ -2096,7 +2096,7 @@ int Document::CloseAllDocumentInWindow() {
 			if (win->shell_ == winShell && win->fileChanged_) {
 				Document *next = win->next_;
 				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
-					return False;
+					return false;
 				win = next;
 			} else {
 				win = win->next_;
@@ -2116,7 +2116,7 @@ int Document::CloseAllDocumentInWindow() {
 				if (win->shell_ == winShell && win != topDocument) {
 					Document *next = win->next_;
 					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
-						return False;
+						return false;
 					win = next;
 				} else
 					win = win->next_;
@@ -2124,11 +2124,11 @@ int Document::CloseAllDocumentInWindow() {
 
 			// close the last document and its window 
 			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
-				return False;
+				return false;
 		}
 	}
 
-	return True;
+	return true;
 }
 
 /*
@@ -2170,7 +2170,7 @@ Document *Document::DetachDocument() {
 	cloneDocument(cloneWin);
 
 	// remove the document from the old this 
-	fileChanged_ = False;
+	fileChanged_ = false;
 	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
 	// refresh former host this 
@@ -2272,7 +2272,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	// find out where the selection is 
 	if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
 		left = right = TextGetCursorPos(textPane);
-		isRect = False;
+		isRect = false;
 	}
 
 	/* Check vertical positioning unless the selection is already shown or
@@ -2288,11 +2288,11 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		TextGetScroll(textPane, &topLineNum, &horizOffset);
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen 
-			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, False);
+			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, false);
 			targetLineNum = topLineNum + scrollOffset;
 			if (leftLineNum >= targetLineNum) {
 				// Start of sel. is not between top & target 
-				linesToScroll = textD->TextDCountLines(lastChar, right, False) + scrollOffset;
+				linesToScroll = textD->TextDCountLines(lastChar, right, false) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum)
 					linesToScroll = leftLineNum - targetLineNum;
 				// Scroll start of selection to the target line 
@@ -2301,11 +2301,11 @@ void Document::MakeSelectionVisible(Widget textPane) {
 		} else if (left < topChar) {
 			// Start of sel. is above top of screen 
 			lastLineNum = topLineNum + rows;
-			rightLineNum = lastLineNum - textD->TextDCountLines(right, lastChar, False);
+			rightLineNum = lastLineNum - textD->TextDCountLines(right, lastChar, false);
 			targetLineNum = lastLineNum - scrollOffset;
 			if (rightLineNum <= targetLineNum) {
 				// End of sel. is not between bottom & target 
-				linesToScroll = textD->TextDCountLines(left, topChar, False) + scrollOffset;
+				linesToScroll = textD->TextDCountLines(left, topChar, false) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum)
 					linesToScroll = targetLineNum - rightLineNum;
 				// Scroll end of selection to the target line 
@@ -2371,7 +2371,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	next_ = cloneWin;
 
 	// remove the document from the old this 
-	fileChanged_ = False;
+	fileChanged_ = false;
 	CloseFileAndWindow(this, NO_SBC_DIALOG_RESPONSE);
 
 	// some menu states might have changed when deleting document 
@@ -2392,10 +2392,10 @@ void Document::ShowWindowTabBar() {
 		if (GetPrefTabBarHideOne()) {
 			ShowTabBar(NDocuments() > 1);
 		} else {
-			ShowTabBar(True);
+			ShowTabBar(true);
 		}
 	} else {
-		ShowTabBar(False);
+		ShowTabBar(false);
 	}
 }
 
@@ -2487,15 +2487,15 @@ void Document::SetAutoIndent(int state) {
 	if (indentStyle_ == SMART_INDENT && !smartIndent)
 		EndSmartIndent(this);
 	else if (smartIndent && indentStyle_ != SMART_INDENT)
-		BeginSmartIndent(this, True);
+		BeginSmartIndent(this, true);
 	indentStyle_ = state;
 	XtVaSetValues(textArea_, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
 	for (i = 0; i < nPanes_; i++)
 		XtVaSetValues(textPanes_[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
 	if (IsTopDocument()) {
-		XmToggleButtonSetState(smartIndentItem_, smartIndent, False);
-		XmToggleButtonSetState(autoIndentItem_, autoIndent, False);
-		XmToggleButtonSetState(autoIndentOffItem_, state == NO_AUTO_INDENT, False);
+		XmToggleButtonSetState(smartIndentItem_, smartIndent, false);
+		XmToggleButtonSetState(autoIndentItem_, autoIndent, false);
+		XmToggleButtonSetState(autoIndentOffItem_, state == NO_AUTO_INDENT, false);
 	}
 }
 
@@ -2506,9 +2506,9 @@ void Document::SetAutoIndent(int state) {
 void Document::SetShowMatching(int state) {
 	showMatchingStyle_ = state;
 	if (IsTopDocument()) {
-		XmToggleButtonSetState(showMatchingOffItem_, state == NO_FLASH, False);
-		XmToggleButtonSetState(showMatchingDelimitItem_, state == FLASH_DELIMIT, False);
-		XmToggleButtonSetState(showMatchingRangeItem_, state == FLASH_RANGE, False);
+		XmToggleButtonSetState(showMatchingOffItem_, state == NO_FLASH, false);
+		XmToggleButtonSetState(showMatchingDelimitItem_, state == FLASH_DELIMIT, false);
+		XmToggleButtonSetState(showMatchingRangeItem_, state == FLASH_RANGE, false);
 	}
 }
 
@@ -2530,7 +2530,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	XFontStruct *font, *oldFont;
 	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
 	int borderWidth, borderHeight, marginWidth, marginHeight;
-	int primaryChanged, highlightChanged = False;
+	int primaryChanged, highlightChanged = false;
 	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
 	Dimension textHeight, newWindowWidth, newWindowHeight;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
@@ -2538,11 +2538,11 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	// Check which fonts have changed 
 	primaryChanged = fontName != fontName_;
 	if (strcmp(italicName, italicFontName_))
-		highlightChanged = True;
+		highlightChanged = true;
 	if (strcmp(boldName, boldFontName_))
-		highlightChanged = True;
+		highlightChanged = true;
 	if (strcmp(boldItalicName, boldItalicFontName_))
-		highlightChanged = True;
+		highlightChanged = true;
 	if (!primaryChanged && !highlightChanged)
 		return;
 
@@ -2744,13 +2744,13 @@ void Document::CloseWindow() {
 		fileGid_ = 0;
 		filename_ = name;
 		path_ = "";
-		ignoreModify_ = TRUE;
+		ignoreModify_ = true;
 		buffer_->BufSetAllEx("");
-		ignoreModify_ = FALSE;
+		ignoreModify_ = false;
 		nMarks_ = 0;
-		filenameSet_ = FALSE;
-		fileMissing_ = TRUE;
-		fileChanged_ = FALSE;
+		filenameSet_ = false;
+		fileMissing_ = true;
+		fileChanged_ = false;
 		fileFormat_ = UNIX_FILE_FORMAT;
 		lastModTime_ = 0;
 		device_ = 0;
@@ -2760,14 +2760,14 @@ void Document::CloseWindow() {
 		EndSmartIndent(this);
 		UpdateWindowTitle();
 		UpdateWindowReadOnly();
-		XtSetSensitive(closeItem_, FALSE);
-		XtSetSensitive(readOnlyItem_, TRUE);
-		XmToggleButtonSetState(readOnlyItem_, FALSE, FALSE);
+		XtSetSensitive(closeItem_, false);
+		XtSetSensitive(readOnlyItem_, true);
+		XmToggleButtonSetState(readOnlyItem_, false, false);
 		ClearUndoList();
 		ClearRedoList();
 		XmTextSetStringEx(statsLine_, ""); // resets scroll pos of stats line from long file names 
 		UpdateStatsLine();
-		DetermineLanguageMode(this, True);
+		DetermineLanguageMode(this, true);
 		RefreshTabState();
 		updateLineNumDisp();
 		return;
@@ -3066,7 +3066,7 @@ void Document::RaiseDocument() {
 	   this may shrink on some this-managers such as
 	   metacity, due to changes made in UpdateWMSizeHints().*/
 	if (highlightSyntax_ && highlightData_ == nullptr)
-		StartHighlighting(this, False);
+		StartHighlighting(this, false);
 
 	// put away the bg menu tearoffs of last active document 
 	hideTearOffs(win->bgMenuPane_);
@@ -3075,7 +3075,7 @@ void Document::RaiseDocument() {
 	redisplayTearOffs(bgMenuPane_);
 
 	// set tab as active 
-	XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), False);
+	XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), false);
 
 	/* set keyboard focus. Must be done before unmanaging previous
 	   top document, else lastFocus will be reset to textArea */
@@ -3125,7 +3125,7 @@ void Document::cloneDocument(Document *window) {
 
 	window->ShowLineNumbers(showLineNumbers_);
 
-	window->ignoreModify_ = True;
+	window->ignoreModify_ = true;
 
 	// copy the text buffer 
 	auto orgDocument = buffer_->BufAsStringEx();
@@ -3137,7 +3137,7 @@ void Document::cloneDocument(Document *window) {
 	XtVaGetValues(textArea_, textNemulateTabs, &emTabDist, nullptr);
 	window->SetEmTabDist(emTabDist);
 
-	window->ignoreModify_ = False;
+	window->ignoreModify_ = false;
 
 	// transfer text fonts 
 	char *params[4];
@@ -3166,7 +3166,7 @@ void Document::cloneDocument(Document *window) {
 	window->languageMode_ = languageMode_;
 	window->highlightSyntax_ = highlightSyntax_;
 	if (window->highlightSyntax_) {
-		StartHighlighting(window, False);
+		StartHighlighting(window, false);
 	}
 	
 	// TODO(eteran): clone the find dialogs as well
@@ -3278,18 +3278,18 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	dialogFind_    = nullptr;
 	dialogReplace_ = nullptr;
 
-	multiFileReplSelected_ = FALSE;
-	multiFileBusy_         = FALSE;
+	multiFileReplSelected_ = false;
+	multiFileBusy_         = false;
 	writableWindows_       = nullptr;
 	nWritableWindows_      = 0;
-	fileChanged_           = FALSE;
+	fileChanged_           = false;
 	fileMode_              = 0;
 	fileUid_               = 0;
 	fileGid_               = 0;
-	filenameSet_           = FALSE;
+	filenameSet_           = false;
 	fileFormat_            = UNIX_FILE_FORMAT;
 	lastModTime_           = 0;
-	fileMissing_           = True;
+	fileMissing_           = true;
 	filename_              = name;
 	undo_                  = std::list<UndoInfo *>();
 	redo_                  = std::list<UndoInfo *>();
@@ -3420,7 +3420,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	shell_ = winShell;
 
 #ifdef EDITRES
-	XtAddEventHandler(winShell, (EventMask)0, True, (XtEventHandler)_XEditResCheckMessages, nullptr);
+	XtAddEventHandler(winShell, (EventMask)0, true, (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif
 
 	addWindowIcon(winShell);
@@ -3444,7 +3444,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	// The statsAreaForm holds the stats line and the I-Search line. 
 	Widget statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
-	                                 // XmNautoUnmanage, False, 
+	                                 // XmNautoUnmanage, false, 
 	                                 nullptr);
 
 	/* NOTE: due to a bug in openmotif 2.1.30, NEdit used to crash when
@@ -3474,7 +3474,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 		isrcFind = createBitmapWithDepth(iSearchForm_, (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
 	}
 	iSearchFindButton_ = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
-	                                                    XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
+	                                                    XmNtraversalOn, false, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
 	                                                    // XmNleftOffset, 3, 
 	                                                    XmNleftOffset, 0, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
@@ -3482,25 +3482,25 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	iSearchCaseToggle_ = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
 	                                                    GetPrefSearch() == SEARCH_CASE_SENSE || GetPrefSearch() == SEARCH_REGEX || GetPrefSearch() == SEARCH_CASE_SENSE_WORD, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment,
 	                                                    XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
-	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
+	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
 
 	iSearchRegexToggle_ =
 	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
 	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
-	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchCaseToggle_, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
+	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchCaseToggle_, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
 
-	iSearchRevToggle_ = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, False, XmNtopAttachment, XmATTACH_FORM,
+	iSearchRevToggle_ = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, false, XmNtopAttachment, XmATTACH_FORM,
 	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
-	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRegexToggle_, XmNmarginHeight, 0, XmNtraversalOn, False, nullptr);
+	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRegexToggle_, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
 
 	if (isrcClear == 0) {
 		isrcClear = createBitmapWithDepth(iSearchForm_, (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
 	}
 	iSearchClearButton_ = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("<x"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
-	                                                     XmNtraversalOn, False, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRevToggle_, XmNrightOffset, 2, XmNtopAttachment,
+	                                                     XmNtraversalOn, false, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRevToggle_, XmNrightOffset, 2, XmNtopAttachment,
 	                                                     XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
 
@@ -3514,7 +3514,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	SetISearchTextCallbacks(this);
 
 	// create the a form to house the tab bar and close-tab button 
-	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, False, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
+	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, false, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
 	                           0, nullptr);
 
 	// button to close top document 
@@ -3522,7 +3522,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 		closeTabPixmap = createBitmapWithDepth(tabForm, (char *)close_bits, close_width, close_height);
 	}
 	closeTabBtn = XtVaCreateManagedWidget("closeTabBtn", xmPushButtonWidgetClass, tabForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNhighlightThickness, 0, XmNlabelType, XmPIXMAP, XmNlabelPixmap, closeTabPixmap, XmNshadowThickness, 1,
-	                                      XmNtraversalOn, False, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
+	                                      XmNtraversalOn, false, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
 	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin);
 
 	// create the tab bar 
@@ -3535,7 +3535,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	/* create an unmanaged composite widget to get the folder
 	   widget to hide the 3D shadow for the manager area.
 	   Note: this works only on the patched XmLFolder widget */
-	Widget form = XtVaCreateWidget("form", xmFormWidgetClass, tabBar_, XmNheight, 1, XmNresizable, False, nullptr);
+	Widget form = XtVaCreateWidget("form", xmFormWidgetClass, tabBar_, XmNheight, 1, XmNresizable, false, nullptr);
 
 	(void)form;
 
@@ -3545,12 +3545,12 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	// A form to hold the stats line text and line/col widgets 
 	statsLineForm_ = XtVaCreateWidget("statsLineForm", xmFormWidgetClass, statsAreaForm, XmNshadowThickness, 0, XmNtopAttachment, showISearchLine_ ? XmATTACH_WIDGET : XmATTACH_FORM, XmNtopWidget, iSearchForm_,
-	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, False, //  
+	                                         XmNrightAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNresizable, false, //  
 	                                         nullptr);
 
 	// A separate display of the line/column number 
 	statsLineColNo_ = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, statsLineForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
-	                                                 False, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, //  
+	                                                 false, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, //  
 	                                                 nullptr);
 	XmStringFree(s1);
 
@@ -3568,7 +3568,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	                                                   aligns tatsLineColNo & statsLine */
 	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1,
 	                                                   to align with statsLineColNo */
-	                                XmNscrollHorizontal, False, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, False, XmNtraversalOn, False, XmNcursorPositionVisible, False, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                //  
+	                                XmNscrollHorizontal, false, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, false, XmNtraversalOn, false, XmNcursorPositionVisible, false, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                //  
 	                                XmNtopWidget, statsLineColNo_, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, statsLineColNo_, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, //  
 	                                XmNbottomWidget, statsLineColNo_, XmNrightOffset, 3, nullptr);
 	statsLine_ = stats;
@@ -3592,7 +3592,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	XtManageChild(menuBar);
 
 	// Create paned window to manage split pane behavior 
-	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, nullptr);
+	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, false, XmNspacing, 3, XmNsashIndent, -2, nullptr);
 	splitPane_ = pane;
 	XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
 
@@ -3707,16 +3707,16 @@ Document *Document::CreateDocument(const char *name) {
     window->showISearchLine_ = GetPrefISearchLine();
 #endif
 
-	window->multiFileReplSelected_ = FALSE;
-	window->multiFileBusy_         = FALSE;
+	window->multiFileReplSelected_ = false;
+	window->multiFileBusy_         = false;
 	window->writableWindows_       = nullptr;
 	window->nWritableWindows_      = 0;
-	window->fileChanged_           = FALSE;
-	window->fileMissing_           = True;
+	window->fileChanged_           = false;
+	window->fileMissing_           = true;
 	window->fileMode_              = 0;
 	window->fileUid_               = 0;
 	window->fileGid_               = 0;
-	window->filenameSet_           = FALSE;
+	window->filenameSet_           = false;
 	window->fileFormat_            = UNIX_FILE_FORMAT;
 	window->lastModTime_           = 0;
 	window->filename_              = name;
@@ -3733,7 +3733,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->autoSave_              = GetPrefAutoSave();
 	window->saveOldVersion_        = GetPrefSaveOldVersion();
 	window->wrapMode_              = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	window->overstrike_            = False;
+	window->overstrike_            = false;
 	window->showMatchingStyle_     = GetPrefShowMatching();
 	window->matchSyntaxBased_      = GetPrefMatchSyntaxBased();
 	window->highlightSyntax_       = GetPrefHighlightSyntax();
@@ -3747,13 +3747,13 @@ Document *Document::CreateDocument(const char *name) {
 		}
 	}
 	
-	window->modeMessageDisplayed_  = FALSE;
+	window->modeMessageDisplayed_  = false;
 	window->modeMessage_           = nullptr;
-	window->ignoreModify_          = FALSE;
-	window->windowMenuValid_       = FALSE;
+	window->ignoreModify_          = false;
+	window->windowMenuValid_       = false;
 	window->flashTimeoutID_        = 0;
 	window->fileClosedAtom_        = None;
-	window->wasSelected_           = FALSE;
+	window->wasSelected_           = false;
 	window->fontName_              = GetPrefFontName();
 	
 	strcpy(window->italicFontName_, GetPrefItalicFontName());
@@ -3775,8 +3775,8 @@ Document *Document::CreateDocument(const char *name) {
 	window->languageMode_          = PLAIN_LANGUAGE_MODE;
 	window->iSearchHistIndex_      = 0;
 	window->iSearchStartPos_       = -1;
-	window->iSearchLastRegexCase_  = TRUE;
-	window->iSearchLastLiteralCase_= FALSE;
+	window->iSearchLastRegexCase_  = true;
+	window->iSearchLastLiteralCase_= false;
 	window->tab_                   = nullptr;
 	window->bgMenuUndoItem_        = nullptr;
 	window->bgMenuRedoItem_        = nullptr;
@@ -3799,7 +3799,7 @@ Document *Document::CreateDocument(const char *name) {
 	   when later brought up by  RaiseDocument(). So we first
 	   manage it hidden, then unmanage it and reset XmNworkWindow,
 	   then let RaiseDocument() show it later. */
-	Widget pane = XtVaCreateWidget("pane", xmPanedWindowWidgetClass, window->mainWin_, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, False, XmNspacing, 3, XmNsashIndent, -2, XmNmappedWhenManaged, False, nullptr);
+	Widget pane = XtVaCreateWidget("pane", xmPanedWindowWidgetClass, window->mainWin_, XmNmarginWidth, 0, XmNmarginHeight, 0, XmNseparatorOn, false, XmNspacing, 3, XmNsashIndent, -2, XmNmappedWhenManaged, false, nullptr);
 	XtVaSetValues(window->mainWin_, XmNworkWindow, pane, nullptr);
 	XtManageChild(pane);
 	window->splitPane_ = pane;
@@ -3869,7 +3869,7 @@ Document *Document::CreateDocument(const char *name) {
 	XtVaSetValues(window->mainWin_, XmNworkWindow, splitPane_, nullptr);
 	XLowerWindow(TheDisplay, XtWindow(window->splitPane_));
 	XtUnmanageChild(window->splitPane_);
-	XtVaSetValues(window->splitPane_, XmNmappedWhenManaged, True, nullptr);
+	XtVaSetValues(window->splitPane_, XmNmappedWhenManaged, true, nullptr);
 
 	return window;
 }
@@ -3969,7 +3969,7 @@ void Document::Undo() {
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (undo->restoresToSaved) {
-		SetWindowModified(False);
+		SetWindowModified(false);
 		RemoveBackupFile(this);
 	}
 
@@ -4017,7 +4017,7 @@ void Document::Redo() {
 	   the backup file, since the text in the buffer is now identical to
 	   the original file */
 	if (redo->restoresToSaved) {
-		SetWindowModified(False);
+		SetWindowModified(false);
 		RemoveBackupFile(this);
 	}
 
@@ -4035,8 +4035,8 @@ void Document::addUndoItem(UndoInfo *undo) {
 
 	// Make the undo menu item sensitive now that there's something to undo 
 	if (undo_.empty()) {
-		SetSensitive(undoItem_, True);
-		SetBGMenuUndoSensitivity(this, True);
+		SetSensitive(undoItem_, true);
+		SetBGMenuUndoSensitivity(this, true);
 	}
 
 	// Add the item to the beginning of the list 
@@ -4060,8 +4060,8 @@ void Document::addUndoItem(UndoInfo *undo) {
 void Document::addRedoItem(UndoInfo *redo) {
 	// Make the redo menu item sensitive now that there's something to redo 
 	if (redo_.empty()) {	
-		SetSensitive(redoItem_, True);
-		SetBGMenuRedoSensitivity(this, True);
+		SetSensitive(redoItem_, true);
+		SetBGMenuRedoSensitivity(this, true);
 	}
 
 	// Add the item to the beginning of the list 
@@ -4089,8 +4089,8 @@ void Document::removeUndoItem() {
 
 	// if there are no more undo records left, dim the Undo menu item 
 	if (undo_.empty()) {
-		SetSensitive(undoItem_, False);
-		SetBGMenuUndoSensitivity(this, False);
+		SetSensitive(undoItem_, false);
+		SetBGMenuUndoSensitivity(this, false);
 	}
 }
 
@@ -4106,8 +4106,8 @@ void Document::removeRedoItem() {
 
 	// if there are no more redo records left, dim the Redo menu item 
 	if (redo_.empty()) {
-		SetSensitive(redoItem_, False);
-		SetBGMenuRedoSensitivity(this, False);
+		SetSensitive(redoItem_, false);
+		SetBGMenuRedoSensitivity(this, false);
 	}
 }
 

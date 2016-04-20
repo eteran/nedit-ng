@@ -42,6 +42,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogWrapMargin.h
 	ui/DialogMoveDocument.h
 	ui/ListWidget.h
+	ui/LineEdit.h
 	ui/MainWindow.h
 )
 
@@ -93,6 +94,7 @@ add_executable(nedit
 	ui/DialogMoveDocument.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
+	ui/LineEdit.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp

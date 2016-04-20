@@ -49,7 +49,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editIFind">
+        <widget class="LineEdit" name="editIFind">
          <property name="placeholderText">
           <string>Incremental Search</string>
          </property>
@@ -1022,6 +1022,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>LineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
