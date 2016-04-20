@@ -71,43 +71,11 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 		return true;
 	}
 	
-	if (this->nPatterns != rhs.nPatterns) {
+	if(this->patterns != rhs.patterns) {
 		return true;
 	}
-		
-	for (int i = 0; i < rhs.nPatterns; i++) {
-		HighlightPattern *pat1 = &this->patterns[i];
-		HighlightPattern *pat2 = &rhs.patterns[i];
-		
-		if (pat1->flags != pat2->flags) {
-			return true;
-		}
-		
-		if (pat1->name != pat2->name) {
-			return true;
-		}
-		
-		if (pat1->startRE != pat2->startRE) {
-			return true;
-		}
-		
-		if (pat1->endRE != pat2->endRE) {
-			return true;
-		}
-		
-		if (pat1->errorRE != pat2->errorRE) {
-			return true;
-		}
-			
-			
-		if(pat1->style != pat2->style) {
-			return true;
-		}
-		
-		if (pat1->subPatternOf != pat2->subPatternOf) {
-			return true;
-		}
-	}
+
+
 	return false;
 }
 

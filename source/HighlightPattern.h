@@ -16,6 +16,10 @@ public:
 	~HighlightPattern();
 	
 public:
+	bool operator==(const HighlightPattern &rhs) const;
+	bool operator!=(const HighlightPattern &rhs) const;
+	
+public:
 	void swap(HighlightPattern &other);
 
 public:
