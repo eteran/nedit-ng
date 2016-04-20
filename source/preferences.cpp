@@ -1937,7 +1937,7 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	
 	emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
 	indentStyleIsDef = window->indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? oldlanguageModeName : "") == nullptr);
+	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? QLatin1String(oldlanguageModeName) : QLatin1String("")) == nullptr);
 	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode_;
 	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer_->BufGetTabDistance();
 	emTabDist        = emTabDistIsDef                                      || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
@@ -1947,7 +1947,7 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
 	const char *languageModeName = LanguageModeName(mode);
-	haveHighlightPatterns = FindPatternSet(languageModeName ? languageModeName : "") != nullptr;
+	haveHighlightPatterns = FindPatternSet(languageModeName ? QLatin1String(languageModeName) : QLatin1String("")) != nullptr;
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);

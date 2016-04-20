@@ -501,7 +501,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	}
 
 	// Look up the appropriate pattern for the language 
-	patterns = FindPatternSet(modeName);
+	patterns = FindPatternSet(QLatin1String(modeName));
 	if(!patterns) {
 		if (warn) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QString(QLatin1String("Syntax highlighting is not available in language\n"

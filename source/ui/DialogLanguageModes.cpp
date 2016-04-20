@@ -549,7 +549,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	}
 
 	// don't allow deletion if data will be lost 
-	if (LMHasHighlightPatterns(languageModes_[itemIndex]->name)) {
+	if (LMHasHighlightPatterns(QLatin1String(languageModes_[itemIndex]->name))) {
 		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting\npatterns defined.  Please delete the patterns\nfirst, in Preferences -> Default Settings ->\nSyntax Highlighting, before proceeding here."));
 		return; // False;
 	}

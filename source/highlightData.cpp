@@ -594,10 +594,10 @@ bool NamedStyleExists(view::string_view styleName) {
 ** Look through the list of pattern sets, and find the one for a particular
 ** language.  Returns nullptr if not found.
 */
-PatternSet *FindPatternSet(view::string_view langModeName) {
+PatternSet *FindPatternSet(const QString &langModeName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
-		if (langModeName == PatternSets[i]->languageMode.toStdString()) {
+		if (langModeName == PatternSets[i]->languageMode) {
 			return PatternSets[i];
 		}
 	}
@@ -609,11 +609,11 @@ PatternSet *FindPatternSet(view::string_view langModeName) {
 ** Returns True if there are highlight patterns, or potential patterns
 ** not yet committed in the syntax highlighting dialog for a language mode,
 */
-bool LMHasHighlightPatterns(view::string_view languageMode) {
+bool LMHasHighlightPatterns(const QString &languageMode) {
 	if (FindPatternSet(languageMode) != nullptr)
 		return true;
 		
-	return HighlightDialog.shell != nullptr && languageMode == HighlightDialog.langModeName.toStdString() && HighlightDialog.nPatterns != 0;
+	return HighlightDialog.shell != nullptr && languageMode == HighlightDialog.langModeName && HighlightDialog.nPatterns != 0;
 }
 
 /*
@@ -1388,9 +1388,9 @@ void EditHighlightPatterns(Document *window) {
 	Widget lmForm, contextFrame, contextForm, styleLbl, styleBtn;
 	Widget okBtn, applyBtn, checkBtn, deleteBtn, closeBtn, helpBtn;
 	Widget restoreBtn, nameLbl, typeLbl, typeBox, lmBtn, matchBox;
-	PatternSet *patSet;
 	XmString s1;
-	int i, n, nPatterns;
+	int i;
+	int n;
 	Arg args[20];
 
 	// if the dialog is already displayed, just pop it to the top and return 
@@ -1411,11 +1411,11 @@ void EditHighlightPatterns(Document *window) {
 	HighlightDialog.langModeName = QLatin1String(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
 
 	// Find the associated pattern set (patSet) to edit 
-	patSet = FindPatternSet(HighlightDialog.langModeName.toLatin1().data());
+	PatternSet *patSet = FindPatternSet(HighlightDialog.langModeName);
 
 	// Copy the list of patterns to one that the user can freely edit 
 	HighlightDialog.patterns = new HighlightPattern *[MAX_PATTERNS];
-	nPatterns                = (!patSet) ? 0 : patSet->nPatterns;
+	int nPatterns            = (!patSet) ? 0 : patSet->nPatterns;
 	
 	for (i = 0; i < nPatterns; i++) {
 		HighlightDialog.patterns[i] = new HighlightPattern(patSet->patterns[i]);
@@ -1782,7 +1782,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	// Look up the original version of the patterns being edited 
-	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName.toLatin1().data());
+	PatternSet *oldPatSet = FindPatternSet(HighlightDialog.langModeName);
 	if(!oldPatSet) {
 		oldPatSet = &emptyPatSet;
 	}
@@ -1836,7 +1836,7 @@ static void langModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// Fill the dialog with the new language mode information 
 	HighlightDialog.langModeName = QLatin1String(modeName);
-	newPatSet = FindPatternSet(modeName);
+	newPatSet = FindPatternSet(QLatin1String(modeName));
 	if(!newPatSet) {
 		HighlightDialog.nPatterns = 0;
 		SetIntText(HighlightDialog.lineContextW, 1);
