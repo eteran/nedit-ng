@@ -58,13 +58,21 @@
 #include <Xm/XmP.h>
 #include <Xm/PrimitiveP.h>
 
+namespace {
+
 // How much re-parsing to do when an unfinished style is encountered 
-#define PASS_2_REPARSE_CHUNK_SIZE 1000
+const int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
-#define REPARSE_CHUNK_SIZE 80
+const int REPARSE_CHUNK_SIZE = 80;
+
+}
+
+
+
+
 
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
