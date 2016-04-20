@@ -55,7 +55,6 @@ void PatternSet::swap(PatternSet &other) {
 	swap(charContext,  other.charContext);
 	swap(nPatterns,    other.nPatterns);
 	swap(patterns,     other.patterns);
-	
 }
 
 //------------------------------------------------------------------------------
@@ -74,7 +73,6 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 	if(this->patterns != rhs.patterns) {
 		return true;
 	}
-
 
 	return false;
 }
