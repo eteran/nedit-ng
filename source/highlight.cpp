@@ -457,7 +457,7 @@ void *GetHighlightInfo(Document *window, int pos) {
 	if (!pattern) {
 		return nullptr;
 	}
-	return (void *)pattern->userStyleIndex;
+	return reinterpret_cast<void *>(pattern->userStyleIndex);
 }
 
 /*
