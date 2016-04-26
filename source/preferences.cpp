@@ -247,28 +247,28 @@ static PrefDescripRec PrefDescrip[] = {
     {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, sizeof(PrefData.fileVersion), true},
 
 #ifdef linux
-    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:EX:\n\
+    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:EX:\n\
     cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
     wc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
      &TempStringPrefs.shellCmds, nullptr, true},
 #elif __FreeBSD__
-    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:EX:\n\
+    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:EX:\n\
     cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
     wc::w:ED:\nwc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n\
     sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
      &TempStringPrefs.shellCmds, nullptr, true},
 #else
-    {"shellCommands", "ShellCommands", PREF_STD_STRING, "spell:Alt+B:s:ED:\n\
+    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:ED:\n\
     (cat;echo \"\") | spell\nwc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
     \nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
     expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
      &TempStringPrefs.shellCmds, nullptr, true},
 #endif // linux, __FreeBSD__ 
 
-    {"macroCommands", "MacroCommands", PREF_STD_STRING, "Complete Word:Alt+D::: {\n\
+    {"macroCommands", "MacroCommands", PREF_QSTRING, "Complete Word:Alt+D::: {\n\
 		# This macro attempts to complete the current word by\n\
 		# finding another word in the same document that has\n\
 		# the same prefix; repeated invocations of the macro\n\
@@ -572,14 +572,14 @@ static PrefDescripRec PrefDescrip[] = {
 		replace_range(0, 0, prototypes staticPrototypes)\n\
 	}",
      &TempStringPrefs.macroCmds, nullptr, true},
-    {"bgMenuCommands", "BGMenuCommands", PREF_STD_STRING, "Undo:::: {\nundo()\n}\n\
+    {"bgMenuCommands", "BGMenuCommands", PREF_QSTRING, "Undo:::: {\nundo()\n}\n\
 	Redo:::: {\nredo()\n}\n\
 	Cut:::R: {\ncut_clipboard()\n}\n\
 	Copy:::R: {\ncopy_clipboard()\n}\n\
 	Paste:::: {\npaste_clipboard()\n}",
      &TempStringPrefs.bgMenuCmds, nullptr, true},
 
-    {"highlightPatterns", "HighlightPatterns", PREF_STD_STRING, "Ada:Default\n\
+    {"highlightPatterns", "HighlightPatterns", PREF_QSTRING, "Ada:Default\n\
         Awk:Default\n\
         C++:Default\n\
         C:Default\n\
@@ -608,7 +608,7 @@ static PrefDescripRec PrefDescrip[] = {
         X Resources:Default\n\
         Yacc:Default",
      &TempStringPrefs.highlight, nullptr, true},
-    {"languageModes", "LanguageModes", PREF_STD_STRING,
+    {"languageModes", "LanguageModes", PREF_QSTRING,
 
      "Ada:.ada .ad .ads .adb .a:::::::\n\
         Awk:.awk:::::::\n\
@@ -640,7 +640,7 @@ static PrefDescripRec PrefDescrip[] = {
         Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
 
      &TempStringPrefs.language, nullptr, true},
-    {"styles", "Styles", PREF_STD_STRING, "Plain:black:Plain\n\
+    {"styles", "Styles", PREF_QSTRING, "Plain:black:Plain\n\
     	Comment:gray20:Italic\n\
     	Keyword:black:Bold\n\
         Operator:dark blue:Bold\n\
@@ -671,12 +671,12 @@ static PrefDescripRec PrefDescrip[] = {
     	Text Escape:gray30:Bold\n\
 	LaTeX Math:darkGreen:Plain\n" ADD_5_2_STYLES,
      &TempStringPrefs.styles, nullptr, true},
-    {"smartIndentInit", "SmartIndentInit", PREF_STD_STRING, "C:Default\n\
+    {"smartIndentInit", "SmartIndentInit", PREF_QSTRING, "C:Default\n\
 	C++:Default\n\
 	Python:Default\n\
 	Matlab:Default",
      &TempStringPrefs.smartIndent, nullptr, true},
-    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_STD_STRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
+    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_QSTRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
     {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous", &PrefData.wrapStyle, AutoWrapTypes, true},
     {"wrapMargin", "WrapMargin", PREF_INT, "0", &PrefData.wrapMargin, nullptr, true},
     {"autoIndent", "AutoIndent", PREF_ENUM, "Auto", &PrefData.autoIndent, AutoIndentTypes, true},

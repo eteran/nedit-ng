@@ -38,7 +38,7 @@ enum PrefDataTypes {
 	PREF_ENUM,         
 	PREF_STRING,       
 	PREF_ALLOC_STRING,
-	PREF_STD_STRING
+	PREF_QSTRING
 };
 
 struct PrefDescripRec {

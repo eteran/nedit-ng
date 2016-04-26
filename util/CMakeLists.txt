@@ -6,7 +6,6 @@ find_package(Qt4 4.6.0 REQUIRED QtCore QtGui QtNetwork)
 
 add_library (NUtil 
 	getfiles.cpp 
-	printUtils.cpp 
 	misc.cpp 
 	fileUtils.cpp 
 	prefFile.cpp 

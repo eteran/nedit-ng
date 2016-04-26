@@ -32,6 +32,7 @@
 
 #include <QApplication>
 #include <QX11Info>
+#include "ui/DialogPrint.h"
 
 #include "QtMotif.h"
 #include "nedit.h"
@@ -47,7 +48,6 @@
 #include "MotifHelper.h"
 #include "parse.h"
 #include "preferences.h"
-#include "printUtils.h"
 #include "regularExp.h"
 #include "selection.h"
 #include "server.h"
@@ -367,7 +367,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	// More preference stuff 
-	LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
+	DialogPrint::LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
 	SetDeleteRemap(GetPrefMapDelete());
 	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());

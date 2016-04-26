@@ -38,6 +38,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QtDebug>
+#include "ui/DialogPrint.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
@@ -55,7 +56,6 @@
 #include "misc.h"
 #include "fileUtils.h"
 #include "getfiles.h"
-#include "printUtils.h"
 #include "utils.h"
 
 #include <cerrno>
@@ -1276,7 +1276,7 @@ static bool bckError(Document *window, const char *errString, const char *file) 
 	return false;
 }
 
-void PrintWindow(Document *window, int selectedOnly) {
+void PrintWindow(Document *window, bool selectedOnly) {
 	TextBuffer *buf = window->buffer_;
 	TextSelection *sel = &buf->primary_;
 	std::string fileString;
@@ -1306,14 +1306,14 @@ void PrintWindow(Document *window, int selectedOnly) {
 	}
 
 	// Print the string 
-	PrintString(fileString, window->shell_, window->filename_);
+	PrintString(fileString, window->filename_);
 }
 
 /*
 ** Print a string (length is required).  parent is the dialog parent, for
 ** error dialogs, and jobName is the print title.
 */
-void PrintString(const std::string &string, Widget parent, const std::string &jobName) {
+void PrintString(const std::string &string, const std::string &jobName) {
 
 	QString tempDir = QDesktopServices::storageLocation(QDesktopServices::TempLocation);
 
@@ -1352,7 +1352,12 @@ void PrintString(const std::string &string, Widget parent, const std::string &jo
 	}
 
 	// Print the temporary file, then delete it and return success 
-	PrintFile(parent, tmpFileName, jobName);
+	
+	auto dialog = new DialogPrint(QLatin1String(tmpFileName), QString::fromStdString(jobName), nullptr);
+	dialog->exec();
+	delete dialog;
+	
+//	PrintFile(parent, tmpFileName, jobName);
 	remove(tmpFileName);
 	return;
 }
