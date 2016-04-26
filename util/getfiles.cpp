@@ -74,36 +74,41 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 
-#define MAX_ARGS 20 /* Maximum number of X arguments */
-#define PERMS                                                                                                                                                                                                                                  \
-	0666 /* UNIX file permission, RW for owner,                                                                                                                                                                                                \
-group, world */
-#define MAX_LIST_KEYSTROKES                                                                                                                                                                                                                    \
-	100 /* Max # of keys user can type to                                                                                                                                                                                                      \
-a file list */
-#define MAX_LIST_KESTROKE_WAIT                                                                                                                                                                                                                 \
-	2000 /* Allowable delay in milliseconds                                                                                                                                                                                                    \
-between characters typed to a list                                                                                                                                                                                                             \
-before starting over (throwing                                                                                                                                                                                                                 \
-out the accumulated characters */
-
-#define SET_ONE_RSRC(widget, name, newValue)                                                                                                                                                                                                   \
-	{                                                                                                                                                                                                                                          \
-		static Arg tmpargs[1] = {{name, (XtArgVal)0}};                                                                                                                                                                                         \
-		tmpargs[0].value = (XtArgVal)newValue;                                                                                                                                                                                                 \
-		XtSetValues(widget, tmpargs, 1);                                                                                                                                                                                                       \
+#define SET_ONE_RSRC(widget, name, newValue)           \
+	{                                                  \
+		static Arg tmpargs[1] = {{name, (XtArgVal)0}}; \
+		tmpargs[0].value = (XtArgVal)newValue;         \
+		XtSetValues(widget, tmpargs, 1);               \
 	}
+
+
+namespace {
+
+const int MAX_ARGS               = 20;   /* Maximum number of X arguments */
+const int PERMS                  = 0666; /* UNIX file permission, RW for owner, group, world */
+const int MAX_LIST_KEYSTROKES    = 100;  /* Max # of keys user can type to a file list */
+const int MAX_LIST_KESTROKE_WAIT = 2000; /* Allowable delay in milliseconds between characters typed to a list before starting over (throwing out the accumulated characters */
 
 enum yesNoValues { ynNone, ynYes, ynNo };
 
 /* Saved default directory and pattern from last successful call */
-static XmString DefaultDirectory = nullptr;
-static XmString DefaultPattern = nullptr;
+XmString DefaultDirectory = nullptr;
+XmString DefaultPattern = nullptr;
 
 /* User settable option for leaving the file name text field in
    GetExistingFilename dialogs.  Off by default so new users will get
    used to typing in the list rather than in the text field */
-static int RemoveRedundantTextField = True;
+bool RemoveRedundantTextField = true;
+
+int SelectResult = GFN_CANCEL;  			   /* Initialize results as cancel   */
+Widget YesNoDialog; 						   /* "Overwrite?" dialog widget	*/
+yesNoValues YesNoResult;					   /* Result of overwrite dialog	*/
+Widget ErrorDialog; 						   /* Dialog widget for error msgs  	*/
+int ErrorDone;  							   /* Flag to mark dialog completed   */
+void (*OrigDirSearchProc)(Widget, XtPointer);  /* Built in Motif directory search */
+void (*OrigFileSearchProc)(Widget, XtPointer); /* Built in Motif file search proc */
+
+}
 
 /* Text for help button help display */
 /* ... needs variant for VMS */
@@ -166,13 +171,7 @@ static void replacementDirSearchProc(Widget w, XtPointer searchData);
 static void replacementFileSearchProc(Widget w, XtPointer searchData);
 static void sortWidgetList(Widget listWidget);
 
-static int SelectResult = GFN_CANCEL;                 /*  Initialize results as cancel   */
-static Widget YesNoDialog;                            /* "Overwrite?" dialog widget	   */
-static int YesNoResult;                               /* Result of overwrite dialog	   */
-static Widget ErrorDialog;                            /* Dialog widget for error msgs	   */
-static int ErrorDone;                                 /* Flag to mark dialog completed   */
-static void (*OrigDirSearchProc)(Widget, XtPointer);  /* Built in Motif directory search */
-static void (*OrigFileSearchProc)(Widget, XtPointer); /* Built in Motif file search proc */
+
 
 /*
  * Do the hard work of setting up a file selection dialog
@@ -209,28 +208,28 @@ Widget getFilenameHelper(Widget parent, const char *promptString, const char *fi
 	return fileSB;
 }
 
-/*  GetExistingFilename				  	                   */
-/*									   */
-/*  This routine will popup a file selection box so that the user can      */
-/*  select an existing file from the scrollable list.  The user is         */
-/*  prevented from entering a new filename because the edittable text      */
-/*  area of the file selection box widget is unmanaged.  After the user    */
-/*  selects a file, GetExistingFilename returns the selected filename and  */
-/*  GFN_OK, indicating that the OK button was pressed.  If the user        */
-/*  pressed the cancel button, the return value is GFN_CANCEL, and the     */
-/*  filename character string supplied in the call is not altered.	   */
-/*									   */
-/*  Arguments:								   */
-/*									   */
-/*	Widget  parent	      - parent widget id			   */
-/*	char *  promptString  - prompt string				   */
-/*	char *  filename      - a string to receive the selected filename  */
-/*				(this string will not be altered if the    */
-/*				user pressed the cancel button)		   */
-/*									   */
-/*  Returns:	GFN_OK	      - file was selected and OK button pressed	   */
-/*		GFN_CANCEL    - Cancel button pressed and no returned file */
-/*									   */
+/*  GetExistingFilename
+**
+**  This routine will popup a file selection box so that the user can
+**  select an existing file from the scrollable list.  The user is
+**  prevented from entering a new filename because the edittable text
+**  area of the file selection box widget is unmanaged.  After the user
+**  selects a file, GetExistingFilename returns the selected filename and
+**  GFN_OK, indicating that the OK button was pressed.  If the user
+**  pressed the cancel button, the return value is GFN_CANCEL, and the
+**  filename character string supplied in the call is not altered.
+**
+**  Arguments:
+**
+**	Widget  parent	      - parent widget id
+**	char *  promptString  - prompt string
+**	char *  filename      - a string to receive the selected filename
+**				(this string will not be altered if the
+**				user pressed the cancel button)
+**
+**  Returns:	GFN_OK	      - file was selected and OK button pressed
+**		GFN_CANCEL    - Cancel button pressed and no returned file
+*/
 int GetExistingFilename(Widget parent, const char *promptString, char *filename) {
 	Widget existFileSB = getFilenameHelper(parent, promptString, filename, True);
 	return HandleCustomExistFileSB(existFileSB, filename);
@@ -331,7 +330,7 @@ int HandleCustomExistFileSB(Widget existFileSB, char *filename) {
 			strcpy(filename, fileString.c_str());
 		} else {
 			/* Concatenate the directory name and the file name */
-			std::string dirString = XmStringGetLtoREx(cDir, XmSTRING_DEFAULT_CHARSET);			
+			std::string dirString = XmStringGetLtoREx(cDir, XmSTRING_DEFAULT_CHARSET);
 			sprintf(filename, "%s%s", dirString.c_str(), fileString.c_str());
 		}
 		XmStringFree(cFileString);
@@ -431,7 +430,7 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 		} else {
 			/* Concatenate the directory name and the file name */
 			std::string dirString = XmStringGetLtoREx(cDir, XmSTRING_DEFAULT_CHARSET);
-			
+
 			sprintf(filename, "%s%s", dirString.c_str(), fileString.c_str());
 		}
 		XmStringFree(cFileString);
@@ -443,41 +442,6 @@ int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultN
 /*
 ** Return current default directory used by GetExistingFilename.
 ** Can return nullptr if no default directory has been set (meaning
-** use the application's current working directory) String must
-** be freed by the caller using XtFree.
-*/
-char *GetFileDialogDefaultDirectory(void) {
-	char *string;
-
-	if(!DefaultDirectory) {
-		return nullptr;
-	}
-	
-	XmStringGetLtoR(DefaultDirectory, XmSTRING_DEFAULT_CHARSET, &string);
-	return string;
-}
-
-/*
-** Return current default match pattern used by GetExistingFilename.
-** Can return nullptr if no default pattern has been set (meaning use
-** a pattern matching all files in the directory) String must be
-** freed by the caller using XtFree.
-*/
-char *GetFileDialogDefaultPattern(void) {
-	char *string;
-
-	if(!DefaultPattern) {
-		return nullptr;
-	}
-	
-	XmStringGetLtoR(DefaultPattern, XmSTRING_DEFAULT_CHARSET, &string);
-	return string;
-}
-
-
-/*
-** Return current default directory used by GetExistingFilename.
-** Can return nullptr if no default directory has been set (meaning
 ** use the application's current working directory).
 */
 QString GetFileDialogDefaultDirectoryEx(void) {
@@ -485,7 +449,7 @@ QString GetFileDialogDefaultDirectoryEx(void) {
 	if(!DefaultDirectory) {
 		return QString();
 	}
-	
+
 	return QString::fromStdString(XmStringGetLtoREx(DefaultDirectory, XmSTRING_DEFAULT_CHARSET));
 }
 
@@ -499,7 +463,7 @@ QString GetFileDialogDefaultPatternEx(void) {
 	if(!DefaultPattern) {
 		return QString();
 	}
-	
+
 	return QString::fromStdString(XmStringGetLtoREx(DefaultPattern, XmSTRING_DEFAULT_CHARSET));
 }
 
@@ -512,7 +476,7 @@ void SetFileDialogDefaultDirectory(const QString &dir) {
 	if (DefaultDirectory) {
 		XmStringFree(DefaultDirectory);
 	}
-	
+
 	DefaultDirectory = (dir.isNull()) ? nullptr : XmStringCreateSimpleEx(dir.toStdString());
 }
 
@@ -525,7 +489,7 @@ void SetFileDialogDefaultPattern(const QString &pattern) {
 	if (DefaultPattern) {
 		XmStringFree(DefaultPattern);
 	}
-	
+
 	DefaultPattern = (pattern.isNull()) ? nullptr : XmStringCreateSimpleEx(pattern.toStdString());
 }
 
@@ -619,10 +583,10 @@ static void doErrorDialog(const char *errorString, const char *filename) {
 static void newFileOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
-	
+
 	auto client_data = static_cast<Boolean *>(clientData);
 	auto call_data   = static_cast<XmFileSelectionBoxCallbackStruct *>(callData);
-	
+
 	int fd;          /* file descriptor                 */
 	int length;      /* length of file name		 */
 	struct stat buf; /* status from fstat		 */
@@ -643,7 +607,7 @@ static void newFileOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 			doErrorDialog("Error: %s is a directory", filename.c_str());
 			return;
 		}
-		
+
 		int response = doYesNoDialog(filename.c_str());
 
 		if (!response) {
@@ -665,8 +629,8 @@ static void newFileCancelCB(Widget w, XtPointer clientData, XtPointer callData) 
 
 	(void)w;
 	(void)callData;
-	
-	auto client_data = static_cast<Boolean *>(clientData);	
+
+	auto client_data = static_cast<Boolean *>(clientData);
 
 	SelectResult = GFN_CANCEL;
 	*client_data = True;
@@ -676,7 +640,7 @@ static void newHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
+
 	auto helpPanel = (Widget)clientData;
 
 	ManageDialogCenteredOnPointer(helpPanel);
@@ -685,16 +649,16 @@ static void newHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void existOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
-	
+
 	auto client_data = static_cast<Boolean *>(clientData);
 	auto call_data   = static_cast<XmFileSelectionBoxCallbackStruct *>(callData);
-	
+
 	int fd;         /* file descriptor                 */
 
 	std::string filename = XmStringGetLtoREx(call_data->value, XmSTRING_DEFAULT_CHARSET);
 	SelectResult = GFN_OK;
 	size_t length = filename.size();
-	
+
 	if (length == 0 || filename[length - 1] == '/') {
 		doErrorDialog("Please select a file to open", nullptr);
 		return;
@@ -704,7 +668,7 @@ static void existOkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	} else {
 		close(fd);
 	}
-	
+
 	*client_data = True; /* done with dialog		*/
 }
 
@@ -712,7 +676,7 @@ static void existCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
+
 	auto client_data = static_cast<Boolean *>(clientData);
 
 	SelectResult = GFN_CANCEL;
@@ -724,7 +688,7 @@ static void yesNoOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
-	
+
 	YesNoResult = ynYes;
 }
 
@@ -732,9 +696,9 @@ static void existHelpCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)w;
 	(void)callData;
-	
+
 	auto helpPanel = (Widget)clientData;
-	
+
 	ManageDialogCenteredOnPointer(helpPanel);
 }
 
@@ -742,7 +706,7 @@ static void errorOKCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
-	
+
 	ErrorDone = True;
 }
 
@@ -750,7 +714,7 @@ static void yesNoCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 	(void)clientData;
 	(void)callData;
-	
+
 	YesNoResult = ynNo;
 }
 
@@ -955,22 +919,22 @@ static void sortWidgetList(Widget listWidget) {
 	   contents anyway. */
 	XmListDeselectAllItems(listWidget);
 	XtVaGetValues(listWidget, XmNitems, &items, XmNitemCount, &nItems, nullptr);
-	
+
 	std::vector<XmString> sortedItems;
 	sortedItems.reserve(nItems);
-	
+
 	for (int i = 0; i < nItems; i++) {
 		sortedItems.push_back(XmStringCopy(items[i]));
 	}
-	
+
 	std::sort(sortedItems.begin(), sortedItems.end(), [](XmString string1, XmString string2) {
 		std::string s1 = XmStringGetLtoREx(string1, XmSTRING_DEFAULT_CHARSET);
 		std::string s2 = XmStringGetLtoREx(string2, XmSTRING_DEFAULT_CHARSET);
 		return s1 < s2;
 	});
-	
+
 	XmListReplaceItemsPos(listWidget, &sortedItems[0], nItems, 1);
-	
+
 	for (int i = 0; i < nItems; i++) {
 		XmStringFree(sortedItems[i]);
 	}

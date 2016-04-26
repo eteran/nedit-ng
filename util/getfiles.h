@@ -28,7 +28,6 @@
 #define GETFILES_H_
 
 #include <QString>
-#include <string>
 #include <X11/Intrinsic.h>
 
 enum {
