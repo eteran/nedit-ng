@@ -482,9 +482,6 @@ static void editMacroOrBGMenu(Document *window, int dialogType) {
 			ucd->menuItemsList[i] = new MenuItem(*MacroMenuItems[i]);
 		ucd->nMenuItems = NMacroMenuItems;
 	} else { // BG_MENU_CMDS 
-		for (i = 0; i < NBGMenuItems; i++)
-			ucd->menuItemsList[i] = new MenuItem(*BGMenuItems[i]);
-		ucd->nMenuItems = NBGMenuItems;
 	}
 	ucd->dialogType = dialogType;
 
@@ -838,18 +835,18 @@ void UpdateUserMenuInfo(void) {
 ** Search through the shell menu and execute the first command with menu item
 ** name "itemName".  Returns True on successs and False on failure.
 */
-int DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
+bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 	int i;
 
 	for (i = 0; i < NShellMenuItems; i++) {
 		if (ShellMenuItems[i]->name == QLatin1String(itemName)) {
 			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
-				return False;
+				return false;
 			DoShellMenuCmd(window, ShellMenuItems[i]->cmd, ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
-			return True;
+			return true;
 		}
 	}
-	return False;
+	return false;
 }
 
 /*
@@ -857,28 +854,26 @@ int DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 ** with menu item name "itemName".  Returns True on successs and False on
 ** failure.
 */
-int DoNamedMacroMenuCmd(Document *window, const char *itemName) {
-	int i;
+bool DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 
-	for (i = 0; i < NMacroMenuItems; i++) {
+	for (int i = 0; i < NMacroMenuItems; i++) {
 		if (MacroMenuItems[i]->name == QLatin1String(itemName)) {
 			DoMacro(window, MacroMenuItems[i]->cmd, "macro menu command");
-			return True;
+			return true;
 		}
 	}
-	return False;
+	return false;
 }
 
-int DoNamedBGMenuCmd(Document *window, const char *itemName) {
-	int i;
+bool DoNamedBGMenuCmd(Document *window, const char *itemName) {
 
-	for (i = 0; i < NBGMenuItems; i++) {
-		if (BGMenuItems[i]->name == QLatin1String(itemName)) {
+	for (int i = 0; i < NBGMenuItems; i++) {
+		if (BGMenuItems[i]->name == QLatin1String(itemName)) {		
 			DoMacro(window, BGMenuItems[i]->cmd, "background menu macro");
-			return True;
+			return true;
 		}
 	}
-	return False;
+	return false;
 }
 
 /*
@@ -1404,10 +1399,12 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
 				}
 				
-				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n"))
+				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n")) {
 					window->bgMenuUndoItem_ = btn;
-				else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n"))
+				} else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n")) {
 					window->bgMenuRedoItem_ = btn;
+				}
+				
 				// generate accelerator keys 
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
 				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
@@ -1838,7 +1835,8 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NMacroMenuItems)
 		return;
 
-	params[0] = MacroMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
+	QByteArray str = MacroMenuItems[index]->name.toLatin1();
+	params[0] = str.data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1862,7 +1860,9 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NBGMenuItems)
 		return;
 
-	params[0] = BGMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
+	
+	QByteArray str = BGMenuItems[index]->name.toLatin1();
+	params[0] = str.data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
