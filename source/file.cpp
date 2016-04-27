@@ -1362,10 +1362,6 @@ void PrintString(const std::string &string, const std::string &jobName) {
 	return;
 }
 
-/*
-** Wrapper for GetExistingFilename which uses the current window's path
-** (if set) as the default directory.
-*/
 int PromptForExistingFile(Document *window, const char *prompt, char *fullname) {
 
 	/* Temporarily set default directory to window->path_, prompt for file,
@@ -1376,7 +1372,6 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
 	}
 	
-#if 1
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
@@ -1388,14 +1383,7 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 
 	SetFileDialogDefaultDirectory(savedDefaultDir);
 	return GFN_CANCEL;
-#else
-	int retVal = GetExistingFilename(window->shell_, prompt, fullname);
-	if (retVal != GFN_OK) {
-		SetFileDialogDefaultDirectory(savedDefaultDir);
-	}
 
-	return retVal;
-#endif
 }
 
 /*

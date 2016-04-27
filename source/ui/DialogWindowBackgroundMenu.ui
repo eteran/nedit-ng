@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogMacroCommands</class>
- <widget class="QDialog" name="DialogMacroCommands">
+ <class>DialogWindowBackgroundMenu</class>
+ <widget class="QDialog" name="DialogWindowBackgroundMenu">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
-    <height>500</height>
+    <width>751</width>
+    <height>476</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Macro Commands</string>
+   <string>Window Background Menu</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QPushButton" name="buttonNew">
+           <property name="text">
+            <string>New</string>
+           </property>
+           <property name="icon">
+            <iconset theme="document-new"/>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QPushButton" name="buttonDelete">
            <property name="text">
@@ -84,12 +94,12 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="listMacros"/>
+        <widget class="QListWidget" name="listItems"/>
        </item>
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
@@ -102,62 +112,91 @@ Select &quot;New&quot; to add a new command to the menu.</string>
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Menu Entry</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Menu Entry (&gt; for sub-menu, @ language mode)</string>
+            <string>(&gt; for sub-menu, @ language mode)</string>
            </property>
           </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="editEntry"/>
          </item>
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Accelerator</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="editAccelerator"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Mnemonic</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="editMnemonic"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="buttonPasteReplay">
+        <widget class="QLineEdit" name="editName"/>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>&amp;Paste Learn/Replay Macro</string>
+            <string>Accelerator</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Mnemonic</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>108</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLineEdit" name="editAccelerator"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="editMnemonic">
+           <property name="maxLength">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="buttonPasteLRMacro">
+           <property name="text">
+            <string>Paste Learn/Replay Macro</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="checkRequiresSelection">
          <property name="text">
-          <string>&amp;Requires Selection</string>
+          <string>Requires Selection</string>
          </property>
         </widget>
        </item>
@@ -166,24 +205,26 @@ Select &quot;New&quot; to add a new command to the menu.</string>
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Macro Command to Execute</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="plainTextEdit"/>
+    <widget class="QPlainTextEdit" name="editMacro"/>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QPushButton" name="buttonOK">
        <property name="text">
-        <string>OK</string>
+        <string>&amp;OK</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok"/>
+        <iconset theme="dialog-ok">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -193,7 +234,9 @@ Select &quot;New&quot; to add a new command to the menu.</string>
         <string>&amp;Apply</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-ok-apply"/>
+        <iconset theme="dialog-ok-apply">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -207,10 +250,12 @@ Select &quot;New&quot; to add a new command to the menu.</string>
      <item>
       <widget class="QPushButton" name="buttonClose">
        <property name="text">
-        <string>Close</string>
+        <string>&amp;Close</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-close"/>
+        <iconset theme="dialog-close">
+         <normaloff/>
+        </iconset>
        </property>
       </widget>
      </item>
@@ -219,5 +264,22 @@ Select &quot;New&quot; to add a new command to the menu.</string>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonClose</sender>
+   <signal>clicked()</signal>
+   <receiver>DialogWindowBackgroundMenu</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>578</x>
+     <y>447</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>562</x>
+     <y>475</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

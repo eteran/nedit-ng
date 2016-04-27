@@ -3273,7 +3273,7 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
-	if (nullptr == window->macroCmdData_) {
+	if (window->macroCmdData_ == nullptr) {
 		M_FAILURE("%s can't be called from non-suspendable context");
 	}
 
@@ -3306,15 +3306,15 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	}
 
 	//  Set default directory (saving original for later)  
-	auto orgDefaultPath = GetFileDialogDefaultDirectoryEx();
-	if ('\0' != defaultPath[0]) {
+	QString orgDefaultPath = GetFileDialogDefaultDirectoryEx();
+	if (defaultPath[0] != '\0') {
 		SetFileDialogDefaultDirectory(QLatin1String(defaultPath));
 	} else {
 		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
 	}
 
 	//  Set filter (saving original for later)  
-	auto orgFilter = GetFileDialogDefaultPatternEx();
+	QString orgFilter = GetFileDialogDefaultPatternEx();
 	if (filter[0] != '\0') {
 		SetFileDialogDefaultPattern(QString::fromStdString(filter));
 	}

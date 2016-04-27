@@ -41,6 +41,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogWindowTitle.h
 	ui/DialogWrapMargin.h
 	ui/DialogMoveDocument.h
+	ui/DialogWindowBackgroundMenu.h
 	ui/DialogPrint.h
 	ui/ListWidget.h
 	ui/LineEdit.h
@@ -66,6 +67,7 @@ set(UI_FILES
 	ui/DialogWindowSize.ui
 	ui/DialogWindowTitle.ui
 	ui/DialogWrapMargin.ui
+	ui/DialogWindowBackgroundMenu.ui
 	ui/DialogPrint.ui
 	ui/MainWindow.ui
 )
@@ -97,6 +99,7 @@ add_executable(nedit
 	ui/DialogPrint.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
+	ui/DialogWindowBackgroundMenu.cpp
 	ui/LineEdit.cpp
 
 	QtMotif.cpp
@@ -104,6 +107,7 @@ add_executable(nedit
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
+	MenuItem.cpp
 	Color.cpp
 	SmartIndent.cpp
 	Document.cpp

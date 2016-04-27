@@ -36,8 +36,6 @@ DialogDrawingStyles::~DialogDrawingStyles() {
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::setStyleByName(const QString &name) {
 
-	qDebug() << "HERE: " << name;
-
 	QList<QListWidgetItem *> items = ui.listStyles->findItems(name, Qt::MatchFixedString);
 	if(items.size() != 1) {
 		return;
@@ -50,13 +48,18 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 // Name: on_buttonCopy_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonCopy_clicked() {
+#if 0
+	// TODO(eteran): implement
+#endif
 }
 
 //------------------------------------------------------------------------------
 // Name: on_buttonDelete_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonDelete_clicked() {
-
+#if 0
+	// TODO(eteran): implement
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -304,7 +307,7 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 ** highlight style information in HighlightStyles
 */
 bool DialogDrawingStyles::updateHSList() {
-
+	// TODO(eteran): implement
 #if 0
 	// Replace the old highlight styles list with the new one from the dialog 
 	for (int i = 0; i < NHighlightStyles; i++) {

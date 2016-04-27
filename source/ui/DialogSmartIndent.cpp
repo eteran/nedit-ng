@@ -381,13 +381,12 @@ QString DialogSmartIndent::ensureNewline(const QString &string) {
 	if(string.isNull()) {
 		return QString();
 	}
-
-	int length = string.size();
-	if (length == 0 || string[length - 1] == QLatin1Char('\n')) {
-		return string;
+	
+	if(string.endsWith(QLatin1Char('\n'))) {
+		return string;	
 	}
 	
-	return string + QLatin1Char('\n');
+	return string + QLatin1Char('\n');	
 }
 
 bool DialogSmartIndent::hasSmartIndentMacros(const QString &languageMode) const {
