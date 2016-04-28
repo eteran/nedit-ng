@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QString>
 #include "ui/DialogWindowBackgroundMenu.h"
+#include "ui/DialogMacros.h"
 
 #include "userCmds.h"
 #include "TextBuffer.h"
@@ -79,6 +80,7 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 namespace {
 
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
+DialogMacros               *WindowMacros         = nullptr;
 
 /* indicates, that an unknown (i.e. not existing) language mode
    is bound to an user menu item */
@@ -89,7 +91,6 @@ const int LEFT_MARGIN_POS  = 1;
 const int RIGHT_MARGIN_POS = 99;
 const int LIST_RIGHT       = 45;
 const int SHELL_CMD_TOP    = 70;
-const int MACRO_CMD_TOP    = 40;
 
 }
 
@@ -136,12 +137,14 @@ static MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
 static userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
 static userSubMenuCache ShellSubMenus;
 static int NShellMenuItems = 0;
-static MenuItem *MacroMenuItems[MAX_ITEMS_PER_MENU];
-static userMenuInfo *MacroMenuInfo[MAX_ITEMS_PER_MENU];
-static userSubMenuCache MacroSubMenus;
-static int NMacroMenuItems = 0;
 
 
+
+
+int NMacroMenuItems = 0;
+MenuItem *MacroMenuItems[MAX_ITEMS_PER_MENU];
+userMenuInfo *MacroMenuInfo[MAX_ITEMS_PER_MENU];
+userSubMenuCache MacroSubMenus;
 
 int NBGMenuItems = 0;
 MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
@@ -150,13 +153,7 @@ userSubMenuCache BGSubMenus;
 
 // Top level shells of the user-defined menu editing dialogs 
 static Widget ShellCmdDialog = nullptr;
-static Widget MacroCmdDialog = nullptr;
 
-/* Paste learn/replay sequence buttons in user defined menu editing dialogs
-   (for dimming and undimming externally when replay macro is available) */
-static Widget MacroPasteReplayBtn = nullptr;
-
-static void editMacroOrBGMenu(Document *window, int dialogType);
 static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
 static void rebuildMenu(Document *window, int menuType);
 static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const QString &hierName);
@@ -178,11 +175,9 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window);
 static void createMenuItems(Document *window, selectedUserMenu *menu);
 static void okCB(Widget w, XtPointer clientData, XtPointer callData);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
-static void checkCB(Widget w, XtPointer clientData, XtPointer callData);
 static int checkMacro(userCmdDialog *ucd);
 static int applyDialogChanges(userCmdDialog *ucd);
 static void closeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void accKeyCB(Widget w, XtPointer clientData, XKeyEvent *event);
 static void sameOutCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -204,7 +199,6 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
-static char *addTerminatingNewlineEx(char *string) ;
 static int getSubMenuDepth(const char *menuName);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
@@ -440,7 +434,14 @@ Select \"New\" to add a new command to the menu."),
 ** and background menus
 */
 void EditMacroMenu(Document *window) {
-	editMacroOrBGMenu(window, MACRO_CMDS);
+	(void)window;
+	
+	if(!WindowMacros) {
+		WindowMacros = new DialogMacros();
+	}
+
+	WindowMacros->show();
+	WindowMacros->raise();
 }
 
 
@@ -454,192 +455,6 @@ void EditBGMenu(Document *window) {
 	
 	WindowBackgroundMenu->show();
 	WindowBackgroundMenu->raise();
-
-}
-
-static void editMacroOrBGMenu(Document *window, int dialogType) {
-	Widget form, accLabel, pasteReplayBtn;
-	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
-	char *title;
-	XmString s1;
-	int ac, i;
-	Arg args[20];
-
-	// if the dialog is already displayed, just pop it to the top and return 
-	if (dialogType == MACRO_CMDS && MacroCmdDialog) {
-		RaiseDialogWindow(MacroCmdDialog);
-		return;
-	}
-
-	// Create a structure for keeping track of dialog state 
-	auto ucd = new userCmdDialog;
-	ucd->window = window;
-
-	// Set the dialog to operate on the Macro menu 
-	ucd->menuItemsList = new MenuItem *[MAX_ITEMS_PER_MENU];
-	if (dialogType == MACRO_CMDS) {
-		for (i = 0; i < NMacroMenuItems; i++)
-			ucd->menuItemsList[i] = new MenuItem(*MacroMenuItems[i]);
-		ucd->nMenuItems = NMacroMenuItems;
-	} else { // BG_MENU_CMDS 
-	}
-	ucd->dialogType = dialogType;
-
-	title = dialogType == MACRO_CMDS ? (String) "Macro Commands" : (String) "Window Background Menu";
-	ac = 0;
-	XtSetArg(args[ac], XmNdeleteResponse, XmDO_NOTHING);
-	ac++;
-	XtSetArg(args[ac], XmNiconName, title);
-	ac++;
-	XtSetArg(args[ac], XmNtitle, title);
-	ac++;
-	ucd->dlogShell = CreateWidget(TheAppShell, "macros", topLevelShellWidgetClass, args, ac);
-	AddSmallIcon(ucd->dlogShell);
-	form = XtVaCreateManagedWidget("editMacroCommands", xmFormWidgetClass, ucd->dlogShell, XmNautoUnmanage, False, XmNresizePolicy, XmRESIZE_NONE, nullptr);
-	XtAddCallback(form, XmNdestroyCallback, destroyCB, ucd);
-	AddMotifCloseCallback(ucd->dlogShell, closeCB, ucd);
-
-	ac = 0;
-	XtSetArg(args[ac], XmNtopAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNtopPosition, 2);
-	ac++;
-	XtSetArg(args[ac], XmNleftAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNleftPosition, LEFT_MARGIN_POS);
-	ac++;
-	XtSetArg(args[ac], XmNrightAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNrightPosition, LIST_RIGHT - 1);
-	ac++;
-	XtSetArg(args[ac], XmNbottomAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNbottomPosition, MACRO_CMD_TOP);
-	ac++;
-	ucd->managedList = CreateManagedList(form, "list", args, ac, (void **)ucd->menuItemsList, &ucd->nMenuItems, MAX_ITEMS_PER_MENU, 20, getDialogDataCB, ucd, setDialogDataCB, ucd, freeItemCB);
-
-	ucd->selInpBtn = XtVaCreateManagedWidget("selInpBtn", xmToggleButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Requires Selection"), XmNmnemonic, 'R', XmNalignment, XmALIGNMENT_BEGINNING, XmNmarginHeight, 0, XmNset,
-	                                         False, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, MACRO_CMD_TOP, nullptr);
-	XmStringFree(s1);
-
-	ucd->mneTextW = XtVaCreateManagedWidget("mne", xmTextWidgetClass, form, XmNcolumns, 1, XmNmaxLength, 1, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, RIGHT_MARGIN_POS - 21 - 5, XmNrightAttachment, XmATTACH_POSITION,
-	                                        XmNrightPosition, RIGHT_MARGIN_POS - 21, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, ucd->selInpBtn, XmNbottomOffset, 5, nullptr);
-	RemapDeleteKey(ucd->mneTextW);
-
-	ucd->accTextW = XtVaCreateManagedWidget("acc", xmTextWidgetClass, form, XmNcolumns, 12, XmNmaxLength, MAX_ACCEL_LEN - 1, XmNcursorPositionVisible, False, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT,
-	                                        XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS - 20 - 10, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, ucd->selInpBtn, XmNbottomOffset, 5, nullptr);
-	XtAddEventHandler(ucd->accTextW, KeyPressMask, False, (XtEventHandler)accKeyCB, ucd);
-	XtAddCallback(ucd->accTextW, XmNfocusCallback, accFocusCB, ucd);
-	XtAddCallback(ucd->accTextW, XmNlosingFocusCallback, accLoseFocusCB, ucd);
-
-	accLabel = XtVaCreateManagedWidget("accLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Accelerator"), XmNmnemonic, 'l', XmNuserData, ucd->accTextW, XmNalignment, XmALIGNMENT_BEGINNING, XmNmarginTop, 5,
-	                                   XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, LIST_RIGHT + 22, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget,
-	                                   ucd->mneTextW, nullptr);
-	XmStringFree(s1);
-
-	XtVaCreateManagedWidget("mneLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Mnemonic"), XmNmnemonic, 'i', XmNuserData, ucd->mneTextW, XmNalignment, XmALIGNMENT_END, XmNmarginTop, 5, XmNleftAttachment,
-	                        XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT + 22, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS - 21, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, ucd->mneTextW, nullptr);
-	XmStringFree(s1);
-
-	pasteReplayBtn = XtVaCreateManagedWidget("pasteReplay", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Paste Learn/\nReplay Macro"), XmNmnemonic, 'P', XmNsensitive, !GetReplayMacro().empty(), XmNleftAttachment,
-	                                         XmATTACH_POSITION, XmNleftPosition, RIGHT_MARGIN_POS - 20, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition,
-	                                         MACRO_CMD_TOP, nullptr);
-	XtAddCallback(pasteReplayBtn, XmNactivateCallback, pasteReplayCB, ucd);
-	XmStringFree(s1);
-
-	ucd->nameTextW = XtVaCreateManagedWidget("name", xmTextWidgetClass, form, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, XmNbottomAttachment,
-	                                         XmATTACH_WIDGET, XmNbottomWidget, accLabel, nullptr);
-	RemapDeleteKey(ucd->nameTextW);
-
-	nameLabel = XtVaCreateManagedWidget("nameLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Menu Entry"), XmNmnemonic, 'y', XmNuserData, ucd->nameTextW, XmNalignment, XmALIGNMENT_BEGINNING, XmNmarginTop, 5,
-	                                    XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, ucd->nameTextW, nullptr);
-	XmStringFree(s1);
-
-	XtVaCreateManagedWidget("nameNotes", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("(> for sub-menu, @ language mode)"), XmNalignment, XmALIGNMENT_END, XmNmarginTop, 5, XmNleftAttachment, XmATTACH_WIDGET,
-	                        XmNleftWidget, nameLabel, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS, XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, ucd->nameTextW, nullptr);
-	XmStringFree(s1);
-
-	XtVaCreateManagedWidget("topLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Select a macro menu item from the list at left.\n\
-Select \"New\" to add a new command to the menu."),
-	                        XmNtopAttachment, XmATTACH_POSITION, XmNtopPosition, 2, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LIST_RIGHT, XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, RIGHT_MARGIN_POS,
-	                        XmNbottomAttachment, XmATTACH_WIDGET, XmNbottomWidget, nameLabel, nullptr);
-	XmStringFree(s1);
-
-	cmdLabel = XtVaCreateManagedWidget("cmdLabel", xmLabelGadgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Macro Command to Execute"), XmNmnemonic, 'x', XmNalignment, XmALIGNMENT_BEGINNING, XmNmarginTop, 5, XmNtopAttachment,
-	                                   XmATTACH_POSITION, XmNtopPosition, MACRO_CMD_TOP, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, LEFT_MARGIN_POS, nullptr);
-	XmStringFree(s1);
-
-	okBtn = XtVaCreateManagedWidget("ok", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("OK"), XmNmarginWidth, BUTTON_WIDTH_MARGIN, XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 8, XmNrightAttachment,
-	                                XmATTACH_POSITION, XmNrightPosition, 23, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 99, nullptr);
-	XtAddCallback(okBtn, XmNactivateCallback, okCB, ucd);
-	XmStringFree(s1);
-
-	applyBtn = XtVaCreateManagedWidget("apply", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Apply"), XmNmnemonic, 'A', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 31, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 46, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 99, nullptr);
-	XtAddCallback(applyBtn, XmNactivateCallback, applyCB, ucd);
-	XmStringFree(s1);
-
-	applyBtn = XtVaCreateManagedWidget("check", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Check"), XmNmnemonic, 'C', XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 54, XmNrightAttachment,
-	                                   XmATTACH_POSITION, XmNrightPosition, 69, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 99, nullptr);
-	XtAddCallback(applyBtn, XmNactivateCallback, checkCB, ucd);
-	XmStringFree(s1);
-
-	closeBtn = XtVaCreateManagedWidget("close", xmPushButtonWidgetClass, form, XmNlabelString, s1 = XmStringCreateLtoREx("Close"), XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 77, XmNrightAttachment, XmATTACH_POSITION,
-	                                   XmNrightPosition, 92, XmNbottomAttachment, XmATTACH_POSITION, XmNbottomPosition, 99, nullptr);
-	XtAddCallback(closeBtn, XmNactivateCallback, closeCB, ucd);
-	XmStringFree(s1);
-
-	ac = 0;
-	XtSetArg(args[ac], XmNeditMode, XmMULTI_LINE_EDIT);
-	ac++;
-	XtSetArg(args[ac], XmNtopAttachment, XmATTACH_WIDGET);
-	ac++;
-	XtSetArg(args[ac], XmNtopWidget, cmdLabel);
-	ac++;
-	XtSetArg(args[ac], XmNleftAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNleftPosition, LEFT_MARGIN_POS);
-	ac++;
-	XtSetArg(args[ac], XmNrightAttachment, XmATTACH_POSITION);
-	ac++;
-	XtSetArg(args[ac], XmNrightPosition, RIGHT_MARGIN_POS);
-	ac++;
-	XtSetArg(args[ac], XmNbottomAttachment, XmATTACH_WIDGET);
-	ac++;
-	XtSetArg(args[ac], XmNbottomWidget, okBtn);
-	ac++;
-	XtSetArg(args[ac], XmNbottomOffset, 5);
-	ac++;
-	ucd->cmdTextW = XmCreateScrolledText(form, (String) "name", args, ac);
-	AddMouseWheelSupport(ucd->cmdTextW);
-	XtManageChild(ucd->cmdTextW);
-	RemapDeleteKey(ucd->cmdTextW);
-	XtVaSetValues(cmdLabel, XmNuserData, ucd->cmdTextW, nullptr); // for mnemonic 
-
-	/* Disable text input for the accelerator key widget, let the
-	   event handler manage it instead */
-	disableTextW(ucd->accTextW);
-
-	// initializs the dialog fields to match "New" list item 
-	updateDialogFields(nullptr, ucd);
-
-	// Set initial default button 
-	XtVaSetValues(form, XmNdefaultButton, okBtn, nullptr);
-	XtVaSetValues(form, XmNcancelButton, closeBtn, nullptr);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-	/* Make widgets for top level shell and paste-replay buttons available
-	   to other functions */
-	if (dialogType == MACRO_CMDS) {
-		MacroCmdDialog = ucd->dlogShell;
-		MacroPasteReplayBtn = pasteReplayBtn;
-	} else {
-	}
-
-	// Realize all of the widgets in the new dialog 
-	RealizeWithoutForcingPosition(ucd->dlogShell);
 }
 
 /*
@@ -674,9 +489,10 @@ void UpdateUserMenus(Document *window) {
 ** Dim/undim buttons for pasting replay macros into macro and bg menu dialogs
 */
 void DimPasteReplayBtns(int sensitive) {
-	if(MacroCmdDialog)
-		XtSetSensitive(MacroPasteReplayBtn, sensitive);
-		
+
+	if(WindowMacros) {
+		WindowMacros->setPasteReplayEnabled(sensitive);
+	}
 
 	if(WindowBackgroundMenu) {
 		WindowBackgroundMenu->setPasteReplayEnabled(sensitive);
@@ -836,9 +652,8 @@ void UpdateUserMenuInfo(void) {
 ** name "itemName".  Returns True on successs and False on failure.
 */
 bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
-	int i;
 
-	for (i = 0; i < NShellMenuItems; i++) {
+	for (int i = 0; i < NShellMenuItems; i++) {
 		if (ShellMenuItems[i]->name == QLatin1String(itemName)) {
 			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
 				return false;
@@ -1552,8 +1367,6 @@ static void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Mark that there's no longer a (macro, bg, or shell) dialog up 
 	if (ucd->dialogType == SHELL_CMDS)
 		ShellCmdDialog = nullptr;
-	else if (ucd->dialogType == MACRO_CMDS)
-		MacroCmdDialog = nullptr;
 
 	/* pop down and destroy the dialog (memory for ucd is freed in the
 	   destroy callback) */
@@ -1574,8 +1387,6 @@ static void okCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Mark that there's no longer a (macro, bg, or shell) dialog up 
 	if (ucd->dialogType == SHELL_CMDS)
 		ShellCmdDialog = nullptr;
-	else if (ucd->dialogType == MACRO_CMDS)
-		MacroCmdDialog = nullptr;
 
 	/* pop down and destroy the dialog (memory for ucd is freed in the
 	   destroy callback) */
@@ -1588,18 +1399,6 @@ static void applyCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	applyDialogChanges((userCmdDialog *)clientData);
-}
-
-static void checkCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-
-	auto ucd = static_cast<userCmdDialog *>(clientData);
-
-	if (checkMacro(ucd)) {
-		QMessageBox::information(nullptr /*parent*/, QLatin1String("Macro"), QLatin1String("Macro compiled without error"));
-	}
 }
 
 static int checkMacro(userCmdDialog *ucd) {
@@ -1667,18 +1466,7 @@ static int applyDialogChanges(userCmdDialog *ucd) {
 		NShellMenuItems = ucd->nMenuItems;
 		parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
 	} else if (ucd->dialogType == MACRO_CMDS) {
-		for (i = 0; i < NMacroMenuItems; i++) {
-			delete MacroMenuItems[i];
-		}
-		
-		freeUserMenuInfoList(MacroMenuInfo, NMacroMenuItems);
-		freeSubMenuCache(&MacroSubMenus);
-		for (i = 0; i < ucd->nMenuItems; i++) {
-			MacroMenuItems[i] = new MenuItem(*ucd->menuItemsList[i]);
-		}
-		
-		NMacroMenuItems = ucd->nMenuItems;
-		parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
+
 	} else { // BG_MENU_CMDS 
 	}
 
@@ -1688,18 +1476,6 @@ static int applyDialogChanges(userCmdDialog *ucd) {
 	// Note that preferences have been changed 
 	MarkPrefsChanged();
 	return True;
-}
-
-static void pasteReplayCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	auto ucd = static_cast<userCmdDialog *>(clientData);
-
-	if (GetReplayMacro().empty())
-		return;
-
-	XmTextInsert(ucd->cmdTextW, XmTextGetInsertionPosition(ucd->cmdTextW), (String)GetReplayMacro().c_str());
 }
 
 static void destroyCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1802,7 +1578,9 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NShellMenuItems)
 		return;
 
-	params[0] = ShellMenuItems[index]->name.toLatin1().data(); // TODO(eteran): is this safe?
+	QByteArray str = ShellMenuItems[index]->name.toLatin1();
+	
+	params[0] = str.data(); // TODO(eteran): is this safe?
 	XtCallActionProc(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
 }
 
@@ -1953,14 +1731,6 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 		XtFree(cmdText);
 
 		return nullptr;
-	}
-
-	if (ucd->dialogType == MACRO_CMDS) {
-		cmdText = addTerminatingNewlineEx(cmdText);
-		if (!checkMacroText(cmdText, silent ? nullptr : ucd->dlogShell, ucd->cmdTextW)) {
-			XtFree(cmdText);
-			return nullptr;
-		}
 	}
 
 	auto f = new MenuItem;
@@ -2567,27 +2337,6 @@ static char *copyMacroToEnd(const char **inPtr) {
 	*retPtr = '\0';
 	*inPtr = stoppedAt;
 	return retStr;
-}
-
-/*
-** If "*string" is not terminated with a newline character, reallocate the
-** string and add one.  (The macro language requires newline terminators for
-** statements, but the text widget doesn't force it like the NEdit text buffer
-** does, so this might avoid some confusion.)
-*/
-static char *addTerminatingNewlineEx(char *string) {
-
-	int length = strlen(string);
-	if (string[length - 1] == '\n') {
-		return string;
-	}
-
-	char *str = XtMalloc(length + 2);
-	strcpy(str, string);
-	str[length] = '\n';
-	str[length + 1] = '\0';
-	XtFree(string);
-	return str;
 }
 
 /*

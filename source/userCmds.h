@@ -141,4 +141,10 @@ extern int NBGMenuItems;
 extern MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
 extern userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
 extern userSubMenuCache BGSubMenus;
+
+extern int NMacroMenuItems;
+extern MenuItem *MacroMenuItems[MAX_ITEMS_PER_MENU];
+extern userMenuInfo *MacroMenuInfo[MAX_ITEMS_PER_MENU];
+extern userSubMenuCache MacroSubMenus;
+
 #endif
