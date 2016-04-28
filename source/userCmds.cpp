@@ -1348,8 +1348,11 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 	char mneChar;
 	KeySym keysym;
 	unsigned int modifiers;
-	int i, input, output, saveFirst, loadAfter, repInput;
-	int nameLen, accLen, mneLen, cmdLen;
+	int i;
+	int nameLen;
+	int accLen;
+	int mneLen;
+	int cmdLen;
 
 	for (;;) {
 
@@ -1398,11 +1401,11 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 			return parseError("end not expected");
 
 		// read flags field 
-		input = FROM_NONE;
-		output = TO_SAME_WINDOW;
-		repInput = False;
-		saveFirst = False;
-		loadAfter = False;
+		InSrcs input = FROM_NONE;
+		OutDests output = TO_SAME_WINDOW;
+		bool repInput = false;
+		bool saveFirst = false;
+		bool loadAfter = false;
 		for (; *inPtr != ':'; inPtr++) {
 			if (listType == SHELL_CMDS) {
 				if (*inPtr == 'I')

@@ -203,7 +203,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QRadioButton" name="radioSelection">
+           <widget class="QRadioButton" name="radioFromSelection">
             <property name="text">
              <string>&amp;selection</string>
             </property>
@@ -213,21 +213,21 @@ Select &quot;New&quot; to add a new command to the menu.</string>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioDocument">
+           <widget class="QRadioButton" name="radioFromDocument">
             <property name="text">
              <string>document</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioEither">
+           <widget class="QRadioButton" name="radioFromEither">
             <property name="text">
              <string>ei&amp;ther</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioNone">
+           <widget class="QRadioButton" name="radioFromNone">
             <property name="text">
              <string>n&amp;one</string>
             </property>
@@ -243,7 +243,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QRadioButton" name="radioSameDocument">
+           <widget class="QRadioButton" name="radioToSameDocument">
             <property name="text">
              <string>sa&amp;me document</string>
             </property>
@@ -253,14 +253,14 @@ Select &quot;New&quot; to add a new command to the menu.</string>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioDialog">
+           <widget class="QRadioButton" name="radioToDialog">
             <property name="text">
              <string>dialo&amp;g</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioNewDocument">
+           <widget class="QRadioButton" name="radioToNewDocument">
             <property name="text">
              <string>&amp;new document</string>
             </property>

@@ -8,6 +8,10 @@
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
 
+/* sources for command input and destinations for command output */
+enum InSrcs   : uint8_t { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };
+enum OutDests : uint8_t { TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG };
+
 // Structure representing a menu item for shell, macro and BG menus
 class MenuItem {
 public:
@@ -24,8 +28,8 @@ public:
 	unsigned int modifiers;
 	KeySym keysym;
 	char mnemonic;
-	uint8_t input;
-	uint8_t output;
+	InSrcs input;
+	OutDests output;
 	bool repInput;
 	bool saveFirst;
 	bool loadAfter;

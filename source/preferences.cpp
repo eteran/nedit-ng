@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QPushButton>
+#include <QInputDialog>
 #include <QtDebug>
 #include "ui/DialogFontSelector.h"
 #include "ui/DialogWrapMargin.h"
@@ -70,21 +71,13 @@
 #include <sys/param.h>
 #include "clearcase.h"
 
-#include <Xm/Xm.h>
-#include <Xm/SelectioB.h>
-#include <Xm/Form.h>
-#include <Xm/List.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/LabelG.h>
-#include <Xm/Label.h>
 #include <Xm/PushBG.h>
 #include <Xm/PushB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeBG.h>
-#include <Xm/Frame.h>
-#include <Xm/Text.h>
+
 
 #define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
 
@@ -118,8 +111,10 @@ static const char *ReplaceDefScopeStrings[] = {"Window", "Selection", "Smart", n
 
 #define N_WRAP_STYLES 3
 static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
+
 #define N_INDENT_STYLES 3
 static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
+
 #define N_VIRTKEY_OVERRIDE_MODES 3
 static const char *VirtKeyOverrideModes[N_VIRTKEY_OVERRIDE_MODES + 1] = {"Never", "Auto", "Always", nullptr};
 
@@ -809,14 +804,9 @@ static bool PrefsHaveChanged = false;
    preferences on top of the defaults.  Contains name of file loaded */
 static char *ImportedFile = nullptr;
 
-//  Module-global variables for shell selection dialog  
-static int DoneWithShellSelDialog = False;
-
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
-static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData);
-static void shellSelCancelCB(Widget widgget, XtPointer clientData, XtPointer callData);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
 
 static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
@@ -1778,80 +1768,30 @@ void WrapMarginDialog(Widget parent, Document *forWindow) {
 */
 void SelectShellDialog(Widget parent, Document *forWindow) {
 
-	(void)forWindow;
+	Q_UNUSED(parent);
+	Q_UNUSED(forWindow);
 
-	Widget shellSelDialog;
-	Arg shellSelDialogArgs[2];
-	XmString label;
+	bool ok;
+	QString shell = QInputDialog::getText(nullptr /*parent*/,
+		QLatin1String("Command Shell"),
+        QLatin1String("Enter shell path:"), 
+		QLineEdit::Normal,
+        QLatin1String(GetPrefShell()),
+		&ok);
+		
+	if (ok && !shell.isEmpty()) {
 
-	//  Set up the dialog.  
-	XtSetArg(shellSelDialogArgs[0], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	XtSetArg(shellSelDialogArgs[1], XmNautoUnmanage, False);
-	shellSelDialog = CreatePromptDialog(parent, "shellSelDialog", shellSelDialogArgs, 2);
-
-	//  Fix dialog to our liking.  
-	XtVaSetValues(XtParent(shellSelDialog), XmNtitle, "Command Shell", nullptr);
-	XtAddCallback(shellSelDialog, XmNokCallback, shellSelOKCB, shellSelDialog);
-	XtAddCallback(shellSelDialog, XmNcancelCallback, shellSelCancelCB, nullptr);
-	XtUnmanageChild(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_HELP_BUTTON));
-	label = XmStringCreateLocalizedEx("Enter shell path:");
-	XtVaSetValues(shellSelDialog, XmNselectionLabelString, label, nullptr);
-	XmStringFree(label);
-
-	//  Set dialog's text to the current setting.  
-	XmTextSetStringEx(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT), GetPrefShell());
-
-	DoneWithShellSelDialog = False;
-
-	//  Show dialog and wait until the user made her choice.  
-	ManageDialogCenteredOnPointer(shellSelDialog);
-	while (!DoneWithShellSelDialog) {
-		XEvent event;
-		XtAppNextEvent(XtWidgetToApplicationContext(parent), &event);
-		ServerDispatchEvent(&event);
-	}
-
-	XtDestroyWidget(shellSelDialog);
-}
-
-static void shellSelOKCB(Widget widget, XtPointer clientData, XtPointer callData) {
-
-	(void)widget;
-	(void)callData;
-
-	Widget shellSelDialog = static_cast<Widget>(clientData);
-	String shellName = XtMalloc(MAXPATHLEN);
-	struct stat attribute;
-
-	//  Leave with a warning if the dialog is not up.  
-	if (!XtIsRealized(shellSelDialog)) {
-		fprintf(stderr, "nedit: Callback shellSelOKCB() illegally called.\n");
-		return;
-	}
-
-	//  Get the string that the user entered and make sure it's ok.  
-	shellName = XmTextGetString(XmSelectionBoxGetChild(shellSelDialog, XmDIALOG_TEXT));
-
-	if (stat(shellName, &attribute) == -1) {
-		int resp = QMessageBox::warning(nullptr /*shellSelDialog*/, QLatin1String("Command Shell"), QLatin1String("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
-		if(resp == QMessageBox::Cancel) {
-			return;
+		struct stat attribute;
+		if (stat(shell.toLatin1().data(), &attribute) == -1) {
+			int resp = QMessageBox::warning(nullptr /*shellSelDialog*/, QLatin1String("Command Shell"), QLatin1String("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
+			if(resp == QMessageBox::Cancel) {
+				return;
+			}
 		}
+
+		SetPrefShell(shell.toLatin1().data());
 	}
 
-	SetPrefShell(shellName);
-	XtFree(shellName);
-
-	DoneWithShellSelDialog = True;
-}
-
-static void shellSelCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	DoneWithShellSelDialog = True;
 }
 
 void freeLanguageModeRec(LanguageMode *lm) {
@@ -3572,9 +3512,8 @@ static void updateMacroCmdsTo5dot6(void) {
 
 // Decref the default calltips file(s) for this window 
 void UnloadLanguageModeTipsFile(Document *window) {
-	int mode;
 
-	mode = window->languageMode_;
+	int mode = window->languageMode_;
 	if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
 		DeleteTagsFile(LanguageModes[mode]->defTipsFile, TIP, False);
 	}
@@ -3585,14 +3524,13 @@ void UnloadLanguageModeTipsFile(Document *window) {
  */
 void ChooseColors(Document *window) {
 
-	if(window->dialogColors_) {
-		window->dialogColors_->show();
-		window->dialogColors_->raise();
-		return;
+	if(!window->dialogColors_) {
+		window->dialogColors_ = new DialogColors(window);
 	}
-	
-	window->dialogColors_ = new DialogColors(window);
+
 	window->dialogColors_->show();
+	window->dialogColors_->raise();
+
 }
 
 /*

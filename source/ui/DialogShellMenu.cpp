@@ -193,29 +193,29 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		switch(ptr->input) {
 		case FROM_SELECTION:
 		default:
-			ui.radioSelection->setChecked(true);
+			ui.radioFromSelection->setChecked(true);
 			break;
 		case FROM_WINDOW:
-			ui.radioDocument->setChecked(true);
+			ui.radioFromDocument->setChecked(true);
 			break;		
 		case FROM_EITHER:
-			ui.radioEither->setChecked(true);
+			ui.radioFromEither->setChecked(true);
 			break;		
 		case FROM_NONE:
-			ui.radioNone->setChecked(true);
+			ui.radioFromNone->setChecked(true);
 			break;		
 		}
 		
 		switch(ptr->output) {
 		case TO_SAME_WINDOW:
 		default:
-			ui.radioSameDocument->setChecked(true);
+			ui.radioToSameDocument->setChecked(true);
 			break;
 		case TO_DIALOG:
-			ui.radioDialog->setChecked(true);
+			ui.radioToDialog->setChecked(true);
 			break;		
 		case TO_NEW_WINDOW:
-			ui.radioNewDocument->setChecked(true);
+			ui.radioToNewDocument->setChecked(true);
 			break;		
 		}
 		
@@ -251,8 +251,8 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		ui.buttonDelete->setEnabled(false);
 		ui.buttonCopy  ->setEnabled(false);
 		
-		ui.radioSelection->setChecked(true);
-		ui.radioSameDocument->setChecked(true);
+		ui.radioFromSelection->setChecked(true);
+		ui.radioToSameDocument->setChecked(true);
 
 		
 		ui.checkReplaceInput->setChecked(false);	
@@ -296,14 +296,12 @@ void DialogShellMenu::on_buttonBox_accepted() {
 MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 
 	QString nameText = ui.editName->text();
-
 	if (nameText.isEmpty()) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
 	}
-
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (!silent) {
@@ -340,32 +338,29 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
 	}
 
-	
-	if(ui.radioSelection->isChecked()) {
+	if(ui.radioFromSelection->isChecked()) {
 		f->input = FROM_SELECTION;
-	} else if(ui.radioDocument->isChecked()) {
+	} else if(ui.radioFromDocument->isChecked()) {
 		f->input = FROM_WINDOW;
-	} else if(ui.radioEither->isChecked()) {
+	} else if(ui.radioFromEither->isChecked()) {
 		f->input = FROM_EITHER;
-	} else if(ui.radioNone->isChecked()) {
+	} else if(ui.radioFromNone->isChecked()) {
 		f->input = FROM_NONE;
 	}
 	
-	if(ui.radioSameDocument->isChecked()) {
-		f->input = TO_SAME_WINDOW;
-	} else if(ui.radioDialog->isChecked()) {
-		f->input = TO_DIALOG;
-	} else if(ui.radioNewDocument->isChecked()) {
-		f->input = TO_NEW_WINDOW;
+	if(ui.radioToSameDocument->isChecked()) {
+		f->output = TO_SAME_WINDOW;
+	} else if(ui.radioToDialog->isChecked()) {
+		f->output = TO_DIALOG;
+	} else if(ui.radioToNewDocument->isChecked()) {
+		f->output = TO_NEW_WINDOW;
 	}			
 
-		
 	f->repInput  = ui.checkReplaceInput->isChecked();
 	f->saveFirst = ui.checkSaveBeforeExec->isChecked();
 	f->loadAfter = ui.checkReloadAfterExec->isChecked();
 	
 	return f;
-
 }
 
 

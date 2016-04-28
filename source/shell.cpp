@@ -30,19 +30,20 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include "shell.h"
-#include "TextBuffer.h"
-#include "text.h"
-#include "nedit.h"
 #include "Document.h"
-#include "window.h"
-#include "preferences.h"
-#include "file.h"
-#include "macro.h"
-#include "interpret.h"
-#include "misc.h"
+#include "MenuItem.h"
 #include "MotifHelper.h"
+#include "TextBuffer.h"
+#include "file.h"
+#include "interpret.h"
+#include "macro.h"
 #include "menu.h"
+#include "misc.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "shell.h"
+#include "text.h"
+#include "window.h"
 
 #include <algorithm>
 #include <cctype>
