@@ -188,6 +188,41 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		ui.editAccelerator->setText(tr("%1").arg(QLatin1String(buf)));
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.editCommand->setPlainText(ptr->cmd);
+		
+		
+		switch(ptr->input) {
+		case FROM_SELECTION:
+		default:
+			ui.radioSelection->setChecked(true);
+			break;
+		case FROM_WINDOW:
+			ui.radioDocument->setChecked(true);
+			break;		
+		case FROM_EITHER:
+			ui.radioEither->setChecked(true);
+			break;		
+		case FROM_NONE:
+			ui.radioNone->setChecked(true);
+			break;		
+		}
+		
+		switch(ptr->output) {
+		case TO_SAME_WINDOW:
+		default:
+			ui.radioSameDocument->setChecked(true);
+			break;
+		case TO_DIALOG:
+			ui.radioDialog->setChecked(true);
+			break;		
+		case TO_NEW_WINDOW:
+			ui.radioNewDocument->setChecked(true);
+			break;		
+		}
+		
+		ui.checkReplaceInput->setChecked(ptr->repInput);	
+		ui.checkSaveBeforeExec->setChecked(ptr->saveFirst);
+		ui.checkReloadAfterExec->setChecked(ptr->loadAfter);
+		
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
@@ -215,6 +250,15 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		ui.buttonDown  ->setEnabled(false);
 		ui.buttonDelete->setEnabled(false);
 		ui.buttonCopy  ->setEnabled(false);
+		
+		ui.radioSelection->setChecked(true);
+		ui.radioSameDocument->setChecked(true);
+
+		
+		ui.checkReplaceInput->setChecked(false);	
+		ui.checkSaveBeforeExec->setChecked(false);
+		ui.checkReloadAfterExec->setChecked(false);
+				
 	}
 	
 	previous_ = current;
@@ -251,8 +295,6 @@ void DialogShellMenu::on_buttonBox_accepted() {
 */
 MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 
-	Q_UNUSED(silent);
-#if 0
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
@@ -278,11 +320,6 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 		return nullptr;
 	}
 
-	cmdText = ensureNewline(cmdText);
-	if (!checkMacroText(cmdText, silent)) {
-		return nullptr;
-	}
-
 	auto f = new MenuItem;
 	f->name = nameText;
 	f->cmd  = cmdText;
@@ -303,16 +340,32 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
 	}
 
-	f->input     = FROM_NONE;
-	f->output    = TO_SAME_WINDOW;
-	f->repInput  = false;
-	f->saveFirst = false;
-	f->loadAfter = false;
+	
+	if(ui.radioSelection->isChecked()) {
+		f->input = FROM_SELECTION;
+	} else if(ui.radioDocument->isChecked()) {
+		f->input = FROM_WINDOW;
+	} else if(ui.radioEither->isChecked()) {
+		f->input = FROM_EITHER;
+	} else if(ui.radioNone->isChecked()) {
+		f->input = FROM_NONE;
+	}
+	
+	if(ui.radioSameDocument->isChecked()) {
+		f->input = TO_SAME_WINDOW;
+	} else if(ui.radioDialog->isChecked()) {
+		f->input = TO_DIALOG;
+	} else if(ui.radioNewDocument->isChecked()) {
+		f->input = TO_NEW_WINDOW;
+	}			
 
+		
+	f->repInput  = ui.checkReplaceInput->isChecked();
+	f->saveFirst = ui.checkSaveBeforeExec->isChecked();
+	f->loadAfter = ui.checkReloadAfterExec->isChecked();
+	
 	return f;
-#else
-	return nullptr;
-#endif
+
 }
 
 
