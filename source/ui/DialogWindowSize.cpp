@@ -1,10 +1,14 @@
 
 #include "DialogWindowSize.h"
 #include <QMessageBox>
+#include <QIntValidator>
 #include "preferences.h"
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
+	
+	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
+	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
 DialogWindowSize::~DialogWindowSize() {
@@ -26,7 +30,6 @@ void DialogWindowSize::on_buttonBox_accepted() {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(width));
 		return;
 	}
-
 
 	if(height.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of columns"));
