@@ -29,7 +29,7 @@ public:
 	bool repInput;
 	bool saveFirst;
 	bool loadAfter;
-	char *cmd;
+	QString cmd;
 };
 
 #endif

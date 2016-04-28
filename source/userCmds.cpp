@@ -657,7 +657,7 @@ bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) 
 		if (ShellMenuItems[i]->name == QLatin1String(itemName)) {
 			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
 				return false;
-			DoShellMenuCmd(window, ShellMenuItems[i]->cmd, ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
+			DoShellMenuCmd(window, ShellMenuItems[i]->cmd.toStdString(), ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
 			return true;
 		}
 	}
@@ -673,7 +673,7 @@ bool DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 
 	for (int i = 0; i < NMacroMenuItems; i++) {
 		if (MacroMenuItems[i]->name == QLatin1String(itemName)) {
-			DoMacro(window, MacroMenuItems[i]->cmd, "macro menu command");
+			DoMacro(window, MacroMenuItems[i]->cmd.toStdString(), "macro menu command");
 			return true;
 		}
 	}
@@ -684,7 +684,7 @@ bool DoNamedBGMenuCmd(Document *window, const char *itemName) {
 
 	for (int i = 0; i < NBGMenuItems; i++) {
 		if (BGMenuItems[i]->name == QLatin1String(itemName)) {		
-			DoMacro(window, BGMenuItems[i]->cmd, "background menu macro");
+			DoMacro(window, BGMenuItems[i]->cmd.toStdString(), "background menu macro");
 			return true;
 		}
 	}
@@ -1214,9 +1214,9 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
 				}
 				
-				if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "undo()\n")) {
+				if (menuType == BG_MENU_CMDS && item->cmd == QLatin1String("undo()\n")) {
 					window->bgMenuUndoItem_ = btn;
-				} else if (menuType == BG_MENU_CMDS && !strcmp(item->cmd, "redo()\n")) {
+				} else if (menuType == BG_MENU_CMDS && item->cmd == QLatin1String("redo()\n")) {
 					window->bgMenuRedoItem_ = btn;
 				}
 				
@@ -1406,7 +1406,7 @@ static int checkMacro(userCmdDialog *ucd) {
 	MenuItem *f = readDialogFields(ucd, False);
 	if(!f)
 		return false;
-	if (!checkMacroText(f->cmd, ucd->dlogShell, ucd->cmdTextW)) {
+	if (!checkMacroText(f->cmd.toLatin1().data(), ucd->dlogShell, ucd->cmdTextW)) {
 		delete f;
 		return false;
 	}
@@ -1673,7 +1673,7 @@ static void updateDialogFields(MenuItem *f, userCmdDialog *ucd) {
 		generateAcceleratorString(accString, f->modifiers, f->keysym);
 		
 		XmTextSetStringEx(ucd->nameTextW, f->name.toStdString());
-		XmTextSetStringEx(ucd->cmdTextW,  f->cmd);
+		XmTextSetStringEx(ucd->cmdTextW,  f->cmd.toStdString());
 		XmTextSetStringEx(ucd->accTextW,  accString);
 		XmTextSetStringEx(ucd->mneTextW,  mneString);
 		
@@ -1735,7 +1735,8 @@ static MenuItem *readDialogFields(userCmdDialog *ucd, int silent) {
 
 	auto f = new MenuItem;
 	f->name = nameText;
-	f->cmd  = cmdText;
+	f->cmd  = QLatin1String(cmdText);
+	XtFree(cmdText);
 
 	if ((mneText = XmTextGetString(ucd->mneTextW))) {
 		f->mnemonic = mneText == nullptr ? '\0' : mneText[0];
@@ -1870,7 +1871,7 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 		generateAcceleratorString(accStr, f->modifiers, f->keysym);
 		length += f->name.size() * 2; // allow for \n & \\ expansions 
 		length += strlen(accStr);
-		length += strlen(f->cmd) * 6; // allow for \n & \\ expansions 
+		length += f->cmd.size() * 6; // allow for \n & \\ expansions 
 		length += 21;                 // number of characters added below 
 	}
 	length++; // terminating null 
@@ -1936,19 +1937,19 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 		*outPtr++ = '\t';
 		*outPtr++ = '\t';
 		
-		for (auto c = f->cmd; *c != '\0'; c++) { // Copy the command string, changing 
-			if (*c == '\\') {               // backslashes to double backslashes 
-				*outPtr++ = '\\';           // and newlines to backslash-n's,    
-				*outPtr++ = '\\';           // followed by real newlines and tab 
-			} else if (*c == '\n') {
-				*outPtr++ = '\\';
+		for(QChar c : f->cmd) {
+			if (c == QLatin1Char('\\')) {                
+				*outPtr++ = '\\';                // Copy the command string, changing 
+				*outPtr++ = '\\';                // backslashes to double backslashes 
+			} else if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,    
+				*outPtr++ = '\\';			     // followed by real newlines and tab 
 				*outPtr++ = 'n';
 				*outPtr++ = '\\';
 				*outPtr++ = '\n';
 				*outPtr++ = '\t';
 				*outPtr++ = '\t';
 			} else
-				*outPtr++ = *c;
+				*outPtr++ = c.toLatin1();
 		}
 		
 		if (listType == MACRO_CMDS) {
@@ -1981,7 +1982,9 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 
 	char *cmdStr;
 	const char *inPtr = inString;
-	char *nameStr, accStr[MAX_ACCEL_LEN], mneChar;
+	char *nameStr;
+	char accStr[MAX_ACCEL_LEN];
+	char mneChar;
 	KeySym keysym;
 	unsigned int modifiers;
 	int i, input, output, saveFirst, loadAfter, repInput;
@@ -2098,7 +2101,7 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 		// create a menu item record 
 		auto f = new MenuItem;
 		f->name      = QLatin1String(nameStr);
-		f->cmd       = cmdStr;
+		f->cmd       = QLatin1String(cmdStr);
 		f->mnemonic  = mneChar;
 		f->modifiers = modifiers;
 		f->input     = input;
@@ -2107,6 +2110,9 @@ static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *n
 		f->saveFirst = saveFirst;
 		f->loadAfter = loadAfter;
 		f->keysym    = keysym;
+		
+		XtFree(nameStr);
+		XtFree(cmdStr);
 
 		// add/replace menu record in the list 
 		for (i = 0; i < *nItems; i++) {

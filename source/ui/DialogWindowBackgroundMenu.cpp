@@ -3,7 +3,6 @@
 #include "DialogWindowBackgroundMenu.h"
 
 #include "MenuItem.h"
-#include "MotifHelper.h"
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
@@ -198,7 +197,7 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 		ui.editAccelerator->setText(tr("%1").arg(QLatin1String(buf)));
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
-		ui.editMacro->setPlainText(QLatin1String(ptr->cmd));
+		ui.editMacro->setPlainText(ptr->cmd);
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
@@ -271,7 +270,7 @@ bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
 		return false;
 	}
 
-	if (!checkMacroText(QLatin1String(f->cmd), silent)) {
+	if (!checkMacroText(f->cmd, silent)) {
 		delete f;
 		return false;
 	}
@@ -321,7 +320,7 @@ MenuItem *DialogWindowBackgroundMenu::readDialogFields(bool silent) {
 
 	auto f = new MenuItem;
 	f->name = nameText;
-	f->cmd  = XtStringDup(cmdText);
+	f->cmd  = cmdText;
 
 	QString mneText = ui.editMnemonic->text();
 	if(!mneText.isEmpty()) {
