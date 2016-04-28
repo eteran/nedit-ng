@@ -137,6 +137,11 @@ void rebuildMenuOfAllWindows(int menuType);
    macro, shell, and background menus */
 #define MAX_ITEMS_PER_MENU 400
 
+extern int NShellMenuItems;
+extern MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
+extern userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
+extern userSubMenuCache ShellSubMenus;
+
 extern int NBGMenuItems;
 extern MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
 extern userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];

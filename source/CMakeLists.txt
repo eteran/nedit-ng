@@ -32,20 +32,21 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogFontSelector.h
 	ui/DialogFonts.h
 	ui/DialogLanguageModes.h
+	ui/DialogMacros.h
+	ui/DialogMoveDocument.h
 	ui/DialogMultiReplace.h
+	ui/DialogPrint.h
 	ui/DialogReplace.h
-	ui/DialogSmartIndentCommon.h
+	ui/DialogShellMenu.h
 	ui/DialogSmartIndent.h
+	ui/DialogSmartIndentCommon.h
 	ui/DialogTabs.h
+	ui/DialogWindowBackgroundMenu.h
 	ui/DialogWindowSize.h
 	ui/DialogWindowTitle.h
 	ui/DialogWrapMargin.h
-	ui/DialogMoveDocument.h
-	ui/DialogWindowBackgroundMenu.h
-	ui/DialogMacros.h
-	ui/DialogPrint.h
-	ui/ListWidget.h
 	ui/LineEdit.h
+	ui/ListWidget.h
 	ui/MainWindow.h
 )
 
@@ -58,19 +59,20 @@ set(UI_FILES
 	ui/DialogFontSelector.ui
 	ui/DialogFonts.ui
 	ui/DialogLanguageModes.ui
+	ui/DialogMacros.ui
 	ui/DialogMoveDocument.ui
 	ui/DialogMultiReplace.ui
-	ui/DialogReplaceScope.ui
+	ui/DialogPrint.ui
 	ui/DialogReplace.ui
-	ui/DialogSmartIndentCommon.ui
+	ui/DialogReplaceScope.ui
+	ui/DialogShellMenu.ui
 	ui/DialogSmartIndent.ui	
+	ui/DialogSmartIndentCommon.ui
 	ui/DialogTabs.ui
+	ui/DialogWindowBackgroundMenu.ui
 	ui/DialogWindowSize.ui
 	ui/DialogWindowTitle.ui
 	ui/DialogWrapMargin.ui
-	ui/DialogMacros.ui
-	ui/DialogWindowBackgroundMenu.ui
-	ui/DialogPrint.ui
 	ui/MainWindow.ui
 )
 
@@ -86,24 +88,25 @@ add_executable(nedit
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
-	ui/DialogFonts.cpp
 	ui/DialogFontSelector.cpp
+	ui/DialogFonts.cpp
 	ui/DialogLanguageModes.cpp
+	ui/DialogMacros.cpp
+	ui/DialogMoveDocument.cpp
 	ui/DialogMultiReplace.cpp
+	ui/DialogPrint.cpp
 	ui/DialogReplace.cpp
-	ui/DialogSmartIndentCommon.cpp
+	ui/DialogShellMenu.cpp
 	ui/DialogSmartIndent.cpp
+	ui/DialogSmartIndentCommon.cpp
 	ui/DialogTabs.cpp
+	ui/DialogWindowBackgroundMenu.cpp
 	ui/DialogWindowSize.cpp
 	ui/DialogWindowTitle.cpp
 	ui/DialogWrapMargin.cpp
-	ui/DialogMoveDocument.cpp
-	ui/DialogPrint.cpp
-	ui/DialogMacros.cpp
+	ui/LineEdit.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
-	ui/DialogWindowBackgroundMenu.cpp
-	ui/LineEdit.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp

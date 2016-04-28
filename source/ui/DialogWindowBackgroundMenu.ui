@@ -26,7 +26,9 @@
             <string>New</string>
            </property>
            <property name="icon">
-            <iconset theme="document-new"/>
+            <iconset theme="document-new">
+             <normaloff/>
+            </iconset>
            </property>
           </widget>
          </item>
@@ -212,7 +214,13 @@ Select &quot;New&quot; to add a new command to the menu.</string>
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="editMacro"/>
+    <widget class="QPlainTextEdit" name="editMacro">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">

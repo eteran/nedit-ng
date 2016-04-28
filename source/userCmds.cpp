@@ -32,6 +32,7 @@
 #include <QString>
 #include "ui/DialogWindowBackgroundMenu.h"
 #include "ui/DialogMacros.h"
+#include "ui/DialogShellMenu.h"
 
 #include "userCmds.h"
 #include "TextBuffer.h"
@@ -81,6 +82,7 @@ namespace {
 
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
 DialogMacros               *WindowMacros         = nullptr;
+DialogShellMenu            *WindowShellMenu      = nullptr;
 
 /* indicates, that an unknown (i.e. not existing) language mode
    is bound to an user menu item */
@@ -93,6 +95,9 @@ const int LIST_RIGHT       = 45;
 const int SHELL_CMD_TOP    = 70;
 
 }
+
+// Top level shells of the user-defined menu editing dialogs 
+static Widget ShellCmdDialog = nullptr;
 
 /* Structure for widgets and flags associated with shell command,
    macro command and BG command editing dialogs */
@@ -133,12 +138,10 @@ struct selectedUserMenu {
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
-static MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
-static userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
-static userSubMenuCache ShellSubMenus;
-static int NShellMenuItems = 0;
-
-
+int NShellMenuItems = 0;
+MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
+userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
+userSubMenuCache ShellSubMenus;
 
 
 int NMacroMenuItems = 0;
@@ -150,9 +153,6 @@ int NBGMenuItems = 0;
 MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
 userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
 userSubMenuCache BGSubMenus;
-
-// Top level shells of the user-defined menu editing dialogs 
-static Widget ShellCmdDialog = nullptr;
 
 static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
 static void rebuildMenu(Document *window, int menuType);
@@ -220,6 +220,15 @@ static void freeUserSubMenuList(UserMenuList *list);
 ** Present a dialog for editing the user specified commands in the shell menu
 */
 void EditShellMenu(Document *window) {
+
+	if(!WindowShellMenu) {
+		WindowShellMenu = new DialogShellMenu();
+	}
+	
+	WindowShellMenu->show();
+	WindowShellMenu->raise();
+
+
 	Widget form, accLabel, inpLabel, inpBox, outBox, outLabel;
 	Widget nameLabel, cmdLabel, okBtn, applyBtn, closeBtn;
 	XmString s1;

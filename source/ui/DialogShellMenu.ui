@@ -326,7 +326,13 @@ Select &quot;New&quot; to add a new command to the menu.</string>
     </layout>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="editCommand"/>
+    <widget class="QPlainTextEdit" name="editCommand">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -341,5 +347,22 @@ Select &quot;New&quot; to add a new command to the menu.</string>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogShellMenu</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>469</x>
+     <y>620</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>505</x>
+     <y>599</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
