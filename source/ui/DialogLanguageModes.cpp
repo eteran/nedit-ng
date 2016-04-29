@@ -142,7 +142,7 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(languageModes_.size() > 2);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);
 		} else if(i == languageModes_.size() - 1) {
@@ -544,6 +544,8 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 		if (i != itemIndex && !strcmp(languageModes_[i]->name, languageModes_[itemIndex]->name)) {
 			languageModes_.removeAt(itemIndex);
 			delete selection;
+			// force an update of the display
+			Q_EMIT on_listLanguages_itemSelectionChanged();
 			return; // True;
 		}
 	}
@@ -562,6 +564,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	languageModes_.removeAt(itemIndex);
 	delete selection;
+	Q_EMIT on_listLanguages_itemSelectionChanged();
 	return;// True;
 }
 

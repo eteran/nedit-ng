@@ -1,34 +1,50 @@
 
 #include <QtDebug>
+#include <QMessageBox>
+#include <QX11Info>
+#include <QRegExp>
+#include <QRegExpValidator>
 #include "DialogDrawingStyles.h"
 #include "HighlightStyle.h"
 #include "highlightData.h"
 #include "preferences.h"
 #include "Document.h"
+#include "nedit.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
 //------------------------------------------------------------------------------
-DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
-	
+
 	// Copy the list of highlight style information to one that the user can freely edit
 	for (HighlightStyle *style: HighlightStyles) {
-		styles_.push_back(new HighlightStyle(*style));
+		auto ptr  = new HighlightStyle(*style);
+		auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+		ui.listStyles->addItem(item);
 	}
 
-	ui.listStyles->addItem(tr("New"));
-	for(HighlightStyle *style : styles_) {
-		ui.listStyles->addItem(QString::fromStdString(style->name));
+	if(ui.listStyles->count() != 0) {
+		ui.listStyles->setCurrentRow(0);
 	}
-	ui.listStyles->setCurrentRow(0);
+	
+	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
+	QValidator *validator = new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this);
+	
+	ui.editName->setValidator(validator);
 }
 
 //------------------------------------------------------------------------------
 // Name: ~DialogDrawingStyles
 //------------------------------------------------------------------------------
 DialogDrawingStyles::~DialogDrawingStyles() {
-	qDeleteAll(styles_);
+
+	for(int i = 0; i < ui.listStyles->count(); ++i) {
+	    QListWidgetItem* item = ui.listStyles->item(i);
+		auto ptr = reinterpret_cast<HighlightStyle *>(item->data(Qt::UserRole).toULongLong());
+		delete ptr;
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -41,25 +57,61 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 		return;
 	}
 	
-	items[0]->setSelected(true);
+	ui.listStyles->setCurrentItem(items[0]);
+}
+
+//------------------------------------------------------------------------------
+// Name: on_buttonNew_clicked
+//------------------------------------------------------------------------------
+void DialogDrawingStyles::on_buttonNew_clicked() {
+	auto ptr  = new HighlightStyle;
+	ptr->name = tr("New Item").toStdString();
+
+	auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+	ui.listStyles->addItem(item);
+	ui.listStyles->setCurrentItem(item);
 }
 
 //------------------------------------------------------------------------------
 // Name: on_buttonCopy_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonCopy_clicked() {
-#if 0
-	// TODO(eteran): implement
-#endif
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
+	auto newPtr = new HighlightStyle(*ptr);
+	auto newItem = new QListWidgetItem(QString::fromStdString(newPtr->name));
+	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
+
+	const int i = ui.listStyles->row(selection);
+	ui.listStyles->insertItem(i + 1, newItem);
+	ui.listStyles->setCurrentItem(newItem);
 }
 
 //------------------------------------------------------------------------------
 // Name: on_buttonDelete_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonDelete_clicked() {
-#if 0
-	// TODO(eteran): implement
-#endif
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
+
+	delete ptr;
+	delete selection;
+	
+	
+	// force an update of the display
+	Q_EMIT on_listStyles_itemSelectionChanged();
+	
 }
 
 //------------------------------------------------------------------------------
@@ -73,13 +125,10 @@ void DialogDrawingStyles::on_buttonUp_clicked() {
 
 	QListWidgetItem *const selection = selections[0];
 
-	const int i = ui.listStyles->row(selection) - 1;
+	const int i = ui.listStyles->row(selection);
 	if(i != 0) {
-		styles_.move(i, i - 1);
-		
-		// offset by 1 because of "New" at the top
-		QListWidgetItem *item = ui.listStyles->takeItem(i + 1);
-		ui.listStyles->insertItem(i, item);
+		QListWidgetItem *item = ui.listStyles->takeItem(i);
+		ui.listStyles->insertItem(i - 1, item);
 		ui.listStyles->scrollToItem(item);
 		item->setSelected(true);
 	}
@@ -96,13 +145,10 @@ void DialogDrawingStyles::on_buttonDown_clicked() {
 
 	QListWidgetItem *const selection = selections[0];
 
-	const int i = ui.listStyles->row(selection) - 1;
-	if(i != styles_.size() - 1) {
-		styles_.move(i, i + 1);
-		
-		// offset by 1 because of "New" at the top
-		QListWidgetItem *item = ui.listStyles->takeItem(i + 1);
-		ui.listStyles->insertItem(i + 2, item);
+	const int i = ui.listStyles->row(selection);
+	if(i != ui.listStyles->count() - 1) {
+		QListWidgetItem *item = ui.listStyles->takeItem(i);
+		ui.listStyles->insertItem(i + 1, item);
 		ui.listStyles->scrollToItem(item);
 		item->setSelected(true);
 	}
@@ -115,26 +161,53 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
 	if(selections.size() != 1) {
+		previous_ = nullptr;
 		return;
 	}
 
-	QListWidgetItem *const selection = selections[0];
-	styleName_ = selection->text();
+	QListWidgetItem *const current = selections[0];
 
-	if(styleName_ == tr("New")) {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	} else {
-		const int i = ui.listStyles->row(selection) - 1;
+	if(previous_ != nullptr && current != nullptr && current != previous_) {
+		// we want to try to save it (but not apply it yet)
+		// and then move on
+		if(!checkCurrent(true)) {
 
-		HighlightStyle *style = styles_[i];
-		
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Discard Entry"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
+			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+			Q_UNUSED(buttonDiscard);
+
+			messageBox.exec();
+			if (messageBox.clickedButton() == buttonKeep) {
+			
+				// again to cause messagebox to pop up
+				checkCurrent(false);
+				
+				// reselect the old item
+				ui.listStyles->blockSignals(true);
+				ui.listStyles->setCurrentItem(previous_);
+				ui.listStyles->blockSignals(false);
+				return;
+			}
+
+			// if we get here, we are ditching changes
+		} else {
+			// TODO(eteran): update entry we are leaving
+		}
+	}
+
+	if(current) {
+		const int i = ui.listStyles->row(current);
+
+		auto style = reinterpret_cast<HighlightStyle *>(current->data(Qt::UserRole).toULongLong());
+
 		ui.editName->setText(QString::fromStdString(style->name));
 		ui.editColorFG->setText(style->color);
 		ui.editColorBG->setText(style->bgColor);
-		
+
 		switch(style->font) {
 		case PLAIN_FONT:
 			ui.radioPlain->setChecked(true);
@@ -149,14 +222,14 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 			ui.radioBoldItalic->setChecked(true);
 			break;
 		}
-		
-		
+
+
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(ui.listStyles->count() > 1);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);
-		} else if(i == styles_.size() - 1) {
+		} else if(i == ui.listStyles->count() - 1) {
 			ui.buttonUp    ->setEnabled(true);
 			ui.buttonDown  ->setEnabled(false);
 			ui.buttonDelete->setEnabled(true);
@@ -166,117 +239,21 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 			ui.buttonDown  ->setEnabled(true);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);					
-		}		
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: on_editName_textChanged
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_editName_textChanged(const QString &text) {
-	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
-
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listStyles->row(selection) - 1;
-	styles_[i]->name = text.toStdString();
-}
-
-//------------------------------------------------------------------------------
-// Name: on_editColorFG_textChanged
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_editColorFG_textChanged(const QString &text) {
-	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
-
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listStyles->row(selection) - 1;
-	styles_[i]->color = text;
-}
-
-//------------------------------------------------------------------------------
-// Name: on_editColorBG_textChanged
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_editColorBG_textChanged(const QString &text) {
-	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
-
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listStyles->row(selection) - 1;
-	styles_[i]->bgColor = text;
-}
-
-//------------------------------------------------------------------------------
-// Name: on_radioPlain_toggled
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_radioPlain_toggled(bool checked) {
-	if(checked) {
-		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-		if(selections.size() != 1) {
-			return;
 		}
-
-		QListWidgetItem *const selection = selections[0];
-		const int i = ui.listStyles->row(selection) - 1;	
-		styles_[i]->font = PLAIN_FONT;
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: on_radioBold_toggled
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_radioBold_toggled(bool checked) {
-	if(checked) {
-		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-		if(selections.size() != 1) {
-			return;
+		
+		
+		// don't allow deleteing the last "Plain" entry
+		// since it's reserved
+		if (style->name == tr("Plain").toStdString()) {
+			QList<QListWidgetItem *> plainItems = ui.listStyles->findItems(tr("Plain"), Qt::MatchFixedString);
+			if(plainItems.size() < 2) {
+				ui.buttonDelete->setEnabled(false);
+			}
 		}
-
-		QListWidgetItem *const selection = selections[0];
-		const int i = ui.listStyles->row(selection) - 1;
-		styles_[i]->font = BOLD_FONT;
+		
 	}
-}
-
-//------------------------------------------------------------------------------
-// Name: on_radioItalic_toggled
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_radioItalic_toggled(bool checked) {
-	if(checked) {
-		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-		if(selections.size() != 1) {
-			return;
-		}
-
-		QListWidgetItem *const selection = selections[0];
-		const int i = ui.listStyles->row(selection) - 1;
-		styles_[i]->font = ITALIC_FONT;
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: on_radioBoldItalic_toggled
-//------------------------------------------------------------------------------
-void DialogDrawingStyles::on_radioBoldItalic_toggled(bool checked) {
-	if(checked) {
-		QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
-		if(selections.size() != 1) {
-			return;
-		}
-
-		QListWidgetItem *const selection = selections[0];
-		const int i = ui.listStyles->row(selection) - 1;
-
-		HighlightStyle *style = styles_[i];	
-
-		style->font = BOLD_ITALIC_FONT;
-	}
+	
+	previous_ = current;
 }
 
 //------------------------------------------------------------------------------
@@ -301,23 +278,140 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 	}
 }
 
+//------------------------------------------------------------------------------
+// Name: checkCurrent
+//------------------------------------------------------------------------------
+bool DialogDrawingStyles::checkCurrent(bool silent) {
+	if(HighlightStyle *ptr = readDialogFields(silent)) {
+		delete ptr;
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------------
+// Name: readDialogFields
+//------------------------------------------------------------------------------
+HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
+
+   	// Allocate a language mode structure to return 
+	auto hs = new HighlightStyle;
+
+    // read the name field 
+	QString name = ui.editName->text().simplified();
+    if (name.isNull()) {
+    	delete hs;
+    	return nullptr;
+    }
+
+	hs->name = name.toStdString();
+    if (hs->name.empty()) {
+        if (!silent) {
+            QMessageBox::warning(this, tr("Highlight Style"), tr("Please specify a name for the highlight style"));
+        }
+
+        delete hs;
+        return nullptr;
+    }
+
+    // read the color field 
+    QString color = ui.editColorFG->text().simplified();
+    if (color.isNull()) {
+    	delete hs;
+    	return nullptr;
+    }
+
+	hs->color = color;
+    if (hs->color.isEmpty()) {
+        if (!silent) {
+            QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
+        }
+        delete hs;
+        return nullptr;
+    }
+
+    XColor rgb;
+	Display *display = QX11Info::display();
+	int screenNum    = QX11Info::appScreen();
+
+    // Verify that the color is a valid X color spec 
+    if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
+        if (!silent) {			
+			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
+        }
+        delete hs;
+        return nullptr;;
+    }
+
+    // read the background color field - this may be empty
+	QString bgColor = ui.editColorBG->text().simplified();
+    if (!hs->bgColor.isNull() && hs->bgColor.isEmpty()) {
+        hs->bgColor = QString();
+    } else {
+		hs->bgColor = bgColor;
+	}
+
+    // Verify that the background color (if present) is a valid X color spec 
+    if (!hs->bgColor.isEmpty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
+        if (!silent) {
+			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
+        }
+
+        delete hs;
+        return nullptr;;
+    }
+    // read the font buttons 
+    if (ui.radioBold->isChecked()) {
+    	hs->font = BOLD_FONT;
+    } else if (ui.radioItalic->isChecked()) {
+    	hs->font = ITALIC_FONT;
+    } else if (ui.radioBoldItalic->isChecked()) {
+    	hs->font = BOLD_ITALIC_FONT;
+    } else {
+    	hs->font = PLAIN_FONT;
+	}
+
+    return hs;
+}
+
 
 /*
 ** Apply the changes made in the highlight styles dialog to the stored
 ** highlight style information in HighlightStyles
 */
 bool DialogDrawingStyles::updateHSList() {
-	// TODO(eteran): implement
-#if 0
-	// Replace the old highlight styles list with the new one from the dialog 
-	for (int i = 0; i < NHighlightStyles; i++) {
-		delete HighlightStyles[i];
+
+
+	// Test compile the macro
+	auto current = readDialogFields(false);
+	if(!current) {
+		return false;
 	}
 
-	for (int i = 0; i < styles_.size(); ++i) {
-		HighlightStyles[i] = new HighlightStyle(*styles_[i]);
+	// Get the current contents of the dialog fields
+	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
+	if(selections.size() != 1) {
+		return false;
 	}
-	NHighlightStyles = styles_.size();
+
+	// update the currently selected item's associated data
+	// and make sure it has the text updated as well
+	QListWidgetItem *const selection = selections[0];
+	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
+	delete ptr;
+	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
+	selection->setText(QString::fromStdString(current->name));
+
+
+	// Replace the old highlight styles list with the new one from the dialog 
+	qDeleteAll(HighlightStyles);
+	HighlightStyles.clear();
+	
+	for(int i = 0; i < ui.listStyles->count(); ++i) {
+	    QListWidgetItem* item = ui.listStyles->item(i);
+		auto ptr = reinterpret_cast<HighlightStyle *>(item->data(Qt::UserRole).toULongLong());	
+		HighlightStyles.push_back(new HighlightStyle(*ptr));
+	}
 
 	// If a syntax highlighting dialog is up, update its menu 
 	updateHighlightStyleMenu();
@@ -329,6 +423,6 @@ bool DialogDrawingStyles::updateHSList() {
 
 	// Note that preferences have been changed 
 	MarkPrefsChanged();
-#endif
+
 	return true;
 }

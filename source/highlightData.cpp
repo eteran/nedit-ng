@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include "ui/DialogLanguageModes.h"
+#include "ui/DialogDrawingStyles.h"
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -84,6 +85,9 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 	"Bold Italic"
 };
 
+
+DialogDrawingStyles *DrawingStyles = nullptr;
+
 }
 
 // list of available highlight styles 
@@ -131,7 +135,6 @@ static void setDisplayedCB(void *item, void *cbArg);
 static void setStyleByName(view::string_view style);
 static void setStyleMenu(view::string_view styleName);
 static void styleDialogCB(Widget w, XtPointer clientData, XtPointer callData);
-static void updateHighlightStyleMenu(void);
 static void updateLabels(void);
 static Widget createHighlightStylesMenu(Widget parent);
 static QString convertPatternExprEx(const QString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
@@ -947,6 +950,16 @@ static bool styleError(const char *stringStart, const char *stoppedAt, const cha
 ** Present a dialog for editing highlight style information
 */
 void EditHighlightStyles(const char *initialStyle) {
+
+	if(!DrawingStyles) {
+		DrawingStyles = new DialogDrawingStyles();
+	}
+	
+	DrawingStyles->setStyleByName(QLatin1String(initialStyle));
+	DrawingStyles->show();
+	DrawingStyles->raise();
+
+
 #define HS_LIST_RIGHT 60
 #define HS_LEFT_MARGIN_POS 1
 #define HS_RIGHT_MARGIN_POS 99
@@ -1230,97 +1243,90 @@ static HighlightStyle *readHSDialogFields(bool silent) {
    	// Allocate a language mode structure to return 
 	auto hs = new HighlightStyle;
 
-	try {
-    	Display *display = XtDisplay(HSDialog.shell);
-    	int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
-    	XColor rgb;
+    Display *display = XtDisplay(HSDialog.shell);
+    int screenNum = XScreenNumberOfScreen(XtScreen(HSDialog.shell));
+    XColor rgb;
 
- 
+    // read the name field 
+    QString name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
+    if (name.isNull()) {
+    	delete hs;
+    	return nullptr;
+    }
 
-    	// read the name field 
-    	QString name = ReadSymbolicFieldTextWidgetEx(HSDialog.nameW, "highlight style name", silent);
-    	if (name.isNull()) {
-    		delete hs;
-    		return nullptr;
-    	}
-		
-		hs->name = name.toStdString();
+	hs->name = name.toStdString();
 
-    	if (hs->name.empty()) {
-        	if (!silent) {
-            	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Highlight Style"), QLatin1String("Please specify a name\nfor the highlight style"));
-            	XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
-        	}
-			
-        	delete hs;
-        	return nullptr;
-    	}
+    if (hs->name.empty()) {
+        if (!silent) {
+            QMessageBox::warning(nullptr /*parent*/, QLatin1String("Highlight Style"), QLatin1String("Please specify a name\nfor the highlight style"));
+            XmProcessTraversal(HSDialog.nameW, XmTRAVERSE_CURRENT);
+        }
 
-    	// read the color field 
-    	QString color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
-    	if (color.isNull()) {
-    		delete hs;
-    		return nullptr;
-    	}
-		
-		hs->color = color;
+        delete hs;
+        return nullptr;
+    }
 
-    	if (hs->color.isEmpty()) {
-        	if (!silent) {
-            	QMessageBox::warning(nullptr /*parent*/, QLatin1String("Style Color"), QLatin1String("Please specify a color\nfor the highlight style"));
-            	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-        	}
-        	delete hs;
-        	return nullptr;
-    	}
+    // read the color field 
+    QString color = ReadSymbolicFieldTextWidgetEx(HSDialog.colorW, "color", silent);
+    if (color.isNull()) {
+    	delete hs;
+    	return nullptr;
+    }
 
-    	// Verify that the color is a valid X color spec 
-    	if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
-        	if (!silent) {
-			
-				QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X color specification: %1\n")).arg(hs->color));
-            	XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
-        	}
-        	delete hs;
-        	return nullptr;;
-    	}
+	hs->color = color;
 
-    	// read the background color field - this may be empty
-		if(const char *s = ReadSymbolicFieldTextWidget(HSDialog.bgColorW, "bgColor", silent)) {
-	    	hs->bgColor = QLatin1String(s);
-		}
-		
-    	if (!hs->bgColor.isNull() && hs->bgColor.isEmpty()) {
-        	hs->bgColor = QString();
-    	}
+    if (hs->color.isEmpty()) {
+        if (!silent) {
+            QMessageBox::warning(nullptr /*parent*/, QLatin1String("Style Color"), QLatin1String("Please specify a color\nfor the highlight style"));
+            XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        }
+        delete hs;
+        return nullptr;
+    }
 
-    	// Verify that the background color (if present) is a valid X color spec 
-    	if (!hs->bgColor.isNull() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
-        	if (!silent) {
-			
-				QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X background color specification: %1\n")).arg(hs->bgColor));
-            	XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
-        	}
-			
-        	delete hs;
-        	return nullptr;;
-    	}
+    // Verify that the color is a valid X color spec 
+    if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
+        if (!silent) {
 
-    	// read the font buttons 
-    	if (XmToggleButtonGetState(HSDialog.boldW))
-    		hs->font = BOLD_FONT;
-    	else if (XmToggleButtonGetState(HSDialog.italicW))
-    		hs->font = ITALIC_FONT;
-    	else if (XmToggleButtonGetState(HSDialog.boldItalicW))
-    		hs->font = BOLD_ITALIC_FONT;
-    	else
-    		hs->font = PLAIN_FONT;
+			QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X color specification: %1\n")).arg(hs->color));
+            XmProcessTraversal(HSDialog.colorW, XmTRAVERSE_CURRENT);
+        }
+        delete hs;
+        return nullptr;;
+    }
 
-    	return hs;
-	} catch(const invalid_character_error &e) {
-		delete hs;
-		return nullptr;	
+    // read the background color field - this may be empty
+	if(const char *s = ReadSymbolicFieldTextWidget(HSDialog.bgColorW, "bgColor", silent)) {
+	    hs->bgColor = QLatin1String(s);
 	}
+
+    if (!hs->bgColor.isNull() && hs->bgColor.isEmpty()) {
+        hs->bgColor = QString();
+    }
+
+    // Verify that the background color (if present) is a valid X color spec 
+    if (!hs->bgColor.isNull() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
+        if (!silent) {
+
+			QMessageBox::warning(nullptr /* parent */, QLatin1String("Invalid Color"), QString(QLatin1String("Invalid X background color specification: %1\n")).arg(hs->bgColor));
+            XmProcessTraversal(HSDialog.bgColorW, XmTRAVERSE_CURRENT);
+        }
+
+        delete hs;
+        return nullptr;;
+    }
+
+    // read the font buttons 
+    if (XmToggleButtonGetState(HSDialog.boldW))
+    	hs->font = BOLD_FONT;
+    else if (XmToggleButtonGetState(HSDialog.italicW))
+    	hs->font = ITALIC_FONT;
+    else if (XmToggleButtonGetState(HSDialog.boldItalicW))
+    	hs->font = BOLD_ITALIC_FONT;
+    else
+    	hs->font = PLAIN_FONT;
+
+    return hs;
 }
 
 /*
@@ -1714,7 +1720,7 @@ void EditHighlightPatterns(Document *window) {
 ** If a syntax highlighting dialog is up, ask to have the option menu for
 ** chosing highlight styles updated (via a call to createHighlightStylesMenu)
 */
-static void updateHighlightStyleMenu(void) {
+void updateHighlightStyleMenu(void) {
 	Widget oldMenu;
 	int patIndex;
 

@@ -23,7 +23,7 @@ private Q_SLOTS:
 	void on_listItems_itemSelectionChanged();
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
-	void on_radioSameDocument_toggled(bool checked);
+	void on_radioToSameDocument_toggled(bool checked);
 	
 private:
 	MenuItem *readDialogFields(bool silent);

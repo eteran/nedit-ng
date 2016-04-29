@@ -89,6 +89,8 @@ void DialogShellMenu::on_buttonDelete_clicked() {
 	delete ptr;
 	delete selection;
 
+	// force an update of the display
+	Q_EMIT on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------
@@ -145,35 +147,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 	QListWidgetItem *const current = selections[0];
 
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
-#if 0
-		// we want to try to save it (but not apply it yet)
-		// and then move on
-		if(!checkMacro(true)) {
-
-			QMessageBox messageBox(this);
-			messageBox.setWindowTitle(tr("Discard Entry"));
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setText(tr("Discard incomplete entry for current menu item?"));
-			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
-			Q_UNUSED(buttonDiscard);
-
-			messageBox.exec();
-			if (messageBox.clickedButton() == buttonKeep) {
-			
-				// again to cause messagebox to pop up
-				checkMacro(false);
-				
-				// reselect the old item
-				ui.listItems->blockSignals(true);
-				ui.listItems->setCurrentItem(previous_);
-				ui.listItems->blockSignals(false);
-				return;
-			}
-
-			// if we get here, we are ditching changes
-		}
-#endif
+		// TODO(eteran): update entry we are leaving
 	}
 
 	if(current) {
@@ -226,7 +200,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(ui.listItems->count() > 1);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);
 		} else if(i == (ui.listItems->count() - 1)) {
@@ -438,8 +412,8 @@ bool DialogShellMenu::applyDialogChanges() {
 }
 
 //------------------------------------------------------------------------------
-// Name: on_radioSameDocument_toggled
+// Name: on_radioToSameDocument_toggled
 //------------------------------------------------------------------------------
-void DialogShellMenu::on_radioSameDocument_toggled(bool checked) {
+void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
 	ui.checkReplaceInput->setEnabled(checked);
 }

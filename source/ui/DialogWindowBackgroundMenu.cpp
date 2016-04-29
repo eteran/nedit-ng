@@ -87,7 +87,9 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 
 	delete ptr;
 	delete selection;
-
+	
+	// force an update of the display
+	Q_EMIT on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------
@@ -182,6 +184,8 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 			}
 
 			// if we get here, we are ditching changes
+		} else {
+			// TODO(eteran): update entry we are leaving
 		}
 	}
 
@@ -201,7 +205,7 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(ui.listItems->count() > 1);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);
 		} else if(i == (ui.listItems->count() - 1)) {

@@ -34,6 +34,18 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
+          <widget class="QPushButton" name="buttonNew">
+           <property name="text">
+            <string>New</string>
+           </property>
+           <property name="icon">
+            <iconset theme="document-new">
+             <normaloff/>
+            </iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="buttonDelete">
            <property name="text">
             <string>Delete</string>

@@ -3,7 +3,6 @@
 #define DIALOG_DRAWING_STYLES_H_
 
 #include <QDialog>
-#include <QList>
 #include "ui_DialogDrawingStyles.h"
 
 class HighlightStyle;
@@ -19,26 +18,23 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void on_listStyles_itemSelectionChanged();
+	void on_buttonNew_clicked();
 	void on_buttonCopy_clicked();
 	void on_buttonDelete_clicked();
 	void on_buttonUp_clicked();
 	void on_buttonDown_clicked();
-	void on_editName_textChanged(const QString &text);
-	void on_editColorFG_textChanged(const QString &text);
-	void on_editColorBG_textChanged(const QString &text);
-	void on_radioPlain_toggled(bool checked);
-	void on_radioBold_toggled(bool checked);
-	void on_radioItalic_toggled(bool checked);
-	void on_radioBoldItalic_toggled(bool checked);
+
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 	
 private:
 	bool updateHSList();
+	bool checkCurrent(bool silent);
+	HighlightStyle *readDialogFields(bool silent);
 
 private:
 	Ui::DialogDrawingStyles ui;
-	QList<HighlightStyle *> styles_;
+	QListWidgetItem *previous_;
 	QString                 styleName_;
 };
 

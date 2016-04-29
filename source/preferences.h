@@ -35,14 +35,6 @@ class QWidget;
 class QString;
 class LanguageMode;
 
-class invalid_character_error : public std::exception {
-public:
-	virtual const char *what() const noexcept {
-		return "invalid_character_error";
-	}
-};
-
-
 
 #include <X11/Intrinsic.h>
 #include <X11/Xresource.h>
