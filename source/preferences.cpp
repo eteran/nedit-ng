@@ -1691,12 +1691,13 @@ void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 ** mode or PLAIN_LANGUAGE_MODE if the name is not found
 */
 int FindLanguageMode(const char *languageName) {
-	int i;
 
 	// Compare each language mode to the one we were presented 
-	for (i = 0; i < NLanguageModes; i++)
-		if (!strcmp(languageName, LanguageModes[i]->name))
+	for (int i = 0; i < NLanguageModes; i++) {
+		if (LanguageModes[i]->name == QLatin1String(languageName)) {
 			return i;
+		}
+	}
 
 	return PLAIN_LANGUAGE_MODE;
 }
@@ -1717,9 +1718,9 @@ void DetermineLanguageMode(Document *window, int forceNewDefaults) {
 ** Return the name of the current language mode set in "window", or nullptr
 ** if the current mode is "Plain".
 */
-char *LanguageModeName(int mode) {
+QString LanguageModeName(int mode) {
 	if (mode == PLAIN_LANGUAGE_MODE)
-		return nullptr;
+		return QString();
 	else
 		return LanguageModes[mode]->name;
 }
@@ -1796,7 +1797,6 @@ void SelectShellDialog(Widget parent, Document *forWindow) {
 
 void freeLanguageModeRec(LanguageMode *lm) {
 
-	XtFree(lm->name);
 	XtFree(lm->recognitionExpr);
 	XtFree(lm->defTipsFile);
 	XtFree(lm->delimiters);
@@ -1815,7 +1815,7 @@ LanguageMode *copyLanguageModeRec(LanguageMode *lm) {
 
 	auto newLM = new LanguageMode;
 	
-	newLM->name        = XtStringDup(lm->name);
+	newLM->name        = lm->name;
 	newLM->nExtensions = lm->nExtensions;
 	newLM->extensions  = new char *[lm->nExtensions];
 	
@@ -1873,11 +1873,11 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	tabDistIsDef = window->buffer_->BufGetTabDistance() == GetPrefTabDist(oldMode);
 	XtVaGetValues(window->textArea_, textNemulateTabs, &oldEmTabDist, nullptr);
 	
-	const char *oldlanguageModeName = LanguageModeName(oldMode);
+	QString oldlanguageModeName = LanguageModeName(oldMode);
 	
 	emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
-	indentStyleIsDef = window->indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(oldlanguageModeName ? QLatin1String(oldlanguageModeName) : QLatin1String("")) == nullptr);
+	indentStyleIsDef = window->indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode).toLatin1().data()));
+	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
 	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode_;
 	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer_->BufGetTabDistance();
 	emTabDist        = emTabDistIsDef                                      || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
@@ -1886,9 +1886,9 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
-	const char *languageModeName = LanguageModeName(mode);
-	haveHighlightPatterns = FindPatternSet(languageModeName ? QLatin1String(languageModeName) : QLatin1String("")) != nullptr;
-	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
+	QString languageModeName = LanguageModeName(mode);
+	haveHighlightPatterns = FindPatternSet(!languageModeName.isNull() ? languageModeName : QLatin1String("")) != nullptr;
+	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode).toLatin1().data());
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
 		XtSetSensitive(window->smartIndentItem_, haveSmartIndentMacros);
@@ -2007,11 +2007,15 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		lm->delimiters      = nullptr;
 
 		// read language mode name 
-		lm->name = ReadSymbolicField(&inPtr);
-		if (!lm->name) {
+		
+		char *name = ReadSymbolicField(&inPtr);
+		if (!name) {
 			delete lm;
 			return modeError(nullptr, inString, inPtr, "language mode name required");
 		}
+		
+		lm->name = QLatin1String(name);
+		
 		if (!SkipDelimiter(&inPtr, &errMsg))
 			return modeError(lm, inString, inPtr, errMsg);
 
@@ -2099,7 +2103,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 
 		// pattern set was read correctly, add/replace it in the list 
 		for (i = 0; i < NLanguageModes; i++) {
-			if (!strcmp(LanguageModes[i]->name, lm->name)) {
+			if (LanguageModes[i]->name == lm->name) {
 				freeLanguageModeRec(LanguageModes[i]);
 				LanguageModes[i] = lm;
 				break;
@@ -2126,7 +2130,7 @@ static QString WriteLanguageModesStringEx(void) {
 
 	for (int i = 0; i < NLanguageModes; i++) {
 		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(LanguageModes[i]->name);
+		outBuf->BufAppendEx(LanguageModes[i]->name.toStdString());
 		outBuf->BufAppendEx(":");
 		outBuf->BufAppendEx(str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
 		XtFree(str);
@@ -2638,13 +2642,13 @@ QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int s
 ** XmNuserData for each item contains the language mode name.
 */
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg) {
-	Widget menu, btn;
-	int i;
-	XmString s1;
 
-	menu = CreatePulldownMenu(parent, "languageModes", nullptr, 0);
-	for (i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, LanguageModes[i]->name, nullptr);
+	Widget menu = CreatePulldownMenu(parent, "languageModes", nullptr, 0);
+	for (int i = 0; i < NLanguageModes; i++) {
+	
+		XmString s1 = XmStringCreateSimpleEx(LanguageModes[i]->name.toStdString());	
+		Widget btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1, XmNmarginHeight, 0, XmNuserData, LanguageModes[i]->name.toLatin1().data(), nullptr);
+			
 		XmStringFree(s1);
 		XtAddCallback(btn, XmNactivateCallback, cbProc, cbArg);
 	}
@@ -2741,7 +2745,10 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	/*
 	    reapplyLanguageMode(window, (int)mode, False);
 	*/
-	params[0] = (((long)mode) == PLAIN_LANGUAGE_MODE) ? "" : LanguageModes[(long)mode]->name;
+	
+	QByteArray str = LanguageModes[(long)mode]->name.toLatin1();
+	
+	params[0] = (((long)mode) == PLAIN_LANGUAGE_MODE) ? "" : str.data();
 	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, (char **)params, 1);
 }
 

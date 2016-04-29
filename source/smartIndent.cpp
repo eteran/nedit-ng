@@ -226,8 +226,8 @@ void BeginSmartIndent(Document *window, int warn) {
 	static bool initialized = false;
 
 	// Find the window's language mode.  If none is set, warn the user 
-	char *modeName = LanguageModeName(window->languageMode_);
-	if(!modeName) {
+	QString modeName = LanguageModeName(window->languageMode_);
+	if(modeName.isNull()) {
 		if (warn) {
 			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QLatin1String("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
 		}
@@ -235,10 +235,10 @@ void BeginSmartIndent(Document *window, int warn) {
 	}
 
 	// Look up the appropriate smart-indent macros for the language 
-	indentMacros = findIndentSpec(modeName);
+	indentMacros = findIndentSpec(modeName.toLatin1().data());
 	if(!indentMacros) {
 		if (warn) {
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(QLatin1String(modeName)));
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(modeName));
 		}
 		return;
 	}
@@ -443,7 +443,7 @@ void EditSmartIndentMacros(Document *window) {
 		return;
 	}
 
-	if (LanguageModeName(0) == nullptr) {
+	if (LanguageModeName(0).isNull()) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
 		return;
 	}	

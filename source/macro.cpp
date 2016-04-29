@@ -4467,12 +4467,14 @@ static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)argList;
 	(void)errMsg;
 
-	const char *lmName = LanguageModeName(window->languageMode_);
+	QString lmName = LanguageModeName(window->languageMode_);
 
-	if(!lmName)
-		lmName = "Plain";
+	if(lmName.isNull()) {
+		lmName = QLatin1String("Plain");
+	}
+	
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, lmName);
+	AllocNStringCpy(&result->val.str, lmName.toLatin1().data());
 	return True;
 }
 

@@ -955,7 +955,7 @@ void EditHighlightPatterns(Document *window) {
 		return;
 	}
 
-	if (LanguageModeName(0) == nullptr) {
+	if (LanguageModeName(0).isNull()) {
 	
 		QMessageBox::warning(nullptr /* window->shell_ */, QLatin1String("No Language Modes"), 
 			QLatin1String("No Language Modes available for syntax highlighting\n"
@@ -964,7 +964,7 @@ void EditHighlightPatterns(Document *window) {
 	}
 
 	// Decide on an initial language mode 
-	HighlightDialog.langModeName = QLatin1String(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
+	HighlightDialog.langModeName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 
 	// Find the associated pattern set (patSet) to edit 
 	PatternSet *patSet = FindPatternSet(HighlightDialog.langModeName);
@@ -1963,7 +1963,7 @@ static int updatePatternSet(void) {
 	   re-do the highlighting */
 	for(Document *window: WindowList) {
 		if (patSet->nPatterns > 0) {
-			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode.toStdString())) {
+			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */

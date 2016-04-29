@@ -9,7 +9,7 @@
 
 class LanguageMode {
 public:
-	char *name;
+	QString name;
 	int nExtensions;
 	char **extensions;
 	char *recognitionExpr;

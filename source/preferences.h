@@ -86,7 +86,7 @@ char *GetPrefServerName(void);
 char *GetPrefTagFile(void);
 char *GetPrefTooltipBgColor(void);
 char *GetWindowDelimiters(const Document *window);
-char *LanguageModeName(int mode);
+QString LanguageModeName(int mode);
 char *ReadSymbolicField(const char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
 const char *GetPrefShell(void);

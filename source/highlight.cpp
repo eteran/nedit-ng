@@ -493,11 +493,10 @@ static void freeHighlightData(windowHighlightData *hd) {
 */
 static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	PatternSet *patterns;
-	char *modeName;
 
 	// Find the window's language mode.  If none is set, warn user 
-	modeName = LanguageModeName(window->languageMode_);
-	if(!modeName) {
+	QString modeName = LanguageModeName(window->languageMode_);
+	if(modeName.isNull()) {
 		if (warn)
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No language-specific mode has been set for this file.\n\n"
 			                                                    "To use syntax highlighting in this window, please select a\n"
@@ -509,7 +508,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	}
 
 	// Look up the appropriate pattern for the language 
-	patterns = FindPatternSet(QLatin1String(modeName));
+	patterns = FindPatternSet(modeName);
 	if(!patterns) {
 		if (warn) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QString(QLatin1String("Syntax highlighting is not available in language\n"
@@ -517,7 +516,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 			                                                    "You can create new syntax highlight patterns in the\n"
 			                                                    "Preferences -> Default Settings -> Syntax Highlighting\n"
 			                                                    "dialog, or choose a different language mode from:\n"
-			                                                    "Preferences -> Language Mode.")).arg(QLatin1String(modeName)));
+			                                                    "Preferences -> Language Mode.")).arg(modeName));
 			return nullptr;
 		}
 	}

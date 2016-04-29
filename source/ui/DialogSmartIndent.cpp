@@ -20,7 +20,7 @@
 DialogSmartIndent::DialogSmartIndent(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 		
-	QString languageMode = QLatin1String(LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_));
+	QString languageMode = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
 
 	updateLanguageModes();
 	setLanguageMode(languageMode);
@@ -43,7 +43,7 @@ void DialogSmartIndent::updateLanguageModes() {
 	const QString languageMode = languageMode_;
 	ui.comboLanguageMode->clear();
 	for (int i = 0; i < NLanguageModes; i++) {
-		ui.comboLanguageMode->addItem(QLatin1String(LanguageModes[i]->name));
+		ui.comboLanguageMode->addItem(LanguageModes[i]->name);
 	}
 	
 	setLanguageMode(languageMode);
@@ -262,8 +262,9 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	   re-do the smart indent macros */
 	for(Document *window: WindowList) {
 
-		if(char *lmName = LanguageModeName(window->languageMode_)) {
-			if (!strcmp(lmName, newMacros->lmName)) {
+		QString lmName = LanguageModeName(window->languageMode_);
+		if(!lmName.isNull()) {
+			if (lmName == QLatin1String(newMacros->lmName)) {
 
 				window->SetSensitive(window->smartIndentItem_, true);
 				if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {

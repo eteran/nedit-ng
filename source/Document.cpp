@@ -1401,7 +1401,7 @@ void Document::RefreshMenuToggleStates() {
 	XmToggleButtonSetState(matchSyntaxBasedItem_, matchSyntaxBased_, false);
 	XmToggleButtonSetState(readOnlyItem_, IS_USER_LOCKED(lockReasons_), false);
 
-	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
+	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
 
 	SetAutoIndent(indentStyle_);
 	SetAutoWrap(wrapMode_);
