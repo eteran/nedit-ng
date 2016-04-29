@@ -1450,8 +1450,12 @@ int GetPrefAlwaysCheckRelTagsSpecs(void) {
 	return PrefData.alwaysCheckRelativeTagsSpecs;
 }
 
-char *GetPrefDelimiters(void) {
-	return PrefData.delimiters;
+QString GetPrefDelimiters(void) {
+	if(PrefData.delimiters) {
+		return QLatin1String(PrefData.delimiters);
+	}
+	
+	return QString();
 }
 
 char *GetPrefColorName(int index) {
@@ -1733,9 +1737,9 @@ QString LanguageModeName(int mode) {
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is nullptr).
 */
-char *GetWindowDelimiters(const Document *window) {
+QString GetWindowDelimiters(const Document *window) {
 	if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
-		return nullptr;
+		return QString();
 	else
 		return LanguageModes[window->languageMode_]->delimiters;
 }
@@ -1800,7 +1804,7 @@ void SelectShellDialog(Widget parent, Document *forWindow) {
 ** delimiters, syntax highlighting and other mode specific parameters
 */
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
-	char *delimiters;
+
 	int i, wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
 	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
 	int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
@@ -1820,13 +1824,16 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	}
 
 	// Set delimiters for all text widgets 
-	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode]->delimiters == nullptr)
+	QString delimiters;
+	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode]->delimiters.isNull()) {
 		delimiters = GetPrefDelimiters();
-	else
+	} else {
 		delimiters = LanguageModes[mode]->delimiters;
-	XtVaSetValues(window->textArea_, textNwordDelimiters, delimiters, nullptr);
+	}
+		
+	XtVaSetValues(window->textArea_, textNwordDelimiters, delimiters.toLatin1().data(), nullptr);
 	for (i = 0; i < window->nPanes_; i++)
-		XtVaSetValues(window->textPanes_[i], textNautoIndent, delimiters, nullptr);
+		XtVaSetValues(window->textPanes_[i], textNautoIndent, delimiters.toLatin1().data(), nullptr);
 
 	/* Decide on desired values for language-specific parameters.  If a
 	   parameter was set to its default value, set it to the new default,
@@ -2039,10 +2046,14 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(lm, inString, inPtr, errMsg);
 
 		// read the delimiters string 
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':')
-			lm->delimiters = nullptr;
-		else if (!ReadQuotedString(&inPtr, &errMsg, &lm->delimiters))
+		char *delimiters;
+		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+			delimiters = nullptr;
+		} else if (!ReadQuotedString(&inPtr, &errMsg, &delimiters)) {
 			return modeError(lm, inString, inPtr, errMsg);
+		}
+			
+		lm->delimiters = delimiters ? QLatin1String(delimiters) : QString();
 
 		// After 5.3 all language modes need a default tips file field 
 		if (!SkipDelimiter(&inPtr, &errMsg))
@@ -2115,8 +2126,8 @@ static QString WriteLanguageModesStringEx(void) {
 			outBuf->BufAppendEx(numBuf);
 		}
 		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->delimiters) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters);
+		if (!LanguageModes[i]->delimiters.isNull()) {
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");

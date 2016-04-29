@@ -31,7 +31,7 @@ public:
 	char **extensions;
 	char *recognitionExpr;
 	QString defTipsFile;
-	char *delimiters;
+	QString delimiters;
 	int wrapStyle;
 	int indentStyle;
 	int tabDist;

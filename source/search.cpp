@@ -1406,7 +1406,7 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 				replaceResult,
 				SEARCHMAX,
 				startPos == 0 ? '\0' : window->buffer_->BufGetCharacter(startPos - 1),
-				GetWindowDelimiters(window),
+				GetWindowDelimiters(window).toLatin1().data(),
 				defaultRegexFlags(searchType));
 
 			window->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -1473,7 +1473,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 			replaceResult,
 			SEARCHMAX,
 			startPos == 0 ? '\0' : window->buffer_->BufGetCharacter(startPos - 1),
-			GetWindowDelimiters(window),
+			GetWindowDelimiters(window).toLatin1().data(),
 			defaultRegexFlags(searchType));
 
 		window->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -1621,7 +1621,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	cursorPos = 0;
 	realOffset = 0;
 	while (found) {
-		found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
+		found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window).toLatin1().data());
 		if (!found)
 			break;
 
@@ -1666,7 +1666,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 							replaceResult,
 							SEARCHMAX,
 							(startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
-							GetWindowDelimiters(window),
+							GetWindowDelimiters(window).toLatin1().data(),
 							defaultRegexFlags(searchType));
 
 			if (!substSuccess) {
@@ -1758,7 +1758,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 	// view the entire text buffer from the text area widget as a string 
 	view::string_view fileString = window->buffer_->BufAsStringEx();
 
-	newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimiters(window));
+	newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimiters(window).toLatin1().data());
 
 	if(!newFileString) {
 		if (window->multiFileBusy_) {
@@ -1947,7 +1947,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 	   dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
 	   an incremental search is in progress.  A parameter would be better. */
 	if (window->iSearchStartPos_ == -1) { // normal search 
-		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
+		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window).toLatin1().data());
 		
 		// Avoid Motif 1.1 bug by putting away search dialog before Dialogs
 		if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
@@ -1981,7 +1981,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 							return false;
 						}
 					}
-					found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
+					found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window).toLatin1().data());
 				} else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
 					if (GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
@@ -2000,7 +2000,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 							return false;
 						}
 					}
-					found = SearchString(fileString, searchString, direction, searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
+					found = SearchString(fileString, searchString, direction, searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window).toLatin1().data());
 				}
 			}
 			if (!found) {
@@ -2019,7 +2019,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 				beginPos = fileEnd + 1;
 			outsideBounds = FALSE;
 		}
-		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, searchWrap, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window));
+		found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, searchWrap, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimiters(window).toLatin1().data());
 		if (found) {
 			iSearchTryBeepOnWrap(window, direction, beginPos, *startPos);
 		} else
@@ -2129,8 +2129,10 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 
 	// If there is no language mode, we use the default list of delimiters 
-	if(!delimiters)
-		delimiters = GetPrefDelimiters();
+	QByteArray delimiterString = GetPrefDelimiters().toLatin1();
+	if(!delimiters) {
+		delimiters = delimiterString.data();
+	}
 
 	if (isspace((unsigned char)searchString[0]) || strchr(delimiters, searchString[0])) {
 		cignore_L = true;
@@ -2514,7 +2516,7 @@ static bool searchMatchesSelection(Document *window, const char *searchString, i
 	// search for the string in the selection (we are only interested 	
 	// in an exact match, but the procedure SearchString does important 
 	// stuff like applying the correct matching algorithm)		
-	bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window));
+	bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window).toLatin1().data());
 
 	// decide if it is an exact match 
 	if (!found) {

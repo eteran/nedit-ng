@@ -3607,7 +3607,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	text = createTextArea(pane, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	text = createTextArea(pane, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(text);
 	textArea_ = text;
 	lastFocus_ = text;
@@ -3815,7 +3815,7 @@ Document *Document::CreateDocument(const char *name) {
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	Widget text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	Widget text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(text);
 
 	window->textArea_  = text;

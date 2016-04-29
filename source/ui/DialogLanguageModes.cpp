@@ -99,7 +99,7 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 		ui.editExtensions->setText(extensions.join(tr(" ")));
 		ui.editRegex     ->setText(QLatin1String(language->recognitionExpr));
 		ui.editCallTips  ->setText(language->defTipsFile);
-		ui.editDelimiters->setText(QLatin1String(language->delimiters));
+		ui.editDelimiters->setText(language->delimiters);
 
 		if(language->tabDist != -1) {
 			ui.editTabSpacing->setText(tr("%1").arg(language->tabDist));
@@ -306,7 +306,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// read delimiters string 
 	QString delimiters = ui.editDelimiters->text();
 	if(!delimiters.isEmpty()) {
-		lm->delimiters = XtStringDup(delimiters);
+		lm->delimiters = delimiters;
 	}
 	
 	// read indent style 
@@ -393,7 +393,6 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 bool DialogLanguageModes::updateLMList(bool silent) {
 
 	int oldLanguageMode;
-	char *newDelimiters;
 
 	// Get the current contents of the dialog fields 
 	if(!updateLanguageList(silent)) {
@@ -412,14 +411,16 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 			for (int i = 0; i < ui.listLanguages->count(); i++) {
 
 				if (oldModeName == itemFromIndex(i)->name) {
-					newDelimiters = itemFromIndex(i)->delimiters;
-					if(!newDelimiters) {
+					QString newDelimiters = itemFromIndex(i)->delimiters;
+					
+					// TODO(eteran): should this include empty string?
+					if(newDelimiters.isNull()) {
 						newDelimiters = GetPrefDelimiters();
 					}
 					
-					XtVaSetValues(window->textArea_, textNwordDelimiters, newDelimiters, nullptr);
+					XtVaSetValues(window->textArea_, textNwordDelimiters, newDelimiters.toLatin1().data(), nullptr);
 					for (int j = 0; j < window->nPanes_; j++) {
-						XtVaSetValues(window->textPanes_[j], textNwordDelimiters, newDelimiters, nullptr);
+						XtVaSetValues(window->textPanes_[j], textNwordDelimiters, newDelimiters.toLatin1().data(), nullptr);
 					}
 					
 					// don't forget to adapt the LM stored within the user menu cache 

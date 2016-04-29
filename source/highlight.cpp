@@ -218,7 +218,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 
 	// Re-parse around the changed region 
 	if (highlightData->pass1Patterns)
-		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window));
+		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window).toLatin1().data());
 }
 
 /*
@@ -259,7 +259,7 @@ void StartHighlighting(Document *window, int warn) {
 	} else {
 		const char *bufString = window->buffer_->BufAsString();
 		const char *stringPtr = bufString;		
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, False, GetWindowDelimiters(window), bufString, nullptr);
+		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, False, GetWindowDelimiters(window).toLatin1().data(), bufString, nullptr);
 	}
 	*stylePtr = '\0';
 	highlightData->styleBuffer->BufSetAllEx(styleString);
@@ -1254,7 +1254,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 
 	// Parse it with pass 2 patterns 
 	prevChar = getPrevChar(buf, beginSafety);
-	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, false, GetWindowDelimiters(window), string, nullptr);
+	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, false, GetWindowDelimiters(window).toLatin1().data(), string, nullptr);
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */

@@ -2453,7 +2453,7 @@ static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataV
 	}
 
 	if (!skipSearch)
-		found = SearchString(view::string_view(string, stringLen), searchStr, direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+		found = SearchString(view::string_view(string, stringLen), searchStr, direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window).toLatin1().data());
 
 	// Return the results 
 	ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2514,7 +2514,7 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 	}
 
 	// Do the replace 
-	replacedStr = ReplaceAllInString(string, searchStr, replaceStr, searchType, &copyStart, &copyEnd, &replacedLen, GetWindowDelimiters(window));
+	replacedStr = ReplaceAllInString(string, searchStr, replaceStr, searchType, &copyStart, &copyEnd, &replacedLen, GetWindowDelimiters(window).toLatin1().data());
 
 	// Return the results 
 	result->tag = STRING_TAG;
@@ -3784,7 +3784,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 			return (False);
 		}
 		strcpy(allocIndexStr, indexStr);
-		found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+		found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window).toLatin1().data());
 		elementEnd = found ? foundStart : strLength;
 		elementLen = elementEnd - lastEnd;
 		element.tag = STRING_TAG;
@@ -3847,7 +3847,7 @@ static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *r
 			   The '\n' gets added in the lines above, but we still have to
 			   verify whether the pattern also matches the end of the string,
 			   and add an empty chunk in case it does. */
-			found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window));
+			found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimiters(window).toLatin1().data());
 			if (found) {
 				++indexNum;
 				sprintf(indexStr, "%d", indexNum);

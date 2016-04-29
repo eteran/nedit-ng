@@ -384,7 +384,7 @@ int main(int argc, char *argv[]) {
 	InstallMouseWheelActions(context);
 
 	// Install word delimiters for regular expression matching 
-	SetREDefaultWordDelimiters(GetPrefDelimiters());
+	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 
 	/* Read the nedit dynamic database of files for the Open Previous
 	   command (and eventually other information as well) */
