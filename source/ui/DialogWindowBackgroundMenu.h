@@ -36,6 +36,7 @@ private:
 	QString ensureNewline(const QString &string);
 	bool applyDialogChanges();
 	void updateButtons();
+	MenuItem *itemFromIndex(int i) const;
 	
 private:
 	Ui::DialogWindowBackgroundMenu ui;

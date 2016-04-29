@@ -31,6 +31,7 @@ private:
 	bool updateHSList();
 	bool checkCurrent(bool silent);
 	HighlightStyle *readDialogFields(bool silent);
+	HighlightStyle *itemFromIndex(int i) const;
 
 private:
 	Ui::DialogDrawingStyles ui;

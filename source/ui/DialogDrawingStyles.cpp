@@ -41,10 +41,21 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 DialogDrawingStyles::~DialogDrawingStyles() {
 
 	for(int i = 0; i < ui.listStyles->count(); ++i) {
+	    delete itemFromIndex(i);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: itemFromIndex
+//------------------------------------------------------------------------------
+HighlightStyle *DialogDrawingStyles::itemFromIndex(int i) const {
+	if(i < ui.listStyles->count()) {
 	    QListWidgetItem* item = ui.listStyles->item(i);
 		auto ptr = reinterpret_cast<HighlightStyle *>(item->data(Qt::UserRole).toULongLong());
-		delete ptr;
+		return ptr;
 	}
+	
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -412,8 +423,7 @@ bool DialogDrawingStyles::updateHSList() {
 	HighlightStyles.clear();
 	
 	for(int i = 0; i < ui.listStyles->count(); ++i) {
-	    QListWidgetItem* item = ui.listStyles->item(i);
-		auto ptr = reinterpret_cast<HighlightStyle *>(item->data(Qt::UserRole).toULongLong());	
+		auto ptr = itemFromIndex(i);
 		HighlightStyles.push_back(new HighlightStyle(*ptr));
 	}
 

@@ -3,7 +3,6 @@
 #define DIALOG_LANGUAGE_MODES_H_
 
 #include <QDialog>
-#include <QList>
 #include "ui_DialogLanguageModes.h"
 
 class LanguageMode;
@@ -22,16 +21,18 @@ private Q_SLOTS:
 	void on_buttonDown_clicked();
 	void on_buttonDelete_clicked();
 	void on_buttonCopy_clicked();
+	void on_buttonNew_clicked();
 	void on_listLanguages_itemSelectionChanged();
 	
 private:
 	bool updateLMList(bool silent);
 	bool updateLanguageList(bool silent);
 	LanguageMode *readLMDialogFields(bool silent);
+	LanguageMode *itemFromIndex(int i) const;
 	
 private:
 	Ui::DialogLanguageModes ui;
-	QList<LanguageMode *>   languageModes_;
+	QListWidgetItem *previous_;
 };
 
 #endif

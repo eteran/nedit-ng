@@ -9,6 +9,14 @@
 
 class LanguageMode {
 public:
+	/* suplement wrap and indent styles w/ a value meaning "use default" for
+    ** the override fields in the language modes dialog
+	*/
+
+	constexpr static const int DEFAULT_TAB_DIST    = -1;
+	constexpr static const int DEFAULT_EM_TAB_DIST = -1;
+	
+public:
 	LanguageMode();
 	LanguageMode(const LanguageMode &other);
 	LanguageMode& operator=(const LanguageMode &rhs);

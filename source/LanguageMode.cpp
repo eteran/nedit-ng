@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionExpr(nullptr), defTipsFile(nullptr), delimiters(nullptr), wrapStyle(0), indentStyle(0), tabDist(0), emTabDist(0) {
+LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionExpr(nullptr), defTipsFile(nullptr), delimiters(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
 }
 
 //------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionE
 LanguageMode::LanguageMode(const LanguageMode &other) {
 	this->name        = other.name;
 	this->nExtensions = other.nExtensions;
-	this->extensions  = new char *[other.nExtensions];
+	this->extensions  = other.extensions ? new char *[other.nExtensions] : nullptr;
 	
 	for (int i = 0; i < other.nExtensions; i++) {
 		this->extensions[i] = XtStringDup(other.extensions[i]);

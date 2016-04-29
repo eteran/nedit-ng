@@ -32,10 +32,21 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 //------------------------------------------------------------------------------
 DialogWindowBackgroundMenu::~DialogWindowBackgroundMenu() {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
+	    delete itemFromIndex(i);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: itemFromIndex
+//------------------------------------------------------------------------------
+MenuItem *DialogWindowBackgroundMenu::itemFromIndex(int i) const {
+	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
 		auto ptr = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
-		delete ptr;
+		return ptr;
 	}
+	
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -445,8 +456,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
-	    QListWidgetItem* item = ui.listItems->item(i);
-		auto ptr = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
+		auto ptr = itemFromIndex(i);
 		BGMenuItems[i] = new MenuItem(*ptr);
 	}
 
