@@ -9,6 +9,15 @@
 
 class LanguageMode {
 public:
+	LanguageMode();
+	LanguageMode(const LanguageMode &other);
+	LanguageMode& operator=(const LanguageMode &rhs);
+	~LanguageMode();
+	
+public:
+	void swap(LanguageMode &other);
+	
+public:
 	QString name;
 	int nExtensions;
 	char **extensions;

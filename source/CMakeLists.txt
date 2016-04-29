@@ -113,6 +113,7 @@ add_executable(nedit
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
+	LanguageMode.cpp
 	MenuItem.cpp
 	Color.cpp
 	SmartIndent.cpp

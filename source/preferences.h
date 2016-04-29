@@ -226,8 +226,6 @@ int GetPrefReplaceDefScope(void);
 
 extern int NLanguageModes;
 extern LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
-LanguageMode *copyLanguageModeRec(LanguageMode *lm);
-void freeLanguageModeRec(LanguageMode *lm);
 void updateLanguageModeSubmenu(Document *window);
 
 #endif

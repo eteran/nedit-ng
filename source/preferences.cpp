@@ -1795,44 +1795,6 @@ void SelectShellDialog(Widget parent, Document *forWindow) {
 
 }
 
-void freeLanguageModeRec(LanguageMode *lm) {
-
-	XtFree(lm->recognitionExpr);
-	XtFree(lm->defTipsFile);
-	XtFree(lm->delimiters);
-	for (int i = 0; i < lm->nExtensions; i++) {
-		XtFree(lm->extensions[i]);
-	}
-
-	delete [] lm->extensions;
-	delete lm;
-}
-
-/*
-** Copy a LanguageMode data structure and all of the allocated data it contains
-*/
-LanguageMode *copyLanguageModeRec(LanguageMode *lm) {
-
-	auto newLM = new LanguageMode;
-	
-	newLM->name        = lm->name;
-	newLM->nExtensions = lm->nExtensions;
-	newLM->extensions  = new char *[lm->nExtensions];
-	
-	for (int i = 0; i < lm->nExtensions; i++) {
-		newLM->extensions[i] = XtStringDup(lm->extensions[i]);
-	}
-	
-	newLM->recognitionExpr = lm->recognitionExpr ? XtStringDup(lm->recognitionExpr) : nullptr;
-	newLM->defTipsFile     = lm->defTipsFile     ? XtStringDup(lm->defTipsFile)     : nullptr;
-	newLM->delimiters      = lm->delimiters      ? XtStringDup(lm->delimiters)      : nullptr;	
-	newLM->wrapStyle       = lm->wrapStyle;
-	newLM->indentStyle     = lm->indentStyle;
-	newLM->tabDist         = lm->tabDist;
-	newLM->emTabDist       = lm->emTabDist;
-	return newLM;
-}
-
 /*
 ** Change the language mode to the one indexed by "mode", reseting word
 ** delimiters, syntax highlighting and other mode specific parameters
@@ -2104,7 +2066,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		// pattern set was read correctly, add/replace it in the list 
 		for (i = 0; i < NLanguageModes; i++) {
 			if (LanguageModes[i]->name == lm->name) {
-				freeLanguageModeRec(LanguageModes[i]);
+				delete LanguageModes[i];
 				LanguageModes[i] = lm;
 				break;
 			}
@@ -2787,7 +2749,7 @@ int SkipOptSeparator(char separator, const char **inPtr) {
 */
 static int modeError(LanguageMode *lm, const char *stringStart, const char *stoppedAt, const char *message) {
 	if(lm) {
-		freeLanguageModeRec(lm);
+		delete lm;
 	}
 
 	return ParseError(nullptr, stringStart, stoppedAt, "language mode specification", message);

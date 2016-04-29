@@ -31,7 +31,7 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Q
 	ui.setupUi(this);
 
 	for (int i = 0; i < NLanguageModes; i++) {
-		languageModes_.push_back(copyLanguageModeRec(LanguageModes[i]));
+		languageModes_.push_back(new LanguageMode(*LanguageModes[i]));
 	}
 
 	ui.listLanguages->addItem(tr("New"));
@@ -208,7 +208,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
-		freeLanguageModeRec(lm);
+		delete lm;
 		return nullptr;
 	}
 	
@@ -237,7 +237,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QLatin1String(e.what())));
 			}
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		}
 
@@ -252,7 +252,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(QLatin1String(lm->defTipsFile)));
 			}
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		} else if (DeleteTagsFile(lm->defTipsFile, TIP, False) == FALSE) {
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", lm->defTipsFile);
@@ -268,7 +268,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		int tabsSpacingValue = tabsSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(tabsSpacing));
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		}
 		
@@ -278,7 +278,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid tab spacing: %1").arg(lm->tabDist));
 			}
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		}	
 	}
@@ -292,7 +292,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		int emulatedTabSpacingValue = emulatedTabSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(tabsSpacing));
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		}
 		
@@ -302,7 +302,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid emulated tab spacing: %1").arg(lm->emTabDist));
 			}
-			freeLanguageModeRec(lm);
+			delete lm;
 			return nullptr;
 		}	
 	}
@@ -355,7 +355,7 @@ void DialogLanguageModes::on_buttonCopy_clicked() {
 
 	const int i = ui.listLanguages->row(selection) - 1;
 	
-	LanguageMode *newLM = copyLanguageModeRec(languageModes_[i]);
+	LanguageMode *newLM = new LanguageMode(*languageModes_[i]);
 	languageModes_.insert(i, newLM);
 	ui.listLanguages->insertItem(i + 1, newLM->name);
 	
@@ -499,11 +499,11 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 
 	// Replace the old language mode list with the new one from the dialog 
 	for (int i = 0; i < NLanguageModes; i++) {
-		freeLanguageModeRec(LanguageModes[i]);
+		delete LanguageModes[i];
 	}
 	
 	for (int i = 0; i < languageModes_.size(); i++) {
-		LanguageModes[i] = copyLanguageModeRec(languageModes_[i]);
+		LanguageModes[i] = new LanguageMode(*languageModes_[i]);
 	}
 	
 	NLanguageModes = languageModes_.size();
