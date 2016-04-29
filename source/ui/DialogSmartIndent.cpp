@@ -122,7 +122,7 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 
 
 	// TODO(eteran): originally was "Yes, Delete"
-	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent\nmacros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
+	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
 	}
@@ -160,13 +160,13 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 	}
 
 	if (i == N_DEFAULT_INDENT_SPECS) {
-		QMessageBox::warning(this, tr("Smart Indent"), tr("There are no default indent macros\nfor language mode %1").arg(languageMode_));
+		QMessageBox::warning(this, tr("Smart Indent"), tr("There are no default indent macros for language mode %1").arg(languageMode_));
 		return;
 	}
 
 	SmartIndent *defaultIS = &DefaultIndentSpecs[i];
 	
-	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard\nall changes to smart indent macros\nfor language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
+	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
 	}

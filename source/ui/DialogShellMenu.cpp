@@ -43,6 +43,9 @@ DialogShellMenu::~DialogShellMenu() {
 // Name: on_buttonNew_clicked
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_buttonNew_clicked() {
+
+	// TODO(eteran): update entry we are leaving
+	
 	auto ptr  = new MenuItem;
 	ptr->name = tr("New Item");
 
@@ -56,6 +59,8 @@ void DialogShellMenu::on_buttonNew_clicked() {
 // Name: on_buttonCopy_clicked
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_buttonCopy_clicked() {
+
+	// TODO(eteran): update entry we are leaving
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {

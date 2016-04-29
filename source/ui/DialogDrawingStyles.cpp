@@ -64,6 +64,9 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 // Name: on_buttonNew_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonNew_clicked() {
+
+	// TODO(eteran): update entry we are leaving
+
 	auto ptr  = new HighlightStyle;
 	ptr->name = tr("New Item");
 
@@ -77,6 +80,9 @@ void DialogDrawingStyles::on_buttonNew_clicked() {
 // Name: on_buttonCopy_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonCopy_clicked() {
+
+	// TODO(eteran): update entry we are leaving
+
 	QList<QListWidgetItem *> selections = ui.listStyles->selectedItems();
 	if(selections.size() != 1) {
 		return;

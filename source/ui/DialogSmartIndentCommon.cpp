@@ -56,7 +56,7 @@ void DialogSmartIndentCommon::on_buttonCheck_clicked() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndentCommon::on_buttonRestore_clicked() {
-	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all\nchanges to common smart indent macros"), QMessageBox::Discard | QMessageBox::Cancel);
+	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to common smart indent macros"), QMessageBox::Discard | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
 	}

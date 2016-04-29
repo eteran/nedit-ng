@@ -342,6 +342,9 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 // Name: on_buttonCopy_clicked
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonCopy_clicked() {
+
+	// TODO(eteran): update entry we are leaving
+
 	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
 	if(selections.size() != 1) {
 		return;
@@ -552,13 +555,13 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	// don't allow deletion if data will be lost 
 	if (LMHasHighlightPatterns(QLatin1String(languageModes_[itemIndex]->name))) {
-		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting\npatterns defined.  Please delete the patterns\nfirst, in Preferences -> Default Settings ->\nSyntax Highlighting, before proceeding here."));
+		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting patterns defined.  Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));
 		return; // False;
 	}
 
 	// don't allow deletion if data will be lost 
 	if (LMHasSmartIndentMacros(languageModes_[itemIndex]->name)) {
-		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros\ndefined.  Please delete the macros first,\nin Preferences -> Default Settings ->\nAuto Indent -> Program Smart Indent,\nbefore proceeding here."));
+		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
 		return; // False;
 	}
 
@@ -626,7 +629,7 @@ void DialogLanguageModes::on_buttonDown_clicked() {
 		QMessageBox messageBox(nullptr /*LMDialog.shell*/);
 		messageBox.setWindowTitle(tr("Discard Language Mode"));
 		messageBox.setIcon(QMessageBox::Warning);
-		messageBox.setText(tr("Discard incomplete entry\nfor current language mode?"));
+		messageBox.setText(tr("Discard incomplete entry for current language mode?"));
 		
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
