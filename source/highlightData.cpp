@@ -65,7 +65,6 @@
 #include <Xm/PushB.h>
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
-#include <Xm/SeparatoG.h>
 
 namespace {
 
@@ -249,7 +248,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		if (name.isNull()) {
 			return styleError(inString, inPtr, "style name required");
 		}		
-		hs->name = name.toStdString();
+		hs->name = name;
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			delete hs;
@@ -335,7 +334,7 @@ QString WriteStylesStringEx(void) {
 	for (i = 0; i < HighlightStyles.size(); i++) {
 		style = HighlightStyles[i];
 		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(style->name);
+		outBuf->BufAppendEx(style->name.toStdString());
 		outBuf->BufAppendEx(":");
 		outBuf->BufAppendEx(style->color.toStdString());
 		if (!style->bgColor.isNull()) {
@@ -2046,7 +2045,7 @@ static PatternSet *getDialogPatternSet(void) {
 static int lookupNamedStyle(view::string_view styleName) {
 
 	for (int i = 0; i < HighlightStyles.size(); i++) {
-		if (HighlightStyles[i]->name == styleName.to_string()) {
+		if (HighlightStyles[i]->name.toStdString() == styleName) {
 			return i;
 		}
 	}

@@ -20,7 +20,7 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 	// Copy the list of highlight style information to one that the user can freely edit
 	for (HighlightStyle *style: HighlightStyles) {
 		auto ptr  = new HighlightStyle(*style);
-		auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listStyles->addItem(item);
 	}
@@ -65,9 +65,9 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonNew_clicked() {
 	auto ptr  = new HighlightStyle;
-	ptr->name = tr("New Item").toStdString();
+	ptr->name = tr("New Item");
 
-	auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+	auto item = new QListWidgetItem(ptr->name);
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 	ui.listStyles->addItem(item);
 	ui.listStyles->setCurrentItem(item);
@@ -85,7 +85,7 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
 	auto newPtr = new HighlightStyle(*ptr);
-	auto newItem = new QListWidgetItem(QString::fromStdString(newPtr->name));
+	auto newItem = new QListWidgetItem(newPtr->name);
 	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
 
 	const int i = ui.listStyles->row(selection);
@@ -204,7 +204,7 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 
 		auto style = reinterpret_cast<HighlightStyle *>(current->data(Qt::UserRole).toULongLong());
 
-		ui.editName->setText(QString::fromStdString(style->name));
+		ui.editName->setText(style->name);
 		ui.editColorFG->setText(style->color);
 		ui.editColorBG->setText(style->bgColor);
 
@@ -244,7 +244,7 @@ void DialogDrawingStyles::on_listStyles_itemSelectionChanged() {
 		
 		// don't allow deleteing the last "Plain" entry
 		// since it's reserved
-		if (style->name == tr("Plain").toStdString()) {
+		if (style->name == tr("Plain")) {
 			QList<QListWidgetItem *> plainItems = ui.listStyles->findItems(tr("Plain"), Qt::MatchFixedString);
 			if(plainItems.size() < 2) {
 				ui.buttonDelete->setEnabled(false);
@@ -304,8 +304,8 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
     	return nullptr;
     }
 
-	hs->name = name.toStdString();
-    if (hs->name.empty()) {
+	hs->name = name;
+    if (hs->name.isEmpty()) {
         if (!silent) {
             QMessageBox::warning(this, tr("Highlight Style"), tr("Please specify a name for the highlight style"));
         }
@@ -399,7 +399,7 @@ bool DialogDrawingStyles::updateHSList() {
 	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
 	delete ptr;
 	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
-	selection->setText(QString::fromStdString(current->name));
+	selection->setText(current->name);
 
 	// Replace the old highlight styles list with the new one from the dialog 
 	qDeleteAll(HighlightStyles);

@@ -3,7 +3,6 @@
 #define HIGHLIGHT_STYLE_H_
 
 #include <QString>
-#include <string>
 
 enum FontType {
 	PLAIN_FONT, 
@@ -14,7 +13,7 @@ enum FontType {
 
 class HighlightStyle {
 public:
-	std::string name; // not QString yet for Motif List Widget needs
+	QString name;
 	QString color;
 	QString bgColor;
 	int     font;
