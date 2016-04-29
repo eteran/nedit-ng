@@ -27,8 +27,7 @@ public:
 	
 public:
 	QString name;
-	int nExtensions;
-	char **extensions;
+	QStringList extensions;
 	char *recognitionExpr;
 	QString defTipsFile;
 	QString delimiters;

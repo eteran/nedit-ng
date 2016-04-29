@@ -6,21 +6,15 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionExpr(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
+LanguageMode::LanguageMode() : recognitionExpr(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 LanguageMode::LanguageMode(const LanguageMode &other) {
-	this->name        = other.name;
-	this->nExtensions = other.nExtensions;
-	this->extensions  = other.extensions ? new char *[other.nExtensions] : nullptr;
-	
-	for (int i = 0; i < other.nExtensions; i++) {
-		this->extensions[i] = XtStringDup(other.extensions[i]);
-	}
-	
+	this->name            = other.name;
+	this->extensions      = other.extensions;
 	this->recognitionExpr = other.recognitionExpr ? XtStringDup(other.recognitionExpr) : nullptr;
 	this->defTipsFile     = other.defTipsFile;
 	this->delimiters      = other.delimiters;
@@ -43,11 +37,6 @@ LanguageMode& LanguageMode::operator=(const LanguageMode &rhs) {
 //------------------------------------------------------------------------------
 LanguageMode::~LanguageMode() {
 	XtFree(recognitionExpr);
-	for (int i = 0; i < nExtensions; i++) {
-		XtFree(extensions[i]);
-	}
-
-	delete [] extensions;
 }
 
 //------------------------------------------------------------------------------
@@ -57,7 +46,6 @@ void LanguageMode::swap(LanguageMode &other) {
 	using std::swap;
 	
 	std::swap(name, other.name);
-	std::swap(nExtensions, other.nExtensions);
 	std::swap(extensions, other.extensions);
 	std::swap(recognitionExpr, other.recognitionExpr);
 	std::swap(defTipsFile, other.defTipsFile);

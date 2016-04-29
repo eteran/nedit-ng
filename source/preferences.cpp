@@ -810,8 +810,7 @@ static void setStringPref(char *prefDataField, const char *newValue);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
 
 static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
-static char *createExtString(char **extensions, int nExtensions);
-static char **readExtensionList(const char **inPtr, int *nExtensions);
+static QStringList readExtensionList(const char **inPtr);
 static const char *getDefaultShell(void);
 static int caseFind(view::string_view inString, const char *expr);
 static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
@@ -1904,8 +1903,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 ** remain valid until a change is made to the language modes list.
 */
 static int matchLanguageMode(Document *window) {
-	char *ext;
-	int i, j, fileNameLen, extLen, beginPos, endPos, start;
+
+	int i, fileNameLen, extLen, beginPos, endPos, start;
 
 	/*... look for an explicit mode statement first */
 
@@ -1930,12 +1929,11 @@ static int matchLanguageMode(Document *window) {
 	}
 
 	for (i = 0; i < NLanguageModes; i++) {
-		for (j = 0; j < LanguageModes[i]->nExtensions; j++) {
-			ext = LanguageModes[i]->extensions[j];
-			extLen = strlen(ext);
+		for(QString ext : LanguageModes[i]->extensions) {
+			extLen = ext.size();
 			start = fileNameLen - extLen;
 
-			if (start >= 0 && !strncmp(&window->filename_[start], ext, extLen))
+			if (start >= 0 && !strncmp(&window->filename_[start], ext.toLatin1().data(), extLen))
 				return i;
 		}
 	}
@@ -1981,7 +1979,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(lm, inString, inPtr, errMsg);
 
 		// read list of extensions 
-		lm->extensions = readExtensionList(&inPtr, &lm->nExtensions);
+		lm->extensions = readExtensionList(&inPtr);
 		if (!SkipDelimiter(&inPtr, &errMsg))
 			return modeError(lm, inString, inPtr, errMsg);
 
@@ -2093,7 +2091,6 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 }
 
 static QString WriteLanguageModesStringEx(void) {
-	char *str;
 	char numBuf[25];
 
 	auto outBuf = new TextBuffer;
@@ -2102,8 +2099,10 @@ static QString WriteLanguageModesStringEx(void) {
 		outBuf->BufAppendEx("\t");
 		outBuf->BufAppendEx(LanguageModes[i]->name.toStdString());
 		outBuf->BufAppendEx(":");
-		outBuf->BufAppendEx(str = createExtString(LanguageModes[i]->extensions, LanguageModes[i]->nExtensions));
-		XtFree(str);
+		
+		QString str = LanguageModes[i]->extensions.join(QLatin1String(" "));
+		
+		outBuf->BufAppendEx(str.toStdString());
 		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->recognitionExpr) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
@@ -2145,51 +2144,31 @@ static QString WriteLanguageModesStringEx(void) {
 	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 
-static char *createExtString(char **extensions, int nExtensions) {
-	int e, length = 1;
-	char *outStr, *outPtr;
-
-	for (e = 0; e < nExtensions; e++)
-		length += strlen(extensions[e]) + 1;
-	outStr = outPtr = XtMalloc(length);
-	for (e = 0; e < nExtensions; e++) {
-		strcpy(outPtr, extensions[e]);
-		outPtr += strlen(extensions[e]);
-		*outPtr++ = ' ';
-	}
-	if (nExtensions == 0)
-		*outPtr = '\0';
-	else
-		*(outPtr - 1) = '\0';
-	return outStr;
-}
-
-static char **readExtensionList(const char **inPtr, int *nExtensions) {
-	char *extensionList[MAX_FILE_EXTENSIONS];
+static QStringList readExtensionList(const char **inPtr) {
+	QStringList extensionList;
 	const char *strStart;
-	int i, len;
+	int len;
 
 	// skip over blank space 
 	*inPtr += strspn(*inPtr, " \t");
 
-	for (i = 0; i < MAX_FILE_EXTENSIONS && **inPtr != ':' && **inPtr != '\0'; i++) {
+	while(**inPtr != ':' && **inPtr != '\0') {
+		
 		*inPtr += strspn(*inPtr, " \t");
 		strStart = *inPtr;
-		while (**inPtr != ' ' && **inPtr != '\t' && **inPtr != ':' && **inPtr != '\0')
+		
+		while (**inPtr != ' ' && **inPtr != '\t' && **inPtr != ':' && **inPtr != '\0') {
 			(*inPtr)++;
+		}
+		
 		len = *inPtr - strStart;
-		extensionList[i] = XtMalloc(len + 1);
-		strncpy(extensionList[i], strStart, len);
-		extensionList[i][len] = '\0';
+		
+		
+		extensionList.push_back(QString::fromLatin1(strStart, len));
 	}
-	*nExtensions = i;
-	if (i == 0) {
-		return nullptr;
-	}
-	
-	auto retList = new char*[i];
-	std::copy_n(extensionList, i, retList);
-	return retList;
+
+
+	return extensionList;
 }
 
 int ReadNumericField(const char **inPtr, int *value) {

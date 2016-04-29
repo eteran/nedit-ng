@@ -91,12 +91,12 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 		LanguageMode *language = itemFromIndex(i);
 
 		QStringList extensions;
-		for(int i = 0; i < language->nExtensions; ++i) {
-			extensions.push_back(QLatin1String(language->extensions[i]));
+		for(QString extension : language->extensions) {
+			extensions.push_back(extension);
 		}
 
 		ui.editName      ->setText(language->name);
-		ui.editExtensions->setText(extensions.join(tr(" ")));
+		ui.editExtensions->setText(extensions.join(QLatin1String(" ")));
 		ui.editRegex     ->setText(QLatin1String(language->recognitionExpr));
 		ui.editCallTips  ->setText(language->defTipsFile);
 		ui.editDelimiters->setText(language->delimiters);
@@ -211,14 +211,8 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// read the extension list field 
 	QString extStr      = ui.editExtensions->text().simplified();
 	QStringList extList = extStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
-	lm->extensions  = new char*[extList.size()];
-	lm->nExtensions = extList.size();
-	int i = 0;
-	for(QString ext : extList) {
-		lm->extensions[i] = XtStringDup(ext);
-		++i;
-	}
-	
+	lm->extensions = extList;
+
 	// read recognition expression 
 	QString recognitionExpr = ui.editRegex->text();
 	if(!recognitionExpr.isEmpty()) {
