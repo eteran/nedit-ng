@@ -381,7 +381,6 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 */
 bool DialogDrawingStyles::updateHSList() {
 
-
 	// Test compile the macro
 	auto current = readDialogFields(false);
 	if(!current) {
@@ -401,7 +400,6 @@ bool DialogDrawingStyles::updateHSList() {
 	delete ptr;
 	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
 	selection->setText(QString::fromStdString(current->name));
-
 
 	// Replace the old highlight styles list with the new one from the dialog 
 	qDeleteAll(HighlightStyles);
