@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionExpr(nullptr), defTipsFile(nullptr), delimiters(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
+LanguageMode::LanguageMode() : nExtensions(0), extensions(nullptr), recognitionExpr(nullptr), delimiters(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
 }
 
 //------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ LanguageMode::LanguageMode(const LanguageMode &other) {
 	}
 	
 	this->recognitionExpr = other.recognitionExpr ? XtStringDup(other.recognitionExpr) : nullptr;
-	this->defTipsFile     = other.defTipsFile     ? XtStringDup(other.defTipsFile)     : nullptr;
+	this->defTipsFile     = other.defTipsFile;
 	this->delimiters      = other.delimiters      ? XtStringDup(other.delimiters)      : nullptr;	
 	this->wrapStyle       = other.wrapStyle;
 	this->indentStyle     = other.indentStyle;
@@ -43,7 +43,6 @@ LanguageMode& LanguageMode::operator=(const LanguageMode &rhs) {
 //------------------------------------------------------------------------------
 LanguageMode::~LanguageMode() {
 	XtFree(recognitionExpr);
-	XtFree(defTipsFile);
 	XtFree(delimiters);
 	for (int i = 0; i < nExtensions; i++) {
 		XtFree(extensions[i]);

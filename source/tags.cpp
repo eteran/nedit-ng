@@ -427,6 +427,14 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		return FALSE;
 }
 
+int AddTagsFileEx(const QString &tagSpec, int file_type) {
+	return AddTagsFile(tagSpec.toLatin1().data(), file_type);
+}
+
+int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload) {
+	return DeleteTagsFile(tagSpec.toLatin1().data(), file_type, force_unload);
+}
+
 /*
 **  AddTagsFile():  Set up the the list of tag files to manage from a file spec.
 **  The file spec comes from the X-Resource Nedit.tags: It can list multiple

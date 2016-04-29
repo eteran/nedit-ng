@@ -98,7 +98,7 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 		ui.editName      ->setText(language->name);
 		ui.editExtensions->setText(extensions.join(tr(" ")));
 		ui.editRegex     ->setText(QLatin1String(language->recognitionExpr));
-		ui.editCallTips  ->setText(QLatin1String(language->defTipsFile));
+		ui.editCallTips  ->setText(language->defTipsFile);
 		ui.editDelimiters->setText(QLatin1String(language->delimiters));
 
 		if(language->tabDist != -1) {
@@ -242,23 +242,18 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// Read the default calltips file for the language mode 
 	QString tipsFile = ui.editCallTips->text();
 	if(!tipsFile.isEmpty()) {
-	
-		// TODO(eteran): the dialog box says that you can specify several files delimited by colons
-		//               but the original code did not seem to support this in any meaningful way
-		//               it should be easy enough to implement this though
-	
 		// Ensure that AddTagsFile will work 
-		if (!AddTagsFile(tipsFile.toLatin1().data(), TIP)) {
+		if (!AddTagsFileEx(tipsFile, TIP)) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			delete lm;
 			return nullptr;
-		} else if (!DeleteTagsFile(tipsFile.toLatin1().data(), TIP, False)) {
+		} else if (!DeleteTagsFileEx(tipsFile, TIP, False)) {
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", tipsFile.toLatin1().data());
 		}	
 	}
-	lm->defTipsFile = XtStringDup(tipsFile);
+	lm->defTipsFile = tipsFile;
 	
 	// read tab spacing field 	
 	QString tabsSpacing = ui.editTabSpacing->text();
@@ -482,8 +477,8 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 	    calltips files */
 	for(Document *window: WindowList) {
 		updateLanguageModeSubmenu(window);
-		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && LanguageModes[window->languageMode_]->defTipsFile != nullptr)
-			AddTagsFile(LanguageModes[window->languageMode_]->defTipsFile, TIP);
+		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[window->languageMode_]->defTipsFile.isNull())
+			AddTagsFileEx(LanguageModes[window->languageMode_]->defTipsFile, TIP);
 		// cache user menus: Rebuild all user menus of this window 
 		RebuildAllMenus(window);
 	}

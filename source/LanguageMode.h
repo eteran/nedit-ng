@@ -30,7 +30,7 @@ public:
 	int nExtensions;
 	char **extensions;
 	char *recognitionExpr;
-	char *defTipsFile;
+	QString defTipsFile;
 	char *delimiters;
 	int wrapStyle;
 	int indentStyle;

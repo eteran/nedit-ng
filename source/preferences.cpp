@@ -1815,8 +1815,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	window->languageMode_ = mode;
 
 	// Decref oldMode's default calltips file if needed 
-	if (oldMode != PLAIN_LANGUAGE_MODE && LanguageModes[oldMode]->defTipsFile) {
-		DeleteTagsFile(LanguageModes[oldMode]->defTipsFile, TIP, False);
+	if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode]->defTipsFile.isNull()) {
+		DeleteTagsFileEx(LanguageModes[oldMode]->defTipsFile, TIP, False);
 	}
 
 	// Set delimiters for all text widgets 
@@ -1883,8 +1883,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	window->SetEmTabDist(emTabDist);
 
 	// Load calltips files for new mode 
-	if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
-		AddTagsFile(LanguageModes[mode]->defTipsFile, TIP);
+	if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
+		AddTagsFileEx(LanguageModes[mode]->defTipsFile, TIP);
 	}
 
 	// Add/remove language specific menu items 
@@ -1959,17 +1959,9 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		// skip over blank space 
 		inPtr += strspn(inPtr, " \t\n");
 
-		/* Allocate a language mode structure to return, set unread fields to
-		   empty so everything can be freed on errors by freeLanguageModeRec */
 		auto lm = new LanguageMode;
 		
-		lm->nExtensions     = 0;
-		lm->recognitionExpr = nullptr;
-		lm->defTipsFile     = nullptr;
-		lm->delimiters      = nullptr;
-
-		// read language mode name 
-		
+		// read language mode name 		
 		char *name = ReadSymbolicField(&inPtr);
 		if (!name) {
 			delete lm;
@@ -2058,10 +2050,15 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 				return modeError(lm, inString, inPtr, errMsg);
 
 		// read the default tips file 
-		if (*inPtr == '\n' || *inPtr == '\0')
-			lm->defTipsFile = nullptr;
-		else if (!ReadQuotedString(&inPtr, &errMsg, &lm->defTipsFile))
+		
+		char *defTipsFile;
+		if (*inPtr == '\n' || *inPtr == '\0') {
+			defTipsFile = nullptr;
+		} else if (!ReadQuotedString(&inPtr, &errMsg, &defTipsFile)) {
 			return modeError(lm, inString, inPtr, errMsg);
+		}
+		
+		lm->defTipsFile = defTipsFile ? QLatin1String(defTipsFile) : QString();
 
 		// pattern set was read correctly, add/replace it in the list 
 		for (i = 0; i < NLanguageModes; i++) {
@@ -2123,8 +2120,8 @@ static QString WriteLanguageModesStringEx(void) {
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->defTipsFile) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile);
+		if (!LanguageModes[i]->defTipsFile.isNull()) {
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 
@@ -3483,8 +3480,8 @@ static void updateMacroCmdsTo5dot6(void) {
 void UnloadLanguageModeTipsFile(Document *window) {
 
 	int mode = window->languageMode_;
-	if (mode != PLAIN_LANGUAGE_MODE && LanguageModes[mode]->defTipsFile) {
-		DeleteTagsFile(LanguageModes[mode]->defTipsFile, TIP, False);
+	if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
+		DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
 	}
 }
 
