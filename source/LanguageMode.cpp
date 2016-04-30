@@ -11,35 +11,6 @@ LanguageMode::LanguageMode() : wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode(const LanguageMode &other) {
-	name			= other.name;
-	extensions  	= other.extensions;
-	recognitionExpr = other.recognitionExpr;
-	defTipsFile 	= other.defTipsFile;
-	delimiters  	= other.delimiters;
-	wrapStyle		= other.wrapStyle;
-	indentStyle 	= other.indentStyle;
-	tabDist 		= other.tabDist;
-	emTabDist		= other.emTabDist;
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-LanguageMode& LanguageMode::operator=(const LanguageMode &rhs) {
-	LanguageMode(rhs).swap(*this);
-	return *this;
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-LanguageMode::~LanguageMode() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void LanguageMode::swap(LanguageMode &other) {
 	using std::swap;
 	

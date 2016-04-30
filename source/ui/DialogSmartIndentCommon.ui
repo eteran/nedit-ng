@@ -45,6 +45,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-ok">
+         <normaloff/>
         </iconset>
        </property>
       </widget>
@@ -56,6 +57,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
+         <normaloff/>
         </iconset>
        </property>
       </widget>
@@ -70,7 +72,7 @@
      <item>
       <widget class="QPushButton" name="buttonRestore">
        <property name="text">
-        <string>Restore Default</string>
+        <string>Restore Defaults</string>
        </property>
       </widget>
      </item>
@@ -81,6 +83,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-close">
+         <normaloff/>
         </iconset>
        </property>
       </widget>

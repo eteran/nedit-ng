@@ -10,7 +10,6 @@
 #include "LanguageMode.h"
 #include "preferences.h"
 #include "Document.h"
-#include "MotifHelper.h"
 #include "regularExp.h"
 #include "tags.h"
 #include "text.h" // for textNwordDelimiters

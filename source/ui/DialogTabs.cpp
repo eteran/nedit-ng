@@ -39,6 +39,9 @@ DialogTabs::DialogTabs(Document *forWindow, QWidget *parent, Qt::WindowFlags f) 
 	ui.checkUseTabsInPadding->setChecked(useTabs);
 	ui.labelEmulatedTabSpacing->setEnabled(emulate);
 	ui.editEmulatedTabSpacing->setEnabled(emulate);
+	
+	ui.editEmulatedTabSpacing->setValidator(new QIntValidator(0, INT_MAX, this));
+	ui.editTabSpacing->setValidator(new QIntValidator(0, INT_MAX, this));
 
 }
 

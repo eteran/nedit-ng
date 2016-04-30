@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>751</width>
-    <height>476</height>
+    <width>681</width>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -163,19 +163,6 @@ Select &quot;New&quot; to add a new command to the menu.</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>108</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item row="1" column="0">
           <widget class="QLineEdit" name="editAccelerator"/>
          </item>
@@ -186,10 +173,11 @@ Select &quot;New&quot; to add a new command to the menu.</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="0" column="2" rowspan="2">
           <widget class="QPushButton" name="buttonPasteLRMacro">
            <property name="text">
-            <string>Paste Learn/Replay Macro</string>
+            <string>&amp;Paste Learn/
+Replay Macro</string>
            </property>
           </widget>
          </item>

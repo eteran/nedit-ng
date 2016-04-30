@@ -28,8 +28,7 @@ DialogWindowTitle::DialogWindowTitle(Document *window, QWidget *parent, Qt::Wind
 	
 	inConstructor_ = true;
 	
-	QValidator *validator = new QRegExpValidator(QRegExp(QLatin1String("[0-9]")), this);
-	ui.editDirectory->setValidator(validator);
+	ui.editDirectory->setValidator(new QRegExpValidator(QRegExp(QLatin1String("[0-9]")), this));
 
 	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect

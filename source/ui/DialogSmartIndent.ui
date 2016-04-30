@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>702</width>
+    <width>701</width>
     <height>459</height>
    </rect>
   </property>
@@ -19,7 +19,8 @@
      <item>
       <widget class="QPushButton" name="buttonCommon">
        <property name="text">
-        <string>&amp;Common / Shared Initialization...</string>
+        <string>&amp;Common / Shared
+Initialization...</string>
        </property>
       </widget>
      </item>
@@ -62,7 +63,8 @@
      <item>
       <widget class="QPushButton" name="buttonLanguageMode">
        <property name="text">
-        <string>&amp;Add / Modify Language Mode...</string>
+        <string>&amp;Add / Modify
+Language Mode...</string>
        </property>
       </widget>
      </item>
@@ -238,11 +240,6 @@
       <widget class="QPushButton" name="buttonRestore">
        <property name="text">
         <string>Restore De&amp;faults</string>
-       </property>
-       <property name="icon">
-        <iconset theme="kt-restore-defaults">
-         <normaloff/>
-        </iconset>
        </property>
       </widget>
      </item>
