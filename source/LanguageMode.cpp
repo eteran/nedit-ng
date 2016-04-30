@@ -1,27 +1,26 @@
 
 #include "LanguageMode.h"
-#include "MotifHelper.h"
 #include <algorithm>
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode() : recognitionExpr(nullptr), wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
+LanguageMode::LanguageMode() : wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 LanguageMode::LanguageMode(const LanguageMode &other) {
-	this->name            = other.name;
-	this->extensions      = other.extensions;
-	this->recognitionExpr = other.recognitionExpr ? XtStringDup(other.recognitionExpr) : nullptr;
-	this->defTipsFile     = other.defTipsFile;
-	this->delimiters      = other.delimiters;
-	this->wrapStyle       = other.wrapStyle;
-	this->indentStyle     = other.indentStyle;
-	this->tabDist         = other.tabDist;
-	this->emTabDist       = other.emTabDist;
+	name			= other.name;
+	extensions  	= other.extensions;
+	recognitionExpr = other.recognitionExpr;
+	defTipsFile 	= other.defTipsFile;
+	delimiters  	= other.delimiters;
+	wrapStyle		= other.wrapStyle;
+	indentStyle 	= other.indentStyle;
+	tabDist 		= other.tabDist;
+	emTabDist		= other.emTabDist;
 }
 
 //------------------------------------------------------------------------------
@@ -36,7 +35,6 @@ LanguageMode& LanguageMode::operator=(const LanguageMode &rhs) {
 // Name: 
 //------------------------------------------------------------------------------
 LanguageMode::~LanguageMode() {
-	XtFree(recognitionExpr);
 }
 
 //------------------------------------------------------------------------------

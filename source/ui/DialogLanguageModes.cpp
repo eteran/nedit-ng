@@ -18,8 +18,6 @@
 #include "smartIndent.h"
 #include "userCmds.h"
 
-
-
 //------------------------------------------------------------------------------
 // Name: DialogLanguageModes
 //------------------------------------------------------------------------------
@@ -81,7 +79,41 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 	QListWidgetItem *const current = selections[0];
 
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
-		// TODO(eteran): update entry we are leaving
+#if 0
+		// we want to try to save it (but not apply it yet)
+		// and then move on
+		if(!checkCurrent(true)) {
+
+			/* If there are problems, and the user didn't ask for the fields to be
+			   read, give more warning */
+
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Discard Language Mode"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(tr("Discard incomplete entry for current language mode?"));
+
+			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+			Q_UNUSED(buttonDiscard);
+
+			messageBox.exec();
+			if (messageBox.clickedButton() == buttonKeep) {
+			
+				// again to cause messagebox to pop up
+				checkCurrent(false);
+				
+				// reselect the old item
+				ui.listLanguages->blockSignals(true);
+				ui.listLanguages->setCurrentItem(previous_);
+				ui.listLanguages->blockSignals(false);
+				return;
+			}
+
+			// if we get here, we are ditching changes
+		} else {
+			// TODO(eteran): update entry we are leaving
+		}
+#endif
 	}
 
 	if(current) {
@@ -97,7 +129,7 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 
 		ui.editName      ->setText(language->name);
 		ui.editExtensions->setText(extensions.join(QLatin1String(" ")));
-		ui.editRegex     ->setText(QLatin1String(language->recognitionExpr));
+		ui.editRegex     ->setText(language->recognitionExpr);
 		ui.editCallTips  ->setText(language->defTipsFile);
 		ui.editDelimiters->setText(language->delimiters);
 
@@ -216,11 +248,10 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// read recognition expression 
 	QString recognitionExpr = ui.editRegex->text();
 	if(!recognitionExpr.isEmpty()) {
-		regexp *compiledRE;
 		try {
 			std::string expression = recognitionExpr.toStdString();
-			compiledRE = new regexp(expression, REDFLT_STANDARD);
-
+			auto compiledRE = new regexp(expression, REDFLT_STANDARD);
+			delete compiledRE;
 		} catch(const regex_error &e) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QLatin1String(e.what())));
@@ -228,10 +259,8 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			delete lm;
 			return nullptr;
 		}
-
-		delete compiledRE;	
 	}
-	lm->recognitionExpr = XtStringDup(recognitionExpr);
+	lm->recognitionExpr = recognitionExpr;
 	
 	// Read the default calltips file for the language mode 
 	QString tipsFile = ui.editCallTips->text();
@@ -612,28 +641,3 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	Q_EMIT on_listLanguages_itemSelectionChanged();
 	return;// True;
 }
-
-
-
-// TODO(eteran): what code path actually leads to this code being called
-// see lmGetDisplayedCB @ preferences.c
-#if 0
-	/* If there are problems, and the user didn't ask for the fields to be
-	   read, give more warning */
-	if (!explicitRequest) {
-	
-		QMessageBox messageBox(nullptr /*LMDialog.shell*/);
-		messageBox.setWindowTitle(tr("Discard Language Mode"));
-		messageBox.setIcon(QMessageBox::Warning);
-		messageBox.setText(tr("Discard incomplete entry for current language mode?"));
-		
-		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-		QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
-		Q_UNUSED(buttonKeep);
-
-		messageBox.exec();
-		if(messageBox.clickedButton() == buttonDiscard) {
-			return oldItem == nullptr ? nullptr : copyLanguageModeRec((LanguageMode *)oldItem);
-		}
-	}
-#endif

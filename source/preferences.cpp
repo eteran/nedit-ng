@@ -1911,8 +1911,8 @@ static int matchLanguageMode(Document *window) {
 	// Do a regular expression search on for recognition pattern 
 	std::string first200 = window->buffer_->BufGetRangeEx(0, 200);
 	for (i = 0; i < NLanguageModes; i++) {
-		if (LanguageModes[i]->recognitionExpr) {
-			if (SearchString(first200, LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+		if (!LanguageModes[i]->recognitionExpr.isNull()) {
+			if (SearchString(first200, LanguageModes[i]->recognitionExpr.toLatin1().data(), SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
 		}
@@ -1984,12 +1984,19 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(lm, inString, inPtr, errMsg);
 
 		// read the recognition regular expression 
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':')
-			lm->recognitionExpr = nullptr;
-		else if (!ReadQuotedString(&inPtr, &errMsg, &lm->recognitionExpr))
+		char *recognitionExpr;
+		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+			recognitionExpr = nullptr;
+		} else if (!ReadQuotedString(&inPtr, &errMsg, &recognitionExpr)) {
 			return modeError(lm, inString, inPtr, errMsg);
-		if (!SkipDelimiter(&inPtr, &errMsg))
+		}
+			
+			
+		lm->recognitionExpr = QLatin1String(recognitionExpr);
+			
+		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			return modeError(lm, inString, inPtr, errMsg);
+		}
 
 		// read the indent style 
 		styleName = ReadSymbolicField(&inPtr);
@@ -2104,8 +2111,8 @@ static QString WriteLanguageModesStringEx(void) {
 		
 		outBuf->BufAppendEx(str.toStdString());
 		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->recognitionExpr) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
+		if (!LanguageModes[i]->recognitionExpr.isNull()) {
+			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");
