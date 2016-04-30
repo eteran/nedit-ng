@@ -75,52 +75,52 @@ DialogSmartIndent *SmartIndentDlg = nullptr;
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(TextBuffer *buf, char *macro);
-static int isDefaultIndentSpec(SmartIndent *indentSpec);
-static int loadDefaultIndentSpec(const char *lmName);
+static bool isDefaultIndentSpec(SmartIndent *indentSpec);
+static bool loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 
 static char *readSIMacro(const char **inPtr);
-static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2);
+static QString readSIMacroEx(const char **inPtr);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
 
 SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	{
-		"C"
+		QLatin1String("C")
 		,
-		"# C Macros and tuning parameters are shared with C++, and are declared\n"
-		"# in the common section.  Press Common / Shared Initialization above.\n"
+		QLatin1String("# C Macros and tuning parameters are shared with C++, and are declared\n"
+		"# in the common section.  Press Common / Shared Initialization above.\n")
 		,
-		"return cFindSmartIndentDist($1)\n"
+		QLatin1String("return cFindSmartIndentDist($1)\n")
 		,
-		"if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
-		"    cBraceOrPound($1, $2)\n"
+		QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+		"    cBraceOrPound($1, $2)\n")
 	},{
-		"C++"
+		QLatin1String("C++")
 		,
-		"# C++ Macros and tuning parameters are shared with C, and are declared\n"
-		"# in the common section.  Press Common / Shared Initialization above.\n"
+		QLatin1String("# C++ Macros and tuning parameters are shared with C, and are declared\n"
+		"# in the common section.  Press Common / Shared Initialization above.\n")
 		,
-		"return cFindSmartIndentDist($1)\n"
+		QLatin1String("return cFindSmartIndentDist($1)\n")
 		,
-		"if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
-		"    cBraceOrPound($1, $2)\n"
+		QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+		"    cBraceOrPound($1, $2)\n")
 	},{
-		"Python"
+		QLatin1String("Python")
 		,
-		"# Number of characters in a normal indent level.  May be a number, or the\n"
+		QLatin1String("# Number of characters in a normal indent level.  May be a number, or the\n"
 		"# string \"default\", meaning, guess the value from the current tab settings.\n"
-		"$pyIndentDist = \"default\"\n"
+		"$pyIndentDist = \"default\"\n")
 		,
-		"if (get_range($1-1, $1) != \":\")\n"
+		QLatin1String("if (get_range($1-1, $1) != \":\")\n"
 		"    return -1\n"
-		"return measureIndent($1) + defaultIndent($pyIndentDist)\n"
+		"return measureIndent($1) + defaultIndent($pyIndentDist)\n")
 		,
-		nullptr
+		QString()
 	},{
-		"Matlab"
+		QLatin1String("Matlab")
 		,
-		"# Number of spaces to indent \"case\" statements\n"
+		QLatin1String("# Number of spaces to indent \"case\" statements\n"
 		"$caseDepth = 2\n"
 		"define matlabNewlineMacro\n"
 		"{\n"
@@ -196,11 +196,11 @@ SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 		"   else {\n"
 		"      return indentLevel\n"
 		"   }\n"
-		"}\n"
+		"}\n")
 		,
-		"return matlabNewlineMacro($1)\n"
+		QLatin1String("return matlabNewlineMacro($1)\n")
 		,
-		nullptr
+		QString()
 	}
 };
 
@@ -256,8 +256,9 @@ void BeginSmartIndent(Document *window, int warn) {
 			return;
 		initialized = true;
 	}
-	if (indentMacros->initMacro) {
-		if (!ReadMacroString(window, indentMacros->initMacro, "smart indent initialization macro"))
+	
+	if (!indentMacros->initMacro.isNull()) {
+		if (!ReadMacroString(window, indentMacros->initMacro.toLatin1().data(), "smart indent initialization macro"))
 			return;
 	}
 
@@ -265,20 +266,20 @@ void BeginSmartIndent(Document *window, int warn) {
 	winData = new windowSmartIndentData;
 	winData->inNewLineMacro = 0;
 	winData->inModMacro = 0;
-	winData->newlineMacro = ParseMacro((String)indentMacros->newlineMacro, &errMsg, &stoppedAt);
+	winData->newlineMacro = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
 	if (!winData->newlineMacro) {
 		delete winData;
-		ParseError(window->shell_, indentMacros->newlineMacro, stoppedAt, "newline macro", errMsg);
+		ParseError(window->shell_, indentMacros->newlineMacro.toLatin1().data(), stoppedAt, "newline macro", errMsg);
 		return;
 	}
-	if (!indentMacros->modMacro)
+	if (indentMacros->modMacro.isNull())
 		winData->modMacro = nullptr;
 	else {
-		winData->modMacro = ParseMacro((String)indentMacros->modMacro, &errMsg, &stoppedAt);
+		winData->modMacro = ParseMacro(indentMacros->modMacro.toLatin1().data(), &errMsg, &stoppedAt);
 		if (!winData->modMacro) {
 			FreeProgram(winData->newlineMacro);
 			delete winData;
-			ParseError(window->shell_, indentMacros->modMacro, stoppedAt, "smart indent modify macro", errMsg);
+			ParseError(window->shell_, indentMacros->modMacro.toLatin1().data(), stoppedAt, "smart indent modify macro", errMsg);
 			return;
 		}
 	}
@@ -451,15 +452,15 @@ void EditSmartIndentMacros(Document *window) {
 	return;
 }
 
-static int loadDefaultIndentSpec(const char *lmName) {
+static bool loadDefaultIndentSpec(const char *lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (!strcmp(lmName, DefaultIndentSpecs[i].lmName)) {
-			SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(&DefaultIndentSpecs[i]);
-			return True;
+		if (DefaultIndentSpecs[i].lmName == QLatin1String(lmName)) {
+			SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(DefaultIndentSpecs[i]);
+			return true;
 		}
 	}
-	return False;
+	return false;
 }
 
 int LoadSmartIndentStringEx(const QString &string) {
@@ -483,11 +484,12 @@ int LoadSmartIndentString(char *inString) {
 			return True;
 
 		// read language mode name 
-		is.lmName = ReadSymbolicField(&inPtr);
-		if (is.lmName == nullptr)
+		is.lmName = ReadSymbolicFieldEx(&inPtr);
+		if (is.lmName.isNull()) {
 			return siParseError(inString, inPtr, "language mode name required");
+		}
+		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			XtFree((char *)is.lmName);
 			return siParseError(inString, inPtr, errMsg);
 		}
 
@@ -495,51 +497,42 @@ int LoadSmartIndentString(char *inString) {
 		   smart indent macros */
 		if (!strncmp(inPtr, "Default", 7)) {
 			inPtr += 7;
-			if (!loadDefaultIndentSpec(is.lmName)) {
-				XtFree((char *)is.lmName);
+			if (!loadDefaultIndentSpec(is.lmName.toLatin1().data())) {
 				return siParseError(inString, inPtr, "no default smart indent macros");
 			}
-			XtFree((char *)is.lmName);
 			continue;
 		}
 
 		/* read the initialization macro (arbitrary text terminated by the
 		   macro end boundary string) */
-		is.initMacro = readSIMacro(&inPtr);
-		if(!is.initMacro) {
-			XtFree((char *)is.lmName);
+		is.initMacro = readSIMacroEx(&inPtr);
+		if(is.initMacro.isNull()) {
 			return siParseError(inString, inPtr, "no end boundary to initialization macro");
 		}
-
+		
 		// read the newline macro 
-		is.newlineMacro = readSIMacro(&inPtr);
-		if(!is.newlineMacro) {
-			XtFree((char *)is.lmName);
-			XtFree((char *)is.initMacro);
+		is.newlineMacro = readSIMacroEx(&inPtr);
+		if(is.newlineMacro.isNull()) {
 			return siParseError(inString, inPtr, "no end boundary to newline macro");
 		}
-
+		
 		// read the modify macro 
-		is.modMacro = readSIMacro(&inPtr);
-		if(!is.modMacro) {
-			XtFree((char *)is.lmName);
-			XtFree((char *)is.initMacro);
-			XtFree((char *)is.newlineMacro);
+		is.modMacro = readSIMacroEx(&inPtr);
+		if(is.modMacro.isNull()) {
 			return siParseError(inString, inPtr, "no end boundary to modify macro");
 		}
 
 		// if there's no mod macro, make it null so it won't be executed 
-		if (is.modMacro[0] == '\0') {
-			XtFree((char *)is.modMacro);
-			is.modMacro = nullptr;
+		if (is.modMacro.isEmpty()) {
+			is.modMacro = QString();
 		}
 
 		// create a new data structure and add/change it in the list 
 		isCopy = new SmartIndent(is);
 
 		for (i = 0; i < NSmartIndentSpecs; i++) {
-			if (!strcmp(SmartIndentSpecs[i]->lmName, is.lmName)) {
-				freeIndentSpec(SmartIndentSpecs[i]);
+			if (SmartIndentSpecs[i]->lmName == is.lmName) {
+				delete SmartIndentSpecs[i];
 				SmartIndentSpecs[i] = isCopy;
 				break;
 			}
@@ -587,6 +580,17 @@ int LoadSmartIndentCommonString(char *inString) {
 ** allocated copy of the string, and advance *inPtr to the end of the macro.
 ** Returns nullptr if the macro end boundary string is not found.
 */
+
+static QString readSIMacroEx(const char **inPtr) {
+	if(char *s = readSIMacro(inPtr)) {
+		QString ret = QLatin1String(s);
+		XtFree(s);
+		return ret;
+	}
+	
+	return QString();
+}
+
 static char *readSIMacro(const char **inPtr) {
 	
 	// Strip leading newline 
@@ -613,9 +617,7 @@ static char *readSIMacro(const char **inPtr) {
 	return retStr;
 }
 
-static int indentSpecsDiffer(SmartIndent *is1, SmartIndent *is2) {
-	return AllocatedStringsDiffer(is1->initMacro, is2->initMacro) || AllocatedStringsDiffer(is1->newlineMacro, is2->newlineMacro) || AllocatedStringsDiffer(is1->modMacro, is2->modMacro);
-}
+
 
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message) {
 	return ParseError(nullptr, stringStart, stoppedAt, "smart indent specification", message);
@@ -628,14 +630,14 @@ QString WriteSmartIndentStringEx(void) {
 		SmartIndent *sis = SmartIndentSpecs[i];
 		
 		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(sis->lmName);
+		outBuf->BufAppendEx(sis->lmName.toStdString());
 		outBuf->BufAppendEx(":");
 		if (isDefaultIndentSpec(sis)) {
 			outBuf->BufAppendEx("Default\n");
 		} else {
-			insertShiftedMacro(outBuf, (String)sis->initMacro);
-			insertShiftedMacro(outBuf, (String)sis->newlineMacro);
-			insertShiftedMacro(outBuf, (String)sis->modMacro);
+			insertShiftedMacro(outBuf, sis->initMacro.toLatin1().data());
+			insertShiftedMacro(outBuf, sis->newlineMacro.toLatin1().data());
+			insertShiftedMacro(outBuf, sis->modMacro.toLatin1().data());
 		}
 	}
 
@@ -688,23 +690,27 @@ static void insertShiftedMacro(TextBuffer *buf, char *macro) {
 	buf->BufAppendEx("\n");
 }
 
-static int isDefaultIndentSpec(SmartIndent *indentSpec) {
+static bool isDefaultIndentSpec(SmartIndent *indentSpec) {
 
-	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++)
-		if (!strcmp(indentSpec->lmName, DefaultIndentSpecs[i].lmName))
-			return !indentSpecsDiffer(indentSpec, &DefaultIndentSpecs[i]);
-	return False;
+	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
+		if (indentSpec->lmName == DefaultIndentSpecs[i].lmName) {
+			return (*indentSpec == DefaultIndentSpecs[i]);
+		}
+	}
+	return false;
 }
 
 SmartIndent *findIndentSpec(const char *modeName) {
-	int i;
 
-	if(!modeName)
+	if(!modeName) {
 		return nullptr;
+	}
 
-	for (i = 0; i < NSmartIndentSpecs; i++)
-		if (!strcmp(modeName, SmartIndentSpecs[i]->lmName))
+	for (int i = 0; i < NSmartIndentSpecs; i++) {
+		if (SmartIndentSpecs[i]->lmName == QLatin1String(modeName)) {
 			return SmartIndentSpecs[i];
+		}
+	}
 	return nullptr;
 }
 
@@ -729,9 +735,8 @@ int LMHasSmartIndentMacros(const char *languageMode) {
 void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		if (!strcmp(oldName, SmartIndentSpecs[i]->lmName)) {
-			XtFree((char *)SmartIndentSpecs[i]->lmName);
-			SmartIndentSpecs[i]->lmName = XtNewStringEx(newName);
+		if (SmartIndentSpecs[i]->lmName == QLatin1String(oldName)) {
+			SmartIndentSpecs[i]->lmName = QLatin1String(newName);
 		}
 	}
 	if (SmartIndentDlg) {

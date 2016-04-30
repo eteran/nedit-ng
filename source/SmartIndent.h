@@ -2,15 +2,18 @@
 #ifndef SMART_INDENT_H_
 #define SMART_INDENT_H_
 
+#include <QString>
+
 class SmartIndent {
 public:
-	const char *lmName;
-	const char *initMacro;
-	const char *newlineMacro;
-	const char *modMacro;
+	bool operator==(const SmartIndent &rhs) const;
+	bool operator!=(const SmartIndent &rhs) const;
+	
+public:
+	QString lmName;
+	QString initMacro;
+	QString newlineMacro;
+	QString modMacro;
 };
-
-SmartIndent *copyIndentSpec(SmartIndent *is);
-void freeIndentSpec(SmartIndent *is);
 
 #endif

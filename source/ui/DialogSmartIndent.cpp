@@ -129,15 +129,15 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 
 	// if a stored version of the pattern set exists, delete it from the list 
 	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (languageMode_ == QLatin1String(SmartIndentSpecs[i]->lmName)) {
+		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
 			break;
 		}
 	}
 			
 			
 	if (i < NSmartIndentSpecs) {
-		freeIndentSpec(SmartIndentSpecs[i]);
-		memmove(&SmartIndentSpecs[i], &SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i) * sizeof(SmartIndent *));
+		delete SmartIndentSpecs[i];
+		std::copy_n(&SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i), &SmartIndentSpecs[i]);
 		NSmartIndentSpecs--;
 	}
 
@@ -154,7 +154,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 
 	// Find the default indent spec 
 	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (languageMode_ == QLatin1String(DefaultIndentSpecs[i].lmName)) {
+		if (languageMode_ == DefaultIndentSpecs[i].lmName) {
 			break;
 		}
 	}
@@ -173,16 +173,16 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
 	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (languageMode_ == QLatin1String(SmartIndentSpecs[i]->lmName)) {
+		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
 			break;
 		}
 	}
 	
 	if (i < NSmartIndentSpecs) {
-		freeIndentSpec(SmartIndentSpecs[i]);
-		SmartIndentSpecs[i] = copyIndentSpec(defaultIS);
+		delete SmartIndentSpecs[i];
+		SmartIndentSpecs[i] = new SmartIndent(*defaultIS);
 	} else {
-		SmartIndentSpecs[NSmartIndentSpecs++] = copyIndentSpec(defaultIS);
+		SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(*defaultIS);
 	}
 
 	// Update the dialog 
@@ -208,19 +208,9 @@ void DialogSmartIndent::setSmartIndentDialogData(SmartIndent *is) {
 		ui.editNewline->setPlainText(QString());
 		ui.editModMacro->setPlainText(QString());
 	} else {
-		if (!is->initMacro) {
-			ui.editInit->setPlainText(QString());
-		} else {
-			ui.editInit->setPlainText(QLatin1String(is->initMacro));
-		}
-					
-		ui.editNewline->setPlainText(QLatin1String(is->newlineMacro));
-
-		if (!is->modMacro) {
-			ui.editModMacro->setPlainText(QString());
-		} else {
-			ui.editModMacro->setPlainText(QLatin1String(is->modMacro));
-		}
+		ui.editInit->setPlainText(is->initMacro);
+		ui.editNewline->setPlainText(is->newlineMacro);
+		ui.editModMacro->setPlainText(is->modMacro);
 	}
 }
 
@@ -243,7 +233,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	// Find the original macros
 	int i;
 	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (languageMode_ == QLatin1String(SmartIndentSpecs[i]->lmName)) {
+		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
 			break;
 		}
 	}
@@ -253,7 +243,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	if (i == NSmartIndentSpecs) {
 		SmartIndentSpecs[NSmartIndentSpecs++] = newMacros;
 	} else {
-		freeIndentSpec(SmartIndentSpecs[i]);
+		delete SmartIndentSpecs[i];
 		SmartIndentSpecs[i] = newMacros;
 	}
 
@@ -264,7 +254,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 		QString lmName = LanguageModeName(window->languageMode_);
 		if(!lmName.isNull()) {
-			if (lmName == QLatin1String(newMacros->lmName)) {
+			if (lmName == newMacros->lmName) {
 
 				window->SetSensitive(window->smartIndentItem_, true);
 				if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
@@ -286,14 +276,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 //------------------------------------------------------------------------------
 bool DialogSmartIndent::checkSmartIndentDialogData() {
 
-
-
-
-/*
- ui.editModMacro->toPlainText().isNull() 
-*/
-
-
+	// TODO(eteran): make it not check if all fields are empty...
 
 
 	// Check the initialization macro 
@@ -362,10 +345,10 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 SmartIndent *DialogSmartIndent::getSmartIndentDialogData() {
 
 	auto is = new SmartIndent;
-	is->lmName       = XtNewStringEx(languageMode_.toStdString());
-	is->initMacro    = ui.editInit->toPlainText().isNull()    ? nullptr : XtStringDup(ensureNewline(ui.editInit->toPlainText()).toStdString());
-	is->newlineMacro = ui.editNewline->toPlainText().isNull() ? nullptr : XtStringDup(ensureNewline(ui.editNewline->toPlainText()).toStdString());
-	is->modMacro     = ui.editModMacro->toPlainText().isNull()  ? nullptr : XtStringDup(ensureNewline(ui.editModMacro->toPlainText()).toStdString());
+	is->lmName       = languageMode_;
+	is->initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
+	is->newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());
+	is->modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensureNewline(ui.editModMacro->toPlainText());
 	return is;
 }
 
