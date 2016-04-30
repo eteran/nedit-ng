@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>746</width>
+    <width>812</width>
     <height>795</height>
    </rect>
   </property>
@@ -270,7 +270,7 @@ Style...</string>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="labelRegex">
      <property name="text">
       <string>Regular Expression to Match</string>
      </property>
@@ -280,7 +280,7 @@ Style...</string>
     <widget class="QPlainTextEdit" name="editRegex"/>
    </item>
    <item>
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="labelRegexEnd">
      <property name="text">
       <string>Ending Regular Expression</string>
      </property>
@@ -290,7 +290,7 @@ Style...</string>
     <widget class="QLineEdit" name="editRegexEnd"/>
    </item>
    <item>
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="editRegexError_2">
      <property name="text">
       <string>Regular Expression Indicating Error in Match (Optional)</string>
      </property>
