@@ -437,10 +437,8 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 void EditSmartIndentMacros(Document *window) {
 
 
-	if (SmartIndentDlg) {
-		SmartIndentDlg->show();
-		SmartIndentDlg->raise();
-		return;
+	if (!SmartIndentDlg) {
+		SmartIndentDlg = new DialogSmartIndent(window, nullptr /*parent*/);
 	}
 
 	if (LanguageModeName(0).isNull()) {
@@ -448,9 +446,9 @@ void EditSmartIndentMacros(Document *window) {
 		return;
 	}	
 	
-	
-	SmartIndentDlg = new DialogSmartIndent(window, nullptr /*parent*/);
 	SmartIndentDlg->show();
+	SmartIndentDlg->raise();
+	return;
 }
 
 static int loadDefaultIndentSpec(const char *lmName) {
