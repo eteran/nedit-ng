@@ -51,7 +51,8 @@ knowlege.
 Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
 is complete some post 1.0 goals are already planned:
 
+* Internationalization!
 * Python scripting support in addition to the built-in macro system
 * An improved preferences system
 * Extensibility though plugins
-* Sessions, meaning that you can save and restore an edit session
+* Sessions, meaning that you can save and restore an edit session (such as several open tabs)
