@@ -1,11 +1,10 @@
 
 #include <QPushButton>
-#include <QtDebug>
+#include <QRegExp>
 #include "DialogFonts.h"
 #include "DialogFontSelector.h"
 #include "Document.h"
 #include "preferences.h"
-#include "regularExp.h"
 #include "Color.h"
 #include "highlight.h" // for AllocColor
 #include <X11/Intrinsic.h>
@@ -75,44 +74,20 @@ void DialogFonts::on_buttonFontBoldItalic_clicked() {
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFill_clicked() {
-
-	// TODO(eteran): use QString::replace with QRegExp
-
-	char modifiedFontName[MAX_FONT_LEN];
-	const char searchString[]            = "(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)";
 	
-	const char italicReplaceString[]     = "\\1-\\2-o-\\4";
-	const char boldReplaceString[]       = "\\1-bold-\\3-\\4";
-	const char boldItalicReplaceString[] = "\\1-bold-o-\\4";
-	regexp *compiledRE = nullptr;
-
-	/* Match the primary font agains RE pattern for font names.  If it
-	   doesn't match, we can't generate highlight font names, so return */
-	try {
-		compiledRE = new regexp(searchString, REDFLT_STANDARD);
-	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error?!
-	}
-
-	QString primaryName = ui.editFontPrimary->text();
-	std::string primaryNameString = primaryName.toStdString();
-	if (!compiledRE->execute(primaryNameString)) {
-		QApplication::beep();
-		delete compiledRE;
-		return;
-	}
-
-	// Make up names for new fonts based on RE replace patterns
-	compiledRE->SubstituteRE(italicReplaceString, modifiedFontName, MAX_FONT_LEN);
-	ui.editFontItalic->setText(QLatin1String(modifiedFontName));
-
-	compiledRE->SubstituteRE(boldReplaceString, modifiedFontName, MAX_FONT_LEN);
-	ui.editFontBold->setText(QLatin1String(modifiedFontName));
-
-	compiledRE->SubstituteRE(boldItalicReplaceString, modifiedFontName, MAX_FONT_LEN);
-	ui.editFontBoldItalic->setText(QLatin1String(modifiedFontName));
-
-	delete compiledRE;
+	QRegExp regex(QLatin1String("(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)"));
+	QString italicString     = ui.editFontPrimary->text();
+	QString boldString       = ui.editFontPrimary->text();
+	QString italicBoldString = ui.editFontPrimary->text();
+	
+	
+	italicString    .replace(regex, QLatin1String("\\1-\\2-o-\\4"));
+	boldString      .replace(regex, QLatin1String("\\1-bold-\\3-\\4"));
+	italicBoldString.replace(regex, QLatin1String("\\1-bold-o-\\4"));
+	
+	ui.editFontItalic    ->setText(italicString);
+	ui.editFontBold      ->setText(boldString);
+	ui.editFontBoldItalic->setText(italicBoldString);
 }
 
 //------------------------------------------------------------------------------
