@@ -31,6 +31,7 @@
 #include <QPushButton>
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogDrawingStyles.h"
+#include "ui/DialogSyntaxPatterns.h"
 
 #include "highlightData.h"
 #include "TextBuffer.h"
@@ -84,6 +85,7 @@ static const char *FontTypeNames[N_FONT_TYPES] = {
 
 
 DialogDrawingStyles *DrawingStyles = nullptr;
+DialogSyntaxPatterns *SyntaxPatterns = nullptr;
 
 }
 
@@ -101,7 +103,6 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 static int updatePatternSet(void);
 static PatternSet *getDialogPatternSet(void);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
-static PatternSet *readDefaultPatternSet(const char *langModeName);
 static PatternSet *readPatternSet(const char **inPtr, int convertOld);
 static std::string createPatternsString(PatternSet *patSet, const char *indentStr);
 static void applyCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -159,8 +160,8 @@ static struct {
                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, QString(), 0,       nullptr};
 
 // Pattern sources loaded from the .nedit file or set by the user 
-static int NPatternSets = 0;
-static PatternSet *PatternSets[MAX_LANGUAGE_MODES];
+int NPatternSets = 0;
+PatternSet *PatternSets[MAX_LANGUAGE_MODES];
 
 static const char *DefaultPatternSets[] = {
 	#include "DefaultPatternSet00.inc"
@@ -283,7 +284,6 @@ bool LoadStylesStringEx(const std::string &string) {
 		// TODO(eteran): Note, assumes success!
 		fontStr = ReadSymbolicFieldEx(&inPtr);
 		
-		
 		for (i = 0; i < N_FONT_TYPES; i++) {
 			if (FontTypeNames[i] == fontStr.toStdString()) {
 				hs->font = i;
@@ -295,9 +295,7 @@ bool LoadStylesStringEx(const std::string &string) {
 			delete hs;
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
-		
-		
-		
+
 		/* pattern set was read correctly, add/change it in the list */\
 		for (i = 0; i < HighlightStyles.size(); i++) {
 			if (HighlightStyles[i]->name == hs->name) {			
@@ -878,7 +876,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 ** return a new allocated copy of it.  The returned pattern set should be
 ** freed by the caller with delete
 */
-static PatternSet *readDefaultPatternSet(const char *langModeName) {
+PatternSet *readDefaultPatternSet(const char *langModeName) {
 
 	size_t modeNameLen = strlen(langModeName);
 	for (int i = 0; i < (int)XtNumber(DefaultPatternSets); i++) {
@@ -936,6 +934,29 @@ void EditHighlightStyles(const char *initialStyle) {
 ** Present a dialog for editing highlight pattern information
 */
 void EditHighlightPatterns(Document *window) {
+
+
+	if(SyntaxPatterns) {
+		SyntaxPatterns->show();
+		SyntaxPatterns->raise();
+		return;	
+	}
+	
+	if (LanguageModeName(0).isNull()) {
+	
+		QMessageBox::warning(nullptr /* window->shell_ */, QLatin1String("No Language Modes"), 
+			QLatin1String("No Language Modes available for syntax highlighting\n"
+			              "Add language modes under Preferenses->Language Modes"));
+		return;
+	}	
+	
+	QString languageName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
+	SyntaxPatterns = new DialogSyntaxPatterns();
+	SyntaxPatterns->setLanguageName(languageName);
+	SyntaxPatterns->show();
+	SyntaxPatterns->raise();	
+
+
 
 	const int BORDER = 4;
 	const int LIST_RIGHT = 41;

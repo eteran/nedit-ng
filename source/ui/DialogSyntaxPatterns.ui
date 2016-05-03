@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>812</width>
-    <height>795</height>
+    <width>820</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -196,7 +196,7 @@ Language Mode...</string>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QGroupBox" name="groupBox_4">
+       <widget class="QGroupBox" name="groupMatching">
         <property name="title">
          <string>Matching</string>
         </property>
@@ -234,14 +234,17 @@ Language Mode...</string>
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="labelPatternName">
           <property name="text">
            <string>Pattern Name</string>
           </property>
          </widget>
         </item>
         <item row="0" column="3">
-         <widget class="QLabel" name="label_5">
+         <widget class="QLabel" name="labelParentPattern">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Parent Pattern</string>
           </property>
@@ -254,7 +257,11 @@ Language Mode...</string>
          <widget class="QLineEdit" name="editPatternName"/>
         </item>
         <item row="1" column="3">
-         <widget class="QLineEdit" name="editParentPattern"/>
+         <widget class="QLineEdit" name="editParentPattern">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="0" column="1" rowspan="2">
          <widget class="QPushButton" name="buttonHighlightStyle">
@@ -277,27 +284,57 @@ Style...</string>
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="editRegex"/>
+    <widget class="QPlainTextEdit" name="editRegex">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="labelRegexEnd">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Ending Regular Expression</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="editRegexEnd"/>
+    <widget class="QLineEdit" name="editRegexEnd">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
-    <widget class="QLabel" name="editRegexError_2">
+    <widget class="QLabel" name="labelRegexError">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Regular Expression Indicating Error in Match (Optional)</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="editRegexError"/>
+    <widget class="QLineEdit" name="editRegexError">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_2">

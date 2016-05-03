@@ -30,6 +30,7 @@
 #include "highlight.h"
 #include "nedit.h"
 #include "string_view.h"
+#include "preferences.h"
 #include <string>
 #include <QList>
 
@@ -59,8 +60,12 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 void UpdateLanguageModeMenu(void);
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
 void updateHighlightStyleMenu(void);
+PatternSet *readDefaultPatternSet(const char *langModeName);
 
 // list of available highlight styles 
 extern QList<HighlightStyle *> HighlightStyles;
+
+extern int NPatternSets;
+extern PatternSet *PatternSets[MAX_LANGUAGE_MODES];
 
 #endif
