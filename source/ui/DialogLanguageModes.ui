@@ -105,7 +105,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listLanguages"/>
+      <widget class="QListWidget" name="listItems"/>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">

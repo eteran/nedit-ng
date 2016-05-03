@@ -27,11 +27,11 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Q
 		auto ptr  = new LanguageMode(*LanguageModes[i]);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-		ui.listLanguages->addItem(item);
+		ui.listItems->addItem(item);
 	}
 
-	if(ui.listLanguages->count() != 0) {
-		ui.listLanguages->setCurrentRow(0);
+	if(ui.listItems->count() != 0) {
+		ui.listItems->setCurrentRow(0);
 	}
 	
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
@@ -46,7 +46,7 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Q
 // Name: ~DialogLanguageModes
 //------------------------------------------------------------------------------
 DialogLanguageModes::~DialogLanguageModes() {
-	for(int i = 0; i < ui.listLanguages->count(); ++i) {
+	for(int i = 0; i < ui.listItems->count(); ++i) {
 		delete itemFromIndex(i);
 	}
 }
@@ -55,8 +55,8 @@ DialogLanguageModes::~DialogLanguageModes() {
 // Name: itemFromIndex
 //------------------------------------------------------------------------------
 LanguageMode *DialogLanguageModes::itemFromIndex(int i) const {
-	if(i < ui.listLanguages->count()) {
-	    QListWidgetItem* item = ui.listLanguages->item(i);
+	if(i < ui.listItems->count()) {
+	    QListWidgetItem* item = ui.listItems->item(i);
 		auto ptr = reinterpret_cast<LanguageMode *>(item->data(Qt::UserRole).toULongLong());
 		return ptr;
 	}
@@ -65,11 +65,11 @@ LanguageMode *DialogLanguageModes::itemFromIndex(int i) const {
 }
 
 //------------------------------------------------------------------------------
-// Name: on_listLanguages_itemSelectionChanged
+// Name: on_listItems_itemSelectionChanged
 //------------------------------------------------------------------------------
-void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
+void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		previous_ = nullptr;
 		return;
@@ -78,10 +78,14 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 	QListWidgetItem *const current = selections[0];
 
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
-#if 0
+
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		if(!checkCurrent(true)) {
+		
+		// NOTE(eteran): in the original nedit 5.6, this code is broken!
+		//               it results in a crash when leaving invalid entries :-(
+		//               we can do better of course
+		if(false/*!checkCurrent(true)*/) {
 
 			/* If there are problems, and the user didn't ask for the fields to be
 			   read, give more warning */
@@ -99,25 +103,28 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 			if (messageBox.clickedButton() == buttonKeep) {
 			
 				// again to cause messagebox to pop up
+#if 0
 				checkCurrent(false);
+#endif
 				
 				// reselect the old item
-				ui.listLanguages->blockSignals(true);
-				ui.listLanguages->setCurrentItem(previous_);
-				ui.listLanguages->blockSignals(false);
+				ui.listItems->blockSignals(true);
+				ui.listItems->setCurrentItem(previous_);
+				ui.listItems->blockSignals(false);
 				return;
 			}
 
 			// if we get here, we are ditching changes
 		} else {
-			// TODO(eteran): update entry we are leaving
+			if(!updateCurrentItem(previous_)) {
+				return;
+			}
 		}
-#endif
 	}
 
 	if(current) {
 		
-		const int i = ui.listLanguages->row(current);
+		const int i = ui.listItems->row(current);
 
 		LanguageMode *language = itemFromIndex(i);
 
@@ -176,10 +183,10 @@ void DialogLanguageModes::on_listLanguages_itemSelectionChanged() {
 
 		if(i == 0) {
 			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(ui.listLanguages->count() > 2);
+			ui.buttonDown  ->setEnabled(ui.listItems->count() > 2);
 			ui.buttonDelete->setEnabled(true);
 			ui.buttonCopy  ->setEnabled(true);
-		} else if(i == ui.listLanguages->count() - 1) {
+		} else if(i == ui.listItems->count() - 1) {
 			ui.buttonUp    ->setEnabled(true);
 			ui.buttonDown  ->setEnabled(false);
 			ui.buttonDelete->setEnabled(true);
@@ -362,7 +369,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 // Name: updateLanguageList
 //------------------------------------------------------------------------------
 bool DialogLanguageModes::updateLanguageList(bool silent) {
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return false;
 	}
@@ -370,7 +377,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 	QListWidgetItem *const selection = selections[0];
 	QString languageName = selection->text();
 	
-	const int i = ui.listLanguages->row(selection);
+	const int i = ui.listItems->row(selection);
 	LanguageMode *oldLM = itemFromIndex(i);
 
 	if(LanguageMode *newLM = readLMDialogFields(silent)) {
@@ -383,7 +390,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 		if (oldLM != nullptr && oldLM->name != newLM->name) {
 			int nCopies = 0;
 
-			for (int i = 0; i < ui.listLanguages->count(); i++) {
+			for (int i = 0; i < ui.listItems->count(); i++) {
 				if (oldLM->name == itemFromIndex(i)->name) {
 					nCopies++;
 				}
@@ -398,7 +405,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 			}			
 		}
 
-		QListWidgetItem* item = ui.listLanguages->item(i);
+		QListWidgetItem* item = ui.listItems->item(i);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newLM));
 		item->setText(newLM->name);
 		delete oldLM;
@@ -430,7 +437,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 			QString oldModeName = LanguageModes[window->languageMode_]->name;
 			window->languageMode_ = PLAIN_LANGUAGE_MODE;
 
-			for (int i = 0; i < ui.listLanguages->count(); i++) {
+			for (int i = 0; i < ui.listItems->count(); i++) {
 
 				if (oldModeName == itemFromIndex(i)->name) {
 					QString newDelimiters = itemFromIndex(i)->delimiters;
@@ -467,7 +474,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 	   and smart-indent macros and fix up the weird rename-format names */	   
 	// naming causes the name to be set to the format of "Old:New"
 	// update names appropriately
-	for (int i = 0; i < ui.listLanguages->count(); i++) {
+	for (int i = 0; i < ui.listItems->count(); i++) {
 		QStringList parts = itemFromIndex(i)->name.split(QLatin1Char(':'));
 	
 		if (parts.size() == 2) {
@@ -486,11 +493,11 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 	}
 	
 
-	for (int i = 0; i < ui.listLanguages->count(); i++) {
+	for (int i = 0; i < ui.listItems->count(); i++) {
 		LanguageModes[i] = new LanguageMode(*itemFromIndex(i));
 	}
 	
-	NLanguageModes = ui.listLanguages->count();
+	NLanguageModes = ui.listItems->count();
 	
 	/* Update user menu info to update language mode dependencies of
 	   user menu items */
@@ -520,15 +527,18 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 // Name: on_buttonNew_clicked
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonNew_clicked() {
-	// TODO(eteran): update entry we are leaving
+
+	if(!updateCurrentItem()) {
+		return;
+	}
 
 	auto ptr  = new LanguageMode;
 	ptr->name = tr("New Item");
 
 	auto item = new QListWidgetItem(ptr->name);
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	ui.listLanguages->addItem(item);
-	ui.listLanguages->setCurrentItem(item);
+	ui.listItems->addItem(item);
+	ui.listItems->setCurrentItem(item);
 }
 
 //------------------------------------------------------------------------------
@@ -536,9 +546,11 @@ void DialogLanguageModes::on_buttonNew_clicked() {
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonCopy_clicked() {
 
-	// TODO(eteran): update entry we are leaving
+	if(!updateCurrentItem()) {
+		return;
+	}
 
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
 	}
@@ -549,9 +561,9 @@ void DialogLanguageModes::on_buttonCopy_clicked() {
 	auto newItem = new QListWidgetItem(newPtr->name);
 	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
 
-	const int i = ui.listLanguages->row(selection);
-	ui.listLanguages->insertItem(i + 1, newItem);
-	ui.listLanguages->setCurrentItem(newItem);
+	const int i = ui.listItems->row(selection);
+	ui.listItems->insertItem(i + 1, newItem);
+	ui.listItems->setCurrentItem(newItem);
 }
 
 //------------------------------------------------------------------------------
@@ -559,18 +571,18 @@ void DialogLanguageModes::on_buttonCopy_clicked() {
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonUp_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
 	}
 
 	QListWidgetItem *const selection = selections[0];
 
-	const int i = ui.listLanguages->row(selection);
+	const int i = ui.listItems->row(selection);
 	if(i != 0) {	
-		QListWidgetItem *item = ui.listLanguages->takeItem(i);
-		ui.listLanguages->insertItem(i - 1, item);
-		ui.listLanguages->scrollToItem(item);
+		QListWidgetItem *item = ui.listItems->takeItem(i);
+		ui.listItems->insertItem(i - 1, item);
+		ui.listItems->scrollToItem(item);
 		item->setSelected(true);
 	}
 }
@@ -580,19 +592,19 @@ void DialogLanguageModes::on_buttonUp_clicked() {
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonDown_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
 	}
 
 	QListWidgetItem *const selection = selections[0];
 
-	const int i = ui.listLanguages->row(selection);
-	if(i != ui.listLanguages->count() - 1) {
+	const int i = ui.listItems->row(selection);
+	if(i != ui.listItems->count() - 1) {
 		
-		QListWidgetItem *item = ui.listLanguages->takeItem(i);
-		ui.listLanguages->insertItem(i + 1, item);
-		ui.listLanguages->scrollToItem(item);
+		QListWidgetItem *item = ui.listItems->takeItem(i);
+		ui.listItems->insertItem(i + 1, item);
+		ui.listItems->scrollToItem(item);
 		item->setSelected(true);
 	}
 }
@@ -602,7 +614,7 @@ void DialogLanguageModes::on_buttonDown_clicked() {
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonDelete_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listLanguages->selectedItems();
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return; // false
 	}
@@ -610,15 +622,15 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	QListWidgetItem *const selection = selections[0];
 	QString languageName = selection->text();
 
-	const int itemIndex = ui.listLanguages->row(selection);
+	const int itemIndex = ui.listItems->row(selection);
 
 	// Allow duplicate names to be deleted regardless of dependencies 
-	for (int i = 0; i < ui.listLanguages->count(); i++) {
+	for (int i = 0; i < ui.listItems->count(); i++) {
 		if (i != itemIndex && itemFromIndex(i)->name == itemFromIndex(itemIndex)->name) {
 			delete itemFromIndex(itemIndex);
 			delete selection;
 			// force an update of the display
-			Q_EMIT on_listLanguages_itemSelectionChanged();
+			Q_EMIT on_listItems_itemSelectionChanged();
 			return; // True;
 		}
 	}
@@ -637,6 +649,38 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	delete itemFromIndex(itemIndex);
 	delete selection;
-	Q_EMIT on_listLanguages_itemSelectionChanged();
+	Q_EMIT on_listItems_itemSelectionChanged();
 	return;// True;
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
+	// Get the current contents of the "patterns" dialog fields 
+	auto ptr = readLMDialogFields(false);
+	if(!ptr) {
+		return false;
+	}
+	
+	// delete the current pattern in this slot
+	auto old = reinterpret_cast<LanguageMode *>(item->data(Qt::UserRole).toULongLong());
+	delete old;
+	
+	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+	item->setText(ptr->name);
+	return true;
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogLanguageModes::updateCurrentItem() {
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
+	if(selections.size() != 1) {
+		return false;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	return updateCurrentItem(selection);	
 }

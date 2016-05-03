@@ -54,7 +54,9 @@ MenuItem *DialogMacros::itemFromIndex(int i) const {
 //------------------------------------------------------------------------------
 void DialogMacros::on_buttonNew_clicked() {
 
-	// TODO(eteran): update entry we are leaving
+	if(!updateCurrentItem()) {
+		return;
+	}
 
 	auto ptr  = new MenuItem;
 	ptr->name = tr("New Item");
@@ -70,7 +72,9 @@ void DialogMacros::on_buttonNew_clicked() {
 //------------------------------------------------------------------------------
 void DialogMacros::on_buttonCopy_clicked() {
 
-	// TODO(eteran): update entry we are leaving
+	if(!updateCurrentItem()) {
+		return;
+	}
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -202,7 +206,9 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 
 			// if we get here, we are ditching changes
 		} else {
-			// TODO(eteran): update entry we are leaving
+			if(!updateCurrentItem(previous_)) {
+				return;
+			}
 		}
 	}
 
@@ -477,4 +483,36 @@ bool DialogMacros::applyDialogChanges() {
 
 void DialogMacros::setPasteReplayEnabled(bool enabled) {
 	ui.buttonPasteLRMacro->setEnabled(enabled);
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogMacros::updateCurrentItem(QListWidgetItem *item) {
+	// Get the current contents of the "patterns" dialog fields 
+	auto ptr = readDialogFields(false);
+	if(!ptr) {
+		return false;
+	}
+	
+	// delete the current pattern in this slot
+	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
+	delete old;
+	
+	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+	item->setText(ptr->name);
+	return true;
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogMacros::updateCurrentItem() {
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
+	if(selections.size() != 1) {
+		return false;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	return updateCurrentItem(selection);	
 }

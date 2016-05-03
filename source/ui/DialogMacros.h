@@ -37,6 +37,8 @@ private:
 	bool applyDialogChanges();
 	void updateButtons();
 	MenuItem *itemFromIndex(int i) const;
+	bool updateCurrentItem();
+	bool updateCurrentItem(QListWidgetItem *item);		
 	
 private:
 	Ui::DialogMacros ui;

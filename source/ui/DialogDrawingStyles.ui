@@ -109,7 +109,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="listStyles"/>
+        <widget class="QListWidget" name="listItems"/>
        </item>
       </layout>
      </item>

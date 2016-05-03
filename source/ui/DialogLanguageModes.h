@@ -22,13 +22,15 @@ private Q_SLOTS:
 	void on_buttonDelete_clicked();
 	void on_buttonCopy_clicked();
 	void on_buttonNew_clicked();
-	void on_listLanguages_itemSelectionChanged();
+	void on_listItems_itemSelectionChanged();
 	
 private:
 	bool updateLMList(bool silent);
 	bool updateLanguageList(bool silent);
 	LanguageMode *readLMDialogFields(bool silent);
 	LanguageMode *itemFromIndex(int i) const;
+	bool updateCurrentItem();
+	bool updateCurrentItem(QListWidgetItem *item);		
 	
 private:
 	Ui::DialogLanguageModes ui;

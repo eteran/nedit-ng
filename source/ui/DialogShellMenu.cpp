@@ -55,7 +55,9 @@ MenuItem *DialogShellMenu::itemFromIndex(int i) const {
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_buttonNew_clicked() {
 
-	// TODO(eteran): update entry we are leaving
+	if(!updateCurrentItem()) {
+		return;
+	}
 	
 	auto ptr  = new MenuItem;
 	ptr->name = tr("New Item");
@@ -71,7 +73,9 @@ void DialogShellMenu::on_buttonNew_clicked() {
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_buttonCopy_clicked() {
 
-	// TODO(eteran): update entry we are leaving
+	if(!updateCurrentItem()) {
+		return;
+	}
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -163,7 +167,38 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 	QListWidgetItem *const current = selections[0];
 
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
-		// TODO(eteran): update entry we are leaving
+	
+		// we want to try to save it (but not apply it yet)
+		// and then move on
+		if(!checkCurrent(true)) {
+
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Discard Entry"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
+			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+			Q_UNUSED(buttonDiscard);
+
+			messageBox.exec();
+			if (messageBox.clickedButton() == buttonKeep) {
+			
+				// again to cause messagebox to pop up
+				checkCurrent(false);
+				
+				// reselect the old item
+				ui.listItems->blockSignals(true);
+				ui.listItems->setCurrentItem(previous_);
+				ui.listItems->blockSignals(false);
+				return;
+			}
+
+			// if we get here, we are ditching changes
+		} else {
+			if(!updateCurrentItem(previous_)) {
+				return;
+			}
+		}
 	}
 
 	if(current) {
@@ -431,4 +466,48 @@ bool DialogShellMenu::applyDialogChanges() {
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
 	ui.checkReplaceInput->setEnabled(checked);
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
+	// Get the current contents of the "patterns" dialog fields 
+	auto ptr = readDialogFields(false);
+	if(!ptr) {
+		return false;
+	}
+	
+	// delete the current pattern in this slot
+	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
+	delete old;
+	
+	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+	item->setText(ptr->name);
+	return true;
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogShellMenu::updateCurrentItem() {
+	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
+	if(selections.size() != 1) {
+		return false;
+	}
+
+	QListWidgetItem *const selection = selections[0];
+	return updateCurrentItem(selection);	
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogShellMenu::checkCurrent(bool silent) {
+	if(auto ptr = readDialogFields(silent)) {
+		delete ptr;
+		return true;
+	}
+	
+	return false;
 }

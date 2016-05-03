@@ -26,11 +26,14 @@ private Q_SLOTS:
 	void on_radioToSameDocument_toggled(bool checked);
 	
 private:
+	bool checkCurrent(bool silent);
 	MenuItem *readDialogFields(bool silent);
 	QString ensureNewline(const QString &string);
 	bool applyDialogChanges();
 	void updateButtons();
 	MenuItem *itemFromIndex(int i) const;
+	bool updateCurrentItem();
+	bool updateCurrentItem(QListWidgetItem *item);		
 	
 private:
 	Ui::DialogShellMenu ui;

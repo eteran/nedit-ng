@@ -17,7 +17,7 @@ public Q_SLOTS:
 	void setStyleByName(const QString &name);
 
 private Q_SLOTS:
-	void on_listStyles_itemSelectionChanged();
+	void on_listItems_itemSelectionChanged();
 	void on_buttonNew_clicked();
 	void on_buttonCopy_clicked();
 	void on_buttonDelete_clicked();
@@ -32,6 +32,8 @@ private:
 	bool checkCurrent(bool silent);
 	HighlightStyle *readDialogFields(bool silent);
 	HighlightStyle *itemFromIndex(int i) const;
+	bool updateCurrentItem();
+	bool updateCurrentItem(QListWidgetItem *item);		
 
 private:
 	Ui::DialogDrawingStyles ui;
