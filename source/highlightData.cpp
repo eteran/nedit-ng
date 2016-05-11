@@ -58,9 +58,6 @@
 #include <memory>
 #include <algorithm>
 
-#include <Xm/PushB.h>
-#include <Xm/RowColumn.h>
-
 namespace {
 
 /* Maximum number of patterns allowed in a pattern set (regular expression
