@@ -7,8 +7,6 @@
 #include "preferences.h"
 #include "Color.h"
 #include "highlight.h" // for AllocColor
-#include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
 
 //------------------------------------------------------------------------------
 // Name:

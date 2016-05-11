@@ -54,9 +54,6 @@
 #include <unistd.h>
 #include <pwd.h>
 
-#include <Xm/Xm.h>
-#include <Xm/XmP.h>
-
 static void processServerCommand(void);
 static void cleanUpServerCommunication(void);
 static void processServerCommandString(char *string);

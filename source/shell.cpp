@@ -59,10 +59,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <Xm/Xm.h>
-#include <Xm/MessageB.h>
-#include <Xm/Text.h>
-#include <Xm/Form.h>
 #include <Xm/PushBG.h>
 
 // Tuning parameters 

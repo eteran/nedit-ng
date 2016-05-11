@@ -58,8 +58,6 @@
 
 #include <sys/param.h>
 
-#include <Xm/Xm.h>
-#include <X11/keysym.h>
 #include <X11/IntrinsicP.h>
 #include <Xm/PushB.h>
 #include <Xm/RowColumn.h>

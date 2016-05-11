@@ -42,9 +42,7 @@
 #include <cstring>
 #include <climits>
 
-#include <Xm/Xm.h>
 #include <Xm/Label.h>
-#include <X11/Shell.h>
 
 static std::string expandAllTabsEx(view::string_view text, int tab_width);
 

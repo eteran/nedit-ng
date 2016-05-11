@@ -58,10 +58,6 @@
 #include <sys/param.h>
 #include <algorithm>
 
-#include <Xm/Xm.h>
-#include <Xm/XmP.h>
-#include <Xm/PrimitiveP.h>
-
 namespace {
 
 // How much re-parsing to do when an unfinished style is encountered 

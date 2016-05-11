@@ -46,9 +46,6 @@
 #include <cstring>
 #include <sys/param.h>
 
-#include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
-
 namespace {
 
 const int PROGRAM_SIZE      = 4096; // Maximum program size

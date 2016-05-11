@@ -71,7 +71,6 @@
 #include <sys/param.h>
 #include <fcntl.h>
 
-#include <Xm/Xm.h>
 #include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
 #include <Xm/RowColumn.h>

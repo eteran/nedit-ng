@@ -77,21 +77,14 @@
 #include <sys/param.h>
 #include <fcntl.h>
 
-#include <X11/Intrinsic.h>
-#include <X11/keysym.h>
-#include <Xm/Xm.h>
-#include <Xm/CutPaste.h>
 #include <Xm/Form.h>
-#include <Xm/RowColumn.h>
-#include <Xm/LabelG.h>
 #include <Xm/List.h>
-#include <Xm/ToggleB.h>
-#include <Xm/DialogS.h>
 #include <Xm/MessageB.h>
-#include <Xm/SelectioB.h>
 #include <Xm/PushB.h>
-#include <Xm/Text.h>
+#include <Xm/RowColumn.h>
+#include <Xm/SelectioB.h>
 #include <Xm/Separator.h>
+#include <Xm/ToggleB.h>
 
 namespace {
 

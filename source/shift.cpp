@@ -42,8 +42,6 @@
 #include <algorithm>
 #include <sys/param.h>
 
-#include <Xm/Xm.h>
-
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
 static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);

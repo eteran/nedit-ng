@@ -72,7 +72,6 @@
 #include "clearcase.h"
 
 #include <Xm/PushBG.h>
-#include <Xm/PushB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>

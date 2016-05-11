@@ -31,7 +31,6 @@
 #include "server_common.h"
 
 #include <cstdio>
-#include <Xm/Xm.h>
 #include <sys/types.h>
 #include <sys/param.h>
 
