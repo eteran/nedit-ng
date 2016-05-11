@@ -19,6 +19,8 @@ public:
 	void UpdateLanguageModeMenu();
 	void updateHighlightStyleMenu();
 	void SetLangModeMenu(const QString &name);
+	void RenameHighlightPattern(const QString &oldName, const QString &newName);
+	bool LMHasHighlightPatterns(const QString &languageMode);
 
 public Q_SLOTS:
 	void on_buttonLanguageMode_clicked();

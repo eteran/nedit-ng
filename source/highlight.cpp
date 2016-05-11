@@ -521,14 +521,14 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 
 	for (i = 0; i < nPatterns; i++) {
 		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {				
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(QString::fromStdString(patternSrc[i].name)));
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
 			return nullptr;
 		}
 	}
 
 	for (i = 0; i < nPatterns; i++) {
 		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {				
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(QString::fromStdString(patternSrc[i].name)));
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
 			return nullptr;
 		}
 	}
@@ -541,7 +541,7 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 
 			int parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
 			if (parentindex == -1) {
-				QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Pattern \"%1\" does not have valid parent")).arg(QString::fromStdString(patternSrc[i].name)));
+				QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Pattern \"%1\" does not have valid parent")).arg(patternSrc[i].name));
 				return nullptr;
 			}
 
@@ -570,14 +570,14 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	HighlightPattern *p1Ptr = pass1PatternSrc;
 	HighlightPattern *p2Ptr = pass2PatternSrc;
 
-	p1Ptr->name         = "";
+	p1Ptr->name         = QString();
 	p1Ptr->startRE      = QString();
 	p1Ptr->endRE        = QString();
 	p1Ptr->errorRE      = QString();
 	p1Ptr->style        = QLatin1String("Plain");
 	p1Ptr->flags        = 0;
 	
-	p2Ptr->name 		= "";
+	p2Ptr->name 		= QString();
 	p2Ptr->startRE  	= QString();
 	p2Ptr->endRE		= QString();
 	p2Ptr->errorRE  	= QString();
@@ -666,7 +666,7 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	auto setStyleTablePtr = [window](StyleTableEntry *p, HighlightPattern *pat) {
 		Color c;
 
-		p->highlightName = pat->name;
+		p->highlightName = pat->name.toStdString();
 		p->styleName     = pat->style.toStdString();
 		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString()).toStdString();
 		p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
@@ -782,7 +782,7 @@ static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *pat
 		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
 		
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {		
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(QString::fromStdString(patternSrc[i].name)));
+			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));
 			return nullptr;
 		}
 		
@@ -959,7 +959,7 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 
 	if (hData && (set = hData->patternSetForWindow)) {
 		for (int i = 0; i < set->nPatterns; i++)
-			if (set->patterns[i].name == name) {
+			if (set->patterns[i].name == QLatin1String(name)) {
 				return &set->patterns[i];
 			}
 	}
@@ -2162,7 +2162,7 @@ static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char 
 	}
 	
 	for (int i = 0; i < nPats; i++) {
-		if (patList[i].name == patName) {	
+		if (patList[i].name == QLatin1String(patName)) {
 			return i;
 		}
 	}

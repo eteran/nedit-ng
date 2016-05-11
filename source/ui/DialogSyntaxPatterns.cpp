@@ -153,7 +153,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		int nPatterns = patSet->nPatterns;
 		for (int i = 0; i < nPatterns; i++) {
 			auto ptr  = new HighlightPattern(patSet->patterns[i]);
-			auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+			auto item = new QListWidgetItem(ptr->name);
 			item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 			ui.listItems->addItem(item);
 		}
@@ -274,7 +274,7 @@ bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
 	delete old;
 	
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(QString::fromStdString(ptr->name));
+	item->setText(ptr->name);
 	return true;
 }
 
@@ -301,9 +301,9 @@ void DialogSyntaxPatterns::on_buttonNew_clicked() {
 	}
 
 	auto ptr  = new HighlightPattern;
-	ptr->name = tr("New Item").toStdString();
+	ptr->name = tr("New Item");
 
-	auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+	auto item = new QListWidgetItem(ptr->name);
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 	ui.listItems->addItem(item);
 	ui.listItems->setCurrentItem(item);
@@ -348,7 +348,7 @@ void DialogSyntaxPatterns::on_buttonCopy_clicked() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<HighlightPattern *>(selection->data(Qt::UserRole).toULongLong());
 	auto newPtr = new HighlightPattern(*ptr);
-	auto newItem = new QListWidgetItem(QString::fromStdString(newPtr->name));
+	auto newItem = new QListWidgetItem(newPtr->name);
 	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
 
 	const int i = ui.listItems->row(selection);
@@ -513,7 +513,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	int nPatterns = defaultPatSet->nPatterns;
 	for (int i = 0; i < nPatterns; i++) {
 		auto ptr  = new HighlightPattern(defaultPatSet->patterns[i]);
-		auto item = new QListWidgetItem(QString::fromStdString(ptr->name));
+		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
 	}
@@ -624,7 +624,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 			isColorOnly = pat->flags & COLOR_ONLY;
 			isRange = (!pat->endRE.isNull());
 			
-			ui.editPatternName->setText(QString::fromStdString(pat->name));
+			ui.editPatternName->setText(pat->name);
 			ui.editParentPattern->setText(!pat->subPatternOf.isNull() ? pat->subPatternOf : QString());
 			ui.editRegex->setPlainText(pat->startRE);
 			ui.editRegexEnd->setText(pat->endRE);
@@ -692,7 +692,14 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 	// TODO(eteran): implement this
-	qDebug("[UpdateLanguageModeMenu]");
+#if 0
+	Widget oldMenu = HighlightDialog.lmPulldown;
+	HighlightDialog.lmPulldown = CreateLanguageModeMenu(XtParent(XtParent(oldMenu)), langModeCB, nullptr);
+	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.lmOptMenu), XmNsubMenuId, HighlightDialog.lmPulldown, nullptr);
+	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
+
+	XtDestroyWidget(oldMenu);
+#endif
 }
 
 
@@ -702,7 +709,21 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 	// TODO(eteran): implement this
-	qDebug("[updateHighlightStyleMenu]");
+#if 0
+	int patIndex;
+
+	Widget oldMenu = HighlightDialog.stylePulldown;
+	HighlightDialog.stylePulldown = createHighlightStylesMenu(XtParent(XtParent(oldMenu)));
+	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.styleOptMenu), XmNsubMenuId, HighlightDialog.stylePulldown, nullptr);
+	patIndex = ManagedListSelectedIndex(HighlightDialog.managedListW);
+	if (patIndex == -1) {
+		setStyleMenu("Plain");
+	} else {
+		setStyleMenu(HighlightDialog.patterns[patIndex]->style.toStdString());
+	}
+
+	XtDestroyWidget(oldMenu);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -901,8 +922,8 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 		return nullptr;
 	}
 	
-	pat->name = name.toStdString();
-	if (pat->name.empty()) {
+	pat->name = name;
+	if (pat->name.isEmpty()) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
@@ -1022,4 +1043,20 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 	}
 	
 	return false;
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const QString &newName) {
+	if (ui.comboLanguageMode->currentText() == oldName) {
+		setLanguageMenu(newName);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
+	return languageMode == ui.comboLanguageMode->currentText() && ui.listItems->count() != 0;
 }

@@ -24,7 +24,7 @@ public:
 	void swap(HighlightPattern &other);
 
 public:
-	std::string name;
+	QString name;
 	QString startRE;
 	QString endRE;
 	QString errorRE;
