@@ -9,10 +9,11 @@
 class HighlightPattern {
 public:
 	HighlightPattern();
-	HighlightPattern(const HighlightPattern &other);
-	HighlightPattern &operator=(const HighlightPattern &rhs);
-	HighlightPattern(HighlightPattern &&other);
-	HighlightPattern &operator=(HighlightPattern &&rhs);
+	HighlightPattern(const HighlightPattern &) = default;
+	HighlightPattern &operator=(const HighlightPattern &) = default;
+	HighlightPattern(HighlightPattern &&) = default;
+	HighlightPattern &operator=(HighlightPattern &&) = default;
+	
 	~HighlightPattern();
 	
 public:

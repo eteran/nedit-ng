@@ -1,7 +1,6 @@
 
 #include "PatternSet.h"
 #include "HighlightPattern.h"
-#include "preferences.h" // for AllocatedStringsDiffer
 
 #include <algorithm>
 
@@ -70,8 +69,14 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 		return true;
 	}
 	
-	if(this->patterns != rhs.patterns) {
+	if(this->nPatterns != rhs.nPatterns) {
 		return true;
+	}
+	
+	for(int i = 0; i < nPatterns; ++i) {
+		if(this->patterns[i] != rhs.patterns[i]) {
+			return true;
+		}
 	}
 
 	return false;

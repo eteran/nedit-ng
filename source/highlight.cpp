@@ -30,6 +30,7 @@
 #include <QMessageBox>
 
 #include "highlight.h"
+#include "WindowHighlightData.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
 #include "text.h"
@@ -45,6 +46,9 @@
 #include "HighlightPattern.h"
 #include "misc.h"
 #include "MotifHelper.h"
+#include "HighlightData.h"
+#include "ReparseContext.h"
+
 
 #include <cstdio>
 #include <climits>
@@ -70,10 +74,6 @@ const int REPARSE_CHUNK_SIZE = 80;
 
 }
 
-
-
-
-
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
    subtracting 'A'). */
@@ -91,53 +91,17 @@ const int REPARSE_CHUNK_SIZE = 80;
    by a context requirement of 1 line and 0 characters */
 #define CAN_CROSS_LINE_BOUNDARIES(contextRequirements) (contextRequirements->nLines != 1 || contextRequirements->nChars != 0)
 
-// "Compiled" version of pattern specification 
-struct highlightDataRec {
-	regexp *startRE;
-	regexp *endRE;
-	regexp *errorRE;
-	regexp *subPatternRE;
-	char style;
-	int colorOnly;
-	int startSubexprs[NSUBEXP + 1];
-	int endSubexprs[NSUBEXP + 1];
-	int flags;
-	int nSubPatterns;
-	int nSubBranches; // Number of top-level branches of subPatternRE 
-	long userStyleIndex;
-	struct highlightDataRec **subPatterns;
-};
 
-// Context requirements for incremental reparsing of a pattern set 
-struct reparseContext {
-	int nLines;
-	int nChars;
-};
 
-/* Data structure attached to window to hold all syntax highlighting
-   information (for both drawing and incremental reparsing) */
-struct windowHighlightData {
-	highlightDataRec *pass1Patterns;
-	highlightDataRec *pass2Patterns;
-	char *parentStyles;
-	reparseContext contextRequirements;
-	StyleTableEntry *styleTable;
-	int nStyles;
-	TextBuffer *styleBuffer;
-	PatternSet *patternSetForWindow;
-};
-
-static windowHighlightData *createHighlightData(Document *window, PatternSet *patSet);
-static void freeHighlightData(windowHighlightData *hd);
 static PatternSet *findPatternsForWindow(Document *window, int warn);
-static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
-static void freePatterns(highlightDataRec *patterns);
+static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
+static void freePatterns(HighlightData *patterns);
 static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, const int pos);
 static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg);
-static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
-static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
-static bool parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
-static void passTwoParseString(highlightDataRec *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
+static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
+static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static int lastModified(TextBuffer *styleBuf);
@@ -145,13 +109,13 @@ static char getPrevChar(TextBuffer *buf, int pos);
 static regexp *compileREAndWarn(Widget parent, view::string_view re);
 static int parentStyleOf(const char *parentStyles, int style);
 static int isParentStyle(const char *parentStyles, int style1, int style2);
-static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlightData, int *pos);
-static int backwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
-static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos);
+static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
+static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
-static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style);
+static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static void updateWindowHeight(Document *window, int oldFontHeight);
 static int getFontHeight(Document *window);
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
@@ -182,7 +146,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	(void)deletedText;
 
 	auto window = static_cast<Document *>(cbArg);
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
 	if(!highlightData)
 		return;
@@ -227,7 +191,7 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 */
 void StartHighlighting(Document *window, int warn) {
 	PatternSet *patterns;
-	windowHighlightData *highlightData;
+	WindowHighlightData *highlightData;
 	char prevChar = '\0';
 	int i, oldFontHeight;
 
@@ -308,7 +272,7 @@ void StopHighlighting(Document *window) {
 	oldFontHeight = getFontHeight(window);
 
 	// Free and remove the highlight data from the window 
-	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
+	freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
 	/* Remove and detach style buffer and style table from all text
@@ -335,7 +299,7 @@ void FreeHighlightingData(Document *window) {
 		return;
 
 	// Free and remove the highlight data from the window 
-	freeHighlightData(static_cast<windowHighlightData *>(window->highlightData_));
+	freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
 	window->highlightData_ = nullptr;
 
 	/* The text display may make a last desperate attempt to access highlight
@@ -350,7 +314,7 @@ void FreeHighlightingData(Document *window) {
 ** text widget and redisplay.
 */
 void AttachHighlightToWidget(Widget widget, Document *window) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
 	reinterpret_cast<TextWidget>(widget)->text.textD->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
 }
@@ -368,7 +332,7 @@ void RemoveWidgetHighlight(Widget widget) {
 */
 void UpdateHighlightStyles(Document *window) {
 
-	auto oldHighlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto oldHighlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
 	// Do nothing if window not highlighted 
 	if (!window->highlightData_) {
@@ -383,7 +347,7 @@ void UpdateHighlightStyles(Document *window) {
 	}
 
 	// Build new patterns 
-	windowHighlightData *highlightData = createHighlightData(window, patterns);
+	WindowHighlightData *highlightData = createHighlightData(window, patterns);
 	if(!highlightData) {
 		StopHighlighting(window);
 		return;
@@ -421,7 +385,7 @@ bool TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-	windowHighlightData *highlightData = createHighlightData(WindowList, patSet);
+	WindowHighlightData *highlightData = createHighlightData(WindowList, patSet);
 	if(!highlightData)
 		return false;
 	freeHighlightData(highlightData);
@@ -440,8 +404,8 @@ bool TestHighlightPatterns(PatternSet *patSet) {
 **/
 void *GetHighlightInfo(Document *window, int pos) {
 
-	highlightDataRec *pattern = nullptr;
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	HighlightData *pattern = nullptr;
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	if (!highlightData)
 		return nullptr;
 
@@ -475,7 +439,7 @@ void *GetHighlightInfo(Document *window, int pos) {
 ** calling this.  Because of the slow, multi-phase destruction of
 ** widgets, this data can be referenced even AFTER destroying the widget.
 */
-static void freeHighlightData(windowHighlightData *hd) {
+void freeHighlightData(WindowHighlightData *hd) {
 
 	if(hd) {
 		freePatterns(hd->pass1Patterns);
@@ -530,7 +494,7 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 ** are encountered, warns user with a dialog and returns nullptr.  To free the
 ** allocated components of the returned data structure, use freeHighlightData.
 */
-static windowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
+WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	HighlightPattern *patternSrc = patSet->patterns;
 	int nPatterns    = patSet->nPatterns;
 	int contextLines = patSet->lineContext;
@@ -541,8 +505,8 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	int noPass1;
 	int noPass2;
 	char *parentStylesPtr;
-	highlightDataRec *pass1Pats;
-	highlightDataRec *pass2Pats;
+	HighlightData *pass1Pats;
+	HighlightData *pass2Pats;
 
 	// The highlighting code can't handle empty pattern sets, quietly say no 
 	if (nPatterns == 0) {
@@ -749,7 +713,7 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 	auto styleBuf = new TextBuffer;
 
 	// Collect all of the highlighting information in a single structure 
-	auto highlightData = new windowHighlightData;
+	auto highlightData = new WindowHighlightData;
 	highlightData->pass1Patterns              = pass1Pats;
 	highlightData->pass2Patterns              = pass2Pats;
 	highlightData->parentStyles               = parentStyles;
@@ -765,10 +729,10 @@ static windowHighlightData *createHighlightData(Document *window, PatternSet *pa
 
 /*
 ** Transform pattern sources into the compiled highlight information
-** actually used by the code.  Output is a tree of highlightDataRec structures
+** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns) {
+static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns) {
 	int length;
 	int subPatIndex;
 	int subExprNum;
@@ -777,7 +741,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
-	auto compiledPats = new highlightDataRec[nPatterns + 1];
+	auto compiledPats = new HighlightData[nPatterns + 1];
 	compiledPats[nPatterns].style = 0;
 
 	// Build the tree of parse expressions 
@@ -795,7 +759,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 	}
 
 	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new highlightDataRec *[compiledPats[i].nSubPatterns];
+		compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new HighlightData *[compiledPats[i].nSubPatterns];
 	}
 
 	for (int i = 0; i < nPatterns; i++) {
@@ -968,7 +932,7 @@ static highlightDataRec *compilePatterns(Widget dialogParent, HighlightPattern *
 /*
 ** Free a pattern list and all of its allocated components
 */
-static void freePatterns(highlightDataRec *patterns) {
+static void freePatterns(HighlightData *patterns) {
 
 	if(patterns) {
 		for (int i = 0; patterns[i].style != 0; i++) {
@@ -990,7 +954,7 @@ static void freePatterns(highlightDataRec *patterns) {
 ** Find the HighlightPattern structure with a given name in the window.
 */
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
-	auto hData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
 	PatternSet *set;
 
 	if (hData && (set = hData->patternSetForWindow)) {
@@ -1007,7 +971,7 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
 int HighlightCodeOfPos(Document *window, int pos) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 
@@ -1030,7 +994,7 @@ int HighlightCodeOfPos(Document *window, int pos) {
 /* YOO: This is called form only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
@@ -1066,7 +1030,7 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 ** is used.
 */
 int StyleLengthOfCodeFromPos(Document *window, int pos) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
 	int hCode = 0;
 	int oldPos = pos;
@@ -1109,7 +1073,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 ** hCode (if any).
 */
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
 	hCode -= UNFINISHED_STYLE; // get the correct index value 
 	if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
@@ -1192,10 +1156,10 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, const int pos) {
 	TextBuffer *buf = window->buffer_;
 	int beginParse, endParse, beginSafety, endSafety, p;
-	auto highlightData = static_cast<windowHighlightData *>(window->highlightData_);
+	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
-	reparseContext *context = &highlightData->contextRequirements;
-	highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
+	ReparseContext *context = &highlightData->contextRequirements;
+	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	char c, prevChar;
 	int firstPass2Style = (unsigned char)pass2Patterns[1].style;
 
@@ -1275,13 +1239,13 @@ static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, cons
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters) {
+static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters) {
 	int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
 	TextBuffer *styleBuf = highlightData->styleBuffer;
-	highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
-	highlightDataRec *pass2Patterns = highlightData->pass2Patterns;
-	highlightDataRec *startPattern;
-	reparseContext *context = &highlightData->contextRequirements;
+	HighlightData *pass1Patterns = highlightData->pass1Patterns;
+	HighlightData *pass2Patterns = highlightData->pass2Patterns;
+	HighlightData *startPattern;
+	ReparseContext *context = &highlightData->contextRequirements;
 	char *parentStyles = highlightData->parentStyles;
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
@@ -1359,7 +1323,7 @@ static void incrementalReparse(windowHighlightData *highlightData, TextBuffer *b
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-static int parseBufferRange(highlightDataRec *pass1Patterns, highlightDataRec *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, reparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
+static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
 
 	int endSafety, endPass2Safety, startPass2Safety;
 	int modStart, modEnd, beginSafety, beginStyle, p, style;
@@ -1509,13 +1473,13 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-static bool parseString(highlightDataRec *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool subExecuted;
 	int *subExpr;
 	char succChar = match_till ? (*match_till) : '\0';
-	highlightDataRec *subPat = nullptr;
-	highlightDataRec *subSubPat;
+	HighlightData *subPat = nullptr;
+	HighlightData *subSubPat;
 
 	if (length <= 0) {
 		return false;
@@ -1680,7 +1644,7 @@ static bool parseString(highlightDataRec *pattern, const char **string, char **s
 ** have the same meaning as in parseString, except that strings aren't doubly
 ** indirect and string pointers are not updated.
 */
-static void passTwoParseString(highlightDataRec *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
 	int inParseRegion = False;
 	char *stylePtr, temp, *parseStart = nullptr, *parseEnd, *s, *c;
 	const char *stringPtr;
@@ -1989,7 +1953,7 @@ static int isParentStyle(const char *parentStyles, int style1, int style2) {
 ** operation, i.e. the parent pattern initiates, and leaf patterns merely
 ** confirm and color.  Returns TRUE if the pattern is suitable for parsing.
 */
-static int patternIsParsable(highlightDataRec *pattern) {
+static int patternIsParsable(HighlightData *pattern) {
 	return pattern != nullptr && pattern->subPatternRE != nullptr;
 }
 
@@ -2007,11 +1971,11 @@ static int patternIsParsable(highlightDataRec *pattern) {
 ** result in an incorrect re-parse.  However this will happen very rarely,
 ** and, if it does, is unlikely to result in incorrect highlighting.
 */
-static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlightData, int *pos) {
+static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
 	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
 	char *parentStyles = highlightData->parentStyles;
-	highlightDataRec *pass1Patterns = highlightData->pass1Patterns;
-	reparseContext *context = &highlightData->contextRequirements;
+	HighlightData *pass1Patterns = highlightData->pass1Patterns;
+	ReparseContext *context = &highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change 
 	*pos = backwardOneContext(buf, context, *pos);
@@ -2140,7 +2104,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, windowHighlightData *highlig
 ** only one extra character, but I'm not sure, and my brain hurts from
 ** thinking about it).
 */
-static int backwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos) {
+static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos) {
 	if (context->nLines == 0)
 		return std::max<int>(0, fromPos - context->nChars);
 	else if (context->nChars == 0)
@@ -2157,7 +2121,7 @@ static int backwardOneContext(TextBuffer *buf, reparseContext *context, int from
 ** next line, rather than the newline character at the end (see notes in
 ** backwardOneContext).
 */
-static int forwardOneContext(TextBuffer *buf, reparseContext *context, int fromPos) {
+static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos) {
 	if (context->nLines == 0)
 		return std::min<int>(buf->BufGetLength(), fromPos + context->nChars);
 	else if (context->nChars == 0)
@@ -2181,7 +2145,7 @@ static void recolorSubexpr(regexp *re, int subexpr, int style, const char *strin
 /*
 ** Search for a pattern in pattern list "patterns" with style "style"
 */
-static highlightDataRec *patternOfStyle(highlightDataRec *patterns, int style) {
+static HighlightData *patternOfStyle(HighlightData *patterns, int style) {
 
 	for (int i = 0; patterns[i].style != 0; i++)
 		if (patterns[i].style == style)

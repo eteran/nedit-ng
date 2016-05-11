@@ -46,6 +46,7 @@ enum {
 
 class PatternSet;
 class HighlightPattern;
+class WindowHighlightData;
 
 bool TestHighlightPatterns(PatternSet *patSet);
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name);
@@ -67,5 +68,7 @@ void StartHighlighting(Document *window, int warn);
 void StopHighlighting(Document *window);
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 void UpdateHighlightStyles(Document *window);
+WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet);
+void freeHighlightData(WindowHighlightData *hd);
 
 #endif

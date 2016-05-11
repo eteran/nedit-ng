@@ -1,6 +1,7 @@
 
 #include <QtDebug>
 #include <QMessageBox>
+#include <QIntValidator>
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
 #include "PatternSet.h"
@@ -9,6 +10,8 @@
 #include "HighlightStyle.h"
 #include "preferences.h"
 #include "highlightData.h"
+#include "HighlightData.h"
+#include "WindowHighlightData.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogSyntaxPatterns
@@ -16,21 +19,24 @@
 DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 	
+	ui.editContextChars->setValidator(new QIntValidator(0, INT_MAX, this));
+	ui.editContextLines->setValidator(new QIntValidator(0, INT_MAX, this));
+	
 	connect(ui.radioColoring,    SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 	connect(ui.radioPass1,       SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 	connect(ui.radioPass2,       SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 	connect(ui.radioSubPattern,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 	connect(ui.radioSimpleRegex, SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 	connect(ui.radioRangeRegex,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));	
+
+	// populate the highlight style combo
+	for(HighlightStyle *style : HighlightStyles) {
+		ui.comboHighlightStyle->addItem(style->name);
+	}
 	
 	// populate language mode combo
 	for (int i = 0; i < NLanguageModes; i++) {	
 		ui.comboLanguageMode->addItem(LanguageModes[i]->name);
-	}
-	
-	// populate the highlight style combo
-	for(HighlightStyle *style : HighlightStyles) {
-		ui.comboHighlightStyle->addItem(style->name);
 	}
 }
 
@@ -60,6 +66,80 @@ HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
 // Name: setLanguageName
 //------------------------------------------------------------------------------
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
+
+
+
+	// if there is no change, do nothing
+	if(previousLanguage_== name) {
+		return;
+	}
+	
+	
+	// if we are setting the language for the first time skip this part
+	// otherwise check if any uncommited changes are present
+	if(!previousLanguage_.isEmpty()) {
+		// Look up the original version of the patterns being edited 
+		PatternSet emptyPatSet;
+		PatternSet *oldPatSet = FindPatternSet(previousLanguage_);
+		if(!oldPatSet) {
+			oldPatSet = &emptyPatSet;
+		}
+
+		/* Get the current information displayed by the dialog.  If it's bad,
+		   give the user the chance to throw it out or go back and fix it.  If
+		   it has changed, give the user the chance to apply discard or cancel. */
+		PatternSet *newPatSet = getDialogPatternSet();	
+
+		if(!newPatSet) {
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Incomplete Language Mode"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(tr("Discard incomplete entry for current language mode?"));
+			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+			Q_UNUSED(buttonDiscard);
+
+			messageBox.exec();
+			if (messageBox.clickedButton() == buttonKeep) {
+			
+				// reselect the old item
+				ui.comboLanguageMode->blockSignals(true);
+				setLanguageMenu(previousLanguage_);
+				ui.comboLanguageMode->blockSignals(false);
+				return;
+			}
+		} else if (*oldPatSet != *newPatSet) {
+		
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Language Mode"));
+			messageBox.setIcon(QMessageBox::Warning);
+			messageBox.setText(tr("Apply changes for language mode %1?").arg(previousLanguage_));
+			QPushButton *buttonApply   = messageBox.addButton(tr("Apply Changes"), QMessageBox::AcceptRole);
+			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard Changes"), QMessageBox::RejectRole);
+			QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
+			Q_UNUSED(buttonDiscard);
+
+
+			messageBox.exec();
+			if (messageBox.clickedButton() == buttonCancel) {
+
+
+				// reselect the old item
+				ui.comboLanguageMode->blockSignals(true);
+				setLanguageMenu(previousLanguage_);
+				ui.comboLanguageMode->blockSignals(false);
+
+				return;
+			} else if (messageBox.clickedButton() == buttonApply) {
+				updatePatternSet();
+			}
+		}
+
+		if(newPatSet) {
+			delete newPatSet;
+		}
+	}
+	
 
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
@@ -91,6 +171,8 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	if(ui.listItems->count() != 0) {
 		ui.listItems->setCurrentRow(0);
 	}
+	
+	previousLanguage_ = name;
 }
 
 //------------------------------------------------------------------------------
@@ -348,7 +430,7 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	messageBox.setWindowTitle(tr("Delete Pattern"));
 	messageBox.setIcon(QMessageBox::Warning);
 	messageBox.setText(tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode));
-	QPushButton *buttonYes     = messageBox.addButton(QLatin1String("Yes, Delete"), QMessageBox::AcceptRole);
+	QPushButton *buttonYes     = messageBox.addButton(tr("Yes, Delete"), QMessageBox::AcceptRole);
 	QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
 	Q_UNUSED(buttonYes);
 
@@ -607,6 +689,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 	// TODO(eteran): implement this
+	qDebug("[UpdateLanguageModeMenu]");
 }
 
 
@@ -616,13 +699,88 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 	// TODO(eteran): implement this
+	qDebug("[updateHighlightStyleMenu]");
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::updatePatternSet() {
-	// TODO(eteran): implement this
+
+	// Make sure the patterns are valid and compile 
+	if (!checkHighlightDialogData()) {
+		return false;
+	}
+
+	// Get the current data 
+	PatternSet *patSet = getDialogPatternSet();
+	if(!patSet) {
+		return false;
+	}
+
+	// Find the pattern being modified 
+	int psn;
+	for (psn = 0; psn < NPatternSets; psn++) {
+		if (PatternSets[psn]->languageMode == ui.comboLanguageMode->currentText()) {
+			break;
+		}
+	}
+
+	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
+	int oldNum = -1;
+	if (psn == NPatternSets) {
+		PatternSets[NPatternSets++] = patSet;
+		oldNum = 0;
+	} else {
+		oldNum = PatternSets[psn]->nPatterns;
+		delete PatternSets[psn];
+		PatternSets[psn] = patSet;
+	}
+
+	// Find windows that are currently using this pattern set and re-do the highlighting
+	for(Document *window: WindowList) {
+		if (patSet->nPatterns > 0) {
+			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode)) {
+				/*  The user worked on the current document's language mode, so
+				    we have to make some changes immediately. For inactive
+				    modes, the changes will be activated on activation.  */
+				if (oldNum == 0) {
+					/*  Highlighting (including menu entry) was deactivated in
+					    this function or in preferences.c::reapplyLanguageMode()
+					    if the old set had no patterns, so reactivate menu entry. */
+					if (window->IsTopDocument()) {
+						XtSetSensitive(window->highlightItem_, true);
+					}
+
+					//  Reactivate highlighting if it's default  
+					window->highlightSyntax_ = GetPrefHighlightSyntax();
+				}
+
+				if (window->highlightSyntax_) {
+					StopHighlighting(window);
+					if (window->IsTopDocument()) {
+						XtSetSensitive(window->highlightItem_, true);
+						window->SetToggleButtonState(window->highlightItem_, true, false);
+					}
+					StartHighlighting(window, true);
+				}
+			}
+		} else {
+			/*  No pattern in pattern set. This will probably not happen much,
+			    but you never know.  */
+			StopHighlighting(window);
+			window->highlightSyntax_ = false;
+
+			if (window->IsTopDocument()) {
+				XtSetSensitive(window->highlightItem_, false);
+				window->SetToggleButtonState(window->highlightItem_, false, false);
+			}
+		}
+	}
+
+	// Note that preferences have been changed 
+	MarkPrefsChanged();
+
 	return true;
 }
 
@@ -642,6 +800,19 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	return result;
 }
 
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
+	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
+	if(index != -1) {
+		ui.comboLanguageMode->setCurrentIndex(index);
+	} else {
+		ui.comboLanguageMode->setCurrentIndex(0);
+	}
+}
+
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
@@ -653,7 +824,6 @@ void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 	} else {
 		ui.comboHighlightStyle->setCurrentIndex(0);
 	}
-	
 }
 
 /*
@@ -685,7 +855,9 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in context chars").arg(ui.editContextChars->text()));
 		return nullptr;
 	}
-
+		
+	// ensure that the list has the current item complete filled out
+	updateCurrentItem();
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
@@ -694,7 +866,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	
-	for (int i = 0; i < ui.listItems->count(); i++) {		
+	for (int i = 0; i < ui.listItems->count(); i++) {
 		patSet->patterns[i] = *itemFromIndex(i);
 	}
 	
@@ -704,7 +876,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 /*
 ** Read the pattern fields of the highlight dialog, and produce an allocated
 ** HighlightPattern structure reflecting the contents, or pop up dialogs
-** telling the user what's wrong (Passing "silent" as True, suppresses these
+** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
 HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
@@ -822,6 +994,28 @@ bool DialogSyntaxPatterns::checkCurrentPattern(bool silent) {
 	if(auto ptr = readDialogFields(silent)) {
 		delete ptr;
 		return true;
+	}
+	
+	return false;
+}
+
+/*
+** Do a test compile of patterns in "patSet" and report problems to the
+** user via dialog.  Returns true if patterns are ok.
+**
+** This is somewhat kludgy in that it uses createHighlightData, which
+** requires a window to find the fonts to use, and just uses a random
+** window from the window list.  Since the window is used to get the
+** dialog parent as well, in non-popups-under-pointer mode, these dialogs
+** will appear in odd places on the screen.
+*/
+bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
+
+	/* Compile the patterns (passing a random window as a source for fonts, and
+	   parent for dialogs, since we really don't care what fonts are used) */
+	if(WindowHighlightData *highlightData = createHighlightData(WindowList, patSet)) {
+		freeHighlightData(highlightData);
+		return true;	
 	}
 	
 	return false;

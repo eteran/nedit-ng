@@ -44,16 +44,19 @@ private:
 	bool updatePatternSet();
 	bool checkHighlightDialogData();
 	void setStyleMenu(const QString &name);
+	void setLanguageMenu(const QString &name);
 	PatternSet *getDialogPatternSet();
 	HighlightPattern *itemFromIndex(int i) const;
 	HighlightPattern *readDialogFields(bool silent);
 	bool checkCurrentPattern(bool silent);
 	bool updateCurrentItem();
 	bool updateCurrentItem(QListWidgetItem *item);
+	bool TestHighlightPatterns(PatternSet *patSet);
 
 private:
 	Ui::DialogSyntaxPatterns ui;
 	QListWidgetItem *previous_;
+	QString previousLanguage_;
 };
 
 #endif
