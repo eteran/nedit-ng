@@ -317,6 +317,9 @@ void DialogSyntaxPatterns::on_buttonDelete_clicked() {
 	if(selections.size() != 1) {
 		return;
 	}
+	
+	// prevent usage of this item going forward
+	previous_ = nullptr;
 
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<HighlightPattern *>(selection->data(Qt::UserRole).toULongLong());

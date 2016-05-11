@@ -627,6 +627,10 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	// Allow duplicate names to be deleted regardless of dependencies 
 	for (int i = 0; i < ui.listItems->count(); i++) {
 		if (i != itemIndex && itemFromIndex(i)->name == itemFromIndex(itemIndex)->name) {
+		
+		
+			previous_ = nullptr;		
+		
 			delete itemFromIndex(itemIndex);
 			delete selection;
 			// force an update of the display
@@ -646,6 +650,8 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
 		return; // False;
 	}
+	
+	previous_ = nullptr;
 
 	delete itemFromIndex(itemIndex);
 	delete selection;

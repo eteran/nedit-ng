@@ -122,6 +122,9 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 	if(selections.size() != 1) {
 		return;
 	}
+	
+	// prevent usage of this item going forward
+	previous_ = nullptr;
 
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
