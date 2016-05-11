@@ -56,7 +56,6 @@
 #include "MotifHelper.h"
 #include "prefFile.h"
 #include "misc.h"
-#include "managedList.h"
 #include "fileUtils.h"
 #include "utils.h"
 

@@ -48,7 +48,6 @@
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
 #include "misc.h"
-#include "managedList.h"
 #include "memory.h"
 
 #include <cstdio>

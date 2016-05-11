@@ -9,7 +9,6 @@ add_library (NUtil
 	misc.cpp 
 	fileUtils.cpp 
 	prefFile.cpp 
-	managedList.cpp 
 	utils.cpp 
 	clearcase.cpp)
 
