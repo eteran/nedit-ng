@@ -72,7 +72,6 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		return;
 	}
 	
-	
 	// if we are setting the language for the first time skip this part
 	// otherwise check if any uncommited changes are present
 	if(!previousLanguage_.isEmpty()) {
@@ -107,6 +106,10 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 				return;
 			}
 		} else if (*oldPatSet != *newPatSet) {
+		
+		
+			qDebug() << "Comparing Patterns: " << oldPatSet->languageMode << " : " << newPatSet->languageMode << " (" << previousLanguage_ << ")";
+		
 		
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Language Mode"));
@@ -148,9 +151,11 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	if(PatternSet *patSet = FindPatternSet(name)) {
 
 		// Copy the list of highlight style information to one that the user can freely edit
-		int nPatterns = patSet->nPatterns;
-		for (int i = 0; i < nPatterns; i++) {
-			auto ptr  = new HighlightPattern(patSet->patterns[i]);
+		
+		
+		for(HighlightPattern &pattern: patSet->patterns) {
+		
+			auto ptr  = new HighlightPattern(pattern);
 			auto item = new QListWidgetItem(ptr->name);
 			item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 			ui.listItems->addItem(item);
@@ -536,9 +541,8 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	ui.listItems->clear();
 
 	// Update the dialog 
-	int nPatterns = defaultPatSet->nPatterns;
-	for (int i = 0; i < nPatterns; i++) {
-		auto ptr  = new HighlightPattern(defaultPatSet->patterns[i]);
+	for(HighlightPattern &pattern: defaultPatSet->patterns) {
+		auto ptr  = new HighlightPattern(pattern);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -774,14 +778,14 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 		PatternSets[NPatternSets++] = patSet;
 		oldNum = 0;
 	} else {
-		oldNum = PatternSets[psn]->nPatterns;
+		oldNum = PatternSets[psn]->patterns.size();
 		delete PatternSets[psn];
 		PatternSets[psn] = patSet;
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
 	for(Document *window: WindowList) {
-		if (patSet->nPatterns > 0) {
+		if (!patSet->patterns.isEmpty()) {
 			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
@@ -837,7 +841,7 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	}
 
 	// Compile the patterns  
-	bool result = (patSet->nPatterns == 0) ? true : TestHighlightPatterns(patSet);
+	bool result = patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet);
 	delete patSet;
 	return result;
 }
@@ -880,13 +884,13 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	auto patSet = new PatternSet(ui.listItems->count());
+	auto patSet = new PatternSet;
 	patSet->languageMode = ui.comboLanguageMode->currentText();
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 	
 	for (int i = 0; i < ui.listItems->count(); i++) {
-		patSet->patterns[i] = *itemFromIndex(i);
+		patSet->patterns.push_back(*itemFromIndex(i));
 	}
 	
 	return patSet;

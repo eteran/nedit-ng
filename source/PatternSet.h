@@ -3,6 +3,7 @@
 #define PATTERN_SET_H_
 
 #include <QString>
+#include <QVector>
 
 #include "HighlightPattern.h"
 
@@ -10,21 +11,12 @@
 class PatternSet {
 public:
 	PatternSet();
-	
-	template <class In>
-	PatternSet(In first, In last) : lineContext(0), charContext(0) {
-	
-		nPatterns = std::distance(first, last);
-		patterns = new HighlightPattern[nPatterns];
-		
-		std::copy(first, last, patterns);	
-	}
-	
-	explicit PatternSet(int patternCount);
+	PatternSet(const PatternSet &other) = default;
+	PatternSet& operator=(const PatternSet &rhs) = default;
+	PatternSet(PatternSet &&other) = default;
+	PatternSet& operator=(PatternSet &&rhs) = default;
 	~PatternSet();
-	PatternSet(const PatternSet &other);
-	PatternSet& operator=(const PatternSet &rhs);
-
+	
 public:
 	bool operator!=(const PatternSet &rhs) const;
 	bool operator==(const PatternSet &rhs) const;
@@ -33,11 +25,10 @@ public:
 	void swap(PatternSet &other);
 
 public:
-	QString           languageMode;
-	int               lineContext;
-	int               charContext;
-	int               nPatterns;
-	HighlightPattern *patterns;
+	QString                   languageMode;
+	int                       lineContext;
+	int                       charContext;
+	QVector<HighlightPattern> patterns;
 };
 
 #endif

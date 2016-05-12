@@ -84,7 +84,7 @@ QList<HighlightStyle *> HighlightStyles;
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
-static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns);
+static QVector<HighlightPattern> readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, bool *ok);
 static int lookupNamedStyle(view::string_view styleName);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -342,7 +342,7 @@ QString WriteHighlightStringEx(void) {
 
 	for (int psn = 0; psn < NPatternSets; psn++) {
 		PatternSet *patSet = PatternSets[psn];
-		if (patSet->nPatterns == 0) {
+		if (patSet->patterns.isEmpty()) {
 			continue;
 		}
 		
@@ -375,11 +375,10 @@ QString WriteHighlightStringEx(void) {
 */
 static void convertOldPatternSet(PatternSet *patSet) {
 
-	for (int p = 0; p < patSet->nPatterns; p++) {
-		HighlightPattern *pattern = &patSet->patterns[p];
-		pattern->startRE = convertPatternExprEx(pattern->startRE, patSet->languageMode.toLatin1().data(), pattern->name.toLatin1().data(), pattern->flags & COLOR_ONLY);
-		pattern->endRE   = convertPatternExprEx(pattern->endRE,   patSet->languageMode.toLatin1().data(), pattern->name.toLatin1().data(), pattern->flags & COLOR_ONLY);
-		pattern->errorRE = convertPatternExprEx(pattern->errorRE, patSet->languageMode.toLatin1().data(), pattern->name.toLatin1().data(), pattern->flags & COLOR_ONLY);
+	for(HighlightPattern &pattern : patSet->patterns) {
+		pattern.startRE = convertPatternExprEx(pattern.startRE, patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
+		pattern.endRE   = convertPatternExprEx(pattern.endRE,   patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
+		pattern.errorRE = convertPatternExprEx(pattern.errorRE, patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
 	}
 }
 
@@ -550,36 +549,36 @@ static std::string createPatternsString(PatternSet *patSet, const char *indentSt
 
 	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
 
-	for (int pn = 0; pn < patSet->nPatterns; pn++) {
-		HighlightPattern *pat = &patSet->patterns[pn];
+	for(HighlightPattern &pat : patSet->patterns) {
+
 		outBuf->BufAppendEx(indentStr);
-		outBuf->BufAppendEx(pat->name.toStdString());
+		outBuf->BufAppendEx(pat.name.toStdString());
 		outBuf->BufAppendEx(":");
-		if (!pat->startRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat->startRE.toStdString());
+		if (!pat.startRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat.startRE.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");
-		if (!pat->endRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat->endRE.toStdString());
+		if (!pat.endRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat.endRE.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");
-		if (!pat->errorRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat->errorRE.toStdString());
+		if (!pat.errorRE.isNull()) {
+			std::string str = MakeQuotedStringEx(pat.errorRE.toStdString());
 			outBuf->BufAppendEx(str);
 		}
 		outBuf->BufAppendEx(":");
-		outBuf->BufAppendEx(pat->style.toStdString());
+		outBuf->BufAppendEx(pat.style.toStdString());
 		outBuf->BufAppendEx(":");
-		if (!pat->subPatternOf.isNull())
-			outBuf->BufAppendEx(pat->subPatternOf.toStdString());
+		if (!pat.subPatternOf.isNull())
+			outBuf->BufAppendEx(pat.subPatternOf.toStdString());
 		outBuf->BufAppendEx(":");
-		if (pat->flags & DEFER_PARSING)
+		if (pat.flags & DEFER_PARSING)
 			outBuf->BufAppendEx("D");
-		if (pat->flags & PARSE_SUBPATS_FROM_START)
+		if (pat.flags & PARSE_SUBPATS_FROM_START)
 			outBuf->BufAppendEx("R");
-		if (pat->flags & COLOR_ONLY)
+		if (pat.flags & COLOR_ONLY)
 			outBuf->BufAppendEx("C");
 		outBuf->BufAppendEx("\n");
 	}
@@ -632,9 +631,13 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 		return highlightError(stringStart, *inPtr, "unreadable character context field");
 
 	// read pattern list 
-	patSet.patterns = readHighlightPatterns(inPtr, True, &errMsg, &patSet.nPatterns);
-	if (!patSet.patterns)
+	bool ok;
+	QVector<HighlightPattern> patterns = readHighlightPatterns(inPtr, True, &errMsg, &ok);
+	if (!ok) {
 		return highlightError(stringStart, *inPtr, errMsg);
+	}
+	
+	patSet.patterns = patterns;
 
 	// pattern set was read correctly, make an allocated copy to return 
 	auto retPatSet = new PatternSet(patSet);
@@ -653,8 +656,7 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 ** structures, and a language mode name.  If unsuccessful, returns nullptr with
 ** (statically allocated) message in "errMsg".
 */
-static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, int *nPatterns) {
-	HighlightPattern *pat, *returnedList, patternList[MAX_PATTERNS];
+static QVector<HighlightPattern> readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, bool *ok) {
 
 	// skip over blank space 
 	*inPtr += strspn(*inPtr, " \t\n");
@@ -663,7 +665,8 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 	if (withBraces) {
 		if (**inPtr != '{') {
 			*errMsg = "pattern list must begin with \"{\"";
-			return False;
+			*ok = false;
+			return QVector<HighlightPattern>();
 		}
 		(*inPtr)++;
 	}
@@ -671,32 +674,37 @@ static HighlightPattern *readHighlightPatterns(const char **inPtr, int withBrace
 	/*
 	** parse each pattern in the list
 	*/
-	pat = patternList;
+	
+	QVector<HighlightPattern> ret;
+	
 	while (true) {
 		*inPtr += strspn(*inPtr, " \t\n");
 		if (**inPtr == '\0') {
 			if (withBraces) {
 				*errMsg = "end of pattern list not found";
-				return nullptr;
+				*ok = false;
+				return QVector<HighlightPattern>();
 			} else
 				break;
 		} else if (**inPtr == '}') {
 			(*inPtr)++;
 			break;
 		}
-		if (pat - patternList >= MAX_PATTERNS) {
-			*errMsg = "max number of patterns exceeded\n";
-			return nullptr;
+		
+	
+		HighlightPattern pat;
+		
+		if (!readHighlightPattern(inPtr, errMsg, &pat)) {
+			*ok = false;
+			return QVector<HighlightPattern>();
 		}
-		if (!readHighlightPattern(inPtr, errMsg, pat++))
-			return nullptr;
+		
+		ret.push_back(pat);
 	}
-
-	// allocate a more appropriately sized list to return patterns 
-	*nPatterns = pat - patternList;
-	returnedList = new HighlightPattern[*nPatterns];
-	std::copy_n(patternList, *nPatterns, returnedList);
-	return returnedList;
+	
+	
+	*ok = true;
+	return ret;
 }
 
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern) {

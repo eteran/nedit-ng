@@ -491,8 +491,9 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 ** allocated components of the returned data structure, use freeHighlightData.
 */
 WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
-	HighlightPattern *patternSrc = patSet->patterns;
-	int nPatterns    = patSet->nPatterns;
+	
+	HighlightPattern *patternSrc = &patSet->patterns[0];
+	int nPatterns    = patSet->patterns.size();
 	int contextLines = patSet->lineContext;
 	int contextChars = patSet->charContext;
 	int i;
@@ -515,14 +516,14 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 		return nullptr;
 	}
 
-	for (i = 0; i < nPatterns; i++) {
+	for (int i = 0; i < nPatterns; i++) {
 		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {				
 			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
 			return nullptr;
 		}
 	}
 
-	for (i = 0; i < nPatterns; i++) {
+	for (int i = 0; i < nPatterns; i++) {
 		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {				
 			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
 			return nullptr;
@@ -532,7 +533,7 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	/* Make DEFER_PARSING flags agree with top level patterns (originally,
 	   individual flags had to be correct and were checked here, but dialog now
 	   shows this setting only on top patterns which is much less confusing) */
-	for (i = 0; i < nPatterns; i++) {
+	for (int i = 0; i < nPatterns; i++) {
 		if (!patternSrc[i].subPatternOf.isNull()) {
 
 			int parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
@@ -553,11 +554,13 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	   be used in pass 2, and add default pattern (0) to each list */
 	nPass1Patterns = 1;
 	nPass2Patterns = 1;
-	for (i = 0; i < nPatterns; i++)
-		if (patternSrc[i].flags & DEFER_PARSING)
+	for (int i = 0; i < nPatterns; i++) {
+		if (patternSrc[i].flags & DEFER_PARSING) {
 			nPass2Patterns++;
-		else
+		} else {
 			nPass1Patterns++;
+		}
+	}
 
 	auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
 	auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
@@ -954,10 +957,12 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 	PatternSet *set;
 
 	if (hData && (set = hData->patternSetForWindow)) {
-		for (int i = 0; i < set->nPatterns; i++)
-			if (set->patterns[i].name == QLatin1String(name)) {
-				return &set->patterns[i];
+	
+		for(HighlightPattern &pattern : set->patterns) {
+			if (pattern.name == QLatin1String(name)) {
+				return &pattern;
 			}
+		}
 	}
 	return nullptr;
 }
