@@ -67,8 +67,6 @@ HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
 //------------------------------------------------------------------------------
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
-
-
 	// if there is no change, do nothing
 	if(previousLanguage_== name) {
 		return;
@@ -179,9 +177,37 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 // Name: SetLangModeMenu
 //------------------------------------------------------------------------------
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
-	QList<QListWidgetItem *> matches = ui.listItems->findItems(name, Qt::MatchFixedString);
-	if(!matches.isEmpty()) {
-		ui.listItems->setCurrentItem(matches[0]);
+
+	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
+	if(index != -1) {
+		ui.comboLanguageMode->setCurrentIndex(index);
+	} else {
+		ui.comboLanguageMode->setCurrentIndex(0);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
+	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
+	if(index != -1) {
+		ui.comboLanguageMode->setCurrentIndex(index);
+	} else {
+		ui.comboLanguageMode->setCurrentIndex(0);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
+
+	int index = ui.comboHighlightStyle->findText(name, Qt::MatchFixedString);
+	if(index != -1) {
+		ui.comboHighlightStyle->setCurrentIndex(index);
+	} else {
+		ui.comboHighlightStyle->setCurrentIndex(0);
 	}
 }
 
@@ -691,15 +717,14 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
-	// TODO(eteran): implement this
-#if 0
-	Widget oldMenu = HighlightDialog.lmPulldown;
-	HighlightDialog.lmPulldown = CreateLanguageModeMenu(XtParent(XtParent(oldMenu)), langModeCB, nullptr);
-	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.lmOptMenu), XmNsubMenuId, HighlightDialog.lmPulldown, nullptr);
-	SetLangModeMenu(HighlightDialog.lmOptMenu, HighlightDialog.langModeName.toLatin1().data());
 
-	XtDestroyWidget(oldMenu);
-#endif
+	QString language = ui.comboLanguageMode->currentText();
+	ui.comboLanguageMode->clear();
+	for (int i = 0; i < NLanguageModes; i++) {	
+		ui.comboLanguageMode->addItem(LanguageModes[i]->name);
+	}
+	SetLangModeMenu(language);
+
 }
 
 
@@ -708,22 +733,15 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 ** chosing highlight styles updated (via a call to createHighlightStylesMenu)
 */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
-	// TODO(eteran): implement this
-#if 0
-	int patIndex;
 
-	Widget oldMenu = HighlightDialog.stylePulldown;
-	HighlightDialog.stylePulldown = createHighlightStylesMenu(XtParent(XtParent(oldMenu)));
-	XtVaSetValues(XmOptionButtonGadget(HighlightDialog.styleOptMenu), XmNsubMenuId, HighlightDialog.stylePulldown, nullptr);
-	patIndex = ManagedListSelectedIndex(HighlightDialog.managedListW);
-	if (patIndex == -1) {
-		setStyleMenu("Plain");
-	} else {
-		setStyleMenu(HighlightDialog.patterns[patIndex]->style.toStdString());
+
+	QString pattern = ui.comboHighlightStyle->currentText();
+	ui.comboHighlightStyle->clear();
+	for(HighlightStyle *style : HighlightStyles) {
+		ui.comboHighlightStyle->addItem(style->name);
 	}
-
-	XtDestroyWidget(oldMenu);
-#endif
+	
+	setStyleMenu(pattern);
 }
 
 //------------------------------------------------------------------------------
@@ -825,30 +843,7 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 }
 
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
-	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
-	if(index != -1) {
-		ui.comboLanguageMode->setCurrentIndex(index);
-	} else {
-		ui.comboLanguageMode->setCurrentIndex(0);
-	}
-}
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
-
-	int index = ui.comboHighlightStyle->findText(name, Qt::MatchFixedString);
-	if(index != -1) {
-		ui.comboHighlightStyle->setCurrentIndex(index);
-	} else {
-		ui.comboHighlightStyle->setCurrentIndex(0);
-	}
-}
 
 /*
 ** Get the current information that the user has entered in the syntax
