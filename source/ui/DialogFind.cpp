@@ -51,9 +51,6 @@ void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Ato
 // name: 
 //------------------------------------------------------------------------------
 DialogFind::DialogFind(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
-	
-	// TODO(eteran): remove the need for the window parameter
-	
 	ui.setupUi(this);
 	
 	lastRegexCase_   = true;
@@ -73,7 +70,7 @@ void DialogFind::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	ui.textFind->setFocus();
 	
-	// TODO(eteran): reset state on show
+	// TODO(eteran): reset state on show?
 }
 
 //------------------------------------------------------------------------------

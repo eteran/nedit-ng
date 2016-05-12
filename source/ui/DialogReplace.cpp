@@ -15,6 +15,7 @@
 
 namespace {
 
+// TODO(eteran): deprecate this in favor or a member function
 void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Atom *type, char *value, int *length, int *format) {
 
 	(void)w;
@@ -51,8 +52,6 @@ void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Ato
 // name: 
 //------------------------------------------------------------------------------
 DialogReplace::DialogReplace(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
-	
-	// TODO(eteran): remove the need for the window parameter
 	
 	ui.setupUi(this);
 	
@@ -229,7 +228,7 @@ void DialogReplace::on_buttonFind_clicked() {
 //------------------------------------------------------------------------------
 void DialogReplace::on_buttonReplace_clicked() {
 	// TODO(eteran): implement this
-#if REPALCE_SCOPE && 0
+#if REPLACE_SCOPE && 0
 	switch (replaceScope_) {
 	case REPL_SCOPE_WIN:
 		replaceAllCB(w, window, callData);

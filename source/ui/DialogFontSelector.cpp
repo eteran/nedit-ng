@@ -258,7 +258,7 @@ void DialogFontSelector::on_listSizes_itemSelectionChanged() {
 void DialogFontSelector::on_checkShowInPoints_toggled(bool checked) {
 	Q_UNUSED(checked);
 
-	// TODO(eteran): this is a change in behavior, the original would
+	// NOTE(eteran): this is a change in behavior, the original would
 	//               simply match the selection by index (presumably because
 	//               it's the same resultant physical size)
 	//               but instead, we just clear all selections

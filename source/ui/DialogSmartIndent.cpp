@@ -120,8 +120,7 @@ void DialogSmartIndent::on_buttonCheck_clicked() {
 void DialogSmartIndent::on_buttonDelete_clicked() {
 	int i;
 
-
-	// TODO(eteran): originally was "Yes, Delete"
+	// NOTE(eteran): originally was "Yes, Delete"
 	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
@@ -276,8 +275,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 //------------------------------------------------------------------------------
 bool DialogSmartIndent::checkSmartIndentDialogData() {
 
-	// TODO(eteran): make it not check if all fields are empty...
-
+	// BUGFIX(eteran): make it not check if all fields are empty...
 
 	// Check the initialization macro 
 	QString initText = ui.editInit->toPlainText();
