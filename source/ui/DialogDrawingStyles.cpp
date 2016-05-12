@@ -371,7 +371,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 
     // read the background color field - this may be empty
 	QString bgColor = ui.editColorBG->text().simplified();
-    if (!hs->bgColor.isNull() && hs->bgColor.isEmpty()) {
+    if (!bgColor.isNull() && bgColor.isEmpty()) {
         hs->bgColor = QString();
     } else {
 		hs->bgColor = bgColor;
