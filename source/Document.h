@@ -316,10 +316,10 @@ public:
 	int autoSaveCharCount_;            /* count of single characters typed since last backup file generated */
 	int autoSaveOpCount_;              /* count of editing operations "" */
 	int undoMemUsed_;                  /* amount of memory (in bytes) dedicated to the undo list */
-	std::string fontName_;             /* names of the text fonts in use */
-	char italicFontName_[MAX_FONT_LEN];
-	char boldFontName_[MAX_FONT_LEN];
-	char boldItalicFontName_[MAX_FONT_LEN];
+	QString fontName_;                 /* names of the text fonts in use */
+	QString italicFontName_;
+	QString boldFontName_;
+	QString boldItalicFontName_;
 	XmFontList fontList_;           /* fontList for the primary font */
 	XFontStruct *italicFontStruct_; /* fontStructs for highlighting fonts */
 	XFontStruct *boldFontStruct_;

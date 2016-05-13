@@ -2530,19 +2530,26 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	XFontStruct *font, *oldFont;
 	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
 	int borderWidth, borderHeight, marginWidth, marginHeight;
-	int primaryChanged, highlightChanged = false;
+	bool highlightChanged = false;
 	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
 	Dimension textHeight, newWindowWidth, newWindowHeight;
 	TextDisplay *textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
 
 	// Check which fonts have changed 
-	primaryChanged = fontName != fontName_;
-	if (strcmp(italicName, italicFontName_))
+	bool primaryChanged = QLatin1String(fontName) != fontName_;
+	
+	if (QLatin1String(italicName) != italicFontName_) {
 		highlightChanged = true;
-	if (strcmp(boldName, boldFontName_))
+	}
+	
+	if (QLatin1String(boldName) != boldFontName_) {
 		highlightChanged = true;
-	if (strcmp(boldItalicName, boldItalicFontName_))
+	}
+	
+	if (QLatin1String(boldItalicName) != boldItalicFontName_) {
 		highlightChanged = true;
+	}
+	
 	if (!primaryChanged && !highlightChanged)
 		return;
 
@@ -2566,19 +2573,22 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   statistics line.  Highlight fonts are allowed to be nullptr, which
 	   is interpreted as "use the primary font" */
 	if (primaryChanged) {
-		fontName_ = fontName;
+		fontName_ = QLatin1String(fontName);
 		font = XLoadQueryFont(TheDisplay, fontName);
 		if(!font)
 			XtVaGetValues(statsLine_, XmNfontList, &fontList_, nullptr);
 		else
 			fontList_ = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
 	}
+	
 	if (highlightChanged) {
-		strcpy(italicFontName_, italicName);
+		italicFontName_   = QLatin1String(italicName);
 		italicFontStruct_ = XLoadQueryFont(TheDisplay, italicName);
-		strcpy(boldFontName_, boldName);
+		
+		boldFontName_   = QLatin1String(boldName);
 		boldFontStruct_ = XLoadQueryFont(TheDisplay, boldName);
-		strcpy(boldItalicFontName_, boldItalicName);
+		
+		boldItalicFontName_   = QLatin1String(boldItalicName);
 		boldItalicFontStruct_ = XLoadQueryFont(TheDisplay, boldItalicName);
 	}
 
@@ -3138,13 +3148,19 @@ void Document::cloneDocument(Document *window) {
 	window->SetEmTabDist(emTabDist);
 
 	window->ignoreModify_ = false;
-
+	
+	
+	QByteArray fontStr   = fontName_.toLatin1();
+	QByteArray iFontStr  = italicFontName_.toLatin1();
+	QByteArray bFontStr  = boldFontName_.toLatin1();
+	QByteArray biFontStr = boldItalicFontName_.toLatin1();
+	
 	// transfer text fonts 
 	char *params[4];
-	params[0] = const_cast<char *>(fontName_.c_str());
-	params[1] = italicFontName_;
-	params[2] = boldFontName_;
-	params[3] = boldItalicFontName_;
+	params[0] = fontStr.data();
+	params[1] = iFontStr.data();
+	params[2] = bFontStr.data();
+	params[3] = biFontStr.data();
 	XtCallActionProc(window->textArea_, "set_fonts", nullptr, params, 4);
 
 	window->SetBacklightChars(backlightCharTypes_);
@@ -3327,11 +3343,11 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	flashTimeoutID_         = 0;
 	fileClosedAtom_         = None;
 	wasSelected_            = false;
-	fontName_               = GetPrefFontName();
+	fontName_               = QLatin1String(GetPrefFontName());
 	
-	strcpy(italicFontName_, GetPrefItalicFontName());
-	strcpy(boldFontName_, GetPrefBoldFontName());
-	strcpy(boldItalicFontName_, GetPrefBoldItalicFontName());
+	italicFontName_         = QLatin1String(GetPrefItalicFontName());
+	boldFontName_           = QLatin1String(GetPrefBoldFontName());
+	boldItalicFontName_     = QLatin1String(GetPrefBoldItalicFontName());
 	
 	dialogColors_           = nullptr;
 	fontList_               = GetPrefFontList();
@@ -3754,11 +3770,11 @@ Document *Document::CreateDocument(const char *name) {
 	window->flashTimeoutID_        = 0;
 	window->fileClosedAtom_        = None;
 	window->wasSelected_           = false;
-	window->fontName_              = GetPrefFontName();
 	
-	strcpy(window->italicFontName_, GetPrefItalicFontName());
-	strcpy(window->boldFontName_, GetPrefBoldFontName());
-	strcpy(window->boldItalicFontName_, GetPrefBoldItalicFontName());
+	window->fontName_              = QLatin1String(GetPrefFontName());
+	window->italicFontName_        = QLatin1String(GetPrefItalicFontName());
+	window->boldFontName_          = QLatin1String(GetPrefBoldFontName());
+	window->boldItalicFontName_    = QLatin1String(GetPrefBoldItalicFontName());
 	
 	window->dialogColors_          = nullptr;
 	window->fontList_              = GetPrefFontList();

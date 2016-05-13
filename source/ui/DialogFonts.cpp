@@ -22,10 +22,10 @@ DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::
 
 	// Set initial values
 	if (forWindow) {
-		ui.editFontPrimary->setText(QString::fromStdString(window->fontName_));
-		ui.editFontBold->setText(QLatin1String(window->boldFontName_));
-		ui.editFontItalic->setText(QLatin1String(window->italicFontName_));
-		ui.editFontBoldItalic->setText(QLatin1String(window->boldItalicFontName_));
+		ui.editFontPrimary->setText(window->fontName_);
+		ui.editFontBold->setText(window->boldFontName_);
+		ui.editFontItalic->setText(window->italicFontName_);
+		ui.editFontBoldItalic->setText(window->boldItalicFontName_);
 	} else {
 		ui.editFontPrimary->setText(QLatin1String(GetPrefFontName()));
 		ui.editFontBold->setText(QLatin1String(GetPrefBoldFontName()));

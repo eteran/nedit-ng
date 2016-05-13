@@ -4265,7 +4265,7 @@ static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->fontName_.c_str());
+	AllocNStringCpy(&result->val.str, window->fontName_.toLatin1().data());
 	return True;
 }
 
@@ -4275,7 +4275,7 @@ static int fontNameItalicMV(Document *window, DataValue *argList, int nArgs, Dat
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->italicFontName_);
+	AllocNStringCpy(&result->val.str, window->italicFontName_.toLatin1().data());
 	return True;
 }
 
@@ -4285,7 +4285,7 @@ static int fontNameBoldMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->boldFontName_);
+	AllocNStringCpy(&result->val.str, window->boldFontName_.toLatin1().data());
 	return True;
 }
 
@@ -4295,7 +4295,7 @@ static int fontNameBoldItalicMV(Document *window, DataValue *argList, int nArgs,
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->boldItalicFontName_);
+	AllocNStringCpy(&result->val.str, window->boldItalicFontName_.toLatin1().data());
 	return True;
 }
 
