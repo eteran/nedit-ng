@@ -91,7 +91,7 @@ static bool doSave(Document *window);
 static int fileWasModifiedExternally(Document *window);
 static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapNewlines(Document *window);
-static std::string backupFileNameEx(Document *window);
+static QString backupFileNameEx(Document *window);
 static void forceShowLineNumbers(Document *window);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void safeClose(Document *window);
@@ -121,7 +121,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 		window->path_.append(QLatin1Char('/'));
 	}
 
-	window->SetWindowModified(FALSE);
+	window->SetWindowModified(false);
 	CLEAR_ALL_LOCKS(window->lockReasons_);
 	window->UpdateWindowReadOnly();
 	window->UpdateStatsLine();
@@ -282,7 +282,7 @@ void RevertToSaved(Document *window) {
 		else {
 			// Treat it like an externally modified file 
 			window->lastModTime_ = 0;
-			window->fileMissing_ = FALSE;
+			window->fileMissing_ = false;
 		}
 		return;
 	}
@@ -329,8 +329,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	// Update the window data structure 
 	window->filename_    = QLatin1String(name);
 	window->path_        = QLatin1String(path);
-	window->filenameSet_ = TRUE;
-	window->fileMissing_ = TRUE;
+	window->filenameSet_ = true;
+	window->fileMissing_ = true;
 
 	// Get the full name of the file 
 	const QString fullname = window->FullPath();
@@ -345,7 +345,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	{
 		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
 			if (access(fullname.toLatin1().data(), W_OK) != 0) {
-				SET_PERM_LOCKED(window->lockReasons_, TRUE);
+				SET_PERM_LOCKED(window->lockReasons_, true);
 			}
 
 		} else if (flags & CREATE && errno == ENOENT) {
@@ -381,7 +381,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				}
 
 				if (resp == QMessageBox::Cancel) {
-					return FALSE;
+					return false;
 				} else if (msgbox.clickedButton() == exitButton) {
 					exit(EXIT_SUCCESS);
 				}
@@ -390,22 +390,22 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			// Test if new file can be created 
 			if ((fd = creat(fullname.toLatin1().data(), 0666)) == -1) {
 				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error creating File"), QString(QLatin1String("Can't create %1:\n%2")).arg(fullname, QLatin1String(strerror(errno))));
-				return FALSE;
+				return false;
 			} else {
 				close(fd);
 				remove(fullname.toLatin1().data());
 			}
 
-			window->SetWindowModified(FALSE);
+			window->SetWindowModified(false);
 			if ((flags & PREF_READ_ONLY) != 0) {
-				SET_USER_LOCKED(window->lockReasons_, TRUE);
+				SET_USER_LOCKED(window->lockReasons_, true);
 			}
 			window->UpdateWindowReadOnly();
-			return TRUE;
+			return true;
 		} else {
 			// A true error 
 			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1%2:\n%3")).arg(QLatin1String(path), QLatin1String(name), QLatin1String(strerror(errno))));
-			return FALSE;
+			return false;
 		}
 	}
 
@@ -413,27 +413,27 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	   last modification to the file */
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
+		window->filenameSet_ = false; // Temp. prevent check for changes. 
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(name)));
-		window->filenameSet_ = TRUE;
-		return FALSE;
+		window->filenameSet_ = true;
+		return false;
 	}
 
 	if (S_ISDIR(statbuf.st_mode)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
+		window->filenameSet_ = false; // Temp. prevent check for changes. 
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(QLatin1String(name)));
-		window->filenameSet_ = TRUE;
-		return FALSE;
+		window->filenameSet_ = true;
+		return false;
 	}
 
 #ifdef S_ISBLK
 	if (S_ISBLK(statbuf.st_mode)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
+		window->filenameSet_ = false; // Temp. prevent check for changes. 
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open block device %1")).arg(QLatin1String(name)));
-		window->filenameSet_ = TRUE;
-		return FALSE;
+		window->filenameSet_ = true;
+		return false;
 	}
 #endif
 
@@ -443,21 +443,21 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	auto fileString = new char[fileLen + 1]; // +1 = space for null 
 	if(!fileString) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
+		window->filenameSet_ = false; // Temp. prevent check for changes. 
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error while opening File"), QLatin1String("File is too large to edit"));
-		window->filenameSet_ = TRUE;
-		return FALSE;
+		window->filenameSet_ = true;
+		return false;
 	}
 
 	// Read the file into fileString and terminate with a null 
 	int readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
 		fclose(fp);
-		window->filenameSet_ = FALSE; // Temp. prevent check for changes. 
+		window->filenameSet_ = false; // Temp. prevent check for changes. 
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error while opening File"), QString(QLatin1String("Error reading %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
-		window->filenameSet_ = TRUE;
+		window->filenameSet_ = true;
 		delete [] fileString;
-		return FALSE;
+		return false;
 	}
 	fileString[readLen] = '\0';
 
@@ -470,14 +470,14 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	/* Any errors that happen after this point leave the window in a
 	    "broken" state, and thus RevertToSaved will abandon the window if
-	    window->fileMissing_ is FALSE and doOpen fails. */
+	    window->fileMissing_ is false and doOpen fails. */
 	window->fileMode_    = statbuf.st_mode;
 	window->fileUid_     = statbuf.st_uid;
 	window->fileGid_     = statbuf.st_gid;
 	window->lastModTime_ = statbuf.st_mtime;
 	window->device_      = statbuf.st_dev;
 	window->inode_       = statbuf.st_ino;
-	window->fileMissing_ = FALSE;
+	window->fileMissing_ = false;
 
 	// Detect and convert DOS and Macintosh format files 
 	if (GetPrefForceOSConversion()) {
@@ -512,10 +512,10 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			int resp = msgbox.exec();
 			
 			if (resp == QMessageBox::Cancel) {
-				return FALSE;
+				return false;
 			}
 
-			SET_TMBD_LOCKED(window->lockReasons_, TRUE);
+			SET_TMBD_LOCKED(window->lockReasons_, true);
 			for (char *c = fileString; c < &fileString[readLen]; c++) {
 				if (*c == '\0') {
 					*c = (char)0xfe;
@@ -533,20 +533,20 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	// Set window title and file changed flag 
 	if ((flags & PREF_READ_ONLY) != 0) {
-		SET_USER_LOCKED(window->lockReasons_, TRUE);
+		SET_USER_LOCKED(window->lockReasons_, true);
 	}
 	if (IS_PERM_LOCKED(window->lockReasons_)) {
-		window->fileChanged_ = FALSE;
+		window->fileChanged_ = false;
 		window->UpdateWindowTitle();
 	} else {
-		window->SetWindowModified(FALSE);
+		window->SetWindowModified(false);
 		if (IS_ANY_LOCKED(window->lockReasons_)) {
 			window->UpdateWindowTitle();
 		}
 	}
 	window->UpdateWindowReadOnly();
 
-	return TRUE;
+	return true;
 }
 
 int IncludeFile(Document *window, const char *name) {
@@ -556,20 +556,20 @@ int IncludeFile(Document *window, const char *name) {
 	FILE *fp = fopen(name, "rb");
 	if(!fp) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Could not open %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
-		return FALSE;
+		return false;
 	}
 
 	// Get the length of the file 
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(name)));
 		fclose(fp);
-		return FALSE;
+		return false;
 	}
 
 	if (S_ISDIR(statbuf.st_mode)) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Can't open directory %1")).arg(QLatin1String(name)));
 		fclose(fp);
-		return FALSE;
+		return false;
 	}
 	int fileLen = statbuf.st_size;
 
@@ -578,7 +578,7 @@ int IncludeFile(Document *window, const char *name) {
 	if(!fileString) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QLatin1String("File is too large to include"));
 		fclose(fp);
-		return FALSE;
+		return false;
 	}
 
 	// read the file into fileString and terminate with a null 
@@ -587,7 +587,7 @@ int IncludeFile(Document *window, const char *name) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error reading %1:\n%2")).arg(QLatin1String(name), QLatin1String(strerror(errno))));
 		fclose(fp);
 		delete [] fileString;
-		return FALSE;
+		return false;
 	}
 	fileString[readLen] = '\0';
 
@@ -627,7 +627,7 @@ int IncludeFile(Document *window, const char *name) {
 	// release the memory that holds fileString 
 	delete [] fileString;
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -657,7 +657,7 @@ int CloseAllFilesAndWindows(void) {
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 int CloseFileAndWindow(Document *window, int preResponse) {
@@ -710,7 +710,7 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 			if (stat) {
 				window->CloseWindow();
 			} else {
-				return FALSE;
+				return false;
 			}
 			break;
 			
@@ -720,10 +720,10 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 			window->CloseWindow();
 			break;
 		default:
-			return FALSE;			
+			return false;			
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 int SaveWindow(Document *window) {
@@ -734,7 +734,7 @@ int SaveWindow(Document *window) {
 	/* Return success if the file is normal & unchanged or is a
 	    read-only file. */
 	if ((!window->fileChanged_ && !window->fileMissing_ && window->lastModTime_ > 0) || IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons_))
-		return TRUE;
+		return true;
 	// Prompt for a filename if this is an Untitled window 
 	if (!window->filenameSet_)
 		return SaveWindowAs(window, nullptr, False);
@@ -761,13 +761,13 @@ int SaveWindow(Document *window) {
 		if(messageBox.clickedButton() == buttonCancel) {
 			// Cancel and mark file as externally modified 
 			window->lastModTime_ = 0;
-			window->fileMissing_ = FALSE;
-			return FALSE;
+			window->fileMissing_ = false;
+			return false;
 		}
 	}
 
 	if (writeBckVersion(window))
-		return FALSE;
+		return false;
 	
 	bool stat = doSave(window);
 	if (stat)
@@ -864,7 +864,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 					addWrap = wrapCheck->isChecked();					
 					strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
 				} else {
-					return FALSE;
+					return false;
 				}
 
 			}
@@ -878,13 +878,13 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		addWrapNewlines(window);
 
 	if (ParseFilename(fullname, filename, pathname) != 0) {
-		return FALSE;
+		return false;
 	}
 
 	// If the requested file is this file, just save it and return 
 	if (window->filename_ == QLatin1String(filename) && window->path_ == QLatin1String(pathname)) {
 		if (writeBckVersion(window))
-			return FALSE;
+			return false;
 		return doSave(window);
 	}
 
@@ -905,12 +905,12 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 
 		messageBox.exec();
 		if(messageBox.clickedButton() == buttonCancel) {
-			return FALSE;
+			return false;
 		}	
 	
 		if (otherWindow == FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
 			if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
-				return FALSE;
+				return false;
 			}
 		}
 	}
@@ -1000,7 +1000,7 @@ static bool doSave(Document *window) {
 			return SaveWindowAs(window, nullptr, 0);
 		}	
 
-		return FALSE;
+		return false;
 	}
 
 	// get the text buffer contents and its length 
@@ -1016,7 +1016,7 @@ static bool doSave(Document *window) {
 
 			// NOTE(eteran): fixes resource leak error
 			fclose(fp);
-			return FALSE;
+			return false;
 		}
 	} else if (window->fileFormat_ == MAC_FILE_FORMAT) {
 		ConvertToMacFileStringEx(fileString);
@@ -1030,33 +1030,33 @@ static bool doSave(Document *window) {
 		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
 		remove(fullname.toLatin1().data());
-		return FALSE;
+		return false;
 	}
 
 	// close the file 
 	if (fclose(fp) != 0) {
 		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error closing File"), QString(QLatin1String("Error closing file:\n%1")).arg(QLatin1String(strerror(errno))));
-		return FALSE;
+		return false;
 	}
 
 	// success, file was written 
-	window->SetWindowModified(FALSE);
+	window->SetWindowModified(false);
 
 	// update the modification time 
 	if (stat(fullname.toLatin1().data(), &statbuf) == 0) {
 		window->lastModTime_ = statbuf.st_mtime;
-		window->fileMissing_ = FALSE;
+		window->fileMissing_ = false;
 		window->device_ = statbuf.st_dev;
 		window->inode_ = statbuf.st_ino;
 	} else {
 		// This needs to produce an error message -- the file can't be accessed! 
 		window->lastModTime_ = 0;
-		window->fileMissing_ = TRUE;
+		window->fileMissing_ = true;
 		window->device_ = 0;
 		window->inode_ = 0;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1069,21 +1069,21 @@ int WriteBackupFile(Document *window) {
 	int fd;
 
 	// Generate a name for the autoSave file 
-	std::string name = backupFileNameEx(window);
+	QString name = backupFileNameEx(window);
 
 	/* remove the old backup file.
 	   Well, this might fail - we'll notice later however. */
-	remove(name.c_str());
+	remove(name.toLatin1().data());
 
 	/* open the file, set more restrictive permissions (using default
 	    permissions was somewhat of a security hole, because permissions were
 	    independent of those of the original file being edited */
-	if ((fd = open(name.c_str(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
+	if ((fd = open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 	
 		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error writing Backup"), QString(QLatin1String("Unable to save backup for %1:\n%2\nAutomatic backup is now off")).arg(window->filename_).arg(QLatin1String(strerror(errno))));		
-		window->autoSave_ = FALSE;
-		window->SetToggleButtonState(window->autoSaveItem_, FALSE, FALSE);
-		return FALSE;
+		window->autoSave_ = false;
+		window->SetToggleButtonState(window->autoSaveItem_, false, false);
+		return false;
 	}
 
 	// get the text buffer contents and its length 
@@ -1102,17 +1102,17 @@ int WriteBackupFile(Document *window) {
 	if (ferror(fp)) {	
 		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving Backup"), QString(QLatin1String("Error while saving backup for %1:\n%2\nAutomatic backup is now off")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
-		remove(name.c_str());
-		window->autoSave_ = FALSE;
-		return FALSE;
+		remove(name.toLatin1().data());
+		window->autoSave_ = false;
+		return false;
 	}
 
 	// close the backup file 
 	if (fclose(fp) != 0) {
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1121,26 +1121,25 @@ int WriteBackupFile(Document *window) {
 void RemoveBackupFile(Document *window) {
 
 	// Don't delete backup files when backups aren't activated. 
-	if (window->autoSave_ == FALSE)
+	if (window->autoSave_ == false)
 		return;
 
-	std::string name = backupFileNameEx(window);
-	remove(name.c_str());
+	QString name = backupFileNameEx(window);
+	remove(name.toLatin1().data());
 }
 
 /*
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-static std::string backupFileNameEx(Document *window) {
+static QString backupFileNameEx(Document *window) {
 	
-	char buf[MAXPATHLEN];
 	if (window->filenameSet_) {
-		snprintf(buf, sizeof(buf), "%s~%s", window->path_.toLatin1().data(), window->filename_.toLatin1().data());
-		return buf;
+		return QString(QLatin1String("%s~%s")).arg(window->path_, window->filename_);
 	} else {
+		char buf[MAXPATHLEN];
 		snprintf(buf, sizeof(buf), "~%s", window->filename_.toLatin1().data());
-		return PrependHomeEx(buf).toStdString();
+		return PrependHomeEx(buf);
 	}
 }
 
@@ -1268,8 +1267,8 @@ static bool bckError(Document *window, const char *errString, const char *file) 
 	}
 
 	if(messageBox.clickedButton() == buttonTurnOff) {
-		window->saveOldVersion_ = FALSE;
-		window->SetToggleButtonState(window->saveLastItem_, FALSE, FALSE);
+		window->saveOldVersion_ = false;
+		window->SetToggleButtonState(window->saveLastItem_, false, false);
 	}
 
 	return false;
@@ -1448,7 +1447,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), nullptr);
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), nullptr);
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL), XmNmnemonic, prompt[strspn(prompt, "lFD")], XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), nullptr);
-	AddDialogMnemonicHandler(fileSB, FALSE);
+	AddDialogMnemonicHandler(fileSB, false);
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
 	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_.toLatin1().data() : nullptr);
@@ -1492,7 +1491,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 	(void)w;
 	(void)callData;
 
-	*static_cast<Bool *>(clientData) = TRUE;
+	*static_cast<Bool *>(clientData) = true;
 }
 
 /*
@@ -1554,7 +1553,7 @@ void CheckForChangesToFile(Document *window) {
 
 		/* Can't stat the file -- maybe it's been deleted.
 		   The filename is now invalid */
-		window->fileMissing_ = TRUE;
+		window->fileMissing_ = true;
 		window->lastModTime_ = 1;
 		window->device_ = 0;
 		window->inode_ = 0;
@@ -1648,7 +1647,7 @@ void CheckForChangesToFile(Document *window) {
 	   of calling XUngrabPointer is inelegant but seems to fix the problem. */
 	if (!silent && ((window->lastModTime_ != 0 && window->lastModTime_ != statbuf.st_mtime) || window->fileMissing_)) {
 		window->lastModTime_ = 0; // Inhibit further warnings 
-		window->fileMissing_ = FALSE;
+		window->fileMissing_ = false;
 		if (!GetPrefWarnFileMods())
 			return;
 		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
@@ -1682,31 +1681,31 @@ void CheckForChangesToFile(Document *window) {
 
 /*
 ** Return true if the file displayed in window has been modified externally
-** to nedit.  This should return FALSE if the file has been deleted or is
+** to nedit.  This should return false if the file has been deleted or is
 ** unavailable.
 */
 static int fileWasModifiedExternally(Document *window) {	
 	struct stat statbuf;
 
 	if (!window->filenameSet_) {
-		return FALSE;
+		return false;
 	}
 	
 	QString fullname = window->FullPath();
 	
 	if (stat(fullname.toLatin1().data(), &statbuf) != 0) {
-		return FALSE;
+		return false;
 	}
 	
 	if (window->lastModTime_ == statbuf.st_mtime) {
-		return FALSE;
+		return false;
 	}
 	
 	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
-		return FALSE;
+		return false;
 	}
 	
-	return TRUE;
+	return true;
 }
 
 /*
