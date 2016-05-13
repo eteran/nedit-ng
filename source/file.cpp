@@ -52,7 +52,6 @@
 #include "server.h"
 #include "interpret.h"
 #include "Document.h"
-#include "MotifHelper.h"
 #include "misc.h"
 #include "fileUtils.h"
 #include "getfiles.h"
@@ -71,12 +70,6 @@
 #include <sys/param.h>
 #include <fcntl.h>
 
-#include <Xm/ToggleB.h>
-#include <Xm/FileSB.h>
-#include <Xm/RowColumn.h>
-#include <Xm/Form.h>
-#include <Xm/Label.h>
-
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
@@ -89,13 +82,11 @@ static int cmpWinAgainstFile(Document *window, const QString &fileName);
 static int doOpen(Document *window, const char *name, const char *path, int flags);
 static bool doSave(Document *window);
 static int fileWasModifiedExternally(Document *window);
-static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData);
 static void addWrapNewlines(Document *window);
 static QString backupFileNameEx(Document *window);
 static void forceShowLineNumbers(Document *window);
 static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void safeClose(Document *window);
-static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData);
 
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
 	char name[MAXPATHLEN];
@@ -827,6 +818,9 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 				++row;
 
 				auto wrapCheck = new QCheckBox(QLatin1String("&Add line breaks where wrapped"));
+				if(addWrap) {
+					wrapCheck->setChecked(true);
+				}
 #if 0	
 				// TODO(eteran): implement this once this is hoisted into a QObject
 				//               since Qt4 doesn't support lambda based connections							
@@ -874,8 +868,9 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	}
 
 	// Add newlines if requested 
-	if (addWrap)
+	if (addWrap) {
 		addWrapNewlines(window);
+	}
 
 	if (ParseFilename(fullname, filename, pathname) != 0) {
 		return false;
@@ -1135,7 +1130,7 @@ void RemoveBackupFile(Document *window) {
 static QString backupFileNameEx(Document *window) {
 	
 	if (window->filenameSet_) {
-		return QString(QLatin1String("%s~%s")).arg(window->path_, window->filename_);
+		return QString(QLatin1String("%1~%2")).arg(window->path_, window->filename_);
 	} else {
 		char buf[MAXPATHLEN];
 		snprintf(buf, sizeof(buf), "~%s", window->filename_.toLatin1().data());
@@ -1355,7 +1350,6 @@ void PrintString(const std::string &string, const std::string &jobName) {
 	dialog->exec();
 	delete dialog;
 	
-//	PrintFile(parent, tmpFileName, jobName);
 	remove(tmpFileName);
 	return;
 }
@@ -1390,11 +1384,6 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 ** to make wrapping permanent.
 */
 int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
-	int n, retVal;
-	Arg args[20];
-	XmString s1, s2;
-	Widget fileSB, wrapToggle;
-	Widget formatForm, formatBtns, unixFormat, dosFormat, macFormat;
 
 	*fileFormat = window->fileFormat_;
 
@@ -1406,54 +1395,100 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 	if (!window->path_.isEmpty()) {
 		SetFileDialogDefaultDirectory(window->path_);
 	}
+	
+	int retVal = GFN_CANCEL;
+	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
+	dialog.setFileMode(QFileDialog::AnyFile);
+	dialog.setAcceptMode(QFileDialog::AcceptSave);
+	dialog.setDirectory((!window->path_.isEmpty()) ? window->path_ : QString());
+	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 
-	/* Present a file selection dialog with an added field for requesting
-	   long line wrapping to become permanent via inserted newlines */
-	n = 0;
-	XtSetArg(args[n], XmNselectionLabelString, s1 = XmStringCreateLocalizedEx("New File Name:"));
-	n++;
-	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL);
-	n++;
-	XtSetArg(args[n], XmNdialogTitle, s2 = XmStringCreateSimpleEx(prompt));
-	n++;
-	fileSB = CreateFileSelectionDialog(window->shell_, "FileSelect", args, n);
-	XmStringFree(s1);
-	XmStringFree(s2);
-	formatForm = XtVaCreateManagedWidget("formatForm", xmFormWidgetClass, fileSB, nullptr);
-	formatBtns = XtVaCreateManagedWidget("formatBtns", xmRowColumnWidgetClass, formatForm, XmNradioBehavior, XmONE_OF_MANY, XmNorientation, XmHORIZONTAL, XmNpacking, XmPACK_TIGHT, XmNtopAttachment, XmATTACH_FORM, XmNleftAttachment,
-	                                     XmATTACH_FORM, nullptr);
-	XtVaCreateManagedWidget("formatBtns", xmLabelWidgetClass, formatBtns, XmNlabelString, s1 = XmStringCreateSimpleEx("Format:"), nullptr);
-	XmStringFree(s1);
-	unixFormat = XtVaCreateManagedWidget("unixFormat", xmToggleButtonWidgetClass, formatBtns, XmNlabelString, s1 = XmStringCreateSimpleEx("Unix"), XmNset, *fileFormat == UNIX_FILE_FORMAT, XmNuserData, (XtPointer)UNIX_FILE_FORMAT,
-	                                     XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'U', nullptr);
-	XmStringFree(s1);
-	XtAddCallback(unixFormat, XmNvalueChangedCallback, setFormatCB, fileFormat);
-	dosFormat = XtVaCreateManagedWidget("dosFormat", xmToggleButtonWidgetClass, formatBtns, XmNlabelString, s1 = XmStringCreateSimpleEx("DOS"), XmNset, *fileFormat == DOS_FILE_FORMAT, XmNuserData, (XtPointer)DOS_FILE_FORMAT,
-	                                    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'O', nullptr);
-	XmStringFree(s1);
-	XtAddCallback(dosFormat, XmNvalueChangedCallback, setFormatCB, fileFormat);
-	macFormat = XtVaCreateManagedWidget("macFormat", xmToggleButtonWidgetClass, formatBtns, XmNlabelString, s1 = XmStringCreateSimpleEx("Macintosh"), XmNset, *fileFormat == MAC_FILE_FORMAT, XmNuserData, (XtPointer)MAC_FILE_FORMAT,
-	                                    XmNmarginHeight, 0, XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'M', nullptr);
-	XmStringFree(s1);
-	XtAddCallback(macFormat, XmNvalueChangedCallback, setFormatCB, fileFormat);
-	if (window->wrapMode_ == CONTINUOUS_WRAP) {
-		wrapToggle = XtVaCreateManagedWidget("addWrap", xmToggleButtonWidgetClass, formatForm, XmNlabelString, s1 = XmStringCreateSimpleEx("Add line breaks where wrapped"), XmNalignment, XmALIGNMENT_BEGINNING, XmNmnemonic, 'A',
-		                                     XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, formatBtns, XmNleftAttachment, XmATTACH_FORM, nullptr);
-		XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB, addWrap);
-		XmStringFree(s1);
+	if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+		if(layout->rowCount() == 4 && layout->columnCount() == 3) {
+			auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
+			auto unixCheck = new QRadioButton(QLatin1String("&Unix"));
+			auto dosCheck  = new QRadioButton(QLatin1String("D&OS"));
+			auto macCheck  = new QRadioButton(QLatin1String("&Macintosh"));
+
+			switch(window->fileFormat_) {
+			case DOS_FILE_FORMAT:
+				dosCheck->setChecked(true);
+				break;			
+			case MAC_FILE_FORMAT:
+				macCheck->setChecked(true);
+				break;
+			case UNIX_FILE_FORMAT:
+				unixCheck->setChecked(true);
+				break;
+			}
+
+			auto group = new QButtonGroup();
+			group->addButton(unixCheck);
+			group->addButton(dosCheck);
+			group->addButton(macCheck);
+
+			boxLayout->addWidget(unixCheck);
+			boxLayout->addWidget(dosCheck);
+			boxLayout->addWidget(macCheck);
+
+			int row = layout->rowCount();
+
+			layout->addWidget(new QLabel(QLatin1String("Format: ")), row, 0, 1, 1);
+			layout->addLayout(boxLayout, row, 1, 1, 1, Qt::AlignLeft);
+
+			++row;
+
+			auto wrapCheck = new QCheckBox(QLatin1String("&Add line breaks where wrapped"));
+			if(*addWrap) {
+				wrapCheck->setChecked(true);
+			}			
+#if 0	
+			// TODO(eteran): implement this once this is hoisted into a QObject
+			//               since Qt4 doesn't support lambda based connections							
+			QObject::connect(wrapCheck, &QCheckBox::toggled, [&](bool checked) {
+				if(checked) {
+					int ret = QMessageBox::information(nullptr, QLatin1String("Add Wrap"), 
+						QLatin1String("This operation adds permanent line breaks to\n"
+						"match the automatic wrapping done by the\n"
+						"Continuous Wrap mode Preferences Option.\n\n"
+						"*** This Option is Irreversable ***\n\n"
+						"Once newlines are inserted, continuous wrapping\n"
+						"will no longer work automatically on these lines"),
+						QMessageBox::Ok, QMessageBox::Cancel);
+
+					if(ret != QMessageBox::Ok) {
+						wrapCheck->setChecked(false);
+					}
+				}
+			});
+#endif
+
+			if (window->wrapMode_ == CONTINUOUS_WRAP) {			
+				layout->addWidget(wrapCheck, row, 1, 1, 1);
+			}
+
+			if(dialog.exec()) {
+				if(dosCheck->isChecked()) {
+					window->fileFormat_ = DOS_FILE_FORMAT;
+				} else if(macCheck->isChecked()) {
+					window->fileFormat_ = MAC_FILE_FORMAT;
+				} else if(unixCheck->isChecked()) {
+					window->fileFormat_ = UNIX_FILE_FORMAT;
+				}
+
+				*addWrap = wrapCheck->isChecked();					
+				strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+				retVal = GFN_OK;
+			}
+
+		}
 	}
-	*addWrap = false;
-	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT), nullptr);
-	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), nullptr);
-	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), nullptr);
-	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_SELECTION_LABEL), XmNmnemonic, prompt[strspn(prompt, "lFD")], XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT), nullptr);
-	AddDialogMnemonicHandler(fileSB, false);
-	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
-	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
-	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_.toLatin1().data() : nullptr);
 
-	if (retVal != GFN_OK)
+
+	if (retVal != GFN_OK) {
 		SetFileDialogDefaultDirectory(savedDefaultDir);
+	}
 
 	return retVal;
 }
@@ -1718,52 +1753,6 @@ int CheckReadOnly(Document *window) {
 		return true;
 	}
 	return false;
-}
-
-/*
-** Callback procedure for File Format toggle buttons.  Format is stored
-** in userData field of widget button
-*/
-static void setFormatCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)callData;
-
-	if (XmToggleButtonGetState(w)) {
-		XtPointer userData;
-		XtVaGetValues(w, XmNuserData, &userData, nullptr);
-		*(int *)clientData = (long)userData;
-	}
-}
-
-/*
-** Callback procedure for toggle button requesting newlines to be inserted
-** to emulate continuous wrapping.
-*/
-static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)callData;
-
-	auto addWrap = static_cast<int *>(clientData);
-
-	if (XmToggleButtonGetState(w)) {
-	
-		int resp = QMessageBox::warning(nullptr /*w*/, QLatin1String("Add Wrap"), 
-			QLatin1String("This operation adds permanent line breaks to\n"
-						  "match the automatic wrapping done by the\n"
-						  "Continuous Wrap mode Preferences Option.\n\n"
-						  "*** This Option is Irreversable ***\n\n"
-						  "Once newlines are inserted, continuous wrapping\n"
-						  "will no longer work automatically on these lines"), 
-			QMessageBox::Ok | QMessageBox::Cancel);
-	
-		if (resp == QMessageBox::Cancel) {
-			XmToggleButtonSetState(w, false, false);
-			*addWrap = false;
-		} else {
-			*addWrap = true;
-		}
-	} else {
-		*addWrap = false;
-	}
 }
 
 /*
