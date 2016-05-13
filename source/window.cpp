@@ -117,14 +117,14 @@ Document *TabToWindow(Widget tab) {
 /*
 ** Check if there is already a window open for a given file
 */
-Document *FindWindowWithFile(const char *name, const char *path) {
+Document *FindWindowWithFile(const QString &name, const QString &path) {
 
 	/* I don't think this algorithm will work on vms so I am
 	   disabling it for now */
 	if (!GetPrefHonorSymlinks()) {
 		struct stat attribute;
 		
-		QString fullname = QString(QLatin1String("%1%2")).arg(QLatin1String(path), QLatin1String(name));
+		QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
 		
 
 		if (stat(fullname.toLatin1().data(), &attribute) == 0) {
@@ -141,7 +141,7 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	}
 		
 	Document *window = Document::find_if([name, path](Document *window) {
-		return (window->filename_ == QLatin1String(name)) && (window->path_ == QLatin1String(path));
+		return (window->filename_ == name) && (window->path_ == path);
 	});
 
 	return window;

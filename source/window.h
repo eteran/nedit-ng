@@ -29,9 +29,11 @@
 
 #include "nedit.h"
 
+class QString;
+
 #include <X11/Intrinsic.h>
 
-Document *FindWindowWithFile(const char *name, const char *path);
+Document *FindWindowWithFile(const QString &name, const QString &path);
 Document *TabToWindow(Widget tab);
 int NWindows(void);
 void AddSmallIcon(Widget shell);

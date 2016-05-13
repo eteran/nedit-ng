@@ -168,7 +168,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	Document *window;
 	
 	// first look to see if file is already displayed in a window 
-	window = FindWindowWithFile(name, path);
+	window = FindWindowWithFile(QLatin1String(name), QLatin1String(path));
 	if (window) {
 		if (!bgOpen) {
 			if (iconic)
@@ -892,7 +892,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	   it is possible for user to close the window by hand while the dialog
 	   is still up, because the dialog is not application modal, so after
 	   doing the dialog, check again whether the window still exists. */
-	otherWindow = FindWindowWithFile(filename, pathname);
+	otherWindow = FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 	if (otherWindow) {
 	
 		QMessageBox messageBox(nullptr /*window->shell_*/);
@@ -908,7 +908,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 			return FALSE;
 		}	
 	
-		if (otherWindow == FindWindowWithFile(filename, pathname)) {
+		if (otherWindow == FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
 			if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
 				return FALSE;
 			}

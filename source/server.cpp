@@ -404,7 +404,7 @@ static void processServerCommandString(char *string) {
 			break;
 		}
 
-		window = FindWindowWithFile(filename, pathname);
+		window = FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
