@@ -1628,15 +1628,9 @@ void CheckForChangesToFile(Document *window) {
 		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
 			int readOnly;
 			fclose(fp);
-#ifndef DONT_USE_ACCESS
+
 			readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
-#else
-			if (((fp = fopen(fullname.toLatin1().data(), "r+")) != nullptr)) {
-				readOnly = FALSE;
-				fclose(fp);
-			} else
-				readOnly = TRUE;
-#endif
+
 			if (IS_PERM_LOCKED(window->lockReasons_) != readOnly) {
 				SET_PERM_LOCKED(window->lockReasons_, readOnly);
 				window->UpdateWindowTitle();
