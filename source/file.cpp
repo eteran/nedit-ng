@@ -113,7 +113,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	}
 
 	window->SetWindowModified(false);
-	CLEAR_ALL_LOCKS(window->lockReasons_);
+	window->lockReasons_.clear();
 	window->UpdateWindowReadOnly();
 	window->UpdateStatsLine();
 	window->UpdateWindowTitle();
@@ -262,7 +262,7 @@ void RevertToSaved(Document *window) {
 	
 	RemoveBackupFile(window);
 	window->ClearUndoList();
-	openFlags |= IS_USER_LOCKED(window->lockReasons_) ? PREF_READ_ONLY : 0;
+	openFlags |= window->lockReasons_.isUserLocked() ? PREF_READ_ONLY : 0;
 	if (!doOpen(window, name, path, openFlags)) {
 		/* This is a bit sketchy.  The only error in doOpen that irreperably
 		        damages the window is "too much binary data".  It should be
@@ -315,7 +315,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	int resp;
 
 	// initialize lock reasons 
-	CLEAR_ALL_LOCKS(window->lockReasons_);
+	window->lockReasons_.clear();
 
 	// Update the window data structure 
 	window->filename_    = QLatin1String(name);
@@ -336,7 +336,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	{
 		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
 			if (access(fullname.toLatin1().data(), W_OK) != 0) {
-				SET_PERM_LOCKED(window->lockReasons_, true);
+				window->lockReasons_.setPermLocked(true);
 			}
 
 		} else if (flags & CREATE && errno == ENOENT) {
@@ -389,7 +389,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 			window->SetWindowModified(false);
 			if ((flags & PREF_READ_ONLY) != 0) {
-				SET_USER_LOCKED(window->lockReasons_, true);
+				window->lockReasons_.setUserLocked(true);
 			}
 			window->UpdateWindowReadOnly();
 			return true;
@@ -506,7 +506,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				return false;
 			}
 
-			SET_TMBD_LOCKED(window->lockReasons_, true);
+			window->lockReasons_.setTMBDLocked(true);
 			for (char *c = fileString; c < &fileString[readLen]; c++) {
 				if (*c == '\0') {
 					*c = (char)0xfe;
@@ -524,14 +524,14 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	// Set window title and file changed flag 
 	if ((flags & PREF_READ_ONLY) != 0) {
-		SET_USER_LOCKED(window->lockReasons_, true);
+		window->lockReasons_.setUserLocked(true);
 	}
-	if (IS_PERM_LOCKED(window->lockReasons_)) {
+	if (window->lockReasons_.isPermLocked()) {
 		window->fileChanged_ = false;
 		window->UpdateWindowTitle();
 	} else {
 		window->SetWindowModified(false);
-		if (IS_ANY_LOCKED(window->lockReasons_)) {
+		if (window->lockReasons_.isAnyLocked()) {
 			window->UpdateWindowTitle();
 		}
 	}
@@ -724,7 +724,7 @@ int SaveWindow(Document *window) {
 
 	/* Return success if the file is normal & unchanged or is a
 	    read-only file. */
-	if ((!window->fileChanged_ && !window->fileMissing_ && window->lastModTime_ > 0) || IS_ANY_LOCKED_IGNORING_PERM(window->lockReasons_))
+	if ((!window->fileChanged_ && !window->fileMissing_ && window->lastModTime_ > 0) || window->lockReasons_.isAnyLockedIgnoringPerm())
 		return true;
 	// Prompt for a filename if this is an Untitled window 
 	if (!window->filenameSet_)
@@ -921,7 +921,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	window->fileUid_  = 0;
 	window->fileGid_  = 0;
 	
-	CLEAR_ALL_LOCKS(window->lockReasons_);
+	window->lockReasons_.clear();
 	retVal = doSave(window);
 	window->UpdateWindowReadOnly();
 	window->RefreshTabState();
@@ -1644,7 +1644,7 @@ void CheckForChangesToFile(Document *window) {
 		//  TODO: A document without a file can be locked though.  
 		// Make sure that the window was not destroyed behind our back! 
 		if (!windowIsDestroyed) {
-			SET_PERM_LOCKED(window->lockReasons_, false);
+			window->lockReasons_.setPermLocked(false);
 			window->UpdateWindowTitle();
 			window->UpdateWindowReadOnly();
 		}
@@ -1665,8 +1665,8 @@ void CheckForChangesToFile(Document *window) {
 
 			readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
 
-			if (IS_PERM_LOCKED(window->lockReasons_) != readOnly) {
-				SET_PERM_LOCKED(window->lockReasons_, readOnly);
+			if (window->lockReasons_.isPermLocked() != readOnly) {
+				window->lockReasons_.setPermLocked(readOnly);
 				window->UpdateWindowTitle();
 				window->UpdateWindowReadOnly();
 			}
@@ -1748,7 +1748,7 @@ static int fileWasModifiedExternally(Document *window) {
 ** false if the window should not be written in.
 */
 int CheckReadOnly(Document *window) {
-	if (IS_ANY_LOCKED(window->lockReasons_)) {
+	if (window->lockReasons_.isAnyLocked()) {
 		QApplication::beep();
 		return true;
 	}

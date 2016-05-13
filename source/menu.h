@@ -30,7 +30,6 @@
 #include "nedit.h"
 
 #include <X11/Intrinsic.h>
-#include <X11/Xlib.h>
 
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2

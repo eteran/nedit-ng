@@ -84,7 +84,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 			   file status has changed or the file was locked in the mean time
 			   (possible due to Lesstif modal dialog bug), we just skip the
 			   window. */
-			if (!IS_ANY_LOCKED(writableWin->lockReasons_)) {
+			if (!writableWin->lockReasons_.isAnyLocked()) {
 				noWritableLeft = false;
 				writableWin->multiFileReplSelected_ = true;
 				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 

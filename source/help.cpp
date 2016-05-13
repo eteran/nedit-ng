@@ -45,9 +45,8 @@ static char _XmVersionString[] = "unknown";
 #endif
 
 
-static char *bldInfoString = nullptr;
-
 static const char *getBuildInfo(void) {
+	static char *bldInfoString = nullptr;
 	static const char bldFormat[] = "%s\n"
 	                               "     Built on: %s, %s, %s\n"
 	                               "     Built at: %s, %s\n"

@@ -73,10 +73,10 @@ void DialogWindowTitle::setToggleButtons() {
 
 	ui.checkDirectoryPresent->setChecked(filenameSet_);
 	ui.checkFileModified->setChecked(fileChanged_);
-	ui.checkFileReadOnly->setChecked(IS_PERM_LOCKED(lockReasons_));
-	ui.checkFileLocked->setChecked(IS_USER_LOCKED(lockReasons_));
+	ui.checkFileReadOnly->setChecked(lockReasons_.isPermLocked());
+	ui.checkFileLocked->setChecked(lockReasons_.isUserLocked());
 	// Read-only takes precedence on locked 
-	ui.checkFileLocked->setEnabled(!IS_PERM_LOCKED(lockReasons_));
+	ui.checkFileLocked->setEnabled(!lockReasons_.isPermLocked());
 
 	QString ccTag = GetClearCaseViewTag();
 
@@ -137,7 +137,7 @@ void DialogWindowTitle::formatChangedCB() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat) {
+QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 	return FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, nullptr);
 	
 }
@@ -158,7 +158,7 @@ QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QStr
 **  if the ClearCase view tag and server name are identical, only the first one
 **  specified in the formatting string will be displayed.
 */
-QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat) {
+QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 
 
 	UpdateState state;
@@ -209,7 +209,7 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
 	// Enable/disable test buttons, depending on presence of codes 
 	ui.checkFileModified->setEnabled(state.fileStatusPresent);
 	ui.checkFileReadOnly->setEnabled(state.fileStatusPresent);
-	ui.checkFileLocked->setEnabled(state.fileStatusPresent && !IS_PERM_LOCKED(lockReasons_));
+	ui.checkFileLocked->setEnabled(state.fileStatusPresent && !lockReasons_.isPermLocked());
 	ui.checkServerNamePresent->setEnabled(state.serverNamePresent);
 	ui.checkClearCasePresent->setEnabled(state.clearCasePresent);
 	ui.checkServerEqualsCC->setEnabled(state.clearCasePresent && state.serverNamePresent);
@@ -418,7 +418,7 @@ void DialogWindowTitle::on_checkFileModified_toggled(bool checked) {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogWindowTitle::on_checkFileReadOnly_toggled(bool checked) {
-	SET_PERM_LOCKED(lockReasons_, checked);
+	lockReasons_.setPermLocked(checked);
 	formatChangedCB();
 }
 
@@ -426,7 +426,7 @@ void DialogWindowTitle::on_checkFileReadOnly_toggled(bool checked) {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogWindowTitle::on_checkFileLocked_toggled(bool checked) {
-	SET_USER_LOCKED(lockReasons_, checked);
+	lockReasons_.setUserLocked(checked);
 	formatChangedCB();
 }
 
@@ -553,7 +553,7 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state) {
+QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state) {
 	QString title;
 
 	// Flags to supress one of these if both are specified and they are identical 
@@ -650,13 +650,13 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 
 			case 'S': // file status 
 				fileStatusPresent = true;
-				if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
+				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
 					title.append(tr("read only, modified"));
-				else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
+				else if (lockReasons.isAnyLockedIgnoringUser())
 					title.append(tr("read only"));
-				else if (IS_USER_LOCKED(lockReasons) && fileChanged)
+				else if (lockReasons.isUserLocked() && fileChanged)
 					title.append(tr("locked, modified"));
-				else if (IS_USER_LOCKED(lockReasons))
+				else if (lockReasons.isUserLocked())
 					title.append(tr("locked"));
 				else if (fileChanged)
 					title.append(tr("modified"));
@@ -676,13 +676,13 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
 					++format_it;
 					shortStatus = true;
-					if (IS_ANY_LOCKED_IGNORING_USER(lockReasons) && fileChanged)
+					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
 						title.append(tr("RO*"));
-					else if (IS_ANY_LOCKED_IGNORING_USER(lockReasons))
+					else if (lockReasons.isAnyLockedIgnoringUser())
 						title.append(tr("RO"));
-					else if (IS_USER_LOCKED(lockReasons) && fileChanged)
+					else if (lockReasons.isUserLocked() && fileChanged)
 						title.append(tr("LO*"));
-					else if (IS_USER_LOCKED(lockReasons))
+					else if (lockReasons.isUserLocked())
 						title.append(tr("LO"));
 					else if (fileChanged)
 						title.append(tr("*"));

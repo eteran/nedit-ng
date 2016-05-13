@@ -402,7 +402,7 @@ Widget createTextArea(Widget parent, Document *window, int rows, int cols, int e
 		textNvScrollBar, 
 		vScrollBar, 
 		textNreadOnly, 
-		IS_ANY_LOCKED(window->lockReasons_), 
+		window->lockReasons_.isAnyLocked(), 
 		textNwordDelimiters, 
 		delimiters, 
 		textNwrapMargin,
@@ -1386,7 +1386,7 @@ void Document::RefreshMenuToggleStates() {
 	XmToggleButtonSetState(autoSaveItem_, autoSave_, false);
 	XmToggleButtonSetState(overtypeModeItem_, overstrike_, false);
 	XmToggleButtonSetState(matchSyntaxBasedItem_, matchSyntaxBased_, false);
-	XmToggleButtonSetState(readOnlyItem_, IS_USER_LOCKED(lockReasons_), false);
+	XmToggleButtonSetState(readOnlyItem_, lockReasons_.isUserLocked(), false);
 
 	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
 
@@ -1786,17 +1786,20 @@ void Document::SetBacklightChars(char *applyBacklightTypes) {
 ** the window data structure.
 */
 void Document::UpdateWindowReadOnly() {
-	int i, state;
 
-	if (!IsTopDocument())
+	if (!IsTopDocument()) {
 		return;
+	}
 
-	state = IS_ANY_LOCKED(lockReasons_);
+	bool state = lockReasons_.isAnyLocked();
 	XtVaSetValues(textArea_, textNreadOnly, state, nullptr);
-	for (i = 0; i < nPanes_; i++)
+	
+	for (int i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], textNreadOnly, state, nullptr);
+	}
+	
 	XmToggleButtonSetState(readOnlyItem_, state, false);
-	XtSetSensitive(readOnlyItem_, !IS_ANY_LOCKED_IGNORING_USER(lockReasons_));
+	XtSetSensitive(readOnlyItem_, !lockReasons_.isAnyLockedIgnoringUser());
 }
 
 /*
@@ -2736,7 +2739,7 @@ void Document::CloseWindow() {
 		filename_ = QLatin1String("");
 
 		UniqueUntitledName(name, sizeof(name));
-		CLEAR_ALL_LOCKS(lockReasons_);
+		lockReasons_.clear();
 
 		fileMode_     = 0;
 		fileUid_      = 0;
@@ -3305,7 +3308,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	autoSaveOpCount_       = 0;
 	undoMemUsed_           = 0;
 	
-	CLEAR_ALL_LOCKS(lockReasons_);
+	lockReasons_.clear();
 	
 	indentStyle_        = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
 	autoSave_           = GetPrefAutoSave();
@@ -3734,7 +3737,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->autoSaveOpCount_       = 0;
 	window->undoMemUsed_           = 0;
 	
-	CLEAR_ALL_LOCKS(window->lockReasons_);
+	window->lockReasons_.clear();
 	
 	window->indentStyle_           = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
 	window->autoSave_              = GetPrefAutoSave();

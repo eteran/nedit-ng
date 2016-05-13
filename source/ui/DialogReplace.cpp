@@ -771,7 +771,7 @@ void DialogReplace::collectWritableWindows() {
 	
 	
 	for(Document *w: WindowList) {
-		if (!IS_ANY_LOCKED(w->lockReasons_)) {
+		if (!w->lockReasons_.isAnyLocked()) {
 			windows[i++] = w;
 		}
 	}

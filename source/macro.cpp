@@ -1893,7 +1893,7 @@ static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataV
 	}
 
 	// Don't allow modifications if the window is read-only 
-	if (IS_ANY_LOCKED(window->lockReasons_)) {
+	if (window->lockReasons_.isAnyLocked()) {
 		XBell(XtDisplay(window->shell_), 0);
 		result->tag = NO_TAG;
 		return True;
@@ -1931,7 +1931,7 @@ static int replaceSelectionMS(Document *window, DataValue *argList, int nArgs, D
 		return False;
 
 	// Don't allow modifications if the window is read-only 
-	if (IS_ANY_LOCKED(window->lockReasons_)) {
+	if (window->lockReasons_.isAnyLocked()) {
 		XBell(XtDisplay(window->shell_), 0);
 		result->tag = NO_TAG;
 		return True;
@@ -4216,7 +4216,7 @@ static int readOnlyMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = (IS_ANY_LOCKED(window->lockReasons_)) ? 1 : 0;
+	result->val.n = (window->lockReasons_.isAnyLocked()) ? 1 : 0;
 	return True;
 }
 
@@ -4227,7 +4227,7 @@ static int lockedMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = (IS_USER_LOCKED(window->lockReasons_)) ? 1 : 0;
+	result->val.n = (window->lockReasons_.isUserLocked()) ? 1 : 0;
 	return True;
 }
 

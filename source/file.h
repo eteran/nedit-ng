@@ -31,8 +31,6 @@
 #include "fileUtils.h"
 #include "string_view.h"
 
-#include <X11/Intrinsic.h>
-
 /* flags for EditExistingFile */
 enum EditFlags {
 	CREATE               = 1,

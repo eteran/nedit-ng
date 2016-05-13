@@ -30,8 +30,6 @@
 #include "nedit.h"
 #include "string_view.h"
 
-#include <X11/Intrinsic.h>
-
 class QString;
 class QWidget;
 class Program;

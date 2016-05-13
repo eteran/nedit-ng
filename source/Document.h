@@ -8,6 +8,7 @@
 #include "nedit.h"
 #include "fileUtils.h"
 #include "string_view.h"
+#include "LockReasons.h"
 #include <algorithm>
 
 class QDialog;
@@ -23,7 +24,7 @@ struct TextBuffer;
    of 'tabbed' documents may reside within a shell window, hence some of
    its members are of 'shell-level'; namely the find/replace dialogs, the
    menu bar & its associated members, the components on the stats area
-   (i-search line, statsline and tab bar), plus probably a few others.
+   (i-search line, statsline and tab bar), plus probably a few olock_thers.
    See CreateWindow() and CreateDocument() for more info.
 
    Each document actually 'lives' within its splitPane widget member,
@@ -329,7 +330,7 @@ public:
 	bool filenameSet_;              /* is the window still "Untitled"? */
 	bool fileChanged_;              /* has window been modified? */
 	bool fileMissing_;              /* is the window's file gone? */
-	int lockReasons_;               /* all ways a file can be locked */
+	LockReasons lockReasons_;       /* all ways a file can be locked */
 	bool autoSave_;                 /* is autosave turned on? */
 	bool saveOldVersion_;           /* keep old version in filename.bck */
 	char indentStyle_;              /* whether/how to auto indent */

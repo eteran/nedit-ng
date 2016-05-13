@@ -4,6 +4,7 @@
 
 #include <QDialog>
 #include <QString>
+#include "LockReasons.h"
 #include "ui_DialogWindowTitle.h"
 
 class Document;
@@ -36,30 +37,29 @@ private Q_SLOTS:
 	void on_editFormat_textChanged(const QString &text);
 
 public:
-	static QString FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat);
+	static QString FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
 
 private:
 	static QString compressWindowTitle(const QString &title);
-	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state);
+	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state);
 
 private:
 	void setToggleButtons();
 	void formatChangedCB();
-	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, int lockReasons, bool fileChanged, const QString &titleFormat);
+	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
 	void removeFromFormat(const QString &string);
 	void appendToFormat(const QString &string);
 
 private:
 	Ui::DialogWindowTitle ui;
 	
-	// TODO(eteran): Find out if these are necessary..
 	QString filename_;
 	QString path_;
 	QString viewTag_;
 	QString serverName_;
 	bool isServer_;
 	bool filenameSet_;
-	int lockReasons_;
+	LockReasons lockReasons_;
 	bool fileChanged_;
 
 	bool suppressFormatUpdate_;

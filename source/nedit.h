@@ -29,28 +29,25 @@
 
 #include "TextBuffer.h"
 #include "UserMenuListElement.h"
-#include <sys/types.h>
+
 #include <list>
-
-#include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
-#include <Xm/XmStrDefs.h>
 #include <sys/param.h>
+#include <sys/types.h>
 
-#define NEDIT_VERSION 5
+#define NEDIT_VERSION  5
 #define NEDIT_REVISION 6
 
 /* Some default colors */
-#define NEDIT_DEFAULT_FG "black"
-#define NEDIT_DEFAULT_TEXT_BG "rgb:e5/e5/e5"
-#define NEDIT_DEFAULT_SEL_FG "black"
-#define NEDIT_DEFAULT_SEL_BG "rgb:cc/cc/cc"
-#define NEDIT_DEFAULT_HI_FG "white" /* These are colors for flashing */
-#define NEDIT_DEFAULT_HI_BG "red"   /*   matching parens. */
+#define NEDIT_DEFAULT_FG        "black"
+#define NEDIT_DEFAULT_TEXT_BG   "rgb:e5/e5/e5"
+#define NEDIT_DEFAULT_SEL_FG    "black"
+#define NEDIT_DEFAULT_SEL_BG    "rgb:cc/cc/cc"
+#define NEDIT_DEFAULT_HI_FG     "white"        /* These are colors for flashing */
+#define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
-#define NEDIT_DEFAULT_HELP_FG "black"
-#define NEDIT_DEFAULT_HELP_BG "rgb:cc/cc/cc"
+#define NEDIT_DEFAULT_HELP_FG   "black"
+#define NEDIT_DEFAULT_HELP_BG   "rgb:cc/cc/cc"
 
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
@@ -95,6 +92,7 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 	}
 
 /* This handles all the different reasons files can be locked */
+#if 0
 #define USER_LOCKED_BIT 0
 #define PERM_LOCKED_BIT 1
 #define TOO_MUCH_BINARY_DATA_LOCKED_BIT 2
@@ -113,6 +111,7 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 #define IS_ANY_LOCKED_IGNORING_PERM(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
 #define IS_ANY_LOCKED(reasons) ((reasons) != 0)
 #define CLEAR_ALL_LOCKS(reasons) ((reasons) = 0)
+#endif
 
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)

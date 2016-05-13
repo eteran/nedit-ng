@@ -78,7 +78,6 @@
 #include <sys/types.h>
 #include <sys/param.h>
 
-#include <X11/X.h>
 #include <Xm/Xm.h>
 #include <Xm/CascadeB.h>
 #include <Xm/PushB.h>
@@ -806,7 +805,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 
 	createMenuSeparator(menuPane, "sep2", SHORT);
 	window->overtypeModeItem_ = createMenuToggle(menuPane, "overtype", "Overtype", 'O', doActionCB, "set_overtype_mode", False, SHORT);
-	window->readOnlyItem_ = createMenuToggle(menuPane, "readOnly", "Read Only", 'y', doActionCB, "set_locked", IS_USER_LOCKED(window->lockReasons_), FULL);
+	window->readOnlyItem_ = createMenuToggle(menuPane, "readOnly", "Read Only", 'y', doActionCB, "set_locked", window->lockReasons_.isUserLocked(), FULL);
 
 	/*
 	** Create the Shell menu
@@ -4068,11 +4067,11 @@ static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
 
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, IS_USER_LOCKED(window->lockReasons_), "set_locked");
+	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->lockReasons_.isUserLocked(), "set_locked");
 
-	SET_USER_LOCKED(window->lockReasons_, newState);
+	window->lockReasons_.setUserLocked(newState);
 	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->readOnlyItem_, IS_ANY_LOCKED(window->lockReasons_), False);
+		XmToggleButtonSetState(window->readOnlyItem_, window->lockReasons_.isAnyLocked(), False);
 	window->UpdateWindowTitle();
 	window->UpdateWindowReadOnly();
 }

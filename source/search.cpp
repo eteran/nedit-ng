@@ -524,7 +524,7 @@ int countWritableWindows(void) {
 			continue;
 		}
 		
-		if (!IS_ANY_LOCKED(w->lockReasons_)) {
+		if (!w->lockReasons_.isAnyLocked()) {
 			++nWritable;
 		}
 	}
