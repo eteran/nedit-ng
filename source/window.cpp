@@ -141,7 +141,7 @@ Document *FindWindowWithFile(const char *name, const char *path) {
 	}
 		
 	Document *window = Document::find_if([name, path](Document *window) {
-		return (window->filename_ == name) && (window->path_ == path);
+		return (window->filename_ == QLatin1String(name)) && (window->path_ == QLatin1String(path));
 	});
 
 	return window;

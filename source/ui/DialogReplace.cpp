@@ -167,7 +167,7 @@ void DialogReplace::on_checkBackward_toggled(bool checked) {
 //------------------------------------------------------------------------------
 void DialogReplace::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-		setWindowTitle(tr("Find/Replace (in %1)").arg(QString::fromStdString(window_->filename_)));
+		setWindowTitle(tr("Find/Replace (in %1)").arg(window_->filename_));
 	} else {
 		setWindowTitle(tr("Find/Replace"));
 	}

@@ -26,7 +26,7 @@ void DialogMoveDocument::on_buttonMove_clicked() {
 //------------------------------------------------------------------------------
 void DialogMoveDocument::addItem(Document *document) {
 
-	QString name = tr("%1%2").arg(document->filenameSet_ ? QString::fromStdString(document->path_) : tr("")).arg(QString::fromStdString(document->filename_));
+	QString name = tr("%1%2").arg(document->filenameSet_ ? document->path_ : tr("")).arg(document->filename_);
 
 	documents_.push_back(document);
 	ui.listDocuments->addItem(name);

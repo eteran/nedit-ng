@@ -1725,7 +1725,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		// just use the plain name as supplied 
 		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *win) {
 			char fullname[MAXPATHLEN];
-			snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
+			snprintf(fullname, sizeof(fullname), "%s%s", win->path_.toLatin1().data(), win->filename_.toLatin1().data());
 			return strcmp(string, fullname) == 0;
 		});
 		
@@ -1744,7 +1744,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 			
 			w = std::find_if(begin(WindowList), end(WindowList), [&normalizedString](Document *win) {
 				char fullname[MAXPATHLEN];
-				snprintf(fullname, sizeof(fullname), "%s%s", win->path_.c_str(), win->filename_.c_str());
+				snprintf(fullname, sizeof(fullname), "%s%s", win->path_.toLatin1().data(), win->filename_.toLatin1().data());
 				return strcmp(normalizedString, fullname) == 0;
 			});
 		}
@@ -1769,7 +1769,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	// Return the name of the window 
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, w->path_.size() + w->filename_.size() + 1);
-	sprintf(result->val.str.rep, "%s%s", w->path_.c_str(), w->filename_.c_str());
+	sprintf(result->val.str.rep, "%s%s", w->path_.toLatin1().data(), w->filename_.toLatin1().data());
 	return True;
 }
 
@@ -3303,7 +3303,7 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	if (defaultPath[0] != '\0') {
 		SetFileDialogDefaultDirectory(QLatin1String(defaultPath));
 	} else {
-		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
+		SetFileDialogDefaultDirectory(window->path_);
 	}
 
 	//  Set filter (saving original for later)  
@@ -3946,7 +3946,7 @@ static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->filename_.c_str());
+	AllocNStringCpy(&result->val.str, window->filename_.toLatin1().data());
 	return True;
 }
 
@@ -3957,7 +3957,7 @@ static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->path_.c_str());
+	AllocNStringCpy(&result->val.str, window->path_.toLatin1().data());
 	return True;
 }
 

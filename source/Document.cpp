@@ -1434,9 +1434,9 @@ void Document::RefreshTabState() {
 	   "*" (modified) will change per label alignment setting */
 	XtVaGetValues(tab_, XmNalignment, &alignment, nullptr);
 	if (alignment != XmALIGNMENT_END) {
-		sprintf(labelString, "%s%s", fileChanged_ ? "*" : "", filename_.c_str());
+		sprintf(labelString, "%s%s", fileChanged_ ? "*" : "", filename_.toLatin1().data());
 	} else {
-		sprintf(labelString, "%s%s", filename_.c_str(), fileChanged_ ? "*" : "");
+		sprintf(labelString, "%s%s", filename_.toLatin1().data(), fileChanged_ ? "*" : "");
 	}
 
 	// Make the top document stand out a little more 
@@ -1447,7 +1447,7 @@ void Document::RefreshTabState() {
 
 	if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
 		strcat(labelString, " - ");
-		strcat(labelString, path_.c_str());
+		strcat(labelString, path_.toLatin1().data());
 	}
 	tipString = XmStringCreateSimpleEx(labelString);
 
@@ -1513,14 +1513,14 @@ void Document::UpdateStatsLine() {
 	char slinecol[32];
 	
 	if (!TextPosToLineAndCol(lastFocus_, pos, &line, &colNum)) {
-		snprintf(string, string_size, "%s%s%s %d bytes", path_.c_str(), filename_.c_str(), format, buffer_->BufGetLength());
+		snprintf(string, string_size, "%s%s%s %d bytes", path_.toLatin1().data(), filename_.toLatin1().data(), format, buffer_->BufGetLength());
 		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
 		snprintf(slinecol, sizeof(slinecol), "L: %d  C: %d", line, colNum);
 		if (showLineNumbers_) {
-			snprintf(string, string_size, "%s%s%s byte %d of %d", path_.c_str(), filename_.c_str(), format, pos, buffer_->BufGetLength());
+			snprintf(string, string_size, "%s%s%s byte %d of %d", path_.toLatin1().data(), filename_.toLatin1().data(), format, pos, buffer_->BufGetLength());
 		} else {
-			snprintf(string, string_size, "%s%s%s %d bytes", path_.c_str(), filename_.c_str(), format, buffer_->BufGetLength());
+			snprintf(string, string_size, "%s%s%s %d bytes", path_.toLatin1().data(), filename_.toLatin1().data(), format, buffer_->BufGetLength());
 		}
 	}
 
@@ -1880,8 +1880,8 @@ void Document::UpdateWindowTitle() {
 	QString clearCaseTag = GetClearCaseViewTag();
 
 	QString title = DialogWindowTitle::FormatWindowTitle(
-		QString::fromStdString(filename_), 
-		QString::fromStdString(path_),
+		filename_, 
+		path_,
 		clearCaseTag, 
 		QLatin1String(GetPrefServerName()),
 		IsServer, 
@@ -1891,25 +1891,25 @@ void Document::UpdateWindowTitle() {
 		QLatin1String(GetPrefTitleFormat()));
 	
 	
-	std::string iconTitle = filename_;	
+	QString iconTitle = filename_;	
 	if (fileChanged_) {
-		iconTitle.append("*");
+		iconTitle.append(QLatin1String("*"));
 	}
 	
-	XtVaSetValues(shell_, XmNtitle, title.toLatin1().data(), XmNiconName, iconTitle.c_str(), nullptr);
+	XtVaSetValues(shell_, XmNtitle, title.toLatin1().data(), XmNiconName, iconTitle.toLatin1().data(), nullptr);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
 	if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
 		if(dialog->keepDialog()) {
-			title = QString(QLatin1String("Find (in %1)")).arg(QString::fromStdString(filename_));
+			title = QString(QLatin1String("Find (in %1)")).arg(filename_);
 			dialog->setWindowTitle(title);
 		}
 	}
 	
 	if(auto dialog = getDialogReplace()) {
 		if(dialog->keepDialog()) {		
-			title = QString(QLatin1String("Replace (in %1)")).arg(QString::fromStdString(filename_));
+			title = QString(QLatin1String("Replace (in %1)")).arg(filename_);
 			dialog->setWindowTitle(title);
 		}
 	}
@@ -2148,7 +2148,7 @@ Document *Document::DetachDocument() {
 	}
 
 	// Create a new this 
-	auto cloneWin = new Document(filename_.c_str(), nullptr, false);
+	auto cloneWin = new Document(filename_.toLatin1().data(), nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's
@@ -2215,7 +2215,7 @@ void Document::MoveDocumentDialog() {
 	
 	// reset the dialog and display it
 	dialog->resetSelection();
-	dialog->setLabel(QString::fromStdString(filename_));
+	dialog->setLabel(filename_);
 	dialog->setMultipleDocuments(NDocuments() > 1);
 	int r = dialog->exec();
 	
@@ -2356,7 +2356,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	}
 
 	// relocate the document to target this 
-	cloneWin = toWindow->CreateDocument(filename_.c_str());
+	cloneWin = toWindow->CreateDocument(filename_.toLatin1().data());
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin);
 
@@ -2746,25 +2746,29 @@ void Document::CloseWindow() {
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
 	if (keepWindow || (WindowList == this && next_ == nullptr)) {
-		filename_[0] = '\0';
+		filename_ = QLatin1String("");
+
 		UniqueUntitledName(name, sizeof(name));
 		CLEAR_ALL_LOCKS(lockReasons_);
-		fileMode_ = 0;
-		fileUid_ = 0;
-		fileGid_ = 0;
-		filename_ = name;
-		path_ = "";
+
+		fileMode_     = 0;
+		fileUid_      = 0;
+		fileGid_      = 0;
+		filename_     = QLatin1String(name);
+		path_         = QLatin1String("");
 		ignoreModify_ = true;
+		
 		buffer_->BufSetAllEx("");
+		
 		ignoreModify_ = false;
-		nMarks_ = 0;
-		filenameSet_ = false;
-		fileMissing_ = true;
-		fileChanged_ = false;
-		fileFormat_ = UNIX_FILE_FORMAT;
-		lastModTime_ = 0;
-		device_ = 0;
-		inode_ = 0;
+		nMarks_       = 0;
+		filenameSet_  = false;
+		fileMissing_  = true;
+		fileChanged_  = false;
+		fileFormat_   = UNIX_FILE_FORMAT;
+		lastModTime_  = 0;
+		device_       = 0;
+		inode_        = 0;
 
 		StopHighlighting(this);
 		EndSmartIndent(this);
@@ -3306,7 +3310,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	fileFormat_            = UNIX_FILE_FORMAT;
 	lastModTime_           = 0;
 	fileMissing_           = true;
-	filename_              = name;
+	filename_              = QLatin1String(name);
 	undo_                  = std::list<UndoInfo *>();
 	redo_                  = std::list<UndoInfo *>();
 	nPanes_                = 0;
@@ -3735,7 +3739,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->filenameSet_           = false;
 	window->fileFormat_            = UNIX_FILE_FORMAT;
 	window->lastModTime_           = 0;
-	window->filename_              = name;
+	window->filename_              = QLatin1String(name);
 	window->undo_                  = std::list<UndoInfo *>();
 	window->redo_                  = std::list<UndoInfo *>();
 	window->nPanes_                = 0;
@@ -4315,7 +4319,7 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 
 std::string Document::FullPath() const {
 	char fullPath[MAXPATHLEN + 1];
-	snprintf(fullPath, sizeof(fullPath), "%s%s", path_.c_str(), filename_.c_str());
+	snprintf(fullPath, sizeof(fullPath), "%s%s", path_.toLatin1().data(), filename_.toLatin1().data());
 	return fullPath;
 }
 

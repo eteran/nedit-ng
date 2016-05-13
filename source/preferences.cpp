@@ -1902,7 +1902,7 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 */
 static int matchLanguageMode(Document *window) {
 
-	int i, fileNameLen, extLen, beginPos, endPos, start;
+	int i, fileNameLen, beginPos, endPos;
 
 	/*... look for an explicit mode statement first */
 
@@ -1921,18 +1921,19 @@ static int matchLanguageMode(Document *window) {
 	   stripped off to recognize the extension to make ClearCase users happy) */
 	fileNameLen = window->filename_.size();
 
-	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(QString::fromStdString(window->filename_));
+	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(window->filename_);
 	if (versionExtendedPathIndex != -1) {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
 	for (i = 0; i < NLanguageModes; i++) {
 		for(QString ext : LanguageModes[i]->extensions) {
-			extLen = ext.size();
-			start = fileNameLen - extLen;
+			int extLen = ext.size();
+			int start = fileNameLen - extLen;
 
-			if (start >= 0 && !strncmp(&window->filename_[start], ext.toLatin1().data(), extLen))
+			if (start >= 0 && strncmp(&window->filename_.toLatin1().data()[start], ext.toLatin1().data(), extLen) == 0) {
 				return i;
+			}
 		}
 	}
 

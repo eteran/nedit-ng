@@ -34,8 +34,8 @@ DialogWindowTitle::DialogWindowTitle(Document *window, QWidget *parent, Qt::Wind
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */	
-	path_        = QString::fromStdString(window->path_);
-	filename_    = QString::fromStdString(window->filename_);
+	path_        = window->path_;
+	filename_    = window->filename_;
 	
 	QString clearCase = GetClearCaseViewTag();
 	

@@ -1153,8 +1153,9 @@ static int findAllMatches(Document *window, const char *string) {
 		strcpy(tagSearch[nMatches], searchString);
 		tagPosInf[nMatches] = startPos;
 		ParseFilename(tagFiles[nMatches], filename, pathname);
+
 		// Is this match in the current file?  If so, use it! 
-		if (GetPrefSmartTags() && window->filename_ == filename && window->path_ == pathname) {
+		if (GetPrefSmartTags() && window->filename_ == QLatin1String(filename) && window->path_ == QLatin1String(pathname)) {
 			if (nMatches) {
 				strcpy(tagFiles[0],  tagFiles[nMatches]);
 				strcpy(tagSearch[0], tagSearch[nMatches]);
@@ -1164,7 +1165,7 @@ static int findAllMatches(Document *window, const char *string) {
 			break;
 		}
 		// Is this match in the same dir. as the current file? 
-		if (window->path_ == pathname) {
+		if (window->path_ == QLatin1String(pathname)) {
 			samePath++;
 			pathMatch = nMatches;
 		}

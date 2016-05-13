@@ -300,8 +300,8 @@ public:
 
 	// NOTE(eteran): these appear to be the document/tab specific variables
 public:
-	std::string filename_;             /* name component of file being edited*/
-	std::string path_;                 /* path component of file being edited*/
+	QString filename_;                 /* name component of file being edited*/
+	QString path_;                     /* path component of file being edited*/
 	unsigned fileMode_;                /* permissions of file being edited */
 	uid_t fileUid_;                    /* last recorded user id of the file */
 	gid_t fileGid_;                    /* last recorded group id of the file */

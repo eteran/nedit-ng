@@ -2435,7 +2435,7 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		}
 	}
 
-	EditNewFile(openInTab ? window : nullptr, nullptr, False, nullptr, window->path_.c_str());
+	EditNewFile(openInTab ? window : nullptr, nullptr, False, nullptr, window->path_.toLatin1().data());
 	CheckCloseDim();
 }
 
@@ -2451,7 +2451,7 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	Document *window = Document::WidgetToWindow(w);
 
-	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path_.c_str());
+	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path_.toLatin1().data());
 	CheckCloseDim();
 }
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2461,7 +2461,7 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Document *window = Document::WidgetToWindow(w);
 
-	EditNewFile(window, nullptr, False, nullptr, window->path_.c_str());
+	EditNewFile(window, nullptr, False, nullptr, window->path_.toLatin1().data());
 	CheckCloseDim();
 }
 
@@ -2601,7 +2601,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		QMessageBox messageBox(nullptr /*window->shell_*/);
 		messageBox.setWindowTitle(QLatin1String("Discard Changes"));
 		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(QString(QLatin1String("Discard changes to\n%1%2?")).arg(QString::fromStdString(window->path_)).arg(QString::fromStdString(window->filename_)));
+		messageBox.setText(QString(QLatin1String("Discard changes to\n%1%2?")).arg(window->path_).arg(window->filename_));
 		QPushButton *buttonOk   = messageBox.addButton(QMessageBox::Ok);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 		Q_UNUSED(buttonOk);
@@ -2616,7 +2616,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		QMessageBox messageBox(nullptr /*window->shell_*/);
 		messageBox.setWindowTitle(QLatin1String("Reload File"));
 		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(QString(QLatin1String("Re-load file\n%1%2?")).arg(QString::fromStdString(window->path_)).arg(QString::fromStdString(window->filename_)));
+		messageBox.setText(QString(QLatin1String("Re-load file\n%1%2?")).arg(window->path_).arg(window->filename_));
 		QPushButton *buttonOk   = messageBox.addButton(QLatin1String("Re-read"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 		Q_UNUSED(buttonOk);
@@ -2871,7 +2871,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			Document *win = *it;
 			
 			char filename[MAXPATHLEN];
-			snprintf(filename, sizeof(filename), "%s%s", win->filename_.c_str(), win->fileChanged_ ? "*" : "");
+			snprintf(filename, sizeof(filename), "%s%s", win->filename_.toLatin1().data(), win->fileChanged_ ? "*" : "");
 			
 			char *title = filename;
 			int titleLen = strlen(title);
@@ -3369,8 +3369,8 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 	QMessageBox messageBox(nullptr /*window->shell_*/);
 	messageBox.setWindowTitle(QLatin1String("Detach"));
 	messageBox.setIcon(QMessageBox::Question);
-	messageBox.setText(QString(QLatin1String("Detach %1?")).arg(QString::fromStdString(window->filename_)));
-	QPushButton *buttonDetach   = messageBox.addButton(QLatin1String("Detach"), QMessageBox::AcceptRole);
+	messageBox.setText(QString(QLatin1String("Detach %1?")).arg(window->filename_));
+	QPushButton *buttonDetach = messageBox.addButton(QLatin1String("Detach"), QMessageBox::AcceptRole);
 	QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 	Q_UNUSED(buttonDetach);
 
@@ -4381,11 +4381,11 @@ void AddToPrevOpenMenu(const char *filename) {
 static char *getWindowsMenuEntry(const Document *window) {
 	static char fullTitle[MAXPATHLEN * 2 + 3 + 1];
 
-	sprintf(fullTitle, "%s%s", window->filename_.c_str(), window->fileChanged_ ? "*" : "");
+	sprintf(fullTitle, "%s%s", window->filename_.toLatin1().data(), window->fileChanged_ ? "*" : "");
 
 	if (GetPrefShowPathInWindowsMenu() && window->filenameSet_) {
 		strcat(fullTitle, " - ");
-		strcat(fullTitle, window->path_.c_str());
+		strcat(fullTitle, window->path_.toLatin1().data());
 	}
 
 	return fullTitle;

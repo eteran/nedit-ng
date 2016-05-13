@@ -113,12 +113,12 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 		window = new Document(name, geometry, iconic);
 	}
 
-	window->filename_ = name;
-	window->path_     = (defaultPath && *defaultPath) ? defaultPath : GetCurrentDirEx().toStdString();
+	window->filename_ = QLatin1String(name);
+	window->path_     = (defaultPath && *defaultPath) ? QLatin1String(defaultPath) : GetCurrentDirEx();
 	
 	// do we have a "/" at the end? if not, add one 
-	if (!window->path_.empty() && window->path_.back() != '/') {
-		window->path_.append("/");
+	if (!window->path_.isEmpty() && !window->path_.endsWith(QLatin1Char('/'))) {
+		window->path_.append(QLatin1Char('/'));
 	}
 
 	window->SetWindowModified(FALSE);
@@ -193,8 +193,8 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	} else {
 		// open file in untitled document 
 		window            = inWindow;
-		window->path_     = path;
-		window->filename_ = name;
+		window->path_     = QLatin1String(path);
+		window->filename_ = QLatin1String(name);
 		
 		if (!iconic && !bgOpen) {
 			window->RaiseDocumentWindow();
@@ -254,7 +254,7 @@ void RevertToSaved(Document *window) {
 
 	// Can't revert untitled windows 
 	if (!window->filenameSet_) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error"), QString(QLatin1String("Window '%1' was never saved, can't re-read")).arg(QString::fromStdString(window->filename_)));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error"), QString(QLatin1String("Window '%1' was never saved, can't re-read")).arg(window->filename_));
 		return;
 	}
 
@@ -266,8 +266,8 @@ void RevertToSaved(Document *window) {
 	}
 
 	// re-read the file, update the window title if new file is different 
-	strcpy(name, window->filename_.c_str());
-	strcpy(path, window->path_.c_str());
+	strcpy(name, window->filename_.toLatin1().data());
+	strcpy(path, window->path_.toLatin1().data());
 	
 	RemoveBackupFile(window);
 	window->ClearUndoList();
@@ -327,8 +327,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	CLEAR_ALL_LOCKS(window->lockReasons_);
 
 	// Update the window data structure 
-	window->filename_    = name;
-	window->path_        = path;
+	window->filename_    = QLatin1String(name);
+	window->path_        = QLatin1String(path);
 	window->filenameSet_ = TRUE;
 	window->fileMissing_ = TRUE;
 
@@ -683,7 +683,7 @@ int CloseFileAndWindow(Document *window, int preResponse) {
 	} else {
 		if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
 		
-			int resp = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Save File"), QString(QLatin1String("Save %1 before closing?")).arg(QString::fromStdString(window->filename_)), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			int resp = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Save File"), QString(QLatin1String("Save %1 before closing?")).arg(window->filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 			
 			// TODO(eteran): factor out the need for this mapping...
 			switch(resp) {
@@ -751,7 +751,7 @@ int SaveWindow(Document *window) {
 		                                         "and your work or someone else's may potentially be lost.\n\n"
 		                                         "To preserve the modified file, cancel this operation and\n"
 		                                         "use Save As... to save this file under a different name,\n"
-		                                         "or Revert to Saved to revert to the modified version.")).arg(QString::fromStdString(window->filename_)));
+		                                         "or Revert to Saved to revert to the modified version.")).arg(window->filename_));
 
 		QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
@@ -787,7 +787,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 		QFileDialog dialog(nullptr /*parent*/, QLatin1String("Save File As"));
 		dialog.setFileMode(QFileDialog::AnyFile);
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
-		dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
+		dialog.setDirectory((!window->path_.isEmpty()) ? window->path_ : QString());
 		dialog.setOptions(QFileDialog::DontUseNativeDialog);
 		
 		if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
@@ -882,7 +882,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	}
 
 	// If the requested file is this file, just save it and return 
-	if (window->filename_ == filename && window->path_ == pathname) {
+	if (window->filename_ == QLatin1String(filename) && window->path_ == QLatin1String(pathname)) {
 		if (writeBckVersion(window))
 			return FALSE;
 		return doSave(window);
@@ -920,8 +920,8 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 
 	// Change the name of the file and save it under the new name 
 	RemoveBackupFile(window);
-	window->filename_ = filename;
-	window->path_     = pathname;
+	window->filename_ = QLatin1String(filename);
+	window->path_     = QLatin1String(pathname);
 	window->fileMode_ = 0;
 	window->fileUid_  = 0;
 	window->fileGid_  = 0;
@@ -963,7 +963,7 @@ static bool doSave(Document *window) {
 	    none of the write bits set.  */
 	if ((getuid() == 0) && (stat(fullname.c_str(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
 	
-		int result = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Writing Read-only File"), QString(QLatin1String("File '%1' is marked as read-only.\nDo you want to save anyway?")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+		int result = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Writing Read-only File"), QString(QLatin1String("File '%1' is marked as read-only.\nDo you want to save anyway?")).arg(window->filename_), QMessageBox::Save | QMessageBox::Cancel);
 		if (result != QMessageBox::Save) {
 			return true;
 		}
@@ -989,7 +989,7 @@ static bool doSave(Document *window) {
 		QMessageBox messageBox(nullptr /*window->shell_*/);
 		messageBox.setWindowTitle(QLatin1String("Error saving File"));
 		messageBox.setIcon(QMessageBox::Warning);
-		messageBox.setText(QString(QLatin1String("Unable to save %1:\n%1\n\nSave as a new file?")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
+		messageBox.setText(QString(QLatin1String("Unable to save %1:\n%1\n\nSave as a new file?")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 
 		QPushButton *buttonSaveAs = messageBox.addButton(QLatin1String("Save As..."), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
@@ -1027,7 +1027,7 @@ static bool doSave(Document *window) {
 	
 	
 	if (ferror(fp)) {
-		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
+		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
 		remove(fullname.c_str());
 		return FALSE;
@@ -1080,7 +1080,7 @@ int WriteBackupFile(Document *window) {
 	    independent of those of the original file being edited */
 	if ((fd = open(name.c_str(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 	
-		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error writing Backup"), QString(QLatin1String("Unable to save backup for %1:\n%2\nAutomatic backup is now off")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));		
+		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error writing Backup"), QString(QLatin1String("Unable to save backup for %1:\n%2\nAutomatic backup is now off")).arg(window->filename_).arg(QLatin1String(strerror(errno))));		
 		window->autoSave_ = FALSE;
 		window->SetToggleButtonState(window->autoSaveItem_, FALSE, FALSE);
 		return FALSE;
@@ -1100,7 +1100,7 @@ int WriteBackupFile(Document *window) {
 	// write out the file 
 	fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 	if (ferror(fp)) {	
-		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving Backup"), QString(QLatin1String("Error while saving backup for %1:\n%2\nAutomatic backup is now off")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))));
+		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving Backup"), QString(QLatin1String("Error while saving backup for %1:\n%2\nAutomatic backup is now off")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
 		remove(name.c_str());
 		window->autoSave_ = FALSE;
@@ -1136,10 +1136,10 @@ static std::string backupFileNameEx(Document *window) {
 	
 	char buf[MAXPATHLEN];
 	if (window->filenameSet_) {
-		snprintf(buf, sizeof(buf), "%s~%s", window->path_.c_str(), window->filename_.c_str());
+		snprintf(buf, sizeof(buf), "%s~%s", window->path_.toLatin1().data(), window->filename_.toLatin1().data());
 		return buf;
 	} else {
-		snprintf(buf, sizeof(buf), "~%s", window->filename_.c_str());
+		snprintf(buf, sizeof(buf), "~%s", window->filename_.toLatin1().data());
 		return PrependHomeEx(buf).toStdString();
 	}
 }
@@ -1168,7 +1168,7 @@ static bool writeBckVersion(Document *window) {
 
 	// Generate name for old version 
 	if (fullname.size() >= MAXPATHLEN) {
-		return bckError(window, "file name too long", window->filename_.c_str());
+		return bckError(window, "file name too long", window->filename_.toLatin1().data());
 	}
 	snprintf(bckname, sizeof(bckname), "%s.bck", fullname.c_str());
 
@@ -1218,7 +1218,7 @@ static bool writeBckVersion(Document *window) {
 			close(out_fd);
 			remove(bckname);
 			delete [] io_buffer;
-			return bckError(window, "read() error", window->filename_.c_str());
+			return bckError(window, "read() error", window->filename_.toLatin1().data());
 		}
 
 		if (bytes_read == 0) {
@@ -1305,7 +1305,7 @@ void PrintWindow(Document *window, bool selectedOnly) {
 	}
 
 	// Print the string 
-	PrintString(fileString, window->filename_);
+	PrintString(fileString, window->filename_.toLatin1().data());
 }
 
 /*
@@ -1367,14 +1367,14 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	   then, if the call was unsuccessful, restore the original default
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-	if (!window->path_.empty()) {
-		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
+	if (!window->path_.isEmpty()) {
+		SetFileDialogDefaultDirectory(window->path_);
 	}
 	
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setDirectory((!window->path_.empty()) ? QString::fromStdString(window->path_) : QString());
+	dialog.setDirectory((!window->path_.isEmpty()) ? window->path_ : QString());
 	if(dialog.exec()) {
 		strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
 		return GFN_OK;
@@ -1404,8 +1404,8 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 	   directory */
 	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
 
-	if (!window->path_.empty()) {
-		SetFileDialogDefaultDirectory(QString::fromStdString(window->path_));
+	if (!window->path_.isEmpty()) {
+		SetFileDialogDefaultDirectory(window->path_);
 	}
 
 	/* Present a file selection dialog with an added field for requesting
@@ -1451,7 +1451,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 	AddDialogMnemonicHandler(fileSB, FALSE);
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT));
 	RemapDeleteKey(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_TEXT));
-	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_.c_str() : nullptr);
+	retVal = HandleCustomNewFileSB(fileSB, fullname, window->filenameSet_ ? window->filename_.toLatin1().data() : nullptr);
 
 	if (retVal != GFN_OK)
 		SetFileDialogDefaultDirectory(savedDefaultDir);
@@ -1475,7 +1475,7 @@ void UniqueUntitledName(char *name, size_t size) {
 		}
 		
 		Document *w = Document::find_if([name](Document *window) {
-			return window->filename_ == name;
+			return window->filename_ == QLatin1String(name);
 		});
 		
 		if(!w) {
@@ -1576,21 +1576,21 @@ void CheckForChangesToFile(Document *window) {
 			case ENOENT:
 				{
 					// A component of the path file_name does not exist. 
-					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Found"), QString(QLatin1String("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Found"), QString(QLatin1String("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.")).arg(window->filename_), QMessageBox::Save | QMessageBox::Cancel);
 					save = (resp == QMessageBox::Save);
 				}
 				break;
 			case EACCES:
 				{
 					// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
-					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Permission Denied"), QString(QLatin1String("You no longer have access to file '%1'.\nAnother program may have changed the permissions of\none of its parent directories.")).arg(QString::fromStdString(window->filename_)), QMessageBox::Save | QMessageBox::Cancel);
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Permission Denied"), QString(QLatin1String("You no longer have access to file '%1'.\nAnother program may have changed the permissions of one of its parent directories.")).arg(window->filename_), QMessageBox::Save | QMessageBox::Cancel);
 					save = (resp == QMessageBox::Save);
 				}
 				break;
 			default:
 				{
 					// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Accessible"), QString(QLatin1String("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing\nthis window.")).arg(QString::fromStdString(window->filename_)).arg(QLatin1String(strerror(errno))), QMessageBox::Save | QMessageBox::Cancel);
+					int resp = QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("File not Accessible"), QString(QLatin1String("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.")).arg(window->filename_).arg(QLatin1String(strerror(errno))), QMessageBox::Save | QMessageBox::Cancel);
 					save = (resp == QMessageBox::Save);
 				}
 				break;
@@ -1671,9 +1671,9 @@ void CheckForChangesToFile(Document *window) {
 		Q_UNUSED(buttonCancel);
 
 		if (window->fileChanged_) {			
-			messageBox.setText(QString(QLatin1String("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this\nediting session!")).arg(QString::fromStdString(window->filename_)));
+			messageBox.setText(QString(QLatin1String("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!")).arg(window->filename_));
 		} else {
-			messageBox.setText(QString(QLatin1String("%1 has been modified by another\nprogram.  Reload?")).arg(QString::fromStdString(window->filename_)));
+			messageBox.setText(QString(QLatin1String("%1 has been modified by another program.  Reload?")).arg(window->filename_));
 		}
 		
 		messageBox.exec();
@@ -1852,7 +1852,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	sprintf(message, "Comparing externally modified %s ...", window->filename_.c_str());
+	sprintf(message, "Comparing externally modified %s ...", window->filename_.toLatin1().data());
 	restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
 	bufPos = 0;
 	filePos = 0;
