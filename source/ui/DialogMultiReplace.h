@@ -21,6 +21,9 @@ public Q_SLOTS:
 	void on_buttonReplace_clicked();
 	
 public:
+	void uploadFileListItems(bool replace);
+	
+public:
 	Ui::DialogMultiReplace ui;
 	Document *window_;
 	DialogReplace *replace_;

@@ -38,7 +38,6 @@ public:
 	void UpdateReplaceActionButtons();
 	int getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
 	void collectWritableWindows();
-	void uploadFileListItems(bool replace);
 
 public:
 	bool keepDialog() const;

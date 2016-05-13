@@ -104,7 +104,7 @@ int StringToSearchType(const char *string, int *searchType);
 extern int NHist;
 
 struct SelectionInfo {
-	int done;
+	bool done;
 	Document *window;
 	char *selection;
 };

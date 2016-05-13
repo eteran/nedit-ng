@@ -15,9 +15,7 @@ DialogMultiReplace::~DialogMultiReplace() {
 
 void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {
 	Q_UNUSED(checked);
-#if 0
-	uploadFileListItems(window, true); // Replace 
-#endif
+	uploadFileListItems(true);
 }
 
 void DialogMultiReplace::on_buttonDeselectAll_clicked() {
@@ -126,4 +124,61 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 			QApplication::beep();
 		}
 	}
+}
+
+
+/*
+ * Uploads the file items to the multi-file replament dialog list.
+ * A boolean argument indicates whether the elements currently in the
+ * list have to be replaced or not.
+ * Depending on the state of the "Show path names" toggle button, either
+ * the file names or the path names are listed.
+ */
+void DialogMultiReplace::uploadFileListItems(bool replace) {
+
+	int nWritable = window_->nWritableWindows_;
+
+	QStringList names;
+
+	bool usePathNames = ui.checkShowPaths->isChecked();
+	
+	
+	if(replace) {
+		// we want to maintain selections, we are replacing the 
+		// existing items with equivalent items but with (possibly)
+		// updated names
+		for(int i = 0; i < ui.listFiles->count(); ++i) {
+	    	QListWidgetItem* item = ui.listFiles->item(i);
+			auto w = reinterpret_cast<Document *>(item->data(Qt::UserRole).toULongLong());
+			if (usePathNames && window_->filenameSet_) {
+				item->setText(QString::fromStdString(w->FullPath()));
+			} else {
+				item->setText(QString::fromStdString(w->filename_));
+			}				
+		}
+		
+	} else {
+		/* Note: the windows are sorted alphabetically by _file_ name. This
+	        	 order is _not_ changed when we switch to path names. That
+	        	 would be confusing for the user */
+
+		for (int i = 0; i < nWritable; ++i) {
+			Document *w = window_->writableWindows_[i];
+
+			QListWidgetItem *item;
+			if (usePathNames && window_->filenameSet_) {
+				item = new QListWidgetItem(QString::fromStdString(w->FullPath()));
+			} else {
+				item = new QListWidgetItem(QString::fromStdString(w->filename_));
+			}
+			
+			item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(w));
+			ui.listFiles->addItem(item);
+		}
+		
+		if(ui.listFiles->selectedItems().isEmpty()) {
+			ui.listFiles->selectAll();
+		}		
+	}
+
 }

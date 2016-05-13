@@ -28,22 +28,24 @@ void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Ato
 	if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == nullptr || *length == 0) {
 		XtFree(value);
 		selectionInfo->selection = nullptr;
-		selectionInfo->done = 1;
+		selectionInfo->done = true;
 		return;
 	}
+	
 	// return an empty string if the data is not of the correct format. 
 	if (*format != 8) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Invalid Format"), QLatin1String("NEdit can't handle non 8-bit text"));
+		QMessageBox::warning(nullptr /*parent*/, DialogReplace::tr("Invalid Format"), DialogReplace::tr("NEdit can't handle non 8-bit text"));
 		XtFree(value);
 		selectionInfo->selection = nullptr;
-		selectionInfo->done = 1;
+		selectionInfo->done = true;
 		return;
 	}
+	
 	selectionInfo->selection = XtMalloc(*length + 1);
 	memcpy(selectionInfo->selection, value, *length);
 	selectionInfo->selection[*length] = 0;
 	XtFree(value);
-	selectionInfo->done = 1;
+	selectionInfo->done = true;
 }
 
 }
@@ -472,7 +474,7 @@ void DialogReplace::on_buttonMulti_clicked() {
 	collectWritableWindows();
 
 	// Initialize/update the list of files. 
-	uploadFileListItems(false);
+	dialogMultiReplace_->uploadFileListItems(false);
 
 	// Display the dialog 
 	// TODO(eteran): center on pointer
@@ -530,13 +532,13 @@ void DialogReplace::setTextField(Document *window, time_t time) {
 
 	// TODO(eteran): is there even a way to enable this setting?
 	if (GetPrefFindReplaceUsesSelection()) {
-		selectionInfo->done      = 0;
+		selectionInfo->done      = false;
 		selectionInfo->window    = window;
 		selectionInfo->selection = nullptr;
 		XtGetSelectionValue(window_->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
 
 		XEvent nextEvent;
-		while (selectionInfo->done == 0) {
+		while (!selectionInfo->done) {
 			XtAppNextEvent(XtWidgetToApplicationContext(window_->textArea_), &nextEvent);
 			ServerDispatchEvent(&nextEvent);
 		}
@@ -782,63 +784,6 @@ void DialogReplace::collectWritableWindows() {
 	window_->nWritableWindows_ = nWritable;
 }
 
-
-/*
- * Uploads the file items to the multi-file replament dialog list.
- * A boolean argument indicates whether the elements currently in the
- * list have to be replaced or not.
- * Depending on the state of the "Show path names" toggle button, either
- * the file names or the path names are listed.
- */
-void DialogReplace::uploadFileListItems(bool replace) {
-
-	int nWritable = window_->nWritableWindows_;
-
-	QStringList names;
-
-	bool usePathNames = dialogMultiReplace_->ui.checkShowPaths->isChecked();
-
-	/* Note: the windows are sorted alphabetically by _file_ name. This
-	         order is _not_ changed when we switch to path names. That
-	         would be confusing for the user */
-
-	for (int i = 0; i < nWritable; ++i) {
-		Document *w = window_->writableWindows_[i];
-		
-		QString name;
-		
-		if (usePathNames && window_->filenameSet_) {
-			name = tr("%1%2").arg(QString::fromStdString(w->path_)).arg(QString::fromStdString(w->filename_));
-		} else {
-			name = QString::fromStdString(w->filename_);
-		}
-		
-		names.push_back(name);
-	}
-
-
-	// TODO(eteran): generally get the selection behavior to be more like the original
-	//
-
-	if (replace) {
-
-		
-		// TODO(eteran): what is the story with "maintaining the selection"
-		//               the code *appeared* to record the positions of the current
-		//               selections, replace ALL the names, then highlight the 
-		//               elements at the positions noted (even though they are likely 
-		//               different values...).
-		dialogMultiReplace_->ui.listFiles->clear();
-		dialogMultiReplace_->ui.listFiles->addItems(names);
-	} else {
-		dialogMultiReplace_->ui.listFiles->clear();
-		dialogMultiReplace_->ui.listFiles->addItems(names);
-		
-		if(dialogMultiReplace_->ui.listFiles->selectedItems().isEmpty()) {
-			dialogMultiReplace_->ui.listFiles->selectAll();
-		}
-	}
-}
 
 //------------------------------------------------------------------------------
 // name: 
