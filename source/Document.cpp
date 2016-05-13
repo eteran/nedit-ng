@@ -4317,10 +4317,8 @@ void Document::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::s
 	}
 }
 
-std::string Document::FullPath() const {
-	char fullPath[MAXPATHLEN + 1];
-	snprintf(fullPath, sizeof(fullPath), "%s%s", path_.toLatin1().data(), filename_.toLatin1().data());
-	return fullPath;
+QString Document::FullPath() const {
+	return QString(QLatin1String("%1%2")).arg(path_, filename_);
 }
 
 

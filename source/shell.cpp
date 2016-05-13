@@ -183,12 +183,12 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	std::string fullName = window->FullPath();
+	QString fullName = window->FullPath();
 	
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
-	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.c_str(), lineNumber);
+	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.toLatin1().data(), lineNumber);
 	if(!subsCommand) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"

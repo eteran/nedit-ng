@@ -151,7 +151,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 	    	QListWidgetItem* item = ui.listFiles->item(i);
 			auto w = reinterpret_cast<Document *>(item->data(Qt::UserRole).toULongLong());
 			if (usePathNames && window_->filenameSet_) {
-				item->setText(QString::fromStdString(w->FullPath()));
+				item->setText(w->FullPath());
 			} else {
 				item->setText(w->filename_);
 			}				
@@ -167,7 +167,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 
 			QListWidgetItem *item;
 			if (usePathNames && window_->filenameSet_) {
-				item = new QListWidgetItem(QString::fromStdString(w->FullPath()));
+				item = new QListWidgetItem(w->FullPath());
 			} else {
 				item = new QListWidgetItem(w->filename_);
 			}

@@ -333,7 +333,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	window->fileMissing_ = TRUE;
 
 	// Get the full name of the file 
-	const std::string fullname = window->FullPath();
+	const QString fullname = window->FullPath();
 
 	// Open the file 
 	/* The only advantage of this is if you use clearcase,
@@ -343,8 +343,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	   this is now the default.
 	*/
 	{
-		if ((fp = fopen(fullname.c_str(), "r"))) {
-			if (access(fullname.c_str(), W_OK) != 0) {
+		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
+			if (access(fullname.toLatin1().data(), W_OK) != 0) {
 				SET_PERM_LOCKED(window->lockReasons_, TRUE);
 			}
 
@@ -363,7 +363,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 					
 					msgbox.setIcon(QMessageBox::Warning);
 					msgbox.setWindowTitle(QLatin1String("New File"));
-					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
+					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(fullname, QLatin1String(strerror(errno))));
 					msgbox.addButton(QLatin1String("New File"), QMessageBox::AcceptRole);
 					msgbox.addButton(QMessageBox::Cancel);
 					exitButton = msgbox.addButton(QLatin1String("Exit NEdit"), QMessageBox::RejectRole);
@@ -373,7 +373,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				
 					msgbox.setIcon(QMessageBox::Warning);
 					msgbox.setWindowTitle(QLatin1String("New File"));
-					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
+					msgbox.setText(QString(QLatin1String("Can't open %1:\n%2")).arg(fullname, QLatin1String(strerror(errno))));
 					msgbox.addButton(QLatin1String("New File"), QMessageBox::AcceptRole);
 					msgbox.addButton(QMessageBox::Cancel);
 					exitButton = nullptr;
@@ -388,12 +388,12 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			}
 
 			// Test if new file can be created 
-			if ((fd = creat(fullname.c_str(), 0666)) == -1) {
-				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error creating File"), QString(QLatin1String("Can't create %1:\n%2")).arg(QString::fromStdString(fullname), QLatin1String(strerror(errno))));
+			if ((fd = creat(fullname.toLatin1().data(), 0666)) == -1) {
+				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error creating File"), QString(QLatin1String("Can't create %1:\n%2")).arg(fullname, QLatin1String(strerror(errno))));
 				return FALSE;
 			} else {
 				close(fd);
-				remove(fullname.c_str());
+				remove(fullname.toLatin1().data());
 			}
 
 			window->SetWindowModified(FALSE);
@@ -957,11 +957,11 @@ static bool doSave(Document *window) {
 
 	// Get the full name of the file 
 	
-	std::string fullname = window->FullPath();
+	QString fullname = window->FullPath();
 
 	/*  Check for root and warn him if he wants to write to a file with
 	    none of the write bits set.  */
-	if ((getuid() == 0) && (stat(fullname.c_str(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+	if ((getuid() == 0) && (stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
 	
 		int result = QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Writing Read-only File"), QString(QLatin1String("File '%1' is marked as read-only.\nDo you want to save anyway?")).arg(window->filename_), QMessageBox::Save | QMessageBox::Cancel);
 		if (result != QMessageBox::Save) {
@@ -983,7 +983,7 @@ static bool doSave(Document *window) {
 	}
 
 	// open the file 
-	fp = fopen(fullname.c_str(), "wb");
+	fp = fopen(fullname.toLatin1().data(), "wb");
 	if(!fp) {
 	
 		QMessageBox messageBox(nullptr /*window->shell_*/);
@@ -1029,7 +1029,7 @@ static bool doSave(Document *window) {
 	if (ferror(fp)) {
 		QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error saving File"), QString(QLatin1String("%2 not saved:\n%2")).arg(window->filename_).arg(QLatin1String(strerror(errno))));
 		fclose(fp);
-		remove(fullname.c_str());
+		remove(fullname.toLatin1().data());
 		return FALSE;
 	}
 
@@ -1043,7 +1043,7 @@ static bool doSave(Document *window) {
 	window->SetWindowModified(FALSE);
 
 	// update the modification time 
-	if (stat(fullname.c_str(), &statbuf) == 0) {
+	if (stat(fullname.toLatin1().data(), &statbuf) == 0) {
 		window->lastModTime_ = statbuf.st_mtime;
 		window->fileMissing_ = FALSE;
 		window->device_ = statbuf.st_dev;
@@ -1164,13 +1164,13 @@ static bool writeBckVersion(Document *window) {
 	}
 
 	// Get the full name of the file 
-	std::string fullname = window->FullPath();
+	QString fullname = window->FullPath();
 
 	// Generate name for old version 
 	if (fullname.size() >= MAXPATHLEN) {
 		return bckError(window, "file name too long", window->filename_.toLatin1().data());
 	}
-	snprintf(bckname, sizeof(bckname), "%s.bck", fullname.c_str());
+	snprintf(bckname, sizeof(bckname), "%s.bck", fullname.toLatin1().data());
 
 	// Delete the old backup file 
 	// Errors are ignored; we'll notice them later. 
@@ -1178,7 +1178,7 @@ static bool writeBckVersion(Document *window) {
 
 	/* open the file being edited.  If there are problems with the
 	   old file, don't bother the user, just skip the backup */
-	in_fd = open(fullname.c_str(), O_RDONLY);
+	in_fd = open(fullname.toLatin1().data(), O_RDONLY);
 	if (in_fd < 0) {
 		return false;
 	}
@@ -1543,9 +1543,10 @@ void CheckForChangesToFile(Document *window) {
 	}
 
 	// Get the file mode and modification time
-	std::string fullname = window->FullPath();
+	QString fullname = window->FullPath();
 	
-	if (stat(fullname.c_str(), &statbuf) != 0) {
+	if (stat(fullname.toLatin1().data(), &statbuf) != 0) {
+	
 		// Return if we've already warned the user or we can't warn him now 
 		if (window->fileMissing_ || silent) {
 			return;
@@ -1619,16 +1620,18 @@ void CheckForChangesToFile(Document *window) {
 	/* Check that the file's read-only status is still correct (but
 	   only if the file can still be opened successfully in read mode) */
 	if (window->fileMode_ != statbuf.st_mode || window->fileUid_ != statbuf.st_uid || window->fileGid_ != statbuf.st_gid) {
+		
 		window->fileMode_ = statbuf.st_mode;
 		window->fileUid_ = statbuf.st_uid;
 		window->fileGid_ = statbuf.st_gid;
-		if ((fp = fopen(fullname.c_str(), "r"))) {
+		
+		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
 			int readOnly;
 			fclose(fp);
 #ifndef DONT_USE_ACCESS
-			readOnly = access(fullname.c_str(), W_OK) != 0;
+			readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
 #else
-			if (((fp = fopen(fullname.c_str(), "r+")) != nullptr)) {
+			if (((fp = fopen(fullname.toLatin1().data(), "r+")) != nullptr)) {
 				readOnly = FALSE;
 				fclose(fp);
 			} else
@@ -1654,7 +1657,7 @@ void CheckForChangesToFile(Document *window) {
 		window->fileMissing_ = FALSE;
 		if (!GetPrefWarnFileMods())
 			return;
-		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.c_str())) {
+		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
 			// Contents hasn't changed. Update the modification time. 
 			window->lastModTime_ = statbuf.st_mtime;
 			return;
@@ -1695,9 +1698,9 @@ static int fileWasModifiedExternally(Document *window) {
 		return FALSE;
 	}
 	
-	std::string fullname = window->FullPath();
+	QString fullname = window->FullPath();
 	
-	if (stat(fullname.c_str(), &statbuf) != 0) {
+	if (stat(fullname.toLatin1().data(), &statbuf) != 0) {
 		return FALSE;
 	}
 	
@@ -1705,7 +1708,7 @@ static int fileWasModifiedExternally(Document *window) {
 		return FALSE;
 	}
 	
-	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.c_str())) {
+	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
 		return FALSE;
 	}
 	
