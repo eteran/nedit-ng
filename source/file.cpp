@@ -85,7 +85,7 @@
 
 static bool writeBckVersion(Document *window);
 static bool bckError(Document *window, const char *errString, const char *file);
-static int cmpWinAgainstFile(Document *window, const char *fileName);
+static int cmpWinAgainstFile(Document *window, const QString &fileName);
 static int doOpen(Document *window, const char *name, const char *path, int flags);
 static bool doSave(Document *window);
 static int fileWasModifiedExternally(Document *window);
@@ -129,9 +129,9 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	window->RefreshTabState();
 
 	if(!languageMode)
-		DetermineLanguageMode(window, True);
+		DetermineLanguageMode(window, true);
 	else
-		SetLanguageMode(window, FindLanguageMode(languageMode), True);
+		SetLanguageMode(window, FindLanguageMode(languageMode), true);
 
 	window->ShowTabBar(window->GetShowTabBar());
 
@@ -159,7 +159,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 ** If languageMode is passed as nullptr, it will be determined automatically
 ** from the file extension or file contents.
 **
-** If bgOpen is True, then the file will be open in background. This
+** If bgOpen is true, then the file will be open in background. This
 ** works in association with the SetLanguageMode() function that has
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
@@ -213,9 +213,9 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 
 	// Decide what language mode to use, trigger language specific actions 
 	if(!languageMode)
-		DetermineLanguageMode(window, True);
+		DetermineLanguageMode(window, true);
 	else
-		SetLanguageMode(window, FindLanguageMode(languageMode), True);
+		SetLanguageMode(window, FindLanguageMode(languageMode), true);
 
 	// update tab label and tooltip 
 	window->RefreshTabState();
@@ -353,7 +353,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			if (!(flags & SUPPRESS_CREATE_WARN)) {
 				/* on Solaris 2.6, and possibly other OSes, dialog won't
 		           show if parent window is iconized. */
-				RaiseShellWindow(window->shell_, False);
+				RaiseShellWindow(window->shell_, false);
 				
 				QMessageBox msgbox(nullptr /*parent*/);
 				QAbstractButton  *exitButton;
@@ -490,9 +490,9 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 	}
 
 	// Display the file contents in the text widget 
-	window->ignoreModify_ = True;
+	window->ignoreModify_ = true;
 	window->buffer_->BufSetAllEx(view::string_view(fileString, readLen));
-	window->ignoreModify_ = False;
+	window->ignoreModify_ = false;
 
 	/* Check that the length that the buffer thinks it has is the same
 	   as what we gave it.  If not, there were probably nuls in the file.
@@ -523,9 +523,9 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			}
 			window->buffer_->nullSubsChar_ = (char)0xfe;
 		}
-		window->ignoreModify_ = True;
+		window->ignoreModify_ = true;
 		window->buffer_->BufSetAllEx(fileString);
-		window->ignoreModify_ = False;
+		window->ignoreModify_ = false;
 	}
 
 	// Release the memory that holds fileString 
@@ -648,11 +648,11 @@ int CloseAllFilesAndWindows(void) {
 		 */
 		if (MacroRunWindow() == WindowList && WindowList->next_) {
 			if (!WindowList->next_->CloseAllDocumentInWindow()) {
-				return False;
+				return false;
 			}
 		} else {
 			if (!WindowList->CloseAllDocumentInWindow()) {
-				return False;
+				return false;
 			}
 		}
 	}
@@ -737,7 +737,7 @@ int SaveWindow(Document *window) {
 		return true;
 	// Prompt for a filename if this is an Untitled window 
 	if (!window->filenameSet_)
-		return SaveWindowAs(window, nullptr, False);
+		return SaveWindowAs(window, nullptr, false);
 
 	// Check for external modifications and warn the user 
 	if (GetPrefWarnFileMods() && fileWasModifiedExternally(window)) {
@@ -938,9 +938,9 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	    it's an Untitled window for which the user already set a language
 	    mode; it's probably the right one.  */
 	if (window->languageMode_ == PLAIN_LANGUAGE_MODE || window->filenameSet_) {
-		DetermineLanguageMode(window, False);
+		DetermineLanguageMode(window, false);
 	}
-	window->filenameSet_ = True;
+	window->filenameSet_ = true;
 
 	// Update the stats line and window title with the new filename 
 	window->UpdateWindowTitle();
@@ -1146,7 +1146,7 @@ static QString backupFileNameEx(Document *window) {
 /*
 ** If saveOldVersion is on, copies the existing version of the file to
 ** <filename>.bck in anticipation of a new version being saved.  Returns
-** True if backup fails and user requests that the new file not be written.
+** true if backup fails and user requests that the new file not be written.
 */
 static bool writeBckVersion(Document *window) {
 
@@ -1442,7 +1442,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 		XtAddCallback(wrapToggle, XmNvalueChangedCallback, addWrapCB, addWrap);
 		XmStringFree(s1);
 	}
-	*addWrap = False;
+	*addWrap = false;
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_LABEL), XmNmnemonic, 'l', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_FILTER_TEXT), nullptr);
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST_LABEL), XmNmnemonic, 'D', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_DIR_LIST), nullptr);
 	XtVaSetValues(XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST_LABEL), XmNmnemonic, 'F', XmNuserData, XmFileSelectionBoxGetChild(fileSB, XmDIALOG_LIST), nullptr);
@@ -1506,7 +1506,7 @@ void CheckForChangesToFile(Document *window) {
 	FILE *fp;
 	int silent = 0;
 	XWindowAttributes winAttr;
-	Boolean windowIsDestroyed = False;
+	Boolean windowIsDestroyed = false;
 
 	if (!window->filenameSet_) {
 		return;
@@ -1609,7 +1609,7 @@ void CheckForChangesToFile(Document *window) {
 		//  TODO: A document without a file can be locked though.  
 		// Make sure that the window was not destroyed behind our back! 
 		if (!windowIsDestroyed) {
-			SET_PERM_LOCKED(window->lockReasons_, False);
+			SET_PERM_LOCKED(window->lockReasons_, false);
 			window->UpdateWindowTitle();
 			window->UpdateWindowReadOnly();
 		}
@@ -1650,7 +1650,7 @@ void CheckForChangesToFile(Document *window) {
 		window->fileMissing_ = false;
 		if (!GetPrefWarnFileMods())
 			return;
-		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
+		if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname)) {
 			// Contents hasn't changed. Update the modification time. 
 			window->lastModTime_ = statbuf.st_mtime;
 			return;
@@ -1701,7 +1701,7 @@ static int fileWasModifiedExternally(Document *window) {
 		return false;
 	}
 	
-	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname.toLatin1().data())) {
+	if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(window, fullname)) {
 		return false;
 	}
 	
@@ -1715,9 +1715,9 @@ static int fileWasModifiedExternally(Document *window) {
 int CheckReadOnly(Document *window) {
 	if (IS_ANY_LOCKED(window->lockReasons_)) {
 		QApplication::beep();
-		return True;
+		return true;
 	}
-	return False;
+	return false;
 }
 
 /*
@@ -1756,13 +1756,13 @@ static void addWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 			QMessageBox::Ok | QMessageBox::Cancel);
 	
 		if (resp == QMessageBox::Cancel) {
-			XmToggleButtonSetState(w, False, False);
-			*addWrap = False;
+			XmToggleButtonSetState(w, false, false);
+			*addWrap = false;
 		} else {
-			*addWrap = True;
+			*addWrap = true;
 		}
 	} else {
-		*addWrap = False;
+		*addWrap = false;
 	}
 }
 
@@ -1796,7 +1796,7 @@ static void addWrapNewlines(Document *window) {
 
 	/* Show the user that something has happened by turning off
 	   Continuous Wrap mode */
-	window->SetToggleButtonState(window->continuousWrapItem_, False, True);
+	window->SetToggleButtonState(window->continuousWrapItem_, false, true);
 }
 
 /*
@@ -1813,45 +1813,50 @@ static void addWrapNewlines(Document *window) {
  *   0: no difference found
  *  !0: difference found or could not compare contents.
  */
-static int cmpWinAgainstFile(Document *window, const char *fileName) {
+static int cmpWinAgainstFile(Document *window, const QString &fileName) {
+
 	char fileString[PREFERRED_CMPBUF_LEN + 2];
 	struct stat statbuf;
-	int fileLen, restLen, nRead, bufPos, rv, offset, filePos;
-	char pendingCR = 0;
-	int fileFormat = window->fileFormat_;
-	char message[MAXPATHLEN + 50];
-	TextBuffer *buf = window->buffer_;
-	FILE *fp;
+	int rv;
+	int offset;
+	char pendingCR         = 0;
+	FileFormats fileFormat = window->fileFormat_;
+	TextBuffer *buf        = window->buffer_;
 
-	fp = fopen(fileName, "r");
-	if (!fp)
-		return (1);
+	FILE *fp = fopen(fileName.toLatin1().data(), "r");
+	if (!fp) {
+		return 1;
+	}
+	
 	if (fstat(fileno(fp), &statbuf) != 0) {
 		fclose(fp);
-		return (1);
+		return 1;
 	}
 
-	fileLen = statbuf.st_size;
+	int fileLen = statbuf.st_size;
 	// For DOS files, we can't simply check the length 
 	if (fileFormat != DOS_FILE_FORMAT) {
 		if (fileLen != buf->BufGetLength()) {
 			fclose(fp);
-			return (1);
+			return 1;
 		}
 	} else {
 		// If a DOS file is smaller on disk, it's certainly different 
 		if (fileLen < buf->BufGetLength()) {
 			fclose(fp);
-			return (1);
+			return 1;
 		}
 	}
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	sprintf(message, "Comparing externally modified %s ...", window->filename_.toLatin1().data());
-	restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
-	bufPos = 0;
-	filePos = 0;
+	char message[MAXPATHLEN + 50];	   
+	snprintf(message, sizeof(message), "Comparing externally modified %s ...", window->filename_.toLatin1().data());
+
+	int restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
+	int bufPos  = 0;
+	int filePos = 0;
+	
 	while (restLen > 0) {
 		AllWindowsBusy(message);
 		if (pendingCR) {
@@ -1861,11 +1866,11 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 			offset = 0;
 		}
 
-		nRead = fread(fileString + offset, sizeof(char), restLen, fp);
+		int nRead = fread(fileString + offset, sizeof(char), restLen, fp);
 		if (nRead != restLen) {
 			fclose(fp);
 			AllWindowsUnbusy();
-			return (1);
+			return 1;
 		}
 		filePos += nRead;
 
@@ -1875,13 +1880,14 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 		if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
 			fclose(fp);
 			AllWindowsUnbusy();
-			return (1);
+			return 1;
 		}
 
-		if (fileFormat == MAC_FILE_FORMAT)
+		if (fileFormat == MAC_FILE_FORMAT) {
 			ConvertFromMacFileString(fileString, nRead);
-		else if (fileFormat == DOS_FILE_FORMAT)
+		} else if (fileFormat == DOS_FILE_FORMAT) {
 			ConvertFromDosFileString(fileString, &nRead, &pendingCR);
+		}
 
 		// Beware of 0 chars ! 
 		buf->BufSubstituteNullChars(fileString, nRead);
@@ -1889,24 +1895,26 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 		if (rv) {
 			fclose(fp);
 			AllWindowsUnbusy();
-			return (rv);
+			return rv;
 		}
 		bufPos += nRead;
 		restLen = std::min<int>(fileLen - filePos, PREFERRED_CMPBUF_LEN);
 	}
+	
 	AllWindowsUnbusy();
 	fclose(fp);
 	if (pendingCR) {
 		rv = buf->BufCmpEx(bufPos, 1, &pendingCR);
 		if (rv) {
-			return (rv);
+			return rv;
 		}
 		bufPos += 1;
 	}
+	
 	if (bufPos != buf->BufGetLength()) {
-		return (1);
+		return 1;
 	}
-	return (0);
+	return 0;
 }
 
 /*
@@ -1916,7 +1924,7 @@ static int cmpWinAgainstFile(Document *window, const char *fileName) {
 static void forceShowLineNumbers(Document *window) {
 	Boolean showLineNum = window->showLineNumbers_;
 	if (showLineNum) {
-		window->showLineNumbers_ = False;
+		window->showLineNumbers_ = false;
 		window->ShowLineNumbers(showLineNum);
 	}
 }
