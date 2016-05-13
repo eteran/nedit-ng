@@ -31,7 +31,7 @@
 #ifndef RANGESET_H_
 #define RANGESET_H_
 
-#include <Xm/Xm.h>
+#include <Xm/Xm.h> // for Pixel
 
 #define N_RANGESETS 63
 

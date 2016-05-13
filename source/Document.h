@@ -5,7 +5,6 @@
 #include <QPointer>
 #include <QString>
 #include <list>
-#include <X11/Intrinsic.h>
 #include "nedit.h"
 #include "fileUtils.h"
 #include "string_view.h"

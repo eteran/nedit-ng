@@ -37,28 +37,15 @@
 #include "BubbleButton.h"
 #include "BubbleButtonP.h"
 
-#include <X11/Intrinsic.h>
-#include <X11/Shell.h>
-#include <X11/Xatom.h>
 #include <Xm/CascadeB.h>
 #include <Xm/Form.h>
 #include <Xm/Frame.h>
-#include <Xm/Label.h>
-#include <Xm/List.h>
 #include <Xm/MainW.h>
 #include <Xm/PanedW.h>
 #include <Xm/PanedWP.h>
-#include <Xm/PrimitiveP.h>
-#include <Xm/Protocols.h>
-#include <Xm/PushB.h>
-#include <Xm/RowColumnP.h>
 #include <Xm/ScrollBar.h>
 #include <Xm/ScrolledW.h>
-#include <Xm/SelectioB.h>
-#include <Xm/Separator.h>
-#include <Xm/Text.h>
 #include <Xm/ToggleB.h>
-#include <Xm/Xm.h>
 
 namespace {
 
