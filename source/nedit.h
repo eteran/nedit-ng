@@ -91,28 +91,6 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 		XtGetValues(widget, args, 1);                                                                                                                                                                                                          \
 	}
 
-/* This handles all the different reasons files can be locked */
-#if 0
-#define USER_LOCKED_BIT 0
-#define PERM_LOCKED_BIT 1
-#define TOO_MUCH_BINARY_DATA_LOCKED_BIT 2
-
-#define LOCKED_BIT_TO_MASK(bitNum) (1 << (bitNum))
-#define SET_LOCKED_BY_REASON(reasons, onOrOff, reasonBit) ((onOrOff) ? ((reasons) |= LOCKED_BIT_TO_MASK(reasonBit)) : ((reasons) &= ~LOCKED_BIT_TO_MASK(reasonBit)))
-
-#define IS_USER_LOCKED(reasons) (((reasons)&LOCKED_BIT_TO_MASK(USER_LOCKED_BIT)) != 0)
-#define SET_USER_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, USER_LOCKED_BIT)
-#define IS_PERM_LOCKED(reasons) (((reasons)&LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
-#define SET_PERM_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, PERM_LOCKED_BIT)
-#define IS_TMBD_LOCKED(reasons) (((reasons)&LOCKED_BIT_TO_MASK(TOO_MUCH_BINARY_DATA_LOCKED_BIT)) != 0)
-#define SET_TMBD_LOCKED(reasons, onOrOff) SET_LOCKED_BY_REASON(reasons, onOrOff, TOO_MUCH_BINARY_DATA_LOCKED_BIT)
-
-#define IS_ANY_LOCKED_IGNORING_USER(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(USER_LOCKED_BIT)) != 0)
-#define IS_ANY_LOCKED_IGNORING_PERM(reasons) (((reasons) & ~LOCKED_BIT_TO_MASK(PERM_LOCKED_BIT)) != 0)
-#define IS_ANY_LOCKED(reasons) ((reasons) != 0)
-#define CLEAR_ALL_LOCKS(reasons) ((reasons) = 0)
-#endif
-
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 

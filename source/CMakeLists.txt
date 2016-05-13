@@ -46,6 +46,8 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogWindowTitle.h
 	ui/DialogWrapMargin.h
 	ui/DialogSyntaxPatterns.h
+	ui/DialogPrompt.h
+	ui/DialogPromptString.h
 	ui/LineEdit.h
 	ui/ListWidget.h
 	ui/MainWindow.h
@@ -75,6 +77,8 @@ set(UI_FILES
 	ui/DialogWindowTitle.ui
 	ui/DialogWrapMargin.ui
 	ui/DialogSyntaxPatterns.ui
+	ui/DialogPrompt.ui
+	ui/DialogPromptString.ui
 	ui/MainWindow.ui
 )
 
@@ -109,6 +113,8 @@ add_executable(nedit
 	ui/LineEdit.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
+	ui/DialogPrompt.cpp
+	ui/DialogPromptString.cpp
 	ui/DialogSyntaxPatterns.cpp
 
 	QtMotif.cpp

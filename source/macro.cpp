@@ -28,9 +28,12 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QPushButton>
 #include <QString>
 #include <QWidget>
 #include <QStack>
+#include "ui/DialogPrompt.h"
+#include "ui/DialogPromptString.h"
 #include <QtDebug>
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -184,12 +187,8 @@ static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *
 static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
-static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 
 static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
-static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 
 static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -2749,12 +2748,7 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	char btnStorage[TYPE_INT_STR_SIZE(int)];
 	char *btnLabel;
 	char *message;
-	Arg al[20];
-	int ac;
-	Widget dialog, btn;
 	long i;
-	int nBtns;
-	XmString s1, s2;
 	int messageLen;
 	int btnLabelLen;
 
@@ -2786,115 +2780,30 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 			return False;
 		}
 	}
-
-	// pick up the first button 
-	if (nArgs == 1) {
-		btnLabel = (String) "OK";
-		nBtns = 1;
-	} else {
-		nBtns = nArgs - 1;
-		argList++;
-		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-	}
-
-	// Create the message box dialog widget and its dialog shell parent 
-	ac = 0;
-	XtSetArg(al[ac], XmNtitle, " ");
-	ac++;
-	XtSetArg(al[ac], XmNmessageString, s1 = XmStringCreateLtoREx(message));
-	ac++;
-	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
-	ac++;
-	dialog = CreateMessageDialog(window->shell_, "macroDialog", al, ac);
-	if (nArgs == 1) {
-		//  Only set margin width for the default OK button  
-		XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
-	}
-
-	XmStringFree(s1);
-	XmStringFree(s2);
-	AddMotifCloseCallback(XtParent(dialog), dialogCloseCB, window);
-	XtAddCallback(dialog, XmNokCallback, dialogBtnCB, window);
-	XtVaSetValues(XmMessageBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNuserData, (XtPointer)1, nullptr);
-	cmdData->dialog = dialog;
-
-	// Unmanage default buttons, except for "OK" 
-	XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
-	XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-
-	/* Make callback for the unmanaged cancel button (which can
-	   still get executed via the esc key) activate close box action */
-	XtAddCallback(XmMessageBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON), XmNactivateCallback, dialogCloseCB, window);
-
-	// Add user specified buttons (1st is already done) 
-	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
-		XtAddCallback(btn, XmNactivateCallback, dialogBtnCB, window);
-		XmStringFree(s1);
-	}
-
-	// Put up the dialog 
-	ManageDialogCenteredOnPointer(dialog);
-
+	
 	// Stop macro execution until the dialog is complete 
 	PreemptMacro();
-
+	
 	// Return placeholder result.  Value will be changed by button callback 
 	result->tag = INT_TAG;
-	result->val.n = 0;
+	result->val.n = 0;		
+	
+	auto prompt = new DialogPrompt(nullptr /*parent*/);
+	prompt->setMessage(QLatin1String(message));
+	if (nArgs == 1) {
+		prompt->addButton(QDialogButtonBox::Ok);
+	} else {
+		for(int i = 1; i < nArgs; ++i) {		
+			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
+			prompt->addButton(QLatin1String(btnLabel));
+		}
+	}	
+	prompt->exec();
+	result->val.n = prompt->result();
+	ModifyReturnedValue(cmdData->context, *result);	
+	
+	ResumeMacroExecution(window);
 	return True;
-}
-
-static void dialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)callData;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	XtPointer userData;
-	DataValue retVal;
-
-	/* Return the index of the button which was pressed (stored in the userData
-	   field of the button widget).  The 1st button, being a gadget, is not
-	   returned in w. */
-	if(!cmdData)
-		return; // shouldn't happen 
-	if (XtClass(w) == xmPushButtonWidgetClass) {
-		XtVaGetValues(w, XmNuserData, &userData, nullptr);
-		retVal.val.n = (long)userData;
-	} else
-		retVal.val.n = 1;
-	retVal.tag = INT_TAG;
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
-	ResumeMacroExecution(window);
-}
-
-static void dialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	DataValue retVal;
-
-	// Return 0 to show that the dialog was closed via the window close box 
-	retVal.val.n = 0;
-	retVal.tag = INT_TAG;
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
-	ResumeMacroExecution(window);
 }
 
 static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2903,12 +2812,7 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	char btnStorage[TYPE_INT_STR_SIZE(int)];
 	char *btnLabel;
 	char *message;
-	Widget dialog, btn;
 	long i;
-	int nBtns;
-	XmString s1, s2;
-	Arg al[20];
-	int ac;
 	int messageLen;
 	int btnLabelLen;
 
@@ -2933,144 +2837,44 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg)) {
 		return False;
 	}
+	
 	// check that all button labels can be read 
 	for (i = 1; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, stringStorage, errMsg)) {
 			return False;
 		}
 	}
-	if (nArgs == 1) {
-		btnLabel = (String) "OK";
-		nBtns = 1;
-	} else {
-		nBtns = nArgs - 1;
-		argList++;
-		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-	}
-
-	// Create the selection box dialog widget and its dialog shell parent 
-	ac = 0;
-	XtSetArg(al[ac], XmNtitle, " ");
-	ac++;
-	XtSetArg(al[ac], XmNselectionLabelString, s1 = XmStringCreateLtoREx(message));
-	ac++;
-	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
-	ac++;
-	dialog = CreatePromptDialog(window->shell_, "macroStringDialog", al, ac);
-	if (nArgs == 1) {
-		//  Only set margin width for the default OK button  
-		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
-	}
-
-	XmStringFree(s1);
-	XmStringFree(s2);
-	AddMotifCloseCallback(XtParent(dialog), stringDialogCloseCB, window);
-	XtAddCallback(dialog, XmNokCallback, stringDialogBtnCB, window);
-	XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNuserData, (XtPointer)1, nullptr);
-	cmdData->dialog = dialog;
-
-	// Unmanage unneded widgets 
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-
-	/* Make callback for the unmanaged cancel button (which can
-	   still get executed via the esc key) activate close box action */
-	XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON), XmNactivateCallback, stringDialogCloseCB, window);
-
-	/* Add user specified buttons (1st is already done).  Selection box
-	   requires a place-holder widget to be added before buttons can be
-	   added, that's what the separator below is for */
-	XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
-	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
-		XtAddCallback(btn, XmNactivateCallback, stringDialogBtnCB, window);
-		XmStringFree(s1);
-	}
-
-	// Put up the dialog 
-	ManageDialogCenteredOnPointer(dialog);
 
 	// Stop macro execution until the dialog is complete 
 	PreemptMacro();
-
+	
 	// Return placeholder result.  Value will be changed by button callback 
 	result->tag = INT_TAG;
-	result->val.n = 0;
-	return True;
-}
+	result->val.n = 0;	
 
-static void stringDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)callData;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	XtPointer userData;
-	DataValue retVal;
-	char *text;
-	int btnNum;
-
-	// shouldn't happen, but would crash if it did 
-	if(!cmdData)
-		return;
-
-	// Return the string entered in the selection text area 
-	text = XmTextGetString(XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_TEXT));
-	retVal.tag = STRING_TAG;
-	AllocNStringCpy(&retVal.val.str, text);
-	XtFree(text);
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	/* Find the index of the button which was pressed (stored in the userData
-	   field of the button widget).  The 1st button, being a gadget, is not
-	   returned in w. */
-	if (XtClass(w) == xmPushButtonWidgetClass) {
-		XtVaGetValues(w, XmNuserData, &userData, nullptr);
-		btnNum = (long)userData;
-	} else
-		btnNum = 1;
-
+	auto prompt = new DialogPromptString(nullptr /*parent*/);
+	prompt->setMessage(QLatin1String(message));
+	if (nArgs == 1) {
+		prompt->addButton(QDialogButtonBox::Ok);
+	} else {
+		for(int i = 1; i < nArgs; ++i) {		
+			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
+			prompt->addButton(QLatin1String(btnLabel));
+		}
+	}	
+	prompt->exec();
+	
 	// Return the button number in the global variable $string_dialog_button 
 	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = btnNum;
+	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+	
+	result->	tag = STRING_TAG;
+	AllocNStringCpy(&result->val.str, prompt->text().toLatin1().data());
+	ModifyReturnedValue(cmdData->context, *result);		
 
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
 	ResumeMacroExecution(window);
-}
 
-static void stringDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)w;
-	(void)callData;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	DataValue retVal;
-
-	// shouldn't happen, but would crash if it did 
-	if(!cmdData)
-		return;
-
-	// Return an empty string 
-	retVal.tag = STRING_TAG;
-	retVal.val.str.rep = PERM_ALLOC_STR("");
-	retVal.val.str.len = 0;
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	// Return button number 0 in the global variable $string_dialog_button 
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = 0;
-
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
-	ResumeMacroExecution(window);
+	return True;
 }
 
 /*
