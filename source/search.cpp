@@ -33,6 +33,7 @@
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
+#include "WrapStyle.h"
 
 #include "search.h"
 #include "regularExp.h"

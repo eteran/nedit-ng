@@ -3,6 +3,7 @@
 #define DOCUMENT_H_
 
 #include <QPointer>
+#include <QString>
 #include <list>
 #include <X11/Intrinsic.h>
 #include "nedit.h"
@@ -147,6 +148,10 @@ public:
 public:
 	DialogReplace *getDialogReplace() const;
 
+	// NOTE(eteran): I think the following are the "shell" level members
+	//               essentially the variables associated with the window
+	//               but not a particular tab
+	// TODO(eteran): separate this out in a new class which owns the tabs/documents!
 public:
 	Widget shell_;                /* application shell of window */
 	Widget mainWin_;              /* main window of shell */
@@ -293,6 +298,7 @@ public:
 	Widget bgMenuUndoItem_;
 	Widget bgMenuRedoItem_;
 
+	// NOTE(eteran): these appear to be the document/tab specific variables
 public:
 	std::string filename_;             /* name component of file being edited*/
 	std::string path_;                 /* path component of file being edited*/
