@@ -89,7 +89,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 				writableWin->multiFileReplSelected_ = true;
 				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 
 				writableWin->replaceFailed_ = false;
-				XtCallActionProc(writableWin->lastFocus_, "replace_all", nullptr /*callData->event*/, (char **)params, 3);
+				XtCallActionProc(writableWin->lastFocus_, "replace_all", nullptr /*callData->event*/, const_cast<char **>(params), 3);
 				writableWin->multiFileBusy_ = false;
 				if (!writableWin->replaceFailed_) {
 					replaceFailed = false;

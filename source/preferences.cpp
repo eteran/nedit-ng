@@ -2703,7 +2703,7 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	QByteArray str = LanguageModes[(long)mode]->name.toLatin1();
 	
 	params[0] = (((long)mode) == PLAIN_LANGUAGE_MODE) ? "" : str.data();
-	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, (char **)params, 1);
+	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, const_cast<char **>(params), 1);
 }
 
 /*

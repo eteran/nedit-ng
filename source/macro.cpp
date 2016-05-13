@@ -1272,7 +1272,7 @@ static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
 	}
 
 	// call the action routine repeat_macro to do the work 
-	XtCallActionProc(rd->forWindow->lastFocus_, "repeat_macro", event, (char **)params, 2);
+	XtCallActionProc(rd->forWindow->lastFocus_, "repeat_macro", event, const_cast<char **>(params), 2);
 	XtFree((char *)params[1]);
 	return True;
 }

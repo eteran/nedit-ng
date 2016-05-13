@@ -1007,7 +1007,7 @@ static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"rect"};
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "paste_clipboard", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "paste_clipboard", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1109,7 +1109,7 @@ static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (event->type == KeyPress || event->type == KeyRelease)
 		BeginGotoMarkCommand(window, extend);
 	else
-		XtCallActionProc(window->lastFocus_, "goto_mark_dialog", event, (char **)params, extend ? 1 : 0);
+		XtCallActionProc(window->lastFocus_, "goto_mark_dialog", event, const_cast<char **>(params), extend ? 1 : 0);
 }
 
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1131,7 +1131,7 @@ static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) 
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1145,7 +1145,7 @@ static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1159,7 +1159,7 @@ static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1199,7 +1199,7 @@ static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1213,7 +1213,7 @@ static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer call
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1226,7 +1226,7 @@ static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callDa
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1264,7 +1264,7 @@ static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1278,7 +1278,7 @@ static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1292,7 +1292,7 @@ static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData)
 	(void)window;
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2333,7 +2333,7 @@ static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static const char *params[1] = {"\f"};
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "insert_string", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "insert_string", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2485,7 +2485,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (*nArgs > 0 && !strcmp(args[0], "1"))
 		params[n++] = "1";
 
-	XtCallActionProc(window->lastFocus_, "open", event, (char **)params, n);
+	XtCallActionProc(window->lastFocus_, "open", event, const_cast<char **>(params), n);
 	CheckCloseDim();
 }
 
@@ -2573,7 +2573,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	window->fileFormat_ = fileFormat;
 	params[0] = fullname;
 	params[1] = "wrapped";
-	XtCallActionProc(window->lastFocus_, "save_as", event, (char **)params, addWrap ? 2 : 1);
+	XtCallActionProc(window->lastFocus_, "save_as", event, const_cast<char **>(params), addWrap ? 2 : 1);
 }
 
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4923,7 +4923,7 @@ static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 	CheckCloseDim();
 }
 
@@ -4936,7 +4936,7 @@ static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -4947,7 +4947,7 @@ static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 	Widget menu = XmGetPostedFromWidget(XtParent(w)); // If menu is torn off 
 
 	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, (char **)params, 1);
+	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 /*

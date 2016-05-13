@@ -438,7 +438,7 @@ void GotoMarkDialog(Document *window, int extend) {
 	
 	params[0] = letterText;
 	params[1] = "extend";
-	XtCallActionProc(window->lastFocus_, "goto_mark", nullptr, (char **)params, extend ? 2 : 1);
+	XtCallActionProc(window->lastFocus_, "goto_mark", nullptr, const_cast<char **>(params), extend ? 2 : 1);
 }
 
 /*
@@ -502,7 +502,7 @@ static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Bool
 		string[1] = '\0';
 		params[0] = string;
 		params[1] = "extend";
-		XtCallActionProc(window->lastFocus_, action, event, (char **)params, extend ? 2 : 1);
+		XtCallActionProc(window->lastFocus_, action, event, const_cast<char **>(params), extend ? 2 : 1);
 		*continueDispatch = False;
 	}
 	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);

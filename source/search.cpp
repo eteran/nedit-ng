@@ -971,7 +971,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
 	
-	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, (char **)params, 4);
+	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, const_cast<char **>(params), 4);
 }
 
 /*
@@ -1037,7 +1037,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 		params[nParams++] = "continued";
 	}
 	
-	XtCallActionProc(window->lastFocus_, (String) "find_incremental", callData->event, (char **)params, nParams);
+	XtCallActionProc(window->lastFocus_, (String) "find_incremental", callData->event, const_cast<char **>(params), nParams);
 }
 
 /*
