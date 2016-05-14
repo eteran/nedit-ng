@@ -34,6 +34,7 @@
 #include <QStack>
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptString.h"
+#include "ui/DialogPromptList.h"
 #include <QtDebug>
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -81,12 +82,8 @@
 #include <fcntl.h>
 
 #include <Xm/Form.h>
-#include <Xm/List.h>
-#include <Xm/MessageB.h>
-#include <Xm/PushB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/SelectioB.h>
-#include <Xm/Separator.h>
 #include <Xm/ToggleB.h>
 
 namespace {
@@ -194,8 +191,6 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 // T Balinski 
 static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData);
-static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData);
 // T Balinski End 
 
 static int stringCompareMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -2801,6 +2796,7 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	prompt->exec();
 	result->val.n = prompt->result();
 	ModifyReturnedValue(cmdData->context, *result);	
+	delete prompt;
 	
 	ResumeMacroExecution(window);
 	return True;
@@ -2868,12 +2864,13 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
 	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
 	
-	result->	tag = STRING_TAG;
+	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, prompt->text().toLatin1().data());
 	ModifyReturnedValue(cmdData->context, *result);		
 
 	ResumeMacroExecution(window);
-
+	delete prompt;
+	
 	return True;
 }
 
@@ -3152,19 +3149,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	char *btnLabel;
 	char *message;
 	char *text;
-	Widget dialog, btn;
 	long i;
-	int nBtns;
-	XmString s1, s2;
-	long nlines = 0;
-	char *p;
-	char *old_p;
-	char **text_lines;
-	int n;
-	XmString *test_strings;
-	int tabDist;
-	Arg al[20];
-	int ac;
 	int messageLen;
 	int textLen;
 	int btnLabelLen;
@@ -3200,277 +3185,46 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	}
 
 	// check that all button labels can be read 
-	for (i = 2; i < nArgs; i++)
-		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg))
+	for (i = 2; i < nArgs; i++) {
+		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg)) {
 			return False;
-
-	// pick up the first button 
-	if (nArgs == 2) {
-		btnLabel = (String) "OK";
-		nBtns = 1;
-	} else {
-		nBtns = nArgs - 2;
-		argList += 2;
-		readStringArg(argList[0], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-	}
-
-	// count the lines in the text - add one for unterminated last line 
-	nlines = 1;
-	for (p = text; *p; p++)
-		if (*p == '\n')
-			nlines++;
-
-	// now set up arrays of pointers to lines 
-	//   test_strings to hold the display strings (tab expanded) 
-	//   text_lines to hold the original text lines (without the '\n's) 
-	test_strings = (XmString *)XtMalloc(sizeof(XmString) * nlines);
-	text_lines = (char **)XtMalloc(sizeof(char *) * (nlines + 1));
-	for (n = 0; n < nlines; n++) {
-		test_strings[n] = nullptr;
-		text_lines[n] = nullptr;
-	}
-	text_lines[n] = nullptr; // make sure this is a null-terminated table 
-
-	// pick up the tabDist value 
-	tabDist = window->buffer_->tabDist_;
-
-	// load the table 
-	n = 0;
-	bool is_last = false;
-	p = old_p = text;
-	int tmp_len = 0;             // current allocated size of temporary buffer tmp 
-	auto tmp = (char *)malloc(1); // temporary buffer into which to expand tabs 
-	do {
-		is_last = (*p == '\0');
-		if (*p == '\n' || is_last) {
-			*p = '\0';
-			if (strlen(old_p) > 0) { // only include non-empty lines 
-				char *s;
-				char *t;
-				int l;
-
-				// save the actual text line in text_lines[n] 
-				text_lines[n] = XtStringDup(old_p);
-
-				// work out the tabs expanded length 
-				for (s = old_p, l = 0; *s != '\0'; s++) {
-					l += (*s == '\t') ? tabDist - (l % tabDist) : 1;
-				}
-
-				// verify tmp is big enough then tab-expand old_p into tmp 
-				if (l > tmp_len) {
-
-					char *new_tmp = static_cast<char *>(realloc(tmp, (tmp_len = l) + 1));
-					assert(new_tmp);
-					tmp = new_tmp;
-				}
-				
-				for (s = old_p, t = tmp, l = 0; *s; s++) {
-					if (*s == '\t') {
-						for (i = tabDist - (l % tabDist); i--; l++)
-							*t++ = ' ';
-					} else {
-						*t++ = *s;
-						l++;
-					}
-				}
-				*t = '\0';
-				// that's it: tmp is the tab-expanded version of old_p 
-				test_strings[n] = XmStringCreateLtoREx(tmp);
-				n++;
-			}
-			old_p = p + 1;
-			if (!is_last)
-				*p = '\n'; // put back our newline 
 		}
-		p++;
-	} while (!is_last);
-
-	free(tmp); // don't need this anymore 
-	nlines = n;
-	if (nlines == 0) {
-		test_strings[0] = XmStringCreateLtoREx("");
-		nlines = 1;
 	}
-
-	// Create the selection box dialog widget and its dialog shell parent 
-	ac = 0;
-	XtSetArg(al[ac], XmNtitle, " ");
-	ac++;
-	XtSetArg(al[ac], XmNlistLabelString, s1 = XmStringCreateLtoREx(message));
-	ac++;
-	XtSetArg(al[ac], XmNlistItems, test_strings);
-	ac++;
-	XtSetArg(al[ac], XmNlistItemCount, nlines);
-	ac++;
-	XtSetArg(al[ac], XmNlistVisibleItemCount, (nlines > 10) ? 10 : nlines);
-	ac++;
-	XtSetArg(al[ac], XmNokLabelString, s2 = XmStringCreateSimpleEx(btnLabel));
-	ac++;
-	dialog = CreateSelectionDialog(window->shell_, "macroListDialog", al, ac);
-	if (nArgs == 2) {
-		//  Only set margin width for the default OK button  
-		XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNmarginWidth, BUTTON_WIDTH_MARGIN, nullptr);
-	}
-
-	AddMotifCloseCallback(XtParent(dialog), listDialogCloseCB, window);
-	XtAddCallback(dialog, XmNokCallback, listDialogBtnCB, window);
-	XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_OK_BUTTON), XmNuserData, (XtPointer)1, nullptr);
-	XmStringFree(s1);
-	XmStringFree(s2);
-	cmdData->dialog = dialog;
-
-	// forget lines stored in list 
-	while (n--)
-		XmStringFree(test_strings[n]);
-	XtFree((char *)test_strings);
-
-	// modify the list 
-	XtVaSetValues(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST), XmNselectionPolicy, XmSINGLE_SELECT, XmNuserData, (XtPointer)text_lines, nullptr);
-
-	// Unmanage unneeded widgets 
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_APPLY_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(dialog, XmDIALOG_SELECTION_LABEL));
-
-	/* Make callback for the unmanaged cancel button (which can
-	   still get executed via the esc key) activate close box action */
-	XtAddCallback(XmSelectionBoxGetChild(dialog, XmDIALOG_CANCEL_BUTTON), XmNactivateCallback, listDialogCloseCB, window);
-
-	/* Add user specified buttons (1st is already done).  Selection box
-	   requires a place-holder widget to be added before buttons can be
-	   added, that's what the separator below is for */
-	XtVaCreateWidget("x", xmSeparatorWidgetClass, dialog, nullptr);
-	for (i = 1; i < nBtns; i++) {
-		readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);
-		btn = XtVaCreateManagedWidget("mdBtn", xmPushButtonWidgetClass, dialog, XmNlabelString, s1 = XmStringCreateSimpleEx(btnLabel), XmNuserData, (XtPointer)(i + 1), nullptr);
-		XtAddCallback(btn, XmNactivateCallback, listDialogBtnCB, window);
-		XmStringFree(s1);
-	}
-
-	// Put up the dialog 
-	ManageDialogCenteredOnPointer(dialog);
-
+			
+			
 	// Stop macro execution until the dialog is complete 
 	PreemptMacro();
-
+	
 	// Return placeholder result.  Value will be changed by button callback 
 	result->tag = INT_TAG;
-	result->val.n = 0;
+	result->val.n = 0;	
+
+	auto prompt = new DialogPromptList(nullptr /*parent*/);
+	prompt->setMessage(QLatin1String(message));
+	prompt->setList(QLatin1String(text));
+	if (nArgs == 2) {
+		prompt->addButton(QDialogButtonBox::Ok);
+	} else {
+		for(int i = 2; i < nArgs; ++i) {		
+			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
+			prompt->addButton(QLatin1String(btnLabel));
+		}
+	}	
+	prompt->exec();
+	
+	// Return the button number in the global variable $string_dialog_button 
+	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
+	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+	
+	result->tag = STRING_TAG;
+	AllocNStringCpy(&result->val.str, prompt->text().toLatin1().data());
+	ModifyReturnedValue(cmdData->context, *result);		
+	delete prompt;
+	
+	ResumeMacroExecution(window);
+
 	return True;
 }
-
-static void listDialogBtnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)callData;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	XtPointer userData;
-	DataValue retVal;
-	char *text;
-	char **text_lines;
-	int btnNum;
-	int n_sel, *seltable, sel_index = 0;
-	Widget theList;
-	size_t length;
-
-	// shouldn't happen, but would crash if it did 
-	if(!cmdData)
-		return;
-
-	theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
-	// Return the string selected in the selection list area 
-	XtVaGetValues(theList, XmNuserData, &text_lines, nullptr);
-	if (!XmListGetSelectedPos(theList, &seltable, &n_sel)) {
-		n_sel = 0;
-	} else {
-		sel_index = seltable[0] - 1;
-		XtFree((char *)seltable);
-	}
-
-	if (!n_sel) {
-		text = PERM_ALLOC_STR("");
-		length = 0;
-	} else {
-		length = strlen(text_lines[sel_index]);
-		text = AllocString(length + 1);
-		strcpy(text, text_lines[sel_index]);
-	}
-
-	// don't need text_lines anymore: free it 
-	for (sel_index = 0; text_lines[sel_index]; sel_index++)
-		XtFree(text_lines[sel_index]);
-	XtFree((char *)text_lines);
-
-	retVal.tag = STRING_TAG;
-	retVal.val.str.rep = text;
-	retVal.val.str.len = length;
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	/* Find the index of the button which was pressed (stored in the userData
-	   field of the button widget).  The 1st button, being a gadget, is not
-	   returned in w. */
-	if (XtClass(w) == xmPushButtonWidgetClass) {
-		XtVaGetValues(w, XmNuserData, &userData, nullptr);
-		btnNum = (long)userData;
-	} else
-		btnNum = 1;
-
-	// Return the button number in the global variable $list_dialog_button 
-	ReturnGlobals[LIST_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[LIST_DIALOG_BUTTON]->value.val.n = btnNum;
-
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
-	ResumeMacroExecution(window);
-}
-
-static void listDialogCloseCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)callData;
-	(void)w;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	DataValue retVal;
-	char **text_lines;
-	int sel_index;
-	Widget theList;
-
-	// shouldn't happen, but would crash if it did 
-	if(!cmdData)
-		return;
-
-	// don't need text_lines anymore: retrieve it then free it 
-	theList = XmSelectionBoxGetChild(cmdData->dialog, XmDIALOG_LIST);
-	XtVaGetValues(theList, XmNuserData, &text_lines, nullptr);
-	for (sel_index = 0; text_lines[sel_index]; sel_index++)
-		XtFree(text_lines[sel_index]);
-	XtFree((char *)text_lines);
-
-	// Return an empty string 
-	retVal.tag = STRING_TAG;
-	retVal.val.str.rep = PERM_ALLOC_STR("");
-	retVal.val.str.len = 0;
-	ModifyReturnedValue(cmdData->context, retVal);
-
-	// Return button number 0 in the global variable $list_dialog_button 
-	ReturnGlobals[LIST_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[LIST_DIALOG_BUTTON]->value.val.n = 0;
-
-	// Pop down the dialog 
-	XtDestroyWidget(XtParent(cmdData->dialog));
-	cmdData->dialog = nullptr;
-
-	// Continue preempted macro execution 
-	ResumeMacroExecution(window);
-}
-// T Balinski End 
 
 static int stringCompareMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
