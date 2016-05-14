@@ -155,6 +155,14 @@ public:
 	//               but not a particular tab
 	// TODO(eteran): separate this out in a new class which owns the tabs/documents!
 public:
+	QPointer<QDialog> dialogFind_;
+	QPointer<QDialog> dialogReplace_;
+	bool              showLineNumbers_; // is the line number display shown
+	bool              showStats_;       // is stats line supposed to be shown
+	bool              showISearchLine_; // is incr. search line to be shown
+
+	// NOTE(eteran): these appear to be the document/tab specific variables
+public:
 	Widget shell_;                /* application shell of window */
 	Widget mainWin_;              /* main window of shell */
 	Widget splitPane_;            /* paned win. for splitting text area */
@@ -175,11 +183,8 @@ public:
 	Widget tabBar_;      /* tab bar for tabbed window */
 	Widget tab_;         /* tab for this document */
 
-	// TODO(eteran): probably want to use QPointer or similar here
-	QDialog* dialogFind_;
-	QDialog* dialogReplace_;
-	QDialog* dialogColors_;
-	QDialog* dialogFonts_; /* nullptr, unless font dialog is up */
+	QPointer<QDialog> dialogColors_;
+	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */
 
 	Widget readOnlyItem_; /* menu bar settable widgets... */
 	Widget autoSaveItem_;
@@ -300,7 +305,6 @@ public:
 	Widget bgMenuUndoItem_;
 	Widget bgMenuRedoItem_;
 
-	// NOTE(eteran): these appear to be the document/tab specific variables
 public:
 	QString filename_;                 /* name component of file being edited*/
 	QString path_;                     /* path component of file being edited*/
@@ -340,9 +344,6 @@ public:
 	bool overstrike_;               /* is overstrike mode turned on ? */
 	char showMatchingStyle_;        /* How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE */
 	char matchSyntaxBased_;         /* Use syntax info to show matching */
-	bool showStats_;                /* is stats line supposed to be shown */
-	bool showISearchLine_;          /* is incr. search line to be shown */
-	bool showLineNumbers_;          /* is the line number display shown */
 	bool highlightSyntax_;          /* is syntax highlighting turned on? */
 	bool backlightChars_;           /* is char backlighting turned on? */
 	char *backlightCharTypes_;      /* what backlighting to use */

@@ -87,9 +87,6 @@
 // maximum number of word delimiters allowed (256 allows whole character set) 
 #define MAX_WORD_DELIMITERS 256
 
-// maximum number of file extensions allowed in a language mode 
-#define MAX_FILE_EXTENSIONS 20
-
 // Return values for checkFontStatus 
 enum fontStatus { GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING };
 

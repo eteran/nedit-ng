@@ -3283,14 +3283,10 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	static Pixmap isrcClear = 0;
 	static Pixmap closeTabPixmap = 0;
 
-	// initialize window structure 
-	/* + Schwarzenberg: should a
-	  memset(window, 0, sizeof(Document));
-	     be added here ?
-	*/
-	
-	dialogFind_    = nullptr;
-	dialogReplace_ = nullptr;
+	dialogFind_            = nullptr;
+	dialogReplace_         = nullptr;
+	dialogColors_          = nullptr;
+	dialogFonts_           = nullptr;
 
 	multiFileReplSelected_ = false;
 	multiFileBusy_         = false;
@@ -3346,13 +3342,11 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	italicFontName_         = GetPrefItalicFontName();
 	boldFontName_           = GetPrefBoldFontName();
 	boldItalicFontName_     = GetPrefBoldItalicFontName();
-	
-	dialogColors_           = nullptr;
+
 	fontList_               = GetPrefFontList();
 	italicFontStruct_       = GetPrefItalicFont();
 	boldFontStruct_         = GetPrefBoldFont();
 	boldItalicFontStruct_   = GetPrefBoldItalicFont();
-	dialogFonts_            = nullptr;
 	nMarks_                 = 0;
 	markTimeoutID_          = 0;
 	highlightData_          = nullptr;
@@ -3709,6 +3703,7 @@ Document *Document::CreateDocument(const char *name) {
 	int nRows;
 
 	// Allocate some memory for the new window data structure 
+	// start with a copy of the this document
 	auto window = new Document(*this);
 
 #if 0
