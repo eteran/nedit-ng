@@ -89,13 +89,12 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 static void safeClose(Document *window);
 
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
-	char name[MAXPATHLEN];
 	Document *window;
 
 	/*... test for creatability? */
 
 	// Find a (relatively) unique name for the new file 
-	UniqueUntitledName(name, sizeof(name));
+	QString name = UniqueUntitledName();
 
 	// create new window/document 
 	if (inWindow) {
@@ -104,7 +103,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 		window = new Document(name, geometry, iconic);
 	}
 
-	window->filename_ = QLatin1String(name);
+	window->filename_ = name;
 	window->path_     = (defaultPath && *defaultPath) ? QLatin1String(defaultPath) : GetCurrentDirEx();
 	
 	// do we have a "/" at the end? if not, add one 
@@ -173,12 +172,12 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 	   busy running a macro; create the window */
 	Document *window;
 	if(!inWindow) {
-		window = new Document(name.toLatin1().data(), geometry, iconic);
+		window = new Document(name, geometry, iconic);
 	} else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
 		if (tabbed) {
-			window = inWindow->CreateDocument(name.toLatin1().data());
+			window = inWindow->CreateDocument(name);
 		} else {
-			window = new Document(name.toLatin1().data(), geometry, iconic);
+			window = new Document(name, geometry, iconic);
 		}
 	} else {
 		// open file in untitled document 
@@ -1497,24 +1496,29 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 ** files in this session, i.e. Untitled or Untitled_nn, and write it into
 ** the string "name".
 */
-void UniqueUntitledName(char *name, size_t size) {
+QString UniqueUntitledName() {
 	
 	for (int i = 0; i < INT_MAX; i++) {
 	
+	
+		QString name;
+	
 		if (i == 0) {
-			snprintf(name, size, "Untitled");
+			name = QLatin1String("Untitled");
 		} else {
-			snprintf(name, size, "Untitled_%d", i);
+			name = QString(QLatin1String("Untitled_%1")).arg(i);
 		}
 		
 		Document *w = Document::find_if([name](Document *window) {
-			return window->filename_ == QLatin1String(name);
+			return window->filename_ == name;
 		});
 		
 		if(!w) {
-			break;
+			return name;
 		}
 	}
+	
+	return QString();
 }
 
 /*

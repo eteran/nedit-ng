@@ -39,14 +39,14 @@ struct TextBuffer;
 */
 class Document {
 public:
-	Document(const char *name, char *geometry, bool iconic);
+	Document(const QString &name, char *geometry, bool iconic);
 	
 private:
 	Document(const Document &) = default;
 	Document& operator=(const Document &) = default;
 
 public:
-	Document *CreateDocument(const char *name);
+	Document *CreateDocument(const QString &name);
 	Document *DetachDocument();
 	Document *MarkActiveDocument();
 	Document *MarkLastDocument();

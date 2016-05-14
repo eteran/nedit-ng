@@ -681,7 +681,7 @@ void tabClickEH(Widget w, XtPointer clientData, XEvent *event) {
 /*
 ** add a tab to the tab bar for the new document.
 */
-Widget addTab(Widget folder, const char *string) {
+Widget addTab(Widget folder, const QString &string) {
 	Widget tooltipLabel, tab;
 	XmString s1;
 
@@ -2142,7 +2142,7 @@ Document *Document::DetachDocument() {
 	}
 
 	// Create a new this 
-	auto cloneWin = new Document(filename_.toLatin1().data(), nullptr, false);
+	auto cloneWin = new Document(filename_, nullptr, false);
 
 	/* CreateWindow() simply adds the new this's pointer to the
 	   head of WindowList. We need to adjust the detached this's
@@ -2350,7 +2350,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	}
 
 	// relocate the document to target this 
-	cloneWin = toWindow->CreateDocument(filename_.toLatin1().data());
+	cloneWin = toWindow->CreateDocument(filename_);
 	cloneWin->ShowTabBar(cloneWin->GetShowTabBar());
 	cloneDocument(cloneWin);
 
@@ -2702,7 +2702,6 @@ void Document::ClosePane() {
 */
 void Document::CloseWindow() {
 	int keepWindow, state;
-	char name[MAXPATHLEN];
 	Document *win;
 	Document *topBuf = nullptr;
 	Document *nextBuf = nullptr;
@@ -2742,13 +2741,13 @@ void Document::CloseWindow() {
 	if (keepWindow || (WindowList == this && next_ == nullptr)) {
 		filename_ = QLatin1String("");
 
-		UniqueUntitledName(name, sizeof(name));
+		QString name = UniqueUntitledName();
 		lockReasons_.clear();
 
 		fileMode_     = 0;
 		fileUid_      = 0;
 		fileGid_      = 0;
-		filename_     = QLatin1String(name);
+		filename_     = name;
 		path_         = QLatin1String("");
 		ignoreModify_ = true;
 		
@@ -3257,7 +3256,7 @@ void Document::cloneDocument(Document *window) {
 /*
 ** Create a new editor window
 */
-Document::Document(const char *name, char *geometry, bool iconic) {
+Document::Document(const QString &name, char *geometry, bool iconic) {
 	
 	Widget winShell;
 	Widget menuBar;
@@ -3300,7 +3299,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	fileFormat_            = UNIX_FILE_FORMAT;
 	lastModTime_           = 0;
 	fileMissing_           = true;
-	filename_              = QLatin1String(name);
+	filename_              = name;
 	undo_                  = std::list<UndoInfo *>();
 	redo_                  = std::list<UndoInfo *>();
 	nPanes_                = 0;
@@ -3393,12 +3392,13 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	}
 
 	// Create a new toplevel shell to hold the window 
+	QByteArray nameStr = name.toLatin1();
 	ac = 0;
-	XtSetArg(al[ac], XmNtitle, name);
+	XtSetArg(al[ac], XmNtitle, nameStr.data());
 	ac++;
 	XtSetArg(al[ac], XmNdeleteResponse, XmDO_NOTHING);
 	ac++;
-	XtSetArg(al[ac], XmNiconName, name);
+	XtSetArg(al[ac], XmNiconName, nameStr.data());
 	ac++;
 	XtSetArg(al[ac], XmNgeometry, newGeometry[0] == '\0' ? nullptr : newGeometry);
 	ac++;
@@ -3697,7 +3697,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 ** unnecessarily; hence speeding up the process of opening
 ** multiple files.
 */
-Document *Document::CreateDocument(const char *name) {
+Document *Document::CreateDocument(const QString &name) {
 
 	int nCols;
 	int nRows;
@@ -3728,7 +3728,7 @@ Document *Document::CreateDocument(const char *name) {
 	window->filenameSet_           = false;
 	window->fileFormat_            = UNIX_FILE_FORMAT;
 	window->lastModTime_           = 0;
-	window->filename_              = QLatin1String(name);
+	window->filename_              = name;
 	window->undo_                  = std::list<UndoInfo *>();
 	window->redo_                  = std::list<UndoInfo *>();
 	window->nPanes_                = 0;
