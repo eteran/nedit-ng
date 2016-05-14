@@ -824,6 +824,7 @@ static QString WriteLanguageModesStringEx(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
 static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
 void updateLanguageModeSubmenu(Document *window);
+
 static void updateMacroCmdsTo5dot5(void);
 static void updateMacroCmdsTo5dot6(void);
 static void updatePatternsTo5dot1(void);
@@ -1369,11 +1370,11 @@ int GetPrefMatchSyntaxBased(void) {
 	return PrefData.matchSyntaxBased;
 }
 
-void SetPrefHighlightSyntax(Boolean state) {
+void SetPrefHighlightSyntax(bool state) {
 	setIntPref(&PrefData.highlightSyntax, state);
 }
 
-Boolean GetPrefHighlightSyntax(void) {
+bool GetPrefHighlightSyntax(void) {
 	return PrefData.highlightSyntax;
 }
 
@@ -1589,19 +1590,19 @@ const char *GetPrefTitleFormat(void) {
 	return PrefData.titleFormat;
 }
 
-Boolean GetPrefUndoModifiesSelection(void) {
-	return (Boolean)PrefData.undoModifiesSelection;
+bool GetPrefUndoModifiesSelection(void) {
+	return PrefData.undoModifiesSelection;
 }
 
-Boolean GetPrefFocusOnRaise(void) {
-	return (Boolean)PrefData.focusOnRaise;
+bool GetPrefFocusOnRaise(void) {
+	return PrefData.focusOnRaise;
 }
 
-Boolean GetPrefForceOSConversion(void) {
+bool GetPrefForceOSConversion(void) {
 	return PrefData.forceOSConversion;
 }
 
-Boolean GetPrefHonorSymlinks(void) {
+bool GetPrefHonorSymlinks(void) {
 	return PrefData.honorSymlinks;
 }
 

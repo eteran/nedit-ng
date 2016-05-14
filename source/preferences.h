@@ -65,11 +65,11 @@ enum HelpFonts {
 	NUM_HELP_FONTS
 };
 
-Boolean GetPrefFocusOnRaise(void);
-Boolean GetPrefForceOSConversion(void);
-Boolean GetPrefHighlightSyntax(void);
-Boolean GetPrefHonorSymlinks(void);
-Boolean GetPrefUndoModifiesSelection(void);
+bool GetPrefFocusOnRaise(void);
+bool GetPrefForceOSConversion(void);
+bool GetPrefHighlightSyntax(void);
+bool GetPrefHonorSymlinks(void);
+bool GetPrefUndoModifiesSelection(void);
 char *EscapeSensitiveChars(const char *string);
 char *GetPrefBacklightCharTypes(void);
 char *GetPrefBGMenuBtn(void);
@@ -175,10 +175,10 @@ void SetPrefColorName(int colorIndex, const char *color);
 void SetPrefCols(int nCols);
 void SetPrefEmTabDist(int tabDist);
 void SetPrefFindReplaceUsesSelection(int state);
-void SetPrefFocusOnRaise(Boolean);
+void SetPrefFocusOnRaise(bool);
 void SetPrefFont(char *fontName);
 void SetPrefGlobalTabNavigate(int state);
-void SetPrefHighlightSyntax(Boolean state);
+void SetPrefHighlightSyntax(bool state);
 void SetPrefInsertTabs(int state);
 void SetPrefISearchLine(int state);
 void SetPrefItalicFont(char *fontName);
@@ -204,7 +204,7 @@ void SetPrefTabBar(int state);
 void SetPrefTabDist(int tabDist);
 void SetPrefTitleFormat(const char *format);
 void SetPrefToolTips(int state);
-void SetPrefUndoModifiesSelection(Boolean);
+void SetPrefUndoModifiesSelection(bool);
 void SetPrefWarnExit(int state);
 void SetPrefWarnFileMods(int state);
 void SetPrefWarnRealFileMods(int state);
