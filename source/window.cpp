@@ -99,8 +99,6 @@
 // extern void _XEditResCheckMessages(); 
 #endif
 
-extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
-
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 
 
