@@ -1491,20 +1491,34 @@ void SetPrefBoldItalicFont(char *fontName) {
 	PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay, fontName);
 }
 
-char *GetPrefFontName(void) {
-	return PrefData.fontString;
+QString GetPrefFontName(void) {
+	if(PrefData.fontString) {
+		return QLatin1String(PrefData.fontString);
+	}
+	
+	return QString();
 }
 
-char *GetPrefBoldFontName(void) {
-	return PrefData.boldFontString;
+QString GetPrefBoldFontName(void) {
+	if(PrefData.boldFontString) {
+		return QLatin1String(PrefData.boldFontString);
+	}
+	return QString();
 }
 
-char *GetPrefItalicFontName(void) {
-	return PrefData.italicFontString;
+QString GetPrefItalicFontName(void) {
+	if(PrefData.italicFontString) {
+		return QLatin1String(PrefData.italicFontString);
+	}
+	return QString();
 }
 
-char *GetPrefBoldItalicFontName(void) {
-	return PrefData.boldItalicFontString;
+QString GetPrefBoldItalicFontName(void) {
+	if(PrefData.boldItalicFontString) {
+		return QLatin1String(PrefData.boldItalicFontString);
+	}
+	
+	return QString();
 }
 
 XmFontList GetPrefFontList(void) {

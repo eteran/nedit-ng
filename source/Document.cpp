@@ -3341,11 +3341,11 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	flashTimeoutID_         = 0;
 	fileClosedAtom_         = None;
 	wasSelected_            = false;
-	fontName_               = QLatin1String(GetPrefFontName());
 	
-	italicFontName_         = QLatin1String(GetPrefItalicFontName());
-	boldFontName_           = QLatin1String(GetPrefBoldFontName());
-	boldItalicFontName_     = QLatin1String(GetPrefBoldItalicFontName());
+	fontName_               = GetPrefFontName();	
+	italicFontName_         = GetPrefItalicFontName();
+	boldFontName_           = GetPrefBoldFontName();
+	boldItalicFontName_     = GetPrefBoldItalicFontName();
 	
 	dialogColors_           = nullptr;
 	fontList_               = GetPrefFontList();
@@ -3769,10 +3769,10 @@ Document *Document::CreateDocument(const char *name) {
 	window->fileClosedAtom_        = None;
 	window->wasSelected_           = false;
 	
-	window->fontName_              = QLatin1String(GetPrefFontName());
-	window->italicFontName_        = QLatin1String(GetPrefItalicFontName());
-	window->boldFontName_          = QLatin1String(GetPrefBoldFontName());
-	window->boldItalicFontName_    = QLatin1String(GetPrefBoldItalicFontName());
+	window->fontName_              = GetPrefFontName();
+	window->italicFontName_        = GetPrefItalicFontName();
+	window->boldFontName_          = GetPrefBoldFontName();
+	window->boldItalicFontName_    = GetPrefBoldItalicFontName();
 	
 	window->dialogColors_          = nullptr;
 	window->fontList_              = GetPrefFontList();

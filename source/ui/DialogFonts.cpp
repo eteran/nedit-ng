@@ -27,10 +27,10 @@ DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::
 		ui.editFontItalic->setText(window->italicFontName_);
 		ui.editFontBoldItalic->setText(window->boldItalicFontName_);
 	} else {
-		ui.editFontPrimary->setText(QLatin1String(GetPrefFontName()));
-		ui.editFontBold->setText(QLatin1String(GetPrefBoldFontName()));
-		ui.editFontItalic->setText(QLatin1String(GetPrefItalicFontName()));
-		ui.editFontBoldItalic->setText(QLatin1String(GetPrefBoldItalicFontName()));
+		ui.editFontPrimary->setText(GetPrefFontName());
+		ui.editFontBold->setText(GetPrefBoldFontName());
+		ui.editFontItalic->setText(GetPrefItalicFontName());
+		ui.editFontBoldItalic->setText(GetPrefBoldItalicFontName());
 	}	
 }
 
