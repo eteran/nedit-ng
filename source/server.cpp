@@ -404,7 +404,7 @@ static void processServerCommandString(char *string) {
 			break;
 		}
 
-		window = FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+		window = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
@@ -412,7 +412,7 @@ static void processServerCommandString(char *string) {
 			   last file opened will be raised to restore those deferred
 			   items. The current file may also be raised if there're
 			   macros to execute on. */
-			window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop), filename, pathname, editFlags, geometry, iconicFlag, lmLen == 0 ? nullptr : langMode, tabbed == -1 ? GetPrefOpenInTab() : tabbed, True);
+			window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconicFlag, lmLen == 0 ? nullptr : langMode, tabbed == -1 ? GetPrefOpenInTab() : tabbed, True);
 
 			if (window) {
 				window->CleanUpTabBarExposeQueue();

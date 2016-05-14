@@ -310,7 +310,7 @@ static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 			if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
 				QApplication::beep();
 			else
-				EditExistingFile(GetPrefOpenInTab() ? window : nullptr, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
+				EditExistingFile(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 		}
 		globfree(&globbuf);
 	}

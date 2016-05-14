@@ -37,6 +37,10 @@
 #include "BubbleButton.h"
 #include "BubbleButtonP.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <Xm/CascadeB.h>
 #include <Xm/Form.h>
 #include <Xm/Frame.h>
@@ -740,7 +744,7 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	int nDocuments = window->NDocuments();
 
-	if (nDocuments == NWindows()) {
+	if (nDocuments == Document::WindowCount()) {
 		// this is only window, then exit 
 		XtCallActionProc(WindowList->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 	} else {
@@ -816,7 +820,7 @@ void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
 	tab = tabList[cbs->pos];
-	TabToWindow(tab)->RaiseDocument();
+	Document::TabToWindow(tab)->RaiseDocument();
 }
 
 /*
@@ -1017,7 +1021,7 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 	int tabCount, tabTotalCount;
 	int tabPos, nextPos;
 	int i, n;
-	int nBuf = crossWin ? NWindows() : NDocuments();
+	int nBuf = crossWin ? Document::WindowCount() : NDocuments();
 
 	if (nBuf <= 1)
 		return nullptr;
@@ -2830,7 +2834,7 @@ void Document::CloseWindow() {
 	}
 
 	// dim/undim Attach_Tab menu items 
-	state = WindowList->NDocuments() < NWindows();
+	state = WindowList->NDocuments() < Document::WindowCount();
 	
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
@@ -3681,7 +3685,7 @@ Document::Document(const char *name, char *geometry, bool iconic) {
 	UpdateMinPaneHeights();
 
 	// dim/undim Attach_Tab menu items 
-	state = NDocuments() < NWindows();
+	state = NDocuments() < WindowCount();
 	
 	
 	for(Document *win: WindowList) {
@@ -4322,4 +4326,47 @@ void Document::EditCustomTitleFormat() {
 	auto dialog = new DialogWindowTitle(this);
 	dialog->exec();
 	delete dialog;
+}
+
+/*
+** find which document a tab belongs to
+*/
+Document *Document::TabToWindow(Widget tab) {
+
+	return Document::find_if([tab](Document *win) {
+		return win->tab_ == tab;
+	});
+}
+
+/*
+** Check if there is already a window open for a given file
+*/
+Document *Document::FindWindowWithFile(const QString &name, const QString &path) {
+
+	/* I don't think this algorithm will work on vms so I am
+	   disabling it for now */
+	if (!GetPrefHonorSymlinks()) {
+		struct stat attribute;
+		
+		QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
+		
+
+		if (stat(fullname.toLatin1().data(), &attribute) == 0) {
+		
+			Document *window = Document::find_if([attribute](Document *window) {
+				return attribute.st_dev == window->device_ && attribute.st_ino == window->inode_;
+			});
+			
+			if(window) {
+				return window;
+			}
+		} /*  else:  Not an error condition, just a new file. Continue to check
+		      whether the filename is already in use for an unsaved document.  */
+	}
+		
+	Document *window = Document::find_if([name, path](Document *window) {
+		return (window->filename_ == name) && (window->path_ == path);
+	});
+
+	return window;
 }

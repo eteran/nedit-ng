@@ -155,12 +155,10 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-Document *EditExistingFile(Document *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
-	Document *window;
+Document *EditExistingFile(Document *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
 	
 	// first look to see if file is already displayed in a window 
-	window = FindWindowWithFile(QLatin1String(name), QLatin1String(path));
-	if (window) {
+	if (Document *window = Document::FindWindowWithFile(name, path)) {
 		if (!bgOpen) {
 			if (iconic)
 				window->RaiseDocument();
@@ -173,19 +171,20 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	/* If an existing window isn't specified; or the window is already
 	   in use (not Untitled or Untitled and modified), or is currently
 	   busy running a macro; create the window */
+	Document *window;
 	if(!inWindow) {
-		window = new Document(name, geometry, iconic);
+		window = new Document(name.toLatin1().data(), geometry, iconic);
 	} else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
 		if (tabbed) {
-			window = inWindow->CreateDocument(name);
+			window = inWindow->CreateDocument(name.toLatin1().data());
 		} else {
-			window = new Document(name, geometry, iconic);
+			window = new Document(name.toLatin1().data(), geometry, iconic);
 		}
 	} else {
 		// open file in untitled document 
 		window            = inWindow;
-		window->path_     = QLatin1String(path);
-		window->filename_ = QLatin1String(name);
+		window->path_     = path;
+		window->filename_ = name;
 		
 		if (!iconic && !bgOpen) {
 			window->RaiseDocumentWindow();
@@ -193,7 +192,7 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 	}
 
 	// Open the file 
-	if (!doOpen(window, name, path, flags)) {
+	if (!doOpen(window, name.toLatin1().data(), path.toLatin1().data(), flags)) {
 		/* The user may have destroyed the window instead of closing the
 		   warning dialog; don't close it twice */
 		safeClose(window);
@@ -224,10 +223,10 @@ Document *EditExistingFile(Document *inWindow, const char *name, const char *pat
 
 	// Add the name to the convenience menu of previously opened files 
 	char fullname[MAXPATHLEN];
-	snprintf(fullname, sizeof(fullname), "%s%s", path, name);
+	snprintf(fullname, sizeof(fullname), "%s%s", path.toLatin1().data(), name.toLatin1().data());
 	
 	if (GetPrefAlwaysCheckRelTagsSpecs()) {
-		AddRelTagsFile(GetPrefTagFile(), path, TAG);
+		AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
 	}
 	
 	AddToPrevOpenMenu(fullname);
@@ -887,7 +886,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 	   it is possible for user to close the window by hand while the dialog
 	   is still up, because the dialog is not application modal, so after
 	   doing the dialog, check again whether the window still exists. */
-	otherWindow = FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+	otherWindow = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 	if (otherWindow) {
 	
 		QMessageBox messageBox(nullptr /*window->shell_*/);
@@ -903,7 +902,7 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap) {
 			return false;
 		}	
 	
-		if (otherWindow == FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
+		if (otherWindow == Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
 			if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
 				return false;
 			}

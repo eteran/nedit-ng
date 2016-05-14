@@ -57,7 +57,7 @@ void PrintWindow(Document *window, bool selectedOnly);
 void RemoveBackupFile(Document *window);
 void RevertToSaved(Document *window);
 void UniqueUntitledName(char *name, size_t size);
-Document *EditExistingFile(Document *inWindow, const char *name, const char *path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
+Document *EditExistingFile(Document *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath);
 
 #endif

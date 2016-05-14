@@ -117,6 +117,8 @@ public:
 public:
 	static Document *GetTopDocument(Widget w);
 	static Document *WidgetToWindow(Widget w);
+	static Document *TabToWindow(Widget tab);
+	static Document *FindWindowWithFile(const QString &name, const QString &path);
 
 public:
 	int updateLineNumDisp();

@@ -503,7 +503,7 @@ int main(int argc, char *argv[]) {
 				   last file opened will be raised to restore those deferred
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
-				window = EditExistingFile(WindowList, filename, pathname, editFlags, geometry, iconic, langMode, isTabbed, true);
+				window = EditExistingFile(WindowList, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				fileSpecified = true;
 				if (window) {
 					window->CleanUpTabBarExposeQueue();

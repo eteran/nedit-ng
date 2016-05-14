@@ -1311,11 +1311,13 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 				*outPtr++ = c.toLatin1();
 		}
 		
-		if (listType == MACRO_CMDS) {
-			if (*(outPtr - 1) == '\t')
+		if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
+			if (*(outPtr - 1) == '\t') {
 				outPtr--;
+			}
 			*outPtr++ = '}';
 		}
+		
 		*outPtr++ = '\\';
 		*outPtr++ = 'n';
 		*outPtr++ = '\\';

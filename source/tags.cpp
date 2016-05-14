@@ -1426,8 +1426,8 @@ static void editTaggedLocation(Widget parent, int i) {
 
 	ParseFilename(tagFiles[i], filename, pathname);
 	// open the file containing the definition 
-	EditExistingFile(parentWindow, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
-	windowToSearch = FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+	EditExistingFile(parentWindow, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
+	windowToSearch = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 	if(!windowToSearch) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QLatin1String(tagFiles[i])));
 		return;

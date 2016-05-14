@@ -2207,3 +2207,30 @@ void TextBuffer::BufAppendEx(view::string_view text) {
 bool TextBuffer::BufIsEmpty() const {
 	return BufGetLength() == 0;
 }
+
+/*
+** Find the start and end of a single line selection.  Hides rectangular
+** selection issues for older routines which use selections that won't
+** span lines.
+*/
+bool TextBuffer::GetSimpleSelection(int *left, int *right) {
+	int selStart, selEnd, rectStart, rectEnd;
+	bool isRect;
+
+	/* get the character to match and its position from the selection, or
+	   the character before the insert point if nothing is selected.
+	   Give up if too many characters are selected */
+	if (!this->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+		return false;
+	}
+	
+	if (isRect) {
+		int lineStart = this->BufStartOfLine(selStart);
+		selStart  = this->BufCountForwardDispChars(lineStart, rectStart);
+		selEnd    = this->BufCountForwardDispChars(lineStart, rectEnd);
+	}
+	
+	*left  = selStart;
+	*right = selEnd;
+	return true;
+}

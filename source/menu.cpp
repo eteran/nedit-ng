@@ -2505,7 +2505,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: invalid file name for open action: %s\n", args[0]);
 		return;
 	}
-	EditExistingFile(window, filename, pathname, 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
+	EditExistingFile(window, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
 	CheckCloseDim();
 }
 
@@ -4444,7 +4444,7 @@ static void updateWindowMenu(const Document *window) {
 	   match the window list.  Delete any extras */
 	XtVaGetValues(window->windowMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
 	int windowIndex = 0;
-	int nWindows = NWindows();
+	int nWindows = Document::WindowCount();
 	for (n = 0; n < (int)nItems; n++) {
 		XtPointer userData;
 		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
@@ -5086,10 +5086,10 @@ static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	   from the gutter even if users did right-click on the tabs.
 	   Here we try to cater for the uncertainty. */
 	if (XtClass(w) == xrwsBubbleButtonWidgetClass)
-		window = TabToWindow(w);
+		window = Document::TabToWindow(w);
 	else if (xbutton->subwindow) {
 		wgt = XtWindowToWidget(XtDisplay(w), xbutton->subwindow);
-		window = TabToWindow(wgt);
+		window = Document::TabToWindow(wgt);
 	} else {
 		window = Document::WidgetToWindow(w);
 	}

@@ -33,9 +33,6 @@ class QString;
 
 #include <X11/Intrinsic.h>
 
-Document *FindWindowWithFile(const QString &name, const QString &path);
-Document *TabToWindow(Widget tab);
-int NWindows(void);
 void AddSmallIcon(Widget shell);
 void AllWindowsBusy(const char *message);
 void AllWindowsUnbusy(void);

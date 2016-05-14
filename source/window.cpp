@@ -103,86 +103,6 @@ extern void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 
-/*
-** find which document a tab belongs to
-*/
-Document *TabToWindow(Widget tab) {
-
-	return Document::find_if([tab](Document *win) {
-		return win->tab_ == tab;
-	});
-}
-
-
-/*
-** Check if there is already a window open for a given file
-*/
-Document *FindWindowWithFile(const QString &name, const QString &path) {
-
-	/* I don't think this algorithm will work on vms so I am
-	   disabling it for now */
-	if (!GetPrefHonorSymlinks()) {
-		struct stat attribute;
-		
-		QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
-		
-
-		if (stat(fullname.toLatin1().data(), &attribute) == 0) {
-		
-			Document *window = Document::find_if([attribute](Document *window) {
-				return attribute.st_dev == window->device_ && attribute.st_ino == window->inode_;
-			});
-			
-			if(window) {
-				return window;
-			}
-		} /*  else:  Not an error condition, just a new file. Continue to check
-		      whether the filename is already in use for an unsaved document.  */
-	}
-		
-	Document *window = Document::find_if([name, path](Document *window) {
-		return (window->filename_ == name) && (window->path_ == path);
-	});
-
-	return window;
-}
-
-/*
-** Count the windows
-*/
-int NWindows(void) {
-	return Document::WindowCount();
-}
-
-
-
-
-/*
-** Find the start and end of a single line selection.  Hides rectangular
-** selection issues for older routines which use selections that won't
-** span lines.
-*/
-bool TextBuffer::GetSimpleSelection(int *left, int *right) {
-	int selStart, selEnd, rectStart, rectEnd;
-	bool isRect;
-
-	/* get the character to match and its position from the selection, or
-	   the character before the insert point if nothing is selected.
-	   Give up if too many characters are selected */
-	if (!this->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-		return false;
-	}
-	
-	if (isRect) {
-		int lineStart = this->BufStartOfLine(selStart);
-		selStart  = this->BufCountForwardDispChars(lineStart, rectStart);
-		selEnd    = this->BufCountForwardDispChars(lineStart, rectEnd);
-	}
-	
-	*left  = selStart;
-	*right = selEnd;
-	return true;
-}
 
 #ifndef NO_SESSION_RESTART
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -255,7 +175,7 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 		XtVaGetValues(topWin->tabBar_, XmNtabWidgetList, &tabs, XmNtabCount, &tabCount, nullptr);
 
 		for (int i = 0; i < tabCount; i++) {
-			Document *win = TabToWindow(tabs[i]);
+			Document *win = Document::TabToWindow(tabs[i]);
 			if (win->filenameSet_) {
 				// add filename 
 				argv.push_back(XtNewStringEx(win->FullPath()));
