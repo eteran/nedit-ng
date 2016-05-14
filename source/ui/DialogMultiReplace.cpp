@@ -41,7 +41,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	}
 
 	// Set the initial focus of the dialog back to the search string 
-	resetReplaceTabGroup(window_);
+	replace_->ui.textFind->setFocus();
 
 	/*
 	 * Protect the user against him/herself; Maybe this is a bit too much?
@@ -64,7 +64,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 
 
 	// Set the initial focus of the dialog back to the search string 
-	resetReplaceTabGroup(window_);
+	replace_->ui.textFind->setFocus();
 
 	const char *params[4];
 	params[0] = searchString;

@@ -26,46 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_HELP_H_INCLUDED
-#define NEDIT_HELP_H_INCLUDED
-
-#include "help_topic.h"
-
-#include <X11/Intrinsic.h>
-
-/*============================================================================*/
-/*                          VARIABLE TYPE DEFINITIONS                         */
-/*============================================================================*/
-
-struct HelpMenu /* Maintains help menu structure */
-    {
-	HelpMenu *next;
-	int level;            /* menu level, submenu > 1               */
-	HelpTopic topic; /* HELP_none for submenu & separator     */
-	const char *wgtName;
-	int hideIt;           /* value which determines displayability */
-	char mnemonic;        /* '-' for separator                     */
-	const char *subTitle; /* title for sub menu, or nullptr           */
-};
-
-struct Href /* Source to topic internal hyperlinks */
-    {
-	Href *next;
-	int location;         /* position to link in topic    */
-	HelpTopic topic; /* target of link in this topic */
-	const char *source;   /* hypertext link characters    */
-};
-
-/*============================================================================*/
-/*                             VARIABLE DECLARATIONS                          */
-/*============================================================================*/
-
-extern HelpMenu H_M[];
-extern const char *HelpTitles[];
-
-/*============================================================================*/
-/*                             PROGRAM PROTOTYPES                             */
-/*============================================================================*/
+#ifndef HELP_H_
+#define HELP_H_
 
 void PrintVersion(void);
 

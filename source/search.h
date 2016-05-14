@@ -116,8 +116,6 @@ const char *searchWrapArg(int searchWrap);
 int countWritableWindows(void);
 int historyIndex(int nCycles);
 int isRegexType(int searchType);
-void resetFindTabGroup(Document *window);
-void resetReplaceTabGroup(Document *window);
 void unmanageReplaceDialogs(const Document *window);
 
 extern char *SearchHistory[MAX_SEARCH_HISTORY];

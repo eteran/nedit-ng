@@ -29,14 +29,14 @@
 
 #include "help.h"
 #include "preferences.h"
-#include "help_data.h"
-#include "../util/misc.h"
-#include "../util/system.h"
+#include "misc.h"
+#include "system.h"
 
 #include <cstring>
 
 #include <Xm/Xm.h>
 
+static const char *NEditVersion = "NEdit 5.6\nJul 5, 2010\n";
 
 #ifdef HAVE__XMVERSIONSTRING
 extern char _XmVersionString[];

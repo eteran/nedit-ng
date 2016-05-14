@@ -335,8 +335,6 @@ static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void setLanguageModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
-static HelpMenu *buildHelpMenu(Widget pane, HelpMenu *menu, Document *window);
-
 // Application action table 
 static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "new_opposite", newOppositeAP},
@@ -865,28 +863,10 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	*/
 	menuPane = createMenu(menuBar, "helpMenu", "Help", 0, &cascade, SHORT);
 	XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, nullptr);
-	buildHelpMenu(menuPane, &H_M[0], window);
 
 	return menuBar;
 }
 
-/*----------------------------------------------------------------------------*/
-
-static Widget makeHelpMenuItem(
-
-    Widget parent, const char *name, // to be assigned to the child widget 
-    const char *label,               // text to be displayed in menu       
-    char mnemonic,                   // letter in label to be underlined   
-    menuCallbackProc callback,       // activated when menu item selected  
-    const void *cbArg,               // passed to activated call back      
-    int mode,                        // SGI_CUSTOM menu option             
-    HelpTopic topic                  // associated with this menu item     
-    ) {
-	Widget menuItem = createMenuItem(parent, name, label, mnemonic, callback, cbArg, mode);
-
-	XtVaSetValues(menuItem, XmNuserData, (XtPointer)topic, nullptr);
-	return menuItem;
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -896,79 +876,7 @@ static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-#if 0
-	HelpTopic topic;
-	XtPointer userData;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(menuItem))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtVaGetValues(menuItem, XmNuserData, &userData, nullptr);
-	topic = (HelpTopic)(long) userData;
-
-	Help(topic);
-#endif
-}
-
-/*----------------------------------------------------------------------------*/
-
-#define NON_MENU_HELP 9
-
-static HelpMenu *buildHelpMenu(
-
-    Widget pane,       // Menu pane on which to place new menu items 
-    HelpMenu *menu,    // Data to drive building the help menu       
-    Document *window // Main NEdit window information              
-    ) {
-	int hideIt = -1; // This value should make all menu items accessible  
-
-	if (menu) {
-		int crntLevel = menu->level;
-
-		/*-------------------------
-		* For each menu element ...
-		*-------------------------*/
-		while (menu != nullptr && menu->level == crntLevel) {
-			/*----------------------------------------------
-			* ... see if dealing with a separator or submenu
-			*----------------------------------------------*/
-			if (menu->topic == HELP_none) {
-				if (menu->mnemonic == '-') {
-					createMenuSeparator(pane, menu->wgtName, SHORT);
-					menu = menu->next;
-				} else {
-					/*-------------------------------------------------------
-					* Do not show any of the submenu when it is to be hidden.
-					*-------------------------------------------------------*/
-					if (menu->hideIt == hideIt || menu->hideIt == NON_MENU_HELP) {
-						do {
-							menu = menu->next;
-						} while (menu != nullptr && menu->level > crntLevel);
-
-					} else {
-						Widget subPane = createMenu(pane, menu->wgtName, menu->subTitle, menu->mnemonic, nullptr, FULL);
-
-						menu = buildHelpMenu(subPane, menu->next, window);
-					}
-				}
-			}
-
-			else {
-				/*---------------------------------------
-				* Show menu item if not going to hide it.
-				* This is the easy way out of hiding
-				* menu items. When entire submenus want
-				* to be hidden, either the entire branch
-				* will have to be marked, or this algorithm
-				* will have to become a lot smarter.
-				*---------------------------------------*/
-				if (menu->hideIt != hideIt && menu->hideIt != NON_MENU_HELP)
-					makeHelpMenuItem(pane, menu->wgtName, HelpTitles[menu->topic], menu->mnemonic, helpCB, window, SHORT, menu->topic);
-
-				menu = menu->next;
-			}
-		}
-	}
-
-	return menu;
+	// TODO(eteran): implement this
 }
 
 /*----------------------------------------------------------------------------*/

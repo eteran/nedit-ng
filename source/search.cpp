@@ -477,11 +477,12 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 	entriesToMove = window->nWritableWindows_ - index - 1;
 	memmove(&(window->writableWindows_[index]), &(window->writableWindows_[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
 	window->nWritableWindows_ -= 1;
-#if 0
-	XmListDeletePos(window->replaceMultiFileList_, index + 1);
-#else
-	// TODO(eteran): implement equivalent code?!
-#endif
+
+	if(auto dialogReplace = window->getDialogReplace()) {
+		if(auto dialogReplaceMulti = dialogReplace->dialogMultiReplace_) {
+			delete dialogReplaceMulti->ui.listFiles->item(index + 1);
+		}		
+	}
 }
 
 /*
@@ -2434,30 +2435,6 @@ static std::string downCaseStringEx(view::string_view inString) {
 		return  tolower((unsigned char)ch);
 	});
 	return str;
-}
-
-/*
-** resetFindTabGroup & resetReplaceTabGroup are really gruesome kludges to
-** set the keyboard traversal.  XmProcessTraversal does not work at
-** all on these dialogs.  ...It seems to have started working around
-** Motif 1.1.2
-*/
-void resetFindTabGroup(Document *window) {
-#if 0
-	XmProcessTraversal(window->findText_, XmTRAVERSE_CURRENT);
-#else
-	// TODO(eteran): what does it actually do?
-	Q_UNUSED(window);
-#endif
-}
-
-void resetReplaceTabGroup(Document *window) {
-#if 0
-	XmProcessTraversal(window->replaceText_, XmTRAVERSE_CURRENT);
-#else
-	// TODO(eteran): what does it actually do?
-	Q_UNUSED(window);
-#endif
 }
 
 /*

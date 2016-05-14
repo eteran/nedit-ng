@@ -277,8 +277,8 @@ void DialogFind::on_buttonFind_clicked() {
 		return;
 
 
-	// Set the initial focus of the dialog back to the search string	
-	resetFindTabGroup(window_);
+	// Set the initial focus of the dialog back to the search string
+	ui.textFind->setFocus();
 
 	// find the text and mark it 
 	windowNotToClose = window_;

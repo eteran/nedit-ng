@@ -196,7 +196,7 @@ void DialogReplace::on_buttonFind_clicked() {
 		return;
 
 	// Set the initial focus of the dialog back to the search string	
-	resetReplaceTabGroup(window_);
+	ui.textFind->setFocus();
 
 	// Find the text and mark it 
 
@@ -254,7 +254,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 		return;
 
 	// Set the initial focus of the dialog back to the search string 
-	resetReplaceTabGroup(window_);
+	ui.textFind->setFocus();
 
 	// Find the text and replace it 
 
@@ -294,7 +294,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 		return;
 
 	// Set the initial focus of the dialog back to the search string 
-	resetReplaceTabGroup(window_);
+	ui.textFind->setFocus();
 
 	// Find the text and replace it 
 	windowNotToClose = window_;
@@ -385,7 +385,7 @@ void DialogReplace::on_buttonWindow_clicked() {
 		return;
 
 	// Set the initial focus of the dialog back to the search string	
-	resetReplaceTabGroup(window_);
+	ui.textFind->setFocus();
 
 	// do replacement 
 	windowNotToClose = window_;
@@ -419,7 +419,7 @@ void DialogReplace::on_buttonSelection_clicked() {
 		return;
 
 	// Set the initial focus of the dialog back to the search string 
-	resetReplaceTabGroup(window_);
+	ui.textFind->setFocus();
 
 	// do replacement 
 	windowNotToClose = window_;
@@ -455,9 +455,9 @@ void DialogReplace::on_buttonMulti_clicked() {
 	// Don't let the user select files when no replacement can be made 
 	if (*searchString == '\0') {
 		// Set the initial focus of the dialog back to the search string 
-		resetReplaceTabGroup(window_);
-		// pop down the replace dialog 
+		ui.textFind->setFocus();
 		
+		// pop down the replace dialog 		
 		if(!keepDialog()) {
 			unmanageReplaceDialogs(window_);
 		}
