@@ -346,7 +346,7 @@ public:
 	char matchSyntaxBased_;         /* Use syntax info to show matching */
 	bool highlightSyntax_;          /* is syntax highlighting turned on? */
 	bool backlightChars_;           /* is char backlighting turned on? */
-	char *backlightCharTypes_;      /* what backlighting to use */
+	QString backlightCharTypes_;    /* what backlighting to use */
 	bool modeMessageDisplayed_;     /* special stats line banner for learn and shell command executing modes */
 	char *modeMessage_;             /* stats line banner content for learn and shell command executing modes */
 	bool ignoreModify_;             /* ignore modifications to text area */

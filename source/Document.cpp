@@ -390,7 +390,7 @@ Widget createTextArea(Widget parent, Document *window, int rows, int cols, int e
 		textWidgetClass, 
 		frame, 
 		textNbacklightCharTypes, 
-		window->backlightCharTypes_, 
+		window->backlightCharTypes_.toLatin1().data(), 
 		textNrows, 
 		rows, 
 		textNcolumns, 
@@ -1768,20 +1768,20 @@ void Document::SetBacklightChars(char *applyBacklightTypes) {
 
 	backlightChars_ = do_apply;
 
-	XtFree(backlightCharTypes_);
-	
-	
 	if(backlightChars_) {
-		backlightCharTypes_ = XtStringDup(applyBacklightTypes);
+		backlightCharTypes_ = QLatin1String(applyBacklightTypes);
 	} else {
-		backlightCharTypes_ = nullptr;
+		backlightCharTypes_ = QString();
 	}
 
-	XtVaSetValues(textArea_, textNbacklightCharTypes, backlightCharTypes_, nullptr);
-	for (i = 0; i < nPanes_; i++)
-		XtVaSetValues(textPanes_[i], textNbacklightCharTypes, backlightCharTypes_, nullptr);
-	if (is_applied != do_apply)
+	XtVaSetValues(textArea_, textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
+	for (i = 0; i < nPanes_; i++) {
+		XtVaSetValues(textPanes_[i], textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
+	}
+	
+	if (is_applied != do_apply) {
 		SetToggleButtonState(backlightCharsItem_, do_apply, false);
+	}
 }
 
 /*
@@ -2853,7 +2853,6 @@ void Document::CloseWindow() {
 		FreeUserMenuCache(userMenuCache_);
 
 		// remove and deallocate all of the widgets associated with window 
-		XtFree(backlightCharTypes_); // we made a copy earlier on 
 		CloseAllPopupsFor(shell_);
 		XtDestroyWidget(shell_);
 	}
@@ -2949,8 +2948,9 @@ void Document::SplitPane() {
 	if (highlightData_)
 		AttachHighlightToWidget(text, this);
 	if (backlightChars_) {
-		XtVaSetValues(text, textNbacklightCharTypes, backlightCharTypes_, nullptr);
+		XtVaSetValues(text, textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
 	}
+	
 	XtManageChild(text);
 	textPanes_[nPanes_++] = text;
 
@@ -3160,7 +3160,7 @@ void Document::cloneDocument(Document *window) {
 	params[3] = biFontStr.data();
 	XtCallActionProc(window->textArea_, "set_fonts", nullptr, params, 4);
 
-	window->SetBacklightChars(backlightCharTypes_);
+	window->SetBacklightChars(backlightCharTypes_.toLatin1().data());
 
 	/* Clone rangeset info.
 
@@ -3320,15 +3320,16 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	showISearchLine_    = GetPrefISearchLine();
 	showLineNumbers_    = GetPrefLineNums();
 	highlightSyntax_    = GetPrefHighlightSyntax();
-	backlightCharTypes_ = nullptr;
+	backlightCharTypes_ = QString();
 	backlightChars_     = GetPrefBacklightChars();
 	
 	if (backlightChars_) {
 		const char *cTypes = GetPrefBacklightCharTypes();
 		if (cTypes && backlightChars_) {
-			backlightCharTypes_ = XtStringDup(cTypes);
+			backlightCharTypes_ = QLatin1String(cTypes);
 		}
 	}
+	
 	modeMessageDisplayed_   = false;
 	modeMessage_            = nullptr;
 	ignoreModify_           = false;
@@ -3746,13 +3747,13 @@ Document *Document::CreateDocument(const QString &name) {
 	window->showMatchingStyle_     = GetPrefShowMatching();
 	window->matchSyntaxBased_      = GetPrefMatchSyntaxBased();
 	window->highlightSyntax_       = GetPrefHighlightSyntax();
-	window->backlightCharTypes_    = nullptr;
+	window->backlightCharTypes_    = QString();
 	window->backlightChars_        = GetPrefBacklightChars();
 	
 	if (window->backlightChars_) {
 		const char *cTypes = GetPrefBacklightCharTypes();
 		if (cTypes && window->backlightChars_) {			
-			window->backlightCharTypes_ = XtStringDup(cTypes);
+			window->backlightCharTypes_ = QLatin1String(cTypes);
 		}
 	}
 	
