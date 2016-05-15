@@ -35,7 +35,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="textFilter"/>
+    <widget class="LineEdit" name="textFilter"/>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -72,6 +72,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>LineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>textFilter</tabstop>
  </tabstops>

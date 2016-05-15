@@ -131,7 +131,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="editFormat"/>
+         <widget class="LineEdit" name="editFormat"/>
         </item>
        </layout>
       </item>
@@ -299,6 +299,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>LineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

@@ -36,7 +36,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="textCommand"/>
+    <widget class="LineEdit" name="textCommand"/>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -73,6 +73,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>LineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>textCommand</tabstop>
  </tabstops>
