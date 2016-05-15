@@ -82,11 +82,6 @@
 #include <sys/param.h>
 #include <fcntl.h>
 
-#include <Xm/Form.h>
-#include <Xm/RowColumn.h>
-#include <Xm/SelectioB.h>
-#include <Xm/ToggleB.h>
-
 namespace {
 
 // How long to wait (msec) before putting up Macro Command banner 
