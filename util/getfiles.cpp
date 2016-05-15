@@ -108,11 +108,12 @@ int ErrorDone;  							   /* Flag to mark dialog completed   */
 void (*OrigDirSearchProc)(Widget, XtPointer);  /* Built in Motif directory search */
 void (*OrigFileSearchProc)(Widget, XtPointer); /* Built in Motif file search proc */
 
-}
 
+
+#if 1
 /* Text for help button help display */
 /* ... needs variant for VMS */
-static const char *HelpExist = "The file open dialog shows a list of directories on the left, and a list \
+const char *HelpExist = "The file open dialog shows a list of directories on the left, and a list \
 of files on the right.  Double clicking on a file name in the list on the \
 right, or selecting it and pressing the OK button, will open that file.  \
 Double clicking on a directory name, or selecting \
@@ -130,7 +131,7 @@ any files to open in the list \
 because the filter specification matched the directory file itself, rather \
 than the files in the directory.";
 
-static const char *HelpNew = "This dialog allows you to create a new file, or to save the current file \
+const char *HelpNew = "This dialog allows you to create a new file, or to save the current file \
 under a new name.  To specify a file \
 name in the current directory, complete the name displayed in the \"Save File \
 As:\" field near the bottom of the dialog.  If you delete or change \
@@ -148,6 +149,9 @@ in the directory tree, double \
 click on the directory entry ending in \"..\".  You can also move directly \
 to a directory by typing the file specification of the path in the \"Filter\" \
 field and pressing the \"Filter\" button.";
+#endif
+
+}
 
 /*                    Local Callback Routines and variables                */
 

@@ -3258,25 +3258,8 @@ void Document::cloneDocument(Document *window) {
 */
 Document::Document(const QString &name, char *geometry, bool iconic) {
 	
-	Widget winShell;
-	Widget menuBar;
-	Widget pane;
-	Widget text;
-	Widget stats;
-	Widget closeTabBtn;
-	Widget tabForm;
-	Pixel bgpix, fgpix;
-	Arg al[20];
-	int ac;
 	XmString s1;
 	XmFontList statsFontList;
-	char newGeometry[MAX_GEOM_STRING_LEN];
-	unsigned int rows, cols;
-	int x = 0;
-	int y = 0;
-	int bitmask;
-	int showTabBar;
-	int state;
 
 	static Pixmap isrcFind = 0;
 	static Pixmap isrcClear = 0;
@@ -3361,6 +3344,16 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	tab_                    = nullptr;
 	device_                 = 0;
 	inode_                  = 0;
+	
+	
+	char newGeometry[MAX_GEOM_STRING_LEN];
+	unsigned int rows;
+	unsigned int cols;
+	int bitmask;
+	int x = 0;
+	int y = 0;
+	Arg al[20];
+	int ac;	
 
 	/* If window geometry was specified, split it apart into a window position
 	   component and a window size component.  Create a new geometry string
@@ -3407,41 +3400,31 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	ac++;
 
 	if (newGeometry[0] == '\0') {
-		/* Workaround to make Xt ignore Motif's bad PPosition size changes. Even
-		   though we try to remove the PPosition in RealizeWithoutForcingPosition,
-		   it is not sufficient.  Motif will recompute the size hints some point
-		   later and put PPosition back! If the window is mapped after that time,
-		   then the window will again wind up at 0, 0.  So, XEmacs does this, and
-		   now we do.
-
-		   Alternate approach, relying on ShellP.h:
-
-		   ((WMShellWidget)winShell)->shell.client_specified &= ~_XtShellPPositionOK;
-		 */
-
 		XtSetArg(al[ac], XtNx, XT_IGNORE_PPOSITION);
 		ac++;
 		XtSetArg(al[ac], XtNy, XT_IGNORE_PPOSITION);
 		ac++;
 	}
 
-	winShell = CreateWidget(TheAppShell, "textShell", topLevelShellWidgetClass, al, ac);
-	shell_ = winShell;
+	shell_ = CreateWidget(TheAppShell, "textShell", topLevelShellWidgetClass, al, ac);
 
 #ifdef EDITRES
-	XtAddEventHandler(winShell, (EventMask)0, true, (XtEventHandler)_XEditResCheckMessages, nullptr);
+	XtAddEventHandler(shell_, (EventMask)0, true, (XtEventHandler)_XEditResCheckMessages, nullptr);
 #endif
 
-	addWindowIcon(winShell);
-
+	addWindowIcon(shell_);
+	
 	/* Create a MainWindow to manage the menubar and text area, set the
 	   userData resource to be used by WidgetToWindow to recover the
 	   window pointer from the widget id of any of the window's widgets */
 	XtSetArg(al[ac], XmNuserData, this);
 	ac++;
-	Widget mainWin = XmCreateMainWindow(winShell, (String) "main", al, ac);
-	mainWin_ = mainWin;
-	XtManageChild(mainWin);
+	mainWin_ = XmCreateMainWindow(shell_, (String) "main", al, ac);
+	XtManageChild(mainWin_);
+
+
+
+
 	
 #if 0
 	// TODO(eteran): this is an experiement in making a Qt main window along side
@@ -3452,7 +3435,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	
 
 	// The statsAreaForm holds the stats line and the I-Search line. 
-	Widget statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
+	Widget statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin_, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
 	                                 // XmNautoUnmanage, false, 
 	                                 nullptr);
 
@@ -3523,20 +3506,17 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	SetISearchTextCallbacks(this);
 
 	// create the a form to house the tab bar and close-tab button 
-	tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, false, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness,
-	                           0, nullptr);
+	Widget tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, false, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness, 0, nullptr);
 
 	// button to close top document 
 	if (closeTabPixmap == 0) {
 		closeTabPixmap = createBitmapWithDepth(tabForm, (char *)close_bits, close_width, close_height);
 	}
-	closeTabBtn = XtVaCreateManagedWidget("closeTabBtn", xmPushButtonWidgetClass, tabForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNhighlightThickness, 0, XmNlabelType, XmPIXMAP, XmNlabelPixmap, closeTabPixmap, XmNshadowThickness, 1,
-	                                      XmNtraversalOn, false, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
-	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin);
+	Widget closeTabBtn = XtVaCreateManagedWidget("closeTabBtn", xmPushButtonWidgetClass, tabForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNhighlightThickness, 0, XmNlabelType, XmPIXMAP, XmNlabelPixmap, closeTabPixmap, XmNshadowThickness, 1, XmNtraversalOn, false, XmNrightAttachment, XmATTACH_FORM, XmNrightOffset, 3, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 3, nullptr);
+	XtAddCallback(closeTabBtn, XmNactivateCallback, closeTabCB, mainWin_);
 
 	// create the tab bar 
-	tabBar_ = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn,
-	                                         XmNrightOffset, 5, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, XmNtopAttachment, XmATTACH_FORM, nullptr);
+	tabBar_ = XtVaCreateManagedWidget("tabBar", xmlFolderWidgetClass, tabForm, XmNresizePolicy, XmRESIZE_PACK, XmNleftAttachment, XmATTACH_FORM, XmNleftOffset, 0, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, closeTabBtn, XmNrightOffset, 5, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 0, XmNtopAttachment, XmATTACH_FORM, nullptr);
 
 	tabMenuPane_ = CreateTabContextMenu(tabBar_, this);
 	AddTabContextMenuAction(tabBar_);
@@ -3570,17 +3550,17 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	   file names and line numbers.  Colors are copied from parent
 	   widget, because many users and some system defaults color text
 	   backgrounds differently from other widgets. */
+	Pixel bgpix;
+	Pixel fgpix;
 	XtVaGetValues(statsLineForm_, XmNbackground, &bgpix, nullptr);
 	XtVaGetValues(statsLineForm_, XmNforeground, &fgpix, nullptr);
-	stats = XtVaCreateManagedWidget("statsLine", xmTextWidgetClass, statsLineForm_, XmNbackground, bgpix, XmNforeground, fgpix, XmNshadowThickness, 0, XmNhighlightColor, bgpix, XmNhighlightThickness,
-	                                0,                  /* must be zero, for OM (2.1.30) to
-	                                                   aligns tatsLineColNo & statsLine */
-	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1,
-	                                                   to align with statsLineColNo */
+
+	statsLine_ = XtVaCreateManagedWidget("statsLine", xmTextWidgetClass, statsLineForm_, XmNbackground, bgpix, XmNforeground, fgpix, XmNshadowThickness, 0, XmNhighlightColor, bgpix, XmNhighlightThickness,
+	                                0,                  /* must be zero, for OM (2.1.30) to aligns tatsLineColNo & statsLine */
+	                                XmNmarginHeight, 1, /* == statsLineColNo.marginHeight - 1, to align with statsLineColNo */
 	                                XmNscrollHorizontal, false, XmNeditMode, XmSINGLE_LINE_EDIT, XmNeditable, false, XmNtraversalOn, false, XmNcursorPositionVisible, false, XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,                //  
 	                                XmNtopWidget, statsLineColNo_, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, statsLineColNo_, XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET, //  
 	                                XmNbottomWidget, statsLineColNo_, XmNrightOffset, 3, nullptr);
-	statsLine_ = stats;
 
 	// Give the statsLine the same font as the statsLineColNo 
 	XtVaGetValues(statsLineColNo_, XmNfontList, &statsFontList, nullptr);
@@ -3593,33 +3573,30 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	/* If the fontList was nullptr, use the magical default provided by Motif,
 	   since it must have worked if we've gotten this far */
 	if (!fontList_)
-		XtVaGetValues(stats, XmNfontList, &fontList_, nullptr);
+		XtVaGetValues(statsLine_, XmNfontList, &fontList_, nullptr);
 
 	// Create the menu bar 
-	menuBar = CreateMenuBar(mainWin, this);
-	menuBar_ = menuBar;
-	XtManageChild(menuBar);
+	menuBar_ = CreateMenuBar(mainWin_, this);
+	XtManageChild(menuBar_);
 
 	// Create paned window to manage split pane behavior 
-	pane = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin, XmNseparatorOn, false, XmNspacing, 3, XmNsashIndent, -2, nullptr);
-	splitPane_ = pane;
-	XmMainWindowSetAreas(mainWin, menuBar, statsAreaForm, nullptr, nullptr, pane);
+	splitPane_ = XtVaCreateManagedWidget("pane", xmPanedWindowWidgetClass, mainWin_, XmNseparatorOn, false, XmNspacing, 3, XmNsashIndent, -2, nullptr);
+	XmMainWindowSetAreas(mainWin_, menuBar_, statsAreaForm, nullptr, nullptr, splitPane_);
 
 	/* Store a copy of document/window pointer in text pane to support
 	   action procedures. See also WidgetToWindow() for info. */
-	XtVaSetValues(pane, XmNuserData, this, nullptr);
+	XtVaSetValues(splitPane_, XmNuserData, this, nullptr);
 
 	/* Patch around Motif's most idiotic "feature", that its menu accelerators
 	   recognize Caps Lock and Num Lock as modifiers, and don't trigger if
 	   they are engaged */
-	AccelLockBugPatch(pane, menuBar_);
+	AccelLockBugPatch(splitPane_, menuBar_);
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	text = createTextArea(pane, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
-	XtManageChild(text);
-	textArea_ = text;
-	lastFocus_ = text;
+	textArea_ = createTextArea(splitPane_, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	XtManageChild(textArea_);
+	lastFocus_ = textArea_;
 
 	// Set the initial colors from the globals. 
 	SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
@@ -3643,11 +3620,11 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	buffer_->BufAddModifyCB(SyntaxHighlightModifyCB, this);
 
 	// Attach the buffer to the text widget, and add callbacks for modify 
-	TextSetBuffer(text, buffer_);
+	TextSetBuffer(textArea_, buffer_);
 	buffer_->BufAddModifyCB(modifiedCB, this);
 
 	// Designate the permanent text area as the owner for selections 
-	HandleXSelections(text);
+	HandleXSelections(textArea_);
 
 	// Set the requested hardware tab distance and useTabs in the text buffer 
 	buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
@@ -3657,7 +3634,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	addToWindowList();
 	InvalidateWindowMenus();
 
-	showTabBar = GetShowTabBar();
+	bool showTabBar = GetShowTabBar();
 	if (showTabBar)
 		XtManageChild(tabForm);
 
@@ -3667,11 +3644,11 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 		XtManageChild(statsAreaForm);
 
 	// realize all of the widgets in the new window 
-	RealizeWithoutForcingPosition(winShell);
-	XmProcessTraversal(text, XmTRAVERSE_CURRENT);
+	RealizeWithoutForcingPosition(shell_);
+	XmProcessTraversal(textArea_, XmTRAVERSE_CURRENT);
 
 	// Make close command in window menu gracefully prompt for close 
-	AddMotifCloseCallback(winShell, closeCB, this);
+	AddMotifCloseCallback(shell_, closeCB, this);
 
 	// Make window resizing work in nice character heights 
 	UpdateWMSizeHints();
@@ -3680,7 +3657,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	UpdateMinPaneHeights();
 
 	// dim/undim Attach_Tab menu items 
-	state = NDocuments() < WindowCount();
+	int state = NDocuments() < WindowCount();
 	
 	
 	for(Document *win: WindowList) {
@@ -3690,6 +3667,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 		}	
 	}
 }
+
 
 /*
 ** Create a new document in the shell window.
