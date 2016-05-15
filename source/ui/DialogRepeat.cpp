@@ -19,17 +19,13 @@ void DialogRepeat::setCommand(const QString &command) {
 	
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
-	QByteArray str = command.toLatin1();
-	char *LastCommand = str.data();	
-	char *parenChar = strchr(LastCommand, '(');
-	if(!parenChar) {
+	int index = command.indexOf(QLatin1Char('('));
+	if(index == -1) {
 		return;
 	}
-	
-	int cmdNameLen = parenChar - LastCommand;
-	
+
 	lastCommand_ = command;
-	ui.radioLastCommand->setText(tr("Last &Command (%1)").arg(QString::fromLatin1(LastCommand, cmdNameLen)));
+	ui.radioLastCommand->setText(tr("Last &Command (%1)").arg(command.mid(0, index)));
 }
 
 void DialogRepeat::on_buttonBox_accepted() {
@@ -57,6 +53,12 @@ bool DialogRepeat::doRepeatDialogAction() {
 	} else {
 	
 		QString strTimes = ui.lineEdit->text();
+		
+		if(strTimes.isEmpty()) {
+			QMessageBox::warning(this, tr("Warning"), tr("Please supply a valur for number of times"));
+			return false;
+		}
+		
 		bool ok;
 		int nTimes = strTimes.toInt(&ok);
 		if(!ok) {

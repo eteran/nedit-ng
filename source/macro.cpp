@@ -315,7 +315,7 @@ static const char *RedundantActions[] = {"open_dialog",             "save_as_dia
                                          "goto_line_number_dialog", "mark_dialog",    "goto_mark_dialog",       "control_code_dialog", "filter_selection_dialog", "execute_command_dialog", "repeat_dialog", "start_incremental_find"};
 
 // The last command executed (used by the Repeat command) 
-static char *LastCommand = nullptr;
+static QString LastCommand;
 
 // The current macro to execute on Replay command 
 std::string ReplayMacro;
@@ -1118,20 +1118,19 @@ std::string GetReplayMacro(void) {
 */
 void RepeatDialog(Document *window) {
 
-	if(!LastCommand) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Repeat Macro"), QLatin1String("No previous commands or learn/\nreplay sequences to repeat"));
+	if(LastCommand.isNull()) {
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Repeat Macro"), QLatin1String("No previous commands or learn/replay sequences to repeat"));
 		return;
 	}
 
-	/* make a label for the Last command item of the dialog, which includes
-	   the last executed action name */
-	char *parenChar = strchr(LastCommand, '(');
-	if(!parenChar) {
+	// TODO(eteran): redundant to work done in DialogRepeat::setCommand function 
+	int index = LastCommand.indexOf(QLatin1Char('('));
+	if(index == -1) {
 		return;
 	}
 
 	auto dialog = new DialogRepeat(window);
-	dialog->setCommand(QString::fromLatin1(LastCommand));
+	dialog->setCommand(LastCommand);
 	dialog->show();	
 }
 
@@ -1260,8 +1259,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	// Record the action and its parameters 
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString) {
-		XtFree(LastCommand);
-		LastCommand = actionString;
+		LastCommand = QLatin1String(actionString);
 	}
 }
 
