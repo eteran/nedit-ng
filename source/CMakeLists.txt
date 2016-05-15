@@ -49,6 +49,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogPrompt.h
 	ui/DialogPromptString.h
 	ui/DialogPromptList.h
+	ui/DialogRepeat.h
 	ui/LineEdit.h
 	ui/ListWidget.h
 	ui/MainWindow.h
@@ -81,6 +82,7 @@ set(UI_FILES
 	ui/DialogPrompt.ui
 	ui/DialogPromptString.ui
 	ui/DialogPromptList.ui
+	ui/DialogRepeat.ui
 	ui/MainWindow.ui
 )
 
@@ -119,6 +121,7 @@ add_executable(nedit
 	ui/DialogPromptString.cpp
 	ui/DialogPromptList.cpp
 	ui/DialogSyntaxPatterns.cpp
+	ui/DialogRepeat.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp
