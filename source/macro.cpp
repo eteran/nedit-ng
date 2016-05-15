@@ -27,18 +27,18 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QFileDialog>
+#include <QStack>
 #include <QString>
 #include <QWidget>
-#include <QStack>
-#include "ui/DialogPrompt.h"
-#include "ui/DialogPromptString.h"
-#include "ui/DialogPromptList.h"
 #include <QtDebug>
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+#include "ui/DialogPrompt.h"
+#include "ui/DialogPromptList.h"
+#include "ui/DialogPromptString.h"
 
 #include "macro.h"
 #include "fileUtils.h"
@@ -67,7 +67,6 @@
 #include "userCmds.h"
 #include "window.h"
 #include "HighlightPattern.h"
-
 
 #include <cstdio>
 #include <cstdlib>
@@ -3140,7 +3139,7 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 
 
 	result->tag = STRING_TAG;
-	if (GFN_OK == gfnResult) {
+	if (gfnResult == GFN_OK) {
 		//  Got a string, copy it to the result  
 		if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
 			M_FAILURE("failed to allocate return value: %s");
