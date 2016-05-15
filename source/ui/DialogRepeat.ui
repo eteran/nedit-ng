@@ -55,7 +55,7 @@
          <string>&amp;In Selection</string>
         </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -70,6 +70,9 @@
        <widget class="QRadioButton" name="radioNTimes">
         <property name="text">
          <string>&amp;N Times</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -96,16 +99,16 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>DialogRepeat</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>281</x>
+     <y>118</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
+     <x>5</x>
+     <y>99</y>
     </hint>
    </hints>
   </connection>

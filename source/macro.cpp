@@ -39,6 +39,7 @@
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
 #include "ui/DialogPromptString.h"
+#include "ui/DialogRepeat.h"
 
 #include "macro.h"
 #include "fileUtils.h"
@@ -122,25 +123,12 @@ struct macroCmdInfo {
 	char closeOnCompletion;
 	Program *program;
 	RestartData *context;
-	Widget dialog;
 };
 
-// Widgets and global data for Repeat dialog 
-struct repeatDialog {
-	Document *forWindow;
-	char *lastCommand;
-	Widget shell, repeatText, lastCmdToggle;
-	Widget inSelToggle, toEndToggle;
-};
 
 static void cancelLearn(void);
 static void runMacro(Document *window, Program *prog);
 static void finishMacroCmdExecution(Document *window);
-static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData);
-static void repeatApplyCB(Widget w, XtPointer clientData, XtPointer callData);
-static int doRepeatDialogAction(repeatDialog *rd, XEvent *event);
-static void repeatCancelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData);
 static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static char *actionToString(Widget w, const char *actionName, XEvent *event, String *params, Cardinal numParams);
@@ -335,7 +323,7 @@ static const char *RedundantActions[] = {"open_dialog",             "save_as_dia
 static char *LastCommand = nullptr;
 
 // The current macro to execute on Replay command 
-static std::string ReplayMacro;
+std::string ReplayMacro;
 
 // Buffer where macro commands are recorded in Learn mode 
 static TextBuffer *MacroRecordBuf = nullptr;
@@ -914,7 +902,6 @@ static void runMacro(Document *window, Program *prog) {
 	cmdData->program = prog;
 	cmdData->context = nullptr;
 	cmdData->continueWorkProcID = 0;
-	cmdData->dialog = nullptr;
 
 	// Set up timer proc for putting up banner when macro takes too long 
 	cmdData->bannerTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), BANNER_WAIT_TIME, bannerTimeoutProc, window);
@@ -1048,10 +1035,6 @@ static void finishMacroCmdExecution(Document *window) {
 		window->ClearModeMessage();
 	}
 
-	// If a dialog was up, get rid of it 
-	if (cmdData->dialog)
-		XtDestroyWidget(XtParent(cmdData->dialog));
-
 	// Free execution information 
 	FreeProgram(cmdData->program);
 	delete cmdData;
@@ -1139,154 +1122,24 @@ std::string GetReplayMacro(void) {
 ** Present the user a dialog for "Repeat" command
 */
 void RepeatDialog(Document *window) {
-	Widget form, selBox, radioBox, timesForm;
-	Arg selBoxArgs[1];
-	char *lastCmdLabel, *parenChar;
-	XmString s1;
-	int cmdNameLen;
 
 	if(!LastCommand) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Repeat Macro"), QLatin1String("No previous commands or learn/\nreplay sequences to repeat"));
 		return;
 	}
 
-	/* Remeber the last command, since the user is allowed to work in the
-	   window while the dialog is up */
-	auto rd = new repeatDialog;
-	rd->lastCommand = XtNewStringEx(LastCommand);
-
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
-	parenChar = strchr(LastCommand, '(');
-	if(!parenChar)
+	char *parenChar = strchr(LastCommand, '(');
+	if(!parenChar) {
 		return;
-	cmdNameLen = parenChar - LastCommand;
-	lastCmdLabel = XtMalloc(16 + cmdNameLen);
-	strcpy(lastCmdLabel, "Last Command (");
-	strncpy(&lastCmdLabel[14], LastCommand, cmdNameLen);
-	strcpy(&lastCmdLabel[14 + cmdNameLen], ")");
-
-	XtSetArg(selBoxArgs[0], XmNautoUnmanage, False);
-	selBox = CreatePromptDialog(window->shell_, "repeat", selBoxArgs, 1);
-	rd->shell = XtParent(selBox);
-	XtAddCallback(rd->shell, XmNdestroyCallback, repeatDestroyCB, rd);
-	XtAddCallback(selBox, XmNokCallback, repeatOKCB, rd);
-	XtAddCallback(selBox, XmNapplyCallback, repeatApplyCB, rd);
-	XtAddCallback(selBox, XmNcancelCallback, repeatCancelCB, rd);
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_SELECTION_LABEL));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(selBox, XmDIALOG_APPLY_BUTTON));
-	XtVaSetValues(XtParent(selBox), XmNtitle, "Repeat Macro", nullptr);
-	AddMotifCloseCallback(XtParent(selBox), repeatCancelCB, rd);
-
-	form = XtVaCreateManagedWidget("form", xmFormWidgetClass, selBox, nullptr);
-
-	radioBox = XtVaCreateManagedWidget("cmdSrc", xmRowColumnWidgetClass, form, XmNradioBehavior, True, XmNorientation, XmHORIZONTAL, XmNpacking, XmPACK_TIGHT, XmNtopAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, nullptr);
-	rd->lastCmdToggle = XtVaCreateManagedWidget("lastCmdToggle", xmToggleButtonWidgetClass, radioBox, XmNset, True, XmNlabelString, s1 = XmStringCreateSimpleEx(lastCmdLabel), XmNmnemonic, 'C', nullptr);
-	XmStringFree(s1);
-	XtFree(lastCmdLabel);
-	XtVaCreateManagedWidget("learnReplayToggle", xmToggleButtonWidgetClass, radioBox, XmNset, False, XmNlabelString, s1 = XmStringCreateSimpleEx("Learn/Replay"), XmNmnemonic, 'L', XmNsensitive, !ReplayMacro.empty(), nullptr);
-	XmStringFree(s1);
-
-	timesForm = XtVaCreateManagedWidget("form", xmFormWidgetClass, form, XmNtopAttachment, XmATTACH_WIDGET, XmNtopWidget, radioBox, XmNtopOffset, 10, XmNleftAttachment, XmATTACH_FORM, nullptr);
-	radioBox = XtVaCreateManagedWidget("method", xmRowColumnWidgetClass, timesForm, XmNradioBehavior, True, XmNorientation, XmHORIZONTAL, XmNpacking, XmPACK_TIGHT, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM,
-	                                   XmNleftAttachment, XmATTACH_FORM, nullptr);
-	rd->inSelToggle = XtVaCreateManagedWidget("inSelToggle", xmToggleButtonWidgetClass, radioBox, XmNset, False, XmNlabelString, s1 = XmStringCreateSimpleEx("In Selection"), XmNmnemonic, 'I', nullptr);
-	XmStringFree(s1);
-	rd->toEndToggle = XtVaCreateManagedWidget("toEndToggle", xmToggleButtonWidgetClass, radioBox, XmNset, False, XmNlabelString, s1 = XmStringCreateSimpleEx("To End"), XmNmnemonic, 'T', nullptr);
-	XmStringFree(s1);
-	XtVaCreateManagedWidget("nTimesToggle", xmToggleButtonWidgetClass, radioBox, XmNset, True, XmNlabelString, s1 = XmStringCreateSimpleEx("N Times"), XmNmnemonic, 'N', XmNset, True, nullptr);
-	XmStringFree(s1);
-	rd->repeatText =
-	    XtVaCreateManagedWidget("repeatText", xmTextWidgetClass, timesForm, XmNcolumns, 5, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNleftAttachment, XmATTACH_WIDGET, XmNleftWidget, radioBox, nullptr);
-	RemapDeleteKey(rd->repeatText);
-
-	// Handle mnemonic selection of buttons and focus to dialog 
-	AddDialogMnemonicHandler(form, FALSE);
-
-// Set initial focus 
-	XtVaSetValues(form, XmNinitialFocus, timesForm, nullptr);
-	XtVaSetValues(timesForm, XmNinitialFocus, rd->repeatText, nullptr);
-
-	// put up dialog 
-	rd->forWindow = window;
-	ManageDialogCenteredOnPointer(selBox);
-}
-
-static void repeatOKCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)w;
-	auto rd = static_cast<repeatDialog *>(clientData);
-
-	if (doRepeatDialogAction(rd, static_cast<XmAnyCallbackStruct *>(callData)->event))
-		XtDestroyWidget(rd->shell);
-}
-
-/* Note that the apply button is not managed in the repeat dialog.  The dialog
-   itself is capable of non-modal operation, but to be complete, it needs
-   to dynamically update last command, dimming of learn/replay, possibly a
-   stop button for the macro, and possibly in-selection with selection */
-static void repeatApplyCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	doRepeatDialogAction((repeatDialog *)clientData, static_cast<XmAnyCallbackStruct *>(callData)->event);
-}
-
-static int doRepeatDialogAction(repeatDialog *rd, XEvent *event) {
-	int nTimes;
-	char nTimesStr[TYPE_INT_STR_SIZE(int)];
-	const char *params[2];
-
-	// Find out from the dialog how to repeat the command 
-	if (XmToggleButtonGetState(rd->inSelToggle)) {
-		if (!rd->forWindow->buffer_->primary_.selected) {
-			QMessageBox::warning(nullptr /*parent */, QLatin1String("Repeat Macro"), QLatin1String("No selection in window to repeat within"));
-			XmProcessTraversal(rd->inSelToggle, XmTRAVERSE_CURRENT);
-			return False;
-		}
-		params[0] = "in_selection";
-	} else if (XmToggleButtonGetState(rd->toEndToggle)) {
-		params[0] = "to_end";
-	} else {
-		if (GetIntTextWarn(rd->repeatText, &nTimes, "number of times", True) != TEXT_READ_OK) {
-			XmProcessTraversal(rd->repeatText, XmTRAVERSE_CURRENT);
-			return False;
-		}
-		sprintf(nTimesStr, "%d", nTimes);
-		params[0] = nTimesStr;
 	}
 
-	// Figure out which command user wants to repeat 
-	if (XmToggleButtonGetState(rd->lastCmdToggle))
-		params[1] = XtNewStringEx(rd->lastCommand);
-	else {
-		if (ReplayMacro.empty())
-			return False;
-		params[1] = XtNewStringEx(ReplayMacro);
-	}
-
-	// call the action routine repeat_macro to do the work 
-	XtCallActionProc(rd->forWindow->lastFocus_, "repeat_macro", event, const_cast<char **>(params), 2);
-	XtFree((char *)params[1]);
-	return True;
+	auto dialog = new DialogRepeat(window);
+	dialog->setCommand(QString::fromLatin1(LastCommand));
+	dialog->show();	
 }
 
-static void repeatCancelCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)w;
-	(void)callData;
-	auto rd = static_cast<repeatDialog *>(clientData);
-
-	XtDestroyWidget(rd->shell);
-}
-
-static void repeatDestroyCB(Widget w, XtPointer clientData, XtPointer callData) {
-	(void)w;
-	(void)callData;
-	auto rd = static_cast<repeatDialog *>(clientData);
-
-	XtFree(rd->lastCommand);
-	delete rd;
-}
 
 /*
 ** Dispatches a macro to which repeats macro command in "command", either

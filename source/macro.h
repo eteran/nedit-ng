@@ -59,4 +59,6 @@ void ReadMacroInitFile(Document *window);
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
 Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt);
 
+extern std::string ReplayMacro;
+
 #endif
