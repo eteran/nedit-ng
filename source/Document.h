@@ -16,8 +16,7 @@ class DialogReplace;
 class DialogReplaceScope;
 class DialogColors;
 class UndoInfo;
-
-struct TextBuffer;
+class TextBuffer;
 
 
 /* The Document structure holds the information on a Document. A number

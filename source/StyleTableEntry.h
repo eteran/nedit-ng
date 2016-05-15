@@ -7,7 +7,8 @@
 #include <cstdint>
 #include <X11/Intrinsic.h>
 
-struct StyleTableEntry {
+class StyleTableEntry {
+public:
 	std::string highlightName;
 	std::string styleName;
 	std::string colorName;

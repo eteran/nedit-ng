@@ -23,7 +23,7 @@ target_link_libraries(NUtil LINK_PUBLIC
 	Qt4::QtNetwork
 )
 
-set(CMAKE_CXX_FLAGS "-W -Wall -pedantic") #-Wuseless-cast
+set(CMAKE_CXX_FLAGS "-W -Wall -pedantic -Wunused") #-Wuseless-cast
 
 set_property(TARGET NUtil PROPERTY CXX_STANDARD 11)
 

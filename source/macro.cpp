@@ -29,6 +29,7 @@
 
 #include <QMessageBox>
 #include <QPushButton>
+#include <QFileDialog>
 #include <QString>
 #include <QWidget>
 #include <QStack>
@@ -3100,30 +3101,43 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 	}
 
 	//  Set default directory (saving original for later)  
-	QString orgDefaultPath = GetFileDialogDefaultDirectoryEx();
+	QString defaultPathEx;
 	if (defaultPath[0] != '\0') {
-		SetFileDialogDefaultDirectory(QLatin1String(defaultPath));
+		defaultPathEx = QLatin1String(defaultPath);
 	} else {
-		SetFileDialogDefaultDirectory(window->path_);
+		defaultPathEx = window->path_;
 	}
 
 	//  Set filter (saving original for later)  
-	QString orgFilter = GetFileDialogDefaultPatternEx();
+	QString defaultFilter;
 	if (filter[0] != '\0') {
-		SetFileDialogDefaultPattern(QString::fromStdString(filter));
+		defaultFilter = QString::fromStdString(filter);
 	}
 
 	/*  Fork to one of the worker methods from util/getfiles.c.
 	    (This should obviously be refactored.)  */
 	if (strcmp(mode, "exist") == 0) {
-		gfnResult = GetExistingFilename(window->shell_, title, filename);
+		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
+		// TODO(eteran): default path doesn't seem to be able to be specified easily
+		QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
+		if(!existingFile.isNull()) {
+			strcpy(filename, existingFile.toLatin1().data());
+			gfnResult = GFN_OK;
+		} else {
+			gfnResult = GFN_CANCEL;
+		}
 	} else {
-		gfnResult = GetNewFilename(window->shell_, title, filename, defaultName);
+		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
+		// TODO(eteran): default path doesn't seem to be able to be specified easily
+		QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
+		if(!newFile.isNull()) {
+			strcpy(filename, newFile.toLatin1().data());
+			gfnResult = GFN_OK;
+		} else {
+			gfnResult = GFN_CANCEL;
+		}
 	} //  Invalid values are weeded out above.  
 
-	//  Reset original values and free temps  
-	SetFileDialogDefaultDirectory(orgDefaultPath);
-	SetFileDialogDefaultPattern(orgFilter);
 
 	result->tag = STRING_TAG;
 	if (GFN_OK == gfnResult) {

@@ -11,7 +11,8 @@ class PatternSet;
 
 /* Data structure attached to window to hold all syntax highlighting
    information (for both drawing and incremental reparsing) */
-struct WindowHighlightData {
+class WindowHighlightData {
+public:
 	HighlightData *pass1Patterns;
 	HighlightData *pass2Patterns;
 	char *parentStyles;

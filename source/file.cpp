@@ -1354,24 +1354,15 @@ void PrintString(const std::string &string, const std::string &jobName) {
 
 int PromptForExistingFile(Document *window, const char *prompt, char *fullname) {
 
-	/* Temporarily set default directory to window->path_, prompt for file,
-	   then, if the call was unsuccessful, restore the original default
-	   directory */
-	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-	if (!window->path_.isEmpty()) {
-		SetFileDialogDefaultDirectory(window->path_);
-	}
-	
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setDirectory((!window->path_.isEmpty()) ? window->path_ : QString());
+	dialog.setDirectory(window->path_);
 	if(dialog.exec()) {
 		strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
 		return GFN_OK;
 	}
 
-	SetFileDialogDefaultDirectory(savedDefaultDir);
 	return GFN_CANCEL;
 
 }
@@ -1385,20 +1376,11 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 
 	*fileFormat = window->fileFormat_;
 
-	/* Temporarily set default directory to window->path_, prompt for file,
-	   then, if the call was unsuccessful, restore the original default
-	   directory */
-	auto savedDefaultDir = GetFileDialogDefaultDirectoryEx();
-
-	if (!window->path_.isEmpty()) {
-		SetFileDialogDefaultDirectory(window->path_);
-	}
-	
 	int retVal = GFN_CANCEL;
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
-	dialog.setDirectory((!window->path_.isEmpty()) ? window->path_ : QString());
+	dialog.setDirectory(window->path_);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 
 	if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
@@ -1481,11 +1463,6 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 			}
 
 		}
-	}
-
-
-	if (retVal != GFN_OK) {
-		SetFileDialogDefaultDirectory(savedDefaultDir);
 	}
 
 	return retVal;

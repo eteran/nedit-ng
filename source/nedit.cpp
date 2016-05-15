@@ -370,8 +370,11 @@ int main(int argc, char *argv[]) {
 	DialogPrint::LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
 	SetDeleteRemap(GetPrefMapDelete());
 	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
-	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 
+#if 0
+	// TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
+	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
+#endif
 	// Set up action procedures for menu item commands 
 	InstallMenuActions(context);
 

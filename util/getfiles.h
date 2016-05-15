@@ -27,22 +27,9 @@
 #ifndef GETFILES_H_
 #define GETFILES_H_
 
-#include <QString>
-#include <X11/Intrinsic.h>
-
 enum {
 	GFN_OK     = 1, /* Get Filename OK constant     */
 	GFN_CANCEL = 2, /* Get Filename Cancel constant */
 };
-
-int GetExistingFilename(Widget parent, const char *promptString, char *filename);
-int GetNewFilename(Widget parent, const char *promptString, char *filename, const char *defaultName);
-int HandleCustomExistFileSB(Widget existFileSB, char *filename);
-int HandleCustomNewFileSB(Widget newFileSB, char *filename, const char *defaultName);
-QString GetFileDialogDefaultDirectoryEx(void);
-QString GetFileDialogDefaultPatternEx(void);
-void SetFileDialogDefaultDirectory(const QString &dir);
-void SetFileDialogDefaultPattern(const QString &pattern);
-void SetGetEFTextFieldRemoval(int state);
 
 #endif

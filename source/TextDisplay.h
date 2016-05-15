@@ -38,16 +38,14 @@ enum CursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY
 
 #define NO_HINT -1
 
-struct StyleTableEntry;
-
+class StyleTableEntry;
+class TextDisplay;
 
 struct graphicExposeTranslationEntry {
 	int horizontal;
 	int vertical;
 	struct graphicExposeTranslationEntry *next;
 };
-
-class TextDisplay;
 
 typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 

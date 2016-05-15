@@ -35,8 +35,8 @@
 
 #define N_RANGESETS 63
 
-struct Rangeset;
-struct TextBuffer;
+class Rangeset;
+class TextBuffer;
 
 struct Range {
 	int start;
@@ -45,7 +45,7 @@ struct Range {
 
 typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
-struct Rangeset {
+class Rangeset {
 public:
 	const char *RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);

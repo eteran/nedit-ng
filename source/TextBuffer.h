@@ -43,7 +43,7 @@ class RangesetTable;
 typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
 
-struct TextBuffer {
+class TextBuffer {
 public:
 	TextBuffer();
 	explicit TextBuffer(int requestedSize);

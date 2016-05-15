@@ -5,7 +5,8 @@
 #include "regularExp.h"
 
 // "Compiled" version of pattern specification 
-struct HighlightData {
+class HighlightData {
+public:
 	regexp *startRE;
 	regexp *endRE;
 	regexp *errorRE;
@@ -18,7 +19,7 @@ struct HighlightData {
 	int nSubPatterns;
 	int nSubBranches; // Number of top-level branches of subPatternRE 
 	long userStyleIndex;
-	struct HighlightData **subPatterns;
+	HighlightData **subPatterns;
 };
 
 #endif
