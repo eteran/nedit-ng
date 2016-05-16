@@ -671,15 +671,13 @@ static void patchResourcesForVisual(void) {
 	Visual *visual;
 	int depth;
 	Colormap map;
-	Boolean usingDefaultVisual;
-	XrmDatabase db;
 
 	if (!TheDisplay)
 		return;
 
-	db = XtDatabase(TheDisplay);
+	XrmDatabase db = XtDatabase(TheDisplay);
 
-	usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
+	Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
 
 	if (!usingDefaultVisual) {
 		/*
@@ -704,18 +702,18 @@ static void patchResourcesForVisual(void) {
 		value.size = sizeof(depth);
 		XrmPutResource(&db, "*depth", "Int", &value);
 
-/* Drag-and-drop visuals do not work well when using a different
-   visual.  One some systems, you'll just get a funny-looking icon
-   (maybe all-black) but on other systems it crashes with a BadMatch
-   error.  This appears to be an OSF Motif bug.  It would be nicer
-   to just disable the visual itself, instead of the entire drag
-   operation.
+		/* Drag-and-drop visuals do not work well when using a different
+		   visual.  One some systems, you'll just get a funny-looking icon
+		   (maybe all-black) but on other systems it crashes with a BadMatch
+		   error.  This appears to be an OSF Motif bug.  It would be nicer
+		   to just disable the visual itself, instead of the entire drag
+		   operation.
 
-   Update: this is no longer necessary since all problems with
-   non-default visuals should now be solved.
+		   Update: this is no longer necessary since all problems with
+		   non-default visuals should now be solved.
 
-   XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
- */
+		   XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
+		 */
 
 		for (i = 1; i < XtNumber(fallbackResources); ++i) {
 			Cardinal resIndex = i - 1;

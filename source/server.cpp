@@ -175,16 +175,14 @@ Boolean ServerDispatchEvent(XEvent *event) {
 
 // Try to find existing 'FileOpen' property atom for path. 
 static Atom findFileOpenProperty(const char *filename, const char *pathname) {
-	char path[MAXPATHLEN];
-	Atom atom;
 
-	if (!IsServer)
+	if (!IsServer) {
 		return (None);
+	}
 
-	strcpy(path, pathname);
-	strcat(path, filename);
-	atom = CreateServerFileOpenAtom(GetPrefServerName(), path);
-	return (atom);
+	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
+	
+	return CreateServerFileOpenAtom(GetPrefServerName(), path.toLatin1().data());
 }
 
 /* Destroy the 'FileOpen' atom to inform nc that this file has
@@ -204,16 +202,14 @@ static void deleteFileOpenProperty2(const char *filename, const char *pathname) 
 
 // Try to find existing 'FileClosed' property atom for path. 
 static Atom findFileClosedProperty(const char *filename, const char *pathname) {
-	char path[MAXPATHLEN];
-	Atom atom;
 
-	if (!IsServer)
+	if (!IsServer) {
 		return (None);
+	}
 
-	strcpy(path, pathname);
-	strcat(path, filename);
-	atom = CreateServerFileClosedAtom(GetPrefServerName(), path, True); // don't create 
-	return (atom);
+	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
+
+	return CreateServerFileClosedAtom(GetPrefServerName(), path.toLatin1().data(), True); // don't create 
 }
 
 // Get hold of the property to use when closing the file. 

@@ -234,9 +234,10 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 }
 
 void RevertToSaved(Document *window) {
-	char name[MAXPATHLEN], path[MAXPATHLEN];
+
 	int i;
-	int insertPositions[MAX_PANES], topLines[MAX_PANES];
+	int insertPositions[MAX_PANES];
+	int topLines[MAX_PANES];
 	int horizOffsets[MAX_PANES];
 	int openFlags = 0;
 	Widget text;
@@ -255,13 +256,13 @@ void RevertToSaved(Document *window) {
 	}
 
 	// re-read the file, update the window title if new file is different 
-	strcpy(name, window->filename_.toLatin1().data());
-	strcpy(path, window->path_.toLatin1().data());
+	QString name = window->filename_;
+	QString path = window->path_;
 	
 	RemoveBackupFile(window);
 	window->ClearUndoList();
 	openFlags |= window->lockReasons_.isUserLocked() ? PREF_READ_ONLY : 0;
-	if (!doOpen(window, name, path, openFlags)) {
+	if (!doOpen(window, name.toLatin1().data(), path.toLatin1().data(), openFlags)) {
 		/* This is a bit sketchy.  The only error in doOpen that irreperably
 		        damages the window is "too much binary data".  It should be
 		        pretty rare to be reverting something that was fine only to find

@@ -1643,14 +1643,18 @@ bool CheckPrefsChangesSaved(Widget dialogParent) {
 ** and update PrefsHaveChanged if a preference setting has now changed.
 */
 static void setIntPref(int *prefDataField, int newValue) {
-	if (newValue != *prefDataField)
+	if (newValue != *prefDataField) {
 		PrefsHaveChanged = true;
+	}
+	
 	*prefDataField = newValue;
 }
 
 static void setStringPref(char *prefDataField, const char *newValue) {
-	if (strcmp(prefDataField, newValue))
+	if (strcmp(prefDataField, newValue)) {
 		PrefsHaveChanged = true;
+	}
+
 	strcpy(prefDataField, newValue);
 }
 
@@ -1938,12 +1942,7 @@ static int matchLanguageMode(Document *window) {
 static int loadLanguageModesStringEx(const std::string &string, int fileVer) {
 	
 	// TODO(eteran): implement this natively
-	auto buffer = new char[string.size() + 1];
-	strcpy(buffer, string.c_str());
-	int r = loadLanguageModesString(buffer, fileVer);
-	delete [] buffer;
-	return r;
-
+	return loadLanguageModesString(string.c_str(), fileVer);
 }
 
 static int loadLanguageModesString(const char *inString, int fileVer) {

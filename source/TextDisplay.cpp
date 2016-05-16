@@ -836,8 +836,11 @@ void TextDisplay::TextDOverstrike(const char *text) {
 				p++;
 				paddedText = new char[textLen + MAX_EXP_CHAR_LEN + 1];
 				strcpy(paddedText, text);
-				for (i = 0; i < indent - endIndent; i++)
+				
+				for (i = 0; i < indent - endIndent; i++) {
 					paddedText[textLen + i] = ' ';
+				}
+				
 				paddedText[textLen + i] = '\0';
 			}
 			break;

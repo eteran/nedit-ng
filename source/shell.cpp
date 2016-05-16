@@ -217,7 +217,7 @@ void ShellCmdToMacroString(Document *window, const std::string &command, const s
 */
 void ExecCursorLine(Document *window, int fromMacro) {
 	int left, right, insertPos;
-	char *subsCommand, fullName[MAXPATHLEN];
+	char *subsCommand;
 	int pos, line, column;
 	char lineNumber[11];
 
@@ -244,12 +244,12 @@ void ExecCursorLine(Document *window, int fromMacro) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_.toLatin1().data());
-	strcat(fullName, window->filename_.toLatin1().data());
+	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
+	
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
-	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName, lineNumber);
+	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName.toLatin1().data(), lineNumber);
 	if(!subsCommand) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"
@@ -269,7 +269,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 */
 void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
-	char *subsCommand, fullName[MAXPATHLEN];
+	char *subsCommand;
 	int left = 0, right = 0;
 	int pos, line, column;
 	char lineNumber[11];
@@ -284,13 +284,12 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	strcpy(fullName, window->path_.toLatin1().data());
-	strcat(fullName, window->filename_.toLatin1().data());
+	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
 	pos = TextGetCursorPos(window->lastFocus_);
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
-	subsCommand = shellCommandSubstitutes(command.c_str(), fullName, lineNumber);
+	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.toLatin1().data(), lineNumber);
 	if(!subsCommand) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
 		                                                   "filename substitutions with '%%' or\n"

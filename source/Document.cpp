@@ -1400,31 +1400,34 @@ void Document::RefreshMenuToggleStates() {
 ** update the tab label, etc. of a tab, per the states of it's document.
 */
 void Document::RefreshTabState() {
-	XmString s1, tipString;
-	char labelString[MAXPATHLEN];
+
 	const char *tag = XmFONTLIST_DEFAULT_TAG;
 	unsigned char alignment;
+	
+	QString labelString;
 
 	/* Set tab label to document's filename. Position of
 	   "*" (modified) will change per label alignment setting */
 	XtVaGetValues(tab_, XmNalignment, &alignment, nullptr);
 	if (alignment != XmALIGNMENT_END) {
-		sprintf(labelString, "%s%s", fileChanged_ ? "*" : "", filename_.toLatin1().data());
+		labelString = QString(QLatin1String("%1%2")).arg(fileChanged_ ? QLatin1String("*") : QLatin1String("")).arg(filename_);
 	} else {
-		sprintf(labelString, "%s%s", filename_.toLatin1().data(), fileChanged_ ? "*" : "");
+		labelString = QString(QLatin1String("%1%2")).arg(filename_).arg(fileChanged_ ? QLatin1String("*") : QLatin1String(""));
 	}
 
 	// Make the top document stand out a little more 
-	if (IsTopDocument())
+	if (IsTopDocument()) {
 		tag = (String) "BOLD";
+	}
 
-	s1 = XmStringCreateLtoREx(labelString, tag);
+	XmString s1 = XmStringCreateLtoREx(labelString.toLatin1().data(), tag);
 
 	if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
-		strcat(labelString, " - ");
-		strcat(labelString, path_.toLatin1().data());
+		labelString.append(QLatin1String(" - "));
+		labelString.append(path_);
 	}
-	tipString = XmStringCreateSimpleEx(labelString);
+	
+	XmString tipString = XmStringCreateSimpleEx(labelString);
 
 	XtVaSetValues(tab_, XltNbubbleString, tipString, XmNlabelString, s1, nullptr);
 	XmStringFree(s1);
@@ -3169,48 +3172,48 @@ void Document::cloneDocument(Document *window) {
 	// TODO(eteran): clone the find dialogs as well
 
 	// copy states of original document 
-	window->filenameSet_ = filenameSet_;
-	window->fileFormat_ = fileFormat_;
-	window->lastModTime_ = lastModTime_;
-	window->fileChanged_ = fileChanged_;
-	window->fileMissing_ = fileMissing_;
-	window->lockReasons_ = lockReasons_;
-	window->autoSaveCharCount_ = autoSaveCharCount_;
-	window->autoSaveOpCount_ = autoSaveOpCount_;
-	window->undoMemUsed_ = undoMemUsed_;
-	window->lockReasons_ = lockReasons_;
-	window->autoSave_ = autoSave_;
-	window->saveOldVersion_ = saveOldVersion_;
-	window->wrapMode_ = wrapMode_;
+	window->filenameSet_            = filenameSet_;
+	window->fileFormat_             = fileFormat_;
+	window->lastModTime_            = lastModTime_;
+	window->fileChanged_            = fileChanged_;
+	window->fileMissing_            = fileMissing_;
+	window->lockReasons_            = lockReasons_;
+	window->autoSaveCharCount_      = autoSaveCharCount_;
+	window->autoSaveOpCount_        = autoSaveOpCount_;
+	window->undoMemUsed_            = undoMemUsed_;
+	window->lockReasons_            = lockReasons_;
+	window->autoSave_               = autoSave_;
+	window->saveOldVersion_         = saveOldVersion_;
+	window->wrapMode_               = wrapMode_;
 	window->SetOverstrike(overstrike_);
-	window->showMatchingStyle_ = showMatchingStyle_;
-	window->matchSyntaxBased_ = matchSyntaxBased_;
-#if 0
-    window->showStats_ = showStats_;
-    window->showISearchLine_ = showISearchLine_;
-    window->showLineNumbers_ = showLineNumbers_;
-    window->modeMessageDisplayed_ = modeMessageDisplayed_;
-    window->ignoreModify_ = ignoreModify_;
-    window->windowMenuValid_ = windowMenuValid_;
-    window->flashTimeoutID_ = flashTimeoutID_;
-    window->wasSelected_ = wasSelected_;
-    window->fontName_ = fontName_;
-    strcpy(window->italicFontName_, italicFontName_);
-    strcpy(window->boldFontName_, boldFontName_);
-    strcpy(window->boldItalicFontName_, boldItalicFontName_);
-    window->fontList_ = fontList_;
-    window->italicFontStruct_ = italicFontStruct_;
-    window->boldFontStruct_ = boldFontStruct_;
-    window->boldItalicFontStruct_ = boldItalicFontStruct_;
-    window->markTimeoutID_ = markTimeoutID_;
-    window->highlightData_ = highlightData_;
-    window->shellCmdData_ = shellCmdData_;
-    window->macroCmdData_ = macroCmdData_;
-    window->smartIndentData_ = smartIndentData_;
+	window->showMatchingStyle_      = showMatchingStyle_;
+	window->matchSyntaxBased_       = matchSyntaxBased_;
+#if 0							    
+	window->showStats_              = showStats_;
+	window->showISearchLine_        = showISearchLine_;
+	window->showLineNumbers_        = showLineNumbers_;
+	window->modeMessageDisplayed_   = modeMessageDisplayed_;
+	window->ignoreModify_           = ignoreModify_;
+	window->windowMenuValid_        = windowMenuValid_;
+	window->flashTimeoutID_         = flashTimeoutID_;
+	window->wasSelected_            = wasSelected_;
+	window->fontName_               = fontName_;
+	window->italicFontName_         = italicFontName_;
+	window->boldFontName_           = boldFontName_;
+	window->boldItalicFontName_     = boldItalicFontName_;
+	window->fontList_               = fontList_;
+	window->italicFontStruct_       = italicFontStruct_;
+	window->boldFontStruct_         = boldFontStruct_;
+	window->boldItalicFontStruct_   = boldItalicFontStruct_;
+	window->markTimeoutID_          = markTimeoutID_;
+	window->highlightData_          = highlightData_;
+	window->shellCmdData_           = shellCmdData_;
+	window->macroCmdData_           = macroCmdData_;
+	window->smartIndentData_        = smartIndentData_;
 #endif
-	window->iSearchHistIndex_ = iSearchHistIndex_;
-	window->iSearchStartPos_ = iSearchStartPos_;
-	window->iSearchLastRegexCase_ = iSearchLastRegexCase_;
+	window->iSearchHistIndex_       = iSearchHistIndex_;
+	window->iSearchStartPos_        = iSearchStartPos_;
+	window->iSearchLastRegexCase_   = iSearchLastRegexCase_;
 	window->iSearchLastLiteralCase_ = iSearchLastLiteralCase_;
 
 	window->device_ = device_;
