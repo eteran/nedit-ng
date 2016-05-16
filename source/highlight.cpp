@@ -497,10 +497,6 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	int contextLines = patSet->lineContext;
 	int contextChars = patSet->charContext;
 	int i;
-	int nPass1Patterns;
-	int nPass2Patterns;
-	int noPass1;
-	int noPass2;
 	char *parentStylesPtr;
 	HighlightData *pass1Pats;
 	HighlightData *pass2Pats;
@@ -552,8 +548,8 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 
 	/* Sort patterns into those to be used in pass 1 parsing, and those to
 	   be used in pass 2, and add default pattern (0) to each list */
-	nPass1Patterns = 1;
-	nPass2Patterns = 1;
+	int nPass1Patterns = 1;
+	int nPass2Patterns = 1;
 	for (int i = 0; i < nPatterns; i++) {
 		if (patternSrc[i].flags & DEFER_PARSING) {
 			nPass2Patterns++;
@@ -627,20 +623,25 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	   0 should have a default style of UNFINISHED_STYLE.  With no pass 2
 	   patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
 	   to avoid triggering re-parsing every time they are encountered */
-	noPass1 = nPass1Patterns == 0;
-	noPass2 = nPass2Patterns == 0;
-	if (noPass2)
+	int noPass1 = nPass1Patterns == 0;
+	int noPass2 = nPass2Patterns == 0;
+
+	if (noPass2) {
 		pass1Pats[0].style = PLAIN_STYLE;
-	else if (noPass1)
+	} else if (noPass1) {
 		pass2Pats[0].style = PLAIN_STYLE;
-	else {
+	} else {
 		pass1Pats[0].style = UNFINISHED_STYLE;
 		pass2Pats[0].style = PLAIN_STYLE;
 	}
-	for (i = 1; i < nPass1Patterns; i++)
+	
+	for (i = 1; i < nPass1Patterns; i++) {
 		pass1Pats[i].style = PLAIN_STYLE + i;
-	for (i = 1; i < nPass2Patterns; i++)
+	}
+	
+	for (i = 1; i < nPass2Patterns; i++) {
 		pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
+	}
 
 	// Create table for finding parent styles 
 	char *parentStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 2);
