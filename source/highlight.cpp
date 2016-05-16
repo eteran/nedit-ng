@@ -703,13 +703,13 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
 	// explicit styles (pass 1) 
-	for (i = 1; i < nPass1Patterns; i++) {
+	for (int i = 1; i < nPass1Patterns; i++) {
 		styleTablePtr->underline = false;
 		setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
 	}
 
 	// explicit styles (pass 2) 
-	for (i = 1; i < nPass2Patterns; i++) {
+	for (int i = 1; i < nPass2Patterns; i++) {
 		styleTablePtr->underline = false;
 		setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
 	}
