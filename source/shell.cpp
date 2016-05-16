@@ -641,15 +641,13 @@ static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id) {
 ** Timer proc for putting up the "Shell Command in Progress" banner if
 ** the process is taking too long.
 */
-#define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
 
-	auto window = static_cast<Document *>(clientData);
+	auto window  = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	XmString xmCancel;	
-	char message[MAX_TIMEOUT_MSG_LEN];
 
 	cmdData->bannerIsUp = True;
 
@@ -663,14 +661,14 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	XmStringFree(xmCancel);
 
 	// Create message 
+	QString message;
 	if (cCancel.empty()) {
-		strncpy(message, "Shell Command in Progress", MAX_TIMEOUT_MSG_LEN);
-		message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
+		message = QLatin1String("Shell Command in Progress");
 	} else {
-		snprintf(message, sizeof(message), "Shell Command in Progress -- Press %s to Cancel", cCancel.c_str());
+		message = QString(QLatin1String("Shell Command in Progress -- Press %1 to Cancel")).arg(QString::fromStdString(cCancel));
 	}
 
-	window->SetModeMessage(message);
+	window->SetModeMessage(message.toLatin1().data());
 	cmdData->bannerTimeoutID = 0;
 }
 
@@ -681,10 +679,14 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** and ending positions (part of the state of the command) are corrected.
 */
 static void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &text) {
-	if (*start > buf->BufGetLength())
+	if (*start > buf->BufGetLength()) {
 		*start = buf->BufGetLength();
-	if (*end > buf->BufGetLength())
+	}
+	
+	if (*end > buf->BufGetLength()) {
 		*end = buf->BufGetLength();
+	}
+	
 	buf->BufReplaceEx(*start, *end, text);
 }
 

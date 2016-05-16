@@ -818,10 +818,14 @@ int AllocNString(NString *string, int length) {
 // Allocate a new string buffer of length chars, and copy in the string s 
 char *AllocStringNCpy(const char *s, int length) {
 	char *p = AllocString(length + 1); // add extra char for forced \0 
-	if (!p)
+	if (!p) {
 		return p;
-	if (!s)
+	}
+	
+	if (!s) {
 		s = "";
+	}
+	
 	p[length] = '\0'; // forced \0 
 	return strncpy(p, s, length);
 }
@@ -1703,15 +1707,14 @@ static int power(void) {
 */
 static int concat(void) {
 	char *s1, *s2, *out;
-	int len1, len2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_STRING(s2)
 	POP_STRING(s1)
-	len1 = strlen(s1);
-	len2 = strlen(s2);
+	int len1 = strlen(s1);
+	int len2 = strlen(s2);
 	out = AllocString(len1 + len2 + 1);
 	strncpy(out, s1, len1);
 	strcpy(&out[len1], s2);

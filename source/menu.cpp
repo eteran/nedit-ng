@@ -4276,8 +4276,9 @@ void AddToPrevOpenMenu(const char *filename) {
 	// Undim the menu in all windows if it was previously empty 
 	if (NPrevOpen > 0) {
 		for(Document *w: WindowList) {
-			if (w->IsTopDocument())
+			if (w->IsTopDocument()) {
 				XtSetSensitive(w->prevOpenMenuItem_, True);
+			}
 		}
 	}
 
@@ -4285,14 +4286,13 @@ void AddToPrevOpenMenu(const char *filename) {
 	WriteNEditDB();
 }
 
-static char *getWindowsMenuEntry(const Document *window) {
-	static char fullTitle[MAXPATHLEN * 2 + 3 + 1];
+static QString getWindowsMenuEntry(const Document *window) {
 
-	sprintf(fullTitle, "%s%s", window->filename_.toLatin1().data(), window->fileChanged_ ? "*" : "");
+	QString fullTitle = QString(QLatin1String("%1%2")).arg(window->filename_).arg(window->fileChanged_ ? QLatin1String("*") : QLatin1String(""));
 
 	if (GetPrefShowPathInWindowsMenu() && window->filenameSet_) {
-		strcat(fullTitle, " - ");
-		strcat(fullTitle, window->path_.toLatin1().data());
+		fullTitle.append(QLatin1String(" - "));
+		fullTitle.append(window->path_);
 	}
 
 	return fullTitle;
@@ -4363,7 +4363,7 @@ static void updateWindowMenu(const Document *window) {
 				XtDestroyWidget(items[n]);
 			} else {
 				XmString st1;
-				char *title = getWindowsMenuEntry(windows[windowIndex]);
+				QString title = getWindowsMenuEntry(windows[windowIndex]);
 				XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(title), nullptr);
 				XtRemoveAllCallbacks(items[n], XmNactivateCallback);
 				XtAddCallback(items[n], XmNactivateCallback, raiseCB, windows[windowIndex]);
@@ -4376,7 +4376,7 @@ static void updateWindowMenu(const Document *window) {
 	// Add new items for the titles of the remaining windows to the menu 
 	for (; windowIndex < nWindows; windowIndex++) {
 		XmString st1;
-		char *title = getWindowsMenuEntry(windows[windowIndex]);
+		QString title = getWindowsMenuEntry(windows[windowIndex]);
 		Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->windowMenuPane_, XmNlabelString, st1 = XmStringCreateSimpleEx(title), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
 		XtAddCallback(btn, XmNactivateCallback, raiseCB, windows[windowIndex]);
 		XmStringFree(st1);

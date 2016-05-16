@@ -358,12 +358,10 @@ void RegisterMacroSubroutines(void) {
 		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
-#define MAX_LEARN_MSG_LEN ((2 * MAX_ACCEL_LEN) + 60)
 void BeginLearn(Document *window) {
 	XmString s;
 	XmString xmFinish;
 	XmString xmCancel;
-	char message[MAX_LEARN_MSG_LEN];
 
 	// If we're already in learn mode, return 
 	if(MacroRecordActionHook)
@@ -403,24 +401,23 @@ void BeginLearn(Document *window) {
 	XmStringFree(xmCancel);
 
 	// Create message 
+	QString message;
 	if (cFinish[0] == '\0') {
 		if (cCancel[0] == '\0') {
-			strncpy(message, "Learn Mode -- Use menu to finish or cancel", MAX_LEARN_MSG_LEN);
-			message[MAX_LEARN_MSG_LEN - 1] = '\0';
+			message = QLatin1String("Learn Mode -- Use menu to finish or cancel");
 		} else {
-			sprintf(message, "Learn Mode -- Use menu to finish, press %s to cancel", cCancel.c_str());
+			message = QString(QLatin1String("Learn Mode -- Use menu to finish, press %1 to cancel")).arg(QString::fromStdString(cCancel));
 		}
 	} else {
 		if (cCancel[0] == '\0') {
-			sprintf(message, "Learn Mode -- Press %s to finish, use menu to cancel", cFinish.c_str());
-
+			message = QString(QLatin1String("Learn Mode -- Press %1 to finish, use menu to cancel")).arg(QString::fromStdString(cFinish));
 		} else {
-			sprintf(message, "Learn Mode -- Press %s to finish, %s to cancel", cFinish.c_str(), cCancel.c_str());
+			message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(QString::fromStdString(cFinish)).arg(QString::fromStdString(cCancel));
 		}
 	}
 
 	// Put up the learn-mode banner 
-	window->SetModeMessage(message);
+	window->SetModeMessage(message.toLatin1().data());
 }
 
 void AddLastCommandActionHook(XtAppContext context) {

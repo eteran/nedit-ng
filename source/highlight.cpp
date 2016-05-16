@@ -30,33 +30,32 @@
 #include <QMessageBox>
 
 #include "highlight.h"
-#include "WindowHighlightData.h"
+#include "Document.h"
+#include "HighlightData.h"
+#include "HighlightPattern.h"
+#include "MotifHelper.h"
+#include "PatternSet.h"
+#include "ReparseContext.h"
+#include "StyleTableEntry.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
+#include "WindowHighlightData.h"
+#include "highlightData.h"
+#include "misc.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "regularExp.h"
 #include "text.h"
 #include "textP.h"
-#include "nedit.h"
-#include "regularExp.h"
-#include "highlightData.h"
-#include "preferences.h"
-#include "Document.h"
 #include "window.h"
-#include "StyleTableEntry.h"
-#include "PatternSet.h"
-#include "HighlightPattern.h"
-#include "misc.h"
-#include "MotifHelper.h"
-#include "HighlightData.h"
-#include "ReparseContext.h"
 
-
-#include <cstdio>
+#include <algorithm>
 #include <climits>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <sys/param.h>
-#include <algorithm>
+
 
 // TODO(eteran): NOTE! while we've removed the limitation of strings being NUL terminated, it seems that the highlighter
 //               doesn't  know how to deal with NUL caracters so we need to fix that
@@ -90,34 +89,32 @@ const int REPARSE_CHUNK_SIZE = 80;
    by a context requirement of 1 line and 0 characters */
 #define CAN_CROSS_LINE_BOUNDARIES(contextRequirements) (contextRequirements->nLines != 1 || contextRequirements->nChars != 0)
 
-
-
-static PatternSet *findPatternsForWindow(Document *window, int warn);
 static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
+static HighlightData *patternOfStyle(HighlightData *patterns, int style);
+static PatternSet *findPatternsForWindow(Document *window, int warn);
+static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
+static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static char getPrevChar(TextBuffer *buf, int pos);
+static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
+static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
+static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+static int getFontHeight(Document *window);
+static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
+static int isParentStyle(const char *parentStyles, int style1, int style2);
+static int lastModified(TextBuffer *styleBuf);
+static int parentStyleOf(const char *parentStyles, int style);
+static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
+static regexp *compileREAndWarn(Widget parent, view::string_view re);
+static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void freePatterns(HighlightData *patterns);
 static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, const int pos);
 static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg);
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
-static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
-static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
-static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
-static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
-static int lastModified(TextBuffer *styleBuf);
-static char getPrevChar(TextBuffer *buf, int pos);
-static regexp *compileREAndWarn(Widget parent, view::string_view re);
-static int parentStyleOf(const char *parentStyles, int style);
-static int isParentStyle(const char *parentStyles, int style1, int style2);
-static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
-static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
-static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
-static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
-static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
-static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static void updateWindowHeight(Document *window, int oldFontHeight);
-static int getFontHeight(Document *window);
-static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -262,8 +259,9 @@ void StartHighlighting(Document *window, int warn) {
 void StopHighlighting(Document *window) {
 	int i, oldFontHeight;
 
-	if (!window->highlightData_)
+	if (!window->highlightData_) {
 		return;
+	}
 
 	/* Get the line height being used by the highlight fonts in the window,
 	   to be used after highlighting is turned off to resize the window
@@ -1419,6 +1417,10 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 			goto parseDone;
 		} else {
 		
+			// TODO(eteran): this code backs up a section of the style string
+			//               calls passTwoParseString and then restores it
+			//               is this necessary given the NUL safe code?		
+		
 			const int tempLen = endPass2Safety - modStart;			
 			std::string temp(&styleString[modStart - beginSafety], tempLen);
 			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, nullptr);
@@ -1435,6 +1437,10 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, nullptr);
 		} else {
 			startPass2Safety = std::max<int>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
+
+			// TODO(eteran): this code backs up a section of the style string
+			//               calls passTwoParseString and then restores it
+			//               is this necessary given the NUL safe code?
 
 			const int tempLen = modEnd - startPass2Safety;			
 			std::string temp(&styleString[startPass2Safety - beginSafety], tempLen);
