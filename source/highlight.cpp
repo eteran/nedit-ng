@@ -70,24 +70,33 @@ const int PASS_2_REPARSE_CHUNK_SIZE = 1000;
    This distance is increased by a factor of two for each subsequent step. */
 const int REPARSE_CHUNK_SIZE = 80;
 
-}
-
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
    subtracting 'A'). */
-#define UNFINISHED_STYLE ASCII_A
-#define PLAIN_STYLE (ASCII_A + 1)
-#define IS_PLAIN(style) (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
+const char UNFINISHED_STYLE = ASCII_A;
+
+const char PLAIN_STYLE = (ASCII_A + 1);
+
+constexpr bool is_plain(int style) {
+	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);
+}
 
 /* Compare two styles where one of the styles may not yet have been processed
    with pass2 patterns */
-#define EQUIVALENT_STYLE(style1, style2, firstPass2Style)                                                                                                                                                                                      \
-	(style1 == style2 || (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (unsigned char)style2 >= firstPass2Style)) || (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (unsigned char)style1 >= firstPass2Style)))
+constexpr bool equivalent_style(int style1, int style2, int  firstPass2Style) {
+	return (style1 == style2) || 
+		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (unsigned char)style2 >= firstPass2Style)) || 
+		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (unsigned char)style1 >= firstPass2Style));
+}
 
 /* Scanning context can be reduced (with big efficiency gains) if we
    know that patterns can't cross line boundaries, which is implied
    by a context requirement of 1 line and 0 characters */
-#define CAN_CROSS_LINE_BOUNDARIES(contextRequirements) (contextRequirements->nLines != 1 || contextRequirements->nChars != 0)
+bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
+	return (contextRequirements->nLines != 1 || contextRequirements->nChars != 0);
+}
+
+}
 
 static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static HighlightData *patternOfStyle(HighlightData *patterns, int style);
@@ -1293,7 +1302,7 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 		if (endAt < endParse) {
 			beginParse = endAt;
 			endParse = forwardOneContext(buf, context, std::max<int>(endAt, std::max<int>(lastModified(styleBuf), lastMod)));
-			if (IS_PLAIN(parseInStyle)) {
+			if (is_plain(parseInStyle)) {
 				fprintf(stderr, "NEdit internal error: incr. reparse fell short\n");
 				return;
 			}
@@ -1336,11 +1345,11 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 
 	// Begin parsing one context distance back (or to the last style change) 
 	beginStyle = pass1Patterns->style;
-	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements)) {
+	if (can_cross_line_boundaries(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; p--) {
 			style = styleBuf->BufGetCharacter(p - 1);
-			if (!EQUIVALENT_STYLE(style, beginStyle, firstPass2Style)) {
+			if (!equivalent_style(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
 				break;
 			}
@@ -1348,7 +1357,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	} else {
 		for (beginSafety = std::max<int>(0, beginParse - 1); beginSafety > 0; beginSafety--) {
 			style = styleBuf->BufGetCharacter(beginSafety);
-			if (!EQUIVALENT_STYLE(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
+			if (!equivalent_style(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
 				beginSafety++;
 				break;
 			}
@@ -1360,7 +1369,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	   in which case the end of the line is fine */
 	if (endParse == 0)
 		return 0;
-	if (CAN_CROSS_LINE_BOUNDARIES(contextRequirements))
+	if (can_cross_line_boundaries(contextRequirements))
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
 	else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n'))
 		endSafety = endParse;
@@ -2001,7 +2010,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlig
 	if (*pos == 0)
 		return PLAIN_STYLE;
 	startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
-	if (IS_PLAIN(startStyle))
+	if (is_plain(startStyle))
 		return PLAIN_STYLE;
 
 	/*
