@@ -665,15 +665,15 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	auto setStyleTablePtr = [window](StyleTableEntry *p, HighlightPattern *pat) {
 		Color c;
 
-		p->highlightName = pat->name.toStdString();
-		p->styleName     = pat->style.toStdString();
-		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString()).toStdString();
+		p->highlightName = pat->name;
+		p->styleName     = pat->style;
+		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
 		p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
 		p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
 		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
 
 		// And now for the more physical stuff 
-		p->color = AllocColor(window->textArea_, p->colorName.c_str(), &c);
+		p->color = AllocColor(window->textArea_, p->colorName.toLatin1().data(), &c);
 		
 		if (!p->bgColorName.isNull()) {
 			p->bgColor = AllocColor(window->textArea_, p->bgColorName.toLatin1().data(), &c);
@@ -1052,7 +1052,7 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 		if(!entry)
 			return 0;
 			
-		std::string checkStyleName = entry->styleName;
+		QString checkStyleName = entry->styleName;
 			
 		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && entry->styleName == checkStyleName)) {
 			if (hCode == UNFINISHED_STYLE) {
@@ -1086,14 +1086,14 @@ static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 ** Functions to return style information from the highlighting style table.
 */
 
-std::string HighlightNameOfCode(Document *window, int hCode) {
+QString HighlightNameOfCode(Document *window, int hCode) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	return entry ? entry->highlightName : "";
+	return entry ? entry->highlightName : QString();
 }
 
-std::string HighlightStyleOfCode(Document *window, int hCode) {
+QString HighlightStyleOfCode(Document *window, int hCode) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	return entry ? entry->styleName : "";
+	return entry ? entry->styleName : QString();
 }
 
 Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {

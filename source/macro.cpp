@@ -4858,7 +4858,15 @@ static int getStyleAtPosMS(Document *window, DataValue *argList, int nArgs, Data
 		return True;
 	}
 
-	return fillStyleResult(result, errMsg, window, HighlightStyleOfCode(window, patCode).c_str(), False, True, patCode, bufferPos);
+	return fillStyleResult(
+		result, 
+		errMsg, 
+		window, 
+		HighlightStyleOfCode(window, patCode).toLatin1().data(), 
+		False, 
+		True, 
+		patCode, 
+		bufferPos);
 }
 
 /*
@@ -4996,7 +5004,15 @@ static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, Da
 		return True;
 	}
 
-	return fillPatternResult(result, errMsg, window, (String)HighlightNameOfCode(window, patCode).c_str(), False, True, (String)HighlightStyleOfCode(window, patCode).c_str(), bufferPos);
+	return fillPatternResult(
+		result, 
+		errMsg, 
+		window, 
+		HighlightNameOfCode(window, patCode).toLatin1().data(), 
+		False, 
+		True, 
+		HighlightStyleOfCode(window, patCode).toLatin1().data(), 
+		bufferPos);
 }
 
 static int wrongNArgsErr(const char **errMsg) {
