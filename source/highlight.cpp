@@ -189,20 +189,20 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 ** can't be done, otherwise, just return.
 */
 void StartHighlighting(Document *window, int warn) {
-	PatternSet *patterns;
-	WindowHighlightData *highlightData;
+
 	char prevChar = '\0';
-	int i, oldFontHeight;
+	int i;
+	int oldFontHeight;
 
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
-	patterns = findPatternsForWindow(window, warn);
+	PatternSet *patterns = findPatternsForWindow(window, warn);
 	if(!patterns) {
 		return;
 	}
 
 	// Compile the patterns 
-	highlightData = createHighlightData(window, patterns);
+	WindowHighlightData *highlightData = createHighlightData(window, patterns);
 	if(!highlightData) {
 		return;
 	}
@@ -213,7 +213,7 @@ void StartHighlighting(Document *window, int warn) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	auto styleString = new char [window->buffer_->BufGetLength() + 1];
+	auto styleString = new char[window->buffer_->BufGetLength() + 1];
 	char *stylePtr = styleString;
 	if (!highlightData->pass1Patterns) {
 		for (i = 0; i < window->buffer_->BufGetLength(); i++) {
