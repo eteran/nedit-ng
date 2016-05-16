@@ -59,10 +59,6 @@
 
 namespace {
 
-/* Maximum number of patterns allowed in a pattern set (regular expression
-   limitations are probably much more restrictive).  */
-const int MAX_PATTERNS = 127;
-
 // Names for the fonts that can be used for syntax highlighting 
 const int N_FONT_TYPES = 4;
 

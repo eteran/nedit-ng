@@ -1446,11 +1446,7 @@ int GetPrefAlwaysCheckRelTagsSpecs(void) {
 }
 
 QString GetPrefDelimiters(void) {
-	if(PrefData.delimiters) {
-		return QLatin1String(PrefData.delimiters);
-	}
-	
-	return QString();
+	return QLatin1String(PrefData.delimiters);
 }
 
 char *GetPrefColorName(int index) {
@@ -1490,33 +1486,19 @@ void SetPrefBoldItalicFont(char *fontName) {
 }
 
 QString GetPrefFontName(void) {
-	if(PrefData.fontString) {
-		return QLatin1String(PrefData.fontString);
-	}
-	
-	return QString();
+	return QLatin1String(PrefData.fontString);
 }
 
 QString GetPrefBoldFontName(void) {
-	if(PrefData.boldFontString) {
-		return QLatin1String(PrefData.boldFontString);
-	}
-	return QString();
+	return QLatin1String(PrefData.boldFontString);
 }
 
 QString GetPrefItalicFontName(void) {
-	if(PrefData.italicFontString) {
-		return QLatin1String(PrefData.italicFontString);
-	}
-	return QString();
+	return QLatin1String(PrefData.italicFontString);
 }
 
 QString GetPrefBoldItalicFontName(void) {
-	if(PrefData.boldItalicFontString) {
-		return QLatin1String(PrefData.boldItalicFontString);
-	}
-	
-	return QString();
+	return QLatin1String(PrefData.boldItalicFontString);
 }
 
 XmFontList GetPrefFontList(void) {

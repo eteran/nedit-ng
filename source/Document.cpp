@@ -53,7 +53,6 @@
 
 namespace {
 
-
 // TODO(eteran): use an enum for this
 const int FORWARD = 1;
 const int REVERSE = 2;
@@ -86,9 +85,6 @@ const Dimension XT_IGNORE_PPOSITION = 32767;
 
 Document *inFocusDocument   = nullptr; // where we are now 
 Document *lastFocusDocument = nullptr; // where we came from 
-
-int DoneWithMoveDocumentDialog;
-
 
 /*
 ** perform generic management on the children (toolbars) of toolBarsForm,
@@ -191,18 +187,6 @@ Widget containingPane(Widget w) {
 	/* The containing pane used to simply be the first parent, but with
 	   the introduction of an XmFrame, it's the grandparent. */
 	return XtParent(XtParent(w));
-}
-
-/*
-**
-*/
-void moveDocumentCB(Widget dialog, XtPointer clientData, XtPointer callData) {
-
-	(void)dialog;
-	(void)clientData;
-
-	auto cbs = static_cast<XmSelectionBoxCallbackStruct *>(callData);
-	DoneWithMoveDocumentDialog = cbs->reason;
 }
 
 /*
