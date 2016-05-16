@@ -441,7 +441,6 @@ void freeHighlightData(WindowHighlightData *hd) {
 	if(hd) {
 		freePatterns(hd->pass1Patterns);
 		freePatterns(hd->pass2Patterns);
-		XtFree(hd->parentStyles);
 		delete hd->styleBuffer;
 		delete[] hd->styleTable;
 		delete hd;
@@ -716,7 +715,7 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	auto highlightData = new WindowHighlightData;
 	highlightData->pass1Patterns              = pass1Pats;
 	highlightData->pass2Patterns              = pass2Pats;
-	highlightData->parentStyles               = parentStyles;
+	highlightData->parentStyles               = QLatin1String(parentStyles);
 	highlightData->styleTable                 = styleTable;
 	highlightData->nStyles                    = styleTablePtr - styleTable;
 	highlightData->styleBuffer                = styleBuf;
@@ -1248,7 +1247,10 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	HighlightData *startPattern;
 	ReparseContext *context = &highlightData->contextRequirements;
-	char *parentStyles = highlightData->parentStyles;
+	
+	QByteArray parentStylesStr = highlightData->parentStyles.toLatin1();
+	
+	char *parentStyles = parentStylesStr.data();
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
@@ -1982,8 +1984,11 @@ static int patternIsParsable(HighlightData *pattern) {
 ** and, if it does, is unlikely to result in incorrect highlighting.
 */
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
+	
+	QByteArray parentStylesStr = highlightData->parentStyles.toLatin1();
+	
 	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
-	char *parentStyles = highlightData->parentStyles;
+	char *parentStyles = parentStylesStr.data();
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	ReparseContext *context = &highlightData->contextRequirements;
 

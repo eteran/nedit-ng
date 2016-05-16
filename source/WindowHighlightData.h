@@ -3,6 +3,7 @@
 #define WINDOW_HIGHLIGHT_DATA_H_
 
 #include "ReparseContext.h"
+#include <QString>
 
 class HighlightData;
 class StyleTableEntry;
@@ -15,7 +16,7 @@ class WindowHighlightData {
 public:
 	HighlightData *pass1Patterns;
 	HighlightData *pass2Patterns;
-	char *parentStyles;
+	QString parentStyles;
 	ReparseContext contextRequirements;
 	StyleTableEntry *styleTable;
 	int nStyles;
