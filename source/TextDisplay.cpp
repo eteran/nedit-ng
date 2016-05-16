@@ -220,11 +220,12 @@ TextDisplay::TextDisplay(Widget widget, Widget hScrollBar, Widget vScrollBar, Po
 	this->bgClassPixel = nullptr;
 	this->bgClass = nullptr;
 	TextDSetupBGClasses(widget, bgClassString, &this->bgClassPixel, &this->bgClass, bgPixel);
-	this->suppressResync = 0;
-	this->nLinesDeleted = 0;
+
+	this->suppressResync   = 0;
+	this->nLinesDeleted    = 0;
 	this->modifyingTabDist = 0;
-	this->pointerHidden = False;
-	this->graphicsExposeQueue = nullptr;
+	this->pointerHidden    = False;
+	graphicsExposeQueue_   = nullptr;
 
 	/* Attach an event handler to the widget so we can know the visibility
 	   (used for choosing the fastest drawing method) */
@@ -2426,52 +2427,61 @@ static void calcLineStarts(TextDisplay *textD, int startLine, int endLine) {
 static void calcLastChar(TextDisplay *textD) {
 	int i;
 
-	for (i = textD->nVisibleLines - 1; i > 0 && textD->lineStarts[i] == -1; i--)
+	for (i = textD->nVisibleLines - 1; i > 0 && textD->lineStarts[i] == -1; i--) {
 		;
+	}
 	textD->lastChar = i < 0 ? 0 : textD->TextDEndOfLine(textD->lineStarts[i], True);
 }
 
 void TextDisplay::TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset) {
-	if (this->graphicsExposeQueue) {
-		graphicExposeTranslationEntry *thisGEQEntry = this->graphicsExposeQueue->next;
-		if (thisGEQEntry) {
+
+	// NOTE(eteran): won't this skip the first item in the queue? is that desirable?
+	if (graphicsExposeQueue_) {
+		if (graphicExposeTranslationEntry *thisGEQEntry = graphicsExposeQueue_->next) {
 			*xOffset += thisGEQEntry->horizontal;
 			*yOffset += thisGEQEntry->vertical;
 		}
 	}
 }
 
-Boolean TextDisplay::TextDPopGraphicExposeQueueEntry() {
-	graphicExposeTranslationEntry *removedGEQEntry = this->graphicsExposeQueue;
+bool TextDisplay::TextDPopGraphicExposeQueueEntry() {
+	graphicExposeTranslationEntry *removedGEQEntry = graphicsExposeQueue_;
 
 	if (removedGEQEntry) {
-		this->graphicsExposeQueue = removedGEQEntry->next;
+		graphicsExposeQueue_ = removedGEQEntry->next;
 		delete removedGEQEntry;
+		return true;
 	}
-	return (removedGEQEntry ? True : False);
+	
+	return false;
 }
 
-void TextDisplay::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry) {
+void TextDisplay::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool appendEntry) {
+
 	graphicExposeTranslationEntry *newGEQEntry = nullptr;
+
 	if (appendEntry) {
 		newGEQEntry = new graphicExposeTranslationEntry;
-		newGEQEntry->next = nullptr;
+		newGEQEntry->next       = nullptr;
 		newGEQEntry->horizontal = xOffset;
-		newGEQEntry->vertical = yOffset;
+		newGEQEntry->vertical   = yOffset;
 	}
-	if (this->graphicsExposeQueue) {
-		graphicExposeTranslationEntry *iter = this->graphicsExposeQueue;
-		while (iter->next) {
+	
+	if (graphicsExposeQueue_) {
+	
+		// NOTE(eteran): won't this skip the first item in the queue? is that desirable?
+		auto iter = graphicsExposeQueue_;
+		for(; iter->next; iter = iter->next) {
 			iter->next->horizontal += xOffset;
-			iter->next->vertical += yOffset;
-			iter = iter->next;
+			iter->next->vertical   += yOffset;			
 		}
+		
 		if (appendEntry) {
-			iter->next = static_cast<graphicExposeTranslationEntry *>(newGEQEntry);
+			iter->next = newGEQEntry;
 		}
 	} else {
 		if (appendEntry) {
-			this->graphicsExposeQueue = newGEQEntry;
+			graphicsExposeQueue_ = newGEQEntry;
 		}
 	}
 }
@@ -2515,7 +2525,7 @@ static void setScroll(TextDisplay *textD, int topLineNum, int horizOffset, int u
 	xOffset = origHOffset - textD->horizOffset;
 	yOffset = lineDelta * fontHeight;
 	if (textD->visibility != VisibilityUnobscured || abs(xOffset) > textD->width || abs(yOffset) > exactHeight) {
-		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, False);
+		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
 		textD->TextDRedisplayRect(textD->left, textD->top, textD->width, textD->height);
 	} else {
 		/* If the window is not obscured, paint most of the window using XCopyArea
@@ -2528,7 +2538,7 @@ static void setScroll(TextDisplay *textD, int topLineNum, int horizOffset, int u
 		dstY = textD->top + (yOffset >= 0 ? yOffset : 0);
 		height = exactHeight - abs(yOffset);
 		resetClipRectangles(textD);
-		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, True);
+		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
 		XCopyArea(XtDisplay(textD->w), XtWindow(textD->w), XtWindow(textD->w), textD->gc, srcX, srcY, width, height, dstX, dstY);
 		// redraw the un-recoverable parts 
 		if (yOffset > 0) {

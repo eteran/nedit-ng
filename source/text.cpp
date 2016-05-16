@@ -868,13 +868,14 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 
 	if (event->type == GraphicsExpose) {
 		XGraphicsExposeEvent *e = &event->xgraphicsexpose;
-		int x = e->x, y = e->y;
+		int x = e->x;
+		int y = e->y;
 
 		w->text.textD->TextDImposeGraphicsExposeTranslation(&x, &y);
 		if (*first) {
-			*left = x;
-			*top = y;
-			*width = e->width;
+			*left   = x;
+			*top    = y;
+			*width  = e->width;
 			*height = e->height;
 
 			*first = false;
@@ -882,9 +883,9 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 			int prev_left = *left;
 			int prev_top = *top;
 
-			*left = std::min<int>(*left, x);
-			*top = std::min<int>(*top, y);
-			*width = std::max<int>(prev_left + *width, x + e->width) - *left;
+			*left   = std::min<int>(*left, x);
+			*top    = std::min<int>(*top, y);
+			*width  = std::max<int>(prev_left + *width, x + e->width) - *left;
 			*height = std::max<int>(prev_top + *height, y + e->height) - *top;
 		}
 		if (e->count == 0) {
@@ -893,6 +894,7 @@ static void adjustRectForGraphicsExposeOrNoExposeEvent(TextWidget w, XEvent *eve
 	} else if (event->type == NoExpose) {
 		removeQueueEntry = true;
 	}
+
 	if (removeQueueEntry) {
 		w->text.textD->TextDPopGraphicExposeQueueEntry();
 	}

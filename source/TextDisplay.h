@@ -44,7 +44,7 @@ class TextDisplay;
 struct graphicExposeTranslationEntry {
 	int horizontal;
 	int vertical;
-	struct graphicExposeTranslationEntry *next;
+	graphicExposeTranslationEntry *next;
 };
 
 typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
@@ -70,7 +70,7 @@ public:
 	TextDisplay& operator=(const TextDisplay &) = delete;
 
 public:
-	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, Boolean appendEntry);
+	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool appendEntry);
 	void TextDUnblankCursor();
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	void TextDSetInsertPosition(int newPos);
@@ -87,7 +87,7 @@ public:
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDResize(int width, int height);	
-	Boolean TextDPopGraphicExposeQueueEntry();
+	bool TextDPopGraphicExposeQueueEntry();
 	int TextDCountBackwardNLines(int startPos, int nLines);
 	int TextDCountForwardNLines(int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
@@ -173,7 +173,7 @@ public:
 	int nLinesDeleted;     /* Number of lines deleted during buffer modification (only used when resynchronization is suppressed) */
 	int modifyingTabDist;  /* Whether tab distance is being modified */
 	Boolean pointerHidden; /* true if the mouse pointer is hidden */
-	graphicExposeTranslationEntry *graphicsExposeQueue;
+	graphicExposeTranslationEntry *graphicsExposeQueue_;
 };
 
 #endif
