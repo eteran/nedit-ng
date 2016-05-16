@@ -50,8 +50,7 @@ struct graphicExposeTranslationEntry {
 typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 
 struct calltipStruct {
-	int ID;           /* ID of displayed calltip.  Equals
-	                    zero if none is displayed. */
+	int ID;           /* ID of displayed calltip.  Equals zero if none is displayed. */
 	Boolean anchored; /* Is it anchored to a position */
 	int pos;          /* Position tip is anchored to */
 	int hAlign;       /* horizontal alignment */
@@ -82,11 +81,9 @@ public:
 	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
 	void TextDSetCursorStyle(int style);
 	void TextDSetFont(XFontStruct *fontStruct);
-	void TextDInsert(const char *text);
 	void TextDInsertEx(view::string_view text);
 	void TextDMaintainAbsLineNum(int state);
 	void TextDMakeInsertPosVisible();
-	void TextDOverstrike(const char *text);
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDResize(int width, int height);	
@@ -126,38 +123,25 @@ public:
 	int top, left, width, height, lineNumLeft, lineNumWidth;
 	int cursorPos;
 	int cursorOn;
-	int cursorX, cursorY;    /* X, Y pos. of last drawn cursor
-	                                     Note: these are used for *drawing*
-	                                     and are not generally reliable
-	                                     for finding the insert position's
-	                                     x/y coordinates! */
-	int cursorToHint;        /* Tells the buffer modified callback
-	                    where to move the cursor, to reduce
-	                    the number of redraw calls */
-	int cursorStyle;         /* One of enum cursorStyles above */
-	int cursorPreferredCol;  /* Column for vert. cursor movement */
-	int nVisibleLines;       /* # of visible (displayed) lines */
-	int nBufferLines;        /* # of newlines in the buffer */
-	TextBuffer *buffer;      /* Contains text to be displayed */
-	TextBuffer *styleBuffer; /* Optional parallel buffer containing
-	                            color and font information */
-	int firstChar, lastChar; /* Buffer positions of first and last
-	                displayed character (lastChar points
-	                either to a newline or one character
-	                beyond the end of the buffer) */
-	int continuousWrap;      /* Wrap long lines when displaying */
-	int wrapMargin;          /* Margin in # of char positions for
-	                            wrapping in continuousWrap mode */
+	int cursorX, cursorY;        // X, Y pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates! 
+	int cursorToHint;            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls 
+	int cursorStyle;             // One of enum cursorStyles above 
+	int cursorPreferredCol;      // Column for vert. cursor movement 
+	int nVisibleLines;           // # of visible (displayed) lines 
+	int nBufferLines;            // # of newlines in the buffer 
+	TextBuffer *buffer;          // Contains text to be displayed 
+	TextBuffer *styleBuffer;     // Optional parallel buffer containing color and font information 
+	int firstChar, lastChar;     // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer) 
+	int continuousWrap;          // Wrap long lines when displaying 
+	int wrapMargin;              // Margin in # of char positions for wrapping in continuousWrap mode 
 	int *lineStarts;
-	int topLineNum;              /* Line number of top displayed line
-	                            of file (first line of file is 1) */
+	int topLineNum;              /* Line number of top displayed line of file (first line of file is 1) */
 	int absTopLineNum;           /* In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed). */
 	int needAbsTopLineNum;       /* Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display */
 	int horizOffset;             /* Horizontal scroll pos. in pixels */
 	int visibility;              /* Window visibility (see XVisibility event) */
 	int nStyles;                 /* Number of entries in styleTable */
-	StyleTableEntry *styleTable; /* Table of fonts and colors for
-	                                coloring/syntax-highlighting */
+	StyleTableEntry *styleTable; /* Table of fonts and colors for coloring/syntax-highlighting */
 	char unfinishedStyle;        /* Style buffer entry which triggers on-the-fly reparsing of region */
 	unfinishedStyleCBProc unfinishedHighlightCB; /* Callback to parse "unfinished" regions */
 	void *highlightCBArg;        /* Arg to unfinishedHighlightCB */
@@ -169,13 +153,12 @@ public:
 	GC selectBGGC, highlightBGGC; /* GCs for erasing text */
 	GC cursorFGGC;                /* GC for drawing the cursor */
 	GC lineNumGC;                 /* GC for drawing line numbers */
-	GC styleGC;                   /* GC with color and font unspecified
-	                                 for drawing colored/styled text */
+	GC styleGC;                   /* GC with color and font unspecified for drawing colored/styled text */
 	Pixel fgPixel, bgPixel;       /* Foreground/Background colors */
-	Pixel selectFGPixel,          /* Foreground select color */
-	    selectBGPixel;            /* Background select color */
-	Pixel highlightFGPixel,       /* Highlight colors are used when */
-	    highlightBGPixel;         /*    flashing matching parens    */
+	Pixel selectFGPixel;          /* Foreground select color */
+	Pixel selectBGPixel;            /* Background select color */
+	Pixel highlightFGPixel;       /* Highlight colors are used when */
+	Pixel highlightBGPixel;         /*    flashing matching parens    */
 	Pixel lineNumFGPixel;         /* Color for drawing line numbers */
 	Pixel cursorFGPixel;
 	Pixel *bgClassPixel;    /* table of colors for each BG class */
@@ -188,10 +171,8 @@ public:
 	Pixel calltipBGPixel;
 	int suppressResync;    /* Suppress resynchronization of line starts during buffer updates */
 	int nLinesDeleted;     /* Number of lines deleted during buffer modification (only used when resynchronization is suppressed) */
-	int modifyingTabDist;  /* Whether tab distance is being
-	                  modified */
-	Boolean pointerHidden; /* true if the mouse pointer is
-	                          hidden */
+	int modifyingTabDist;  /* Whether tab distance is being modified */
+	Boolean pointerHidden; /* true if the mouse pointer is hidden */
 	graphicExposeTranslationEntry *graphicsExposeQueue;
 };
 
