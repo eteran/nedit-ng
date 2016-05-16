@@ -3,7 +3,6 @@
 #define STYLE_TABLE_ENTRY_H_
 
 #include <QString>
-#include <cstdint>
 #include <X11/Intrinsic.h>
 
 class StyleTableEntry {

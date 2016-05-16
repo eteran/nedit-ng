@@ -1881,13 +1881,17 @@ static void drawString(TextDisplay *textD, int style, int x, int y, int toX, cha
 		   1 Primary(Selection), 2 Highlight(Parens),
 		   3 Rangeset, 4 SyntaxHighlightStyle,
 		   5 Backlight (if NOT fill), 6 DefaultBackground */
-		bground = style & PRIMARY_MASK ? textD->selectBGPixel : style & HIGHLIGHT_MASK ? textD->highlightBGPixel : style & RANGESET_MASK
-		                                                                                                               ? getRangesetColor(textD, (style & RANGESET_MASK) >> RANGESET_SHIFT, bground)
-		                                                                                                               : (styleRec && !styleRec->bgColorName.isNull()) ? styleRec->bgColor : (style & BACKLIGHT_MASK) && !(style & FILL_MASK)
-		                                                                                                                                                                             ? textD->bgClassPixel[(style >> BACKLIGHT_SHIFT) & 0xff]
-		                                                                                                                                                                             : textD->bgPixel;
-		if (fground == bground) // B&W kludge 
+		bground = (style & PRIMARY_MASK)                           ? textD->selectBGPixel : 
+		          (style & HIGHLIGHT_MASK)                         ? textD->highlightBGPixel : 
+				  (style & RANGESET_MASK)                          ? getRangesetColor(textD, (style & RANGESET_MASK) >> RANGESET_SHIFT, bground) : 
+				  (styleRec && !styleRec->bgColorName.isNull())    ? styleRec->bgColor : 
+				  (style & BACKLIGHT_MASK) && !(style & FILL_MASK) ? textD->bgClassPixel[(style >> BACKLIGHT_SHIFT) & 0xff] : 
+				  textD->bgPixel;
+
+		if (fground == bground) { // B&W kludge 
 			fground = textD->bgPixel;
+		}
+		
 		// set up gc for clearing using the foreground color entry 
 		gcValues.foreground = gcValues.background = bground;
 		XChangeGC(XtDisplay(textD->w), gc, GCFont | GCForeground | GCBackground, &gcValues);
