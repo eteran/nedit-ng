@@ -1859,6 +1859,7 @@ static void drawString(TextDisplay *textD, int style, int x, int y, int toX, cha
 	}
 
 	if (gc == textD->styleGC) {
+
 		// we have work to do 
 		StyleTableEntry *styleRec;
 		/* Set font, color, and gc depending on style.  For normal text, GCs
@@ -1877,6 +1878,7 @@ static void drawString(TextDisplay *textD, int style, int x, int y, int toX, cha
 			gcValues.font = fs->fid;
 			fground = textD->fgPixel;
 		}
+			
 		/* Background color priority order is:
 		   1 Primary(Selection), 2 Highlight(Parens),
 		   3 Rangeset, 4 SyntaxHighlightStyle,
@@ -1888,20 +1890,23 @@ static void drawString(TextDisplay *textD, int style, int x, int y, int toX, cha
 				  (style & BACKLIGHT_MASK) && !(style & FILL_MASK) ? textD->bgClassPixel[(style >> BACKLIGHT_SHIFT) & 0xff] : 
 				  textD->bgPixel;
 
+
 		if (fground == bground) { // B&W kludge 
 			fground = textD->bgPixel;
 		}
 		
 		// set up gc for clearing using the foreground color entry 
-		gcValues.foreground = gcValues.background = bground;
+		gcValues.foreground = bground;
+		gcValues.background = bground;
 		XChangeGC(XtDisplay(textD->w), gc, GCFont | GCForeground | GCBackground, &gcValues);
 	}
 
 	// Draw blank area rather than text, if that was the request 
 	if (style & FILL_MASK) {
 		// wipes out to right hand edge of widget 
-		if (toX >= textD->left)
+		if (toX >= textD->left) {
 			clearRect(textD, bgGC, std::max<int>(x, textD->left), y, toX - std::max<int>(x, textD->left), textD->ascent + textD->descent);
+		}
 		return;
 	}
 

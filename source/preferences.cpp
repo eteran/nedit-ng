@@ -2680,24 +2680,26 @@ static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
 	const char *params[1];
 	void *mode;
 
-	if (!XmToggleButtonGetState(w))
+	if (!XmToggleButtonGetState(w)) {
 		return;
+	}
 
 	// get name of language mode stored in userData field of menu item 
 	XtVaGetValues(w, XmNuserData, &mode, nullptr);
 
 	// If the mode didn't change, do nothing 
-	if (window->languageMode_ == (long)mode)
+	if (window->languageMode_ == reinterpret_cast<long>(mode)) {
 		return;
-
-	// redo syntax highlighting word delimiters, etc. 
-	/*
-	    reapplyLanguageMode(window, (int)mode, False);
-	*/
+	}
 	
-	QByteArray str = LanguageModes[(long)mode]->name.toLatin1();
+	QByteArray str;
+	if((reinterpret_cast<long>(mode)) == PLAIN_LANGUAGE_MODE) {
+		params[0] = "";
+	} else {
+		str = LanguageModes[reinterpret_cast<long>(mode)]->name.toLatin1();
+		params[0] = str.data();
+	}
 	
-	params[0] = (((long)mode) == PLAIN_LANGUAGE_MODE) ? "" : str.data();
 	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, const_cast<char **>(params), 1);
 }
 
