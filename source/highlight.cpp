@@ -58,6 +58,9 @@
 #include <sys/param.h>
 #include <algorithm>
 
+// TODO(eteran): NOTE! while we've removed the limitation of strings being NUL terminated, it seems that the highlighter
+//               doesn't  know how to deal with NUL caracters so we need to fix that
+
 namespace {
 
 // How much re-parsing to do when an unfinished style is encountered 
