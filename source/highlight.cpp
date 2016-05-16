@@ -219,7 +219,7 @@ void StartHighlighting(Document *window, int warn) {
 	} else {
 		const char *bufString = window->buffer_->BufAsString();
 		const char *stringPtr = bufString;		
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, False, GetWindowDelimiters(window).toLatin1().data(), bufString, nullptr);
+		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, false, GetWindowDelimiters(window).toLatin1().data(), bufString, nullptr);
 	}
 	*stylePtr = '\0';
 	highlightData->styleBuffer->BufSetAllEx(styleString);
@@ -336,7 +336,7 @@ void UpdateHighlightStyles(Document *window) {
 	}
 
 	// Find the pattern set for the window's current language mode 
-	PatternSet *patterns = findPatternsForWindow(window, False);
+	PatternSet *patterns = findPatternsForWindow(window, false);
 	if(!patterns) {
 		StopHighlighting(window);
 		return;
@@ -369,7 +369,7 @@ void UpdateHighlightStyles(Document *window) {
 
 /*
 ** Do a test compile of patterns in "patSet" and report problems to the
-** user via dialog.  Returns True if patterns are ok.
+** user via dialog.  Returns true if patterns are ok.
 **
 ** This is somewhat kludgy in that it uses createHighlightData, which
 ** requires a window to find the fonts to use, and just uses a random
@@ -449,7 +449,7 @@ void freeHighlightData(WindowHighlightData *hd) {
 
 /*
 ** Find the pattern set matching the window's current language mode, or
-** tell the user if it can't be done (if warn is True) and return nullptr.
+** tell the user if it can't be done (if warn is true) and return nullptr.
 */
 static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	PatternSet *patterns;
@@ -685,22 +685,22 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	};
 
 	// PLAIN_STYLE (pass 1) 
-	styleTablePtr->underline = FALSE;
+	styleTablePtr->underline = false;
 	setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
 	// PLAIN_STYLE (pass 2) 
-	styleTablePtr->underline = FALSE;
+	styleTablePtr->underline = false;
 	setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
 	// explicit styles (pass 1) 
 	for (i = 1; i < nPass1Patterns; i++) {
-		styleTablePtr->underline = FALSE;
+		styleTablePtr->underline = false;
 		setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
 	}
 
 	// explicit styles (pass 2) 
 	for (i = 1; i < nPass2Patterns; i++) {
-		styleTablePtr->underline = FALSE;
+		styleTablePtr->underline = false;
 		setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
 	}
 
@@ -1470,7 +1470,7 @@ parseDone:
 ** it is assumed that the terminating \0 indicates the boundary. Note that
 ** look-ahead patterns can peek beyond the boundary, if supplied.
 **
-** Returns True if parsing was done and the parse succeeded.  Returns False if
+** Returns true if parsing was done and the parse succeeded.  Returns false if
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
@@ -1577,7 +1577,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 				                subPat->style, prevChar);
 
 			// Parse to the end of the subPattern 
-			parseString(subPat, &stringPtr, &stylePtr, length - (stringPtr - *string), prevChar, False, delimiters, lookBehindTo, match_till);
+			parseString(subPat, &stringPtr, &stylePtr, length - (stringPtr - *string), prevChar, false, delimiters, lookBehindTo, match_till);
 		} else {
 			/* If the parent pattern is not a start/end pattern, the
 			   sub-pattern can between the boundaries of the parent's
@@ -1586,7 +1586,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			   Without that restriction, matching becomes unstable. */
 
 			// Parse to the end of the subPattern 
-			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, False, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
+			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, false, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -1646,7 +1646,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 ** indirect and string pointers are not updated.
 */
 static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
-	int inParseRegion = False;
+	int inParseRegion = false;
 	char *stylePtr, temp, *parseStart = nullptr, *parseEnd, *s, *c;
 	const char *stringPtr;
 	int firstPass2Style = (unsigned char)pattern[1].style;
@@ -1654,7 +1654,7 @@ static void passTwoParseString(HighlightData *pattern, char *string, char *style
 	for (c = string, s = styleString;; c++, s++) {
 		if (!inParseRegion && *c != '\0' && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style)) {
 			parseStart = c;
-			inParseRegion = True;
+			inParseRegion = true;
 		}
 		if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style))) {
 			parseEnd = c;
@@ -1665,9 +1665,9 @@ static void passTwoParseString(HighlightData *pattern, char *string, char *style
 			temp = *parseEnd;
 			*parseEnd = '\0';
 			// printf("pass2 parsing %d chars\n", strlen(stringPtr)); 
-			parseString(pattern, &stringPtr, &stylePtr, std::min<int>(parseEnd - parseStart, length - (parseStart - string)), prevChar, False, delimiters, lookBehindTo, match_till);
+			parseString(pattern, &stringPtr, &stylePtr, std::min<int>(parseEnd - parseStart, length - (parseStart - string)), prevChar, false, delimiters, lookBehindTo, match_till);
 			*parseEnd = temp;
-			inParseRegion = False;
+			inParseRegion = false;
 		}
 		if (*c == '\0' || (!inParseRegion && c - string >= length))
 			break;
@@ -1940,11 +1940,11 @@ static int isParentStyle(const char *parentStyles, int style1, int style2) {
 
 	for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
 		if (style1 == p) {
-			return TRUE;
+			return true;
 		}
 	}
 	
-	return FALSE;
+	return false;
 }
 
 /*
@@ -1952,7 +1952,7 @@ static int isParentStyle(const char *parentStyles, int style1, int style2) {
 ** can't.  Leaf patterns are not suitable for parsing, because patterns
 ** contain the expressions used for parsing within the context of their own
 ** operation, i.e. the parent pattern initiates, and leaf patterns merely
-** confirm and color.  Returns TRUE if the pattern is suitable for parsing.
+** confirm and color.  Returns true if the pattern is suitable for parsing.
 */
 static int patternIsParsable(HighlightData *pattern) {
 	return pattern != nullptr && pattern->subPatternRE != nullptr;
