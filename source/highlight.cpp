@@ -683,10 +683,10 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
 
 		// And now for the more physical stuff 
-		p->color = AllocColor(window->textArea_, p->colorName.toLatin1().data(), &c);
+		p->color = AllocColor(window->textArea_, p->colorName, &c);
 		
 		if (!p->bgColorName.isNull()) {
-			p->bgColor = AllocColor(window->textArea_, p->bgColorName.toLatin1().data(), &c);
+			p->bgColor = AllocColor(window->textArea_, p->bgColorName, &c);
 		} else {
 			p->bgColor = p->color;
 		}
@@ -1813,6 +1813,9 @@ Pixel AllocateColor(Widget w, const char *colorName) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's foreground color as a backup.
 */
+Pixel AllocColor(Widget w, const QString &colorName, Color *color) {
+	return AllocColor(w, colorName.toLatin1().data(), color);
+}
 
 Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	XColor colorDef;
@@ -1911,6 +1914,10 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	color->b = allColorDefs[best].blue;
 	delete [] allColorDefs;
 	return bestPixel;
+}
+
+Pixel AllocColor(Widget w, const QString &colorName) {
+	return AllocColor(w, colorName.toLatin1().data());
 }
 
 Pixel AllocColor(Widget w, const char *colorName) {

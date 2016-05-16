@@ -56,6 +56,8 @@ int StyleLengthOfCodeFromPos(Document *window, int pos);
 Pixel AllocateColor(Widget w, const char *colorName);
 Pixel AllocColor(Widget w, const char *colorName, Color *color);
 Pixel AllocColor(Widget w, const char *colorName);
+Pixel AllocColor(Widget w, const QString &colorName, Color *color);
+Pixel AllocColor(Widget w, const QString &colorName);
 Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color);
 Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color);
 QString HighlightNameOfCode(Document *window, int hCode);
