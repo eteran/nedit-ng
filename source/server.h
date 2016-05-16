@@ -24,10 +24,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_SERVER_H_INCLUDED
-#define NEDIT_SERVER_H_INCLUDED
+#ifndef SERVER_H_
+#define SERVER_H_
 
-#include "window.h"
+#include <X11/Intrinsic.h>
+class Document;
 
 #define NO_CONNECTION -1
 #define COM_OK 1
@@ -38,4 +39,4 @@ void ServerMainLoop(XtAppContext context);
 Boolean ServerDispatchEvent(XEvent *event);
 void DeleteFileClosedProperty(Document *window);
 
-#endif /* NEDIT_SERVER_H_INCLUDED */
+#endif

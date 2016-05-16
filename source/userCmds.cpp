@@ -158,7 +158,7 @@ static int doesLanguageModeMatch(userMenuInfo *info, int languageMode);
 static void freeUserMenuInfo(userMenuInfo *info);
 static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
 static void freeUserMenuList(UserMenuList *list);
-static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys);
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem, const QString &accKeys);
 static void freeUserMenuListElement(UserMenuListElement *element);
 static void freeUserSubMenuList(UserMenuList *list);
 
@@ -769,7 +769,7 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 			/* if element is a sub-menu, then continue removing accelerators
 			   from all items of that sub-menu recursively */
 			removeAccelFromMenuWidgets(element->umleSubMenuList);
-		} else if (element->umleAccKeys != nullptr && element->umleManageMode == UMMM_UNMANAGE && element->umlePrevManageMode == UMMM_MANAGE) {
+		} else if (!element->umleAccKeys.isNull() && element->umleManageMode == UMMM_UNMANAGE && element->umlePrevManageMode == UMMM_MANAGE) {
 			// remove accelerator if one was bound 
 			XtVaSetValues(element->umleMenuItem, XmNaccelerator, nullptr, nullptr);
 		}
@@ -790,9 +790,9 @@ static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 			/* if element is a sub-menu, then continue assigning accelerators
 			   to all managed items of that sub-menu recursively */
 			assignAccelToMenuWidgets(element->umleSubMenuList, window);
-		} else if (element->umleAccKeys != nullptr && element->umleManageMode == UMMM_MANAGE && element->umlePrevManageMode == UMMM_UNMANAGE) {
+		} else if (!element->umleAccKeys.isNull() && element->umleManageMode == UMMM_MANAGE && element->umlePrevManageMode == UMMM_UNMANAGE) {
 			// assign accelerator if applicable 
-			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys, nullptr);
+			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys.toLatin1().data(), nullptr);
 			if (!element->umleAccLockPatchApplied) {
 				UpdateAccelLockPatch(window->splitPane_, element->umleMenuItem);
 				element->umleAccLockPatchApplied = true;
@@ -911,7 +911,6 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	Widget btn, subPane, newSubPane;
 	int n;
 	MenuItem *item;
-	int nTreeEntries;
 	char *namePtr, *subSep, *fullName;
 	int menuType = menu->sumType;
 	userMenuInfo *info;
@@ -920,11 +919,10 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	UserMenuListElement *currentLE;
 	int subMenuDepth;
 	char accKeysBuf[MAX_ACCEL_LEN + 5];
-	char *accKeys;
 
 	// Allocate storage for structures to help find panes of sub-menus 
 	auto menuTree = new menuTreeItem[menu->sumNbrOfListItems];
-	nTreeEntries = 0;
+	int nTreeEntries = 0;
 
 	/* Harmless kludge: undo and redo items are marked specially if found
 	   in the background menu, and used to dim/undim with edit menu */
@@ -953,23 +951,30 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 			subSep = strchr(namePtr, '>');
 			if(!subSep) {
 				
-				if(menuType == SHELL_CMDS) {
+				switch(menuType) {
+				case SHELL_CMDS:
 					btn = createUserMenuItem(subPane, namePtr, item, n, shellMenuCB, (XtPointer)window);
-				} else if(menuType == MACRO_CMDS) {
+					break;
+				case MACRO_CMDS:
 					btn = createUserMenuItem(subPane, namePtr, item, n, macroMenuCB, (XtPointer)window);
-				} else {
+					break;
+				default:
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
+					break;
 				}
-				
-				if (menuType == BG_MENU_CMDS && item->cmd == QLatin1String("undo()\n")) {
-					window->bgMenuUndoItem_ = btn;
-				} else if (menuType == BG_MENU_CMDS && item->cmd == QLatin1String("redo()\n")) {
-					window->bgMenuRedoItem_ = btn;
+
+				if (menuType == BG_MENU_CMDS) {
+					if (item->cmd == QLatin1String("undo()\n")) {
+						window->bgMenuUndoItem_ = btn;
+					} else if (item->cmd == QLatin1String("redo()\n")) {
+						window->bgMenuRedoItem_ = btn;
+					}
 				}
 				
 				// generate accelerator keys 
 				genAccelEventName(accKeysBuf, item->modifiers, item->keysym);
-				accKeys = item->keysym == NoSymbol ? nullptr : XtNewStringEx(accKeysBuf);
+				QString accKeys = item->keysym == NoSymbol ? QString() : QLatin1String(accKeysBuf);
+				
 				// create corresponding menu list item 
 				menuList->push_back(allocUserMenuListElement(btn, accKeys));
 				break;
@@ -986,7 +991,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 				menuTree[nTreeEntries].name       = hierName;
 				menuTree[nTreeEntries++].menuPane = newSubPane;
 
-				currentLE = allocUserMenuListElement(btn, nullptr);
+				currentLE = allocUserMenuListElement(btn, QString());
 				menuList->push_back(currentLE);
 				currentLE->umleSubMenuPane = newSubPane;
 				currentLE->umleSubMenuList = new UserMenuList;
@@ -2097,7 +2102,7 @@ static void freeUserMenuList(UserMenuList *list) {
 	list->clear();
 }
 
-static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accKeys) {
+static UserMenuListElement *allocUserMenuListElement(Widget menuItem, const QString &accKeys) {
 
 	auto element = new UserMenuListElement;
 
@@ -2113,10 +2118,10 @@ static UserMenuListElement *allocUserMenuListElement(Widget menuItem, char *accK
 }
 
 static void freeUserMenuListElement(UserMenuListElement *element) {
-	if (element->umleSubMenuList)
+	if (element->umleSubMenuList) {
 		freeUserSubMenuList(element->umleSubMenuList);
+	}
 
-	XtFree(element->umleAccKeys);
 	delete element;
 }
 

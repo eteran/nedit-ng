@@ -28,7 +28,6 @@
 #define TEXTSEL_H_
 
 #include <X11/Intrinsic.h>
-#include <X11/X.h>
 
 void HandleXSelections(Widget w);
 void StopHandlingXSelections(Widget w);

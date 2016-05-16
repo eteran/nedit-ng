@@ -40,7 +40,6 @@ class QString;
 class HighlightStyle;
 
 #include <X11/Intrinsic.h>
-//#include <X11/Xlib.h>
 
 bool LoadHighlightStringEx(const std::string &inString, int convertOld);
 bool LoadStylesStringEx(const std::string &string);

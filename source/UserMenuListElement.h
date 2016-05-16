@@ -2,6 +2,7 @@
 #ifndef USER_MENU_LIST_ELEMENT_H_
 #define USER_MENU_LIST_ELEMENT_H_
 
+#include <QString>
 #include <vector>
 #include <Xm/Xm.h>
 
@@ -21,7 +22,7 @@ typedef std::vector<UserMenuListElement*> UserMenuList;
 struct UserMenuListElement {
 	UserMenuManageMode umleManageMode;     //current manage mode
 	UserMenuManageMode umlePrevManageMode; // previous manage mode
-	char *umleAccKeys;                     // accelerator keys of item
+	QString umleAccKeys;                     // accelerator keys of item
 	bool umleAccLockPatchApplied;          // indicates, if accelerator lock patch is applied
 	Widget umleMenuItem;                   // menu item represented by this element
 	Widget umleSubMenuPane;                // holds menu pane, if item represents a sub menu

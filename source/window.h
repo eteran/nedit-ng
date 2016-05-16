@@ -27,10 +27,6 @@
 #ifndef WINDOW_H_
 #define WINDOW_H_
 
-#include "nedit.h"
-
-class QString;
-
 #include <X11/Intrinsic.h>
 
 void AddSmallIcon(Widget shell);

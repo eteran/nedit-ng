@@ -96,7 +96,6 @@
 
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
-// extern void _XEditResCheckMessages(); 
 #endif
 
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
