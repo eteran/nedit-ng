@@ -3409,10 +3409,6 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	mainWin_ = XmCreateMainWindow(shell_, (String) "main", al, ac);
 	XtManageChild(mainWin_);
 
-
-
-
-	
 #if 0
 	// TODO(eteran): this is an experiement in making a Qt main window along side
 	// the typical one...

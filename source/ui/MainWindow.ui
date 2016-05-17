@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>NEdit-NG</string>
+   <string>NEdit-ng</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -106,6 +106,9 @@
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -133,6 +136,9 @@
     <addaction name="action_Exit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Edit</string>
     </property>
@@ -156,6 +162,9 @@
     <addaction name="action_Insert_Ctrl_Code"/>
    </widget>
    <widget class="QMenu" name="menu_Search">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Search</string>
     </property>
@@ -178,6 +187,9 @@
     <addaction name="action_Show_Calltip"/>
    </widget>
    <widget class="QMenu" name="menu_Preferences">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Preferences</string>
     </property>
@@ -185,24 +197,157 @@
      <property name="title">
       <string>Show &amp;Matching (..)</string>
      </property>
-     <addaction name="action_Off"/>
-     <addaction name="action_Delimeter"/>
-     <addaction name="action_Range"/>
+     <addaction name="action_Matching_Off"/>
+     <addaction name="action_Matching_Delimiter"/>
+     <addaction name="action_Matching_Range"/>
      <addaction name="separator"/>
-     <addaction name="action_Syntax_Based"/>
+     <addaction name="action_Matching_Syntax"/>
     </widget>
     <widget class="QMenu" name="menu_Default_Settings">
      <property name="title">
       <string>&amp;Default Settings</string>
      </property>
+     <widget class="QMenu" name="menu_Default_Auto_Indent">
+      <property name="title">
+       <string>&amp;Auto Indent</string>
+      </property>
+      <addaction name="action_Default_Indent_Off"/>
+      <addaction name="action_Default_Indent_On"/>
+      <addaction name="action_Default_Indent_Smart"/>
+      <addaction name="separator"/>
+      <addaction name="action_Default_Program_Smart_Indent"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Wrap">
+      <property name="title">
+       <string>&amp;Wrap</string>
+      </property>
+      <addaction name="action_Default_Wrap_None"/>
+      <addaction name="action_Default_Wrap_Auto_Newline"/>
+      <addaction name="action_Default_Wrap_Continuous"/>
+      <addaction name="separator"/>
+      <addaction name="action_Default_Wrap_Margin"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Tag_Collisions">
+      <property name="title">
+       <string>Tag Co&amp;llisions</string>
+      </property>
+      <addaction name="action_Default_Tag_Show_All"/>
+      <addaction name="action_Default_Tag_Smart"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Customize_Menus">
+      <property name="title">
+       <string>C&amp;ustomize Menus</string>
+      </property>
+      <addaction name="action_Default_Shell_Menu"/>
+      <addaction name="action_Default_Macro_Menu"/>
+      <addaction name="action_Default_Window_Background_Menu"/>
+      <addaction name="separator"/>
+      <addaction name="action_Default_Sort_Open_Prev_Menu"/>
+      <addaction name="action_Default_Show_Path_In_Windows_Menu"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Searching">
+      <property name="title">
+       <string>Searchin&amp;g</string>
+      </property>
+      <widget class="QMenu" name="menu_Default_Search_Style">
+       <property name="title">
+        <string>&amp;Default Search Style</string>
+       </property>
+       <addaction name="action_Default_Search_Literal"/>
+       <addaction name="action_Default_Search_Literal_Case_Sensitive"/>
+       <addaction name="action_Default_Search_Literal_Whole_Word"/>
+       <addaction name="action_Default_Search_Literal_Case_Sensitive_Whole_Word"/>
+       <addaction name="action_Default_Search_Regular_Expression"/>
+       <addaction name="action_Default_Search_Regular_Expresison_Case_Insensitive"/>
+      </widget>
+      <addaction name="action_Default_Search_Verbose"/>
+      <addaction name="action_Default_Search_Wrap_Around"/>
+      <addaction name="action_Default_Search_Beep_On_Search_Wrap"/>
+      <addaction name="action_Default_Search_Keep_Dialogs_Up"/>
+      <addaction name="menu_Default_Search_Style"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Syntax_Highlighting">
+      <property name="title">
+       <string>Syntax &amp;Highlighting</string>
+      </property>
+      <addaction name="action_Default_Syntax_Off"/>
+      <addaction name="action_Default_Syntax_On"/>
+      <addaction name="separator"/>
+      <addaction name="action_Default_Syntax_Recognition_Patterns"/>
+      <addaction name="action_Default_Syntax_Text_Drawing_Styles"/>
+     </widget>
+     <widget class="QMenu" name="menuTabbed_Editing">
+      <property name="title">
+       <string>Tabbed Editing</string>
+      </property>
+      <addaction name="action_Default_Tab_Open_File_In_New_Tab"/>
+      <addaction name="action_Default_Tab_Show_Tab_Bar"/>
+      <addaction name="action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open"/>
+      <addaction name="action_Default_Tab_Next_Prev_Tabs_Across_Windows"/>
+      <addaction name="action_Default_Tab_Sort_Tabs_Alphabetically"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Show_Matching">
+      <property name="title">
+       <string>Show &amp;Matching (..)</string>
+      </property>
+      <addaction name="action_Default_Matching_Off"/>
+      <addaction name="action_Default_Matching_Delimiter"/>
+      <addaction name="action_Default_Matching_Range"/>
+      <addaction name="separator"/>
+      <addaction name="action_Default_Matching_Syntax_Based"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Warnings">
+      <property name="title">
+       <string>Wa&amp;rnings</string>
+      </property>
+      <addaction name="action_Default_Warnings_Files_Modified_Externally"/>
+      <addaction name="action_Default_Warnings_Check_Modified_File_Contents"/>
+      <addaction name="action_Default_Warnings_On_Exit"/>
+     </widget>
+     <widget class="QMenu" name="menu_Default_Initial_Window_Size">
+      <property name="title">
+       <string>Initial Window Si&amp;ze</string>
+      </property>
+      <addaction name="action_Default_Size_24_x_24"/>
+      <addaction name="action_Default_Size_40_x_80"/>
+      <addaction name="action_Default_Size_60_x_80"/>
+      <addaction name="action_Default_Size_80_x_80"/>
+      <addaction name="action_Default_Size_Custom"/>
+     </widget>
+     <addaction name="action_Default_Language_Modes"/>
+     <addaction name="menu_Default_Auto_Indent"/>
+     <addaction name="menu_Default_Wrap"/>
+     <addaction name="menu_Default_Tag_Collisions"/>
+     <addaction name="action_Default_Command_Shell"/>
+     <addaction name="action_Default_Tab_Stops"/>
+     <addaction name="action_Default_Text_Fonts"/>
+     <addaction name="action_Default_Colors"/>
+     <addaction name="menu_Default_Customize_Menus"/>
+     <addaction name="action_Default_Customize_Window_Title"/>
+     <addaction name="menu_Default_Searching"/>
+     <addaction name="menu_Default_Syntax_Highlighting"/>
+     <addaction name="action_Default_Apply_Backlighting"/>
+     <addaction name="menuTabbed_Editing"/>
+     <addaction name="action_Default_Show_Tooltips"/>
+     <addaction name="action_Default_Statistics_Line"/>
+     <addaction name="action_Default_Incremental_Search_Line"/>
+     <addaction name="action_Default_Show_Line_Numbers"/>
+     <addaction name="action_Default_Make_Backup_Copy"/>
+     <addaction name="action_Default_Incremental_Backup"/>
+     <addaction name="menu_Default_Show_Matching"/>
+     <addaction name="action_Default_Terminate_with_Line_Break_on_Save"/>
+     <addaction name="action_Default_Popups_Under_Pointer"/>
+     <addaction name="action_Default_Auto_Scroll_Near_Window_Top_Bottom"/>
+     <addaction name="menu_Default_Warnings"/>
+     <addaction name="menu_Default_Initial_Window_Size"/>
     </widget>
     <widget class="QMenu" name="menu_Wrap">
      <property name="title">
       <string>&amp;Wrap</string>
      </property>
-     <addaction name="action_None"/>
-     <addaction name="action_Auto_Newline"/>
-     <addaction name="action_Continuous"/>
+     <addaction name="action_Wrap_None"/>
+     <addaction name="action_Wrap_Auto_Newline"/>
+     <addaction name="action_Wrap_Continuous"/>
      <addaction name="separator"/>
      <addaction name="action_Wrap_Margin"/>
     </widget>
@@ -212,7 +357,7 @@
      </property>
      <addaction name="action_Indent_Off"/>
      <addaction name="action_Indent_On"/>
-     <addaction name="action_Smart"/>
+     <addaction name="action_Indent_Smart"/>
     </widget>
     <addaction name="menu_Default_Settings"/>
     <addaction name="action_Save_Defaults"/>
@@ -235,6 +380,9 @@
     <addaction name="action_Read_Only"/>
    </widget>
    <widget class="QMenu" name="menu_Shell">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>She&amp;ll</string>
     </property>
@@ -245,6 +393,9 @@
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_Macro">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>Ma&amp;cro</string>
     </property>
@@ -256,6 +407,9 @@
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_Windows">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Windows</string>
     </property>
@@ -267,6 +421,9 @@
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
+    <property name="tearOffEnabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Help</string>
     </property>
@@ -284,6 +441,11 @@
    <addaction name="menu_Help"/>
   </widget>
   <action name="action_New">
+   <property name="icon">
+    <iconset theme="tab-new">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -292,6 +454,11 @@
    </property>
   </action>
   <action name="action_New_Window">
+   <property name="icon">
+    <iconset theme="document-new">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>New &amp;Window</string>
    </property>
@@ -300,6 +467,11 @@
    </property>
   </action>
   <action name="action_Open">
+   <property name="icon">
+    <iconset theme="document-open">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -321,6 +493,11 @@
    </property>
   </action>
   <action name="action_Close">
+   <property name="icon">
+    <iconset theme="document-close">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Close</string>
    </property>
@@ -329,6 +506,11 @@
    </property>
   </action>
   <action name="action_Save">
+   <property name="icon">
+    <iconset theme="document-save">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -337,11 +519,19 @@
    </property>
   </action>
   <action name="action_Save_As">
+   <property name="icon">
+    <iconset theme="document-save-as">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Save &amp;As...</string>
    </property>
   </action>
   <action name="action_Revert_to_Saved">
+   <property name="icon">
+    <iconset theme="document-revert"/>
+   </property>
    <property name="text">
     <string>&amp;Revert to Saved</string>
    </property>
@@ -383,6 +573,11 @@
    </property>
   </action>
   <action name="action_Print">
+   <property name="icon">
+    <iconset theme="document-print">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Print...</string>
    </property>
@@ -399,6 +594,11 @@
    </property>
   </action>
   <action name="action_Exit">
+   <property name="icon">
+    <iconset theme="application-exit">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>E&amp;xit</string>
    </property>
@@ -407,6 +607,11 @@
    </property>
   </action>
   <action name="action_Undo">
+   <property name="icon">
+    <iconset theme="edit-undo">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -415,6 +620,11 @@
    </property>
   </action>
   <action name="action_Redo">
+   <property name="icon">
+    <iconset theme="edit-redo">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -423,6 +633,11 @@
    </property>
   </action>
   <action name="action_Cut">
+   <property name="icon">
+    <iconset theme="edit-cut">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
@@ -431,6 +646,11 @@
    </property>
   </action>
   <action name="action_Copy">
+   <property name="icon">
+    <iconset theme="edit-copy">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
@@ -439,6 +659,11 @@
    </property>
   </action>
   <action name="action_Paste">
+   <property name="icon">
+    <iconset theme="edit-paste">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -458,6 +683,11 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset theme="edit-delete">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Delete</string>
    </property>
@@ -466,6 +696,11 @@
    </property>
   </action>
   <action name="action_Select_All">
+   <property name="icon">
+    <iconset theme="edit-select-all">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Select &amp;All</string>
    </property>
@@ -474,6 +709,11 @@
    </property>
   </action>
   <action name="action_Shift_Left">
+   <property name="icon">
+    <iconset theme="format-indent-less">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Shift &amp;Left</string>
    </property>
@@ -482,6 +722,11 @@
    </property>
   </action>
   <action name="action_Shift_Right">
+   <property name="icon">
+    <iconset theme="format-indent-more">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Shift Ri&amp;ght</string>
    </property>
@@ -490,6 +735,11 @@
    </property>
   </action>
   <action name="action_Lower_case">
+   <property name="icon">
+    <iconset theme="format-text-lowercase">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Lo&amp;wer-case</string>
    </property>
@@ -498,6 +748,11 @@
    </property>
   </action>
   <action name="action_Upper_case">
+   <property name="icon">
+    <iconset theme="format-text-uppercase">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>Upp&amp;er-case</string>
    </property>
@@ -530,6 +785,11 @@
    </property>
   </action>
   <action name="action_Find">
+   <property name="icon">
+    <iconset theme="edit-find">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Find</string>
    </property>
@@ -562,6 +822,11 @@
    </property>
   </action>
   <action name="action_Replace">
+   <property name="icon">
+    <iconset theme="edit-find-replace">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Replace...</string>
    </property>
@@ -586,6 +851,9 @@
    </property>
   </action>
   <action name="action_Goto_Line_Number">
+   <property name="icon">
+    <iconset theme="go-jump"/>
+   </property>
    <property name="text">
     <string>Goto &amp;Line Number...</string>
    </property>
@@ -602,6 +870,9 @@
    </property>
   </action>
   <action name="action_Mark">
+   <property name="icon">
+    <iconset theme="bookmark-new"/>
+   </property>
    <property name="text">
     <string>Mar&amp;k</string>
    </property>
@@ -648,6 +919,11 @@
    </property>
   </action>
   <action name="action_Execute_Command">
+   <property name="icon">
+    <iconset theme="utilities-terminal">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Execute Command</string>
    </property>
@@ -666,6 +942,9 @@
   <action name="action_Filter_Selection">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-filter"/>
    </property>
    <property name="text">
     <string>&amp;Filter Selection...</string>
@@ -686,6 +965,11 @@
    </property>
   </action>
   <action name="action_Split_Pane">
+   <property name="icon">
+    <iconset theme="view-split-top-bottom">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Split Pane</string>
    </property>
@@ -694,6 +978,9 @@
    </property>
   </action>
   <action name="action_Close_Pane">
+   <property name="icon">
+    <iconset theme="view-close"/>
+   </property>
    <property name="text">
     <string>&amp;Close Pane</string>
    </property>
@@ -702,6 +989,11 @@
    </property>
   </action>
   <action name="action_Detach_Tab">
+   <property name="icon">
+    <iconset theme="tab-detach">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Detach Tab</string>
    </property>
@@ -827,37 +1119,58 @@
     <string>Read Onl&amp;y</string>
    </property>
   </action>
-  <action name="action_Off">
+  <action name="action_Matching_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Off</string>
    </property>
   </action>
-  <action name="action_Delimeter">
+  <action name="action_Matching_Delimiter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>&amp;Delimeter</string>
+    <string>&amp;Delimiter</string>
    </property>
   </action>
-  <action name="action_Range">
+  <action name="action_Matching_Range">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Range</string>
    </property>
   </action>
-  <action name="action_Syntax_Based">
+  <action name="action_Matching_Syntax">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Syntax Based</string>
    </property>
   </action>
-  <action name="action_None">
+  <action name="action_Wrap_None">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;None</string>
    </property>
   </action>
-  <action name="action_Auto_Newline">
+  <action name="action_Wrap_Auto_Newline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Auto Newline</string>
    </property>
   </action>
-  <action name="action_Continuous">
+  <action name="action_Wrap_Continuous">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Continuous</string>
    </property>
@@ -868,16 +1181,25 @@
    </property>
   </action>
   <action name="action_Indent_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Off</string>
    </property>
   </action>
   <action name="action_Indent_On">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>O&amp;n</string>
    </property>
   </action>
-  <action name="action_Smart">
+  <action name="action_Indent_Smart">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Smart</string>
    </property>
@@ -924,6 +1246,9 @@
    </property>
   </action>
   <action name="action_Repeat">
+   <property name="icon">
+    <iconset theme="repeat"/>
+   </property>
    <property name="text">
     <string>&amp;Repeat...</string>
    </property>
@@ -940,8 +1265,13 @@
    </property>
   </action>
   <action name="action_About">
+   <property name="icon">
+    <iconset theme="help-about">
+     <normaloff/>
+    </iconset>
+   </property>
    <property name="text">
-    <string>&amp;About nedit-ng</string>
+    <string>&amp;About NEdit-ng</string>
    </property>
   </action>
   <action name="action_Find_Again_Backwards">
@@ -1019,6 +1349,463 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_Default_Language_Modes">
+   <property name="text">
+    <string>&amp;Language Modes...</string>
+   </property>
+  </action>
+  <action name="action_Default_Command_Shell">
+   <property name="text">
+    <string>Command Shell...</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Stops">
+   <property name="text">
+    <string>&amp;Tab Stops...</string>
+   </property>
+  </action>
+  <action name="action_Default_Text_Fonts">
+   <property name="text">
+    <string>Text &amp;Fonts...</string>
+   </property>
+  </action>
+  <action name="action_Default_Colors">
+   <property name="text">
+    <string>&amp;Colors...</string>
+   </property>
+  </action>
+  <action name="action_Default_Customize_Window_Title">
+   <property name="text">
+    <string>Customize Win&amp;dow Title...</string>
+   </property>
+  </action>
+  <action name="action_Default_Apply_Backlighting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Apply Backli&amp;ghting</string>
+   </property>
+  </action>
+  <action name="action_Default_Show_Tooltips">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Tooltips</string>
+   </property>
+  </action>
+  <action name="action_Default_Statistics_Line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Statistics Line</string>
+   </property>
+  </action>
+  <action name="action_Default_Incremental_Search_Line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Incremental Search L&amp;ine</string>
+   </property>
+  </action>
+  <action name="action_Default_Make_Backup_Copy">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mak&amp;e Backup Copy (*.bck)</string>
+   </property>
+  </action>
+  <action name="action_Default_Incremental_Backup">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Incremental &amp;Backup</string>
+   </property>
+  </action>
+  <action name="action_Default_Terminate_with_Line_Break_on_Save">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Terminate with Line Break on Sa&amp;ve</string>
+   </property>
+  </action>
+  <action name="action_Default_Popups_Under_Pointer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Popups Under Pointer</string>
+   </property>
+  </action>
+  <action name="action_Default_Auto_Scroll_Near_Window_Top_Bottom">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto Scroll Near Window Top/Bottom</string>
+   </property>
+  </action>
+  <action name="action_Default_Indent_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Off</string>
+   </property>
+  </action>
+  <action name="action_Default_Indent_On">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>O&amp;n</string>
+   </property>
+  </action>
+  <action name="action_Default_Indent_Smart">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Smart</string>
+   </property>
+  </action>
+  <action name="action_Default_Program_Smart_Indent">
+   <property name="text">
+    <string>&amp;Program Smart Indent...</string>
+   </property>
+  </action>
+  <action name="action_Default_Wrap_None">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;None</string>
+   </property>
+  </action>
+  <action name="action_Default_Wrap_Auto_Newline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Auto Newline</string>
+   </property>
+  </action>
+  <action name="action_Default_Wrap_Continuous">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Continuous</string>
+   </property>
+  </action>
+  <action name="action_Default_Wrap_Margin">
+   <property name="text">
+    <string>&amp;Wrap Margin...</string>
+   </property>
+  </action>
+  <action name="action_Default_Tag_Show_All">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;All</string>
+   </property>
+  </action>
+  <action name="action_Default_Tag_Smart">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Smart</string>
+   </property>
+  </action>
+  <action name="action_Default_Shell_Menu">
+   <property name="text">
+    <string>&amp;Shell Menu...</string>
+   </property>
+  </action>
+  <action name="action_Default_Macro_Menu">
+   <property name="text">
+    <string>&amp;Macro Menu...</string>
+   </property>
+  </action>
+  <action name="action_Default_Window_Background_Menu">
+   <property name="text">
+    <string>&amp;Window Background Menu...</string>
+   </property>
+  </action>
+  <action name="action_Default_Sort_Open_Prev_Menu">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>S&amp;ort Open Prev. Menu</string>
+   </property>
+  </action>
+  <action name="action_Default_Show_Path_In_Windows_Menu">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Path In Windows Menu</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Verbose">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Verbose</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Wrap_Around">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Wrap Around</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Beep_On_Search_Wrap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Beep On Search Wrap</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Keep_Dialogs_Up">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Keep Dialogs Up</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Literal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Literal</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Literal_Case_Sensitive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Literal, &amp;Case Sensitive</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Literal_Whole_Word">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Literal, &amp;Whole Word</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Literal_Case_Sensitive_Whole_Word">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>L&amp;iteral, Case Sensitive, Whole Word</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Regular_Expression">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Regular Expression</string>
+   </property>
+  </action>
+  <action name="action_Default_Search_Regular_Expresison_Case_Insensitive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Regular Expresison, Case &amp;Insensitive</string>
+   </property>
+  </action>
+  <action name="action_Default_Syntax_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Off</string>
+   </property>
+  </action>
+  <action name="action_Default_Syntax_On">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>O&amp;n</string>
+   </property>
+  </action>
+  <action name="action_Default_Syntax_Recognition_Patterns">
+   <property name="text">
+    <string>&amp;Recognition Patterns...</string>
+   </property>
+  </action>
+  <action name="action_Default_Syntax_Text_Drawing_Styles">
+   <property name="text">
+    <string>&amp;Text Drawing Styles...</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Open_File_In_New_Tab">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Open File In New &amp;Tab</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Show_Tab_Bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Tab &amp;Bar</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Hide Tab Bar When Only One Document is Open</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Next_Prev_Tabs_Across_Windows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Next/Prev Tabs Across &amp;Windows</string>
+   </property>
+  </action>
+  <action name="action_Default_Tab_Sort_Tabs_Alphabetically">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Sort Tabs Alphabetically</string>
+   </property>
+  </action>
+  <action name="action_Default_Show_Line_Numbers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Line &amp;Numbers</string>
+   </property>
+  </action>
+  <action name="action_Default_Matching_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Off</string>
+   </property>
+  </action>
+  <action name="action_Default_Matching_Delimiter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Delimiter</string>
+   </property>
+  </action>
+  <action name="action_Default_Matching_Range">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Range</string>
+   </property>
+  </action>
+  <action name="action_Default_Matching_Syntax_Based">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Syntax Based</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_Files_Modified_Externally">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Files Modified Externally</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_Check_Modified_File_Contents">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Check Modified File Contents</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_On_Exit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;On Exit</string>
+   </property>
+  </action>
+  <action name="action_Default_Size_24_x_24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;24 x 80</string>
+   </property>
+  </action>
+  <action name="action_Default_Size_40_x_80">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;40 x 80</string>
+   </property>
+  </action>
+  <action name="action_Default_Size_60_x_80">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;60 x 80</string>
+   </property>
+  </action>
+  <action name="action_Default_Size_80_x_80">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;80 x 80</string>
+   </property>
+  </action>
+  <action name="action_Default_Size_Custom">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Custom...</string>
    </property>
   </action>
  </widget>
