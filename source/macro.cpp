@@ -575,6 +575,14 @@ int ReadMacroString(Document *window, const char *string, const char *errIn) {
 	return readCheckMacroString(window->shell_, string, window, errIn, nullptr);
 }
 
+int ReadMacroStringEx(Document *window, const QString &string, const char *errIn) {
+	if(!string.isNull()) {
+		return readCheckMacroString(window->shell_, string.toLatin1().data(), window, errIn, nullptr);
+	} else {
+		return readCheckMacroString(window->shell_, nullptr, window, errIn, nullptr);
+	}
+}
+
 /*
 ** Check a macro string containing definitions for errors.  Returns True
 ** if macro compiled successfully.  Returns False and puts up

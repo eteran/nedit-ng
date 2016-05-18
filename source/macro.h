@@ -52,6 +52,7 @@ void RepeatDialog(Document *window);
 void RepeatMacro(Document *window, const char *command, int how);
 int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist);
 int ReadMacroString(Document *window, const char *string, const char *errIn);
+int ReadMacroStringEx(Document *window, const QString &string, const char *errIn);
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 std::string GetReplayMacro(void);

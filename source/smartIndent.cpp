@@ -55,7 +55,7 @@
 
 namespace {
 
-struct windowSmartIndentData {
+struct SmartIndentData {
 	Program *newlineMacro;
 	int inNewLineMacro;
 	Program *modMacro;
@@ -68,7 +68,8 @@ const char MacroEndBoundary[] = "--End-of-Macro--";
 
 int NSmartIndentSpecs = 0;
 SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
-char *CommonMacros = nullptr;
+
+QString CommonMacros;
 
 DialogSmartIndent *SmartIndentDlg = nullptr;
 
@@ -219,7 +220,7 @@ const char DefaultCommonMacros[] =
 ** (a split-window command).
 */
 void BeginSmartIndent(Document *window, int warn) {
-	windowSmartIndentData *winData;
+	SmartIndentData *winData;
 	SmartIndent *indentMacros;
 	const char *stoppedAt;
 	const char *errMsg;
@@ -252,20 +253,23 @@ void BeginSmartIndent(Document *window, int warn) {
 	   (Note that when these return, the immediate commands in the file have not
 	   necessarily been executed yet.  They are only SCHEDULED for execution) */
 	if (!initialized) {
-		if (!ReadMacroString(window, CommonMacros, "smart indent common initialization macros"))
+		if (!ReadMacroStringEx(window, CommonMacros, "smart indent common initialization macros")) {
 			return;
+		}
+		
 		initialized = true;
 	}
 	
 	if (!indentMacros->initMacro.isNull()) {
-		if (!ReadMacroString(window, indentMacros->initMacro.toLatin1().data(), "smart indent initialization macro"))
+		if (!ReadMacroStringEx(window, indentMacros->initMacro, "smart indent initialization macro")) {
 			return;
+		}
 	}
 
 	// Compile the newline and modify macros and attach them to the window 
-	winData = new windowSmartIndentData;
-	winData->inNewLineMacro = 0;
-	winData->inModMacro = 0;
+	winData = new SmartIndentData;
+	winData->inNewLineMacro = false;
+	winData->inModMacro = false;
 	winData->newlineMacro = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
 	if (!winData->newlineMacro) {
 		delete winData;
@@ -287,7 +291,7 @@ void BeginSmartIndent(Document *window, int warn) {
 }
 
 void EndSmartIndent(Document *window) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
+	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 
 	if(!winData)
 		return;
@@ -338,7 +342,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 ** structure passed by the widget
 */
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
+	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 	// posValue probably shouldn't be static due to re-entrance issues <slobasso> 
 	static DataValue posValue = {INT_TAG, {0}, {0}};
 	DataValue result;
@@ -386,7 +390,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 }
 
 Boolean InSmartIndentMacros(Document *window) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
+	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 
 	return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
 }
@@ -396,7 +400,7 @@ Boolean InSmartIndentMacros(Document *window) {
 ** structure passed by the widget
 */
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<windowSmartIndentData *>(window->smartIndentData_);
+	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 	// args probably shouldn't be static due to future re-entrance issues <slobasso> 
 	static DataValue args[2] = {{INT_TAG, {0}, {0}}, {STRING_TAG, {0}, {0}}};
 	// after 5.2 release remove inModCB and use new winData->inModMacro value 
@@ -481,7 +485,7 @@ int LoadSmartIndentString(char *inString) {
 
 		// finished 
 		if (*inPtr == '\0')
-			return True;
+			return true;
 
 		// read language mode name 
 		is.lmName = ReadSymbolicFieldEx(&inPtr);
@@ -553,11 +557,10 @@ int LoadSmartIndentCommonStringEx(view::string_view string) {
 }
 
 int LoadSmartIndentCommonString(char *inString) {
-	int shiftedLen;
+
 	char *inPtr = inString;
 
 	// If called from -import, can replace existing ones 
-	XtFree(CommonMacros);
 
 	// skip over blank space 
 	inPtr += strspn(inPtr, " \t\n");
@@ -565,13 +568,14 @@ int LoadSmartIndentCommonString(char *inString) {
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
 	if (!strncmp(inPtr, "Default", 7)) {
-		CommonMacros = XtNewStringEx(DefaultCommonMacros);
-		return True;
+		CommonMacros = QLatin1String(DefaultCommonMacros);
+		return true;
 	}
 
-	// Remove leading tabs added by writer routine 
-	CommonMacros = ShiftText(inPtr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
-	return True;
+	// Remove leading tabs added by writer routine
+	std::string newMacros = ShiftTextEx(inPtr, SHIFT_LEFT, true, 8, 8);
+	CommonMacros = QString::fromStdString(newMacros);
+	return true;
 }
 
 /*
@@ -652,14 +656,16 @@ QString WriteSmartIndentStringEx(void) {
 
 QString WriteSmartIndentCommonStringEx(void) {
 
-	if (!strcmp(CommonMacros, DefaultCommonMacros))
+	if (CommonMacros == QString::fromStdString(DefaultCommonMacros)) {
 		return QLatin1String("Default");
+	}
 
-	if(!CommonMacros)
+	if(CommonMacros.isNull()) {
 		return QLatin1String("");
+	}
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean 
-	std::string outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, True, 8, 8);
+	std::string outStr = ShiftTextEx(CommonMacros.toStdString(), SHIFT_RIGHT, True, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */

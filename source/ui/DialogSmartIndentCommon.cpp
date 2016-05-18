@@ -16,7 +16,7 @@
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
-	ui.editCode->setPlainText(QLatin1String(CommonMacros));
+	ui.editCode->setPlainText(CommonMacros);
 }
 
 //------------------------------------------------------------------------------
@@ -62,11 +62,10 @@ void DialogSmartIndentCommon::on_buttonRestore_clicked() {
 	}
 
 	// replace common macros with default 
-	XtFree(CommonMacros);
-	CommonMacros = XtNewStringEx(DefaultCommonMacros);
+	CommonMacros = QLatin1String(DefaultCommonMacros);
 
 	// Update the dialog 
-	ui.editCode->setPlainText(QLatin1String(CommonMacros));
+	ui.editCode->setPlainText(CommonMacros);
 }
 
 //------------------------------------------------------------------------------
@@ -126,7 +125,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	QString code = ui.editCode->toPlainText();
 
 	// Get the current data 
-	CommonMacros = XtStringDup(ensureNewline(code));
+	CommonMacros = ensureNewline(code);
 
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it
@@ -135,7 +134,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	auto it = begin(WindowList);
 	if(it != end(WindowList)) {
 		Document *window = *it;
-		if (!ReadMacroString(window, CommonMacros, "common macros")) {
+		if (!ReadMacroStringEx(window, CommonMacros, "common macros")) {
 			return false;
 		}
 	}

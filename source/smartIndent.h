@@ -51,7 +51,7 @@ void UpdateLangModeMenuSmartIndent(void);
 
 SmartIndent *findIndentSpec(const char *modeName);
 
-extern char *CommonMacros;
+extern QString CommonMacros;
 extern const char DefaultCommonMacros[];
 
 #define N_DEFAULT_INDENT_SPECS 4
