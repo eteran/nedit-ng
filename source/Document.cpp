@@ -3413,6 +3413,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	// TODO(eteran): this is an experiement in making a Qt main window along side
 	// the typical one...
 	auto win = new MainWindow();
+	win->setWindowTitle(name);
 	win->show();
 #endif
 	
@@ -3448,25 +3449,29 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	if (isrcFind == 0) {
 		isrcFind = createBitmapWithDepth(iSearchForm_, (char *)isrcFind_bits, isrcFind_width, isrcFind_height);
 	}
-	iSearchFindButton_ = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Find"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
+	
+	s1 = XmStringCreateSimpleEx("Find");
+	iSearchFindButton_ = XtVaCreateManagedWidget("iSearchFindButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1, XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcFind,
 	                                                    XmNtraversalOn, false, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNleftAttachment, XmATTACH_FORM,
 	                                                    // XmNleftOffset, 3, 
 	                                                    XmNleftOffset, 0, XmNtopAttachment, XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
 
-	iSearchCaseToggle_ = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Case"), XmNset,
+	s1 = XmStringCreateSimpleEx("Case");
+	iSearchCaseToggle_ = XtVaCreateManagedWidget("iSearchCaseToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1, XmNset,
 	                                                    GetPrefSearch() == SEARCH_CASE_SENSE || GetPrefSearch() == SEARCH_REGEX || GetPrefSearch() == SEARCH_CASE_SENSE_WORD, XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment,
 	                                                    XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                                                    XmNrightAttachment, XmATTACH_FORM, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
 
-	iSearchRegexToggle_ =
-	    XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("RegExp"), XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
+	s1 = XmStringCreateSimpleEx("RegExp");
+	iSearchRegexToggle_ = XtVaCreateManagedWidget("iSearchREToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1, XmNset, GetPrefSearch() == SEARCH_REGEX_NOCASE || GetPrefSearch() == SEARCH_REGEX,
 	                            XmNtopAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                            XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchCaseToggle_, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
 
-	iSearchRevToggle_ = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("Rev"), XmNset, false, XmNtopAttachment, XmATTACH_FORM,
+	s1 = XmStringCreateSimpleEx("Rev");
+	iSearchRevToggle_ = XtVaCreateManagedWidget("iSearchRevToggle", xmToggleButtonWidgetClass, iSearchForm_, XmNlabelString, s1, XmNset, false, XmNtopAttachment, XmATTACH_FORM,
 	                                                   XmNbottomAttachment, XmATTACH_FORM, XmNtopOffset, 1, // see openmotif note above 
 	                                                   XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRegexToggle_, XmNmarginHeight, 0, XmNtraversalOn, false, nullptr);
 	XmStringFree(s1);
@@ -3474,7 +3479,9 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	if (isrcClear == 0) {
 		isrcClear = createBitmapWithDepth(iSearchForm_, (char *)isrcClear_bits, isrcClear_width, isrcClear_height);
 	}
-	iSearchClearButton_ = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("<x"), XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
+	
+	s1 = XmStringCreateSimpleEx("<x");
+	iSearchClearButton_ = XtVaCreateManagedWidget("iSearchClearButton", xmPushButtonWidgetClass, iSearchForm_, XmNlabelString, s1, XmNlabelType, XmPIXMAP, XmNlabelPixmap, isrcClear,
 	                                                     XmNtraversalOn, false, XmNmarginHeight, 1, XmNmarginWidth, 1, XmNrightAttachment, XmATTACH_WIDGET, XmNrightWidget, iSearchRevToggle_, XmNrightOffset, 2, XmNtopAttachment,
 	                                                     XmATTACH_FORM, XmNtopOffset, 1, XmNbottomAttachment, XmATTACH_FORM, XmNbottomOffset, 1, nullptr);
 	XmStringFree(s1);
@@ -3521,7 +3528,8 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	                                         nullptr);
 
 	// A separate display of the line/column number 
-	statsLineColNo_ = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, statsLineForm_, XmNlabelString, s1 = XmStringCreateSimpleEx("L: ---  C: ---"), XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
+	s1 = XmStringCreateSimpleEx("L: ---  C: ---");
+	statsLineColNo_ = XtVaCreateManagedWidget("statsLineColNo", xmLabelWidgetClass, statsLineForm_, XmNlabelString, s1, XmNshadowThickness, 0, XmNmarginHeight, 2, XmNtraversalOn,
 	                                                 false, XmNtopAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNbottomAttachment, XmATTACH_FORM, //  
 	                                                 nullptr);
 	XmStringFree(s1);
@@ -3550,13 +3558,15 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	XtVaSetValues(statsLine_, XmNfontList, statsFontList, nullptr);
 
 	// Manage the statsLineForm 
-	if (showStats_)
+	if (showStats_) {
 		XtManageChild(statsLineForm_);
+	}
 
 	/* If the fontList was nullptr, use the magical default provided by Motif,
 	   since it must have worked if we've gotten this far */
-	if (!fontList_)
+	if (!fontList_) {
 		XtVaGetValues(statsLine_, XmNfontList, &fontList_, nullptr);
+	}
 
 	// Create the menu bar 
 	menuBar_ = CreateMenuBar(mainWin_, this);
@@ -3582,8 +3592,15 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	lastFocus_ = textArea_;
 
 	// Set the initial colors from the globals. 
-	SetColors(GetPrefColorName(TEXT_FG_COLOR), GetPrefColorName(TEXT_BG_COLOR), GetPrefColorName(SELECT_FG_COLOR), GetPrefColorName(SELECT_BG_COLOR), GetPrefColorName(HILITE_FG_COLOR), GetPrefColorName(HILITE_BG_COLOR),
-	          GetPrefColorName(LINENO_FG_COLOR), GetPrefColorName(CURSOR_FG_COLOR));
+	SetColors(
+		GetPrefColorName(TEXT_FG_COLOR), 
+		GetPrefColorName(TEXT_BG_COLOR), 
+		GetPrefColorName(SELECT_FG_COLOR), 
+		GetPrefColorName(SELECT_BG_COLOR), 
+		GetPrefColorName(HILITE_FG_COLOR), 
+		GetPrefColorName(HILITE_BG_COLOR),
+	    GetPrefColorName(LINENO_FG_COLOR), 
+		GetPrefColorName(CURSOR_FG_COLOR));
 
 	/* Create the right button popup menu (note: order is important here,
 	   since the translation for popping up this menu was probably already
@@ -3594,7 +3611,12 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 
 	// cache user menus: init. user background menu cache 
 	InitUserBGMenuCache(&userBGMenuCache_);
-
+	
+	// ------------------------------------------------------------------------------
+	// NOTE(eteran): looks like at this point the UI is setup, now start creating the
+	//               main text buffer view
+	// ------------------------------------------------------------------------------
+	
 	/* Create the text buffer rather than using the one created automatically
 	   with the text area widget.  This is done so the syntax highlighting
 	   modify callback can be called to synchronize the style buffer BEFORE
