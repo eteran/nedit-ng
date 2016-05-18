@@ -48,7 +48,6 @@ class PatternSet;
 class HighlightPattern;
 class WindowHighlightData;
 
-bool TestHighlightPatterns(PatternSet *patSet);
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name);
 int HighlightCodeOfPos(Document *window, int pos);
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode);

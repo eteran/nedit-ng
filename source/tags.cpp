@@ -1417,8 +1417,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 /*  Open a new (or existing) editor window to the location specified in
     tagFiles[i], tagSearch[i], tagPosInf[i] */
 static void editTaggedLocation(Widget parent, int i) {
-	/* Globals: tagSearch, tagPosInf, tagFiles, tagName, textNrows,
-	        WindowList */
+	/* Globals: tagSearch, tagPosInf, tagFiles, tagName, textNrows, WindowList */
 	int startPos, endPos, lineNum, rows;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
 	Document *windowToSearch;

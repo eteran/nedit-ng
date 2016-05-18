@@ -131,8 +131,13 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
-	if (!ReadMacroString(WindowList, CommonMacros, "common macros")) {
-		return false;
+	   
+	auto it = begin(WindowList);
+	if(it != end(WindowList)) {
+		Document *window = *it;
+		if (!ReadMacroString(window, CommonMacros, "common macros")) {
+			return false;
+		}
 	}
 
 	/* Find windows that are currently using smart indent and

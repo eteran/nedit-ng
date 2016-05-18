@@ -349,6 +349,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				QAbstractButton  *exitButton;
 
 				// ask user for next action if file not found 
+				
+				// NOTE(eteran): is window the one and only window?
 				if (window == WindowList && window->next_ == nullptr) {
 					
 					msgbox.setIcon(QMessageBox::Warning);
@@ -625,8 +627,11 @@ int IncludeFile(Document *window, const char *name) {
 */
 int CloseAllFilesAndWindows(void) {
 
-	// while the size of the list is > 1 ...
+	// NOTE(eteran): while the size of the list is > 1 ...
 	while (WindowList->next_ != nullptr || WindowList->filenameSet_ || WindowList->fileChanged_) {
+	
+		Document *current = WindowList;
+	
 		/*
 		 * When we're exiting through a macro, the document running the
 		 * macro does not disappear from the list, so we could get stuck
@@ -636,12 +641,12 @@ int CloseAllFilesAndWindows(void) {
 		 * document that gets closed, but it won't disappear; it becomes
 		 * Untitled.)
 		 */
-		if (MacroRunWindow() == WindowList && WindowList->next_) {
-			if (!WindowList->next_->CloseAllDocumentInWindow()) {
+		if (MacroRunWindow() == current && current->next_) {
+			if (!current->next_->CloseAllDocumentInWindow()) {
 				return false;
 			}
 		} else {
-			if (!WindowList->CloseAllDocumentInWindow()) {
+			if (!current->CloseAllDocumentInWindow()) {
 				return false;
 			}
 		}

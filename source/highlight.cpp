@@ -378,27 +378,6 @@ void UpdateHighlightStyles(Document *window) {
 }
 
 /*
-** Do a test compile of patterns in "patSet" and report problems to the
-** user via dialog.  Returns true if patterns are ok.
-**
-** This is somewhat kludgy in that it uses createHighlightData, which
-** requires a window to find the fonts to use, and just uses a random
-** window from the window list.  Since the window is used to get the
-** dialog parent as well, in non-popups-under-pointer mode, these dialogs
-** will appear in odd places on the screen.
-*/
-bool TestHighlightPatterns(PatternSet *patSet) {
-
-	/* Compile the patterns (passing a random window as a source for fonts, and
-	   parent for dialogs, since we really don't care what fonts are used) */
-	WindowHighlightData *highlightData = createHighlightData(WindowList, patSet);
-	if(!highlightData)
-		return false;
-	freeHighlightData(highlightData);
-	return true;
-}
-
-/*
 ** Returns the highlight style of the character at a given position of a
 ** window. To avoid breaking encapsulation, the highlight style is converted
 ** to a void* pointer (no other module has to know that characters are used
@@ -2227,7 +2206,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 
 	/* resize if there's only _one_ document in the window, to avoid
 	   the growing-window bug */
-	if (window->NDocuments() > 1)
+	if (window->TabCount() > 1)
 		return;
 
 	/* Decompose the window height into the part devoted to displaying

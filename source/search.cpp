@@ -510,7 +510,9 @@ int countWritableWindows(void) {
 	int nBefore = countWindows();
 	int nWritable = 0;
 	
-	for (Document *w: WindowList) {
+	for(auto it = begin(WindowList); it != end(WindowList); ++it) {
+	
+		Document *w = *it;
 	
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
@@ -520,7 +522,7 @@ int countWritableWindows(void) {
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again 
 			nBefore = nAfter;
-			w = WindowList;
+			it = begin(WindowList);
 			nWritable = 0;
 			continue;
 		}

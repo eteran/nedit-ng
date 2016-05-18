@@ -57,7 +57,7 @@ public:
 	bool GetShowTabBar();
 	bool IsIconic();
 	bool IsValidWindow();
-	int NDocuments() const;
+	int TabCount() const;
 	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();
 	void ClosePane();
@@ -104,7 +104,7 @@ public:
 	Widget GetPaneByIndex(int paneIndex) const;
 	int WidgetToPaneIndex(Widget w) const;
 	void EditCustomTitleFormat();
-	QString FullPath() const;
+	QString FullPath() const;	
 	
 public:
 	void Undo();
@@ -118,7 +118,8 @@ public:
 	static Document *WidgetToWindow(Widget w);
 	static Document *TabToWindow(Widget tab);
 	static Document *FindWindowWithFile(const QString &name, const QString &path);
-
+	static int WindowCount();
+	
 public:
 	int updateLineNumDisp();
 	void getGeometryString(char *geomString);	
@@ -380,8 +381,6 @@ public:
 
 	template <class Pred>
 	static Document *find_if(Pred p);
-		
-	static inline int WindowCount();
 };
 
 class ConstDocumentIterator;
@@ -489,15 +488,6 @@ Document *Document::find_if(Pred p) {
 	}
 
 	return nullptr;
-}
-
-inline int Document::WindowCount() {
-	int n = 0;
-	for(Document *win: WindowList) {
-		(void)win;
-		++n;
-	}
-	return n;	
 }
 
 #endif

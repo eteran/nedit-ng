@@ -270,8 +270,9 @@ void ExecCursorLine(Document *window, int fromMacro) {
 void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
 	char *subsCommand;
-	int left = 0, right = 0;
-	int pos, line, column;
+	int left = 0;
+	int right = 0;
+	int line, column;
 	char lineNumber[11];
 	Document *inWindow = window;
 	Widget outWidget;
@@ -285,15 +286,13 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
 	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
-	pos = TextGetCursorPos(window->lastFocus_);
+	int pos = TextGetCursorPos(window->lastFocus_);
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.toLatin1().data(), lineNumber);
 	if(!subsCommand) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to\n"
-		                                                   "filename substitutions with '%%' or\n"
-		                                                   "line number substitutions with '#'"));
+		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Shell Command"), QLatin1String("Shell command is too long due to filename substitutions with '%%' or line number substitutions with '#'"));
 		return;
 	}
 
@@ -329,17 +328,23 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	/* Assign the output destination.  If output is to a new window,
 	   create it, and run the command from it instead of the current
 	   one, to free the current one from waiting for lengthy execution */
-	if (output == TO_DIALOG) {
+	switch(output) {
+	case TO_DIALOG:
 		outWidget = nullptr;
 		flags |= OUTPUT_TO_DIALOG;
-		left = right = 0;
-	} else if (output == TO_NEW_WINDOW) {
-		EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, False, nullptr, window->path_.toLatin1().data());
-		outWidget = WindowList->textArea_;
-		inWindow = WindowList;
-		left = right = 0;
-		CheckCloseDim();
-	} else { // TO_SAME_WINDOW 
+		left  = 0;	
+		right = 0;
+		break;
+	case TO_NEW_WINDOW:
+		if(Document *win = EditNewFile(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, false, nullptr, window->path_.toLatin1().data())) {
+			inWindow  = win;
+			outWidget = win->textArea_;		
+			left      = 0;
+			right     = 0;
+			CheckCloseDim();
+		}
+		break;
+	case TO_SAME_WINDOW:
 		outWidget = window->lastFocus_;
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
@@ -349,19 +354,23 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 				window->buffer_->GetSimpleSelection(&left, &right);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else if (input == FROM_EITHER) {
-				if (window->buffer_->GetSimpleSelection(&left, &right))
+				if (window->buffer_->GetSimpleSelection(&left, &right)) {
 					flags |= ACCUMULATE | REPLACE_SELECTION;
-				else {
+				} else {
 					left = 0;
 					right = window->buffer_->BufGetLength();
 				}
 			}
 		} else {
-			if (window->buffer_->GetSimpleSelection(&left, &right))
+			if (window->buffer_->GetSimpleSelection(&left, &right)) {
 				flags |= ACCUMULATE | REPLACE_SELECTION;
-			else
+			} else {
 				left = right = TextGetCursorPos(window->lastFocus_);
-		}
+			}
+		}	
+		break;
+	default:
+		break;
 	}
 
 	// If the command requires the file be saved first, save it 

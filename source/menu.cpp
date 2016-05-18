@@ -3270,7 +3270,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 
 	Document *window = Document::WidgetToWindow(w);
 
-	if (window->NDocuments() < 2)
+	if (window->TabCount() < 2)
 		return;
 
 	QMessageBox messageBox(nullptr /*window->shell_*/);
@@ -3297,7 +3297,7 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	Document *window = Document::WidgetToWindow(w);
 
-	if (window->NDocuments() < 2)
+	if (window->TabCount() < 2)
 		return;
 
 	window->DetachDocument();

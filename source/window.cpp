@@ -244,9 +244,16 @@ void AllWindowsBusy(const char *message) {
 		}
 		modeMessageSet = True;
 	}
-	BusyWait(WindowList->shell_);
+	
+	// NOTE(eteran): I'm not 100% sure what this BusyWait function actually does
+	// so I am equally not sure if it matters which Window's shell we use
+	auto it = begin(WindowList);
+	if(it != end(WindowList)) {
+		Document *window = *it;
+		BusyWait(window->shell_);
+	}
 
-	currentlyBusy = True;
+	currentlyBusy = true;
 }
 
 void AllWindowsUnbusy(void) {
@@ -256,13 +263,14 @@ void AllWindowsUnbusy(void) {
 		EndWait(w->shell_);
 	}
 
-	currentlyBusy = False;
-	modeMessageSet = False;
+	currentlyBusy = false;
+	modeMessageSet = false;
 	busyStartTime = 0;
 }
 
 void AddSmallIcon(Widget shell) {
-	static Pixmap iconPixmap = 0, maskPixmap = 0;
+	static Pixmap iconPixmap = 0;
+	static Pixmap maskPixmap = 0;
 
 	if (iconPixmap == 0) {
 		iconPixmap = XCreateBitmapFromData(TheDisplay, RootWindowOfScreen(XtScreen(shell)), (char *)n_bits, n_width, n_height);

@@ -726,13 +726,13 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 	
 	auto window = static_cast<Document *>(clientData);
 
-	int nDocuments = window->NDocuments();
+	int TabCount = window->TabCount();
 
-	if (nDocuments == Document::WindowCount()) {
+	if (TabCount == Document::WindowCount()) {
 		// this is only window, then exit 
 		XtCallActionProc(WindowList->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 	} else {
-		if (nDocuments == 1) {
+		if (TabCount == 1) {
 			CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
 		} else {
 			int resp = QMessageBox::Cancel;
@@ -959,7 +959,7 @@ bool Document::IsValidWindow() {
 bool Document::GetShowTabBar() {
 	if (!GetPrefTabBar())
 		return false;
-	else if (NDocuments() == 1)
+	else if (TabCount() == 1)
 		return !GetPrefTabBarHideOne();
 	else
 		return true;
@@ -1005,7 +1005,7 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 	int tabCount, tabTotalCount;
 	int tabPos, nextPos;
 	int i, n;
-	int nBuf = crossWin ? Document::WindowCount() : NDocuments();
+	int nBuf = crossWin ? WindowCount() : TabCount();
 
 	if (nBuf <= 1)
 		return nullptr;
@@ -1271,7 +1271,7 @@ int Document::updateLineNumDisp() {
 **  Set the new gutter width in the window. Sadly, the only way to do this is
 **  to set it on every single document, so we have to iterate over them.
 **
-**  (Iteration taken from NDocuments(); is there a better way to do it?)
+**  (Iteration taken from TabCount(); is there a better way to do it?)
 */
 int Document::updateGutterWidth() {
 
@@ -1386,8 +1386,8 @@ void Document::RefreshMenuToggleStates() {
 	// Windows Menu 
 	XtSetSensitive(splitPaneItem_, nPanes_ < MAX_PANES);
 	XtSetSensitive(closePaneItem_, nPanes_ > 0);
-	XtSetSensitive(detachDocumentItem_, NDocuments() > 1);
-	XtSetSensitive(contextDetachDocumentItem_, NDocuments() > 1);
+	XtSetSensitive(detachDocumentItem_, TabCount() > 1);
+	XtSetSensitive(contextDetachDocumentItem_, TabCount() > 1);
 
 	Document *win = Document::find_if([&](Document *win) {
 		return win->shell_ != shell_;
@@ -1437,7 +1437,7 @@ void Document::RefreshTabState() {
 /*
 ** return the number of documents owned by this shell window
 */
-int Document::NDocuments() const {
+int Document::TabCount() const {
 
 	int nDocument = 0;
 	
@@ -1908,7 +1908,7 @@ void Document::SortTabBar() {
 		return;
 
 	// need more than one tab to sort 
-	const int nDoc = NDocuments();
+	const int nDoc = TabCount();
 	if (nDoc < 2) {
 		return;
 	}
@@ -2065,7 +2065,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 */
 bool Document::CloseAllDocumentInWindow() {
 
-	if (NDocuments() == 1) {
+	if (TabCount() == 1) {
 		// only one document in the window 
 		return CloseFileAndWindow(this, PROMPT_SBC_DIALOG_RESPONSE);
 	} else {
@@ -2118,7 +2118,7 @@ bool Document::CloseAllDocumentInWindow() {
 Document *Document::DetachDocument() {
 	Document *win = nullptr;
 
-	if (NDocuments() < 2)
+	if (TabCount() < 2)
 		return nullptr;
 
 	/* raise another document in the same shell this if the this
@@ -2197,7 +2197,7 @@ void Document::MoveDocumentDialog() {
 	// reset the dialog and display it
 	dialog->resetSelection();
 	dialog->setLabel(filename_);
-	dialog->setMultipleDocuments(NDocuments() > 1);
+	dialog->setMultipleDocuments(TabCount() > 1);
 	int r = dialog->exec();
 	
 	if(r == QDialog::Accepted) {
@@ -2327,7 +2327,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 	Document *win = nullptr, *cloneWin;
 
 	// prepare to move document 
-	if (NDocuments() < 2) {
+	if (TabCount() < 2) {
 		// hide the this to make it look like we are moving 
 		XtUnmapWidget(shell_);
 	} else if (IsTopDocument()) {
@@ -2371,7 +2371,7 @@ Document *Document::MoveDocument(Document *toWindow) {
 void Document::ShowWindowTabBar() {
 	if (GetPrefTabBar()) {
 		if (GetPrefTabBarHideOne()) {
-			ShowTabBar(NDocuments() > 1);
+			ShowTabBar(TabCount() > 1);
 		} else {
 			ShowTabBar(true);
 		}
@@ -2596,7 +2596,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	/* Use the information from the old this to re-size the this to a
 	   size appropriate for the new font, but only do so if there's only
 	   _one_ document in the this, in order to avoid growing-this bug */
-	if (NDocuments() == 1) {
+	if (TabCount() == 1) {
 		fontWidth = GetDefaultFontStruct(fontList_)->max_bounds.width;
 		fontHeight = textD->ascent + textD->descent;
 		newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
@@ -2781,7 +2781,7 @@ void Document::CloseWindow() {
 	ClearRedoList();
 
 	// close the document/window 
-	if (NDocuments() > 1) {
+	if (TabCount() > 1) {
 		if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
 			nextBuf = MacroRunWindow();
 			nextBuf->RaiseDocument();
@@ -2814,13 +2814,13 @@ void Document::CloseWindow() {
 	// dim/undim Detach_Tab menu items 
 	win = nextBuf ? nextBuf : topBuf;
 	if (win) {
-		state = win->NDocuments() > 1;
+		state = win->TabCount() > 1;
 		XtSetSensitive(win->detachDocumentItem_, state);
 		XtSetSensitive(win->contextDetachDocumentItem_, state);
 	}
 
 	// dim/undim Attach_Tab menu items 
-	state = WindowList->NDocuments() < Document::WindowCount();
+	state = WindowList->TabCount() < WindowCount();
 	
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
@@ -3662,7 +3662,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	UpdateMinPaneHeights();
 
 	// dim/undim Attach_Tab menu items 
-	int state = NDocuments() < WindowCount();
+	int state = TabCount() < WindowCount();
 	
 	
 	for(Document *win: WindowList) {
@@ -4348,4 +4348,13 @@ Document *Document::FindWindowWithFile(const QString &name, const QString &path)
 	});
 
 	return window;
+}
+
+int Document::WindowCount() {
+	int n = 0;
+	for(Document *win: WindowList) {
+		(void)win;
+		++n;
+	}
+	return n;	
 }
