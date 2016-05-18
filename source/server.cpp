@@ -372,7 +372,7 @@ static void processServerCommandString(char *string) {
 				// where win->macroCmdData_ is "false"
 				
 				auto win = begin(WindowList);
-				while (win != end(WindowList) && win->macroCmdData_) {
+				while (win != end(WindowList) && (*win)->macroCmdData_) {
 					++win;
 				}
 
@@ -380,10 +380,11 @@ static void processServerCommandString(char *string) {
 					QApplication::beep();
 				} else {
 					// Raise before -do (macro could close window). 
-					if (iconicFlag)
-						win->RaiseDocument();
-					else
-						win->RaiseDocumentWindow();
+					if (iconicFlag) {
+						(*win)->RaiseDocument();
+					} else {
+						(*win)->RaiseDocumentWindow();
+					}
 					DoMacro(*win, doCommand, "-do macro");
 				}
 			}
