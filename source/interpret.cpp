@@ -217,7 +217,7 @@ void InitMacroGlobals(void) {
 	XtActionsRec *actions;
 	int i, nActions;
 	static char argName[3] = "$x";
-	static DataValue dv = {NO_TAG, {0}, {0}};
+	static DataValue dv = INIT_DATA_VALUE;
 
 	// Add action routines from NEdit menus and text widget 
 	actions = GetMenuActions(&nActions);
@@ -453,7 +453,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 */
 int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
 
-	static DataValue noValue = {NO_TAG, {0}, {0}};
+	static DataValue noValue = INIT_DATA_VALUE;
 	int i;
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
@@ -562,7 +562,7 @@ int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg
 ** additional work.
 */
 void RunMacroAsSubrCall(Program *prog) {
-	static DataValue noValue = {NO_TAG, {0}, {0}};
+	static DataValue noValue = INIT_DATA_VALUE;
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
 	   for a subroutine call */
@@ -1742,7 +1742,7 @@ static int concat(void) {
 static int callSubroutine(void) {
 	Symbol *sym;
 	int i, nArgs;
-	static DataValue noValue = {NO_TAG, {0}, {0}};
+	static DataValue noValue = INIT_DATA_VALUE;
 	Program *prog;
 	const char *errMsg;
 
@@ -1880,7 +1880,7 @@ static int returnVal(void) {
 */
 static int returnValOrNone(int valOnStack) {
 	DataValue retVal;
-	static DataValue noValue = {NO_TAG, {0}, {0}};
+	static DataValue noValue = INIT_DATA_VALUE;
 	DataValue *newFrameP;
 	int nArgs;
 

@@ -344,7 +344,7 @@ void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 	// posValue probably shouldn't be static due to re-entrance issues <slobasso> 
-	static DataValue posValue = {INT_TAG, {0}, {0}};
+	static DataValue posValue = INIT_DATA_VALUE;
 	DataValue result;
 	RestartData *continuation;
 	const char *errMsg;
@@ -402,7 +402,7 @@ Boolean InSmartIndentMacros(Document *window) {
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 	// args probably shouldn't be static due to future re-entrance issues <slobasso> 
-	static DataValue args[2] = {{INT_TAG, {0}, {0}}, {STRING_TAG, {0}, {0}}};
+	static DataValue args[2] = {INIT_DATA_VALUE, INIT_DATA_VALUE};
 	// after 5.2 release remove inModCB and use new winData->inModMacro value 
 	static int inModCB = False;
 	DataValue result;

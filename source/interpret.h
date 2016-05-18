@@ -128,10 +128,13 @@ struct DataValue {
 		DataValue*   dataval;
 		ArrayEntry*  arrayPtr;
 	} val;
-	
+#if 0
 	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, ArrayEntry*> value_type;
 	value_type value;
+#endif
 };
+
+#define INIT_DATA_VALUE {NO_TAG, {0}}
 
 //------------------------------------------------------------------------------
 struct ArrayEntry : public rbTreeNode {
