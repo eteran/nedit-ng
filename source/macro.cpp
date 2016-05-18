@@ -1200,10 +1200,12 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	int i;
 	char *actionString;
 
-	/* Select only actions in text panes in the window for which this
+	/* Select only actions in text panes in the curr for which this
 	   action hook is recording macros (from clientData). */
-	auto window = begin(WindowList);
-	for (; window != end(WindowList); ++window) {
+	auto curr = begin(WindowList);
+	for (; curr != end(WindowList); ++curr) {
+	
+		Document *const window = *curr;
 	
 		if (window->textArea_ == w)
 			break;
@@ -1215,7 +1217,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 			break;
 	}
 	
-	if (window == end(WindowList) || *window != static_cast<Document *>(clientData))
+	if (curr == end(WindowList) || *curr != static_cast<Document *>(clientData))
 		return;
 
 	/* beep on un-recordable operations which require a mouse position, to
@@ -1242,9 +1244,12 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	int i;
 	char *actionString;
 
-	// Find the window to which this action belongs 
-	auto window = begin(WindowList);
-	for (; window != end(WindowList); ++window) {
+	// Find the curr to which this action belongs 
+	auto curr = begin(WindowList);
+	for (; curr != end(WindowList); ++curr) {
+	
+		Document *const window = *curr;
+	
 		if (window->textArea_ == w)
 			break;
 		for (i = 0; i < window->nPanes_; i++) {
@@ -1254,8 +1259,10 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 		if (i < window->nPanes_)
 			break;
 	}
-	if(window == end(WindowList))
+	
+	if(curr == end(WindowList)) {
 		return;
+	}
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
@@ -1610,20 +1617,22 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		result->val.str.len = 0;
 		return True;
 	}
+	
+	Document *const win = *w;
 
 	// Change the focused window to the requested one 
-	SetMacroFocusWindow(*w);
+	SetMacroFocusWindow(win);
 
 	// turn on syntax highlight that might have been deferred 
-	if (w->highlightSyntax_ && !w->highlightData_) {
-		StartHighlighting(*w, False);
+	if ((win)->highlightSyntax_ && !(win)->highlightData_) {
+		StartHighlighting(win, false);
 	}
 
 	// Return the name of the window 
 	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, w->path_.size() + w->filename_.size() + 1);
-	sprintf(result->val.str.rep, "%s%s", w->path_.toLatin1().data(), w->filename_.toLatin1().data());
-	return True;
+	AllocNString(&result->val.str, win->path_.size() + win->filename_.size() + 1);
+	sprintf(result->val.str.rep, "%s%s", win->path_.toLatin1().data(), win->filename_.toLatin1().data());
+	return true;
 }
 
 /*

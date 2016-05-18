@@ -130,7 +130,7 @@ private:
 	void showISearch(int state);
 	void showStatsForm();
 	void addToWindowList();
-	void removeFromWindowList() const;
+	void removeFromWindowList();
 	void refreshMenuBar();
 	int updateGutterWidth();
 	void cloneDocument(Document *window);
@@ -404,7 +404,6 @@ public:
 	DocumentIterator& operator=(const DocumentIterator &) = default;
 
 public:
-	Document* operator->() { return ptr_; }
 	Document* operator*()  { return ptr_; }
 
 public:
@@ -439,7 +438,6 @@ public:
 	ConstDocumentIterator& operator=(const ConstDocumentIterator &) = default;
 
 public:
-	const Document* operator->() const { return ptr_; }
 	const Document* operator*() const  { return ptr_; }
 
 public:
@@ -488,6 +486,23 @@ Document *Document::find_if(Pred p) {
 	}
 
 	return nullptr;
+}
+
+inline bool listEmpty(Document *list) {
+	if(list == nullptr) {
+		return true;
+	}
+	
+	return begin(list) == end(list);
+}
+
+inline int listSize(Document *list) {
+	int n = 0;
+	for(Document *win: list) {
+		(void)win;
+		++n;
+	}
+	return n;
 }
 
 #endif

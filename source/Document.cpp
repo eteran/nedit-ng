@@ -1152,7 +1152,7 @@ void Document::addToWindowList() {
 /*
 ** Remove a this from the list of windows
 */
-void Document::removeFromWindowList() const {
+void Document::removeFromWindowList() {
 
 	if (WindowList == this) {
 		WindowList = next_;
@@ -1802,7 +1802,7 @@ void Document::UpdateWindowReadOnly() {
 */
 void Document::PreviousDocument() {
 
-	if (!WindowList->next_) {
+	if (listSize(WindowList) == 1) {
 		return;
 	}
 
@@ -1822,7 +1822,7 @@ void Document::PreviousDocument() {
 void Document::NextDocument() {
 
 
-	if (!WindowList->next_) {
+	if (listSize(WindowList) == 1) {
 		return;
 	}
 
@@ -2083,8 +2083,9 @@ bool Document::CloseAllDocumentInWindow() {
 		for (Document *win = WindowList; win;) {
 			if (win->shell_ == winShell && win->fileChanged_) {
 				Document *next = win->next_;
-				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE)) {
 					return false;
+				}
 				win = next;
 			} else {
 				win = win->next_;
@@ -2103,8 +2104,9 @@ bool Document::CloseAllDocumentInWindow() {
 			for (Document *win = WindowList; win;) {
 				if (win->shell_ == winShell && win != topDocument) {
 					Document *next = win->next_;
-					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
+					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE)) {
 						return false;
+					}
 					win = next;
 				} else {
 					win = win->next_;
@@ -2734,7 +2736,7 @@ void Document::CloseWindow() {
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (this == WindowList && next_ == nullptr)) {
+	if (keepWindow || (this == WindowList && listSize(WindowList) == 1)) {
 		filename_ = QLatin1String("");
 
 		QString name = UniqueUntitledName();
