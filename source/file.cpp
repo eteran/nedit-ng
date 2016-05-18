@@ -351,7 +351,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				// ask user for next action if file not found 
 				
 				// NOTE(eteran): is window the one and only window?
-				if (window == WindowList && window->next_ == nullptr) {
+				if (window == listFront(WindowList) && listSize(WindowList) == 1) {
 					
 					msgbox.setIcon(QMessageBox::Warning);
 					msgbox.setWindowTitle(QLatin1String("New File"));
@@ -628,7 +628,7 @@ int IncludeFile(Document *window, const char *name) {
 int CloseAllFilesAndWindows(void) {
 
 	// NOTE(eteran): while the size of the list is > 1 ...
-	while (WindowList->next_ != nullptr || WindowList->filenameSet_ || WindowList->fileChanged_) {
+	while (listSize(WindowList) > 1 || WindowList->filenameSet_ || WindowList->fileChanged_) {
 	
 		Document *current = WindowList;
 	

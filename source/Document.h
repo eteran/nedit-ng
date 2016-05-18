@@ -505,4 +505,12 @@ inline int listSize(Document *list) {
 	return n;
 }
 
+inline Document *listFront(Document *list) {
+	if(!list) {
+		return nullptr;
+	}
+	
+	return list;
+}
+
 #endif

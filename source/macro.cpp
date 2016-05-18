@@ -1585,9 +1585,8 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	} else {
 		// just use the plain name as supplied 
 		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *win) {
-			char fullname[MAXPATHLEN];
-			snprintf(fullname, sizeof(fullname), "%s%s", win->path_.toLatin1().data(), win->filename_.toLatin1().data());
-			return strcmp(string, fullname) == 0;
+			QString fullname = win->FullPath();
+			return fullname == QLatin1String(string);
 		});
 		
 		// didn't work? try normalizing the string passed in 
@@ -1604,9 +1603,8 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 			}
 			
 			w = std::find_if(begin(WindowList), end(WindowList), [&normalizedString](Document *win) {
-				char fullname[MAXPATHLEN];
-				snprintf(fullname, sizeof(fullname), "%s%s", win->path_.toLatin1().data(), win->filename_.toLatin1().data());
-				return strcmp(normalizedString, fullname) == 0;
+				QString fullname = win->FullPath();
+				return fullname == QLatin1String(normalizedString);
 			});
 		}
 	}

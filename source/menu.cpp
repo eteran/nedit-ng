@@ -4171,9 +4171,7 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode) {
 */
 void CheckCloseDim(void) {
 
-
-	// NOTE(eteran): list is empty
-	if(!WindowList) {
+	if(listEmpty(WindowList)) {
 		return;
 	}
 	
