@@ -223,7 +223,7 @@ QString GetRCFileNameEx(int type) {
 						perror("nedit: Error while creating rc file directory"
 						       " $HOME/" DEFAULT_NEDIT_HOME "\n"
 						       " (Make sure all parent directories exist.)");
-						throw path_error();
+						return QString();
 					}
 				}
 
@@ -240,7 +240,7 @@ QString GetRCFileNameEx(int type) {
 				if (mkdir(nedit_home, 0777) != 0) {
 					perror("nedit: Error while creating rc file directory $NEDIT_HOME\n"
 					       "nedit: (Make sure all parent directories exist.)");
-					throw path_error();
+					return QString();
 				}
 			}
 

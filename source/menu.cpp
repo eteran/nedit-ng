@@ -4544,37 +4544,39 @@ static char neditDBBadFilenameChars[] = "\n";
 */
 void WriteNEditDB(void) {
 
-	try {
-		QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
-		FILE *fp;
-		int i;
-		static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
-
-		// If the Open Previous command is disabled, just return 
-		if (GetPrefMaxPrevOpenFiles() < 1) {
-			return;
-		}
-
-		// open the file 
-		if ((fp = fopen(fullName.toLatin1().data(), "w")) == nullptr) {
-			return;
-		}
-
-		// write the file header text to the file 
-		fprintf(fp, "%s", fileHeader);
-
-		// Write the list of file names 
-		for (i = 0; i < NPrevOpen; ++i) {
-			size_t lineLen = strlen(PrevOpen[i]);
-
-			if (lineLen > 0 && PrevOpen[i][0] != '#' && strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
-				fprintf(fp, "%s\n", PrevOpen[i]);
-			}
-		}
-
-		fclose(fp);
-	} catch(const path_error &e) {
+	QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+	if(fullName.isNull()) {
+		return;
 	}
+
+	FILE *fp;
+	int i;
+	static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
+
+	// If the Open Previous command is disabled, just return 
+	if (GetPrefMaxPrevOpenFiles() < 1) {
+		return;
+	}
+
+	// open the file 
+	if ((fp = fopen(fullName.toLatin1().data(), "w")) == nullptr) {
+		return;
+	}
+
+	// write the file header text to the file 
+	fprintf(fp, "%s", fileHeader);
+
+	// Write the list of file names 
+	for (i = 0; i < NPrevOpen; ++i) {
+		size_t lineLen = strlen(PrevOpen[i]);
+
+		if (lineLen > 0 && PrevOpen[i][0] != '#' && strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
+			fprintf(fp, "%s\n", PrevOpen[i]);
+		}
+	}
+
+	fclose(fp);
+
 }
 
 /*
@@ -4613,10 +4615,8 @@ void ReadNEditDB(void) {
 
 	/* Don't move this check ahead of the previous statements. PrevOpen
 	   must be initialized at all times. */
-	QString fullName;
-	try {
-		fullName = GetRCFileNameEx(NEDIT_HISTORY);
-	} catch(const path_error &e) {
+	QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+	if(fullName.isNull()) {
 		return;
 	}
 

@@ -33,7 +33,6 @@
 #include <sys/utsname.h>
 #include <string>
 #include "string_view.h"
-#include "path_error.h"
 
 QString GetCurrentDirEx();
 QString GetHomeDirEx();

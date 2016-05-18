@@ -835,13 +835,12 @@ static void updateShellCmdsTo5dot4(void);
 XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut) {
 
 	// NOTE(eteran): mimic previous bahavior here of passing null when nedit.rc lookup fails
-	try {
-		const QString filename = GetRCFileNameEx(NEDIT_RC);
-		return CreatePreferencesDatabase(filename.toLatin1().data(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
-	} catch(const path_error &e) {
+	const QString filename = GetRCFileNameEx(NEDIT_RC);
+	if(filename.isNull()) {
 		return CreatePreferencesDatabase(nullptr, APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
+	} else {
+		return CreatePreferencesDatabase(filename.toLatin1().data(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
 	}
-	
 }
 
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB) {
@@ -1008,46 +1007,47 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 }
 
 void SaveNEditPrefs(Widget parent, int quietly) {
-	try {
-		QString prefFileName = GetRCFileNameEx(NEDIT_RC);
 
-		if (!quietly) {
-		
-		
-			int resp = QMessageBox::information(nullptr /*parent*/, QLatin1String("Save Preferences"), 
-				ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
-				                        : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)), 
-					QMessageBox::Ok | QMessageBox::Cancel);
-		
-		
-		
-			if(resp == QMessageBox::Cancel) {
-				return;
-			}
-		}
-
-		/*  Write the more dynamic settings into TempStringPrefs.
-	    	These locations are set in PrefDescrip, so this is where
-	    	SavePreferences() will look for them.  */
-
-		TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
-		TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
-		TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
-		TempStringPrefs.highlight         = WriteHighlightStringEx();
-		TempStringPrefs.language          = WriteLanguageModesStringEx();
-		TempStringPrefs.styles            = WriteStylesStringEx();
-		TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
-		TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
-		strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-
-		if (!SavePreferences(XtDisplay(parent), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
-			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
-		}
-
-		PrefsHaveChanged = false;
-	} catch(const path_error &e) {
+	QString prefFileName = GetRCFileNameEx(NEDIT_RC);
+	if(prefFileName.isNull()) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
+		return;
 	}
+
+	if (!quietly) {
+
+
+		int resp = QMessageBox::information(nullptr /*parent*/, QLatin1String("Save Preferences"), 
+			ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
+				                    : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)), 
+				QMessageBox::Ok | QMessageBox::Cancel);
+
+
+
+		if(resp == QMessageBox::Cancel) {
+			return;
+		}
+	}
+
+	/*  Write the more dynamic settings into TempStringPrefs.
+	    These locations are set in PrefDescrip, so this is where
+	    SavePreferences() will look for them.  */
+
+	TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
+	TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
+	TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
+	TempStringPrefs.highlight         = WriteHighlightStringEx();
+	TempStringPrefs.language          = WriteLanguageModesStringEx();
+	TempStringPrefs.styles            = WriteStylesStringEx();
+	TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
+	TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
+	strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
+
+	if (!SavePreferences(XtDisplay(parent), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
+	}
+
+	PrefsHaveChanged = false;
 }
 
 /*
