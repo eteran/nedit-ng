@@ -527,7 +527,7 @@ int main(int argc, char *argv[]) {
 					}
 
 					if (!macroFileRead) {
-						ReadMacroInitFile(WindowList);
+						ReadMacroInitFile(window);
 						macroFileRead = true;
 					}
 					if (gotoLine)
@@ -564,11 +564,18 @@ int main(int argc, char *argv[]) {
 
 	// If no file to edit was specified, open a window to edit "Untitled" 
 	if (!fileSpecified) {
+
+		Document *window = nullptr;
+		auto it = begin(WindowList);
+		if(it != end(WindowList)) {	
+			window = *it;
+		}
+	
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
-		ReadMacroInitFile(WindowList);
+		ReadMacroInitFile(window);
 		CheckCloseDim();
 		if (toDoCommand) {
-			DoMacro(WindowList, toDoCommand, "-do macro");
+			DoMacro(window, toDoCommand, "-do macro");
 		}
 	}
 

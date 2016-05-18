@@ -27,12 +27,9 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include <QString>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
-#include <string>
 #include "string_view.h"
+
+class QString;
 
 QString GetCurrentDirEx();
 QString GetHomeDirEx();
