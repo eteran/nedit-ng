@@ -249,7 +249,7 @@ void AllWindowsBusy(const char *message) {
 	// so I am equally not sure if it matters which Window's shell we use
 	auto it = begin(WindowList);
 	if(it != end(WindowList)) {
-		Document *window = *it;
+		Document *const window = *it;
 		BusyWait(window->shell_);
 	}
 

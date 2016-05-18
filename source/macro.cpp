@@ -96,7 +96,7 @@ const int BANNER_WAIT_TIME = 6000;
 #define M_FAILURE(s)                                                                                                                                                                                                                           \
 	do {                                                                                                                                                                                                                                       \
 		*errMsg = s;                                                                                                                                                                                                                           \
-		return False;                                                                                                                                                                                                                      \
+		return false;                                                                                                                                                                                                                      \
 	} while (0)
 
 #define M_STR_ALLOC_ASSERT(xDV)                                                                                                                                                                                                                \
@@ -562,7 +562,7 @@ int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotEx
 		if (errno != ENOENT || warnNotExist) {
 			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QLatin1String(strerror(errno))));
 		}
-		return False;
+		return false;
 	}
 
 	// Parse fileString 
@@ -864,7 +864,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, Documen
 		RunMacroAsSubrCall(prog);
 	}
 
-	return True;
+	return true;
 }
 
 /*
@@ -992,7 +992,7 @@ int MacroWindowCloseActions(Document *window) {
 				mcd->context->focusWindow = mcd->context->runWindow;
 		}
 		
-		return True;
+		return true;
 	}
 
 	/* If the macro currently running (and therefore calling us, because
@@ -1001,7 +1001,7 @@ int MacroWindowCloseActions(Document *window) {
 	   and schedule window close on completion of macro */
 	if (window == MacroRunWindow()) {
 		cmdData->closeOnCompletion = True;
-		return False;
+		return false;
 	}
 
 	// Free the continuation 
@@ -1009,7 +1009,7 @@ int MacroWindowCloseActions(Document *window) {
 
 	// Kill the macro command 
 	finishMacroCmdExecution(window);
-	return True;
+	return true;
 }
 
 /*
@@ -1336,8 +1336,8 @@ static int isMouseAction(const char *action) {
 
 	for (i = 0; i < (int)XtNumber(MouseActions); i++)
 		if (!strcmp(action, MouseActions[i]))
-			return True;
-	return False;
+			return true;
+	return false;
 }
 
 static int isRedundantAction(const char *action) {
@@ -1345,8 +1345,8 @@ static int isRedundantAction(const char *action) {
 
 	for (i = 0; i < (int)XtNumber(RedundantActions); i++)
 		if (!strcmp(action, RedundantActions[i]))
-			return True;
-	return False;
+			return true;
+	return false;
 }
 
 static int isIgnoredAction(const char *action) {
@@ -1354,8 +1354,8 @@ static int isIgnoredAction(const char *action) {
 
 	for (i = 0; i < (int)XtNumber(IgnoredActions); i++)
 		if (!strcmp(action, IgnoredActions[i]))
-			return True;
-	return False;
+			return true;
+	return false;
 }
 
 /*
@@ -1419,19 +1419,19 @@ static Boolean continueWorkProc(XtPointer clientData) {
 	if (stat == MACRO_ERROR) {
 		finishMacroCmdExecution(window);
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
-		return True;
+		return true;
 	} else if (stat == MACRO_DONE) {
 		finishMacroCmdExecution(window);
-		return True;
+		return true;
 	} else if (stat == MACRO_PREEMPT) {
 		cmdData->continueWorkProcID = 0;
-		return True;
+		return true;
 	}
 
 	// Macro exceeded time slice, re-schedule it 
 	if (stat != MACRO_TIME_LIMIT)
-		return True; // shouldn't happen 
-	return False;
+		return true; // shouldn't happen 
+	return false;
 }
 
 /*
@@ -1500,12 +1500,12 @@ static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	}
 
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
-		return False;
+		return false;
 	}
 
 	result->tag   = INT_TAG;
 	result->val.n = len;
-	return True;
+	return true;
 }
 
 /*
@@ -1514,38 +1514,55 @@ static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *
 static int minMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
-	int minVal, value, i;
+	int minVal;
+	int value;
 
-	if (nArgs == 1)
+	if (nArgs == 1) {
 		return tooFewArgsErr(errMsg);
-	if (!readIntArg(argList[0], &minVal, errMsg))
-		return False;
-	for (i = 0; i < nArgs; i++) {
-		if (!readIntArg(argList[i], &value, errMsg))
-			return False;
-		minVal = value < minVal ? value : minVal;
 	}
-	result->tag = INT_TAG;
+	
+	if (!readIntArg(argList[0], &minVal, errMsg)) {
+		return false;
+	}
+	
+	for (int i = 0; i < nArgs; i++) {
+		if (!readIntArg(argList[i], &value, errMsg)) {
+			return false;
+		}
+		
+		minVal = std::min(minVal, value);
+	}
+	
+	result->tag   = INT_TAG;
 	result->val.n = minVal;
-	return True;
+	return true;
 }
+
 static int maxMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	(void)window;
 
-	int maxVal, value, i;
+	int maxVal;
+	int value;
 
-	if (nArgs == 1)
+	if (nArgs == 1) {
 		return tooFewArgsErr(errMsg);
-	if (!readIntArg(argList[0], &maxVal, errMsg))
-		return False;
-	for (i = 0; i < nArgs; i++) {
-		if (!readIntArg(argList[i], &value, errMsg))
-			return False;
-		maxVal = value > maxVal ? value : maxVal;
 	}
-	result->tag = INT_TAG;
+	
+	if (!readIntArg(argList[0], &maxVal, errMsg)) {
+		return false;
+	}
+	
+	for (int i = 0; i < nArgs; i++) {
+		if (!readIntArg(argList[i], &value, errMsg)) {
+			return false;
+		}
+		
+		maxVal = std::max(maxVal, value);
+	}
+
+	result->tag   = INT_TAG;
 	result->val.n = maxVal;
-	return True;
+	return true;
 }
 
 static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -1568,12 +1585,8 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		w = begin(WindowList);
 	} else if (!strcmp(string, "next")) {
 
-		// TODO(eteran): find a better way to do this, we have a window pointer
-		//               but we really want an iterator so we can move it to the
-		//               next element. Perhaps we'll end up using an intrusive list?
-			
-		auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *w) {
-			return w == window;
+		auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+			return doc == window;
 		});
 		
 		if(curr != end(WindowList)) {
@@ -1581,11 +1594,11 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		}
 	} else if (strlen(string) >= MAXPATHLEN) {
 		*errMsg = "Pathname too long in focus_window()";
-		return False;
+		return false;
 	} else {
 		// just use the plain name as supplied 
-		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *win) {
-			QString fullname = win->FullPath();
+		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *doc) {
+			QString fullname = doc->FullPath();
 			return fullname == QLatin1String(string);
 		});
 		
@@ -1599,7 +1612,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 			if (NormalizePathname(normalizedString) == 1) {
 				//  Something is broken with the input pathname. 
 				*errMsg = "Pathname too long in focus_window()";
-				return False;
+				return false;
 			}
 			
 			w = std::find_if(begin(WindowList), end(WindowList), [&normalizedString](Document *win) {
@@ -1614,7 +1627,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		result->tag         = STRING_TAG;
 		result->val.str.rep = PERM_ALLOC_STR("");
 		result->val.str.len = 0;
-		return True;
+		return true;
 	}
 	
 	Document *const win = *w;
@@ -1647,10 +1660,10 @@ static int getRangeMS(Document *window, DataValue *argList, int nArgs, DataValue
 		return wrongNArgsErr(errMsg);
 		
 	if (!readIntArg(argList[0], &from, errMsg))
-		return False;
+		return false;
 		
 	if (!readIntArg(argList[1], &to, errMsg))
-		return False;
+		return false;
 		
 	if (from < 0)
 		from = 0;
@@ -1682,7 +1695,7 @@ static int getRangeMS(Document *window, DataValue *argList, int nArgs, DataValue
 	/* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
 
-	return True;
+	return true;
 }
 
 /*
@@ -1697,7 +1710,7 @@ static int getCharacterMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readIntArg(argList[0], &pos, errMsg))
-		return False;
+		return false;
 	if (pos < 0)
 		pos = 0;
 	if (pos > buf->BufGetLength())
@@ -1711,7 +1724,7 @@ static int getCharacterMS(Document *window, DataValue *argList, int nArgs, DataV
 	buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
 	/* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
-	return True;
+	return true;
 }
 
 /*
@@ -1729,13 +1742,13 @@ static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataV
 		return wrongNArgsErr(errMsg);
 		
 	if (!readIntArg(argList[0], &from, errMsg))
-		return False;
+		return false;
 		
 	if (!readIntArg(argList[1], &to, errMsg))
-		return False;
+		return false;
 		
 	if (!readStringArgEx(argList[2], &string, errMsg))
-		return False;
+		return false;
 		
 	if (from < 0)
 		from = 0;
@@ -1757,7 +1770,7 @@ static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (window->lockReasons_.isAnyLocked()) {
 		XBell(XtDisplay(window->shell_), 0);
 		result->tag = NO_TAG;
-		return True;
+		return true;
 	}
 
 	/* There are no null characters in the string (because macro strings
@@ -1768,13 +1781,13 @@ static int replaceRangeMS(Document *window, DataValue *argList, int nArgs, DataV
 	   up, stop the macro and tell the user of the failure */
 	if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
 		*errMsg = "Too much binary data in file";
-		return False;
+		return false;
 	}
 
 	// Do the replace 
 	buf->BufReplaceEx(from, to, string);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -1789,13 +1802,13 @@ static int replaceSelectionMS(Document *window, DataValue *argList, int nArgs, D
 		return wrongNArgsErr(errMsg);
 
 	if (!readStringArgEx(argList[0], &string, errMsg))
-		return False;
+		return false;
 
 	// Don't allow modifications if the window is read-only 
 	if (window->lockReasons_.isAnyLocked()) {
 		XBell(XtDisplay(window->shell_), 0);
 		result->tag = NO_TAG;
-		return True;
+		return true;
 	}
 
 	/* There are no null characters in the string (because macro strings
@@ -1806,13 +1819,13 @@ static int replaceSelectionMS(Document *window, DataValue *argList, int nArgs, D
 	   up, stop the macro and tell the user of the failure */
 	if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
 		*errMsg = "Too much binary data in file";
-		return False;
+		return false;
 	}
 
 	// Do the replace 
 	window->buffer_->BufReplaceSelectedEx(string);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -1867,13 +1880,13 @@ static int validNumberMS(Document *window, DataValue *argList, int nArgs, DataVa
 		return wrongNArgsErr(errMsg);
 	}
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
-		return False;
+		return false;
 	}
 
 	result->tag = INT_TAG;
 	result->val.n = StringToNum(string, nullptr);
 
-	return True;
+	return true;
 }
 
 /*
@@ -1896,13 +1909,13 @@ static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, D
 	if (nArgs != 4)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &string_len, stringStorage[1], errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[1], &from, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[2], &to, errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[3], &replStr, &replStr_len, stringStorage[1], errMsg))
-		return False;
+		return false;
 	
 	length = string_len;
 	
@@ -1926,7 +1939,7 @@ static int replaceSubstringMS(Document *window, DataValue *argList, int nArgs, D
 	strncpy(result->val.str.rep, string, from);
 	strncpy(&result->val.str.rep[from], replStr, replaceLen);
 	strncpy(&result->val.str.rep[from + replaceLen], &string[to], length - to);
-	return True;
+	return true;
 }
 
 /*
@@ -1946,13 +1959,13 @@ static int substringMS(Document *window, DataValue *argList, int nArgs, DataValu
 	if (nArgs != 2 && nArgs != 3)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[1], &from, errMsg))
-		return False;
+		return false;
 	length = to = len;
 	if (nArgs == 3)
 		if (!readIntArg(argList[2], &to, errMsg))
-			return False;
+			return false;
 	if (from < 0)
 		from += length;
 	if (from < 0)
@@ -1971,7 +1984,7 @@ static int substringMS(Document *window, DataValue *argList, int nArgs, DataValu
 	// Allocate a new string and copy the sub-string into it 
 	result->tag = STRING_TAG;
 	AllocNStringNCpy(&result->val.str, &string[from], to - from);
-	return True;
+	return true;
 }
 
 static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -1986,7 +1999,7 @@ static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
-		return False;
+		return false;
 	length = len;
 
 	// Allocate a new string and copy an uppercased version of the string it 
@@ -1994,7 +2007,7 @@ static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	AllocNString(&result->val.str, length + 1);
 	for (i = 0; i < length; i++)
 		result->val.str.rep[i] = toupper((unsigned char)string[i]);
-	return True;
+	return true;
 }
 
 static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2009,7 +2022,7 @@ static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
-		return False;
+		return false;
 	length = len;
 
 	// Allocate a new string and copy an lowercased version of the string it 
@@ -2017,7 +2030,7 @@ static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	AllocNString(&result->val.str, length + 1);
 	for (i = 0; i < length; i++)
 		result->val.str.rep[i] = tolower((unsigned char)string[i]);
-	return True;
+	return true;
 }
 
 static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2032,7 +2045,7 @@ static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg))
-		return False;
+		return false;
 
 	/* Use the XmClipboard routines to copy the text to the clipboard.
 	   If errors occur, just give up.  */
@@ -2040,13 +2053,13 @@ static int stringToClipboardMS(Document *window, DataValue *argList, int nArgs, 
 	stat = SpinClipboardStartCopy(TheDisplay, XtWindow(window->textArea_), s = XmStringCreateSimpleEx("NEdit"), XtLastTimestampProcessed(TheDisplay), window->textArea_, nullptr, &itemID);
 	XmStringFree(s);
 	if (stat != ClipboardSuccess)
-		return True;
+		return true;
 	if (SpinClipboardCopy(TheDisplay, XtWindow(window->textArea_), itemID, (String) "STRING", string, len, 0, nullptr) != ClipboardSuccess) {
 		SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea_), itemID);
-		return True;
+		return true;
 	}
 	SpinClipboardEndCopy(TheDisplay, XtWindow(window->textArea_), itemID);
-	return True;
+	return true;
 }
 
 static int clipboardToStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2070,7 +2083,7 @@ static int clipboardToStringMS(Document *window, DataValue *argList, int nArgs, 
 		 * a failure, so we try to remove the lock, just to be sure.
 		 */
 		SpinClipboardUnlock(TheDisplay, XtWindow(window->shell_));
-		return True;
+		return true;
 	}
 
 	// Allocate a new string to hold the data 
@@ -2089,7 +2102,7 @@ static int clipboardToStringMS(Document *window, DataValue *argList, int nArgs, 
 	result->val.str.rep[retLength] = '\0';
 	result->val.str.len = retLength;
 
-	return True;
+	return true;
 }
 
 /*
@@ -2112,7 +2125,7 @@ static int readFileMS(Document *window, DataValue *argList, int nArgs, DataValue
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &name, &len, stringStorage, errMsg))
-		return False;
+		return false;
 
 	// Read the whole file into an allocated string 
 	if ((fp = fopen(name, "r")) == nullptr)
@@ -2147,7 +2160,7 @@ static int readFileMS(Document *window, DataValue *argList, int nArgs, DataValue
 	// Return the results 
 	ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
 	ReturnGlobals[READ_STATUS]->value.val.n = True;
-	return True;
+	return true;
 
 error:
 	fclose(fp);
@@ -2158,7 +2171,7 @@ errorNoClose:
 	result->tag = STRING_TAG;
 	result->val.str.rep = PERM_ALLOC_STR("");
 	result->val.str.len = 0;
-	return True;
+	return true;
 }
 
 /*
@@ -2189,15 +2202,15 @@ static int writeOrAppendFile(int append, Document *window, DataValue *argList, i
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &len, stringStorage[1], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[1], &name, &nameLen, stringStorage[0], errMsg))
-		return False;
+		return false;
 
 	// open the file 
 	if ((fp = fopen(name, append ? "a" : "w")) == nullptr) {
 		result->tag = INT_TAG;
 		result->val.n = False;
-		return True;
+		return true;
 	}
 
 	// write the string to the file 
@@ -2206,14 +2219,14 @@ static int writeOrAppendFile(int append, Document *window, DataValue *argList, i
 		fclose(fp);
 		result->tag = INT_TAG;
 		result->val.n = False;
-		return True;
+		return true;
 	}
 	fclose(fp);
 
 	// return the status 
 	result->tag = INT_TAG;
 	result->val.n = True;
-	return True;
+	return true;
 }
 
 /*
@@ -2273,13 +2286,13 @@ static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (nArgs < 3)
 		return tooFewArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &stringLen, stringStorage[0], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[1], &searchStr, &searchStrLen, stringStorage[1], errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[2], &beginPos, errMsg))
-		return False;
+		return false;
 	if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &wrap, errMsg))
-		return False;
+		return false;
 
 	len = argList[0].val.str.len;
 	if (beginPos > len) {
@@ -2314,7 +2327,7 @@ static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataV
 	ReturnGlobals[SEARCH_END]->value.val.n = found ? foundEnd : 0;
 	result->tag = INT_TAG;
 	result->val.n = found ? foundStart : -1;
-	return True;
+	return true;
 }
 
 /*
@@ -2347,22 +2360,22 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 	if (nArgs < 3 || nArgs > 5)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &string, &stringLen, stringStorage[0], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[1], &searchStr, &searchStrLen, stringStorage[1], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[2], &replaceStr, &replaceStrLen, stringStorage[2], errMsg))
-		return False;
+		return false;
 	for (i = 3; i < nArgs; i++) {
 		// Read the optional search type and force arguments 
 		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage[2], errMsg))
-			return False;
+			return false;
 		if (!StringToSearchType(argStr, &searchType)) {
 			// It's not a search type.  is it "copy"? 
 			if (!strcmp(argStr, "copy")) {
 				force = True;
 			} else {
 				*errMsg = "unrecognized argument to %s";
-				return False;
+				return false;
 			}
 		}
 	}
@@ -2394,7 +2407,7 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 		strcpy(&result->val.str.rep[replaceEnd], &string[copyEnd]);
 		XtFree(replacedStr);
 	}
-	return True;
+	return true;
 }
 
 static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg) {
@@ -2408,7 +2421,7 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
 	*searchType = SEARCH_LITERAL;
 	for (i = 0; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage, errMsg))
-			return False;
+			return false;
 		else if (!strcmp(argStr, "wrap"))
 			*wrap = True;
 		else if (!strcmp(argStr, "nowrap"))
@@ -2419,10 +2432,10 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
 			*searchDirection = SEARCH_FORWARD;
 		else if (!StringToSearchType(argStr, searchType)) {
 			*errMsg = "Unrecognized argument to %s";
-			return False;
+			return false;
 		}
 	}
-	return True;
+	return true;
 }
 
 static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2432,12 +2445,12 @@ static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
 	if (!readIntArg(argList[0], &pos, errMsg))
-		return False;
+		return false;
 
 	// Set the position 
 	TextSetCursorPos(window->lastFocus_, pos);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 static int selectMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2447,9 +2460,9 @@ static int selectMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
 	if (!readIntArg(argList[0], &start, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[1], &end, errMsg))
-		return False;
+		return false;
 
 	// Verify integrity of arguments 
 	if (start > end) {
@@ -2469,7 +2482,7 @@ static int selectMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	// Make the selection 
 	window->buffer_->BufSelect(start, end);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 static int selectRectangleMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2479,18 +2492,18 @@ static int selectRectangleMS(Document *window, DataValue *argList, int nArgs, Da
 	if (nArgs != 4)
 		return wrongNArgsErr(errMsg);
 	if (!readIntArg(argList[0], &start, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[1], &end, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[2], &left, errMsg))
-		return False;
+		return false;
 	if (!readIntArg(argList[3], &right, errMsg))
-		return False;
+		return false;
 
 	// Make the selection 
 	window->buffer_->BufRectSelect(start, end, left, right);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -2504,7 +2517,7 @@ static int beepMS(Document *window, DataValue *argList, int nArgs, DataValue *re
 		return wrongNArgsErr(errMsg);
 	XBell(XtDisplay(window->shell_), 0);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2520,12 +2533,12 @@ static int tPrintMS(Document *window, DataValue *argList, int nArgs, DataValue *
 		return tooFewArgsErr(errMsg);
 	for (i = 0; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &string, &stringLen, stringStorage, errMsg))
-			return False;
+			return false;
 		printf("%s%s", string, i == nArgs - 1 ? "" : " ");
 	}
 	fflush(stdout);
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -2545,7 +2558,7 @@ static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &name, &nameLen, stringStorage[0], errMsg)) {
 		*errMsg = "argument to %s must be a string";
-		return False;
+		return false;
 	}
 	value = getenv(name);
 	if(!value)
@@ -2554,7 +2567,7 @@ static int getenvMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	// Return the text as an allocated string 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, value);
-	return True;
+	return true;
 }
 
 static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2567,21 +2580,21 @@ static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue
 	if (nArgs != 2)
 		return wrongNArgsErr(errMsg);
 	if (!readStringArg(argList[0], &cmdString, &cmdStringLen, stringStorage[0], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[1], &inputString, &inputStringLen, stringStorage[1], errMsg))
-		return False;
+		return false;
 
 	/* Shell command execution requires that the macro be suspended, so
 	   this subroutine can't be run if macro execution can't be interrupted */
 	if (!MacroRunWindow()->macroCmdData_) {
 		*errMsg = "%s can't be called from non-suspendable context";
-		return False;
+		return false;
 	}
 
 	ShellCmdToMacroString(window, cmdString, inputString);
 	result->tag = INT_TAG;
 	result->val.n = 0;
-	return True;
+	return true;
 }
 
 /*
@@ -2623,23 +2636,23 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	   This subroutine can't be run if macro execution can't be interrupted */
 	if (!cmdData) {
 		*errMsg = "%s can't be called from non-suspendable context";
-		return False;
+		return false;
 	}
 
 	/* Read and check the arguments.  The first being the dialog message,
 	   and the rest being the button labels */
 	if (nArgs == 0) {
 		*errMsg = "%s subroutine called with no arguments";
-		return False;
+		return false;
 	}
 	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg)) {
-		return False;
+		return false;
 	}
 
 	// check that all button labels can be read 
 	for (i = 1; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg)) {
-			return False;
+			return false;
 		}
 	}
 	
@@ -2666,7 +2679,7 @@ static int dialogMS(Document *window, DataValue *argList, int nArgs, DataValue *
 	delete prompt;
 	
 	ResumeMacroExecution(window);
-	return True;
+	return true;
 }
 
 static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2688,23 +2701,23 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	   This subroutine can't be run if macro execution can't be interrupted */
 	if (!cmdData) {
 		*errMsg = "%s can't be called from non-suspendable context";
-		return False;
+		return false;
 	}
 
 	/* Read and check the arguments.  The first being the dialog message,
 	   and the rest being the button labels */
 	if (nArgs == 0) {
 		*errMsg = "%s subroutine called with no arguments";
-		return False;
+		return false;
 	}
 	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg)) {
-		return False;
+		return false;
 	}
 	
 	// check that all button labels can be read 
 	for (i = 1; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, stringStorage, errMsg)) {
-			return False;
+			return false;
 		}
 	}
 
@@ -2738,7 +2751,7 @@ static int stringDialogMS(Document *window, DataValue *argList, int nArgs, DataV
 	ResumeMacroExecution(window);
 	delete prompt;
 	
-	return True;
+	return true;
 }
 
 /*
@@ -2778,21 +2791,21 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	// Read and check the string 
 	if (nArgs < 1) {
 		*errMsg = "%s subroutine called with too few arguments";
-		return False;
+		return false;
 	}
 	if (nArgs > 6) {
 		*errMsg = "%s subroutine called with too many arguments";
-		return False;
+		return false;
 	}
 
 	// Read the tip text or key 
 	if (!readStringArg(argList[0], &tipText, &tipTextLen, stringStorage, errMsg))
-		return False;
+		return false;
 
 	// Read the anchor position (-1 for unanchored) 
 	if (nArgs > 1) {
 		if (!readIntArg(argList[1], &anchorPos, errMsg))
-			return False;
+			return false;
 	} else {
 		anchorPos = -1;
 	}
@@ -2802,7 +2815,7 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	// Any further args are directives for relative positioning 
 	for (i = 2; i < nArgs; ++i) {
 		if (!readStringArg(argList[i], &txtArg, &txtArgLen, stringStorage, errMsg)) {
-			return False;
+			return false;
 		}
 		switch (txtArg[0]) {
 		case 'c':
@@ -2846,7 +2859,7 @@ static int calltipMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	// Look up (maybe) a calltip and display it 
 	result->val.n = ShowTipString(window, tipText, anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
 
-	return True;
+	return true;
 
 bad_arg:
 	/* This is how the (more informative) global var. version would work,
@@ -2854,7 +2867,7 @@ bad_arg:
 	/* sprintf(msg, "unrecognized argument to %%s: \"%s\"", txtArg);
 	*errMsg = msg; */
 	*errMsg = "unrecognized argument to %s";
-	return False;
+	return false;
 }
 
 /*
@@ -2865,17 +2878,17 @@ static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataVa
 
 	if (nArgs > 1) {
 		*errMsg = "%s subroutine called with too many arguments";
-		return False;
+		return false;
 	}
 	if (nArgs > 0) {
 		if (!readIntArg(argList[0], &calltipID, errMsg))
-			return False;
+			return false;
 	}
 
 	KillCalltip(window, calltipID);
 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -2889,7 +2902,7 @@ static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValu
 
 	result->tag = INT_TAG;
 	result->val.n = GetCalltipID(window, 0);
-	return True;
+	return true;
 }
 
 /*
@@ -2940,26 +2953,26 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 
 	//  Get the argument list.  
 	if (nArgs > 0 && !readStringArg(argList[0], &title, &titleLen, stringStorage[0], errMsg)) {
-		return False;
+		return false;
 	}
 
 	if (nArgs > 1 && !readStringArg(argList[1], &mode, &modeLen, stringStorage[1], errMsg)) {
-		return False;
+		return false;
 	}
 	if (strcmp(mode, "exist") != 0 && strcmp(mode, "new") != 0) {
 		M_FAILURE("Invalid value for mode in %s");
 	}
 
 	if (nArgs > 2 && !readStringArg(argList[2], &defaultPath, &defaultPathLen, stringStorage[2], errMsg)) {
-		return False;
+		return false;
 	}
 
 	if (nArgs > 3 && !readStringArg(argList[3], &filter, &filterLen, stringStorage[3], errMsg)) {
-		return False;
+		return false;
 	}
 
 	if (nArgs > 4 && !readStringArg(argList[4], &defaultName, &defaultNameLen, stringStorage[4], errMsg)) {
-		return False;
+		return false;
 	}
 
 	if (nArgs > 5) {
@@ -3017,7 +3030,7 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 		result->val.str.len = 0;
 	}
 
-	return True;
+	return true;
 }
 
 // T Balinski 
@@ -3043,31 +3056,31 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	   This subroutine can't be run if macro execution can't be interrupted */
 	if (!cmdData) {
 		*errMsg = "%s can't be called from non-suspendable context";
-		return False;
+		return false;
 	}
 
 	/* Read and check the arguments.  The first being the dialog message,
 	   and the rest being the button labels */
 	if (nArgs < 2) {
 		*errMsg = "%s subroutine called with no message, string or arguments";
-		return False;
+		return false;
 	}
 
 	if (!readStringArg(argList[0], &message, &messageLen, stringStorage, errMsg))
-		return False;
+		return false;
 
 	if (!readStringArg(argList[1], &text, &textLen, textStorage, errMsg))
-		return False;
+		return false;
 
 	if (!text || text[0] == '\0') {
 		*errMsg = "%s subroutine called with empty list data";
-		return False;
+		return false;
 	}
 
 	// check that all button labels can be read 
 	for (i = 2; i < nArgs; i++) {
 		if (!readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg)) {
-			return False;
+			return false;
 		}
 	}
 			
@@ -3103,7 +3116,7 @@ static int listDialogMS(Document *window, DataValue *argList, int nArgs, DataVal
 	
 	ResumeMacroExecution(window);
 
-	return True;
+	return true;
 }
 
 static int stringCompareMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3123,19 +3136,19 @@ static int stringCompareMS(Document *window, DataValue *argList, int nArgs, Data
 		return (wrongNArgsErr(errMsg));
 	}
 	if (!readStringArg(argList[0], &leftStr, &leftStrLen, stringStorage[0], errMsg))
-		return False;
+		return false;
 	if (!readStringArg(argList[1], &rightStr, &rightStrLen, stringStorage[1], errMsg))
-		return False;
+		return false;
 	for (i = 2; i < nArgs; ++i) {
 		if (!readStringArg(argList[i], &argStr, &argStrLen, stringStorage[2], errMsg))
-			return False;
+			return false;
 		else if (!strcmp(argStr, "case"))
 			considerCase = True;
 		else if (!strcmp(argStr, "nocase"))
 			considerCase = False;
 		else {
 			*errMsg = "Unrecognized argument to %s";
-			return False;
+			return false;
 		}
 	}
 	if (considerCase) {
@@ -3146,7 +3159,7 @@ static int stringCompareMS(Document *window, DataValue *argList, int nArgs, Data
 	}
 	result->tag = INT_TAG;
 	result->val.n = compareResult;
-	return True;
+	return true;
 }
 
 /*
@@ -3319,7 +3332,7 @@ static int setBacklightStringMS(Document *window, DataValue *argList,
     else if (nArgs == 1) {
       if (argList[0].tag != STRING_TAG) {
           *errMsg = "%s not called with a string parameter";
-          return False;
+          return false;
       }
       backlightString = argList[0].val.str.rep;
     }
@@ -3332,7 +3345,7 @@ static int setBacklightStringMS(Document *window, DataValue *argList,
       backlightString = nullptr;                 / * turns of backlighting * /
 
     window->SetBacklightChars(backlightString);
-    return True;
+    return true;
 } */
 
 static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3343,7 +3356,7 @@ static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	result->tag = INT_TAG;
 	result->val.n = TextGetCursorPos(window->lastFocus_);
-	return True;
+	return true;
 }
 
 static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3359,7 +3372,7 @@ static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *re
 	if (!TextPosToLineAndCol(window->lastFocus_, cursorPos, &line, &colNum))
 		line = window->buffer_->BufCountLines(0, cursorPos) + 1;
 	result->val.n = line;
-	return True;
+	return true;
 }
 
 static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3374,7 +3387,7 @@ static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	result->tag = INT_TAG;
 	cursorPos = TextGetCursorPos(window->lastFocus_);
 	result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
-	return True;
+	return true;
 }
 
 static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3385,7 +3398,7 @@ static int fileNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->filename_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3396,7 +3409,7 @@ static int filePathMV(Document *window, DataValue *argList, int nArgs, DataValue
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->path_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int lengthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3407,7 +3420,7 @@ static int lengthMV(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->BufGetLength();
-	return True;
+	return true;
 }
 
 static int selectionStartMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3418,7 +3431,7 @@ static int selectionStartMV(Document *window, DataValue *argList, int nArgs, Dat
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.start : -1;
-	return True;
+	return true;
 }
 
 static int selectionEndMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3429,7 +3442,7 @@ static int selectionEndMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.end : -1;
-	return True;
+	return true;
 }
 
 static int selectionLeftMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3442,7 +3455,7 @@ static int selectionLeftMV(Document *window, DataValue *argList, int nArgs, Data
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
-	return True;
+	return true;
 }
 
 static int selectionRightMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3455,7 +3468,7 @@ static int selectionRightMV(Document *window, DataValue *argList, int nArgs, Dat
 
 	result->tag = INT_TAG;
 	result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;
-	return True;
+	return true;
 }
 
 static int wrapMarginMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3469,7 +3482,7 @@ static int wrapMarginMV(Document *window, DataValue *argList, int nArgs, DataVal
 	XtVaGetValues(window->textArea_, textNcolumns, &nCols, textNwrapMargin, &margin, nullptr);
 	result->tag = INT_TAG;
 	result->val.n = margin == 0 ? nCols : margin;
-	return True;
+	return true;
 }
 
 static int statisticsLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3480,7 +3493,7 @@ static int statisticsLineMV(Document *window, DataValue *argList, int nArgs, Dat
 
 	result->tag = INT_TAG;
 	result->val.n = window->showStats_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int incSearchLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3491,7 +3504,7 @@ static int incSearchLineMV(Document *window, DataValue *argList, int nArgs, Data
 
 	result->tag = INT_TAG;
 	result->val.n = window->showISearchLine_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int showLineNumbersMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3502,7 +3515,7 @@ static int showLineNumbersMV(Document *window, DataValue *argList, int nArgs, Da
 
 	result->tag = INT_TAG;
 	result->val.n = window->showLineNumbers_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int autoIndentMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3525,13 +3538,13 @@ static int autoIndentMV(Document *window, DataValue *argList, int nArgs, DataVal
 		break;
 	default:
 		*errMsg = "Invalid indent style value encountered in %s";
-		return False;
+		return false;
 		break;
 	}
 	result->tag = STRING_TAG;
 	result->val.str.rep = res;
 	result->val.str.len = strlen(res);
-	return True;
+	return true;
 }
 
 static int wrapTextMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3554,13 +3567,13 @@ static int wrapTextMV(Document *window, DataValue *argList, int nArgs, DataValue
 		break;
 	default:
 		*errMsg = "Invalid wrap style value encountered in %s";
-		return False;
+		return false;
 		break;
 	}
 	result->tag = STRING_TAG;
 	result->val.str.rep = res;
 	result->val.str.len = strlen(res);
-	return True;
+	return true;
 }
 
 static int highlightSyntaxMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3571,7 +3584,7 @@ static int highlightSyntaxMV(Document *window, DataValue *argList, int nArgs, Da
 
 	result->tag = INT_TAG;
 	result->val.n = window->highlightSyntax_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int makeBackupCopyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3582,7 +3595,7 @@ static int makeBackupCopyMV(Document *window, DataValue *argList, int nArgs, Dat
 
 	result->tag = INT_TAG;
 	result->val.n = window->saveOldVersion_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int incBackupMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3593,7 +3606,7 @@ static int incBackupMV(Document *window, DataValue *argList, int nArgs, DataValu
 
 	result->tag = INT_TAG;
 	result->val.n = window->autoSave_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int showMatchingMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3616,13 +3629,13 @@ static int showMatchingMV(Document *window, DataValue *argList, int nArgs, DataV
 		break;
 	default:
 		*errMsg = "Invalid match flashing style value encountered in %s";
-		return False;
+		return false;
 		break;
 	}
 	result->tag = STRING_TAG;
 	result->val.str.rep = res;
 	result->val.str.len = strlen(res);
-	return True;
+	return true;
 }
 
 static int matchSyntaxBasedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3633,7 +3646,7 @@ static int matchSyntaxBasedMV(Document *window, DataValue *argList, int nArgs, D
 
 	result->tag = INT_TAG;
 	result->val.n = window->matchSyntaxBased_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int overTypeModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3644,7 +3657,7 @@ static int overTypeModeMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = INT_TAG;
 	result->val.n = window->overstrike_ ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int readOnlyMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3655,7 +3668,7 @@ static int readOnlyMV(Document *window, DataValue *argList, int nArgs, DataValue
 
 	result->tag = INT_TAG;
 	result->val.n = (window->lockReasons_.isAnyLocked()) ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int lockedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3666,7 +3679,7 @@ static int lockedMV(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	result->tag = INT_TAG;
 	result->val.n = (window->lockReasons_.isUserLocked()) ? 1 : 0;
-	return True;
+	return true;
 }
 
 static int fileFormatMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3689,12 +3702,12 @@ static int fileFormatMV(Document *window, DataValue *argList, int nArgs, DataVal
 		break;
 	default:
 		*errMsg = "Invalid linefeed style value encountered in %s";
-		return False;
+		return false;
 	}
 	result->tag = STRING_TAG;
 	result->val.str.rep = res;
 	result->val.str.len = strlen(res);
-	return True;
+	return true;
 }
 
 static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3704,7 +3717,7 @@ static int fontNameMV(Document *window, DataValue *argList, int nArgs, DataValue
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->fontName_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int fontNameItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3714,7 +3727,7 @@ static int fontNameItalicMV(Document *window, DataValue *argList, int nArgs, Dat
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->italicFontName_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int fontNameBoldMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3724,7 +3737,7 @@ static int fontNameBoldMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->boldFontName_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int fontNameBoldItalicMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3734,7 +3747,7 @@ static int fontNameBoldItalicMV(Document *window, DataValue *argList, int nArgs,
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, window->boldItalicFontName_.toLatin1().data());
-	return True;
+	return true;
 }
 
 static int subscriptSepMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3746,7 +3759,7 @@ static int subscriptSepMV(Document *window, DataValue *argList, int nArgs, DataV
 	result->tag = STRING_TAG;
 	result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
 	result->val.str.len = strlen(result->val.str.rep);
-	return True;
+	return true;
 }
 
 static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3756,7 +3769,7 @@ static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = INT_TAG;
 	result->val.n = TextGetMinFontWidth(window->textArea_, window->highlightSyntax_);
-	return True;
+	return true;
 }
 
 static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3766,7 +3779,7 @@ static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = INT_TAG;
 	result->val.n = TextGetMaxFontWidth(window->textArea_, window->highlightSyntax_);
-	return True;
+	return true;
 }
 
 static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3776,7 +3789,7 @@ static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	result->tag = INT_TAG;
 	result->val.n = TextFirstVisibleLine(window->lastFocus_);
-	return True;
+	return true;
 }
 
 static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3786,7 +3799,7 @@ static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, Da
 
 	result->tag = INT_TAG;
 	result->val.n = TextNumVisibleLines(window->lastFocus_);
-	return True;
+	return true;
 }
 
 static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3797,7 +3810,7 @@ static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	result->tag = INT_TAG;
 	result->val.n = TextVisibleWidth(window->lastFocus_);
-	return True;
+	return true;
 }
 
 static int activePaneMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3808,7 +3821,7 @@ static int activePaneMV(Document *window, DataValue *argList, int nArgs, DataVal
 
 	result->tag = INT_TAG;
 	result->val.n = window->WidgetToPaneIndex(window->lastFocus_) + 1;
-	return True;
+	return true;
 }
 
 static int nPanesMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3819,7 +3832,7 @@ static int nPanesMV(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	result->tag = INT_TAG;
 	result->val.n = window->nPanes_ + 1;
-	return True;
+	return true;
 }
 
 static int emptyArrayMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3831,7 +3844,7 @@ static int emptyArrayMV(Document *window, DataValue *argList, int nArgs, DataVal
 
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
-	return True;
+	return true;
 }
 
 static int serverNameMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3843,7 +3856,7 @@ static int serverNameMV(Document *window, DataValue *argList, int nArgs, DataVal
 
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, GetPrefServerName());
-	return True;
+	return true;
 }
 
 static int tabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3854,7 +3867,7 @@ static int tabDistMV(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->tabDist_;
-	return True;
+	return true;
 }
 
 static int emTabDistMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3868,7 +3881,7 @@ static int emTabDistMV(Document *window, DataValue *argList, int nArgs, DataValu
 	XtVaGetValues(window->textArea_, textNemulateTabs, &dist, nullptr);
 	result->tag = INT_TAG;
 	result->val.n = dist;
-	return True;
+	return true;
 }
 
 static int useTabsMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3878,7 +3891,7 @@ static int useTabsMV(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->useTabs_;
-	return True;
+	return true;
 }
 
 static int modifiedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3889,7 +3902,7 @@ static int modifiedMV(Document *window, DataValue *argList, int nArgs, DataValue
 
 	result->tag = INT_TAG;
 	result->val.n = window->fileChanged_;
-	return True;
+	return true;
 }
 
 static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3906,7 +3919,7 @@ static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataV
 	
 	result->tag = STRING_TAG;
 	AllocNStringCpy(&result->val.str, lmName.toLatin1().data());
-	return True;
+	return true;
 }
 
 // -------------------------------------------------------------------------- 
@@ -3930,7 +3943,7 @@ static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataV
 	result->val.arrayPtr = ArrayNew();
 
 	if(!rangesetTable) {
-		return True;
+		return true;
 	}
 
 	rangesetList = rangesetTable->RangesetGetList();
@@ -3949,7 +3962,7 @@ static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataV
 			M_FAILURE("Failed to insert array element in %s");
 	}
 
-	return True;
+	return true;
 }
 
 /*
@@ -3973,7 +3986,7 @@ static int versionMV(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	result->tag = INT_TAG;
 	result->val.n = version;
-	return True;
+	return true;
 }
 
 /*
@@ -4004,16 +4017,16 @@ static int rangesetCreateMS(Document *window, DataValue *argList, int nArgs, Dat
 
 		result->tag = INT_TAG;
 		result->val.n = label;
-		return True;
+		return true;
 	} else {
 		if (!readIntArg(argList[0], &nRangesetsRequired, errMsg))
-			return False;
+			return false;
 
 		result->tag = ARRAY_TAG;
 		result->val.arrayPtr = ArrayNew();
 
 		if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
-			return True;
+			return true;
 
 		for (i = 0; i < nRangesetsRequired; i++) {
 			element.tag = INT_TAG;
@@ -4029,7 +4042,7 @@ static int rangesetCreateMS(Document *window, DataValue *argList, int nArgs, Dat
 			ArrayInsert(result, allocIndexStr, &element);
 		}
 
-		return True;
+		return true;
 	}
 }
 
@@ -4086,7 +4099,7 @@ static int rangesetDestroyMS(Document *window, DataValue *argList, int nArgs, Da
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -4119,7 +4132,7 @@ static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, 
 	result->val.arrayPtr = ArrayNew();
 
 	if(!rangesetTable) {
-		return True;
+		return true;
 	}
 
 	rangesetList = rangesetTable->RangesetGetList();
@@ -4148,7 +4161,7 @@ static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, 
 		}
 	}
 
-	return True;
+	return true;
 }
 
 /*
@@ -4212,10 +4225,10 @@ static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataVa
 	if (nArgs == 3) {
 		// add a range bounded by the start and end positions in $2, $3 
 		if (!readIntArg(argList[1], &start, errMsg)) {
-			return False;
+			return false;
 		}
 		if (!readIntArg(argList[2], &end, errMsg)) {
-			return False;
+			return false;
 		}
 
 		// make sure range is in order and fits buffer size 
@@ -4250,7 +4263,7 @@ static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataVa
 	// set up result 
 	result->tag = INT_TAG;
 	result->val.n = index;
-	return True;
+	return true;
 }
 
 /*
@@ -4308,9 +4321,9 @@ static int rangesetSubtractMS(Document *window, DataValue *argList, int nArgs, D
 	if (nArgs == 3) {
 		// remove a range bounded by the start and end positions in $2, $3 
 		if (!readIntArg(argList[1], &start, errMsg))
-			return False;
+			return false;
 		if (!readIntArg(argList[2], &end, errMsg))
-			return False;
+			return false;
 
 		// make sure range is in order and fits buffer size 
 		maxpos = buffer->BufGetLength();
@@ -4333,7 +4346,7 @@ static int rangesetSubtractMS(Document *window, DataValue *argList, int nArgs, D
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -4369,7 +4382,7 @@ static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, Dat
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -4433,7 +4446,7 @@ static int rangesetInfoMS(Document *window, DataValue *argList, int nArgs, DataV
 	if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
 		M_FAILURE("Failed to insert array element \"mode\" in %s");
 
-	return True;
+	return true;
 }
 
 /*
@@ -4472,7 +4485,7 @@ static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, Data
 			rangeIndex = -1;
 		} else if (nArgs == 2) {
 			if (!readIntArg(argList[1], &rangeIndex, errMsg)) {
-				return False;
+				return false;
 			}
 			ok = rangeset->RangesetFindRangeNo(rangeIndex - 1, &start, &end);
 		}
@@ -4483,7 +4496,7 @@ static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, Data
 	result->val.arrayPtr = ArrayNew();
 
 	if (!ok)
-		return True;
+		return true;
 
 	element.tag = INT_TAG;
 	element.val.n = start;
@@ -4495,7 +4508,7 @@ static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, Data
 	if (!ArrayInsert(result, PERM_ALLOC_STR("end"), &element))
 		M_FAILURE("Failed to insert array element \"end\" in %s");
 
-	return True;
+	return true;
 }
 
 /*
@@ -4533,7 +4546,7 @@ static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs
 		pos = TextGetCursorPos(window->lastFocus_);
 	} else if (nArgs == 2) {
 		if (!readIntArg(argList[1], &pos, errMsg))
-			return False;
+			return false;
 	}
 
 	maxpos = buffer->BufGetLength();
@@ -4546,7 +4559,7 @@ static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs
 	// set up result 
 	result->tag = INT_TAG;
 	result->val.n = rangeIndex;
-	return True;
+	return true;
 }
 
 /*
@@ -4591,7 +4604,7 @@ static int rangesetSetColorMS(Document *window, DataValue *argList, int nArgs, D
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -4633,7 +4646,7 @@ static int rangesetSetNameMS(Document *window, DataValue *argList, int nArgs, Da
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 /*
@@ -4684,7 +4697,7 @@ static int rangesetSetModeMS(Document *window, DataValue *argList, int nArgs, Da
 
 	// set up result 
 	result->tag = NO_TAG;
-	return True;
+	return true;
 }
 
 // -------------------------------------------------------------------------- 
@@ -4798,7 +4811,7 @@ static int fillStyleResult(DataValue *result, const char **errMsg, Document *win
 			M_ARRAY_INSERT_FAILURE();
 		}
 	}
-	return True;
+	return true;
 }
 
 /*
@@ -4829,7 +4842,7 @@ static int getStyleByNameMS(Document *window, DataValue *argList, int nArgs, Dat
 
 	if (!NamedStyleExists(styleName)) {
 		// if the given name is invalid we just return an empty array. 
-		return True;
+		return true;
 	}
 
 	return fillStyleResult(result, errMsg, window, styleName, (argList[0].tag == STRING_TAG), False, 0, -1);
@@ -4862,21 +4875,21 @@ static int getStyleAtPosMS(Document *window, DataValue *argList, int nArgs, Data
 	result->val.arrayPtr = nullptr;
 
 	if (!readIntArg(argList[0], &bufferPos, errMsg)) {
-		return False;
+		return false;
 	}
 
 	//  Verify sane buffer position 
 	if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the style, so we return an empty array. */
-		return True;
+		return true;
 	}
 
 	// Determine pattern code 
 	patCode = HighlightCodeOfPos(window, bufferPos);
 	if (patCode == 0) {
 		// if there is no pattern we just return an empty array. 
-		return True;
+		return true;
 	}
 
 	return fillStyleResult(
@@ -4943,7 +4956,7 @@ static int fillPatternResult(DataValue *result, const char **errMsg, Document *w
 		}
 	}
 
-	return True;
+	return true;
 }
 
 /*
@@ -4975,7 +4988,7 @@ static int getPatternByNameMS(Document *window, DataValue *argList, int nArgs, D
 	pattern = FindPatternOfWindow(window, patternName);
 	if(!pattern) {
 		// The pattern's name is unknown. 
-		return True;
+		return true;
 	}
 
 	return fillPatternResult(result, errMsg, window, patternName, (argList[0].tag == STRING_TAG), False, pattern->style.toLatin1().data(), -1);
@@ -5006,7 +5019,7 @@ static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, Da
 	/* The most straightforward case: Get a pattern, style and extent
 	   for a buffer position. */
 	if (!readIntArg(argList[0], &bufferPos, errMsg)) {
-		return False;
+		return false;
 	}
 
 	/*  Verify sane buffer position
@@ -5015,14 +5028,14 @@ static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, Da
 	if ((bufferPos < 0) || (bufferPos >= buffer->BufGetLength())) {
 		/*  If the position is not legal, we cannot guess anything about
 		    the highlighting pattern, so we return an empty array. */
-		return True;
+		return true;
 	}
 
 	// Determine the highlighting pattern used 
 	patCode = HighlightCodeOfPos(window, bufferPos);
 	if (patCode == 0) {
 		// if there is no highlighting pattern we just return an empty array. 
-		return True;
+		return true;
 	}
 
 	return fillPatternResult(
@@ -5038,12 +5051,12 @@ static int getPatternAtPosMS(Document *window, DataValue *argList, int nArgs, Da
 
 static int wrongNArgsErr(const char **errMsg) {
 	*errMsg = "Wrong number of arguments to function %s";
-	return False;
+	return false;
 }
 
 static int tooFewArgsErr(const char **errMsg) {
 	*errMsg = "Too few arguments to function %s";
-	return False;
+	return false;
 }
 
 /*
@@ -5076,7 +5089,7 @@ static int readIntArg(DataValue dv, int *result, const char **errMsg) {
 
 	if (dv.tag == INT_TAG) {
 		*result = dv.val.n;
-		return True;
+		return true;
 	} else if (dv.tag == STRING_TAG) {
 		for (c = dv.val.str.rep; *c != '\0'; c++) {
 			if (!(isdigit((unsigned char)*c) || *c == ' ' || *c == '\t')) {
@@ -5084,12 +5097,12 @@ static int readIntArg(DataValue dv, int *result, const char **errMsg) {
 			}
 		}
 		sscanf(dv.val.str.rep, "%d", result);
-		return True;
+		return true;
 	}
 
 typeError:
 	*errMsg = "%s called with non-integer argument";
-	return False;
+	return false;
 }
 
 /*
