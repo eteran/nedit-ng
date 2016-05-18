@@ -1396,21 +1396,19 @@ static void showMatchingCalltip(Widget parent, int i) {
 	}
 	// 5. Copy the calltip to a string 
 	tipLen = endPos - startPos;
-	auto message = new char[tipLen + 1]; // +1 = space for null
+	try {
+		auto message = new char[tipLen + 1]; // +1 = space for null
+		strncpy(message, &fileString[startPos], tipLen);
+		message[tipLen] = '\0';
 	
-	// TODO(eteran): catch the allocation failure!
-	if(!message) {
+		// 6. Display it 
+		tagsShowCalltip(Document::WidgetToWindow(parent), message);
+	
+		delete [] message;
+	} catch(const std::bad_alloc &) {
 		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Can't allocate memory for calltip message"));
-		delete [] fileString;
-		return;
 	}
-	strncpy(message, &fileString[startPos], tipLen);
-	message[tipLen] = 0;
-
-	// 6. Display it 
-	tagsShowCalltip(Document::WidgetToWindow(parent), message);
-
-	delete [] message;
+	
 	delete [] fileString;
 }
 
