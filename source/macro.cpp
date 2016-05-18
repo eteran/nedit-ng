@@ -1554,15 +1554,22 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	DocumentIterator w;
 
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
-		return False;
+		return false;
 	} else if (!strcmp(string, "last")) {
 		w = begin(WindowList);
 	} else if (!strcmp(string, "next")) {
+
 		// TODO(eteran): find a better way to do this, we have a window pointer
 		//               but we really want an iterator so we can move it to the
 		//               next element. Perhaps we'll end up using an intrusive list?
-		auto it = DocumentIterator(window);
-		w = ++it;
+			
+		auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *w) {
+			return w == window;
+		});
+		
+		if(curr != end(WindowList)) {
+			w = std::next(curr);
+		}
 	} else if (strlen(string) >= MAXPATHLEN) {
 		*errMsg = "Pathname too long in focus_window()";
 		return False;

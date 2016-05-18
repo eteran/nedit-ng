@@ -730,7 +730,11 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (TabCount == Document::WindowCount()) {
 		// this is only window, then exit 
-		XtCallActionProc(WindowList->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+		auto it = begin(WindowList);
+		if(it != end(WindowList)) {
+			Document *doc = *it;
+			XtCallActionProc(doc->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
+		}
 	} else {
 		if (TabCount == 1) {
 			CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
@@ -1818,17 +1822,20 @@ void Document::PreviousDocument() {
 void Document::NextDocument() {
 
 
-	if (!WindowList->next_)
+	if (!WindowList->next_) {
 		return;
+	}
 
 	Document *win = getNextTabWindow(1, GetPrefGlobalTabNavigate(), 1);
-	if(!win)
+	if(!win) {
 		return;
+	}
 
-	if (shell_ == win->shell_)
+	if (shell_ == win->shell_) {
 		win->RaiseDocument();
-	else
+	} else {
 		win->RaiseFocusDocumentWindow(true);
+	}
 }
 
 /*
@@ -2093,19 +2100,21 @@ bool Document::CloseAllDocumentInWindow() {
 			topDocument = GetTopDocument(winShell);
 
 			// close all non-top documents belong to this window 
-			for (win = WindowList; win;) {
+			for (Document *win = WindowList; win;) {
 				if (win->shell_ == winShell && win != topDocument) {
 					Document *next = win->next_;
 					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE))
 						return false;
 					win = next;
-				} else
+				} else {
 					win = win->next_;
+				}
 			}
 
 			// close the last document and its window 
-			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE))
+			if (!CloseFileAndWindow(topDocument, PROMPT_SBC_DIALOG_RESPONSE)) {
 				return false;
+			}
 		}
 	}
 
@@ -2725,7 +2734,7 @@ void Document::CloseWindow() {
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (WindowList == this && next_ == nullptr)) {
+	if (keepWindow || (this == WindowList && next_ == nullptr)) {
 		filename_ = QLatin1String("");
 
 		QString name = UniqueUntitledName();

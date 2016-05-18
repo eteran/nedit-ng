@@ -499,7 +499,7 @@ int main(int argc, char *argv[]) {
 				} else if (group == 1) {
 					isTabbed = 1; // new tab for file in group 
 				} else {          // not in group 
-					isTabbed = tabbed == -1 ? GetPrefOpenInTab() : tabbed;
+					isTabbed = (tabbed == -1) ? GetPrefOpenInTab() : tabbed;
 				}
 
 				/* Files are opened in background to improve opening speed
@@ -508,7 +508,14 @@ int main(int argc, char *argv[]) {
 				   last file opened will be raised to restore those deferred
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
-				window = EditExistingFile(WindowList, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+
+				auto it = begin(WindowList);
+				if(it != end(WindowList)) {
+					window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+				} else {
+					window = EditExistingFile(nullptr, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+				}
+				
 				fileSpecified = true;
 				if (window) {
 					window->CleanUpTabBarExposeQueue();
@@ -536,8 +543,9 @@ int main(int argc, char *argv[]) {
 				}
 
 				// register last opened file for later use 
-				if (window)
+				if (window) {
 					lastFile = window;
+				}
 			} else {
 				fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 			}
@@ -559,8 +567,9 @@ int main(int argc, char *argv[]) {
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
 		ReadMacroInitFile(WindowList);
 		CheckCloseDim();
-		if (toDoCommand)
+		if (toDoCommand) {
 			DoMacro(WindowList, toDoCommand, "-do macro");
+		}
 	}
 
 	// Begin remembering last command invoked for "Repeat" menu item 
