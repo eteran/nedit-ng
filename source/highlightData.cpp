@@ -709,39 +709,39 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	QString name = ReadSymbolicFieldEx(inPtr);
 	if (name.isNull()) {
 		*errMsg = "pattern name is required";
-		return False;
+		return false;
 	}
 	pattern->name = name;
 	
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read the start pattern 
 	if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->startRE))
-		return False;
+		return false;
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read the end pattern 
 	
 	if (**inPtr == ':') {
 		pattern->endRE = QString();
 	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->endRE)) {
-		return False;
+		return false;
 	}
 
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read the error pattern 
 	if (**inPtr == ':') {
 		pattern->errorRE = QString();
 	} else if (!ReadQuotedStringEx(inPtr, errMsg, &pattern->errorRE)) {
-		return False;
+		return false;
 	}
 	
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read the style field 
 	if(const char *s = ReadSymbolicField(inPtr)) {
@@ -750,13 +750,13 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	
 	if (pattern->style.isNull()) {
 		*errMsg = "style field required in pattern";
-		return False;
+		return false;
 	}
 	
 	
 	
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read the sub-pattern-of field 
 	if(const char *s = ReadSymbolicField(inPtr)) {	
@@ -764,7 +764,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	}
 	
 	if (!SkipDelimiter(inPtr, errMsg))
-		return False;
+		return false;
 
 	// read flags field 
 	pattern->flags = 0;
@@ -777,10 +777,10 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 			pattern->flags |= COLOR_ONLY;
 		else if (**inPtr != ' ' && **inPtr != '\t') {
 			*errMsg = "unreadable flag field";
-			return False;
+			return false;
 		}
 	}
-	return True;
+	return true;
 }
 
 /*
@@ -792,9 +792,10 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 PatternSet *readDefaultPatternSet(const char *langModeName) {
 
 	size_t modeNameLen = strlen(langModeName);
-	for (int i = 0; i < (int)XtNumber(DefaultPatternSets); i++) {
-		if (!strncmp(langModeName, DefaultPatternSets[i], modeNameLen) && DefaultPatternSets[i][modeNameLen] == ':') {
-			const char *strPtr = DefaultPatternSets[i];
+	
+	for(const char *patternSet : DefaultPatternSets) {
+		if (!strncmp(langModeName, patternSet, modeNameLen) && patternSet[modeNameLen] == ':') {
+			const char *strPtr = patternSet;
 			return readPatternSet(&strPtr, False);
 		}
 	}
@@ -808,7 +809,7 @@ static bool isDefaultPatternSet(PatternSet *patSet) {
 
 	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode.toLatin1().data());
 	if(!defaultPatSet) {
-		return False;
+		return false;
 	}
 	
 	bool retVal = *patSet == *defaultPatSet;
