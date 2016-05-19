@@ -2080,15 +2080,16 @@ bool Document::CloseAllDocumentInWindow() {
 		Document *topDocument;
 
 		// close all _modified_ documents belong to this window 
-		for (Document *win = WindowList; win;) {
+		for (auto it = begin(WindowList); it != end(WindowList);) {
+			Document *const win = *it;
 			if (win->shell_ == winShell && win->fileChanged_) {
-				Document *next = win->next_;
+				auto next = std::next(it);
 				if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE)) {
 					return false;
 				}
-				win = next;
+				it = next;
 			} else {
-				win = win->next_;
+				++it;
 			}
 		}
 
@@ -2101,15 +2102,16 @@ bool Document::CloseAllDocumentInWindow() {
 			topDocument = GetTopDocument(winShell);
 
 			// close all non-top documents belong to this window 
-			for (Document *win = WindowList; win;) {
+			for (auto it = begin(WindowList); it != end(WindowList); ) {
+				Document *const win = *it;
 				if (win->shell_ == winShell && win != topDocument) {
-					Document *next = win->next_;
+					auto next = std::next(it);
 					if (!CloseFileAndWindow(win, PROMPT_SBC_DIALOG_RESPONSE)) {
 						return false;
 					}
-					win = next;
+					it = next;
 				} else {
-					win = win->next_;
+					++it;
 				}
 			}
 
@@ -2222,13 +2224,14 @@ void Document::MoveDocumentDialog() {
 		// move top document 
 		if (dialog->moveAllSelected()) {
 			// move all documents 
-			for (Document *win = WindowList; win;) {
+			for (auto it = begin(WindowList); it != end(WindowList);) {
+				Document *win = *it;
 				if (win != this && win->shell_ == shell_) {
-					Document *next = win->next_;
+					auto next = std::next(it);
 					win->MoveDocument(targetWin);
-					win = next;
+					it = next;
 				} else {
-					win = win->next_;
+					++it;
 				}
 			}
 
@@ -2424,14 +2427,17 @@ void Document::ShowLineNumbers(bool state) {
 
 	/* line numbers panel is shell-level, hence other
 	   tabbed documents in the this should synch */
-	for (Document *win: WindowList) {
-		if (win->shell_ != shell_ || win == this)
+	for (auto it = begin(WindowList); it != end(WindowList);) {
+		Document *const win = *it;
+		
+		if (win->shell_ != shell_ || win == this) {
 			continue;
+		}
 
 		win->showLineNumbers_ = state;
 
 		for (i = 0; i <= win->nPanes_; i++) {
-			text = i == 0 ? win->textArea_ : win->textPanes_[i - 1];
+			text = (i == 0) ? win->textArea_ : win->textPanes_[i - 1];
 			//  reqCols should really be cast here, but into what? XmRInt?  
 			XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
 		}
@@ -2736,7 +2742,7 @@ void Document::CloseWindow() {
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (this == WindowList && listSize(WindowList) == 1)) {
+	if (keepWindow || (listSize(WindowList) == 1 && this == listFront(WindowList))) {
 		filename_ = QLatin1String("");
 
 		QString name = UniqueUntitledName();
@@ -2831,7 +2837,7 @@ void Document::CloseWindow() {
 	}
 
 	// dim/undim Attach_Tab menu items 
-	state = WindowList->TabCount() < WindowCount();
+	state = listFront(WindowList)->TabCount() < WindowCount();
 	
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
@@ -3045,7 +3051,7 @@ void Document::RaiseDocument() {
 	
 	Q_ASSERT(this);
 
-	if (!this || !WindowList)
+	if (!this || listEmpty(WindowList))
 		return;
 
 	Document *lastwin = MarkActiveDocument();
