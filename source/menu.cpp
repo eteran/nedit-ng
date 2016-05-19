@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QStringList>
 #include <QPushButton>
+#include <QMenu>
 #include "ui/DialogExecuteCommand.h"
 #include "ui/DialogFilter.h"
 #include "ui/DialogTabs.h"
@@ -1917,8 +1918,9 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Set the preference and make the other windows' menus agree 
 	SetPrefSortTabs(state);
 	for(Document *win: WindowList) {
-		if (win->IsTopDocument())
+		if (win->IsTopDocument()) {
 			XmToggleButtonSetState(win->tabSortDefItem_, state, False);
+		}
 	}
 
 	/* If we just enabled sorting, sort all tabs.  Note that this reorders
@@ -1945,8 +1947,9 @@ static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	// Set the preference and make the other windows' menus agree 
 	SetPrefStatsLine(state);
 	for(Document *win: WindowList) {
-		if (win->IsTopDocument())
+		if (win->IsTopDocument()) {
 			XmToggleButtonSetState(win->statsLineDefItem_, state, False);
+		}
 	}
 }
 
@@ -4933,6 +4936,7 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	Q_UNUSED(nArgs)
 	Q_UNUSED(args);
 
+#if 1
 	Document *window = Document::WidgetToWindow(w);
 
 	/* The Motif popup handling code BLOCKS events while the menu is posted,
@@ -4943,7 +4947,7 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	// Pop up the menu 
 	XmMenuPosition(window->bgMenuPane_, (XButtonPressedEvent *)event);
 	XtManageChild(window->bgMenuPane_);
-
+#endif
 	/*
 	   These statements have been here for a very long time, but seem
 	   unnecessary and are even dangerous: when any of the lock keys are on,
@@ -4956,6 +4960,14 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	   XtMapWidget(XtParent(window->bgMenuPane_));
 	   XtMapWidget(window->bgMenuPane_);
 	*/
+#if 0
+	QMenu menu;
+	menu.addAction(QLatin1String("Test 1"));
+	menu.addAction(QLatin1String("Test 2"));
+	menu.addAction(QLatin1String("Test 3"));
+	menu.addAction(QLatin1String("Test 4"));
+	menu.exec(QCursor::pos());
+#endif
 }
 
 void AddTabContextMenuAction(Widget widget) {

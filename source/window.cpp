@@ -70,6 +70,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <vector>
+#include <deque>
 
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
@@ -119,15 +120,9 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 	   window/session manager combination which uses window creation
 	   order for re-associating stored geometry information with
 	   new windows created by a restored application */
-	int nWindows = Document::WindowCount();;
-	
-	auto revWindowList = new Document *[nWindows];
-	int i = nWindows - 1;
-	
-	
+	std::deque<Document *> revWindowList;
 	for(Document *win: WindowList) {
-		revWindowList[i] = win;
-		--i;
+		revWindowList.push_front(win);
 	}
 
 	// Create command line arguments for restoring each window in the list 
@@ -179,8 +174,6 @@ static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData) {
 			}
 		}
 	}
-
-	delete [] revWindowList;
 
 	// Set the window's WM_COMMAND property to the created command line 
 	XSetCommand(TheDisplay, XtWindow(appShell), &argv[0], argv.size());

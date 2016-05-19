@@ -308,7 +308,7 @@ static void processServerCommandString(char *string) {
 	** Loop over all of the files in the command list
 	*/
 	inPtr = string;
-	while (TRUE) {
+	while (true) {
 
 		if (*inPtr == '\0')
 			break;

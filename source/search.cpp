@@ -417,15 +417,16 @@ void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, in
 void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
 
 	for(Document *w: WindowList) {
-		if (w->writableWindows_)
+		if (w->writableWindows_) {
 			// A multi-file replacement dialog is up for this window 
 			checkMultiReplaceListForDoomedW(w, doomedWindow);
+		}
 	}
 }
 
 void CreateReplaceDlog(Widget parent, Document *window) {
 	Q_UNUSED(parent);
-		window->dialogReplace_ = new DialogReplace(window, nullptr /*parent*/);		
+	window->dialogReplace_ = new DialogReplace(window, nullptr /*parent*/);		
 }
 
 void CreateFindDlog(Widget parent, Document *window) {
@@ -464,7 +465,6 @@ static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWi
 ** which to replace. If the list becomes empty, the dialog is popped down.
 */
 static void removeDoomedWindowFromList(Document *window, int index) {
-	int entriesToMove;
 
 	// If the list would become empty, we remove the dialog 
 	if (window->nWritableWindows_ <= 1) {
@@ -474,7 +474,7 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 		}
 	}
 
-	entriesToMove = window->nWritableWindows_ - index - 1;
+	int entriesToMove = window->nWritableWindows_ - index - 1;
 	memmove(&(window->writableWindows_[index]), &(window->writableWindows_[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
 	window->nWritableWindows_ -= 1;
 
