@@ -3588,70 +3588,74 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	int windowIndex;
 	Boolean focus = GetPrefFocusOnRaise();
 	
+	auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+		return doc == window;
+	});	
+	
 	
 	// NOTE(eteran): the list is sorted *backwards*, so all of the iteration is reverse
 	//               order here
 
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "last") == 0) {
-			window = WindowList;
+			curr = begin(WindowList);
 		} else if (strcmp(args[0], "first") == 0) {
-			window = WindowList;
-			if (window) {
+			curr = begin(WindowList);
+			if (curr != end(WindowList)) {
 			
 				// NOTE(eteran): i think this is looking for the last window?
-				Document *nextWindow = window->next_;
-				while (nextWindow) {
-					window = nextWindow;
-					nextWindow = nextWindow->next_;
+				auto nextWindow = std::next(curr);
+				while (nextWindow != end(WindowList)) {
+					curr = nextWindow;
+					++nextWindow;
 				}
 			}
 		} else if (strcmp(args[0], "previous") == 0) {
-			Document *tmpWindow = window;
-			window = WindowList;
-			if (window) {
-				Document *nextWindow = window->next_;
-				while (nextWindow != nullptr && nextWindow != tmpWindow) {
-					window = nextWindow;
-					nextWindow = nextWindow->next_;
+			auto tmpWindow = curr;
+			curr = begin(WindowList);
+			if (curr != end(WindowList)) {
+				auto nextWindow = std::next(curr);
+				while (nextWindow != end(WindowList) && nextWindow != tmpWindow) {
+					curr = nextWindow;
+					++nextWindow;
 				}
 				
-				if (nextWindow == nullptr && tmpWindow != WindowList) {
-					window = nullptr;
+				if (nextWindow == end(WindowList) && tmpWindow != begin(WindowList)) {
+					curr = end(WindowList);
 				}
 			}
 		} else if (strcmp(args[0], "next") == 0) {
-			if (window) {
-				window = window->next_;
-				if(!window) {
-					window = WindowList;
+			if (curr != end(WindowList)) {
+				++curr;
+				if(curr == end(WindowList)) {
+					curr = begin(WindowList);
 				}
 			}
 		} else {
 			if (sscanf(args[0], "%d", &windowIndex) == 1) {
 				if (windowIndex > 0) {
-					for (window = WindowList; window != nullptr && windowIndex > 1; --windowIndex) {
-						window = window->next_;
+					for (curr = begin(WindowList); curr != end(WindowList) && windowIndex > 1; --windowIndex) {
+						++curr;
 					}
 				} else if (windowIndex < 0) {
 				
 				
-					for (window = WindowList; window != nullptr; window = window->next_) {
+					for (curr = begin(WindowList); curr != end(WindowList); ++curr) {
 						++windowIndex;
 					}
 					
 					if (windowIndex >= 0) {
-						for (window = WindowList; window != nullptr && windowIndex > 0; window = window->next_) {
+						for (curr = begin(WindowList); curr != end(WindowList) && windowIndex > 0; ++curr) {
 							--windowIndex;
 						}
 					} else {
-						window = nullptr;
+						curr = end(WindowList);
 					}
 				} else {
-					window = nullptr;
+					curr = end(WindowList);
 				}
 			} else {
-				window = nullptr;
+				curr = end(WindowList);
 			}
 		}
 
@@ -3664,8 +3668,8 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		}
 	}
 
-	if (window) {
-		window->RaiseFocusDocumentWindow(focus);
+	if (curr != end(WindowList)) {
+		(*curr)->RaiseFocusDocumentWindow(focus);
 	} else {
 		QApplication::beep();
 	}
@@ -4157,14 +4161,16 @@ void CheckCloseDim(void) {
 	}
 	
 	// NOTE(eteran): list has a size of 1	
-	if (WindowList->next_ == nullptr && !WindowList->filenameSet_ && !WindowList->fileChanged_) {
-		XtSetSensitive(WindowList->closeItem_, FALSE);
+	if (listSize(WindowList) == 1 && !WindowList->filenameSet_ && !WindowList->fileChanged_) {
+		Document *doc = *begin(WindowList);
+		XtSetSensitive(doc->closeItem_, false);
 		return;
 	}
 
 	for(Document *window: WindowList) {
-		if (window->IsTopDocument())
-			XtSetSensitive(window->closeItem_, True);
+		if (window->IsTopDocument()) {
+			XtSetSensitive(window->closeItem_, true);
+		}
 	}
 }
 
@@ -4181,10 +4187,11 @@ void InvalidateWindowMenus(void) {
 	   down), unless the menu is torn off, meaning it is visible to the user
 	   and should be updated immediately */
 	for(Document *w: WindowList) {
-		if (!XmIsMenuShell(XtParent(w->windowMenuPane_)))
+		if (!XmIsMenuShell(XtParent(w->windowMenuPane_))) {
 			updateWindowMenu(w);
-		else
-			w->windowMenuValid_ = False;
+		} else {
+			w->windowMenuValid_ = false;
+		}
 	}
 }
 
@@ -4199,8 +4206,9 @@ static void invalidatePrevOpenMenus(void) {
 	   down), unless the menu is torn off, meaning it is visible to the user
 	   and should be updated immediately */
 	for(Document *w: WindowList) {
-		if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane_)))
+		if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane_))) {
 			updatePrevOpenMenu(w);
+		}
 	};
 }
 
@@ -4256,7 +4264,7 @@ void AddToPrevOpenMenu(const char *filename) {
 	if (NPrevOpen > 0) {
 		for(Document *w: WindowList) {
 			if (w->IsTopDocument()) {
-				XtSetSensitive(w->prevOpenMenuItem_, True);
+				XtSetSensitive(w->prevOpenMenuItem_, true);
 			}
 		}
 	}
@@ -4294,7 +4302,6 @@ static void updateWindowMenu(const Document *window) {
 	std::vector<Document *> windows;
 	for(Document *w: WindowList) {
 		windows.push_back(w);
-		
 	}
 	
 	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
