@@ -628,9 +628,9 @@ int IncludeFile(Document *window, const char *name) {
 int CloseAllFilesAndWindows(void) {
 
 	// NOTE(eteran): while the size of the list is > 1 ...
-	while (listSize(WindowList) > 1 || WindowList->filenameSet_ || WindowList->fileChanged_) {
+	while (listSize(WindowList) > 1 || listFront(WindowList)->filenameSet_ || listFront(WindowList)->fileChanged_) {
 	
-		Document *current = WindowList;
+		Document *current = listFront(WindowList);
 	
 		/*
 		 * When we're exiting through a macro, the document running the

@@ -4161,8 +4161,8 @@ void CheckCloseDim(void) {
 	}
 	
 	// NOTE(eteran): list has a size of 1	
-	if (listSize(WindowList) == 1 && !WindowList->filenameSet_ && !WindowList->fileChanged_) {
-		Document *doc = *begin(WindowList);
+	if (listSize(WindowList) == 1 && !listFront(WindowList)->filenameSet_ && !listFront(WindowList)->fileChanged_) {
+		Document *doc = listFront(WindowList);
 		XtSetSensitive(doc->closeItem_, false);
 		return;
 	}
