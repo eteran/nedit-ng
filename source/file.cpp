@@ -630,7 +630,8 @@ int CloseAllFilesAndWindows(void) {
 	// NOTE(eteran): while the size of the list is > 1 ...
 	while (listSize(WindowList) > 1 || listFront(WindowList)->filenameSet_ || listFront(WindowList)->fileChanged_) {
 	
-		Document *current = listFront(WindowList);
+		auto it   = begin(WindowList);
+		auto next = std::next(it);
 	
 		/*
 		 * When we're exiting through a macro, the document running the
@@ -641,12 +642,12 @@ int CloseAllFilesAndWindows(void) {
 		 * document that gets closed, but it won't disappear; it becomes
 		 * Untitled.)
 		 */
-		if (MacroRunWindow() == current && current->next_) {
-			if (!current->next_->CloseAllDocumentInWindow()) {
+		if (MacroRunWindow() == *it && next != end(WindowList)) {
+			if (!(*next)->CloseAllDocumentInWindow()) {
 				return false;
 			}
 		} else {
-			if (!current->CloseAllDocumentInWindow()) {
+			if (!(*it)->CloseAllDocumentInWindow()) {
 				return false;
 			}
 		}
