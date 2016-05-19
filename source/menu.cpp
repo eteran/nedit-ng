@@ -1306,7 +1306,7 @@ static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(callData);
 	Q_UNUSED(w);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefAutoSave(state);
@@ -1324,7 +1324,7 @@ static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(callData);
 	Q_UNUSED(w);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefSaveOldVersion(state);
@@ -1526,7 +1526,7 @@ static void matchSyntaxBasedDefCB(Widget w, XtPointer clientData, XtPointer call
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefMatchSyntaxBased(state);
@@ -1541,7 +1541,7 @@ static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callDa
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefBacklightChars(state);
@@ -1665,7 +1665,7 @@ static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefSearchDlogs(state);
@@ -1680,7 +1680,7 @@ static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer call
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefBeepOnSearchWrap(state);
@@ -1695,7 +1695,7 @@ static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callD
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefKeepSearchDlogs(state);
@@ -1710,7 +1710,7 @@ static void searchWrapsDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefSearchWraps(state);
@@ -1725,7 +1725,7 @@ static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	SetPrefAppendLF(state);
 	for(Document *win: WindowList) {
@@ -1739,7 +1739,7 @@ static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	/* Set the preference, make the other windows' menus agree,
 	   and invalidate their Open Previous menus */
@@ -1755,7 +1755,7 @@ static void reposDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefRepositionDialogs(state);
@@ -1771,7 +1771,7 @@ static void autoScrollDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefAutoScroll(state);
@@ -1787,7 +1787,7 @@ static void modWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWarnFileMods(state);
@@ -1804,7 +1804,7 @@ static void modWarnRealDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 	
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWarnRealFileMods(state);
@@ -1819,7 +1819,7 @@ static void exitWarnDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefWarnExit(state);
@@ -1834,7 +1834,7 @@ static void openInTabDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefOpenInTab(state);
@@ -1848,7 +1848,7 @@ static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefTabBar(state);
@@ -1865,7 +1865,7 @@ static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefTabBarHideOne(state);
@@ -1882,7 +1882,7 @@ static void toolTipsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefToolTips(state);
@@ -1898,7 +1898,7 @@ static void tabNavigateDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefGlobalTabNavigate(state);
@@ -1913,7 +1913,7 @@ static void tabSortDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefSortTabs(state);
@@ -1942,7 +1942,7 @@ static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefStatsLine(state);
@@ -1958,7 +1958,7 @@ static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefISearchLine(state);
@@ -1973,7 +1973,7 @@ static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefLineNums(state);
@@ -1988,7 +1988,7 @@ static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer cal
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int state = XmToggleButtonGetState(w);
+	bool state = XmToggleButtonGetState(w);
 
 	// Set the preference and make the other windows' menus agree 
 	SetPrefShowPathInWindowsMenu(state);
@@ -2751,72 +2751,50 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	
 	const int DF_MAX_MSG_LENGTH = 2048;
 	
-	// NOTE(eteran): This is a bit of a cheat...
-	auto it = DocumentIterator(window);
 	
-	if (!CheckPrefsChangesSaved(window->shell_))
+	auto it = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+		return doc == window;
+	});
+	
+	if (!CheckPrefsChangesSaved(window->shell_)) {
 		return;
+	}
 
 	/* If this is not the last window (more than one window is open),
 	   confirm with the user before exiting. */
-	   
 	// NOTE(eteran): test if the current window is NOT the only window
 	if (GetPrefWarnExit() && !(it == begin(WindowList) && std::next(it) == end(WindowList))) {
-		int lineLen;
-		char exitMsg[DF_MAX_MSG_LENGTH];
-		char *ptr;
+	
+		QString exitMsg(QLatin1String("Editing: "));
 		
-
 		/* List the windows being edited and make sure the
-		   user really wants to exit */
-		ptr = exitMsg;
-		lineLen = 0;
-		strcpy(ptr, "Editing: ");
-		ptr += 9;
-		lineLen += 9;
-		
+		   user really wants to exit */	
 		// This code assembles a list of document names being edited and elides as necessary
 		for(auto it = begin(WindowList); it != end(WindowList); ++it) {
 			
 			Document *win = *it;
 			
-			char filename[MAXPATHLEN];
-			snprintf(filename, sizeof(filename), "%s%s", win->filename_.toLatin1().data(), win->fileChanged_ ? "*" : "");
-			
-			char *title = filename;
-			int titleLen = strlen(title);
-			
-			if (ptr - exitMsg + titleLen + 30 >= DF_MAX_MSG_LENGTH) {
-				strcpy(ptr, "...");
-				ptr += 3;
+			QString filename = QString(QLatin1String("%1%2")).arg(win->filename_).arg(win->fileChanged_ ? QLatin1String("*") : QLatin1String(""));
+						
+			if (exitMsg.size() + filename.size() + 30 >= DF_MAX_MSG_LENGTH) {
+				exitMsg.append(QLatin1String("..."));
 				break;
-			}
-			
-			
-			// NOTE(eteran): test if this is the last window
-			if (lineLen + titleLen + (std::next(it) == end(WindowList) ? 5 : 2) > 50) {
-				*ptr++ = '\n';
-				lineLen = 0;
 			}
 			
 			// NOTE(eteran): test if this is the last window
 			if (std::next(it) == end(WindowList)) {
-				sprintf(ptr, "and %s.", title);
-				ptr += 5 + titleLen;
-				lineLen += 5 + titleLen;
+				exitMsg.append(QString(QLatin1String("and %1.")).arg(filename));
 			} else {
-				sprintf(ptr, "%s, ", title);
-				ptr += 2 + titleLen;
-				lineLen += 2 + titleLen;
+				exitMsg.append(QString(QLatin1String("%1, ")).arg(filename));
 			}
 		}
 		
-		sprintf(ptr, "\n\nExit NEdit?");
+		exitMsg.append(QLatin1String("\n\nExit NEdit?"));
 		
 		QMessageBox messageBox(nullptr /*window->shell_*/);
 		messageBox.setWindowTitle(QLatin1String("Exit"));
 		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(QString(QLatin1String("%1")).arg(QLatin1String(exitMsg)));
+		messageBox.setText(exitMsg);
 		QPushButton *buttonExit   = messageBox.addButton(QLatin1String("Exit"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 		Q_UNUSED(buttonExit);
