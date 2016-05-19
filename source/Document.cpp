@@ -1300,7 +1300,7 @@ int Document::updateGutterWidth() {
 				maxCols = lineNumCols;
 			}
 
-			tmpReqCols = textD->nBufferLines < 1 ? 1 : (int)log10((double)textD->nBufferLines + 1) + 1;
+			tmpReqCols = textD->nBufferLines < 1 ? 1 : static_cast<int>(log10(static_cast<double>(textD->nBufferLines) + 1)) + 1;
 
 			if (tmpReqCols > reqCols) {
 				reqCols = tmpReqCols;
