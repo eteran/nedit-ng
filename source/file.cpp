@@ -1364,7 +1364,9 @@ int PromptForExistingFile(Document *window, const char *prompt, char *fullname) 
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setDirectory(window->path_);
+	if(!window->path_.isEmpty()) {
+		dialog.setDirectory(window->path_);
+	}
 	if(dialog.exec()) {
 		strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
 		return GFN_OK;
