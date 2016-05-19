@@ -39,6 +39,7 @@ class TextBuffer;
 class Document {
 public:
 	Document(const QString &name, char *geometry, bool iconic);
+	virtual ~Document();
 	
 private:
 	Document(const Document &) = default;
@@ -144,9 +145,6 @@ private:
 	void addUndoItem(UndoInfo *undo);
 	void showTabBar(int state);
 
-public:
-	Document *next_;
-	
 public:
 	DialogReplace *getDialogReplace() const;
 
@@ -375,142 +373,8 @@ public:
 
 	UserMenuCache *userMenuCache_;    /* cache user menus: */
 	UserBGMenuCache userBGMenuCache_; /* shell & macro menu are shared over all "tabbed" documents, while each document has its own background menu. */
-	
-public:
-	// Some algorithms to ease transition to std::list<Document>
-
-	template <class Pred>
-	static Document *find_if(Pred p);
-};
-
-class ConstDocumentIterator;
-
-class DocumentIterator {
-	friend class ConstDocumentIterator;
-
-public:
-	typedef std::forward_iterator_tag iterator_category;
-	typedef Document*                 value_type;
-	typedef Document*                 pointer;
-	typedef ptrdiff_t                 difference_type;
-	typedef void                      reference;			
-
-public:
-	DocumentIterator()          : ptr_(nullptr)  {}
-	explicit DocumentIterator(Document *p) : ptr_(p) {}
-	
-public:
-	DocumentIterator(const DocumentIterator &)            = default;
-	DocumentIterator& operator=(const DocumentIterator &) = default;
-
-public:
-	Document* operator*()  { return ptr_; }
-
-public:
-	bool operator!=(const DocumentIterator& rhs) const { return ptr_ != rhs.ptr_; }
-	bool operator==(const DocumentIterator& rhs) const { return ptr_ == rhs.ptr_; }
-
-public:
-	DocumentIterator operator++(int) { DocumentIterator t(*this); ptr_ = ptr_->next_; return t; }
-	DocumentIterator& operator++()   { ptr_ = ptr_->next_; return *this; }
-	
-public:
-	Document* ptr_;
 };
 
 
-class ConstDocumentIterator {
-	friend class DocumentIterator;
-public:
-	typedef std::forward_iterator_tag iterator_category;
-	typedef const Document*           value_type;
-	typedef const Document*           pointer;
-	typedef ptrdiff_t                 difference_type;
-	typedef void                      reference;		
-
-public:
-	ConstDocumentIterator()          : ptr_(nullptr)  {}
-	explicit ConstDocumentIterator(const Document *p) : ptr_(p) {}
-	explicit ConstDocumentIterator(const DocumentIterator &it) : ptr_(it.ptr_) {}
-	
-public:
-	ConstDocumentIterator(const ConstDocumentIterator &)            = default;
-	ConstDocumentIterator& operator=(const ConstDocumentIterator &) = default;
-
-public:
-	const Document* operator*() const  { return ptr_; }
-
-public:
-	bool operator!=(const ConstDocumentIterator& rhs) const { return ptr_ != rhs.ptr_; }
-	bool operator==(const ConstDocumentIterator& rhs) const { return ptr_ == rhs.ptr_; }
-
-public:
-	ConstDocumentIterator operator++(int) { ConstDocumentIterator t(*this); ptr_ = ptr_->next_; return t; }
-	ConstDocumentIterator& operator++()   { ptr_ = ptr_->next_; return *this; }
-	
-public:
-	const Document* ptr_;
-};
-
-inline DocumentIterator begin(Document *win) {
-	return DocumentIterator(win);
-}
-
-inline DocumentIterator end(Document *) {
-	return DocumentIterator();
-}
-
-inline ConstDocumentIterator begin(const Document *win) {
-	return ConstDocumentIterator(win);
-}
-
-inline ConstDocumentIterator end(const Document *) {
-	return ConstDocumentIterator();
-}
-
-inline ConstDocumentIterator cbegin(const Document *win) {
-	return ConstDocumentIterator(win);
-}
-
-inline ConstDocumentIterator cend(const Document *) {
-	return ConstDocumentIterator();
-}
-
-
-template <class Pred>
-Document *Document::find_if(Pred p) {
-
-	auto it = std::find_if(begin(WindowList), end(WindowList), p);
-	if(it != end(WindowList)) {
-		return *it;
-	}
-
-	return nullptr;
-}
-
-inline bool listEmpty(Document *list) {
-	if(list == nullptr) {
-		return true;
-	}
-	
-	return begin(list) == end(list);
-}
-
-inline int listSize(Document *list) {
-	int n = 0;
-	for(Document *win: list) {
-		(void)win;
-		++n;
-	}
-	return n;
-}
-
-inline Document *listFront(Document *list) {
-	if(!list) {
-		return nullptr;
-	}
-	
-	return list;
-}
 
 #endif

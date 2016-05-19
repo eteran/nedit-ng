@@ -297,12 +297,12 @@ void RevertToSaved(Document *window) {
 */
 static void safeClose(Document *window) {
 
-	Document *win = Document::find_if([window](Document *p) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [window](Document *p) {
 		return p == window;
 	});
-	
-	if(win) {
-		win->CloseWindow();
+
+	if(it != WindowList.end()) {
+		(*it)->CloseWindow();
 	}
 }
 
@@ -351,7 +351,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				// ask user for next action if file not found 
 				
 				// NOTE(eteran): is window the one and only window?
-				if (window == listFront(WindowList) && listSize(WindowList) == 1) {
+				if (window == WindowList.front() && WindowList.size() == 1) {
 					
 					msgbox.setIcon(QMessageBox::Warning);
 					msgbox.setWindowTitle(QLatin1String("New File"));
@@ -628,9 +628,9 @@ int IncludeFile(Document *window, const char *name) {
 int CloseAllFilesAndWindows(void) {
 
 	// NOTE(eteran): while the size of the list is > 1 ...
-	while (listSize(WindowList) > 1 || listFront(WindowList)->filenameSet_ || listFront(WindowList)->fileChanged_) {
+	while (WindowList.size() > 1 || WindowList.front()->filenameSet_ || WindowList.front()->fileChanged_) {
 	
-		auto it   = begin(WindowList);
+		auto it   = WindowList.begin();
 		auto next = std::next(it);
 	
 		/*
@@ -642,7 +642,7 @@ int CloseAllFilesAndWindows(void) {
 		 * document that gets closed, but it won't disappear; it becomes
 		 * Untitled.)
 		 */
-		if (MacroRunWindow() == *it && next != end(WindowList)) {
+		if (MacroRunWindow() == *it && next != WindowList.end()) {
 			if (!(*next)->CloseAllDocumentInWindow()) {
 				return false;
 			}
@@ -1493,11 +1493,11 @@ QString UniqueUntitledName() {
 			name = QString(QLatin1String("Untitled_%1")).arg(i);
 		}
 		
-		Document *w = Document::find_if([name](Document *window) {
+		auto it = std::find_if(WindowList.begin(), WindowList.end(), [name](Document *window) {
 			return window->filename_ == name;
-		});
+		});		
 		
-		if(!w) {
+		if(it == WindowList.end()) {
 			return name;
 		}
 	}

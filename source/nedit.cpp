@@ -84,7 +84,7 @@ static void restoreInsaneVirtualKeyBindings(unsigned char *bindings);
 static void noWarningFilter(String);
 static void showWarningFilter(String);
 
-Document *WindowList = nullptr;
+QLinkedList<Document *> WindowList;
 Display *TheDisplay = nullptr;
 const char *ArgV0 = nullptr;
 bool IsServer = false;
@@ -509,8 +509,8 @@ int main(int argc, char *argv[]) {
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
 
-				auto it = begin(WindowList);
-				if(it != end(WindowList)) {
+				auto it = WindowList.begin();
+				if(it != WindowList.end()) {
 					window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				} else {
 					window = EditExistingFile(nullptr, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
@@ -566,8 +566,8 @@ int main(int argc, char *argv[]) {
 	if (!fileSpecified) {
 
 		Document *window = nullptr;
-		auto it = begin(WindowList);
-		if(it != end(WindowList)) {	
+		auto it = WindowList.begin();
+		if(it != WindowList.end()) {	
 			window = *it;
 		}
 	

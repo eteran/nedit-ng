@@ -240,8 +240,8 @@ void AllWindowsBusy(const char *message) {
 	
 	// NOTE(eteran): I'm not 100% sure what this BusyWait function actually does
 	// so I am equally not sure if it matters which Window's shell we use
-	auto it = begin(WindowList);
-	if(it != end(WindowList)) {
+	auto it = WindowList.begin();
+	if(it != WindowList.end()) {
 		Document *const window = *it;
 		BusyWait(window->shell_);
 	}

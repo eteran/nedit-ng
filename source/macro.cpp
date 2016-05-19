@@ -1203,8 +1203,8 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 
 	/* Select only actions in text panes in the curr for which this
 	   action hook is recording macros (from clientData). */
-	auto curr = begin(WindowList);
-	for (; curr != end(WindowList); ++curr) {
+	auto curr = WindowList.begin();
+	for (; curr != WindowList.end(); ++curr) {
 	
 		Document *const window = *curr;
 	
@@ -1218,7 +1218,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 			break;
 	}
 	
-	if (curr == end(WindowList) || *curr != static_cast<Document *>(clientData))
+	if (curr == WindowList.end() || *curr != static_cast<Document *>(clientData))
 		return;
 
 	/* beep on un-recordable operations which require a mouse position, to
@@ -1246,8 +1246,8 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	char *actionString;
 
 	// Find the curr to which this action belongs 
-	auto curr = begin(WindowList);
-	for (; curr != end(WindowList); ++curr) {
+	auto curr = WindowList.begin();
+	for (; curr != WindowList.end(); ++curr) {
 	
 		Document *const window = *curr;
 	
@@ -1261,7 +1261,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 			break;
 	}
 	
-	if(curr == end(WindowList)) {
+	if(curr == WindowList.end()) {
 		return;
 	}
 
@@ -1577,19 +1577,19 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	}
 
 
-	DocumentIterator w;
+	QLinkedList<Document *>::iterator w;
 
 	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
 		return false;
 	} else if (!strcmp(string, "last")) {
-		w = begin(WindowList);
+		w = WindowList.begin();
 	} else if (!strcmp(string, "next")) {
 
-		auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+		auto curr = std::find_if(WindowList.begin(), WindowList.end(), [window](Document *doc) {
 			return doc == window;
 		});
 		
-		if(curr != end(WindowList)) {
+		if(curr != WindowList.end()) {
 			w = std::next(curr);
 		}
 	} else if (strlen(string) >= MAXPATHLEN) {
@@ -1597,13 +1597,13 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 		return false;
 	} else {
 		// just use the plain name as supplied 
-		w = std::find_if(begin(WindowList), end(WindowList), [&string](Document *doc) {
+		w = std::find_if(WindowList.begin(), WindowList.end(), [&string](Document *doc) {
 			QString fullname = doc->FullPath();
 			return fullname == QLatin1String(string);
 		});
 		
 		// didn't work? try normalizing the string passed in 
-		if(w == end(WindowList)) {
+		if(w == WindowList.end()) {
 			
 			char normalizedString[MAXPATHLEN];
 			strncpy(normalizedString, string, MAXPATHLEN);
@@ -1615,7 +1615,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 				return false;
 			}
 			
-			w = std::find_if(begin(WindowList), end(WindowList), [&normalizedString](Document *win) {
+			w = std::find_if(WindowList.begin(), WindowList.end(), [&normalizedString](Document *win) {
 				QString fullname = win->FullPath();
 				return fullname == QLatin1String(normalizedString);
 			});
@@ -1623,7 +1623,7 @@ static int focusWindowMS(Document *window, DataValue *argList, int nArgs, DataVa
 	}
 
 	// If no matching window was found, return empty string and do nothing 
-	if(w == end(WindowList)) {
+	if(w == WindowList.end()) {
 		result->tag         = STRING_TAG;
 		result->val.str.rep = PERM_ALLOC_STR("");
 		result->val.str.len = 0;

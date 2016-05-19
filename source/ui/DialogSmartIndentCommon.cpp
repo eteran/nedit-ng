@@ -131,8 +131,8 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
 	   
-	auto it = begin(WindowList);
-	if(it != end(WindowList)) {
+	auto it = WindowList.begin();
+	if(it != WindowList.end()) {
 		Document *window = *it;
 		if (!ReadMacroStringEx(window, CommonMacros, "common macros")) {
 			return false;

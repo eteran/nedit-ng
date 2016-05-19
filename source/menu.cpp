@@ -2752,7 +2752,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	const int DF_MAX_MSG_LENGTH = 2048;
 	
 	
-	auto it = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [window](Document *doc) {
 		return doc == window;
 	});
 	
@@ -2763,14 +2763,14 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	/* If this is not the last window (more than one window is open),
 	   confirm with the user before exiting. */
 	// NOTE(eteran): test if the current window is NOT the only window
-	if (GetPrefWarnExit() && !(it == begin(WindowList) && std::next(it) == end(WindowList))) {
+	if (GetPrefWarnExit() && !(it == WindowList.begin() && std::next(it) == WindowList.end())) {
 	
 		QString exitMsg(QLatin1String("Editing: "));
 		
 		/* List the windows being edited and make sure the
 		   user really wants to exit */	
 		// This code assembles a list of document names being edited and elides as necessary
-		for(auto it = begin(WindowList); it != end(WindowList); ++it) {
+		for(auto it = WindowList.begin(); it != WindowList.end(); ++it) {
 			
 			Document *win = *it;
 			
@@ -2782,7 +2782,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			}
 			
 			// NOTE(eteran): test if this is the last window
-			if (std::next(it) == end(WindowList)) {
+			if (std::next(it) == WindowList.end()) {
 				exitMsg.append(QString(QLatin1String("and %1.")).arg(filename));
 			} else {
 				exitMsg.append(QString(QLatin1String("%1, ")).arg(filename));
@@ -3588,7 +3588,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	int windowIndex;
 	Boolean focus = GetPrefFocusOnRaise();
 	
-	auto curr = std::find_if(begin(WindowList), end(WindowList), [window](Document *doc) {
+	auto curr = std::find_if(WindowList.begin(), WindowList.end(), [window](Document *doc) {
 		return doc == window;
 	});	
 	
@@ -3598,64 +3598,64 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	if (*nArgs > 0) {
 		if (strcmp(args[0], "last") == 0) {
-			curr = begin(WindowList);
+			curr = WindowList.begin();
 		} else if (strcmp(args[0], "first") == 0) {
-			curr = begin(WindowList);
-			if (curr != end(WindowList)) {
+			curr = WindowList.begin();
+			if (curr != WindowList.end()) {
 			
 				// NOTE(eteran): i think this is looking for the last window?
 				auto nextWindow = std::next(curr);
-				while (nextWindow != end(WindowList)) {
+				while (nextWindow != WindowList.end()) {
 					curr = nextWindow;
 					++nextWindow;
 				}
 			}
 		} else if (strcmp(args[0], "previous") == 0) {
 			auto tmpWindow = curr;
-			curr = begin(WindowList);
-			if (curr != end(WindowList)) {
+			curr = WindowList.begin();
+			if (curr != WindowList.end()) {
 				auto nextWindow = std::next(curr);
-				while (nextWindow != end(WindowList) && nextWindow != tmpWindow) {
+				while (nextWindow != WindowList.end() && nextWindow != tmpWindow) {
 					curr = nextWindow;
 					++nextWindow;
 				}
 				
-				if (nextWindow == end(WindowList) && tmpWindow != begin(WindowList)) {
-					curr = end(WindowList);
+				if (nextWindow == WindowList.end() && tmpWindow != WindowList.begin()) {
+					curr = WindowList.end();
 				}
 			}
 		} else if (strcmp(args[0], "next") == 0) {
-			if (curr != end(WindowList)) {
+			if (curr != WindowList.end()) {
 				++curr;
-				if(curr == end(WindowList)) {
-					curr = begin(WindowList);
+				if(curr == WindowList.end()) {
+					curr = WindowList.begin();
 				}
 			}
 		} else {
 			if (sscanf(args[0], "%d", &windowIndex) == 1) {
 				if (windowIndex > 0) {
-					for (curr = begin(WindowList); curr != end(WindowList) && windowIndex > 1; --windowIndex) {
+					for (curr = WindowList.begin(); curr != WindowList.end() && windowIndex > 1; --windowIndex) {
 						++curr;
 					}
 				} else if (windowIndex < 0) {
 				
 				
-					for (curr = begin(WindowList); curr != end(WindowList); ++curr) {
+					for (curr = WindowList.begin(); curr != WindowList.end(); ++curr) {
 						++windowIndex;
 					}
 					
 					if (windowIndex >= 0) {
-						for (curr = begin(WindowList); curr != end(WindowList) && windowIndex > 0; ++curr) {
+						for (curr = WindowList.begin(); curr != WindowList.end() && windowIndex > 0; ++curr) {
 							--windowIndex;
 						}
 					} else {
-						curr = end(WindowList);
+						curr = WindowList.end();
 					}
 				} else {
-					curr = end(WindowList);
+					curr = WindowList.end();
 				}
 			} else {
-				curr = end(WindowList);
+				curr = WindowList.end();
 			}
 		}
 
@@ -3668,7 +3668,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		}
 	}
 
-	if (curr != end(WindowList)) {
+	if (curr != WindowList.end()) {
 		(*curr)->RaiseFocusDocumentWindow(focus);
 	} else {
 		QApplication::beep();
@@ -4156,13 +4156,13 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode) {
 */
 void CheckCloseDim(void) {
 
-	if(listEmpty(WindowList)) {
+	if(WindowList.empty()) {
 		return;
 	}
 	
 	// NOTE(eteran): list has a size of 1	
-	if (listSize(WindowList) == 1 && !listFront(WindowList)->filenameSet_ && !listFront(WindowList)->fileChanged_) {
-		Document *doc = listFront(WindowList);
+	if (WindowList.size() == 1 && !WindowList.front()->filenameSet_ && !WindowList.front()->fileChanged_) {
+		Document *doc = WindowList.front();
 		XtSetSensitive(doc->closeItem_, false);
 		return;
 	}

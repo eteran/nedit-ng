@@ -510,7 +510,7 @@ int countWritableWindows(void) {
 	int nBefore = countWindows();
 	int nWritable = 0;
 	
-	for(auto it = begin(WindowList); it != end(WindowList); ++it) {
+	for(auto it = WindowList.begin(); it != WindowList.end(); ++it) {
 	
 		Document *w = *it;
 	
@@ -522,7 +522,7 @@ int countWritableWindows(void) {
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again 
 			nBefore = nAfter;
-			it = begin(WindowList);
+			it = WindowList.begin();
 			nWritable = 0;
 			continue;
 		}

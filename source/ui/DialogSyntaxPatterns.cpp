@@ -1037,8 +1037,8 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
 
-	auto it = begin(WindowList);
-	if(it != end(WindowList)) {
+	auto it = WindowList.begin();
+	if(it != WindowList.end()) {
 		Document *window = *it;
 		
 		if(WindowHighlightData *highlightData = createHighlightData(window, patSet)) {

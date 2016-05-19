@@ -730,8 +730,8 @@ void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (TabCount == Document::WindowCount()) {
 		// this is only window, then exit 
-		auto it = begin(WindowList);
-		if(it != end(WindowList)) {
+		auto it = WindowList.begin();
+		if(it != WindowList.end()) {
 			Document *doc = *it;
 			XtCallActionProc(doc->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 		}
@@ -897,14 +897,15 @@ Document *Document::MarkActiveDocument() {
 */
 void Document::LastDocument() const {
 	
-	
-	Document *win = Document::find_if([](Document *win) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [](Document *win) {
 		return lastFocusDocument == win;
 	});
-
-	if (!win) {
+	
+	if(it == WindowList.end()) {
 		return;
 	}
+
+	Document *const win = *it;
 
 	if (shell_ == win->shell_) {
 		win->RaiseDocument();
@@ -950,11 +951,11 @@ Widget Document::GetPaneByIndex(int paneIndex) const {
 */
 bool Document::IsValidWindow() {
 
-	Document *win = Document::find_if([this](Document *win) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *win) {
 		return this == win;
 	});
 	
-	return win != nullptr;
+	return it != WindowList.end();
 }
 
 /*
@@ -1143,10 +1144,7 @@ void Document::showStatsForm() {
 ** Add a this to the the this list.
 */
 void Document::addToWindowList() {
-
-	Document *temp = WindowList;
-	WindowList = this;
-	next_ = temp;
+	WindowList.push_front(this);
 }
 
 /*
@@ -1154,15 +1152,12 @@ void Document::addToWindowList() {
 */
 void Document::removeFromWindowList() {
 
-	if (WindowList == this) {
-		WindowList = next_;
-	} else {
-		for (Document *temp = WindowList; temp != nullptr; temp = temp->next_) {
-			if (temp->next_ == this) {
-				temp->next_ = next_;
-				break;
-			}
-		}
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *win) {
+		return win == this;
+	});
+	
+	if(it != WindowList.end()) {
+		WindowList.erase(it);
 	}
 }
 
@@ -1393,11 +1388,11 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(detachDocumentItem_, TabCount() > 1);
 	XtSetSensitive(contextDetachDocumentItem_, TabCount() > 1);
 
-	Document *win = Document::find_if([&](Document *win) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *win) {
 		return win->shell_ != shell_;
 	});
 	
-	XtSetSensitive(moveDocumentItem_, win != nullptr);
+	XtSetSensitive(moveDocumentItem_, it != WindowList.end());
 }
 
 /*
@@ -1802,7 +1797,7 @@ void Document::UpdateWindowReadOnly() {
 */
 void Document::PreviousDocument() {
 
-	if (listSize(WindowList) == 1) {
+	if (WindowList.size() == 1) {
 		return;
 	}
 
@@ -1822,7 +1817,7 @@ void Document::PreviousDocument() {
 void Document::NextDocument() {
 
 
-	if (listSize(WindowList) == 1) {
+	if (WindowList.size() == 1) {
 		return;
 	}
 
@@ -2080,7 +2075,7 @@ bool Document::CloseAllDocumentInWindow() {
 		Document *topDocument;
 
 		// close all _modified_ documents belong to this window 
-		for (auto it = begin(WindowList); it != end(WindowList);) {
+		for (auto it = WindowList.begin(); it != WindowList.end();) {
 			Document *const win = *it;
 			if (win->shell_ == winShell && win->fileChanged_) {
 				auto next = std::next(it);
@@ -2094,15 +2089,16 @@ bool Document::CloseAllDocumentInWindow() {
 		}
 
 		// see there's still documents left in the window 
-		Document *win = Document::find_if([&](Document *win) {
-			return (win->shell_ == winShell);
+		auto it = std::find_if(WindowList.begin(), WindowList.end(), [winShell](Document *win) {
+			return win->shell_ == winShell;
 		});
 
-		if (win) {
+		if (it != WindowList.end()) {
+
 			topDocument = GetTopDocument(winShell);
 
 			// close all non-top documents belong to this window 
-			for (auto it = begin(WindowList); it != end(WindowList); ) {
+			for (auto it = WindowList.begin(); it != WindowList.end(); ) {
 				Document *const win = *it;
 				if (win->shell_ == winShell && win != topDocument) {
 					auto next = std::next(it);
@@ -2150,9 +2146,12 @@ Document *Document::DetachDocument() {
 	   will travel across the documents per the sequence they're
 	   opened. The new doc will appear to replace it's former self
 	   as the old doc is closed. */
-	WindowList = cloneWin->next_;
-	cloneWin->next_ = next_;
-	next_ = cloneWin;
+	WindowList.pop_front();
+	auto curr = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *doc) {
+		return doc == this;
+	});
+	
+	WindowList.insert(std::next(curr), cloneWin);
 
 	/* these settings should follow the detached document.
 	   must be done before cloning this, else the height
@@ -2224,7 +2223,7 @@ void Document::MoveDocumentDialog() {
 		// move top document 
 		if (dialog->moveAllSelected()) {
 			// move all documents 
-			for (auto it = begin(WindowList); it != end(WindowList);) {
+			for (auto it = WindowList.begin(); it != WindowList.end();) {
 				Document *win = *it;
 				if (win != this && win->shell_ == shell_) {
 					auto next = std::next(it);
@@ -2361,9 +2360,12 @@ Document *Document::MoveDocument(Document *toWindow) {
 	   will travel across the documents per the sequence they're
 	   opened. The new doc will appear to replace it's former self
 	   as the old doc is closed. */
-	WindowList = cloneWin->next_;
-	cloneWin->next_ = next_;
-	next_ = cloneWin;
+	WindowList.pop_front();
+	auto curr = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *doc) {
+		return doc == this;
+	});
+	
+	WindowList.insert(std::next(curr), cloneWin);
 
 	// remove the document from the old this 
 	fileChanged_ = false;
@@ -2427,7 +2429,7 @@ void Document::ShowLineNumbers(bool state) {
 
 	/* line numbers panel is shell-level, hence other
 	   tabbed documents in the this should synch */
-	for (auto it = begin(WindowList); it != end(WindowList);) {
+	for (auto it = WindowList.begin(); it != WindowList.end();) {
 		Document *const win = *it;
 		
 		if (win->shell_ != shell_ || win == this) {
@@ -2742,7 +2744,7 @@ void Document::CloseWindow() {
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
-	if (keepWindow || (listSize(WindowList) == 1 && this == listFront(WindowList))) {
+	if (keepWindow || (WindowList.size() == 1 && this == WindowList.front())) {
 		filename_ = QLatin1String("");
 
 		QString name = UniqueUntitledName();
@@ -2837,7 +2839,7 @@ void Document::CloseWindow() {
 	}
 
 	// dim/undim Attach_Tab menu items 
-	state = listFront(WindowList)->TabCount() < WindowCount();
+	state = WindowList.front()->TabCount() < WindowCount();
 	
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
@@ -3051,7 +3053,7 @@ void Document::RaiseDocument() {
 	
 	Q_ASSERT(this);
 
-	if (!this || listEmpty(WindowList))
+	if (!this || WindowList.empty())
 		return;
 
 	Document *lastwin = MarkActiveDocument();
@@ -3688,6 +3690,9 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
 		}	
 	}
+}
+
+Document::~Document() {
 }
 
 
@@ -4329,9 +4334,15 @@ void Document::EditCustomTitleFormat() {
 */
 Document *Document::TabToWindow(Widget tab) {
 
-	return Document::find_if([tab](Document *win) {
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [tab](Document *win) {
 		return win->tab_ == tab;
 	});
+	
+	if(it != WindowList.end()) {
+		return *it;
+	}
+	
+	return nullptr;
 }
 
 /*
@@ -4346,25 +4357,30 @@ Document *Document::FindWindowWithFile(const QString &name, const QString &path)
 		
 		QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
 		
-
 		if (stat(fullname.toLatin1().data(), &attribute) == 0) {
-		
-			Document *window = Document::find_if([attribute](Document *window) {
+
+			auto it = std::find_if(WindowList.begin(), WindowList.end(), [attribute](Document *window) {
 				return attribute.st_dev == window->device_ && attribute.st_ino == window->inode_;
 			});
+		
 			
-			if(window) {
-				return window;
+			if(it != WindowList.end()) {
+				return *it;
 			}
 		} /*  else:  Not an error condition, just a new file. Continue to check
 		      whether the filename is already in use for an unsaved document.  */
 	}
-		
-	Document *window = Document::find_if([name, path](Document *window) {
+
+
+	auto it = std::find_if(WindowList.begin(), WindowList.end(), [name, path](Document *window) {
 		return (window->filename_ == name) && (window->path_ == path);
 	});
 
-	return window;
+	if(it != WindowList.end()) {
+		return *it;
+	}
+
+	return nullptr;
 }
 
 int Document::WindowCount() {

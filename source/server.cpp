@@ -282,24 +282,24 @@ static void processServerCommandString(char *string) {
 	int editFlags, stringLen = strlen(string);
 	int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed = -1;
 	int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
-	Document *window, *lastFile = nullptr;
+	Document *lastFile = nullptr;
 	long currentDesktop = QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
 
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (string[0] == '\0') {
 
-		Document *window = Document::find_if([currentDesktop](Document *w) {
+		auto it = std::find_if(WindowList.begin(), WindowList.end(), [currentDesktop](Document *w) {
 			return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
 		});
 
-		if(!window) {
+		if(it == WindowList.end()) {
 			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
 			CheckCloseDim();
 		} else {
-			window->RaiseDocument();
-			WmClientMsg(TheDisplay, XtWindow(window->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
-			XMapRaised(TheDisplay, XtWindow(window->shell_));
+			(*it)->RaiseDocument();
+			WmClientMsg(TheDisplay, XtWindow((*it)->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
+			XMapRaised(TheDisplay, XtWindow((*it)->shell_));
 		}
 		return;
 	}
@@ -349,18 +349,20 @@ static void processServerCommandString(char *string) {
 		 */
 		if (fileLen <= 0) {
 			
-			Document *window = Document::find_if([currentDesktop](Document *w) {
-				return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
-			});
 			
+			auto it = std::find_if(WindowList.begin(), WindowList.end(), [currentDesktop](Document *w) {
+				return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
+			});			
+			
+		
 			if (*doCommand == '\0') {
-				if(!window) {
+				if(it == WindowList.end()) {
 					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
 				} else {
 					if (iconicFlag)
-						window->RaiseDocument();
+						(*it)->RaiseDocument();
 					else
-						window->RaiseDocumentWindow();
+						(*it)->RaiseDocumentWindow();
 				}
 			} else {
 				
@@ -371,12 +373,12 @@ static void processServerCommandString(char *string) {
 				// TODO(eteran): I *think* this searches for the first window
 				// where win->macroCmdData_ is "false"
 				
-				auto win = begin(WindowList);
-				while (win != end(WindowList) && (*win)->macroCmdData_) {
+				auto win = WindowList.begin();
+				while (win != WindowList.end() && (*win)->macroCmdData_) {
 					++win;
 				}
 
-				if (win == end(WindowList)) {
+				if (win == WindowList.end()) {
 					QApplication::beep();
 				} else {
 					// Raise before -do (macro could close window). 
@@ -401,7 +403,7 @@ static void processServerCommandString(char *string) {
 			break;
 		}
 
-		window = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+		Document *window = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax

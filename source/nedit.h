@@ -30,7 +30,7 @@
 #include "TextBuffer.h"
 #include "UserMenuListElement.h"
 
-#include <list>
+#include <QLinkedList>
 #include <sys/param.h>
 #include <sys/types.h>
 
@@ -132,7 +132,7 @@ struct UserBGMenuCache {
 
 
 
-extern Document *WindowList;
+extern QLinkedList<Document *> WindowList;
 extern Display *TheDisplay;
 extern Widget TheAppShell;
 extern bool IsServer;
