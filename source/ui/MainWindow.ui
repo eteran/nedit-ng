@@ -83,6 +83,9 @@
         <property name="text">
          <string>/a/very/long/path/used/as/example/</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+        </property>
        </widget>
       </item>
       <item>
@@ -129,7 +132,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>761</width>
      <height>31</height>
     </rect>
    </property>
