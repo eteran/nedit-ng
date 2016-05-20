@@ -14,6 +14,7 @@
 //------------------------------------------------------------------------------
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
+	ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for (int i = 0; i < NBGMenuItems; i++) {
 		auto ptr  = new MenuItem(*BGMenuItems[i]);
@@ -223,7 +224,7 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 		generateAcceleratorString(buf, ptr->modifiers, ptr->keysym);
 
 		ui.editName->setText(ptr->name);
-		ui.editAccelerator->setText(tr("%1").arg(QLatin1String(buf)));
+		ui.editAccelerator->setKeySequence(QKeySequence::fromString(QLatin1String(buf)));
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
 		ui.editMacro->setPlainText(ptr->cmd);
@@ -246,7 +247,7 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 		}
 	} else {
 		ui.editName->setText(QString());
-		ui.editAccelerator->setText(QString());
+		ui.editAccelerator->setKeySequence(QKeySequence());
 		ui.editMnemonic->setText(QString());
 		ui.checkRequiresSelection->setChecked(false);
 		ui.editMacro->setPlainText(QString());
@@ -362,7 +363,7 @@ MenuItem *DialogWindowBackgroundMenu::readDialogFields(bool silent) {
 		}
 	}
 
-	QString accText = ui.editAccelerator->text();
+	QString accText = ui.editAccelerator->keySequence().toString();
 	if(!accText.isEmpty()) {
 		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
 	}

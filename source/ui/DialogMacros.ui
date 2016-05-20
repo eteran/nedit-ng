@@ -150,7 +150,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
        <item>
         <layout class="QGridLayout" name="gridLayout">
          <item row="1" column="0">
-          <widget class="QLineEdit" name="editAccelerator"/>
+          <widget class="KeySequenceEdit" name="editAccelerator"/>
          </item>
          <item row="1" column="1">
           <widget class="QLineEdit" name="editMnemonic">
@@ -259,6 +259,13 @@ Replay Macro</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeySequenceEdit</class>
+   <extends>QLineEdit</extends>
+   <header>KeySequenceEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

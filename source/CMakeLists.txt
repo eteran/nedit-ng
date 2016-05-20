@@ -53,6 +53,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/LineEdit.h
 	ui/ListWidget.h
 	ui/MainWindow.h
+	ui/KeySequenceEdit.h
 )
 
 set(UI_FILES
@@ -122,6 +123,7 @@ add_executable(nedit
 	ui/DialogPromptList.cpp
 	ui/DialogSyntaxPatterns.cpp
 	ui/DialogRepeat.cpp
+	ui/KeySequenceEdit.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp
