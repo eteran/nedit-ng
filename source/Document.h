@@ -44,6 +44,8 @@ public:
 private:
 	Document(const Document &) = default;
 	Document& operator=(const Document &) = default;
+	Document(Document &&) = default;
+	Document& operator=(Document &&) = default;
 
 public:
 	Document *CreateDocument(const QString &name);

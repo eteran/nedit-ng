@@ -118,10 +118,11 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	window->UpdateWindowTitle();
 	window->RefreshTabState();
 
-	if(!languageMode)
+	if(!languageMode) {
 		DetermineLanguageMode(window, true);
-	else
+	} else {
 		SetLanguageMode(window, FindLanguageMode(languageMode), true);
+	}
 
 	window->ShowTabBar(window->GetShowTabBar());
 
@@ -159,10 +160,11 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 	// first look to see if file is already displayed in a window 
 	if (Document *window = Document::FindWindowWithFile(name, path)) {
 		if (!bgOpen) {
-			if (iconic)
+			if (iconic) {
 				window->RaiseDocument();
-			else
+			} else {
 				window->RaiseDocumentWindow();
+			}
 		}
 		return window;
 	}
@@ -1359,20 +1361,20 @@ void PrintString(const std::string &string, const std::string &jobName) {
 	return;
 }
 
-int PromptForExistingFile(Document *window, const char *prompt, char *fullname) {
+QString PromptForExistingFile(Document *window, const QString &prompt) {
 
-	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
+	QFileDialog dialog(nullptr /*parent*/, prompt);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog);
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	if(!window->path_.isEmpty()) {
 		dialog.setDirectory(window->path_);
 	}
+	
 	if(dialog.exec()) {
-		strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
-		return GFN_OK;
+		return dialog.selectedFiles()[0];
 	}
 
-	return GFN_CANCEL;
+	return QString();
 
 }
 

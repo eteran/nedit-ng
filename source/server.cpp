@@ -359,10 +359,11 @@ static void processServerCommandString(char *string) {
 				if(it == WindowList.end()) {
 					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
 				} else {
-					if (iconicFlag)
+					if (iconicFlag) {
 						(*it)->RaiseDocument();
-					else
+					} else {
 						(*it)->RaiseDocumentWindow();
+					}
 				}
 			} else {
 				
@@ -371,8 +372,7 @@ static void processServerCommandString(char *string) {
 				   
 				   
 				// TODO(eteran): I *think* this searches for the first window
-				// where win->macroCmdData_ is "false"
-				
+				// where win->macroCmdData_ is nullptr				
 				auto win = WindowList.begin();
 				while (win != WindowList.end() && (*win)->macroCmdData_) {
 					++win;
@@ -468,10 +468,11 @@ static void processServerCommandString(char *string) {
 	// Raise the last file opened 
 	if (lastFile) {
 		lastFile->CleanUpTabBarExposeQueue();
-		if (lastIconic)
+		if (lastIconic) {
 			lastFile->RaiseDocument();
-		else
+		} else {
 			lastFile->RaiseDocumentWindow();
+		}
 		CheckCloseDim();
 	}
 	return;

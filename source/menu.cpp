@@ -2382,18 +2382,20 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	char fullname[MAXPATHLEN];
 	const char *params[2];
-	int response;
 	int n = 1;
 
-	response = PromptForExistingFile(window, "Open File", fullname);
-	if (response != GFN_OK)
+	QString filename = PromptForExistingFile(window, QLatin1String("Open File"));
+	if (filename.isNull()) {
 		return;
-	params[0] = fullname;
+	}
+	
+	QByteArray fileStr = filename.toLatin1();
+	params[0] = fileStr.data();
 
-	if (*nArgs > 0 && !strcmp(args[0], "1"))
+	if (*nArgs > 0 && !strcmp(args[0], "1")) {
 		params[n++] = "1";
+	}
 
 	XtCallActionProc(window->lastFocus_, "open", event, const_cast<char **>(params), n);
 	CheckCloseDim();
@@ -2557,15 +2559,21 @@ static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	char filename[MAXPATHLEN], *params[1];
-	int response;
+	char *params[1];
 
-	if (CheckReadOnly(window))
+	if (CheckReadOnly(window)) {
 		return;
-	response = PromptForExistingFile(window, "Include File", filename);
-	if (response != GFN_OK)
+	}
+
+	QString filename = PromptForExistingFile(window, QLatin1String("Include File"));
+
+	if (filename.isNull()) {
 		return;
-	params[0] = filename;
+	}
+	
+	QByteArray fileStr = filename.toLatin1();
+	
+	params[0] = fileStr.data();
 	XtCallActionProc(window->lastFocus_, "include_file", event, params, 1);
 }
 
@@ -2593,13 +2601,16 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *n
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	char filename[MAXPATHLEN], *params[1];
-	int response;
+	char *params[1];
 
-	response = PromptForExistingFile(window, "Load Macro File", filename);
-	if (response != GFN_OK)
+	QString filename = PromptForExistingFile(window, QLatin1String("Load Macro File"));
+	if (filename.isNull()) {
 		return;
-	params[0] = filename;
+	}
+	
+	QByteArray fileStr = filename.toLatin1();
+	
+	params[0] = fileStr.data();
 	XtCallActionProc(window->lastFocus_, "load_macro_file", event, params, 1);
 }
 
@@ -2621,13 +2632,17 @@ static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	char filename[MAXPATHLEN], *params[1];
-	int response;
+	char *params[1];
+	
 
-	response = PromptForExistingFile(window, "Load Tags File", filename);
-	if (response != GFN_OK)
+	QString filename = PromptForExistingFile(window, QLatin1String("Load Tags File"));
+	if (filename.isNull()) {
 		return;
-	params[0] = filename;
+	}
+	
+	QByteArray fileStr = filename.toLatin1();
+	
+	params[0] = fileStr.data();
 	XtCallActionProc(window->lastFocus_, "load_tags_file", event, params, 1);
 }
 
@@ -2678,13 +2693,15 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	char filename[MAXPATHLEN], *params[1];
-	int response;
+	char *params[1];
 
-	response = PromptForExistingFile(window, "Load Calltips File", filename);
-	if (response != GFN_OK)
+	QString filename = PromptForExistingFile(window, QLatin1String("Load Calltips File"));
+	if (filename.isNull()) {
 		return;
-	params[0] = filename;
+	}
+	
+	QByteArray fileStr = filename.toLatin1();
+	params[0] = fileStr.data();
 	XtCallActionProc(window->lastFocus_, "load_tips_file", event, params, 1);
 }
 

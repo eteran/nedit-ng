@@ -808,7 +808,10 @@ void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
 	tab = tabList[cbs->pos];
-	Document::TabToWindow(tab)->RaiseDocument();
+	
+	if(Document *win = Document::TabToWindow(tab)) {
+		win->RaiseDocument();
+	}
 }
 
 /*
@@ -1453,12 +1456,6 @@ int Document::TabCount() const {
 ** raise the document and its shell window and focus depending on pref.
 */
 void Document::RaiseDocumentWindow() {
-
-	Q_ASSERT(this);
-
-	if (!this)
-		return;
-
 	RaiseDocument();
 	RaiseShellWindow(shell_, GetPrefFocusOnRaise());
 }
@@ -1802,13 +1799,15 @@ void Document::PreviousDocument() {
 	}
 
 	Document *win = getNextTabWindow(-1, GetPrefGlobalTabNavigate(), 1);
-	if(!win)
+	if(!win) {
 		return;
+	}
 
-	if (shell_ == win->shell_)
+	if (shell_ == win->shell_) {
 		win->RaiseDocument();
-	else
+	} else {
 		win->RaiseFocusDocumentWindow(true);
+	}
 }
 
 /*
@@ -2134,7 +2133,9 @@ Document *Document::DetachDocument() {
 	   being detached is the top document */
 	if (IsTopDocument()) {
 		win = getNextTabWindow(1, 0, 0);
-		win->RaiseDocument();
+		if(win) {
+			win->RaiseDocument();
+		}
 	}
 
 	// Create a new this 
@@ -2346,7 +2347,9 @@ Document *Document::MoveDocument(Document *toWindow) {
 	} else if (IsTopDocument()) {
 		// raise another document to replace the document being moved 
 		win = getNextTabWindow(1, 0, 0);
-		win->RaiseDocument();
+		if(win) {
+			win->RaiseDocument();
+		}
 	}
 
 	// relocate the document to target this 
@@ -2803,11 +2806,15 @@ void Document::CloseWindow() {
 	if (TabCount() > 1) {
 		if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
 			nextBuf = MacroRunWindow();
-			nextBuf->RaiseDocument();
+			if(nextBuf) {
+				nextBuf->RaiseDocument();
+			}
 		} else if (IsTopDocument()) {
 			// need to find a successor before closing a top document 
 			nextBuf = getNextTabWindow(1, 0, 0);
-			nextBuf->RaiseDocument();
+			if(nextBuf) {
+				nextBuf->RaiseDocument();
+			}
 		} else {
 			topBuf = GetTopDocument(shell_);
 		}
@@ -3051,19 +3058,20 @@ void Document::getGeometryString(char *geomString) {
 void Document::RaiseDocument() {
 	Document *win;
 	
-	Q_ASSERT(this);
-
-	if (!this || WindowList.empty())
+	if (WindowList.empty()) {
 		return;
+	}
 
 	Document *lastwin = MarkActiveDocument();
-	if (lastwin != this && lastwin->IsValidWindow())
+	if (lastwin != this && lastwin->IsValidWindow()) {
 		lastwin->MarkLastDocument();
+	}
 
 	// document already on top? 
 	XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
-	if (win == this)
+	if (win == this) {
 		return;
+	}
 
 	// set the document as top document 
 	XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
