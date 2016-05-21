@@ -59,7 +59,7 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 void UpdateLanguageModeMenu(void);
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
 void updateHighlightStyleMenu(void);
-PatternSet *readDefaultPatternSet(const char *langModeName);
+PatternSet *readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 
 extern QList<HighlightStyle *> HighlightStyles;

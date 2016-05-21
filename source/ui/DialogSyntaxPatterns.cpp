@@ -508,7 +508,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 	
-	PatternSet *defaultPatSet = readDefaultPatternSet(languageMode.toLatin1().data());
+	PatternSet *defaultPatSet = readDefaultPatternSet(languageMode);
 	if(!defaultPatSet) {
 		QMessageBox::warning(this, tr("No Default Pattern"), tr("There is no default pattern set for language mode %1").arg(languageMode));
 		return;

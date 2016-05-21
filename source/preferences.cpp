@@ -179,7 +179,7 @@ static struct prefData {
 	char boldFontString[MAX_FONT_LEN];
 	char italicFontString[MAX_FONT_LEN];
 	char boldItalicFontString[MAX_FONT_LEN];
-	XmFontList fontList; // XmFontLists corresp. to above named fonts 
+	XmFontList fontList;                  // XmFontLists corresp. to above named fonts 
 	XFontStruct *boldFontStruct;
 	XFontStruct *italicFontStruct;
 	XFontStruct *boldItalicFontStruct;
@@ -196,17 +196,12 @@ static struct prefData {
 	int typingHidesPointer;               // hide mouse pointer when typing 
 	char delimiters[MAX_WORD_DELIMITERS]; // punctuation characters 
 	char shell[MAXPATHLEN + 1];           // shell to use for executing commands 
-	char geometry[MAX_GEOM_STRING_LEN];   /* per-application geometry string,
-	                                         only for the clueless */
+	char geometry[MAX_GEOM_STRING_LEN];   // per-application geometry string, only for the clueless
 	char serverName[MAXPATHLEN];          // server name for multiple servers per disp. 
-	char bgMenuBtn[MAX_ACCEL_LEN];        /* X event description for triggering
-	                                         posting of background menu */
-	char fileVersion[6];                  /* Version of nedit which wrote the .nedit
-	                                 file we're reading */
-	int findReplaceUsesSelection;         /* whether the find replace dialog is automatically
-	                                         loaded with the primary selection */
-	int virtKeyOverride;                  /* Override Motif default virtual key bindings
-	                             never, if invalid, or always */
+	char bgMenuBtn[MAX_ACCEL_LEN];        // X event description for triggering posting of background menu
+	char fileVersion[6];                  // Version of nedit which wrote the .nedit file we're reading
+	int findReplaceUsesSelection;         // whether the find replace dialog is automatically loaded with the primary selection
+	int virtKeyOverride;                  // Override Motif default virtual key bindings never, if invalid, or always
 	char titleFormat[MAX_TITLE_FORMAT_LEN];
 	char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN]; // fonts for help system 
 	char helpLinkColor[MAX_COLOR_LEN];                // Color for hyperlinks in the help system 
@@ -1608,7 +1603,7 @@ void MarkPrefsChanged(void) {
 bool CheckPrefsChangesSaved(Widget dialogParent) {
 
 	if (!PrefsHaveChanged)
-		return True;
+		return true;
 
 
 	QMessageBox messageBox(nullptr /*dialogParent*/);
@@ -2076,17 +2071,19 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 				break;
 			}
 		}
+		
 		if (i == NLanguageModes) {
 			LanguageModes[NLanguageModes++] = lm;
-			if (NLanguageModes > MAX_LANGUAGE_MODES)
+			if (NLanguageModes > MAX_LANGUAGE_MODES) {
 				return modeError(nullptr, inString, inPtr, "maximum allowable number of language modes exceeded");
+			}
 		}
 
 		// if the string ends here, we're done 
 		inPtr += strspn(inPtr, " \t\n");
 		if (*inPtr == '\0')
-			return True;
-	} // End for(;;) 
+			return true;
+	}
 }
 
 static QString WriteLanguageModesStringEx(void) {
@@ -2177,11 +2174,11 @@ int ReadNumericField(const char **inPtr, int *value) {
 	*inPtr += strspn(*inPtr, " \t");
 
 	if (sscanf(*inPtr, "%d%n", value, &charsRead) != 1) {
-		return False;
+		return false;
 	}
 	
 	*inPtr += charsRead;
-	return True;
+	return true;
 }
 
 /*
@@ -2298,7 +2295,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 	// look for initial quote 
 	if (**inPtr != '\"') {
 		*errMsg = "expecting quoted string";
-		return False;
+		return false;
 	}
 	(*inPtr)++;
 
@@ -2306,7 +2303,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 	for (c = *inPtr;; c++) {
 		if (*c == '\0') {
 			*errMsg = "string not terminated";
-			return False;
+			return false;
 		} else if (*c == '\"') {
 			if (*(c + 1) == '\"')
 				c++;
@@ -2331,7 +2328,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 
 	// skip end quote 
 	(*inPtr)++;
-	return True;
+	return true;
 }
 
 /*
@@ -2350,7 +2347,7 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 	// look for initial quote 
 	if (**inPtr != '\"') {
 		*errMsg = "expecting quoted string";
-		return False;
+		return false;
 	}
 	(*inPtr)++;
 
@@ -2358,7 +2355,7 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 	for (c = *inPtr;; c++) {
 		if (*c == '\0') {
 			*errMsg = "string not terminated";
-			return False;
+			return false;
 		} else if (*c == '\"') {
 			if (*(c + 1) == '\"')
 				c++;
@@ -2387,7 +2384,7 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 	(*inPtr)++;
 	
 	*string = str;
-	return True;
+	return true;
 }
 
 /*
@@ -2709,11 +2706,11 @@ int SkipDelimiter(const char **inPtr, const char **errMsg) {
 	*inPtr += strspn(*inPtr, " \t");
 	if (**inPtr != ':') {
 		*errMsg = "syntax error";
-		return False;
+		return false;
 	}
 	(*inPtr)++;
 	*inPtr += strspn(*inPtr, " \t");
-	return True;
+	return true;
 }
 
 /*
@@ -2723,11 +2720,11 @@ int SkipDelimiter(const char **inPtr, const char **errMsg) {
 int SkipOptSeparator(char separator, const char **inPtr) {
 	*inPtr += strspn(*inPtr, " \t");
 	if (**inPtr != separator) {
-		return False;
+		return false;
 	}
 	(*inPtr)++;
 	*inPtr += strspn(*inPtr, " \t");
-	return True;
+	return true;
 }
 
 /*
@@ -2812,7 +2809,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 	}
 	
 	delete [] errorLine;
-	return False;
+	return false;
 }
 
 /*
@@ -2820,9 +2817,9 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 */
 int AllocatedStringsDiffer(const char *s1, const char *s2) {
 	if (s1 == nullptr && s2 == nullptr)
-		return False;
+		return false;
 	if (s1 == nullptr || s2 == nullptr)
-		return True;
+		return true;
 	return strcmp(s1, s2);
 }
 

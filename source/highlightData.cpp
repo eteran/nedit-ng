@@ -538,9 +538,7 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	*inPtr += strspn(*inPtr, " \t\n");
 
 	// read language mode field 
-	if(const char *s = ReadSymbolicField(inPtr)) {
-		patSet.languageMode = QLatin1String(s);
-	}
+	patSet.languageMode = ReadSymbolicFieldEx(inPtr);
 	
 	if (patSet.languageMode.isNull()) {
 		return highlightError(stringStart, *inPtr, "language mode must be specified");
@@ -554,7 +552,7 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode.toLatin1().data());
+		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode);
 		if(!retPatSet)
 			return highlightError(stringStart, *inPtr, "No default pattern set");
 		return retPatSet;
@@ -727,11 +725,10 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	return true;
 }
 
-PatternSet *readDefaultPatternSet(QByteArray &patternData, const char *langModeName) {
-	size_t modeNameLen = strlen(langModeName);
+PatternSet *readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
+	size_t modeNameLen = langModeName.size();
 	
-	
-	if(patternData.startsWith(langModeName) && patternData.data()[modeNameLen] == ':') {
+	if(patternData.startsWith(langModeName.toLatin1()) && patternData.data()[modeNameLen] == ':') {
 		const char *strPtr = patternData.data();
 		return readPatternSet(&strPtr, false);
 	}
@@ -745,9 +742,8 @@ PatternSet *readDefaultPatternSet(QByteArray &patternData, const char *langModeN
 ** return a new allocated copy of it.  The returned pattern set should be
 ** freed by the caller with delete
 */
-PatternSet *readDefaultPatternSet(const char *langModeName) {
 
-
+PatternSet *readDefaultPatternSet(const QString &langModeName) {
 	for(int i = 0; i < 28; ++i) {
 		QResource res(QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0')));
 
@@ -773,7 +769,7 @@ PatternSet *readDefaultPatternSet(const char *langModeName) {
 */
 static bool isDefaultPatternSet(PatternSet *patSet) {
 
-	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode.toLatin1().data());
+	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode);
 	if(!defaultPatSet) {
 		return false;
 	}
