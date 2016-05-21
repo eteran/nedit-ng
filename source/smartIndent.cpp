@@ -88,19 +88,25 @@ static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
 
 QByteArray defaultCommonMacros() {
-	QResource res(QLatin1String("res/DefaultCommonMacros.txt"));
-	if(res.isValid()) {
-		// NOTE(eteran): don't copy the data, if it's uncompressed, we can deal with it in place :-)
-		auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
 
-		if(res.isCompressed()) {
-			defaults = qUncompress(defaults);
+	static bool loaded = false;
+	static QByteArray defaultsMacros;
+	
+	if(!loaded) {
+		QResource res(QLatin1String("res/DefaultCommonMacros.txt"));
+		if(res.isValid()) {
+			// NOTE(eteran): don't copy the data, if it's uncompressed, we can deal with it in place :-)
+			defaultsMacros = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+
+			if(res.isCompressed()) {
+				defaultsMacros = qUncompress(defaultsMacros);
+			}
+
+			loaded = true;
 		}
-		
-		return defaults;
 	}
 	
-	return QByteArray();
+	return defaultsMacros;
 }
 
 SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
