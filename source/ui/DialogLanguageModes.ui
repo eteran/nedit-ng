@@ -37,7 +37,9 @@
           <string>New</string>
          </property>
          <property name="icon">
-          <iconset theme="document-new"/>
+          <iconset theme="document-new">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -194,7 +196,13 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="editDelimiters"/>
+         <widget class="QLineEdit" name="editDelimiters">
+          <property name="font">
+           <font>
+            <family>Monospace</family>
+           </font>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
