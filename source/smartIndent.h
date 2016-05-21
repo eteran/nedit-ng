@@ -32,6 +32,7 @@
 #include <X11/Intrinsic.h>
 
 class QString;
+class QByteArray;
 class SmartIndent;
 
 Boolean InSmartIndentMacros(Document *window);
@@ -48,11 +49,10 @@ void EndSmartIndent(Document *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent(void);
-
+QByteArray defaultCommonMacros();
 SmartIndent *findIndentSpec(const char *modeName);
 
 extern QString CommonMacros;
-extern const char DefaultCommonMacros[];
 
 #define N_DEFAULT_INDENT_SPECS 4
 extern int NSmartIndentSpecs;

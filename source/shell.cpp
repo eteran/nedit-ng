@@ -275,7 +275,6 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	int line, column;
 	char lineNumber[11];
 	Document *inWindow = window;
-	Widget outWidget;
 
 	// Can't do two shell commands at once in the same window 
 	if (window->shellCmdData_) {
@@ -328,6 +327,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	/* Assign the output destination.  If output is to a new window,
 	   create it, and run the command from it instead of the current
 	   one, to free the current one from waiting for lengthy execution */
+	Widget outWidget = nullptr;
 	switch(output) {
 	case TO_DIALOG:
 		outWidget = nullptr;
@@ -370,6 +370,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		}	
 		break;
 	default:
+		Q_ASSERT(0);
 		break;
 	}
 

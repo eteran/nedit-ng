@@ -29,6 +29,8 @@
 
 #include <QMessageBox>
 #include <QPushButton>
+#include <QResource>
+#include <QtDebug>
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogDrawingStyles.h"
 #include "ui/DialogSyntaxPatterns.h"
@@ -92,64 +94,6 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 // Pattern sources loaded from the .nedit file or set by the user 
 int NPatternSets = 0;
 PatternSet *PatternSets[MAX_LANGUAGE_MODES];
-
-static const char *DefaultPatternSets[] = {
-	#include "DefaultPatternSet00.inc"
-	,
-	#include "DefaultPatternSet01.inc"
-	,
-	#include "DefaultPatternSet02.inc"
-	,
-	#include "DefaultPatternSet03.inc"
-	,
-	#include "DefaultPatternSet04.inc"
-	,
-	#include "DefaultPatternSet05.inc"
-	,
-	#include "DefaultPatternSet06.inc"
-	,
-	#include "DefaultPatternSet07.inc"
-	,
-	#include "DefaultPatternSet08.inc"
-	,
-	#include "DefaultPatternSet09.inc"
-	,
-	#include "DefaultPatternSet10.inc"
-	,
-	#include "DefaultPatternSet11.inc"
-	,
-	#include "DefaultPatternSet12.inc"
-	,
-	#include "DefaultPatternSet13.inc"
-	,
-	#include "DefaultPatternSet14.inc"
-	,
-	#include "DefaultPatternSet15.inc"
-	,
-	#include "DefaultPatternSet16.inc"
-	,
-	#include "DefaultPatternSet17.inc"
-	,
-	#include "DefaultPatternSet18.inc"
-	,
-	#include "DefaultPatternSet19.inc"
-	,
-	#include "DefaultPatternSet20.inc"
-	,
-	#include "DefaultPatternSet21.inc"
-	,
-	#include "DefaultPatternSet22.inc"
-	,
-	#include "DefaultPatternSet23.inc"
-	,
-	#include "DefaultPatternSet24.inc"
-	,
-	#include "DefaultPatternSet25.inc"
-	,
-	#include "DefaultPatternSet26.inc"
-	,
-	#include "DefaultPatternSet27.inc"
-};
 
 /*
 ** Read a string (from the  value of the styles resource) containing highlight
@@ -783,6 +727,18 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 	return true;
 }
 
+PatternSet *readDefaultPatternSet(QByteArray &patternData, const char *langModeName) {
+	size_t modeNameLen = strlen(langModeName);
+	
+	
+	if(patternData.startsWith(langModeName) && patternData.data()[modeNameLen] == ':') {
+		const char *strPtr = patternData.data();
+		return readPatternSet(&strPtr, false);
+	}
+
+	return nullptr;
+}
+
 /*
 ** Given a language mode name, determine if there is a default (built-in)
 ** pattern set available for that language mode, and if so, read it and
@@ -791,14 +747,24 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 */
 PatternSet *readDefaultPatternSet(const char *langModeName) {
 
-	size_t modeNameLen = strlen(langModeName);
-	
-	for(const char *patternSet : DefaultPatternSets) {
-		if (!strncmp(langModeName, patternSet, modeNameLen) && patternSet[modeNameLen] == ':') {
-			const char *strPtr = patternSet;
-			return readPatternSet(&strPtr, False);
+
+	for(int i = 0; i < 28; ++i) {
+		QResource res(QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0')));
+
+		if(res.isValid()) {
+			// NOTE(eteran): don't copy the data, if it's uncompressed, we can deal with it in place :-)
+			auto data = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+			
+			if(res.isCompressed()) {
+				data = qUncompress(data);
+			}
+
+			if(PatternSet* patternSet = readDefaultPatternSet(data, langModeName)) {
+				return patternSet;
+			}
 		}
 	}
+	
 	return nullptr;
 }
 

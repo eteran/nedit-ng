@@ -27,6 +27,8 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QResource>
+#include <QtDebug>
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogSmartIndentCommon.h"
 #include "ui/DialogSmartIndent.h"
@@ -84,6 +86,22 @@ static char *readSIMacro(const char **inPtr);
 static QString readSIMacroEx(const char **inPtr);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
+
+QByteArray defaultCommonMacros() {
+	QResource res(QLatin1String("res/DefaultCommonMacros.txt"));
+	if(res.isValid()) {
+		// NOTE(eteran): don't copy the data, if it's uncompressed, we can deal with it in place :-)
+		auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+
+		if(res.isCompressed()) {
+			defaults = qUncompress(defaults);
+		}
+		
+		return defaults;
+	}
+	
+	return QByteArray();
+}
 
 SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	{
@@ -205,10 +223,6 @@ SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	}
 };
 
-
-const char DefaultCommonMacros[] = 
-#include "DefaultCommonMacros.inc"
-;
 
 /*
 ** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
@@ -568,7 +582,9 @@ int LoadSmartIndentCommonString(char *inString) {
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
 	if (!strncmp(inPtr, "Default", 7)) {
-		CommonMacros = QLatin1String(DefaultCommonMacros);
+			
+		QByteArray defaults = defaultCommonMacros();
+		CommonMacros = QString::fromLatin1(defaults.data(), defaults.size());
 		return true;
 	}
 
@@ -656,7 +672,8 @@ QString WriteSmartIndentStringEx(void) {
 
 QString WriteSmartIndentCommonStringEx(void) {
 
-	if (CommonMacros == QString::fromStdString(DefaultCommonMacros)) {
+	QByteArray defaults = defaultCommonMacros();
+	if (CommonMacros == QString::fromLatin1(defaults.data(), defaults.size())) {
 		return QLatin1String("Default");
 	}
 
