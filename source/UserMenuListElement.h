@@ -4,7 +4,7 @@
 
 #include <QString>
 #include <vector>
-#include <Xm/Xm.h>
+#include <X11/Intrinsic.h> // For Widget
 
 // cache user menus: manage mode of user menu list element
 enum UserMenuManageMode {
@@ -20,13 +20,13 @@ typedef std::vector<UserMenuListElement*> UserMenuList;
 
 // structure representing one user menu item
 struct UserMenuListElement {
-	UserMenuManageMode umleManageMode;     //current manage mode
-	UserMenuManageMode umlePrevManageMode; // previous manage mode
-	QString umleAccKeys;                     // accelerator keys of item
-	bool umleAccLockPatchApplied;          // indicates, if accelerator lock patch is applied
-	Widget umleMenuItem;                   // menu item represented by this element
-	Widget umleSubMenuPane;                // holds menu pane, if item represents a sub menu
-	UserMenuList *umleSubMenuList;         // elements of sub menu, if item represents a sub menu
+	UserMenuManageMode umleManageMode;          // current manage mode
+	UserMenuManageMode umlePrevManageMode;      // previous manage mode
+	QString            umleAccKeys;             // accelerator keys of item
+	bool               umleAccLockPatchApplied; // indicates, if accelerator lock patch is applied
+	Widget             umleMenuItem;            // menu item represented by this element
+	Widget             umleSubMenuPane;         // holds menu pane, if item represents a sub menu
+	UserMenuList *     umleSubMenuList;         // elements of sub menu, if item represents a sub menu
 };
 
 #endif

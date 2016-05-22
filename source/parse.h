@@ -24,11 +24,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_PARSE_H_INCLUDED
-#define NEDIT_PARSE_H_INCLUDED
+#ifndef PARSE_H_
+#define PARSE_H_
 
 #include "interpret.h"
 
 Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt);
 
-#endif /* NEDIT_PARSE_H_INCLUDED */
+#endif

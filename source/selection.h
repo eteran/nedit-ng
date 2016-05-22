@@ -31,7 +31,6 @@ class QString;
 class Document;
 
 #include <X11/Intrinsic.h>
-#include <X11/X.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
 QString GetAnySelectionEx(Document *window);

@@ -1,6 +1,7 @@
 
 #include <QMessageBox>
 #include <QtDebug>
+#include "TextBuffer.h"
 #include "DialogTabs.h"
 #include "Document.h"
 #include "preferences.h"

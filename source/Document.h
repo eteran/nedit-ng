@@ -9,7 +9,7 @@
 #include "fileUtils.h"
 #include "string_view.h"
 #include "LockReasons.h"
-#include <algorithm>
+#include <Xm/Xm.h>
 
 class QDialog;
 class DialogReplace;

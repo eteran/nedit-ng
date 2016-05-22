@@ -29,16 +29,14 @@
 
 #include "nedit.h"
 #include "rbTree.h"
+#include "string_view.h"
 #include <map>
 #include <list>
 #include <boost/variant.hpp>
 
-#define STACK_SIZE 1024 /* Maximum stack size */
-#define MAX_SYM_LEN 100 /* Max. symbol name length */
-#define MACRO_EVENT_MARKER                                                                                                                                                                                                                     \
-	2 /* Special value for the send_event field of                                                                                                                                                                                             \
-	     events passed to action routines.  Tells                                                                                                                                                                                              \
-	     them that they were called from a macro */
+#define STACK_SIZE         1024  // Maximum stack size
+#define MAX_SYM_LEN        100   // Max. symbol name length
+#define MACRO_EVENT_MARKER 2     // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
 
 enum SymTypes { CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM, C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM };
 #define N_OPS 43
@@ -100,7 +98,7 @@ class Program;
 struct Symbol;
 
 union Inst {
-	int (*func)(void);
+	int (*func)();
 	int value;
 	Symbol *sym;
 };
@@ -166,11 +164,11 @@ struct RestartData {
 	Document *focusWindow;
 };
 
-void InitMacroGlobals(void);
+void InitMacroGlobals();
 
 ArrayEntry *arrayIterateFirst(DataValue *theArray);
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator);
-ArrayEntry *ArrayNew(void);
+ArrayEntry *ArrayNew();
 Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
@@ -180,20 +178,20 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
-void BeginCreatingProgram(void);
+void BeginCreatingProgram();
 int AddOp(int op, const char **msg);
 int AddSym(Symbol *sym, const char **msg);
 int AddImmediate(int value, const char **msg);
 int AddBranchOffset(Inst *to, const char **msg);
-Inst *GetPC(void);
-Symbol *InstallIteratorSymbol(void);
+Inst *GetPC();
+Symbol *InstallIteratorSymbol();
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(view::string_view name);
 Symbol *InstallSymbol(const char *name, SymTypes type, DataValue value);
-Program *FinishCreatingProgram(void);
+Program *FinishCreatingProgram();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
-void StartLoopAddrList(void);
+void StartLoopAddrList();
 int AddBreakAddr(Inst *addr);
 int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
@@ -205,20 +203,20 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
 int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
-void PreemptMacro(void);
+void PreemptMacro();
 char *AllocString(int length);
 char *AllocStringNCpy(const char *s, int length);
 char *AllocStringCpy(const char *s);
 int AllocNString(NString *string, int length);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
-void GarbageCollectStrings(void);
+void GarbageCollectStrings();
 void FreeRestartData(RestartData *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValue(RestartData *context, DataValue dv);
-Document *MacroRunWindow(void);
-Document *MacroFocusWindow(void);
+Document *MacroRunWindow();
+Document *MacroFocusWindow();
 void SetMacroFocusWindow(Document *window);
 /* function used for implicit conversion from string to number */
 int StringToNum(const char *string, int *number);

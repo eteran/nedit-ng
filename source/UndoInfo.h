@@ -46,8 +46,8 @@ public:
 	int endPos;
 	int oldLen;
 	std::string oldText;
-	bool inUndo;          /* flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list. */
-	bool restoresToSaved; /* flag to indicate undoing this operation will restore file to last saved (unmodified) state */
+	bool inUndo;          // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
+	bool restoresToSaved; // flag to indicate undoing this operation will restore file to last saved (unmodified) state
 };
 
 #endif

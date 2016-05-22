@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 
+#include "shell.h"
 #include "Document.h"
 #include "MenuItem.h"
 #include "MotifHelper.h"
@@ -41,40 +42,36 @@
 #include "misc.h"
 #include "nedit.h"
 #include "preferences.h"
-#include "shell.h"
 #include "text.h"
 #include "window.h"
 
-#include <algorithm>
-#include <cctype>
-#include <cerrno>
-#include <csignal>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <fcntl.h>
-#include <list>
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include <Xm/PushBG.h>
 
-// Tuning parameters 
-#define IO_BUF_SIZE 4096       // size of buffers for collecting cmd output 
-#define MAX_OUT_DIALOG_ROWS 30 // max height of dialog for command output 
-#define MAX_OUT_DIALOG_COLS 80 // max width of dialog for command output 
-#define OUTPUT_FLUSH_FREQ	1000 // how often (msec) to flush output buffers when process is taking too long 
-#define BANNER_WAIT_TIME	6000 // how long to wait (msec) before putting up Shell Command Executing... banner 
+namespace {
 
-// flags for issueCommand 
-#define ACCUMULATE 1
-#define ERROR_DIALOGS 2
-#define REPLACE_SELECTION 4
-#define RELOAD_FILE_AFTER 8
-#define OUTPUT_TO_DIALOG 16
-#define OUTPUT_TO_STRING 32
+// Tuning parameters 
+const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output 
+const int MAX_OUT_DIALOG_ROWS = 30;   // max height of dialog for command output 
+const int MAX_OUT_DIALOG_COLS = 80;   // max width of dialog for command output 
+const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long 
+const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner 
+
+// flags for issueCommand
+enum {
+	ACCUMULATE  	  = 1,
+	ERROR_DIALOGS	  = 2,
+	REPLACE_SELECTION = 4,
+	RELOAD_FILE_AFTER = 8,
+	OUTPUT_TO_DIALOG  = 16,
+	OUTPUT_TO_STRING  = 32
+};
+
+}
 
 // element of a buffer list for collecting output from shell processes 
 struct bufElem {

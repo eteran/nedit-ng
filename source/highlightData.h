@@ -28,7 +28,6 @@
 #define HIGHLIGHT_DATA_H_
 
 #include "highlight.h"
-#include "nedit.h"
 #include "string_view.h"
 #include "preferences.h"
 #include <string>
@@ -51,14 +50,14 @@ bool LMHasHighlightPatterns(const QString &languageMode);
 PatternSet *FindPatternSet(const QString &langModeName);
 QString BgColorOfNamedStyleEx(view::string_view styleName);
 QString ColorOfNamedStyleEx(view::string_view styleName);
-QString WriteHighlightStringEx(void);
-QString WriteStylesStringEx(void);
+QString WriteHighlightStringEx();
+QString WriteStylesStringEx();
 void EditHighlightPatterns(Document *window);
 void EditHighlightStyles(const char *initialStyle);
 void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
-void UpdateLanguageModeMenu(void);
+void UpdateLanguageModeMenu();
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);
-void updateHighlightStyleMenu(void);
+void updateHighlightStyleMenu();
 PatternSet *readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 

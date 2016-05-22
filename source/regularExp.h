@@ -109,8 +109,6 @@ public:
 	 * @param reverse    Backward search.
 	 */
 	bool execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
-	
-	
 
 	/**
 	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset

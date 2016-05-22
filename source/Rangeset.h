@@ -66,21 +66,21 @@ public:
 	void RangesetGetInfo(int *defined, int *label, int *count, const char **color, const char **name, const char **mode);
 	void RangesetRefreshRange(int start, int end);
 	void RangesetInit(int label, TextBuffer *buf);
-	
-public:
-	RangesetUpdateFn *update_fn; /* modification update function */
-	const char *update_name;     /* update function name */
-	int maxpos;                  /* text buffer maxpos */
-	int last_index;              /* a place to start looking */
-	int n_ranges;                /* how many ranges in ranges */
-	Range *ranges;               /* the ranges table */
-	unsigned char label;         /* a number 1-63 */
 
-	signed char color_set; /* 0: unset; 1: set; -1: invalid */
-	char *color_name;      /* the name of an assigned color */
-	Pixel color;           /* the value of a particular color */
-	TextBuffer *buf;       /* the text buffer of the rangeset */
-	char *name;            /* name of rangeset */
+public:
+	RangesetUpdateFn *update_fn; // modification update function
+	const char *update_name;     // update function name
+	int maxpos;                  // text buffer maxpos
+	int last_index;              // a place to start looking
+	int n_ranges;                // how many ranges in ranges
+	Range *ranges;               // the ranges table
+	unsigned char label;         // a number 1-63
+
+	int8_t color_set;            // 0: unset; 1: set; -1: invalid
+	char *color_name;            // the name of an assigned color
+	Pixel color;                 // the value of a particular color
+	TextBuffer *buf;             // the text buffer of the rangeset
+	char *name;                  // name of rangeset
 };
 
 #endif

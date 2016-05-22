@@ -29,6 +29,7 @@
 
 #include "nedit.h"
 #include "SearchDirection.h"
+#include "string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>

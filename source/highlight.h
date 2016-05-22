@@ -27,26 +27,26 @@
 #ifndef HIGHLIGHT_H_
 #define HIGHLIGHT_H_
 
-#include "nedit.h"
 #include "Color.h"
+#include "string_view.h"
 
 #include <X11/Intrinsic.h>
-#include <string>
 
-/* Pattern flags for modifying pattern matching behavior */
+// Pattern flags for modifying pattern matching behavior
 enum {
 	PARSE_SUBPATS_FROM_START = 1,
 	DEFER_PARSING            = 2,
 	COLOR_ONLY               = 4
 };
 
-/* Don't use plain 'A' or 'B' for style indices, it causes problems
-   with EBCDIC coding (possibly negative offsets when subtracting 'A'). */
+// Don't use plain 'A' or 'B' for style indices, it causes problems
+// with EBCDIC coding (possibly negative offsets when subtracting 'A').
 #define ASCII_A static_cast<char>(65)
 
 class PatternSet;
 class HighlightPattern;
 class WindowHighlightData;
+class Document;
 
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name);
 int HighlightCodeOfPos(Document *window, int pos);

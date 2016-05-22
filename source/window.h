@@ -27,11 +27,11 @@
 #ifndef WINDOW_H_
 #define WINDOW_H_
 
-#include <X11/Intrinsic.h>
+#include <X11/Intrinsic.h> // For Widget
 
 void AddSmallIcon(Widget shell);
 void AllWindowsBusy(const char *message);
-void AllWindowsUnbusy(void);
+void AllWindowsUnbusy();
 void AttachSessionMgrHandler(Widget appShell);
 
 #endif

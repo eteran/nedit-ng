@@ -27,12 +27,12 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-#include "nedit.h"
-
 #include <X11/Intrinsic.h>
 
 #define PERMANENT_MENU_ITEM (XtPointer)1
 #define TEMPORARY_MENU_ITEM (XtPointer)2
+
+class Document;
 
 Widget CreateBGMenu(Document *window);
 Widget CreateMenuBar(Widget parent, Document *window);
@@ -41,13 +41,13 @@ XtActionsRec *GetMenuActions(int *nActions);
 void AddBGMenuAction(Widget widget);
 void AddTabContextMenuAction(Widget widget);
 void AddToPrevOpenMenu(const char *filename);
-void CheckCloseDim(void);
+void CheckCloseDim();
 void HidePointerOnKeyedEvent(Widget w, XEvent *event);
 void InstallMenuActions(XtAppContext context);
-void InvalidateWindowMenus(void);
-void ReadNEditDB(void);
+void InvalidateWindowMenus();
+void ReadNEditDB();
 void ShowHiddenTearOff(Widget menuPane);
-void WriteNEditDB(void);
+void WriteNEditDB();
 
 
 #endif

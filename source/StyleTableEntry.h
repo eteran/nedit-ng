@@ -7,16 +7,16 @@
 
 class StyleTableEntry {
 public:
-	QString     highlightName;
-	QString     styleName;
-	QString     colorName;
-	bool        isBold;
-	bool        isItalic;
-	Pixel       color;
-	bool        underline;
-	XFontStruct *font;
-	QString bgColorName; /* background style coloring (name may be "empty") */
-	Pixel       bgColor;
+	QString      highlightName;
+	QString      styleName;
+	QString      colorName;
+	bool         isBold;
+	bool         isItalic;
+	Pixel        color;
+	bool         underline;
+	XFontStruct* font;
+	QString      bgColorName; // background style coloring (name may be "empty")
+	Pixel        bgColor;
 };
 
 #endif

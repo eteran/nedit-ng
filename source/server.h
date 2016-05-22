@@ -31,10 +31,10 @@
 class Document;
 
 #define NO_CONNECTION -1
-#define COM_OK 1
+#define COM_OK      1
 #define COM_FAILURE 2
 
-void InitServerCommunication(void);
+void InitServerCommunication();
 void ServerMainLoop(XtAppContext context);
 Boolean ServerDispatchEvent(XEvent *event);
 void DeleteFileClosedProperty(Document *window);

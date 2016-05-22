@@ -50,14 +50,14 @@ class MenuItem;
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
 struct userMenuInfo {
-	char *umiName;             // hierarchical name of menu item (w.o. language mode info)
-	int *umiId;                // hierarchical ID of menu item 
-	int umiIdLen;              // length of hierarchical ID 
-	Boolean umiIsDefault;      // menu item is default one ("@*") 
-	int umiNbrOfLanguageModes; // number of language modes applicable for this menu item
-	int *umiLanguageMode;      // list of applicable lang. modes 
-	int umiDefaultIndex;       // array index of menu item to be used as default, if no lang. mode matches
-	Boolean umiToBeManaged;    // indicates, that menu item needs to be managed
+	char *umiName;               // hierarchical name of menu item (w.o. language mode info)
+	int * umiId;                 // hierarchical ID of menu item 
+	int   umiIdLen;              // length of hierarchical ID 
+	bool  umiIsDefault;          // menu item is default one ("@*") 
+	int   umiNbrOfLanguageModes; // number of language modes applicable for this menu item
+	int * umiLanguageMode;       // list of applicable lang. modes 
+	int   umiDefaultIndex;       // array index of menu item to be used as default, if no lang. mode matches
+	bool  umiToBeManaged;        // indicates, that menu item needs to be managed
 };
 
 /* Structure holding hierarchical info about one sub-menu.
@@ -84,16 +84,16 @@ struct userMenuInfo {
    2.) "subMenuA>subMenuB" (hierarchical ID = {1, 2} means: el. nbr. "2" of
        "subMenuA", which itself is el. nbr. "0" of main menu) */
 struct userSubMenuInfo {
-	char *usmiName; // hierarchical name of sub-menu 
-	int *usmiId;    // hierarchical ID of sub-menu   
-	int usmiIdLen;  // length of hierarchical ID     
+	char *usmiName;  // hierarchical name of sub-menu 
+	int * usmiId;    // hierarchical ID of sub-menu   
+	int   usmiIdLen; // length of hierarchical ID     
 };
 
 // Holds info about sub-menu structure of an user menu 
 struct userSubMenuCache {
-	int usmcNbrOfMainMenuItems; // number of main menu items 
-	int usmcNbrOfSubMenus;      // number of sub-menus 
-	userSubMenuInfo *usmcInfo;  // list of sub-menu info 
+	int              usmcNbrOfMainMenuItems; // number of main menu items 
+	int              usmcNbrOfSubMenus;      // number of sub-menus 
+	userSubMenuInfo *usmcInfo;               // list of sub-menu info 
 };
 
 

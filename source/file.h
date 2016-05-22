@@ -43,7 +43,7 @@ enum EditFlags {
 #define NO_SBC_DIALOG_RESPONSE     2
 
 int CheckReadOnly(Document *window);
-int CloseAllFilesAndWindows(void);
+int CloseAllFilesAndWindows();
 int CloseFileAndWindow(Document *window, int preResponse);
 int IncludeFile(Document *window, const char *name);
 QString PromptForExistingFile(Document *window, const QString &prompt);

@@ -27,12 +27,10 @@
 #ifndef NEDIT_H_
 #define NEDIT_H_
 
-#include "TextBuffer.h"
+#include "TextSelection.h"
 #include "UserMenuListElement.h"
-
 #include <QLinkedList>
-#include <sys/param.h>
-#include <sys/types.h>
+#include <X11/Intrinsic.h>
 
 #define NEDIT_VERSION  5
 #define NEDIT_REVISION 6

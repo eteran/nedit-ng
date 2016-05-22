@@ -32,11 +32,13 @@
 #include <string>
 #include <deque>
 
-/* Maximum length in characters of a tab or control character expansion
-   of a single buffer character */
+// Maximum length in characters of a tab or control character expansion
+// of a single buffer character
 #define MAX_EXP_CHAR_LEN 20
 
-//#define PURIFY
+#if 0
+#define PURIFY
+#endif
 
 class RangesetTable;
 
@@ -55,15 +57,17 @@ public:
 	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
 	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
 
-public: bool BufSubstituteNullChars(char *string, int length);
-public: const char *BufAsString();
-public: void BufUnsubstituteNullChars(char *string, int length) const;
+public:
+	bool BufSubstituteNullChars(char *string, int length);
+	void BufUnsubstituteNullChars(char *string, int length) const;
 
 public:
+	bool BufIsEmpty() const;
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSubstituteNullCharsEx(std::string &string);
 	char BufGetCharacter(int pos) const;
+	const char *BufAsString();
 	int BufCmpEx(int pos, int len, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
@@ -88,13 +92,13 @@ public:
 	void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
+	void BufAppendEx(view::string_view text);
 	void BufCheckDisplay(int start, int end);
 	void BufClearRect(int start, int end, int rectStart, int rectEnd);
 	void BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos);
 	void BufHighlight(int start, int end);
 	void BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufInsertEx(int pos, view::string_view text);
-	void BufAppendEx(view::string_view text);
 	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted);
 	void BufRectHighlight(int start, int end, int rectStart, int rectEnd);
 	void BufRectSelect(int start, int end, int rectStart, int rectEnd);
@@ -117,7 +121,6 @@ public:
 	void BufUnhighlight();
 	void BufUnselect();
 	void BufUnsubstituteNullCharsEx(std::string &string) const;
-	bool BufIsEmpty() const;
 
 public:
 	bool GetSimpleSelection(int *left, int *right);
@@ -142,23 +145,23 @@ private:
 	void updateSelections(int pos, int nDeleted, int nInserted);
 	 	
 private:
-	char *buf_;         /* allocated memory where the text is stored */
-	int gapStart_;      /* points to the first character of the gap */
-	int gapEnd_;        /* points to the first char after the gap */
-	int length_;        /* length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length) */
+	char *buf_;         // allocated memory where the text is stored
+	int gapStart_;      // points to the first character of the gap
+	int gapEnd_;        // points to the first char after the gap
+	int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
 	
 public:
 	// TODO(eteran): accessors
-	TextSelection primary_; /* highlighted areas */
+	TextSelection primary_;                                                  // highlighted areas
 	TextSelection secondary_;
 	TextSelection highlight_;	
-	int tabDist_; /* equiv. number of characters in a tab */
-	int useTabs_; /* True if buffer routines are allowed to use tabs for padding in rectangular operations */
-	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       /* procedures to call when buffer is modified to redisplay contents */
-	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; /* procedure to call before text is deleted from the buffer; at most one is supported. */
-	int cursorPosHint_;            /* hint for reasonable cursor position after a buffer modification operation */
-	char nullSubsChar_;            /* NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it */
-	RangesetTable *rangesetTable_; /* current range sets */
+	int tabDist_;                                                            // equiv. number of characters in a tab
+	bool useTabs_;                                                           // True if buffer routines are allowed to use tabs for padding in rectangular operations
+	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
+	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
+	int cursorPosHint_;                                                      // hint for reasonable cursor position after a buffer modification operation
+	char nullSubsChar_;                                                      // NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it
+	RangesetTable *rangesetTable_;                                           // current range sets
 };
 
 #endif

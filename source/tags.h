@@ -27,12 +27,11 @@
 #ifndef TAGS_H_
 #define TAGS_H_
 
-#include "nedit.h"
+#include <X11/Intrinsic.h>
+#include <ctime>
 #include <string>
 
-#include <X11/Intrinsic.h>
-#include <X11/X.h>
-#include <ctime>
+class Document;
 
 struct tagFile {
 	tagFile     *next;
@@ -40,33 +39,31 @@ struct tagFile {
 	time_t      date;
 	bool        loaded;
 	short       index;
-	short       refcount; /* Only tips files are refcounted, not tags files */
+	short       refcount; // Only tips files are refcounted, not tags files
 };
 
-extern tagFile *TagsFileList; /* list of loaded tags files */
-extern tagFile *TipsFileList; /* list of loaded calltips tag files */
+extern tagFile *TagsFileList; // list of loaded tags files
+extern tagFile *TipsFileList; // list of loaded calltips tag files
 
-/* file_type and search_type arguments are to select between tips and tags,
-    and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString. */
+// file_type and search_type arguments are to select between tips and tags,
+// and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
 enum Mode { TAG, TIP_FROM_TAG, TIP };
 
 int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
-/* tagSpec is a colon-delimited list of filenames */
+// tagSpec is a colon-delimited list of filenames 
 int AddTagsFile(const char *tagSpec, int file_type);
 int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload);
-
 
 int AddTagsFileEx(const QString &tagSpec, int file_type);
 int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload);
 
 int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 
-/* Routines for handling tags or tips from the current selection */
+// Routines for handling tags or tips from the current selection
 void FindDefinition(Document *window, Time time, const char *arg);
 void FindDefCalltip(Document *window, Time time, const char *arg);
 
-/* Display (possibly finding first) a calltip.  Search type can only be
-    TIP or TIP_FROM_TAG here. */
+//  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
 int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
 #endif

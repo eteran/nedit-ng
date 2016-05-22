@@ -27,8 +27,8 @@
 #ifndef X_SMART_INDENT_H_
 #define X_SMART_INDENT_H_
 
-#include "nedit.h"
 #include "preferences.h"
+#include "string_view.h"
 #include <X11/Intrinsic.h>
 
 class QString;
@@ -40,15 +40,15 @@ int LMHasSmartIndentMacros(const char *languageMode);
 int LoadSmartIndentCommonStringEx(view::string_view string);
 int LoadSmartIndentStringEx(const QString &string);
 int SmartIndentMacrosAvailable(char *languageMode);
-QString  WriteSmartIndentCommonStringEx(void);
-QString WriteSmartIndentStringEx(void);
+QString  WriteSmartIndentCommonStringEx();
+QString WriteSmartIndentStringEx();
 void BeginSmartIndent(Document *window, int warn);
-void EditCommonSmartIndentMacro(void);
+void EditCommonSmartIndentMacro();
 void EditSmartIndentMacros(Document *window);
 void EndSmartIndent(Document *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
-void UpdateLangModeMenuSmartIndent(void);
+void UpdateLangModeMenuSmartIndent();
 QByteArray defaultCommonMacros();
 SmartIndent *findIndentSpec(const char *modeName);
 

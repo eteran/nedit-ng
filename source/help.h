@@ -29,6 +29,6 @@
 #ifndef HELP_H_
 #define HELP_H_
 
-void PrintVersion(void);
+void PrintVersion();
 
 #endif

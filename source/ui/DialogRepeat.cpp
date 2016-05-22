@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QIntValidator>
 #include "DialogRepeat.h"
+#include "TextBuffer.h"
 #include "Document.h"
 #include "MotifHelper.h"
 #include "macro.h"

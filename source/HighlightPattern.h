@@ -3,7 +3,6 @@
 #define HIGHLIGHT_PATTERN_H_
 
 #include <QString>
-#include <string>
 
 /* Pattern specification structure */
 class HighlightPattern {
@@ -12,8 +11,7 @@ public:
 	HighlightPattern(const HighlightPattern &) = default;
 	HighlightPattern &operator=(const HighlightPattern &) = default;
 	HighlightPattern(HighlightPattern &&) = default;
-	HighlightPattern &operator=(HighlightPattern &&) = default;
-	
+	HighlightPattern &operator=(HighlightPattern &&) = default;	
 	~HighlightPattern();
 	
 public:

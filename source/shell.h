@@ -27,7 +27,8 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
-#include "nedit.h"
+#include <string>
+class Document;
 
 void FilterSelection(Document *window, const std::string &command, int fromMacro);
 void ExecShellCommand(Document *window, const std::string &command, int fromMacro);
