@@ -31,6 +31,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QDesktopServices>
+#include <QFile>
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QLabel>
@@ -1072,15 +1073,14 @@ int WriteBackupFile(Document *window) {
 	// Generate a name for the autoSave file 
 	QString name = backupFileNameEx(window);
 
-	/* remove the old backup file.
-	   Well, this might fail - we'll notice later however. */
+	// remove the old backup file. Well, this might fail - we'll notice later however.
 	remove(name.toLatin1().data());
 
 	/* open the file, set more restrictive permissions (using default
 	    permissions was somewhat of a security hole, because permissions were
 	    independent of those of the original file being edited */
 	int fd = open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
-	if (fd< 0 || (fp = fdopen(fd, "w")) == nullptr) {
+	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 	
 		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error writing Backup"), QString(QLatin1String("Unable to save backup for %1:\n%2\nAutomatic backup is now off")).arg(window->filename_).arg(QLatin1String(strerror(errno))));		
 		window->autoSave_ = false;

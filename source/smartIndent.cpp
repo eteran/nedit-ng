@@ -649,7 +649,7 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 	return ParseError(nullptr, stringStart, stoppedAt, "smart indent specification", message);
 }
 
-QString WriteSmartIndentStringEx(void) {
+QString WriteSmartIndentStringEx() {
 
 	auto outBuf = new TextBuffer;
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
@@ -676,7 +676,7 @@ QString WriteSmartIndentStringEx(void) {
 	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 
-QString WriteSmartIndentCommonStringEx(void) {
+QString WriteSmartIndentCommonStringEx() {
 
 	QByteArray defaults = defaultCommonMacros();
 	if (CommonMacros == QString::fromLatin1(defaults.data(), defaults.size())) {
@@ -779,7 +779,7 @@ void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 ** If a smart indent dialog is up, ask to have the option menu for
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
-void UpdateLangModeMenuSmartIndent(void) {
+void UpdateLangModeMenuSmartIndent() {
 
 	if(SmartIndentDlg) {
 		SmartIndentDlg->updateLanguageModes();

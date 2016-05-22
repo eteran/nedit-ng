@@ -37,28 +37,28 @@ class Program;
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
 
-void RegisterMacroSubroutines();
-void AddLastCommandActionHook(XtAppContext context);
-void BeginLearn(Document *window);
-void FinishLearn();
-void CancelMacroOrLearn(Document *window);
-void Replay(Document *window);
-void SafeGC();
-void DoMacro(Document *window, view::string_view macro, const char *errInName);
-void ResumeMacroExecution(Document *window);
-void AbortMacroCommand(Document *window);
+Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt);
+bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
+int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 int MacroWindowCloseActions(Document *window);
-void RepeatDialog(Document *window);
-void RepeatMacro(Document *window, const char *command, int how);
 int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist);
 int ReadMacroString(Document *window, const char *string, const char *errIn);
 int ReadMacroStringEx(Document *window, const QString &string, const char *errIn);
-int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
-bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 std::string GetReplayMacro();
+void AbortMacroCommand(Document *window);
+void AddLastCommandActionHook(XtAppContext context);
+void BeginLearn(Document *window);
+void CancelMacroOrLearn(Document *window);
+void DoMacro(Document *window, view::string_view macro, const char *errInName);
+void FinishLearn();
 void ReadMacroInitFile(Document *window);
+void RegisterMacroSubroutines();
+void RepeatDialog(Document *window);
+void RepeatMacro(Document *window, const char *command, int how);
+void Replay(Document *window);
+void ResumeMacroExecution(Document *window);
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
-Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt);
+void SafeGC();
 
 extern std::string ReplayMacro;
 

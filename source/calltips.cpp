@@ -180,7 +180,7 @@ void TextDRedrawCalltip(TextDisplay *textD, int calltipID) {
 ** is to prevent tabs from turning into squares in calltips, not to get the
 ** formatting just right.
 */
-static std::string expandAllTabsEx(view::string_view text, int tab_width) {
+std::string expandAllTabsEx(view::string_view text, int tab_width) {
 	int nTabs = 0;
 
 	// First count 'em

@@ -46,7 +46,6 @@
 #include <unistd.h>
 #include <pwd.h>
 
-
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 
@@ -69,7 +68,7 @@ static CommandLine processCommandLine(int argc, char **argv);
 static void parseCommandLine(int argc, char **arg, CommandLine *cmdLine);
 static void nextArg(int argc, char **argv, int *argIndex);
 static void copyCommandLineArg(CommandLine *cmdLine, const char *arg);
-static void printNcVersion(void);
+static void printNcVersion();
 static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom);
 static void startNewServer(XtAppContext context, Window rootWindow, char *commandLine, Atom serverExistsAtom);
 static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, char *commandString, Atom serverRequestAtom);
@@ -78,7 +77,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow
 Display *TheDisplay;
 XtAppContext AppContext;
 static Atom currentWaitForAtom;
-static Atom noAtom = static_cast<Atom>(-1);
+static const Atom noAtom = static_cast<Atom>(-1);
 
 static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                                   "           [-line n | +n] [-do command] [-lm languagemode]\n"
@@ -154,7 +153,7 @@ static void addToFileList(const char *path) {
 }
 
 // Creates the properties for the various paths 
-static void createWaitProperties(void) {
+static void createWaitProperties() {
 
 	for(FileListEntry *item : fileListHead.fileList) {
 		fileListHead.waitForOpenCount++;
@@ -736,7 +735,7 @@ static void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
 }
 
 // Print version of 'nc' 
-static void printNcVersion(void) {
+static void printNcVersion() {
 	static const char *const ncHelpText = "nc (NEdit) Version 5.6 (November 2009)\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";

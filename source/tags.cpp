@@ -585,7 +585,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 ** Update the "Find Definition", "Unload Tags File", "Show Calltip",
 ** and "Unload Calltips File" menu items in the existing windows.
 */
-static void updateMenuItems(void) {
+static void updateMenuItems() {
 	Boolean tipStat = FALSE, tagStat = FALSE;
 
 	if (TipsFileList)

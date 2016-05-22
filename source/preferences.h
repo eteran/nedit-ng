@@ -29,7 +29,6 @@
 
 #include "nedit.h"
 #include "string_view.h"
-#include <exception>
 
 class QWidget;
 class QString;

@@ -337,7 +337,7 @@ static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 ** Install built-in macro subroutines and special variables for accessing
 ** editor information
 */
-void RegisterMacroSubroutines(void) {
+void RegisterMacroSubroutines() {
 	static DataValue subrPtr = INIT_DATA_VALUE;
 	static DataValue noValue = INIT_DATA_VALUE;
 
@@ -425,7 +425,7 @@ void AddLastCommandActionHook(XtAppContext context) {
 	XtAppAddActionHook(context, lastActionHook, nullptr);
 }
 
-void FinishLearn(void) {
+void FinishLearn() {
 
 	// If we're not in learn mode, return 
 	if(!MacroRecordActionHook)
@@ -476,7 +476,7 @@ void CancelMacroOrLearn(Document *window) {
 		AbortMacroCommand(window);
 }
 
-static void cancelLearn(void) {
+static void cancelLearn() {
 
 	// If we're not in learn mode, return 
 	if(!MacroRecordActionHook)
@@ -1071,7 +1071,7 @@ static void finishMacroCmdExecution(Document *window) {
 ** or waiting for a shell command or dialog), this does nothing and therefore
 ** defers GC to the completion of the last macro out.
 */
-void SafeGC(void) {
+void SafeGC() {
 
 	for (Document *win: WindowList) {
 		if (win->macroCmdData_ != nullptr || InSmartIndentMacros(win)) {
@@ -1116,7 +1116,7 @@ void DoMacro(Document *window, view::string_view macro, const char *errInName) {
 ** pointer to the stored macro and should not be freed by the caller (and
 ** will cease to exist when the next replay macro is installed)
 */
-std::string GetReplayMacro(void) {
+std::string GetReplayMacro() {
 	return ReplayMacro;
 }
 

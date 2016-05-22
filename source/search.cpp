@@ -497,14 +497,14 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 /*
 ** Count no. of windows
 */
-static int countWindows(void) {
+static int countWindows() {
 	return Document::WindowCount();
 }
 
 /*
 ** Count no. of writable windows, but first update the status of all files.
 */
-int countWritableWindows(void) {
+int countWritableWindows() {
 	int nAfter;
 
 	int nBefore = countWindows();

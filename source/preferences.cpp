@@ -1071,7 +1071,7 @@ void SetPrefOpenInTab(int state) {
 	}
 }
 
-int GetPrefOpenInTab(void) {
+int GetPrefOpenInTab() {
 	return PrefData.openInTab;
 }
 
@@ -1089,7 +1089,7 @@ void SetPrefWrapMargin(int margin) {
 	setIntPref(&PrefData.wrapMargin, margin);
 }
 
-int GetPrefWrapMargin(void) {
+int GetPrefWrapMargin() {
 	return PrefData.wrapMargin;
 }
 
@@ -1097,7 +1097,7 @@ void SetPrefSearch(int searchType) {
 	setIntPref(&PrefData.searchMethod, searchType);
 }
 
-int GetPrefSearch(void) {
+int GetPrefSearch() {
 	return PrefData.searchMethod;
 }
 
@@ -1106,7 +1106,7 @@ void SetPrefReplaceDefScope(int scope) {
 	setIntPref(&PrefData.replaceDefScope, scope);
 }
 
-int GetPrefReplaceDefScope(void) {
+int GetPrefReplaceDefScope() {
 	return PrefData.replaceDefScope;
 }
 #endif
@@ -1125,7 +1125,7 @@ void SetPrefAutoSave(int state) {
 	setIntPref(&PrefData.autoSave, state);
 }
 
-int GetPrefAutoSave(void) {
+int GetPrefAutoSave() {
 	return PrefData.autoSave;
 }
 
@@ -1133,7 +1133,7 @@ void SetPrefSaveOldVersion(int state) {
 	setIntPref(&PrefData.saveOldVersion, state);
 }
 
-int GetPrefSaveOldVersion(void) {
+int GetPrefSaveOldVersion() {
 	return PrefData.saveOldVersion;
 }
 
@@ -1141,7 +1141,7 @@ void SetPrefSearchDlogs(int state) {
 	setIntPref(&PrefData.searchDlogs, state);
 }
 
-int GetPrefSearchDlogs(void) {
+int GetPrefSearchDlogs() {
 	return PrefData.searchDlogs;
 }
 
@@ -1149,7 +1149,7 @@ void SetPrefBeepOnSearchWrap(int state) {
 	setIntPref(&PrefData.searchWrapBeep, state);
 }
 
-int GetPrefBeepOnSearchWrap(void) {
+int GetPrefBeepOnSearchWrap() {
 	return PrefData.searchWrapBeep;
 }
 
@@ -1157,7 +1157,7 @@ void SetPrefKeepSearchDlogs(int state) {
 	setIntPref(&PrefData.keepSearchDlogs, state);
 }
 
-int GetPrefKeepSearchDlogs(void) {
+int GetPrefKeepSearchDlogs() {
 	return PrefData.keepSearchDlogs;
 }
 
@@ -1165,11 +1165,11 @@ void SetPrefSearchWraps(int state) {
 	setIntPref(&PrefData.searchWraps, state);
 }
 
-int GetPrefStickyCaseSenseBtn(void) {
+int GetPrefStickyCaseSenseBtn() {
 	return PrefData.stickyCaseSenseBtn;
 }
 
-int GetPrefSearchWraps(void) {
+int GetPrefSearchWraps() {
 	return PrefData.searchWraps;
 }
 
@@ -1177,7 +1177,7 @@ void SetPrefStatsLine(int state) {
 	setIntPref(&PrefData.statsLine, state);
 }
 
-int GetPrefStatsLine(void) {
+int GetPrefStatsLine() {
 	return PrefData.statsLine;
 }
 
@@ -1185,7 +1185,7 @@ void SetPrefISearchLine(int state) {
 	setIntPref(&PrefData.iSearchLine, state);
 }
 
-int GetPrefISearchLine(void) {
+int GetPrefISearchLine() {
 	return PrefData.iSearchLine;
 }
 
@@ -1193,7 +1193,7 @@ void SetPrefSortTabs(int state) {
 	setIntPref(&PrefData.sortTabs, state);
 }
 
-int GetPrefSortTabs(void) {
+int GetPrefSortTabs() {
 	return PrefData.sortTabs;
 }
 
@@ -1201,7 +1201,7 @@ void SetPrefTabBar(int state) {
 	setIntPref(&PrefData.tabBar, state);
 }
 
-int GetPrefTabBar(void) {
+int GetPrefTabBar() {
 	return PrefData.tabBar;
 }
 
@@ -1209,7 +1209,7 @@ void SetPrefTabBarHideOne(int state) {
 	setIntPref(&PrefData.tabBarHideOne, state);
 }
 
-int GetPrefTabBarHideOne(void) {
+int GetPrefTabBarHideOne() {
 	return PrefData.tabBarHideOne;
 }
 
@@ -1217,7 +1217,7 @@ void SetPrefGlobalTabNavigate(int state) {
 	setIntPref(&PrefData.globalTabNavigate, state);
 }
 
-int GetPrefGlobalTabNavigate(void) {
+int GetPrefGlobalTabNavigate() {
 	return PrefData.globalTabNavigate;
 }
 
@@ -1225,7 +1225,7 @@ void SetPrefToolTips(int state) {
 	setIntPref(&PrefData.toolTips, state);
 }
 
-int GetPrefToolTips(void) {
+int GetPrefToolTips() {
 	return PrefData.toolTips;
 }
 
@@ -1233,7 +1233,7 @@ void SetPrefLineNums(int state) {
 	setIntPref(&PrefData.lineNums, state);
 }
 
-int GetPrefLineNums(void) {
+int GetPrefLineNums() {
 	return PrefData.lineNums;
 }
 
@@ -1241,7 +1241,7 @@ void SetPrefShowPathInWindowsMenu(int state) {
 	setIntPref(&PrefData.pathInWindowsMenu, state);
 }
 
-int GetPrefShowPathInWindowsMenu(void) {
+int GetPrefShowPathInWindowsMenu() {
 	return PrefData.pathInWindowsMenu;
 }
 
@@ -1249,7 +1249,7 @@ void SetPrefWarnFileMods(int state) {
 	setIntPref(&PrefData.warnFileMods, state);
 }
 
-int GetPrefWarnFileMods(void) {
+int GetPrefWarnFileMods() {
 	return PrefData.warnFileMods;
 }
 
@@ -1257,7 +1257,7 @@ void SetPrefWarnRealFileMods(int state) {
 	setIntPref(&PrefData.warnRealFileMods, state);
 }
 
-int GetPrefWarnRealFileMods(void) {
+int GetPrefWarnRealFileMods() {
 	return PrefData.warnRealFileMods;
 }
 
@@ -1265,7 +1265,7 @@ void SetPrefWarnExit(int state) {
 	setIntPref(&PrefData.warnExit, state);
 }
 
-int GetPrefWarnExit(void) {
+int GetPrefWarnExit() {
 	return PrefData.warnExit;
 }
 
@@ -1273,15 +1273,15 @@ void SetPrefv(int state) {
 	setIntPref(&PrefData.findReplaceUsesSelection, state);
 }
 
-int GetPrefFindReplaceUsesSelection(void) {
+int GetPrefFindReplaceUsesSelection() {
 	return PrefData.findReplaceUsesSelection;
 }
 
-int GetPrefMapDelete(void) {
+int GetPrefMapDelete() {
 	return PrefData.mapDelete;
 }
 
-int GetPrefStdOpenDialog(void) {
+int GetPrefStdOpenDialog() {
 	return PrefData.stdOpenDialog;
 }
 
@@ -1289,7 +1289,7 @@ void SetPrefRows(int nRows) {
 	setIntPref(&PrefData.textRows, nRows);
 }
 
-int GetPrefRows(void) {
+int GetPrefRows() {
 	return PrefData.textRows;
 }
 
@@ -1297,7 +1297,7 @@ void SetPrefCols(int nCols) {
 	setIntPref(&PrefData.textCols, nCols);
 }
 
-int GetPrefCols(void) {
+int GetPrefCols() {
 	return PrefData.textCols;
 }
 
@@ -1336,7 +1336,7 @@ void SetPrefInsertTabs(int state) {
 	setIntPref(&PrefData.insertTabs, state);
 }
 
-int GetPrefInsertTabs(void) {
+int GetPrefInsertTabs() {
 	return PrefData.insertTabs;
 }
 
@@ -1344,7 +1344,7 @@ void SetPrefShowMatching(int state) {
 	setIntPref(&PrefData.showMatchingStyle, state);
 }
 
-int GetPrefShowMatching(void) {
+int GetPrefShowMatching() {
 	/*
 	 * For backwards compatibility with pre-5.2 versions, the boolean
 	 * False/True matching behavior is converted to NO_FLASH/FLASH_DELIMIT.
@@ -1358,7 +1358,7 @@ void SetPrefMatchSyntaxBased(int state) {
 	setIntPref(&PrefData.matchSyntaxBased, state);
 }
 
-int GetPrefMatchSyntaxBased(void) {
+int GetPrefMatchSyntaxBased() {
 	return PrefData.matchSyntaxBased;
 }
 
@@ -1366,7 +1366,7 @@ void SetPrefHighlightSyntax(bool state) {
 	setIntPref(&PrefData.highlightSyntax, state);
 }
 
-bool GetPrefHighlightSyntax(void) {
+bool GetPrefHighlightSyntax() {
 	return PrefData.highlightSyntax;
 }
 
@@ -1374,11 +1374,11 @@ void SetPrefBacklightChars(int state) {
 	setIntPref(&PrefData.backlightChars, state);
 }
 
-int GetPrefBacklightChars(void) {
+int GetPrefBacklightChars() {
 	return PrefData.backlightChars;
 }
 
-char *GetPrefBacklightCharTypes(void) {
+char *GetPrefBacklightCharTypes() {
 	return PrefData.backlightCharTypes;
 }
 
@@ -1386,7 +1386,7 @@ void SetPrefRepositionDialogs(int state) {
 	setIntPref(&PrefData.repositionDialogs, state);
 }
 
-int GetPrefRepositionDialogs(void) {
+int GetPrefRepositionDialogs() {
 	return PrefData.repositionDialogs;
 }
 
@@ -1400,11 +1400,11 @@ void SetPrefAutoScroll(int state) {
 	}
 }
 
-int GetPrefAutoScroll(void) {
+int GetPrefAutoScroll() {
 	return PrefData.autoScroll;
 }
 
-int GetVerticalAutoScroll(void) {
+int GetVerticalAutoScroll() {
 	return PrefData.autoScroll ? PrefData.autoScrollVPadding : 0;
 }
 
@@ -1412,7 +1412,7 @@ void SetPrefAppendLF(int state) {
 	setIntPref(&PrefData.appendLF, state);
 }
 
-int GetPrefAppendLF(void) {
+int GetPrefAppendLF() {
 	return PrefData.appendLF;
 }
 
@@ -1420,11 +1420,11 @@ void SetPrefSortOpenPrevMenu(int state) {
 	setIntPref(&PrefData.sortOpenPrevMenu, state);
 }
 
-int GetPrefSortOpenPrevMenu(void) {
+int GetPrefSortOpenPrevMenu() {
 	return PrefData.sortOpenPrevMenu;
 }
 
-char *GetPrefTagFile(void) {
+char *GetPrefTagFile() {
 	return PrefData.tagFile;
 }
 
@@ -1432,15 +1432,15 @@ void SetPrefSmartTags(int state) {
 	setIntPref(&PrefData.smartTags, state);
 }
 
-int GetPrefSmartTags(void) {
+int GetPrefSmartTags() {
 	return PrefData.smartTags;
 }
 
-int GetPrefAlwaysCheckRelTagsSpecs(void) {
+int GetPrefAlwaysCheckRelTagsSpecs() {
 	return PrefData.alwaysCheckRelativeTagsSpecs;
 }
 
-QString GetPrefDelimiters(void) {
+QString GetPrefDelimiters() {
 	return QLatin1String(PrefData.delimiters);
 }
 
@@ -1480,35 +1480,35 @@ void SetPrefBoldItalicFont(char *fontName) {
 	PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay, fontName);
 }
 
-QString GetPrefFontName(void) {
+QString GetPrefFontName() {
 	return QLatin1String(PrefData.fontString);
 }
 
-QString GetPrefBoldFontName(void) {
+QString GetPrefBoldFontName() {
 	return QLatin1String(PrefData.boldFontString);
 }
 
-QString GetPrefItalicFontName(void) {
+QString GetPrefItalicFontName() {
 	return QLatin1String(PrefData.italicFontString);
 }
 
-QString GetPrefBoldItalicFontName(void) {
+QString GetPrefBoldItalicFontName() {
 	return QLatin1String(PrefData.boldItalicFontString);
 }
 
-XmFontList GetPrefFontList(void) {
+XmFontList GetPrefFontList() {
 	return PrefData.fontList;
 }
 
-XFontStruct *GetPrefBoldFont(void) {
+XFontStruct *GetPrefBoldFont() {
 	return PrefData.boldFontStruct;
 }
 
-XFontStruct *GetPrefItalicFont(void) {
+XFontStruct *GetPrefItalicFont() {
 	return PrefData.italicFontStruct;
 }
 
-XFontStruct *GetPrefBoldItalicFont(void) {
+XFontStruct *GetPrefBoldItalicFont() {
 	return PrefData.boldItalicFontStruct;
 }
 
@@ -1516,11 +1516,11 @@ char *GetPrefHelpFontName(int index) {
 	return PrefData.helpFontNames[index];
 }
 
-char *GetPrefHelpLinkColor(void) {
+char *GetPrefHelpLinkColor() {
 	return PrefData.helpLinkColor;
 }
 
-char *GetPrefTooltipBgColor(void) {
+char *GetPrefTooltipBgColor() {
 	return PrefData.tooltipBgColor;
 }
 
@@ -1528,27 +1528,27 @@ void SetPrefShell(const char *shell) {
 	setStringPref(PrefData.shell, shell);
 }
 
-const char *GetPrefShell(void) {
+const char *GetPrefShell() {
 	return PrefData.shell;
 }
 
-char *GetPrefGeometry(void) {
+char *GetPrefGeometry() {
 	return PrefData.geometry;
 }
 
-char *GetPrefServerName(void) {
+char *GetPrefServerName() {
 	return PrefData.serverName;
 }
 
-char *GetPrefBGMenuBtn(void) {
+char *GetPrefBGMenuBtn() {
 	return PrefData.bgMenuBtn;
 }
 
-int GetPrefMaxPrevOpenFiles(void) {
+int GetPrefMaxPrevOpenFiles() {
 	return PrefData.maxPrevOpenFiles;
 }
 
-int GetPrefTypingHidesPointer(void) {
+int GetPrefTypingHidesPointer() {
 	return (PrefData.typingHidesPointer);
 }
 
@@ -1560,38 +1560,38 @@ void SetPrefTitleFormat(const char *format) {
 		window->UpdateWindowTitle();
 	}
 }
-const char *GetPrefTitleFormat(void) {
+const char *GetPrefTitleFormat() {
 	return PrefData.titleFormat;
 }
 
-bool GetPrefUndoModifiesSelection(void) {
+bool GetPrefUndoModifiesSelection() {
 	return PrefData.undoModifiesSelection;
 }
 
-bool GetPrefFocusOnRaise(void) {
+bool GetPrefFocusOnRaise() {
 	return PrefData.focusOnRaise;
 }
 
-bool GetPrefForceOSConversion(void) {
+bool GetPrefForceOSConversion() {
 	return PrefData.forceOSConversion;
 }
 
-bool GetPrefHonorSymlinks(void) {
+bool GetPrefHonorSymlinks() {
 	return PrefData.honorSymlinks;
 }
 
-int GetPrefOverrideVirtKeyBindings(void) {
+int GetPrefOverrideVirtKeyBindings() {
 	return PrefData.virtKeyOverride;
 }
 
-int GetPrefTruncSubstitution(void) {
+int GetPrefTruncSubstitution() {
 	return PrefData.truncSubstitution;
 }
 
 /*
 ** If preferences don't get saved, ask the user on exit whether to save
 */
-void MarkPrefsChanged(void) {
+void MarkPrefsChanged() {
 	PrefsHaveChanged = true;
 }
 
@@ -2086,7 +2086,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 	}
 }
 
-static QString WriteLanguageModesStringEx(void) {
+static QString WriteLanguageModesStringEx() {
 	char numBuf[25];
 
 	auto outBuf = new TextBuffer;
@@ -2823,7 +2823,7 @@ int AllocatedStringsDiffer(const char *s1, const char *s2) {
 	return strcmp(s1, s2);
 }
 
-static void updatePatternsTo5dot1(void) {
+static void updatePatternsTo5dot1() {
 	const char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
 	const char *vhdlAnchorExpr = "^[ \t]*VHDL:";
 	
@@ -2895,7 +2895,7 @@ static void updatePatternsTo5dot1(void) {
 	TempStringPrefs.highlight   = QString::fromStdString(newHighlight);
 }
 
-static void updatePatternsTo5dot2(void) {
+static void updatePatternsTo5dot2() {
 
 	const char *cppLm5dot1 = "^[ \t]*C\\+\\+:\\.cc \\.hh \\.C \\.H \\.i \\.cxx "
 	                         "\\.hxx::::::\"\\.,/\\\\`'!\\|@#%\\^&\\*\\(\\)-=\\+\\{\\}\\[\\]\"\":;\\<\\>\\?~\"";
@@ -2974,11 +2974,11 @@ static void updatePatternsTo5dot2(void) {
 	TempStringPrefs.highlight = QString::fromStdString(newHighlight);
 }
 
-static void updatePatternsTo5dot3(void) {
+static void updatePatternsTo5dot3() {
 	// This is a bogus function on non-VMS 
 }
 
-static void updatePatternsTo5dot4(void) {
+static void updatePatternsTo5dot4() {
 
 	const char *pyLm5dot3 = "Python:\\.py:\"\\^#!\\.\\*python\":Auto:None::::?\n";
 	const char *xrLm5dot3 = "X Resources:\\.Xresources \\.Xdefaults "
@@ -3006,7 +3006,7 @@ static void updatePatternsTo5dot4(void) {
 	TempStringPrefs.styles    = QString::fromStdString(newStyles);
 }
 
-static void updatePatternsTo5dot6(void) {
+static void updatePatternsTo5dot6() {
 	const char *pats[] = {"Csh:\\.csh \\.cshrc \\.login \\.logout:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ "
 	                      "\\\\t\\]\\*/bin/csh\"::::::\\n",
 	                      "Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n", "LaTeX:\\.tex \\.sty \\.cls \\.ltx \\.ins:::::::\\n", "LaTeX:.tex .sty .cls .ltx .ins .clo .fd:::::::\n",
@@ -3217,7 +3217,7 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 ** containing those working. '#' is a line number placeholder in 5.3 and
 ** had no special meaning before.
 */
-static void updateShellCmdsTo5dot3(void) {
+static void updateShellCmdsTo5dot3() {
 
 	if (TempStringPrefs.shellCmds.isNull())
 		return;
@@ -3286,13 +3286,13 @@ static void updateShellCmdsTo5dot3(void) {
 	TempStringPrefs.shellCmds = QString::fromStdString(newString);
 }
 
-static void updateShellCmdsTo5dot4(void) {
+static void updateShellCmdsTo5dot4() {
 #ifdef __FreeBSD__
-	const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"words,\" \\$wc\\[2\\] \"lines,\" \\$wc\\[3\\] \"characters\"\\n";
-	const char *wc5dot4 = "wc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n";
+	static const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"words,\" \\$wc\\[2\\] \"lines,\" \\$wc\\[3\\] \"characters\"\\n";
+	static const char *wc5dot4 = "wc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n";
 #else
-	const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"lines,\" \\$wc\\[2\\] \"words,\" \\$wc\\[3\\] \"characters\"\\n";
-	const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
+	static const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"lines,\" \\$wc\\[2\\] \"words,\" \\$wc\\[3\\] \"characters\"\\n";
+	static const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
 #endif
 
 
@@ -3305,9 +3305,9 @@ static void updateShellCmdsTo5dot4(void) {
 	TempStringPrefs.shellCmds = QString::fromStdString(shellCmds);
 }
 
-static void updateMacroCmdsTo5dot5(void) {
-	const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
-	const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
+static void updateMacroCmdsTo5dot5() {
+	static const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
+	static const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
 	
 	std::string macroCmds = TempStringPrefs.macroCmds.toStdString();
 	
@@ -3318,7 +3318,7 @@ static void updateMacroCmdsTo5dot5(void) {
 	TempStringPrefs.macroCmds = QString::fromStdString(macroCmds);
 }
 
-static void updateMacroCmdsTo5dot6(void) {
+static void updateMacroCmdsTo5dot6() {
 	/*
 	   This is ridiculous. Macros don't belong in the default preferences
 	   string.
@@ -3329,7 +3329,7 @@ static void updateMacroCmdsTo5dot6(void) {
 	   would simplify upgrading A LOT in the future, but changing the way
 	   default macros are stored, is a lot of work too, unfortunately.
 	*/
-	const char *pats[] = {"Complete Word:Alt+D::: {\n\
+	static const char *pats[] = {"Complete Word:Alt+D::: {\n\
 		# Tuning parameters\n\
 		ScanDistance = 200\n\
 		\n\
@@ -3458,9 +3458,11 @@ static void updateMacroCmdsTo5dot6(void) {
 		}\n\
 		string = get_range(start, end)\n\
 		nDefs = 0",                                 "Make C Prototypes@C@C++:", "\t\tnDefs = 0", nullptr};
-	int i;
-	for (i = 0; pats[i]; i += 3)
+
+	for (int i = 0; pats[i]; i += 3) {
 		replaceMacroIfUnchanged(pats[i], pats[i + 1], pats[i + 2]);
+	}
+	
 	return;
 }
 
@@ -3492,7 +3494,7 @@ void ChooseColors(Document *window) {
 **  shell, currently defined as the user's login shell.
 **  In case of errors, the fallback of "sh" will be returned.
 */
-static const char *getDefaultShell(void) {
+static const char *getDefaultShell() {
 	struct passwd *passwdEntry = nullptr;
 	static char shellBuffer[MAXPATHLEN + 1] = "sh";
 
