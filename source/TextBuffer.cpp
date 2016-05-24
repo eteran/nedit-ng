@@ -560,7 +560,7 @@ TextBuffer::TextBuffer() : TextBuffer(0) {
 ** avoid unnecessary re-allocation if you know exactly how much the buffer
 ** will need to hold
 */
-TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), nullSubsChar_('\0'), rangesetTable_(nullptr) {
+TextBuffer::TextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), cursorPosHint_(0), nullSubsChar_('\0'), rangesetTable_(nullptr) {
 
 	buf_ = new char[requestedSize + PreferredGapSize + 1];
 	buf_[requestedSize + PreferredGapSize] = '\0';

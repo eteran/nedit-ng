@@ -1,7 +1,8 @@
 
 #include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "file.h"
 #include <QToolButton>
-
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -9,14 +10,18 @@
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 	
+	// default to hiding the optional panels
+	ui.statusFrame->setVisible(false);
+	ui.incrementalSearchFrame->setVisible(false);
 	
+	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
-
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
 	deleteTabButton->setIcon(QIcon::fromTheme(QLatin1String("tab-close")));
 	deleteTabButton->setAutoRaise(true);
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
+	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
 	
 	auto indentGroup = new QActionGroup(this);
 	indentGroup->addAction(ui.action_Indent_Off);
@@ -72,8 +77,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	defaultSizeGroup->addAction(ui.action_Default_Size_60_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_80_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_Custom);
-		
-	
 }
 
 //------------------------------------------------------------------------------
@@ -81,4 +84,22 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 //------------------------------------------------------------------------------
 MainWindow::~MainWindow() {
 
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void MainWindow::deleteTabButtonClicked() {
+	ui.tabWidget->removeTab(ui.tabWidget->currentIndex());
+}
+
+//------------------------------------------------------------------------------
+// Name: 
+//------------------------------------------------------------------------------
+void MainWindow::on_action_New_triggered() {
+
+	QString name = UniqueUntitledName();
+
+	auto newTab = new DocumentWidget(name, this);
+	ui.tabWidget->addTab(newTab, name);
 }

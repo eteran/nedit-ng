@@ -313,8 +313,6 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 
 	struct stat statbuf;
 	FILE *fp = nullptr;
-	int fd;
-	int resp;
 
 	// initialize lock reasons 
 	window->lockReasons_.clear();
@@ -354,6 +352,7 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 				// ask user for next action if file not found 
 				
 				// NOTE(eteran): is window the one and only window?
+				int resp;
 				if (window == WindowList.front() && WindowList.size() == 1) {
 					
 					msgbox.setIcon(QMessageBox::Warning);
@@ -383,7 +382,8 @@ static int doOpen(Document *window, const char *name, const char *path, int flag
 			}
 
 			// Test if new file can be created 
-			if ((fd = creat(fullname.toLatin1().data(), 0666)) == -1) {
+			int fd = creat(fullname.toLatin1().data(), 0666);
+			if (fd == -1) {
 				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error creating File"), QString(QLatin1String("Can't create %1:\n%2")).arg(fullname, QLatin1String(strerror(errno))));
 				return false;
 			} else {
@@ -1651,10 +1651,9 @@ void CheckForChangesToFile(Document *window) {
 		window->fileGid_ = statbuf.st_gid;
 		
 		if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
-			int readOnly;
 			fclose(fp);
 
-			readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
+			bool readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
 
 			if (window->lockReasons_.isPermLocked() != readOnly) {
 				window->lockReasons_.setPermLocked(readOnly);

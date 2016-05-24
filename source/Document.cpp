@@ -3436,15 +3436,6 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	mainWin_ = XmCreateMainWindow(shell_, (String) "main", al, ac);
 	XtManageChild(mainWin_);
 
-#if 0
-	// TODO(eteran): this is an experiement in making a Qt main window along side
-	// the typical one...
-	auto win = new MainWindow();
-	win->setWindowTitle(name);
-	win->show();
-#endif
-	
-
 	// The statsAreaForm holds the stats line and the I-Search line. 
 	Widget statsAreaForm = XtVaCreateWidget("statsAreaForm", xmFormWidgetClass, mainWin_, XmNmarginWidth, STAT_SHADOW_THICKNESS, XmNmarginHeight, STAT_SHADOW_THICKNESS,
 	                                 // XmNautoUnmanage, false, 
@@ -3638,6 +3629,14 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 
 	// cache user menus: init. user background menu cache 
 	InitUserBGMenuCache(&userBGMenuCache_);
+	
+#if 0
+	// TODO(eteran): this is an experiement in making a Qt main window along side
+	// the typical one...
+	auto win = new MainWindow();
+	win->setWindowTitle(name);
+	win->show();
+#endif	
 	
 	// ------------------------------------------------------------------------------
 	// NOTE(eteran): looks like at this point the UI is setup, now start creating the

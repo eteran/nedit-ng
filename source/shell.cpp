@@ -900,8 +900,10 @@ static pid_t forkCommand(Widget parent, const std::string &command, const std::s
 
 	(void)parent;
 
-	int childStdoutFD, childStdinFD, childStderrFD, pipeFDs[2];
-	int dupFD;
+	int childStdoutFD;
+	int childStdinFD;
+	int childStderrFD;
+	int pipeFDs[2];
 	pid_t childPid;
 
 	/* Ignore SIGPIPE signals generated when user attempts to provide
@@ -915,17 +917,19 @@ static pid_t forkCommand(Widget parent, const std::string &command, const std::s
 		perror("nedit: Internal error (opening stdout pipe)");
 		return -1;
 	}
+	
 	*stdoutFD = pipeFDs[0];
 	childStdoutFD = pipeFDs[1];
 	if (pipe(pipeFDs) != 0) {
 		perror("nedit: Internal error (opening stdin pipe)");
 		return -1;
 	}
+	
 	*stdinFD = pipeFDs[1];
 	childStdinFD = pipeFDs[0];
-	if(!stderrFD)
+	if(!stderrFD) {
 		childStderrFD = childStdoutFD;
-	else {
+	} else {
 		if (pipe(pipeFDs) != 0) {
 			perror("nedit: Internal error (opening stdin pipe)");
 			return -1;
@@ -956,7 +960,7 @@ static pid_t forkCommand(Widget parent, const std::string &command, const std::s
 
 		/* duplicate the child ends of the pipes to have the same numbers
 		   as stdout & stderr, so it can substitute for stdout & stderr */
-		dupFD = dup2(childStdinFD, fileno(stdin));
+		int dupFD = dup2(childStdinFD, fileno(stdin));
 		if (dupFD == -1)
 			perror("dup of stdin failed");
 		dupFD = dup2(childStdoutFD, fileno(stdout));

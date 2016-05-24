@@ -29,21 +29,16 @@
 
 #include <string>
 #include "string_view.h"
+#include "FileFormats.h"
 
 class QString;
 
-enum FileFormats {
-	UNIX_FILE_FORMAT, 
-	DOS_FILE_FORMAT, 
-	MAC_FILE_FORMAT
-};
-
-QString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
-QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
-int CompressPathname(char *pathname);
-bool ConvertToDosFileStringEx(std::string &fileString);
-int ExpandTilde(char *pathname);
 FileFormats FormatOfFileEx(view::string_view fileString);
+QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
+QString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
+bool ConvertToDosFileStringEx(std::string &fileString);
+int CompressPathname(char *pathname);
+int ExpandTilde(char *pathname);
 int NormalizePathname(char *pathname);
 int ParseFilename(const char *fullname, char *filename, char *pathname);
 int ResolvePath(const char *pathIn, char *pathResolved);

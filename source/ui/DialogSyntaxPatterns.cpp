@@ -633,12 +633,6 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 
 		auto pat = reinterpret_cast<HighlightPattern *>(current->data(Qt::UserRole).toULongLong());
 
-		bool isSubpat;
-		bool isDeferred;
-		bool isColorOnly;
-		bool isRange;
-
-
 		if(!pat) {		
 			ui.editPatternName->setText(QString());
 			ui.editParentPattern->setText(QString());
@@ -649,10 +643,10 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 			ui.radioSimpleRegex->setChecked(true);
 			setStyleMenu(tr("Plain"));
 		} else {
-			isSubpat    = !pat->subPatternOf.isNull();
-			isDeferred  = pat->flags & DEFER_PARSING;
-			isColorOnly = pat->flags & COLOR_ONLY;
-			isRange = (!pat->endRE.isNull());
+			bool isSubpat    = !pat->subPatternOf.isNull();
+			bool isDeferred  = pat->flags & DEFER_PARSING;
+			bool isColorOnly = pat->flags & COLOR_ONLY;
+			bool isRange = (!pat->endRE.isNull());
 			
 			ui.editPatternName->setText(pat->name);
 			ui.editParentPattern->setText(!pat->subPatternOf.isNull() ? pat->subPatternOf : QString());

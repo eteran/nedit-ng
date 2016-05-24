@@ -177,13 +177,13 @@ void DowncaseSelection(Document *window) {
 */
 static void changeCase(Document *window, int makeUpper) {
 	TextBuffer *buf = window->buffer_;
-	int cursorPos, start, end, rectStart, rectEnd;
+	int start, end, rectStart, rectEnd;
 	bool isRect;
 
 	// Get the selection.  Use character before cursor if no selection 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		char bufChar[2] = " ";
-		cursorPos = TextGetCursorPos(window->lastFocus_);
+		int cursorPos = TextGetCursorPos(window->lastFocus_);
 		if (cursorPos == 0) {
 			QApplication::beep();
 			return;
@@ -632,7 +632,6 @@ static int findLeftMarginEx(In first, In last, int length, int tabDist) {
 ** previous versions which did all paragraphs together).
 */
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst) {
-	int paraEnd, fillEnd;
 	char ch;
 	int len;
 
@@ -661,12 +660,12 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		paraStart = buf->BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph 
-		paraEnd = findParagraphEnd(buf, paraStart);
+		int paraEnd = findParagraphEnd(buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-		fillEnd = alignWithFirst ? buf->BufGetLength() : paraEnd;
+		int fillEnd = alignWithFirst ? buf->BufGetLength() : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */

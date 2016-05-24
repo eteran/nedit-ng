@@ -986,11 +986,10 @@ int HighlightCodeOfPos(Document *window, int pos) {
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-	int hCode = 0;
 	int oldPos = pos;
 
 	if (styleBuf) {
-		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+		int hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
 		if (hCode == UNFINISHED_STYLE) {
