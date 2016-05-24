@@ -14,6 +14,7 @@ public:
 
 public Q_SLOTS:
 	void on_action_New_triggered();
+	void on_action_About_triggered();
 #if 0
 	void on_action_New_Window_triggered();
 	void on_action_Open_triggered();
@@ -101,8 +102,7 @@ public Q_SLOTS:
 	void on_action_Cancel_Learn_triggered();
 	void on_action_Replay_Keystrokes_triggered();
 	void on_action_Repeat_triggered();
-	void on_action_Complete_Word_triggered();
-	void on_action_About_triggered();
+	void on_action_Complete_Word_triggered();	
 	void on_action_Find_Again_Backwards_triggered();
 	void on_action_Find_Selection_Backwards_triggered();
 	void on_action_Highlight_To_Matching_triggered();

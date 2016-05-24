@@ -28,6 +28,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	QtMotifWidget.h
 	QtXtWidget.h
 
+	ui/DialogAbout.h
 	ui/DialogColors.h
 	ui/DialogDrawingStyles.h
 	ui/DialogExecuteCommand.h
@@ -64,6 +65,7 @@ qt4_wrap_cpp(MOC_SOURCES
 )
 
 set(UI_FILES
+	ui/DialogAbout.ui
 	ui/DialogColors.ui
 	ui/DialogDrawingStyles.ui
 	ui/DialogExecuteCommand.ui
@@ -102,6 +104,7 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
+	ui/DialogAbout.cpp
 	ui/DialogColors.cpp
 	ui/DialogDrawingStyles.cpp
 	ui/DialogExecuteCommand.cpp

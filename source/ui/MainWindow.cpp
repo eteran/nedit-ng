@@ -1,5 +1,6 @@
 
 #include "MainWindow.h"
+#include "DialogAbout.h"
 #include "DocumentWidget.h"
 #include "file.h"
 #include <QToolButton>
@@ -102,4 +103,10 @@ void MainWindow::on_action_New_triggered() {
 
 	auto newTab = new DocumentWidget(name, this);
 	ui.tabWidget->addTab(newTab, name);
+}
+
+
+void MainWindow::on_action_About_triggered() {
+	auto dialog = new DialogAbout(this);
+	dialog->exec();
 }
