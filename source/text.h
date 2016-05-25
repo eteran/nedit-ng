@@ -139,31 +139,21 @@ struct smartIndentCBStruct {
 /* User callable routines */
 
 XtActionsRec *TextGetActions(int *nActions);
-int TextFirstVisibleLine(Widget w);
-int TextFirstVisiblePos(Widget w);
-int TextGetCursorPos(Widget w);
-int TextGetMaxFontWidth(Widget w, Boolean considerStyles);
-int TextGetMinFontWidth(Widget w, Boolean considerStyles);
-int TextLastVisiblePos(Widget w);
-int TextLineAndColToPos(Widget w, int lineNum, int column);
-int TextNumVisibleLines(Widget w);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
 int TextPosToXY(Widget w, int pos, int *x, int *y);
 int TextVisibleWidth(Widget w);
-std::string TextGetWrappedEx(Widget w, int startPos, int endPos);
 TextBuffer *TextGetBuffer(Widget w);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void TextColPasteClipboard(Widget w, Time time);
-void TextCopyClipboard(Widget w, Time time);
-void TextCutClipboard(Widget w, Time time);
 void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextHandleXSelections(Widget w);
 void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);
-void TextSetBuffer(Widget w, TextBuffer *buffer);
-void TextSetCursorPos(Widget w, int pos);
-void TextSetScroll(Widget w, int topLineNum, int horizOffset);
+void cancelDrag(Widget w);
+int checkReadOnly(Widget w);
+void checkAutoShowInsertPos(Widget w);
+void callCursorMovementCBs(Widget w, XEvent *event);
 
 #endif

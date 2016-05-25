@@ -42,6 +42,8 @@
 #include "ui/DialogPrint.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+#include "TextDisplay.h"
+#include "textP.h"
 
 #include "file.h"
 #include "TextBuffer.h"
@@ -253,8 +255,10 @@ void RevertToSaved(Document *window) {
 
 	// save insert & scroll positions of all of the panes to restore later 
 	for (i = 0; i <= window->nPanes_; i++) {
-		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
-		insertPositions[i] = TextGetCursorPos(text);
+		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+		
+		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		insertPositions[i] = textD->TextGetCursorPos();
 		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
 	}
 
@@ -286,8 +290,9 @@ void RevertToSaved(Document *window) {
 	// restore the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
-		TextSetCursorPos(text, insertPositions[i]);
-		TextSetScroll(text, topLines[i], horizOffsets[i]);
+		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		textD->TextSetCursorPos(insertPositions[i]);
+		textD->TextSetScroll(topLines[i], horizOffsets[i]);
 	}
 }
 
@@ -616,7 +621,8 @@ int IncludeFile(Document *window, const char *name) {
 	if (window->buffer_->primary_.selected) {
 		window->buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
 	} else {
-		window->buffer_->BufInsertEx(TextGetCursorPos(window->lastFocus_), view::string_view(fileString, readLen));
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		window->buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(fileString, readLen));
 	}
 
 	// release the memory that holds fileString 
@@ -1291,10 +1297,12 @@ void PrintWindow(Document *window, bool selectedOnly) {
 		if (sel->rectangular) {
 			fileString = buf->BufGetSelectionTextEx();
 		} else {
-			fileString = TextGetWrappedEx(window->textArea_, sel->start, sel->end);
+			auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+			fileString = textD->TextGetWrappedEx(sel->start, sel->end);
 		}
 	} else {
-		fileString = TextGetWrappedEx(window->textArea_, 0, buf->BufGetLength());
+		auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+		fileString = textD->TextGetWrappedEx(0, buf->BufGetLength());
 	}
 
 	// If null characters are substituted for, put them back 
@@ -1751,26 +1759,35 @@ int CheckReadOnly(Document *window) {
 ** by turning off Continuous Wrap mode.
 */
 static void addWrapNewlines(Document *window) {
-	int i, insertPositions[MAX_PANES], topLines[MAX_PANES];
+	int i;
+	int insertPositions[MAX_PANES];
+	int topLines[MAX_PANES];
 	int horizOffset;
 	Widget text;
 
 	// save the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
-		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
-		insertPositions[i] = TextGetCursorPos(text);
+		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+
+		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		insertPositions[i] = textD->TextGetCursorPos();
 		TextGetScroll(text, &topLines[i], &horizOffset);
 	}
 
 	// Modify the buffer to add wrapping 
-	std::string fileString = TextGetWrappedEx(window->textArea_, 0, window->buffer_->BufGetLength());
+	
+	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+	
+	std::string fileString = textD->TextGetWrappedEx(0, window->buffer_->BufGetLength());
 	window->buffer_->BufSetAllEx(fileString);
 
 	// restore the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
-		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
-		TextSetCursorPos(text, insertPositions[i]);
-		TextSetScroll(text, topLines[i], 0);
+		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+		
+		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		textD->TextSetCursorPos(insertPositions[i]);
+		textD->TextSetScroll(topLines[i], 0);
 	}
 
 	/* Show the user that something has happened by turning off

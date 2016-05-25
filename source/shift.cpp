@@ -35,12 +35,13 @@
 #include "Document.h"
 #include "window.h"
 #include "memory.h"
+#include "TextDisplay.h"
+#include "textP.h"
 
 #include <cstring>
 #include <climits>
 #include <cctype>
 #include <algorithm>
-#include <sys/param.h>
 
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
@@ -83,9 +84,11 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	TextBuffer *buf = window->buffer_;
 	std::string text;
 
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+
 	// get selection, if no text selected, use current insert position 
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-		cursorPos = TextGetCursorPos(window->lastFocus_);
+		cursorPos = textD->TextGetCursorPos();
 		selStart = buf->BufStartOfLine(cursorPos);
 		selEnd = buf->BufEndOfLine(cursorPos);
 		if (selEnd < buf->BufGetLength())
@@ -94,10 +97,12 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 		isRect = False;
 		text = buf->BufGetRangeEx(selStart, selEnd);
 	} else if (isRect) {
-		cursorPos = TextGetCursorPos(window->lastFocus_);
+		cursorPos = textD->TextGetCursorPos();
 		origLength = buf->BufGetLength();
 		shiftRect(window, direction, byTab, selStart, selEnd, rectStart, rectEnd);
-		TextSetCursorPos(window->lastFocus_, (cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		textD->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
 		return;
 	} else {
 		selStart = buf->BufStartOfLine(selStart);
@@ -177,13 +182,18 @@ void DowncaseSelection(Document *window) {
 */
 static void changeCase(Document *window, int makeUpper) {
 	TextBuffer *buf = window->buffer_;
-	int start, end, rectStart, rectEnd;
+	int start;
+	int end;
+	int rectStart;
+	int rectEnd;
 	bool isRect;
+
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 
 	// Get the selection.  Use character before cursor if no selection 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		char bufChar[2] = " ";
-		int cursorPos = TextGetCursorPos(window->lastFocus_);
+		int cursorPos = textD->TextGetCursorPos();
 		if (cursorPos == 0) {
 			QApplication::beep();
 			return;
@@ -217,10 +227,19 @@ static void changeCase(Document *window, int makeUpper) {
 
 void FillSelection(Document *window) {
 	TextBuffer *buf = window->buffer_;
-	int left, right, nCols, len, rectStart, rectEnd;
+	int left;
+	int right;
+	int nCols;
+	int len;
+	int rectStart;
+	int rectEnd;
 	bool isRect;
-	int rightMargin, wrapMargin;
-	int insertPos = TextGetCursorPos(window->lastFocus_);
+	int rightMargin;
+	int wrapMargin;
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	
+	int insertPos = textD->TextGetCursorPos();
 	int hasSelection = window->buffer_->primary_.selected;
 	std::string text;
 
@@ -275,10 +294,11 @@ void FillSelection(Document *window) {
 
 	/* Find a reasonable cursor position.  Usually insertPos is best, but
 	   if the text was indented, positions can shift */
-	if (hasSelection && isRect)
-		TextSetCursorPos(window->lastFocus_, buf->cursorPosHint_);
-	else
-		TextSetCursorPos(window->lastFocus_, insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
+	if (hasSelection && isRect) {
+		textD->TextSetCursorPos(buf->cursorPosHint_);
+	} else {
+		textD->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
+	}
 }
 
 /*

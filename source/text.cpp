@@ -144,8 +144,7 @@ static void focusInAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void checkMoveSelectionChange(Widget w, XEvent *event, int startPos, String *args, Cardinal *nArgs);
 static void keyMoveExtendSelection(Widget w, XEvent *event, int startPos, int rectangular);
-static void checkAutoShowInsertPos(Widget w);
-static int checkReadOnly(Widget w);
+
 static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete);
 static int pendingSelection(Widget w);
 static int deletePendingSelection(Widget w, XEvent *event);
@@ -158,8 +157,8 @@ static int startOfWord(TextWidget w, int pos);
 static int endOfWord(TextWidget w, int pos);
 static void checkAutoScroll(TextWidget w, int x, int y);
 static void endDrag(Widget w);
-static void cancelDrag(Widget w);
-static void callCursorMovementCBs(Widget w, XEvent *event);
+
+
 static void adjustSelection(TextWidget tw, int x, int y);
 static void adjustSecondarySelection(TextWidget tw, int x, int y);
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
@@ -1044,20 +1043,7 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 		return XtGeometryAlmost;
 }
 
-/*
-** Set the text buffer which this widget will display and interact with.
-** The currently attached buffer is automatically freed, ONLY if it has
-** no additional modify procs attached (as it would if it were being
-** displayed by another text widget).
-*/
-void TextSetBuffer(Widget w, TextBuffer *buffer) {
-	TextBuffer *oldBuf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
-	StopHandlingXSelections(w);
-	reinterpret_cast<TextWidget>(w)->text.textD->TextDSetBuffer(buffer);
-	if (oldBuf->modifyProcs_.empty())
-		delete oldBuf;
-}
 
 /*
 ** Get the buffer associated with this text widget.  Note that attaching
@@ -1068,12 +1054,7 @@ TextBuffer *TextGetBuffer(Widget w) {
 	return reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 }
 
-/*
-** Translate a line number and column into a position
-*/
-int TextLineAndColToPos(Widget w, int lineNum, int column) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDLineAndColToPos(lineNum, column);
-}
+
 
 /*
 ** Translate a position into a line number (if the position is visible,
@@ -1094,21 +1075,9 @@ int TextPosToXY(Widget w, int pos, int *x, int *y) {
 	return reinterpret_cast<TextWidget>(w)->text.textD->TextDPositionToXY(pos, x, y);
 }
 
-/*
-** Return the cursor position
-*/
-int TextGetCursorPos(Widget w) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
-}
 
-/*
-** Set the cursor position
-*/
-void TextSetCursorPos(Widget w, int pos) {
-	reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(pos);
-	checkAutoShowInsertPos(w);
-	callCursorMovementCBs(w, nullptr);
-}
+
+
 
 /*
 ** Return the horizontal and vertical scroll positions of the widget
@@ -1117,20 +1086,6 @@ void TextGetScroll(Widget w, int *topLineNum, int *horizOffset) {
 	reinterpret_cast<TextWidget>(w)->text.textD->TextDGetScroll(topLineNum, horizOffset);
 }
 
-/*
-** Set the horizontal and vertical scroll positions of the widget
-*/
-void TextSetScroll(Widget w, int topLineNum, int horizOffset) {
-	reinterpret_cast<TextWidget>(w)->text.textD->TextDSetScroll(topLineNum, horizOffset);
-}
-
-int TextGetMinFontWidth(Widget w, Boolean considerStyles) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDMinFontWidth(considerStyles);
-}
-
-int TextGetMaxFontWidth(Widget w, Boolean considerStyles) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDMaxFontWidth(considerStyles);
-}
 
 /*
 ** Set this widget to be the owner of selections made in it's attached
@@ -1158,51 +1113,15 @@ void TextColPasteClipboard(Widget w, Time time) {
 	callCursorMovementCBs(w, nullptr);
 }
 
-void TextCopyClipboard(Widget w, Time time) {
-	cancelDrag(w);
-	if (!reinterpret_cast<TextWidget>(w)->text.textD->buffer->primary_.selected) {
-		XBell(XtDisplay(w), 0);
-		return;
-	}
-	CopyToClipboard(w, time);
-}
 
-void TextCutClipboard(Widget w, Time time) {
-	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
-		return;
-	if (!textD->buffer->primary_.selected) {
-		XBell(XtDisplay(w), 0);
-		return;
-	}
-	TakeMotifDestination(w, time);
-	CopyToClipboard(w, time);
-	textD->buffer->BufRemoveSelected();
-	textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
-	checkAutoShowInsertPos(w);
-}
 
-int TextFirstVisibleLine(Widget w) {
-	return (reinterpret_cast<TextWidget>(w)->text.textD->topLineNum);
-}
-
-int TextNumVisibleLines(Widget w) {
-	return (reinterpret_cast<TextWidget>(w)->text.textD->nVisibleLines);
-}
 
 int TextVisibleWidth(Widget w) {
 	return (reinterpret_cast<TextWidget>(w)->text.textD->width);
 }
 
-int TextFirstVisiblePos(Widget w) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->firstChar;
-}
 
-int TextLastVisiblePos(Widget w) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->lastChar;
-}
 
 /*
 ** Insert text "chars" at the cursor position, respecting pending delete
@@ -1279,49 +1198,6 @@ void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int 
 	}
 	checkAutoShowInsertPos(w);
 	callCursorMovementCBs(w, event);
-}
-
-/*
-** Fetch text from the widget's buffer, adding wrapping newlines to emulate
-** effect acheived by wrapping in the text display in continuous wrap mode.
-*/
-std::string TextGetWrappedEx(Widget w, int startPos, int endPos) {
-	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	TextBuffer *buf = textD->buffer;
-
-	if (!reinterpret_cast<TextWidget>(w)->text.continuousWrap || startPos == endPos) {
-		return buf->BufGetRangeEx(startPos, endPos);
-	}
-
-	/* Create a text buffer with a good estimate of the size that adding
-	   newlines will expand it to.  Since it's a text buffer, if we guess
-	   wrong, it will fail softly, and simply expand the size */
-	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
-	int outPos = 0;
-
-	/* Go (displayed) line by line through the buffer, adding newlines where
-	   the text is wrapped at some character other than an existing newline */
-	int fromPos = startPos;
-	int toPos = textD->TextDCountForwardNLines(startPos, 1, False);
-	while (toPos < endPos) {
-		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
-		outPos += toPos - fromPos;
-		char c = outBuf->BufGetCharacter(outPos - 1);
-		if (c == ' ' || c == '\t')
-			outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
-		else if (c != '\n') {
-			outBuf->BufInsertEx(outPos, "\n");
-			outPos++;
-		}
-		fromPos = toPos;
-		toPos = textD->TextDCountForwardNLines(fromPos, 1, True);
-	}
-	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
-
-	// return the contents of the output buffer as a string 
-	std::string outString = outBuf->BufGetAllEx();
-	delete outBuf;
-	return outString;
 }
 
 /*
@@ -1950,7 +1826,8 @@ static void copyClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)args;
 	(void)nArgs;
 
-	TextCopyClipboard(w, event->xkey.time);
+	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->TextCopyClipboard(event->xkey.time);
 }
 
 static void cutClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1958,7 +1835,8 @@ static void cutClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	(void)args;
 	(void)nArgs;
 
-	TextCutClipboard(w, event->xkey.time);
+	TextDisplay *textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->TextCutClipboard(event->xkey.time);
 }
 
 static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3173,12 +3051,12 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	}
 }
 
-static void checkAutoShowInsertPos(Widget w) {
+void checkAutoShowInsertPos(Widget w) {
 	if (reinterpret_cast<TextWidget>(w)->text.autoShowInsertPos)
 		reinterpret_cast<TextWidget>(w)->text.textD->TextDMakeInsertPosVisible();
 }
 
-static int checkReadOnly(Widget w) {
+int checkReadOnly(Widget w) {
 	if (reinterpret_cast<TextWidget>(w)->text.readOnly) {
 		XBell(XtDisplay(w), 0);
 		return True;
@@ -3493,7 +3371,7 @@ static void endDrag(Widget w) {
 ** which might change the insert position or the content of the buffer during
 ** a drag operation)
 */
-static void cancelDrag(Widget w) {
+void cancelDrag(Widget w) {
 	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState;
 
 	if (reinterpret_cast<TextWidget>(w)->text.autoScrollProcID != 0)
@@ -3513,7 +3391,7 @@ static void cancelDrag(Widget w) {
 ** procedure(s), and cancel marker indicating that the cursor is after one or
 ** more just-entered emulated tabs (spaces to be deleted as a unit).
 */
-static void callCursorMovementCBs(Widget w, XEvent *event) {
+void callCursorMovementCBs(Widget w, XEvent *event) {
 	reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor = 0;
 	XtCallCallbacks((Widget)w, textNcursorMovementCallback, (XtPointer)event);
 }

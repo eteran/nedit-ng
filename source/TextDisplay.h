@@ -70,23 +70,6 @@ public:
 	TextDisplay& operator=(const TextDisplay &) = delete;
 
 public:
-	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool appendEntry);
-	void TextDUnblankCursor();
-	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
-	void TextDSetInsertPosition(int newPos);
-	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
-	void TextDSetScroll(int topLineNum, int horizOffset);
-	void TextDSetWrapMode(int wrap, int wrapMargin);
-	void TextDSetBuffer(TextBuffer *buffer);
-	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
-	void TextDSetCursorStyle(int style);
-	void TextDSetFont(XFontStruct *fontStruct);
-	void TextDInsertEx(view::string_view text);
-	void TextDMaintainAbsLineNum(int state);
-	void TextDMakeInsertPosVisible();
-	void TextDOverstrikeEx(view::string_view text);
-	void TextDRedisplayRect(int left, int top, int width, int height);
-	void TextDResize(int width, int height);	
 	bool TextDPopGraphicExposeQueueEntry();
 	int TextDCountBackwardNLines(int startPos, int nLines);
 	int TextDCountForwardNLines(int startPos, const unsigned nLines, const Boolean startPosIsLineStart);
@@ -113,13 +96,46 @@ public:
 	void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 	void TextDBlankCursor();
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
-	void TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset);	
+	void TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset);
+	void TextDInsertEx(view::string_view text);
+	void TextDMaintainAbsLineNum(int state);
+	void TextDMakeInsertPosVisible();
+	void TextDOverstrikeEx(view::string_view text);
+	void TextDRedisplayRect(int left, int top, int width, int height);
+	void TextDResize(int width, int height);	
+	void TextDSetBuffer(TextBuffer *buffer);
+	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
+	void TextDSetCursorStyle(int style);
+	void TextDSetFont(XFontStruct *fontStruct);
+	void TextDSetInsertPosition(int newPos);
+	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
+	void TextDSetScroll(int topLineNum, int horizOffset);
+	void TextDSetWrapMode(int wrap, int wrapMargin);
+	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool appendEntry);
+	void TextDUnblankCursor();
+	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 
+public:
+	int TextFirstVisibleLine();
+	int TextFirstVisiblePos();
+	int TextGetCursorPos();
+	int TextGetMaxFontWidth(Boolean considerStyles);
+	int TextGetMinFontWidth(Boolean considerStyles);
+	int TextLastVisiblePos();
+	int TextLineAndColToPos(int lineNum, int column);
+	int TextNumVisibleLines();
+	std::string TextGetWrappedEx(int startPos, int endPos);
+	void TextCopyClipboard(Time time);
+	void TextCutClipboard(Time time);
+	void TextSetBuffer(TextBuffer *buffer);
+	void TextSetCursorPos(int pos);
+	void TextSetScroll(int topLineNum, int horizOffset);
+			
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 	
 public:
-	Widget w;
+	Widget w; // TextWidget
 	int top, left, width, height, lineNumLeft, lineNumWidth;
 	int cursorPos;
 	int cursorOn;

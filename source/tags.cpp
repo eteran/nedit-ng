@@ -31,6 +31,8 @@
 
 #include "tags.h"
 #include "TextBuffer.h"
+#include "TextDisplay.h"
+#include "textP.h"
 #include "text.h"
 #include "nedit.h"
 #include "window.h"
@@ -1452,8 +1454,11 @@ static void editTaggedLocation(Widget parent, int i) {
 	   about 1/4 of the way down from the top */
 	lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
 	XtVaGetValues(windowToSearch->lastFocus_, textNrows, &rows, nullptr);
-	TextSetScroll(windowToSearch->lastFocus_, lineNum - rows / 4, 0);
-	TextSetCursorPos(windowToSearch->lastFocus_, endPos);
+	
+	auto textD = reinterpret_cast<TextWidget>(windowToSearch->lastFocus_)->text.textD;
+	
+	textD->TextSetScroll(lineNum - rows / 4, 0);
+	textD->TextSetCursorPos(endPos);
 }
 
 //      Create a Menu for user to select from the collided tags 

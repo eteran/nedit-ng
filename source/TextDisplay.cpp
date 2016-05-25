@@ -36,7 +36,7 @@
 #include "highlight.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
-
+#include "textSel.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -137,8 +137,7 @@ static void resetClipRectangles(TextDisplay *textD);
 static int visLineLength(TextDisplay *textD, int visLineNum);
 static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted);
 static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
-static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines,
-                               int *retLineStart, int *retLineEnd);
+static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd);
 static void findLineEnd(TextDisplay *textD, int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
 static int wrapUsesCharacter(TextDisplay *textD, int lineEndPos);
 static void hideOrShowHScrollBar(TextDisplay *textD);
@@ -3535,4 +3534,147 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 	
 	std::copy_n(bgClass, 256, *pp_bgClass);
 	std::copy_n(bgClassPixel, class_no, *pp_bgClassPixel);
+}
+
+/*
+** Fetch text from the widget's buffer, adding wrapping newlines to emulate
+** effect acheived by wrapping in the text display in continuous wrap mode.
+*/
+std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
+
+	TextBuffer *buf = this->buffer;
+
+	if (!reinterpret_cast<TextWidget>(w)->text.continuousWrap || startPos == endPos) {
+		return buf->BufGetRangeEx(startPos, endPos);
+	}
+
+	/* Create a text buffer with a good estimate of the size that adding
+	   newlines will expand it to.  Since it's a text buffer, if we guess
+	   wrong, it will fail softly, and simply expand the size */
+	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
+	int outPos = 0;
+
+	/* Go (displayed) line by line through the buffer, adding newlines where
+	   the text is wrapped at some character other than an existing newline */
+	int fromPos = startPos;
+	int toPos = this->TextDCountForwardNLines(startPos, 1, False);
+	while (toPos < endPos) {
+		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
+		outPos += toPos - fromPos;
+		char c = outBuf->BufGetCharacter(outPos - 1);
+		if (c == ' ' || c == '\t')
+			outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
+		else if (c != '\n') {
+			outBuf->BufInsertEx(outPos, "\n");
+			outPos++;
+		}
+		fromPos = toPos;
+		toPos = this->TextDCountForwardNLines(fromPos, 1, True);
+	}
+	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
+
+	// return the contents of the output buffer as a string 
+	std::string outString = outBuf->BufGetAllEx();
+	delete outBuf;
+	return outString;
+}
+
+void TextDisplay::TextCopyClipboard(Time time) {
+	cancelDrag(w);
+	
+	if (!this->buffer->primary_.selected) {
+		XBell(XtDisplay(w), 0);
+		return;
+	}
+	
+	CopyToClipboard(w, time);
+}
+
+void TextDisplay::TextCutClipboard(Time time) {
+
+	cancelDrag(w);
+	if (checkReadOnly(w)) {
+		return;
+	}
+		
+	if (!this->buffer->primary_.selected) {
+		XBell(XtDisplay(w), 0);
+		return;
+	}
+	
+	TakeMotifDestination(w, time);
+	CopyToClipboard(w, time);
+	this->buffer->BufRemoveSelected();
+	this->TextDSetInsertPosition(this->buffer->cursorPosHint_);
+	checkAutoShowInsertPos(w);
+}
+
+int TextDisplay::TextFirstVisibleLine() {
+	return this->topLineNum;
+}
+
+int TextDisplay::TextFirstVisiblePos() {
+	return this->firstChar;
+}
+
+/*
+** Set the text buffer which this widget will display and interact with.
+** The currently attached buffer is automatically freed, ONLY if it has
+** no additional modify procs attached (as it would if it were being
+** displayed by another text widget).
+*/
+void TextDisplay::TextSetBuffer(TextBuffer *buffer) {
+	TextBuffer *oldBuf = this->buffer;
+
+	StopHandlingXSelections(w);
+	TextDSetBuffer(buffer);
+	if (oldBuf->modifyProcs_.empty())
+		delete oldBuf;
+}
+
+/*
+** Set the cursor position
+*/
+void TextDisplay::TextSetCursorPos(int pos) {
+	TextDSetInsertPosition(pos);
+	checkAutoShowInsertPos(w);
+	callCursorMovementCBs(w, nullptr);
+}
+
+/*
+** Set the horizontal and vertical scroll positions of the widget
+*/
+void TextDisplay::TextSetScroll(int topLineNum, int horizOffset) {
+	TextDSetScroll(topLineNum, horizOffset);
+}
+
+
+int TextDisplay::TextGetMinFontWidth(Boolean considerStyles) {
+	return TextDMinFontWidth(considerStyles);
+}
+
+int TextDisplay::TextGetMaxFontWidth(Boolean considerStyles) {
+	return TextDMaxFontWidth(considerStyles);
+}
+
+/*
+** Return the cursor position
+*/
+int TextDisplay::TextGetCursorPos() {
+	return TextDGetInsertPosition();
+}
+
+int TextDisplay::TextLastVisiblePos() {
+	return lastChar;
+}
+
+/*
+** Translate a line number and column into a position
+*/
+int TextDisplay::TextLineAndColToPos(int lineNum, int column) {
+	return TextDLineAndColToPos(lineNum, column);
+}
+
+int TextDisplay::TextNumVisibleLines() {
+	return this->nVisibleLines;
 }

@@ -41,6 +41,8 @@
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 
+#include "textP.h"
+#include "TextDisplay.h"
 #include "menu.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -3082,7 +3084,10 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)event;
 
-	int lineNum, column, position, curCol;
+	int lineNum;
+	int column;
+	int position;
+	int curCol;
 
 	/* Accept various formats:
 	      [line]:[column]   (menu action)
@@ -3092,10 +3097,12 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
 		return;
 	}
+	
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 	// User specified column, but not line number 
 	if (lineNum == -1) {
-		position = TextGetCursorPos(w);
+		position = textD->TextGetCursorPos();		
 		if (TextPosToLineAndCol(w, position, &lineNum, &curCol) == False) {
 			return;
 		}
@@ -3105,12 +3112,12 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 
-	position = TextLineAndColToPos(w, lineNum, column);
+	position = textD->TextLineAndColToPos(lineNum, column);
 	if (position == -1) {
 		return;
 	}
 
-	TextSetCursorPos(w, position);
+	textD->TextSetCursorPos(position);
 	return;
 }
 
@@ -3573,10 +3580,14 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
 		return;
-	if (!isRect)
-		TextSetCursorPos(w, start);
-	else
-		TextSetCursorPos(w, buf->BufCountForwardDispChars(buf->BufStartOfLine(start), rectStart));
+	
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	
+	if (!isRect) {
+		textD->TextSetCursorPos(start);
+	} else {
+		textD->TextSetCursorPos(buf->BufCountForwardDispChars(buf->BufStartOfLine(start), rectStart));
+	}
 }
 
 static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3592,10 +3603,13 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
 		return;
 
-	if (!isRect)
-		TextSetCursorPos(w, end);
-	else
-		TextSetCursorPos(w, buf->BufCountForwardDispChars(buf->BufStartOfLine(end), rectEnd));
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	
+	if (!isRect) {
+		textD->TextSetCursorPos(end);
+	} else {
+		textD->TextSetCursorPos(buf->BufCountForwardDispChars(buf->BufStartOfLine(end), rectEnd));
+	}
 }
 
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

@@ -30,6 +30,8 @@
 #include <QMessageBox>
 #include <QPushButton>
 
+#include "textP.h"
+#include "TextDisplay.h"
 #include "shell.h"
 #include "Document.h"
 #include "MenuItem.h"
@@ -170,13 +172,18 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 		QApplication::beep();
 		return;
 	}
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	
 
 	// get the selection or the insert position 
-	pos = TextGetCursorPos(window->lastFocus_);
-	if (window->buffer_->GetSimpleSelection(&left, &right))
+	pos = textD->TextGetCursorPos();
+	
+	if (window->buffer_->GetSimpleSelection(&left, &right)) {
 		flags = ACCUMULATE | REPLACE_SELECTION;
-	else
+	} else {
 		left = right = pos;
+	}
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -213,9 +220,12 @@ void ShellCmdToMacroString(Document *window, const std::string &command, const s
 ** as a shell command.
 */
 void ExecCursorLine(Document *window, int fromMacro) {
-	int left, right, insertPos;
+	int left;
+	int right;
+	int insertPos;
 	char *subsCommand;
-	int pos, line, column;
+	int line;
+	int column;
 	char lineNumber[11];
 
 	// Can't do two shell commands at once in the same window 
@@ -223,9 +233,12 @@ void ExecCursorLine(Document *window, int fromMacro) {
 		QApplication::beep();
 		return;
 	}
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 
 	// get all of the text on the line with the insert position 
-	pos = TextGetCursorPos(window->lastFocus_);
+	int pos = textD->TextGetCursorPos();
+	
 	if (!window->buffer_->GetSimpleSelection(&left, &right)) {
 		left = right = pos;
 		left = window->buffer_->BufStartOfLine(left);
@@ -278,11 +291,13 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		QApplication::beep();
 		return;
 	}
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
 	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
-	int pos = TextGetCursorPos(window->lastFocus_);
+	int pos = textD->TextGetCursorPos();
 	TextPosToLineAndCol(window->lastFocus_, pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
@@ -362,7 +377,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 			if (window->buffer_->GetSimpleSelection(&left, &right)) {
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else {
-				left = right = TextGetCursorPos(window->lastFocus_);
+				left = right = textD->TextGetCursorPos();
 			}
 		}	
 		break;
@@ -717,7 +732,10 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	if (!outText.empty()) {
 		if (buf->BufSubstituteNullCharsEx(outText)) {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
-			TextSetCursorPos(cmdData->textW, cmdData->leftPos + outText.size());
+			
+			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
+			
+			textD->TextSetCursorPos(cmdData->leftPos + outText.size());
 			cmdData->leftPos += outText.size();
 			cmdData->rightPos = cmdData->leftPos;
 		} else
@@ -868,12 +886,16 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		if (cmdData->flags & REPLACE_SELECTION) {
 			reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
 			buf->BufReplaceSelectedEx(outText);
-			TextSetCursorPos(cmdData->textW, buf->cursorPosHint_);
+			
+			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
+			textD->TextSetCursorPos(buf->cursorPosHint_);
 			if (reselectStart != -1)
 				buf->BufSelect(reselectStart, reselectStart + outText.size());
 		} else {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
-			TextSetCursorPos(cmdData->textW, cmdData->leftPos + outText.size());
+			
+			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
+			textD->TextSetCursorPos(cmdData->leftPos + outText.size());
 		}
 	}
 

@@ -34,6 +34,7 @@
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
 #include "WrapStyle.h"
+#include "TextDisplay.h"
 
 #include "search.h"
 #include "regularExp.h"
@@ -49,6 +50,7 @@
 #include "highlight.h"
 #include "selection.h"
 #include "MotifHelper.h"
+#include "textP.h"
 
 #ifdef REPLACE_SCOPE
 #include "TextDisplay.h"
@@ -570,8 +572,12 @@ bool SearchAndSelectSame(Document *window, SearchDirection direction, int search
 ** adds the search string to the global search history.
 */
 bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap) {
-	int startPos, endPos;
-	int beginPos, cursorPos, selStart, selEnd;
+	int startPos;
+	int endPos;
+	int beginPos;
+	int cursorPos;
+	int selStart;
+	int selEnd;
 	int movedFwd = 0;
 
 	// Save a copy of searchString in the search history 
@@ -591,7 +597,10 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 		selStart = -1;
 		selEnd = -1;
 		// no selection, or no match, search relative cursor 
-		cursorPos = TextGetCursorPos(window->lastFocus_);
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		
+		cursorPos = textD->TextGetCursorPos();
 		if (direction == SEARCH_BACKWARD) {
 			// use the insert position - 1 for backward searches 
 			beginPos = cursorPos - 1;
@@ -631,7 +640,10 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	// select the text found string 
 	window->buffer_->BufSelect(startPos, endPos);
 	window->MakeSelectionVisible(window->lastFocus_);
-	TextSetCursorPos(window->lastFocus_, endPos);
+	
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(endPos);
 
 	return TRUE;
 }
@@ -766,7 +778,10 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	/* If there's a search in progress, start the search from the original
 	   starting position, otherwise search from the cursor position. */
 	if (!continued || window->iSearchStartPos_ == -1) {
-		window->iSearchStartPos_ = TextGetCursorPos(window->lastFocus_);
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		
+		window->iSearchStartPos_ = textD->TextGetCursorPos();
 		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
 	}
 	beginPos = window->iSearchStartPos_;
@@ -780,7 +795,9 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 		iSearchTryBeepOnWrap(window, direction, beepBeginPos, beepBeginPos);
 		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
 		window->buffer_->BufUnselect();
-		TextSetCursorPos(window->lastFocus_, beginPos);
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		textD->TextSetCursorPos(beginPos);
 		return true;
 	}
 
@@ -815,7 +832,9 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	// select the text found string 
 	window->buffer_->BufSelect(startPos, endPos);
 	window->MakeSelectionVisible(window->lastFocus_);
-	TextSetCursorPos(window->lastFocus_, endPos);
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(endPos);
 
 	return true;
 }
@@ -1113,8 +1132,11 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 void FlashMatching(Document *window, Widget textW) {
 	char c;
 	void *style;
-	int pos, matchIndex;
-	int startPos, endPos, searchPos, matchPos;
+	int matchIndex;
+	int startPos;
+	int endPos;
+	int searchPos;
+	int matchPos;
 	int constrain;
 
 	// if a marker is already drawn, erase it and cancel the timeout 
@@ -1134,7 +1156,9 @@ void FlashMatching(Document *window, Widget textW) {
 		return;
 
 	// get the character to match and the position to start from 
-	pos = TextGetCursorPos(textW) - 1;
+	auto textD = reinterpret_cast<TextWidget>(textW)->text.textD;
+	
+	int pos = textD->TextGetCursorPos() - 1;
 	if (pos < 0)
 		return;
 	c = window->buffer_->BufGetCharacter(pos);
@@ -1153,12 +1177,12 @@ void FlashMatching(Document *window, Widget textW) {
 	constrain = ((window->nPanes_ == 0) && (window->showMatchingStyle_ == FLASH_DELIMIT));
 
 	if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
-		startPos = constrain ? TextFirstVisiblePos(textW) : 0;
+		startPos = constrain ? textD->TextFirstVisiblePos() : 0;
 		endPos = pos;
 		searchPos = endPos;
 	} else {
 		startPos = pos;
-		endPos = constrain ? TextLastVisiblePos(textW) : window->buffer_->BufGetLength();
+		endPos = constrain ? textD->TextLastVisiblePos() : window->buffer_->BufGetLength();
 		searchPos = startPos;
 	}
 
@@ -1184,15 +1208,21 @@ void FlashMatching(Document *window, Widget textW) {
 }
 
 void SelectToMatchingCharacter(Document *window) {
-	int selStart, selEnd;
-	int startPos, endPos, matchPos;
+	int selStart;
+	int selEnd;
+	int startPos;
+	int endPos;
+	int matchPos;
 	TextBuffer *buf = window->buffer_;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
 	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
-		selEnd = TextGetCursorPos(window->lastFocus_);
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		
+		selEnd = textD->TextGetCursorPos();
 		if (window->overstrike_)
 			selEnd += 1;
 		selStart = selEnd - 1;
@@ -1235,9 +1265,15 @@ void GotoMatchingCharacter(Document *window) {
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
 	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
-		selEnd = TextGetCursorPos(window->lastFocus_);
-		if (window->overstrike_)
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		
+		selEnd = textD->TextGetCursorPos();
+		
+		if (window->overstrike_) {
 			selEnd += 1;
+		}
+		
 		selStart = selEnd - 1;
 		if (selStart < 0) {
 			QApplication::beep();
@@ -1261,7 +1297,10 @@ void GotoMatchingCharacter(Document *window) {
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
-	TextSetCursorPos(window->lastFocus_, matchPos + 1);
+
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	
+	textD->TextSetCursorPos(matchPos + 1);
 	window->MakeSelectionVisible(window->lastFocus_);
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
 }
@@ -1422,7 +1461,8 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 
 		// Position the cursor so the next search will work correctly based 
 		// on the direction of the search 
-		TextSetCursorPos(window->lastFocus_, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		textD->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 		replaced = true;
 	}
 
@@ -1438,9 +1478,14 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 ** Also adds the search and replace strings to the global search history.
 */
 bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
-	int startPos, endPos, replaceLen, searchExtentBW, searchExtentFW;
+	int startPos;
+	int endPos;
+	int replaceLen;
+	int searchExtentBW;
+	int searchExtentFW;
 	int found;
-	int beginPos, cursorPos;
+	int beginPos;
+	int cursorPos;
 
 	// Save a copy of search and replace strings in the search history 
 	saveSearchHistory(searchString, replaceString, searchType, FALSE);
@@ -1451,7 +1496,10 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	// Otherwise, search for the string.				
 	if (!searchMatchesSelection(window, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 		// get the position to start the search 
-		cursorPos = TextGetCursorPos(window->lastFocus_);
+		
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		
+		cursorPos = textD->TextGetCursorPos();
 		if (direction == SEARCH_BACKWARD) {
 			// use the insert position - 1 for backward searches 
 			beginPos = cursorPos - 1;
@@ -1498,7 +1546,9 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
-	TextSetCursorPos(window->lastFocus_, startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 	window->MakeSelectionVisible(window->lastFocus_);
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
 
@@ -1710,7 +1760,9 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 			window->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 
 			// set the insert point at the end of the last replacement 
-			TextSetCursorPos(window->lastFocus_, selStart + cursorPos + realOffset);
+			auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+			
+			textD->TextSetCursorPos(selStart + cursorPos + realOffset);
 
 			/* leave non-rectangular selections selected (rect. ones after replacement
 			   are less useful since left/right positions are randomly adjusted) */
@@ -1791,7 +1843,8 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 	window->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
 	// Move the cursor to the end of the last replacement 
-	TextSetCursorPos(window->lastFocus_, copyStart + replacementLen);
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(copyStart + replacementLen);
 
 	XtFree(newFileString);
 	return true;

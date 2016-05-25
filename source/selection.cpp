@@ -28,6 +28,8 @@
 #include <QInputDialog>
 #include <QString>
 
+#include "textP.h"
+#include "TextDisplay.h"
 #include "selection.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -224,8 +226,9 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	}
 
 	// User specified column, but not line number 
+	auto textD = reinterpret_cast<TextWidget>(widget)->text.textD;
 	if (lineNum == -1) {
-		position = TextGetCursorPos(widget);
+		position = textD->TextGetCursorPos();
 		if (TextPosToLineAndCol(widget, position, &lineNum, &curCol) == False) {
 			QApplication::beep();
 			return;
@@ -237,12 +240,13 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 		return;
 	}
 
-	position = TextLineAndColToPos(widget, lineNum, column);
+	position = textD->TextLineAndColToPos(lineNum, column);
 	if (position == -1) {
 		QApplication::beep();
 		return;
 	}
-	TextSetCursorPos(widget, position);
+	
+	textD->TextSetCursorPos(position);
 }
 
 static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
@@ -369,7 +373,9 @@ void SelectNumberedLine(Document *window, int lineNum) {
 		QApplication::beep();
 	}
 	window->MakeSelectionVisible(window->lastFocus_);
-	TextSetCursorPos(window->lastFocus_, lineStart);
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(lineStart);
 }
 
 void MarkDialog(Document *window) {
@@ -540,7 +546,11 @@ void AddMark(Document *window, Widget widget, char label) {
 	// store the cursor location and selection position in the table 
 	window->markTable_[index].label = label;
 	memcpy(&window->markTable_[index].sel, &window->buffer_->primary_, sizeof(TextSelection));
-	window->markTable_[index].cursorPos = TextGetCursorPos(widget);
+	
+	
+	auto textD = reinterpret_cast<TextWidget>(widget)->text.textD;
+		
+	window->markTable_[index].cursorPos = textD->TextGetCursorPos();
 }
 
 void GotoMark(Document *window, Widget w, char label, int extendSel) {
@@ -563,10 +573,14 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	oldSel = &window->buffer_->primary_;
 	cursorPos = window->markTable_[index].cursorPos;
 	if (extendSel) {
-		oldStart = oldSel->selected ? oldSel->start : TextGetCursorPos(w);
-		oldEnd = oldSel->selected ? oldSel->end : TextGetCursorPos(w);
-		newStart = sel->selected ? sel->start : cursorPos;
-		newEnd = sel->selected ? sel->end : cursorPos;
+		
+		auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+		
+		oldStart = oldSel->selected ? oldSel->start : textD->TextGetCursorPos();
+		oldEnd   = oldSel->selected ? oldSel->end   : textD->TextGetCursorPos();
+		newStart = sel->selected    ? sel->start    : cursorPos;
+		newEnd   = sel->selected    ? sel->end      : cursorPos;
+		
 		window->buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
 		if (sel->selected) {
@@ -585,7 +599,10 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	   of the widget itself for bringing the cursor in to view, you have to
 	   first turn it off, set the position, then turn it back on. */
 	XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
-	TextSetCursorPos(w, cursorPos);
+	
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->TextSetCursorPos(cursorPos);
+	
 	window->MakeSelectionVisible(window->lastFocus_);
 	XtVaSetValues(w, textNautoShowInsertPos, True, nullptr);
 }

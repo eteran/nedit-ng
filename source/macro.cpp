@@ -41,6 +41,8 @@
 #include "ui/DialogPromptString.h"
 #include "ui/DialogRepeat.h"
 
+#include "TextDisplay.h"
+#include "textP.h"
 #include "macro.h"
 #include "fileUtils.h"
 #include "getfiles.h"
@@ -2448,7 +2450,8 @@ static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataV
 		return false;
 
 	// Set the position 
-	TextSetCursorPos(window->lastFocus_, pos);
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	textD->TextSetCursorPos(pos);
 	result->tag = NO_TAG;
 	return true;
 }
@@ -3354,8 +3357,9 @@ static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	(void)nArgs;
 	(void)argList;
 
-	result->tag = INT_TAG;
-	result->val.n = TextGetCursorPos(window->lastFocus_);
+	auto textD    = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	result->tag   = INT_TAG;
+	result->val.n = textD->TextGetCursorPos();
 	return true;
 }
 
@@ -3367,10 +3371,14 @@ static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *re
 
 	int line, cursorPos, colNum;
 
+	auto textD  = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 	result->tag = INT_TAG;
-	cursorPos = TextGetCursorPos(window->lastFocus_);
-	if (!TextPosToLineAndCol(window->lastFocus_, cursorPos, &line, &colNum))
+	cursorPos   = textD->TextGetCursorPos();
+	
+	if (!TextPosToLineAndCol(window->lastFocus_, cursorPos, &line, &colNum)) {
 		line = window->buffer_->BufCountLines(0, cursorPos) + 1;
+	}
+	
 	result->val.n = line;
 	return true;
 }
@@ -3382,10 +3390,10 @@ static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	(void)argList;
 
 	TextBuffer *buf = window->buffer_;
-	int cursorPos;
 
-	result->tag = INT_TAG;
-	cursorPos = TextGetCursorPos(window->lastFocus_);
+	auto textD    = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	result->tag   = INT_TAG;
+	int cursorPos = textD->TextGetCursorPos();
 	result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
 	return true;
 }
@@ -3767,8 +3775,9 @@ static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)nArgs;
 	(void)argList;
 
+	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
 	result->tag = INT_TAG;
-	result->val.n = TextGetMinFontWidth(window->textArea_, window->highlightSyntax_);
+	result->val.n = textD->TextGetMinFontWidth(window->highlightSyntax_);
 	return true;
 }
 
@@ -3777,8 +3786,9 @@ static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)nArgs;
 	(void)argList;
 
+	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
 	result->tag = INT_TAG;
-	result->val.n = TextGetMaxFontWidth(window->textArea_, window->highlightSyntax_);
+	result->val.n = textD->TextGetMaxFontWidth(window->highlightSyntax_);
 	return true;
 }
 
@@ -3788,7 +3798,9 @@ static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue 
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = TextFirstVisibleLine(window->lastFocus_);
+	
+	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	result->val.n = textD->TextFirstVisibleLine();
 	return true;
 }
 
@@ -3797,8 +3809,9 @@ static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, Da
 	(void)nArgs;
 	(void)argList;
 
-	result->tag = INT_TAG;
-	result->val.n = TextNumVisibleLines(window->lastFocus_);
+	auto textD    = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	result->tag   = INT_TAG;
+	result->val.n = textD->TextNumVisibleLines();
 	return true;
 }
 
@@ -4543,7 +4556,8 @@ static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs
 
 	int pos = 0;
 	if (nArgs == 1) {
-		pos = TextGetCursorPos(window->lastFocus_);
+		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		pos = textD->TextGetCursorPos();
 	} else if (nArgs == 2) {
 		if (!readIntArg(argList[1], &pos, errMsg))
 			return false;
