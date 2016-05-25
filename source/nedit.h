@@ -56,7 +56,6 @@
 #define AUTOSAVE_OP_LIMIT   8  /* number of distinct editing operations user can do before NEdit gens. new backup file */
 #define MAX_FONT_LEN 100    /* maximum length for a font name */
 #define MAX_COLOR_LEN 30    /* maximum length for a color name */
-#define MAX_MARKS 36        /* max. # of bookmarks (one per letter & #) */
 #define MIN_LINE_NUM_COLS 4 /* Min. # of columns in line number display */
 #define APP_NAME "nedit"    /* application name for loading resources */
 #define APP_CLASS "NEdit"   /* application class for loading resources */
@@ -96,12 +95,6 @@ class UndoInfo;
 class Document;
 struct UserMenuListElement;
 
-/* Element in bookmark table */
-struct Bookmark {
-	char label;
-	int cursorPos;
-	TextSelection sel;
-};
 
 /* Identifiers for the different colors that can be adjusted. */
 enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };

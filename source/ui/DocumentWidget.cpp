@@ -5,6 +5,9 @@
 #include <QSplitter>
 #include "preferences.h"
 
+//------------------------------------------------------------------------------
+// Name: DocumentWidget
+//------------------------------------------------------------------------------
 DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 
 	// create the text widget
@@ -51,39 +54,32 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	backlightCharTypes_    = QString();
 	backlightChars_        = GetPrefBacklightChars();
 	
-#if 0
-	if (window->backlightChars_) {
+	if (backlightChars_) {
 		const char *cTypes = GetPrefBacklightCharTypes();
-		if (cTypes && window->backlightChars_) {			
-			window->backlightCharTypes_ = QLatin1String(cTypes);
+		if (cTypes && backlightChars_) {			
+			backlightCharTypes_ = QLatin1String(cTypes);
 		}
 	}
 	
-	window->modeMessageDisplayed_  = false;
-	window->modeMessage_           = nullptr;
-	window->ignoreModify_          = false;
-	window->windowMenuValid_       = false;
-	window->flashTimeoutID_        = 0;
-	window->fileClosedAtom_        = None;
-	window->wasSelected_           = false;
-#endif
+	modeMessageDisplayed_  = false;
+	modeMessage_           = nullptr;
+	ignoreModify_          = false;
+	windowMenuValid_       = false;
+	flashTimeoutID_        = 0;
+	fileClosedAtom_        = None;
+	wasSelected_           = false;
 	fontName_              = GetPrefFontName();
 	italicFontName_        = GetPrefItalicFontName();
 	boldFontName_          = GetPrefBoldFontName();
 	boldItalicFontName_    = GetPrefBoldItalicFontName();
-
-#if 0
 	dialogColors_          = nullptr;
 	fontList_              = GetPrefFontList();
 	italicFontStruct_      = GetPrefItalicFont();
 	boldFontStruct_        = GetPrefBoldFont();
 	boldItalicFontStruct_  = GetPrefBoldItalicFont();
 	dialogFonts_           = nullptr;
-#endif
 	nMarks_                = 0;
-#if 0
 	markTimeoutID_         = 0;
-#endif
 	highlightData_         = nullptr;
 	shellCmdData_          = nullptr;
 	macroCmdData_          = nullptr;
@@ -93,15 +89,19 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	iSearchStartPos_       = -1;
 	iSearchLastRegexCase_  = true;
 	iSearchLastLiteralCase_= false;
+	device_                = 0;
+	inode_                 = 0;	
+	
 #if 0
 	bgMenuUndoItem_        = nullptr;
 	bgMenuRedoItem_        = nullptr;
-#endif
-	device_                = 0;
-	inode_                 = 0;	
+#endif	
 
 }
 
+//------------------------------------------------------------------------------
+// Name: ~DocumentWidget
+//------------------------------------------------------------------------------
 DocumentWidget::~DocumentWidget() {
 }
 

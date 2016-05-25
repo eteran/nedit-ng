@@ -12,4 +12,5 @@ public:
 	virtual ~TextArea();
 };
 
+
 #endif

@@ -9,6 +9,7 @@
 #include "fileUtils.h"
 #include "string_view.h"
 #include "LockReasons.h"
+#include "Bookmark.h"
 #include <Xm/Xm.h>
 
 class QDialog;
@@ -146,6 +147,9 @@ private:
 	void addRedoItem(UndoInfo *redo);
 	void addUndoItem(UndoInfo *undo);
 	void showTabBar(int state);
+
+public:
+	static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
 
 public:
 	DialogReplace *getDialogReplace() const;

@@ -3,6 +3,8 @@
 #define MAIN_WINDOW_H_
 
 #include <QMainWindow>
+#include <QPointer>
+
 #include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow {
@@ -11,6 +13,10 @@ class MainWindow : public QMainWindow {
 public:
 	MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	virtual ~MainWindow();
+	
+private:
+	void setupMenus();
+	void setupTabBar();
 
 public Q_SLOTS:
 	void on_action_New_triggered();
@@ -176,6 +182,13 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
+
+private:
+	QPointer<QDialog> dialogFind_;
+	QPointer<QDialog> dialogReplace_;
+	bool              showLineNumbers_; // is the line number display shown
+	bool              showStats_;       // is stats line supposed to be shown
+	bool              showISearchLine_; // is incr. search line to be shown
 
 private:
 	Ui::MainWindow ui;

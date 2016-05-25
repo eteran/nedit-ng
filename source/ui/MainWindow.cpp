@@ -1,20 +1,40 @@
 
+#include <QToolButton>
 #include "MainWindow.h"
 #include "DialogAbout.h"
 #include "DocumentWidget.h"
 #include "file.h"
-#include <QToolButton>
+#include "preferences.h"
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: MainWindow
 //------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 	
-	// default to hiding the optional panels
-	ui.statusFrame->setVisible(false);
-	ui.incrementalSearchFrame->setVisible(false);
+	setupMenus();
+	setupTabBar();
 	
+	showStats_       = GetPrefStatsLine();
+	showISearchLine_ = GetPrefISearchLine();
+	showLineNumbers_ = GetPrefLineNums();
+	
+	// default to hiding the optional panels
+	ui.statusFrame->setVisible(showStats_);
+	ui.incrementalSearchFrame->setVisible(showISearchLine_);	
+}
+
+//------------------------------------------------------------------------------
+// Name: ~MainWindow
+//------------------------------------------------------------------------------
+MainWindow::~MainWindow() {
+
+}
+
+//------------------------------------------------------------------------------
+// Name: setupTabBar
+//------------------------------------------------------------------------------
+void MainWindow::setupTabBar() {
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -23,7 +43,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
 	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
-	
+}
+
+//------------------------------------------------------------------------------
+// Name: setupMenus
+//------------------------------------------------------------------------------
+void MainWindow::setupMenus() {
 	auto indentGroup = new QActionGroup(this);
 	indentGroup->addAction(ui.action_Indent_Off);
 	indentGroup->addAction(ui.action_Indent_On);
@@ -38,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	matchingGroup->addAction(ui.action_Matching_Off);
 	matchingGroup->addAction(ui.action_Matching_Range);
 	matchingGroup->addAction(ui.action_Matching_Delimiter);
-	
 	
 	auto defaultIndentGroup = new QActionGroup(this);
 	defaultIndentGroup->addAction(ui.action_Default_Indent_Off);
@@ -81,21 +105,14 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 }
 
 //------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-MainWindow::~MainWindow() {
-
-}
-
-//------------------------------------------------------------------------------
-// Name: 
+// Name: deleteTabButtonClicked
 //------------------------------------------------------------------------------
 void MainWindow::deleteTabButtonClicked() {
 	ui.tabWidget->removeTab(ui.tabWidget->currentIndex());
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
 
@@ -105,7 +122,9 @@ void MainWindow::on_action_New_triggered() {
 	ui.tabWidget->addTab(newTab, name);
 }
 
-
+//------------------------------------------------------------------------------
+// Name: on_action_About_triggered
+//------------------------------------------------------------------------------
 void MainWindow::on_action_About_triggered() {
 	auto dialog = new DialogAbout(this);
 	dialog->exec();

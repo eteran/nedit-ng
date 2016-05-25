@@ -361,83 +361,6 @@ void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
 	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
 }
 
-Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
-
-	// Create a text widget inside of a scrolled window widget 
-	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
-	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
-	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
-	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
-	
-	Widget text = XtVaCreateManagedWidget(
-		"text", 
-		textWidgetClass, 
-		frame, 
-		textNbacklightCharTypes, 
-		window->backlightCharTypes_.toLatin1().data(), 
-		textNrows, 
-		rows, 
-		textNcolumns, 
-		cols, 
-		textNlineNumCols, 
-		lineNumCols, 
-		textNemulateTabs, 
-		emTabDist, 
-		textNfont,
-	    GetDefaultFontStruct(window->fontList_), 
-		textNhScrollBar, 
-		hScrollBar, 
-		textNvScrollBar, 
-		vScrollBar, 
-		textNreadOnly, 
-		window->lockReasons_.isAnyLocked(), 
-		textNwordDelimiters, 
-		delimiters, 
-		textNwrapMargin,
-	    wrapMargin, 
-		textNautoIndent, 
-		window->indentStyle_ == AUTO_INDENT, 
-		textNsmartIndent, 
-		window->indentStyle_ == SMART_INDENT, 
-		textNautoWrap, 
-		window->wrapMode_ == NEWLINE_WRAP, 
-		textNcontinuousWrap,
-	    window->wrapMode_ == CONTINUOUS_WRAP, 
-		textNoverstrike, 
-		window->overstrike_, 
-		textNhidePointer, 
-		(Boolean)GetPrefTypingHidesPointer(), 
-		textNcursorVPadding, 
-		GetVerticalAutoScroll(), 
-		nullptr);
-
-	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
-
-	// add focus, drag, cursor tracking, and smart indent callbacks 
-	XtAddCallback(text, textNfocusCallback, focusCB, window);
-	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
-	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
-	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
-	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
-
-	/* This makes sure the text area initially has a the insert point shown
-	   ... (check if still true with the nedit text widget, probably not) */
-	XmAddTabGroup(containingPane(text));
-
-	// compensate for Motif delete/backspace problem 
-	RemapDeleteKey(text);
-
-	// Augment translation table for right button popup menu 
-	AddBGMenuAction(text);
-
-	/* If absolute line numbers will be needed for display in the statistics
-	   line, tell the widget to maintain them (otherwise, it's a costly
-	   operation and performance will be better without it) */
-	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats_);
-
-	return text;
-}
-
 /*
 ** hide all the tearoffs spawned from this menu.
 ** It works recursively to close the tearoffs of the submenus
@@ -566,7 +489,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		   highlight data to be the same as the other panes in the orgWin */
 
 		for (i = 0; i < orgWin->nPanes_; i++) {
-			text = createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
+			text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
 			TextSetBuffer(text, window->buffer_);
 
 			if (window->highlightData_)
@@ -4397,4 +4320,81 @@ int Document::WindowCount() {
 		++n;
 	}
 	return n;	
+}
+
+Widget Document::createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
+
+	// Create a text widget inside of a scrolled window widget 
+	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
+	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
+	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
+	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
+	
+	Widget text = XtVaCreateManagedWidget(
+		"text", 
+		textWidgetClass, 
+		frame, 
+		textNbacklightCharTypes, 
+		window->backlightCharTypes_.toLatin1().data(), 
+		textNrows, 
+		rows, 
+		textNcolumns, 
+		cols, 
+		textNlineNumCols, 
+		lineNumCols, 
+		textNemulateTabs, 
+		emTabDist, 
+		textNfont,
+	    GetDefaultFontStruct(window->fontList_), 
+		textNhScrollBar, 
+		hScrollBar, 
+		textNvScrollBar, 
+		vScrollBar, 
+		textNreadOnly, 
+		window->lockReasons_.isAnyLocked(), 
+		textNwordDelimiters, 
+		delimiters, 
+		textNwrapMargin,
+	    wrapMargin, 
+		textNautoIndent, 
+		window->indentStyle_ == AUTO_INDENT, 
+		textNsmartIndent, 
+		window->indentStyle_ == SMART_INDENT, 
+		textNautoWrap, 
+		window->wrapMode_ == NEWLINE_WRAP, 
+		textNcontinuousWrap,
+	    window->wrapMode_ == CONTINUOUS_WRAP, 
+		textNoverstrike, 
+		window->overstrike_, 
+		textNhidePointer, 
+		(Boolean)GetPrefTypingHidesPointer(), 
+		textNcursorVPadding, 
+		GetVerticalAutoScroll(), 
+		nullptr);
+
+	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
+
+	// add focus, drag, cursor tracking, and smart indent callbacks 
+	XtAddCallback(text, textNfocusCallback, focusCB, window);
+	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
+	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
+	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
+	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
+
+	/* This makes sure the text area initially has a the insert point shown
+	   ... (check if still true with the nedit text widget, probably not) */
+	XmAddTabGroup(containingPane(text));
+
+	// compensate for Motif delete/backspace problem 
+	RemapDeleteKey(text);
+
+	// Augment translation table for right button popup menu 
+	AddBGMenuAction(text);
+
+	/* If absolute line numbers will be needed for display in the statistics
+	   line, tell the widget to maintain them (otherwise, it's a costly
+	   operation and performance will be better without it) */
+	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats_);
+
+	return text;
 }
