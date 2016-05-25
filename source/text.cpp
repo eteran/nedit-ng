@@ -674,10 +674,32 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 
 	// Create and initialize the text-display part of the widget 
 	textLeft = new_widget->text.marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
-	new_widget->text.textD = new TextDisplay(newWidget, new_widget->text.hScrollBar, new_widget->text.vScrollBar, textLeft, new_widget->text.marginHeight, new_widget->core.width - marginWidth - textLeft,
-	                new_widget->core.height - new_widget->text.marginHeight * 2, lineNumCols == 0 ? 0 : marginWidth, lineNumCols == 0 ? 0 : lineNumCols * charWidth, buf, new_widget->text.fontStruct, new_widget->core.background_pixel,
-	                new_widget->primitive.foreground, new_widget->text.selectFGPixel, new_widget->text.selectBGPixel, new_widget->text.highlightFGPixel, new_widget->text.highlightBGPixel, new_widget->text.cursorFGPixel,
-	                new_widget->text.lineNumFGPixel, new_widget->text.continuousWrap, new_widget->text.wrapMargin, new_widget->text.backlightCharTypes, new_widget->text.calltipFGPixel, new_widget->text.calltipBGPixel);
+	
+	new_widget->text.textD = new TextDisplay(
+		newWidget, 
+		new_widget->text.hScrollBar, 
+		new_widget->text.vScrollBar, 
+		textLeft, 
+		new_widget->text.marginHeight, 
+		new_widget->core.width - marginWidth - textLeft,
+	    new_widget->core.height - new_widget->text.marginHeight * 2, 
+		lineNumCols == 0 ? 0 : marginWidth, 
+		lineNumCols == 0 ? 0 : lineNumCols * charWidth, 
+		buf, 
+		new_widget->text.fontStruct, 
+		new_widget->core.background_pixel,
+	    new_widget->primitive.foreground, 
+		new_widget->text.selectFGPixel, 
+		new_widget->text.selectBGPixel, 
+		new_widget->text.highlightFGPixel, 
+		new_widget->text.highlightBGPixel, 
+		new_widget->text.cursorFGPixel,
+	    new_widget->text.lineNumFGPixel, 
+		new_widget->text.continuousWrap, 
+		new_widget->text.wrapMargin, 
+		new_widget->text.backlightCharTypes, 
+		new_widget->text.calltipFGPixel, 
+		new_widget->text.calltipBGPixel);
 
 	/* Add mandatory delimiters blank, tab, and newline to the list of
 	   delimiters.  The memory use scheme here is that new values are
@@ -778,14 +800,13 @@ void ShowHidePointer(TextWidget w, Boolean hidePointer) {
 ** Widget destroy method
 */
 static void destroy(TextWidget w) {
-	TextBuffer *buf;
 
 	/* Free the text display and possibly the attached buffer.  The buffer
 	   is freed only if after removing all of the modify procs (by calling
 	   StopHandlingXSelections and TextDFree) there are no modify procs
 	   left */
 	StopHandlingXSelections((Widget)w);
-	buf = w->text.textD->buffer;
+	TextBuffer *buf = w->text.textD->buffer;
 	delete w->text.textD;
 	if (buf->modifyProcs_.empty())
 		delete buf;
