@@ -209,10 +209,14 @@ public:
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 	void hideOrShowHScrollBar();
-void measureDeletedLines(int pos, int nDeleted);
-void offsetAbsLineNum(int oldFirstChar);
-void redrawLineNumbers(int clearAll);
-void resetAbsLineNum();
+	void measureDeletedLines(int pos, int nDeleted);
+	void offsetAbsLineNum(int oldFirstChar);
+	void redrawLineNumbers(int clearAll);
+	void resetAbsLineNum();
+
+	void resetClipRectangles();
+	void updateVScrollBarRange();
+	void wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
 
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);

@@ -114,22 +114,12 @@ enum positionTypes {
 static GC allocateGC(Widget w, unsigned long valueMask, unsigned long foreground, unsigned long background, Font font, unsigned long dynamicMask, unsigned long dontCareMask);
 static Pixel allocBGColor(Widget w, char *colorName, int *ok);
 static int countLinesEx(view::string_view string);
-static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIndex);
-static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
 static void releaseGC(Widget w, GC gc);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
-
-
-
-
-static void resetClipRectangles(TextDisplay *textD);
-static void updateVScrollBarRange(TextDisplay *textD);
-static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd);
-
 
 TextDisplay::TextDisplay(Widget widget,
 						 Widget hScrollBar, 
@@ -533,7 +523,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters.  If updating the horizontal range caused scrolling,
 	   redraw */
-	updateVScrollBarRange(this);
+	updateVScrollBarRange();
 	if (updateHScrollBarRange())
 		redrawAll = true;
 
@@ -566,7 +556,7 @@ void TextDisplay::TextDRedisplayRect(int left, int top, int width, int height) {
 
 	/* If the graphics contexts are shared using XtAllocateGC, their
 	   clipping rectangles may have changed since the last use */
-	resetClipRectangles(this);
+	resetClipRectangles();
 
 	// draw the lines of text
 	for (line = firstLine; line <= lastLine; line++)
@@ -636,7 +626,7 @@ void TextDisplay::textDRedisplayRange(int start, int end) {
 
 	/* Reset the clipping rectangles for the drawing GCs which are shared
 	   using XtAllocateGC, and may have changed since the last use */
-	resetClipRectangles(this);
+	resetClipRectangles();
 
 	/* If the starting and ending lines are the same, redisplay the single
 	   line between "start" and "end" */
@@ -755,7 +745,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters) */
-	updateVScrollBarRange(this);
+	updateVScrollBarRange();
 	updateHScrollBarRange();
 
 	// Decide if the horizontal scroll bar needs to be visible
@@ -1005,9 +995,9 @@ int TextDisplay::TextDInSelection(Point p) {
 	TextBuffer *buf = this->buffer;
 
 	xyToUnconstrainedPos(p.x, p.y, &row, &column, CHARACTER_POS);
-	if (rangeTouchesRectSel(&buf->primary_, this->firstChar, this->lastChar))
+	if (buf->primary_.rangeTouchesRectSel(this->firstChar, this->lastChar))
 		column = this->TextDOffsetWrappedColumn(row, column);
-	return inSelection(&buf->primary_, pos, buf->BufStartOfLine(pos), column);
+	return buf->primary_.inSelection(pos, buf->BufStartOfLine(pos), column);
 }
 
 /*
@@ -1260,7 +1250,7 @@ int TextDisplay::TextDCountLines(int startPos, int endPos, int startPosIsLineSta
 	if (!this->continuousWrap)
 		return this->buffer->BufCountLines(startPos, endPos);
 
-	wrappedLineCounter(this, this->buffer, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this->buffer, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLines;
 }
 
@@ -1282,7 +1272,7 @@ int TextDisplay::TextDCountForwardNLines(const int startPos, const unsigned nLin
 		return startPos;
 
 	// use the common line counting routine to count forward
-	wrappedLineCounter(this, this->buffer, startPos, this->buffer->BufGetLength(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this->buffer, startPos, this->buffer->BufGetLength(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retPos;
 }
 
@@ -1311,7 +1301,7 @@ int TextDisplay::TextDEndOfLine(int pos, const Boolean startPosIsLineStart) {
 
 	if (pos == this->buffer->BufGetLength())
 		return pos;
-	wrappedLineCounter(this, this->buffer, pos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this->buffer, pos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineEnd;
 }
 
@@ -1326,7 +1316,7 @@ int TextDisplay::TextDStartOfLine(int pos) const {
 	if (!this->continuousWrap)
 		return this->buffer->BufStartOfLine(pos);
 
-	wrappedLineCounter(this, this->buffer, this->buffer->BufStartOfLine(pos), pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this->buffer, this->buffer->BufStartOfLine(pos), pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineStart;
 }
 
@@ -1345,7 +1335,7 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 	pos = startPos;
 	while (true) {
 		lineStart = buf->BufStartOfLine(pos);
-		wrappedLineCounter(this, this->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(this->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retLines > nLines)
 			return this->TextDCountForwardNLines(lineStart, retLines - nLines, True);
 		nLines -= retLines;
@@ -1428,7 +1418,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   much.  Note also, that the horizontal scroll bar update routine is
 	   allowed to re-adjust horizOffset if there is blank space to the right
 	   of all lines of text. */
-	updateVScrollBarRange(textD);
+	textD->updateVScrollBarRange();
 	scrolled |= textD->updateHScrollBarRange();
 
 	// Update the cursor position
@@ -1648,8 +1638,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	   position and the line start we're using.  Since scanning back to find a
 	   newline is expensive, only do so if there's actually a rectangular
 	   selection which needs it */
-	if (this->continuousWrap && (rangeTouchesRectSel(&buf->primary_, lineStartPos, lineStartPos + lineLen) || rangeTouchesRectSel(&buf->secondary_, lineStartPos, lineStartPos + lineLen) ||
-	                              rangeTouchesRectSel(&buf->highlight_, lineStartPos, lineStartPos + lineLen))) {
+	if (this->continuousWrap && (buf->primary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->secondary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->highlight_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen))) {
 		dispIndexOffset = buf->BufCountDispChars(buf->BufStartOfLine(lineStartPos), lineStartPos);
 	} else
 		dispIndexOffset = 0;
@@ -2042,11 +2031,11 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 			style = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 	}
-	if (inSelection(&buf->primary_, pos, lineStartPos, dispIndex))
+	if (buf->primary_.inSelection(pos, lineStartPos, dispIndex))
 		style |= PRIMARY_MASK;
-	if (inSelection(&buf->highlight_, pos, lineStartPos, dispIndex))
+	if (buf->highlight_.inSelection(pos, lineStartPos, dispIndex))
 		style |= HIGHLIGHT_MASK;
-	if (inSelection(&buf->secondary_, pos, lineStartPos, dispIndex))
+	if (buf->secondary_.inSelection(pos, lineStartPos, dispIndex))
 		style |= SECONDARY_MASK;
 	// store in the RANGESET_MASK portion of style the rangeset index for pos
 	if (buf->rangesetTable_) {
@@ -2074,13 +2063,7 @@ int TextDisplay::stringWidth(const char *string, const int length, const int sty
 	return XTextWidth(fs, (char *)string, (int)length);
 }
 
-/*
-** Return true if position "pos" with indentation "dispIndex" is in
-** selection "sel"
-*/
-static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIndex) {
-	return sel->selected && ((!sel->rectangular && pos >= sel->start && pos < sel->end) || (sel->rectangular && pos >= sel->start && lineStartPos <= sel->end && dispIndex >= sel->rectStart && dispIndex < sel->rectEnd));
-}
+
 
 /*
 ** Translate window coordinates to the nearest (insert cursor or character
@@ -2517,7 +2500,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	   horizontal scroll bars can have the further side-effect of changing
 	   the horizontal scroll position, this->horizOffset */
 	if (updateVScrollBar && this->vScrollBar) {
-		updateVScrollBarRange(this);
+		updateVScrollBarRange();
 	}
 	if (updateHScrollBar && this->hScrollBar) {
 		updateHScrollBarRange();
@@ -2541,7 +2524,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 		srcY = this->top + (yOffset >= 0 ? 0 : -yOffset);
 		dstY = this->top + (yOffset >= 0 ? yOffset : 0);
 		height = exactHeight - abs(yOffset);
-		resetClipRectangles(this);
+		resetClipRectangles();
 		this->TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
 		XCopyArea(XtDisplay(this->w), XtWindow(this->w), XtWindow(this->w), this->gc, srcX, srcY, width, height, dstX, dstY);
 		// redraw the un-recoverable parts
@@ -2573,20 +2556,20 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 ** Update the minimum, maximum, slider size, page increment, and value
 ** for vertical scroll bar.
 */
-static void updateVScrollBarRange(TextDisplay *textD) {
+void TextDisplay::updateVScrollBarRange() {
 	int sliderSize, sliderMax, sliderValue;
 
-	if (!textD->vScrollBar)
+	if (!this->vScrollBar)
 		return;
 
 	/* The Vert. scroll bar value and slider size directly represent the top
 	   line number, and the number of visible lines respectively.  The scroll
 	   bar maximum value is chosen to generally represent the size of the whole
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
-	sliderSize = std::max<int>(textD->nVisibleLines, 1); // Avoid X warning (size < 1)
-	sliderValue = textD->topLineNum;
-	sliderMax = std::max<int>(textD->nBufferLines + 2 + TEXT_OF_TEXTD(textD).cursorVPadding, sliderSize + sliderValue);
-	XtVaSetValues(textD->vScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max<int>(1, textD->nVisibleLines - 1), XmNvalue, sliderValue, nullptr);
+	sliderSize = std::max<int>(this->nVisibleLines, 1); // Avoid X warning (size < 1)
+	sliderValue = this->topLineNum;
+	sliderMax = std::max<int>(this->nBufferLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding, sliderSize + sliderValue);
+	XtVaSetValues(this->vScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max<int>(1, this->nVisibleLines - 1), XmNvalue, sliderValue, nullptr);
 }
 
 /*
@@ -2854,21 +2837,21 @@ static void releaseGC(Widget w, GC gc) {
 ** GCs were created with XtAllocGC).  This routine resets them so the clipping
 ** rectangles are correct for this text display.
 */
-static void resetClipRectangles(TextDisplay *textD) {
+void TextDisplay::resetClipRectangles() {
 	XRectangle clipRect;
-	Display *display = XtDisplay(textD->w);
+	Display *display = XtDisplay(this->w);
 
-	clipRect.x = textD->left;
-	clipRect.y = textD->top;
-	clipRect.width = textD->width;
-	clipRect.height = textD->height - textD->height % (textD->ascent + textD->descent);
+	clipRect.x = this->left;
+	clipRect.y = this->top;
+	clipRect.width = this->width;
+	clipRect.height = this->height - this->height % (this->ascent + this->descent);
 
-	XSetClipRectangles(display, textD->gc, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, textD->selectGC, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, textD->highlightGC, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, textD->selectBGGC, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, textD->highlightBGGC, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, textD->styleGC, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->gc, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->selectGC, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->highlightGC, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->selectBGGC, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->highlightBGGC, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, this->styleGC, 0, 0, &clipRect, 1, Unsorted);
 }
 
 /*
@@ -2942,7 +2925,7 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
-		wrappedLineCounter(this, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buf->BufGetLength()) {
 			countTo = buf->BufGetLength();
 			*modRangeEnd = countTo;
@@ -3035,7 +3018,7 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 		deletedTextBuf->BufCopyFromBuf(this->buffer, pos + nInserted, countTo, pos - countFrom + nDeleted);
 	/* Note that we need to take into account an offset for the style buffer:
 	   the deletedTextBuf can be out of sync with the style buffer. */
-	wrappedLineCounter(this, deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 	delete deletedTextBuf;
 	*linesDeleted = retLines;
 	this->suppressResync = 0;
@@ -3085,7 +3068,7 @@ void TextDisplay::measureDeletedLines(int pos, int nDeleted) {
 	while (true) {
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
-		wrappedLineCounter(this, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buf->BufGetLength()) {
 			if (retPos != retLineEnd)
 				nLines++;
@@ -3131,26 +3114,25 @@ void TextDisplay::measureDeletedLines(int pos, int nDeleted) {
 **   retLineStart:  Start of the line where counting ended
 **   retLineEnd:    End position of the last line traversed
 */
-static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines,
-                               int *retLineStart, int *retLineEnd) {
+void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const {
 	int lineStart, newLineStart = 0, b, p, colNum, wrapMargin;
 	int maxWidth, width, countPixels, i, foundBreak;
-	int nLines = 0, tabDist = textD->buffer->tabDist_;
+	int nLines = 0, tabDist = this->buffer->tabDist_;
 	unsigned char c;
-	char nullSubsChar = textD->buffer->nullSubsChar_;
+	char nullSubsChar = this->buffer->nullSubsChar_;
 
 	/* If the font is fixed, or there's a wrap margin set, it's more efficient
 	   to measure in columns, than to count pixels.  Determine if we can count
 	   in columns (countPixels == False) or must count pixels (countPixels ==
 	   True), and set the wrap target for either pixels or columns */
-	if (textD->fixedFontWidth != -1 || textD->wrapMargin != 0) {
+	if (this->fixedFontWidth != -1 || this->wrapMargin != 0) {
 		countPixels = false;
-		wrapMargin = textD->wrapMargin != 0 ? textD->wrapMargin : textD->width / textD->fixedFontWidth;
+		wrapMargin = this->wrapMargin != 0 ? this->wrapMargin : this->width / this->fixedFontWidth;
 		maxWidth = INT_MAX;
 	} else {
 		countPixels = true;
 		wrapMargin = INT_MAX;
-		maxWidth = textD->width;
+		maxWidth = this->width;
 	}
 
 	/* Find the start of the line if the start pos is not marked as a
@@ -3158,7 +3140,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 	if (startPosIsLineStart)
 		lineStart = startPos;
 	else
-		lineStart = textD->TextDStartOfLine(startPos);
+		lineStart = this->TextDStartOfLine(startPos);
 
 	/*
 	** Loop until position exceeds maxPos or line count exceeds maxLines.
@@ -3194,7 +3176,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 		} else {
 			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 			if (countPixels)
-				width += textD->measurePropChar(c, colNum, p + styleBufOffset);
+				width += this->measurePropChar(c, colNum, p + styleBufOffset);
 		}
 
 		/* If character exceeded wrap margin, find the break point
@@ -3209,7 +3191,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 						colNum = 0;
 						width = 0;
 						for (i = b + 1; i < p + 1; i++) {
-							width += textD->measurePropChar(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
+							width += this->measurePropChar(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
 							colNum++;
 						}
 					} else
@@ -3222,7 +3204,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 				newLineStart = std::max<int>(p, lineStart + 1);
 				colNum = TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 				if (countPixels)
-					width = textD->measurePropChar(c, colNum, p + styleBufOffset);
+					width = this->measurePropChar(c, colNum, p + styleBufOffset);
 			}
 			if (p >= maxPos) {
 				*retPos = maxPos;
@@ -3304,7 +3286,7 @@ void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEn
 	}
 
 	// use the wrapped line counter routine to count forward one line
-	wrappedLineCounter(this, this->buffer, startPos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
+	wrappedLineCounter(this->buffer, startPos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
 	return;
 }
 
@@ -3347,14 +3329,6 @@ void TextDisplay::hideOrShowHScrollBar() {
 		XtUnmanageChild(this->hScrollBar);
 	else
 		XtManageChild(this->hScrollBar);
-}
-
-/*
-** Return true if the selection "sel" is rectangular, and touches a
-** buffer position withing "rangeStart" to "rangeEnd"
-*/
-static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd) {
-	return sel->selected && sel->rectangular && sel->end >= rangeStart && sel->start <= rangeEnd;
 }
 
 /*

@@ -11,10 +11,12 @@ public:
 
 public:
 	int getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
+	int inSelection(int pos, int lineStartPos, int dispIndex);
+	int rangeTouchesRectSel(int rangeStart, int rangeEnd);
 	void setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd);
 	void setSelection(int newStart, int newEnd);
 	void updateSelection(int pos, int nDeleted, int nInserted);
-	
+
 public:
 	explicit operator bool() const { return selected; }
 
