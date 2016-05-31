@@ -2259,7 +2259,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	   scrolling operation, causing the display to jump twice.  It's done after
 	   vertical scrolling to take advantage of TextPosToXY which requires it's
 	   reqested position to be vertically on screen) */
-	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
+	if (textD->TextPosToXY(left, &leftX, &y) && textD->TextPosToXY(right, &rightX, &y) && leftX <= rightX) {
 		textD->TextGetScroll(&topLineNum, &horizOffset);
 		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
 		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)

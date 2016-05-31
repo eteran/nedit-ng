@@ -3706,3 +3706,14 @@ int TextDisplay::TextNumVisibleLines() {
 void TextDisplay::TextGetScroll(int *topLineNum, int *horizOffset) {
 	TextDGetScroll(topLineNum, horizOffset);
 }
+
+/*
+** Translate a buffer text position to the XY location where the center
+** of the cursor would be positioned to point to that character.  Returns
+** False if the position is not displayed because it is VERTICALLY out
+** of view.  If the position is horizontally out of view, returns the
+** x coordinate where the position would be if it were visible.
+*/
+int TextDisplay::TextPosToXY(int pos, int *x, int *y) {
+	return TextDPositionToXY(pos, x, y);
+}

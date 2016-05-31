@@ -154,6 +154,7 @@ public:
 	void TextSetCursorPos(int pos);
 	void TextSetScroll(int topLineNum, int horizOffset);
 	void TextGetScroll(int *topLineNum, int *horizOffset);
+	int TextPosToXY(int pos, int *x, int *y);
 
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);

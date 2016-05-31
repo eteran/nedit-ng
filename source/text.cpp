@@ -1085,16 +1085,7 @@ int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column) {
 	return reinterpret_cast<TextWidget>(w)->text.textD->TextDPosToLineAndCol(pos, lineNum, column);
 }
 
-/*
-** Translate a buffer text position to the XY location where the center
-** of the cursor would be positioned to point to that character.  Returns
-** False if the position is not displayed because it is VERTICALLY out
-** of view.  If the position is horizontally out of view, returns the
-** x coordinate where the position would be if it were visible.
-*/
-int TextPosToXY(Widget w, int pos, int *x, int *y) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDPositionToXY(pos, x, y);
-}
+
 
 
 
@@ -3225,7 +3216,7 @@ static void selectWord(Widget w, int pointerX) {
 	TextBuffer *buf = tw->text.textD->buffer;
 	int x, y, insertPos = tw->text.textD->TextDGetInsertPosition();
 
-	TextPosToXY(w, insertPos, &x, &y);
+	tw->text.textD->TextPosToXY(insertPos, &x, &y);
 	if (pointerX < x && insertPos > 0 && buf->BufGetCharacter(insertPos - 1) != '\n')
 		insertPos--;
 	buf->BufSelect(startOfWord(tw, insertPos), endOfWord(tw, insertPos));

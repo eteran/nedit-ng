@@ -140,7 +140,6 @@ struct smartIndentCBStruct {
 
 XtActionsRec *TextGetActions(int *nActions);
 int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column);
-int TextPosToXY(Widget w, int pos, int *x, int *y);
 int TextVisibleWidth(Widget w);
 TextBuffer *TextGetBuffer(Widget w);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
