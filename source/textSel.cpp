@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QApplication>
 #include "MotifHelper.h"
 #include "textSel.h"
 #include "textP.h"
@@ -504,7 +505,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 	// Confirm that there is a value and it is of the correct type 
 	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
-		XBell(XtDisplay(w), 0);
+		QApplication::beep();
 		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
 		return;
 	}
@@ -767,7 +768,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 	/* Check if the request succeeded, if not, beep, remove any existing
 	   secondary selection, and return */
 	if (e->property == None) {
-		XBell(XtDisplay(w), 0);
+		QApplication::beep();
 		buf->BufSecondaryUnselect();
 		XtDisownSelection(w, XA_SECONDARY, e->time);
 		XtFree(cbInfo->actionText);

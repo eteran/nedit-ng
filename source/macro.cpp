@@ -1226,7 +1226,7 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	/* beep on un-recordable operations which require a mouse position, to
 	   remind the user that the action was not recorded */
 	if (isMouseAction(actionName)) {
-		XBell(XtDisplay(w), 0);
+		QApplication::beep();
 		return;
 	}
 

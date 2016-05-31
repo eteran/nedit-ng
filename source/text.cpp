@@ -25,7 +25,7 @@
 *******************************************************************************/
 
 #include <QMessageBox>
-
+#include <QApplication>
 #include "text.h"
 #include "textP.h"
 #include "TextBuffer.h"
@@ -161,7 +161,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 static int hasKey(const char *key, const String *args, const Cardinal *nArgs);
 static int strCaseCmp(const char *str1, const char *str2);
-static void ringIfNecessary(Boolean silent, Widget w);
+static void ringIfNecessary(bool silent);
 
 static char defaultTranslations[] =
     // Home
@@ -1437,7 +1437,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	   selection overlap, just beep and return */
 	if (!sec->selected || (primary->selected && ((primary->start <= sec->start && primary->end > sec->start) || (sec->start <= primary->start && sec->end > primary->start)))) {
 		buf->BufSecondaryUnselect();
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		/* If there's no secondary selection, but the primary selection is
 		   being dragged, we must not forget to finish the dragging.
 		   Otherwise, modifications aren't recorded. */
@@ -1827,7 +1827,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 		return;
 
 	if (insertPos == 0) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 
@@ -1862,7 +1862,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == textD->buffer->BufGetLength()) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	textD->buffer->BufRemove(insertPos, insertPos + 1);
@@ -1889,7 +1889,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	}
 
 	if (insertPos == lineStart) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 
@@ -1923,7 +1923,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	}
 
 	if (insertPos == lineEnd) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 
@@ -1957,7 +1957,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == endOfLine) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	textD->buffer->BufRemove(insertPos, endOfLine);
@@ -1984,7 +1984,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == startOfLine) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	textD->buffer->BufRemove(startOfLine, insertPos);
@@ -1999,7 +1999,7 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveRight()) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	}
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
@@ -2013,7 +2013,7 @@ static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal 
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveLeft()) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	}
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
@@ -2029,7 +2029,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	pos = insertPos;
@@ -2069,7 +2069,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	textD->cancelDrag();
 	if (insertPos == 0) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	pos = std::max<int>(insertPos - 1, 0);
@@ -2093,7 +2093,7 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	pos = std::min<int>(buf->BufEndOfLine(insertPos) + 1, buf->BufGetLength());
@@ -2122,7 +2122,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 
 	textD->cancelDrag();
 	if (insertPos == 0) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 		return;
 	}
 	parStart = buf->BufStartOfLine(std::max<int>(insertPos - 1, 0));
@@ -2163,7 +2163,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		return;
 	}
 	if (!stat) {
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	} else {
 		keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
 		textD->checkAutoShowInsertPos();
@@ -2179,7 +2179,7 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2193,7 +2193,7 @@ static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2207,7 +2207,7 @@ static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2221,7 +2221,7 @@ static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
-		ringIfNecessary(silent, w);
+		ringIfNecessary(silent);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2310,7 +2310,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
 
 		if (targetLine == textD->topLineNum) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
@@ -2321,7 +2321,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		column = textD->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
 			if (insertPos >= buf->BufGetLength() || textD->topLineNum == lastTopLine) {
-				ringIfNecessary(silent, w);
+				ringIfNecessary(silent);
 				return;
 			}
 			targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
@@ -2338,7 +2338,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				pos = textD->lineStarts[targetLine];
 			}
 			if (lineStartPos == pos) {
-				ringIfNecessary(silent, w);
+				ringIfNecessary(silent);
 				return;
 			}
 			if (maintainColumn) {
@@ -2356,7 +2356,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		}
 	} else { // "standard"
 		if (insertPos >= buf->BufGetLength() && textD->topLineNum == lastTopLine) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		if (maintainColumn) {
@@ -2399,7 +2399,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
 
 		if (targetLine == textD->topLineNum) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
@@ -2410,7 +2410,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		column = textD->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
 			if (textD->topLineNum == 1 && (maintainColumn || column == 0)) {
-				ringIfNecessary(silent, w);
+				ringIfNecessary(silent);
 				return;
 			}
 			targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
@@ -2437,7 +2437,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		}
 	} else { // "standard"
 		if (insertPos <= 0 && textD->topLineNum == 1) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		if (maintainColumn) {
@@ -2475,7 +2475,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		if (textD->horizOffset == 0) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		horizOffset = std::max<int>(0, textD->horizOffset - textD->width);
@@ -2483,7 +2483,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	} else {
 		lineStartPos = buf->BufStartOfLine(insertPos);
 		if (insertPos == lineStartPos && textD->horizOffset == 0) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		indent = buf->BufCountDispChars(lineStartPos, insertPos);
@@ -2516,7 +2516,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 		horizOffset = std::min<int>(textD->horizOffset + textD->width, sliderMax - sliderSize);
 		if (textD->horizOffset == horizOffset) {
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 			return;
 		}
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
@@ -2527,7 +2527,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		textD->TextDSetInsertPosition(pos);
 		textD->TextDSetScroll(textD->topLineNum, textD->horizOffset + textD->width);
 		if (textD->horizOffset == oldHorizOffset && insertPos == pos)
-			ringIfNecessary(silent, w);
+			ringIfNecessary(silent);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		textD->checkAutoShowInsertPos();
 		textD->callCursorMovementCBs(event);
@@ -3369,7 +3369,7 @@ static int strCaseCmp(const char *str1, const char *str2) {
 	}
 }
 
-static void ringIfNecessary(Boolean silent, Widget w) {
+static void ringIfNecessary(bool silent) {
 	if (!silent)
-		XBell(XtDisplay(w), 0);
+		QApplication::beep();
 }

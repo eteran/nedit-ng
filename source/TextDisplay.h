@@ -139,6 +139,8 @@ public:
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 
 public:
+	TextBuffer *TextGetBuffer();
+	bool checkReadOnly();
 	int TextFirstVisibleLine();
 	int TextFirstVisiblePos();
 	int TextGetCursorPos();
@@ -147,30 +149,28 @@ public:
 	int TextLastVisiblePos();
 	int TextLineAndColToPos(int lineNum, int column);
 	int TextNumVisibleLines();
+	int TextPosToLineAndCol(int pos, int *lineNum, int *column);
+	int TextPosToXY(int pos, int *x, int *y);
+	int TextVisibleWidth();
 	std::string TextGetWrappedEx(int startPos, int endPos);
+	void HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event);
+	void ResetCursorBlink(bool startsBlanked);
+	void ShowHidePointer(bool hidePointer);
+	void TextColPasteClipboard(Time time);
 	void TextCopyClipboard(Time time);
 	void TextCutClipboard(Time time);
+	void TextGetScroll(int *topLineNum, int *horizOffset);
+	void TextHandleXSelections();
+	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
+	void TextPasteClipboard(Time time);
 	void TextSetBuffer(TextBuffer *buffer);
 	void TextSetCursorPos(int pos);
 	void TextSetScroll(int topLineNum, int horizOffset);
-	void TextGetScroll(int *topLineNum, int *horizOffset);
-	int TextPosToXY(int pos, int *x, int *y);
-	int TextPosToLineAndCol(int pos, int *lineNum, int *column);
-	int TextVisibleWidth();
-	TextBuffer *TextGetBuffer();
-	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
-	void ResetCursorBlink(bool startsBlanked);
-	void ShowHidePointer(bool hidePointer);
-	void TextPasteClipboard(Time time);
-	void TextColPasteClipboard(Time time);
-	void TextHandleXSelections();
-	bool checkReadOnly();
+	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
+	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
 	void checkAutoShowInsertPos();
-	void callCursorMovementCBs(XEvent *event);
-	void HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event);
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
-	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 		
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
@@ -179,6 +179,17 @@ private:
 	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
 	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 	
+public:
+	Pixel getRangesetColor(int ind, Pixel bground);
+	void textDRedisplayRange(int start, int end);	
+	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
+	void offsetLineStarts(int newTopLineNum);
+	void calcLineStarts(int startLine, int endLine);	
+void calcLastChar();
+int posToVisibleLineNum(int pos, int *lineNum);
+void redisplayLine(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
+void drawString(int style, int x, int y, int toX, char *string, int nChars);
+
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);

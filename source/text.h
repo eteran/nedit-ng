@@ -27,9 +27,7 @@
 #ifndef TEXT_H_
 #define TEXT_H_
 
-#include "TextBuffer.h"
-#include <string>
-
+#include "string_view.h"
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -130,7 +128,7 @@ struct dragEndCBStruct {
 
 enum SmartIndentCallbackReasons { NEWLINE_INDENT_NEEDED, CHAR_TYPED };
 struct smartIndentCBStruct {
-	int reason;
+	SmartIndentCallbackReasons reason;
 	int pos;
 	int indentRequest;
 	char *charsTyped;
