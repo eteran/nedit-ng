@@ -1077,13 +1077,6 @@ TextBuffer *TextGetBuffer(Widget w) {
 
 
 
-/*
-** Translate a position into a line number (if the position is visible,
-** if it's not, return False
-*/
-int TextPosToLineAndCol(Widget w, int pos, int *lineNum, int *column) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->TextDPosToLineAndCol(pos, lineNum, column);
-}
 
 
 

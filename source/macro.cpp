@@ -3375,7 +3375,7 @@ static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *re
 	result->tag = INT_TAG;
 	cursorPos   = textD->TextGetCursorPos();
 	
-	if (!TextPosToLineAndCol(window->lastFocus_, cursorPos, &line, &colNum)) {
+	if (!textD->TextPosToLineAndCol(cursorPos, &line, &colNum)) {
 		line = window->buffer_->BufCountLines(0, cursorPos) + 1;
 	}
 	

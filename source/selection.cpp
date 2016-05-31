@@ -229,7 +229,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	auto textD = reinterpret_cast<TextWidget>(widget)->text.textD;
 	if (lineNum == -1) {
 		position = textD->TextGetCursorPos();
-		if (TextPosToLineAndCol(widget, position, &lineNum, &curCol) == False) {
+		if (textD->TextPosToLineAndCol(position, &lineNum, &curCol) == False) {
 			QApplication::beep();
 			return;
 		}

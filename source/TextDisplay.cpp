@@ -3717,3 +3717,12 @@ void TextDisplay::TextGetScroll(int *topLineNum, int *horizOffset) {
 int TextDisplay::TextPosToXY(int pos, int *x, int *y) {
 	return TextDPositionToXY(pos, x, y);
 }
+
+
+/*
+** Translate a position into a line number (if the position is visible,
+** if it's not, return False
+*/
+int TextDisplay::TextPosToLineAndCol(int pos, int *lineNum, int *column) {
+	return TextDPosToLineAndCol(pos, lineNum, column);
+}

@@ -1414,7 +1414,7 @@ void Document::UpdateStatsLine() {
 	const char *format = (fileFormat_ == DOS_FILE_FORMAT) ? " DOS" : (fileFormat_ == MAC_FILE_FORMAT ? " Mac" : "");
 	char slinecol[32];
 	
-	if (!TextPosToLineAndCol(lastFocus_, pos, &line, &colNum)) {
+	if (!textD->TextPosToLineAndCol(pos, &line, &colNum)) {
 		snprintf(string, string_size, "%s%s%s %d bytes", path_.toLatin1().data(), filename_.toLatin1().data(), format, buffer_->BufGetLength());
 		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
