@@ -144,7 +144,6 @@ void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void TextColPasteClipboard(Widget w, Time time);
 void TextHandleXSelections(Widget w);
-void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);
 void cancelDrag(Widget w);
 int checkReadOnly(Widget w);

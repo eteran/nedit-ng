@@ -158,9 +158,18 @@ public:
 	int TextPosToLineAndCol(int pos, int *lineNum, int *column);
 	int TextVisibleWidth();
 	TextBuffer *TextGetBuffer();
-
+	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
+	
+private:
+	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
+	int pendingSelection();
+	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
+	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
+	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
+	
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
+
 
 public:
 	Widget w; // TextWidget

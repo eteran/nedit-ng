@@ -296,7 +296,7 @@ void InsertClipboard(Widget w, int isColumnar) {
 		if (reinterpret_cast<TextWidget>(w)->text.autoShowInsertPos)
 			textD->TextDMakeInsertPosVisible();
 	} else
-		TextInsertAtCursorEx(w, contents, nullptr, True, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+		textD->TextInsertAtCursorEx(contents, nullptr, true, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 }
 
 /*
@@ -393,7 +393,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 	cbInfo->widget       = (Widget)w;
 	cbInfo->actionText   = actionText;
 	cbInfo->length       = actionTextLen;
-	XtAddEventHandler(w, 0, True, selectNotifyEH, cbInfo);
+	XtAddEventHandler(w, 0, true, selectNotifyEH, cbInfo);
 	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
 }
 
@@ -441,7 +441,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
 		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else
-		TextInsertAtCursorEx(w, string, nullptr, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+		textD->TextInsertAtCursorEx(string, nullptr, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 
 	/* The selection requstor is required to free the memory passed
 	   to it via value */
@@ -459,7 +459,8 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 
 	(void)selType;
 
-	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto textD      = reinterpret_cast<TextWidget>(w)->text.textD;
+	TextBuffer *buf = textD->buffer;
 	auto resultFlag = static_cast<int *>(clientData);
 
 	// Confirm that the returned value is of the correct type 
@@ -481,7 +482,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 	}
 
 	// Insert it in the text widget 
-	TextInsertAtCursorEx(w, string, nullptr, True, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+	textD->TextInsertAtCursorEx(string, nullptr, true, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
 	*resultFlag = SUCCESSFUL_INSERT;
 
 	// This callback is required to free the memory passed to it thru value 
@@ -760,7 +761,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 
 	/* The time stamp matched, remove this event handler and its
 	   backup timer procedure */
-	XtRemoveEventHandler(w, 0, True, selectNotifyEH, data);
+	XtRemoveEventHandler(w, 0, true, selectNotifyEH, data);
 	XtRemoveTimeOut(cbInfo->timeoutProcID);
 
 	/* Check if the request succeeded, if not, beep, remove any existing
@@ -816,7 +817,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 	TextBuffer *buf = ((TextWidget)cbInfo->widget)->text.textD->buffer;
 
 	fprintf(stderr, "NEdit: timeout on selection request\n");
-	XtRemoveEventHandler(cbInfo->widget, 0, True, selectNotifyEH, cbInfo);
+	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
 	XtFree(cbInfo->actionText);
