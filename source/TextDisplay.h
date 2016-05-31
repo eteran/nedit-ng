@@ -159,6 +159,8 @@ public:
 	int TextVisibleWidth();
 	TextBuffer *TextGetBuffer();
 	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
+	void ResetCursorBlink(bool startsBlanked);
+	void ShowHidePointer(bool hidePointer);
 	
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
@@ -169,7 +171,9 @@ private:
 	
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
-
+	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
+	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
+	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 
 public:
 	Widget w; // TextWidget

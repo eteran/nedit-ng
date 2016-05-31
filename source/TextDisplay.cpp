@@ -51,7 +51,12 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
+#define NEDIT_HIDE_CURSOR_MASK (KeyPressMask)
+#define NEDIT_SHOW_CURSOR_MASK (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask)
+
 namespace {
+
+Cursor empty_cursor = 0;
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
@@ -4063,4 +4068,100 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 		*column = indent;
 
 	return indentStr;
+}
+
+
+/*
+**  Sets the caret to on or off and restart the caret blink timer.
+**  This could be used by other modules to modify the caret's blinking.
+*/
+void TextDisplay::ResetCursorBlink(bool startsBlanked) {
+
+	auto tw = reinterpret_cast<TextWidget>(w);
+
+	if (tw->text.cursorBlinkRate != 0) {
+		if (tw->text.cursorBlinkProcID != 0) {
+			XtRemoveTimeOut(tw->text.cursorBlinkProcID);
+		}
+
+		if (startsBlanked) {
+			TextDBlankCursor();
+		} else {
+			TextDUnblankCursor();
+		}
+
+		tw->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), tw->text.cursorBlinkRate, cursorBlinkTimerProc, tw);
+	}
+}
+
+/*
+** Xt timer procedure for cursor blinking
+*/
+void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
+	(void)id;
+
+	TextWidget w = (TextWidget)clientData;
+	TextDisplay *textD = w->text.textD;
+
+	// Blink the cursor
+	if (textD->cursorOn)
+		textD->TextDBlankCursor();
+	else
+		textD->TextDUnblankCursor();
+
+	// re-establish the timer proc (this routine) to continue processing
+	w->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.cursorBlinkRate, cursorBlinkTimerProc, w);
+}
+
+
+void TextDisplay::ShowHidePointer(bool hidePointer) {
+
+	auto tw = reinterpret_cast<TextWidget>(w);
+
+	if (tw->text.hidePointer) {
+		if (hidePointer != tw->text.textD->pointerHidden) {
+			if (hidePointer) {
+				// Don't listen for keypresses any more
+				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
+				// Switch to empty cursor
+				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
+
+				tw->text.textD->pointerHidden = true;
+
+				// Listen to mouse movement, focus change, and button presses
+				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, (Opaque) nullptr);
+			} else {
+				// Don't listen to mouse/focus events any more
+				XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, (Opaque) nullptr);
+				// Switch to regular cursor
+				XUndefineCursor(XtDisplay(w), XtWindow(w));
+
+				tw->text.textD->pointerHidden = false;
+
+				// Listen for keypresses now
+				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
+			}
+		}
+	}
+}
+
+// Hide the pointer while the user is typing
+void TextDisplay::handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
+	(void)unused;
+	(void)event;
+	(void)continue_to_dispatch;
+
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->ShowHidePointer(true);
+}
+
+
+// Restore the pointer if the mouse moves or focus changes
+void TextDisplay::handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch) {
+	(void)unused;
+	(void)event;
+	(void)continue_to_dispatch;
+
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->ShowHidePointer(false);
 }

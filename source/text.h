@@ -140,8 +140,6 @@ struct smartIndentCBStruct {
 
 XtActionsRec *TextGetActions(int *nActions);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
-void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void TextColPasteClipboard(Widget w, Time time);
 void TextHandleXSelections(Widget w);
 void TextPasteClipboard(Widget w, Time time);

@@ -499,7 +499,8 @@ static char **PrevOpen = nullptr;
 
 void HidePointerOnKeyedEvent(Widget w, XEvent *event) {
 	if (event && (event->type == KeyPress || event->type == KeyRelease)) {
-		ShowHidePointer(reinterpret_cast<TextWidget>(w), True);
+		auto textD = reinterpret_cast<TextWidget>(w)->text.textD;	
+		textD->ShowHidePointer(true);
 	}
 }
 

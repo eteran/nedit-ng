@@ -307,6 +307,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	auto textWidget = reinterpret_cast<TextWidget>(w);
+	auto textD = textWidget->text.textD;
 
 	if (window->ignoreModify_)
 		return;
@@ -327,7 +328,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    ID for the blink procedure.  */
 	if (textWidget->text.cursorBlinkProcID != 0) {
 		//  Start blinking the caret again.  
-		ResetCursorBlink(textWidget, false);
+		textD->ResetCursorBlink(false);
 	}
 }
 
