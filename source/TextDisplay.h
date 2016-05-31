@@ -173,50 +173,49 @@ public:
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 		
 private:
-	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
-	int pendingSelection();
-	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
-	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
-	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
-	
-public:
 	Pixel getRangesetColor(int ind, Pixel bground);
 	int emptyLinesVisible();
 	int getAbsTopLineNum();
-	int maintainingAbsTopLineNum();
 	int measurePropChar(const char c, const int colNum, const int pos) const;
 	int measureVisLine(int visLineNum);
+	int pendingSelection();
 	int posToVisibleLineNum(int pos, int *lineNum);
 	int stringWidth(const char *string, const int length, const int style) const;
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
-	int updateHScrollBarRange();
 	int visLineLength(int visLineNum);
+	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
 	int wrapUsesCharacter(int lineEndPos);
 	int xyToPos(int x, int y, int posType);
+	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
+	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 	void allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
-	void blankCursorProtrusions();
 	void calcLastChar();
 	void calcLineStarts(int startLine, int endLine);	
 	void clearRect(GC gc, int x, int y, int width, int height);
 	void drawCursor(int x, int y);
 	void drawString(int style, int x, int y, int toX, char *string, int nChars);
-	void extendRangeForStyleMods(int *start, int *end);
+	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
+	void hideOrShowHScrollBar();
+	void offsetAbsLineNum(int oldFirstChar);
 	void offsetLineStarts(int newTopLineNum);
 	void redisplayLine(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
-	void textDRedisplayRange(int start, int end);	
-	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
-	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
-	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
-	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
-	void hideOrShowHScrollBar();
-	void measureDeletedLines(int pos, int nDeleted);
-	void offsetAbsLineNum(int oldFirstChar);
-	void redrawLineNumbers(int clearAll);
-	void resetAbsLineNum();
-
 	void resetClipRectangles();
-	void updateVScrollBarRange();
+	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
 	void wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
+	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
+
+public:
+	void measureDeletedLines(int pos, int nDeleted);
+	void redrawLineNumbers(int clearAll);
+	void textDRedisplayRange(int start, int end);
+	void extendRangeForStyleMods(int *start, int *end);
+	void blankCursorProtrusions();
+	void updateVScrollBarRange();
+	int updateHScrollBarRange();
+	void resetAbsLineNum();	
+	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
+	int maintainingAbsTopLineNum();
+	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
