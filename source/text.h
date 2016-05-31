@@ -147,7 +147,6 @@ void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);
 void TextColPasteClipboard(Widget w, Time time);
-void TextGetScroll(Widget w, int *topLineNum, int *horizOffset);
 void TextHandleXSelections(Widget w);
 void TextInsertAtCursorEx(Widget w, view::string_view chars, XEvent *event, int allowPendingDelete, int allowWrap);
 void TextPasteClipboard(Widget w, Time time);

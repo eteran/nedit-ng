@@ -40,6 +40,7 @@ enum CursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY
 
 class StyleTableEntry;
 class TextDisplay;
+class TextPart;
 
 struct graphicExposeTranslationEntry {
 	int horizontal;
@@ -60,9 +61,31 @@ struct calltipStruct {
 
 class TextDisplay {
 public:
-	TextDisplay(Widget widget, Widget hScrollBar, Widget vScrollBar, Position left, Position top, Position width, Position height, Position lineNumLeft, Position lineNumWidth, TextBuffer *buffer, XFontStruct *fontStruct,
-                      Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel cursorFGPixel, Pixel lineNumFGPixel, int continuousWrap, int wrapMargin,
-                      XmString bgClassString, Pixel calltipFGPixel, Pixel calltipBGPixel);
+	TextDisplay(
+		Widget widget, 
+		Widget hScrollBar, 
+		Widget vScrollBar, 
+		Position left, 
+		Position top, 
+		Position width, 
+		Position height, 
+		Position lineNumLeft, 
+		Position lineNumWidth, 
+		TextBuffer *buffer, 
+		XFontStruct *fontStruct, 
+		Pixel bgPixel, 
+		Pixel fgPixel, 
+		Pixel selectFGPixel, 
+		Pixel selectBGPixel, 
+		Pixel highlightFGPixel, 
+		Pixel highlightBGPixel, 
+		Pixel cursorFGPixel, 
+		Pixel lineNumFGPixel, 
+		bool continuousWrap, 
+		int wrapMargin, 
+		XmString bgClassString, 
+		Pixel calltipFGPixel, 
+		Pixel calltipBGPixel);
 
 	~TextDisplay();
 
@@ -130,6 +153,7 @@ public:
 	void TextSetBuffer(TextBuffer *buffer);
 	void TextSetCursorPos(int pos);
 	void TextSetScroll(int topLineNum, int horizOffset);
+	void TextGetScroll(int *topLineNum, int *horizOffset);
 
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);

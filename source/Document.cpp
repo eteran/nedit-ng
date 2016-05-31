@@ -469,7 +469,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == orgWin->lastFocus_)
 			focusPane = i;
 	}
@@ -1537,7 +1537,7 @@ void Document::SetTabDist(int tabDist) {
 			Widget w = GetPaneByIndex(paneIndex);
 			auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-			TextGetScroll(w, &saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
+			textD->TextGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
 			saveCursorPositions[paneIndex] = textD->TextGetCursorPos();
 			textD->modifyingTabDist = 1;
 		}
@@ -2222,7 +2222,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
 		XtVaGetValues(textPane, textNrows, &rows, nullptr);
 		scrollOffset = rows / 3;
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		textD->TextGetScroll(&topLineNum, &horizOffset);
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen 
 			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, false);
@@ -2233,7 +2233,6 @@ void Document::MakeSelectionVisible(Widget textPane) {
 				if (leftLineNum - linesToScroll < targetLineNum)
 					linesToScroll = leftLineNum - targetLineNum;
 				// Scroll start of selection to the target line 
-				auto textD = reinterpret_cast<TextWidget>(textPane)->text.textD;
 				textD->TextSetScroll(topLineNum + linesToScroll, horizOffset);
 			}
 		} else if (left < topChar) {
@@ -2247,7 +2246,6 @@ void Document::MakeSelectionVisible(Widget textPane) {
 				if (rightLineNum + linesToScroll > targetLineNum)
 					linesToScroll = targetLineNum - rightLineNum;
 				// Scroll end of selection to the target line 
-				auto textD = reinterpret_cast<TextWidget>(textPane)->text.textD;
 				textD->TextSetScroll(topLineNum - linesToScroll, horizOffset);
 			}
 		}
@@ -2262,14 +2260,13 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	   vertical scrolling to take advantage of TextPosToXY which requires it's
 	   reqested position to be vertically on screen) */
 	if (TextPosToXY(textPane, left, &leftX, &y) && TextPosToXY(textPane, right, &rightX, &y) && leftX <= rightX) {
-		TextGetScroll(textPane, &topLineNum, &horizOffset);
+		textD->TextGetScroll(&topLineNum, &horizOffset);
 		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
 		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
 			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
 		else if (rightX > width - margin)
 			horizOffset += rightX - (width - margin);
 		
-		auto textD = reinterpret_cast<TextWidget>(textPane)->text.textD;
 		textD->TextSetScroll(topLineNum, horizOffset);
 	}
 
@@ -2600,7 +2597,7 @@ void Document::ClosePane() {
 		
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == lastFocus_)
 			focusPane = i;
 	}
@@ -2896,7 +2893,7 @@ void Document::SplitPane() {
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == lastFocus_)
 			focusPane = i;
 	}

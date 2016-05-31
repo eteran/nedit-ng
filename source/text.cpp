@@ -1100,12 +1100,7 @@ int TextPosToXY(Widget w, int pos, int *x, int *y) {
 
 
 
-/*
-** Return the horizontal and vertical scroll positions of the widget
-*/
-void TextGetScroll(Widget w, int *topLineNum, int *horizOffset) {
-	reinterpret_cast<TextWidget>(w)->text.textD->TextDGetScroll(topLineNum, horizOffset);
-}
+
 
 
 /*

@@ -259,7 +259,7 @@ void RevertToSaved(Document *window) {
 		
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		insertPositions[i] = textD->TextGetCursorPos();
-		TextGetScroll(text, &topLines[i], &horizOffsets[i]);
+		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
 	}
 
 	// re-read the file, update the window title if new file is different 
@@ -1771,7 +1771,7 @@ static void addWrapNewlines(Document *window) {
 
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		insertPositions[i] = textD->TextGetCursorPos();
-		TextGetScroll(text, &topLines[i], &horizOffset);
+		textD->TextGetScroll(&topLines[i], &horizOffset);
 	}
 
 	// Modify the buffer to add wrapping 
