@@ -167,7 +167,11 @@ public:
 	bool checkReadOnly();
 	void cancelDrag();
 	void checkAutoShowInsertPos();
-	
+	void callCursorMovementCBs(XEvent *event);
+	void HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event);
+	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
+	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
+		
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
 	int pendingSelection();
@@ -180,6 +184,7 @@ public:
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
+	static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg);
 
 public:
 	Widget w; // TextWidget

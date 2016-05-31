@@ -125,7 +125,6 @@ static int xyToPos(TextDisplay *textD, int x, int y, int posType);
 static void xyToUnconstrainedPos(TextDisplay *textD, int x, int y, int *row, int *column, int posType);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-static void setScroll(TextDisplay *textD, int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch);
@@ -555,7 +554,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (canRedraw && oldVisibleLines < newVisibleLines && this->topLineNum + this->nVisibleLines > this->nBufferLines)
-		setScroll(this, std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding), this->horizOffset, False, False);
+		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding), this->horizOffset, False, False);
 
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters.  If updating the horizontal range caused scrolling,
@@ -702,7 +701,7 @@ void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
 	if (horizOffset > sliderMax - sliderSize)
 		horizOffset = sliderMax - sliderSize;
 
-	setScroll(this, topLineNum, horizOffset, True, True);
+	setScroll(topLineNum, horizOffset, True, True);
 }
 
 /*
@@ -1130,7 +1129,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	   to scroll to, otherwise, do the vertical scrolling first, then the
 	   horizontal */
 	if (!this->TextDPositionToXY(cursorPos, &x, &y)) {
-		setScroll(this, topLine, hOffset, True, True);
+		setScroll(topLine, hOffset, True, True);
 		if (!this->TextDPositionToXY(cursorPos, &x, &y))
 			return; // Give up, it's not worth it (but why does it fail?)
 	}
@@ -1140,7 +1139,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 		hOffset += x - this->left;
 
 	// Do the scroll
-	setScroll(this, topLine, hOffset, True, True);
+	setScroll(topLine, hOffset, True, True);
 }
 
 /*
@@ -2512,83 +2511,83 @@ void TextDisplay::TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool
 	}
 }
 
-static void setScroll(TextDisplay *textD, int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar) {
-	int fontHeight = textD->ascent + textD->descent;
-	int origHOffset = textD->horizOffset;
-	int lineDelta = textD->topLineNum - topLineNum;
+void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar) {
+	int fontHeight = this->ascent + this->descent;
+	int origHOffset = this->horizOffset;
+	int lineDelta = this->topLineNum - topLineNum;
 	int xOffset, yOffset, srcX, srcY, dstX, dstY, width, height;
-	int exactHeight = textD->height - textD->height % (textD->ascent + textD->descent);
+	int exactHeight = this->height - this->height % (this->ascent + this->descent);
 
 	/* Do nothing if scroll position hasn't actually changed or there's no
 	   window to draw in yet */
-	if (XtWindow(textD->w) == 0 || (textD->horizOffset == horizOffset && textD->topLineNum == topLineNum))
+	if (XtWindow(this->w) == 0 || (this->horizOffset == horizOffset && this->topLineNum == topLineNum))
 		return;
 
 	/* If part of the cursor is protruding beyond the text clipping region,
 	   clear it off */
-	blankCursorProtrusions(textD);
+	blankCursorProtrusions(this);
 
 	/* If the vertical scroll position has changed, update the line
 	   starts array and related counters in the text display */
-	offsetLineStarts(textD, topLineNum);
+	offsetLineStarts(this, topLineNum);
 
-	// Just setting textD->horizOffset is enough information for redisplay
-	textD->horizOffset = horizOffset;
+	// Just setting this->horizOffset is enough information for redisplay
+	this->horizOffset = horizOffset;
 
 	/* Update the scroll bar positions if requested, note: updating the
 	   horizontal scroll bars can have the further side-effect of changing
-	   the horizontal scroll position, textD->horizOffset */
-	if (updateVScrollBar && textD->vScrollBar) {
-		updateVScrollBarRange(textD);
+	   the horizontal scroll position, this->horizOffset */
+	if (updateVScrollBar && this->vScrollBar) {
+		updateVScrollBarRange(this);
 	}
-	if (updateHScrollBar && textD->hScrollBar) {
-		updateHScrollBarRange(textD);
+	if (updateHScrollBar && this->hScrollBar) {
+		updateHScrollBarRange(this);
 	}
 
 	/* Redisplay everything if the window is partially obscured (since
 	   it's too hard to tell what displayed areas are salvageable) or
 	   if there's nothing to recover because the scroll distance is large */
-	xOffset = origHOffset - textD->horizOffset;
+	xOffset = origHOffset - this->horizOffset;
 	yOffset = lineDelta * fontHeight;
-	if (textD->visibility != VisibilityUnobscured || abs(xOffset) > textD->width || abs(yOffset) > exactHeight) {
-		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
-		textD->TextDRedisplayRect(textD->left, textD->top, textD->width, textD->height);
+	if (this->visibility != VisibilityUnobscured || abs(xOffset) > this->width || abs(yOffset) > exactHeight) {
+		this->TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
+		this->TextDRedisplayRect(this->left, this->top, this->width, this->height);
 	} else {
 		/* If the window is not obscured, paint most of the window using XCopyArea
 		   from existing displayed text, and redraw only what's necessary */
 		// Recover the useable window areas by moving to the proper location
-		srcX = textD->left + (xOffset >= 0 ? 0 : -xOffset);
-		dstX = textD->left + (xOffset >= 0 ? xOffset : 0);
-		width = textD->width - abs(xOffset);
-		srcY = textD->top + (yOffset >= 0 ? 0 : -yOffset);
-		dstY = textD->top + (yOffset >= 0 ? yOffset : 0);
+		srcX = this->left + (xOffset >= 0 ? 0 : -xOffset);
+		dstX = this->left + (xOffset >= 0 ? xOffset : 0);
+		width = this->width - abs(xOffset);
+		srcY = this->top + (yOffset >= 0 ? 0 : -yOffset);
+		dstY = this->top + (yOffset >= 0 ? yOffset : 0);
 		height = exactHeight - abs(yOffset);
-		resetClipRectangles(textD);
-		textD->TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
-		XCopyArea(XtDisplay(textD->w), XtWindow(textD->w), XtWindow(textD->w), textD->gc, srcX, srcY, width, height, dstX, dstY);
+		resetClipRectangles(this);
+		this->TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
+		XCopyArea(XtDisplay(this->w), XtWindow(this->w), XtWindow(this->w), this->gc, srcX, srcY, width, height, dstX, dstY);
 		// redraw the un-recoverable parts
 		if (yOffset > 0) {
-			textD->TextDRedisplayRect(textD->left, textD->top, textD->width, yOffset);
+			this->TextDRedisplayRect(this->left, this->top, this->width, yOffset);
 		} else if (yOffset < 0) {
-			textD->TextDRedisplayRect(textD->left, textD->top + textD->height + yOffset, textD->width, -yOffset);
+			this->TextDRedisplayRect(this->left, this->top + this->height + yOffset, this->width, -yOffset);
 		}
 		if (xOffset > 0) {
-			textD->TextDRedisplayRect(textD->left, textD->top, xOffset, textD->height);
+			this->TextDRedisplayRect(this->left, this->top, xOffset, this->height);
 		} else if (xOffset < 0) {
-			textD->TextDRedisplayRect(textD->left + textD->width + xOffset, textD->top, -xOffset, textD->height);
+			this->TextDRedisplayRect(this->left + this->width + xOffset, this->top, -xOffset, this->height);
 		}
 		// Restore protruding parts of the cursor
-		textDRedisplayRange(textD, textD->cursorPos - 1, textD->cursorPos + 1);
+		textDRedisplayRange(this, this->cursorPos - 1, this->cursorPos + 1);
 	}
 
 	/* Refresh line number/calltip display if its up and we've scrolled
 	    vertically */
 	if (lineDelta != 0) {
-		redrawLineNumbers(textD, False);
-		TextDRedrawCalltip(textD, 0);
+		redrawLineNumbers(this, False);
+		TextDRedrawCalltip(this, 0);
 	}
 
-	HandleAllPendingGraphicsExposeNoExposeEvents(reinterpret_cast<TextWidget>(textD->w), nullptr);
+	HandleAllPendingGraphicsExposeNoExposeEvents(nullptr);
 }
 
 /*
@@ -2726,7 +2725,7 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (lineDelta == 0)
 		return;
-	setScroll(textD, newValue, textD->horizOffset, False, True);
+	textD->setScroll(newValue, textD->horizOffset, False, True);
 }
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
@@ -2736,7 +2735,7 @@ static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (newValue == textD->horizOffset)
 		return;
-	setScroll(textD, textD->topLineNum, newValue, False, False);
+	textD->setScroll(textD->topLineNum, newValue, False, False);
 }
 
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch) {
@@ -3665,7 +3664,7 @@ void TextDisplay::TextSetBuffer(TextBuffer *buffer) {
 void TextDisplay::TextSetCursorPos(int pos) {
 	TextDSetInsertPosition(pos);
 	this->checkAutoShowInsertPos();
-	callCursorMovementCBs(w, nullptr);
+	callCursorMovementCBs(nullptr);
 }
 
 /*
@@ -3824,7 +3823,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 		}
 	}
 	textD->checkAutoShowInsertPos();
-	callCursorMovementCBs(w, event);
+	callCursorMovementCBs(event);
 }
 
 
@@ -3921,7 +3920,7 @@ void TextDisplay::simpleInsertAtCursorEx(view::string_view chars, XEvent *event,
 	}
 
 	textD->checkAutoShowInsertPos();
-	callCursorMovementCBs(w, event);
+	callCursorMovementCBs(event);
 }
 
 
@@ -4174,7 +4173,7 @@ void TextDisplay::TextPasteClipboard(Time time) {
 		return;
 	TakeMotifDestination(w, time);
 	InsertClipboard(w, False);
-	callCursorMovementCBs(w, nullptr);
+	callCursorMovementCBs(nullptr);
 }
 
 void TextDisplay::TextColPasteClipboard(Time time) {
@@ -4183,7 +4182,7 @@ void TextDisplay::TextColPasteClipboard(Time time) {
 		return;
 	TakeMotifDestination(w, time);
 	InsertClipboard(w, True);
-	callCursorMovementCBs(w, nullptr);
+	callCursorMovementCBs(nullptr);
 }
 
 
@@ -4233,4 +4232,80 @@ void TextDisplay::checkAutoShowInsertPos() {
 
 	if (tw->text.autoShowInsertPos)
 		tw->text.textD->TextDMakeInsertPosVisible();
+}
+
+/*
+** Do operations triggered by cursor movement: Call cursor movement callback
+** procedure(s), and cancel marker indicating that the cursor is after one or
+** more just-entered emulated tabs (spaces to be deleted as a unit).
+*/
+void TextDisplay::callCursorMovementCBs(XEvent *event) {
+	reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor = 0;
+	XtCallCallbacks((Widget)w, textNcursorMovementCallback, (XtPointer)event);
+}
+
+void TextDisplay::HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event) {
+	XEvent foundEvent;
+	int left;
+	int top;
+	int width;
+	int height;
+	bool invalidRect = true;
+
+	if (event) {
+		adjustRectForGraphicsExposeOrNoExposeEvent(event, &invalidRect, &left, &top, &width, &height);
+	}
+	while (XCheckIfEvent(XtDisplay(w), &foundEvent, findGraphicsExposeOrNoExposeEvent, (XPointer)w)) {
+		adjustRectForGraphicsExposeOrNoExposeEvent(&foundEvent, &invalidRect, &left, &top, &width, &height);
+	}
+	if (!invalidRect) {
+		TextDRedisplayRect(left, top, width, height);
+	}
+}
+
+
+void TextDisplay::adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height) {
+	bool removeQueueEntry = false;
+
+	if (event->type == GraphicsExpose) {
+		XGraphicsExposeEvent *e = &event->xgraphicsexpose;
+		int x = e->x;
+		int y = e->y;
+
+		TextDImposeGraphicsExposeTranslation(&x, &y);
+		if (*first) {
+			*left   = x;
+			*top    = y;
+			*width  = e->width;
+			*height = e->height;
+
+			*first = false;
+		} else {
+			int prev_left = *left;
+			int prev_top = *top;
+
+			*left   = std::min<int>(*left, x);
+			*top    = std::min<int>(*top, y);
+			*width  = std::max<int>(prev_left + *width, x + e->width) - *left;
+			*height = std::max<int>(prev_top + *height, y + e->height) - *top;
+		}
+		if (e->count == 0) {
+			removeQueueEntry = true;
+		}
+	} else if (event->type == NoExpose) {
+		removeQueueEntry = true;
+	}
+
+	if (removeQueueEntry) {
+		this->TextDPopGraphicExposeQueueEntry();
+	}
+}
+
+
+Bool TextDisplay::findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg) {
+	if ((theDisplay == event->xany.display) && (event->type == GraphicsExpose || event->type == NoExpose) && ((Widget)arg == XtWindowToWidget(event->xany.display, event->xany.window))) {
+		return (True);
+	} else {
+		return (False);
+	}
 }

@@ -139,7 +139,5 @@ struct smartIndentCBStruct {
 /* User callable routines */
 
 XtActionsRec *TextGetActions(int *nActions);
-void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-void callCursorMovementCBs(Widget w, XEvent *event);
 
 #endif
