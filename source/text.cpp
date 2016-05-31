@@ -56,10 +56,6 @@
 #include <Xm/XmP.h>
 #include <Xm/PrimitiveP.h>
 
-#ifdef UNICOS
-#define XtOffset(p_type, field) ((size_t)__INTADDR_(&(((p_type)0)->field)))
-#endif
-
 /* Number of pixels of motion from the initial (grab-focus) button press
    required to begin recognizing a mouse drag for the purpose of making a
    selection */
