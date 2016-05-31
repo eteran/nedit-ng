@@ -4165,3 +4165,31 @@ void TextDisplay::handleShowPointer(Widget w, XtPointer unused, XEvent *event, B
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	textD->ShowHidePointer(false);
 }
+
+
+void TextDisplay::TextPasteClipboard(Time time) {
+	cancelDrag(w);
+	if (checkReadOnly(w))
+		return;
+	TakeMotifDestination(w, time);
+	InsertClipboard(w, False);
+	callCursorMovementCBs(w, nullptr);
+}
+
+void TextDisplay::TextColPasteClipboard(Time time) {
+	cancelDrag(w);
+	if (checkReadOnly(w))
+		return;
+	TakeMotifDestination(w, time);
+	InsertClipboard(w, True);
+	callCursorMovementCBs(w, nullptr);
+}
+
+
+/*
+** Set this widget to be the owner of selections made in it's attached
+** buffer (text buffers may be shared among several text widgets).
+*/
+void TextDisplay::TextHandleXSelections() {
+	HandleXSelections(w);
+}

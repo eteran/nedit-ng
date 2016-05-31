@@ -1024,34 +1024,6 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 }
 
 /*
-** Set this widget to be the owner of selections made in it's attached
-** buffer (text buffers may be shared among several text widgets).
-*/
-void TextHandleXSelections(Widget w) {
-	HandleXSelections(w);
-}
-
-void TextPasteClipboard(Widget w, Time time) {
-	cancelDrag(w);
-	if (checkReadOnly(w))
-		return;
-	TakeMotifDestination(w, time);
-	InsertClipboard(w, False);
-	callCursorMovementCBs(w, nullptr);
-}
-
-void TextColPasteClipboard(Widget w, Time time) {
-	cancelDrag(w);
-	if (checkReadOnly(w))
-		return;
-	TakeMotifDestination(w, time);
-	InsertClipboard(w, True);
-	callCursorMovementCBs(w, nullptr);
-}
-
-
-
-/*
 ** Return the (statically allocated) action table for menu item actions.
 **
 ** Warning: This routine can only be used before the first text widget is
@@ -1666,10 +1638,14 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void pasteClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+
+	auto tw = reinterpret_cast<TextWidget>(w);
+	TextDisplay *textD = tw->text.textD;
+
 	if (hasKey("rect", args, nArgs))
-		TextColPasteClipboard(w, event->xkey.time);
+		textD->TextColPasteClipboard(event->xkey.time);
 	else
-		TextPasteClipboard(w, event->xkey.time);
+		textD->TextPasteClipboard(event->xkey.time);
 }
 
 static void copyClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

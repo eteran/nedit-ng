@@ -161,6 +161,9 @@ public:
 	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
 	void ResetCursorBlink(bool startsBlanked);
 	void ShowHidePointer(bool hidePointer);
+	void TextPasteClipboard(Time time);
+	void TextColPasteClipboard(Time time);
+	void TextHandleXSelections();
 	
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
