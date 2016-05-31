@@ -1064,29 +1064,6 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 		return XtGeometryAlmost;
 }
 
-
-
-/*
-** Get the buffer associated with this text widget.  Note that attaching
-** additional modify callbacks to the buffer will prevent it from being
-** automatically freed when the widget is destroyed.
-*/
-TextBuffer *TextGetBuffer(Widget w) {
-	return reinterpret_cast<TextWidget>(w)->text.textD->buffer;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
 ** Set this widget to be the owner of selections made in it's attached
 ** buffer (text buffers may be shared among several text widgets).
@@ -1112,16 +1089,6 @@ void TextColPasteClipboard(Widget w, Time time) {
 	InsertClipboard(w, True);
 	callCursorMovementCBs(w, nullptr);
 }
-
-
-
-
-
-int TextVisibleWidth(Widget w) {
-	return (reinterpret_cast<TextWidget>(w)->text.textD->width);
-}
-
-
 
 /*
 ** Insert text "chars" at the cursor position, respecting pending delete

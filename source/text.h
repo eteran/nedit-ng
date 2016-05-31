@@ -139,8 +139,6 @@ struct smartIndentCBStruct {
 /* User callable routines */
 
 XtActionsRec *TextGetActions(int *nActions);
-int TextVisibleWidth(Widget w);
-TextBuffer *TextGetBuffer(Widget w);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
 void ResetCursorBlink(TextWidget textWidget, Boolean startsBlanked);
 void ShowHidePointer(TextWidget w, Boolean hidePointer);

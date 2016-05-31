@@ -722,7 +722,9 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	auto window  = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
-	TextBuffer *buf = TextGetBuffer(cmdData->textW);
+	auto textD   = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
+	
+	TextBuffer *buf = textD->TextGetBuffer();
 
 	// shouldn't happen, but it would be bad if it did 
 	if (!cmdData->textW)
@@ -732,9 +734,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	if (!outText.empty()) {
 		if (buf->BufSubstituteNullCharsEx(outText)) {
 			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
-			
-			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
-			
+
 			textD->TextSetCursorPos(cmdData->leftPos + outText.size());
 			cmdData->leftPos += outText.size();
 			cmdData->rightPos = cmdData->leftPos;
@@ -866,42 +866,43 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 			goto cmdDone;
 		}
 	}
+	
+	{
+		auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
 
-	/* If output is to a dialog, present the dialog.  Otherwise insert the
-	   (remaining) output in the text widget as requested, and move the
-	   insert point to the end */
-	if (cmdData->flags & OUTPUT_TO_DIALOG) {
-		removeTrailingNewlines(outText);
-		if (!outText.empty()) {
-			createOutputDialog(window->shell_, outText);
-		}
-	} else if (cmdData->flags & OUTPUT_TO_STRING) {
-		ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
-	} else {
-		buf = TextGetBuffer(cmdData->textW);
-		if (!buf->BufSubstituteNullCharsEx(outText)) {
-			fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
-			outText[0] = '\0';
-		}
-		if (cmdData->flags & REPLACE_SELECTION) {
-			reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
-			buf->BufReplaceSelectedEx(outText);
-			
-			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
-			textD->TextSetCursorPos(buf->cursorPosHint_);
-			if (reselectStart != -1)
-				buf->BufSelect(reselectStart, reselectStart + outText.size());
+		/* If output is to a dialog, present the dialog.  Otherwise insert the
+		   (remaining) output in the text widget as requested, and move the
+		   insert point to the end */
+		if (cmdData->flags & OUTPUT_TO_DIALOG) {
+			removeTrailingNewlines(outText);
+			if (!outText.empty()) {
+				createOutputDialog(window->shell_, outText);
+			}
+		} else if (cmdData->flags & OUTPUT_TO_STRING) {
+			ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
 		} else {
-			safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
-			
-			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
-			textD->TextSetCursorPos(cmdData->leftPos + outText.size());
-		}
-	}
+			buf = textD->TextGetBuffer();
+			if (!buf->BufSubstituteNullCharsEx(outText)) {
+				fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
+				outText[0] = '\0';
+			}
+			if (cmdData->flags & REPLACE_SELECTION) {
+				reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+				buf->BufReplaceSelectedEx(outText);
 
-	// If the command requires the file to be reloaded afterward, reload it 
-	if (cmdData->flags & RELOAD_FILE_AFTER)
-		RevertToSaved(window);
+				textD->TextSetCursorPos(buf->cursorPosHint_);
+				if (reselectStart != -1)
+					buf->BufSelect(reselectStart, reselectStart + outText.size());
+			} else {
+				safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
+				textD->TextSetCursorPos(cmdData->leftPos + outText.size());
+			}
+		}
+
+		// If the command requires the file to be reloaded afterward, reload it 
+		if (cmdData->flags & RELOAD_FILE_AFTER)
+			RevertToSaved(window);
+	}
 
 cmdDone:
 	delete cmdData;

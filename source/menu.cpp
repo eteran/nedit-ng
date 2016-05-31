@@ -2328,7 +2328,7 @@ static void unloadTipsFileMenuCB(Widget w, XtPointer clientData, XtPointer callD
 */
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	int openInTab = GetPrefOpenInTab();
@@ -2357,7 +2357,7 @@ static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 ** about them -- they can use new( "opposite" ) or new( "tab" ).
 */
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2367,7 +2367,7 @@ static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	CheckCloseDim();
 }
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2379,7 +2379,7 @@ static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2405,7 +2405,7 @@ static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2426,7 +2426,7 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2436,7 +2436,7 @@ static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2457,7 +2457,7 @@ static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2470,7 +2470,7 @@ static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2492,7 +2492,7 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: save_as action requires file argument\n");
@@ -2547,7 +2547,7 @@ static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2556,7 +2556,7 @@ static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2581,7 +2581,7 @@ static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2598,7 +2598,7 @@ static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2618,7 +2618,7 @@ static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: load_macro_file action requires file argument\n");
@@ -2629,7 +2629,7 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2665,7 +2665,7 @@ static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(w);
 
 	if (*nArgs == 0) {
@@ -2690,7 +2690,7 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2709,7 +2709,7 @@ static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	(void)w;
 
 	if (*nArgs == 0) {
@@ -2724,7 +2724,7 @@ static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(w);
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: unload_tips_file action requires file argument\n");
@@ -2746,7 +2746,7 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 }
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2754,7 +2754,7 @@ static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2762,7 +2762,7 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2831,7 +2831,7 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2844,7 +2844,7 @@ static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2857,7 +2857,7 @@ static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2870,7 +2870,7 @@ static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2881,7 +2881,7 @@ static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2894,7 +2894,7 @@ static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2907,7 +2907,7 @@ static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2920,7 +2920,7 @@ static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2933,7 +2933,7 @@ static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -2942,7 +2942,7 @@ static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0) {
 		fprintf(stderr, "nedit: find action requires search string argument\n");
@@ -2953,26 +2953,26 @@ static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	SearchAndSelectSame(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	SearchForSelected(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchType(0, args, nArgs), searchWrap(0, args, nArgs), event->xbutton.time);
 }
 
 static void startIncrFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	BeginISearch(Document::WidgetToWindow(w), searchDirection(0, args, nArgs));
 }
 
 static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	int i, continued = FALSE;
 	if (*nArgs == 0) {
@@ -2987,7 +2987,7 @@ static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -2998,7 +2998,7 @@ static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3012,7 +3012,7 @@ static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3027,7 +3027,7 @@ static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void replaceInSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3042,7 +3042,7 @@ static void replaceInSelAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3053,7 +3053,7 @@ static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3071,7 +3071,7 @@ static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3082,7 +3082,7 @@ static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	int lineNum;
 	int column;
@@ -3122,7 +3122,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -3130,7 +3130,7 @@ static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 }
 
 static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -3138,7 +3138,7 @@ static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -3146,7 +3146,7 @@ static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 }
 
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	int how;
 
@@ -3166,7 +3166,7 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((unsigned char)args[0][0])) {
 		fprintf(stderr, "nedit: mark action requires a single-letter label\n");
@@ -3177,7 +3177,7 @@ static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
 
@@ -3186,7 +3186,7 @@ static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((unsigned char)args[0][0])) {
 		fprintf(stderr, "nedit: goto_mark action requires a single-letter label\n");
@@ -3197,7 +3197,7 @@ static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	GotoMarkDialog(Document::WidgetToWindow(w), *nArgs != 0 && !strcmp(args[0], "extend"));
 }
@@ -3206,7 +3206,7 @@ static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	SelectToMatchingCharacter(Document::WidgetToWindow(w));
 }
@@ -3215,7 +3215,7 @@ static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	GotoMatchingCharacter(Document::WidgetToWindow(w));
 }
@@ -3224,7 +3224,7 @@ static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 	FindDefinition(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
 
@@ -3232,7 +3232,7 @@ static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	FindDefCalltip(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
@@ -3241,7 +3241,7 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3256,7 +3256,7 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3271,7 +3271,7 @@ static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardin
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3298,7 +3298,7 @@ static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3312,7 +3312,7 @@ static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document::WidgetToWindow(w)->MoveDocumentDialog();
 }
@@ -3321,7 +3321,7 @@ static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document::WidgetToWindow(w)->NextDocument();
 }
@@ -3330,7 +3330,7 @@ static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document::WidgetToWindow(w)->PreviousDocument();
 }
@@ -3339,7 +3339,7 @@ static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document::WidgetToWindow(w)->LastDocument();
 }
@@ -3348,7 +3348,7 @@ static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3361,7 +3361,7 @@ static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3374,7 +3374,7 @@ static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);
 	Q_UNUSED(nArgs)
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3572,16 +3572,21 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 
 	Q_UNUSED(nArgs)
 	Q_UNUSED(args);
-	(void)event;
-
-	TextBuffer *buf = TextGetBuffer(w);
-	int start, end, rectStart, rectEnd;
-	bool isRect;
-
-	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
-		return;
+	Q_UNUSED(event);
+	
 	
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+
+	TextBuffer *buf = textD->TextGetBuffer();
+	int start;
+	int end;
+	int rectStart;
+	int rectEnd;
+	bool isRect;
+
+	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+		return;
+	}
 	
 	if (!isRect) {
 		textD->TextSetCursorPos(start);
@@ -3594,17 +3599,20 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	Q_UNUSED(nArgs)
 	Q_UNUSED(args);
-	(void)event;
-
-	TextBuffer *buf = TextGetBuffer(w);
-	int start, end, rectStart, rectEnd;
-	bool isRect;
-
-	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd))
-		return;
+	Q_UNUSED(event);
 
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	
+	TextBuffer *buf = textD->TextGetBuffer();
+	int start;
+	int end;
+	int rectStart;
+	int rectEnd;
+	bool isRect;
+
+	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+		return;
+	}
+
 	if (!isRect) {
 		textD->TextSetCursorPos(end);
 	} else {
@@ -3613,7 +3621,7 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 }
 
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	int windowIndex;
@@ -3707,7 +3715,7 @@ static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Widget newFocusPane = nullptr;
@@ -3772,7 +3780,7 @@ static void ACTION_BOOL_PARAM_OR_TOGGLE(Boolean &newState, Cardinal numArgs, Str
 
 static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3786,7 +3794,7 @@ static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal 
 
 static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3800,7 +3808,7 @@ static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Ca
 
 static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3814,7 +3822,7 @@ static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal
 
 static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
@@ -3834,7 +3842,7 @@ static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
@@ -3854,7 +3862,7 @@ static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -3877,7 +3885,7 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3896,7 +3904,7 @@ static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args, Cardinal
 
 static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3911,7 +3919,7 @@ static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal 
 
 static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3925,7 +3933,7 @@ static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardin
 
 static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs > 0) {
@@ -3955,7 +3963,7 @@ static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3969,7 +3977,7 @@ static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args, Cardina
 
 static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -3986,7 +3994,7 @@ static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -4002,7 +4010,7 @@ static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -4020,7 +4028,7 @@ static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 
@@ -4041,7 +4049,7 @@ static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 	Boolean newState;
@@ -4053,7 +4061,7 @@ static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 	Document *window = Document::WidgetToWindow(w);
 	if (*nArgs >= 4) {
 		window->SetFonts(args[0], args[1], args[2], args[3]);
@@ -4064,7 +4072,7 @@ static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void setLanguageModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	(void)event;
+	Q_UNUSED(event);
 
 	Document *window = Document::WidgetToWindow(w);
 

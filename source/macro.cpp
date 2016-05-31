@@ -3821,8 +3821,9 @@ static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)nArgs;
 	(void)argList;
 
-	result->tag = INT_TAG;
-	result->val.n = TextVisibleWidth(window->lastFocus_);
+	auto textD    = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	result->tag   = INT_TAG;
+	result->val.n = textD->TextVisibleWidth();
 	return true;
 }
 

@@ -3726,3 +3726,19 @@ int TextDisplay::TextPosToXY(int pos, int *x, int *y) {
 int TextDisplay::TextPosToLineAndCol(int pos, int *lineNum, int *column) {
 	return TextDPosToLineAndCol(pos, lineNum, column);
 }
+
+
+
+int TextDisplay::TextVisibleWidth() {
+	return this->width;
+}
+
+
+/*
+** Get the buffer associated with this text widget.  Note that attaching
+** additional modify callbacks to the buffer will prevent it from being
+** automatically freed when the widget is destroyed.
+*/
+TextBuffer *TextDisplay::TextGetBuffer() {
+	return this->buffer;
+}
