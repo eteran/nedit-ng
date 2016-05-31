@@ -166,6 +166,7 @@ public:
 	void TextHandleXSelections();
 	bool checkReadOnly();
 	void cancelDrag();
+	void checkAutoShowInsertPos();
 	
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);

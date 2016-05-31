@@ -1100,7 +1100,7 @@ static void moveDestinationAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	// Move the cursor
 	textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -1531,7 +1531,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		buf->BufSelect(newPrimaryStart, newPrimaryEnd);
 		textD->TextDSetInsertPosition(newPrimaryEnd);
 	}
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 }
 
 static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1553,14 +1553,14 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		buf->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
 
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = textD->TextDGetInsertPosition();
 		buf->BufInsertEx(insertPos, textToCopy);
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
 
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 	} else if (rectangular) {
 		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &tw->text.btnDownCoord.x, &tw->text.btnDownCoord.y))
 			return; // shouldn't happen
@@ -1589,7 +1589,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
 
 		buf->BufRemoveSelected();
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = textD->TextDGetInsertPosition();
@@ -1597,7 +1597,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		textD->TextDSetInsertPosition(insertPos + textToCopy.size());
 
 		buf->BufRemoveSelected();
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 	} else if (rectangular) {
 		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.x, &reinterpret_cast<TextWidget>(w)->text.btnDownCoord.y))
 			return; // shouldn't happen
@@ -1908,7 +1908,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 	}
 
 	textD->TextDSetInsertPosition(insertPos - 1);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -1929,7 +1929,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 		return;
 	}
 	textD->buffer->BufRemove(insertPos, insertPos + 1);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -1963,7 +1963,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 
 	pos = startOfWord(reinterpret_cast<TextWidget>(w), pos);
 	textD->buffer->BufRemove(pos, insertPos);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -1997,7 +1997,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 
 	pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
 	textD->buffer->BufRemove(insertPos, pos);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2024,7 +2024,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 		return;
 	}
 	textD->buffer->BufRemove(insertPos, endOfLine);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2051,7 +2051,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 		return;
 	}
 	textD->buffer->BufRemove(startOfLine, insertPos);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2065,7 +2065,7 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 		ringIfNecessary(silent, w);
 	}
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2079,7 +2079,7 @@ static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal 
 		ringIfNecessary(silent, w);
 	}
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2119,7 +2119,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	textD->TextDSetInsertPosition(pos);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2142,7 +2142,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	textD->TextDSetInsertPosition(pos);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2171,7 +2171,7 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 	}
 	textD->TextDSetInsertPosition(std::min<int>(pos + 1, buf->BufGetLength()));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2203,7 +2203,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 	}
 	textD->TextDSetInsertPosition(parStart);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2229,7 +2229,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		ringIfNecessary(silent, w);
 	} else {
 		keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 	}
 }
@@ -2244,7 +2244,7 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
 		ringIfNecessary(silent, w);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2258,7 +2258,7 @@ static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
 		ringIfNecessary(silent, w);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2272,7 +2272,7 @@ static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
 		ringIfNecessary(silent, w);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2286,7 +2286,7 @@ static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
 		ringIfNecessary(silent, w);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2300,7 +2300,7 @@ static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *n
 	else
 		textD->TextDSetInsertPosition(textD->TextDStartOfLine(insertPos));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 	textD->cursorPreferredCol = 0;
 }
@@ -2315,7 +2315,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	else
 		textD->TextDSetInsertPosition(textD->TextDEndOfLine(insertPos, False));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 	textD->cursorPreferredCol = -1;
 }
@@ -2332,7 +2332,7 @@ static void beginningOfFileAP(Widget w, XEvent *event, String *args, Cardinal *n
 	} else {
 		reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(0);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 	}
 }
@@ -2351,7 +2351,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	} else {
 		textD->TextDSetInsertPosition(textD->buffer->BufGetLength());
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 	}
 }
@@ -2410,7 +2410,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			textD->TextDSetInsertPosition(pos);
 		}
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 		if (maintainColumn) {
 			textD->cursorPreferredCol = column;
@@ -2437,7 +2437,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		textD->TextDSetInsertPosition(pos);
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 		if (maintainColumn) {
 			textD->cursorPreferredCol = column;
@@ -2491,7 +2491,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 			textD->TextDSetInsertPosition(pos);
 		}
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 		if (maintainColumn) {
 			textD->cursorPreferredCol = column;
@@ -2516,7 +2516,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		textD->TextDSetInsertPosition(pos);
 		textD->TextDSetScroll(targetLine, textD->horizOffset);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 		if (maintainColumn) {
 			textD->cursorPreferredCol = column;
@@ -2554,7 +2554,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		textD->TextDSetInsertPosition(pos);
 		textD->TextDSetScroll(textD->topLineNum, std::max<int>(0, textD->horizOffset - textD->width));
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 	}
 }
@@ -2592,7 +2592,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		if (textD->horizOffset == oldHorizOffset && insertPos == pos)
 			ringIfNecessary(silent, w);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 	}
 }
@@ -2887,10 +2887,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	}
 }
 
-void checkAutoShowInsertPos(Widget w) {
-	if (reinterpret_cast<TextWidget>(w)->text.autoShowInsertPos)
-		reinterpret_cast<TextWidget>(w)->text.textD->TextDMakeInsertPosVisible();
-}
+
 
 /*
 ** Insert text "chars" at the cursor position, as if the text had been
@@ -2916,7 +2913,7 @@ static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *ev
 		textD->TextDInsertEx(chars);
 	}
 
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -2932,7 +2929,7 @@ static int deletePendingSelection(Widget w, XEvent *event) {
 	if (reinterpret_cast<TextWidget>(w)->text.textD->buffer->primary_.selected) {
 		buf->BufRemoveSelected();
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-		checkAutoShowInsertPos(w);
+		textD->checkAutoShowInsertPos();
 		callCursorMovementCBs(w, event);
 		return True;
 	} else
@@ -3015,7 +3012,7 @@ static int deleteEmulatedTab(Widget w, XEvent *event) {
 
 	/* The normal cursor movement stuff would usually be called by the action
 	   routine, but this wraps around it to restore emTabsBeforeCursor */
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 
 	/* Decrement and restore the marker for consecutive emulated tabs, which

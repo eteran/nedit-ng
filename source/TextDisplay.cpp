@@ -3633,7 +3633,7 @@ void TextDisplay::TextCutClipboard(Time time) {
 	CopyToClipboard(w, time);
 	this->buffer->BufRemoveSelected();
 	this->TextDSetInsertPosition(this->buffer->cursorPosHint_);
-	checkAutoShowInsertPos(w);
+	this->checkAutoShowInsertPos();
 }
 
 int TextDisplay::TextFirstVisibleLine() {
@@ -3664,7 +3664,7 @@ void TextDisplay::TextSetBuffer(TextBuffer *buffer) {
 */
 void TextDisplay::TextSetCursorPos(int pos) {
 	TextDSetInsertPosition(pos);
-	checkAutoShowInsertPos(w);
+	this->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, nullptr);
 }
 
@@ -3823,7 +3823,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 			textD->TextDSetInsertPosition(buf->cursorPosHint_);
 		}
 	}
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -3920,7 +3920,7 @@ void TextDisplay::simpleInsertAtCursorEx(view::string_view chars, XEvent *event,
 		textD->TextDInsertEx(chars);
 	}
 
-	checkAutoShowInsertPos(w);
+	textD->checkAutoShowInsertPos();
 	callCursorMovementCBs(w, event);
 }
 
@@ -4224,4 +4224,13 @@ void TextDisplay::cancelDrag() {
 		XUngrabPointer(XtDisplay(w), CurrentTime);
 	if (dragState != NOT_CLICKED)
 		reinterpret_cast<TextWidget>(w)->text.dragState = DRAG_CANCELED;
+}
+
+
+void TextDisplay::checkAutoShowInsertPos() {
+
+	auto tw = reinterpret_cast<TextWidget>(w);
+
+	if (tw->text.autoShowInsertPos)
+		tw->text.textD->TextDMakeInsertPosVisible();
 }
