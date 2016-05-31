@@ -111,44 +111,25 @@ enum positionTypes {
 }
 
 
-static void clearRect(TextDisplay *textD, GC gc, int x, int y, int width, int height);
-static void drawCursor(TextDisplay *textD, int x, int y);
-static int styleOfPos(TextDisplay *textD, int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
-static int stringWidth(const TextDisplay *textD, const char *string, const int length, const int style);
+static GC allocateGC(Widget w, unsigned long valueMask, unsigned long foreground, unsigned long background, Font font, unsigned long dynamicMask, unsigned long dontCareMask);
+static Pixel allocBGColor(Widget w, char *colorName, int *ok);
+static int countLinesEx(view::string_view string);
 static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIndex);
-static int xyToPos(TextDisplay *textD, int x, int y, int posType);
-static void xyToUnconstrainedPos(TextDisplay *textD, int x, int y, int *row, int *column, int posType);
-static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
+static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
+static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
+static void releaseGC(Widget w, GC gc);
 static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData);
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch);
-static void redrawLineNumbers(TextDisplay *textD, int clearAll);
-static void updateVScrollBarRange(TextDisplay *textD);
-static int updateHScrollBarRange(TextDisplay *textD);
-static int countLinesEx(view::string_view string);
-static int measureVisLine(TextDisplay *textD, int visLineNum);
-static int emptyLinesVisible(TextDisplay *textD);
-static void blankCursorProtrusions(TextDisplay *textD);
-static void allocateFixedFontGCs(TextDisplay *textD, XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
-static GC allocateGC(Widget w, unsigned long valueMask, unsigned long foreground, unsigned long background, Font font, unsigned long dynamicMask, unsigned long dontCareMask);
-static void releaseGC(Widget w, GC gc);
+static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData);
+
+
+
+
 static void resetClipRectangles(TextDisplay *textD);
-static int visLineLength(TextDisplay *textD, int visLineNum);
-static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted);
-static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
+static void updateVScrollBarRange(TextDisplay *textD);
 static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd);
-static void findLineEnd(TextDisplay *textD, int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
-static int wrapUsesCharacter(TextDisplay *textD, int lineEndPos);
-static void hideOrShowHScrollBar(TextDisplay *textD);
-static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd);
-static void extendRangeForStyleMods(TextDisplay *textD, int *start, int *end);
-static int getAbsTopLineNum(TextDisplay *textD);
-static void offsetAbsLineNum(TextDisplay *textD, int oldFirstChar);
-static int maintainingAbsTopLineNum(TextDisplay *textD);
-static void resetAbsLineNum(TextDisplay *textD);
-static int measurePropChar(const TextDisplay *textD, const char c, const int colNum, const int pos);
-static Pixel allocBGColor(Widget w, char *colorName, int *ok);
+
 
 TextDisplay::TextDisplay(Widget widget,
 						 Widget hScrollBar, 
@@ -218,7 +199,7 @@ TextDisplay::TextDisplay(Widget widget,
 	this->cursorFGPixel = cursorFGPixel;
 	this->wrapMargin = wrapMargin;
 	this->continuousWrap = continuousWrap;
-	allocateFixedFontGCs(this, fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
+	allocateFixedFontGCs(fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
 	this->styleGC = allocateGC(this->w, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
 	this->lineNumLeft = lineNumLeft;
 	this->lineNumWidth = lineNumWidth;
@@ -273,7 +254,7 @@ TextDisplay::TextDisplay(Widget widget,
 		bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
 
 	// Decide if the horizontal scroll bar needs to be visible
-	hideOrShowHScrollBar(this);
+	hideOrShowHScrollBar();
 }
 
 /*
@@ -370,7 +351,7 @@ void TextDisplay::TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, 
 	releaseGC(this->w, this->highlightGC);
 	releaseGC(this->w, this->highlightBGGC);
 	releaseGC(this->w, this->lineNumGC);
-	allocateFixedFontGCs(this, this->fontStruct, textBgP, textFgP, selectFgP, selectBgP, hiliteFgP, hiliteBgP, lineNoFgP);
+	allocateFixedFontGCs(this->fontStruct, textBgP, textFgP, selectFgP, selectBgP, hiliteFgP, hiliteBgP, lineNoFgP);
 
 	// Change the cursor GC (the cursor GC is not shared).
 	values.foreground = cursorFgP;
@@ -378,7 +359,7 @@ void TextDisplay::TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, 
 
 	// Redisplay
 	this->TextDRedisplayRect(this->left, this->top, this->width, this->height);
-	redrawLineNumbers(this, True);
+	redrawLineNumbers(true);
 }
 
 /*
@@ -394,7 +375,7 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	XFontStruct *styleFont;
 
 	// If font size changes, cursor will be redrawn in a new position
-	blankCursorProtrusions(this);
+	blankCursorProtrusions();
 
 	/* If there is a (syntax highlighting) style table in use, find the new
 	   maximum font height for this text display */
@@ -449,7 +430,7 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	releaseGC(this->w, this->highlightBGGC);
 	releaseGC(this->w, this->lineNumGC);
 
-	allocateFixedFontGCs(this, fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
+	allocateFixedFontGCs(fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
 	XSetFont(display, this->styleGC, fontStruct->fid);
 
 	// Do a full resize to force recalculation of font related parameters
@@ -462,13 +443,13 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	/* if the shell window doesn't get resized, and the new fonts are
 	   of smaller sizes, sometime we get some residual text on the
 	   blank space at the bottom part of text area. Clear it here. */
-	clearRect(this, this->gc, this->left, this->top + this->height - maxAscent - maxDescent, this->width, maxAscent + maxDescent);
+	clearRect(this->gc, this->left, this->top + this->height - maxAscent - maxDescent, this->width, maxAscent + maxDescent);
 
 	// Redisplay
 	this->TextDRedisplayRect(this->left, this->top, this->width, this->height);
 
 	// Clean up line number area in case spacing has changed
-	redrawLineNumbers(this, True);
+	redrawLineNumbers(true);
 }
 
 int TextDisplay::TextDMinFontWidth(Boolean considerStyles) {
@@ -524,7 +505,7 @@ void TextDisplay::TextDResize(int width, int height) {
 		this->firstChar = this->TextDStartOfLine(this->firstChar);
 		this->topLineNum = this->TextDCountLines(0, this->firstChar, True) + 1;
 		redrawAll = true;
-		offsetAbsLineNum(this, oldFirstChar);
+		offsetAbsLineNum(oldFirstChar);
 	}
 
 	/* reallocate and update the line starts array, which may have changed
@@ -553,7 +534,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	   bar parameters.  If updating the horizontal range caused scrolling,
 	   redraw */
 	updateVScrollBarRange(this);
-	if (updateHScrollBarRange(this))
+	if (updateHScrollBarRange())
 		redrawAll = true;
 
 	// If a full redraw is needed
@@ -561,11 +542,11 @@ void TextDisplay::TextDResize(int width, int height) {
 		this->TextDRedisplayRect(this->left, this->top, this->width, this->height);
 
 	// Decide if the horizontal scroll bar needs to be visible
-	hideOrShowHScrollBar(this);
+	hideOrShowHScrollBar();
 
 	/* Refresh the line number display to draw more line numbers, or
 	   erase extras */
-	redrawLineNumbers(this, True);
+	redrawLineNumbers(true);
 
 	// Redraw the calltip
 	TextDRedrawCalltip(this, 0);
@@ -593,7 +574,7 @@ void TextDisplay::TextDRedisplayRect(int left, int top, int width, int height) {
 
 	// draw the line numbers if exposed area includes them
 	if (this->lineNumWidth != 0 && left <= this->lineNumLeft + this->lineNumWidth)
-		redrawLineNumbers(this, False);
+		redrawLineNumbers(false);
 }
 
 /*
@@ -607,7 +588,7 @@ void TextDisplay::textDRedisplayRange(int start, int end) {
 	int i, startLine, lastLine, startIndex, endIndex;
 
 	// If the range is outside of the displayed text, just return
-	if (end < this->firstChar || (start > this->lastChar && !emptyLinesVisible(this)))
+	if (end < this->firstChar || (start > this->lastChar && !emptyLinesVisible()))
 		return;
 
 	// Clean up the starting and ending values
@@ -734,7 +715,7 @@ void TextDisplay::TextDBlankCursor() {
 	if (!this->cursorOn)
 		return;
 
-	blankCursorProtrusions(this);
+	blankCursorProtrusions();
 	this->cursorOn = false;
 	textDRedisplayRange(this->cursorPos - 1, this->cursorPos + 1);
 }
@@ -748,7 +729,7 @@ void TextDisplay::TextDUnblankCursor() {
 
 void TextDisplay::TextDSetCursorStyle(int style) {
 	this->cursorStyle = style;
-	blankCursorProtrusions(this);
+	blankCursorProtrusions();
 	if (this->cursorOn) {
 		textDRedisplayRange(this->cursorPos - 1, this->cursorPos + 1);
 	}
@@ -766,7 +747,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	   change the line number */
 	this->firstChar = this->TextDStartOfLine(this->firstChar);
 	this->topLineNum = this->TextDCountLines(0, this->firstChar, True) + 1;
-	resetAbsLineNum(this);
+	resetAbsLineNum();
 
 	// update the line starts array
 	calcLineStarts(0, this->nVisibleLines);
@@ -775,10 +756,10 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters) */
 	updateVScrollBarRange(this);
-	updateHScrollBarRange(this);
+	updateHScrollBarRange();
 
 	// Decide if the horizontal scroll bar needs to be visible
-	hideOrShowHScrollBar(this);
+	hideOrShowHScrollBar();
 
 	// Do a full redraw
 	this->TextDRedisplayRect(0, this->top, this->width + this->left, this->height);
@@ -861,14 +842,14 @@ void TextDisplay::TextDOverstrikeEx(view::string_view text) {
 ** Translate window coordinates to the nearest text cursor position.
 */
 int TextDisplay::TextDXYToPosition(Point coord) {
-	return xyToPos(this, coord.x, coord.y, CURSOR_POS);
+	return xyToPos(coord.x, coord.y, CURSOR_POS);
 }
 
 /*
 ** Translate window coordinates to the nearest character cell.
 */
 int TextDisplay::TextDXYToCharPos(Point coord) {
-	return xyToPos(this, coord.x, coord.y, CHARACTER_POS);
+	return xyToPos(coord.x, coord.y, CHARACTER_POS);
 }
 
 /*
@@ -877,7 +858,7 @@ int TextDisplay::TextDXYToCharPos(Point coord) {
 ** is proportional, since there are no absolute columns.
 */
 void TextDisplay::TextDXYToUnconstrainedPosition(Point coord, int *row, int *column) {
-	xyToUnconstrainedPos(this, coord.x, coord.y, row, column, CURSOR_POS);
+	xyToUnconstrainedPos(coord.x, coord.y, row, column, CURSOR_POS);
 }
 
 /*
@@ -950,7 +931,7 @@ int TextDisplay::TextDPositionToXY(int pos, int *x, int *y) {
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
 	// If position is not displayed, return false
-	if (pos < this->firstChar || (pos > this->lastChar && !emptyLinesVisible(this)))
+	if (pos < this->firstChar || (pos > this->lastChar && !emptyLinesVisible()))
 		return false;
 
 	// Calculate y coordinate
@@ -967,7 +948,7 @@ int TextDisplay::TextDPositionToXY(int pos, int *x, int *y) {
 		*x = this->left - this->horizOffset;
 		return true;
 	}
-	lineLen = visLineLength(this, visLineNum);
+	lineLen = visLineLength(visLineNum);
 	std::string lineStr = this->buffer->BufGetRangeEx(lineStartPos, lineStartPos + lineLen);
 
 	/* Step through character positions from the beginning of the line
@@ -976,8 +957,8 @@ int TextDisplay::TextDPositionToXY(int pos, int *x, int *y) {
 	outIndex = 0;
 	for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
 		charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
-		charStyle = styleOfPos(this, lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
-		xStep += stringWidth(this, expandedChar, charLen, charStyle);
+		charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
+		xStep += stringWidth(expandedChar, charLen, charStyle);
 		outIndex += charLen;
 	}
 	*x = xStep;
@@ -999,7 +980,7 @@ int TextDisplay::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 	   maintained separately, as needed.  Only return it if we're actually
 	   keeping track of it and pos is in the displayed text */
 	if (this->continuousWrap) {
-		if (!maintainingAbsTopLineNum(this) || pos < this->firstChar || pos > this->lastChar)
+		if (!maintainingAbsTopLineNum() || pos < this->firstChar || pos > this->lastChar)
 			return false;
 		*lineNum = this->absTopLineNum + buf->BufCountLines(this->firstChar, pos);
 		*column = buf->BufCountDispChars(buf->BufStartOfLine(pos), pos);
@@ -1020,10 +1001,10 @@ int TextDisplay::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 int TextDisplay::TextDInSelection(Point p) {
 	int row;
 	int column;
-	int pos = xyToPos(this, p.x, p.y, CHARACTER_POS);
+	int pos = xyToPos(p.x, p.y, CHARACTER_POS);
 	TextBuffer *buf = this->buffer;
 
-	xyToUnconstrainedPos(this, p.x, p.y, &row, &column, CHARACTER_POS);
+	xyToUnconstrainedPos(p.x, p.y, &row, &column, CHARACTER_POS);
 	if (rangeTouchesRectSel(&buf->primary_, this->firstChar, this->lastChar))
 		column = this->TextDOffsetWrappedColumn(row, column);
 	return inSelection(&buf->primary_, pos, buf->BufStartOfLine(pos), column);
@@ -1088,10 +1069,10 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	if (cursorPos < this->firstChar) {
 		topLine -= this->TextDCountLines(cursorPos, this->firstChar, False);
 		// linesFromTop = 0;
-	} else if (cursorPos > this->lastChar && !emptyLinesVisible(this)) {
-		topLine += this->TextDCountLines(this->lastChar - (wrapUsesCharacter(this, this->lastChar) ? 0 : 1), cursorPos, False);
+	} else if (cursorPos > this->lastChar && !emptyLinesVisible()) {
+		topLine += this->TextDCountLines(this->lastChar - (wrapUsesCharacter(this->lastChar) ? 0 : 1), cursorPos, False);
 		linesFromTop = this->nVisibleLines - 1;
-	} else if (cursorPos == this->lastChar && !emptyLinesVisible(this) && !wrapUsesCharacter(this, this->lastChar)) {
+	} else if (cursorPos == this->lastChar && !emptyLinesVisible() && !wrapUsesCharacter(this->lastChar)) {
 		topLine++;
 		linesFromTop = this->nVisibleLines - 1;
 	} else {
@@ -1390,7 +1371,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 		   kind of calculations in advance, even if the font width is "fixed",
 		   because when the width of the tab characters changes, the layout
 		   of the text may be completely different. */
-		measureDeletedLines(textD, pos, nDeleted);
+		textD->measureDeletedLines(pos, nDeleted);
 	else
 		textD->suppressResync = 0; // Probably not needed, but just in case
 }
@@ -1413,7 +1394,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
 	if (textD->continuousWrap) {
-		findWrapRangeEx(textD, deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
+		textD->findWrapRangeEx(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = nInserted == 0 ? 0 : buf->BufCountLines(pos, pos + nInserted);
 		linesDeleted = nDeleted == 0 ? 0 : countLinesEx(deletedText);
@@ -1431,11 +1412,11 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 
 	/* If we're counting non-wrapped lines as well, maintain the absolute
 	   (non-wrapped) line number of the text displayed */
-	if (maintainingAbsTopLineNum(textD) && (nInserted != 0 || nDeleted != 0)) {
+	if (textD->maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
 		if (pos + nDeleted < oldFirstChar)
 			textD->absTopLineNum += buf->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText);
 		else if (pos < oldFirstChar)
-			resetAbsLineNum(textD);
+			textD->resetAbsLineNum();
 	}
 
 	// Update the line count for the whole buffer
@@ -1448,7 +1429,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   allowed to re-adjust horizOffset if there is blank space to the right
 	   of all lines of text. */
 	updateVScrollBarRange(textD);
-	scrolled |= updateHScrollBarRange(textD);
+	scrolled |= textD->updateHScrollBarRange();
 
 	// Update the cursor position
 	if (textD->cursorToHint != NO_HINT) {
@@ -1463,7 +1444,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
-		blankCursorProtrusions(textD);
+		textD->blankCursorProtrusions();
 		textD->TextDRedisplayRect(0, textD->top, textD->width + textD->left, textD->height);
 		if (textD->styleBuffer) { // See comments in extendRangeForStyleMods
 			textD->styleBuffer->primary_.selected = false;
@@ -1486,7 +1467,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 		else {
 			endDispPos = textD->continuousWrap ? wrapModEnd : buf->BufEndOfLine(pos + nInserted) + 1;
 			if (origCursorPos >= startDispPos && (origCursorPos <= endDispPos || endDispPos == buf->BufGetLength()))
-				blankCursorProtrusions(textD);
+				textD->blankCursorProtrusions();
 		}
 		/* If more than one line is inserted/deleted, a line break may have
 		   been inserted or removed in between, and the line numbers may
@@ -1494,20 +1475,21 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 		   be affected (the insertion or removal of a line break always
 		   results in at least two lines being redrawn). */
 		if (linesInserted > 1)
-			redrawLineNumbers(textD, False);
+			textD->redrawLineNumbers(false);
 	} else { // linesInserted != linesDeleted
 		endDispPos = textD->lastChar + 1;
 		if (origCursorPos >= pos)
-			blankCursorProtrusions(textD);
-		redrawLineNumbers(textD, False);
+			textD->blankCursorProtrusions();
+		textD->redrawLineNumbers(false);
 	}
 
 	/* If there is a style buffer, check if the modification caused additional
 	   changes that need to be redisplayed.  (Redisplaying separately would
 	   cause double-redraw on almost every modification involving styled
 	   text).  Extend the redraw range to incorporate style changes */
-	if (textD->styleBuffer)
-		extendRangeForStyleMods(textD, &startDispPos, &endDispPos);
+	if (textD->styleBuffer) {
+		textD->extendRangeForStyleMods(&startDispPos, &endDispPos);
+	}
 
 	// Redisplay computed range
 	textD->textDRedisplayRange(startDispPos, endDispPos);
@@ -1525,30 +1507,30 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 */
 void TextDisplay::TextDMaintainAbsLineNum(int state) {
 	this->needAbsTopLineNum = state;
-	resetAbsLineNum(this);
+	resetAbsLineNum();
 }
 
 /*
 ** Returns the absolute (non-wrapped) line number of the first line displayed.
 ** Returns 0 if the absolute top line number is not being maintained.
 */
-static int getAbsTopLineNum(TextDisplay *textD) {
-	if (!textD->continuousWrap)
-		return textD->topLineNum;
-	if (maintainingAbsTopLineNum(textD))
-		return textD->absTopLineNum;
+int TextDisplay::getAbsTopLineNum() {
+	if (!this->continuousWrap)
+		return this->topLineNum;
+	if (maintainingAbsTopLineNum())
+		return this->absTopLineNum;
 	return 0;
 }
 
 /*
 ** Re-calculate absolute top line number for a change in scroll position.
 */
-static void offsetAbsLineNum(TextDisplay *textD, int oldFirstChar) {
-	if (maintainingAbsTopLineNum(textD)) {
-		if (textD->firstChar < oldFirstChar)
-			textD->absTopLineNum -= textD->buffer->BufCountLines(textD->firstChar, oldFirstChar);
+void TextDisplay::offsetAbsLineNum(int oldFirstChar) {
+	if (this->maintainingAbsTopLineNum()) {
+		if (this->firstChar < oldFirstChar)
+			this->absTopLineNum -= this->buffer->BufCountLines(this->firstChar, oldFirstChar);
 		else
-			textD->absTopLineNum += textD->buffer->BufCountLines(oldFirstChar, textD->firstChar);
+			this->absTopLineNum += this->buffer->BufCountLines(oldFirstChar, this->firstChar);
 	}
 }
 
@@ -1556,8 +1538,8 @@ static void offsetAbsLineNum(TextDisplay *textD, int oldFirstChar) {
 ** Return true if a separate absolute top line number is being maintained
 ** (for displaying line numbers or showing in the statistics line).
 */
-static int maintainingAbsTopLineNum(TextDisplay *textD) {
-	return textD->continuousWrap && (textD->lineNumWidth != 0 || textD->needAbsTopLineNum);
+int TextDisplay::maintainingAbsTopLineNum() {
+	return this->continuousWrap && (this->lineNumWidth != 0 || this->needAbsTopLineNum);
 }
 
 /*
@@ -1565,9 +1547,9 @@ static int maintainingAbsTopLineNum(TextDisplay *textD) {
 ** absolute (non-wrapped) top line number.  If mode is not continuous wrap,
 ** or the number is not being maintained, does nothing.
 */
-static void resetAbsLineNum(TextDisplay *textD) {
-	textD->absTopLineNum = 1;
-	offsetAbsLineNum(textD, 0);
+void TextDisplay::resetAbsLineNum() {
+	this->absTopLineNum = 1;
+	offsetAbsLineNum(0);
 }
 
 /*
@@ -1580,7 +1562,7 @@ int TextDisplay::posToVisibleLineNum(int pos, int *lineNum) {
 	if (pos < this->firstChar)
 		return false;
 	if (pos > this->lastChar) {
-		if (emptyLinesVisible(this)) {
+		if (emptyLinesVisible()) {
 			if (this->lastChar < this->buffer->BufGetLength()) {
 				if (!posToVisibleLineNum(this->lastChar, lineNum)) {
 					fprintf(stderr, "nedit: Consistency check ptvl failed\n");
@@ -1646,7 +1628,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	if (lineStartPos == -1) {
 		lineLen = 0;
 	} else {
-		lineLen = visLineLength(this, visLineNum);
+		lineLen = visLineLength(visLineNum);
 		lineStr = buf->BufGetRangeEx(lineStartPos, lineStartPos + lineLen);
 	}
 
@@ -1682,8 +1664,8 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	for (charIndex = 0;; charIndex++) {
 		baseChar = '\0';
 		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buf->tabDist_, buf->nullSubsChar_);
-		style = styleOfPos(this, lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
-		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(this, expandedChar, charLen, style);
+		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
+		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
 
 		if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
 			startIndex = charIndex;
@@ -1708,7 +1690,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 				hasCursor = true;
 				cursorX = x - 1;
 			} else if (charIndex == lineLen) {
-				if (wrapUsesCharacter(this, cursorPos)) {
+				if (wrapUsesCharacter(cursorPos)) {
 					hasCursor = true;
 					cursorX = x - 1;
 				}
@@ -1717,10 +1699,10 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 
 		baseChar = '\0';
 		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buf->tabDist_, buf->nullSubsChar_);
-		charStyle = styleOfPos(this, lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
+		charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		for (i = 0; i < charLen; i++) {
 			if (i != 0 && charIndex < lineLen && lineStr[charIndex] == '\t') {
-				charStyle = styleOfPos(this, lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, '\t');
+				charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, '\t');
 			}
 
 			if (charStyle != style) {
@@ -1732,7 +1714,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 
 			if (charIndex < lineLen) {
 				*outPtr = expandedChar[i];
-				charWidth = stringWidth(this, &expandedChar[i], 1, charStyle);
+				charWidth = stringWidth(&expandedChar[i], 1, charStyle);
 			} else {
 				charWidth = stdCharWidth;
 			}
@@ -1757,17 +1739,17 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	y_orig = this->cursorY;
 	if (this->cursorOn) {
 		if (hasCursor) {
-			drawCursor(this, cursorX, y);
+			drawCursor(cursorX, y);
 		} else if (charIndex < lineLen && (lineStartPos + charIndex + 1 == cursorPos) && x == rightClip) {
 			if (cursorPos >= buf->BufGetLength()) {
-				drawCursor(this, x - 1, y);
+				drawCursor(x - 1, y);
 			} else {
-				if (wrapUsesCharacter(this, cursorPos)) {
-					drawCursor(this, x - 1, y);
+				if (wrapUsesCharacter(cursorPos)) {
+					drawCursor(x - 1, y);
 				}
 			}
 		} else if ((lineStartPos + rightCharIndex) == cursorPos) {
-			drawCursor(this, x - 1, y);
+			drawCursor(x - 1, y);
 		}
 	}
 
@@ -1785,12 +1767,14 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 ** the maximum y extent of the current font(s).
 */
 void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int nChars) {
-	GC gc, bgGC;
+
+	GC gc;
+	GC bgGC;
 	XGCValues gcValues;
-	XFontStruct *fs = this->fontStruct;
-	Pixel bground = this->bgPixel;
-	Pixel fground = this->fgPixel;
-	int underlineStyle = FALSE;
+	XFontStruct *fs     = this->fontStruct;
+	Pixel bground       = this->bgPixel;
+	Pixel fground       = this->fgPixel;
+	bool underlineStyle = false;
 
 	// Don't draw if widget isn't realized
 	if (XtWindow(this->w) == 0)
@@ -1856,7 +1840,7 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	if (style & FILL_MASK) {
 		// wipes out to right hand edge of widget
 		if (toX >= this->left) {
-			clearRect(this, bgGC, std::max<int>(x, this->left), y, toX - std::max<int>(x, this->left), this->ascent + this->descent);
+			clearRect(bgGC, std::max<int>(x, this->left), y, toX - std::max<int>(x, this->left), this->ascent + this->descent);
 		}
 		return;
 	}
@@ -1865,9 +1849,9 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	   different sized fonts for highlighting), fill in above or below
 	   to erase previously drawn characters */
 	if (fs->ascent < this->ascent)
-		clearRect(this, bgGC, x, y, toX - x, this->ascent - fs->ascent);
+		clearRect(bgGC, x, y, toX - x, this->ascent - fs->ascent);
 	if (fs->descent < this->descent)
-		clearRect(this, bgGC, x, y + this->ascent + fs->descent, toX - x, this->descent - fs->descent);
+		clearRect(bgGC, x, y + this->ascent + fs->descent, toX - x, this->descent - fs->descent);
 
 	// set up gc for writing text (set foreground properly)
 	if (bgGC == this->styleGC) {
@@ -1891,29 +1875,30 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 /*
 ** Clear a rectangle with the appropriate background color for "style"
 */
-static void clearRect(TextDisplay *textD, GC gc, int x, int y, int width, int height) {
+void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
+
 	// A width of zero means "clear to end of window" to XClearArea
-	if (width == 0 || XtWindow(textD->w) == 0)
+	if (width == 0 || XtWindow(this->w) == 0)
 		return;
 
-	if (gc == textD->gc) {
-		XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, y, width, height, False);
+	if (gc == this->gc) {
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), x, y, width, height, False);
 	} else {
-		XFillRectangle(XtDisplay(textD->w), XtWindow(textD->w), gc, x, y, width, height);
+		XFillRectangle(XtDisplay(this->w), XtWindow(this->w), gc, x, y, width, height);
 	}
 }
 
 /*
 ** Draw a cursor with top center at x, y.
 */
-static void drawCursor(TextDisplay *textD, int x, int y) {
+void TextDisplay::drawCursor(int x, int y) {
 	XSegment segs[5];
 	int left, right, cursorWidth, midY;
-	int fontWidth = textD->fontStruct->min_bounds.width, nSegs = 0;
-	int fontHeight = textD->ascent + textD->descent;
+	int fontWidth = this->fontStruct->min_bounds.width, nSegs = 0;
+	int fontHeight = this->ascent + this->descent;
 	int bot = y + fontHeight - 1;
 
-	if (XtWindow(textD->w) == 0 || x < textD->left - 1 || x > textD->left + textD->width)
+	if (XtWindow(this->w) == 0 || x < this->left - 1 || x > this->left + this->width)
 		return;
 
 	/* For cursors other than the block, make them around 2/3 of a character
@@ -1924,7 +1909,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 	right = left + cursorWidth;
 
 	// Create segments and draw cursor
-	if (textD->cursorStyle == CARET_CURSOR) {
+	if (this->cursorStyle == CARET_CURSOR) {
 		midY = bot - fontHeight / 5;
 		segs[0].x1 = left;
 		segs[0].y1 = bot;
@@ -1943,7 +1928,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 		segs[3].x2 = right;
 		segs[3].y2 = bot;
 		nSegs = 4;
-	} else if (textD->cursorStyle == NORMAL_CURSOR) {
+	} else if (this->cursorStyle == NORMAL_CURSOR) {
 		segs[0].x1 = left;
 		segs[0].y1 = y;
 		segs[0].x2 = right;
@@ -1957,7 +1942,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 		segs[2].x2 = right;
 		segs[2].y2 = bot;
 		nSegs = 3;
-	} else if (textD->cursorStyle == HEAVY_CURSOR) {
+	} else if (this->cursorStyle == HEAVY_CURSOR) {
 		segs[0].x1 = x - 1;
 		segs[0].y1 = y;
 		segs[0].x2 = x - 1;
@@ -1979,7 +1964,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 		segs[4].x2 = right;
 		segs[4].y2 = bot;
 		nSegs = 5;
-	} else if (textD->cursorStyle == DIM_CURSOR) {
+	} else if (this->cursorStyle == DIM_CURSOR) {
 		midY = y + fontHeight / 2;
 		segs[0].x1 = x;
 		segs[0].y1 = y;
@@ -1994,7 +1979,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 		segs[2].x2 = x;
 		segs[2].y2 = bot;
 		nSegs = 3;
-	} else if (textD->cursorStyle == BLOCK_CURSOR) {
+	} else if (this->cursorStyle == BLOCK_CURSOR) {
 		right = x + fontWidth;
 		segs[0].x1 = x;
 		segs[0].y1 = y;
@@ -2014,11 +1999,11 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 		segs[3].y2 = y;
 		nSegs = 4;
 	}
-	XDrawSegments(XtDisplay(textD->w), XtWindow(textD->w), textD->cursorFGGC, segs, nSegs);
+	XDrawSegments(XtDisplay(this->w), XtWindow(this->w), this->cursorFGGC, segs, nSegs);
 
 	// Save the last position drawn
-	textD->cursorX = x;
-	textD->cursorY = y;
+	this->cursorX = x;
+	this->cursorY = y;
 }
 
 /*
@@ -2028,7 +2013,7 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 ** the number of displayed characters past the beginning of the line.  Passing
 ** lineStartPos of -1 returns the drawing style for "no text".
 **
-** Why not just: styleOfPos(textD, pos)?  Because style applies to blank areas
+** Why not just: textD->styleOfPos(pos)?  Because style applies to blank areas
 ** of the window beyond the text boundaries, and because this routine must also
 ** decide whether a position is inside of a rectangular selection, and do so
 ** efficiently, without re-counting character positions from the start of the
@@ -2037,9 +2022,9 @@ static void drawCursor(TextDisplay *textD, int x, int y) {
 ** Note that style is a somewhat incorrect name, drawing method would
 ** be more appropriate.
 */
-static int styleOfPos(TextDisplay *textD, int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
-	TextBuffer *buf = textD->buffer;
-	TextBuffer *styleBuf = textD->styleBuffer;
+int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
+	TextBuffer *buf = this->buffer;
+	TextBuffer *styleBuf = this->styleBuffer;
 	int pos, style = 0;
 
 	if (lineStartPos == -1 || buf == nullptr)
@@ -2051,9 +2036,9 @@ static int styleOfPos(TextDisplay *textD, int lineStartPos, int lineLen, int lin
 		style = FILL_MASK;
 	else if (styleBuf) {
 		style = (unsigned char)styleBuf->BufGetCharacter(pos);
-		if (style == textD->unfinishedStyle) {
+		if (style == this->unfinishedStyle) {
 			// encountered "unfinished" style, trigger parsing
-			(textD->unfinishedHighlightCB)(textD, pos, textD->highlightCBArg);
+			(this->unfinishedHighlightCB)(this, pos, this->highlightCBArg);
 			style = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 	}
@@ -2070,8 +2055,8 @@ static int styleOfPos(TextDisplay *textD, int lineStartPos, int lineLen, int lin
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
-	if (textD->bgClass) {
-		style |= (textD->bgClass[(unsigned char)thisChar] << BACKLIGHT_SHIFT);
+	if (this->bgClass) {
+		style |= (this->bgClass[(unsigned char)thisChar] << BACKLIGHT_SHIFT);
 	}
 	return style;
 }
@@ -2079,13 +2064,13 @@ static int styleOfPos(TextDisplay *textD, int lineStartPos, int lineLen, int lin
 /*
 ** Find the width of a string in the font of a particular style
 */
-static int stringWidth(const TextDisplay *textD, const char *string, const int length, const int style) {
+int TextDisplay::stringWidth(const char *string, const int length, const int style) const {
 	XFontStruct *fs;
 
 	if (style & STYLE_LOOKUP_MASK)
-		fs = textD->styleTable[(style & STYLE_LOOKUP_MASK) - ASCII_A].font;
+		fs = this->styleTable[(style & STYLE_LOOKUP_MASK) - ASCII_A].font;
 	else
-		fs = textD->fontStruct;
+		fs = this->fontStruct;
 	return XTextWidth(fs, (char *)string, (int)length);
 }
 
@@ -2104,38 +2089,38 @@ static int inSelection(TextSelection *sel, int pos, int lineStartPos, int dispIn
 ** position, and CHARACTER_POS means return the position of the character
 ** closest to (x, y).
 */
-static int xyToPos(TextDisplay *textD, int x, int y, int posType) {
+int TextDisplay::xyToPos(int x, int y, int posType) {
 	int charIndex, lineStart, lineLen, fontHeight;
 	int charWidth, charLen, charStyle, visLineNum, xStep, outIndex;
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
 	// Find the visible line number corresponding to the y coordinate
-	fontHeight = textD->ascent + textD->descent;
-	visLineNum = (y - textD->top) / fontHeight;
+	fontHeight = this->ascent + this->descent;
+	visLineNum = (y - this->top) / fontHeight;
 	if (visLineNum < 0)
-		return textD->firstChar;
-	if (visLineNum >= textD->nVisibleLines)
-		visLineNum = textD->nVisibleLines - 1;
+		return this->firstChar;
+	if (visLineNum >= this->nVisibleLines)
+		visLineNum = this->nVisibleLines - 1;
 
 	// Find the position at the start of the line
-	lineStart = textD->lineStarts[visLineNum];
+	lineStart = this->lineStarts[visLineNum];
 
 	// If the line start was empty, return the last position in the buffer
 	if (lineStart == -1)
-		return textD->buffer->BufGetLength();
+		return this->buffer->BufGetLength();
 
 	// Get the line text and its length
-	lineLen = visLineLength(textD, visLineNum);
-	std::string lineStr = textD->buffer->BufGetRangeEx(lineStart, lineStart + lineLen);
+	lineLen = visLineLength(visLineNum);
+	std::string lineStr = this->buffer->BufGetRangeEx(lineStart, lineStart + lineLen);
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-	xStep = textD->left - textD->horizOffset;
+	xStep = this->left - this->horizOffset;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < lineLen; charIndex++) {
-		charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, textD->buffer->tabDist_, textD->buffer->nullSubsChar_);
-		charStyle = styleOfPos(textD, lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
-		charWidth = stringWidth(textD, expandedChar, charLen, charStyle);
+		charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
+		charStyle = this->styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
+		charWidth = this->stringWidth(expandedChar, charLen, charStyle);
 		if (x < xStep + (posType == CURSOR_POS ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
 		}
@@ -2156,17 +2141,17 @@ static int xyToPos(TextDisplay *textD, int x, int y, int posType) {
 ** coordinates to the nearest position between characters, and CHARACTER_POS
 ** means translate the position to the nearest character cell.
 */
-static void xyToUnconstrainedPos(TextDisplay *textD, int x, int y, int *row, int *column, int posType) {
-	int fontHeight = textD->ascent + textD->descent;
-	int fontWidth = textD->fontStruct->max_bounds.width;
+void TextDisplay::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) {
+	int fontHeight = this->ascent + this->descent;
+	int fontWidth = this->fontStruct->max_bounds.width;
 
 	// Find the visible line number corresponding to the y coordinate
-	*row = (y - textD->top) / fontHeight;
+	*row = (y - this->top) / fontHeight;
 	if (*row < 0)
 		*row = 0;
-	if (*row >= textD->nVisibleLines)
-		*row = textD->nVisibleLines - 1;
-	*column = ((x - textD->left) + textD->horizOffset + (posType == CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
+	if (*row >= this->nVisibleLines)
+		*row = this->nVisibleLines - 1;
+	*column = ((x - this->left) + this->horizOffset + (posType == CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
 	if (*column < 0)
 		*column = 0;
 }
@@ -2241,7 +2226,7 @@ void TextDisplay::offsetLineStarts(int newTopLineNum) {
 
 	/* If we're numbering lines or being asked to maintain an absolute line
 	   number, re-calculate the absolute line number */
-	offsetAbsLineNum(this, oldFirstChar);
+	offsetAbsLineNum(oldFirstChar);
 
 	/* {   int i;
 	    printf("lineStarts After: ");
@@ -2356,7 +2341,7 @@ void TextDisplay::updateLineStarts(int pos, int charsInserted, int charsDeleted,
 
 	/* Change was past the end of the displayed text, but displayable by virtue
 	   of being an insert at the end of the buffer into visible blank lines */
-	if (emptyLinesVisible(this)) {
+	if (emptyLinesVisible()) {
 		posToVisibleLineNum(pos, &lineOfPos);
 		this->calcLineStarts(lineOfPos, lineOfPos + linesInserted);
 		calcLastChar();
@@ -2418,7 +2403,7 @@ void TextDisplay::calcLineStarts(int startLine, int endLine) {
 	/* Loop searching for ends of lines and storing the positions of the
 	   start of the next line in lineStarts */
 	for (line = startLine; line <= endLine; line++) {
-		findLineEnd(this, startPos, True, &lineEnd, &nextLineStart);
+		findLineEnd(startPos, True, &lineEnd, &nextLineStart);
 		startPos = nextLineStart;
 		if (startPos >= bufLen) {
 			/* If the buffer ends with a newline or line break, put
@@ -2519,7 +2504,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 
 	/* If part of the cursor is protruding beyond the text clipping region,
 	   clear it off */
-	blankCursorProtrusions(this);
+	blankCursorProtrusions();
 
 	/* If the vertical scroll position has changed, update the line
 	   starts array and related counters in the text display */
@@ -2535,7 +2520,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 		updateVScrollBarRange(this);
 	}
 	if (updateHScrollBar && this->hScrollBar) {
-		updateHScrollBarRange(this);
+		updateHScrollBarRange();
 	}
 
 	/* Redisplay everything if the window is partially obscured (since
@@ -2577,7 +2562,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	/* Refresh line number/calltip display if its up and we've scrolled
 	    vertically */
 	if (lineDelta != 0) {
-		redrawLineNumbers(this, False);
+		redrawLineNumbers(false);
 		TextDRedrawCalltip(this, 0);
 	}
 
@@ -2615,30 +2600,30 @@ static void updateVScrollBarRange(TextDisplay *textD) {
 ** of displayed text, particularly since it's usually called for each typed
 ** character!
 */
-static int updateHScrollBarRange(TextDisplay *textD) {
+int TextDisplay::updateHScrollBarRange() {
 	int i, maxWidth = 0, sliderMax, sliderWidth;
-	int origHOffset = textD->horizOffset;
+	int origHOffset = this->horizOffset;
 
-	if (textD->hScrollBar == nullptr || !XtIsManaged(textD->hScrollBar))
+	if (this->hScrollBar == nullptr || !XtIsManaged(this->hScrollBar))
 		return false;
 
 	// Scan all the displayed lines to find the width of the longest line
-	for (i = 0; i < textD->nVisibleLines && textD->lineStarts[i] != -1; i++)
-		maxWidth = std::max<int>(measureVisLine(textD, i), maxWidth);
+	for (i = 0; i < this->nVisibleLines && this->lineStarts[i] != -1; i++)
+		maxWidth = std::max<int>(this->measureVisLine(i), maxWidth);
 
 	/* If the scroll position is beyond what's necessary to keep all lines
 	   in view, scroll to the left to bring the end of the longest line to
 	   the right margin */
-	if (maxWidth < textD->width + textD->horizOffset && textD->horizOffset > 0)
-		textD->horizOffset = std::max<int>(0, maxWidth - textD->width);
+	if (maxWidth < this->width + this->horizOffset && this->horizOffset > 0)
+		this->horizOffset = std::max<int>(0, maxWidth - this->width);
 
 	// Readjust the scroll bar
-	sliderWidth = textD->width;
-	sliderMax = std::max<int>(maxWidth, sliderWidth + textD->horizOffset);
-	XtVaSetValues(textD->hScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(textD->width - 100, 10), XmNvalue, textD->horizOffset, nullptr);
+	sliderWidth = this->width;
+	sliderMax = std::max<int>(maxWidth, sliderWidth + this->horizOffset);
+	XtVaSetValues(this->hScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(this->width - 100, 10), XmNvalue, this->horizOffset, nullptr);
 
 	// Return True if scroll position was changed
-	return origHOffset != textD->horizOffset;
+	return origHOffset != this->horizOffset;
 }
 
 /*
@@ -2651,7 +2636,7 @@ void TextDisplay::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int 
 	this->lineNumWidth = lineNumWidth;
 	this->left = textLeft;
 	XClearWindow(XtDisplay(this->w), XtWindow(this->w));
-	resetAbsLineNum(this);
+	resetAbsLineNum();
 	this->TextDResize(newWidth, this->height);
 	this->TextDRedisplayRect(0, this->top, INT_MAX, this->height);
 }
@@ -2662,44 +2647,44 @@ void TextDisplay::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int 
 ** stray marks outside of the character cell area, which might have been
 ** left from before a resize or font change.
 */
-static void redrawLineNumbers(TextDisplay *textD, int clearAll) {
+void TextDisplay::redrawLineNumbers(int clearAll) {
 	int y, line, visLine, nCols, lineStart;
 	char lineNumString[12];
-	int lineHeight = textD->ascent + textD->descent;
-	int charWidth = textD->fontStruct->max_bounds.width;
+	int lineHeight = this->ascent + this->descent;
+	int charWidth = this->fontStruct->max_bounds.width;
 	XRectangle clipRect;
-	Display *display = XtDisplay(textD->w);
+	Display *display = XtDisplay(this->w);
 
 	/* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
 	   not yet realized */
-	if (textD->lineNumWidth == 0 || XtWindow(textD->w) == 0)
+	if (this->lineNumWidth == 0 || XtWindow(this->w) == 0)
 		return;
 
 	/* Make sure we reset the clipping range for the line numbers GC, because
 	   the GC may be shared (eg, if the line numbers and text have the same
 	   color) and therefore the clipping ranges may be invalid. */
-	clipRect.x = textD->lineNumLeft;
-	clipRect.y = textD->top;
-	clipRect.width = textD->lineNumWidth;
-	clipRect.height = textD->height;
-	XSetClipRectangles(display, textD->lineNumGC, 0, 0, &clipRect, 1, Unsorted);
+	clipRect.x = this->lineNumLeft;
+	clipRect.y = this->top;
+	clipRect.width = this->lineNumWidth;
+	clipRect.height = this->height;
+	XSetClipRectangles(display, this->lineNumGC, 0, 0, &clipRect, 1, Unsorted);
 
 	// Erase the previous contents of the line number area, if requested
 	if (clearAll)
-		XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumLeft, textD->top, textD->lineNumWidth, textD->height, False);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->top, this->lineNumWidth, this->height, False);
 
 	// Draw the line numbers, aligned to the text
-	nCols = std::min<int>(11, textD->lineNumWidth / charWidth);
-	y = textD->top;
-	line = getAbsTopLineNum(textD);
-	for (visLine = 0; visLine < textD->nVisibleLines; visLine++) {
-		lineStart = textD->lineStarts[visLine];
-		if (lineStart != -1 && (lineStart == 0 || textD->buffer->BufGetCharacter(lineStart - 1) == '\n')) {
+	nCols = std::min<int>(11, this->lineNumWidth / charWidth);
+	y = this->top;
+	line = this->getAbsTopLineNum();
+	for (visLine = 0; visLine < this->nVisibleLines; visLine++) {
+		lineStart = this->lineStarts[visLine];
+		if (lineStart != -1 && (lineStart == 0 || this->buffer->BufGetCharacter(lineStart - 1) == '\n')) {
 			sprintf(lineNumString, "%*d", nCols, line);
-			XDrawImageString(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumGC, textD->lineNumLeft, y + textD->ascent, lineNumString, strlen(lineNumString));
+			XDrawImageString(XtDisplay(this->w), XtWindow(this->w), this->lineNumGC, this->lineNumLeft, y + this->ascent, lineNumString, strlen(lineNumString));
 			line++;
 		} else {
-			XClearArea(XtDisplay(textD->w), XtWindow(textD->w), textD->lineNumLeft, y, textD->lineNumWidth, textD->ascent + textD->descent, False);
+			XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, y, this->lineNumWidth, this->ascent + this->descent, False);
 			if (visLine == 0)
 				line++;
 		}
@@ -2761,22 +2746,22 @@ static int countLinesEx(view::string_view string) {
 /*
 ** Return the width in pixels of the displayed line pointed to by "visLineNum"
 */
-static int measureVisLine(TextDisplay *textD, int visLineNum) {
-	int i, width = 0, len, style, lineLen = visLineLength(textD, visLineNum);
-	int charCount = 0, lineStartPos = textD->lineStarts[visLineNum];
+int TextDisplay::measureVisLine(int visLineNum) {
+	int i, width = 0, len, style, lineLen = visLineLength(visLineNum);
+	int charCount = 0, lineStartPos = this->lineStarts[visLineNum];
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
-	if (!textD->styleBuffer) {
+	if (!this->styleBuffer) {
 		for (i = 0; i < lineLen; i++) {
-			len = textD->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-			width += XTextWidth(textD->fontStruct, expandedChar, len);
+			len = this->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+			width += XTextWidth(this->fontStruct, expandedChar, len);
 			charCount += len;
 		}
 	} else {
 		for (i = 0; i < lineLen; i++) {
-			len = textD->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-			style = (unsigned char)textD->styleBuffer->BufGetCharacter(lineStartPos + i) - ASCII_A;
-			width += XTextWidth(textD->styleTable[style].font, expandedChar, len);
+			len = this->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+			style = (unsigned char)this->styleBuffer->BufGetCharacter(lineStartPos + i) - ASCII_A;
+			width += XTextWidth(this->styleTable[style].font, expandedChar, len);
 			charCount += len;
 		}
 	}
@@ -2786,8 +2771,8 @@ static int measureVisLine(TextDisplay *textD, int visLineNum) {
 /*
 ** Return true if there are lines visible with no corresponding buffer text
 */
-static int emptyLinesVisible(TextDisplay *textD) {
-	return textD->nVisibleLines > 0 && textD->lineStarts[textD->nVisibleLines - 1] == -1;
+int TextDisplay::emptyLinesVisible() {
+	return this->nVisibleLines > 0 && this->lineStarts[this->nVisibleLines - 1] == -1;
 }
 
 /*
@@ -2796,11 +2781,11 @@ static int emptyLinesVisible(TextDisplay *textD) {
 ** can not overwrite this protruding part of the cursor, so it must be
 ** erased independently by calling this routine.
 */
-static void blankCursorProtrusions(TextDisplay *textD) {
-	int x, width, cursorX = textD->cursorX, cursorY = textD->cursorY;
-	int fontWidth = textD->fontStruct->max_bounds.width;
-	int fontHeight = textD->ascent + textD->descent;
-	int cursorWidth, left = textD->left, right = left + textD->width;
+void TextDisplay::blankCursorProtrusions() {
+	int x, width, cursorX = this->cursorX, cursorY = this->cursorY;
+	int fontWidth = this->fontStruct->max_bounds.width;
+	int fontHeight = this->ascent + this->descent;
+	int cursorWidth, left = this->left, right = left + this->width;
 
 	cursorWidth = (fontWidth / 3) * 2;
 	if (cursorX >= left - 1 && cursorX <= left + cursorWidth / 2 - 1) {
@@ -2812,20 +2797,20 @@ static void blankCursorProtrusions(TextDisplay *textD) {
 	} else
 		return;
 
-	XClearArea(XtDisplay(textD->w), XtWindow(textD->w), x, cursorY, width, fontHeight, False);
+	XClearArea(XtDisplay(this->w), XtWindow(this->w), x, cursorY, width, fontHeight, False);
 }
 
 /*
 ** Allocate shared graphics contexts used by the widget, which must be
 ** re-allocated on a font change.
 */
-static void allocateFixedFontGCs(TextDisplay *textD, XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel) {
-	textD->gc = allocateGC(textD->w, GCFont | GCForeground | GCBackground, fgPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode);
-	textD->selectGC = allocateGC(textD->w, GCFont | GCForeground | GCBackground, selectFGPixel, selectBGPixel, fontStruct->fid, GCClipMask, GCArcMode);
-	textD->selectBGGC = allocateGC(textD->w, GCForeground, selectBGPixel, 0, fontStruct->fid, GCClipMask, GCArcMode);
-	textD->highlightGC = allocateGC(textD->w, GCFont | GCForeground | GCBackground, highlightFGPixel, highlightBGPixel, fontStruct->fid, GCClipMask, GCArcMode);
-	textD->highlightBGGC = allocateGC(textD->w, GCForeground, highlightBGPixel, 0, fontStruct->fid, GCClipMask, GCArcMode);
-	textD->lineNumGC = allocateGC(textD->w, GCFont | GCForeground | GCBackground, lineNumFGPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode);
+void TextDisplay::allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel) {
+	this->gc            = allocateGC(this->w, GCFont | GCForeground | GCBackground, fgPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode);
+	this->selectGC      = allocateGC(this->w, GCFont | GCForeground | GCBackground, selectFGPixel, selectBGPixel, fontStruct->fid, GCClipMask, GCArcMode);
+	this->selectBGGC    = allocateGC(this->w, GCForeground, selectBGPixel, 0, fontStruct->fid, GCClipMask, GCArcMode);
+	this->highlightGC   = allocateGC(this->w, GCFont | GCForeground | GCBackground, highlightFGPixel, highlightBGPixel, fontStruct->fid, GCClipMask, GCArcMode);
+	this->highlightBGGC = allocateGC(this->w, GCForeground, highlightBGPixel, 0, fontStruct->fid, GCClipMask, GCArcMode);
+	this->lineNumGC     = allocateGC(this->w, GCFont | GCForeground | GCBackground, lineNumFGPixel, bgPixel, fontStruct->fid, GCClipMask, GCArcMode);
 }
 
 /*
@@ -2890,17 +2875,17 @@ static void resetClipRectangles(TextDisplay *textD) {
 ** Return the length of a line (number of displayable characters) by examining
 ** entries in the line starts array rather than by scanning for newlines
 */
-static int visLineLength(TextDisplay *textD, int visLineNum) {
-	int nextLineStart, lineStartPos = textD->lineStarts[visLineNum];
+int TextDisplay::visLineLength(int visLineNum) {
+	int nextLineStart, lineStartPos = this->lineStarts[visLineNum];
 
 	if (lineStartPos == -1)
 		return 0;
-	if (visLineNum + 1 >= textD->nVisibleLines)
-		return textD->lastChar - lineStartPos;
-	nextLineStart = textD->lineStarts[visLineNum + 1];
+	if (visLineNum + 1 >= this->nVisibleLines)
+		return this->lastChar - lineStartPos;
+	nextLineStart = this->lineStarts[visLineNum + 1];
 	if (nextLineStart == -1)
-		return textD->lastChar - lineStartPos;
-	if (wrapUsesCharacter(textD, nextLineStart - 1))
+		return this->lastChar - lineStartPos;
+	if (wrapUsesCharacter(nextLineStart - 1))
 		return nextLineStart - 1 - lineStartPos;
 	return nextLineStart - lineStartPos;
 }
@@ -2913,15 +2898,15 @@ static int visLineLength(TextDisplay *textD, int visLineNum) {
 ** both for delimiting where the line starts need to be recalculated, and
 ** for deciding what part of the text to redisplay.
 */
-static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted) {
+void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted) {
 	int length;
 	int retPos;
 	int retLines;
 	int retLineStart;
 	int retLineEnd;
-	TextBuffer *buf = textD->buffer;
-	int nVisLines   = textD->nVisibleLines;
-	int *lineStarts = textD->lineStarts;
+	TextBuffer *buf = this->buffer;
+	int nVisLines   = this->nVisibleLines;
+	int *lineStarts = this->lineStarts;
 	int countFrom;
 	int countTo;
 	int lineStart;
@@ -2934,7 +2919,7 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 	** if possible, limit to the start of the (original) previous displayed
 	** line, using information from the existing line starts array
 	*/
-	if (pos >= textD->firstChar && pos <= textD->lastChar) {
+	if (pos >= this->firstChar && pos <= this->lastChar) {
 		for (i = nVisLines - 1; i > 0; i--)
 			if (lineStarts[i] != -1 && pos >= lineStarts[i])
 				break;
@@ -2957,7 +2942,7 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
-		wrappedLineCounter(textD, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(this, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buf->BufGetLength()) {
 			countTo = buf->BufGetLength();
 			*modRangeEnd = countTo;
@@ -2979,7 +2964,7 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 		       If we're in that mode, the number of deleted lines is calculated in
 		       advance, without resynchronization, so we shouldn't resynchronize
 		       for the inserted lines either. */
-		if (textD->suppressResync) {
+		if (this->suppressResync) {
 			continue;
 		}
 
@@ -3006,7 +2991,7 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 			while (visLineNum < nVisLines && lineStarts[visLineNum] < adjLineStart)
 				visLineNum++;
 			if (visLineNum < nVisLines && lineStarts[visLineNum] != -1 && lineStarts[visLineNum] == adjLineStart) {
-				countTo = textD->TextDEndOfLine(lineStart, True);
+				countTo = this->TextDEndOfLine(lineStart, True);
 				*modRangeEnd = lineStart;
 				break;
 			}
@@ -3034,26 +3019,26 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 	     because resynchronization of the line starts is impossible
 	     in that case, which makes the whole calculation less efficient).
 	*/
-	if (textD->suppressResync) {
-		*linesDeleted = textD->nLinesDeleted;
-		textD->suppressResync = 0;
+	if (this->suppressResync) {
+		*linesDeleted = this->nLinesDeleted;
+		this->suppressResync = 0;
 		return;
 	}
 
 	length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
 	auto deletedTextBuf = new TextBuffer(length);
 	if (pos > countFrom)
-		deletedTextBuf->BufCopyFromBuf(textD->buffer, countFrom, pos, 0);
+		deletedTextBuf->BufCopyFromBuf(this->buffer, countFrom, pos, 0);
 	if (nDeleted != 0)
 		deletedTextBuf->BufInsertEx(pos - countFrom, deletedText);
 	if (countTo > pos + nInserted)
-		deletedTextBuf->BufCopyFromBuf(textD->buffer, pos + nInserted, countTo, pos - countFrom + nDeleted);
+		deletedTextBuf->BufCopyFromBuf(this->buffer, pos + nInserted, countTo, pos - countFrom + nDeleted);
 	/* Note that we need to take into account an offset for the style buffer:
 	   the deletedTextBuf can be out of sync with the style buffer. */
-	wrappedLineCounter(textD, deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
+	wrappedLineCounter(this, deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 	delete deletedTextBuf;
 	*linesDeleted = retLines;
-	textD->suppressResync = 0;
+	this->suppressResync = 0;
 }
 
 /*
@@ -3068,11 +3053,11 @@ static void findWrapRangeEx(TextDisplay *textD, view::string_view deletedText, i
 ** can still perform the calculation afterwards (possibly even more
 ** efficiently).
 */
-static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted) {
+void TextDisplay::measureDeletedLines(int pos, int nDeleted) {
 	int retPos, retLines, retLineStart, retLineEnd;
-	TextBuffer *buf = textD->buffer;
-	int nVisLines = textD->nVisibleLines;
-	int *lineStarts = textD->lineStarts;
+	TextBuffer *buf = this->buffer;
+	int nVisLines = this->nVisibleLines;
+	int *lineStarts = this->lineStarts;
 	int countFrom, lineStart;
 	int nLines = 0, i;
 	/*
@@ -3080,7 +3065,7 @@ static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted) {
 	** if possible, limit to the start of the (original) previous displayed
 	** line, using information from the existing line starts array
 	*/
-	if (pos >= textD->firstChar && pos <= textD->lastChar) {
+	if (pos >= this->firstChar && pos <= this->lastChar) {
 		for (i = nVisLines - 1; i > 0; i--)
 			if (lineStarts[i] != -1 && pos >= lineStarts[i])
 				break;
@@ -3100,7 +3085,7 @@ static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted) {
 	while (true) {
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
-		wrappedLineCounter(textD, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(this, buf, lineStart, buf->BufGetLength(), 1, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buf->BufGetLength()) {
 			if (retPos != retLineEnd)
 				nLines++;
@@ -3125,8 +3110,8 @@ static void measureDeletedLines(TextDisplay *textD, int pos, int nDeleted) {
 		   of calculation when it's really needed (continuous wrap + variable
 		   font width). */
 	}
-	textD->nLinesDeleted = nLines;
-	textD->suppressResync = 1;
+	this->nLinesDeleted = nLines;
+	this->suppressResync = 1;
 }
 
 /*
@@ -3209,7 +3194,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 		} else {
 			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 			if (countPixels)
-				width += measurePropChar(textD, c, colNum, p + styleBufOffset);
+				width += textD->measurePropChar(c, colNum, p + styleBufOffset);
 		}
 
 		/* If character exceeded wrap margin, find the break point
@@ -3224,7 +3209,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 						colNum = 0;
 						width = 0;
 						for (i = b + 1; i < p + 1; i++) {
-							width += measurePropChar(textD, buf->BufGetCharacter(i), colNum, i + styleBufOffset);
+							width += textD->measurePropChar(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
 							colNum++;
 						}
 					} else
@@ -3237,7 +3222,7 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 				newLineStart = std::max<int>(p, lineStart + 1);
 				colNum = TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 				if (countPixels)
-					width = measurePropChar(textD, c, colNum, p + styleBufOffset);
+					width = textD->measurePropChar(c, colNum, p + styleBufOffset);
 			}
 			if (p >= maxPos) {
 				*retPos = maxPos;
@@ -3279,23 +3264,23 @@ static void wrappedLineCounter(const TextDisplay *textD, const TextBuffer *buf, 
 ** insertion/deletion, though static display and wrapping and resizing
 ** should now be solid because they are now used for online help display.
 */
-static int measurePropChar(const TextDisplay *textD, const char c, const int colNum, const int pos) {
+int TextDisplay::measurePropChar(const char c, const int colNum, const int pos) const {
 	int charLen, style;
 	char expChar[MAX_EXP_CHAR_LEN];
-	TextBuffer *styleBuf = textD->styleBuffer;
+	TextBuffer *styleBuf = this->styleBuffer;
 
-	charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, textD->buffer->tabDist_, textD->buffer->nullSubsChar_);
+	charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
 	if(!styleBuf) {
 		style = 0;
 	} else {
 		style = (unsigned char)styleBuf->BufGetCharacter(pos);
-		if (style == textD->unfinishedStyle) {
+		if (style == this->unfinishedStyle) {
 			// encountered "unfinished" style, trigger parsing
-			(textD->unfinishedHighlightCB)(textD, pos, textD->highlightCBArg);
+			(this->unfinishedHighlightCB)(this, pos, this->highlightCBArg);
 			style = (unsigned char)styleBuf->BufGetCharacter(pos);
 		}
 	}
-	return stringWidth(textD, expChar, charLen, style);
+	return this->stringWidth(expChar, charLen, style);
 }
 
 /*
@@ -3308,18 +3293,18 @@ static int measurePropChar(const TextDisplay *textD, const char c, const int col
 ** normal character, and to find that out would otherwise require counting all
 ** the way back to the beginning of the line.
 */
-static void findLineEnd(TextDisplay *textD, int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart) {
+void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart) {
 	int retLines, retLineStart;
 
 	// if we're not wrapping use more efficient BufEndOfLine
-	if (!textD->continuousWrap) {
-		*lineEnd = textD->buffer->BufEndOfLine(startPos);
-		*nextLineStart = std::min<int>(textD->buffer->BufGetLength(), *lineEnd + 1);
+	if (!this->continuousWrap) {
+		*lineEnd = this->buffer->BufEndOfLine(startPos);
+		*nextLineStart = std::min<int>(this->buffer->BufGetLength(), *lineEnd + 1);
 		return;
 	}
 
 	// use the wrapped line counter routine to count forward one line
-	wrappedLineCounter(textD, textD->buffer, startPos, textD->buffer->BufGetLength(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
+	wrappedLineCounter(this, this->buffer, startPos, this->buffer->BufGetLength(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
 	return;
 }
 
@@ -3339,14 +3324,14 @@ static void findLineEnd(TextDisplay *textD, int startPos, int startPosIsLineStar
 ** used as a wrap point, and just guesses that it wasn't.  So if an exact
 ** accounting is necessary, don't use this function.
 */
-static int wrapUsesCharacter(TextDisplay *textD, int lineEndPos) {
+int TextDisplay::wrapUsesCharacter(int lineEndPos) {
 	char c;
 
-	if (!textD->continuousWrap || lineEndPos == textD->buffer->BufGetLength())
+	if (!this->continuousWrap || lineEndPos == this->buffer->BufGetLength())
 		return true;
 
-	c = textD->buffer->BufGetCharacter(lineEndPos);
-	return c == '\n' || ((c == '\t' || c == ' ') && lineEndPos + 1 != textD->buffer->BufGetLength());
+	c = this->buffer->BufGetCharacter(lineEndPos);
+	return c == '\n' || ((c == '\t' || c == ' ') && lineEndPos + 1 != this->buffer->BufGetLength());
 }
 
 /*
@@ -3357,11 +3342,11 @@ static int wrapUsesCharacter(TextDisplay *textD, int lineEndPos) {
 ** to the window edge, or when the wrap margin is strictly less than
 ** the longest possible line.
 */
-static void hideOrShowHScrollBar(TextDisplay *textD) {
-	if (textD->continuousWrap && (textD->wrapMargin == 0 || textD->wrapMargin * textD->fontStruct->max_bounds.width < textD->width))
-		XtUnmanageChild(textD->hScrollBar);
+void TextDisplay::hideOrShowHScrollBar() {
+	if (this->continuousWrap && (this->wrapMargin == 0 || this->wrapMargin * this->fontStruct->max_bounds.width < this->width))
+		XtUnmanageChild(this->hScrollBar);
 	else
-		XtManageChild(textD->hScrollBar);
+		XtManageChild(this->hScrollBar);
 }
 
 /*
@@ -3377,8 +3362,8 @@ static int rangeTouchesRectSel(TextSelection *sel, int rangeStart, int rangeEnd)
 ** redraw requests resulting from changes to the attached style buffer (which
 ** contains auxiliary information for coloring or styling text).
 */
-static void extendRangeForStyleMods(TextDisplay *textD, int *start, int *end) {
-	TextSelection *sel = &textD->styleBuffer->primary_;
+void TextDisplay::extendRangeForStyleMods(int *start, int *end) {
+	TextSelection *sel = &this->styleBuffer->primary_;
 	int extended = false;
 
 	/* The peculiar protocol used here is that modifications to the style
@@ -3405,8 +3390,8 @@ static void extendRangeForStyleMods(TextDisplay *textD, int *start, int *end) {
 	/* If the selection was extended due to a style change, and some of the
 	   fonts don't match in spacing, extend redraw area to end of line to
 	   redraw characters exposed by possible font size changes */
-	if (textD->fixedFontWidth == -1 && extended)
-		*end = textD->buffer->BufEndOfLine(*end) + 1;
+	if (this->fixedFontWidth == -1 && extended)
+		*end = this->buffer->BufEndOfLine(*end) + 1;
 }
 
 /**********************  Backlight Functions ******************************/

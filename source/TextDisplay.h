@@ -181,14 +181,38 @@ private:
 	
 public:
 	Pixel getRangesetColor(int ind, Pixel bground);
+	int emptyLinesVisible();
+	int getAbsTopLineNum();
+	int maintainingAbsTopLineNum();
+	int measurePropChar(const char c, const int colNum, const int pos) const;
+	int measureVisLine(int visLineNum);
+	int posToVisibleLineNum(int pos, int *lineNum);
+	int stringWidth(const char *string, const int length, const int style) const;
+	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
+	int updateHScrollBarRange();
+	int visLineLength(int visLineNum);
+	int wrapUsesCharacter(int lineEndPos);
+	int xyToPos(int x, int y, int posType);
+	void allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
+	void blankCursorProtrusions();
+	void calcLastChar();
+	void calcLineStarts(int startLine, int endLine);	
+	void clearRect(GC gc, int x, int y, int width, int height);
+	void drawCursor(int x, int y);
+	void drawString(int style, int x, int y, int toX, char *string, int nChars);
+	void extendRangeForStyleMods(int *start, int *end);
+	void offsetLineStarts(int newTopLineNum);
+	void redisplayLine(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	void textDRedisplayRange(int start, int end);	
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
-	void offsetLineStarts(int newTopLineNum);
-	void calcLineStarts(int startLine, int endLine);	
-void calcLastChar();
-int posToVisibleLineNum(int pos, int *lineNum);
-void redisplayLine(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
-void drawString(int style, int x, int y, int toX, char *string, int nChars);
+	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
+	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
+	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
+	void hideOrShowHScrollBar();
+void measureDeletedLines(int pos, int nDeleted);
+void offsetAbsLineNum(int oldFirstChar);
+void redrawLineNumbers(int clearAll);
+void resetAbsLineNum();
 
 public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
