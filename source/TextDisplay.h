@@ -164,6 +164,8 @@ public:
 	void TextPasteClipboard(Time time);
 	void TextColPasteClipboard(Time time);
 	void TextHandleXSelections();
+	bool checkReadOnly();
+	void cancelDrag();
 	
 private:
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);

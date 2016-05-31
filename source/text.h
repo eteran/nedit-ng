@@ -140,8 +140,6 @@ struct smartIndentCBStruct {
 
 XtActionsRec *TextGetActions(int *nActions);
 void HandleAllPendingGraphicsExposeNoExposeEvents(TextWidget w, XEvent *event);
-void cancelDrag(Widget w);
-int checkReadOnly(Widget w);
 void checkAutoShowInsertPos(Widget w);
 void callCursorMovementCBs(Widget w, XEvent *event);
 

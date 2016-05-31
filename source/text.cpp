@@ -1223,7 +1223,7 @@ static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG)
 		buf->BufUnselect();
-	cancelDrag(w);
+	textD->cancelDrag();
 }
 
 static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1273,7 +1273,7 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 		return;
 	}
 
-	if (checkReadOnly(w))
+	if (textD->checkReadOnly())
 		return;
 
 	/* Record the site of the initial button press and the initial character
@@ -1361,7 +1361,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED))
 		return;
 	if (!(secondary->selected && !reinterpret_cast<TextWidget>(w)->text.motifDestOwner)) {
-		if (checkReadOnly(w)) {
+		if (textD->checkReadOnly()) {
 			buf->BufSecondaryUnselect();
 			return;
 		}
@@ -1424,7 +1424,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	endDrag(w);
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED))
 		return;
-	if (checkReadOnly(w)) {
+	if (textD->checkReadOnly()) {
 		buf->BufSecondaryUnselect();
 		return;
 	}
@@ -1497,7 +1497,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int silent = hasKey("nobell", args, nArgs);
 
 	endDrag(w);
-	if (checkReadOnly(w))
+	if (textD->checkReadOnly())
 		return;
 
 	/* If there's no secondary selection here, or the primary and secondary
@@ -1547,8 +1547,8 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	int rectangular = hasKey("rect", args, nArgs);
 	int insertPos, col;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	if (primary->selected && rectangular) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
@@ -1582,8 +1582,8 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	int rectangular = hasKey("rect", args, nArgs);
 	int insertPos, col;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	if (primary->selected && rectangular) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
@@ -1634,7 +1634,7 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			panCursor = XCreateFontCursor(XtDisplay(w), XC_fleur);
 		XGrabPointer(XtDisplay(w), XtWindow(w), False, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
 	} else
-		cancelDrag(w);
+		textD->cancelDrag();
 }
 
 static void pasteClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1676,8 +1676,8 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	if (*nArgs == 0)
 		return;
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	if (reinterpret_cast<TextWidget>(w)->text.smartIndent) {
 		smartIndent.reason = CHAR_TYPED;
@@ -1711,8 +1711,8 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (nChars == 0 || status == XLookupNone || status == XLookupKeySym || status == XBufferOverflow)
 		return;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	chars[nChars] = '\0';
@@ -1749,9 +1749,11 @@ static void newlineNoIndentAP(Widget w, XEvent *event, String *args, Cardinal *n
 	(void)nArgs;
 
 	XKeyEvent *e = &event->xkey;
+	
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	simpleInsertAtCursorEx(w, "\n", event, True);
@@ -1769,9 +1771,9 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	TextBuffer *buf = textD->buffer;
 	int column;
 
-	if (checkReadOnly(w))
+	if (textD->checkReadOnly())
 		return;
-	cancelDrag(w);
+	textD->cancelDrag();
 	TakeMotifDestination(w, e->time);
 
 	/* Create a string containing a newline followed by auto or smart
@@ -1806,9 +1808,9 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	int emTabsBeforeCursor = reinterpret_cast<TextWidget>(w)->text.emTabsBeforeCursor;
 	int insertPos, indent, startIndent, toIndent, lineStart, tabWidth;
 
-	if (checkReadOnly(w))
+	if (textD->checkReadOnly())
 		return;
-	cancelDrag(w);
+	textD->cancelDrag();
 	TakeMotifDestination(w, event->xkey.time);
 
 	// If emulated tabs are off, just insert a tab
@@ -1867,8 +1869,10 @@ static void deleteSelectionAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	XKeyEvent *e = &event->xkey;
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	deletePendingSelection(w, event);
@@ -1881,8 +1885,8 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 	char c;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 
 	TakeMotifDestination(w, e->time);
@@ -1918,8 +1922,8 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	int insertPos = textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	if (deletePendingSelection(w, event))
@@ -1941,8 +1945,8 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
-	if (checkReadOnly(w)) {
+	textD->cancelDrag();
+	if (textD->checkReadOnly()) {
 		return;
 	}
 
@@ -1975,8 +1979,8 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
-	if (checkReadOnly(w)) {
+	textD->cancelDrag();
+	if (textD->checkReadOnly()) {
 		return;
 	}
 
@@ -2013,8 +2017,8 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 		endOfLine = textD->buffer->BufEndOfLine(insertPos);
 	else
 		endOfLine = textD->TextDEndOfLine(insertPos, False);
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	if (deletePendingSelection(w, event))
@@ -2040,8 +2044,8 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 		startOfLine =textD->TextDStartOfLine(insertPos);
 	else
 		startOfLine = textD->buffer->BufStartOfLine(insertPos);
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	textD->cancelDrag();
+	if (textD->checkReadOnly())
 		return;
 	TakeMotifDestination(w, e->time);
 	if (deletePendingSelection(w, event))
@@ -2056,10 +2060,11 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 }
 
 static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveRight()) {
 		ringIfNecessary(silent, w);
 	}
@@ -2069,10 +2074,11 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 }
 
 static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveLeft()) {
 		ringIfNecessary(silent, w);
 	}
@@ -2088,7 +2094,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
 		ringIfNecessary(silent, w);
 		return;
@@ -2128,7 +2134,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	char *delimiters = reinterpret_cast<TextWidget>(w)->text.delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (insertPos == 0) {
 		ringIfNecessary(silent, w);
 		return;
@@ -2152,7 +2158,7 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 	static char whiteChars[] = " \t";
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
 		ringIfNecessary(silent, w);
 		return;
@@ -2181,7 +2187,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 	static char whiteChars[] = " \t";
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (insertPos == 0) {
 		ringIfNecessary(silent, w);
 		return;
@@ -2210,7 +2216,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	int stat, insertPos = textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("left", args, nArgs))
 		stat = textD->TextDMoveLeft();
 	else if (hasKey("right", args, nArgs))
@@ -2233,11 +2239,12 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
 		ringIfNecessary(silent, w);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
@@ -2246,11 +2253,12 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveUp(abs))
 		ringIfNecessary(silent, w);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
@@ -2259,11 +2267,12 @@ static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nA
 }
 
 static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
 		ringIfNecessary(silent, w);
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
@@ -2272,11 +2281,12 @@ static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 
 static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	int silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (!reinterpret_cast<TextWidget>(w)->text.textD->TextDMoveDown(abs))
 		ringIfNecessary(silent, w);
 	keyMoveExtendSelection(w, event, insertPos, hasKey("rect", args, nArgs));
@@ -2288,7 +2298,7 @@ static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *n
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = textD->TextDGetInsertPosition();
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
 		textD->TextDSetInsertPosition(textD->buffer->BufStartOfLine(insertPos));
 	else
@@ -2303,7 +2313,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	int insertPos = textD->TextDGetInsertPosition();
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
 		textD->TextDSetInsertPosition(textD->buffer->BufEndOfLine(insertPos));
 	else
@@ -2318,7 +2328,7 @@ static void beginningOfFileAP(Widget w, XEvent *event, String *args, Cardinal *n
 	int insertPos = reinterpret_cast<TextWidget>(w)->text.textD->TextDGetInsertPosition();
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		if (textD->topLineNum != 1) {
 			textD->TextDSetScroll(1, textD->horizOffset);
@@ -2336,7 +2346,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	int insertPos = textD->TextDGetInsertPosition();
 	int lastTopLine;
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + reinterpret_cast<TextWidget>(w)->text.cursorVPadding);
 		if (lastTopLine != textD->topLineNum) {
@@ -2362,7 +2372,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int silent = hasKey("nobell", args, nArgs);
 
 	maintainColumn = hasKey("column", args, nArgs);
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only
 		targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
 
@@ -2451,7 +2461,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	int silent = hasKey("nobell", args, nArgs);
 
 	maintainColumn = hasKey("column", args, nArgs);
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only
 		targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
 
@@ -2529,7 +2539,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int horizOffset;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		if (textD->horizOffset == 0) {
 			ringIfNecessary(silent, w);
@@ -2568,7 +2578,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	int horizOffset, sliderSize, sliderMax;
 	int silent = hasKey("nobell", args, nArgs);
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 		horizOffset = std::min<int>(textD->horizOffset + textD->width, sliderMax - sliderSize);
@@ -2714,9 +2724,10 @@ static void selectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 	TextBuffer *buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
 
-	cancelDrag(w);
+	textD->cancelDrag();
 	buf->BufSelect(0, buf->BufGetLength());
 }
 
@@ -2726,7 +2737,8 @@ static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	(void)nArgs;
 	(void)event;
 
-	cancelDrag(w);
+	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	textD->cancelDrag();
 	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnselect();
 }
 
@@ -2883,15 +2895,6 @@ void checkAutoShowInsertPos(Widget w) {
 	if (reinterpret_cast<TextWidget>(w)->text.autoShowInsertPos)
 		reinterpret_cast<TextWidget>(w)->text.textD->TextDMakeInsertPosVisible();
 }
-
-int checkReadOnly(Widget w) {
-	if (reinterpret_cast<TextWidget>(w)->text.readOnly) {
-		XBell(XtDisplay(w), 0);
-		return True;
-	}
-	return False;
-}
-
 
 /*
 ** Insert text "chars" at the cursor position, as if the text had been
@@ -3193,26 +3196,7 @@ static void endDrag(Widget w) {
 	reinterpret_cast<TextWidget>(w)->text.dragState = NOT_CLICKED;
 }
 
-/*
-** Cancel any drag operation that might be in progress.  Should be included
-** in nearly every key event to cleanly end any dragging before edits are made
-** which might change the insert position or the content of the buffer during
-** a drag operation)
-*/
-void cancelDrag(Widget w) {
-	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState;
 
-	if (reinterpret_cast<TextWidget>(w)->text.autoScrollProcID != 0)
-		XtRemoveTimeOut(reinterpret_cast<TextWidget>(w)->text.autoScrollProcID);
-	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG)
-		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
-	if (dragState == PRIMARY_BLOCK_DRAG)
-		CancelBlockDrag(reinterpret_cast<TextWidget>(w));
-	if (dragState == MOUSE_PAN)
-		XUngrabPointer(XtDisplay(w), CurrentTime);
-	if (dragState != NOT_CLICKED)
-		reinterpret_cast<TextWidget>(w)->text.dragState = DRAG_CANCELED;
-}
 
 /*
 ** Do operations triggered by cursor movement: Call cursor movement callback

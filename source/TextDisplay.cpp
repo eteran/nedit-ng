@@ -37,6 +37,7 @@
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "textSel.h"
+#include "textDrag.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -3606,7 +3607,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 }
 
 void TextDisplay::TextCopyClipboard(Time time) {
-	cancelDrag(w);
+	cancelDrag();
 
 	if (!this->buffer->primary_.selected) {
 		XBell(XtDisplay(w), 0);
@@ -3618,8 +3619,8 @@ void TextDisplay::TextCopyClipboard(Time time) {
 
 void TextDisplay::TextCutClipboard(Time time) {
 
-	cancelDrag(w);
-	if (checkReadOnly(w)) {
+	cancelDrag();
+	if (checkReadOnly()) {
 		return;
 	}
 
@@ -4168,8 +4169,8 @@ void TextDisplay::handleShowPointer(Widget w, XtPointer unused, XEvent *event, B
 
 
 void TextDisplay::TextPasteClipboard(Time time) {
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	cancelDrag();
+	if (checkReadOnly())
 		return;
 	TakeMotifDestination(w, time);
 	InsertClipboard(w, False);
@@ -4177,8 +4178,8 @@ void TextDisplay::TextPasteClipboard(Time time) {
 }
 
 void TextDisplay::TextColPasteClipboard(Time time) {
-	cancelDrag(w);
-	if (checkReadOnly(w))
+	cancelDrag();
+	if (checkReadOnly())
 		return;
 	TakeMotifDestination(w, time);
 	InsertClipboard(w, True);
@@ -4192,4 +4193,35 @@ void TextDisplay::TextColPasteClipboard(Time time) {
 */
 void TextDisplay::TextHandleXSelections() {
 	HandleXSelections(w);
+}
+
+
+bool TextDisplay::checkReadOnly() {
+	if (reinterpret_cast<TextWidget>(w)->text.readOnly) {
+		XBell(XtDisplay(w), 0);
+		return True;
+	}
+	return False;
+}
+
+
+/*
+** Cancel any drag operation that might be in progress.  Should be included
+** in nearly every key event to cleanly end any dragging before edits are made
+** which might change the insert position or the content of the buffer during
+** a drag operation)
+*/
+void TextDisplay::cancelDrag() {
+	int dragState = reinterpret_cast<TextWidget>(w)->text.dragState;
+
+	if (reinterpret_cast<TextWidget>(w)->text.autoScrollProcID != 0)
+		XtRemoveTimeOut(reinterpret_cast<TextWidget>(w)->text.autoScrollProcID);
+	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG)
+		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
+	if (dragState == PRIMARY_BLOCK_DRAG)
+		CancelBlockDrag(reinterpret_cast<TextWidget>(w));
+	if (dragState == MOUSE_PAN)
+		XUngrabPointer(XtDisplay(w), CurrentTime);
+	if (dragState != NOT_CLICKED)
+		reinterpret_cast<TextWidget>(w)->text.dragState = DRAG_CANCELED;
 }
