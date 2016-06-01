@@ -470,7 +470,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
-		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
+		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == orgWin->lastFocus_)
 			focusPane = i;
 	}
@@ -524,7 +524,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextSetScroll(topLines[i], horizOffsets[i]);
+		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 
 		// dim the cursor 
 		textD->TextDSetCursorStyle(DIM_CURSOR);
@@ -1415,7 +1415,7 @@ void Document::UpdateStatsLine() {
 	const char *format = (fileFormat_ == DOS_FILE_FORMAT) ? " DOS" : (fileFormat_ == MAC_FILE_FORMAT ? " Mac" : "");
 	char slinecol[32];
 	
-	if (!textD->TextPosToLineAndCol(pos, &line, &colNum)) {
+	if (!textD->TextDPosToLineAndCol(pos, &line, &colNum)) {
 		snprintf(string, string_size, "%s%s%s %d bytes", path_.toLatin1().data(), filename_.toLatin1().data(), format, buffer_->BufGetLength());
 		snprintf(slinecol, sizeof(slinecol), "L: ---  C: ---");
 	} else {
@@ -1538,7 +1538,7 @@ void Document::SetTabDist(int tabDist) {
 			Widget w = GetPaneByIndex(paneIndex);
 			auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
-			textD->TextGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
+			textD->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
 			saveCursorPositions[paneIndex] = textD->TextGetCursorPos();
 			textD->modifyingTabDist = 1;
 		}
@@ -1551,7 +1551,7 @@ void Document::SetTabDist(int tabDist) {
 
 			textD->modifyingTabDist = 0;
 			textD->TextSetCursorPos(saveCursorPositions[paneIndex]);
-			textD->TextSetScroll(saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
+			textD->TextDSetScroll(saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
 		}
 
 		ignoreModify_ = false;
@@ -2223,7 +2223,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
 		XtVaGetValues(textPane, textNrows, &rows, nullptr);
 		scrollOffset = rows / 3;
-		textD->TextGetScroll(&topLineNum, &horizOffset);
+		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen 
 			leftLineNum = topLineNum + textD->TextDCountLines(topChar, left, false);
@@ -2234,7 +2234,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 				if (leftLineNum - linesToScroll < targetLineNum)
 					linesToScroll = leftLineNum - targetLineNum;
 				// Scroll start of selection to the target line 
-				textD->TextSetScroll(topLineNum + linesToScroll, horizOffset);
+				textD->TextDSetScroll(topLineNum + linesToScroll, horizOffset);
 			}
 		} else if (left < topChar) {
 			// Start of sel. is above top of screen 
@@ -2247,7 +2247,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 				if (rightLineNum + linesToScroll > targetLineNum)
 					linesToScroll = targetLineNum - rightLineNum;
 				// Scroll end of selection to the target line 
-				textD->TextSetScroll(topLineNum - linesToScroll, horizOffset);
+				textD->TextDSetScroll(topLineNum - linesToScroll, horizOffset);
 			}
 		}
 	}
@@ -2258,17 +2258,17 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	   rectangular selections, so this part of the routine should be re-written
 	   if it is to be used much with either.  Note also that this is a second
 	   scrolling operation, causing the display to jump twice.  It's done after
-	   vertical scrolling to take advantage of TextPosToXY which requires it's
+	   vertical scrolling to take advantage of TextDPosToXY which requires it's
 	   reqested position to be vertically on screen) */
-	if (textD->TextPosToXY(left, &leftX, &y) && textD->TextPosToXY(right, &rightX, &y) && leftX <= rightX) {
-		textD->TextGetScroll(&topLineNum, &horizOffset);
+	if (textD->TextDPositionToXY(left, &leftX, &y) && textD->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
+		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
 		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
 			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
 		else if (rightX > width - margin)
 			horizOffset += rightX - (width - margin);
 		
-		textD->TextSetScroll(topLineNum, horizOffset);
+		textD->TextDSetScroll(topLineNum, horizOffset);
 	}
 
 	// make sure that the statistics line is up to date 
@@ -2598,7 +2598,7 @@ void Document::ClosePane() {
 		
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
+		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == lastFocus_)
 			focusPane = i;
 	}
@@ -2644,7 +2644,7 @@ void Document::ClosePane() {
 		
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextSetScroll(topLines[i], horizOffsets[i]);
+		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 	}
 	XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
 
@@ -2894,7 +2894,7 @@ void Document::SplitPane() {
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
-		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
+		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 		if (text == lastFocus_)
 			focusPane = i;
 	}
@@ -2952,7 +2952,7 @@ void Document::SplitPane() {
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		
 		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextSetScroll(topLines[i], horizOffsets[i]);
+		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 		setPaneDesiredHeight(containingPane(text), totalHeight / (nPanes_ + 1));
 	}
 	XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);

@@ -189,7 +189,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	   for # in the shell command */
 	QString fullName = window->FullPath();
 	
-	textD->TextPosToLineAndCol(pos, &line, &column);
+	textD->TextDPosToLineAndCol(pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.toLatin1().data(), lineNumber);
@@ -256,7 +256,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 	   for # in the shell command */
 	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
 	
-	textD->TextPosToLineAndCol(pos, &line, &column);
+	textD->TextDPosToLineAndCol(pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(cmdText.c_str(), fullName.toLatin1().data(), lineNumber);
@@ -298,7 +298,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	   for # in the shell command */
 	QString fullName = QString(QLatin1String("%1%2")).arg(window->path_).arg(window->filename_);
 	int pos = textD->TextGetCursorPos();
-	textD->TextPosToLineAndCol(pos, &line, &column);
+	textD->TextDPosToLineAndCol(pos, &line, &column);
 	sprintf(lineNumber, "%d", line);
 
 	subsCommand = shellCommandSubstitutes(command.c_str(), fullName.toLatin1().data(), lineNumber);

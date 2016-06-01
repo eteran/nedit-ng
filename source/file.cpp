@@ -259,7 +259,7 @@ void RevertToSaved(Document *window) {
 		
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		insertPositions[i] = textD->TextGetCursorPos();
-		textD->TextGetScroll(&topLines[i], &horizOffsets[i]);
+		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 	}
 
 	// re-read the file, update the window title if new file is different 
@@ -292,7 +292,7 @@ void RevertToSaved(Document *window) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextSetScroll(topLines[i], horizOffsets[i]);
+		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 	}
 }
 
@@ -1771,7 +1771,7 @@ static void addWrapNewlines(Document *window) {
 
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		insertPositions[i] = textD->TextGetCursorPos();
-		textD->TextGetScroll(&topLines[i], &horizOffset);
+		textD->TextDGetScroll(&topLines[i], &horizOffset);
 	}
 
 	// Modify the buffer to add wrapping 
@@ -1787,7 +1787,7 @@ static void addWrapNewlines(Document *window) {
 		
 		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
 		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextSetScroll(topLines[i], 0);
+		textD->TextDSetScroll(topLines[i], 0);
 	}
 
 	/* Show the user that something has happened by turning off

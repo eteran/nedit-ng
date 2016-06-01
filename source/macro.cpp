@@ -3375,7 +3375,7 @@ static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *re
 	result->tag = INT_TAG;
 	cursorPos   = textD->TextGetCursorPos();
 	
-	if (!textD->TextPosToLineAndCol(cursorPos, &line, &colNum)) {
+	if (!textD->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
 		line = window->buffer_->BufCountLines(0, cursorPos) + 1;
 	}
 	
@@ -3777,7 +3777,7 @@ static int minFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
 	result->tag = INT_TAG;
-	result->val.n = textD->TextGetMinFontWidth(window->highlightSyntax_);
+	result->val.n = textD->TextDMinFontWidth(window->highlightSyntax_);
 	return true;
 }
 
@@ -3788,7 +3788,7 @@ static int maxFontWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 
 	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
 	result->tag = INT_TAG;
-	result->val.n = textD->TextGetMaxFontWidth(window->highlightSyntax_);
+	result->val.n = textD->TextDMaxFontWidth(window->highlightSyntax_);
 	return true;
 }
 

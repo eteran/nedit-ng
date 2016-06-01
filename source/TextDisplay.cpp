@@ -3624,22 +3624,6 @@ void TextDisplay::TextSetCursorPos(int pos) {
 }
 
 /*
-** Set the horizontal and vertical scroll positions of the widget
-*/
-void TextDisplay::TextSetScroll(int topLineNum, int horizOffset) {
-	TextDSetScroll(topLineNum, horizOffset);
-}
-
-
-int TextDisplay::TextGetMinFontWidth(Boolean considerStyles) {
-	return TextDMinFontWidth(considerStyles);
-}
-
-int TextDisplay::TextGetMaxFontWidth(Boolean considerStyles) {
-	return TextDMaxFontWidth(considerStyles);
-}
-
-/*
 ** Return the cursor position
 */
 int TextDisplay::TextGetCursorPos() {
@@ -3650,50 +3634,13 @@ int TextDisplay::TextLastVisiblePos() {
 	return lastChar;
 }
 
-/*
-** Translate a line number and column into a position
-*/
-int TextDisplay::TextLineAndColToPos(int lineNum, int column) {
-	return TextDLineAndColToPos(lineNum, column);
-}
-
 int TextDisplay::TextNumVisibleLines() {
 	return this->nVisibleLines;
 }
 
-/*
-** Return the horizontal and vertical scroll positions of the widget
-*/
-void TextDisplay::TextGetScroll(int *topLineNum, int *horizOffset) {
-	TextDGetScroll(topLineNum, horizOffset);
-}
-
-/*
-** Translate a buffer text position to the XY location where the center
-** of the cursor would be positioned to point to that character.  Returns
-** False if the position is not displayed because it is VERTICALLY out
-** of view.  If the position is horizontally out of view, returns the
-** x coordinate where the position would be if it were visible.
-*/
-int TextDisplay::TextPosToXY(int pos, int *x, int *y) {
-	return TextDPositionToXY(pos, x, y);
-}
-
-
-/*
-** Translate a position into a line number (if the position is visible,
-** if it's not, return False
-*/
-int TextDisplay::TextPosToLineAndCol(int pos, int *lineNum, int *column) {
-	return TextDPosToLineAndCol(pos, lineNum, column);
-}
-
-
-
 int TextDisplay::TextVisibleWidth() {
 	return this->width;
 }
-
 
 /*
 ** Get the buffer associated with this text widget.  Note that attaching

@@ -1457,7 +1457,7 @@ static void editTaggedLocation(Widget parent, int i) {
 	
 	auto textD = reinterpret_cast<TextWidget>(windowToSearch->lastFocus_)->text.textD;
 	
-	textD->TextSetScroll(lineNum - rows / 4, 0);
+	textD->TextDSetScroll(lineNum - rows / 4, 0);
 	textD->TextSetCursorPos(endPos);
 }
 

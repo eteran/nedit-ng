@@ -3104,7 +3104,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	// User specified column, but not line number 
 	if (lineNum == -1) {
 		position = textD->TextGetCursorPos();		
-		if (textD->TextPosToLineAndCol(position, &lineNum, &curCol) == False) {
+		if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
 			return;
 		}
 	} else if (column == -1) {
@@ -3113,7 +3113,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 
-	position = textD->TextLineAndColToPos(lineNum, column);
+	position = textD->TextDLineAndColToPos(lineNum, column);
 	if (position == -1) {
 		return;
 	}

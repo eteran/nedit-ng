@@ -2970,7 +2970,7 @@ static void selectWord(Widget w, int pointerX) {
 	TextBuffer *buf = tw->text.textD->buffer;
 	int x, y, insertPos = tw->text.textD->TextDGetInsertPosition();
 
-	tw->text.textD->TextPosToXY(insertPos, &x, &y);
+	tw->text.textD->TextDPositionToXY(insertPos, &x, &y);
 	if (pointerX < x && insertPos > 0 && buf->BufGetCharacter(insertPos - 1) != '\n')
 		insertPos--;
 	buf->BufSelect(startOfWord(tw, insertPos), endOfWord(tw, insertPos));

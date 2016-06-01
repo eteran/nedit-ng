@@ -152,13 +152,8 @@ public:
 	int TextFirstVisibleLine();
 	int TextFirstVisiblePos();
 	int TextGetCursorPos();
-	int TextGetMaxFontWidth(Boolean considerStyles);
-	int TextGetMinFontWidth(Boolean considerStyles);
 	int TextLastVisiblePos();
-	int TextLineAndColToPos(int lineNum, int column);
 	int TextNumVisibleLines();
-	int TextPosToLineAndCol(int pos, int *lineNum, int *column);
-	int TextPosToXY(int pos, int *x, int *y);
 	int TextVisibleWidth();
 	std::string TextGetWrappedEx(int startPos, int endPos);
 	void HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event);
@@ -167,13 +162,11 @@ public:
 	void TextColPasteClipboard(Time time);
 	void TextCopyClipboard(Time time);
 	void TextCutClipboard(Time time);
-	void TextGetScroll(int *topLineNum, int *horizOffset);
 	void TextHandleXSelections();
 	void TextInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete, bool allowWrap);
 	void TextPasteClipboard(Time time);
 	void TextSetBuffer(TextBuffer *buffer);
 	void TextSetCursorPos(int pos);
-	void TextSetScroll(int topLineNum, int horizOffset);
 	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
