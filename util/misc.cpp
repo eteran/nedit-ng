@@ -103,14 +103,11 @@ static uint8_t watch_bits[] = {0xe0, 0x07, 0xe0, 0x07, 0xe0, 0x07, 0xe0, 0x07, 0
 static uint8_t watch_mask_bits[] = {0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf8, 0x1f, 0xfc, 0x3f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfc, 0x3f, 0xf8, 0x1f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f};
 
 static void addMnemonicGrabs(Widget addTo, Widget w, int unmodified);
-static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event);
-static void findAndActivateMnemonic(Widget w, unsigned int keycode);
 static void addAccelGrabs(Widget topWidget, Widget w);
 static void addAccelGrab(Widget topWidget, Widget w);
 static int parseAccelString(Display *display, const char *string, KeySym *keysym, unsigned int *modifiers);
 static void lockCB(Widget w, XtPointer callData, XEvent *event, Boolean *continueDispatch);
 static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int modifiers, XEvent *event);
-static void removeWhiteSpace(char *string);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
 static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch);
@@ -504,20 +501,12 @@ bool FindBestVisual(Display *display, const char *appName, const char *appClass,
 ** from the parent widget (CreatePopupMenu and CreatePulldownMenu), or from the
 ** best visual, obtained via FindBestVisual above (CreateShellWithBestVis).
 */
-Widget CreateDialogShell(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreateDialogShell, parent, name, arglist, argcount);
-}
-
 Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
 	return addParentVisArgsAndCall(XmCreatePopupMenu, parent, name, arglist, argcount);
 }
 
 Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
 	return addParentVisArgsAndCall(XmCreatePulldownMenu, parent, name, arglist, argcount);
-}
-
-Widget CreatePromptDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreatePromptDialog, parent, name, arglist, argcount);
 }
 
 Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
@@ -530,25 +519,6 @@ Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist, Cardin
 	return addParentVisArgsAndCall(XmCreateFormDialog, parent, name, arglist, argcount);
 }
 
-Widget CreateFileSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	Widget dialog = addParentVisArgsAndCall(XmCreateFileSelectionDialog, parent, name, arglist, argcount);
-
-	AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_LIST));
-	AddMouseWheelSupport(XmFileSelectionBoxGetChild(dialog, XmDIALOG_DIR_LIST));
-	return dialog;
-}
-
-Widget CreateQuestionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreateQuestionDialog, parent, name, arglist, argcount);
-}
-
-Widget CreateMessageDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreateMessageDialog, parent, name, arglist, argcount);
-}
-
-Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreateErrorDialog, parent, name, arglist, argcount);
-}
 
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount) {
 	Widget result;
@@ -789,30 +759,6 @@ void RaiseWindow(Display *display, Window w, bool focus) {
 }
 
 /*
-** Add a handler for mnemonics in a dialog (Motif currently only handles
-** mnemonics in menus) following the example of M.S. Windows.  To add
-** mnemonics to a dialog, set the XmNmnemonic resource, as you would in
-** a menu, on push buttons or toggle buttons, and call this function
-** when the dialog is fully constructed.  Mnemonics added or changed
-** after this call will not be noticed.  To add a mnemonic to a text field
-** or list, set the XmNmnemonic resource on the appropriate label and set
-** the XmNuserData resource of the label to the widget to get the focus
-** when the mnemonic is typed.
-*/
-void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo) {
-	XtAddEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, nullptr);
-	addMnemonicGrabs(dialog, dialog, unmodifiedToo);
-}
-
-/*
-** Removes the event handler and key-grabs added by AddDialogMnemonicHandler
-*/
-void RemoveDialogMnemonicHandler(Widget dialog) {
-	XtUngrabKey(dialog, AnyKey, Mod1Mask);
-	XtRemoveEventHandler(dialog, KeyPressMask, False, (XtEventHandler)mnemonicCB, nullptr);
-}
-
-/*
 ** Patch around Motif's poor handling of menu accelerator keys.  Motif
 ** does not process menu accelerators when the caps lock or num lock
 ** keys are engaged.  To enable accelerators in these cases, call this
@@ -925,34 +871,6 @@ XFontStruct *GetDefaultFontStruct(XmFontList font) {
 	return fs;
 }
 
-/*
-** Create a string table suitable for passing to XmList widgets
-*/
-XmString *StringTable(int count, ...) {
-	va_list ap;
-	XmString *array;
-	int i;
-	char *str;
-
-	va_start(ap, count);
-	array = (XmString *)XtMalloc((count + 1) * sizeof(XmString));
-	for (i = 0; i < count; i++) {
-		str = va_arg(ap, char *);
-		array[i] = XmStringCreateSimple(str);
-	}
-	array[i] = nullptr;
-	va_end(ap);
-	return (array);
-}
-
-void FreeStringTable(XmString *table) {
-	
-	for (int i = 0; table[i]; i++) {
-		XmStringFree(table[i]);
-	}
-	
-	XtFree((char *)table);
-}
 
 /*
 ** Simulate a button press.  The purpose of this routine is show users what
@@ -1031,111 +949,6 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic) {
 	return menu;
 }
 
-/*
-** SetIntText
-**
-** Set the text of a motif label to show an integer
-*/
-void SetIntText(Widget text, int value) {
-	char labelString[20];
-
-	sprintf(labelString, "%d", value);
-	XmTextSetString(text, labelString);
-}
-
-/*
-** GetIntText, GetFloatText, GetIntTextWarn, GetFloatTextWarn
-**
-** Get the text of a motif text widget as an integer or floating point number.
-** The functions will return TEXT_READ_OK of the value was read correctly.
-** If not, they will return either TEXT_IS_BLANK, or TEXT_NOT_NUMBER.  The
-** GetIntTextWarn and GetFloatTextWarn will display a dialog warning the
-** user that the value could not be read.  The argument fieldName is used
-** in the dialog to help the user identify where the problem is.  Set
-** warnBlank to true if a blank field is also considered an error.
-*/
-int GetFloatText(Widget text, double *value) {
-	char *strValue, *endPtr;
-	int retVal;
-
-	strValue = XmTextGetString(text);   /* Get Value */
-	removeWhiteSpace(strValue);         /* Remove blanks and tabs */
-	*value = strtod(strValue, &endPtr); /* Convert string to double */
-	if (strlen(strValue) == 0)          /* String is empty */
-		retVal = TEXT_IS_BLANK;
-	else if (*endPtr != '\0') /* Whole string not parsed */
-		retVal = TEXT_NOT_NUMBER;
-	else
-		retVal = TEXT_READ_OK;
-	XtFree(strValue);
-	return retVal;
-}
-
-int GetIntText(Widget text, int *value) {
-	char *strValue, *endPtr;
-	int retVal;
-
-	strValue = XmTextGetString(text);       /* Get Value */
-	removeWhiteSpace(strValue);             /* Remove blanks and tabs */
-	*value = strtol(strValue, &endPtr, 10); /* Convert string to long */
-	if (strlen(strValue) == 0)              /* String is empty */
-		retVal = TEXT_IS_BLANK;
-	else if (*endPtr != '\0') /* Whole string not parsed */
-		retVal = TEXT_NOT_NUMBER;
-	else
-		retVal = TEXT_READ_OK;
-	XtFree(strValue);
-	return retVal;
-}
-
-int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warnBlank) {
-	int result;
-	char *valueStr;
-
-	result = GetFloatText(text, value);
-	if (result == TEXT_READ_OK || (result == TEXT_IS_BLANK && !warnBlank))
-		return result;
-	valueStr = XmTextGetString(text);
-
-	if (result == TEXT_IS_BLANK) {		
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply %1 value")).arg(QLatin1String(fieldName)));
-	} else /* TEXT_NOT_NUMBER */ {	
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read %1 value: \"%2\"")).arg(QLatin1String(fieldName), QLatin1String(valueStr)));
-	}
-
-	XtFree(valueStr);
-	return result;
-}
-
-int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank) {
-	int result;
-	char *valueStr;
-
-	result = GetIntText(text, value);
-	if (result == TEXT_READ_OK || (result == TEXT_IS_BLANK && !warnBlank))
-		return result;
-	valueStr = XmTextGetString(text);
-
-	if (result == TEXT_IS_BLANK) {	
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Please supply a value for %1")).arg(QLatin1String(fieldName)));
-	} else /* TEXT_NOT_NUMBER */ {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Warning"), QString(QLatin1String("Can't read integer value \"%1\" in %2")).arg(QLatin1String(valueStr), QLatin1String(fieldName)));
-	}
-
-	XtFree(valueStr);
-	return result;
-}
-
-int TextWidgetIsBlank(Widget textW) {
-	char *str;
-	int retVal;
-
-	str = XmTextGetString(textW);
-	removeWhiteSpace(str);
-	retVal = *str == '\0';
-	XtFree(str);
-	return retVal;
-}
 
 /*
 ** Turn a multi-line editing text widget into a fake single line text area
@@ -1298,23 +1111,6 @@ void CreateGeometryString(char *string, int x, int y, int width, int height, int
 }
 
 /*
-** Remove the white space (blanks and tabs) from a string
-*/
-static void removeWhiteSpace(char *string) {
-	char *outPtr = string;
-
-	while (TRUE) {
-		if (*string == 0) {
-			*outPtr = 0;
-			return;
-		} else if (*string != ' ' && *string != '\t')
-			*(outPtr++) = *(string++);
-		else
-			string++;
-	}
-}
-
-/*
 ** Compares two strings and return TRUE if the two strings
 ** are the same, ignoring whitespace and case differences.
 */
@@ -1439,64 +1235,6 @@ static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo) {
 			reallyGrabAKey(dialog, keyCode, Mod1Mask);
 			if (unmodifiedToo)
 				reallyGrabAKey(dialog, keyCode, 0);
-		}
-	}
-}
-
-/*
-** Callback routine for dialog mnemonic processing.
-*/
-static void mnemonicCB(Widget w, XtPointer callData, XKeyEvent *event) {
-
-	(void)callData;
-	
-	findAndActivateMnemonic(w, event->keycode);
-}
-
-/*
-** Look for a widget in the widget tree w, with a mnemonic matching
-** keycode.  When one is found, simulate a button press on that widget
-** and give it the keyboard focus.  If the mnemonic is on a label,
-** look in the userData field of the label to see if it points to
-** another widget, and give that the focus.  This routine is just
-** sufficient for NEdit, no doubt it will need to be extended for
-** mnemonics on widgets other than just buttons and text fields.
-*/
-static void findAndActivateMnemonic(Widget w, unsigned int keycode) {
-	WidgetList children;
-	Cardinal numChildren;
-	int i, isMenu;
-	KeySym mnemonic = '\0';
-	char mneString[2];
-	Widget userData;
-	uint8_t rowColType;
-
-	if (XtIsComposite(w)) {
-		if (XtClass(w) == xmRowColumnWidgetClass) {
-			XtVaGetValues(w, XmNrowColumnType, &rowColType, nullptr);
-			isMenu = rowColType != XmWORK_AREA;
-		} else
-			isMenu = False;
-		if (!isMenu) {
-			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
-			for (i = 0; i < (int)numChildren; i++)
-				findAndActivateMnemonic(children[i], keycode);
-		}
-	} else {
-		XtVaGetValues(w, XmNmnemonic, &mnemonic, nullptr);
-		if (mnemonic != '\0') {
-			mneString[0] = mnemonic;
-			mneString[1] = '\0';
-			if (XKeysymToKeycode(XtDisplay(XtParent(w)), XStringToKeysym(mneString)) == keycode) {
-				if (XtClass(w) == xmLabelWidgetClass || XtClass(w) == xmLabelGadgetClass) {
-					XtVaGetValues(w, XmNuserData, &userData, nullptr);
-					if (userData && XtIsWidget(userData) && XmIsTraversable(userData))
-						XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
-				} else if (XmIsTraversable(w)) {
-					XmProcessTraversal(w, XmTRAVERSE_CURRENT);
-					SimulateButtonPress(w);
-				}
-			}
 		}
 	}
 }
@@ -1966,8 +1704,7 @@ int SpinClipboardEndCopy(Display *display, Window window, long item_id) {
 			return res;
 		}
 		if (res == XmClipboardFail) {
-			warning("XmClipboardEndCopy() failed: XmClipboardStartCopy not "
-			        "called.");
+			warning("XmClipboardEndCopy() failed: XmClipboardStartCopy not called.");
 			return res;
 		}
 		microsleep(USLEEPTIME);

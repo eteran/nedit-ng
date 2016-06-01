@@ -49,10 +49,6 @@
 
 bool FindBestVisual(Display *display, const char *appName, const char *appClass, Visual **visual, int *depth, Colormap *colormap);
 std::string GetXmStringTextEx(XmString fromString);
-int GetFloatTextWarn(Widget text, double *value, const char *fieldName, int warnBlank);
-int GetFloatText(Widget text, double *value);
-int GetIntTextWarn(Widget text, int *value, const char *fieldName, int warnBlank);
-int GetIntText(Widget text, int *value);
 int SpinClipboardCopy(Display *display, Window window, long item_id, char *format_name, XtPointer buffer, unsigned long length, long private_id, long *data_id);
 int SpinClipboardEndCopy(Display *display, Window window, long item_id);
 int SpinClipboardInquireLength(Display *display, Window window, char *format_name, unsigned long *length);
@@ -60,12 +56,11 @@ int SpinClipboardLock(Display *display, Window window);
 int SpinClipboardRetrieve(Display *display, Window window, char *format_name, XtPointer buffer, unsigned long length, unsigned long *num_bytes, long *private_id);
 int SpinClipboardStartCopy(Display *display, Window window, XmString clip_label, Time timestamp, Widget widget, XmCutPasteProc callback, long *item_id);
 int SpinClipboardUnlock(Display *display, Window window);
-int TextWidgetIsBlank(Widget textW);
+//int TextWidgetIsBlank(Widget textW);
 long QueryCurrentDesktop(Display *display, Window rootWindow);
 long QueryDesktop(Display *display, Widget shell);
 Modifiers GetNumLockModMask(Display *display);
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
-void AddDialogMnemonicHandler(Widget dialog, int unmodifiedToo);
 void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void AddMouseWheelSupport(Widget w);
@@ -74,7 +69,6 @@ void BusyWait(Widget anyWidget);
 void CloseAllPopupsFor(Widget shell);
 void CreateGeometryString(char *string, int x, int y, int width, int height, int bitmask);
 void EndWait(Widget topCursorWidget);
-void FreeStringTable(XmString *table);
 void InstallMouseWheelActions(XtAppContext context);
 void MakeSingleLineTextW(Widget textW);
 void ManageDialogCenteredOnPointer(Widget dialogChild);
@@ -86,10 +80,8 @@ void RaiseShellWindow(Widget shell, bool focus);
 void RaiseWindow(Display *display, Window w, bool focus);
 void RealizeWithoutForcingPosition(Widget shell);
 void RemapDeleteKey(Widget w);
-void RemoveDialogMnemonicHandler(Widget dialog);
 void RemovePPositionHint(Widget shell);
 void SetDeleteRemap(int state);
-void SetIntText(Widget text, int value);
 void SetPointerCenteredDialogs(int state);
 void SimulateButtonPress(Widget widget);
 void SuppressPassiveGrabWarnings(void);
@@ -98,20 +90,13 @@ void WmClientMsg(Display *disp, Window win, const char *msg, unsigned long data0
 Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg);
 Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg, int set);
 Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic);
-Widget CreateDialogShell(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
-Widget CreateErrorDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
-Widget CreateFileSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
-Widget CreateMessageDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget parent, ArgList arglist, Cardinal argcount);
-Widget CreatePromptDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
-Widget CreateQuestionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount);
 XFontStruct *GetDefaultFontStruct(XmFontList font);
-XmString *StringTable(int count, ...);
-
+	
 #endif
