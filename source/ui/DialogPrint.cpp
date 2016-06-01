@@ -229,7 +229,7 @@ void DialogPrint::getLprQueueDefault(char *defqueue) {
 ** Is the filename file in the environment path directories
 ** and does it have at least some of the mode_flags enabled ?
 */
-bool DialogPrint::fileInPath(const char *filename, unsigned short mode_flags) {
+bool DialogPrint::fileInPath(const char *filename, uint16_t mode_flags) {
 	char path[MAXPATHLEN];
 	char *pathstring, *lastchar;
 
@@ -307,7 +307,7 @@ bool DialogPrint::foundTag(const char *tagfilename, const char *tagname, char *r
 ** Is the filename file in the directory dirpath
 ** and does it have at least some of the mode_flags enabled ?
 */
-bool DialogPrint::fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags) {
+bool DialogPrint::fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags) {
 	
 	struct stat statbuf;
 	

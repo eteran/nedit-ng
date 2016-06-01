@@ -32,10 +32,10 @@ private:
 	static void getFlprQueueDefault(char *defqueue);
 	static void getFlprHostDefault(char *defhost);
 	static void getLprQueueDefault(char *defqueue);
-	static bool fileInPath(const char *filename, unsigned short mode_flags);
+	static bool fileInPath(const char *filename, uint16_t mode_flags);
 	static bool foundEnv(const char *EnvVarName, char *result);
 	static bool foundTag(const char *tagfilename, const char *tagname, char *result);
-	static bool fileInDir(const char *filename, const char *dirpath, unsigned short mode_flags);
+	static bool fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags);
 
 public:
 	Ui::DialogPrint ui;
