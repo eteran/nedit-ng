@@ -539,7 +539,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	redrawLineNumbers(true);
 
 	// Redraw the calltip
-	TextDRedrawCalltip(this, 0);
+	TextDRedrawCalltip(0);
 }
 
 /*
@@ -1745,7 +1745,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 
 	// If the y position of the cursor has changed, redraw the calltip
 	if (hasCursor && (y_orig != this->cursorY || y_orig != y))
-		TextDRedrawCalltip(this, 0);
+		TextDRedrawCalltip(0);
 }
 
 /*
@@ -2547,7 +2547,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	    vertically */
 	if (lineDelta != 0) {
 		redrawLineNumbers(false);
-		TextDRedrawCalltip(this, 0);
+		TextDRedrawCalltip(0);
 	}
 
 	HandleAllPendingGraphicsExposeNoExposeEvents(nullptr);
@@ -4261,4 +4261,105 @@ Bool TextDisplay::findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent 
 	} else {
 		return false;
 	}
+}
+
+
+void TextDisplay::TextDKillCalltip(int calltipID) {
+	if (this->calltip.ID == 0)
+		return;
+	if (calltipID == 0 || calltipID == this->calltip.ID) {
+		XtPopdown(this->calltipShell);
+		this->calltip.ID = 0;
+	}
+}
+
+
+/*
+** Update the position of the current calltip if one exists, else do nothing
+*/
+void TextDisplay::TextDRedrawCalltip(int calltipID) {
+	int lineHeight = this->ascent + this->descent;
+	Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
+	XWindowAttributes screenAttr;
+	int rel_x, rel_y, flip_delta;
+
+	if (this->calltip.ID == 0)
+		return;
+	if (calltipID != 0 && calltipID != this->calltip.ID)
+		return;
+
+	// Get the location/dimensions of the text area 
+	XtVaGetValues(this->w, XmNx, &txtX, XmNy, &txtY, nullptr);
+
+	if (this->calltip.anchored) {
+		// Put it at the anchor position 
+		if (!this->TextDPositionToXY(this->calltip.pos, &rel_x, &rel_y)) {
+			if (this->calltip.alignMode == TIP_STRICT)
+				this->TextDKillCalltip(this->calltip.ID);
+			return;
+		}
+	} else {
+		if (this->calltip.pos < 0) {
+			/* First display of tip with cursor offscreen (detected in
+			    ShowCalltip) */
+			this->calltip.pos = this->width / 2;
+			this->calltip.hAlign = TIP_CENTER;
+			rel_y = this->height / 3;
+		} else if (!this->TextDPositionToXY(this->cursorPos, &rel_x, &rel_y)) {
+			// Window has scrolled and tip is now offscreen 
+			if (this->calltip.alignMode == TIP_STRICT)
+				this->TextDKillCalltip(this->calltip.ID);
+			return;
+		}
+		rel_x = this->calltip.pos;
+	}
+
+	XtVaGetValues(this->calltipShell, XmNwidth, &tipWidth, XmNheight, &tipHeight, XmNborderWidth, &borderWidth, nullptr);
+	rel_x += borderWidth;
+	rel_y += lineHeight / 2 + borderWidth;
+
+	// Adjust rel_x for horizontal alignment modes 
+	if (this->calltip.hAlign == TIP_CENTER)
+		rel_x -= tipWidth / 2;
+	else if (this->calltip.hAlign == TIP_RIGHT)
+		rel_x -= tipWidth;
+
+	// Adjust rel_y for vertical alignment modes 
+	if (this->calltip.vAlign == TIP_ABOVE) {
+		flip_delta = tipHeight + lineHeight + 2 * borderWidth;
+		rel_y -= flip_delta;
+	} else
+		flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
+
+	XtTranslateCoords(this->w, rel_x, rel_y, &abs_x, &abs_y);
+
+	// If we're not in strict mode try to keep the tip on-screen 
+	if (this->calltip.alignMode == TIP_SLOPPY) {
+		XGetWindowAttributes(XtDisplay(this->w), RootWindowOfScreen(XtScreen(this->w)), &screenAttr);
+
+		// make sure tip doesn't run off right or left side of screen 
+		if (abs_x + tipWidth >= screenAttr.width - CALLTIP_EDGE_GUARD)
+			abs_x = screenAttr.width - tipWidth - CALLTIP_EDGE_GUARD;
+		if (abs_x < CALLTIP_EDGE_GUARD)
+			abs_x = CALLTIP_EDGE_GUARD;
+
+		// Try to keep the tip onscreen vertically if possible 
+		if (screenAttr.height > tipHeight && offscreenV(&screenAttr, abs_y, tipHeight)) {
+			// Maybe flipping from below to above (or vice-versa) will help 
+			if (!offscreenV(&screenAttr, abs_y + flip_delta, tipHeight))
+				abs_y += flip_delta;
+			// Make sure the tip doesn't end up *totally* offscreen 
+			else if (abs_y + tipHeight < 0)
+				abs_y = CALLTIP_EDGE_GUARD;
+			else if (abs_y >= screenAttr.height)
+				abs_y = screenAttr.height - tipHeight - CALLTIP_EDGE_GUARD;
+			// If no case applied, just go with the default placement. 
+		}
+	}
+
+	XtVaSetValues(this->calltipShell, XmNx, abs_x, XmNy, abs_y, nullptr);
+}
+
+bool TextDisplay::offscreenV(XWindowAttributes *screenAttr, int top, int height) {
+	return (top < CALLTIP_EDGE_GUARD || top + height >= screenAttr->height - CALLTIP_EDGE_GUARD);
 }

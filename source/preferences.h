@@ -27,11 +27,14 @@
 #ifndef PREFERENCES_H_
 #define PREFERENCES_H_
 
-#include "nedit.h"
+#define MAX_FONT_LEN 100    /* maximum length for a font name */
+#define MAX_COLOR_LEN 30    /* maximum length for a color name */
+
 #include "string_view.h"
 
 class QWidget;
 class QString;
+class Document;
 class LanguageMode;
 
 

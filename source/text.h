@@ -126,7 +126,11 @@ struct dragEndCBStruct {
 	view::string_view deletedText;
 };
 
-enum SmartIndentCallbackReasons { NEWLINE_INDENT_NEEDED, CHAR_TYPED };
+enum SmartIndentCallbackReasons {
+	NEWLINE_INDENT_NEEDED, 
+	CHAR_TYPED
+};
+
 struct smartIndentCBStruct {
 	SmartIndentCallbackReasons reason;
 	int pos;
@@ -135,7 +139,6 @@ struct smartIndentCBStruct {
 };
 
 /* User callable routines */
-
 XtActionsRec *TextGetActions(int *nActions);
 
 #endif

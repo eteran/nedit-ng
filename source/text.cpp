@@ -1152,7 +1152,7 @@ static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
 
 	// If there's a calltip displayed, kill it.
-	TextDKillCalltip(textD, 0);
+	textD->TextDKillCalltip(0);
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG)
 		buf->BufUnselect();
@@ -2733,7 +2733,7 @@ static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textD->TextDUnblankCursor();
 
 	// If there's a calltip displayed, kill it.
-	TextDKillCalltip(textD, 0);
+	textD->TextDKillCalltip(0);
 
 	// Call any registered focus-out callbacks
 	XtCallCallbacks((Widget)w, textNlosingFocusCallback, (XtPointer)event);

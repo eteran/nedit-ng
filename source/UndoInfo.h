@@ -13,12 +13,13 @@
    When there are very large amounts of saved text held in the list,
    UNDO_WORRY_LIMIT and UNDO_PURGE_LIMIT take over and cause the list to
    be trimmed back further to keep its size down. */
-#define UNDO_PURGE_LIMIT  15000000 /* If undo list gets this large (in bytes), trim it to length of UNDO_PURGE_TRIMTO */
-#define UNDO_PURGE_TRIMTO 1        /* Amount to trim the undo list in a purge */
-#define UNDO_WORRY_LIMIT  2000000  /* If undo list gets this large (in bytes), trim it to length of UNDO_WORRY_TRIMTO */
-#define UNDO_WORRY_TRIMTO 5        /* Amount to trim the undo list when memory use begins to get serious */
-#define UNDO_OP_LIMIT     400      /* normal limit for length of undo list */
-#define UNDO_OP_TRIMTO    200      /* size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length */
+
+#define UNDO_PURGE_LIMIT  15000000 // If undo list gets this large (in bytes), trim it to length of UNDO_PURGE_TRIMTO
+#define UNDO_PURGE_TRIMTO 1        // Amount to trim the undo list in a purge
+#define UNDO_WORRY_LIMIT  2000000  // If undo list gets this large (in bytes), trim it to length of UNDO_WORRY_TRIMTO
+#define UNDO_WORRY_TRIMTO 5        // Amount to trim the undo list when memory use begins to get serious
+#define UNDO_OP_LIMIT     400      // normal limit for length of undo list
+#define UNDO_OP_TRIMTO    200      // size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length
 
 enum UndoTypes {
 	UNDO_NOOP, 

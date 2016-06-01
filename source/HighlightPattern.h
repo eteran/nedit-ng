@@ -4,7 +4,7 @@
 
 #include <QString>
 
-/* Pattern specification structure */
+// Pattern specification structure
 class HighlightPattern {
 public:
 	HighlightPattern();

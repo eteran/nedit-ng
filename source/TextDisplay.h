@@ -34,7 +34,13 @@
 #include <X11/Xlib.h>
 #include <Xm/Xm.h>
 
-enum CursorStyles { NORMAL_CURSOR, CARET_CURSOR, DIM_CURSOR, BLOCK_CURSOR, HEAVY_CURSOR };
+enum CursorStyles {
+	NORMAL_CURSOR, 
+	CARET_CURSOR, 
+	DIM_CURSOR, 
+	BLOCK_CURSOR, 
+	HEAVY_CURSOR
+};
 
 #define NO_HINT -1
 
@@ -137,6 +143,8 @@ public:
 	void TextDTranlateGraphicExposeQueue(int xOffset, int yOffset, bool appendEntry);
 	void TextDUnblankCursor();
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
+	void TextDKillCalltip(int calltipID);
+	void TextDRedrawCalltip(int calltipID);
 
 public:
 	TextBuffer *TextGetBuffer();
@@ -223,6 +231,7 @@ public:
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg);
+	static bool offscreenV(XWindowAttributes *screenAttr, int top, int height);
 
 public:
 	Widget w; // TextWidget

@@ -32,8 +32,8 @@
 
 #define NEDIT_DEFAULT_CALLTIP_FG "black"
 #define NEDIT_DEFAULT_CALLTIP_BG "LemonChiffon1"
+#define CALLTIP_EDGE_GUARD 5
 
-class TextDisplay;
 class Document;
 
 enum TipHAlignMode { TIP_LEFT, TIP_CENTER, TIP_RIGHT };
@@ -41,9 +41,7 @@ enum TipVAlignMode { TIP_ABOVE, TIP_BELOW };
 enum TipAlignStrict { TIP_SLOPPY, TIP_STRICT };
 
 int GetCalltipID(Document *window, int calltipID);
-int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode);
+int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
 void KillCalltip(Document *window, int calltipID);
-void TextDKillCalltip(TextDisplay *textD, int calltipID);
-void TextDRedrawCalltip(TextDisplay *textD, int calltipID);
 
 #endif

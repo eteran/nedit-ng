@@ -27,7 +27,8 @@
 #ifndef SEARCH_H_
 #define SEARCH_H_
 
-#include "nedit.h"
+#define MAX_SEARCH_HISTORY 100 /* Maximum length of search string history */
+
 #include "SearchDirection.h"
 #include "string_view.h"
 

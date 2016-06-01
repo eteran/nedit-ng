@@ -26,8 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_SERVER_COMMON_H_INCLUDED
-#define NEDIT_SERVER_COMMON_H_INCLUDED
+#ifndef SERVER_COMMON_H_
+#define SERVER_COMMON_H_
 
 #include <X11/Intrinsic.h>
 
@@ -41,4 +41,4 @@ Atom CreateServerFileOpenAtom(const char *serverName, const char *path);
 Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exists);
 void DeleteServerFileAtoms(const char *serverName, Window rootWindow);
 
-#endif /* NEDIT_SERVER_COMMON_H_INCLUDED */
+#endif

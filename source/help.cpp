@@ -28,6 +28,7 @@
 *******************************************************************************/
 
 #include "help.h"
+#include "nedit.h"
 #include "preferences.h"
 #include "misc.h"
 #include "system.h"

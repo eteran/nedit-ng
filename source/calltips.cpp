@@ -51,16 +51,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 */
 void KillCalltip(Document *window, int calltipID) {
 	TextDisplay *textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
-	TextDKillCalltip(textD, calltipID);
-}
-
-void TextDKillCalltip(TextDisplay *textD, int calltipID) {
-	if (textD->calltip.ID == 0)
-		return;
-	if (calltipID == 0 || calltipID == textD->calltip.ID) {
-		XtPopdown(textD->calltipShell);
-		textD->calltip.ID = 0;
-	}
+	textD->TextDKillCalltip(calltipID);
 }
 
 /*
@@ -80,98 +71,6 @@ int GetCalltipID(Document *window, int calltipID) {
 			return 0;
 	}
 }
-
-#define CALLTIP_EDGE_GUARD 5
-static Boolean offscreenV(XWindowAttributes *screenAttr, int top, int height) {
-	return (top < CALLTIP_EDGE_GUARD || top + height >= screenAttr->height - CALLTIP_EDGE_GUARD);
-}
-
-/*
-** Update the position of the current calltip if one exists, else do nothing
-*/
-void TextDRedrawCalltip(TextDisplay *textD, int calltipID) {
-	int lineHeight = textD->ascent + textD->descent;
-	Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
-	XWindowAttributes screenAttr;
-	int rel_x, rel_y, flip_delta;
-
-	if (textD->calltip.ID == 0)
-		return;
-	if (calltipID != 0 && calltipID != textD->calltip.ID)
-		return;
-
-	// Get the location/dimensions of the text area 
-	XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, nullptr);
-
-	if (textD->calltip.anchored) {
-		// Put it at the anchor position 
-		if (!textD->TextDPositionToXY(textD->calltip.pos, &rel_x, &rel_y)) {
-			if (textD->calltip.alignMode == TIP_STRICT)
-				TextDKillCalltip(textD, textD->calltip.ID);
-			return;
-		}
-	} else {
-		if (textD->calltip.pos < 0) {
-			/* First display of tip with cursor offscreen (detected in
-			    ShowCalltip) */
-			textD->calltip.pos = textD->width / 2;
-			textD->calltip.hAlign = TIP_CENTER;
-			rel_y = textD->height / 3;
-		} else if (!textD->TextDPositionToXY(textD->cursorPos, &rel_x, &rel_y)) {
-			// Window has scrolled and tip is now offscreen 
-			if (textD->calltip.alignMode == TIP_STRICT)
-				TextDKillCalltip(textD, textD->calltip.ID);
-			return;
-		}
-		rel_x = textD->calltip.pos;
-	}
-
-	XtVaGetValues(textD->calltipShell, XmNwidth, &tipWidth, XmNheight, &tipHeight, XmNborderWidth, &borderWidth, nullptr);
-	rel_x += borderWidth;
-	rel_y += lineHeight / 2 + borderWidth;
-
-	// Adjust rel_x for horizontal alignment modes 
-	if (textD->calltip.hAlign == TIP_CENTER)
-		rel_x -= tipWidth / 2;
-	else if (textD->calltip.hAlign == TIP_RIGHT)
-		rel_x -= tipWidth;
-
-	// Adjust rel_y for vertical alignment modes 
-	if (textD->calltip.vAlign == TIP_ABOVE) {
-		flip_delta = tipHeight + lineHeight + 2 * borderWidth;
-		rel_y -= flip_delta;
-	} else
-		flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
-
-	XtTranslateCoords(textD->w, rel_x, rel_y, &abs_x, &abs_y);
-
-	// If we're not in strict mode try to keep the tip on-screen 
-	if (textD->calltip.alignMode == TIP_SLOPPY) {
-		XGetWindowAttributes(XtDisplay(textD->w), RootWindowOfScreen(XtScreen(textD->w)), &screenAttr);
-
-		// make sure tip doesn't run off right or left side of screen 
-		if (abs_x + tipWidth >= screenAttr.width - CALLTIP_EDGE_GUARD)
-			abs_x = screenAttr.width - tipWidth - CALLTIP_EDGE_GUARD;
-		if (abs_x < CALLTIP_EDGE_GUARD)
-			abs_x = CALLTIP_EDGE_GUARD;
-
-		// Try to keep the tip onscreen vertically if possible 
-		if (screenAttr.height > tipHeight && offscreenV(&screenAttr, abs_y, tipHeight)) {
-			// Maybe flipping from below to above (or vice-versa) will help 
-			if (!offscreenV(&screenAttr, abs_y + flip_delta, tipHeight))
-				abs_y += flip_delta;
-			// Make sure the tip doesn't end up *totally* offscreen 
-			else if (abs_y + tipHeight < 0)
-				abs_y = CALLTIP_EDGE_GUARD;
-			else if (abs_y >= screenAttr.height)
-				abs_y = screenAttr.height - tipHeight - CALLTIP_EDGE_GUARD;
-			// If no case applied, just go with the default placement. 
-		}
-	}
-
-	XtVaSetValues(textD->calltipShell, XmNx, abs_x, XmNy, abs_y, nullptr);
-}
-
 
 /*
 ** Returns a new string with each \t replaced with tab_width spaces or
@@ -222,14 +121,14 @@ std::string expandAllTabsEx(view::string_view text, int tab_width) {
 ** If a calltip is already being displayed it is destroyed and replaced with
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
-int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
 	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
 	int rel_x, rel_y;
 	Position txtX, txtY;
 
 	// Destroy any previous calltip 
-	TextDKillCalltip(textD, 0);
+	textD->TextDKillCalltip(0);
 
 	// Expand any tabs in the calltip and make it an XmString 
 	std::string textCpy = expandAllTabsEx(text, textD->buffer->BufGetTabDistance());
@@ -298,7 +197,7 @@ int ShowCalltip(Document *window, view::string_view text, Boolean anchored, int 
 	// Realize the calltip's shell so that its width & height are known 
 	XtRealizeWidget(textD->calltipShell);
 	// Move the calltip and pop it up 
-	TextDRedrawCalltip(textD, 0);
+	textD->TextDRedrawCalltip(0);
 	XtPopup(textD->calltipShell, XtGrabNone);
 	return textD->calltip.ID;
 }

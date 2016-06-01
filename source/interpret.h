@@ -86,9 +86,19 @@ enum Operations {
 	OP_PUSH_ARG_ARRAY
 };
 
-enum TypeTags { NO_TAG, INT_TAG, STRING_TAG, ARRAY_TAG };
+enum TypeTags {
+	NO_TAG, 
+	INT_TAG, 
+	STRING_TAG, 
+	ARRAY_TAG
+};
 
-enum ExecReturnCodes { MACRO_TIME_LIMIT, MACRO_PREEMPT, MACRO_DONE, MACRO_ERROR };
+enum ExecReturnCodes {
+	MACRO_TIME_LIMIT, 
+	MACRO_PREEMPT, 
+	MACRO_DONE, 
+	MACRO_ERROR
+};
 
 #define ARRAY_DIM_SEP "\034"
 

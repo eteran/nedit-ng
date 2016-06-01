@@ -49,13 +49,10 @@
 
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
-#define MAX_SEARCH_HISTORY 100 /* Maximum length of search string history */
 #define MAX_PANES 6            /* Max # of ADDITIONAL text editing panes  that can be added to a window */
 
 #define AUTOSAVE_CHAR_LIMIT 80 /* set higher on VMS becaus saving is slower */
 #define AUTOSAVE_OP_LIMIT   8  /* number of distinct editing operations user can do before NEdit gens. new backup file */
-#define MAX_FONT_LEN 100    /* maximum length for a font name */
-#define MAX_COLOR_LEN 30    /* maximum length for a color name */
 #define MIN_LINE_NUM_COLS 4 /* Min. # of columns in line number display */
 #define APP_NAME "nedit"    /* application name for loading resources */
 #define APP_CLASS "NEdit"   /* application class for loading resources */
@@ -97,7 +94,17 @@ struct UserMenuListElement;
 
 
 /* Identifiers for the different colors that can be adjusted. */
-enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR, HILITE_FG_COLOR, HILITE_BG_COLOR, LINENO_FG_COLOR, CURSOR_FG_COLOR, NUM_COLORS };
+enum ColorTypes {
+	TEXT_FG_COLOR, 
+	TEXT_BG_COLOR, 
+	SELECT_FG_COLOR, 
+	SELECT_BG_COLOR, 
+	HILITE_FG_COLOR, 
+	HILITE_BG_COLOR, 
+	LINENO_FG_COLOR, 
+	CURSOR_FG_COLOR, 
+	NUM_COLORS
+};
 
 
 /* structure holding cache info about Shell and Macro menus, which are
@@ -105,8 +112,8 @@ enum ColorTypes { TEXT_FG_COLOR, TEXT_BG_COLOR, SELECT_FG_COLOR, SELECT_BG_COLOR
    user definable menus when language mode changes) */
 struct UserMenuCache {
 	int umcLanguageMode;           /* language mode applied for shared user menus */
-	Boolean umcShellMenuCreated;   /* indicating, if all shell menu items were created */
-	Boolean umcMacroMenuCreated;   /* indicating, if all macro menu items were created */
+	bool umcShellMenuCreated;      /* indicating, if all shell menu items were created */
+	bool umcMacroMenuCreated;      /* indicating, if all macro menu items were created */
 	
 	UserMenuList umcShellMenuList; /* list of all shell menu items */
 	UserMenuList umcMacroMenuList; /* list of all macro menu items */
@@ -117,7 +124,7 @@ struct UserMenuCache {
    user definable menu when language mode changes) */
 struct UserBGMenuCache {
 	int ubmcLanguageMode;      /* language mode applied for background user menu */
-	Boolean ubmcMenuCreated;   /* indicating, if all background menu items were created */
+	bool ubmcMenuCreated;      /* indicating, if all background menu items were created */
 	UserMenuList ubmcMenuList; /* list of all background menu items */
 };
 

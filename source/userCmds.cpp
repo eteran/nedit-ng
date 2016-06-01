@@ -97,7 +97,7 @@ struct selectedUserMenu {
 	userMenuInfo **sumInfoList;    // list of infos about menu items 
 	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
 	UserMenuList *sumMainMenuList; // cached info about main menu 
-	Boolean *sumMenuCreated;       // pointer to "menu created" indicator
+	bool *sumMenuCreated;       // pointer to "menu created" indicator
 };
 
 /* Descriptions of the current user programmed menu items for re-generating
