@@ -189,12 +189,16 @@ TextDisplay::TextDisplay(Widget widget,
 	this->cursorFGPixel = cursorFGPixel;
 	this->wrapMargin = wrapMargin;
 	this->continuousWrap = continuousWrap;
+	
 	allocateFixedFontGCs(fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
-	this->styleGC = allocateGC(this->w, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
-	this->lineNumLeft = lineNumLeft;
-	this->lineNumWidth = lineNumWidth;
+	
+	this->styleGC       = allocateGC(this->w, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
+	this->lineNumLeft   = lineNumLeft;
+	this->lineNumWidth  = lineNumWidth;
 	this->nVisibleLines = (height - 1) / (this->ascent + this->descent) + 1;
+	
 	gcValues.foreground = cursorFGPixel;
+	
 	this->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
 	this->lineStarts = new int[this->nVisibleLines];
 	this->lineStarts[0] = 0;
