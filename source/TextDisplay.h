@@ -125,7 +125,7 @@ public:
 	void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProc unfinishedHighlightCB, void *cbArg);
 	void TextDBlankCursor();
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
-	void TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset);
+	void TextDImposeGraphicsExposeTranslation(int *xOffset, int *yOffset) const;
 	void TextDInsertEx(view::string_view text);
 	void TextDMaintainAbsLineNum(int state);
 	void TextDMakeInsertPosVisible();
@@ -148,13 +148,13 @@ public:
 
 public:
 	TextBuffer *TextGetBuffer();
-	bool checkReadOnly();
-	int TextFirstVisibleLine();
-	int TextFirstVisiblePos();
-	int TextGetCursorPos();
-	int TextLastVisiblePos();
-	int TextNumVisibleLines();
-	int TextVisibleWidth();
+	bool checkReadOnly() const;
+	int TextFirstVisibleLine() const;
+	int TextFirstVisiblePos() const;
+	int TextGetCursorPos() const;
+	int TextLastVisiblePos() const;
+	int TextNumVisibleLines() const;
+	int TextVisibleWidth() const;
 	std::string TextGetWrappedEx(int startPos, int endPos);
 	void HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event);
 	void ResetCursorBlink(bool startsBlanked);
@@ -170,12 +170,12 @@ public:
 	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
-	void checkAutoShowInsertPos();
+	void checkAutoShowInsertPos() const;
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 		
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
-	int emptyLinesVisible();
+	int emptyLinesVisible() const;
 	int getAbsTopLineNum();
 	int measurePropChar(const char c, const int colNum, const int pos) const;
 	int measureVisLine(int visLineNum);
@@ -215,7 +215,7 @@ public:
 	int updateHScrollBarRange();
 	void resetAbsLineNum();	
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
-	int maintainingAbsTopLineNum();
+	int maintainingAbsTopLineNum() const;
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 
 public:
@@ -276,7 +276,6 @@ public:
 	Pixel cursorFGPixel;
 	Pixel *bgClassPixel;                         // table of colors for each BG class
 	unsigned char *bgClass;                      // obtains index into bgClassPixel[]
-
 	Widget calltipW;                             // The Label widget for the calltip
 	Widget calltipShell;                         // The Shell that holds the calltip
 	calltipStruct calltip;                       // The info for the calltip itself
