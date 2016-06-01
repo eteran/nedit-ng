@@ -20,7 +20,7 @@ public:
 	int RangesetTableGetColorValid(int index, Pixel *color);
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);
-	unsigned char *RangesetGetList();
+	uint8_t *RangesetGetList();
 	void RangesetTableUpdatePos(int pos, int n_ins, int n_del);
 	
 public:
@@ -30,13 +30,13 @@ public:
 	static int RangesetLabelOK(int label);
 
 public:
-	int n_set;                           /* how many sets are active */
-	TextBuffer *buf;                     /* the text buffer of the rangeset */
-	Rangeset set[N_RANGESETS];           /* the rangeset table */
-	unsigned char order[N_RANGESETS];    /* inds of set[]s ordered by depth */
-	unsigned char active[N_RANGESETS];   /* entry true if corresp. set active */
-	unsigned char depth[N_RANGESETS];    /* depth[i]: pos of set[i] in order[] */
-	unsigned char list[N_RANGESETS + 1]; /* string of labels in depth order */
+	int n_set;                     /* how many sets are active */
+	TextBuffer *buf;               /* the text buffer of the rangeset */
+	Rangeset set[N_RANGESETS];     /* the rangeset table */
+	uint8_t order[N_RANGESETS];    /* inds of set[]s ordered by depth */
+	uint8_t active[N_RANGESETS];   /* entry true if corresp. set active */
+	uint8_t depth[N_RANGESETS];    /* depth[i]: pos of set[i] in order[] */
+	uint8_t list[N_RANGESETS + 1]; /* string of labels in depth order */
 };
 
 #endif

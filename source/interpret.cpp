@@ -2622,7 +2622,7 @@ int StringToNum(const char *string, int *number) {
 	if (*c == '+' || *c == '-') {
 		++c;
 	}
-	while (isdigit((unsigned char)*c)) {
+	while (isdigit((uint8_t)*c)) {
 		++c;
 	}
 	while (*c == ' ' || *c == '\t') {

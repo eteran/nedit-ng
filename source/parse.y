@@ -495,7 +495,7 @@ static int yylex(void)
     }
 
     /* process number tokens */
-    if (isdigit((unsigned char)*InPtr))  { /* number */
+    if (isdigit((uint8_t)*InPtr))  { /* number */
         char name[28];
         sscanf(InPtr, "%d%n", &value.val.n, &len);
         sprintf(name, "const %d", value.val.n);
@@ -510,11 +510,11 @@ static int yylex(void)
        by this parser, considered end of input.  Another special case
        is action routine names which are allowed to contain '-' despite
        the ambiguity, handled in matchesActionRoutine. */
-    if (isalpha((unsigned char)*InPtr) || *InPtr == '$') {
+    if (isalpha((uint8_t)*InPtr) || *InPtr == '$') {
         if ((s=matchesActionRoutine(&InPtr)) == nullptr) {
             char symName[MAX_SYM_LEN+1], *p = symName;
             *p++ = *InPtr++;
-            while (isalnum((unsigned char)*InPtr) || *InPtr=='_') {
+            while (isalnum((uint8_t)*InPtr) || *InPtr=='_') {
                 if (p >= symName + MAX_SYM_LEN)
                     InPtr++;
                 else
@@ -734,8 +734,8 @@ static Symbol *matchesActionRoutine(const char **inPtr)
     Symbol *s;
 
     symPtr = symbolName;
-    for (c = *inPtr; isalnum((unsigned char)*c) || *c=='_' ||
-            ( *c=='-' && isalnum((unsigned char)(*(c+1)))); c++) {
+    for (c = *inPtr; isalnum((uint8_t)*c) || *c=='_' ||
+            ( *c=='-' && isalnum((uint8_t)(*(c+1)))); c++) {
         if (*c == '-')
             hasDash = True;
         *symPtr++ = *c;

@@ -74,7 +74,7 @@ public:
 	int last_index;              // a place to start looking
 	int n_ranges;                // how many ranges in ranges
 	Range *ranges;               // the ranges table
-	unsigned char label;         // a number 1-63
+	uint8_t label;         // a number 1-63
 
 	int8_t color_set;            // 0: unset; 1: set; -1: invalid
 	char *color_name;            // the name of an assigned color

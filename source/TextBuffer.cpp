@@ -184,7 +184,7 @@ void histogramCharactersEx(view::string_view string, bool hist[256], bool init) 
 	}
 
 	for (char ch : string) {
-		hist[(unsigned char)ch] |= true;
+		hist[(uint8_t)ch] |= true;
 	}
 }
 
@@ -222,7 +222,7 @@ char chooseNullSubsChar(bool hist[256]) {
 	static char replacements[N_REPLACEMENTS] = {1, 2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 11, 7};
 
 	for (int i = 0; i < N_REPLACEMENTS; i++) {
-		if (hist[(unsigned char)replacements[i]] == 0) {
+		if (hist[(uint8_t)replacements[i]] == 0) {
 			return replacements[i];
 		}
 	}
@@ -1248,8 +1248,8 @@ int TextBuffer::BufExpandCharacter(char c, int indent, char *outStr, int tabDist
 		return sprintf(outStr, "<nul>");
 	}
 
-	if (((unsigned char)c) <= 31) {
-		return sprintf(outStr, "<%s>", ControlCodeTable[(unsigned char)c]);
+	if (((uint8_t)c) <= 31) {
+		return sprintf(outStr, "<%s>", ControlCodeTable[(uint8_t)c]);
 	} else if (c == 127) {
 		return sprintf(outStr, "<del>");
 	}
@@ -1272,8 +1272,8 @@ int TextBuffer::BufCharWidth(char c, int indent, int tabDist, char nullSubsChar)
 		return 5;
 	else if (c == '\t')
 		return tabDist - (indent % tabDist);
-	else if (((unsigned char)c) <= 31)
-		return strlen(ControlCodeTable[(unsigned char)c]) + 2;
+	else if (((uint8_t)c) <= 31)
+		return strlen(ControlCodeTable[(uint8_t)c]) + 2;
 	else if (c == 127)
 		return 5;
 	return 1;
@@ -1497,7 +1497,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	   histogram the buffer text to find a character which is ok in both the
 	   string and the buffer, and change the buffer's null-substitution
 	   character.  If none can be found, give up and return false */
-	if (histogram[(unsigned char)nullSubsChar_] != 0) {
+	if (histogram[(uint8_t)nullSubsChar_] != 0) {
 		char *bufString, newSubsChar;
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
@@ -1538,7 +1538,7 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	   histogram the buffer text to find a character which is ok in both the
 	   string and the buffer, and change the buffer's null-substitution
 	   character.  If none can be found, give up and return false */
-	if (histogram[(unsigned char)nullSubsChar_] != 0) {
+	if (histogram[(uint8_t)nullSubsChar_] != 0) {
 		char *bufString;
 		char newSubsChar;
 		/* here we know we can modify the file buffer directly,

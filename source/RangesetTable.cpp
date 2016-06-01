@@ -8,8 +8,8 @@ namespace {
 
 // -------------------------------------------------------------------------- 
 
-static unsigned char rangeset_labels[N_RANGESETS + 1] = {58, 10, 15, 1,  27, 52, 14, 3,  61, 13, 31, 30, 45, 28, 41, 55, 33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40, 2,
-                                                         21, 39, 59, 22, 60, 4,  6,  16, 29, 37, 48, 46, 54, 43, 32, 56, 51, 7,  9,  63, 5,  8,  36, 44, 26, 11, 23, 17, 53, 35, 12, 0};
+static uint8_t rangeset_labels[N_RANGESETS + 1] = {58, 10, 15, 1,  27, 52, 14, 3,  61, 13, 31, 30, 45, 28, 41, 55, 33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40, 2,
+                                                   21, 39, 59, 22, 60, 4,  6,  16, 29, 37, 48, 46, 54, 43, 32, 56, 51, 7,  9,  63, 5,  8,  36, 44, 26, 11, 23, 17, 53, 35, 12, 0};
 														 
 														 
 // -------------------------------------------------------------------------- 
@@ -139,9 +139,9 @@ RangesetTable::RangesetTable(TextBuffer *buffer) {
 
 	for (i = 0; i < N_RANGESETS; i++) {
 		this->set[i].RangesetInit(rangeset_labels[i], buffer);
-		this->order[i] = (unsigned char)i;
+		this->order[i] = (uint8_t)i;
 		this->active[i] = 0;
-		this->depth[i] = (unsigned char)i;
+		this->depth[i] = (uint8_t)i;
 	}
 
 	this->n_set = 0;
@@ -158,10 +158,10 @@ RangesetTable::RangesetTable(TextBuffer *buffer) {
 RangesetTable::RangesetTable(TextBuffer *buffer, const RangesetTable &other) : RangesetTable(buffer) {
 
 	this->n_set = other.n_set;
-	memcpy(this->order,  other.order,  sizeof(unsigned char) * N_RANGESETS);
-	memcpy(this->active, other.active, sizeof(unsigned char) * N_RANGESETS);
-	memcpy(this->depth,  other.depth,  sizeof(unsigned char) * N_RANGESETS);
-	memcpy(this->list,   other.list,   sizeof(unsigned char) * (N_RANGESETS + 1));
+	memcpy(this->order,  other.order,  sizeof(uint8_t) * N_RANGESETS);
+	memcpy(this->active, other.active, sizeof(uint8_t) * N_RANGESETS);
+	memcpy(this->depth,  other.depth,  sizeof(uint8_t) * N_RANGESETS);
+	memcpy(this->list,   other.list,   sizeof(uint8_t) * (N_RANGESETS + 1));
 
 	for (int i = 0; i < N_RANGESETS; i++) {
 		rangesetClone(&this->set[i], &other.set[i]);
@@ -224,14 +224,14 @@ char *RangesetTable::RangesetTableGetColorName(int index) {
 */
 
 int RangesetTable::RangesetFindIndex(int label, int must_be_active) const {
-	unsigned char *p_label;
+	uint8_t *p_label;
 
 	if (label == 0) {
 		return -1;
 	}
 
 	if (this) {
-		p_label = (unsigned char *)strchr((char *)rangeset_labels, label);
+		p_label = (uint8_t *)strchr((char *)rangeset_labels, label);
 		if (p_label) {
 			int i = p_label - rangeset_labels;
 			if (!must_be_active || this->active[i])
@@ -296,8 +296,8 @@ int RangesetTable::nRangesetsAvailable() const {
 }
 
 
-unsigned char *RangesetTable::RangesetGetList() {
-	return this ? this->list : (unsigned char *)"";
+uint8_t *RangesetTable::RangesetGetList() {
+	return this ? this->list : (uint8_t *)"";
 }
 
 void RangesetTable::RangesetTableUpdatePos(int pos, int ins, int del) {

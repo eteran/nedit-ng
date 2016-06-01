@@ -1,6 +1,6 @@
 /*******************************************************************************
 *                                                                              *
-* TextDisplay.c - Display text from a text buffer                                 *
+* TextDisplay.c - Display text from a text buffer                              *
 *                                                                              *
 * Copyright (C) 1999 Mark Edel                                                 *
 *                                                                              *
@@ -2060,11 +2060,11 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 	if (lineIndex >= lineLen)
 		style = FILL_MASK;
 	else if (styleBuf) {
-		style = (unsigned char)styleBuf->BufGetCharacter(pos);
+		style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (style == this->unfinishedStyle) {
 			// encountered "unfinished" style, trigger parsing
 			(this->unfinishedHighlightCB)(this, pos, this->highlightCBArg);
-			style = (unsigned char)styleBuf->BufGetCharacter(pos);
+			style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 	}
 	if (buf->primary_.inSelection(pos, lineStartPos, dispIndex))
@@ -2081,7 +2081,7 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
 	if (this->bgClass) {
-		style |= (this->bgClass[(unsigned char)thisChar] << BACKLIGHT_SHIFT);
+		style |= (this->bgClass[(uint8_t)thisChar] << BACKLIGHT_SHIFT);
 	}
 	return style;
 }
@@ -2794,7 +2794,7 @@ int TextDisplay::measureVisLine(int visLineNum) {
 	} else {
 		for (i = 0; i < lineLen; i++) {
 			len = this->buffer->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-			int style = (unsigned char)this->styleBuffer->BufGetCharacter(lineStartPos + i) - ASCII_A;
+			int style = (uint8_t)this->styleBuffer->BufGetCharacter(lineStartPos + i) - ASCII_A;
 			width += XTextWidth(this->styleTable[style].font, expandedChar, len);
 			charCount += len;
 		}
@@ -3206,7 +3206,7 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 	colNum = 0;
 	width = 0;
 	for (p = lineStart; p < buf->BufGetLength(); p++) {
-		unsigned char c = buf->BufGetCharacter(p);
+		uint8_t c = buf->BufGetCharacter(p);
 
 		/* If the character was a newline, count the line and start over,
 		   otherwise, add it to the width and column counts */
@@ -3311,11 +3311,11 @@ int TextDisplay::measurePropChar(const char c, const int colNum, const int pos) 
 	if(!styleBuf) {
 		style = 0;
 	} else {
-		style = (unsigned char)styleBuf->BufGetCharacter(pos);
+		style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (style == this->unfinishedStyle) {
 			// encountered "unfinished" style, trigger parsing
 			(this->unfinishedHighlightCB)(this, pos, this->highlightCBArg);
-			style = (unsigned char)styleBuf->BufGetCharacter(pos);
+			style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 	}
 	return this->stringWidth(expChar, charLen, style);
@@ -3471,8 +3471,8 @@ Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 ** there'll be a pressing need. I suppose the scanning of the specification
 ** could be better too, but then, who cares!
 */
-void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault) {
-	unsigned char bgClass[256];
+void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault) {
+	uint8_t bgClass[256];
 	Pixel bgClassPixel[256];
 	int class_no = 0;
 	char *semicol;
@@ -3536,7 +3536,7 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 			is_good = (pos && 0 <= lo && lo <= hi && hi <= 255);
 			if (is_good)
 				while (lo <= hi)
-					bgClass[lo++] = (unsigned char)class_no;
+					bgClass[lo++] = (uint8_t)class_no;
 			if (*pos != ',')
 				break;
 		}
@@ -3557,7 +3557,7 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 	/* when we get here, we've set up our class table and class-to-pixel table
 	   in local variables: now put them into the "real thing" */
 	class_no++; // bigger than all valid class_nos
-	*pp_bgClass      = new unsigned char[256];
+	*pp_bgClass      = new uint8_t[256];
 	*pp_bgClassPixel = new Pixel[class_no];
 
 	if (!*pp_bgClass || !*pp_bgClassPixel) {

@@ -219,7 +219,7 @@ public:
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 
 public:
-	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, unsigned char **pp_bgClass, Pixel bgPixelDefault);
+	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
@@ -275,7 +275,7 @@ public:
 	Pixel lineNumFGPixel;                        // Color for drawing line numbers
 	Pixel cursorFGPixel;
 	Pixel *bgClassPixel;                         // table of colors for each BG class
-	unsigned char *bgClass;                      // obtains index into bgClassPixel[]
+	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
 	Widget calltipW;                             // The Label widget for the calltip
 	Widget calltipShell;                         // The Shell that holds the calltip
 	calltipStruct calltip;                       // The info for the calltip itself

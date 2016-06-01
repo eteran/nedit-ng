@@ -1859,7 +1859,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 		// setup a list of all language modes related to given menu item 
 		while (atPtr) {
 			// extract language mode name after "@" sign 
-			for (endPtr = atPtr + 1; isalnum((unsigned char)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++)
+			for (endPtr = atPtr + 1; isalnum((uint8_t)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++)
 				;
 
 			/* lookup corresponding language mode index; if PLAIN is

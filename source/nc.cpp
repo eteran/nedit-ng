@@ -130,7 +130,7 @@ struct FileListHead {
 static FileListHead fileListHead;
 
 static void setPropertyValue(Atom atom) {
-	XChangeProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), atom, XA_STRING, 8, PropModeReplace, (unsigned char *)"True", 4);
+	XChangeProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), atom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
 }
 
 // Add another entry to the file entry list, if it doesn't exist yet. 
@@ -255,7 +255,7 @@ static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id) {
 	*/
 	Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 	if (currentWaitForAtom != noAtom) {
-		XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)"", strlen(""));
+		XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"", strlen(""));
 	}
 
 	// Flag that the timeout has occurred. 
@@ -264,7 +264,7 @@ static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id) {
 
 static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom) {
 	Boolean serverExists = True;
-	unsigned char *propValue;
+	uint8_t *propValue;
 	int getFmt;
 	Atom dummyAtom;
 	unsigned long dummyULong, nItems;
@@ -608,7 +608,7 @@ static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, c
 
 	/* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
 	   window to activate the server */
-	XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)commandString, strlen(commandString));
+	XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)commandString, strlen(commandString));
 
 	/* Set up a timeout proc in case the server is dead.  The standard
 	   selection timeout is probably a good guess at how long to wait

@@ -2171,9 +2171,9 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 				ucPtr++;
 				lcPtr++;
 				if (ucPtr == ucString.end()                                                            // matched whole string 
-			    	&& (cignore_R || isspace((unsigned char)*tempPtr) || strchr(delimiters, *tempPtr)) // next char right delimits word ? 
+			    	&& (cignore_R || isspace((uint8_t)*tempPtr) || strchr(delimiters, *tempPtr)) // next char right delimits word ? 
 			    	&& (cignore_L || filePtr == &string[0] ||                                          // border case 
-			        	isspace((unsigned char)filePtr[-1]) || strchr(delimiters, filePtr[-1])))       /* next char left delimits word ? */ {
+			        	isspace((uint8_t)filePtr[-1]) || strchr(delimiters, filePtr[-1])))       /* next char left delimits word ? */ {
 					*startPos = filePtr - &string[0];
 					*endPos = tempPtr - &string[0];
 					return true;
@@ -2191,11 +2191,11 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		delimiters = delimiterString.data();
 	}
 
-	if (isspace((unsigned char)searchString[0]) || strchr(delimiters, searchString[0])) {
+	if (isspace((uint8_t)searchString[0]) || strchr(delimiters, searchString[0])) {
 		cignore_L = true;
 	}
 
-	if (isspace((unsigned char)searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
+	if (isspace((uint8_t)searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
 		cignore_R = true;
 	}
 
@@ -2478,7 +2478,7 @@ static std::string upCaseStringEx(view::string_view inString) {
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-		return  toupper((unsigned char)ch);
+		return toupper((uint8_t)ch);
 	});
 	return str;
 }
@@ -2487,7 +2487,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-		return  tolower((unsigned char)ch);
+		return tolower((uint8_t)ch);
 	});
 	return str;
 }

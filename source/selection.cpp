@@ -94,7 +94,7 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 
 	// Find the next digit 
 	for (textLen = strlen(endptr); textLen > 0; endptr++, textLen--) {
-		if (isdigit((unsigned char)*endptr) || *endptr == '-' || *endptr == '+') {
+		if (isdigit((uint8_t)*endptr) || *endptr == '-' || *endptr == '+') {
 			break;
 		}
 	}
@@ -403,7 +403,7 @@ void MarkDialog(Document *window) {
 	
 	strcpy(letterText, result.toLatin1().data());
 
-	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
+	if (strlen(letterText) != 1 || !isalpha((uint8_t)letterText[0])) {
 		QApplication::beep();
 		return;
 	}
@@ -437,7 +437,7 @@ void GotoMarkDialog(Document *window, int extend) {
 	
 	strcpy(letterText, result.toLatin1().data());	
 
-	if (strlen(letterText) != 1 || !isalpha((unsigned char)letterText[0])) {
+	if (strlen(letterText) != 1 || !isalpha((uint8_t)letterText[0])) {
 		QApplication::beep();
 		return;
 	}

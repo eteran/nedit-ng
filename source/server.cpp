@@ -83,7 +83,7 @@ void InitServerCommunication(void) {
 	/* Create the server-exists property on the root window to tell clients
 	   whether to try a request (otherwise clients would always have to
 	   try and wait for their timeouts to expire) */
-	XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)"True", 4);
+	XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
 
 	// Set up exit handler for cleaning up server-exists property 
 	atexit(cleanUpServerCommunication);
@@ -144,7 +144,7 @@ void ServerMainLoop(XtAppContext context) {
 static void processServerCommand(void) {
 	Atom dummyAtom;
 	unsigned long nItems, dummyULong;
-	unsigned char *propValue;
+	uint8_t *propValue;
 	int getFmt;
 
 	// Get the value of the property, and delete it from the root window 
@@ -166,7 +166,7 @@ Boolean ServerDispatchEvent(XEvent *event) {
 				if (e->atom == ServerRequestAtom && e->state == PropertyNewValue)
 					processServerCommand();
 				else if (e->atom == ServerExistsAtom && e->state == PropertyDelete)
-					XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (unsigned char *)"True", 4);
+					XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
 			}
 		}
 	}

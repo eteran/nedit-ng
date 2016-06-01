@@ -2199,7 +2199,7 @@ char *ReadSymbolicField(const char **inPtr) {
 	/* Find the first invalid character or end of string to know how
 	   much memory to allocate for the returned string */
 	strStart = *inPtr;
-	while (isalnum((unsigned char)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t')
+	while (isalnum((uint8_t)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t')
 		(*inPtr)++;
 	len = *inPtr - strStart;
 	if (len == 0)
@@ -2241,7 +2241,7 @@ QString ReadSymbolicFieldEx(const char **inPtr) {
 	/* Find the first invalid character or end of string to know how
 	   much memory to allocate for the returned string */
 	const char *strStart = *inPtr;
-	while (isalnum((unsigned char)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
+	while (isalnum((uint8_t)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
 		(*inPtr)++;
 	}
 	

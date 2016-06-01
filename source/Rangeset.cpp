@@ -1202,7 +1202,7 @@ void Rangeset::RangesetRefreshRange(int start, int end) {
 */
 
 void Rangeset::RangesetInit(int label, TextBuffer *buf) {
-	this->label = (unsigned char)label; // a letter A-Z 
+	this->label = (uint8_t)label; // a letter A-Z 
 	this->maxpos = 0;                   // text buffer maxpos 
 	this->last_index = 0;               // a place to start looking 
 	this->n_ranges = 0;                 // how many ranges in ranges 

@@ -85,8 +85,8 @@ constexpr bool is_plain(int style) {
    with pass2 patterns */
 constexpr bool equivalent_style(int style1, int style2, int  firstPass2Style) {
 	return (style1 == style2) || 
-		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (unsigned char)style2 >= firstPass2Style)) || 
-		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (unsigned char)style1 >= firstPass2Style));
+		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (uint8_t)style2 >= firstPass2Style)) || 
+		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (uint8_t)style1 >= firstPass2Style));
 }
 
 /* Scanning context can be reduced (with big efficiency gains) if we
@@ -966,11 +966,11 @@ int HighlightCodeOfPos(Document *window, int pos) {
 	int hCode = 0;
 
 	if (styleBuf) {
-		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+		hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (hCode == UNFINISHED_STYLE) {
 			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 	}
 	return hCode;
@@ -989,13 +989,13 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 	int oldPos = pos;
 
 	if (styleBuf) {
-		int hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+		int hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
 		if (hCode == UNFINISHED_STYLE) {
 			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 		if (*checkCode == 0)
 			*checkCode = hCode;
@@ -1003,10 +1003,10 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing, then loop 
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+				hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 			} else {
 				// advance the position and get the new code 
-				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
+				hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
 			}
 		}
 	}
@@ -1026,14 +1026,14 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 
 
 	if (styleBuf) {
-		hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+		hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (!hCode)
 			return 0;
 			
 		if (hCode == UNFINISHED_STYLE) {
 			// encountered "unfinished" style, trigger parsing 
 			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 		
 		StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
@@ -1046,10 +1046,10 @@ int StyleLengthOfCodeFromPos(Document *window, int pos) {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing, then loop 
 				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (unsigned char)styleBuf->BufGetCharacter(pos);
+				hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
 			} else {
 				// advance the position and get the new code 
-				hCode = (unsigned char)styleBuf->BufGetCharacter(++pos);
+				hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
 			}
 		}
 	}
@@ -1150,7 +1150,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 	ReparseContext *context = &highlightData->contextRequirements;
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	char c, prevChar;
-	int firstPass2Style = (unsigned char)pass2Patterns[1].style;
+	int firstPass2Style = (uint8_t)pass2Patterns[1].style;
 
 	/* If there are no pass 2 patterns to process, do nothing (but this
 	   should never be triggered) */
@@ -1164,7 +1164,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 	beginSafety = backwardOneContext(buf, context, beginParse);
 	for (p = beginParse; p >= beginSafety; p--) {
 		c = styleBuf->BufGetCharacter(p);
-		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (unsigned char)c < firstPass2Style) {
+		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
 			beginSafety = p + 1;
 			break;
 		}
@@ -1178,13 +1178,13 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 	endSafety = forwardOneContext(buf, context, endParse);
 	for (p = pos; p < endSafety; p++) {
 		c = styleBuf->BufGetCharacter(p);
-		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (unsigned char)c < firstPass2Style) {
+		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
 			endParse = std::min<int>(endParse, p);
 			endSafety = p;
 			break;
 		} else if (c != UNFINISHED_STYLE && p < endParse) {
 			endParse = p;
-			if ((unsigned char)c < firstPass2Style)
+			if ((uint8_t)c < firstPass2Style)
 				endSafety = p;
 			else
 				endSafety = forwardOneContext(buf, context, endParse);
@@ -1319,7 +1319,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 
 	int endSafety, endPass2Safety, startPass2Safety;
 	int modStart, modEnd, beginSafety, beginStyle, p, style;
-	int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : (unsigned char)pass2Patterns[1].style;
+	int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : (uint8_t)pass2Patterns[1].style;
 
 	// Begin parsing one context distance back (or to the last style change) 
 	beginStyle = pass1Patterns->style;
@@ -1648,14 +1648,14 @@ static void passTwoParseString(HighlightData *pattern, char *string, char *style
 	int inParseRegion = false;
 	char *stylePtr, temp, *parseStart = nullptr, *parseEnd, *s, *c;
 	const char *stringPtr;
-	int firstPass2Style = (unsigned char)pattern[1].style;
+	int firstPass2Style = (uint8_t)pattern[1].style;
 
 	for (c = string, s = styleString;; c++, s++) {
-		if (!inParseRegion && *c != '\0' && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style)) {
+		if (!inParseRegion && *c != '\0' && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style)) {
 			parseStart = c;
 			inParseRegion = true;
 		}
-		if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (unsigned char)*s >= firstPass2Style))) {
+		if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style))) {
 			parseEnd = c;
 			if (parseStart != string)
 				*prevChar = *(parseStart - 1);
@@ -1717,7 +1717,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 	   pass 2 style */
 	for (c = styleString, pos = startPos; pos < modStart && pos < endPos; c++, pos++) {
 		bufChar = styleBuf->BufGetCharacter(pos);
-		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
+		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (uint8_t)*c >= firstPass2Style))) {
 			if (pos < minPos)
 				minPos = pos;
 			if (pos > maxPos)
@@ -1726,7 +1726,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 	}
 	for (c = &styleString[std::max<int>(0, modEnd - startPos)], pos = std::max<int>(modEnd, startPos); pos < endPos; c++, pos++) {
 		bufChar = styleBuf->BufGetCharacter(pos);
-		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (unsigned char)*c >= firstPass2Style))) {
+		if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || (uint8_t)*c >= firstPass2Style))) {
 			if (pos < minPos)
 				minPos = pos;
 			if (pos + 1 > maxPos)
@@ -1939,7 +1939,7 @@ static regexp *compileREAndWarn(Widget parent, view::string_view re) {
 }
 
 static int parentStyleOf(const char *parentStyles, int style) {
-	return parentStyles[(unsigned char)style - UNFINISHED_STYLE];
+	return parentStyles[(uint8_t)style - UNFINISHED_STYLE];
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2) {

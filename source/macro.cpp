@@ -657,11 +657,11 @@ static bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string,
 			QString subrName;
 			auto namePtr = std::back_inserter(subrName);
 			
-			while ((isalnum(static_cast<unsigned char>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_'))) {
+			while ((isalnum(static_cast<uint8_t>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_'))) {
 				*namePtr++ = string[inPtr++];
 			}
 			
-			if (isalnum(static_cast<unsigned char>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_')) {
+			if (isalnum(static_cast<uint8_t>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_')) {
 				return ParseErrorEx(dialogParent, string, inPtr, errIn, QLatin1String("subroutine name too long"));
 			}
 			
@@ -781,11 +781,11 @@ static int readCheckMacroString(Widget dialogParent, const char *string, Documen
 			inPtr += 6;
 			inPtr += strspn(inPtr, " \t\n");
 			namePtr = subrName;
-			while ((namePtr < &subrName[MAX_SYM_LEN - 1]) && (isalnum((unsigned char)*inPtr) || *inPtr == '_')) {
+			while ((namePtr < &subrName[MAX_SYM_LEN - 1]) && (isalnum((uint8_t)*inPtr) || *inPtr == '_')) {
 				*namePtr++ = *inPtr++;
 			}
 			*namePtr = '\0';
-			if (isalnum((unsigned char)*inPtr) || *inPtr == '_') {
+			if (isalnum((uint8_t)*inPtr) || *inPtr == '_') {
 				return ParseError(dialogParent, string, inPtr, errIn, "subroutine name too long");
 			}
 			inPtr += strspn(inPtr, " \t\n");
@@ -2008,7 +2008,7 @@ static int toupperMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, length + 1);
 	for (i = 0; i < length; i++)
-		result->val.str.rep[i] = toupper((unsigned char)string[i]);
+		result->val.str.rep[i] = toupper((uint8_t)string[i]);
 	return true;
 }
 
@@ -2031,7 +2031,7 @@ static int tolowerMS(Document *window, DataValue *argList, int nArgs, DataValue 
 	result->tag = STRING_TAG;
 	AllocNString(&result->val.str, length + 1);
 	for (i = 0; i < length; i++)
-		result->val.str.rep[i] = tolower((unsigned char)string[i]);
+		result->val.str.rep[i] = tolower((uint8_t)string[i]);
 	return true;
 }
 
@@ -3947,7 +3947,7 @@ static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)argList;
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	unsigned char *rangesetList;
+	uint8_t *rangesetList;
 	char *allocIndexStr;
 	char indexStr[TYPE_INT_STR_SIZE(int)];
 	int nRangesets, i;
@@ -4127,7 +4127,7 @@ static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, 
 	int label;
 	char *name;
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	unsigned char *rangesetList;
+	uint8_t *rangesetList;
 	char *allocIndexStr;
 	char indexStr[TYPE_INT_STR_SIZE(int)];
 	int nRangesets, i, insertIndex = 0;
@@ -5082,12 +5082,12 @@ static int tooFewArgsErr(const char **errMsg) {
 static int strCaseCmp(char *str1, char *str2) {
 	char *c1, *c2;
 
-	for (c1 = str1, c2 = str2; (*c1 != '\0' && *c2 != '\0') && toupper((unsigned char)*c1) == toupper((unsigned char)*c2); ++c1, ++c2) {
+	for (c1 = str1, c2 = str2; (*c1 != '\0' && *c2 != '\0') && toupper((uint8_t)*c1) == toupper((uint8_t)*c2); ++c1, ++c2) {
 	}
 
-	if (((unsigned char)toupper((unsigned char)*c1)) > ((unsigned char)toupper((unsigned char)*c2))) {
+	if (((uint8_t)toupper((uint8_t)*c1)) > ((uint8_t)toupper((uint8_t)*c2))) {
 		return (1);
-	} else if (((unsigned char)toupper((unsigned char)*c1)) < ((unsigned char)toupper((unsigned char)*c2))) {
+	} else if (((uint8_t)toupper((uint8_t)*c1)) < ((uint8_t)toupper((uint8_t)*c2))) {
 		return (-1);
 	} else {
 		return (0);
@@ -5107,7 +5107,7 @@ static int readIntArg(DataValue dv, int *result, const char **errMsg) {
 		return true;
 	} else if (dv.tag == STRING_TAG) {
 		for (c = dv.val.str.rep; *c != '\0'; c++) {
-			if (!(isdigit((unsigned char)*c) || *c == ' ' || *c == '\t')) {
+			if (!(isdigit((uint8_t)*c) || *c == ' ' || *c == '\t')) {
 				goto typeError;
 			}
 		}

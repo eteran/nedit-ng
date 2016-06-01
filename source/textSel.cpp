@@ -379,7 +379,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 	/* Set up a property on this window to pass along with the
 	   INSERT_SELECTION request to tell the MOTIF_DESTINATION owner what
 	   selection and what target from that selection to insert */
-	XChangeProperty(disp, XtWindow(w), getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (unsigned char *)selInfoProp, 2 /* 1? */);
+	XChangeProperty(disp, XtWindow(w), getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (uint8_t *)selInfoProp, 2 /* 1? */);
 
 	/* Make INSERT_SELECTION request to the owner of selection "sel"
 	   to do the insert.  This must be done using XLib calls to specify
@@ -581,7 +581,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
 		if (reinterpret_cast<TextWidget>(w)->text.readOnly)
 			return False;
-		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (unsigned char **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
+		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
 		if (reqAtoms[1] != XA_STRING)
 			return False;
@@ -705,7 +705,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *t
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
 		if (reinterpret_cast<TextWidget>(w)->text.readOnly)
 			return False;
-		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (unsigned char **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
+		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
 		if (reqAtoms[1] != XA_STRING)
 			return False;

@@ -199,7 +199,7 @@ static void changeCase(Document *window, int makeUpper) {
 			return;
 		}
 		*bufChar = buf->BufGetCharacter(cursorPos - 1);
-		*bufChar = makeUpper ? toupper((unsigned char)*bufChar) : tolower((unsigned char)*bufChar);
+		*bufChar = makeUpper ? toupper((uint8_t)*bufChar) : tolower((uint8_t)*bufChar);
 		buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
 	} else {
 		bool modified = false;
@@ -208,7 +208,7 @@ static void changeCase(Document *window, int makeUpper) {
 		
 		for(char &ch: text) {
 			char oldChar = ch;
-			ch = makeUpper ? toupper((unsigned char)ch) : tolower((unsigned char)ch);
+			ch = makeUpper ? toupper((uint8_t)ch) : tolower((uint8_t)ch);
 			if (ch != oldChar) {
 				modified = true;
 			}

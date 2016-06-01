@@ -707,13 +707,13 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		searchString[len] = 0;
 		// guess name: take the last alnum (plus _) part of searchString 
 		while (--len >= 0) {
-			if (isalnum((unsigned char)searchString[len]) || (searchString[len] == '_'))
+			if (isalnum((uint8_t)searchString[len]) || (searchString[len] == '_'))
 				break;
 		}
 		if (len < 0)
 			return 0;
 		pos = len;
-		while (pos >= 0 && (isalnum((unsigned char)searchString[pos]) || (searchString[pos] == '_')))
+		while (pos >= 0 && (isalnum((uint8_t)searchString[pos]) || (searchString[pos] == '_')))
 			pos--;
 		strncpy(name, searchString + pos + 1, len - pos);
 		name[len - pos] = 0; // name ready 
@@ -1087,13 +1087,13 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 			 */
 			*outPtr++ = '\\';
 			*outPtr++ = *inPtr++;
-		} else if (isspace((unsigned char)*inPtr)) { // col. multiple spaces 
+		} else if (isspace((uint8_t)*inPtr)) { // col. multiple spaces 
 			*outPtr++ = '\\';
 			*outPtr++ = 's';
 			*outPtr++ = '+';
 			do {
 				inPtr++;
-			} while (isspace((unsigned char)*inPtr));
+			} while (isspace((uint8_t)*inPtr));
 		} else { // simply copy all other characters 
 			*outPtr++ = *inPtr++;
 		}

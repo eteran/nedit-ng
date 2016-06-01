@@ -3169,7 +3169,7 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
 
-	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((unsigned char)args[0][0])) {
+	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((uint8_t)args[0][0])) {
 		fprintf(stderr, "nedit: mark action requires a single-letter label\n");
 		return;
 	}
@@ -3189,7 +3189,7 @@ static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(event);
 
-	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((unsigned char)args[0][0])) {
+	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((uint8_t)args[0][0])) {
 		fprintf(stderr, "nedit: goto_mark action requires a single-letter label\n");
 		return;
 	}
@@ -3400,7 +3400,7 @@ static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	bool ok;
 	int n = QInputDialog::getInt(nullptr /*parent */, QLatin1String("Insert Ctrl Code"), QLatin1String("ASCII Character Code:"), 0, 0, 255, 1, &ok);
 	if(ok) {
-		charCodeString[0] = static_cast<unsigned char>(n);
+		charCodeString[0] = static_cast<uint8_t>(n);
 		charCodeString[1] = '\0';
 		params[0] = charCodeString;
 
@@ -4891,7 +4891,7 @@ static int strCaseCmp(const char *str1, const char *str2) {
 	const char *c1, *c2;
 
 	for (c1 = str1, c2 = str2; *c1 != '\0' && *c2 != '\0'; c1++, c2++)
-		if (toupper((unsigned char)*c1) != toupper((unsigned char)*c2))
+		if (toupper((uint8_t)*c1) != toupper((uint8_t)*c2))
 			return 1;
 	if (*c1 == *c2) {
 		return (0);

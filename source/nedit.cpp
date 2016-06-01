@@ -78,9 +78,9 @@ static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void fixupBrokenXKeysymDB(void);
 static void patchResourcesForVisual(void);
-static unsigned char *sanitizeVirtualKeyBindings(void);
-static int virtKeyBindingsAreInvalid(const unsigned char *bindings);
-static void restoreInsaneVirtualKeyBindings(unsigned char *bindings);
+static uint8_t *sanitizeVirtualKeyBindings(void);
+static int virtKeyBindingsAreInvalid(const uint8_t *bindings);
+static void restoreInsaneVirtualKeyBindings(uint8_t *bindings);
 static void noWarningFilter(String);
 static void showWarningFilter(String);
 
@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
 	char pathname[MAXPATHLEN];
 	Document *window = nullptr;
 	Document *lastFile = nullptr;
-	unsigned char *invalidBindings = nullptr;
+	uint8_t *invalidBindings = nullptr;
 
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
@@ -780,7 +780,7 @@ static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure) {
  * Checks whether a given virtual key binding string is invalid.
  * A binding is considered invalid if there are duplicate key entries.
  */
-static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
+static int virtKeyBindingsAreInvalid(const uint8_t *bindings) {
 	int maxCount = 1, i, count;
 	const char *pos = (const char *)bindings;
 	char *pos2;
@@ -863,14 +863,14 @@ static int virtKeyBindingsAreInvalid(const unsigned char *bindings) {
 
 static Atom virtKeyAtom;
 
-static unsigned char *sanitizeVirtualKeyBindings(void) {
+static uint8_t *sanitizeVirtualKeyBindings(void) {
 	int overrideBindings = GetPrefOverrideVirtKeyBindings();
 	Window rootWindow;
 	const char *virtKeyPropName = "_MOTIF_DEFAULT_BINDINGS";
 	Atom dummyAtom;
 	int getFmt;
 	unsigned long dummyULong, nItems;
-	unsigned char *insaneVirtKeyBindings = nullptr;
+	uint8_t *insaneVirtKeyBindings = nullptr;
 
 	if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER)
 		return nullptr;
@@ -898,7 +898,7 @@ static unsigned char *sanitizeVirtualKeyBindings(void) {
  * NEdit should not mess with the bindings installed by other apps, so we
  * just restore whatever was installed, if necessary
  */
-static void restoreInsaneVirtualKeyBindings(unsigned char *insaneVirtKeyBindings) {
+static void restoreInsaneVirtualKeyBindings(uint8_t *insaneVirtKeyBindings) {
 	if (insaneVirtKeyBindings) {
 		Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 		/* Restore the root window atom, such that we don't affect
