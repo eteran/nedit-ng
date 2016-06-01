@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QPushButton>
+#include "ui/DialogOutput.h"
 
 #include "textP.h"
 #include "TextDisplay.h"
@@ -58,8 +59,6 @@ namespace {
 
 // Tuning parameters 
 const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output 
-const int MAX_OUT_DIALOG_ROWS = 30;   // max height of dialog for command output 
-const int MAX_OUT_DIALOG_COLS = 80;   // max width of dialog for command output 
 const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long 
 const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner 
 
@@ -115,8 +114,6 @@ static std::string coalesceOutputEx(std::list<bufElem *> &bufList);
 static void freeBufListEx(std::list<bufElem *> &bufList);
 static void removeTrailingNewlines(std::string &string);
 static void createOutputDialog(Widget parent, const std::string &text);
-static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure);
-static void measureText(view::string_view text, int wrapWidth, int *rows, int *cols, int *wrapped);
 static void truncateString(std::string &string, int length);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -498,7 +495,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	cmdData->leftPos     = replaceLeft;
 	cmdData->rightPos    = replaceRight;
 	cmdData->inLength    = input.size();
-
+	
 	// Set up timer proc for putting up banner when process takes too long 
 	if (fromMacro) {
 		cmdData->bannerTimeoutID = 0;
@@ -722,13 +719,16 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 
 	auto window  = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
-	auto textD   = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
 	
+	// shouldn't happen, but it would be bad if it did 
+	if (!cmdData->textW) {
+		return;	
+	}
+	
+	auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;	
 	TextBuffer *buf = textD->TextGetBuffer();
 
-	// shouldn't happen, but it would be bad if it did 
-	if (!cmdData->textW)
-		return;
+
 
 	std::string outText = coalesceOutputEx(cmdData->outBufs);
 	if (!outText.empty()) {
@@ -868,8 +868,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 	}
 	
 	{
-		auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
-
+		
 		/* If output is to a dialog, present the dialog.  Otherwise insert the
 		   (remaining) output in the text widget as requested, and move the
 		   insert point to the end */
@@ -881,6 +880,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		} else if (cmdData->flags & OUTPUT_TO_STRING) {
 			ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
 		} else {
+			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
 			buf = textD->TextGetBuffer();
 			if (!buf->BufSubstituteNullCharsEx(outText)) {
 				fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
@@ -1089,158 +1089,10 @@ static void removeTrailingNewlines(std::string &s) {
 ** the user presses the Dismiss button, and is then destroyed
 */
 static void createOutputDialog(Widget parent, const std::string &text) {
-	Arg al[50];
-	int ac, rows, cols, hasScrollBar, wrapped;
-	Widget form, textW, button;
-	XmString st1;
-
-	// measure the width and height of the text to determine size for dialog 
-	measureText(text.c_str(), MAX_OUT_DIALOG_COLS, &rows, &cols, &wrapped);
-	if (rows > MAX_OUT_DIALOG_ROWS) {
-		rows = MAX_OUT_DIALOG_ROWS;
-		hasScrollBar = True;
-	} else
-		hasScrollBar = False;
-	if (cols > MAX_OUT_DIALOG_COLS)
-		cols = MAX_OUT_DIALOG_COLS;
-	if (cols == 0)
-		cols = 1;
-	/* Without completely emulating Motif's wrapping algorithm, we can't
-	   be sure that we haven't underestimated the number of lines in case
-	   a line has wrapped, so let's assume that some lines could be obscured
-	   */
-	if (wrapped)
-		hasScrollBar = True;
-	ac = 0;
-	form = CreateFormDialog(parent, "shellOutForm", al, ac);
-
-	ac = 0;
-	XtSetArg(al[ac], XmNlabelString, st1 = XmStringCreateLtoREx("OK"));
-	ac++;
-	XtSetArg(al[ac], XmNmarginWidth, BUTTON_WIDTH_MARGIN);
-	ac++;
-	XtSetArg(al[ac], XmNhighlightThickness, 2);
-	ac++;
-	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE);
-	ac++;
-	button = XmCreatePushButtonGadget(form, (String) "ok", al, ac);
-	XtManageChild(button);
-	XtVaSetValues(form, XmNdefaultButton, button, nullptr);
-	XtVaSetValues(form, XmNcancelButton, button, nullptr);
-	XmStringFree(st1);
-	XtAddCallback(button, XmNactivateCallback, destroyOutDialogCB, XtParent(form));
-
-	ac = 0;
-	XtSetArg(al[ac], XmNrows, rows);
-	ac++;
-	XtSetArg(al[ac], XmNcolumns, cols);
-	ac++;
-	XtSetArg(al[ac], XmNresizeHeight, False);
-	ac++;
-	XtSetArg(al[ac], XmNtraversalOn, True);
-	ac++;
-	XtSetArg(al[ac], XmNwordWrap, True);
-	ac++;
-	XtSetArg(al[ac], XmNscrollHorizontal, False);
-	ac++;
-	XtSetArg(al[ac], XmNscrollVertical, hasScrollBar);
-	ac++;
-	XtSetArg(al[ac], XmNhighlightThickness, 2);
-	ac++;
-	XtSetArg(al[ac], XmNspacing, 0);
-	ac++;
-	XtSetArg(al[ac], XmNeditMode, XmMULTI_LINE_EDIT);
-	ac++;
-	XtSetArg(al[ac], XmNeditable, False);
-	ac++;
-	XtSetArg(al[ac], XmNvalue, text.c_str());
-	ac++;
-	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET);
-	ac++;
-	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM);
-	ac++;
-	XtSetArg(al[ac], XmNbottomWidget, button);
-	ac++;
-	textW = XmCreateScrolledText(form, (String) "outText", al, ac);
-	AddMouseWheelSupport(textW);
-	MakeSingleLineTextW(textW); // Binds <Return> to activate() 
-	XtManageChild(textW);
-
-	XtVaSetValues(XtParent(form), XmNtitle, "Output from Command", nullptr);
-	ManageDialogCenteredOnPointer(form);
-
-	XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
-}
-
-/*
-** Dispose of the command output dialog when user presses Dismiss button
-*/
-static void destroyOutDialogCB(Widget w, XtPointer callback, XtPointer closure) {
-	(void)w;
-	(void)closure;
-
-	XtDestroyWidget((Widget)callback);
-}
-
-/*
-** Measure the width and height of a string of text.  Assumes 8 character
-** tabs.  wrapWidth specifies a number of columns at which text wraps.
-*/
-static void measureText(view::string_view text, int wrapWidth, int *rows, int *cols, int *wrapped) {
-	int maxCols = 0;
-	int line = 1;
-	int col = 0;
-	int wrapCol;
-
-	*wrapped = 0;
-	for(char ch : text) {
-		if (ch == '\n') {
-			line++;
-			col = 0;
-			continue;
-		}
-
-		if (ch == '\t') {
-			col += 8 - (col % 8);
-			wrapCol = 0; // Tabs at end of line are not drawn when wrapped 
-		} else if (ch == ' ') {
-			col++;
-			wrapCol = 0; // Spaces at end of line are not drawn when wrapped 
-		} else {
-			col++;
-			wrapCol = 1;
-		}
-
-		/* Note: there is a small chance that the number of lines is
-		   over-estimated when a line ends with a space or a tab (ie, followed
-		       by a newline) and that whitespace crosses the boundary, because
-		       whitespace at the end of a line does not cause wrapping. Taking
-		       this into account is very hard, but an over-estimation is harmless.
-		       The worst that can happen is that some extra blank lines are shown
-		       at the end of the dialog (in contrast to an under-estimation, which
-		       could make the last lines invisible).
-		       On the other hand, without emulating Motif's wrapping algorithm
-		       completely, we can't be sure that we don't underestimate the number
-		       of lines (Motif uses word wrap, and this counting algorithm uses
-		       character wrap). Therefore, we remember whether there is a line
-		       that has wrapped. In that case we allways install a scroll bar.
-		   */
-		if (col > wrapWidth) {
-			line++;
-			*wrapped = 1;
-			col = wrapCol;
-		} else if (col > maxCols) {
-			maxCols = col;
-		}
-	}
-	*rows = line;
-	*cols = maxCols;
+	Q_UNUSED(parent)
+	auto dialog = new DialogOutput(nullptr);
+	dialog->setText(QString::fromStdString(text));
+	dialog->show();
 }
 
 /*

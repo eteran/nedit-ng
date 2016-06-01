@@ -102,7 +102,6 @@ static uint8_t watch_bits[] = {0xe0, 0x07, 0xe0, 0x07, 0xe0, 0x07, 0xe0, 0x07, 0
 #define watch_mask_height 16
 static uint8_t watch_mask_bits[] = {0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf8, 0x1f, 0xfc, 0x3f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfe, 0x7f, 0xfc, 0x3f, 0xf8, 0x1f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f};
 
-static void addMnemonicGrabs(Widget addTo, Widget w, int unmodified);
 static void addAccelGrabs(Widget topWidget, Widget w);
 static void addAccelGrab(Widget topWidget, Widget w);
 static int parseAccelString(Display *display, const char *string, KeySym *keysym, unsigned int *modifiers);
@@ -110,7 +109,6 @@ static void lockCB(Widget w, XtPointer callData, XEvent *event, Boolean *continu
 static int findAndActivateAccel(Widget w, unsigned int keyCode, unsigned int modifiers, XEvent *event);
 static int stripCaseCmp(const char *str1, const char *str2);
 static void warnHandlerCB(String message);
-static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch);
 static ArgList addParentVisArgs(Widget parent, ArgList arglist, Cardinal *argcount);
 static Widget addParentVisArgsAndCall(MotifDialogCreationCall callRoutine, Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -515,10 +513,6 @@ Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, C
 	return dialog;
 }
 
-Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	return addParentVisArgsAndCall(XmCreateFormDialog, parent, name, arglist, argcount);
-}
-
 
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount) {
 	Widget result;
@@ -737,10 +731,6 @@ void SetPointerCenteredDialogs(int state) {
 ** window is still invisible, causing a subtle crash potential if
 ** XSetInputFocus is used.
 */
-void RaiseDialogWindow(Widget shell) {
-	RaiseWindow(XtDisplay(shell), XtWindow(shell), True);
-}
-
 void RaiseShellWindow(Widget shell, bool focus) {
 	RaiseWindow(XtDisplay(shell), XtWindow(shell), focus);
 }
@@ -871,38 +861,6 @@ XFontStruct *GetDefaultFontStruct(XmFontList font) {
 	return fs;
 }
 
-
-/*
-** Simulate a button press.  The purpose of this routine is show users what
-** is happening when they take an action with a non-obvious side effect,
-** such as when a user double clicks on a list item.  The argument is an
-** XmPushButton widget to "press"
-*/
-void SimulateButtonPress(Widget widget) {
-	XEvent keyEvent;
-
-	memset(&keyEvent, 0, sizeof(XKeyPressedEvent));
-	keyEvent.type = KeyPress;
-	keyEvent.xkey.serial = 1;
-	keyEvent.xkey.send_event = True;
-
-	if (XtIsSubclass(widget, xmGadgetClass)) {
-		/* On some Motif implementations, asking a gadget for its
-		   window will crash, rather than return the window of its
-		   parent. */
-		Widget parent = XtParent(widget);
-		keyEvent.xkey.display = XtDisplay(parent);
-		keyEvent.xkey.window = XtWindow(parent);
-
-		XtCallActionProc(parent, "ManagerGadgetSelect", &keyEvent, nullptr, 0);
-	} else {
-		keyEvent.xkey.display = XtDisplay(widget);
-		keyEvent.xkey.window = XtWindow(widget);
-
-		XtCallActionProc(widget, "ArmAndActivate", &keyEvent, nullptr, 0);
-	}
-}
-
 /*
 ** Add an item to an already established pull-down or pop-up menu, including
 ** mnemonics, accelerators and callbacks.
@@ -966,63 +924,6 @@ void MakeSingleLineTextW(Widget textW) {
 	XtOverrideTranslations(textW, noReturnTable);
 }
 
-/*
-** Add up-arrow/down-arrow recall to a single line text field.  When user
-** presses up-arrow, string is cleared and recent entries are presented,
-** moving to older ones as each successive up-arrow is pressed.  Down-arrow
-** moves to more recent ones, final down-arrow clears the field.  Associated
-** routine, AddToHistoryList, makes maintaining a history list easier.
-**
-** Arguments are the widget, and pointers to the history list and number of
-** items, which are expected to change periodically.
-*/
-void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems) {
-
-	/* create a data structure for passing history info to the callbacks */
-	auto  histData = new histInfo;
-	histData->list   = historyList;
-	histData->nItems = nItems;
-	histData->index  = -1;
-
-	/* Add an event handler for handling up/down arrow events */
-	XtAddEventHandler(textW, KeyPressMask, False, (XtEventHandler)histArrowKeyEH, histData);
-
-	/* Add a destroy callback for freeing history data structure */
-	XtAddCallback(textW, XmNdestroyCallback, [](Widget, XtPointer clientData, XtPointer) {
-		auto p = static_cast<histInfo *>(clientData);
-		delete p;
-	}, histData);
-}
-
-static void histArrowKeyEH(Widget w, XtPointer callData, XEvent *event, bool *continueDispatch) {
-
-	(void)continueDispatch;
-	
-	histInfo *histData = (histInfo *)callData;
-	KeySym keysym = XLookupKeysym((XKeyEvent *)event, 0);
-
-	/* only process up and down arrow keys */
-	if (keysym != XK_Up && keysym != XK_Down)
-		return;
-
-	/* increment or decrement the index depending on which arrow was pressed */
-	histData->index += (keysym == XK_Up) ? 1 : -1;
-
-	/* if the index is out of range, beep, fix it up, and return */
-	if (histData->index < -1) {
-		histData->index = -1;
-		XBell(XtDisplay(w), 0);
-		return;
-	}
-	if (histData->index >= *histData->nItems) {
-		histData->index = *histData->nItems - 1;
-		XBell(XtDisplay(w), 0);
-		return;
-	}
-
-	/* Change the text field contents */
-	XmTextSetStringEx(w, histData->index == -1 ? "" : (*histData->list)[histData->index]);
-}
 
 /*
 ** BeginWait/EndWait
@@ -1185,59 +1086,6 @@ Modifiers GetNumLockModMask(Display *display) {
 ** Grab a key regardless of caps-lock and other silly latching keys.
 **
 */
-
-static void reallyGrabAKey(Widget dialog, int keyCode, Modifiers mask) {
-	Modifiers numLockMask = GetNumLockModMask(XtDisplay(dialog));
-
-	if (keyCode == 0) /* No anykey grabs, sorry */
-		return;
-
-	XtGrabKey(dialog, keyCode, mask, True, GrabModeAsync, GrabModeAsync);
-	XtGrabKey(dialog, keyCode, mask | LockMask, True, GrabModeAsync, GrabModeAsync);
-	if (numLockMask && numLockMask != LockMask) {
-		XtGrabKey(dialog, keyCode, mask | numLockMask, True, GrabModeAsync, GrabModeAsync);
-		XtGrabKey(dialog, keyCode, mask | LockMask | numLockMask, True, GrabModeAsync, GrabModeAsync);
-	}
-}
-
-/*
-** Part of dialog mnemonic processing.  Search the widget tree under w
-** for widgets with mnemonics.  When found, add a passive grab to the
-** dialog widget for the mnemonic character, thus directing mnemonic
-** events to the dialog widget.
-*/
-static void addMnemonicGrabs(Widget dialog, Widget w, int unmodifiedToo) {
-	char mneString[2];
-	WidgetList children;
-	Cardinal numChildren;
-	int i, isMenu;
-	KeySym mnemonic = '\0';
-	uint8_t rowColType;
-	unsigned int keyCode;
-
-	if (XtIsComposite(w)) {
-		if (XtClass(w) == xmRowColumnWidgetClass) {
-			XtVaGetValues(w, XmNrowColumnType, &rowColType, nullptr);
-			isMenu = rowColType != XmWORK_AREA;
-		} else
-			isMenu = False;
-		if (!isMenu) {
-			XtVaGetValues(w, XmNchildren, &children, XmNnumChildren, &numChildren, nullptr);
-			for (i = 0; i < (int)numChildren; i++)
-				addMnemonicGrabs(dialog, children[i], unmodifiedToo);
-		}
-	} else {
-		XtVaGetValues(w, XmNmnemonic, &mnemonic, nullptr);
-		if (mnemonic != XK_VoidSymbol && mnemonic != '\0') {
-			mneString[0] = mnemonic;
-			mneString[1] = '\0';
-			keyCode = XKeysymToKeycode(XtDisplay(dialog), XStringToKeysym(mneString));
-			reallyGrabAKey(dialog, keyCode, Mod1Mask);
-			if (unmodifiedToo)
-				reallyGrabAKey(dialog, keyCode, 0);
-		}
-	}
-}
 
 /*
 ** Part of workaround for Motif Caps/Num Lock bug.  Search the widget tree

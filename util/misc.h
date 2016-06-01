@@ -32,10 +32,6 @@
 #include <Xm/CutPaste.h>
 #include <string>
 
-#define TEXT_READ_OK 0
-#define TEXT_IS_BLANK 1
-#define TEXT_NOT_NUMBER 2
-
 /* maximum length for a window geometry string */
 #define MAX_GEOM_STRING_LEN 24
 
@@ -56,12 +52,10 @@ int SpinClipboardLock(Display *display, Window window);
 int SpinClipboardRetrieve(Display *display, Window window, char *format_name, XtPointer buffer, unsigned long length, unsigned long *num_bytes, long *private_id);
 int SpinClipboardStartCopy(Display *display, Window window, XmString clip_label, Time timestamp, Widget widget, XmCutPasteProc callback, long *item_id);
 int SpinClipboardUnlock(Display *display, Window window);
-//int TextWidgetIsBlank(Widget textW);
 long QueryCurrentDesktop(Display *display, Window rootWindow);
 long QueryDesktop(Display *display, Widget shell);
 Modifiers GetNumLockModMask(Display *display);
 void AccelLockBugPatch(Widget topWidget, Widget topMenuContainer);
-void AddHistoryToTextWidget(Widget textW, char ***historyList, int *nItems);
 void AddMotifCloseCallback(Widget shell, XtCallbackProc closeCB, void *arg);
 void AddMouseWheelSupport(Widget w);
 void BeginWait(Widget topCursorWidget);
@@ -72,10 +66,8 @@ void EndWait(Widget topCursorWidget);
 void InstallMouseWheelActions(XtAppContext context);
 void MakeSingleLineTextW(Widget textW);
 void ManageDialogCenteredOnPointer(Widget dialogChild);
-void PasswordText(Widget w, char *passTxt);
 void PopDownBugPatch(Widget w);
 void RadioButtonChangeState(Widget widget, bool state, bool notify);
-void RaiseDialogWindow(Widget shell);
 void RaiseShellWindow(Widget shell, bool focus);
 void RaiseWindow(Display *display, Window w, bool focus);
 void RealizeWithoutForcingPosition(Widget shell);
@@ -83,14 +75,12 @@ void RemapDeleteKey(Widget w);
 void RemovePPositionHint(Widget shell);
 void SetDeleteRemap(int state);
 void SetPointerCenteredDialogs(int state);
-void SimulateButtonPress(Widget widget);
 void SuppressPassiveGrabWarnings(void);
 void UpdateAccelLockPatch(Widget topWidget, Widget newButton);
 void WmClientMsg(Display *disp, Window win, const char *msg, unsigned long data0, unsigned long data1, unsigned long data2, unsigned long data3, unsigned long data4);
 Widget AddMenuItem(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg);
 Widget AddMenuToggle(Widget parent, char *name, char *label, char mnemonic, char *acc, char *accText, XtCallbackProc callback, void *cbArg, int set);
 Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic);
-Widget CreateFormDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget parent, ArgList arglist, Cardinal argcount);
 Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);

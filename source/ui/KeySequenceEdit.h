@@ -34,7 +34,7 @@ public Q_SLOTS:
 	void updateCloseButton(const QString &text);
 	
 private Q_SLOTS:
-	void resizeEvent(QResizeEvent *e);
+	virtual void resizeEvent(QResizeEvent *e) override;
 
 Q_SIGNALS:
     void editingFinished();

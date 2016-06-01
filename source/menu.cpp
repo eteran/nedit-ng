@@ -874,17 +874,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 
 /*----------------------------------------------------------------------------*/
 
-static void helpCB(Widget menuItem, XtPointer clientData, XtPointer callData) {
-	
-	(void)menuItem;
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	// TODO(eteran): implement this
-}
-
-/*----------------------------------------------------------------------------*/
-
 /*
 ** handle actions called from the context menus of tabs.
 */

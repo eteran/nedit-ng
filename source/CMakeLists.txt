@@ -62,6 +62,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/TextArea.h
 	ui/DocumentWidget.h
 	ui/TabWidget.h
+	ui/DialogOutput.h
 )
 
 set(UI_FILES
@@ -94,6 +95,7 @@ set(UI_FILES
 	ui/DialogPromptList.ui
 	ui/DialogRepeat.ui
 	ui/MainWindow.ui
+	ui/DialogOutput.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -138,6 +140,7 @@ add_executable(nedit
 	ui/TextArea.cpp
 	ui/DocumentWidget.cpp
 	ui/TabWidget.cpp
+	ui/DialogOutput.cpp
 
 	QtMotif.cpp
 	QtMotifDialog.cpp

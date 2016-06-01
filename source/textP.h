@@ -72,7 +72,7 @@ struct TextClassRec {
 
 extern TextClassRec nTextClassRec;
 
-struct TextPart {
+class TextPart {
 public:
 	/* resources */
 	Pixel selectFGPixel;
