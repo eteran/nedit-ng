@@ -491,7 +491,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	   the top character no longer pointing at a valid line start */
 	if (this->continuousWrap && this->wrapMargin == 0 && width != oldWidth) {
 		int oldFirstChar = this->firstChar;
-		this->nBufferLines = TextDCountLines(0, this->buffer->BufGetLength(), True);
+		this->nBufferLines = TextDCountLines(0, this->buffer->BufGetLength(), true);
 		this->firstChar = TextDStartOfLine(this->firstChar);
 		this->topLineNum = TextDCountLines(0, this->firstChar, True) + 1;
 		redrawAll = true;
@@ -513,12 +513,12 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became shorter, there may be partially drawn
 	   text left at the bottom edge, which must be cleaned up */
 	if (canRedraw && oldVisibleLines > newVisibleLines && exactHeight != height)
-		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->left, this->top + exactHeight, this->width, height - exactHeight, False);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->left, this->top + exactHeight, this->width, height - exactHeight, false);
 
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (canRedraw && oldVisibleLines < newVisibleLines && this->topLineNum + this->nVisibleLines > this->nBufferLines)
-		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding), this->horizOffset, False, False);
+		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding), this->horizOffset, False, false);
 
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters.  If updating the horizontal range caused scrolling,
@@ -665,7 +665,7 @@ void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
 	if (horizOffset > sliderMax - sliderSize)
 		horizOffset = sliderMax - sliderSize;
 
-	setScroll(topLineNum, horizOffset, True, True);
+	setScroll(topLineNum, horizOffset, True, true);
 }
 
 /*
@@ -730,7 +730,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	this->continuousWrap = wrap;
 
 	// wrapping can change change the total number of lines, re-count
-	this->nBufferLines = TextDCountLines(0, this->buffer->BufGetLength(), True);
+	this->nBufferLines = TextDCountLines(0, this->buffer->BufGetLength(), true);
 
 	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
 	   can leave the character at the top no longer at a line start, and/or
@@ -1057,10 +1057,10 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 
 	// Find the new top line number
 	if (cursorPos < this->firstChar) {
-		topLine -= TextDCountLines(cursorPos, this->firstChar, False);
+		topLine -= TextDCountLines(cursorPos, this->firstChar, false);
 		// linesFromTop = 0;
 	} else if (cursorPos > this->lastChar && !emptyLinesVisible()) {
-		topLine += TextDCountLines(this->lastChar - (wrapUsesCharacter(this->lastChar) ? 0 : 1), cursorPos, False);
+		topLine += TextDCountLines(this->lastChar - (wrapUsesCharacter(this->lastChar) ? 0 : 1), cursorPos, false);
 		linesFromTop = this->nVisibleLines - 1;
 	} else if (cursorPos == this->lastChar && !emptyLinesVisible() && !wrapUsesCharacter(this->lastChar)) {
 		topLine++;
@@ -1068,7 +1068,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	} else {
 		// Avoid extra counting if cursorVPadding is disabled
 		if (do_padding)
-			linesFromTop = TextDCountLines(this->firstChar, cursorPos, True);
+			linesFromTop = TextDCountLines(this->firstChar, cursorPos, true);
 	}
 	if (topLine < 1) {
 		fprintf(stderr, "nedit: internal consistency check tl1 failed\n");
@@ -1093,7 +1093,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	   to scroll to, otherwise, do the vertical scrolling first, then the
 	   horizontal */
 	if (!TextDPositionToXY(cursorPos, &x, &y)) {
-		setScroll(topLine, hOffset, True, True);
+		setScroll(topLine, hOffset, True, true);
 		if (!TextDPositionToXY(cursorPos, &x, &y))
 			return; // Give up, it's not worth it (but why does it fail?)
 	}
@@ -1103,7 +1103,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 		hOffset += x - this->left;
 
 	// Do the scroll
-	setScroll(topLine, hOffset, True, True);
+	setScroll(topLine, hOffset, True, true);
 }
 
 /*
@@ -1223,7 +1223,7 @@ int TextDisplay::TextDMoveDown(bool absolute) {
 	if (absolute)
 		nextLineStartPos = this->buffer->BufCountForwardNLines(lineStartPos, 1);
 	else
-		nextLineStartPos = TextDCountForwardNLines(lineStartPos, 1, True);
+		nextLineStartPos = TextDCountForwardNLines(lineStartPos, 1, true);
 
 	newPos = this->buffer->BufCountForwardDispChars(nextLineStartPos, column);
 
@@ -1337,7 +1337,7 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 		lineStart = buf->BufStartOfLine(pos);
 		wrappedLineCounter(this->buffer, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retLines > nLines)
-			return TextDCountForwardNLines(lineStart, retLines - nLines, True);
+			return TextDCountForwardNLines(lineStart, retLines - nLines, true);
 		nLines -= retLines;
 		pos = lineStart - 1;
 		if (pos < 0)
@@ -1872,7 +1872,7 @@ void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
 		return;
 
 	if (gc == this->gc) {
-		XClearArea(XtDisplay(this->w), XtWindow(this->w), x, y, width, height, False);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), x, y, width, height, false);
 	} else {
 		XFillRectangle(XtDisplay(this->w), XtWindow(this->w), gc, x, y, width, height);
 	}
@@ -2040,7 +2040,7 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 		style |= SECONDARY_MASK;
 	// store in the RANGESET_MASK portion of style the rangeset index for pos
 	if (buf->rangesetTable_) {
-		int rangesetIndex = buf->rangesetTable_->RangesetIndex1ofPos(pos, True);
+		int rangesetIndex = buf->rangesetTable_->RangesetIndex1ofPos(pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class
@@ -2173,7 +2173,7 @@ void TextDisplay::offsetLineStarts(int newTopLineNum) {
 	   lineStarts array) */
 	lastLineNum = oldTopLineNum + nVisLines - 1;
 	if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
-		this->firstChar = TextDCountForwardNLines(0, newTopLineNum - 1, True);
+		this->firstChar = TextDCountForwardNLines(0, newTopLineNum - 1, true);
 		// printf("counting forward %d lines from start\n", newTopLineNum-1);
 	} else if (newTopLineNum < oldTopLineNum) {
 		this->firstChar = TextDCountBackwardNLines(this->firstChar, -lineDelta);
@@ -2183,7 +2183,7 @@ void TextDisplay::offsetLineStarts(int newTopLineNum) {
 		/* printf("taking new start from lineStarts[%d]\n",
 		    newTopLineNum - oldTopLineNum); */
 	} else if (newTopLineNum - lastLineNum < this->nBufferLines - newTopLineNum) {
-		this->firstChar = TextDCountForwardNLines(lineStarts[nVisLines - 1], newTopLineNum - lastLineNum, True);
+		this->firstChar = TextDCountForwardNLines(lineStarts[nVisLines - 1], newTopLineNum - lastLineNum, true);
 		/* printf("counting forward %d lines from start of last line\n",
 		    newTopLineNum - lastLineNum); */
 	} else {
@@ -2269,7 +2269,7 @@ void TextDisplay::updateLineStarts(int pos, int charsInserted, int charsDeleted,
 				this->topLineNum = 1;
 				this->firstChar = 0;
 			} else
-				this->firstChar = TextDCountForwardNLines(0, this->topLineNum - 1, True);
+				this->firstChar = TextDCountForwardNLines(0, this->topLineNum - 1, true);
 		}
 		this->calcLineStarts(0, nVisLines - 1);
 		/* {   int i;
@@ -2655,7 +2655,7 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 
 	// Erase the previous contents of the line number area, if requested
 	if (clearAll)
-		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->top, this->lineNumWidth, this->height, False);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->top, this->lineNumWidth, this->height, false);
 
 	// Draw the line numbers, aligned to the text
 	nCols = std::min<int>(11, this->lineNumWidth / charWidth);
@@ -2668,7 +2668,7 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 			XDrawImageString(XtDisplay(this->w), XtWindow(this->w), this->lineNumGC, this->lineNumLeft, y + this->ascent, lineNumString, strlen(lineNumString));
 			line++;
 		} else {
-			XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, y, this->lineNumWidth, this->ascent + this->descent, False);
+			XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, y, this->lineNumWidth, this->ascent + this->descent, false);
 			if (visLine == 0)
 				line++;
 		}
@@ -2688,7 +2688,7 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (lineDelta == 0)
 		return;
-	textD->setScroll(newValue, textD->horizOffset, False, True);
+	textD->setScroll(newValue, textD->horizOffset, False, true);
 }
 
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2699,7 +2699,7 @@ static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	if (newValue == textD->horizOffset)
 		return;
-	textD->setScroll(textD->topLineNum, newValue, False, False);
+	textD->setScroll(textD->topLineNum, newValue, False, false);
 }
 
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch) {
@@ -2782,7 +2782,7 @@ void TextDisplay::blankCursorProtrusions() {
 	} else
 		return;
 
-	XClearArea(XtDisplay(this->w), XtWindow(this->w), x, cursorY, width, fontHeight, False);
+	XClearArea(XtDisplay(this->w), XtWindow(this->w), x, cursorY, width, fontHeight, false);
 }
 
 /*
@@ -2976,7 +2976,7 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 			while (visLineNum < nVisLines && lineStarts[visLineNum] < adjLineStart)
 				visLineNum++;
 			if (visLineNum < nVisLines && lineStarts[visLineNum] != -1 && lineStarts[visLineNum] == adjLineStart) {
-				countTo = TextDEndOfLine(lineStart, True);
+				countTo = TextDEndOfLine(lineStart, true);
 				*modRangeEnd = lineStart;
 				break;
 			}
@@ -3539,7 +3539,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 	/* Go (displayed) line by line through the buffer, adding newlines where
 	   the text is wrapped at some character other than an existing newline */
 	int fromPos = startPos;
-	int toPos = TextDCountForwardNLines(startPos, 1, False);
+	int toPos = TextDCountForwardNLines(startPos, 1, false);
 	while (toPos < endPos) {
 		outBuf->BufCopyFromBuf(buf, fromPos, toPos, outPos);
 		outPos += toPos - fromPos;
@@ -3551,7 +3551,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 			outPos++;
 		}
 		fromPos = toPos;
-		toPos = TextDCountForwardNLines(fromPos, 1, True);
+		toPos = TextDCountForwardNLines(fromPos, 1, true);
 	}
 	outBuf->BufCopyFromBuf(buf, fromPos, endPos, outPos);
 
@@ -3749,7 +3749,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 
 	singleLine = it == chars.end();
 	if (colNum < wrapMargin && singleLine) {
-		simpleInsertAtCursorEx(chars, event, True);
+		simpleInsertAtCursorEx(chars, event, true);
 		return;
 	}
 
@@ -4125,7 +4125,7 @@ void TextDisplay::TextPasteClipboard(Time time) {
 	if (checkReadOnly())
 		return;
 	TakeMotifDestination(w, time);
-	InsertClipboard(w, False);
+	InsertClipboard(w, false);
 	callCursorMovementCBs(nullptr);
 }
 
@@ -4134,7 +4134,7 @@ void TextDisplay::TextColPasteClipboard(Time time) {
 	if (checkReadOnly())
 		return;
 	TakeMotifDestination(w, time);
-	InsertClipboard(w, True);
+	InsertClipboard(w, true);
 	callCursorMovementCBs(nullptr);
 }
 
@@ -4168,12 +4168,16 @@ void TextDisplay::cancelDrag() {
 
 	if (TEXT_OF_TEXTD(this).autoScrollProcID != 0)
 		XtRemoveTimeOut(TEXT_OF_TEXTD(this).autoScrollProcID);
+
 	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG)
-		TEXT_OF_TEXTD(this).textD->buffer->BufSecondaryUnselect();
+		this->buffer->BufSecondaryUnselect();
+
 	if (dragState == PRIMARY_BLOCK_DRAG)
 		CancelBlockDrag(reinterpret_cast<TextWidget>(w));
+
 	if (dragState == MOUSE_PAN)
 		XUngrabPointer(XtDisplay(w), CurrentTime);
+		
 	if (dragState != NOT_CLICKED)
 		TEXT_OF_TEXTD(this).dragState = DRAG_CANCELED;
 }
@@ -4183,8 +4187,9 @@ void TextDisplay::checkAutoShowInsertPos() {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (tw->text.autoShowInsertPos)
+	if (tw->text.autoShowInsertPos) {
 		tw->text.textD->TextDMakeInsertPosVisible();
+	}
 }
 
 /*
