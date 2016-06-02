@@ -1,6 +1,6 @@
 
-#ifndef ABOUT_H_
-#define ABOUT_H_
+#ifndef DIALOG_ABOUT_H_
+#define DIALOG_ABOUT_H_
 
 #include <QDialog>
 #include "ui_DialogAbout.h"
