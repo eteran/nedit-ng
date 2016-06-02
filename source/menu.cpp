@@ -40,6 +40,7 @@
 #include "ui/DialogLanguageModes.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+#include "TextHelper.h"
 
 #include "textP.h"
 #include "TextDisplay.h"
@@ -499,7 +500,7 @@ static char **PrevOpen = nullptr;
 
 void HidePointerOnKeyedEvent(Widget w, XEvent *event) {
 	if (event && (event->type == KeyPress || event->type == KeyRelease)) {
-		auto textD = reinterpret_cast<TextWidget>(w)->text.textD;	
+		auto textD = textD_of(w);	
 		textD->ShowHidePointer(true);
 	}
 }
@@ -3088,7 +3089,7 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 
 	// User specified column, but not line number 
 	if (lineNum == -1) {
@@ -3565,7 +3566,7 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 	Q_UNUSED(event);
 	
 	
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 
 	TextBuffer *buf = textD->TextGetBuffer();
 	int start;
@@ -3591,7 +3592,7 @@ static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	Q_UNUSED(args);
 	Q_UNUSED(event);
 
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 	TextBuffer *buf = textD->TextGetBuffer();
 	int start;
 	int end;

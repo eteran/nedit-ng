@@ -30,7 +30,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include "ui/DialogOutput.h"
-
+#include "TextHelper.h"
 #include "textP.h"
 #include "TextDisplay.h"
 #include "shell.h"
@@ -170,7 +170,7 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 		return;
 	}
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	
 
 	// get the selection or the insert position 
@@ -231,7 +231,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 		return;
 	}
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 
 	// get all of the text on the line with the insert position 
 	int pos = textD->TextGetCursorPos();
@@ -289,7 +289,7 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 		return;
 	}
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -725,7 +725,7 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 		return;	
 	}
 	
-	auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;	
+	auto textD = textD_of(cmdData->textW);	
 	TextBuffer *buf = textD->TextGetBuffer();
 
 
@@ -880,7 +880,7 @@ static void finishCmdExecution(Document *window, int terminatedOnError) {
 		} else if (cmdData->flags & OUTPUT_TO_STRING) {
 			ReturnShellCommandOutput(window, outText, WEXITSTATUS(status));
 		} else {
-			auto textD = reinterpret_cast<TextWidget>(cmdData->textW)->text.textD;
+			auto textD = textD_of(cmdData->textW);
 			buf = textD->TextGetBuffer();
 			if (!buf->BufSubstituteNullCharsEx(outText)) {
 				fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");

@@ -28,6 +28,7 @@
 #include <QInputDialog>
 #include <QString>
 
+#include "TextHelper.h"
 #include "textP.h"
 #include "TextDisplay.h"
 #include "selection.h"
@@ -226,7 +227,7 @@ static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char 
 	}
 
 	// User specified column, but not line number 
-	auto textD = reinterpret_cast<TextWidget>(widget)->text.textD;
+	auto textD = textD_of(widget);
 	if (lineNum == -1) {
 		position = textD->TextGetCursorPos();
 		if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
@@ -374,7 +375,7 @@ void SelectNumberedLine(Document *window, int lineNum) {
 	}
 	window->MakeSelectionVisible(window->lastFocus_);
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	textD->TextSetCursorPos(lineStart);
 }
 
@@ -548,7 +549,7 @@ void AddMark(Document *window, Widget widget, char label) {
 	memcpy(&window->markTable_[index].sel, &window->buffer_->primary_, sizeof(TextSelection));
 	
 	
-	auto textD = reinterpret_cast<TextWidget>(widget)->text.textD;
+	auto textD = textD_of(widget);
 		
 	window->markTable_[index].cursorPos = textD->TextGetCursorPos();
 }
@@ -574,7 +575,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	cursorPos = window->markTable_[index].cursorPos;
 	if (extendSel) {
 		
-		auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+		auto textD = textD_of(w);
 		
 		oldStart = oldSel->selected ? oldSel->start : textD->TextGetCursorPos();
 		oldEnd   = oldSel->selected ? oldSel->end   : textD->TextGetCursorPos();
@@ -600,7 +601,7 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	   first turn it off, set the position, then turn it back on. */
 	XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
 	
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 	textD->TextSetCursorPos(cursorPos);
 	
 	window->MakeSelectionVisible(window->lastFocus_);

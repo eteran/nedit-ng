@@ -29,6 +29,7 @@
 #include <QApplication>
 
 #include "shift.h"
+#include "TextHelper.h"
 #include "TextBuffer.h"
 #include "text.h"
 #include "nedit.h"
@@ -84,7 +85,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	TextBuffer *buf = window->buffer_;
 	std::string text;
 
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 
 	// get selection, if no text selected, use current insert position 
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
@@ -101,7 +102,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 		origLength = buf->BufGetLength();
 		shiftRect(window, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		textD->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
 		return;
 	} else {
@@ -188,7 +189,7 @@ static void changeCase(Document *window, int makeUpper) {
 	int rectEnd;
 	bool isRect;
 
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 
 	// Get the selection.  Use character before cursor if no selection 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
@@ -237,7 +238,7 @@ void FillSelection(Document *window) {
 	int rightMargin;
 	int wrapMargin;
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	
 	int insertPos = textD->TextGetCursorPos();
 	int hasSelection = window->buffer_->primary_.selected;

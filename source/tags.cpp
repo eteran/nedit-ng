@@ -31,6 +31,7 @@
 #include "ui/DialogDuplicateTags.h"
 
 #include "tags.h"
+#include "TextHelper.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
 #include "textP.h"
@@ -1435,7 +1436,7 @@ void editTaggedLocation(Widget parent, int i) {
 	lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
 	XtVaGetValues(windowToSearch->lastFocus_, textNrows, &rows, nullptr);
 	
-	auto textD = reinterpret_cast<TextWidget>(windowToSearch->lastFocus_)->text.textD;
+	auto textD = textD_of(windowToSearch->lastFocus_);
 	
 	textD->TextDSetScroll(lineNum - rows / 4, 0);
 	textD->TextSetCursorPos(endPos);

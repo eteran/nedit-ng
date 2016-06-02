@@ -30,6 +30,7 @@
 #include "TextBuffer.h"
 #include "TextDisplay.h"
 #include "textP.h"
+#include "TextHelper.h"
 
 #include <climits>
 
@@ -51,7 +52,7 @@ static int max3(int i1, int i2, int i3);
 ** selection)
 */
 void BeginBlockDrag(TextWidget tw) {
-	TextDisplay *textD = tw->text.textD;
+	TextDisplay *textD = textD_of(tw);
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
 	int fontWidth = textD->fontStruct->max_bounds.width;
@@ -138,7 +139,7 @@ void BeginBlockDrag(TextWidget tw) {
 ** for a new mouse position of (x, y)
 */
 void BlockDragSelection(TextWidget tw, Point pos, int dragType) {
-	TextDisplay *textD = tw->text.textD;
+	TextDisplay *textD = textD_of(tw);
 	TextBuffer *buf = textD->buffer;
 	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
 	int fontWidth = textD->fontStruct->max_bounds.width;
@@ -377,7 +378,7 @@ void FinishBlockDrag(TextWidget tw) {
 ** Cancel a block drag operation
 */
 void CancelBlockDrag(TextWidget tw) {
-	TextBuffer *buf = tw->text.textD->buffer;
+	TextBuffer *buf = textD_of(tw)->buffer;
 	TextBuffer *origBuf = tw->text.dragOrigBuf;
 	TextSelection *origSel = &origBuf->primary_;
 	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
@@ -400,7 +401,7 @@ void CancelBlockDrag(TextWidget tw) {
 		buf->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
 	else
 		buf->BufSelect(origSel->start, origSel->end);
-	tw->text.textD->TextDSetInsertPosition(buf->cursorPosHint_);
+	textD_of(tw)->TextDSetInsertPosition(buf->cursorPosHint_);
 	XtCallCallbacks((Widget)tw, textNcursorMovementCallback, nullptr);
 	tw->text.emTabsBeforeCursor = 0;
 

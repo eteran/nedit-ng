@@ -44,7 +44,7 @@
 #include "WrapStyle.h"
 #include "TextDisplay.h"
 #include "textP.h"
-
+#include "TextHelper.h"
 #include "file.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -257,7 +257,7 @@ void RevertToSaved(Document *window) {
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 		
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		insertPositions[i] = textD->TextGetCursorPos();
 		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 	}
@@ -290,7 +290,7 @@ void RevertToSaved(Document *window) {
 	// restore the insert and scroll positions of each pane 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 	}
@@ -621,7 +621,7 @@ int IncludeFile(Document *window, const char *name) {
 	if (window->buffer_->primary_.selected) {
 		window->buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
 	} else {
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		window->buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(fileString, readLen));
 	}
 
@@ -1297,11 +1297,11 @@ void PrintWindow(Document *window, bool selectedOnly) {
 		if (sel->rectangular) {
 			fileString = buf->BufGetSelectionTextEx();
 		} else {
-			auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+			auto textD = textD_of(window->textArea_);
 			fileString = textD->TextGetWrappedEx(sel->start, sel->end);
 		}
 	} else {
-		auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+		auto textD = textD_of(window->textArea_);
 		fileString = textD->TextGetWrappedEx(0, buf->BufGetLength());
 	}
 
@@ -1769,14 +1769,14 @@ static void addWrapNewlines(Document *window) {
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		insertPositions[i] = textD->TextGetCursorPos();
 		textD->TextDGetScroll(&topLines[i], &horizOffset);
 	}
 
 	// Modify the buffer to add wrapping 
 	
-	auto textD = reinterpret_cast<TextWidget>(window->textArea_)->text.textD;
+	auto textD = textD_of(window->textArea_);
 	
 	std::string fileString = textD->TextGetWrappedEx(0, window->buffer_->BufGetLength());
 	window->buffer_->BufSetAllEx(fileString);
@@ -1785,7 +1785,7 @@ static void addWrapNewlines(Document *window) {
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 		
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], 0);
 	}

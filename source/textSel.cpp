@@ -33,6 +33,7 @@
 #include "text.h"
 #include "TextDisplay.h"
 #include "TextBuffer.h"
+#include "TextHelper.h"
 #include "misc.h"
 
 #include <cstdio>
@@ -45,18 +46,42 @@
 #include <X11/Xatom.h>
 #include <Xm/PrimitiveP.h>
 
-#define N_SELECT_TARGETS 7
-#define N_ATOMS 11
-enum atomIndex { A_TEXT, A_TARGETS, A_MULTIPLE, A_TIMESTAMP, A_INSERT_SELECTION, A_DELETE, A_CLIPBOARD, A_INSERT_INFO, A_ATOM_PAIR, A_MOTIF_DESTINATION, A_COMPOUND_TEXT };
+namespace {
+
+const int N_SELECT_TARGETS = 7;
+const int N_ATOMS          = 11;
+
+
+enum atomIndex {
+	A_TEXT, 
+	A_TARGETS, 
+	A_MULTIPLE, 
+	A_TIMESTAMP, 
+	A_INSERT_SELECTION, 
+	A_DELETE, 
+	A_CLIPBOARD, 
+	A_INSERT_INFO, 
+	A_ATOM_PAIR, 
+	A_MOTIF_DESTINATION, 
+	A_COMPOUND_TEXT
+};
 
 /* Results passed back to the convert proc processing an INSERT_SELECTION
    request, by getInsertSelection when the selection to insert has been
    received and processed */
-enum insertResultFlags { INSERT_WAITING, UNSUCCESSFUL_INSERT, SUCCESSFUL_INSERT };
+enum insertResultFlags {
+	INSERT_WAITING, 
+	UNSUCCESSFUL_INSERT, 
+	SUCCESSFUL_INSERT
+};
 
 /* Actions for selection notify event handler upon receiving confermation
    of a successful convert selection request */
-enum selectNotifyActions { UNSELECT_SECONDARY, REMOVE_SECONDARY, EXCHANGE_SECONDARY };
+enum selectNotifyActions {
+	UNSELECT_SECONDARY, 
+	REMOVE_SECONDARY, 
+	EXCHANGE_SECONDARY
+};
 
 /* temporary structure for passing data to the event handler for completing
    selection requests (the hard way, via xlib calls) */
@@ -68,6 +93,8 @@ struct selectNotifyInfo {
 	char *actionText;
 	int length;
 };
+
+}
 
 static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actionText, int actionTextLen);
@@ -89,7 +116,7 @@ static Atom getAtom(Display *display, int atomNum);
 ** in its attached buffer (a buffer can be attached to multiple text widgets).
 */
 void HandleXSelections(Widget w) {
-	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = textD_of(w)->buffer;
 
 	// Remove any existing selection handlers for other widgets 
 	for (const auto &pair : buf->modifyProcs_) {
@@ -100,7 +127,7 @@ void HandleXSelections(Widget w) {
 	}
 
 	// Add a handler with this widget as the CB arg (and thus the sel. owner) 
-	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufAddModifyCB(modifiedCB, w);
+	textD_of(w)->buffer->BufAddModifyCB(modifiedCB, w);
 }
 
 /*
@@ -108,7 +135,7 @@ void HandleXSelections(Widget w) {
 ** (if "w" was the designated selection owner)
 */
 void StopHandlingXSelections(Widget w) {
-	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = textD_of(w)->buffer;
 
 
 	for (auto it = buf->modifyProcs_.begin(); it != buf->modifyProcs_.end(); ++it) {
@@ -127,7 +154,7 @@ void CopyToClipboard(Widget w, Time time) {
 	long itemID = 0;
 
 	// Get the selected text, if there's no selection, do nothing 
-	std::string text = reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufGetSelectionTextEx();
+	std::string text = textD_of(w)->buffer->BufGetSelectionTextEx();
 	if (text.empty()) {
 		return;
 	}
@@ -135,7 +162,7 @@ void CopyToClipboard(Widget w, Time time) {
 	/* If the string contained ascii-nul characters, something else was
 	   substituted in the buffer.  Put the nulls back */
 	int length = text.size();
-	reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufUnsubstituteNullCharsEx(text);
+	textD_of(w)->buffer->BufUnsubstituteNullCharsEx(text);
 
 	// Shut up LessTif 
 	if (SpinClipboardLock(XtDisplay(w), XtWindow(w)) != ClipboardSuccess) {
@@ -198,7 +225,7 @@ void SendSecondarySelection(Widget w, Time time, int removeAfter) {
 ** with the secondary selection)
 */
 void ExchangeSelections(Widget w, Time time) {
-	if (!reinterpret_cast<TextWidget>(w)->text.textD->buffer->secondary_.selected)
+	if (!textD_of(w)->buffer->secondary_.selected)
 		return;
 
 	/* Initiate an long series of events: 1) get the primary selection,
@@ -238,8 +265,8 @@ void MovePrimarySelection(Widget w, Time time, int isColumnar) {
 */
 void InsertClipboard(Widget w, int isColumnar) {
 	unsigned long length, retLength;
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
-	auto buf   = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto textD = textD_of(w);
+	auto buf   = textD_of(w)->buffer;
 	int cursorLineStart, column, cursorPos;
 	long id = 0;
 
@@ -338,7 +365,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 	TextWidget w = (TextWidget)cbArg;
 	Time time = XtLastTimestampProcessed(XtDisplay((Widget)w));
-	int selected = w->text.textD->buffer->primary_.selected;
+	int selected = textD_of(w)->buffer->primary_.selected;
 	int isOwner = w->text.selectionOwner;
 
 	/* If the widget owns the selection and the buffer text is still selected,
@@ -354,7 +381,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 
 	// Take ownership of the selection 
 	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr))
-		w->text.textD->buffer->BufUnselect();
+		textD_of(w)->buffer->BufUnselect();
 	else
 		w->text.selectionOwner = True;
 }
@@ -372,7 +399,7 @@ static void sendSecondary(Widget w, Time time, Atom sel, int action, char *actio
 
 	// Take ownership of the secondary selection, give up if we can't 
 	if (!XtOwnSelection(w, XA_SECONDARY, time, convertSecondaryCB, loseSecondaryCB, nullptr)) {
-		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
+		textD_of(w)->buffer->BufSecondaryUnselect();
 		return;
 	}
 
@@ -407,7 +434,7 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 
 	(void)selType;
 
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 	int isColumnar = *(int *)clientData;
 	int cursorLineStart, cursorPos, column, row;
 
@@ -460,7 +487,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 
 	(void)selType;
 
-	auto textD      = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD      = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	auto resultFlag = static_cast<int *>(clientData);
 
@@ -506,7 +533,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		QApplication::beep();
-		reinterpret_cast<TextWidget>(w)->text.textD->buffer->BufSecondaryUnselect();
+		textD_of(w)->buffer->BufSecondaryUnselect();
 		return;
 	}
 
@@ -526,7 +553,7 @@ static void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *ty
 */
 static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
 	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
-	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = textD_of(w)->buffer;
 	Display *display = XtDisplay(w);
 	Atom *targets, dummyAtom;
 	unsigned long nItems, dummyULong;
@@ -618,13 +645,13 @@ static void loseSelectionCB(Widget w, Atom *selType) {
 	(void)selType;
 
 	TextWidget tw = (TextWidget)w;
-	TextSelection *sel = &tw->text.textD->buffer->primary_;
+	TextSelection *sel = &textD_of(tw)->buffer->primary_;
 	char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
 
 	/* For zero width rect. sel. we give up the selection but keep the
 	    zero width tag. */
 	tw->text.selectionOwner = False;
-	tw->text.textD->buffer->BufUnselect();
+	textD_of(tw)->buffer->BufUnselect();
 	sel->zeroWidth = zeroWidth;
 }
 
@@ -637,7 +664,7 @@ static Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *t
 
 	(void)selType;
 
-	auto buf = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf = textD_of(w)->buffer;
 
 	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
@@ -732,8 +759,8 @@ static void loseMotifDestCB(Widget w, Atom *selType) {
 	(void)selType;
 
 	reinterpret_cast<TextWidget>(w)->text.motifDestOwner = False;
-	if (reinterpret_cast<TextWidget>(w)->text.textD->cursorStyle == CARET_CURSOR)
-		reinterpret_cast<TextWidget>(w)->text.textD->TextDSetCursorStyle(DIM_CURSOR);
+	if (textD_of(w)->cursorStyle == CARET_CURSOR)
+		textD_of(w)->TextDSetCursorStyle(DIM_CURSOR);
 }
 
 /*
@@ -750,7 +777,7 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 
 	(void)continueDispatch;
 
-	auto buf    = reinterpret_cast<TextWidget>(w)->text.textD->buffer;
+	auto buf    = textD_of(w)->buffer;
 	auto e      = reinterpret_cast<XSelectionEvent *>(event);
 	auto cbInfo = static_cast<selectNotifyInfo *>(data);
 	int selStart, selEnd;
@@ -789,11 +816,11 @@ static void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *con
 			buf->BufReplaceSecSelectEx(string);
 			if (buf->secondary_.rectangular) {
 				/*... it would be nice to re-select, but probably impossible */
-				reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(buf->cursorPosHint_);
+				textD_of(w)->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else {
 				selEnd = selStart + cbInfo->length;
 				buf->BufSelect(selStart, selEnd);
-				reinterpret_cast<TextWidget>(w)->text.textD->TextDSetInsertPosition(selEnd);
+				textD_of(w)->TextDSetInsertPosition(selEnd);
 			}
 		} else {
 			fprintf(stderr, "Too much binary data\n");
@@ -815,7 +842,7 @@ static void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
-	TextBuffer *buf = ((TextWidget)cbInfo->widget)->text.textD->buffer;
+	TextBuffer *buf = textD_of(cbInfo->widget)->buffer;
 
 	fprintf(stderr, "NEdit: timeout on selection request\n");
 	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);

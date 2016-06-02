@@ -35,7 +35,7 @@
 #include "ui/DialogMultiReplace.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
-
+#include "TextHelper.h"
 #include "search.h"
 #include "regularExp.h"
 #include "TextBuffer.h"
@@ -280,7 +280,7 @@ static int selectionSpansMultipleLines(Document *window) {
 		return FALSE; // Same line 
 
 	// Estimate the number of characters on a line 
-	textD = ((TextWidget)window->textArea_)->text.textD;
+	textD = textD_of(window->textArea_);
 	if (textD->fontStruct->max_bounds.width > 0)
 		lineWidth = textD->width / textD->fontStruct->max_bounds.width;
 	else
@@ -598,7 +598,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 		selEnd = -1;
 		// no selection, or no match, search relative cursor 
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		
 		cursorPos = textD->TextGetCursorPos();
 		if (direction == SEARCH_BACKWARD) {
@@ -642,7 +642,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	window->MakeSelectionVisible(window->lastFocus_);
 	
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	textD->TextSetCursorPos(endPos);
 
 	return TRUE;
@@ -779,7 +779,7 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	   starting position, otherwise search from the cursor position. */
 	if (!continued || window->iSearchStartPos_ == -1) {
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		
 		window->iSearchStartPos_ = textD->TextGetCursorPos();
 		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
@@ -796,7 +796,7 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
 		window->buffer_->BufUnselect();
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		textD->TextSetCursorPos(beginPos);
 		return true;
 	}
@@ -833,7 +833,7 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	window->buffer_->BufSelect(startPos, endPos);
 	window->MakeSelectionVisible(window->lastFocus_);
 	
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	textD->TextSetCursorPos(endPos);
 
 	return true;
@@ -1156,7 +1156,7 @@ void FlashMatching(Document *window, Widget textW) {
 		return;
 
 	// get the character to match and the position to start from 
-	auto textD = reinterpret_cast<TextWidget>(textW)->text.textD;
+	auto textD = textD_of(textW);
 	
 	int pos = textD->TextGetCursorPos() - 1;
 	if (pos < 0)
@@ -1220,7 +1220,7 @@ void SelectToMatchingCharacter(Document *window) {
 	   Give up if too many characters are selected */
 	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		
 		selEnd = textD->TextGetCursorPos();
 		if (window->overstrike_)
@@ -1266,7 +1266,7 @@ void GotoMatchingCharacter(Document *window) {
 	   Give up if too many characters are selected */
 	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		
 		selEnd = textD->TextGetCursorPos();
 		
@@ -1298,7 +1298,7 @@ void GotoMatchingCharacter(Document *window) {
 	   nothing) */
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
 
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	
 	textD->TextSetCursorPos(matchPos + 1);
 	window->MakeSelectionVisible(window->lastFocus_);
@@ -1461,7 +1461,7 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 
 		// Position the cursor so the next search will work correctly based 
 		// on the direction of the search 
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		textD->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 		replaced = true;
 	}
@@ -1497,7 +1497,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	if (!searchMatchesSelection(window, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 		// get the position to start the search 
 		
-		auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+		auto textD = textD_of(window->lastFocus_);
 		
 		cursorPos = textD->TextGetCursorPos();
 		if (direction == SEARCH_BACKWARD) {
@@ -1547,7 +1547,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	   nothing) */
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
 
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	textD->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 	window->MakeSelectionVisible(window->lastFocus_);
 	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
@@ -1760,7 +1760,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 			window->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
 
 			// set the insert point at the end of the last replacement 
-			auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+			auto textD = textD_of(window->lastFocus_);
 			
 			textD->TextSetCursorPos(selStart + cursorPos + realOffset);
 
@@ -1843,7 +1843,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 	window->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
 	// Move the cursor to the end of the last replacement 
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	textD->TextSetCursorPos(copyStart + replacementLen);
 
 	XtFree(newFileString);

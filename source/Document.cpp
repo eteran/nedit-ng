@@ -8,7 +8,7 @@
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "RangesetTable.h"
-
+#include "TextHelper.h"
 #include "MotifHelper.h"
 #include "Document.h"
 #include "file.h"
@@ -307,7 +307,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)callData;
 
 	auto textWidget = reinterpret_cast<TextWidget>(w);
-	auto textD = textWidget->text.textD;
+	auto textD = textD_of(textWidget);
 
 	if (window->ignoreModify_)
 		return;
@@ -465,7 +465,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	for (i = 0; i <= orgWin->nPanes_; i++) {
 		text = i == 0 ? orgWin->textArea_ : orgWin->textPanes_[i - 1];
 		
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
@@ -493,7 +493,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 
 		for (i = 0; i < orgWin->nPanes_; i++) {
 			text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
-			auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+			auto textD = textD_of(text);
 			textD->TextSetBuffer(window->buffer_);
 
 			if (window->highlightData_)
@@ -502,7 +502,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			window->textPanes_[i] = text;
 
 			// Fix up the colors 
-			auto newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
+			auto newTextD = textD_of(text);
 			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}
@@ -522,7 +522,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	// Reset all of the heights, scroll positions, etc. 
 	for (i = 0; i <= window->nPanes_; i++) {
 		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 
@@ -1213,7 +1213,7 @@ int Document::updateGutterWidth() {
 		if (document->shell_ == shell_) {
 			//  We found ourselves a document from this window.  
 			int lineNumCols, tmpReqCols;
-			TextDisplay *textD = ((TextWidget)document->textArea_)->text.textD;
+			TextDisplay *textD = textD_of(document->textArea_);
 
 			XtVaGetValues(document->textArea_, textNlineNumCols, &lineNumCols, nullptr);
 
@@ -1406,7 +1406,7 @@ void Document::UpdateStatsLine() {
 		return;
 	}
 
-	auto textD = reinterpret_cast<TextWidget>(lastFocus_)->text.textD;
+	auto textD = textD_of(lastFocus_);
 
 	// Compose the string to display. If line # isn't available, leave it off 
 	int pos            = textD->TextGetCursorPos();
@@ -1458,7 +1458,7 @@ void Document::UpdateWMSizeHints() {
 	XFontStruct *fs;
 	int i, baseWidth, baseHeight, fontHeight, fontWidth;
 	Widget hScrollBar;
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 
 	// Find the dimensions of a single character of the text font 
 	XtVaGetValues(textArea_, textNfont, &fs, nullptr);
@@ -1536,7 +1536,7 @@ void Document::SetTabDist(int tabDist) {
 
 		for (paneIndex = 0; paneIndex <= nPanes_; ++paneIndex) {
 			Widget w = GetPaneByIndex(paneIndex);
-			auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+			auto textD = textD_of(w);
 
 			textD->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
 			saveCursorPositions[paneIndex] = textD->TextGetCursorPos();
@@ -1547,7 +1547,7 @@ void Document::SetTabDist(int tabDist) {
 
 		for (paneIndex = 0; paneIndex <= nPanes_; ++paneIndex) {
 			Widget w = GetPaneByIndex(paneIndex);
-			auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+			auto textD = textD_of(w);
 
 			textD->modifyingTabDist = 0;
 			textD->TextSetCursorPos(saveCursorPositions[paneIndex]);
@@ -1883,7 +1883,7 @@ void Document::SortTabBar() {
 ** to font or margin height.
 */
 void Document::UpdateMinPaneHeights() {
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 	Dimension hsbHeight, swMarginHeight, frameShadowHeight;
 	int i, marginHeight, minPaneHeight;
 	Widget hScrollBar;
@@ -1961,8 +1961,6 @@ void Document::SetAutoScroll(int margin) {
 */
 void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 	
-	int i;
-	
 	Pixel textFgPix   = AllocColor(textArea_, textFg);
 	Pixel textBgPix   = AllocColor(textArea_, textBg);
 	Pixel selectFgPix = AllocColor(textArea_, selectFg);
@@ -1972,16 +1970,16 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 	Pixel lineNoFgPix = AllocColor(textArea_, lineNoFg);
 	Pixel cursorFgPix = AllocColor(textArea_, cursorFg);
 	
-	TextDisplay *textD;
 
 	// Update the main pane 
 	XtVaSetValues(textArea_, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	TextDisplay *textD = textD_of(textArea_);
 	textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+
 	// Update any additional panes 
-	for (i = 0; i < nPanes_; i++) {
+	for (int i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-		textD = ((TextWidget)textPanes_[i])->text.textD;
+		textD = textD_of(textPanes_[i]);
 		textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	}
 
@@ -2203,7 +2201,7 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	int topLineNum;
 	int y;
 	
-	auto textD   = reinterpret_cast<TextWidget>(textPane)->text.textD;
+	auto textD   = textD_of(textPane);
 	int topChar  = textD->TextFirstVisiblePos();
 	int lastChar = textD->TextLastVisiblePos();
 
@@ -2351,7 +2349,7 @@ void Document::ShowLineNumbers(bool state) {
 	int i, marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 
 	if (showLineNumbers_ == state)
 		return;
@@ -2410,7 +2408,7 @@ void Document::ShowStatsLine(int state) {
 	   numbers, either in the stats line, or along the left margin */
 	for (i = 0; i <= nPanes_; i++) {
 		text = (i == 0) ? textArea_ : textPanes_[i - 1];
-		reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(state);
+		textD_of(text)->TextDMaintainAbsLineNum(state);
 	}
 	showStats_ = state;
 	showStatistics(state);
@@ -2480,7 +2478,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	bool highlightChanged = false;
 	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
 	Dimension textHeight, newWindowWidth, newWindowHeight;
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 
 	// Check which fonts have changed 
 	bool primaryChanged = QLatin1String(fontName) != fontName_;
@@ -2594,7 +2592,7 @@ void Document::ClosePane() {
 	focusPane = 0;
 	for (i = 0; i <= nPanes_; i++) {
 		text = (i == 0) ? textArea_ : textPanes_[i - 1];
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
@@ -2642,7 +2640,7 @@ void Document::ClosePane() {
 	for (i = 0; i <= nPanes_; i++) {
 		text = i == 0 ? textArea_ : textPanes_[i - 1];
 		
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 	}
@@ -2853,7 +2851,7 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 	Widget hScrollBar;
 	Dimension hScrollBarHeight, paneHeight;
 	int marginHeight, marginWidth, totalHeight, fontHeight;
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 
 	// width is the same for panes 
 	XtVaGetValues(textArea_, textNcolumns, nCols, nullptr);
@@ -2890,7 +2888,7 @@ void Document::SplitPane() {
 	for (i = 0; i <= nPanes_; i++) {
 		text = (i == 0) ? textArea_ : textPanes_[i - 1];
 
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		insertPositions[i] = textD->TextGetCursorPos();
 		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
 		totalHeight += paneHeights[i];
@@ -2906,7 +2904,7 @@ void Document::SplitPane() {
 	   highlight data to be the same as the other panes in the document */
 	XtVaGetValues(textArea_, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, textNlineNumCols, &lineNumCols, nullptr);
 	text = createTextArea(splitPane_, this, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
-	auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+	auto textD = textD_of(text);
 	
 	textD->TextSetBuffer(buffer_);
 	if (highlightData_)
@@ -2919,8 +2917,8 @@ void Document::SplitPane() {
 	textPanes_[nPanes_++] = text;
 
 	// Fix up the colors 
-	textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
-	newTextD = reinterpret_cast<TextWidget>(text)->text.textD;
+	textD = textD_of(textArea_);
+	newTextD = textD_of(text);
 	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
 	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
@@ -2949,7 +2947,7 @@ void Document::SplitPane() {
 	// Reset all of the heights, scroll positions, etc. 
 	for (i = 0; i <= nPanes_; i++) {
 		text = i == 0 ? textArea_ : textPanes_[i - 1];
-		auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+		auto textD = textD_of(text);
 		
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
@@ -3604,7 +3602,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	buffer_->BufAddModifyCB(SyntaxHighlightModifyCB, this);
 
 	// Attach the buffer to the text widget, and add callbacks for modify 
-	auto textD = reinterpret_cast<TextWidget>(textArea_)->text.textD;
+	auto textD = textD_of(textArea_);
 	textD->TextSetBuffer(buffer_);
 	buffer_->BufAddModifyCB(modifiedCB, this);
 
@@ -3826,7 +3824,7 @@ Document *Document::CreateDocument(const QString &name) {
 	window->buffer_->BufAddModifyCB(SyntaxHighlightModifyCB, window);
 
 	// Attach the buffer to the text widget, and add callbacks for modify 
-	auto textD = reinterpret_cast<TextWidget>(text)->text.textD;
+	auto textD = textD_of(text);
 	textD->TextSetBuffer(window->buffer_);
 	window->buffer_->BufAddModifyCB(modifiedCB, window);
 
@@ -3929,7 +3927,7 @@ void Document::Undo() {
 	if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		auto textD = reinterpret_cast<TextWidget>(lastFocus_)->text.textD;
+		auto textD = textD_of(lastFocus_);
 		textD->TextSetCursorPos(undo->startPos + restoredTextLength);
 	}
 
@@ -3978,7 +3976,7 @@ void Document::Redo() {
 	if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		auto textD = reinterpret_cast<TextWidget>(lastFocus_)->text.textD;
+		auto textD = textD_of(lastFocus_);
 		textD->TextSetCursorPos(redo->startPos + restoredTextLength);
 	}
 	if (GetPrefUndoModifiesSelection()) {
@@ -4428,7 +4426,7 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	/* If absolute line numbers will be needed for display in the statistics
 	   line, tell the widget to maintain them (otherwise, it's a costly
 	   operation and performance will be better without it) */
-	reinterpret_cast<TextWidget>(text)->text.textD->TextDMaintainAbsLineNum(window->showStats_);
+	textD_of(text)->TextDMaintainAbsLineNum(window->showStats_);
 
 	return text;
 }

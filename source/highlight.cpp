@@ -30,6 +30,7 @@
 #include <QMessageBox>
 
 #include "highlight.h"
+#include "TextHelper.h"
 #include "Document.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
@@ -299,10 +300,10 @@ void StopHighlighting(Document *window) {
 ** redisplaying.
 */
 void FreeHighlightingData(Document *window) {
-	int i;
 
-	if (!window->highlightData_)
+	if (!window->highlightData_) {
 		return;
+	}
 
 	// Free and remove the highlight data from the window 
 	freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
@@ -310,9 +311,11 @@ void FreeHighlightingData(Document *window) {
 
 	/* The text display may make a last desperate attempt to access highlight
 	   information when it is destroyed, which would be a disaster. */
-	((TextWidget)window->textArea_)->text.textD->styleBuffer = nullptr;
-	for (i = 0; i < window->nPanes_; i++)
-		((TextWidget)window->textPanes_[i])->text.textD->styleBuffer = nullptr;
+	textD_of(window->textArea_)->styleBuffer = nullptr;
+	
+	for (int i = 0; i < window->nPanes_; i++) {
+		textD_of(window->textPanes_[i])->styleBuffer = nullptr;
+	}
 }
 
 /*
@@ -322,14 +325,14 @@ void FreeHighlightingData(Document *window) {
 void AttachHighlightToWidget(Widget widget, Document *window) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
-	reinterpret_cast<TextWidget>(widget)->text.textD->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
+	textD_of(widget)->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
 }
 
 /*
 ** Remove style information from a text widget and redisplay it.
 */
 void RemoveWidgetHighlight(Widget widget) {
-	reinterpret_cast<TextWidget>(widget)->text.textD->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
+	textD_of(widget)->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /*
@@ -2238,7 +2241,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 ** text display component
 */
 static int getFontHeight(Document *window) {
-	TextDisplay *textD = ((TextWidget)window->textArea_)->text.textD;
+	TextDisplay *textD = textD_of(window->textArea_);
 
 	return textD->ascent + textD->descent;
 }

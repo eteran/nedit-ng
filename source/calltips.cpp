@@ -34,7 +34,7 @@
 #include "calltips.h"
 #include "TextDisplay.h"
 #include "Document.h"
-
+#include "TextHelper.h"
 #include "misc.h"
 
 #include <cstdio>
@@ -50,7 +50,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 ** Pop-down a calltip if one exists, else do nothing
 */
 void KillCalltip(Document *window, int calltipID) {
-	TextDisplay *textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	TextDisplay *textD = textD_of(window->lastFocus_);
 	textD->TextDKillCalltip(calltipID);
 }
 
@@ -61,7 +61,7 @@ void KillCalltip(Document *window, int calltipID) {
 ** displayed with that calltipID.
 */
 int GetCalltipID(Document *window, int calltipID) {
-	TextDisplay *textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	TextDisplay *textD = textD_of(window->lastFocus_);
 	if (calltipID == 0)
 		return textD->calltip.ID;
 	else {
@@ -123,7 +123,7 @@ std::string expandAllTabsEx(view::string_view text, int tab_width) {
 */
 int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
-	auto textD = reinterpret_cast<TextWidget>(window->lastFocus_)->text.textD;
+	auto textD = textD_of(window->lastFocus_);
 	int rel_x, rel_y;
 	Position txtX, txtY;
 
