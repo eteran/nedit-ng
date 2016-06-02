@@ -5,6 +5,7 @@
 #include "DialogTabs.h"
 #include "Document.h"
 #include "preferences.h"
+#include "MotifHelper.h"
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -113,20 +114,16 @@ void DialogTabs::on_buttonBox_accepted() {
 		SetPrefEmTabDist(emTabDist);
 		SetPrefInsertTabs(useTabs);
 	} else {
-		char *params[1];
 		char numStr[25];
 
-		params[0] = numStr;
 		sprintf(numStr, "%d", tabDist);
-		XtCallActionProc(forWindow_->textArea_, "set_tab_dist", nullptr, params, 1);
+		XtCallActionProcEx(forWindow_->textArea_, "set_tab_dist", nullptr, numStr);
 		
-		params[0] = numStr;
 		sprintf(numStr, "%d", emTabDist);
-		XtCallActionProc(forWindow_->textArea_, "set_em_tab_dist", nullptr, params, 1);
+		XtCallActionProcEx(forWindow_->textArea_, "set_em_tab_dist", nullptr, numStr);
 		
-		params[0] = numStr;
 		sprintf(numStr, "%d", useTabs);
-		XtCallActionProc(forWindow_->textArea_, "set_use_tabs", nullptr, params, 1);
+		XtCallActionProcEx(forWindow_->textArea_, "set_use_tabs", nullptr, numStr);
 	}
 	
 	accept();

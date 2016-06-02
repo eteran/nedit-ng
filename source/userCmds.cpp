@@ -1142,7 +1142,6 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtArgVal userData;
 	int index;
-	char *params[1];
 
 	window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -1153,9 +1152,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	QByteArray str = ShellMenuItems[index]->name.toLatin1();
-	
-	params[0] = str.data(); // TODO(eteran): is this safe?
-	XtCallActionProc(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProcEx(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
 }
 
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1164,7 +1161,6 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtArgVal userData;
 	int index;
-	char *params[1];
 
 	window = Document::WidgetToWindow(MENU_WIDGET(w));
 
@@ -1188,8 +1184,7 @@ static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		return;
 
 	QByteArray str = MacroMenuItems[index]->name.toLatin1();
-	params[0] = str.data(); // TODO(eteran): is this safe?
-	XtCallActionProc(window->lastFocus_, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProcEx(window->lastFocus_, "macro_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
 }
 
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1198,7 +1193,6 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	XtArgVal userData;
 	int index;
-	char *params[1];
 
 	// Same remark as for macro menu commands (see above). 
 	if (window->macroCmdData_) {
@@ -1212,10 +1206,10 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NBGMenuItems)
 		return;
 
+
 	
 	QByteArray str = BGMenuItems[index]->name.toLatin1();
-	params[0] = str.data(); // TODO(eteran): is this safe?
-	XtCallActionProc(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, params, 1);
+	XtCallActionProcEx(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
 }
 
 static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType) {
