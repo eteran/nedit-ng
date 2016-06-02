@@ -39,6 +39,7 @@
 #include "RangesetTable.h"
 #include "textSel.h"
 #include "textDrag.h"
+#include "TextHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -52,13 +53,13 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-#define NEDIT_HIDE_CURSOR_MASK (KeyPressMask)
-#define NEDIT_SHOW_CURSOR_MASK (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask)
-
 // Macro for getting the TextPart from a textD
 #define TEXT_OF_TEXTD(t) (reinterpret_cast<TextWidget>((t)->w)->text)
 
 namespace {
+
+const int NEDIT_HIDE_CURSOR_MASK = (KeyPressMask);
+const int NEDIT_SHOW_CURSOR_MASK = (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask);
 
 Cursor empty_cursor = 0;
 
@@ -101,7 +102,6 @@ const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
 const int MAX_DISP_LINE_LEN = 1000;
-
 
 enum positionTypes {
 	CURSOR_POS,
@@ -207,9 +207,11 @@ TextDisplay::TextDisplay(Widget widget,
 	this->calltip.ID = 0;
 	this->calltipFGPixel = calltipFGPixel;
 	this->calltipBGPixel = calltipBGPixel;
+	
 	for (int i = 1; i < this->nVisibleLines; i++) {
 		this->lineStarts[i] = -1;
 	}
+	
 	this->bgClassPixel = nullptr;
 	this->bgClass = nullptr;
 	TextDSetupBGClasses(widget, bgClassString, &this->bgClassPixel, &this->bgClass, bgPixel);
@@ -720,7 +722,7 @@ void TextDisplay::TextDUnblankCursor() {
 	}
 }
 
-void TextDisplay::TextDSetCursorStyle(int style) {
+void TextDisplay::TextDSetCursorStyle(CursorStyles style) {
 	this->cursorStyle = style;
 	blankCursorProtrusions();
 	if (this->cursorOn) {
@@ -3721,7 +3723,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	int replaceSel, singleLine, breakAt = 0;
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
-	if (!allowWrap || !tw->text.autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
+	if (!allowWrap || !text_of(tw).autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
 		simpleInsertAtCursorEx(chars, event, allowPendingDelete);
 		return;
 	}
@@ -3737,7 +3739,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	   it and be done (for efficiency only, this routine is called for each
 	   character typed). (Of course, it may not be significantly more efficient
 	   than the more general code below it, so it may be a waste of time!) */
-	wrapMargin = tw->text.wrapMargin != 0 ? tw->text.wrapMargin : this->width / fontWidth;
+	wrapMargin = text_of(tw).wrapMargin != 0 ? text_of(tw).wrapMargin : this->width / fontWidth;
 	lineStartPos = buf->BufStartOfLine(cursorPos);
 	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
 
@@ -3761,7 +3763,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	if (replaceSel) {
 		buf->BufReplaceSelectedEx(wrappedText);
 		TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (tw->text.overstrike) {
+	} else if (text_of(tw).overstrike) {
 		if (breakAt == 0 && singleLine)
 			TextDOverstrikeEx(wrappedText);
 		else {
@@ -3916,7 +3918,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	   whitespace in line at which to wrap */
 	for (p = lineEndPos;; p--) {
 		if (p < lineStartPos || p < limitPos) {
-			return False;
+			return false;
 		}
 
 		char c = buf->BufGetCharacter(p);
@@ -3928,7 +3930,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	   indent string reaches the wrap position, slice the auto-indent
 	   back off and return to the left margin */
 	std::string indentStr;
-	if (tw->text.autoIndent || tw->text.smartIndent) {
+	if (text_of(tw).autoIndent || text_of(tw).smartIndent) {
 		indentStr = createIndentStringEx(buf, bufOffset, lineStartPos, lineEndPos, &length, &column);
 		if (column >= p - lineStartPos) {
 			indentStr.resize(1);
@@ -3944,7 +3946,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 
 	*breakAt = p;
 	*charsAdded = length - 1;
-	return True;
+	return true;
 }
 
 
@@ -3971,7 +3973,7 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 	   through the buffer, and reconciling that with wrapping changes made,
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
-	if (tw->text.smartIndent && (lineStartPos == 0 || buf == this->buffer)) {
+	if (text_of(tw).smartIndent && (lineStartPos == 0 || buf == this->buffer)) {
 		smartIndent.reason = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
@@ -4029,9 +4031,9 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (tw->text.cursorBlinkRate != 0) {
-		if (tw->text.cursorBlinkProcID != 0) {
-			XtRemoveTimeOut(tw->text.cursorBlinkProcID);
+	if (text_of(tw).cursorBlinkRate != 0) {
+		if (text_of(tw).cursorBlinkProcID != 0) {
+			XtRemoveTimeOut(text_of(tw).cursorBlinkProcID);
 		}
 
 		if (startsBlanked) {
@@ -4040,7 +4042,7 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 			TextDUnblankCursor();
 		}
 
-		tw->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), tw->text.cursorBlinkRate, cursorBlinkTimerProc, tw);
+		text_of(tw).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), text_of(tw).cursorBlinkRate, cursorBlinkTimerProc, tw);
 	}
 }
 
@@ -4051,7 +4053,7 @@ void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	TextWidget w = static_cast<TextWidget>(clientData);
-	TextDisplay *textD = w->text.textD;
+	TextDisplay *textD = textD_of(w);
 
 	// Blink the cursor
 	if (textD->cursorOn)
@@ -4068,15 +4070,15 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (tw->text.hidePointer) {
-		if (hidePointer != tw->text.textD->pointerHidden) {
+	if (text_of(tw).hidePointer) {
+		if (hidePointer != textD_of(tw)->pointerHidden) {
 			if (hidePointer) {
 				// Don't listen for keypresses any more
 				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
 				// Switch to empty cursor
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
-				tw->text.textD->pointerHidden = true;
+				textD_of(tw)->pointerHidden = true;
 
 				// Listen to mouse movement, focus change, and button presses
 				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, nullptr);
@@ -4086,7 +4088,7 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 				// Switch to regular cursor
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
-				tw->text.textD->pointerHidden = false;
+				textD_of(tw)->pointerHidden = false;
 
 				// Listen for keypresses now
 				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
@@ -4101,7 +4103,7 @@ void TextDisplay::handleHidePointer(Widget w, XtPointer unused, XEvent *event, B
 	(void)event;
 	(void)continue_to_dispatch;
 
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 	textD->ShowHidePointer(true);
 }
 
@@ -4112,7 +4114,7 @@ void TextDisplay::handleShowPointer(Widget w, XtPointer unused, XEvent *event, B
 	(void)event;
 	(void)continue_to_dispatch;
 
-	auto textD = reinterpret_cast<TextWidget>(w)->text.textD;
+	auto textD = textD_of(w);
 	textD->ShowHidePointer(false);
 }
 
@@ -4148,9 +4150,9 @@ void TextDisplay::TextHandleXSelections() {
 bool TextDisplay::checkReadOnly() const {
 	if (TEXT_OF_TEXTD(this).readOnly) {
 		QApplication::beep();
-		return True;
+		return true;
 	}
-	return False;
+	return false;
 }
 
 
@@ -4184,8 +4186,8 @@ void TextDisplay::checkAutoShowInsertPos() const {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (tw->text.autoShowInsertPos) {
-		tw->text.textD->TextDMakeInsertPosVisible();
+	if (text_of(tw).autoShowInsertPos) {
+		textD_of(tw)->TextDMakeInsertPosVisible();
 	}
 }
 

@@ -35,10 +35,10 @@
 #include <Xm/Xm.h>
 
 enum CursorStyles {
-	NORMAL_CURSOR, 
-	CARET_CURSOR, 
-	DIM_CURSOR, 
-	BLOCK_CURSOR, 
+	NORMAL_CURSOR,
+	CARET_CURSOR,
+	DIM_CURSOR,
+	BLOCK_CURSOR,
 	HEAVY_CURSOR
 };
 
@@ -69,29 +69,29 @@ struct calltipStruct {
 class TextDisplay {
 public:
 	TextDisplay(
-		Widget widget, 
-		Widget hScrollBar, 
-		Widget vScrollBar, 
-		Position left, 
-		Position top, 
-		Position width, 
-		Position height, 
-		Position lineNumLeft, 
-		Position lineNumWidth, 
-		TextBuffer *buffer, 
-		XFontStruct *fontStruct, 
-		Pixel bgPixel, 
-		Pixel fgPixel, 
-		Pixel selectFGPixel, 
-		Pixel selectBGPixel, 
-		Pixel highlightFGPixel, 
-		Pixel highlightBGPixel, 
-		Pixel cursorFGPixel, 
-		Pixel lineNumFGPixel, 
-		bool continuousWrap, 
-		int wrapMargin, 
-		XmString bgClassString, 
-		Pixel calltipFGPixel, 
+		Widget widget,
+		Widget hScrollBar,
+		Widget vScrollBar,
+		Position left,
+		Position top,
+		Position width,
+		Position height,
+		Position lineNumLeft,
+		Position lineNumWidth,
+		TextBuffer *buffer,
+		XFontStruct *fontStruct,
+		Pixel bgPixel,
+		Pixel fgPixel,
+		Pixel selectFGPixel,
+		Pixel selectBGPixel,
+		Pixel highlightFGPixel,
+		Pixel highlightBGPixel,
+		Pixel cursorFGPixel,
+		Pixel lineNumFGPixel,
+		bool continuousWrap,
+		int wrapMargin,
+		XmString bgClassString,
+		Pixel calltipFGPixel,
 		Pixel calltipBGPixel);
 
 	~TextDisplay();
@@ -135,7 +135,7 @@ public:
 	void TextDResize(int width, int height);
 	void TextDSetBuffer(TextBuffer *buffer);
 	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
-	void TextDSetCursorStyle(int style);
+	void TextDSetCursorStyle(CursorStyles style);
 	void TextDSetFont(XFontStruct *fontStruct);
 	void TextDSetInsertPosition(int newPos);
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
@@ -173,7 +173,7 @@ public:
 	void cancelDrag();
 	void checkAutoShowInsertPos() const;
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
-		
+
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
 	int emptyLinesVisible() const;
@@ -192,7 +192,7 @@ private:
 	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 	void allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
 	void calcLastChar();
-	void calcLineStarts(int startLine, int endLine);	
+	void calcLineStarts(int startLine, int endLine);
 	void clearRect(GC gc, int x, int y, int width, int height);
 	void drawCursor(int x, int y);
 	void drawString(int style, int x, int y, int toX, char *string, int nChars);
@@ -214,7 +214,7 @@ public:
 	void blankCursorProtrusions();
 	void updateVScrollBarRange();
 	int updateHScrollBarRange();
-	void resetAbsLineNum();	
+	void resetAbsLineNum();
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
 	int maintainingAbsTopLineNum() const;
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
@@ -237,16 +237,18 @@ public:
 	int lineNumWidth;
 	int cursorPos;
 	int cursorOn;
-	int cursorX, cursorY;                        // X, Y pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+	int cursorX;                                 // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+	int cursorY;                                 // Y pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
 	int cursorToHint;                            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
-	int cursorStyle;                             // One of enum cursorStyles above
+	CursorStyles cursorStyle;                    // One of enum cursorStyles above
 	int cursorPreferredCol;                      // Column for vert. cursor movement
 	int nVisibleLines;                           // # of visible (displayed) lines
 	int nBufferLines;                            // # of newlines in the buffer
 	TextBuffer *buffer;                          // Contains text to be displayed
 	TextBuffer *styleBuffer;                     // Optional parallel buffer containing color and font information
-	int firstChar, lastChar;                     // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
-	int continuousWrap;                          // Wrap long lines when displaying
+	int firstChar;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
+	int lastChar;
+	bool continuousWrap;                         // Wrap long lines when displaying
 	int wrapMargin;                              // Margin in # of char positions for wrapping in continuousWrap mode
 	int *lineStarts;
 	int topLineNum;                              // Line number of top displayed line of file (first line of file is 1)
@@ -260,15 +262,28 @@ public:
 	unfinishedStyleCBProc unfinishedHighlightCB; // Callback to parse "unfinished" regions
 	void *highlightCBArg;                        // Arg to unfinishedHighlightCB
 	XFontStruct *fontStruct;                     // Font structure for primary font
-	int ascent, descent;                         // Composite ascent and descent for primary font + all-highlight fonts
+	int ascent;                                  // Composite ascent and descent for primary font + all-highlight fonts
+	int descent;
 	int fixedFontWidth;                          // Font width if all current fonts are fixed and match in width, else -1
-	Widget hScrollBar, vScrollBar;
-	GC gc, selectGC, highlightGC;                // GCs for drawing text
-	GC selectBGGC, highlightBGGC;                // GCs for erasing text
-	GC cursorFGGC;                               // GC for drawing the cursor
-	GC lineNumGC;                                // GC for drawing line numbers
-	GC styleGC;                                  // GC with color and font unspecified for drawing colored/styled text
-	Pixel fgPixel, bgPixel;                      // Foreground/Background colors
+	Widget hScrollBar;
+	Widget vScrollBar;
+
+	// GCs for drawing text
+	GC gc;
+	GC selectGC;
+	GC highlightGC;
+	// GCs for erasing text
+	GC selectBGGC;
+	GC highlightBGGC;
+	// GC for drawing the cursor
+	GC cursorFGGC;
+	// GC for drawing line numbers
+	GC lineNumGC;
+	// GC with color and font unspecified for drawing colored/styled text
+	GC styleGC;
+
+	Pixel fgPixel;                               // Foreground color
+	Pixel bgPixel;                               // Background color
 	Pixel selectFGPixel;                         // Foreground select color
 	Pixel selectBGPixel;                         // Background select color
 	Pixel highlightFGPixel;                      // Highlight colors are used when flashing matching parens
@@ -285,7 +300,7 @@ public:
 	int suppressResync;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int modifyingTabDist;                        // Whether tab distance is being modified
-	Boolean pointerHidden;                       // true if the mouse pointer is hidden
+	bool pointerHidden;                          // true if the mouse pointer is hidden
 	graphicExposeTranslationEntry *graphicsExposeQueue_;
 };
 

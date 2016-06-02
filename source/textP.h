@@ -123,7 +123,7 @@ public:
 	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
 	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
-	int selectionOwner;             // True if widget owns the selection
+	bool selectionOwner;             // True if widget owns the selection
 	int motifDestOwner;             // " " owns the motif destination
 	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll

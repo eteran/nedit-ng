@@ -36,7 +36,8 @@
 #include "Document.h"
 #include "calltips.h"
 #include "window.h"
-#include "../util/memory.h"
+#include "memory.h"
+#include "TextHelper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -65,23 +66,6 @@ const int SELECT_THRESHOLD = 5;
 
 // Length of delay in milliseconds for vertical autoscrolling
 const int VERTICAL_SCROLL_DELAY = 50;
-
-
-template <class T>
-TextPart &text_of(T w) {
-	return reinterpret_cast<TextWidget>(w)->text;
-}
-
-
-inline TextDisplay *&textD_of(TextPart &w) {
-	return w.textD;
-}
-
-
-template <class T>
-TextDisplay *&textD_of(T w) {
-	return text_of(w).textD;
-}
 
 }
 
