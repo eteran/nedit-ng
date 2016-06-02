@@ -40,9 +40,6 @@
    (how many modifier keys can you hold down at once?) */
 #define MAX_ACCEL_LEN 100
 
-/*  button margin width to avoid cramped buttons  */
-#define BUTTON_WIDTH_MARGIN 12
-
 bool FindBestVisual(Display *display, const char *appName, const char *appClass, Visual **visual, int *depth, Colormap *colormap);
 std::string GetXmStringTextEx(XmString fromString);
 int SpinClipboardCopy(Display *display, Window window, long item_id, char *format_name, XtPointer buffer, unsigned long length, long private_id, long *data_id);
@@ -64,8 +61,6 @@ void CloseAllPopupsFor(Widget shell);
 void CreateGeometryString(char *string, int x, int y, int width, int height, int bitmask);
 void EndWait(Widget topCursorWidget);
 void InstallMouseWheelActions(XtAppContext context);
-void MakeSingleLineTextW(Widget textW);
-void ManageDialogCenteredOnPointer(Widget dialogChild);
 void PopDownBugPatch(Widget w);
 void RadioButtonChangeState(Widget widget, bool state, bool notify);
 void RaiseShellWindow(Widget shell, bool focus);
@@ -84,7 +79,6 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic);
 Widget CreatePopupMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreatePopupShellWithBestVis(String shellName, WidgetClass clazz, Widget parent, ArgList arglist, Cardinal argcount);
 Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
-Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount);
 Widget CreateShellWithBestVis(String appName, String appClass, WidgetClass clazz, Display *display, ArgList args, Cardinal nArgs);
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount);
 XFontStruct *GetDefaultFontStruct(XmFontList font);

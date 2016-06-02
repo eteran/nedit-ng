@@ -507,13 +507,6 @@ Widget CreatePulldownMenu(Widget parent, const char *name, ArgList arglist, Card
 	return addParentVisArgsAndCall(XmCreatePulldownMenu, parent, name, arglist, argcount);
 }
 
-Widget CreateSelectionDialog(Widget parent, const char *name, ArgList arglist, Cardinal argcount) {
-	Widget dialog = addParentVisArgsAndCall(XmCreateSelectionDialog, parent, name, arglist, argcount);
-	AddMouseWheelSupport(XmSelectionBoxGetChild(dialog, XmDIALOG_LIST));
-	return dialog;
-}
-
-
 Widget CreateWidget(Widget parent, const char *name, WidgetClass clazz, ArgList arglist, Cardinal argcount) {
 	Widget result;
 	ArgList al = addParentVisArgs(parent, arglist, &argcount);
@@ -609,100 +602,6 @@ static Widget addParentVisArgsAndCall(MotifDialogCreationCall createRoutine, Wid
 	Widget result = (*createRoutine)(parent, (char *)name, al, argcount);
 	XtFree((char *)al);
 	return result;
-}
-
-/*
-** ManageDialogCenteredOnPointer is used in place of XtManageChild for
-** popping up a dialog to enable the dialog to be centered under the
-** mouse pointer.  Whether it pops up the dialog centered under the pointer
-** or in its default position centered over the parent widget, depends on
-** the value set in the SetPointerCenteredDialogs call.
-** Additionally, this function constrains the size of the dialog to the
-** screen's size, to avoid insanely wide dialogs with obscured buttons.
-*/
-void ManageDialogCenteredOnPointer(Widget dialogChild) {
-	Widget shell = XtParent(dialogChild);
-	Window root, child;
-	unsigned int mask;
-	unsigned int width, height, borderWidth, depth;
-	int x, y, winX, winY, maxX, maxY, maxWidth, maxHeight;
-	Dimension xtWidth, xtHeight;
-	bool mappedWhenManaged;
-	static const int slop = 25;
-
-	/* Temporarily set value of XmNmappedWhenManaged
-	   to stop the dialog from popping up right away */
-	XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, nullptr);
-	XtVaSetValues(shell, XmNmappedWhenManaged, False, nullptr);
-
-	/* Ensure that the dialog doesn't get wider/taller than the screen.
-	   We use a hard-coded "slop" size because we don't know the border
-	   width until it's on screen, and by then it's too late.  Putting
-	   this before managing the widgets allows it to get the geometry
-	   right on the first pass and also prevents the user from
-	   accidentally resizing too wide. */
-	maxWidth = XtScreen(shell)->width - slop;
-	maxHeight = XtScreen(shell)->height - slop;
-
-	XtVaSetValues(shell, XmNmaxWidth, maxWidth, XmNmaxHeight, maxHeight, nullptr);
-
-	/* Manage the dialog */
-	XtManageChild(dialogChild);
-
-	/* Check to see if the window manager doesn't respect XmNmaxWidth
-	   and XmNmaxHeight on the first geometry pass (sawfish, twm, fvwm).
-	   For this to work XmNresizePolicy must be XmRESIZE_NONE, otherwise
-	   the dialog will try to expand anyway. */
-	XtVaGetValues(shell, XmNwidth, &xtWidth, XmNheight, &xtHeight, nullptr);
-	if (xtWidth > maxWidth)
-		XtVaSetValues(shell, XmNwidth, (Dimension)maxWidth, nullptr);
-	if (xtHeight > maxHeight)
-		XtVaSetValues(shell, XmNheight, (Dimension)maxHeight, nullptr);
-
-	/* Only set the x/y position if the centering option is enabled.
-	   Avoid getting the coordinates if not so, to save a few round-trips
-	   to the server. */
-	if (PointerCenteredDialogsEnabled) {
-		/* Get the pointer position (x, y) */
-		XQueryPointer(XtDisplay(shell), XtWindow(shell), &root, &child, &x, &y, &winX, &winY, &mask);
-
-		/* Translate the pointer position (x, y) into a position for the new
-		   window that will place the pointer at its center */
-		XGetGeometry(XtDisplay(shell), XtWindow(shell), &root, &winX, &winY, &width, &height, &borderWidth, &depth);
-		width += 2 * borderWidth;
-		height += 2 * borderWidth;
-
-		x -= width / 2;
-		y -= height / 2;
-
-		/* Ensure that the dialog remains on screen */
-		maxX = maxWidth - width;
-		maxY = maxHeight - height;
-		if (x > maxX)
-			x = maxX;
-		if (x < 0)
-			x = 0;
-		if (y > maxY)
-			y = maxY;
-		if (y < 0)
-			y = 0;
-
-		/* Some window managers (Sawfish) don't appear to respond
-		   to the geometry set call in synchronous mode.  This causes
-		   the window to delay XmNwmTimeout (default 5 seconds) before
-		   posting, and it is very annoying.  See "man VendorShell" for
-		   more info. */
-		XtVaSetValues(shell, XmNuseAsyncGeometry, True, nullptr);
-
-		/* Set desired window position in the DialogShell */
-		XtVaSetValues(shell, XmNx, x, XmNy, y, nullptr);
-	}
-
-	/* Map the widget */
-	XtMapWidget(shell);
-
-	/* Restore the value of XmNmappedWhenManaged */
-	XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, nullptr);
 }
 
 /*
@@ -906,24 +805,6 @@ Widget AddSubMenu(Widget parent, char *name, char *label, char mnemonic) {
 	XmStringFree(st1);
 	return menu;
 }
-
-
-/*
-** Turn a multi-line editing text widget into a fake single line text area
-** by disabling the translation for Return.  This is a way to give users
-** extra space, by allowing wrapping, but still prohibiting newlines.
-** (SINGLE_LINE_EDIT mode can't be used, in this case, because it forces
-** the widget to be one line high).
-*/
-void MakeSingleLineTextW(Widget textW) {
-	static XtTranslations noReturnTable = nullptr;
-	static const char *noReturnTranslations = "<Key>Return: activate()\n";
-
-	if(!noReturnTable)
-		noReturnTable = XtParseTranslationTable(noReturnTranslations);
-	XtOverrideTranslations(textW, noReturnTable);
-}
-
 
 /*
 ** BeginWait/EndWait
