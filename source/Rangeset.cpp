@@ -623,7 +623,7 @@ int Rangeset::RangesetGetNRanges() const {
 */
 
 int Rangeset::RangesetInverse() {
-	int n, has_end;
+	int n;
 
 	if (!this)
 		return -1;
@@ -644,7 +644,7 @@ int Rangeset::RangesetInverse() {
 
 		// find out what we have 
 		bool has_zero = (rangeTable[0] == 0);
-		has_end = (rangeTable[n - 1] == this->maxpos);
+		bool has_end = (rangeTable[n - 1] == this->maxpos);
 
 		// fill the entry "beyond the end" with the buffer's length 
 		rangeTable[n + 1] = rangeTable[n] = this->maxpos;

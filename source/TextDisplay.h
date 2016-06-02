@@ -65,6 +65,7 @@ struct calltipStruct {
 	int alignMode;    //  Strict or sloppy alignment
 };
 
+
 class TextDisplay {
 public:
 	TextDisplay(

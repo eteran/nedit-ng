@@ -143,7 +143,7 @@ int GetPrefWrap(int langMode);
 int GetPrefWrapMargin();
 int GetVerticalAutoScroll();
 int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message);
-bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, const QString &errorIn, const QString message);
+bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, const QString &errorIn, const QString &message);
 
 
 int ReadNumericField(const char **inPtr, int *value);

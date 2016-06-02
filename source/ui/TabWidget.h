@@ -8,7 +8,7 @@ class TabWidget : public QTabWidget {
 	Q_OBJECT
 
 public:
-	TabWidget(QWidget *parent = 0);
+	explicit TabWidget(QWidget *parent = 0);
 
 Q_SIGNALS:
 	void countChanged(int count);

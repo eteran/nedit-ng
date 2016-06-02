@@ -2747,7 +2747,7 @@ static int modeError(LanguageMode *lm, const char *stringStart, const char *stop
 ** For a dialog, pass the dialog parent in toDialog.
 */
 
-bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString message) {
+bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
 	if(stoppedAt == string.size()) {

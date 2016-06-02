@@ -318,9 +318,6 @@ void DialogFind::on_buttonFind_clicked() {
 */
 int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, int *searchType) {
 
-
-	regexp *compiledRE = nullptr;
-
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();
 
@@ -336,12 +333,12 @@ int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searc
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			compiledRE = new regexp(findText.toStdString(), regexDefault);
+			regexp *compiledRE = new regexp(findText.toStdString(), regexDefault);
+			delete compiledRE;
 		} catch(const regex_error &e) {
 			QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
-			return FALSE;
+			return false;
 		}
-		delete compiledRE;
 	} else {
 		if (ui.checkCase->isChecked()) {
 			if (ui.checkWord->isChecked()) {

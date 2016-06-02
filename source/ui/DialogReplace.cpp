@@ -699,7 +699,6 @@ void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool
 ** value.  Otherwise, return FALSE.
 */
 int DialogReplace::getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, int *searchType) {
-	regexp *compiledRE = nullptr;
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
@@ -718,12 +717,12 @@ int DialogReplace::getReplaceDlogInfo(SearchDirection *direction, char *searchSt
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			compiledRE = new regexp(replaceText.toLatin1().data(), regexDefault);
+			auto compiledRE = new regexp(replaceText.toLatin1().data(), regexDefault);
+			delete compiledRE;
 		} catch(const regex_error &e) {
 			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
 			return FALSE;
 		}
-		delete compiledRE;
 	} else {
 		if (ui.checkCase->isChecked()) {
 			if (ui.checkWord->isChecked())

@@ -8,7 +8,7 @@ class ListWidget : public QListWidget {
 	Q_OBJECT
 
 public:
-	ListWidget(QWidget *parent = 0);
+	explicit ListWidget(QWidget *parent = 0);
 	virtual ~ListWidget();
 	
 protected:

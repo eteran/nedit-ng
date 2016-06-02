@@ -35,6 +35,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
 namespace {
 
@@ -233,10 +234,10 @@ rbTreeNode *rbTreeInsert(rbTreeNode *base, rbTreeNode *searchNode, rbTreeCompare
 ** returns the removed node pointer
 */
 rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z) {
-	int swapColor;
-	rbTreeNode *x, *y, *x_parent;
+	rbTreeNode *x;
+	rbTreeNode *x_parent;
 
-	y = z;
+	rbTreeNode *y = z;
 	if (y->left == nullptr) {
 		x = y->right;
 		if (y == base->left) {
@@ -279,9 +280,7 @@ rbTreeNode *rbTreeUnlinkNode(rbTreeNode *base, rbTreeNode *z) {
 		}
 		y->parent = z->parent;
 
-		swapColor = y->color;
-		y->color = z->color;
-		z->color = swapColor;
+		std::swap(y->color, z->color);
 
 		y = z;
 	} else {
