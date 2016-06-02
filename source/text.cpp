@@ -72,6 +72,12 @@ TextPart &text_of(T w) {
 	return reinterpret_cast<TextWidget>(w)->text;
 }
 
+
+inline TextDisplay *&textD_of(TextPart &w) {
+	return w.textD;
+}
+
+
 template <class T>
 TextDisplay *&textD_of(T w) {
 	return text_of(w).textD;
@@ -1163,14 +1169,16 @@ static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)event;
 
 	int dragState = text_of(w).dragState;
-	TextBuffer *buf = textD_of(w)->buffer;
 	auto textD = textD_of(w);
-
+	TextBuffer *buf = textD->buffer;
+	
 	// If there's a calltip displayed, kill it.
 	textD->TextDKillCalltip(0);
 
-	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG)
+	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG) {
 		buf->BufUnselect();
+	}
+	
 	textD->cancelDrag();
 }
 
