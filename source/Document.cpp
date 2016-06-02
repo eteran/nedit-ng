@@ -1349,7 +1349,7 @@ void Document::RefreshTabState() {
 		tag = (String) "BOLD";
 	}
 
-	XmString s1 = XmStringCreateLtoREx(labelString.toLatin1().data(), tag);
+	XmString s1 = XmStringCreateLtoREx(labelString, tag);
 
 	if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
 		labelString.append(QLatin1String(" - "));
