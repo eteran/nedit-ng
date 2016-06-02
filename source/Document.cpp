@@ -326,7 +326,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    for unfocussed panes.
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
-	if (textWidget->text.cursorBlinkProcID != 0) {
+	if (text_of(textWidget).cursorBlinkProcID != 0) {
 		//  Start blinking the caret again.  
 		textD->ResetCursorBlink(false);
 	}

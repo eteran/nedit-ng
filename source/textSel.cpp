@@ -315,16 +315,16 @@ void InsertClipboard(Widget w, int isColumnar) {
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = buf->BufStartOfLine(cursorPos);
 		column = buf->BufCountDispChars(cursorLineStart, cursorPos);
-		if (reinterpret_cast<TextWidget>(w)->text.overstrike) {
+		if (text_of(w).overstrike) {
 			buf->BufOverlayRectEx(cursorLineStart, column, -1, contents, nullptr, nullptr);
 		} else {
 			buf->BufInsertColEx(column, cursorLineStart, contents, nullptr, nullptr);
 		}
 		textD->TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
-		if (reinterpret_cast<TextWidget>(w)->text.autoShowInsertPos)
+		if (text_of(w).autoShowInsertPos)
 			textD->TextDMakeInsertPosVisible();
 	} else
-		textD->TextInsertAtCursorEx(contents, nullptr, true, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+		textD->TextInsertAtCursorEx(contents, nullptr, true, text_of(w).autoWrapPastedText);
 }
 
 /*
@@ -334,14 +334,14 @@ void InsertClipboard(Widget w, int isColumnar) {
 ** for compatibility with Motif text widgets.
 */
 void TakeMotifDestination(Widget w, Time time) {
-	if (reinterpret_cast<TextWidget>(w)->text.motifDestOwner || reinterpret_cast<TextWidget>(w)->text.readOnly)
+	if (text_of(w).motifDestOwner || text_of(w).readOnly)
 		return;
 
 	// Take ownership of the MOTIF_DESTINATION selection 
 	if (!XtOwnSelection(w, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
 		return;
 	}
-	reinterpret_cast<TextWidget>(w)->text.motifDestOwner = True;
+	text_of(w).motifDestOwner = True;
 }
 
 /*
@@ -366,7 +366,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	TextWidget w = (TextWidget)cbArg;
 	Time time = XtLastTimestampProcessed(XtDisplay((Widget)w));
 	int selected = textD_of(w)->buffer->primary_.selected;
-	int isOwner = w->text.selectionOwner;
+	int isOwner = text_of(w).selectionOwner;
 
 	/* If the widget owns the selection and the buffer text is still selected,
 	   or if the widget doesn't own it and there's no selection, do nothing */
@@ -383,7 +383,7 @@ static void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view
 	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr))
 		textD_of(w)->buffer->BufUnselect();
 	else
-		w->text.selectionOwner = True;
+		text_of(w).selectionOwner = True;
 }
 
 /*
@@ -462,14 +462,14 @@ static void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(
-			reinterpret_cast<TextWidget>(w)->text.btnDownCoord,
+			text_of(w).btnDownCoord,
 			&row,
 			&column);
 			
 		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
 		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else
-		textD->TextInsertAtCursorEx(string, nullptr, False, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+		textD->TextInsertAtCursorEx(string, nullptr, False, text_of(w).autoWrapPastedText);
 
 	/* The selection requstor is required to free the memory passed
 	   to it via value */
@@ -510,7 +510,7 @@ static void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, 
 	}
 
 	// Insert it in the text widget 
-	textD->TextInsertAtCursorEx(string, nullptr, true, reinterpret_cast<TextWidget>(w)->text.autoWrapPastedText);
+	textD->TextInsertAtCursorEx(string, nullptr, true, text_of(w).autoWrapPastedText);
 	*resultFlag = SUCCESSFUL_INSERT;
 
 	// This callback is required to free the memory passed to it thru value 
@@ -606,7 +606,7 @@ static Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *t
 	   2) initiate a get value request for the selection and target named
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (reinterpret_cast<TextWidget>(w)->text.readOnly)
+		if (text_of(w).readOnly)
 			return False;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
@@ -650,7 +650,7 @@ static void loseSelectionCB(Widget w, Atom *selType) {
 
 	/* For zero width rect. sel. we give up the selection but keep the
 	    zero width tag. */
-	tw->text.selectionOwner = False;
+	text_of(tw).selectionOwner = false;
 	textD_of(tw)->buffer->BufUnselect();
 	sel->zeroWidth = zeroWidth;
 }
@@ -730,7 +730,7 @@ static Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *t
 	   2) initiate a get value request for the selection and target named
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (reinterpret_cast<TextWidget>(w)->text.readOnly)
+		if (text_of(w).readOnly)
 			return False;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
@@ -758,7 +758,7 @@ static void loseMotifDestCB(Widget w, Atom *selType) {
 
 	(void)selType;
 
-	reinterpret_cast<TextWidget>(w)->text.motifDestOwner = False;
+	text_of(w).motifDestOwner = False;
 	if (textD_of(w)->cursorStyle == CARET_CURSOR)
 		textD_of(w)->TextDSetCursorStyle(DIM_CURSOR);
 }

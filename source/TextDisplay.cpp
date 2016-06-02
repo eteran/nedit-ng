@@ -4062,7 +4062,7 @@ void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 		textD->TextDUnblankCursor();
 
 	// re-establish the timer proc (this routine) to continue processing
-	w->text.cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), w->text.cursorBlinkRate, cursorBlinkTimerProc, w);
+	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).cursorBlinkRate, cursorBlinkTimerProc, w);
 }
 
 
