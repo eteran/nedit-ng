@@ -28,6 +28,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	QtMotifWidget.h
 	QtXtWidget.h
 
+	ui/DialogDuplicateTags.h
 	ui/DialogAbout.h
 	ui/DialogColors.h
 	ui/DialogDrawingStyles.h
@@ -66,6 +67,7 @@ qt4_wrap_cpp(MOC_SOURCES
 )
 
 set(UI_FILES
+	ui/DialogDuplicateTags.ui
 	ui/DialogAbout.ui
 	ui/DialogColors.ui
 	ui/DialogDrawingStyles.ui
@@ -106,6 +108,7 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
+	ui/DialogDuplicateTags.cpp
 	ui/DialogAbout.cpp
 	ui/DialogColors.cpp
 	ui/DialogDrawingStyles.cpp

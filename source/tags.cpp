@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include "ui/DialogDuplicateTags.h"
 
 #include "tags.h"
 #include "TextBuffer.h"
@@ -57,10 +58,6 @@
 #include <unistd.h>
 #include <sys/param.h>
 
-#include <Xm/PrimitiveP.h> // For Calltips 
-#include <Xm/Xm.h>
-#include <Xm/SelectioB.h>
-#include <X11/Xatom.h>
 
 namespace {
 
@@ -99,10 +96,8 @@ static bool delTag(int index);
 static Tag *getTag(const char *name, int search_type);
 static int findDef(Document *window, const char *value, int search_type);
 static int findAllMatches(Document *window, const char *string);
-static void findAllCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char *args[]);
-static void editTaggedLocation(Widget parent, int i);
-static void showMatchingCalltip(Widget parent, int i);
+static void createSelectMenu(Widget parent, const QVector<char *> &args);
+
 
 static const char *rcs_strdup(const char *str);
 static void rcs_free(const char *str);
@@ -155,7 +150,7 @@ tagFile *TipsFileList = nullptr;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
-static int searchMode = TAG;
+int searchMode = TAG;
 static const char *tagName;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
@@ -909,14 +904,17 @@ static int findDef(Document *window, const char *value, int search_type) {
 	const char *p;
 	char message[MAX_TAG_LEN + 40];
 	int l, ml, status = 0;
-
+	
 	searchMode = search_type;
 	l = strlen(value);
 	if (l <= MAX_TAG_LEN) {
+	
 		// should be of type text??? 
 		for (p = value; *p && isascii(*p); p++) {
 		}
+		
 		if (!(*p)) {
+				
 			ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
 			strncpy(tagText, value, ml);
 			tagText[ml] = '\0';
@@ -1125,13 +1123,20 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
         list of collided tags in the hash table and allows the user to select
         the correct one. */
 static int findAllMatches(Document *window, const char *string) {
-	Widget dialogParent = window->textArea_;
-	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	char temp[32 + 2 * MAXPATHLEN + MAXLINE];
-	const char *fileToSearch, *searchString, *tagPath;
-	char **dupTagsList;
-	int startPos, i, pathMatch = 0, samePath = 0, langMode, nMatches = 0;
 
+	Widget dialogParent = window->textArea_;
+	char filename[MAXPATHLEN];
+	char pathname[MAXPATHLEN];
+	const char *fileToSearch;
+	const char *searchString;
+	const char *tagPath;
+	int startPos;
+	int i;
+	int pathMatch = 0;
+	int samePath = 0;
+	int langMode;
+	int nMatches = 0;
+	
 	// verify that the string is reasonable as a tag 
 	if (*string == '\0' || strlen(string) > MAX_TAG_LEN) {
 		QApplication::beep();
@@ -1141,17 +1146,24 @@ static int findAllMatches(Document *window, const char *string) {
 
 	// First look up all of the matching tags 
 	while (LookupTag(string, &fileToSearch, &langMode, &searchString, &startPos, &tagPath, searchMode)) {
-		/* Skip this tag if it has a language mode that doesn't match the
-		    current language mode, but don't skip anything if the window is in
-		    PLAIN_LANGUAGE_MODE. */
+	
+	
+		/* 
+		** Skip this tag if it has a language mode that doesn't match the
+		** current language mode, but don't skip anything if the window is in
+		** PLAIN_LANGUAGE_MODE.
+		*/
 		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != window->languageMode_) {
 			string = nullptr;
 			continue;
 		}
-		if (*fileToSearch == '/')
+		
+		if (*fileToSearch == '/') {
 			strcpy(tagFiles[nMatches], fileToSearch);
-		else
+		} else {
 			sprintf(tagFiles[nMatches], "%s%s", tagPath, fileToSearch);
+		}
+		
 		strcpy(tagSearch[nMatches], searchString);
 		tagPosInf[nMatches] = startPos;
 		ParseFilename(tagFiles[nMatches], filename, pathname);
@@ -1166,11 +1178,13 @@ static int findAllMatches(Document *window, const char *string) {
 			nMatches = 1;
 			break;
 		}
+		
 		// Is this match in the same dir. as the current file? 
 		if (window->path_ == QLatin1String(pathname)) {
 			samePath++;
 			pathMatch = nMatches;
 		}
+		
 		if (++nMatches >= MAXDUPTAGS) {
 			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("Too many duplicate tags, first %1 shown")).arg(MAXDUPTAGS));
 			break;
@@ -1178,7 +1192,7 @@ static int findAllMatches(Document *window, const char *string) {
 		// Tell LookupTag to look for more definitions of the same tag: 
 		string = nullptr;
 	}
-
+	
 	// Did we find any matches? 
 	if (!nMatches) {
 		return 0;
@@ -1194,20 +1208,30 @@ static int findAllMatches(Document *window, const char *string) {
 
 	/*  If all of the tag entries are the same file, just use the first.
 	 */
-	if (GetPrefSmartTags()) {
-		for (i = 1; i < nMatches; i++)
-			if (strcmp(tagFiles[i], tagFiles[i - 1]))
+	if (GetPrefSmartTags()) {	
+		for (i = 1; i < nMatches; i++) {
+			if (strcmp(tagFiles[i], tagFiles[i - 1])) {
 				break;
-		if (i == nMatches)
+			}
+		}
+		
+		if (i == nMatches) {
 			nMatches = 1;
+		}
 	}
 
 	if (nMatches > 1) {
-		dupTagsList = new char*[nMatches];
-
+	
+		QVector<char *> dupTagsList;
+	
 		for (i = 0; i < nMatches; i++) {
+		
+			char temp[32 + 2 * MAXPATHLEN + MAXLINE];
+		
 			ParseFilename(tagFiles[i], filename, pathname);
 			if ((i < nMatches - 1 && !strcmp(tagFiles[i], tagFiles[i + 1])) || (i > 0 && !strcmp(tagFiles[i], tagFiles[i - 1]))) {
+			
+			
 				if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags 
 					sprintf(temp, "%2d. %s%s %8i %s", i + 1, pathname, filename, tagPosInf[i], tagSearch[i]);
 				} else if (*(tagSearch[i])) { // ctags search expr 
@@ -1219,14 +1243,14 @@ static int findAllMatches(Document *window, const char *string) {
 				sprintf(temp, "%2d. %s%s", i + 1, pathname, filename);
 			}
 			
-			dupTagsList[i] = new char[strlen(temp) + 1];
-			strcpy(dupTagsList[i], temp);
+			auto str = new char[strlen(temp) + 1];
+			strcpy(str, temp);
+			dupTagsList.push_back(str);
 		}
-		createSelectMenu(dialogParent, "Duplicate Tags", nMatches, dupTagsList);
-		for (i = 0; i < nMatches; i++)
-			delete [] dupTagsList[i];
-
-		delete [] dupTagsList;
+		createSelectMenu(dialogParent, dupTagsList);
+		
+		
+		qDeleteAll(dupTagsList);
 		return 1;
 	}
 
@@ -1239,50 +1263,6 @@ static int findAllMatches(Document *window, const char *string) {
 	else
 		showMatchingCalltip(dialogParent, 0);
 	return 1;
-}
-
-//      Callback function for the FindAll widget. Process the users response. 
-static void findAllCB(Widget parent, XtPointer clientData, XtPointer call_data) {
-
-	(void)clientData;
-
-	int i;
-	
-
-	auto cbs = static_cast<XmSelectionBoxCallbackStruct *>(call_data);
-	if (cbs->reason == XmCR_NO_MATCH) {
-		return;
-	}
-	
-	if (cbs->reason == XmCR_CANCEL) {
-		XtDestroyWidget(XtParent(parent));
-		return;
-	}
-
-	std::string eptr = XmStringGetLtoREx(cbs->value, XmFONTLIST_DEFAULT_TAG);
-	if ((i = stoi(eptr) - 1) < 0) {
-		QApplication::beep();
-		return;
-	}
-
-	if (searchMode == TAG) {
-		editTaggedLocation(parent, i); // Open the file with the definition 
-	} else {
-		showMatchingCalltip(parent, i);
-	}
-
-	if (cbs->reason == XmCR_OK) {
-		XtDestroyWidget(XtParent(parent));
-	}
-}
-
-//      Window manager close-box callback for tag-collision dialog 
-static void findAllCloseCB(Widget parent, XtPointer client_data, XtPointer call_data) {
-
-	(void)client_data;
-	(void)call_data;
-
-	XtDestroyWidget(parent);
 }
 
 /*
@@ -1309,7 +1289,7 @@ static int moveAheadNLines(char *str, int *pos, int n) {
 ** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
 ** or a calltips file (if searchMode == TIP).
 */
-static void showMatchingCalltip(Widget parent, int i) {
+void showMatchingCalltip(Widget parent, int i) {
 	int startPos = 0, fileLen, readLen, tipLen;
 	int endPos = 0;
 	char *fileString;
@@ -1416,7 +1396,7 @@ static void showMatchingCalltip(Widget parent, int i) {
 
 /*  Open a new (or existing) editor window to the location specified in
     tagFiles[i], tagSearch[i], tagPosInf[i] */
-static void editTaggedLocation(Widget parent, int i) {
+void editTaggedLocation(Widget parent, int i) {
 	/* Globals: tagSearch, tagPosInf, tagFiles, tagName, textNrows, WindowList */
 	int startPos, endPos, lineNum, rows;
 	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
@@ -1462,51 +1442,14 @@ static void editTaggedLocation(Widget parent, int i) {
 }
 
 //      Create a Menu for user to select from the collided tags 
-static Widget createSelectMenu(Widget parent, const char *label, int nArgs, char *args[]) {
-	int i;
-	char tmpStr[100];
-	Widget menu;
-	XmString popupTitle;
-	int ac;
-	Arg csdargs[20];
+static void createSelectMenu(Widget parent, const QVector<char *> &args) {
 
-	auto list = new XmString[nArgs];
-	
-	for (i = 0; i < nArgs; i++) {
-		list[i] = XmStringCreateSimpleEx(args[i]);
-	}
-	
-	sprintf(tmpStr, "Select File With TAG: %s", tagName);
-	popupTitle = XmStringCreateSimpleEx(tmpStr);
-	ac = 0;
-	XtSetArg(csdargs[ac], XmNlistLabelString, popupTitle);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItems, list);
-	ac++;
-	XtSetArg(csdargs[ac], XmNlistItemCount, nArgs);
-	ac++;
-	XtSetArg(csdargs[ac], XmNvisibleItemCount, 12);
-	ac++;
-	XtSetArg(csdargs[ac], XmNautoUnmanage, False);
-	ac++;
-	menu = CreateSelectionDialog(parent, label, csdargs, ac);
-	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_TEXT));
-	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_HELP_BUTTON));
-	XtUnmanageChild(XmSelectionBoxGetChild(menu, XmDIALOG_SELECTION_LABEL));
-	XtAddCallback(menu, XmNokCallback, findAllCB, menu);
-	XtAddCallback(menu, XmNapplyCallback, findAllCB, menu);
-	XtAddCallback(menu, XmNcancelCallback, findAllCB, menu);
-	AddMotifCloseCallback(XtParent(menu), findAllCloseCB, nullptr);
-	
-	for (i = 0; i < nArgs; i++) {
-		XmStringFree(list[i]);
-	}
-
-	delete [] list;
-
-	XmStringFree(popupTitle);
-	ManageDialogCenteredOnPointer(menu);
-	return menu;
+	auto dialog = new DialogDuplicateTags(parent, nullptr);
+	dialog->setTag(QLatin1String(tagName));
+	for(char *arg: args) {
+		dialog->addListItem(QLatin1String(arg));
+	}	
+	dialog->show();
 }
 
 /*--------------------------------------------------------------------------

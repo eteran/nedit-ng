@@ -44,6 +44,7 @@ struct tagFile {
 
 extern tagFile *TagsFileList; // list of loaded tags files
 extern tagFile *TipsFileList; // list of loaded calltips tag files
+extern int searchMode;
 
 // file_type and search_type arguments are to select between tips and tags,
 // and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
@@ -65,5 +66,8 @@ void FindDefCalltip(Document *window, Time time, const char *arg);
 
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
 int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
+
+void editTaggedLocation(Widget parent, int i);
+void showMatchingCalltip(Widget parent, int i);
 
 #endif
