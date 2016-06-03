@@ -16,11 +16,11 @@ public:
 	PatternSet(PatternSet &&other) = default;
 	PatternSet& operator=(PatternSet &&rhs) = default;
 	~PatternSet();
-	
+
 public:
 	bool operator!=(const PatternSet &rhs) const;
 	bool operator==(const PatternSet &rhs) const;
-	
+
 public:
 	void swap(PatternSet &other);
 

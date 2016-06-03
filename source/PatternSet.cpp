@@ -5,25 +5,25 @@
 #include <algorithm>
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 PatternSet::PatternSet() : lineContext(0), charContext(0) {
 }
 
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 PatternSet::~PatternSet() {
 }
 
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 void PatternSet::swap(PatternSet &other) {
 	using std::swap;
-	
+
 	swap(languageMode, other.languageMode);
 	swap(lineContext,  other.lineContext);
 	swap(charContext,  other.charContext);
@@ -31,27 +31,27 @@ void PatternSet::swap(PatternSet &other) {
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 bool PatternSet::operator!=(const PatternSet &rhs) const {
 
 	if (this->lineContext != rhs.lineContext) {
 		return true;
 	}
-	
+
 	if (this->charContext != rhs.charContext) {
 		return true;
 	}
-	
+
 	if(this->patterns != rhs.patterns) {
 		return true;
 	}
-	
+
 	return false;
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 bool PatternSet::operator==(const PatternSet &rhs) const {
 	return !(*this != rhs);

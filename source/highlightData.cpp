@@ -811,7 +811,6 @@ void EditHighlightStyles(const char *initialStyle) {
 */
 void EditHighlightPatterns(Document *window) {
 
-
 	if(SyntaxPatterns) {
 		SyntaxPatterns->show();
 		SyntaxPatterns->raise();

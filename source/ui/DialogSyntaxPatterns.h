@@ -38,10 +38,10 @@ public Q_SLOTS:
 	void on_buttonHelp_clicked();
 	void on_listItems_itemSelectionChanged();
 	void on_comboLanguageMode_currentIndexChanged(const QString &currentText);
-	
+
 private Q_SLOTS:
 	void updateLabels();
-	
+
 private:
 	bool updatePatternSet();
 	bool checkHighlightDialogData();
