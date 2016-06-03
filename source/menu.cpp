@@ -304,9 +304,9 @@ static void updatePrevOpenMenu(Document *window);
 static void updateTagsFileMenu(Document *window);
 static void updateTipsFileMenu(Document *window);
 static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
-static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
+static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
 static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
-static int searchType(int ignoreArgs, String *args, Cardinal *nArgs);
+static SearchType searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -2946,13 +2946,21 @@ static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(event);
 
-	SearchAndSelectSame(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
+	SearchAndSelectSame(
+		Document::WidgetToWindow(w), 
+		searchDirection(0, args, nArgs), 
+		searchWrap(0, args, nArgs));
 }
 
 static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
 
-	SearchForSelected(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchType(0, args, nArgs), searchWrap(0, args, nArgs), event->xbutton.time);
+	SearchForSelected(
+		Document::WidgetToWindow(w), 
+		searchDirection(0, args, nArgs), 
+		searchType(0, args, nArgs),		
+		searchWrap(0, args, nArgs), 		
+		event->xbutton.time);
 }
 
 static void startIncrFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4791,14 +4799,14 @@ static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs) {
+static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs) {
 	int i;
 
 	for (i = ignoreArgs; i < (int)*nArgs; i++) {
 		if (!strCaseCmp(args[i], "wrap"))
-			return (TRUE);
+			return true;
 		if (!strCaseCmp(args[i], "nowrap"))
-			return (FALSE);
+			return false;
 	}
 	return GetPrefSearchWraps();
 }
@@ -4809,8 +4817,9 @@ static int searchWrap(int ignoreArgs, String *args, Cardinal *nArgs) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static int searchType(int ignoreArgs, String *args, Cardinal *nArgs) {
-	int i, tmpSearchType;
+static SearchType searchType(int ignoreArgs, String *args, Cardinal *nArgs) {
+	int i;
+	SearchType tmpSearchType;
 
 	for (i = ignoreArgs; i < (int)*nArgs; i++) {
 		if (StringToSearchType(args[i], &tmpSearchType))

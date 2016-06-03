@@ -98,7 +98,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 
 		// determine the strings and button settings to use 
 		const char *searchStr;
-		int searchType;
+		SearchType searchType;
 		if (index == 0) {
 			searchStr  = "";
 			searchType = GetPrefSearch();
@@ -160,7 +160,7 @@ void DialogFind::on_textFind_textChanged(const QString &text) {
 ** the state of the regex/case/word toggle buttons, and the sticky case
 ** sensitivity states.
 */
-void DialogFind::initToggleButtons(int searchType) {
+void DialogFind::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
@@ -224,6 +224,8 @@ void DialogFind::initToggleButtons(int searchType) {
 			ui.checkWord->setEnabled(false);
 		}
 		break;
+	default:
+		Q_ASSERT(0);
 	}
 }
 
@@ -269,7 +271,7 @@ void DialogFind::setTextField(Document *window, time_t time) {
 void DialogFind::on_buttonFind_clicked() {
 
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 	// fetch find string, direction and type from the dialog 
 	std::string searchString;
@@ -316,7 +318,7 @@ void DialogFind::on_buttonFind_clicked() {
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, int *searchType) {
+int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, SearchType *searchType) {
 
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();

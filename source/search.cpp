@@ -72,14 +72,14 @@ int NHist = 0;
 
 struct SearchSelectedCallData {
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	int searchWrap;
 };
 
 // History mechanism for search and replace strings 
 char *SearchHistory[MAX_SEARCH_HISTORY];
 char *ReplaceHistory[MAX_SEARCH_HISTORY];
-int SearchTypeHistory[MAX_SEARCH_HISTORY];
+SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -89,11 +89,11 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static int countWindows(void);
-static int defaultRegexFlags(int searchType);
+static int defaultRegexFlags(SearchType searchType);
 static int findMatchingChar(Document *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static bool searchMatchesSelection(Document *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static bool searchMatchesSelection(Document *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow);
 static void eraseFlash(Document *window);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -107,7 +107,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos);
 static void removeDoomedWindowFromList(Document *window, int index);
-static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental);
+static void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
@@ -173,7 +173,7 @@ Boolean WindowCanBeClosed(Document *window) {
 ** the state of the regex/case/word toggle buttons, and the sticky case
 ** sensitivity states.
 */
-static void initToggleButtons(int searchType, Widget regexToggle, Widget caseToggle, Widget *wordToggle, bool *lastLiteralCase, bool *lastRegexCase) {
+static void initToggleButtons(SearchType searchType, Widget regexToggle, Widget caseToggle, Widget *wordToggle, bool *lastLiteralCase, bool *lastRegexCase) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
@@ -237,6 +237,8 @@ static void initToggleButtons(int searchType, Widget regexToggle, Widget caseTog
 			XtSetSensitive(*wordToggle, False);
 		}
 		break;
+	default:
+		Q_ASSERT(0);
 	}
 }
 
@@ -297,7 +299,7 @@ static int selectionSpansMultipleLines(Document *window) {
 }
 #endif
 
-void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
+void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time) {
 
 	// Create the dialog if it doesn't already exist 
 	if (!window->dialogReplace_) {
@@ -373,7 +375,7 @@ void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDial
 	dialog->show();
 }
 
-void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, int searchType, Time time) {
+void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time) {
 
 	if(!window->dialogFind_) {
 		window->dialogFind_ = new DialogFind(window, nullptr /*parent*/);
@@ -571,7 +573,7 @@ bool SearchAndSelectSame(Document *window, SearchDirection direction, int search
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap) {
+bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap) {
 	int startPos;
 	int endPos;
 	int beginPos;
@@ -648,7 +650,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	return TRUE;
 }
 
-void SearchForSelected(Document *window, SearchDirection direction, int searchType, int searchWrap, Time time) {
+void SearchForSelected(Document *window, SearchDirection direction, SearchType searchType, int searchWrap, Time time) {
 	SearchSelectedCallData *callData = XtNew(SearchSelectedCallData);
 	callData->direction = direction;
 	callData->searchType = searchType;
@@ -662,7 +664,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 
 	Document *window = Document::WidgetToWindow(w);
 	auto callDataItems = static_cast<SearchSelectedCallData *>(callData);
-	int searchType;
+	SearchType searchType;
 	char searchString[SEARCHMAX + 1];
 
 	window = Document::WidgetToWindow(w);
@@ -749,7 +751,7 @@ void EndISearch(Document *window) {
 	window->iSearchStartPos_ = -1;
 
 	// Mark the end of incremental search history overwriting 
-	saveSearchHistory("", nullptr, 0, FALSE);
+	saveSearchHistory("", nullptr, SEARCH_LITERAL, FALSE);
 
 	// Pop down the search line (if it's not pegged up in Preferences) 
 	window->TempShowISearch(FALSE);
@@ -772,7 +774,7 @@ static void iSearchRecordLastBeginPos(Document *window, SearchDirection directio
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncremental(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int continued) {
+bool SearchAndSelectIncremental(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int continued) {
 	int beginPos, startPos, endPos;
 
 	/* If there's a search in progress, start the search from the original
@@ -961,7 +963,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 
 	const char *params[4];
-	int searchType;
+	SearchType searchType;
 	SearchDirection direction;
 
 	window = Document::WidgetToWindow(w);
@@ -1007,7 +1009,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	auto callData = static_cast<XmAnyCallbackStruct *>(call_data);
 	
 	const char *params[5];
-	int searchType;
+	SearchType searchType;
 	SearchDirection direction;
 	int nParams;
 
@@ -1076,7 +1078,7 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 	KeySym keysym = XLookupKeysym(event, 0);
 	int index;
 	const char *searchStr;
-	int searchType;
+	SearchType searchType;
 
 	// only process up and down arrow keys 
 	if (keysym != XK_Up && keysym != XK_Down && keysym != XK_Escape) {
@@ -1422,7 +1424,7 @@ bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap) {
 	int startPos = 0;
 	int endPos = 0;
 	int replaceLen = 0;
@@ -1477,7 +1479,7 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, int searchType, int searchWrap) {
+bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap) {
 	int startPos;
 	int endPos;
 	int replaceLen;
@@ -1624,7 +1626,7 @@ static bool prefOrUserCancelsSubst(const Widget parent, const Display *display) 
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
-void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, const int searchType) {
+void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType) {
 	int selStart;
 	int selEnd;
 	int beginPos;
@@ -1800,7 +1802,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 ** Replace all occurences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
-bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, int searchType) {
+bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, SearchType searchType) {
 	char *newFileString;
 	int copyStart, copyEnd, replacementLen;
 
@@ -1809,7 +1811,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 		return false;
 
 	// save a copy of search and replace strings in the search history 
-	saveSearchHistory(searchString, replaceString, searchType, FALSE);
+	saveSearchHistory(searchString, replaceString, searchType, false);
 
 	// view the entire text buffer from the text area widget as a string 
 	view::string_view fileString = window->buffer_->BufAsStringEx();
@@ -1856,7 +1858,7 @@ bool ReplaceAll(Document *window, const char *searchString, const char *replaceS
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, int searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters) {
+char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters) {
 	int beginPos, startPos, endPos, lastEndPos;
 	int found, nFound, removeLen, replaceLen, copyLen, addLen;
 	char *outString, *fillPtr;
@@ -1979,7 +1981,7 @@ static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, in
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, int searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
 	bool found;
 	int fileEnd = window->buffer_->BufGetLength() - 1;
 	bool outsideBounds;
@@ -2096,7 +2098,7 @@ bool SearchWindow(Document *window, SearchDirection direction, const char *searc
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, int searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
 		return searchLiteralWord(string, searchString, true, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -2110,6 +2112,8 @@ bool SearchString(view::string_view string, const char *searchString, SearchDire
 		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
 	case SEARCH_REGEX_NOCASE:
 		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
+	default:
+		Q_ASSERT(0);
 	}
 	return false; // never reached, just makes compilers happy 
 }
@@ -2120,7 +2124,7 @@ bool SearchString(view::string_view string, const char *searchString, SearchDire
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-int StringToSearchType(const char *string, int *searchType) {
+int StringToSearchType(const char *string, SearchType *searchType) {
 	int i;
 	for (i = 0; searchTypeStrings[i]; i++) {
 		if (!strcmp(string, searchTypeStrings[i])) {
@@ -2128,10 +2132,10 @@ int StringToSearchType(const char *string, int *searchType) {
 		}
 	}
 	if (!searchTypeStrings[i]) {
-		return FALSE;
+		return false;
 	}
-	*searchType = i;
-	return TRUE;
+	*searchType = static_cast<SearchType>(i);
+	return true;
 }
 
 /*
@@ -2497,7 +2501,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static bool searchMatchesSelection(Document *window, const char *searchString, int searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+static bool searchMatchesSelection(Document *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
 	int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
 	int regexLookContext = isRegexType(searchType) ? 1000 : 0;
 	std::string string;
@@ -2607,7 +2611,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-static void saveSearchHistory(const char *searchString, const char *replaceString, int searchType, int isIncremental) {
+static void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental) {
 	char *sStr, *rStr;
 	static int currentItemIsIncremental = FALSE;
 
@@ -2691,7 +2695,7 @@ int historyIndex(int nCycles) {
 ** Return a pointer to the string describing search type for search action
 ** routine parameters (see menu.c for processing of action routines)
 */
-const char *searchTypeArg(int searchType) {
+const char *searchTypeArg(SearchType searchType) {
 	if (0 <= searchType && searchType < N_SEARCH_TYPES) {
 		return searchTypeStrings[searchType];
 	}
@@ -2724,7 +2728,7 @@ const char *directionArg(SearchDirection direction) {
 /*
 ** Checks whether a search mode in one of the regular expression modes.
 */
-int isRegexType(int searchType) {
+int isRegexType(SearchType searchType) {
 	return searchType == SEARCH_REGEX || searchType == SEARCH_REGEX_NOCASE;
 }
 
@@ -2732,7 +2736,7 @@ int isRegexType(int searchType) {
 ** Returns the default flags for regular expression matching, given a
 ** regular expression search mode.
 */
-static int defaultRegexFlags(int searchType) {
+static int defaultRegexFlags(SearchType searchType) {
 	switch (searchType) {
 	case SEARCH_REGEX:
 		return REDFLT_STANDARD;

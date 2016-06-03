@@ -31,6 +31,7 @@
 #define MAX_COLOR_LEN 30    /* maximum length for a color name */
 
 #include "string_view.h"
+#include "SearchType.h"
 
 class QWidget;
 class QString;
@@ -120,7 +121,7 @@ int GetPrefRepositionDialogs();
 int GetPrefRows();
 int GetPrefSaveOldVersion();
 int GetPrefSearchDlogs();
-int GetPrefSearch();
+SearchType GetPrefSearch();
 int GetPrefSearchWraps();
 int GetPrefShowMatching();
 int GetPrefShowPathInWindowsMenu();
@@ -192,7 +193,7 @@ void SetPrefRepositionDialogs(int state);
 void SetPrefRows(int nRows);
 void SetPrefSaveOldVersion(int state);
 void SetPrefSearchDlogs(int state);
-void SetPrefSearch(int searchType);
+void SetPrefSearch(SearchType searchType);
 void SetPrefSearchWraps(int state);
 void SetPrefShell(const char *shell);
 void SetPrefShowMatching(int state);

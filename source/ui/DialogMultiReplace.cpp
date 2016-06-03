@@ -31,7 +31,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	char searchString[SEARCHMAX];
 	char replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;	
+	SearchType searchType;	
 
 	int nSelected = ui.listFiles->selectedItems().size();
 

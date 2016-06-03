@@ -105,7 +105,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 		// determine the strings and button settings to use 
 		QString searchStr;
-		int searchType;
+		SearchType searchType;
 		if (index == 0) {
 			searchStr  = QLatin1String("");
 			searchType = GetPrefSearch();
@@ -189,7 +189,7 @@ void DialogReplace::on_buttonFind_clicked() {
 	char searchString[SEARCHMAX];
 	char replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 	// Validate and fetch the find and replace strings from the dialog 
 	if (!getReplaceDlogInfo(&direction, searchString, replaceString, &searchType))
@@ -246,7 +246,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 	char searchString[SEARCHMAX];
 	char replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 
 	// Validate and fetch the find and replace strings from the dialog 
@@ -286,7 +286,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	char searchString[SEARCHMAX + 1];
 	char replaceString[SEARCHMAX + 1];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 
 	// Validate and fetch the find and replace strings from the dialog 
@@ -377,7 +377,7 @@ void DialogReplace::on_buttonWindow_clicked() {
 
 	char searchString[SEARCHMAX], replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 
 	// Validate and fetch the find and replace strings from the dialog 
@@ -411,7 +411,7 @@ void DialogReplace::on_buttonSelection_clicked() {
 	char searchString[SEARCHMAX];
 	char replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 	
 
 	// Validate and fetch the find and replace strings from the dialog 
@@ -446,7 +446,7 @@ void DialogReplace::on_buttonMulti_clicked() {
 	char searchString[SEARCHMAX];
 	char replaceString[SEARCHMAX];
 	SearchDirection direction;
-	int searchType;
+	SearchType searchType;
 
 	// Validate and fetch the find and replace strings from the dialog 
 	if (!getReplaceDlogInfo(&direction, searchString, replaceString, &searchType))
@@ -563,7 +563,7 @@ void DialogReplace::setTextField(Document *window, time_t time) {
 ** the state of the regex/case/word toggle buttons, and the sticky case
 ** sensitivity states.
 */
-void DialogReplace::initToggleButtons(int searchType) {
+void DialogReplace::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
@@ -627,6 +627,8 @@ void DialogReplace::initToggleButtons(int searchType) {
 			ui.checkWord->setEnabled(false);
 		}
 		break;
+	default:
+		Q_ASSERT(0);
 	}
 }
 
@@ -698,7 +700,7 @@ void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool
 ** return search type in "searchType", and return TRUE as the function
 ** value.  Otherwise, return FALSE.
 */
-int DialogReplace::getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, int *searchType) {
+int DialogReplace::getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, SearchType *searchType) {
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */

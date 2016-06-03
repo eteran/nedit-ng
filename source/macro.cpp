@@ -230,7 +230,7 @@ static int useTabsMV(Document *window, DataValue *argList, int nArgs, DataValue 
 static int modifiedMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int languageModeMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg);
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, int *wrap, const char **errMsg);
 static int wrongNArgsErr(const char **errMsg);
 static int tooFewArgsErr(const char **errMsg);
 static int strCaseCmp(char *str1, char *str2);
@@ -2276,7 +2276,10 @@ static int searchMS(Document *window, DataValue *argList, int nArgs, DataValue *
 ** also returns the ending position of the match in $searchEndPos
 */
 static int searchStringMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int beginPos, wrap, found = False, foundStart, foundEnd, type;
+	int beginPos, wrap;
+	bool found = false;
+	int foundStart, foundEnd;
+	SearchType type;
 	int skipSearch = False, len;
 	char stringStorage[2][TYPE_INT_STR_SIZE(int)];
 	char *string;
@@ -2351,8 +2354,13 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 	char *replaceStr;
 	char *argStr;
 	char *replacedStr;
-	int searchType = SEARCH_LITERAL, copyStart, copyEnd;
-	int replacedLen, replaceEnd, force = False, i;
+	SearchType searchType = SEARCH_LITERAL;
+	int copyStart;
+	int copyEnd;
+	int replacedLen;
+	int replaceEnd;
+	bool force = false;
+	int i;
 	int stringLen;
 	int searchStrLen;
 	int replaceStrLen;
@@ -2413,7 +2421,7 @@ static int replaceInStringMS(Document *window, DataValue *argList, int nArgs, Da
 	return true;
 }
 
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, int *searchType, int *wrap, const char **errMsg) {
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, int *wrap, const char **errMsg) {
 	int i;
 	char *argStr;
 	char stringStorage[TYPE_INT_STR_SIZE(int)];
@@ -3180,8 +3188,15 @@ static int stringCompareMS(Document *window, DataValue *argList, int nArgs, Data
 static int splitMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[3][TYPE_INT_STR_SIZE(int)];
 	char *sourceStr, *splitStr, *typeSplitStr;
-	int searchType, beginPos, foundStart, foundEnd, strLength, lastEnd;
-	int found, elementEnd, indexNum;
+	SearchType searchType;
+	int beginPos;
+	int foundStart;
+	int foundEnd;
+	int strLength;
+	int lastEnd;
+	int found;
+	int elementEnd;
+	int indexNum;
 	char indexStr[TYPE_INT_STR_SIZE(int)], *allocIndexStr;
 	DataValue element;
 	int elementLen;

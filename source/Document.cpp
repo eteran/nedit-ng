@@ -306,8 +306,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	auto textWidget = reinterpret_cast<TextWidget>(w);
-	auto textD = textD_of(textWidget);
+	auto textD = textD_of(w);
 
 	if (window->ignoreModify_)
 		return;
@@ -326,7 +325,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    for unfocussed panes.
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
-	if (text_of(textWidget).cursorBlinkProcID != 0) {
+	if (text_of(w).cursorBlinkProcID != 0) {
 		//  Start blinking the caret again.  
 		textD->ResetCursorBlink(false);
 	}

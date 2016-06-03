@@ -5,7 +5,9 @@
 #include <QDialog>
 #include "ui_DialogFind.h"
 #include "SearchDirection.h"
+#include "SearchType.h"
 #include <ctime>
+
 
 class Document;
 
@@ -21,11 +23,11 @@ protected:
 
 public:
 	void setTextField(Document *window, time_t time);
-	void initToggleButtons(int searchType);
+	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();
 	
 private:
-	int getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, int *searchType);
+	int getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, SearchType *searchType);
 	
 public:
 	bool keepDialog() const;

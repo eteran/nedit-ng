@@ -4,14 +4,18 @@
 
 #include <QDialog>
 #include <QPointer>
+#include "SearchType.h"
+#include "SearchDirection.h"
+#include <ctime>
+
 #ifdef REPLACE_SCOPE
 #include "ui_DialogReplaceScope.h"
 #include "ReplaceScope.h"
 #else
 #include "ui_DialogReplace.h"
 #endif
-#include "SearchDirection.h"
-#include <ctime>
+
+
 
 class Document;
 class DialogMultiReplace;
@@ -28,7 +32,7 @@ protected:
 	
 public:
 	void setTextField(Document *window, time_t time);
-	void initToggleButtons(int searchType);
+	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();
 #ifdef REPLACE_SCOPE
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceAllBtn);
@@ -36,7 +40,7 @@ public:
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
 #endif
 	void UpdateReplaceActionButtons();
-	int getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, int *searchType);
+	int getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, SearchType *searchType);
 	void collectWritableWindows();
 
 public:

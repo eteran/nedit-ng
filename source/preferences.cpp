@@ -799,7 +799,7 @@ static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
 static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
 
-static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen);
+static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen);
 static QStringList readExtensionList(const char **inPtr);
 static const char *getDefaultShell(void);
 static int caseFind(view::string_view inString, const char *expr);
@@ -1093,12 +1093,12 @@ int GetPrefWrapMargin() {
 	return PrefData.wrapMargin;
 }
 
-void SetPrefSearch(int searchType) {
+void SetPrefSearch(SearchType searchType) {
 	setIntPref(&PrefData.searchMethod, searchType);
 }
 
-int GetPrefSearch() {
-	return PrefData.searchMethod;
+SearchType GetPrefSearch() {
+	return static_cast<SearchType>(PrefData.searchMethod);
 }
 
 #ifdef REPLACE_SCOPE
@@ -3143,7 +3143,7 @@ static int caseFind(view::string_view inString, const char *expr) {
 /*
 ** Common implementation for simplified string replacement routines.
 */
-static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int searchType, int replaceLen) {
+static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen) {
 	
 	const std::string &oldString = *inString;
 	
