@@ -4,6 +4,7 @@
 
 #include "ReparseContext.h"
 #include <QString>
+
 class HighlightData;
 class PatternSet;
 class StyleTableEntry;
