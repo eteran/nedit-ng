@@ -207,7 +207,7 @@ void DialogReplace::on_buttonFind_clicked() {
 	params[1] = directionArg(direction);
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
-	XtCallActionProc(window_->lastFocus_, (String) "find", nullptr /*callData->event*/, const_cast<char **>(params), 4);
+	XtCallActionProc(window_->lastFocus_, "find", nullptr /*callData->event*/, const_cast<char **>(params), 4);
 	
 	windowNotToClose = nullptr;
 
@@ -267,7 +267,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 	params[2] = directionArg(direction);
 	params[3] = searchTypeArg(searchType);
 	params[4] = searchWrapArg(GetPrefSearchWraps());
-	XtCallActionProc(window_->lastFocus_, (String) "replace", nullptr /* callData->event */, const_cast<char **>(params), 5);
+	XtCallActionProc(window_->lastFocus_, "replace", nullptr /* callData->event */, const_cast<char **>(params), 5);
 		
 	windowNotToClose = nullptr;
 
@@ -304,7 +304,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	params[1] = replaceString;
 	params[2] = directionArg(direction);
 	params[3] = searchTypeArg(searchType);
-	XtCallActionProc(window_->lastFocus_, (String) "replace_find", nullptr /* callData->event*/, const_cast<char **>(params), 4);
+	XtCallActionProc(window_->lastFocus_, "replace_find", nullptr /* callData->event*/, const_cast<char **>(params), 4);
 	
 	windowNotToClose = nullptr;
 
@@ -394,7 +394,7 @@ void DialogReplace::on_buttonWindow_clicked() {
 	params[0] = searchString;
 	params[1] = replaceString;
 	params[2] = searchTypeArg(searchType);	
-	XtCallActionProc(window_->lastFocus_, (String) "replace_all", nullptr /*callData->event*/, const_cast<char **>(params), 3);
+	XtCallActionProc(window_->lastFocus_, "replace_all", nullptr /*callData->event*/, const_cast<char **>(params), 3);
 	windowNotToClose = nullptr;
 
 	// Pop down the dialog 

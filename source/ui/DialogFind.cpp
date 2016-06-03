@@ -288,7 +288,7 @@ void DialogFind::on_buttonFind_clicked() {
 	params[1] = directionArg(direction);
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
-	XtCallActionProc(window_->lastFocus_, const_cast<char *>("find"), nullptr/* callData->event*/, const_cast<char **>(params), 4);
+	XtCallActionProc(window_->lastFocus_, "find", nullptr/* callData->event*/, const_cast<char **>(params), 4);
 #else
 	// TODO(eteran): replace this with signal/slots eventually
 	//               the original code would end up calling menu.cpp:findAP

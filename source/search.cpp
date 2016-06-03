@@ -994,7 +994,7 @@ static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call
 	params[2] = searchTypeArg(searchType);
 	params[3] = searchWrapArg(GetPrefSearchWraps());
 	
-	XtCallActionProc(window->lastFocus_, (String) "find", callData->event, const_cast<char **>(params), 4);
+	XtCallActionProc(window->lastFocus_, "find", callData->event, const_cast<char **>(params), 4);
 }
 
 /*
@@ -1060,7 +1060,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 		params[nParams++] = "continued";
 	}
 	
-	XtCallActionProc(window->lastFocus_, (String) "find_incremental", callData->event, const_cast<char **>(params), nParams);
+	XtCallActionProc(window->lastFocus_, "find_incremental", callData->event, const_cast<char **>(params), nParams);
 }
 
 /*
@@ -1070,7 +1070,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch) {
 
 
-	auto event = (XKeyEvent *)Event;
+	auto event = reinterpret_cast<XKeyEvent *>(Event);
 	auto window = static_cast<Document *>(clientData);
 
 	KeySym keysym = XLookupKeysym(event, 0);
@@ -2714,8 +2714,10 @@ const char *searchWrapArg(int searchWrap) {
 ** routine parameters (see menu.c for processing of action routines)
 */
 const char *directionArg(SearchDirection direction) {
-	if (direction == SEARCH_BACKWARD)
+	if (direction == SEARCH_BACKWARD) {
 		return "backward";
+	}
+	
 	return "forward";
 }
 
