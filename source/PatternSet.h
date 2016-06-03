@@ -7,7 +7,7 @@
 
 #include "HighlightPattern.h"
 
-/* Header for a set of patterns */
+// Header for a set of patterns
 class PatternSet {
 public:
 	PatternSet();

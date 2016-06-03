@@ -32,7 +32,6 @@
 #include "string_view.h"
 #include <map>
 #include <list>
-#include <boost/variant.hpp>
 
 #define STACK_SIZE         1024  // Maximum stack size
 #define MAX_SYM_LEN        100   // Max. symbol name length

@@ -196,6 +196,7 @@ include(${QT_USE_FILE})
 
 include_directories(nedit
 	${CMAKE_CURRENT_SOURCE_DIR}/ui
+	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${MOTIF_INCLUDES}
 	${X11_INCLUDE_DIR}
 	${X11_Xt_INCLUDE_PATH}

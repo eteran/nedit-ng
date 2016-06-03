@@ -29,8 +29,8 @@
 
 #include <X11/Intrinsic.h>
 
-#define PERMANENT_MENU_ITEM (XtPointer)1
-#define TEMPORARY_MENU_ITEM (XtPointer)2
+#define PERMANENT_MENU_ITEM reinterpret_cast<XtPointer>(1)
+#define TEMPORARY_MENU_ITEM reinterpret_cast<XtPointer>(2)
 
 class Document;
 

@@ -28,13 +28,9 @@
 #define SHIFT_H_
 
 #include "string_view.h"
+#include "ShiftDirection.h"
 
 class Document;
-
-enum ShiftDirection {
-	SHIFT_LEFT, 
-	SHIFT_RIGHT
-};
 
 void ShiftSelection(Document *window, ShiftDirection direction, int byTab);
 void UpcaseSelection(Document *window);
