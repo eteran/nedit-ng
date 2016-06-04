@@ -31,7 +31,6 @@
 #include "TextBuffer.h"
 #include "TextDisplay.h"
 #include "textSel.h"
-#include "textDrag.h"
 #include "nedit.h"
 #include "Document.h"
 #include "calltips.h"
@@ -1347,8 +1346,9 @@ static void copyToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *n
 		copyToAP(w, event, args, nArgs);
 		return;
 	}
-
-	FinishBlockDrag(reinterpret_cast<TextWidget>(w));
+	
+	auto textD = textD_of(w);
+	textD->FinishBlockDrag();
 }
 
 static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1414,7 +1414,8 @@ static void moveToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *n
 		return;
 	}
 
-	FinishBlockDrag(reinterpret_cast<TextWidget>(w));
+	auto textD = textD_of(w);
+	textD->FinishBlockDrag();
 }
 
 static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1423,10 +1424,13 @@ static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	if (text_of(w).dragState == PRIMARY_BLOCK_DRAG)
-		FinishBlockDrag(reinterpret_cast<TextWidget>(w));
-	else
+	auto textD = textD_of(w);
+
+	if (text_of(w).dragState == PRIMARY_BLOCK_DRAG) {
+		textD->FinishBlockDrag();
+	} else {
 		endDrag(w);
+	}
 }
 
 static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1452,7 +1456,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		   being dragged, we must not forget to finish the dragging.
 		   Otherwise, modifications aren't recorded. */
 		if (dragState == PRIMARY_BLOCK_DRAG)
-			FinishBlockDrag(reinterpret_cast<TextWidget>(w));
+			textD->FinishBlockDrag();
 		return;
 	}
 

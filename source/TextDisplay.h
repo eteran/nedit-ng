@@ -28,6 +28,7 @@
 #define TEXTDISP_H_
 
 #include "TextBuffer.h"
+#include "BlockDragTypes.h"
 #include "Point.h"
 
 #include <X11/Intrinsic.h>
@@ -146,8 +147,12 @@ public:
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	void TextDKillCalltip(int calltipID);
 	void TextDRedrawCalltip(int calltipID);
+	
+public:
 	void BeginBlockDrag();
 	void BlockDragSelection(Point pos, int dragType);
+	void FinishBlockDrag();
+	void CancelBlockDrag();
 
 public:
 	TextBuffer *TextGetBuffer();

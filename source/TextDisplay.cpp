@@ -38,7 +38,6 @@
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "textSel.h"
-#include "textDrag.h"
 #include "TextHelper.h"
 
 #include <cstdio>
@@ -4152,14 +4151,14 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 	auto tw = reinterpret_cast<TextWidget>(w);
 
 	if (text_of(tw).hidePointer) {
-		if (hidePointer != textD_of(tw)->pointerHidden) {
+		if (hidePointer != textD_of(w)->pointerHidden) {
 			if (hidePointer) {
 				// Don't listen for keypresses any more
 				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
 				// Switch to empty cursor
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
-				textD_of(tw)->pointerHidden = true;
+				textD_of(w)->pointerHidden = true;
 
 				// Listen to mouse movement, focus change, and button presses
 				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, nullptr);
@@ -4169,7 +4168,7 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 				// Switch to regular cursor
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
-				textD_of(tw)->pointerHidden = false;
+				textD_of(w)->pointerHidden = false;
 
 				// Listen for keypresses now
 				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
@@ -4249,26 +4248,28 @@ void TextDisplay::cancelDrag() {
 	if (TEXT_OF_TEXTD(this).autoScrollProcID != 0)
 		XtRemoveTimeOut(TEXT_OF_TEXTD(this).autoScrollProcID);
 
-	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG)
+	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG) {
 		this->buffer->BufSecondaryUnselect();
+	}
 
-	if (dragState == PRIMARY_BLOCK_DRAG)
-		CancelBlockDrag(reinterpret_cast<TextWidget>(w));
+	if (dragState == PRIMARY_BLOCK_DRAG) {
+		CancelBlockDrag();
+	}
 
-	if (dragState == MOUSE_PAN)
+	if (dragState == MOUSE_PAN) {
 		XUngrabPointer(XtDisplay(w), CurrentTime);
+	}
 		
-	if (dragState != NOT_CLICKED)
+	if (dragState != NOT_CLICKED) {
 		TEXT_OF_TEXTD(this).dragState = DRAG_CANCELED;
+	}
 }
 
 
 void TextDisplay::checkAutoShowInsertPos() const {
 
-	auto tw = reinterpret_cast<TextWidget>(w);
-
-	if (text_of(tw).autoShowInsertPos) {
-		textD_of(tw)->TextDMakeInsertPosVisible();
+	if (text_of(w).autoShowInsertPos) {
+		textD_of(w)->TextDMakeInsertPosVisible();
 	}
 }
 
@@ -4747,4 +4748,83 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	this->TextDUnblankCursor();
 	XtCallCallbacks(w, textNcursorMovementCallback, nullptr);
 	text_of(w).emTabsBeforeCursor = 0;
+}
+
+/*
+** Complete a block text drag operation
+*/
+void TextDisplay::FinishBlockDrag() {
+	
+	int modRangeStart = -1;
+	int origModRangeEnd;
+	int bufModRangeEnd;
+
+	/* Find the changed region of the buffer, covering both the deletion
+	   of the selected text at the drag start position, and insertion at
+	   the drag destination */
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragSourceDeletePos, text_of(w).dragSourceInserted, text_of(w).dragSourceDeleted);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
+
+	// Get the original (pre-modified) range of text from saved backup buffer 
+	view::string_view deletedText = text_of(w).dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
+
+	// Free the backup buffer 
+	delete text_of(w).dragOrigBuf;
+
+	// Return to normal drag state 
+	text_of(w).dragState = NOT_CLICKED;
+
+	// Call finish-drag calback 
+	dragEndCBStruct endStruct;
+	endStruct.startPos       = modRangeStart;
+	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
+	endStruct.nCharsInserted = bufModRangeEnd  - modRangeStart;
+	endStruct.deletedText    = deletedText;
+
+	XtCallCallbacks(w, textNdragEndCallback, &endStruct);
+}
+
+/*
+** Cancel a block drag operation
+*/
+void TextDisplay::CancelBlockDrag() {
+	TextBuffer *buf = textD_of(w)->buffer;
+	TextBuffer *origBuf = text_of(w).dragOrigBuf;
+	TextSelection *origSel = &origBuf->primary_;
+	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
+
+	/* If the operation was a move, make the modify range reflect the
+	   removal of the text from the starting position */
+	if (text_of(w).dragSourceDeleted != 0)
+		trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragSourceDeletePos, text_of(w).dragSourceInserted, text_of(w).dragSourceDeleted);
+
+	/* Include the insert being undone from the last step in the modified
+	   range. */
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
+
+	// Make the changes in the buffer 
+	std::string repText = origBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
+	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
+
+	// Reset the selection and cursor position 
+	if (origSel->rectangular)
+		buf->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
+	else
+		buf->BufSelect(origSel->start, origSel->end);
+	textD_of(w)->TextDSetInsertPosition(buf->cursorPosHint_);
+	XtCallCallbacks(w, textNcursorMovementCallback, nullptr);
+	text_of(w).emTabsBeforeCursor = 0;
+
+	// Free the backup buffer 
+	delete origBuf;
+
+	// Indicate end of drag 
+	text_of(w).dragState = DRAG_CANCELED;
+
+	// Call finish-drag calback 
+	dragEndCBStruct endStruct;	
+	endStruct.startPos       = 0;
+	endStruct.nCharsDeleted  = 0;
+	endStruct.nCharsInserted = 0;
+	XtCallCallbacks(w, textNdragEndCallback, &endStruct);
 }

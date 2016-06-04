@@ -184,7 +184,6 @@ add_executable(nedit
 	tags.cpp
 	text.cpp
 	TextDisplay.cpp
-	textDrag.cpp
 	textSel.cpp
 	userCmds.cpp
 	window.cpp
