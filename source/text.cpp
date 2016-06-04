@@ -30,7 +30,6 @@
 #include "textP.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
-#include "textSel.h"
 #include "nedit.h"
 #include "Document.h"
 #include "calltips.h"
@@ -764,14 +763,20 @@ static void destroy(TextWidget w) {
 	   is freed only if after removing all of the modify procs (by calling
 	   StopHandlingXSelections and TextDFree) there are no modify procs
 	   left */
-	StopHandlingXSelections((Widget)w);
-	TextBuffer *buf = textD_of(w)->buffer;
-	delete textD_of(w);
-	if (buf->modifyProcs_.empty())
+	
+	auto textD = textD_of(w);
+	
+	textD->StopHandlingXSelections();
+	TextBuffer *buf = textD->buffer;
+	delete textD;
+	
+	if (buf->modifyProcs_.empty()) {
 		delete buf;
+	}
 
-	if (text_of(w).cursorBlinkProcID != 0)
+	if (text_of(w).cursorBlinkProcID != 0) {
 		XtRemoveTimeOut(text_of(w).cursorBlinkProcID);
+	}
 
 	XtRemoveAllCallbacks((Widget)w, textNfocusCallback);
 	XtRemoveAllCallbacks((Widget)w, textNlosingFocusCallback);
@@ -989,7 +994,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	/* Become owner of the MOTIF_DESTINATION selection, making this widget
 	   the designated recipient of secondary quick actions in Motif XmText
 	   widgets and in other NEdit text widgets */
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 
 	// Check for possible multi-click sequence in progress
 	if (text_of(tw).multiClickState != NO_CLICKS) {
@@ -1328,14 +1333,14 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			buf->BufSecondaryUnselect();
 			textD->TextDUnblankCursor();
 		} else
-			SendSecondarySelection(w, e->time, False);
+			textD->SendSecondarySelection(e->time, False);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
 		textD->TextInsertAtCursorEx(textToCopy, event, False, text_of(tw).autoWrapPastedText);
 	} else {
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		InsertPrimarySelection(w, e->time, False);
+		textD->InsertPrimarySelection(e->time, False);
 	}
 }
 
@@ -1391,7 +1396,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			buf->BufRemoveSecSelect();
 			buf->BufSecondaryUnselect();
 		} else
-			SendSecondarySelection(w, e->time, True);
+			textD->SendSecondarySelection(e->time, true);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetRangeEx(primary->start, primary->end);
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
@@ -1401,7 +1406,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		buf->BufUnselect();
 	} else {
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		MovePrimarySelection(w, e->time, False);
+		textD->MovePrimarySelection(e->time, False);
 	}
 }
 
@@ -1462,13 +1467,13 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	// if the primary selection is in another widget, use selection routines
 	if (!primary->selected) {
-		ExchangeSelections(w, e->time);
+		textD->ExchangeSelections(e->time);
 		return;
 	}
 
 	// Both primary and secondary are in this widget, do the exchange here
 	std::string primaryText = buf->BufGetSelectionTextEx();
-	std::string secText = buf->BufGetSecSelectTextEx();
+	std::string secText     = buf->BufGetSecSelectTextEx();
 	secWasRect = sec->rectangular;
 	buf->BufReplaceSecSelectEx(primaryText);
 	newPrimaryStart = primary->start;
@@ -1513,11 +1518,14 @@ static void copyPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 		textD->checkAutoShowInsertPos();
 	} else if (rectangular) {
-		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &text_of(tw).btnDownCoord.x, &text_of(tw).btnDownCoord.y))
+		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &text_of(tw).btnDownCoord.x, &text_of(tw).btnDownCoord.y)) {
 			return; // shouldn't happen
-		InsertPrimarySelection(w, e->time, True);
-	} else
-		InsertPrimarySelection(w, e->time, False);
+		}
+		
+		textD->InsertPrimarySelection(e->time, true);
+	} else {
+		textD->InsertPrimarySelection(e->time, false);
+	}
 }
 
 static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1552,9 +1560,9 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	} else if (rectangular) {
 		if (!textD->TextDPositionToXY(textD->TextDGetInsertPosition(), &text_of(w).btnDownCoord.x, &text_of(w).btnDownCoord.y))
 			return; // shouldn't happen
-		MovePrimarySelection(w, e->time, True);
+		textD->MovePrimarySelection(e->time, true);
 	} else {
-		MovePrimarySelection(w, e->time, False);
+		textD->MovePrimarySelection(e->time, False);
 	}
 }
 
@@ -1633,7 +1641,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		smartIndent.charsTyped = args[0];
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
-	textD->TextInsertAtCursorEx(args[0], event, True, True);
+	textD->TextInsertAtCursorEx(args[0], event, True, true);
 	textD->buffer->BufUnselect();
 }
 
@@ -1661,7 +1669,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	chars[nChars] = '\0';
 
 	if (!window->buffer_->BufSubstituteNullChars(chars, nChars)) {
@@ -1678,7 +1686,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		smartIndent.charsTyped    = chars;
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
-	textD->TextInsertAtCursorEx(chars, event, True, True);
+	textD->TextInsertAtCursorEx(chars, event, True, true);
 	textD->buffer->BufUnselect();
 }
 
@@ -1702,8 +1710,8 @@ static void newlineNoIndentAP(Widget w, XEvent *event, String *args, Cardinal *n
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
-	simpleInsertAtCursorEx(w, "\n", event, True);
+	textD->TakeMotifDestination(e->time);
+	simpleInsertAtCursorEx(w, "\n", event, true);
 	textD_of(w)->buffer->BufUnselect();
 }
 
@@ -1721,7 +1729,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	if (textD->checkReadOnly())
 		return;
 	textD->cancelDrag();
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 
 	/* Create a string containing a newline followed by auto or smart
 	   indent string */
@@ -1730,7 +1738,7 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	std::string indentStr = createIndentStringEx(tw, buf, 0, lineStartPos, cursorPos, nullptr, &column);
 
 	// Insert it at the cursor
-	simpleInsertAtCursorEx(w, indentStr, event, True);
+	simpleInsertAtCursorEx(w, indentStr, event, true);
 
 	if (text_of(tw).emulateTabs > 0) {
 		/*  If emulated tabs are on, make the inserted indent deletable by
@@ -1758,11 +1766,11 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	if (textD->checkReadOnly())
 		return;
 	textD->cancelDrag();
-	TakeMotifDestination(w, event->xkey.time);
+	textD->TakeMotifDestination(event->xkey.time);
 
 	// If emulated tabs are off, just insert a tab
 	if (emTabDist <= 0) {
-		textD->TextInsertAtCursorEx("\t", event, True, True);
+		textD->TextInsertAtCursorEx("\t", event, True, true);
 		return;
 	}
 
@@ -1801,7 +1809,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	}
 
 	// Insert the emulated tab
-	textD->TextInsertAtCursorEx(outStr, event, True, True);
+	textD->TextInsertAtCursorEx(outStr, event, True, true);
 
 	// Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx
 	text_of(w).emTabsBeforeCursor = emTabsBeforeCursor + 1;
@@ -1821,7 +1829,7 @@ static void deleteSelectionAP(Widget w, XEvent *event, String *args, Cardinal *n
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	deletePendingSelection(w, event);
 }
 
@@ -1836,7 +1844,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 	if (textD->checkReadOnly())
 		return;
 
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event))
 		return;
 
@@ -1872,7 +1880,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == textD->buffer->BufGetLength()) {
@@ -1897,7 +1905,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 		return;
 	}
 
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event)) {
 		return;
 	}
@@ -1931,7 +1939,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 		return;
 	}
 
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event)) {
 		return;
 	}
@@ -1967,7 +1975,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == endOfLine) {
@@ -1994,7 +2002,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event))
 		return;
 	if (insertPos == startOfLine) {
@@ -2786,7 +2794,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	   the user selects something, grab it (I'm not sure if this distinction
 	   actually makes sense, but it's what Motif was doing, back when their
 	   secondary selections actually worked correctly) */
-	TakeMotifDestination(w, e->time);
+	textD->TakeMotifDestination(e->time);
 
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
 		// rect -> rect

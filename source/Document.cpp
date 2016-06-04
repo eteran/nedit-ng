@@ -29,7 +29,6 @@
 #include "UndoInfo.h"
 #include "userCmds.h"
 #include "window.h" // There are a few global functions found here... for now
-#include "textSel.h"
 
 #include "Folder.h"
 #include "clearcase.h"
@@ -3606,7 +3605,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	buffer_->BufAddModifyCB(modifiedCB, this);
 
 	// Designate the permanent text area as the owner for selections 
-	HandleXSelections(textArea_);
+	textD->HandleXSelections();
 
 	// Set the requested hardware tab distance and useTabs in the text buffer 
 	buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
@@ -3828,7 +3827,7 @@ Document *Document::CreateDocument(const QString &name) {
 	window->buffer_->BufAddModifyCB(modifiedCB, window);
 
 	// Designate the permanent text area as the owner for selections 
-	HandleXSelections(text);
+	textD->HandleXSelections();
 
 	// Set the requested hardware tab distance and useTabs in the text buffer 
 	window->buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));

@@ -153,6 +153,17 @@ public:
 	void BlockDragSelection(Point pos, int dragType);
 	void FinishBlockDrag();
 	void CancelBlockDrag();
+	
+public:
+	void InsertClipboard(bool isColumnar);
+	void CopyToClipboard(Time time);
+	void HandleXSelections();
+	void StopHandlingXSelections();
+	void InsertPrimarySelection(Time time, bool isColumnar);
+	void MovePrimarySelection(Time time, bool isColumnar);
+	void ExchangeSelections(Time time);
+	void SendSecondarySelection(Time time, bool removeAfter);
+	void TakeMotifDestination(Time time);
 
 public:
 	TextBuffer *TextGetBuffer();
@@ -178,7 +189,7 @@ public:
 	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
-	void checkAutoShowInsertPos() const;
+	void checkAutoShowInsertPos();
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 
 private:

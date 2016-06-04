@@ -32,7 +32,6 @@
 
 #include "window.h"
 #include "TextBuffer.h"
-#include "textSel.h"
 #include "text.h"
 #include "Document.h"
 #include "textP.h"
