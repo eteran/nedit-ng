@@ -28,10 +28,8 @@
 #define TEXTDRAG_H_
 
 #include "text.h"
-#include "Point.h"
 #include "BlockDragTypes.h"
 
-void BlockDragSelection(TextWidget tw, Point pos, int dragType);
 void FinishBlockDrag(TextWidget tw);
 void CancelBlockDrag(TextWidget tw);
 

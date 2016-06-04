@@ -147,6 +147,7 @@ public:
 	void TextDKillCalltip(int calltipID);
 	void TextDRedrawCalltip(int calltipID);
 	void BeginBlockDrag();
+	void BlockDragSelection(Point pos, int dragType);
 
 public:
 	TextBuffer *TextGetBuffer();

@@ -1283,7 +1283,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	checkAutoScroll(tw, e->x, e->y);
 
 	// Adjust the selection
-	BlockDragSelection(tw, Point{e->x, e->y}, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
+	textD->BlockDragSelection(Point{e->x, e->y}, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
 }
 
 static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3314,7 +3314,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	} else if (text_of(w).dragState == SECONDARY_RECT_DRAG) {
 		adjustSecondarySelection(w, text_of(w).mouseCoord.x, text_of(w).mouseCoord.y);
 	} else if (text_of(w).dragState == PRIMARY_BLOCK_DRAG) {
-		BlockDragSelection(w, text_of(w).mouseCoord, USE_LAST);
+		textD->BlockDragSelection(text_of(w).mouseCoord, USE_LAST);
 	} else {
 		text_of(w).autoScrollProcID = 0;
 		return;
