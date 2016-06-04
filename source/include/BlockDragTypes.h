@@ -1,0 +1,13 @@
+
+#ifndef BLOCK_DRAG_TYPES_H_
+#define BLOCK_DRAG_TYPES_H_
+
+enum BlockDragTypes {
+	USE_LAST, 
+	DRAG_COPY, 
+	DRAG_MOVE, 
+	DRAG_OVERLAY_MOVE, 
+	DRAG_OVERLAY_COPY
+};
+
+#endif

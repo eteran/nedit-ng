@@ -1257,6 +1257,8 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto tw = reinterpret_cast<TextWidget>(w);
+	TextDisplay *textD = textD_of(tw);
+	
 	XMotionEvent *e = &event->xmotion;
 	int dragState = text_of(tw).dragState;
 
@@ -1271,7 +1273,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	   initial mouse down to be considered a drag */
 	if (text_of(tw).dragState == CLICKED_IN_SELECTION) {
 		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD)
-			BeginBlockDrag(tw);
+			textD->BeginBlockDrag();
 		else
 			return;
 	}

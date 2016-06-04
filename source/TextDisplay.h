@@ -146,6 +146,7 @@ public:
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	void TextDKillCalltip(int calltipID);
 	void TextDRedrawCalltip(int calltipID);
+	void BeginBlockDrag();
 
 public:
 	TextBuffer *TextGetBuffer();

@@ -41,98 +41,10 @@
 #include <Xm/PrimitiveP.h>
 
 static void trackModifyRange(int *rangeStart, int *modRangeEnd, int *unmodRangeEnd, int modPos, int nInserted, int nDeleted);
-static void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *rightMargin);
 static int findRelativeLineStart(TextBuffer *buf, int referencePos, int referenceLineNum, int newLineNum);
 static int min3(int i1, int i2, int i3);
 static int max3(int i1, int i2, int i3);
 
-/*
-** Start the process of dragging the current primary-selected text across
-** the window (move by dragging, as opposed to dragging to create the
-** selection)
-*/
-void BeginBlockDrag(TextWidget tw) {
-	TextDisplay *textD = textD_of(tw);
-	TextBuffer *buf = textD->buffer;
-	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
-	int fontWidth = textD->fontStruct->max_bounds.width;
-	TextSelection *sel = &buf->primary_;
-	int nLines, mousePos, lineStart;
-	int x, y, lineEnd;
-
-	/* Save a copy of the whole text buffer as a backup, and for
-	   deriving changes */
-	text_of(tw).dragOrigBuf = new TextBuffer;
-	text_of(tw).dragOrigBuf->BufSetTabDistance(buf->tabDist_);
-	text_of(tw).dragOrigBuf->useTabs_ = buf->useTabs_;
-
-	std::string text = buf->BufGetAllEx();
-	text_of(tw).dragOrigBuf->BufSetAllEx(text);
-
-	if (sel->rectangular)
-		text_of(tw).dragOrigBuf->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-	else
-		text_of(tw).dragOrigBuf->BufSelect(sel->start, sel->end);
-
-	/* Record the mouse pointer offsets from the top left corner of the
-	   selection (the position where text will actually be inserted In dragging
-	   non-rectangular selections)  */
-	if (sel->rectangular) {
-		text_of(tw).dragXOffset = text_of(tw).btnDownCoord.x + textD->horizOffset - textD->left - sel->rectStart * fontWidth;
-	} else {
-		if (!textD->TextDPositionToXY(sel->start, &x, &y))
-			x = buf->BufCountDispChars(textD->TextDStartOfLine(sel->start), sel->start) * fontWidth + textD->left - textD->horizOffset;
-		text_of(tw).dragXOffset = text_of(tw).btnDownCoord.x - x;
-	}
-	mousePos = textD->TextDXYToPosition(Point{text_of(tw).btnDownCoord.x, text_of(tw).btnDownCoord.y});
-	nLines = buf->BufCountLines(sel->start, mousePos);
-	text_of(tw).dragYOffset = nLines * fontHeight + (((text_of(tw).btnDownCoord.y - text_of(tw).marginHeight) % fontHeight) - fontHeight / 2);
-	text_of(tw).dragNLines = buf->BufCountLines(sel->start, sel->end);
-
-	/* Record the current drag insert position and the information for
-	   undoing the fictional insert of the selection in its new position */
-	text_of(tw).dragInsertPos = sel->start;
-	text_of(tw).dragInserted = sel->end - sel->start;
-	if (sel->rectangular) {
-		TextBuffer *testBuf = new TextBuffer;
-
-		std::string testText = buf->BufGetRangeEx(sel->start, sel->end);
-		testBuf->BufSetTabDistance(buf->tabDist_);
-		testBuf->useTabs_ = buf->useTabs_;
-		testBuf->BufSetAllEx(testText);
-
-		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
-		text_of(tw).dragDeleted = testBuf->BufGetLength();
-		delete testBuf;
-		text_of(tw).dragRectStart = sel->rectStart;
-	} else {
-		text_of(tw).dragDeleted = 0;
-		text_of(tw).dragRectStart = 0;
-	}
-	text_of(tw).dragType = DRAG_MOVE;
-	text_of(tw).dragSourceDeletePos = sel->start;
-	text_of(tw).dragSourceInserted = text_of(tw).dragDeleted;
-	text_of(tw).dragSourceDeleted = text_of(tw).dragInserted;
-
-	/* For non-rectangular selections, fill in the rectangular information in
-	   the selection for overlay mode drags which are done rectangularly */
-	if (!sel->rectangular) {
-		lineStart = buf->BufStartOfLine(sel->start);
-		if (text_of(tw).dragNLines == 0) {
-			text_of(tw).dragOrigBuf->primary_.rectStart = buf->BufCountDispChars(lineStart, sel->start);
-			text_of(tw).dragOrigBuf->primary_.rectEnd   = buf->BufCountDispChars(lineStart, sel->end);
-		} else {
-			lineEnd = buf->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
-			findTextMargins(buf, lineStart, lineEnd, &text_of(tw).dragOrigBuf->primary_.rectStart, &text_of(tw).dragOrigBuf->primary_.rectEnd);
-		}
-	}
-
-	// Set the drag state to announce an ongoing block-drag 
-	text_of(tw).dragState = PRIMARY_BLOCK_DRAG;
-
-	// Call the callback announcing the start of a block drag 
-	XtCallCallbacks((Widget)tw, textNdragStartCallback, (XtPointer) nullptr);
-}
 
 /*
 ** Reposition the primary-selected text that is being dragged as a block
@@ -447,35 +359,6 @@ static void trackModifyRange(int *rangeStart, int *modRangeEnd, int *unmodRangeE
 		} else
 			*modRangeEnd += nInserted - nDeleted;
 	}
-}
-
-/*
-** Find the left and right margins of text between "start" and "end" in
-** buffer "buf".  Note that "start is assumed to be at the start of a line.
-*/
-static void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *rightMargin) {
-	char c;
-	int pos, width = 0, maxWidth = 0, minWhite = INT_MAX, inWhite = True;
-
-	for (pos = start; pos < end; pos++) {
-		c = buf->BufGetCharacter(pos);
-		if (inWhite && c != ' ' && c != '\t') {
-			inWhite = False;
-			if (width < minWhite)
-				minWhite = width;
-		}
-		if (c == '\n') {
-			if (width > maxWidth)
-				maxWidth = width;
-			width = 0;
-			inWhite = True;
-		} else
-			width += TextBuffer::BufCharWidth(c, width, buf->tabDist_, buf->nullSubsChar_);
-	}
-	if (width > maxWidth)
-		maxWidth = width;
-	*leftMargin = minWhite == INT_MAX ? 0 : minWhite;
-	*rightMargin = maxWidth;
 }
 
 /*

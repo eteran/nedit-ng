@@ -27,16 +27,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include "string_view.h"
-
 class QString;
-
-QString GetCurrentDirEx();
-QString GetHomeDirEx();
-QString GetNameOfHostEx();
-QString GetRCFileNameEx(int type);
-QString GetUserNameEx();
-QString PrependHomeEx(view::string_view filename);
 
 /* N_FILE_TYPES must be the last entry!! This saves us from counting. */
 enum {
@@ -45,6 +36,13 @@ enum {
 	NEDIT_HISTORY,
 	N_FILE_TYPES
 };
+
+QString GetCurrentDirEx();
+QString GetHomeDirEx();
+QString GetNameOfHostEx();
+QString GetRCFileNameEx(int type);
+QString GetUserNameEx();
+QString PrependHomeEx(const QString &filename);
 
 /* If anyone knows where to get this from system include files (in a machine
    independent way), please change this (L_cuserid is apparently not ANSI) */

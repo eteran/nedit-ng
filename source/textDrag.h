@@ -24,21 +24,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef NEDIT_TEXTDRAG_H_INCLUDED
-#define NEDIT_TEXTDRAG_H_INCLUDED
+#ifndef TEXTDRAG_H_
+#define TEXTDRAG_H_
 
 #include "text.h"
 #include "Point.h"
+#include "BlockDragTypes.h"
 
-enum BlockDragTypes {
-	USE_LAST, 
-	DRAG_COPY, 
-	DRAG_MOVE, 
-	DRAG_OVERLAY_MOVE, 
-	DRAG_OVERLAY_COPY
-};
-
-void BeginBlockDrag(TextWidget tw);
 void BlockDragSelection(TextWidget tw, Point pos, int dragType);
 void FinishBlockDrag(TextWidget tw);
 void CancelBlockDrag(TextWidget tw);

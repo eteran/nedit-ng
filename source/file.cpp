@@ -1145,9 +1145,7 @@ static QString backupFileNameEx(Document *window) {
 	if (window->filenameSet_) {
 		return QString(QLatin1String("%1~%2")).arg(window->path_, window->filename_);
 	} else {
-		char buf[MAXPATHLEN];
-		snprintf(buf, sizeof(buf), "~%s", window->filename_.toLatin1().data());
-		return PrependHomeEx(buf);
+		return PrependHomeEx(QString(QLatin1String("~%1")).arg(window->filename_));
 	}
 }
 

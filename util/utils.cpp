@@ -105,7 +105,6 @@ bool isRegFile(const char *file) {
 	return ((stat(file, &attribute) == 0) && S_ISREG(attribute.st_mode));
 }
 
-
 }
 
 /* return non-nullptr value for the current working directory.
@@ -171,14 +170,8 @@ QString GetNameOfHostEx(void) {
 ** Create a path: $HOME/filename
 ** Return "" if it doesn't fit into the buffer
 */
-QString PrependHomeEx(view::string_view filename) {
-
-	// TODO(eteran): there is likely a way to make this more efficient
-	//               and make less copies
-	QString path = GetHomeDirEx();
-	path.append(QLatin1String("/"));
-	path.append(QString::fromStdString(filename.to_string()));
-	return path;
+QString PrependHomeEx(const QString &filename) {	
+	return QString(QLatin1String("%1/%2")).arg(GetHomeDirEx()).arg(filename);
 }
 
 /*
