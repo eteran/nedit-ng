@@ -37,6 +37,7 @@
 #include "ui/DialogColors.h"
 #include "LanguageMode.h"
 
+#include "memory.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -2089,7 +2090,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 static QString WriteLanguageModesStringEx() {
 	char numBuf[25];
 
-	auto outBuf = new TextBuffer;
+	auto outBuf = memory::make_unique<TextBuffer>();
 
 	for (int i = 0; i < NLanguageModes; i++) {
 		outBuf->BufAppendEx("\t");
@@ -2136,7 +2137,6 @@ static QString WriteLanguageModesStringEx() {
 
 	// Get the output, and lop off the trailing newline 
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - 1);
-	delete outBuf;
 	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
 }
 

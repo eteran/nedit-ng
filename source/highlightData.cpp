@@ -487,7 +487,7 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 
 std::string createPatternsString(PatternSet *patSet, const char *indentStr) {
 
-	auto outBuf = std::unique_ptr<TextBuffer>(new TextBuffer);
+	auto outBuf = memory::make_unique<TextBuffer>();
 
 	for(HighlightPattern &pat : patSet->patterns) {
 

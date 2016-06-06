@@ -40,6 +40,7 @@
 #include "TextHelper.h"
 #include "misc.h"
 #include "MotifHelper.h"
+#include "memory.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -4241,7 +4242,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 	/* Create a text buffer with a good estimate of the size that adding
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
-	auto outBuf = new TextBuffer((endPos - startPos) + (endPos - startPos) / 5);
+	auto outBuf = memory::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
 	int outPos = 0;
 
 	/* Go (displayed) line by line through the buffer, adding newlines where
@@ -4265,7 +4266,6 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 
 	// return the contents of the output buffer as a string
 	std::string outString = outBuf->BufGetAllEx();
-	delete outBuf;
 	return outString;
 }
 
@@ -5079,7 +5079,7 @@ void TextDisplay::BeginBlockDrag() {
 	text_of(w).dragInsertPos = sel->start;
 	text_of(w).dragInserted = sel->end - sel->start;
 	if (sel->rectangular) {
-		TextBuffer *testBuf = new TextBuffer;
+		auto testBuf = memory::make_unique<TextBuffer>();
 
 		std::string testText = buf->BufGetRangeEx(sel->start, sel->end);
 		testBuf->BufSetTabDistance(buf->tabDist_);
@@ -5088,7 +5088,6 @@ void TextDisplay::BeginBlockDrag() {
 
 		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
 		text_of(w).dragDeleted = testBuf->BufGetLength();
-		delete testBuf;
 		text_of(w).dragRectStart = sel->rectStart;
 	} else {
 		text_of(w).dragDeleted = 0;
@@ -5131,7 +5130,6 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	int fontWidth   = this->fontStruct->max_bounds.width;
 	TextBuffer *origBuf = text_of(w).dragOrigBuf;
 	int dragXOffset = text_of(w).dragXOffset;
-	TextBuffer *tempBuf;
 	TextSelection *origSel = &origBuf->primary_;
 	int rectangular = origSel->rectangular;
 	int overlay, oldDragType = text_of(w).dragType;
@@ -5168,12 +5166,13 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	   eventually be replaced in the real buffer.  Load the buffer with the
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
-	tempBuf = new TextBuffer;
+	auto tempBuf = new TextBuffer;
 	tempBuf->tabDist_ = buf->tabDist_;
 	tempBuf->useTabs_ = buf->useTabs_;
-	tempStart = min3(text_of(w).dragInsertPos, origSel->start, buf->BufCountBackwardNLines(this->firstChar, nLines + 2));
-	tempEnd = buf->BufCountForwardNLines(max3(text_of(w).dragInsertPos, origSel->start, this->lastChar), nLines + 2) + origSel->end - origSel->start;
-	std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
+	tempStart         = min3(text_of(w).dragInsertPos, origSel->start, buf->BufCountBackwardNLines(this->firstChar, nLines + 2));
+	tempEnd           = buf->BufCountForwardNLines(max3(text_of(w).dragInsertPos, origSel->start, this->lastChar), nLines + 2) + origSel->end - origSel->start;
+	
+	std::string text  = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf->BufSetAllEx(text);
 
 	// If the drag type is USE_LAST, use the last dragType applied 

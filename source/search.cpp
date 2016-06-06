@@ -28,11 +28,10 @@
 
 #include <QApplication>
 #include <QMessageBox>
-
-
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
+#include "memory.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
 #include "TextHelper.h"
@@ -1667,7 +1666,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	/* create a temporary buffer in which to do the replacements to hide the
 	   intermediate steps from the display routines, and so everything can
 	   be undone in a single operation */
-	auto tempBuf = new TextBuffer;
+	auto tempBuf = memory::make_unique<TextBuffer>();
 	tempBuf->BufSetAllEx(fileString);
 
 	// search the string and do the replacements in the temporary buffer 
@@ -1793,9 +1792,6 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 			QApplication::beep();
 		}
 	}
-
-	delete tempBuf;
-	return;
 }
 
 /*
