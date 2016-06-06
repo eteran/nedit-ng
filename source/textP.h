@@ -74,48 +74,49 @@ extern TextClassRec nTextClassRec;
 
 class TextPart {
 public:
-	/* resources */
-	Pixel selectFGPixelR;
-	Pixel selectBGPixelR;
-	Pixel highlightFGPixelR;
-	Pixel highlightBGPixelR;
-	Pixel cursorFGPixelR;
-	Pixel lineNumFGPixelR;
-	Pixel calltipFGPixelR;
-	Pixel calltipBGPixelR;
-	XFontStruct *fontStructR;
-	Boolean pendingDeleteR;
-	Boolean autoShowInsertPosR;
-	Boolean autoWrapR;
-	Boolean autoWrapPastedTextR;
-	Boolean continuousWrapR;
-	Boolean autoIndentR;
-	Boolean smartIndentR;
-	Boolean overstrikeR;
-	Boolean heavyCursorR;
-	Boolean readOnlyR;
-	Boolean hidePointerR;
-	int rowsR;
-	int columnsR;
-	int marginWidthR;
-	int marginHeightR;
-	int cursorBlinkRateR;
-	int wrapMarginR;
-	int emulateTabsR;
-	int lineNumColsR;
-	char *delimitersR;
-	Cardinal cursorVPaddingR;
-	Widget hScrollBarR;
-	Widget vScrollBarR;
-	XtCallbackList focusInCB;
-	XtCallbackList focusOutCB;
-	XtCallbackList cursorCB;
-	XtCallbackList dragStartCB;
-	XtCallbackList dragEndCB;
-	XtCallbackList smartIndentCB;
-	
+	// resources
+	Pixel          P_selectFGPixel;
+	Pixel          P_selectBGPixel;
+	Pixel          P_highlightFGPixel;
+	Pixel          P_highlightBGPixel;
+	Pixel          P_cursorFGPixel;
+	Pixel          P_lineNumFGPixel;
+	Pixel          P_calltipFGPixel;
+	Pixel          P_calltipBGPixel;
+	XFontStruct *  P_fontStruct;
+	Boolean        P_pendingDelete;
+	Boolean        P_autoShowInsertPos;
+	Boolean        P_autoWrap;
+	Boolean        P_autoWrapPastedText;
+	Boolean        P_continuousWrap;
+	Boolean        P_autoIndent;
+	Boolean        P_smartIndent;
+	Boolean        P_overstrike;
+	Boolean        P_heavyCursor;
+	Boolean        P_readOnly;
+	Boolean        P_hidePointer;
+	int            P_rows;
+	int            P_columns;
+	int            P_marginWidth;
+	int            P_marginHeight;
+	int            P_cursorBlinkRate;
+	int            P_wrapMargin;
+	int            P_emulateTabs;
+	int            P_lineNumCols;
+	char *         P_delimiters;
+	Cardinal       P_cursorVPadding;
+	Widget         P_hScrollBar;
+	Widget         P_vScrollBar;
+#if 0
+	XtCallbackList P_focusInCB;
+	XtCallbackList P_focusOutCB;
+	XtCallbackList P_cursorCB;
+	XtCallbackList P_dragStartCB;
+	XtCallbackList P_dragEndCB;
+	XtCallbackList P_smartIndentCB;
+#endif
 	/* was private, but looks like a resource */
-	XmString backlightCharTypesR;   // background class string to parse
+	XmString P_backlightCharTypes;   // background class string to parse
 
 
 	/* private state */
