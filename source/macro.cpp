@@ -879,7 +879,6 @@ static void runMacro(Document *window, Program *prog) {
 	DataValue result;
 	const char *errMsg;
 	int stat;
-	macroCmdInfo *cmdData;
 	XmString s;
 
 	/* If a macro is already running, just call the program as a subroutine,
@@ -900,7 +899,7 @@ static void runMacro(Document *window, Program *prog) {
 
 	/* Create a data structure for passing macro execution information around
 	   amongst the callback routines which will process i/o and completion */
-	cmdData = new macroCmdInfo;
+	auto cmdData = new macroCmdInfo;
 	window->macroCmdData_ = cmdData;
 	cmdData->bannerIsUp = False;
 	cmdData->closeOnCompletion = False;
@@ -4039,7 +4038,8 @@ static int rangesetCreateMS(Document *window, DataValue *argList, int nArgs, Dat
 		return wrongNArgsErr(errMsg);
 
 	if(!rangesetTable) {
-		window->buffer_->rangesetTable_ = rangesetTable = new RangesetTable(window->buffer_);
+		rangesetTable = new RangesetTable(window->buffer_);
+		window->buffer_->rangesetTable_ = rangesetTable;
 	}
 
 	if (nArgs == 0) {

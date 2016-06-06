@@ -30,7 +30,7 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 	}
 	
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
-	QValidator *validator = new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this);
+	auto validator = new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this);
 	
 	ui.editName->setValidator(validator);
 }

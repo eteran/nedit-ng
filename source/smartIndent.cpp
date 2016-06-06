@@ -240,7 +240,7 @@ SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 ** (a split-window command).
 */
 void BeginSmartIndent(Document *window, int warn) {
-	SmartIndentData *winData;
+
 	SmartIndent *indentMacros;
 	const char *stoppedAt;
 	const char *errMsg;
@@ -287,7 +287,7 @@ void BeginSmartIndent(Document *window, int warn) {
 	}
 
 	// Compile the newline and modify macros and attach them to the window 
-	winData = new SmartIndentData;
+	auto winData = new SmartIndentData;
 	winData->inNewLineMacro = false;
 	winData->inModMacro = false;
 	winData->newlineMacro = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
@@ -495,7 +495,6 @@ int LoadSmartIndentString(char *inString) {
 	const char *errMsg;
 	const char *inPtr = inString;
 	SmartIndent is;
-	SmartIndent *isCopy;
 	int i;
 
 	for (;;) {
@@ -552,7 +551,7 @@ int LoadSmartIndentString(char *inString) {
 		}
 
 		// create a new data structure and add/change it in the list 
-		isCopy = new SmartIndent(is);
+		auto isCopy = new SmartIndent(is);
 
 		for (i = 0; i < NSmartIndentSpecs; i++) {
 			if (SmartIndentSpecs[i]->lmName == is.lmName) {
@@ -561,8 +560,10 @@ int LoadSmartIndentString(char *inString) {
 				break;
 			}
 		}
-		if (i == NSmartIndentSpecs)
+		
+		if (i == NSmartIndentSpecs) {
 			SmartIndentSpecs[NSmartIndentSpecs++] = isCopy;
+		}
 	}
 }
 

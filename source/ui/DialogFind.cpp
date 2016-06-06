@@ -5,6 +5,7 @@
 #include <QtDebug>
 #include <QMessageBox>
 
+#include "memory.h"
 #include "DialogFind.h"
 #include "Document.h"
 #include "search.h" // for the search type enum
@@ -335,8 +336,7 @@ int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searc
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			regexp *compiledRE = new regexp(findText.toStdString(), regexDefault);
-			delete compiledRE;
+			auto compiledRE = memory::make_unique<regexp>(findText.toStdString(), regexDefault);
 		} catch(const regex_error &e) {
 			QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
 			return false;

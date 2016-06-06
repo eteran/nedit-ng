@@ -1036,13 +1036,11 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   in peace when they have unfinished syntax, but still get beeps when
 	   correct syntax doesn't match) */
 	if (isRegexType(searchType)) {
-		regexp *compiledRE = nullptr;
 		try {
-			compiledRE = new regexp(searchString.toStdString(), defaultRegexFlags(searchType));
+			auto compiledRE = memory::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
 		} catch(const regex_error &e) {
 			return;
 		}
-		delete compiledRE;
 	}
 	
 	QByteArray searchArray = searchString.toLatin1();

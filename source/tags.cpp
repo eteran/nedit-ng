@@ -368,7 +368,6 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 	struct stat statbuf;
 	char *filename;
 	char pathName[MAXPATHLEN];
-	char *tmptagSpec;
 	tagFile *FileList;
 
 	searchMode = file_type;
@@ -378,7 +377,7 @@ int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 		FileList = TipsFileList;
 	}
 
-	tmptagSpec = new char[strlen(tagSpec) + 1];
+	auto tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
 	
 	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
@@ -447,7 +446,6 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	int added = 1;
 	struct stat statbuf;
 	char pathName[MAXPATHLEN];
-	char *tmptagSpec;
 	tagFile *FileList;
 
 	// To prevent any possible segfault 
@@ -464,7 +462,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 		FileList = TipsFileList;
 	}
 
-	tmptagSpec = new char[strlen(tagSpec) + 1];
+	auto tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
@@ -1293,7 +1291,6 @@ static int moveAheadNLines(char *str, int *pos, int n) {
 void showMatchingCalltip(Widget parent, int i) {
 	int startPos = 0, fileLen, readLen, tipLen;
 	int endPos = 0;
-	char *fileString;
 	FILE *fp;
 	struct stat statbuf;
 
@@ -1313,7 +1310,7 @@ void showMatchingCalltip(Widget parent, int i) {
 	// 2. Read the target file 
 	// Allocate space for the whole contents of the file (unfortunately) 
 	fileLen = statbuf.st_size;
-	fileString = new char[fileLen + 1]; // +1 = space for null
+	auto fileString = new char[fileLen + 1]; // +1 = space for null
 	
 	// TODO(eteran): catch the allocation failure!
 	if(!fileString) {
@@ -1330,7 +1327,7 @@ void showMatchingCalltip(Widget parent, int i) {
 		delete [] fileString;
 		return;
 	}
-	fileString[readLen] = 0;
+	fileString[readLen] = '\0';
 
 	// Close the file 
 	if (fclose(fp) != 0) {

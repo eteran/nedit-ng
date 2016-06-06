@@ -81,7 +81,7 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_
     lineEdit_ = new QLineEdit(this);	
 	lineEdit_->setContextMenuPolicy(Qt::PreventContextMenu);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(lineEdit_);
 

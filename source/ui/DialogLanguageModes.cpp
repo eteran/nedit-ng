@@ -7,6 +7,7 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include "DialogLanguageModes.h"
+#include "memory.h"
 #include "LanguageMode.h"
 #include "preferences.h"
 #include "Document.h"
@@ -256,8 +257,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	if(!recognitionExpr.isEmpty()) {
 		try {
 			std::string expression = recognitionExpr.toStdString();
-			auto compiledRE = new regexp(expression, REDFLT_STANDARD);
-			delete compiledRE;
+			auto compiledRE = memory::make_unique<regexp>(expression, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QLatin1String(e.what())));
