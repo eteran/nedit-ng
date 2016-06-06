@@ -331,7 +331,7 @@ char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int
 	const char *lineStartPtr = text;
 	textPtr = text;
 	shiftedPtr = shiftedText;
-	while (TRUE) {
+	while (true) {
 		if (*textPtr == '\n' || *textPtr == '\0') {
 			shiftedLine = (direction == SHIFT_RIGHT) ? shiftLineRight(lineStartPtr, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) 
 			                                         : shiftLineLeft (lineStartPtr, textPtr - lineStartPtr,              tabDist, nChars);

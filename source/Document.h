@@ -352,7 +352,7 @@ public:
 	bool backlightChars_;           /* is char backlighting turned on? */
 	QString backlightCharTypes_;    /* what backlighting to use */
 	bool modeMessageDisplayed_;     /* special stats line banner for learn and shell command executing modes */
-	char *modeMessage_;             /* stats line banner content for learn and shell command executing modes */
+	QString modeMessage_;           /* stats line banner content for learn and shell command executing modes */
 	bool ignoreModify_;             /* ignore modifications to text area */
 	bool windowMenuValid_;          /* is window menu up to date? */
 	int rHistIndex_;

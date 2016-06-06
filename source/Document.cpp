@@ -903,7 +903,7 @@ bool Document::GetShowTabBar() {
 ** on the shell window.  I think this is the most reliable way to tell,
 ** but if someone has a better idea please send me a note).
 */
-bool  Document::IsIconic() {
+bool Document::IsIconic() {
 	unsigned long *property = nullptr;
 	unsigned long nItems;
 	unsigned long leftover;
@@ -940,8 +940,9 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 	int i, n;
 	int nBuf = crossWin ? WindowCount() : TabCount();
 
-	if (nBuf <= 1)
+	if (nBuf <= 1) {
 		return nullptr;
+	}
 
 	// get the list of tabs 
 	auto tabs = new Widget[nBuf];
@@ -1629,18 +1630,20 @@ void Document::SetModeMessage(const char *message) {
 	   so we save a copy of the mode message, so we can restore the
 	   statsline when the document is raised to top again */
 	modeMessageDisplayed_ = true;
-	XtFree(modeMessage_);
-	modeMessage_ = XtNewStringEx(message);
+	modeMessage_ = QLatin1String(message);
 
-	if (!IsTopDocument())
+	if (!IsTopDocument()) {
 		return;
+	}
 
 	XmTextSetStringEx(statsLine_, message);
+	
 	/*
 	 * Don't invoke the stats line again, if stats line is already displayed.
 	 */
-	if (!showStats_)
+	if (!showStats_) {
 		showStatistics(true);
+	}
 }
 
 /*
@@ -1648,15 +1651,17 @@ void Document::SetModeMessage(const char *message) {
 ** the statistics line to its original state as set in window->showStats_
 */
 void Document::ClearModeMessage() {
-	if (!modeMessageDisplayed_)
+	
+	if (!modeMessageDisplayed_) {
 		return;
+	}
 
 	modeMessageDisplayed_ = false;
-	XtFree(modeMessage_);
-	modeMessage_ = nullptr;
+	modeMessage_ = QString();
 
-	if (!IsTopDocument())
+	if (!IsTopDocument()) {
 		return;
+	}
 
 	/*
 	 * Remove the stats line only if indicated by it's window state.
@@ -3277,7 +3282,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	}
 	
 	modeMessageDisplayed_   = false;
-	modeMessage_            = nullptr;
+	modeMessage_            = QString();
 	ignoreModify_           = false;
 	windowMenuValid_        = false;
 	flashTimeoutID_         = 0;
@@ -3720,7 +3725,7 @@ Document *Document::CreateDocument(const QString &name) {
 	}
 	
 	window->modeMessageDisplayed_  = false;
-	window->modeMessage_           = nullptr;
+	window->modeMessage_           = QString();
 	window->ignoreModify_          = false;
 	window->windowMenuValid_       = false;
 	window->flashTimeoutID_        = 0;

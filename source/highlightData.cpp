@@ -336,7 +336,6 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 	}
 	
 	if (isSubsExpr) {
-		// TODO(eteran): the + 5000 seems a bit wasteful
 		const int bufsize = patternRE.size() + 5000;		
 		char *newRE = XtMalloc(bufsize);
 		ConvertSubstituteRE(patternRE.toLatin1().data(), newRE, bufsize);
