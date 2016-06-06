@@ -488,7 +488,6 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	int contextLines = patSet->lineContext;
 	int contextChars = patSet->charContext;
 	int i;
-	char *parentStylesPtr;
 	HighlightData *pass1Pats;
 	HighlightData *pass2Pats;
 
@@ -635,8 +634,10 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	}
 
 	// Create table for finding parent styles 
-	char *parentStyles = XtMalloc(nPass1Patterns + nPass2Patterns + 2);
-	parentStylesPtr = parentStyles;
+	QByteArray parentStyles;
+	parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
+
+	auto parentStylesPtr = std::back_inserter(parentStyles);
 	
 	*parentStylesPtr++ = '\0';
 	*parentStylesPtr++ = '\0';
@@ -707,7 +708,7 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 	auto highlightData = new WindowHighlightData;
 	highlightData->pass1Patterns              = pass1Pats;
 	highlightData->pass2Patterns              = pass2Pats;
-	highlightData->parentStyles               = QLatin1String(parentStyles);
+	highlightData->parentStyles               = parentStyles;
 	highlightData->styleTable                 = styleTable;
 	highlightData->nStyles                    = styleTablePtr - styleTable;
 	highlightData->styleBuffer                = styleBuf;
@@ -779,7 +780,8 @@ static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *pat
 		
 		int nSubExprs = 0;
 		if (!patternSrc[i].startRE.isNull()) {
-			const char *s = patternSrc[i].startRE.toLatin1().data();
+			QByteArray bytes = patternSrc[i].startRE.toLatin1();
+			const char *s = bytes.data();
 			const char *ptr = s;
 			while (true) {
 				if (*ptr == '&') {
@@ -796,7 +798,8 @@ static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *pat
 		compiledPats[i].startSubexprs[nSubExprs] = -1;
 		nSubExprs = 0;
 		if (!patternSrc[i].endRE.isNull()) {
-			const char *s = patternSrc[i].endRE.toLatin1().data();
+			QByteArray bytes = patternSrc[i].endRE.toLatin1();
+			const char *s = bytes.data();
 			const char *ptr = s;
 			while (true) {
 				if (*ptr == '&') {
@@ -1238,10 +1241,8 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	HighlightData *startPattern;
 	ReparseContext *context = &highlightData->contextRequirements;
-	
-	QByteArray parentStylesStr = highlightData->parentStyles.toLatin1();
-	
-	char *parentStyles = parentStylesStr.data();
+		
+	char *parentStyles = highlightData->parentStyles.data();
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
@@ -1942,7 +1943,8 @@ static regexp *compileREAndWarn(Widget parent, view::string_view re) {
 }
 
 static int parentStyleOf(const char *parentStyles, int style) {
-	return parentStyles[(uint8_t)style - UNFINISHED_STYLE];
+	int r = parentStyles[(uint8_t)style - UNFINISHED_STYLE]; 
+	return r;
 }
 
 static int isParentStyle(const char *parentStyles, int style1, int style2) {
@@ -1983,10 +1985,8 @@ static int patternIsParsable(HighlightData *pattern) {
 */
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
 	
-	QByteArray parentStylesStr = highlightData->parentStyles.toLatin1();
-	
 	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
-	char *parentStyles = parentStylesStr.data();
+	char *parentStyles = highlightData->parentStyles.data();
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	ReparseContext *context = &highlightData->contextRequirements;
 

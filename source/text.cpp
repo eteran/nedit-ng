@@ -37,13 +37,6 @@
 #include "memory.h"
 #include "TextHelper.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <climits>
-#include <cstring>
-#include <cctype>
-#include <sys/param.h>
-
 #include <climits>
 #include <algorithm>
 
@@ -525,47 +518,47 @@ static XtActionsRec actionsList[] = {
 */
 
 static XtResource resources[] = {
-	{ XmNhighlightThickness,	   XmCHighlightThickness,		XmRDimension,  sizeof(Dimension),	  XtOffset(TextWidget, primitive.highlight_thickness), XmRInt,    0                                         },
-	{ XmNshadowThickness,		   XmCShadowThickness,  		XmRDimension,  sizeof(Dimension),	  XtOffset(TextWidget, primitive.shadow_thickness),    XmRInt,    0                                         },
-	{ textNfont,				   textCFont,					XmRFontStruct, sizeof(XFontStruct *), XtOffset(TextWidget, text.fontStruct),			   XmRString, (String) "fixed"                          },
-	{ textNselectForeground,	   textCSelectForeground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.selectFGPixel), 		   XmRString, (String)NEDIT_DEFAULT_SEL_FG              },
-	{ textNselectBackground,	   textCSelectBackground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.selectBGPixel), 		   XmRString, (String)NEDIT_DEFAULT_SEL_BG              },
-	{ textNhighlightForeground,    textCHighlightForeground,	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.highlightFGPixel),  	   XmRString, (String)NEDIT_DEFAULT_HI_FG               },
-	{ textNhighlightBackground,    textCHighlightBackground,	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.highlightBGPixel),  	   XmRString, (String)NEDIT_DEFAULT_HI_BG               },
-	{ textNlineNumForeground,	   textCLineNumForeground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.lineNumFGPixel),		   XmRString, (String)NEDIT_DEFAULT_LINENO_FG           },
-	{ textNcursorForeground,	   textCCursorForeground,		XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.cursorFGPixel), 		   XmRString, (String)NEDIT_DEFAULT_CURSOR_FG           },
-	{ textNcalltipForeground,	   textCcalltipForeground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.calltipFGPixel),		   XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG          },
-	{ textNcalltipBackground,	   textCcalltipBackground,  	XmRPixel,	   sizeof(Pixel),		  XtOffset(TextWidget, text.calltipBGPixel),		   XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG          },
-	{ textNbacklightCharTypes,     textCBacklightCharTypes, 	XmRString,     sizeof(XmString),	  XtOffset(TextWidget, text.backlightCharTypes),	   XmRString, nullptr                                   },
-	{ textNrows,				   textCRows,					XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.rows),  				   XmRString, (String) "24"                             },
-	{ textNcolumns, 			   textCColumns,				XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.columns),				   XmRString, (String) "80"                             },
-	{ textNmarginWidth, 		   textCMarginWidth,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.marginWidth),			   XmRString, (String) "5"                              },
-	{ textNmarginHeight,		   textCMarginHeight,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.marginHeight),  		   XmRString, (String) "5"                              },
-	{ textNpendingDelete,		   textCPendingDelete,  		XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.pendingDelete), 		   XmRString, (String) "True"                           },
-	{ textNautoWrap,			   textCAutoWrap,				XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoWrap),  			   XmRString, (String) "True"                           },
-	{ textNcontinuousWrap,  	   textCContinuousWrap, 		XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.continuousWrap),		   XmRString, (String) "True"                           },
-	{ textNautoIndent,  		   textCAutoIndent, 			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoIndent),			   XmRString, (String) "True"                           },
-	{ textNsmartIndent, 		   textCSmartIndent,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.smartIndent),			   XmRString, (String) "False"                          },
-	{ textNoverstrike,  		   textCOverstrike, 			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.overstrike),			   XmRString, (String) "False"                          },
-	{ textNheavyCursor, 		   textCHeavyCursor,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.heavyCursor),			   XmRString, (String) "False"                          },
-	{ textNreadOnly,			   textCReadOnly,				XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.readOnly),  			   XmRString, (String) "False"                          },
-	{ textNhidePointer, 		   textCHidePointer,			XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.hidePointer),			   XmRString, (String) "False"                          },
-	{ textNwrapMargin,  		   textCWrapMargin, 			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.wrapMargin),			   XmRString, (String) "0"                              },
-	{ textNhScrollBar,  		   textCHScrollBar, 			XmRWidget,     sizeof(Widget),  	  XtOffset(TextWidget, text.hScrollBar),			   XmRString, (String) ""                               },
-	{ textNvScrollBar,  		   textCVScrollBar, 			XmRWidget,     sizeof(Widget),  	  XtOffset(TextWidget, text.vScrollBar),			   XmRString, (String) ""                               },
-	{ textNlineNumCols, 		   textCLineNumCols,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.lineNumCols),			   XmRString, (String) "0"                              },
-	{ textNautoShowInsertPos,	   textCAutoShowInsertPos,  	XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoShowInsertPos), 	   XmRString, (String) "True"                           },
-	{ textNautoWrapPastedText,     textCAutoWrapPastedText, 	XmRBoolean,    sizeof(Boolean), 	  XtOffset(TextWidget, text.autoWrapPastedText),	   XmRString, (String) "False"                          },
-	{ textNwordDelimiters,  	   textCWordDelimiters, 		XmRString,     sizeof(char *),  	  XtOffset(TextWidget, text.delimiters),			   XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?" },
-	{ textNblinkRate,			   textCBlinkRate,  			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.cursorBlinkRate),		   XmRString, (String) "500"                            },
-	{ textNemulateTabs, 		   textCEmulateTabs,			XmRInt, 	   sizeof(int), 		  XtOffset(TextWidget, text.emulateTabs),			   XmRString, (String) "0"                              },
-	{ textNfocusCallback,		   textCFocusCallback,  		XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.focusInCB), 			   XtRCallback, nullptr                                 },
-	{ textNlosingFocusCallback,    textCLosingFocusCallback,	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.focusOutCB),			   XtRCallback, nullptr                                 },
-	{ textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.cursorCB),  			   XtRCallback, nullptr                                 },
-	{ textNdragStartCallback,	   textCDragStartCallback,  	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.dragStartCB),			   XtRCallback, nullptr                                 },
-	{ textNdragEndCallback, 	   textCDragEndCallback,		XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.dragEndCB), 			   XtRCallback, nullptr                                 },
-	{ textNsmartIndentCallback,    textCSmartIndentCallback,	XmRCallback,   sizeof(XtPointer),	  XtOffset(TextWidget, text.smartIndentCB), 		   XtRCallback, nullptr                                 },
-	{ textNcursorVPadding,  	   textCCursorVPadding, 		XtRCardinal,   sizeof(Cardinal),	  XtOffset(TextWidget, text.cursorVPadding),		   XmRString, (String) "0"                              }
+	{ XmNhighlightThickness,       XmCHighlightThickness,       XmRDimension,  sizeof(Dimension),     XtOffset(TextWidget, primitive.highlight_thickness), XmRInt,    0                                         },
+	{ XmNshadowThickness,          XmCShadowThickness,          XmRDimension,  sizeof(Dimension),     XtOffset(TextWidget, primitive.shadow_thickness),    XmRInt,    0                                         },
+	{ textNfont,                   textCFont,                   XmRFontStruct, sizeof(XFontStruct *), XtOffset(TextWidget, text.fontStructR),              XmRString, (String) "fixed"                          },
+	{ textNselectForeground,       textCSelectForeground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.selectFGPixelR),           XmRString, (String)NEDIT_DEFAULT_SEL_FG              },
+	{ textNselectBackground,       textCSelectBackground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.selectBGPixelR),           XmRString, (String)NEDIT_DEFAULT_SEL_BG              },
+	{ textNhighlightForeground,    textCHighlightForeground,    XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.highlightFGPixelR),        XmRString, (String)NEDIT_DEFAULT_HI_FG               },
+	{ textNhighlightBackground,    textCHighlightBackground,    XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.highlightBGPixelR),        XmRString, (String)NEDIT_DEFAULT_HI_BG               },
+	{ textNlineNumForeground,      textCLineNumForeground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.lineNumFGPixelR),          XmRString, (String)NEDIT_DEFAULT_LINENO_FG           },
+	{ textNcursorForeground,       textCCursorForeground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.cursorFGPixelR),           XmRString, (String)NEDIT_DEFAULT_CURSOR_FG           },
+	{ textNcalltipForeground,      textCcalltipForeground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.calltipFGPixelR),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG          },
+	{ textNcalltipBackground,      textCcalltipBackground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.calltipBGPixelR),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG          },
+	{ textNbacklightCharTypes,     textCBacklightCharTypes,     XmRString,     sizeof(XmString),      XtOffset(TextWidget, text.backlightCharTypesR),      XmRString, nullptr                                   },
+	{ textNrows,                   textCRows,                   XmRInt,        sizeof(int),           XtOffset(TextWidget, text.rowsR),                    XmRString, (String) "24"                             },
+	{ textNcolumns,                textCColumns,                XmRInt,        sizeof(int),           XtOffset(TextWidget, text.columnsR),                 XmRString, (String) "80"                             },
+	{ textNmarginWidth,            textCMarginWidth,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.marginWidthR),             XmRString, (String) "5"                              },
+	{ textNmarginHeight,           textCMarginHeight,           XmRInt,        sizeof(int),           XtOffset(TextWidget, text.marginHeightR),            XmRString, (String) "5"                              },
+	{ textNpendingDelete,          textCPendingDelete,          XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.pendingDeleteR),           XmRString, (String) "True"                           },
+	{ textNautoWrap,               textCAutoWrap,               XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.autoWrapR),                XmRString, (String) "True"                           },
+	{ textNcontinuousWrap,         textCContinuousWrap,         XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.continuousWrapR),          XmRString, (String) "True"                           },
+	{ textNautoIndent,             textCAutoIndent,             XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.autoIndentR),              XmRString, (String) "True"                           },
+	{ textNsmartIndent,            textCSmartIndent,            XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.smartIndentR),             XmRString, (String) "False"                          },
+	{ textNoverstrike,             textCOverstrike,             XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.overstrikeR),              XmRString, (String) "False"                          },
+	{ textNheavyCursor,            textCHeavyCursor,            XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.heavyCursorR),             XmRString, (String) "False"                          },
+	{ textNreadOnly,               textCReadOnly,               XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.readOnlyR),                XmRString, (String) "False"                          },
+	{ textNhidePointer,            textCHidePointer,            XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.hidePointerR),             XmRString, (String) "False"                          },
+	{ textNwrapMargin,             textCWrapMargin,             XmRInt,        sizeof(int),           XtOffset(TextWidget, text.wrapMarginR),              XmRString, (String) "0"                              },
+	{ textNhScrollBar,             textCHScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.hScrollBarR),              XmRString, (String) ""                               },
+	{ textNvScrollBar,             textCVScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.vScrollBarR),              XmRString, (String) ""                               },
+	{ textNlineNumCols,            textCLineNumCols,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.lineNumColsR),             XmRString, (String) "0"                              },
+	{ textNautoShowInsertPos,      textCAutoShowInsertPos,      XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.autoShowInsertPosR),       XmRString, (String) "True"                           },
+	{ textNautoWrapPastedText,     textCAutoWrapPastedText,     XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.autoWrapPastedTextR),      XmRString, (String) "False"                          },
+	{ textNwordDelimiters,         textCWordDelimiters,         XmRString,     sizeof(char *),        XtOffset(TextWidget, text.delimitersR),              XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?" },
+	{ textNblinkRate,              textCBlinkRate,              XmRInt,        sizeof(int),           XtOffset(TextWidget, text.cursorBlinkRateR),         XmRString, (String) "500"                            },
+	{ textNemulateTabs,            textCEmulateTabs,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.emulateTabsR),             XmRString, (String) "0"                              },
+	{ textNfocusCallback,          textCFocusCallback,          XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.focusInCB),                XtRCallback, nullptr                                 },
+	{ textNlosingFocusCallback,    textCLosingFocusCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.focusOutCB),               XtRCallback, nullptr                                 },
+	{ textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.cursorCB),                 XtRCallback, nullptr                                 },
+	{ textNdragStartCallback,      textCDragStartCallback,      XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.dragStartCB),              XtRCallback, nullptr                                 },
+	{ textNdragEndCallback,        textCDragEndCallback,        XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.dragEndCB),                XtRCallback, nullptr                                 },
+	{ textNsmartIndentCallback,    textCSmartIndentCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.smartIndentCB),            XtRCallback, nullptr                                 },
+	{ textNcursorVPadding,         textCCursorVPadding,         XtRCardinal,   sizeof(Cardinal),      XtOffset(TextWidget, text.cursorVPaddingR),          XmRString, (String) "0"                              }
 };
 
 static TextClassRec textClassRec = {
@@ -636,19 +629,19 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 
 	auto new_widget = reinterpret_cast<TextWidget>(newWidget);
 
-	XFontStruct *fs = text_of(new_widget).fontStruct;
+	XFontStruct *fs = text_of(new_widget).fontStructR;
 	int textLeft;
 	int charWidth   = fs->max_bounds.width;
-	int marginWidth = text_of(new_widget).marginWidth;
-	int lineNumCols = text_of(new_widget).lineNumCols;
+	int marginWidth = text_of(new_widget).marginWidthR;
+	int lineNumCols = text_of(new_widget).lineNumColsR;
 
 	// Set the initial window size based on the rows and columns resources
 	if (request->core.width == 0) {
-		new_widget->core.width = charWidth * text_of(new_widget).columns + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+		new_widget->core.width = charWidth * text_of(new_widget).columnsR + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 	}
 
 	if (request->core.height == 0) {
-		new_widget->core.height = (fs->ascent + fs->descent) * text_of(new_widget).rows + text_of(new_widget).marginHeight * 2;
+		new_widget->core.height = (fs->ascent + fs->descent) * text_of(new_widget).rowsR + text_of(new_widget).marginHeightR * 2;
 	}
 
 	/* The default colors work for B&W as well as color, except for
@@ -659,9 +652,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	Pixel white = WhitePixelOfScreen(XtScreen(newWidget));
 	Pixel black = BlackPixelOfScreen(XtScreen(newWidget));
 
-	if (text_of(new_widget).selectBGPixel == white && new_widget->core.background_pixel == white && text_of(new_widget).selectFGPixel == black && new_widget->primitive.foreground == black) {
-		text_of(new_widget).selectBGPixel = black;
-		text_of(new_widget).selectFGPixel = white;
+	if (text_of(new_widget).selectBGPixelR == white && new_widget->core.background_pixel == white && text_of(new_widget).selectFGPixelR == black && new_widget->primitive.foreground == black) {
+		text_of(new_widget).selectBGPixelR = black;
+		text_of(new_widget).selectFGPixelR = white;
 	}
 
 	/* Create the initial text buffer for the widget to display (which can
@@ -669,55 +662,55 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	auto buf = new TextBuffer;
 
 	// Create and initialize the text-display part of the widget
-	textLeft = text_of(new_widget).marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+	textLeft = text_of(new_widget).marginWidthR + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 
 	textD_of(new_widget) = new TextDisplay(
 		newWidget,
-		text_of(new_widget).hScrollBar,
-		text_of(new_widget).vScrollBar,
+		text_of(new_widget).hScrollBarR,
+		text_of(new_widget).vScrollBarR,
 		textLeft,
-		text_of(new_widget).marginHeight,
+		text_of(new_widget).marginHeightR,
 		new_widget->core.width - marginWidth - textLeft,
-	    new_widget->core.height - text_of(new_widget).marginHeight * 2,
+	    new_widget->core.height - text_of(new_widget).marginHeightR * 2,
 		lineNumCols == 0 ? 0 : marginWidth,
 		lineNumCols == 0 ? 0 : lineNumCols * charWidth,
 		buf,
-		text_of(new_widget).fontStruct,
+		text_of(new_widget).fontStructR,
 		new_widget->core.background_pixel,
 	    new_widget->primitive.foreground,
-		text_of(new_widget).selectFGPixel,
-		text_of(new_widget).selectBGPixel,
-		text_of(new_widget).highlightFGPixel,
-		text_of(new_widget).highlightBGPixel,
-		text_of(new_widget).cursorFGPixel,
-	    text_of(new_widget).lineNumFGPixel,
-		text_of(new_widget).continuousWrap,
-		text_of(new_widget).wrapMargin,
-		text_of(new_widget).backlightCharTypes,
-		text_of(new_widget).calltipFGPixel,
-		text_of(new_widget).calltipBGPixel);
+		text_of(new_widget).selectFGPixelR,
+		text_of(new_widget).selectBGPixelR,
+		text_of(new_widget).highlightFGPixelR,
+		text_of(new_widget).highlightBGPixelR,
+		text_of(new_widget).cursorFGPixelR,
+	    text_of(new_widget).lineNumFGPixelR,
+		text_of(new_widget).continuousWrapR,
+		text_of(new_widget).wrapMarginR,
+		text_of(new_widget).backlightCharTypesR,
+		text_of(new_widget).calltipFGPixelR,
+		text_of(new_widget).calltipBGPixelR);
 
 	/* Add mandatory delimiters blank, tab, and newline to the list of
 	   delimiters.  The memory use scheme here is that new values are
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
 
-    char *delimiters = XtMalloc(strlen(text_of(new_widget).delimiters) + 4);
-    sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).delimiters);
-    text_of(new_widget).delimiters = delimiters;
+    char *delimiters = XtMalloc(strlen(text_of(new_widget).delimitersR) + 4);
+    sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).delimitersR);
+    text_of(new_widget).delimitersR = delimiters;
 
 	/* Start with the cursor blanked (widgets don't have focus on creation,
 	   the initial FocusIn event will unblank it and get blinking started) */
 	textD_of(new_widget)->cursorOn = false;
 
 	// Initialize the widget variables
-	text_of(new_widget).autoScrollProcID = 0;
-	text_of(new_widget).cursorBlinkProcID = 0;
-	text_of(new_widget).dragState = NOT_CLICKED;
-	text_of(new_widget).multiClickState = NO_CLICKS;
-	text_of(new_widget).lastBtnDown = 0;
-	text_of(new_widget).selectionOwner = false;
-	text_of(new_widget).motifDestOwner = false;
+	text_of(new_widget).autoScrollProcID   = 0;
+	text_of(new_widget).cursorBlinkProcID  = 0;
+	text_of(new_widget).dragState          = NOT_CLICKED;
+	text_of(new_widget).multiClickState    = NO_CLICKS;
+	text_of(new_widget).lastBtnDown        = 0;
+	text_of(new_widget).selectionOwner     = false;
+	text_of(new_widget).motifDestOwner     = false;
 	text_of(new_widget).emTabsBeforeCursor = 0;
 
 	// Register the widget to the input manager
@@ -725,22 +718,21 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	// In case some Resources for the IC need to be set, add them below
 	XmImVaSetValues(newWidget, nullptr);
 
-	XtAddEventHandler(newWidget, GraphicsExpose, True, (XtEventHandler)redisplayGE, (Opaque) nullptr);
+	XtAddEventHandler(newWidget, GraphicsExpose, true, (XtEventHandler)redisplayGE, nullptr);
 
-	if (text_of(new_widget).hidePointer) {
-		Display *theDisplay;
+	if (text_of(new_widget).hidePointerR) {
 		Pixmap empty_pixmap;
 		XColor black_color;
 		// Set up the empty Cursor
 		if (empty_cursor == 0) {
-			theDisplay = XtDisplay(newWidget);
+			Display *theDisplay = XtDisplay(newWidget);
 			empty_pixmap = XCreateBitmapFromData(theDisplay, RootWindowOfScreen(XtScreen(newWidget)), empty_bits, 1, 1);
 			XParseColor(theDisplay, DefaultColormapOfScreen(XtScreen(newWidget)), "black", &black_color);
 			empty_cursor = XCreatePixmapCursor(theDisplay, empty_pixmap, empty_pixmap, &black_color, &black_color, 0, 0);
 		}
 
 		// Add event handler to hide the pointer on keypresses
-		XtAddEventHandler(newWidget, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, (Opaque) nullptr);
+		XtAddEventHandler(newWidget, NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 	}
 }
 
@@ -792,13 +784,13 @@ static void destroy(TextWidget w) {
 ** Widget resize method.  Called when the size of the widget changes
 */
 static void resize(TextWidget w) {
-	XFontStruct *fs = text_of(w).fontStruct;
+	XFontStruct *fs = text_of(w).fontStructR;
 	int height = w->core.height, width = w->core.width;
-	int marginWidth = text_of(w).marginWidth, marginHeight = text_of(w).marginHeight;
-	int lineNumAreaWidth = text_of(w).lineNumCols == 0 ? 0 : text_of(w).marginWidth + fs->max_bounds.width * text_of(w).lineNumCols;
+	int marginWidth = text_of(w).marginWidthR, marginHeight = text_of(w).marginHeightR;
+	int lineNumAreaWidth = text_of(w).lineNumColsR == 0 ? 0 : text_of(w).marginWidthR + fs->max_bounds.width * text_of(w).lineNumColsR;
 
-	text_of(w).columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
-	text_of(w).rows = (height - marginHeight * 2) / (fs->ascent + fs->descent);
+	text_of(w).columnsR = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
+	text_of(w).rowsR = (height - marginHeight * 2) / (fs->ascent + fs->descent);
 
 	/* Reject widths and heights less than a character, which the text
 	   display can't tolerate.  This is not strictly legal, but I've seen
@@ -807,12 +799,12 @@ static void resize(TextWidget w) {
 	   splitting windows on Linux 2.0 systems (same Motif, why the change in
 	   behavior?), causes one or two resize calls with < 1 line of height.
 	   Fixing it here is 100x easier than re-designing TextDisplay.c */
-	if (text_of(w).columns < 1) {
-		text_of(w).columns = 1;
+	if (text_of(w).columnsR < 1) {
+		text_of(w).columnsR = 1;
 		w->core.width = width = fs->max_bounds.width + marginWidth * 2 + lineNumAreaWidth;
 	}
-	if (text_of(w).rows < 1) {
-		text_of(w).rows = 1;
+	if (text_of(w).rowsR < 1) {
+		text_of(w).rowsR = 1;
 		w->core.height = height = fs->ascent + fs->descent + marginHeight * 2;
 	}
 
@@ -822,8 +814,8 @@ static void resize(TextWidget w) {
 	/* if the window became shorter or narrower, there may be text left
 	   in the bottom or right margin area, which must be cleaned up */
 	if (XtIsRealized((Widget)w)) {
-		XClearArea(XtDisplay(w), XtWindow(w), 0, height - marginHeight, width, marginHeight, False);
-		XClearArea(XtDisplay(w), XtWindow(w), width - marginWidth, 0, marginWidth, height, False);
+		XClearArea(XtDisplay(w), XtWindow(w), 0, height - marginHeight, width, marginHeight, false);
+		XClearArea(XtDisplay(w), XtWindow(w), width - marginWidth, 0, marginWidth, height, false);
 	}
 }
 
@@ -860,52 +852,52 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	bool redraw = false;
 	bool reconfigure = false;
 
-	if (text_of(new_widget).overstrike != text_of(current).overstrike) {
+	if (text_of(new_widget).overstrikeR != text_of(current).overstrikeR) {
 		if (textD_of(current)->cursorStyle == BLOCK_CURSOR)
-			textD_of(current)->TextDSetCursorStyle(text_of(current).heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+			textD_of(current)->TextDSetCursorStyle(text_of(current).heavyCursorR ? HEAVY_CURSOR : NORMAL_CURSOR);
 		else if (textD_of(current)->cursorStyle == NORMAL_CURSOR || textD_of(current)->cursorStyle == HEAVY_CURSOR)
 			textD_of(current)->TextDSetCursorStyle(BLOCK_CURSOR);
 	}
 
-	if (text_of(new_widget).fontStruct != text_of(current).fontStruct) {
-		if (text_of(new_widget).lineNumCols != 0)
+	if (text_of(new_widget).fontStructR != text_of(current).fontStructR) {
+		if (text_of(new_widget).lineNumColsR != 0)
 			reconfigure = true;
-		textD_of(current)->TextDSetFont(text_of(new_widget).fontStruct);
+		textD_of(current)->TextDSetFont(text_of(new_widget).fontStructR);
 	}
 
-	if (text_of(new_widget).wrapMargin != text_of(current).wrapMargin || text_of(new_widget).continuousWrap != text_of(current).continuousWrap)
-		textD_of(current)->TextDSetWrapMode(text_of(new_widget).continuousWrap, text_of(new_widget).wrapMargin);
+	if (text_of(new_widget).wrapMarginR != text_of(current).wrapMarginR || text_of(new_widget).continuousWrapR != text_of(current).continuousWrapR)
+		textD_of(current)->TextDSetWrapMode(text_of(new_widget).continuousWrapR, text_of(new_widget).wrapMarginR);
 
 	/* When delimiters are changed, copy the memory, so that the caller
 	   doesn't have to manage it, and add mandatory delimiters blank,
 	   tab, and newline to the list */
-	if (text_of(new_widget).delimiters != text_of(current).delimiters) {
+	if (text_of(new_widget).delimitersR != text_of(current).delimitersR) {
 
-		char *delimiters = XtMalloc(strlen(text_of(new_widget).delimiters) + 4);
-		XtFree(text_of(current).delimiters);
-		sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).delimiters);
-		text_of(new_widget).delimiters = delimiters;
+		char *delimiters = XtMalloc(strlen(text_of(new_widget).delimitersR) + 4);
+		XtFree(text_of(current).delimitersR);
+		sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).delimitersR);
+		text_of(new_widget).delimitersR = delimiters;
 	}
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
 	   show, or change the number of columns of the line number display,
 	   which requires re-organizing the x coordinates of both the line
 	   number display and the main text display */
-	if (text_of(new_widget).lineNumCols != text_of(current).lineNumCols || reconfigure) {
-		int marginWidth = text_of(new_widget).marginWidth;
-		int charWidth = text_of(new_widget).fontStruct->max_bounds.width;
-		int lineNumCols = text_of(new_widget).lineNumCols;
+	if (text_of(new_widget).lineNumColsR != text_of(current).lineNumColsR || reconfigure) {
+		int marginWidth = text_of(new_widget).marginWidthR;
+		int charWidth = text_of(new_widget).fontStructR->max_bounds.width;
+		int lineNumCols = text_of(new_widget).lineNumColsR;
 		if (lineNumCols == 0) {
 			textD_of(new_widget)->TextDSetLineNumberArea(0, 0, marginWidth);
-			text_of(new_widget).columns = (new_widget->core.width - marginWidth * 2) / charWidth;
+			text_of(new_widget).columnsR = (new_widget->core.width - marginWidth * 2) / charWidth;
 		} else {
 			textD_of(new_widget)->TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
-			text_of(new_widget).columns = (new_widget->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
+			text_of(new_widget).columnsR = (new_widget->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
 		}
 	}
 
-	if (text_of(new_widget).backlightCharTypes != text_of(current).backlightCharTypes) {
-		TextDisplay::TextDSetupBGClasses((Widget)new_widget, text_of(new_widget).backlightCharTypes, &textD_of(new_widget)->bgClassPixel, &textD_of(new_widget)->bgClass, textD_of(new_widget)->bgPixel);
+	if (text_of(new_widget).backlightCharTypesR != text_of(current).backlightCharTypesR) {
+		TextDisplay::TextDSetupBGClasses((Widget)new_widget, text_of(new_widget).backlightCharTypesR, &textD_of(new_widget)->bgClassPixel, &textD_of(new_widget)->bgClass, textD_of(new_widget)->bgPixel);
 		redraw = true;
 	}
 
@@ -931,14 +923,14 @@ static void realize(Widget w, XtValueMask *valueMask, XSetWindowAttributes *attr
 static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWidgetGeometry *answer) {
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	int curHeight = tw->core.height;
-	int curWidth = tw->core.width;
-	XFontStruct *fs = textD_of(tw)->fontStruct;
-	int fontWidth = fs->max_bounds.width;
-	int fontHeight = fs->ascent + fs->descent;
-	int marginHeight = text_of(tw).marginHeight;
-	int propWidth = (proposed->request_mode & CWWidth) ? proposed->width : 0;
-	int propHeight = (proposed->request_mode & CWHeight) ? proposed->height : 0;
+	int curHeight    = tw->core.height;
+	int curWidth     = tw->core.width;
+	XFontStruct *fs  = textD_of(tw)->fontStruct;
+	int fontWidth    = fs->max_bounds.width;
+	int fontHeight   = fs->ascent + fs->descent;
+	int marginHeight = text_of(tw).marginHeightR;
+	int propWidth    = (proposed->request_mode & CWWidth)  ? proposed->width  : 0;
+	int propHeight   = (proposed->request_mode & CWHeight) ? proposed->height : 0;
 
 	answer->request_mode = CWHeight | CWWidth;
 
@@ -1328,19 +1320,19 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else
-				textD->TextInsertAtCursorEx(textToCopy, event, True, text_of(tw).autoWrapPastedText);
+				textD->TextInsertAtCursorEx(textToCopy, event, true, text_of(tw).autoWrapPastedTextR);
 
 			buf->BufSecondaryUnselect();
 			textD->TextDUnblankCursor();
 		} else
-			textD->SendSecondarySelection(e->time, False);
+			textD->SendSecondarySelection(e->time, false);
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		textD->TextInsertAtCursorEx(textToCopy, event, False, text_of(tw).autoWrapPastedText);
+		textD->TextInsertAtCursorEx(textToCopy, event, false, text_of(tw).autoWrapPastedTextR);
 	} else {
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		textD->InsertPrimarySelection(e->time, False);
+		textD->InsertPrimarySelection(e->time, false);
 	}
 }
 
@@ -1391,7 +1383,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				buf->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
 				textD->TextDSetInsertPosition(buf->cursorPosHint_);
 			} else
-				textD->TextInsertAtCursorEx(textToCopy, event, True, text_of(w).autoWrapPastedText);
+				textD->TextInsertAtCursorEx(textToCopy, event, true, text_of(w).autoWrapPastedTextR);
 
 			buf->BufRemoveSecSelect();
 			buf->BufSecondaryUnselect();
@@ -1400,13 +1392,13 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetRangeEx(primary->start, primary->end);
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		textD->TextInsertAtCursorEx(textToCopy, event, False, text_of(w).autoWrapPastedText);
+		textD->TextInsertAtCursorEx(textToCopy, event, false, text_of(w).autoWrapPastedTextR);
 
 		buf->BufRemoveSelected();
 		buf->BufUnselect();
 	} else {
 		textD->TextDSetInsertPosition(textD->TextDXYToPosition(Point{e->x, e->y}));
-		textD->MovePrimarySelection(e->time, False);
+		textD->MovePrimarySelection(e->time, false);
 	}
 }
 
@@ -1562,7 +1554,7 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 			return; // shouldn't happen
 		textD->MovePrimarySelection(e->time, true);
 	} else {
-		textD->MovePrimarySelection(e->time, False);
+		textD->MovePrimarySelection(e->time, false);
 	}
 }
 
@@ -1587,7 +1579,7 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		text_of(tw).dragState = MOUSE_PAN;
 		if (!panCursor)
 			panCursor = XCreateFontCursor(XtDisplay(w), XC_fleur);
-		XGrabPointer(XtDisplay(w), XtWindow(w), False, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
+		XGrabPointer(XtDisplay(w), XtWindow(w), false, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
 	} else
 		textD->cancelDrag();
 }
@@ -1634,14 +1626,14 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
-	if (text_of(w).smartIndent) {
+	if (text_of(w).smartIndentR) {
 		smartIndent.reason = CHAR_TYPED;
 		smartIndent.pos = textD->TextDGetInsertPosition();
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped = args[0];
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
-	textD->TextInsertAtCursorEx(args[0], event, True, true);
+	textD->TextInsertAtCursorEx(args[0], event, true, true);
 	textD->buffer->BufUnselect();
 }
 
@@ -1679,19 +1671,19 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	/* If smart indent is on, call the smart indent callback to check the
 	   inserted character */
-	if (text_of(w).smartIndent) {
+	if (text_of(w).smartIndentR) {
 		smartIndent.reason        = CHAR_TYPED;
 		smartIndent.pos           = textD->TextDGetInsertPosition();
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = chars;
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
-	textD->TextInsertAtCursorEx(chars, event, True, true);
+	textD->TextInsertAtCursorEx(chars, event, true, true);
 	textD->buffer->BufUnselect();
 }
 
 static void newlineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	if (text_of(w).autoIndent || text_of(w).smartIndent) {
+	if (text_of(w).autoIndentR || text_of(w).smartIndentR) {
 		newlineAndIndentAP(w, event, args, nArgs);
 	} else {
 		newlineNoIndentAP(w, event, args, nArgs);
@@ -1740,12 +1732,12 @@ static void newlineAndIndentAP(Widget w, XEvent *event, String *args, Cardinal *
 	// Insert it at the cursor
 	simpleInsertAtCursorEx(w, indentStr, event, true);
 
-	if (text_of(tw).emulateTabs > 0) {
+	if (text_of(tw).emulateTabsR > 0) {
 		/*  If emulated tabs are on, make the inserted indent deletable by
 		    tab. Round this up by faking the column a bit to the right to
 		    let the user delete half-tabs with one keypress.  */
-		column += text_of(tw).emulateTabs - 1;
-		text_of(tw).emTabsBeforeCursor = column / text_of(tw).emulateTabs;
+		column += text_of(tw).emulateTabsR - 1;
+		text_of(tw).emTabsBeforeCursor = column / text_of(tw).emulateTabsR;
 	}
 
 	buf->BufUnselect();
@@ -1759,7 +1751,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	TextSelection *sel = &buf->primary_;
-	int emTabDist = text_of(w).emulateTabs;
+	int emTabDist = text_of(w).emulateTabsR;
 	int emTabsBeforeCursor = text_of(w).emTabsBeforeCursor;
 	int insertPos, indent, startIndent, toIndent, lineStart, tabWidth;
 
@@ -1770,7 +1762,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 
 	// If emulated tabs are off, just insert a tab
 	if (emTabDist <= 0) {
-		textD->TextInsertAtCursorEx("\t", event, True, true);
+		textD->TextInsertAtCursorEx("\t", event, true, true);
 		return;
 	}
 
@@ -1809,7 +1801,7 @@ static void processTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	}
 
 	// Insert the emulated tab
-	textD->TextInsertAtCursorEx(outStr, event, True, true);
+	textD->TextInsertAtCursorEx(outStr, event, true, true);
 
 	// Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx
 	text_of(w).emTabsBeforeCursor = emTabsBeforeCursor + 1;
@@ -1856,7 +1848,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 	if (deleteEmulatedTab(w, event))
 		return;
 
-	if (text_of(w).overstrike) {
+	if (text_of(w).overstrikeR) {
 		c = textD->buffer->BufGetCharacter(insertPos - 1);
 		if (c == '\n')
 			textD->buffer->BufRemove(insertPos - 1, insertPos);
@@ -1897,7 +1889,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineStart = textD->buffer->BufStartOfLine(insertPos);
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -1931,7 +1923,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineEnd = textD->buffer->BufEndOfLine(insertPos);
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -1971,7 +1963,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 	if (hasKey("absolute", args, nArgs))
 		endOfLine = textD->buffer->BufEndOfLine(insertPos);
 	else
-		endOfLine = textD->TextDEndOfLine(insertPos, False);
+		endOfLine = textD->TextDEndOfLine(insertPos, false);
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
@@ -2046,7 +2038,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -2086,7 +2078,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -2272,7 +2264,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	if (hasKey("absolute", args, nArgs))
 		textD->TextDSetInsertPosition(textD->buffer->BufEndOfLine(insertPos));
 	else
-		textD->TextDSetInsertPosition(textD->TextDEndOfLine(insertPos, False));
+		textD->TextDSetInsertPosition(textD->TextDEndOfLine(insertPos, false));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2303,7 +2295,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
-		lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + text_of(w).cursorVPadding);
+		lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + text_of(w).cursorVPaddingR);
 		if (lastTopLine != textD->topLineNum) {
 			textD->TextDSetScroll(lastTopLine, textD->horizOffset);
 		}
@@ -2318,7 +2310,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
-	int lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + text_of(w).cursorVPadding);
+	int lastTopLine = std::max<int>(1, textD->nBufferLines - (textD->nVisibleLines - 2) + text_of(w).cursorVPaddingR);
 	int insertPos = textD->TextDGetInsertPosition();
 	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
@@ -2347,7 +2339,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 				return;
 			}
 			targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
-			pos = textD->TextDCountForwardNLines(insertPos, pageForwardCount, False);
+			pos = textD->TextDCountForwardNLines(insertPos, pageForwardCount, false);
 			if (maintainColumn) {
 				pos = textD->TextDPosOfPreferredCol(column, pos);
 			}
@@ -2389,7 +2381,7 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			targetLine = 1;
 		if (targetLine > lastTopLine)
 			targetLine = lastTopLine;
-		pos = textD->TextDCountForwardNLines(insertPos, textD->nVisibleLines - 1, False);
+		pos = textD->TextDCountForwardNLines(insertPos, textD->nVisibleLines - 1, false);
 		if (maintainColumn) {
 			pos = textD->TextDPosOfPreferredCol(column, pos);
 		}
@@ -2564,11 +2556,11 @@ static void toggleOverstrikeAP(Widget w, XEvent *event, String *args, Cardinal *
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (text_of(tw).overstrike) {
-		text_of(tw).overstrike = false;
-		textD_of(tw)->TextDSetCursorStyle(text_of(tw).heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+	if (text_of(tw).overstrikeR) {
+		text_of(tw).overstrikeR = false;
+		textD_of(tw)->TextDSetCursorStyle(text_of(tw).heavyCursorR ? HEAVY_CURSOR : NORMAL_CURSOR);
 	} else {
-		text_of(tw).overstrike = true;
+		text_of(tw).overstrikeR = true;
 		if (textD_of(tw)->cursorStyle == NORMAL_CURSOR || textD_of(tw)->cursorStyle == HEAVY_CURSOR)
 			textD_of(tw)->TextDSetCursorStyle(BLOCK_CURSOR);
 	}
@@ -2708,8 +2700,8 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
 	(void)unused1;
 	(void)unused2;
 
-	TextWidget textwidget = (TextWidget)widget;
-	TextDisplay *textD = textD_of(textwidget);
+	auto tw = reinterpret_cast<TextWidget>(widget);
+	TextDisplay *textD = textD_of(tw);
 
 /* I don't entirely understand the traversal mechanism in Motif widgets,
    particularly, what leads to this widget getting a focus-in event when
@@ -2720,15 +2712,17 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
 		return;
 
 	// If the timer is not already started, start it
-	if (text_of(textwidget).cursorBlinkRate != 0 && text_of(textwidget).cursorBlinkProcID == 0) {
-		text_of(textwidget).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(widget), text_of(textwidget).cursorBlinkRate, cursorBlinkTimerProc, widget);
+	if (text_of(tw).cursorBlinkRateR != 0 && text_of(tw).cursorBlinkProcID == 0) {
+		text_of(tw).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(widget), text_of(tw).cursorBlinkRateR, cursorBlinkTimerProc, widget);
 	}
 
 	// Change the cursor to active style
-	if (text_of(textwidget).overstrike)
+	if (text_of(tw).overstrikeR) {
 		textD->TextDSetCursorStyle(BLOCK_CURSOR);
-	else
-		textD->TextDSetCursorStyle((text_of(textwidget).heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR));
+	} else {
+		textD->TextDSetCursorStyle((text_of(tw).heavyCursorR ? HEAVY_CURSOR : NORMAL_CURSOR));
+	}
+	
 	textD->TextDUnblankCursor();
 
 	// Notify Motif input manager that widget has focus
@@ -2860,7 +2854,7 @@ static void simpleInsertAtCursorEx(Widget w, view::string_view chars, XEvent *ev
 	if (allowPendingDelete && pendingSelection(w)) {
 		buf->BufReplaceSelectedEx(chars);
 		textD->TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (text_of(w).overstrike) {
+	} else if (text_of(w).overstrikeR) {
 
 		size_t index = chars.find('\n');
 		if(index != view::string_view::npos) {
@@ -2905,7 +2899,7 @@ static int pendingSelection(Widget w) {
 	TextSelection *sel = &textD_of(w)->buffer->primary_;
 	int pos = textD_of(w)->TextDGetInsertPosition();
 
-	return text_of(w).pendingDelete && sel->selected && pos >= sel->start && pos <= sel->end;
+	return text_of(w).pendingDeleteR && sel->selected && pos >= sel->start && pos <= sel->end;
 }
 
 /*
@@ -2918,7 +2912,7 @@ static int pendingSelection(Widget w) {
 static int deleteEmulatedTab(Widget w, XEvent *event) {
 	TextDisplay *textD        = textD_of(w);
 	TextBuffer *buf        = textD_of(w)->buffer;
-	int emTabDist          = text_of(w).emulateTabs;
+	int emTabDist          = text_of(w).emulateTabsR;
 	int emTabsBeforeCursor = text_of(w).emTabsBeforeCursor;
 	int startIndent, toIndent, insertPos, startPos, lineStart;
 	int pos, indent, startPosIndent;
@@ -3001,14 +2995,14 @@ static void selectWord(Widget w, int pointerX) {
 static int startOfWord(TextWidget w, int pos) {
 	int startPos;
 	TextBuffer *buf = textD_of(w)->buffer;
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
-		if (!spanBackward(buf, pos, " \t", False, &startPos))
+		if (!spanBackward(buf, pos, " \t", false, &startPos))
 			return 0;
 	} else if (strchr(delimiters, c)) {
-		if (!spanBackward(buf, pos, delimiters, True, &startPos))
+		if (!spanBackward(buf, pos, delimiters, true, &startPos))
 			return 0;
 	} else {
 		if (!buf->BufSearchBackwardEx(pos, delimiters, &startPos))
@@ -3020,14 +3014,14 @@ static int startOfWord(TextWidget w, int pos) {
 static int endOfWord(TextWidget w, int pos) {
 	int endPos;
 	TextBuffer *buf = textD_of(w)->buffer;
-	char *delimiters = text_of(w).delimiters;
+	char *delimiters = text_of(w).delimitersR;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
-		if (!spanForward(buf, pos, " \t", False, &endPos))
+		if (!spanForward(buf, pos, " \t", false, &endPos))
 			return buf->BufGetLength();
 	} else if (strchr(delimiters, c)) {
-		if (!spanForward(buf, pos, delimiters, True, &endPos))
+		if (!spanForward(buf, pos, delimiters, true, &endPos))
 			return buf->BufGetLength();
 	} else {
 		if (!buf->BufSearchForwardEx(pos, delimiters, &endPos))
@@ -3039,7 +3033,7 @@ static int endOfWord(TextWidget w, int pos) {
 /*
 ** Search forwards in buffer "buf" for the first character NOT in
 ** "searchChars",  starting with the character "startPos", and returning the
-** result in "foundPos" returns True if found, False if not. If ignoreSpace
+** result in "foundPos" returns True if found, false if not. If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
 static int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
@@ -3065,7 +3059,7 @@ static int spanForward(TextBuffer *buf, int startPos, const char *searchChars, i
 /*
 ** Search backwards in buffer "buf" for the first character NOT in
 ** "searchChars",  starting with the character BEFORE "startPos", returning the
-** result in "foundPos" returns True if found, False if not. If ignoreSpace is
+** result in "foundPos" returns True if found, false if not. If ignoreSpace is
 ** set, then Space, Tab, and Newlines are ignored in searchChars.
 */
 static int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
@@ -3116,7 +3110,7 @@ static void checkAutoScroll(TextWidget w, int x, int y) {
 	int inWindow;
 
 	// Is the pointer in or out of the window?
-	inWindow = x >= textD_of(w)->left && x < w->core.width - text_of(w).marginWidth && y >= text_of(w).marginHeight && y < w->core.height - text_of(w).marginHeight;
+	inWindow = x >= textD_of(w)->left && x < w->core.width - text_of(w).marginWidthR && y >= text_of(w).marginHeightR && y < w->core.height - text_of(w).marginHeightR;
 
 	// If it's in the window, cancel the timer procedure
 	if (inWindow) {
@@ -3232,7 +3226,7 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 	   through the buffer, and reconciling that with wrapping changes made,
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
-	if (text_of(tw).smartIndent && (lineStartPos == 0 || buf == textD->buffer)) {
+	if (text_of(tw).smartIndentR && (lineStartPos == 0 || buf == textD->buffer)) {
 		smartIndent.reason = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
@@ -3305,14 +3299,14 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
 	   for each fontHeight distance from the mouse to the text (vertical) */
 	textD->TextDGetScroll(&topLineNum, &horizOffset);
-	if (cursorX >= (int)w->core.width - text_of(w).marginWidth)
+	if (cursorX >= (int)w->core.width - text_of(w).marginWidthR)
 		horizOffset += fontWidth;
 	else if (text_of(w).mouseCoord.x < textD->left)
 		horizOffset -= fontWidth;
-	if (text_of(w).mouseCoord.y >= (int)w->core.height - text_of(w).marginHeight)
-		topLineNum += 1 + ((text_of(w).mouseCoord.y - (int)w->core.height - text_of(w).marginHeight) / fontHeight) + 1;
-	else if (text_of(w).mouseCoord.y < text_of(w).marginHeight)
-		topLineNum -= 1 + ((text_of(w).marginHeight - text_of(w).mouseCoord.y) / fontHeight);
+	if (text_of(w).mouseCoord.y >= (int)w->core.height - text_of(w).marginHeightR)
+		topLineNum += 1 + ((text_of(w).mouseCoord.y - (int)w->core.height - text_of(w).marginHeightR) / fontHeight) + 1;
+	else if (text_of(w).mouseCoord.y < text_of(w).marginHeightR)
+		topLineNum -= 1 + ((text_of(w).marginHeightR - text_of(w).mouseCoord.y) / fontHeight);
 	textD->TextDSetScroll(topLineNum, horizOffset);
 
 	/* Continue the drag operation in progress.  If none is in progress
@@ -3334,7 +3328,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	// re-establish the timer proc (this routine) to continue processing
 	text_of(w).autoScrollProcID =
-	    XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).mouseCoord.y >= text_of(w).marginHeight && text_of(w).mouseCoord.y < w->core.height - text_of(w).marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
+	    XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).mouseCoord.y >= text_of(w).marginHeightR && text_of(w).mouseCoord.y < w->core.height - text_of(w).marginHeightR ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 	                    autoScrollTimerProc, w);
 }
 
@@ -3354,7 +3348,7 @@ static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 		textD->TextDUnblankCursor();
 
 	// re-establish the timer proc (this routine) to continue processing
-	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).cursorBlinkRate, cursorBlinkTimerProc, w);
+	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).cursorBlinkRateR, cursorBlinkTimerProc, w);
 }
 
 

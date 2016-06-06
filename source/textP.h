@@ -75,55 +75,59 @@ extern TextClassRec nTextClassRec;
 class TextPart {
 public:
 	/* resources */
-	Pixel selectFGPixel;
-	Pixel selectBGPixel;
-	Pixel highlightFGPixel;
-	Pixel highlightBGPixel;
-	Pixel cursorFGPixel;
-	Pixel lineNumFGPixel;
-	Pixel calltipFGPixel;
-	Pixel calltipBGPixel;
-	XFontStruct *fontStruct;
-	Boolean pendingDelete;
-	Boolean autoShowInsertPos;
-	Boolean autoWrap;
-	Boolean autoWrapPastedText;
-	Boolean continuousWrap;
-	Boolean autoIndent;
-	Boolean smartIndent;
-	Boolean overstrike;
-	Boolean heavyCursor;
-	Boolean readOnly;
-	Boolean hidePointer;
-	int rows;
-	int columns;
-	int marginWidth;
-	int marginHeight;
-	int cursorBlinkRate;
-	int wrapMargin;
-	int emulateTabs;
-	int lineNumCols;
-	char *delimiters;
-	Cardinal cursorVPadding;
-	Widget hScrollBar;
-	Widget vScrollBar;
+	Pixel selectFGPixelR;
+	Pixel selectBGPixelR;
+	Pixel highlightFGPixelR;
+	Pixel highlightBGPixelR;
+	Pixel cursorFGPixelR;
+	Pixel lineNumFGPixelR;
+	Pixel calltipFGPixelR;
+	Pixel calltipBGPixelR;
+	XFontStruct *fontStructR;
+	Boolean pendingDeleteR;
+	Boolean autoShowInsertPosR;
+	Boolean autoWrapR;
+	Boolean autoWrapPastedTextR;
+	Boolean continuousWrapR;
+	Boolean autoIndentR;
+	Boolean smartIndentR;
+	Boolean overstrikeR;
+	Boolean heavyCursorR;
+	Boolean readOnlyR;
+	Boolean hidePointerR;
+	int rowsR;
+	int columnsR;
+	int marginWidthR;
+	int marginHeightR;
+	int cursorBlinkRateR;
+	int wrapMarginR;
+	int emulateTabsR;
+	int lineNumColsR;
+	char *delimitersR;
+	Cardinal cursorVPaddingR;
+	Widget hScrollBarR;
+	Widget vScrollBarR;
 	XtCallbackList focusInCB;
 	XtCallbackList focusOutCB;
 	XtCallbackList cursorCB;
 	XtCallbackList dragStartCB;
 	XtCallbackList dragEndCB;
 	XtCallbackList smartIndentCB;
+	
+	/* was private, but looks like a resource */
+	XmString backlightCharTypesR;   // background class string to parse
 
 
 	/* private state */
 	TextDisplay *textD;             // Pointer to display information
-	int anchor, rectAnchor;         // Anchors for drag operations and rectangular drag operations
+	int anchor;                     // Anchor for drag operations
+	int rectAnchor;                 // Anchor for rectangular drag operations
 	int dragState;                  // Why is the mouse being dragged and what is being acquired
 	int multiClickState;            // How long is this multi-click sequence so far
 	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
 	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
-	bool selectionOwner;             // True if widget owns the selection
+	bool selectionOwner;            // True if widget owns the selection
 	int motifDestOwner;             // " " owns the motif destination
 	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
@@ -139,7 +143,6 @@ public:
 	int dragSourceInserted;         // # of chars. inserted when move source text was deleted
 	int dragSourceDeleted;          // # of chars. deleted ""
 	int dragNLines;                 // # of newlines in text being drag'd
-	XmString backlightCharTypes;    // background class string to parse
 };
 
 struct TextRec {

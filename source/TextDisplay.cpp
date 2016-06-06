@@ -55,9 +55,6 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 
-// Macro for getting the TextPart from a textD
-#define TEXT_OF_TEXTD(t) (reinterpret_cast<TextWidget>((t)->w)->text)
-
 namespace {
 
 /* temporary structure for passing data to the event handler for completing
@@ -190,7 +187,7 @@ int min3(int i1, int i2, int i3) {
 }
 
 int max3(int i1, int i2, int i3) {
-	return std::max(i1, std::max(i2, i3));
+    return std::max(i1, std::max(i2, i3));
 }
 
 /*
@@ -283,7 +280,7 @@ void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *t
 	}
 
 	// Insert it in the text widget 
-	textD->TextInsertAtCursorEx(string, nullptr, true, text_of(w).autoWrapPastedText);
+	textD->TextInsertAtCursorEx(string, nullptr, true, text_of(w).autoWrapPastedTextR);
 	*resultFlag = SUCCESSFUL_INSERT;
 
 	// This callback is required to free the memory passed to it thru value 
@@ -353,7 +350,7 @@ Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 	   2) initiate a get value request for the selection and target named
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (text_of(w).readOnly)
+		if (text_of(w).readOnlyR)
 			return False;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
@@ -488,7 +485,7 @@ void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, X
 		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
 		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
 	} else
-		textD->TextInsertAtCursorEx(string, nullptr, False, text_of(w).autoWrapPastedText);
+		textD->TextInsertAtCursorEx(string, nullptr, False, text_of(w).autoWrapPastedTextR);
 
 	/* The selection requstor is required to free the memory passed
 	   to it via value */
@@ -724,7 +721,7 @@ Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 	   2) initiate a get value request for the selection and target named
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (text_of(w).readOnly)
+		if (text_of(w).readOnlyR)
 			return False;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
 			return False;
@@ -1172,7 +1169,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (canRedraw && oldVisibleLines < newVisibleLines && this->topLineNum + this->nVisibleLines > this->nBufferLines)
-		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding), this->horizOffset, False, false);
+		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + text_of(w).cursorVPaddingR), this->horizOffset, False, false);
 
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters.  If updating the horizontal range caused scrolling,
@@ -1306,7 +1303,7 @@ void TextDisplay::textDRedisplayRange(int start, int end) {
 */
 void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
 	int sliderSize, sliderMax;
-	int vPadding = (int)(TEXT_OF_TEXTD(this).cursorVPadding);
+	int vPadding = (int)(text_of(w).cursorVPaddingR);
 
 	// Limit the requested scroll position to allowable values
 	if (topLineNum < 1)
@@ -1712,13 +1709,13 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	int hOffset, topLine, x, y;
 	int cursorPos = this->cursorPos;
 	int linesFromTop = 0;
-	int cursorVPadding = (int)TEXT_OF_TEXTD(this).cursorVPadding;
+	int cursorVPadding = (int)text_of(w).cursorVPaddingR;
 
 	hOffset = this->horizOffset;
 	topLine = this->topLineNum;
 
 	// Don't do padding if this is a mouse operation
-	bool do_padding = ((TEXT_OF_TEXTD(this).dragState == NOT_CLICKED) && (cursorVPadding > 0));
+	bool do_padding = ((text_of(w).dragState == NOT_CLICKED) && (cursorVPadding > 0));
 
 	// Find the new top line number
 	if (cursorPos < this->firstChar) {
@@ -3262,7 +3259,7 @@ void TextDisplay::updateVScrollBarRange() {
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
 	sliderSize = std::max<int>(this->nVisibleLines, 1); // Avoid X warning (size < 1)
 	sliderValue = this->topLineNum;
-	sliderMax = std::max<int>(this->nBufferLines + 2 + TEXT_OF_TEXTD(this).cursorVPadding, sliderSize + sliderValue);
+	sliderMax = std::max<int>(this->nBufferLines + 2 + text_of(w).cursorVPaddingR, sliderSize + sliderValue);
 	XtVaSetValues(this->vScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max<int>(1, this->nVisibleLines - 1), XmNvalue, sliderValue, nullptr);
 }
 
@@ -4229,7 +4226,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 
 	TextBuffer *buf = this->buffer;
 
-	if (!TEXT_OF_TEXTD(this).continuousWrap || startPos == endPos) {
+	if (!text_of(w).continuousWrapR || startPos == endPos) {
 		return buf->BufGetRangeEx(startPos, endPos);
 	}
 
@@ -4372,7 +4369,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	int replaceSel, singleLine, breakAt = 0;
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
-	if (!allowWrap || !text_of(tw).autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
+	if (!allowWrap || !text_of(tw).autoWrapR || (chars[0] == '\n' && chars[1] == '\0')) {
 		simpleInsertAtCursorEx(chars, event, allowPendingDelete);
 		return;
 	}
@@ -4388,7 +4385,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	   it and be done (for efficiency only, this routine is called for each
 	   character typed). (Of course, it may not be significantly more efficient
 	   than the more general code below it, so it may be a waste of time!) */
-	wrapMargin = text_of(tw).wrapMargin != 0 ? text_of(tw).wrapMargin : this->width / fontWidth;
+	wrapMargin = text_of(tw).wrapMarginR != 0 ? text_of(tw).wrapMarginR : this->width / fontWidth;
 	lineStartPos = buf->BufStartOfLine(cursorPos);
 	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
 
@@ -4412,7 +4409,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	if (replaceSel) {
 		buf->BufReplaceSelectedEx(wrappedText);
 		TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (text_of(tw).overstrike) {
+	} else if (text_of(tw).overstrikeR) {
 		if (breakAt == 0 && singleLine)
 			TextDOverstrikeEx(wrappedText);
 		else {
@@ -4510,7 +4507,7 @@ void TextDisplay::simpleInsertAtCursorEx(view::string_view chars, XEvent *event,
 	if (allowPendingDelete && pendingSelection()) {
 		buf->BufReplaceSelectedEx(chars);
 		TextDSetInsertPosition(buf->cursorPosHint_);
-	} else if (TEXT_OF_TEXTD(this).overstrike) {
+	} else if (text_of(w).overstrikeR) {
 
 		size_t index = chars.find('\n');
 		if(index != view::string_view::npos) {
@@ -4537,7 +4534,7 @@ int TextDisplay::pendingSelection() {
 	TextSelection *sel = &this->buffer->primary_;
 	int pos = TextDGetInsertPosition();
 
-	return TEXT_OF_TEXTD(this).pendingDelete && sel->selected && pos >= sel->start && pos <= sel->end;
+	return text_of(w).pendingDeleteR && sel->selected && pos >= sel->start && pos <= sel->end;
 }
 
 /*
@@ -4579,7 +4576,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	   indent string reaches the wrap position, slice the auto-indent
 	   back off and return to the left margin */
 	std::string indentStr;
-	if (text_of(tw).autoIndent || text_of(tw).smartIndent) {
+	if (text_of(tw).autoIndentR || text_of(tw).smartIndentR) {
 		indentStr = createIndentStringEx(buf, bufOffset, lineStartPos, lineEndPos, &length, &column);
 		if (column >= p - lineStartPos) {
 			indentStr.resize(1);
@@ -4622,7 +4619,7 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 	   through the buffer, and reconciling that with wrapping changes made,
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
-	if (text_of(tw).smartIndent && (lineStartPos == 0 || buf == this->buffer)) {
+	if (text_of(tw).smartIndentR && (lineStartPos == 0 || buf == this->buffer)) {
 		smartIndent.reason = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
@@ -4680,7 +4677,7 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (text_of(tw).cursorBlinkRate != 0) {
+	if (text_of(tw).cursorBlinkRateR != 0) {
 		if (text_of(tw).cursorBlinkProcID != 0) {
 			XtRemoveTimeOut(text_of(tw).cursorBlinkProcID);
 		}
@@ -4691,7 +4688,7 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 			TextDUnblankCursor();
 		}
 
-		text_of(tw).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), text_of(tw).cursorBlinkRate, cursorBlinkTimerProc, tw);
+		text_of(tw).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), text_of(tw).cursorBlinkRateR, cursorBlinkTimerProc, tw);
 	}
 }
 
@@ -4711,7 +4708,7 @@ void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 		textD->TextDUnblankCursor();
 
 	// re-establish the timer proc (this routine) to continue processing
-	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).cursorBlinkRate, cursorBlinkTimerProc, w);
+	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).cursorBlinkRateR, cursorBlinkTimerProc, w);
 }
 
 
@@ -4719,7 +4716,7 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (text_of(tw).hidePointer) {
+	if (text_of(tw).hidePointerR) {
 		if (hidePointer != this->pointerHidden) {
 			if (hidePointer) {
 				// Don't listen for keypresses any more
@@ -4797,7 +4794,7 @@ void TextDisplay::TextHandleXSelections() {
 
 
 bool TextDisplay::checkReadOnly() const {
-	if (TEXT_OF_TEXTD(this).readOnly) {
+	if (text_of(w).readOnlyR) {
 		QApplication::beep();
 		return true;
 	}
@@ -4812,10 +4809,10 @@ bool TextDisplay::checkReadOnly() const {
 ** a drag operation)
 */
 void TextDisplay::cancelDrag() {
-	int dragState = TEXT_OF_TEXTD(this).dragState;
+	int dragState = text_of(w).dragState;
 
-	if (TEXT_OF_TEXTD(this).autoScrollProcID != 0)
-		XtRemoveTimeOut(TEXT_OF_TEXTD(this).autoScrollProcID);
+	if (text_of(w).autoScrollProcID != 0)
+		XtRemoveTimeOut(text_of(w).autoScrollProcID);
 
 	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG) {
 		this->buffer->BufSecondaryUnselect();
@@ -4830,14 +4827,14 @@ void TextDisplay::cancelDrag() {
 	}
 		
 	if (dragState != NOT_CLICKED) {
-		TEXT_OF_TEXTD(this).dragState = DRAG_CANCELED;
+		text_of(w).dragState = DRAG_CANCELED;
 	}
 }
 
 
 void TextDisplay::checkAutoShowInsertPos() {
 
-	if (text_of(w).autoShowInsertPos) {
+	if (text_of(w).autoShowInsertPosR) {
 		this->TextDMakeInsertPosVisible();
 	}
 }
@@ -4848,7 +4845,7 @@ void TextDisplay::checkAutoShowInsertPos() {
 ** more just-entered emulated tabs (spaces to be deleted as a unit).
 */
 void TextDisplay::callCursorMovementCBs(XEvent *event) {
-	TEXT_OF_TEXTD(this).emTabsBeforeCursor = 0;
+	text_of(w).emTabsBeforeCursor = 0;
 	XtCallCallbacks((Widget)w, textNcursorMovementCallback, (XtPointer)event);
 }
 
@@ -5064,7 +5061,7 @@ void TextDisplay::BeginBlockDrag() {
 	}
 	mousePos = this->TextDXYToPosition(Point{text_of(w).btnDownCoord.x, text_of(w).btnDownCoord.y});
 	nLines = buf->BufCountLines(sel->start, mousePos);
-	text_of(w).dragYOffset = nLines * fontHeight + (((text_of(w).btnDownCoord.y - text_of(w).marginHeight) % fontHeight) - fontHeight / 2);
+	text_of(w).dragYOffset = nLines * fontHeight + (((text_of(w).btnDownCoord.y - text_of(w).marginHeightR) % fontHeight) - fontHeight / 2);
 	text_of(w).dragNLines = buf->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for
@@ -5335,7 +5332,7 @@ void TextDisplay::FinishBlockDrag() {
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
 
 	// Get the original (pre-modified) range of text from saved backup buffer 
-	view::string_view deletedText = text_of(w).dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
+	std::string deletedText = text_of(w).dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
 
 	// Free the backup buffer 
 	delete text_of(w).dragOrigBuf;
@@ -5455,16 +5452,16 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 		cursorPos = this->TextDGetInsertPosition();
 		cursorLineStart = buf->BufStartOfLine(cursorPos);
 		column = buf->BufCountDispChars(cursorLineStart, cursorPos);
-		if (text_of(w).overstrike) {
+		if (text_of(w).overstrikeR) {
 			buf->BufOverlayRectEx(cursorLineStart, column, -1, contents, nullptr, nullptr);
 		} else {
 			buf->BufInsertColEx(column, cursorLineStart, contents, nullptr, nullptr);
 		}
 		this->TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
-		if (text_of(w).autoShowInsertPos)
+		if (text_of(w).autoShowInsertPosR)
 			this->TextDMakeInsertPosVisible();
 	} else
-		this->TextInsertAtCursorEx(contents, nullptr, true, text_of(w).autoWrapPastedText);
+		this->TextInsertAtCursorEx(contents, nullptr, true, text_of(w).autoWrapPastedTextR);
 }
 
 
@@ -5626,7 +5623,7 @@ void TextDisplay::SendSecondarySelection(Time time, bool removeAfter) {
 */
 void TextDisplay::TakeMotifDestination(Time time) {
 
-	if (text_of(w).motifDestOwner || text_of(w).readOnly)
+	if (text_of(w).motifDestOwner || text_of(w).readOnlyR)
 		return;
 
 	// Take ownership of the MOTIF_DESTINATION selection 

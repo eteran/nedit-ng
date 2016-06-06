@@ -125,12 +125,20 @@ public:
 public:
 	template <class A = std::allocator<Ch>>
 	std::basic_string<Ch, Tr, A> to_string(const A &a = A()) const {
-		return std::basic_string<Ch, Tr, A>(data_, size_, a);
+		if(data_ && size_ != 0) {
+			return std::basic_string<Ch, Tr, A>(data_, size_, a);
+		} else {
+			return std::basic_string<Ch, Tr, A>(a);
+		}
 	}
 	
 	template <class A>
 	explicit operator std::basic_string<Ch, Tr, A>() const {
-		return std::basic_string<Ch, Tr, A>(data_, size_);
+		if(data_ && size_ != 0) {
+			return std::basic_string<Ch, Tr, A>(data_, size_);
+		} else {
+			return std::basic_string<Ch, Tr, A>();
+		}
 	}
 	
 public:

@@ -16,7 +16,7 @@ class WindowHighlightData {
 public:
 	HighlightData*   pass1Patterns;
 	HighlightData*   pass2Patterns;
-	QString          parentStyles;
+	QByteArray       parentStyles;
 	ReparseContext   contextRequirements;
 	StyleTableEntry* styleTable;
 	int              nStyles;
