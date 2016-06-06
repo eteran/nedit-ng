@@ -552,14 +552,6 @@ static XtResource resources[] = {
 	{ textNwordDelimiters,         textCWordDelimiters,         XmRString,     sizeof(char *),        XtOffset(TextWidget, text.P_delimiters),              XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?" },
 	{ textNblinkRate,              textCBlinkRate,              XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_cursorBlinkRate),         XmRString, (String) "500"                            },
 	{ textNemulateTabs,            textCEmulateTabs,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_emulateTabs),             XmRString, (String) "0"                              },
-#if 0
-	{ textNfocusCallback,          textCFocusCallback,          XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_focusInCB),               XtRCallback, nullptr								 },
-	{ textNlosingFocusCallback,    textCLosingFocusCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_focusOutCB),              XtRCallback, nullptr								 },
-	{ textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_cursorCB),                XtRCallback, nullptr								 },
-	{ textNdragStartCallback,      textCDragStartCallback,      XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_dragStartCB),             XtRCallback, nullptr								 },
-	{ textNdragEndCallback,        textCDragEndCallback,        XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_dragEndCB),               XtRCallback, nullptr								 },
-	{ textNsmartIndentCallback,    textCSmartIndentCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_smartIndentCB),           XtRCallback, nullptr								 },
-#endif
 	{ textNcursorVPadding,         textCCursorVPadding,         XtRCardinal,   sizeof(Cardinal),      XtOffset(TextWidget, text.P_cursorVPadding),          XmRString, (String) "0"                              }
 };
 
@@ -580,10 +572,10 @@ static TextClassRec textClassRec = {
 		resources,                         // resources
 		XtNumber(resources),               // num_resources
 		NULLQUARK,                         // xrm_class
-		TRUE,                              // compress_motion
-		TRUE,                              // compress_exposure
-		TRUE,                              // compress_enterleave
-		FALSE,                             // visible_interest
+		true,                              // compress_motion
+		true,                              // compress_exposure
+		true,                              // compress_enterleave
+		false,                             // visible_interest
 		(XtWidgetProc)destroy,             // destroy
 		(XtWidgetProc)resize,              // resize
 		(XtExposeProc)redisplay,           // expose
@@ -616,10 +608,14 @@ static TextClassRec textClassRec = {
 };
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
-#define NEDIT_HIDE_CURSOR_MASK (KeyPressMask)
-#define NEDIT_SHOW_CURSOR_MASK (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask)
-static char empty_bits[] = {0x00, 0x00, 0x00, 0x00};
-static Cursor empty_cursor = 0;
+
+namespace {
+const int NEDIT_HIDE_CURSOR_MASK = (KeyPressMask);
+const int NEDIT_SHOW_CURSOR_MASK = (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask);
+char empty_bits[] = {0x00, 0x00, 0x00, 0x00};
+Cursor empty_cursor = 0;
+
+}
 
 /*
 ** Widget initialize method
@@ -632,7 +628,6 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	auto new_widget = reinterpret_cast<TextWidget>(newWidget);
 
 	XFontStruct *fs = text_of(new_widget).P_fontStruct;
-	int textLeft;
 	int charWidth   = fs->max_bounds.width;
 	int marginWidth = text_of(new_widget).P_marginWidth;
 	int lineNumCols = text_of(new_widget).P_lineNumCols;
@@ -664,7 +659,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	auto buf = new TextBuffer;
 
 	// Create and initialize the text-display part of the widget
-	textLeft = text_of(new_widget).P_marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+	int textLeft = text_of(new_widget).P_marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 
 	textD_of(new_widget) = new TextDisplay(
 		newWidget,

@@ -107,14 +107,7 @@ public:
 	Cardinal       P_cursorVPadding;
 	Widget         P_hScrollBar;
 	Widget         P_vScrollBar;
-#if 0
-	XtCallbackList P_focusInCB;
-	XtCallbackList P_focusOutCB;
-	XtCallbackList P_cursorCB;
-	XtCallbackList P_dragStartCB;
-	XtCallbackList P_dragEndCB;
-	XtCallbackList P_smartIndentCB;
-#endif
+
 	/* was private, but looks like a resource */
 	XmString P_backlightCharTypes;   // background class string to parse
 
