@@ -320,6 +320,20 @@ public:
 	int modifyingTabDist;                        // Whether tab distance is being modified
 	bool pointerHidden;                          // true if the mouse pointer is hidden
 	graphicExposeTranslationEntry *graphicsExposeQueue_;
+	
+	
+	TextBuffer *dragOrigBuf;        // backup buffer copy used during block dragging of selections
+	int dragXOffset;                // offsets between cursor location and actual insertion point in drag
+	int dragYOffset;                // offsets between cursor location and actual insertion point in drag
+	int dragType;                   // style of block drag operation
+	int dragInsertPos;              // location where text being block dragged was last inserted
+	int dragRectStart;              // rect. offset ""
+	int dragInserted;               // # of characters inserted at drag destination in last drag position
+	int dragDeleted;                // # of characters deleted ""
+	int dragSourceDeletePos;        // location from which move source text was removed at start of drag
+	int dragSourceInserted;         // # of chars. inserted when move source text was deleted
+	int dragSourceDeleted;          // # of chars. deleted ""
+	int dragNLines;                 // # of newlines in text being drag'd
 };
 
 #endif

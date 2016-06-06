@@ -108,8 +108,16 @@ public:
 	Widget         P_hScrollBar;
 	Widget         P_vScrollBar;
 
-	/* was private, but looks like a resource */
+	/* was "private", but looks like a resource */
 	XmString P_backlightCharTypes;   // background class string to parse
+	
+	// these are set indirectly in Document::createTextArea
+	XtCallbackList P_focusInCB;		
+	XtCallbackList P_focusOutCB;		
+	XtCallbackList P_cursorCB;		
+	XtCallbackList P_dragStartCB;		
+	XtCallbackList P_dragEndCB;		
+	XtCallbackList P_smartIndentCB;	
 
 
 	/* private state */
@@ -122,21 +130,10 @@ public:
 	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
 	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner;            // True if widget owns the selection
-	int motifDestOwner;             // " " owns the motif destination
+	bool motifDestOwner;            // " "            owns the motif destination
 	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
 	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink
-	TextBuffer *dragOrigBuf;        // backup buffer copy used during block dragging of selections
-	int dragXOffset, dragYOffset;   // offsets between cursor location and actual insertion point in drag
-	int dragType;                   // style of block drag operation
-	int dragInsertPos;              // location where text being block dragged was last inserted
-	int dragRectStart;              // rect. offset ""
-	int dragInserted;               // # of characters inserted at drag destination in last drag position
-	int dragDeleted;                // # of characters deleted ""
-	int dragSourceDeletePos;        // location from which move source text was removed at start of drag
-	int dragSourceInserted;         // # of chars. inserted when move source text was deleted
-	int dragSourceDeleted;          // # of chars. deleted ""
-	int dragNLines;                 // # of newlines in text being drag'd
 };
 
 struct TextRec {

@@ -253,8 +253,9 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 
 	/* When the program needs to make a change to a text area without without
 	   recording it for undo or marking file as changed it sets ignoreModify */
-	if (window->ignoreModify_ || (nDeleted == 0 && nInserted == 0))
+	if (window->ignoreModify_ || (nDeleted == 0 && nInserted == 0)) {
 		return;
+	}
 
 	// Make sure line number display is sufficient for new data 
 	window->updateLineNumDisp();
@@ -307,8 +308,9 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	auto textD = textD_of(w);
 
-	if (window->ignoreModify_)
+	if (window->ignoreModify_) {
 		return;
+	}
 
 	// update line and column nubers in statistics line 
 	window->UpdateStatsLine();
@@ -4026,12 +4028,17 @@ void Document::addUndoItem(UndoInfo *undo) {
 	undoMemUsed_ += undo->oldLen;
 
 	// Trim the list if it exceeds any of the limits 
-	if (undo_.size() > UNDO_OP_LIMIT)
+	if (undo_.size() > UNDO_OP_LIMIT) {
 		trimUndoList(UNDO_OP_TRIMTO);
-	if (undoMemUsed_ > UNDO_WORRY_LIMIT)
+	}
+	
+	if (undoMemUsed_ > UNDO_WORRY_LIMIT) {
 		trimUndoList(UNDO_WORRY_TRIMTO);
-	if (undoMemUsed_ > UNDO_PURGE_LIMIT)
+	}
+	
+	if (undoMemUsed_ > UNDO_PURGE_LIMIT) {
 		trimUndoList(UNDO_PURGE_TRIMTO);
+	}
 }
 
 /*
@@ -4410,11 +4417,11 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
 	// add focus, drag, cursor tracking, and smart indent callbacks 
-	XtAddCallback(text, textNfocusCallback, focusCB, window);
-	XtAddCallback(text, textNcursorMovementCallback, movedCB, window);
-	XtAddCallback(text, textNdragStartCallback, dragStartCB, window);
-	XtAddCallback(text, textNdragEndCallback, dragEndCB, window);
-	XtAddCallback(text, textNsmartIndentCallback, SmartIndentCB, window);
+	XtAddCallback(text, textNfocusCallback,          focusCB,       window);
+	XtAddCallback(text, textNcursorMovementCallback, movedCB,       window);
+	XtAddCallback(text, textNdragStartCallback,      dragStartCB,   window);
+	XtAddCallback(text, textNdragEndCallback,        dragEndCB,     window);
+	XtAddCallback(text, textNsmartIndentCallback,    SmartIndentCB, window);
 
 	/* This makes sure the text area initially has a the insert point shown
 	   ... (check if still true with the nedit text widget, probably not) */

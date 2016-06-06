@@ -552,7 +552,13 @@ static XtResource resources[] = {
 	{ textNwordDelimiters,         textCWordDelimiters,         XmRString,     sizeof(char *),        XtOffset(TextWidget, text.P_delimiters),              XmRString, (String) ".,/\\`'!@#%^&*()-=+{}[]\":;<>?" },
 	{ textNblinkRate,              textCBlinkRate,              XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_cursorBlinkRate),         XmRString, (String) "500"                            },
 	{ textNemulateTabs,            textCEmulateTabs,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_emulateTabs),             XmRString, (String) "0"                              },
-	{ textNcursorVPadding,         textCCursorVPadding,         XtRCardinal,   sizeof(Cardinal),      XtOffset(TextWidget, text.P_cursorVPadding),          XmRString, (String) "0"                              }
+	{ textNcursorVPadding,         textCCursorVPadding,         XtRCardinal,   sizeof(Cardinal),      XtOffset(TextWidget, text.P_cursorVPadding),          XmRString, (String) "0"                              },	
+	{ textNfocusCallback,          textCFocusCallback,          XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_focusInCB),               XtRCallback, nullptr								 },		
+	{ textNlosingFocusCallback,    textCLosingFocusCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_focusOutCB),              XtRCallback, nullptr								 },		
+	{ textNcursorMovementCallback, textCCursorMovementCallback, XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_cursorCB),                XtRCallback, nullptr								 },		
+	{ textNdragStartCallback,      textCDragStartCallback,      XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_dragStartCB),             XtRCallback, nullptr								 },		
+	{ textNdragEndCallback,        textCDragEndCallback,        XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_dragEndCB),               XtRCallback, nullptr								 },		
+	{ textNsmartIndentCallback,    textCSmartIndentCallback,    XmRCallback,   sizeof(XtPointer),     XtOffset(TextWidget, text.P_smartIndentCB),           XtRCallback, nullptr								 },	
 };
 
 static TextClassRec textClassRec = {
@@ -1265,10 +1271,11 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	/* Decide whether the mouse has moved far enough from the
 	   initial mouse down to be considered a drag */
 	if (text_of(tw).dragState == CLICKED_IN_SELECTION) {
-		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD)
+		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD) {
 			textD->BeginBlockDrag();
-		else
+		} else {
 			return;
+		}
 	}
 
 	/* Record the new position for the autoscrolling timer routine, and
@@ -1276,7 +1283,11 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	checkAutoScroll(tw, e->x, e->y);
 
 	// Adjust the selection
-	textD->BlockDragSelection(Point{e->x, e->y}, hasKey("overlay", args, nArgs) ? (hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : (hasKey("copy", args, nArgs) ? DRAG_COPY : DRAG_MOVE));
+	textD->BlockDragSelection(
+		Point{e->x, e->y}, 
+		hasKey("overlay", args, nArgs) ? 
+			(hasKey("copy", args, nArgs) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : 
+			(hasKey("copy", args, nArgs) ? DRAG_COPY         : DRAG_MOVE));
 }
 
 static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1341,8 +1352,7 @@ static void copyToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *n
 		return;
 	}
 	
-	auto textD = textD_of(w);
-	textD->FinishBlockDrag();
+	textD_of(w)->FinishBlockDrag();
 }
 
 static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1408,8 +1418,7 @@ static void moveToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *n
 		return;
 	}
 
-	auto textD = textD_of(w);
-	textD->FinishBlockDrag();
+	textD_of(w)->FinishBlockDrag();
 }
 
 static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1418,10 +1427,8 @@ static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	auto textD = textD_of(w);
-
 	if (text_of(w).dragState == PRIMARY_BLOCK_DRAG) {
-		textD->FinishBlockDrag();
+		textD_of(w)->FinishBlockDrag();
 	} else {
 		endDrag(w);
 	}

@@ -207,17 +207,20 @@ int max3(int i1, int i2, int i3) {
 */
 void trackModifyRange(int *rangeStart, int *modRangeEnd, int *unmodRangeEnd, int modPos, int nInserted, int nDeleted) {
 	if (*rangeStart == -1) {
-		*rangeStart = modPos;
-		*modRangeEnd = modPos + nInserted;
+		*rangeStart    = modPos;
+		*modRangeEnd   = modPos + nInserted;
 		*unmodRangeEnd = modPos + nDeleted;
 	} else {
-		if (modPos < *rangeStart)
+		if (modPos < *rangeStart) {
 			*rangeStart = modPos;
+		}
+		
 		if (modPos + nDeleted > *modRangeEnd) {
 			*unmodRangeEnd += modPos + nDeleted - *modRangeEnd;
 			*modRangeEnd = modPos + nInserted;
-		} else
+		} else {
 			*modRangeEnd += nInserted - nDeleted;
+		}
 	}
 }
 
@@ -4819,23 +4822,24 @@ bool TextDisplay::checkReadOnly() const {
 void TextDisplay::cancelDrag() {
 	int dragState = text_of(w).dragState;
 
-	if (text_of(w).autoScrollProcID != 0)
+	if (text_of(w).autoScrollProcID != 0) {
 		XtRemoveTimeOut(text_of(w).autoScrollProcID);
+	}
 
-	if (dragState == SECONDARY_DRAG || dragState == SECONDARY_RECT_DRAG) {
+	switch(dragState) {
+	case SECONDARY_DRAG:
+	case SECONDARY_RECT_DRAG:
 		this->buffer->BufSecondaryUnselect();
-	}
-
-	if (dragState == PRIMARY_BLOCK_DRAG) {
+		break;
+	case PRIMARY_BLOCK_DRAG:
 		CancelBlockDrag();
-	}
-
-	if (dragState == MOUSE_PAN) {
+		break;
+	case MOUSE_PAN:
 		XUngrabPointer(XtDisplay(w), CurrentTime);
-	}
-		
-	if (dragState != NOT_CLICKED) {
+		break;
+	case NOT_CLICKED:
 		text_of(w).dragState = DRAG_CANCELED;
+		break;
 	}
 }
 
@@ -5047,37 +5051,40 @@ void TextDisplay::BeginBlockDrag() {
 
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
-	text_of(w).dragOrigBuf = new TextBuffer;
-	text_of(w).dragOrigBuf->BufSetTabDistance(buf->tabDist_);
-	text_of(w).dragOrigBuf->useTabs_ = buf->useTabs_;
+	this->dragOrigBuf = new TextBuffer;
+	this->dragOrigBuf->BufSetTabDistance(buf->tabDist_);
+	this->dragOrigBuf->useTabs_ = buf->useTabs_;
 
 	std::string text = buf->BufGetAllEx();
-	text_of(w).dragOrigBuf->BufSetAllEx(text);
+	this->dragOrigBuf->BufSetAllEx(text);
 
 	if (sel->rectangular)
-		text_of(w).dragOrigBuf->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+		this->dragOrigBuf->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
 	else
-		text_of(w).dragOrigBuf->BufSelect(sel->start, sel->end);
+		this->dragOrigBuf->BufSelect(sel->start, sel->end);
 
 	/* Record the mouse pointer offsets from the top left corner of the
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel->rectangular) {
-		text_of(w).dragXOffset = text_of(w).btnDownCoord.x + this->horizOffset - this->rect.left - sel->rectStart * fontWidth;
+		this->dragXOffset = text_of(w).btnDownCoord.x + this->horizOffset - this->rect.left - sel->rectStart * fontWidth;
 	} else {
-		if (!this->TextDPositionToXY(sel->start, &x, &y))
+		if (!this->TextDPositionToXY(sel->start, &x, &y)) {
 			x = buf->BufCountDispChars(this->TextDStartOfLine(sel->start), sel->start) * fontWidth + this->rect.left - this->horizOffset;
-		text_of(w).dragXOffset = text_of(w).btnDownCoord.x - x;
+		}
+		this->dragXOffset = text_of(w).btnDownCoord.x - x;
 	}
+
 	mousePos = this->TextDXYToPosition(Point{text_of(w).btnDownCoord.x, text_of(w).btnDownCoord.y});
 	nLines = buf->BufCountLines(sel->start, mousePos);
-	text_of(w).dragYOffset = nLines * fontHeight + (((text_of(w).btnDownCoord.y - text_of(w).P_marginHeight) % fontHeight) - fontHeight / 2);
-	text_of(w).dragNLines = buf->BufCountLines(sel->start, sel->end);
+	
+	this->dragYOffset = nLines * fontHeight + (((text_of(w).btnDownCoord.y - text_of(w).P_marginHeight) % fontHeight) - fontHeight / 2);
+	this->dragNLines  = buf->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for
 	   undoing the fictional insert of the selection in its new position */
-	text_of(w).dragInsertPos = sel->start;
-	text_of(w).dragInserted = sel->end - sel->start;
+	this->dragInsertPos = sel->start;
+	this->dragInserted = sel->end - sel->start;
 	if (sel->rectangular) {
 		auto testBuf = memory::make_unique<TextBuffer>();
 
@@ -5087,27 +5094,28 @@ void TextDisplay::BeginBlockDrag() {
 		testBuf->BufSetAllEx(testText);
 
 		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
-		text_of(w).dragDeleted = testBuf->BufGetLength();
-		text_of(w).dragRectStart = sel->rectStart;
+		this->dragDeleted = testBuf->BufGetLength();
+		this->dragRectStart = sel->rectStart;
 	} else {
-		text_of(w).dragDeleted = 0;
-		text_of(w).dragRectStart = 0;
+		this->dragDeleted = 0;
+		this->dragRectStart = 0;
 	}
-	text_of(w).dragType = DRAG_MOVE;
-	text_of(w).dragSourceDeletePos = sel->start;
-	text_of(w).dragSourceInserted = text_of(w).dragDeleted;
-	text_of(w).dragSourceDeleted = text_of(w).dragInserted;
+
+	this->dragType            = DRAG_MOVE;
+	this->dragSourceDeletePos = sel->start;
+	this->dragSourceInserted  = this->dragDeleted;
+	this->dragSourceDeleted   = this->dragInserted;
 
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
 	if (!sel->rectangular) {
 		lineStart = buf->BufStartOfLine(sel->start);
-		if (text_of(w).dragNLines == 0) {
-			text_of(w).dragOrigBuf->primary_.rectStart = buf->BufCountDispChars(lineStart, sel->start);
-			text_of(w).dragOrigBuf->primary_.rectEnd   = buf->BufCountDispChars(lineStart, sel->end);
+		if (this->dragNLines == 0) {
+			this->dragOrigBuf->primary_.rectStart = buf->BufCountDispChars(lineStart, sel->start);
+			this->dragOrigBuf->primary_.rectEnd   = buf->BufCountDispChars(lineStart, sel->end);
 		} else {
 			lineEnd = buf->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
-			findTextMargins(buf, lineStart, lineEnd, &text_of(w).dragOrigBuf->primary_.rectStart, &text_of(w).dragOrigBuf->primary_.rectEnd);
+			findTextMargins(buf, lineStart, lineEnd, &this->dragOrigBuf->primary_.rectStart, &this->dragOrigBuf->primary_.rectEnd);
 		}
 	}
 
@@ -5125,27 +5133,42 @@ void TextDisplay::BeginBlockDrag() {
 */
 void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	
-	TextBuffer *buf = this->buffer;
-	int fontHeight  = this->fontStruct->ascent + this->fontStruct->descent;
-	int fontWidth   = this->fontStruct->max_bounds.width;
-	TextBuffer *origBuf = text_of(w).dragOrigBuf;
-	int dragXOffset = text_of(w).dragXOffset;
+	TextBuffer *buf        = this->buffer;
+	int fontHeight         = this->fontStruct->ascent + this->fontStruct->descent;
+	int fontWidth          = this->fontStruct->max_bounds.width;
+	TextBuffer *origBuf    = this->dragOrigBuf;
+	int dragXOffset        = this->dragXOffset;
 	TextSelection *origSel = &origBuf->primary_;
-	int rectangular = origSel->rectangular;
-	int overlay, oldDragType = text_of(w).dragType;
-	int nLines = text_of(w).dragNLines;
-	int insLineNum, insLineStart, insRectStart, insRectEnd, insStart;
-	int modRangeStart = -1, tempModRangeEnd = -1, bufModRangeEnd = -1;
-	int referenceLine, referencePos, tempStart, tempEnd, origSelLen;
-	int insertInserted, insertDeleted, row, column;
-	int origSelLineStart, origSelLineEnd;
-	int sourceInserted, sourceDeleted, sourceDeletePos;
+	int rectangular        = origSel->rectangular;
+	int oldDragType        = this->dragType;
+	int nLines             = this->dragNLines;
+	int insLineNum;
+	int insLineStart;
+	int insRectStart;
+	int insRectEnd;
+	int insStart;
+	int modRangeStart   = -1;
+	int tempModRangeEnd = -1;
+	int bufModRangeEnd  = -1;
+	int referenceLine;
+	int referencePos;
+	int tempStart;
+	int tempEnd;
+	int insertInserted;
+	int insertDeleted;
+	int row;
+	int column;
+	int origSelLineEnd;
+	int sourceInserted;
+	int sourceDeleted;
+	int sourceDeletePos;
 
-	if (text_of(w).dragState != PRIMARY_BLOCK_DRAG)
+	if (text_of(w).dragState != PRIMARY_BLOCK_DRAG) {
 		return;
+	}
 
 	/* The operation of block dragging is simple in theory, but not so simple
-	   in practice.  There is a backup buffer (text_of(w).dragOrigBuf) which
+	   in practice.  There is a backup buffer (this->dragOrigBuf) which
 	   holds a copy of the buffer as it existed before the drag.  When the
 	   user drags the mouse to a new location, this routine is called, and
 	   a temporary buffer is created and loaded with the local part of the
@@ -5169,34 +5192,41 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	auto tempBuf = new TextBuffer;
 	tempBuf->tabDist_ = buf->tabDist_;
 	tempBuf->useTabs_ = buf->useTabs_;
-	tempStart         = min3(text_of(w).dragInsertPos, origSel->start, buf->BufCountBackwardNLines(this->firstChar, nLines + 2));
-	tempEnd           = buf->BufCountForwardNLines(max3(text_of(w).dragInsertPos, origSel->start, this->lastChar), nLines + 2) + origSel->end - origSel->start;
+	tempStart         = min3(this->dragInsertPos, origSel->start, buf->BufCountBackwardNLines(this->firstChar, nLines + 2));
+	tempEnd           = buf->BufCountForwardNLines(max3(this->dragInsertPos, origSel->start, this->lastChar), nLines + 2) + origSel->end - origSel->start;
 	
 	std::string text  = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf->BufSetAllEx(text);
 
 	// If the drag type is USE_LAST, use the last dragType applied 
-	if (dragType == USE_LAST)
-		dragType = text_of(w).dragType;
-	overlay = dragType == DRAG_OVERLAY_MOVE || dragType == DRAG_OVERLAY_COPY;
+	if (dragType == USE_LAST) {
+		dragType = this->dragType;
+	}
+	
+	bool overlay = (dragType == DRAG_OVERLAY_MOVE) || (dragType == DRAG_OVERLAY_COPY);
 
 	/* Overlay mode uses rectangular selections whether or not the original
 	   was rectangular.  To use a plain selection as if it were rectangular,
 	   the start and end positions need to be moved to the line boundaries
 	   and trailing newlines must be excluded */
-	origSelLineStart = origBuf->BufStartOfLine(origSel->start);
-	if (!rectangular && origBuf->BufGetCharacter(origSel->end - 1) == '\n')
+	int origSelLineStart = origBuf->BufStartOfLine(origSel->start);
+
+	if (!rectangular && origBuf->BufGetCharacter(origSel->end - 1) == '\n') {
 		origSelLineEnd = origSel->end - 1;
-	else
+	} else {
 		origSelLineEnd = origBuf->BufEndOfLine(origSel->end);
-	if (!rectangular && overlay && nLines != 0)
+	}
+	
+	if (!rectangular && overlay && nLines != 0) {
 		dragXOffset -= fontWidth * (origSel->rectStart - (origSel->start - origSelLineStart));
+	}
 
 	/* If the drag operation is of a different type than the last one, and the
 	   operation is a move, expand the modified-range to include undoing the
 	   text-removal at the site from which the text was dragged. */
-	if (dragType != oldDragType && text_of(w).dragSourceDeleted != 0)
-		trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, text_of(w).dragSourceDeletePos, text_of(w).dragSourceInserted, text_of(w).dragSourceDeleted);
+	if (dragType != oldDragType && this->dragSourceDeleted != 0) {
+		trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, this->dragSourceDeletePos, this->dragSourceInserted, this->dragSourceDeleted);
+	}
 
 	/* Do, or re-do the original text removal at the site where a move began.
 	   If this part has not changed from the last call, do it silently to
@@ -5206,31 +5236,37 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	if (dragType == DRAG_MOVE || dragType == DRAG_OVERLAY_MOVE) {
 		if (rectangular || overlay) {
 			int prevLen = tempBuf->BufGetLength();
-			origSelLen = origSelLineEnd - origSelLineStart;
-			if (overlay)
+			int origSelLen = origSelLineEnd - origSelLineStart;
+			
+			if (overlay) {
 				tempBuf->BufClearRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
-			else
+			} else {
 				tempBuf->BufRemoveRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
+			}
+			
 			sourceDeletePos = origSelLineStart;
 			sourceInserted = origSelLen - prevLen + tempBuf->BufGetLength();
 			sourceDeleted = origSelLen;
 		} else {
 			tempBuf->BufRemove(origSel->start - tempStart, origSel->end - tempStart);
 			sourceDeletePos = origSel->start;
-			sourceInserted = 0;
-			sourceDeleted = origSel->end - origSel->start;
+			sourceInserted  = 0;
+			sourceDeleted   = origSel->end - origSel->start;
 		}
-		if (dragType != oldDragType)
+		
+		if (dragType != oldDragType) {
 			trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, sourceDeletePos, sourceInserted, sourceDeleted);
+		}
+		
 	} else {
 		sourceDeletePos = 0;
-		sourceInserted = 0;
-		sourceDeleted = 0;
+		sourceInserted  = 0;
+		sourceDeleted   = 0;
 	}
 
 	/* Expand the modified-range to include undoing the insert from the last
 	   call. */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, this->dragInsertPos, this->dragInserted, this->dragDeleted);
 
 	/* Find the line number and column of the insert position.  Note that in
 	   continuous wrap mode, these must be calculated as if the text were
@@ -5238,14 +5274,14 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	this->TextDXYToUnconstrainedPosition(
 		Point{
 			std::max(0, pos.x - dragXOffset), 
-			std::max(0, pos.y - (text_of(w).dragYOffset % fontHeight))
+			std::max(0, pos.y - (this->dragYOffset % fontHeight))
 		},
 		&row, &column);
 		
 		
 	column = this->TextDOffsetWrappedColumn(row, column);
-	row = this->TextDOffsetWrappedRow(row);
-	insLineNum = row + this->topLineNum - text_of(w).dragYOffset / fontHeight;
+	row    = this->TextDOffsetWrappedRow(row);
+	insLineNum = row + this->topLineNum - this->dragYOffset / fontHeight;
 
 	/* find a common point of reference between the two buffers, from which
 	   the insert position line number can be translated to a position */
@@ -5274,19 +5310,22 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 
 	/* If the position is the same as last time, don't bother drawing (it
 	   would be nice if this decision could be made earlier) */
-	if (insStart == text_of(w).dragInsertPos && insRectStart == text_of(w).dragRectStart && dragType == oldDragType) {
+	if (insStart == this->dragInsertPos && insRectStart == this->dragRectStart && dragType == oldDragType) {
 		delete tempBuf;
 		return;
 	}
 
 	// Do the insert in the temporary buffer 
 	if (rectangular || overlay) {
+
 		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel->rectStart, origSel->rectEnd);
-		if (overlay)
+		if (overlay) {
 			tempBuf->BufOverlayRectEx(insStart - tempStart, insRectStart, insRectStart + origSel->rectEnd - origSel->rectStart, insText, &insertInserted, &insertDeleted);
-		else
+		} else {
 			tempBuf->BufInsertColEx(insRectStart, insStart - tempStart, insText, &insertInserted, &insertDeleted);
+		}
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
+
 	} else {
 		std::string insText = origBuf->BufGetSelectionTextEx();
 		tempBuf->BufInsertEx(insStart - tempStart, insText);
@@ -5302,24 +5341,25 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	// Store the necessary information for undoing this step 
-	text_of(w).dragInsertPos       = insStart;
-	text_of(w).dragRectStart       = insRectStart;
-	text_of(w).dragInserted        = insertInserted;
-	text_of(w).dragDeleted         = insertDeleted;
-	text_of(w).dragSourceDeletePos = sourceDeletePos;
-	text_of(w).dragSourceInserted  = sourceInserted;
-	text_of(w).dragSourceDeleted   = sourceDeleted;
-	text_of(w).dragType            = dragType;
+	this->dragInsertPos       = insStart;
+	this->dragRectStart       = insRectStart;
+	this->dragInserted        = insertInserted;
+	this->dragDeleted         = insertDeleted;
+	this->dragSourceDeletePos = sourceDeletePos;
+	this->dragSourceInserted  = sourceInserted;
+	this->dragSourceDeleted   = sourceDeleted;
+	this->dragType            = dragType;
 
 	// Reset the selection and cursor position 
 	if (rectangular || overlay) {
 		insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
 		buf->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
-		this->TextDSetInsertPosition(buf->BufCountForwardDispChars(buf->BufCountForwardNLines(insStart, text_of(w).dragNLines), insRectEnd));
+		this->TextDSetInsertPosition(buf->BufCountForwardDispChars(buf->BufCountForwardNLines(insStart, this->dragNLines), insRectEnd));
 	} else {
 		buf->BufSelect(insStart, insStart + origSel->end - origSel->start);
 		this->TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
+	
 	this->TextDUnblankCursor();
 	XtCallCallbacks(w, textNcursorMovementCallback, nullptr);
 	text_of(w).emTabsBeforeCursor = 0;
@@ -5337,14 +5377,14 @@ void TextDisplay::FinishBlockDrag() {
 	/* Find the changed region of the buffer, covering both the deletion
 	   of the selected text at the drag start position, and insertion at
 	   the drag destination */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragSourceDeletePos, text_of(w).dragSourceInserted, text_of(w).dragSourceDeleted);
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, this->dragSourceDeletePos, this->dragSourceInserted, this->dragSourceDeleted);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, this->dragInsertPos, this->dragInserted, this->dragDeleted);
 
 	// Get the original (pre-modified) range of text from saved backup buffer 
-	std::string deletedText = text_of(w).dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
+	std::string deletedText = this->dragOrigBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
 
 	// Free the backup buffer 
-	delete text_of(w).dragOrigBuf;
+	delete this->dragOrigBuf;
 
 	// Return to normal drag state 
 	text_of(w).dragState = NOT_CLICKED;
@@ -5364,18 +5404,18 @@ void TextDisplay::FinishBlockDrag() {
 */
 void TextDisplay::CancelBlockDrag() {
 	TextBuffer *buf = this->buffer;
-	TextBuffer *origBuf = text_of(w).dragOrigBuf;
+	TextBuffer *origBuf = this->dragOrigBuf;
 	TextSelection *origSel = &origBuf->primary_;
 	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
 
 	/* If the operation was a move, make the modify range reflect the
 	   removal of the text from the starting position */
-	if (text_of(w).dragSourceDeleted != 0)
-		trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragSourceDeletePos, text_of(w).dragSourceInserted, text_of(w).dragSourceDeleted);
+	if (this->dragSourceDeleted != 0)
+		trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, this->dragSourceDeletePos, this->dragSourceInserted, this->dragSourceDeleted);
 
 	/* Include the insert being undone from the last step in the modified
 	   range. */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, text_of(w).dragInsertPos, text_of(w).dragInserted, text_of(w).dragDeleted);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, this->dragInsertPos, this->dragInserted, this->dragDeleted);
 
 	// Make the changes in the buffer 
 	std::string repText = origBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
