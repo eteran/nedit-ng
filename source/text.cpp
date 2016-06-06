@@ -2489,7 +2489,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			ringIfNecessary(silent);
 			return;
 		}
-		horizOffset = std::max<int>(0, textD->horizOffset - textD->width);
+		horizOffset = std::max<int>(0, textD->horizOffset - textD->rect.width);
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
 	} else {
 		lineStartPos = buf->BufStartOfLine(insertPos);
@@ -2498,9 +2498,9 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			return;
 		}
 		indent = buf->BufCountDispChars(lineStartPos, insertPos);
-		pos = buf->BufCountForwardDispChars(lineStartPos, std::max<int>(0, indent - textD->width / maxCharWidth));
+		pos = buf->BufCountForwardDispChars(lineStartPos, std::max<int>(0, indent - textD->rect.width / maxCharWidth));
 		textD->TextDSetInsertPosition(pos);
-		textD->TextDSetScroll(textD->topLineNum, std::max<int>(0, textD->horizOffset - textD->width));
+		textD->TextDSetScroll(textD->topLineNum, std::max<int>(0, textD->horizOffset - textD->rect.width));
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		textD->checkAutoShowInsertPos();
 		textD->callCursorMovementCBs(event);
@@ -2525,7 +2525,7 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
-		horizOffset = std::min<int>(textD->horizOffset + textD->width, sliderMax - sliderSize);
+		horizOffset = std::min<int>(textD->horizOffset + textD->rect.width, sliderMax - sliderSize);
 		if (textD->horizOffset == horizOffset) {
 			ringIfNecessary(silent);
 			return;
@@ -2534,9 +2534,9 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	} else {
 		lineStartPos = buf->BufStartOfLine(insertPos);
 		indent = buf->BufCountDispChars(lineStartPos, insertPos);
-		pos = buf->BufCountForwardDispChars(lineStartPos, indent + textD->width / maxCharWidth);
+		pos = buf->BufCountForwardDispChars(lineStartPos, indent + textD->rect.width / maxCharWidth);
 		textD->TextDSetInsertPosition(pos);
-		textD->TextDSetScroll(textD->topLineNum, textD->horizOffset + textD->width);
+		textD->TextDSetScroll(textD->topLineNum, textD->horizOffset + textD->rect.width);
 		if (textD->horizOffset == oldHorizOffset && insertPos == pos)
 			ringIfNecessary(silent);
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
@@ -3107,7 +3107,7 @@ static void checkAutoScroll(TextWidget w, int x, int y) {
 	int inWindow;
 
 	// Is the pointer in or out of the window?
-	inWindow = x >= textD_of(w)->left && x < w->core.width - text_of(w).P_marginWidth && y >= text_of(w).P_marginHeight && y < w->core.height - text_of(w).P_marginHeight;
+	inWindow = x >= textD_of(w)->rect.left && x < w->core.width - text_of(w).P_marginWidth && y >= text_of(w).P_marginHeight && y < w->core.height - text_of(w).P_marginHeight;
 
 	// If it's in the window, cancel the timer procedure
 	if (inWindow) {
@@ -3298,7 +3298,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	textD->TextDGetScroll(&topLineNum, &horizOffset);
 	if (cursorX >= (int)w->core.width - text_of(w).P_marginWidth)
 		horizOffset += fontWidth;
-	else if (text_of(w).mouseCoord.x < textD->left)
+	else if (text_of(w).mouseCoord.x < textD->rect.left)
 		horizOffset -= fontWidth;
 	if (text_of(w).mouseCoord.y >= (int)w->core.height - text_of(w).P_marginHeight)
 		topLineNum += 1 + ((text_of(w).mouseCoord.y - (int)w->core.height - text_of(w).P_marginHeight) / fontHeight) + 1;

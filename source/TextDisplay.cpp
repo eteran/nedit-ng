@@ -796,14 +796,10 @@ TextDisplay::TextDisplay(Widget widget,
 	XGCValues gcValues;
 
 	this->w = widget;
-	this->top = top;
-	this->left = left;
-	this->width = width;
-	this->height = height;
+	this->rect = { left, top, width, height };	
 	this->cursorOn = true;
 	this->cursorPos = 0;
-	this->cursorX = -100;
-	this->cursorY = -100;
+	this->cursor = Point{-100, -100};
 	this->cursorToHint = NO_HINT;
 	this->cursorStyle = NORMAL_CURSOR;
 	this->cursorPreferredCol = -1;
@@ -1001,7 +997,7 @@ void TextDisplay::TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, 
 	XChangeGC(d, this->cursorFGGC, GCForeground, &values);
 
 	// Redisplay
-	TextDRedisplayRect(this->left, this->top, this->width, this->height);
+	TextDRedisplayRect(this->rect);
 	redrawLineNumbers(true);
 }
 
@@ -1046,8 +1042,8 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	this->fixedFontWidth = fontWidth;
 
 	// Don't let the height dip below one line, or bad things can happen
-	if (this->height < maxAscent + maxDescent)
-		this->height = maxAscent + maxDescent;
+	if (this->rect.height < maxAscent + maxDescent)
+		this->rect.height = maxAscent + maxDescent;
 
 	/* Change the font.  In most cases, this means re-allocating the
 	   affected GCs (they are shared with other widgets, and if the primary
@@ -1077,19 +1073,19 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	XSetFont(display, this->styleGC, fontStruct->fid);
 
 	// Do a full resize to force recalculation of font related parameters
-	width  = this->width;
-	height = this->height;
-	this->width  = 0;
-	this->height = 0;
+	width  = this->rect.width;
+	height = this->rect.height;
+	this->rect.width  = 0;
+	this->rect.height = 0;
 	TextDResize(width, height);
 
 	/* if the shell window doesn't get resized, and the new fonts are
 	   of smaller sizes, sometime we get some residual text on the
 	   blank space at the bottom part of text area. Clear it here. */
-	clearRect(this->gc, this->left, this->top + this->height - maxAscent - maxDescent, this->width, maxAscent + maxDescent);
+	clearRect(this->gc, this->rect.left, this->rect.top + this->rect.height - maxAscent - maxDescent, this->rect.width, maxAscent + maxDescent);
 
 	// Redisplay
-	TextDRedisplayRect(this->left, this->top, this->width, this->height);
+	TextDRedisplayRect(this->rect);
 
 	// Clean up line number area in case spacing has changed
 	redrawLineNumbers(true);
@@ -1131,11 +1127,11 @@ void TextDisplay::TextDResize(int width, int height) {
 	int canRedraw = XtWindow(this->w) != 0;
 	int newVisibleLines = height / (this->ascent + this->descent);
 	int redrawAll = false;
-	int oldWidth = this->width;
+	int oldWidth = this->rect.width;
 	int exactHeight = height - height % (this->ascent + this->descent);
 
-	this->width = width;
-	this->height = height;
+	this->rect.width = width;
+	this->rect.height = height;
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
@@ -1164,7 +1160,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became shorter, there may be partially drawn
 	   text left at the bottom edge, which must be cleaned up */
 	if (canRedraw && oldVisibleLines > newVisibleLines && exactHeight != height)
-		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->left, this->top + exactHeight, this->width, height - exactHeight, false);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->rect.left, this->rect.top + exactHeight, this->rect.width, height - exactHeight, false);
 
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
@@ -1180,7 +1176,7 @@ void TextDisplay::TextDResize(int width, int height) {
 
 	// If a full redraw is needed
 	if (redrawAll && canRedraw)
-		TextDRedisplayRect(this->left, this->top, this->width, this->height);
+		TextDRedisplayRect(this->rect);
 
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
@@ -1197,13 +1193,17 @@ void TextDisplay::TextDResize(int width, int height) {
 ** Refresh a rectangle of the text display.  left and top are in coordinates of
 ** the text drawing window
 */
+void TextDisplay::TextDRedisplayRect(const Rect &rect) {
+	TextDRedisplayRect(rect.left, rect.top, rect.width, rect.height);
+}
+
 void TextDisplay::TextDRedisplayRect(int left, int top, int width, int height) {
 	int fontHeight, firstLine, lastLine, line;
 
 	// find the line number range of the display
 	fontHeight = this->ascent + this->descent;
-	firstLine = (top - this->top - fontHeight + 1) / fontHeight;
-	lastLine = (top + height - this->top) / fontHeight;
+	firstLine = (top - this->rect.top - fontHeight + 1) / fontHeight;
+	lastLine = (top + height - this->rect.top) / fontHeight;
 
 	/* If the graphics contexts are shared using XtAllocateGC, their
 	   clipping rectangles may have changed since the last use */
@@ -1403,7 +1403,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	hideOrShowHScrollBar();
 
 	// Do a full redraw
-	TextDRedisplayRect(0, this->top, this->width + this->left, this->height);
+	TextDRedisplayRect(0, this->rect.top, this->rect.width + this->rect.left, this->rect.height);
 }
 
 int TextDisplay::TextDGetInsertPosition() const {
@@ -1590,14 +1590,14 @@ int TextDisplay::TextDPositionToXY(int pos, int *x, int *y) {
 	if (!posToVisibleLineNum(pos, &visLineNum))
 		return false;
 	fontHeight = this->ascent + this->descent;
-	*y = this->top + visLineNum * fontHeight + fontHeight / 2;
+	*y = this->rect.top + visLineNum * fontHeight + fontHeight / 2;
 
 	/* Get the text, length, and  buffer position of the line. If the position
 	   is beyond the end of the buffer and should be at the first position on
 	   the first empty line, don't try to get or scan the text  */
 	lineStartPos = this->lineStarts[visLineNum];
 	if (lineStartPos == -1) {
-		*x = this->left - this->horizOffset;
+		*x = this->rect.left - this->horizOffset;
 		return true;
 	}
 	lineLen = visLineLength(visLineNum);
@@ -1605,7 +1605,7 @@ int TextDisplay::TextDPositionToXY(int pos, int *x, int *y) {
 
 	/* Step through character positions from the beginning of the line
 	   to "pos" to calculate the x coordinate */
-	xStep = this->left - this->horizOffset;
+	xStep = this->rect.left - this->horizOffset;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
 		int charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
@@ -1759,10 +1759,10 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 		if (!TextDPositionToXY(cursorPos, &x, &y))
 			return; // Give up, it's not worth it (but why does it fail?)
 	}
-	if (x > this->left + this->width)
-		hOffset += x - (this->left + this->width);
-	else if (x < this->left)
-		hOffset += x - this->left;
+	if (x > this->rect.left + this->rect.width)
+		hOffset += x - (this->rect.left + this->rect.width);
+	else if (x < this->rect.left)
+		hOffset += x - this->rect.left;
 
 	// Do the scroll
 	setScroll(topLine, hOffset, True, true);
@@ -2101,7 +2101,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
 		textD->blankCursorProtrusions();
-		textD->TextDRedisplayRect(0, textD->top, textD->width + textD->left, textD->height);
+		textD->TextDRedisplayRect(0, textD->rect.top, textD->rect.width + textD->rect.left, textD->rect.height);
 		if (textD->styleBuffer) { // See comments in extendRangeForStyleMods
 			textD->styleBuffer->primary_.selected = false;
 			textD->styleBuffer->primary_.zeroWidth = false;
@@ -2286,8 +2286,8 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 		return;
 
 	// Shrink the clipping range to the active display area
-	leftClip = std::max<int>(this->left, leftClip);
-	rightClip = std::min<int>(rightClip, this->left + this->width);
+	leftClip = std::max<int>(this->rect.left, leftClip);
+	rightClip = std::min<int>(rightClip, this->rect.left + this->rect.width);
 
 	if (leftClip > rightClip) {
 		return;
@@ -2295,7 +2295,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 
 	// Calculate y coordinate of the string to draw
 	fontHeight = this->ascent + this->descent;
-	y = this->top + visLineNum * fontHeight;
+	y = this->rect.top + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
 	lineStartPos = this->lineStarts[visLineNum];
@@ -2331,7 +2331,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	   that's off the left edge of the displayed area) to find the first
 	   character position that's not clipped, and the x coordinate for drawing
 	   that character */
-	x = this->left - this->horizOffset;
+	x = this->rect.left - this->horizOffset;
 	outIndex = 0;
 
 	for (charIndex = 0;; charIndex++) {
@@ -2409,7 +2409,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	   this line.  Also check for the cases which are not caught as the
 	   line is scanned above: when the cursor appears at the very end
 	   of the redisplayed section. */
-	y_orig = this->cursorY;
+	y_orig = this->cursor.y;
 	if (this->cursorOn) {
 		if (hasCursor) {
 			drawCursor(cursorX, y);
@@ -2427,7 +2427,7 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	}
 
 	// If the y position of the cursor has changed, redraw the calltip
-	if (hasCursor && (y_orig != this->cursorY || y_orig != y))
+	if (hasCursor && (y_orig != this->cursor.y || y_orig != y))
 		TextDRedrawCalltip(0);
 }
 
@@ -2512,8 +2512,8 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	// Draw blank area rather than text, if that was the request
 	if (style & FILL_MASK) {
 		// wipes out to right hand edge of widget
-		if (toX >= this->left) {
-			clearRect(bgGC, std::max<int>(x, this->left), y, toX - std::max<int>(x, this->left), this->ascent + this->descent);
+		if (toX >= this->rect.left) {
+			clearRect(bgGC, std::max(x, this->rect.left), y, toX - std::max(x, this->rect.left), this->ascent + this->descent);
 		}
 		return;
 	}
@@ -2548,6 +2548,10 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 /*
 ** Clear a rectangle with the appropriate background color for "style"
 */
+void TextDisplay::clearRect(GC gc, const Rect &rect) {
+	clearRect(gc, rect.left, rect.top, rect.width, rect.height);
+}
+
 void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
 
 	// A width of zero means "clear to end of window" to XClearArea
@@ -2571,7 +2575,7 @@ void TextDisplay::drawCursor(int x, int y) {
 	int fontHeight = this->ascent + this->descent;
 	int bot = y + fontHeight - 1;
 
-	if (XtWindow(this->w) == 0 || x < this->left - 1 || x > this->left + this->width)
+	if (XtWindow(this->w) == 0 || x < this->rect.left - 1 || x > this->rect.left + this->rect.width)
 		return;
 
 	/* For cursors other than the block, make them around 2/3 of a character
@@ -2675,8 +2679,8 @@ void TextDisplay::drawCursor(int x, int y) {
 	XDrawSegments(XtDisplay(this->w), XtWindow(this->w), this->cursorFGGC, segs, nSegs);
 
 	// Save the last position drawn
-	this->cursorX = x;
-	this->cursorY = y;
+	this->cursor.x = x;
+	this->cursor.y = y;
 }
 
 /*
@@ -2768,7 +2772,7 @@ int TextDisplay::xyToPos(int x, int y, int posType) {
 
 	// Find the visible line number corresponding to the y coordinate
 	fontHeight = this->ascent + this->descent;
-	visLineNum = (y - this->top) / fontHeight;
+	visLineNum = (y - this->rect.top) / fontHeight;
 	if (visLineNum < 0)
 		return this->firstChar;
 	if (visLineNum >= this->nVisibleLines)
@@ -2787,7 +2791,7 @@ int TextDisplay::xyToPos(int x, int y, int posType) {
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-	xStep = this->left - this->horizOffset;
+	xStep = this->rect.left - this->horizOffset;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < lineLen; charIndex++) {
 		int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, this->buffer->tabDist_, this->buffer->nullSubsChar_);
@@ -2819,12 +2823,12 @@ void TextDisplay::xyToUnconstrainedPos(int x, int y, int *row, int *column, int 
 	int fontWidth = this->fontStruct->max_bounds.width;
 
 	// Find the visible line number corresponding to the y coordinate
-	*row = (y - this->top) / fontHeight;
+	*row = (y - this->rect.top) / fontHeight;
 	if (*row < 0)
 		*row = 0;
 	if (*row >= this->nVisibleLines)
 		*row = this->nVisibleLines - 1;
-	*column = ((x - this->left) + this->horizOffset + (posType == CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
+	*column = ((x - this->rect.left) + this->horizOffset + (posType == CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
 	if (*column < 0)
 		*column = 0;
 }
@@ -3169,7 +3173,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	int lineDelta   = this->topLineNum - topLineNum;
 	int xOffset;
 	int yOffset;
-	int exactHeight = this->height - this->height % (this->ascent + this->descent);
+	int exactHeight = this->rect.height - this->rect.height % (this->ascent + this->descent);
 
 	/* Do nothing if scroll position hasn't actually changed or there's no
 	   window to draw in yet */
@@ -3202,32 +3206,32 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	   if there's nothing to recover because the scroll distance is large */
 	xOffset = origHOffset - this->horizOffset;
 	yOffset = lineDelta * fontHeight;
-	if (this->visibility != VisibilityUnobscured || abs(xOffset) > this->width || abs(yOffset) > exactHeight) {
+	if (this->visibility != VisibilityUnobscured || abs(xOffset) > this->rect.width || abs(yOffset) > exactHeight) {
 		TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
-		TextDRedisplayRect(this->left, this->top, this->width, this->height);
+		TextDRedisplayRect(this->rect);
 	} else {
 		/* If the window is not obscured, paint most of the window using XCopyArea
 		   from existing displayed text, and redraw only what's necessary */
 		// Recover the useable window areas by moving to the proper location
-		int srcX   = this->left + (xOffset >= 0 ? 0 : -xOffset);
-		int dstX   = this->left + (xOffset >= 0 ? xOffset : 0);
-		int width  = this->width - abs(xOffset);
-		int srcY   = this->top + (yOffset >= 0 ? 0 : -yOffset);
-		int dstY   = this->top + (yOffset >= 0 ? yOffset : 0);
+		int srcX   = this->rect.left + (xOffset >= 0 ? 0 : -xOffset);
+		int dstX   = this->rect.left + (xOffset >= 0 ? xOffset : 0);
+		int width  = this->rect.width - abs(xOffset);
+		int srcY   = this->rect.top + (yOffset >= 0 ? 0 : -yOffset);
+		int dstY   = this->rect.top + (yOffset >= 0 ? yOffset : 0);
 		int height = exactHeight - abs(yOffset);
 		resetClipRectangles();
 		TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
 		XCopyArea(XtDisplay(this->w), XtWindow(this->w), XtWindow(this->w), this->gc, srcX, srcY, width, height, dstX, dstY);
 		// redraw the un-recoverable parts
 		if (yOffset > 0) {
-			TextDRedisplayRect(this->left, this->top, this->width, yOffset);
+			TextDRedisplayRect(this->rect.left, this->rect.top, this->rect.width, yOffset);
 		} else if (yOffset < 0) {
-			TextDRedisplayRect(this->left, this->top + this->height + yOffset, this->width, -yOffset);
+			TextDRedisplayRect(this->rect.left, this->rect.top + this->rect.height + yOffset, this->rect.width, -yOffset);
 		}
 		if (xOffset > 0) {
-			TextDRedisplayRect(this->left, this->top, xOffset, this->height);
+			TextDRedisplayRect(this->rect.left, this->rect.top, xOffset, this->rect.height);
 		} else if (xOffset < 0) {
-			TextDRedisplayRect(this->left + this->width + xOffset, this->top, -xOffset, this->height);
+			TextDRedisplayRect(this->rect.left + this->rect.width + xOffset, this->rect.top, -xOffset, this->rect.height);
 		}
 		// Restore protruding parts of the cursor
 		textDRedisplayRange(this->cursorPos - 1, this->cursorPos + 1);
@@ -3288,13 +3292,13 @@ int TextDisplay::updateHScrollBarRange() {
 	/* If the scroll position is beyond what's necessary to keep all lines
 	   in view, scroll to the left to bring the end of the longest line to
 	   the right margin */
-	if (maxWidth < this->width + this->horizOffset && this->horizOffset > 0)
-		this->horizOffset = std::max<int>(0, maxWidth - this->width);
+	if (maxWidth < this->rect.width + this->horizOffset && this->horizOffset > 0)
+		this->horizOffset = std::max<int>(0, maxWidth - this->rect.width);
 
 	// Readjust the scroll bar
-	sliderWidth = this->width;
+	sliderWidth = this->rect.width;
 	sliderMax = std::max<int>(maxWidth, sliderWidth + this->horizOffset);
-	XtVaSetValues(this->hScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(this->width - 100, 10), XmNvalue, this->horizOffset, nullptr);
+	XtVaSetValues(this->hScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(this->rect.width - 100, 10), XmNvalue, this->horizOffset, nullptr);
 
 	// Return True if scroll position was changed
 	return origHOffset != this->horizOffset;
@@ -3305,14 +3309,14 @@ int TextDisplay::updateHScrollBarRange() {
 ** number drawing.
 */
 void TextDisplay::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft) {
-	int newWidth = this->width + this->left - textLeft;
+	int newWidth = this->rect.width + this->rect.left - textLeft;
 	this->lineNumLeft = lineNumLeft;
 	this->lineNumWidth = lineNumWidth;
-	this->left = textLeft;
+	this->rect.left = textLeft;
 	XClearWindow(XtDisplay(this->w), XtWindow(this->w));
 	resetAbsLineNum();
-	TextDResize(newWidth, this->height);
-	TextDRedisplayRect(0, this->top, INT_MAX, this->height);
+	TextDResize(newWidth, this->rect.height);
+	TextDRedisplayRect(0, this->rect.top, INT_MAX, this->rect.height);
 }
 
 /*
@@ -3341,18 +3345,18 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 	   the GC may be shared (eg, if the line numbers and text have the same
 	   color) and therefore the clipping ranges may be invalid. */
 	clipRect.x = this->lineNumLeft;
-	clipRect.y = this->top;
+	clipRect.y = this->rect.top;
 	clipRect.width = this->lineNumWidth;
-	clipRect.height = this->height;
+	clipRect.height = this->rect.height;
 	XSetClipRectangles(display, this->lineNumGC, 0, 0, &clipRect, 1, Unsorted);
 
 	// Erase the previous contents of the line number area, if requested
 	if (clearAll)
-		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->top, this->lineNumWidth, this->height, false);
+		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->rect.top, this->lineNumWidth, this->rect.height, false);
 
 	// Draw the line numbers, aligned to the text
 	nCols = std::min<int>(11, this->lineNumWidth / charWidth);
-	y = this->top;
+	y = this->rect.top;
 	line = this->getAbsTopLineNum();
 	for (visLine = 0; visLine < this->nVisibleLines; visLine++) {
 		int lineStart = this->lineStarts[visLine];
@@ -3464,12 +3468,16 @@ int TextDisplay::emptyLinesVisible() const {
 ** erased independently by calling this routine.
 */
 void TextDisplay::blankCursorProtrusions() {
-	int x, width, cursorX = this->cursorX, cursorY = this->cursorY;
-	int fontWidth = this->fontStruct->max_bounds.width;
+	int x;
+	int width;
+	int cursorX    = this->cursor.x;
+	int cursorY    = this->cursor.y;
+	int fontWidth  = this->fontStruct->max_bounds.width;
 	int fontHeight = this->ascent + this->descent;
-	int cursorWidth, left = this->left, right = left + this->width;
+	int left       = this->rect.left;
+	int right      = left + this->rect.width;
 
-	cursorWidth = (fontWidth / 3) * 2;
+	int cursorWidth = (fontWidth / 3) * 2;
 	if (cursorX >= left - 1 && cursorX <= left + cursorWidth / 2 - 1) {
 		x = cursorX - cursorWidth / 2;
 		width = left - x;
@@ -3540,10 +3548,10 @@ void TextDisplay::resetClipRectangles() {
 	XRectangle clipRect;
 	Display *display = XtDisplay(this->w);
 
-	clipRect.x = this->left;
-	clipRect.y = this->top;
-	clipRect.width = this->width;
-	clipRect.height = this->height - this->height % (this->ascent + this->descent);
+	clipRect.x = this->rect.left;
+	clipRect.y = this->rect.top;
+	clipRect.width = this->rect.width;
+	clipRect.height = this->rect.height - this->rect.height % (this->ascent + this->descent);
 
 	XSetClipRectangles(display, this->gc, 0, 0, &clipRect, 1, Unsorted);
 	XSetClipRectangles(display, this->selectGC, 0, 0, &clipRect, 1, Unsorted);
@@ -3831,12 +3839,12 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 	   True), and set the wrap target for either pixels or columns */
 	if (this->fixedFontWidth != -1 || this->wrapMargin != 0) {
 		countPixels = false;
-		wrapMargin = this->wrapMargin != 0 ? this->wrapMargin : this->width / this->fixedFontWidth;
+		wrapMargin = this->wrapMargin != 0 ? this->wrapMargin : this->rect.width / this->fixedFontWidth;
 		maxWidth = INT_MAX;
 	} else {
 		countPixels = true;
 		wrapMargin = INT_MAX;
-		maxWidth = this->width;
+		maxWidth = this->rect.width;
 	}
 
 	/* Find the start of the line if the start pos is not marked as a
@@ -4028,7 +4036,7 @@ int TextDisplay::wrapUsesCharacter(int lineEndPos) {
 ** the longest possible line.
 */
 void TextDisplay::hideOrShowHScrollBar() {
-	if (this->continuousWrap && (this->wrapMargin == 0 || this->wrapMargin * this->fontStruct->max_bounds.width < this->width))
+	if (this->continuousWrap && (this->wrapMargin == 0 || this->wrapMargin * this->fontStruct->max_bounds.width < this->rect.width))
 		XtUnmanageChild(this->hScrollBar);
 	else
 		XtManageChild(this->hScrollBar);
@@ -4339,7 +4347,7 @@ int TextDisplay::TextNumVisibleLines() const {
 }
 
 int TextDisplay::TextVisibleWidth() const {
-	return this->width;
+	return this->rect.width;
 }
 
 /*
@@ -4385,7 +4393,7 @@ void TextDisplay::TextInsertAtCursorEx(view::string_view chars, XEvent *event, b
 	   it and be done (for efficiency only, this routine is called for each
 	   character typed). (Of course, it may not be significantly more efficient
 	   than the more general code below it, so it may be a waste of time!) */
-	wrapMargin = text_of(tw).P_wrapMargin != 0 ? text_of(tw).P_wrapMargin : this->width / fontWidth;
+	wrapMargin = text_of(tw).P_wrapMargin != 0 ? text_of(tw).P_wrapMargin : this->rect.width / fontWidth;
 	lineStartPos = buf->BufStartOfLine(cursorPos);
 	colNum = buf->BufCountDispChars(lineStartPos, cursorPos);
 
@@ -4851,23 +4859,25 @@ void TextDisplay::callCursorMovementCBs(XEvent *event) {
 
 void TextDisplay::HandleAllPendingGraphicsExposeNoExposeEvents(XEvent *event) {
 	XEvent foundEvent;
-	int left;
-	int top;
-	int width;
-	int height;
 	bool invalidRect = true;
+	Rect rect;
 
 	if (event) {
-		adjustRectForGraphicsExposeOrNoExposeEvent(event, &invalidRect, &left, &top, &width, &height);
+		adjustRectForGraphicsExposeOrNoExposeEvent(event, &invalidRect, &rect);
 	}
+	
 	while (XCheckIfEvent(XtDisplay(w), &foundEvent, findGraphicsExposeOrNoExposeEvent, (XPointer)w)) {
-		adjustRectForGraphicsExposeOrNoExposeEvent(&foundEvent, &invalidRect, &left, &top, &width, &height);
+		adjustRectForGraphicsExposeOrNoExposeEvent(&foundEvent, &invalidRect, &rect);
 	}
+	
 	if (!invalidRect) {
-		TextDRedisplayRect(left, top, width, height);
+		TextDRedisplayRect(rect);
 	}
 }
 
+void TextDisplay::adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, Rect *rect) {
+	adjustRectForGraphicsExposeOrNoExposeEvent(event, first, &rect->left, &rect->top, &rect->width, &rect->height);
+}
 
 void TextDisplay::adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height) {
 	bool removeQueueEntry = false;
@@ -4954,9 +4964,9 @@ void TextDisplay::TextDRedrawCalltip(int calltipID) {
 		if (this->calltip.pos < 0) {
 			/* First display of tip with cursor offscreen (detected in
 			    ShowCalltip) */
-			this->calltip.pos = this->width / 2;
+			this->calltip.pos = this->rect.width / 2;
 			this->calltip.hAlign = TIP_CENTER;
-			rel_y = this->height / 3;
+			rel_y = this->rect.height / 3;
 		} else if (!this->TextDPositionToXY(this->cursorPos, &rel_x, &rel_y)) {
 			// Window has scrolled and tip is now offscreen 
 			if (this->calltip.alignMode == TIP_STRICT)
@@ -5053,10 +5063,10 @@ void TextDisplay::BeginBlockDrag() {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel->rectangular) {
-		text_of(w).dragXOffset = text_of(w).btnDownCoord.x + this->horizOffset - this->left - sel->rectStart * fontWidth;
+		text_of(w).dragXOffset = text_of(w).btnDownCoord.x + this->horizOffset - this->rect.left - sel->rectStart * fontWidth;
 	} else {
 		if (!this->TextDPositionToXY(sel->start, &x, &y))
-			x = buf->BufCountDispChars(this->TextDStartOfLine(sel->start), sel->start) * fontWidth + this->left - this->horizOffset;
+			x = buf->BufCountDispChars(this->TextDStartOfLine(sel->start), sel->start) * fontWidth + this->rect.left - this->horizOffset;
 		text_of(w).dragXOffset = text_of(w).btnDownCoord.x - x;
 	}
 	mousePos = this->TextDXYToPosition(Point{text_of(w).btnDownCoord.x, text_of(w).btnDownCoord.y});
@@ -5228,8 +5238,8 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	   not wrapped */
 	this->TextDXYToUnconstrainedPosition(
 		Point{
-			std::max<int>(0, pos.x - dragXOffset), 
-			std::max<int>(0, pos.y - (text_of(w).dragYOffset % fontHeight))
+			std::max(0, pos.x - dragXOffset), 
+			std::max(0, pos.y - (text_of(w).dragYOffset % fontHeight))
 		},
 		&row, &column);
 		

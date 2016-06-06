@@ -30,6 +30,7 @@
 #include "TextBuffer.h"
 #include "BlockDragTypes.h"
 #include "Point.h"
+#include "Rect.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -133,6 +134,7 @@ public:
 	void TextDMakeInsertPosVisible();
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(int left, int top, int width, int height);
+	void TextDRedisplayRect(const Rect &rect);
 	void TextDResize(int width, int height);
 	void TextDSetBuffer(TextBuffer *buffer);
 	void TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, Pixel selectBgP, Pixel hiliteFgP, Pixel hiliteBgP, Pixel lineNoFgP, Pixel cursorFgP);
@@ -187,6 +189,7 @@ public:
 	void TextSetBuffer(TextBuffer *buffer);
 	void TextSetCursorPos(int pos);
 	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
+	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, Rect *rect);
 	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
 	void checkAutoShowInsertPos();
@@ -212,6 +215,7 @@ private:
 	void calcLastChar();
 	void calcLineStarts(int startLine, int endLine);
 	void clearRect(GC gc, int x, int y, int width, int height);
+	void clearRect(GC gc, const Rect &rect);
 	void drawCursor(int x, int y);
 	void drawString(int style, int x, int y, int toX, char *string, int nChars);
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
@@ -247,16 +251,12 @@ public:
 
 public:
 	Widget w; // TextWidget
-	int top;
-	int left;
-	int width;
-	int height;
+	Rect rect;
 	int lineNumLeft;
 	int lineNumWidth;
 	int cursorPos;
 	int cursorOn;
-	int cursorX;                                 // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
-	int cursorY;                                 // Y pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+	Point cursor;                               // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
 	int cursorToHint;                            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
 	CursorStyles cursorStyle;                    // One of enum cursorStyles above
 	int cursorPreferredCol;                      // Column for vert. cursor movement

@@ -1488,7 +1488,7 @@ void Document::UpdateWMSizeHints() {
 	}
 
 	XtVaGetValues(shell_, XmNwidth, &shellWidth, XmNheight, &shellHeight, nullptr);
-	nCols = textD->width / fontWidth;
+	nCols = textD->rect.width / fontWidth;
 	nRows = totalHeight / fontHeight;
 	baseWidth = shellWidth - nCols * fontWidth;
 	baseHeight = shellHeight - nRows * fontHeight;
@@ -2362,7 +2362,7 @@ void Document::ShowLineNumbers(bool state) {
 	} else {
 		XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
 		XtVaGetValues(textArea_, textNmarginWidth, &marginWidth, nullptr);
-		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->left + marginWidth, nullptr);
+		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->rect.left + marginWidth, nullptr);
 
 		for (i = 0; i <= nPanes_; i++) {
 			text = i == 0 ? textArea_ : textPanes_[i - 1];
@@ -2500,7 +2500,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   determine the correct this size after the font is changed */
 	XtVaGetValues(shell_, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
 	XtVaGetValues(textArea_, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
-	oldTextWidth = textD->width + textD->lineNumWidth;
+	oldTextWidth = textD->rect.width + textD->lineNumWidth;
 	oldTextHeight = textHeight - 2 * marginHeight;
 	for (i = 0; i < nPanes_; i++) {
 		XtVaGetValues(textPanes_[i], XmNheight, &textHeight, nullptr);
