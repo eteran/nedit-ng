@@ -5302,14 +5302,14 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	// Store the necessary information for undoing this step 
-	text_of(w).dragInsertPos = insStart;
-	text_of(w).dragRectStart = insRectStart;
-	text_of(w).dragInserted = insertInserted;
-	text_of(w).dragDeleted = insertDeleted;
+	text_of(w).dragInsertPos       = insStart;
+	text_of(w).dragRectStart       = insRectStart;
+	text_of(w).dragInserted        = insertInserted;
+	text_of(w).dragDeleted         = insertDeleted;
 	text_of(w).dragSourceDeletePos = sourceDeletePos;
-	text_of(w).dragSourceInserted = sourceInserted;
-	text_of(w).dragSourceDeleted = sourceDeleted;
-	text_of(w).dragType = dragType;
+	text_of(w).dragSourceInserted  = sourceInserted;
+	text_of(w).dragSourceDeleted   = sourceDeleted;
+	text_of(w).dragType            = dragType;
 
 	// Reset the selection and cursor position 
 	if (rectangular || overlay) {
