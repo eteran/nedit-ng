@@ -4,13 +4,6 @@
 
 #include <QString>
 
-enum FontType {
-	PLAIN_FONT, 
-	ITALIC_FONT, 
-	BOLD_FONT, 
-	BOLD_ITALIC_FONT
-};
-
 class HighlightStyle {
 public:
 	QString name;

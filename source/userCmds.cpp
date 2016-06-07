@@ -26,37 +26,21 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QString>
 #include "ui/DialogWindowBackgroundMenu.h"
 #include "ui/DialogMacros.h"
 #include "ui/DialogShellMenu.h"
-#include "MenuItem.h"
-
 #include "userCmds.h"
-#include "TextBuffer.h"
-#include "UserMenuListElement.h"
-#include "text.h"
-#include "nedit.h"
-#include "preferences.h"
 #include "Document.h"
-#include "window.h"
 #include "menu.h"
+#include "MenuItem.h"
+#include "file.h"
 #include "shell.h"
 #include "macro.h"
-#include "file.h"
+#include "preferences.h"
+#include "TextBuffer.h"
 #include "parse.h"
-#include "MotifHelper.h"
 #include "misc.h"
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cctype>
-
-#include <sys/param.h>
+#include "MotifHelper.h"
 
 #include <X11/IntrinsicP.h>
 #include <Xm/PushB.h>
@@ -64,11 +48,13 @@
 #include <Xm/CascadeB.h>
 #include <Xm/MenuShell.h>
 
-#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
-
 extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 namespace {
+
+Widget MENU_WIDGET(Widget w) {
+	return (XmGetPostedFromWidget(XtParent(w)));
+}
 
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
 DialogMacros               *WindowMacros         = nullptr;
@@ -611,7 +597,7 @@ static void resetManageMode(UserMenuList *list) {
 static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 
 	UserMenuList *subMenuList;
-	UserMenuListElement *element;
+	
 	WidgetList widgetList;
 	Cardinal nWidgetListItems;
 
@@ -631,8 +617,7 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 	   sub-menu */
 	subMenuList = subMenu->umleSubMenuList;
 
-	for (size_t i = 0; i < subMenuList->size(); i++) {
-		element = subMenuList->at(i);
+	for(UserMenuListElement *element : *subMenuList) {
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue managing
@@ -660,15 +645,13 @@ static void manageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 */
 static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 
-	Widget shell;
 	UserMenuList *subMenuList;
-	UserMenuListElement *element;
 	WidgetList widgetList;
 	Cardinal nWidgetListItems;
 
 	/* if sub-menu is torn-off, then unmap its shell
 	   (so tearoff window isn't displayed anymore) */
-	shell = XtParent(subMenu->umleSubMenuPane);
+	Widget shell = XtParent(subMenu->umleSubMenuPane);
 	if (!XmIsMenuShell(shell)) {
 		XtUnmapWidget(shell);
 	}
@@ -681,8 +664,7 @@ static void unmanageAllSubMenuWidgets(UserMenuListElement *subMenu) {
 	   sub-menu */
 	subMenuList = subMenu->umleSubMenuList;
 
-	for (size_t i = 0; i < subMenuList->size(); i++) {
-		element = subMenuList->at(i);
+	for (UserMenuListElement *element: *subMenuList) {
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue unmanaging
@@ -762,8 +744,7 @@ static void manageMenuWidgets(UserMenuList *list) {
 static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 
 	// scan all elements of this (sub-)menu 
-	for (size_t i = 0; i < menuList->size(); i++) {
-		UserMenuListElement *element = menuList->at(i);
+	for(UserMenuListElement *element : *menuList) {
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue removing accelerators
@@ -783,8 +764,7 @@ static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
 static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
 
 	// scan all elements of this (sub-)menu 
-	for (size_t i = 0; i < menuList->size(); i++) {
-		UserMenuListElement *element = menuList->at(i);
+	for(UserMenuListElement *element : *menuList) {
 
 		if (element->umleSubMenuList) {
 			/* if element is a sub-menu, then continue assigning accelerators

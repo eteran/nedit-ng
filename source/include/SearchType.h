@@ -7,7 +7,7 @@
 **
 ** The order of the integers in this enumeration must be exactly
 ** the same as the order of the coressponding strings of the
-** array  SearchMethodStrings defined in preferences.c (!!)
+** array  SearchMethodStrings defined in preferences.cpp (!!)
 **
 */
 enum SearchType {

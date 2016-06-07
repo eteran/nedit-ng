@@ -7,5 +7,4 @@ enum ShiftDirection {
 	SHIFT_RIGHT
 };
 
-
 #endif

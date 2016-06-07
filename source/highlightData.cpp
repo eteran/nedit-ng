@@ -36,6 +36,7 @@
 #include "ui/DialogSyntaxPatterns.h"
 
 #include "highlightData.h"
+#include "FontType.h"
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "highlight.h"

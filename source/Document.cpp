@@ -511,7 +511,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		window->UpdateMinPaneHeights();
 
 		for (i = 0; i <= window->nPanes_; i++) {
-			text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
+			text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
 			setPaneDesiredHeight(containingPane(text), paneHeights[i]);
 		}
 

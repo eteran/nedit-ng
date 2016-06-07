@@ -3,7 +3,7 @@
 #define WINDOW_HIGHLIGHT_DATA_H_
 
 #include "ReparseContext.h"
-#include <QString>
+#include <QByteArray>
 
 class HighlightData;
 class PatternSet;

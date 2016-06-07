@@ -3,7 +3,7 @@
 #define USER_MENU_LIST_ELEMENT_H_
 
 #include <QString>
-#include <vector>
+#include <QVector>
 #include <X11/Intrinsic.h> // For Widget
 
 // cache user menus: manage mode of user menu list element
@@ -16,7 +16,7 @@ enum UserMenuManageMode {
 
 struct UserMenuListElement;
 
-typedef std::vector<UserMenuListElement*> UserMenuList;
+typedef QVector<UserMenuListElement*> UserMenuList;
 
 // structure representing one user menu item
 struct UserMenuListElement {

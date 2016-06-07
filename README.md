@@ -47,6 +47,8 @@ knowlege.
   example: "[Shift]Ctrl + F" meaning that the shift is optional and will
   alter the behavior of the shortcut. I am not aware of a way to do this
   using Qt, short of making a completely custom menu system.
+* NEdit has several points of customization which are controlled by XResource
+  files. I intend to create a new dialog for these "advanced" options.
 
 Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
 is complete some post 1.0 goals are already planned:
@@ -55,4 +57,5 @@ is complete some post 1.0 goals are already planned:
 * Python scripting support in addition to the built-in macro system
 * An improved preferences system
 * Extensibility though plugins
-* Sessions, meaning that you can save and restore an edit session (such as several open tabs)
+* Sessions, meaning that you can save and restore an edit session (such as 
+  several open tabs)

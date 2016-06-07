@@ -9,6 +9,7 @@
 #include "highlightData.h"
 #include "preferences.h"
 #include "Document.h"
+#include "FontType.h"
 #include "nedit.h"
 
 //------------------------------------------------------------------------------

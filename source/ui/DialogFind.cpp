@@ -238,7 +238,6 @@ void DialogFind::setTextField(Document *window, time_t time) {
 	char *primary_selection = nullptr;
 	auto selectionInfo = new SelectionInfo;
 
-	// TODO(eteran): is there even a way to enable this setting?
 	if (GetPrefFindReplaceUsesSelection()) {
 		selectionInfo->done      = 0;
 		selectionInfo->window    = window;
@@ -301,7 +300,7 @@ void DialogFind::on_buttonFind_clicked() {
 	//               with a QAction eventually anyway
 	//               this also is likely reusing the code used to support the scripting
 	//               language
-	SearchAndSelect(window_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
+	SearchAndSelect(window_->lastFocus_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
 #endif
 	windowNotToClose = nullptr;
 

@@ -531,7 +531,6 @@ void DialogReplace::setTextField(Document *window, time_t time) {
 	char *primary_selection = nullptr;
 	auto selectionInfo = new SelectionInfo;
 
-	// TODO(eteran): is there even a way to enable this setting?
 	if (GetPrefFindReplaceUsesSelection()) {
 		selectionInfo->done      = false;
 		selectionInfo->window    = window;
