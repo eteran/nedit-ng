@@ -29,7 +29,6 @@
 #include <QApplication>
 
 #include "text.h"
-#include "textP.h"
 #include "MotifHelper.h"
 #include "calltips.h"
 #include "TextDisplay.h"
@@ -50,7 +49,7 @@ static std::string expandAllTabsEx(view::string_view text, int tab_width);
 ** Pop-down a calltip if one exists, else do nothing
 */
 void KillCalltip(Document *window, int calltipID) {
-	TextDisplay *textD = textD_of(window->lastFocus_);
+	TextDisplay *textD = window->lastFocus();
 	textD->TextDKillCalltip(calltipID);
 }
 
@@ -61,7 +60,7 @@ void KillCalltip(Document *window, int calltipID) {
 ** displayed with that calltipID.
 */
 int GetCalltipID(Document *window, int calltipID) {
-	TextDisplay *textD = textD_of(window->lastFocus_);
+	TextDisplay *textD = window->lastFocus();
 	if (calltipID == 0)
 		return textD->calltip.ID;
 	else {
@@ -123,7 +122,7 @@ std::string expandAllTabsEx(view::string_view text, int tab_width) {
 */
 int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
 	static int StaticCalltipID = 1;
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 	int rel_x, rel_y;
 	Position txtX, txtY;
 

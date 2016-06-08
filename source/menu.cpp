@@ -42,7 +42,6 @@
 #include "WrapStyle.h"
 #include "TextHelper.h"
 
-#include "textP.h"
 #include "TextDisplay.h"
 #include "menu.h"
 #include "TextBuffer.h"

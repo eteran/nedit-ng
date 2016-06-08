@@ -321,7 +321,7 @@ public:
 	bool pointerHidden;                          // true if the mouse pointer is hidden
 	graphicExposeTranslationEntry *graphicsExposeQueue_;
 	
-	
+	// NOTE(eteran): moved from textP
 	TextBuffer *dragOrigBuf;        // backup buffer copy used during block dragging of selections
 	int dragXOffset;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset;                // offsets between cursor location and actual insertion point in drag
@@ -339,6 +339,14 @@ public:
 	int rectAnchor;                 // Anchor for rectangular drag operations
 	int dragState;                  // Why is the mouse being dragged and what is being acquired
 	int multiClickState;            // How long is this multi-click sequence so far	
+	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
+	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
+	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
+	bool selectionOwner;            // True if widget owns the selection
+	bool motifDestOwner;            // " "            owns the motif destination
+	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit	
+	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
+	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink	
 };
 
 #endif

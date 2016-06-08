@@ -29,7 +29,6 @@
 #include <QString>
 
 #include "TextHelper.h"
-#include "textP.h"
 #include "TextDisplay.h"
 #include "selection.h"
 #include "TextBuffer.h"
@@ -375,7 +374,7 @@ void SelectNumberedLine(Document *window, int lineNum) {
 	}
 	window->MakeSelectionVisible(window->lastFocus_);
 	
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 	textD->TextSetCursorPos(lineStart);
 }
 

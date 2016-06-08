@@ -108,7 +108,7 @@ public:
 	Widget         P_hScrollBar;
 	Widget         P_vScrollBar;
 
-	/* was "private", but looks like a resource */
+	/* NOTE(eteran): as "private", but looks like a resource */
 	XmString P_backlightCharTypes;   // background class string to parse
 	
 	// these are set indirectly in Document::createTextArea
@@ -122,14 +122,6 @@ public:
 
 	/* private state */
 	TextDisplay *textD;             // Pointer to display information
-	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
-	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
-	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
-	bool selectionOwner;            // True if widget owns the selection
-	bool motifDestOwner;            // " "            owns the motif destination
-	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
-	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
-	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink
 };
 
 struct TextRec {

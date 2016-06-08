@@ -25,7 +25,6 @@
 #include "smartIndent.h"
 #include "TextDisplay.h"
 #include "text.h"
-#include "textP.h"
 #include "UndoInfo.h"
 #include "userCmds.h"
 #include "window.h" // There are a few global functions found here... for now
@@ -326,7 +325,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    for unfocussed panes.
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
-	if (text_of(w).cursorBlinkProcID != 0) {
+	if (textD->cursorBlinkProcID != 0) {
 		//  Start blinking the caret again.  
 		textD->ResetCursorBlink(false);
 	}
@@ -1407,7 +1406,7 @@ void Document::UpdateStatsLine() {
 		return;
 	}
 
-	auto textD = textD_of(lastFocus_);
+	auto textD = lastFocus();
 
 	// Compose the string to display. If line # isn't available, leave it off 
 	int pos            = textD->TextGetCursorPos();
@@ -3932,7 +3931,7 @@ void Document::Undo() {
 	if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		auto textD = textD_of(lastFocus_);
+		auto textD = lastFocus();
 		textD->TextSetCursorPos(undo->startPos + restoredTextLength);
 	}
 
@@ -3981,7 +3980,7 @@ void Document::Redo() {
 	if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		auto textD = textD_of(lastFocus_);
+		auto textD = lastFocus();
 		textD->TextSetCursorPos(redo->startPos + restoredTextLength);
 	}
 	if (GetPrefUndoModifiesSelection()) {
@@ -4439,4 +4438,9 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	textD_of(text)->TextDMaintainAbsLineNum(window->showStats_);
 
 	return text;
+}
+
+
+TextDisplay *Document::lastFocus() const {
+	return textD_of(lastFocus_);
 }

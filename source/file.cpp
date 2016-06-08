@@ -43,7 +43,6 @@
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
-#include "textP.h"
 #include "TextHelper.h"
 #include "file.h"
 #include "TextBuffer.h"
@@ -621,7 +620,7 @@ int IncludeFile(Document *window, const char *name) {
 	if (window->buffer_->primary_.selected) {
 		window->buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
 	} else {
-		auto textD = textD_of(window->lastFocus_);
+		auto textD = window->lastFocus();
 		window->buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(fileString, readLen));
 	}
 

@@ -47,7 +47,6 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "text.h"
-#include "textP.h"
 #include "window.h"
 
 #include <algorithm>

@@ -398,7 +398,7 @@ void loseSelectionCB(Widget w, Atom *selType) {
 
 	/* For zero width rect. sel. we give up the selection but keep the
 	    zero width tag. */
-	text_of(tw).selectionOwner = false;
+	textD_of(tw)->selectionOwner = false;
 	textD_of(tw)->buffer->BufUnselect();
 	sel->zeroWidth = zeroWidth;
 }
@@ -422,10 +422,10 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 	(void)nDeleted;
 	(void)deletedText;
 
-	TextWidget w = (TextWidget)cbArg;
-	Time time = XtLastTimestampProcessed(XtDisplay((Widget)w));
+	TextWidget w = static_cast<TextWidget>(cbArg);
+	Time time    = XtLastTimestampProcessed(XtDisplay((Widget)w));
 	int selected = textD_of(w)->buffer->primary_.selected;
-	int isOwner = text_of(w).selectionOwner;
+	int isOwner  = textD_of(w)->selectionOwner;
 
 	/* If the widget owns the selection and the buffer text is still selected,
 	   or if the widget doesn't own it and there's no selection, do nothing */
@@ -439,10 +439,11 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 	   callback from firing at a bad time. */
 
 	// Take ownership of the selection 
-	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr))
+	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
 		textD_of(w)->buffer->BufUnselect();
-	else
-		text_of(w).selectionOwner = true;
+	} else {
+		textD_of(w)->selectionOwner = true;
+	}
 }
 
 /*
@@ -482,7 +483,7 @@ void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, X
 		cursorPos = textD->TextDGetInsertPosition();
 		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(
-			text_of(w).btnDownCoord,
+			textD_of(w)->btnDownCoord,
 			&row,
 			&column);
 			
@@ -753,9 +754,10 @@ void loseMotifDestCB(Widget w, Atom *selType) {
 
 	(void)selType;
 
-	text_of(w).motifDestOwner = False;
-	if (textD_of(w)->cursorStyle == CARET_CURSOR)
+	textD_of(w)->motifDestOwner = false;
+	if (textD_of(w)->cursorStyle == CARET_CURSOR) {
 		textD_of(w)->TextDSetCursorStyle(DIM_CURSOR);
+	}
 }
 
 }
@@ -4689,8 +4691,8 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 	auto tw = reinterpret_cast<TextWidget>(w);
 
 	if (text_of(tw).P_cursorBlinkRate != 0) {
-		if (text_of(tw).cursorBlinkProcID != 0) {
-			XtRemoveTimeOut(text_of(tw).cursorBlinkProcID);
+		if (this->cursorBlinkProcID != 0) {
+			XtRemoveTimeOut(this->cursorBlinkProcID);
 		}
 
 		if (startsBlanked) {
@@ -4699,7 +4701,7 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 			TextDUnblankCursor();
 		}
 
-		text_of(tw).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), text_of(tw).P_cursorBlinkRate, cursorBlinkTimerProc, tw);
+		this->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)tw), text_of(tw).P_cursorBlinkRate, cursorBlinkTimerProc, tw);
 	}
 }
 
@@ -4713,13 +4715,14 @@ void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 	TextDisplay *textD = textD_of(w);
 
 	// Blink the cursor
-	if (textD->cursorOn)
+	if (textD->cursorOn) {
 		textD->TextDBlankCursor();
-	else
+	} else {
 		textD->TextDUnblankCursor();
+	}
 
 	// re-establish the timer proc (this routine) to continue processing
-	text_of(w).cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).P_cursorBlinkRate, cursorBlinkTimerProc, w);
+	textD->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).P_cursorBlinkRate, cursorBlinkTimerProc, w);
 }
 
 
@@ -4822,8 +4825,8 @@ bool TextDisplay::checkReadOnly() const {
 void TextDisplay::cancelDrag() {
 	int dragState = this->dragState;
 
-	if (text_of(w).autoScrollProcID != 0) {
-		XtRemoveTimeOut(text_of(w).autoScrollProcID);
+	if (this->autoScrollProcID != 0) {
+		XtRemoveTimeOut(this->autoScrollProcID);
 	}
 
 	switch(dragState) {
@@ -4857,7 +4860,7 @@ void TextDisplay::checkAutoShowInsertPos() {
 ** more just-entered emulated tabs (spaces to be deleted as a unit).
 */
 void TextDisplay::callCursorMovementCBs(XEvent *event) {
-	text_of(w).emTabsBeforeCursor = 0;
+	textD_of(w)->emTabsBeforeCursor = 0;
 	XtCallCallbacks((Widget)w, textNcursorMovementCallback, (XtPointer)event);
 }
 
@@ -5067,18 +5070,18 @@ void TextDisplay::BeginBlockDrag() {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel->rectangular) {
-		this->dragXOffset = text_of(w).btnDownCoord.x + this->horizOffset - this->rect.left - sel->rectStart * fontWidth;
+		this->dragXOffset = textD_of(w)->btnDownCoord.x + this->horizOffset - this->rect.left - sel->rectStart * fontWidth;
 	} else {
 		if (!this->TextDPositionToXY(sel->start, &x, &y)) {
 			x = buf->BufCountDispChars(this->TextDStartOfLine(sel->start), sel->start) * fontWidth + this->rect.left - this->horizOffset;
 		}
-		this->dragXOffset = text_of(w).btnDownCoord.x - x;
+		this->dragXOffset = textD_of(w)->btnDownCoord.x - x;
 	}
 
-	mousePos = this->TextDXYToPosition(Point{text_of(w).btnDownCoord.x, text_of(w).btnDownCoord.y});
+	mousePos = this->TextDXYToPosition(Point{textD_of(w)->btnDownCoord.x, textD_of(w)->btnDownCoord.y});
 	nLines = buf->BufCountLines(sel->start, mousePos);
 	
-	this->dragYOffset = nLines * fontHeight + (((text_of(w).btnDownCoord.y - text_of(w).P_marginHeight) % fontHeight) - fontHeight / 2);
+	this->dragYOffset = nLines * fontHeight + (((textD_of(w)->btnDownCoord.y - text_of(w).P_marginHeight) % fontHeight) - fontHeight / 2);
 	this->dragNLines  = buf->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for
@@ -5362,7 +5365,7 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	
 	this->TextDUnblankCursor();
 	XtCallCallbacks(w, textNcursorMovementCallback, nullptr);
-	text_of(w).emTabsBeforeCursor = 0;
+	textD_of(w)->emTabsBeforeCursor = 0;
 }
 
 /*
@@ -5428,7 +5431,7 @@ void TextDisplay::CancelBlockDrag() {
 		buf->BufSelect(origSel->start, origSel->end);
 	this->TextDSetInsertPosition(buf->cursorPosHint_);
 	XtCallCallbacks(w, textNcursorMovementCallback, nullptr);
-	text_of(w).emTabsBeforeCursor = 0;
+	textD_of(w)->emTabsBeforeCursor = 0;
 
 	// Free the backup buffer 
 	delete origBuf;
@@ -5672,12 +5675,12 @@ void TextDisplay::SendSecondarySelection(Time time, bool removeAfter) {
 */
 void TextDisplay::TakeMotifDestination(Time time) {
 
-	if (text_of(w).motifDestOwner || text_of(w).P_readOnly)
+	if (textD_of(w)->motifDestOwner || text_of(w).P_readOnly)
 		return;
 
 	// Take ownership of the MOTIF_DESTINATION selection 
 	if (!XtOwnSelection(w, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
 		return;
 	}
-	text_of(w).motifDestOwner = true;
+	textD_of(w)->motifDestOwner = true;
 }

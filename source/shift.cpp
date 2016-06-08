@@ -37,7 +37,6 @@
 #include "window.h"
 #include "memory.h"
 #include "TextDisplay.h"
-#include "textP.h"
 
 #include <cstring>
 #include <climits>
@@ -85,7 +84,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	TextBuffer *buf = window->buffer_;
 	std::string text;
 
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 
 	// get selection, if no text selected, use current insert position 
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
@@ -102,7 +101,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 		origLength = buf->BufGetLength();
 		shiftRect(window, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 		
-		auto textD = textD_of(window->lastFocus_);
+		auto textD = window->lastFocus();
 		textD->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
 		return;
 	} else {
@@ -189,7 +188,7 @@ static void changeCase(Document *window, int makeUpper) {
 	int rectEnd;
 	bool isRect;
 
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 
 	// Get the selection.  Use character before cursor if no selection 
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
@@ -238,7 +237,7 @@ void FillSelection(Document *window) {
 	int rightMargin;
 	int wrapMargin;
 	
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 	
 	int insertPos = textD->TextGetCursorPos();
 	int hasSelection = window->buffer_->primary_.selected;

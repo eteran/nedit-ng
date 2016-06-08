@@ -18,6 +18,7 @@ class DialogReplaceScope;
 class DialogColors;
 class UndoInfo;
 class TextBuffer;
+class TextDisplay;
 
 
 /* The Document structure holds the information on a Document. A number
@@ -153,6 +154,8 @@ public:
 
 public:
 	DialogReplace *getDialogReplace() const;
+	
+	TextDisplay *lastFocus() const;
 
 	// NOTE(eteran): I think the following are the "shell" level members
 	//               essentially the variables associated with the window

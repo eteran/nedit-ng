@@ -34,7 +34,6 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "Document.h"
-#include "textP.h"
 #include "UndoInfo.h"
 #include "nedit.h"
 #include "menu.h"

@@ -86,8 +86,8 @@ static void showWarningFilter(String);
 
 QLinkedList<Document *> WindowList;
 Display *TheDisplay = nullptr;
-const char *ArgV0 = nullptr;
-bool IsServer = false;
+const char *ArgV0   = nullptr;
+bool IsServer       = false;
 Widget TheAppShell;
 
 /* Reasons for choice of default font qualifications:

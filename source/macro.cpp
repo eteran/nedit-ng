@@ -43,7 +43,6 @@
 #include "TextHelper.h"
 
 #include "TextDisplay.h"
-#include "textP.h"
 #include "macro.h"
 #include "fileUtils.h"
 #include "getfiles.h"
@@ -2458,7 +2457,7 @@ static int setCursorPosMS(Document *window, DataValue *argList, int nArgs, DataV
 		return false;
 
 	// Set the position 
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 	textD->TextSetCursorPos(pos);
 	result->tag = NO_TAG;
 	return true;
@@ -3372,7 +3371,7 @@ static int cursorMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	(void)nArgs;
 	(void)argList;
 
-	auto textD    = textD_of(window->lastFocus_);
+	auto textD    = window->lastFocus();
 	result->tag   = INT_TAG;
 	result->val.n = textD->TextGetCursorPos();
 	return true;
@@ -3386,7 +3385,7 @@ static int lineMV(Document *window, DataValue *argList, int nArgs, DataValue *re
 
 	int line, cursorPos, colNum;
 
-	auto textD  = textD_of(window->lastFocus_);
+	auto textD  = window->lastFocus();
 	result->tag = INT_TAG;
 	cursorPos   = textD->TextGetCursorPos();
 	
@@ -3406,7 +3405,7 @@ static int columnMV(Document *window, DataValue *argList, int nArgs, DataValue *
 
 	TextBuffer *buf = window->buffer_;
 
-	auto textD    = textD_of(window->lastFocus_);
+	auto textD    = window->lastFocus();
 	result->tag   = INT_TAG;
 	int cursorPos = textD->TextGetCursorPos();
 	result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
@@ -3814,7 +3813,7 @@ static int topLineMV(Document *window, DataValue *argList, int nArgs, DataValue 
 
 	result->tag = INT_TAG;
 	
-	auto textD = textD_of(window->lastFocus_);
+	auto textD = window->lastFocus();
 	result->val.n = textD->TextFirstVisibleLine();
 	return true;
 }
@@ -3824,7 +3823,7 @@ static int numDisplayLinesMV(Document *window, DataValue *argList, int nArgs, Da
 	(void)nArgs;
 	(void)argList;
 
-	auto textD    = textD_of(window->lastFocus_);
+	auto textD    = window->lastFocus();
 	result->tag   = INT_TAG;
 	result->val.n = textD->TextNumVisibleLines();
 	return true;
@@ -3836,7 +3835,7 @@ static int displayWidthMV(Document *window, DataValue *argList, int nArgs, DataV
 	(void)nArgs;
 	(void)argList;
 
-	auto textD    = textD_of(window->lastFocus_);
+	auto textD    = window->lastFocus();
 	result->tag   = INT_TAG;
 	result->val.n = textD->TextVisibleWidth();
 	return true;
@@ -4573,7 +4572,7 @@ static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs
 
 	int pos = 0;
 	if (nArgs == 1) {
-		auto textD = textD_of(window->lastFocus_);
+		auto textD = window->lastFocus();
 		pos = textD->TextGetCursorPos();
 	} else if (nArgs == 2) {
 		if (!readIntArg(argList[1], &pos, errMsg))
