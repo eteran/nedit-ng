@@ -709,8 +709,8 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	// Initialize the widget variables
 	text_of(new_widget).autoScrollProcID   = 0;
 	text_of(new_widget).cursorBlinkProcID  = 0;
-	text_of(new_widget).dragState          = NOT_CLICKED;
-	text_of(new_widget).multiClickState    = NO_CLICKS;
+	textD_of(new_widget)->dragState        = NOT_CLICKED;
+	textD_of(new_widget)->multiClickState  = NO_CLICKS;
 	text_of(new_widget).lastBtnDown        = 0;
 	text_of(new_widget).selectionOwner     = false;
 	text_of(new_widget).motifDestOwner     = false;
@@ -983,7 +983,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	/* Indicate state for future events, PRIMARY_CLICKED indicates that
 	   the proper initialization has been done for primary dragging and/or
 	   multi-clicking.  Also record the timestamp for multi-click processing */
-	text_of(tw).dragState = PRIMARY_CLICKED;
+	textD_of(tw)->dragState = PRIMARY_CLICKED;
 	text_of(tw).lastBtnDown = e->time;
 
 	/* Become owner of the MOTIF_DESTINATION selection, making this widget
@@ -992,23 +992,23 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	textD->TakeMotifDestination(e->time);
 
 	// Check for possible multi-click sequence in progress
-	if (text_of(tw).multiClickState != NO_CLICKS) {
+	if (textD_of(tw)->multiClickState != NO_CLICKS) {
 		if (e->time < lastBtnDown + XtGetMultiClickTime(XtDisplay(w))) {
-			if (text_of(tw).multiClickState == ONE_CLICK) {
+			if (textD_of(tw)->multiClickState == ONE_CLICK) {
 				selectWord(w, e->x);
 				textD->callCursorMovementCBs(event);
 				return;
-			} else if (text_of(tw).multiClickState == TWO_CLICKS) {
+			} else if (textD_of(tw)->multiClickState == TWO_CLICKS) {
 				selectLine(w);
 				textD->callCursorMovementCBs(event);
 				return;
-			} else if (text_of(tw).multiClickState == THREE_CLICKS) {
+			} else if (textD_of(tw)->multiClickState == THREE_CLICKS) {
 				textD->buffer->BufSelect(0, textD->buffer->BufGetLength());
 				return;
-			} else if (text_of(tw).multiClickState > THREE_CLICKS)
-				text_of(tw).multiClickState = NO_CLICKS;
+			} else if (textD_of(tw)->multiClickState > THREE_CLICKS)
+				textD_of(tw)->multiClickState = NO_CLICKS;
 		} else
-			text_of(tw).multiClickState = NO_CLICKS;
+			textD_of(tw)->multiClickState = NO_CLICKS;
 	}
 
 	// Clear any existing selections
@@ -1021,10 +1021,10 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	   position so subsequent motion events and clicking can decide when and
 	   where to begin a primary selection */
 	text_of(tw).btnDownCoord = Point{e->x, e->y};
-	text_of(tw).anchor = textD->TextDGetInsertPosition();
+	textD_of(tw)->anchor = textD->TextDGetInsertPosition();
 	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 	column = textD->TextDOffsetWrappedColumn(row, column);
-	text_of(tw).rectAnchor = column;
+	textD_of(tw)->rectAnchor = column;
 }
 
 static void moveDestinationAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1053,7 +1053,7 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	auto tw = reinterpret_cast<TextWidget>(w);
 	XMotionEvent *e = &event->xmotion;
-	int dragState = text_of(tw).dragState;
+	int dragState = textD_of(tw)->dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
 
 	// Make sure the proper initialization was done on mouse down
@@ -1062,16 +1062,16 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
-	if (text_of(tw).dragState == PRIMARY_CLICKED) {
+	if (textD_of(tw)->dragState == PRIMARY_CLICKED) {
 		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD)
-			text_of(tw).dragState = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
+			textD_of(tw)->dragState = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 		else
 			return;
 	}
 
 	/* If "rect" argument has appeared or disappeared, keep dragState up
 	   to date about which type of drag this is */
-	text_of(tw).dragState = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
+	textD_of(tw)->dragState = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
@@ -1110,8 +1110,8 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		anchorLineStart = buf->BufStartOfLine(anchor);
 		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
 	}
-	text_of(w).anchor = anchor;
-	text_of(w).rectAnchor = rectAnchor;
+	textD_of(w)->anchor = anchor;
+	textD_of(w)->rectAnchor = rectAnchor;
 
 	// Make the new selection
 	if (hasKey("rect", args, nArgs))
@@ -1121,10 +1121,10 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	/* Never mind the motion threshold, go right to dragging since
 	   extend-start is unambiguously the start of a selection */
-	text_of(w).dragState = PRIMARY_DRAG;
+	textD_of(w)->dragState = PRIMARY_DRAG;
 
 	// Don't do by-word or by-line adjustment, just by character
-	text_of(w).multiClickState = NO_CLICKS;
+	textD_of(w)->multiClickState = NO_CLICKS;
 
 	// Move the cursor
 	textD->TextDSetInsertPosition(newPos);
@@ -1140,8 +1140,8 @@ static void extendEndAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	XButtonEvent *e = &event->xbutton;
 	auto tw = reinterpret_cast<TextWidget>(w);
 
-	if (text_of(tw).dragState == PRIMARY_CLICKED && text_of(tw).lastBtnDown <= e->time + XtGetMultiClickTime(XtDisplay(w)))
-		text_of(tw).multiClickState++;
+	if (textD_of(tw)->dragState == PRIMARY_CLICKED && text_of(tw).lastBtnDown <= e->time + XtGetMultiClickTime(XtDisplay(w)))
+		textD_of(tw)->multiClickState++;
 	endDrag(w);
 }
 
@@ -1151,7 +1151,7 @@ static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 	(void)nArgs;
 	(void)event;
 
-	int dragState = text_of(w).dragState;
+	int dragState = textD_of(w)->dragState;
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	
@@ -1192,13 +1192,13 @@ static void secondaryStartAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	   position so subsequent motion events can decide when to begin a
 	   selection, (and where the selection began) */
 	text_of(w).btnDownCoord = Point{e->x, e->y};
-	text_of(w).anchor       = pos;
+	textD_of(w)->anchor       = pos;
 
 	textD->TextDXYToUnconstrainedPosition(Point{e->x, e->y}, &row, &column);
 
 	column = textD->TextDOffsetWrappedColumn(row, column);
-	text_of(w).rectAnchor = column;
-	text_of(w).dragState = SECONDARY_CLICKED;
+	textD_of(w)->rectAnchor = column;
+	textD_of(w)->dragState = SECONDARY_CLICKED;
 }
 
 static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1220,13 +1220,13 @@ static void secondaryOrDragStartAP(Widget w, XEvent *event, String *args, Cardin
 	   position so subsequent motion events can decide when to begin a
 	   drag, and where to drag to */
 	text_of(w).btnDownCoord = Point{e->x, e->y};
-	text_of(w).dragState    = CLICKED_IN_SELECTION;
+	textD_of(w)->dragState    = CLICKED_IN_SELECTION;
 }
 
 static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto tw = reinterpret_cast<TextWidget>(w);
 	XMotionEvent *e = &event->xmotion;
-	int dragState = text_of(tw).dragState;
+	int dragState = textD_of(tw)->dragState;
 	int rectDrag = hasKey("rect", args, nArgs);
 
 	// Make sure the proper initialization was done on mouse down
@@ -1235,16 +1235,16 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
-	if (text_of(tw).dragState == SECONDARY_CLICKED) {
+	if (textD_of(tw)->dragState == SECONDARY_CLICKED) {
 		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD)
-			text_of(tw).dragState = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
+			textD_of(tw)->dragState = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 		else
 			return;
 	}
 
 	/* If "rect" argument has appeared or disappeared, keep dragState up
 	   to date about which type of drag this is */
-	text_of(tw).dragState = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
+	textD_of(tw)->dragState = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
@@ -1259,7 +1259,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 	TextDisplay *textD = textD_of(tw);
 	
 	XMotionEvent *e = &event->xmotion;
-	int dragState = text_of(tw).dragState;
+	int dragState = textD_of(tw)->dragState;
 
 	/* Only dragging of blocks of text is handled in this action proc.
 	   Otherwise, defer to secondaryAdjust to handle the rest */
@@ -1270,7 +1270,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 
 	/* Decide whether the mouse has moved far enough from the
 	   initial mouse down to be considered a drag */
-	if (text_of(tw).dragState == CLICKED_IN_SELECTION) {
+	if (textD_of(tw)->dragState == CLICKED_IN_SELECTION) {
 		if (abs(e->x - text_of(tw).btnDownCoord.x) > SELECT_THRESHOLD || abs(e->y - text_of(tw).btnDownCoord.y) > SELECT_THRESHOLD) {
 			textD->BeginBlockDrag();
 		} else {
@@ -1298,7 +1298,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	XButtonEvent *e = &event->xbutton;
 	auto tw = reinterpret_cast<TextWidget>(w);
 	TextDisplay *textD = textD_of(tw);
-	int dragState = text_of(tw).dragState;
+	int dragState = textD_of(tw)->dragState;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *secondary = &buf->secondary_, *primary = &buf->primary_;
 	int rectangular = secondary->rectangular;
@@ -1345,7 +1345,7 @@ static void copyToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 static void copyToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	int dragState = text_of(w).dragState;
+	int dragState = textD_of(w)->dragState;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		copyToAP(w, event, args, nArgs);
@@ -1362,7 +1362,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	XButtonEvent *e = &event->xbutton;
 	auto textD = textD_of(w);
-	int dragState = text_of(w).dragState;
+	int dragState = textD_of(w)->dragState;
 	TextBuffer *buf = textD->buffer;
 	TextSelection *secondary = &buf->secondary_, *primary = &buf->primary_;
 	int insertPos, rectangular = secondary->rectangular;
@@ -1411,7 +1411,7 @@ static void moveToAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void moveToOrEndDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	int dragState = text_of(w).dragState;
+	int dragState = textD_of(w)->dragState;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		moveToAP(w, event, args, nArgs);
@@ -1427,7 +1427,7 @@ static void endDragAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	if (text_of(w).dragState == PRIMARY_BLOCK_DRAG) {
+	if (textD_of(w)->dragState == PRIMARY_BLOCK_DRAG) {
 		textD_of(w)->FinishBlockDrag();
 	} else {
 		endDrag(w);
@@ -1441,7 +1441,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	TextSelection *sec = &buf->secondary_, *primary = &buf->primary_;
 
 	int newPrimaryStart, newPrimaryEnd, secWasRect;
-	int dragState = text_of(w).dragState; // save before endDrag
+	int dragState = textD_of(w)->dragState; // save before endDrag
 	int silent = hasKey("nobell", args, nArgs);
 
 	endDrag(w);
@@ -1574,13 +1574,13 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int topLineNum, horizOffset;
 	static Cursor panCursor = 0;
 
-	if (text_of(tw).dragState == MOUSE_PAN) {
+	if (textD_of(tw)->dragState == MOUSE_PAN) {
 		textD->TextDSetScroll((text_of(tw).btnDownCoord.y - e->y + lineHeight / 2) / lineHeight, text_of(tw).btnDownCoord.x - e->x);
-	} else if (text_of(tw).dragState == NOT_CLICKED) {
+	} else if (textD_of(tw)->dragState == NOT_CLICKED) {
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		text_of(tw).btnDownCoord.x = e->x + horizOffset;
 		text_of(tw).btnDownCoord.y = e->y + topLineNum * lineHeight;
-		text_of(tw).dragState = MOUSE_PAN;
+		textD_of(tw)->dragState = MOUSE_PAN;
 		if (!panCursor)
 			panCursor = XCreateFontCursor(XtDisplay(w), XC_fleur);
 		XGrabPointer(XtDisplay(w), XtWindow(w), false, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
@@ -2797,10 +2797,10 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
 		// rect -> rect
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
-		startCol = std::min<int>(text_of(tw).rectAnchor, newCol);
-		endCol = std::max<int>(text_of(tw).rectAnchor, newCol);
-		startPos = buf->BufStartOfLine(std::min<int>(text_of(tw).anchor, newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(text_of(tw).anchor, newPos));
+		startCol = std::min<int>(textD_of(tw)->rectAnchor, newCol);
+		endCol = std::max<int>(textD_of(tw)->rectAnchor, newCol);
+		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->anchor, newPos));
+		endPos = buf->BufEndOfLine(std::max<int>(textD_of(tw)->anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 	} else if (sel->selected && rectangular) { // plain -> rect
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
@@ -2810,8 +2810,8 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 			anchor = sel->start;
 		anchorLineStart = buf->BufStartOfLine(anchor);
 		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
-		text_of(tw).anchor = anchor;
-		text_of(tw).rectAnchor = rectAnchor;
+		textD_of(tw)->anchor = anchor;
+		textD_of(tw)->rectAnchor = rectAnchor;
 		buf->BufRectSelect(buf->BufStartOfLine(std::min<int>(anchor, newPos)), buf->BufEndOfLine(std::max<int>(anchor, newPos)), std::min<int>(rectAnchor, newCol), std::max<int>(rectAnchor, newCol));
 	} else if (sel->selected && sel->rectangular) { // rect -> plain
 		startPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->start), sel->rectStart);
@@ -2834,13 +2834,13 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 		endCol = std::max<int>(newCol, origCol);
 		startPos = buf->BufStartOfLine(std::min<int>(origPos, newPos));
 		endPos = buf->BufEndOfLine(std::max<int>(origPos, newPos));
-		text_of(tw).anchor = origPos;
-		text_of(tw).rectAnchor = origCol;
+		textD_of(tw)->anchor = origPos;
+		textD_of(tw)->rectAnchor = origCol;
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 	} else { // no sel -> plain
-		text_of(tw).anchor = origPos;
-		text_of(tw).rectAnchor = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
-		buf->BufSelect(text_of(tw).anchor, newPos);
+		textD_of(tw)->anchor = origPos;
+		textD_of(tw)->rectAnchor = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
+		buf->BufSelect(textD_of(tw)->anchor, newPos);
 	}
 }
 
@@ -3144,10 +3144,10 @@ static void endDrag(Widget w) {
 
 	text_of(w).autoScrollProcID = 0;
 
-	if (text_of(w).dragState == MOUSE_PAN)
+	if (textD_of(w)->dragState == MOUSE_PAN)
 		XUngrabPointer(XtDisplay(w), CurrentTime);
 
-	text_of(w).dragState = NOT_CLICKED;
+	textD_of(w)->dragState = NOT_CLICKED;
 }
 
 
@@ -3164,26 +3164,29 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	int newPos = textD->TextDXYToPosition(Point{x, y});
 
 	// Adjust the selection
-	if (text_of(tw).dragState == PRIMARY_RECT_DRAG) {
+	if (textD_of(tw)->dragState == PRIMARY_RECT_DRAG) {
+	
 		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
-		col = textD->TextDOffsetWrappedColumn(row, col);
-		startCol = std::min<int>(text_of(tw).rectAnchor, col);
-		endCol = std::max<int>(text_of(tw).rectAnchor, col);
-		startPos = buf->BufStartOfLine(std::min<int>(text_of(tw).anchor, newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(text_of(tw).anchor, newPos));
+		col      = textD->TextDOffsetWrappedColumn(row, col);
+		startCol = std::min<int>(textD_of(tw)->rectAnchor, col);
+		endCol   = std::max<int>(textD_of(tw)->rectAnchor, col);
+		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max<int>(textD_of(tw)->anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
-	} else if (text_of(tw).multiClickState == ONE_CLICK) {
-		startPos = startOfWord(tw, std::min<int>(text_of(tw).anchor, newPos));
-		endPos = endOfWord(tw, std::max<int>(text_of(tw).anchor, newPos));
+		
+	} else if (textD_of(tw)->multiClickState == ONE_CLICK) {
+		startPos = startOfWord(tw, std::min<int>(textD_of(tw)->anchor, newPos));
+		endPos   = endOfWord(tw, std::max<int>(textD_of(tw)->anchor, newPos));
 		buf->BufSelect(startPos, endPos);
-		newPos = newPos < text_of(tw).anchor ? startPos : endPos;
-	} else if (text_of(tw).multiClickState == TWO_CLICKS) {
-		startPos = buf->BufStartOfLine(std::min<int>(text_of(tw).anchor, newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(text_of(tw).anchor, newPos));
+		newPos   = newPos < textD_of(tw)->anchor ? startPos : endPos;
+		
+	} else if (textD_of(tw)->multiClickState == TWO_CLICKS) {
+		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max<int>(textD_of(tw)->anchor, newPos));
 		buf->BufSelect(startPos, std::min<int>(endPos + 1, buf->BufGetLength()));
-		newPos = newPos < text_of(tw).anchor ? startPos : endPos;
+		newPos   = newPos < textD_of(tw)->anchor ? startPos : endPos;
 	} else
-		buf->BufSelect(text_of(tw).anchor, newPos);
+		buf->BufSelect(textD_of(tw)->anchor, newPos);
 
 	// Move the cursor
 	textD->TextDSetInsertPosition(newPos);
@@ -3196,16 +3199,17 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 	int row, col, startCol, endCol, startPos, endPos;
 	int newPos = textD->TextDXYToPosition(Point{x, y});
 
-	if (text_of(tw).dragState == SECONDARY_RECT_DRAG) {
+	if (textD_of(tw)->dragState == SECONDARY_RECT_DRAG) {
 		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
-		col = textD->TextDOffsetWrappedColumn(row, col);
-		startCol = std::min<int>(text_of(tw).rectAnchor, col);
-		endCol = std::max<int>(text_of(tw).rectAnchor, col);
-		startPos = buf->BufStartOfLine(std::min<int>(text_of(tw).anchor, newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(text_of(tw).anchor, newPos));
+		col      = textD->TextDOffsetWrappedColumn(row, col);
+		startCol = std::min(textD_of(tw)->rectAnchor, col);
+		endCol   = std::max(textD_of(tw)->rectAnchor, col);
+		startPos = buf->BufStartOfLine(std::min(textD_of(tw)->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max(textD_of(tw)->anchor, newPos));
 		buf->BufSecRectSelect(startPos, endPos, startCol, endCol);
-	} else
-		textD->buffer->BufSecondarySelect(text_of(tw).anchor, newPos);
+	} else {
+		textD->buffer->BufSecondarySelect(textD_of(tw)->anchor, newPos);
+	}
 }
 
 /*
@@ -3295,7 +3299,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
 	newPos = textD->TextDXYToPosition(text_of(w).mouseCoord);
-	if (text_of(w).dragState == PRIMARY_RECT_DRAG)
+	if (textD_of(w)->dragState == PRIMARY_RECT_DRAG)
 		cursorX = text_of(w).mouseCoord.x;
 	else if (!textD->TextDPositionToXY(newPos, &cursorX, &y))
 		cursorX = text_of(w).mouseCoord.x;
@@ -3315,15 +3319,15 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	/* Continue the drag operation in progress.  If none is in progress
 	   (safety check) don't continue to re-establish the timer proc */
-	if (text_of(w).dragState == PRIMARY_DRAG) {
+	if (textD_of(w)->dragState == PRIMARY_DRAG) {
 		adjustSelection(w, text_of(w).mouseCoord.x, text_of(w).mouseCoord.y);
-	} else if (text_of(w).dragState == PRIMARY_RECT_DRAG) {
+	} else if (textD_of(w)->dragState == PRIMARY_RECT_DRAG) {
 		adjustSelection(w, text_of(w).mouseCoord.x, text_of(w).mouseCoord.y);
-	} else if (text_of(w).dragState == SECONDARY_DRAG) {
+	} else if (textD_of(w)->dragState == SECONDARY_DRAG) {
 		adjustSecondarySelection(w, text_of(w).mouseCoord.x, text_of(w).mouseCoord.y);
-	} else if (text_of(w).dragState == SECONDARY_RECT_DRAG) {
+	} else if (textD_of(w)->dragState == SECONDARY_RECT_DRAG) {
 		adjustSecondarySelection(w, text_of(w).mouseCoord.x, text_of(w).mouseCoord.y);
-	} else if (text_of(w).dragState == PRIMARY_BLOCK_DRAG) {
+	} else if (textD_of(w)->dragState == PRIMARY_BLOCK_DRAG) {
 		textD->BlockDragSelection(text_of(w).mouseCoord, USE_LAST);
 	} else {
 		text_of(w).autoScrollProcID = 0;

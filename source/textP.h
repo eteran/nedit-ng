@@ -122,10 +122,6 @@ public:
 
 	/* private state */
 	TextDisplay *textD;             // Pointer to display information
-	int anchor;                     // Anchor for drag operations
-	int rectAnchor;                 // Anchor for rectangular drag operations
-	int dragState;                  // Why is the mouse being dragged and what is being acquired
-	int multiClickState;            // How long is this multi-click sequence so far
 	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
 	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)

@@ -1719,7 +1719,7 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 	topLine = this->topLineNum;
 
 	// Don't do padding if this is a mouse operation
-	bool do_padding = ((text_of(w).dragState == NOT_CLICKED) && (cursorVPadding > 0));
+	bool do_padding = ((this->dragState == NOT_CLICKED) && (cursorVPadding > 0));
 
 	// Find the new top line number
 	if (cursorPos < this->firstChar) {
@@ -1745,10 +1745,10 @@ void TextDisplay::TextDMakeInsertPosVisible() {
 		// Keep the cursor away from the top or bottom of screen.
 		if (this->nVisibleLines <= 2 * (int)cursorVPadding) {
 			topLine += (linesFromTop - this->nVisibleLines / 2);
-			topLine = std::max<int>(topLine, 1);
+			topLine = std::max(topLine, 1);
 		} else if (linesFromTop < (int)cursorVPadding) {
 			topLine -= (cursorVPadding - linesFromTop);
-			topLine = std::max<int>(topLine, 1);
+			topLine = std::max(topLine, 1);
 		} else if (linesFromTop > this->nVisibleLines - (int)cursorVPadding - 1) {
 			topLine += (linesFromTop - (this->nVisibleLines - cursorVPadding - 1));
 		}
@@ -1803,7 +1803,7 @@ int TextDisplay::TextDPosOfPreferredCol(int column, int lineStartPos) {
 
 	newPos = this->buffer->BufCountForwardDispChars(lineStartPos, column);
 	if (this->continuousWrap) {
-		newPos = std::min<int>(newPos, TextDEndOfLine(lineStartPos, True));
+		newPos = std::min(newPos, TextDEndOfLine(lineStartPos, True));
 	}
 	return (newPos);
 }
@@ -1856,7 +1856,7 @@ int TextDisplay::TextDMoveUp(bool absolute) {
 
 	newPos = this->buffer->BufCountForwardDispChars(prevLineStartPos, column);
 	if (this->continuousWrap && !absolute)
-		newPos = std::min<int>(newPos, TextDEndOfLine(prevLineStartPos, True));
+		newPos = std::min(newPos, TextDEndOfLine(prevLineStartPos, True));
 
 	// move the cursor
 	TextDSetInsertPosition(newPos);
@@ -1894,7 +1894,7 @@ int TextDisplay::TextDMoveDown(bool absolute) {
 	newPos = this->buffer->BufCountForwardDispChars(nextLineStartPos, column);
 
 	if (this->continuousWrap && !absolute) {
-		newPos = std::min<int>(newPos, TextDEndOfLine(nextLineStartPos, True));
+		newPos = std::min(newPos, TextDEndOfLine(nextLineStartPos, True));
 	}
 
 	TextDSetInsertPosition(newPos);
@@ -2120,7 +2120,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   beyond the left and right edges of the text. */
 	startDispPos = textD->continuousWrap ? wrapModStart : pos;
 	if (origCursorPos == startDispPos && textD->cursorPos != startDispPos)
-		startDispPos = std::min<int>(startDispPos, origCursorPos - 1);
+		startDispPos = std::min(startDispPos, origCursorPos - 1);
 	if (linesInserted == linesDeleted) {
 		if (nInserted == 0 && nDeleted == 0)
 			endDispPos = pos + nRestyled;
@@ -2231,7 +2231,7 @@ int TextDisplay::posToVisibleLineNum(int pos, int *lineNum) {
 				}
 				return ++(*lineNum) <= this->nVisibleLines - 1;
 			} else {
-				posToVisibleLineNum(std::max<int>(this->lastChar - 1, 0), lineNum);
+				posToVisibleLineNum(std::max(this->lastChar - 1, 0), lineNum);
 				return true;
 			}
 		}
@@ -2290,8 +2290,8 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 		return;
 
 	// Shrink the clipping range to the active display area
-	leftClip = std::max<int>(this->rect.left, leftClip);
-	rightClip = std::min<int>(rightClip, this->rect.left + this->rect.width);
+	leftClip = std::max(this->rect.left, leftClip);
+	rightClip = std::min(rightClip, this->rect.left + this->rect.width);
 
 	if (leftClip > rightClip) {
 		return;
@@ -2711,7 +2711,7 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 	if (lineStartPos == -1 || buf == nullptr)
 		return FILL_MASK;
 
-	pos = lineStartPos + std::min<int>(lineIndex, lineLen);
+	pos = lineStartPos + std::min(lineIndex, lineLen);
 
 	if (lineIndex >= lineLen)
 		style = FILL_MASK;
@@ -2958,7 +2958,7 @@ void TextDisplay::updateLineStarts(int pos, int charsInserted, int charsDeleted,
 	if (pos < this->firstChar) {
 		// If some text remains in the window, anchor on that
 		if (posToVisibleLineNum(pos + charsDeleted, &lineOfEnd) && ++lineOfEnd < nVisLines && lineStarts[lineOfEnd] != -1) {
-			this->topLineNum = std::max<int>(1, this->topLineNum + lineDelta);
+			this->topLineNum = std::max(1, this->topLineNum + lineDelta);
 			this->firstChar = TextDCountBackwardNLines(lineStarts[lineOfEnd] + charDelta, lineOfEnd);
 			// Otherwise anchor on original line number and recount everything
 		} else {
@@ -2996,7 +2996,7 @@ void TextDisplay::updateLineStarts(int pos, int charsInserted, int charsDeleted,
 			for (i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
 				lineStarts[i] = lineStarts[i - lineDelta] + (lineStarts[i - lineDelta] == -1 ? 0 : charDelta);
 		} else /* (lineDelta < 0) */ {
-			for (i = std::max<int>(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
+			for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
 				lineStarts[i] = lineStarts[i - lineDelta] + (lineStarts[i - lineDelta] == -1 ? 0 : charDelta);
 		}
 		/* {   int i;
@@ -3265,7 +3265,7 @@ void TextDisplay::updateVScrollBarRange() {
 	   line number, and the number of visible lines respectively.  The scroll
 	   bar maximum value is chosen to generally represent the size of the whole
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
-	sliderSize = std::max<int>(this->nVisibleLines, 1); // Avoid X warning (size < 1)
+	sliderSize = std::max(this->nVisibleLines, 1); // Avoid X warning (size < 1)
 	sliderValue = this->topLineNum;
 	sliderMax = std::max<int>(this->nBufferLines + 2 + text_of(w).P_cursorVPadding, sliderSize + sliderValue);
 	XtVaSetValues(this->vScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max<int>(1, this->nVisibleLines - 1), XmNvalue, sliderValue, nullptr);
@@ -3291,17 +3291,17 @@ int TextDisplay::updateHScrollBarRange() {
 
 	// Scan all the displayed lines to find the width of the longest line
 	for (i = 0; i < this->nVisibleLines && this->lineStarts[i] != -1; i++)
-		maxWidth = std::max<int>(this->measureVisLine(i), maxWidth);
+		maxWidth = std::max(this->measureVisLine(i), maxWidth);
 
 	/* If the scroll position is beyond what's necessary to keep all lines
 	   in view, scroll to the left to bring the end of the longest line to
 	   the right margin */
 	if (maxWidth < this->rect.width + this->horizOffset && this->horizOffset > 0)
-		this->horizOffset = std::max<int>(0, maxWidth - this->rect.width);
+		this->horizOffset = std::max(0, maxWidth - this->rect.width);
 
 	// Readjust the scroll bar
 	sliderWidth = this->rect.width;
-	sliderMax = std::max<int>(maxWidth, sliderWidth + this->horizOffset);
+	sliderMax = std::max(maxWidth, sliderWidth + this->horizOffset);
 	XtVaSetValues(this->hScrollBar, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(this->rect.width - 100, 10), XmNvalue, this->horizOffset, nullptr);
 
 	// Return True if scroll position was changed
@@ -3359,7 +3359,7 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 		XClearArea(XtDisplay(this->w), XtWindow(this->w), this->lineNumLeft, this->rect.top, this->lineNumWidth, this->rect.height, false);
 
 	// Draw the line numbers, aligned to the text
-	nCols = std::min<int>(11, this->lineNumWidth / charWidth);
+	nCols = std::min(11, this->lineNumWidth / charWidth);
 	y = this->rect.top;
 	line = this->getAbsTopLineNum();
 	for (visLine = 0; visLine < this->nVisibleLines; visLine++) {
@@ -3672,11 +3672,11 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 				countFrom = lineStart;
 				nLines = 0;
 				if (visLineNum + 1 < nVisLines && lineStarts[visLineNum + 1] != -1)
-					*modRangeStart = std::min<int>(pos, lineStarts[visLineNum + 1] - 1);
+					*modRangeStart = std::min(pos, lineStarts[visLineNum + 1] - 1);
 				else
 					*modRangeStart = countFrom;
 			} else
-				*modRangeStart = std::min<int>(*modRangeStart, lineStart - 1);
+				*modRangeStart = std::min(*modRangeStart, lineStart - 1);
 		}
 
 		/* check for synchronization with the original line starts array
@@ -3917,7 +3917,7 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 				}
 			}
 			if (!foundBreak) { // no whitespace, just break at margin
-				newLineStart = std::max<int>(p, lineStart + 1);
+				newLineStart = std::max(p, lineStart + 1);
 				colNum = TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 				if (countPixels)
 					width = this->measurePropChar(c, colNum, p + styleBufOffset);
@@ -4820,7 +4820,7 @@ bool TextDisplay::checkReadOnly() const {
 ** a drag operation)
 */
 void TextDisplay::cancelDrag() {
-	int dragState = text_of(w).dragState;
+	int dragState = this->dragState;
 
 	if (text_of(w).autoScrollProcID != 0) {
 		XtRemoveTimeOut(text_of(w).autoScrollProcID);
@@ -4838,7 +4838,7 @@ void TextDisplay::cancelDrag() {
 		XUngrabPointer(XtDisplay(w), CurrentTime);
 		break;
 	case NOT_CLICKED:
-		text_of(w).dragState = DRAG_CANCELED;
+		this->dragState = DRAG_CANCELED;
 		break;
 	}
 }
@@ -4903,10 +4903,10 @@ void TextDisplay::adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool
 			int prev_left = *left;
 			int prev_top = *top;
 
-			*left   = std::min<int>(*left, x);
-			*top    = std::min<int>(*top, y);
-			*width  = std::max<int>(prev_left + *width, x + e->width) - *left;
-			*height = std::max<int>(prev_top + *height, y + e->height) - *top;
+			*left   = std::min(*left, x);
+			*top    = std::min(*top, y);
+			*width  = std::max(prev_left + *width, x + e->width) - *left;
+			*height = std::max(prev_top + *height, y + e->height) - *top;
 		}
 		if (e->count == 0) {
 			removeQueueEntry = true;
@@ -5120,7 +5120,7 @@ void TextDisplay::BeginBlockDrag() {
 	}
 
 	// Set the drag state to announce an ongoing block-drag 
-	text_of(w).dragState = PRIMARY_BLOCK_DRAG;
+	this->dragState = PRIMARY_BLOCK_DRAG;
 
 	// Call the callback announcing the start of a block drag 
 	XtCallCallbacks(w, textNdragStartCallback, nullptr);
@@ -5163,7 +5163,7 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	int sourceDeleted;
 	int sourceDeletePos;
 
-	if (text_of(w).dragState != PRIMARY_BLOCK_DRAG) {
+	if (this->dragState != PRIMARY_BLOCK_DRAG) {
 		return;
 	}
 
@@ -5387,7 +5387,7 @@ void TextDisplay::FinishBlockDrag() {
 	delete this->dragOrigBuf;
 
 	// Return to normal drag state 
-	text_of(w).dragState = NOT_CLICKED;
+	this->dragState = NOT_CLICKED;
 
 	// Call finish-drag calback 
 	dragEndCBStruct endStruct;
@@ -5434,7 +5434,7 @@ void TextDisplay::CancelBlockDrag() {
 	delete origBuf;
 
 	// Indicate end of drag 
-	text_of(w).dragState = DRAG_CANCELED;
+	this->dragState = DRAG_CANCELED;
 
 	// Call finish-drag calback 
 	dragEndCBStruct endStruct;	

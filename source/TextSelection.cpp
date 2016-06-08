@@ -16,8 +16,8 @@ void TextSelection::setSelection(int newStart, int newEnd) {
 	selected	= (newStart != newEnd);
 	zeroWidth	= (newStart == newEnd);
 	rectangular = false;
-	start		= std::min<int>(newStart, newEnd);
-	end 		= std::max<int>(newStart, newEnd);
+	start		= std::min(newStart, newEnd);
+	end 		= std::max(newStart, newEnd);
 }
 
 //------------------------------------------------------------------------------

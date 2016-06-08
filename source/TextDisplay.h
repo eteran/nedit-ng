@@ -334,6 +334,11 @@ public:
 	int dragSourceInserted;         // # of chars. inserted when move source text was deleted
 	int dragSourceDeleted;          // # of chars. deleted ""
 	int dragNLines;                 // # of newlines in text being drag'd
+	
+	int anchor;                     // Anchor for drag operations
+	int rectAnchor;                 // Anchor for rectangular drag operations
+	int dragState;                  // Why is the mouse being dragged and what is being acquired
+	int multiClickState;            // How long is this multi-click sequence so far	
 };
 
 #endif
