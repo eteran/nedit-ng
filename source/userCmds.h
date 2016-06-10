@@ -135,25 +135,23 @@ void UpdateUserMenus(Document *window);
 void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 int checkMacroText(const char *macro, Widget errorParent, Widget errFocus);
 int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
-void freeUserMenuInfoList(MenuData *infoList, int nbrOfItems);
-void parseMenuItemList(MenuData *itemList, int nbrOfItems, userSubMenuCache *subMenus);
 void freeSubMenuCache(userSubMenuCache *subMenus);
 void rebuildMenuOfAllWindows(int menuType);
+
+void freeUserMenuInfoList(const QVector<MenuData> &infoList);
+void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus);
 
 /* max. number of user programmable menu commands allowed per each of the
    macro, shell, and background menus */
 #define MAX_ITEMS_PER_MENU 400
 
-extern int NShellMenuItems;
-extern MenuData ShellMenuData[MAX_ITEMS_PER_MENU];
+extern QVector<MenuData>  ShellMenuData;
 extern userSubMenuCache ShellSubMenus;
 
-extern int NBGMenuItems;
-extern MenuData BGMenuData[MAX_ITEMS_PER_MENU];
+extern QVector<MenuData> BGMenuData;
 extern userSubMenuCache BGSubMenus;
 
-extern int NMacroMenuItems;
-extern MenuData MacroMenuData[MAX_ITEMS_PER_MENU];
+extern QVector<MenuData> MacroMenuData;
 extern userSubMenuCache MacroSubMenus;
 
 #endif
