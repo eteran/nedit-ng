@@ -79,8 +79,12 @@ struct selectedUserMenu {
 	int sumType;                   // type of menu (shell, macro or background
 	Widget sumMenuPane;            // pane of main menu 
 	int sumNbrOfListItems;         // number of menu items 
+#if 1
 	MenuItem **sumItemList;        // list of menu items 
 	userMenuInfo **sumInfoList;    // list of infos about menu items 
+#endif
+	MenuData *sumDataList;
+
 	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
 	UserMenuList *sumMainMenuList; // cached info about main menu 
 	bool *sumMenuCreated;       // pointer to "menu created" indicator
@@ -89,8 +93,12 @@ struct selectedUserMenu {
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
 int NShellMenuItems = 0;
-MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
+#if 0
+MenuItem *ShellMenuData[MAX_ITEMS_PER_MENU];
 userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
+#else
+MenuData ShellMenuData[MAX_ITEMS_PER_MENU];
+#endif
 userSubMenuCache ShellSubMenus;
 
 int NMacroMenuItems = 0;
@@ -104,6 +112,7 @@ userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
 userSubMenuCache BGSubMenus;
 
 static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
+static void dimSelDepItemsInMenu(Widget menuPane, MenuData *menuList, int nMenuItems, int sensitive);
 static void rebuildMenu(Document *window, int menuType);
 static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const QString &hierName);
 static char *copySubstring(const char *string, int length);
@@ -126,8 +135,11 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType);
+static char *writeMenuItemString(MenuData *menuItems, int nItems, int listType);
 static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType);
+static QString writeMenuItemStringEx(MenuData *menuItems, int nItems, int listType);
 static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType);
+static int loadMenuItemString(const char *inString, MenuData *menuItems, int *nItems, int listType);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
@@ -139,7 +151,9 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *
 static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const QString &hierName);
 static char *stripLanguageModeEx(const QString &menuItemName);
 static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx);
+static void setDefaultIndex(MenuData *infoList, int nbrOfItems, int defaultIdx);
 static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems, int languageMode);
+static void applyLangModeToUserMenuInfo(MenuData *infoList, int nbrOfItems, int languageMode);
 static int doesLanguageModeMatch(userMenuInfo *info, int languageMode);
 static void freeUserMenuInfo(userMenuInfo *info);
 static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
@@ -240,9 +254,34 @@ void DimSelectionDepUserMenuItems(Document *window, int sensitive) {
 	if (!window->IsTopDocument())
 		return;
 
-	dimSelDepItemsInMenu(window->shellMenuPane_, ShellMenuItems, NShellMenuItems, sensitive);
+	dimSelDepItemsInMenu(window->shellMenuPane_, ShellMenuData, NShellMenuItems, sensitive);
 	dimSelDepItemsInMenu(window->macroMenuPane_, MacroMenuItems, NMacroMenuItems, sensitive);
 	dimSelDepItemsInMenu(window->bgMenuPane_,    BGMenuItems,    NBGMenuItems,    sensitive);
+}
+
+static void dimSelDepItemsInMenu(Widget menuPane, MenuData *menuList, int nMenuItems, int sensitive) {
+	WidgetList items;
+	Widget subMenu;
+	XtPointer userData;
+	int n, index;
+	Cardinal nItems;
+
+	XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
+	for (n = 0; n < (int)nItems; n++) {
+		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
+		if (userData != (XtPointer)PERMANENT_MENU_ITEM) {
+			if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
+				XtVaGetValues(items[n], XmNsubMenuId, &subMenu, nullptr);
+				dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
+			} else {
+				index = (long)userData - 10;
+				if (index < 0 || index >= nMenuItems)
+					return;
+				if (menuList[index].item->input == FROM_SELECTION)
+					XtSetSensitive(items[n], sensitive);
+			}
+		}
+	}
 }
 
 static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive) {
@@ -291,7 +330,7 @@ void SetBGMenuRedoSensitivity(Document *window, int sensitive) {
 ** to a resource file such that it will read back in that form.
 */
 QString WriteShellCmdsStringEx(void) {
-	return writeMenuItemStringEx(ShellMenuItems, NShellMenuItems, SHELL_CMDS);
+	return writeMenuItemStringEx(ShellMenuData, NShellMenuItems, SHELL_CMDS);
 }
 
 /*
@@ -315,7 +354,7 @@ QString WriteBGMenuCmdsStringEx(void) {
 ** internal list used for constructing shell menus
 */
 int LoadShellCmdsString(const char *inString) {
-	return loadMenuItemString(inString, ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
+	return loadMenuItemString(inString, ShellMenuData, &NShellMenuItems, SHELL_CMDS);
 }
 
 /*
@@ -324,7 +363,7 @@ int LoadShellCmdsString(const char *inString) {
 */
 int LoadShellCmdsStringEx(view::string_view inString) {
 	// TODO(eteran): make this more efficient
-	return loadMenuItemString(inString.to_string().c_str(), ShellMenuItems, &NShellMenuItems, SHELL_CMDS);
+	return loadMenuItemString(inString.to_string().c_str(), ShellMenuData, &NShellMenuItems, SHELL_CMDS);
 }
 
 /*
@@ -356,7 +395,7 @@ int LoadBGMenuCmdsStringEx(view::string_view inString) {
 ** user menu preference string was read).
 */
 void SetupUserMenuInfo(void) {
-	parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
+	parseMenuItemList(ShellMenuData, NShellMenuItems, &ShellSubMenus);
 	parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
 	parseMenuItemList(BGMenuItems, NBGMenuItems, BGMenuInfo, &BGSubMenus);
 }
@@ -367,9 +406,9 @@ void SetupUserMenuInfo(void) {
 ** (i.e. add / move / delete of language modes etc).
 */
 void UpdateUserMenuInfo(void) {
-	freeUserMenuInfoList(ShellMenuInfo, NShellMenuItems);
+	freeUserMenuInfoList(ShellMenuData, NShellMenuItems);
 	freeSubMenuCache(&ShellSubMenus);
-	parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
+	parseMenuItemList(ShellMenuData, NShellMenuItems, &ShellSubMenus);
 
 	freeUserMenuInfoList(MacroMenuInfo, NMacroMenuItems);
 	freeSubMenuCache(&MacroSubMenus);
@@ -387,10 +426,10 @@ void UpdateUserMenuInfo(void) {
 bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 
 	for (int i = 0; i < NShellMenuItems; i++) {
-		if (ShellMenuItems[i]->name == QLatin1String(itemName)) {
-			if (ShellMenuItems[i]->output == TO_SAME_WINDOW && CheckReadOnly(window))
+		if (ShellMenuData[i].item->name == QLatin1String(itemName)) {
+			if (ShellMenuData[i].item->output == TO_SAME_WINDOW && CheckReadOnly(window))
 				return false;
-			DoShellMenuCmd(window, ShellMenuItems[i]->cmd.toStdString(), ShellMenuItems[i]->input, ShellMenuItems[i]->output, ShellMenuItems[i]->repInput, ShellMenuItems[i]->saveFirst, ShellMenuItems[i]->loadAfter, fromMacro);
+			DoShellMenuCmd(window, ShellMenuData[i].item->cmd.toStdString(), ShellMenuData[i].item->input, ShellMenuData[i].item->output, ShellMenuData[i].item->repInput, ShellMenuData[i].item->saveFirst, ShellMenuData[i].item->loadAfter, fromMacro);
 			return true;
 		}
 	}
@@ -453,7 +492,7 @@ void rebuildMenuOfAllWindows(int menuType) {
 ** - update user menu including (re)creation of menu widgets.
 */
 static void rebuildMenu(Document *window, int menuType) {
-	selectedUserMenu menu;
+	selectedUserMenu menu = {};
 
 	/* Background menu is always rebuild (exists once per document).
 	   Shell, macro (user) menu cache is rebuild only, if given window is
@@ -490,29 +529,28 @@ static void rebuildMenu(Document *window, int menuType) {
 */
 static void selectUserMenu(Document *window, int menuType, selectedUserMenu *menu) {
 	if (menuType == SHELL_CMDS) {
-		menu->sumMenuPane = window->shellMenuPane_;
+		menu->sumMenuPane       = window->shellMenuPane_;
 		menu->sumNbrOfListItems = NShellMenuItems;
-		menu->sumItemList = ShellMenuItems;
-		menu->sumInfoList = ShellMenuInfo;
-		menu->sumSubMenus = &ShellSubMenus;
-		menu->sumMainMenuList = &window->userMenuCache_->umcShellMenuList;
-		menu->sumMenuCreated = &window->userMenuCache_->umcShellMenuCreated;
+		menu->sumDataList       = ShellMenuData;
+		menu->sumSubMenus       = &ShellSubMenus;
+		menu->sumMainMenuList   = &window->userMenuCache_->umcShellMenuList;
+		menu->sumMenuCreated    = &window->userMenuCache_->umcShellMenuCreated;
 	} else if (menuType == MACRO_CMDS) {
-		menu->sumMenuPane = window->macroMenuPane_;
+		menu->sumMenuPane       = window->macroMenuPane_;
 		menu->sumNbrOfListItems = NMacroMenuItems;
-		menu->sumItemList = MacroMenuItems;
-		menu->sumInfoList = MacroMenuInfo;
-		menu->sumSubMenus = &MacroSubMenus;
-		menu->sumMainMenuList = &window->userMenuCache_->umcMacroMenuList;
-		menu->sumMenuCreated = &window->userMenuCache_->umcMacroMenuCreated;
+		menu->sumItemList       = MacroMenuItems;
+		menu->sumInfoList       = MacroMenuInfo;
+		menu->sumSubMenus       = &MacroSubMenus;
+		menu->sumMainMenuList   = &window->userMenuCache_->umcMacroMenuList;
+		menu->sumMenuCreated    = &window->userMenuCache_->umcMacroMenuCreated;
 	} else { // BG_MENU_CMDS 
-		menu->sumMenuPane = window->bgMenuPane_;
+		menu->sumMenuPane       = window->bgMenuPane_;
 		menu->sumNbrOfListItems = NBGMenuItems;
-		menu->sumItemList = BGMenuItems;
-		menu->sumInfoList = BGMenuInfo;
-		menu->sumSubMenus = &BGSubMenus;
-		menu->sumMainMenuList = &window->userBGMenuCache_.ubmcMenuList;
-		menu->sumMenuCreated = &window->userBGMenuCache_.ubmcMenuCreated;
+		menu->sumItemList       = BGMenuItems;
+		menu->sumInfoList       = BGMenuInfo;
+		menu->sumSubMenus       = &BGSubMenus;
+		menu->sumMainMenuList   = &window->userBGMenuCache_.ubmcMenuList;
+		menu->sumMenuCreated    = &window->userBGMenuCache_.ubmcMenuCreated;
 	}
 	menu->sumType = menuType;
 }
@@ -528,13 +566,23 @@ static void selectUserMenu(Document *window, int menuType, selectedUserMenu *men
 **   indication of user menu info list items.
 */
 static void updateMenu(Document *window, int menuType) {
-	selectedUserMenu menu;
+	selectedUserMenu menu = {};
 
 	// Fetch the appropriate menu data 
 	selectUserMenu(window, menuType, &menu);
 
 	// Set / reset "to be managed" flag of all info list items 
-	applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode_);
+	switch(menuType) {
+	case SHELL_CMDS:
+		applyLangModeToUserMenuInfo(menu.sumDataList, menu.sumNbrOfListItems, window->languageMode_);
+		break;
+	case MACRO_CMDS:
+		applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode_);
+		break;
+	case BG_MENU_CMDS:
+		applyLangModeToUserMenuInfo(menu.sumInfoList, menu.sumNbrOfListItems, window->languageMode_);
+		break;	
+	}
 
 	// create user menu items, if not done before 
 	if (!*menu.sumMenuCreated)
@@ -799,7 +847,19 @@ static void manageUserMenu(selectedUserMenu *menu, Document *window) {
 	/* set manage mode of all items of selected user menu in window cache
 	   according to the "to be managed" indication of the info list */
 	for (int n = 0; n < menu->sumNbrOfListItems; n++) {
-		info = menu->sumInfoList[n];
+	
+		switch(menu->sumType) {
+		case SHELL_CMDS:
+			info = menu->sumDataList[n].info;
+			break;
+		case MACRO_CMDS:
+			info = menu->sumInfoList[n];
+			break;
+		case BG_MENU_CMDS:
+			info = menu->sumInfoList[n];
+			break;
+		}		
+	
 
 		menuList = menu->sumMainMenuList;
 		int *id = info->umiId;
@@ -916,8 +976,22 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 	menu->sumMainMenuList->clear();
 	
 	for (n = 0; n < menu->sumNbrOfListItems; n++) {
-		item = menu->sumItemList[n];
-		info = menu->sumInfoList[n];
+	
+		switch(menuType) {
+		case SHELL_CMDS:
+			item = menu->sumDataList[n].item;
+			info = menu->sumDataList[n].info;
+			break;
+		case MACRO_CMDS:
+			item = menu->sumItemList[n];
+			info = menu->sumInfoList[n];
+			break;
+		case BG_MENU_CMDS:
+			item = menu->sumItemList[n];
+			info = menu->sumInfoList[n];
+			break;
+		}	
+	
 		menuList = menu->sumMainMenuList;
 		subMenuDepth = 0;
 
@@ -938,7 +1012,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 				case MACRO_CMDS:
 					btn = createUserMenuItem(subPane, namePtr, item, n, macroMenuCB, (XtPointer)window);
 					break;
-				default:
+				case BG_MENU_CMDS:
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
 					break;
 				}
@@ -1131,7 +1205,7 @@ static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= NShellMenuItems)
 		return;
 
-	QByteArray str = ShellMenuItems[index]->name.toLatin1();
+	QByteArray str = ShellMenuData[index].item->name.toLatin1();
 	XtCallActionProcEx(window->lastFocus_, "shell_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
 }
 
@@ -1190,6 +1264,121 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	
 	QByteArray str = BGMenuItems[index]->name.toLatin1();
 	XtCallActionProcEx(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
+}
+
+static char *writeMenuItemString(MenuData *menuItems, int nItems, int listType) {
+	char accStr[MAX_ACCEL_LEN];
+	int i;
+	int length;
+
+	/* determine the max. amount of memory needed for the returned string
+	   and allocate a buffer for composing the string */
+	   
+	// NOTE(eteran): this code unconditionally writes at least 2 chars
+	// so to avoid an off by one error, this needs to be initialized to
+	// 1
+	length = 1;
+	for (i = 0; i < nItems; i++) {
+		MenuItem *f = menuItems[i].item;
+		generateAcceleratorString(accStr, f->modifiers, f->keysym);
+		length += f->name.size() * 2; // allow for \n & \\ expansions 
+		length += strlen(accStr);
+		length += f->cmd.size() * 6; // allow for \n & \\ expansions 
+		length += 21;                 // number of characters added below 
+	}
+	length++; // terminating null 
+	char *outStr = XtMalloc(length);
+
+	// write the string 
+	char *outPtr = outStr;
+	*outPtr++ = '\\';
+	*outPtr++ = '\n';
+	for (i = 0; i < nItems; i++) {
+		MenuItem *f = menuItems[i].item;
+		generateAcceleratorString(accStr, f->modifiers, f->keysym);
+		*outPtr++ = '\t';
+		
+		for (auto ch : f->name) { // Copy the command name 
+			if (ch == QLatin1Char('\\')) {                // changing backslashes to "\\" 
+				*outPtr++ = '\\';
+				*outPtr++ = '\\';
+			} else if (ch == QLatin1Char('\n')) { // changing newlines to \n 
+				*outPtr++ = '\\';
+				*outPtr++ = 'n';
+			} else {
+				*outPtr++ = ch.toLatin1();
+			}
+		}
+		
+		*outPtr++ = ':';
+		strcpy(outPtr, accStr);
+		outPtr += strlen(accStr);
+		*outPtr++ = ':';
+		if (f->mnemonic != '\0')
+			*outPtr++ = f->mnemonic;
+		*outPtr++ = ':';
+		if (listType == SHELL_CMDS) {
+			if (f->input == FROM_SELECTION)
+				*outPtr++ = 'I';
+			else if (f->input == FROM_WINDOW)
+				*outPtr++ = 'A';
+			else if (f->input == FROM_EITHER)
+				*outPtr++ = 'E';
+			if (f->output == TO_DIALOG)
+				*outPtr++ = 'D';
+			else if (f->output == TO_NEW_WINDOW)
+				*outPtr++ = 'W';
+			if (f->repInput)
+				*outPtr++ = 'X';
+			if (f->saveFirst)
+				*outPtr++ = 'S';
+			if (f->loadAfter)
+				*outPtr++ = 'L';
+			*outPtr++ = ':';
+		} else {
+			if (f->input == FROM_SELECTION)
+				*outPtr++ = 'R';
+			*outPtr++ = ':';
+			*outPtr++ = ' ';
+			*outPtr++ = '{';
+		}
+		*outPtr++ = '\\';
+		*outPtr++ = 'n';
+		*outPtr++ = '\\';
+		*outPtr++ = '\n';
+		*outPtr++ = '\t';
+		*outPtr++ = '\t';
+		
+		for(QChar c : f->cmd) {
+			if (c == QLatin1Char('\\')) {                
+				*outPtr++ = '\\';                // Copy the command string, changing 
+				*outPtr++ = '\\';                // backslashes to double backslashes 
+			} else if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,    
+				*outPtr++ = '\\';			     // followed by real newlines and tab 
+				*outPtr++ = 'n';
+				*outPtr++ = '\\';
+				*outPtr++ = '\n';
+				*outPtr++ = '\t';
+				*outPtr++ = '\t';
+			} else
+				*outPtr++ = c.toLatin1();
+		}
+		
+		if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
+			if (*(outPtr - 1) == '\t') {
+				outPtr--;
+			}
+			*outPtr++ = '}';
+		}
+		
+		*outPtr++ = '\\';
+		*outPtr++ = 'n';
+		*outPtr++ = '\\';
+		*outPtr++ = '\n';
+	}
+	--outPtr;
+	*--outPtr = '\0';
+	return outStr;
 }
 
 static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType) {
@@ -1307,6 +1496,14 @@ static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType)
 	return outStr;
 }
 
+static QString writeMenuItemStringEx(MenuData *menuItems, int nItems, int listType) {
+	QString str;
+	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
+		str = QLatin1String(s);
+		XtFree(s);
+	}
+	return str;
+}
 
 static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType) {
 
@@ -1316,6 +1513,159 @@ static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listT
 		XtFree(s);
 	}
 	return str;
+}
+
+static int loadMenuItemString(const char *inString, MenuData *menuItems, int *nItems, int listType) {
+	char *cmdStr;
+	const char *inPtr = inString;
+	char *nameStr;
+	char accStr[MAX_ACCEL_LEN];
+	char mneChar;
+	KeySym keysym;
+	unsigned int modifiers;
+	int i;
+	int nameLen;
+	int accLen;
+	int mneLen;
+	int cmdLen;
+
+	for (;;) {
+
+		// remove leading whitespace 
+		while (*inPtr == ' ' || *inPtr == '\t')
+			inPtr++;
+
+		// end of string in proper place 
+		if (*inPtr == '\0') {
+			return True;
+		}
+
+		// read name field 
+		nameLen = strcspn(inPtr, ":");
+		if (nameLen == 0)
+			return parseError("no name field");
+		nameStr = XtMalloc(nameLen + 1);
+		strncpy(nameStr, inPtr, nameLen);
+		nameStr[nameLen] = '\0';
+		inPtr += nameLen;
+		if (*inPtr == '\0')
+			return parseError("end not expected");
+		inPtr++;
+
+		// read accelerator field 
+		accLen = strcspn(inPtr, ":");
+		if (accLen >= MAX_ACCEL_LEN)
+			return parseError("accelerator field too long");
+		strncpy(accStr, inPtr, accLen);
+		accStr[accLen] = '\0';
+		inPtr += accLen;
+		if (*inPtr == '\0')
+			return parseError("end not expected");
+		inPtr++;
+
+		// read menemonic field 
+		mneLen = strcspn(inPtr, ":");
+		if (mneLen > 1)
+			return parseError("mnemonic field too long");
+		if (mneLen == 1)
+			mneChar = *inPtr++;
+		else
+			mneChar = '\0';
+		inPtr++;
+		if (*inPtr == '\0')
+			return parseError("end not expected");
+
+		// read flags field 
+		InSrcs input = FROM_NONE;
+		OutDests output = TO_SAME_WINDOW;
+		bool repInput = false;
+		bool saveFirst = false;
+		bool loadAfter = false;
+		for (; *inPtr != ':'; inPtr++) {
+			if (listType == SHELL_CMDS) {
+				if (*inPtr == 'I')
+					input = FROM_SELECTION;
+				else if (*inPtr == 'A')
+					input = FROM_WINDOW;
+				else if (*inPtr == 'E')
+					input = FROM_EITHER;
+				else if (*inPtr == 'W')
+					output = TO_NEW_WINDOW;
+				else if (*inPtr == 'D')
+					output = TO_DIALOG;
+				else if (*inPtr == 'X')
+					repInput = True;
+				else if (*inPtr == 'S')
+					saveFirst = True;
+				else if (*inPtr == 'L')
+					loadAfter = True;
+				else
+					return parseError("unreadable flag field");
+			} else {
+				if (*inPtr == 'R')
+					input = FROM_SELECTION;
+				else
+					return parseError("unreadable flag field");
+			}
+		}
+		inPtr++;
+
+		// read command field 
+		if (listType == SHELL_CMDS) {
+			if (*inPtr++ != '\n')
+				return parseError("command must begin with newline");
+			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
+				inPtr++;
+			cmdLen = strcspn(inPtr, "\n");
+			if (cmdLen == 0)
+				return parseError("shell command field is empty");
+			cmdStr = XtMalloc(cmdLen + 1);
+			strncpy(cmdStr, inPtr, cmdLen);
+			cmdStr[cmdLen] = '\0';
+			inPtr += cmdLen;
+		} else {
+			cmdStr = copyMacroToEnd(&inPtr);
+			if(!cmdStr)
+				return False;
+		}
+		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
+			inPtr++; // skip trailing whitespace & newline 
+		}
+
+		// parse the accelerator field 
+		if (!parseAcceleratorString(accStr, &modifiers, &keysym)) {
+			return parseError("couldn't read accelerator field");
+		}
+
+		// create a menu item record 
+		auto f = new MenuItem;
+		f->name      = QLatin1String(nameStr);
+		f->cmd       = QLatin1String(cmdStr);
+		f->mnemonic  = mneChar;
+		f->modifiers = modifiers;
+		f->input     = input;
+		f->output    = output;
+		f->repInput  = repInput;
+		f->saveFirst = saveFirst;
+		f->loadAfter = loadAfter;
+		f->keysym    = keysym;
+		
+		XtFree(nameStr);
+		XtFree(cmdStr);
+
+		// add/replace menu record in the list 
+		for (i = 0; i < *nItems; i++) {
+			if (menuItems[i].item->name == f->name) {
+				delete menuItems[i].item;
+				menuItems[i].item = f;
+				break;
+			}
+		}
+		
+		if (i == *nItems) {
+			menuItems[(*nItems)++].item = f;
+		}
+	}
 }
 
 static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType) {
@@ -1731,6 +2081,33 @@ void FreeUserBGMenuCache(UserBGMenuCache *cache) {
 ** Parse given menu item list and setup a user menu info list for
 ** management of user menu.
 */
+
+void parseMenuItemList(MenuData *itemList, int nbrOfItems, userSubMenuCache *subMenus) {
+
+	// Allocate storage for structures to keep track of sub-menus 
+	allocSubMenuCache(subMenus, nbrOfItems);
+
+	/* 1st pass: setup user menu info: extract language modes, menu name &
+	   default indication; build user menu ID */
+	for (int i = 0; i < nbrOfItems; i++) {
+		itemList[i].info = parseMenuItemRec(itemList[i].item);
+		generateUserMenuId(itemList[i].info, subMenus);
+	}
+
+	// 2nd pass: solve "default" dependencies 
+	for (int i = 0; i < nbrOfItems; i++) {
+		userMenuInfo *info = itemList[i].info;
+
+		/* If the user menu item is a default one, then scan the list for
+		   items with the same name and a language mode specified.
+		   If one is found, then set the default index to the index of the
+		   current default item. */
+		if (info->umiIsDefault) {
+			setDefaultIndex(itemList, nbrOfItems, i);
+		}
+	}
+}
+
 void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus) {
 	int i;
 	userMenuInfo *info;
@@ -1965,6 +2342,21 @@ static char *stripLanguageModeEx(const QString &menuItemName) {
 	}
 }
 
+static void setDefaultIndex(MenuData *infoList, int nbrOfItems, int defaultIdx) {
+	char *defaultMenuName = infoList[defaultIdx].info->umiName;
+
+	/* Scan the list for items with the same name and a language mode
+	   specified. If one is found, then set the default index to the
+	   index of the current default item. */
+	for (int i = 0; i < nbrOfItems; i++) {
+		userMenuInfo *info = infoList[i].info;
+
+		if (!info->umiIsDefault && strcmp(info->umiName, defaultMenuName) == 0) {
+			info->umiDefaultIndex = defaultIdx;
+		}
+	}
+}
+
 static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx) {
 	char *defaultMenuName = infoList[defaultIdx]->umiName;
 	int i;
@@ -1987,6 +2379,33 @@ static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int default
 ** for given language mode. Set / reset "to be managed" indication
 ** of info list items accordingly.
 */
+static void applyLangModeToUserMenuInfo(MenuData *infoList, int nbrOfItems, int languageMode) {
+
+	/* 1st pass: mark all items as "to be managed", which are applicable
+	   for all language modes or which are indicated as "default" items */
+	for (int i = 0; i < nbrOfItems; i++) {
+		userMenuInfo *info = infoList[i].info;
+
+		info->umiToBeManaged = (info->umiNbrOfLanguageModes == 0 || info->umiIsDefault);
+	}
+
+	/* 2nd pass: mark language mode specific items matching given language
+	   mode as "to be managed". Reset "to be managed" indications of
+	   "default" items, if applicable */
+	for (int i = 0; i < nbrOfItems; i++) {
+		userMenuInfo *info = infoList[i].info;
+
+		if (info->umiNbrOfLanguageModes != 0) {
+			if (doesLanguageModeMatch(info, languageMode)) {
+				info->umiToBeManaged = True;
+
+				if (info->umiDefaultIndex != -1)
+					infoList[info->umiDefaultIndex].info->umiToBeManaged = false;
+			}
+		}
+	}
+}
+
 static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems, int languageMode) {
 	int i;
 	userMenuInfo *info;
@@ -2028,6 +2447,12 @@ static int doesLanguageModeMatch(userMenuInfo *info, int languageMode) {
 	}
 
 	return False;
+}
+
+void freeUserMenuInfoList(MenuData *infoList, int nbrOfItems) {
+	for (int i = 0; i < nbrOfItems; i++) {
+		freeUserMenuInfo(infoList[i].info);
+	}
 }
 
 void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems) {

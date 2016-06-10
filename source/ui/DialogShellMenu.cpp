@@ -17,7 +17,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(p
 	ui.setupUi(this);
 
 	for (int i = 0; i < NShellMenuItems; i++) {
-		auto ptr  = new MenuItem(*ShellMenuItems[i]);
+		auto ptr  = new MenuItem(*ShellMenuData[i].item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -439,21 +439,21 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	// Update the menu information
 	for (int i = 0; i < NShellMenuItems; i++) {
-		delete ShellMenuItems[i];
+		delete ShellMenuData[i].item;
 	}
 
-	freeUserMenuInfoList(ShellMenuInfo, NShellMenuItems);
+	freeUserMenuInfoList(ShellMenuData, NShellMenuItems);
 	freeSubMenuCache(&ShellSubMenus);
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		ShellMenuItems[i] = new MenuItem(*ptr);
+		ShellMenuData[i].item = new MenuItem(*ptr);
 	}
 
 	NShellMenuItems = count;
 
-	parseMenuItemList(ShellMenuItems, NShellMenuItems, ShellMenuInfo, &ShellSubMenus);
+	parseMenuItemList(ShellMenuData, NShellMenuItems, &ShellSubMenus);
 
 	// Update the menus themselves in all of the NEdit windows
 	rebuildMenuOfAllWindows(SHELL_CMDS);

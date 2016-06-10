@@ -38,6 +38,8 @@ enum DialogTypes {
 	BG_MENU_CMDS
 };
 
+
+
 class MenuItem;
 
 /* Structure holding info about a single menu item.
@@ -58,6 +60,11 @@ struct userMenuInfo {
 	int * umiLanguageMode;       // list of applicable lang. modes 
 	int   umiDefaultIndex;       // array index of menu item to be used as default, if no lang. mode matches
 	bool  umiToBeManaged;        // indicates, that menu item needs to be managed
+};
+
+struct MenuData {
+	MenuItem     *item;
+	userMenuInfo *info;
 };
 
 /* Structure holding hierarchical info about one sub-menu.
@@ -106,10 +113,10 @@ int LoadMacroCmdsString(const char *inString);
 int LoadMacroCmdsStringEx(view::string_view inString);
 int LoadShellCmdsString(const char *inString);
 int LoadShellCmdsStringEx(view::string_view inString);
-QString WriteBGMenuCmdsStringEx(void);
-QString WriteMacroCmdsStringEx(void);
-QString WriteShellCmdsStringEx(void);
-UserMenuCache *CreateUserMenuCache(void);
+QString WriteBGMenuCmdsStringEx();
+QString WriteMacroCmdsStringEx();
+QString WriteShellCmdsStringEx();
+UserMenuCache *CreateUserMenuCache();
 void DimPasteReplayBtns(int sensitive);
 void DimSelectionDepUserMenuItems(Document *window, int sensitive);
 void EditBGMenu(Document *window);
@@ -121,15 +128,17 @@ void InitUserBGMenuCache(UserBGMenuCache *cache);
 void RebuildAllMenus(Document *window);
 void SetBGMenuRedoSensitivity(Document *window, int sensitive);
 void SetBGMenuUndoSensitivity(Document *window, int sensitive);
-void SetupUserMenuInfo(void);
-void UpdateUserMenuInfo(void);
+void SetupUserMenuInfo();
+void UpdateUserMenuInfo();
 void UpdateUserMenus(Document *window);
 
 void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
 int checkMacroText(const char *macro, Widget errorParent, Widget errFocus);
 int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems);
+void freeUserMenuInfoList(MenuData *infoList, int nbrOfItems);
 void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus);
+void parseMenuItemList(MenuData *itemList, int nbrOfItems, userSubMenuCache *subMenus);
 void freeSubMenuCache(userSubMenuCache *subMenus);
 void rebuildMenuOfAllWindows(int menuType);
 
@@ -138,8 +147,12 @@ void rebuildMenuOfAllWindows(int menuType);
 #define MAX_ITEMS_PER_MENU 400
 
 extern int NShellMenuItems;
+#if 0
 extern MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
 extern userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
+#else
+extern MenuData ShellMenuData[MAX_ITEMS_PER_MENU];
+#endif
 extern userSubMenuCache ShellSubMenus;
 
 extern int NBGMenuItems;

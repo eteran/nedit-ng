@@ -108,42 +108,7 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-	ui/DialogDuplicateTags.cpp
-	ui/DialogAbout.cpp
-	ui/DialogColors.cpp
-	ui/DialogDrawingStyles.cpp
-	ui/DialogExecuteCommand.cpp
-	ui/DialogFilter.cpp
-	ui/DialogFind.cpp
-	ui/DialogFontSelector.cpp
-	ui/DialogFonts.cpp
-	ui/DialogLanguageModes.cpp
-	ui/DialogMacros.cpp
-	ui/DialogMoveDocument.cpp
-	ui/DialogMultiReplace.cpp
-	ui/DialogPrint.cpp
-	ui/DialogReplace.cpp
-	ui/DialogShellMenu.cpp
-	ui/DialogSmartIndent.cpp
-	ui/DialogSmartIndentCommon.cpp
-	ui/DialogTabs.cpp
-	ui/DialogWindowBackgroundMenu.cpp
-	ui/DialogWindowSize.cpp
-	ui/DialogWindowTitle.cpp
-	ui/DialogWrapMargin.cpp
-	ui/LineEdit.cpp
-	ui/ListWidget.cpp
-	ui/MainWindow.cpp
-	ui/DialogPrompt.cpp
-	ui/DialogPromptString.cpp
-	ui/DialogPromptList.cpp
-	ui/DialogSyntaxPatterns.cpp
-	ui/DialogRepeat.cpp
-	ui/KeySequenceEdit.cpp
-	ui/TextArea.cpp
-	ui/DocumentWidget.cpp
-	ui/TabWidget.cpp
-	ui/DialogOutput.cpp
+
 
 	QtMotif.cpp
 	QtMotifDialog.cpp
@@ -187,6 +152,45 @@ add_executable(nedit
 	userCmds.cpp
 	window.cpp
 	HighlightPattern.cpp
+	
+	
+	ui/DialogDuplicateTags.cpp
+	ui/DialogAbout.cpp
+	ui/DialogColors.cpp
+	ui/DialogDrawingStyles.cpp
+	ui/DialogExecuteCommand.cpp
+	ui/DialogFilter.cpp
+	ui/DialogFind.cpp
+	ui/DialogFontSelector.cpp
+	ui/DialogFonts.cpp
+	ui/DialogLanguageModes.cpp
+	ui/DialogMacros.cpp
+	ui/DialogMoveDocument.cpp
+	ui/DialogMultiReplace.cpp
+	ui/DialogPrint.cpp
+	ui/DialogReplace.cpp
+	ui/DialogShellMenu.cpp
+	ui/DialogSmartIndent.cpp
+	ui/DialogSmartIndentCommon.cpp
+	ui/DialogTabs.cpp
+	ui/DialogWindowBackgroundMenu.cpp
+	ui/DialogWindowSize.cpp
+	ui/DialogWindowTitle.cpp
+	ui/DialogWrapMargin.cpp
+	ui/LineEdit.cpp
+	ui/ListWidget.cpp
+	ui/MainWindow.cpp
+	ui/DialogPrompt.cpp
+	ui/DialogPromptString.cpp
+	ui/DialogPromptList.cpp
+	ui/DialogSyntaxPatterns.cpp
+	ui/DialogRepeat.cpp
+	ui/KeySequenceEdit.cpp
+	ui/TextArea.cpp
+	ui/DocumentWidget.cpp
+	ui/TabWidget.cpp
+	ui/DialogOutput.cpp
+		
 	${BISON_parser_OUTPUT_SOURCE}
 )
 
