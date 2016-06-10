@@ -100,7 +100,6 @@ int NBGMenuItems = 0;
 MenuData BGMenuData[MAX_ITEMS_PER_MENU];
 userSubMenuCache BGSubMenus;
 
-static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive);
 static void dimSelDepItemsInMenu(Widget menuPane, MenuData *menuList, int nMenuItems, int sensitive);
 static void rebuildMenu(Document *window, int menuType);
 static Widget findInMenuTreeEx(menuTreeItem *menuTree, int nTreeEntries, const QString &hierName);
@@ -123,11 +122,8 @@ static void createMenuItems(Document *window, selectedUserMenu *menu);
 static void shellMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void macroMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType);
 static char *writeMenuItemString(MenuData *menuItems, int nItems, int listType);
-static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType);
 static QString writeMenuItemStringEx(MenuData *menuItems, int nItems, int listType);
-static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType);
 static int loadMenuItemString(const char *inString, MenuData *menuItems, int *nItems, int listType);
 static void genAccelEventName(char *text, unsigned int modifiers, KeySym keysym);
 static int parseError(const char *message);
@@ -139,9 +135,7 @@ static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus);
 static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *hierName);
 static userSubMenuInfo *findSubMenuInfoEx(userSubMenuCache *subMenus, const QString &hierName);
 static char *stripLanguageModeEx(const QString &menuItemName);
-static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx);
 static void setDefaultIndex(MenuData *infoList, int nbrOfItems, int defaultIdx);
-static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems, int languageMode);
 static void applyLangModeToUserMenuInfo(MenuData *infoList, int nbrOfItems, int languageMode);
 static int doesLanguageModeMatch(userMenuInfo *info, int languageMode);
 static void freeUserMenuInfo(userMenuInfo *info);
@@ -267,31 +261,6 @@ static void dimSelDepItemsInMenu(Widget menuPane, MenuData *menuList, int nMenuI
 				if (index < 0 || index >= nMenuItems)
 					return;
 				if (menuList[index].item->input == FROM_SELECTION)
-					XtSetSensitive(items[n], sensitive);
-			}
-		}
-	}
-}
-
-static void dimSelDepItemsInMenu(Widget menuPane, MenuItem **menuList, int nMenuItems, int sensitive) {
-	WidgetList items;
-	Widget subMenu;
-	XtPointer userData;
-	int n, index;
-	Cardinal nItems;
-
-	XtVaGetValues(menuPane, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	for (n = 0; n < (int)nItems; n++) {
-		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
-		if (userData != (XtPointer)PERMANENT_MENU_ITEM) {
-			if (XtClass(items[n]) == xmCascadeButtonWidgetClass) {
-				XtVaGetValues(items[n], XmNsubMenuId, &subMenu, nullptr);
-				dimSelDepItemsInMenu(subMenu, menuList, nMenuItems, sensitive);
-			} else {
-				index = (long)userData - 10;
-				if (index < 0 || index >= nMenuItems)
-					return;
-				if (menuList[index]->input == FROM_SELECTION)
 					XtSetSensitive(items[n], sensitive);
 			}
 		}
@@ -1334,132 +1303,7 @@ static char *writeMenuItemString(MenuData *menuItems, int nItems, int listType) 
 	return outStr;
 }
 
-static char *writeMenuItemString(MenuItem **menuItems, int nItems, int listType) {
-	char accStr[MAX_ACCEL_LEN];
-	MenuItem *f;
-	int i, length;
-
-	/* determine the max. amount of memory needed for the returned string
-	   and allocate a buffer for composing the string */
-	   
-	// NOTE(eteran): this code unconditionally writes at least 2 chars
-	// so to avoid an off by one error, this needs to be initialized to
-	// 1
-	length = 1;
-	for (i = 0; i < nItems; i++) {
-		f = menuItems[i];
-		generateAcceleratorString(accStr, f->modifiers, f->keysym);
-		length += f->name.size() * 2; // allow for \n & \\ expansions 
-		length += strlen(accStr);
-		length += f->cmd.size() * 6; // allow for \n & \\ expansions 
-		length += 21;                 // number of characters added below 
-	}
-	length++; // terminating null 
-	char *outStr = XtMalloc(length);
-
-	// write the string 
-	char *outPtr = outStr;
-	*outPtr++ = '\\';
-	*outPtr++ = '\n';
-	for (i = 0; i < nItems; i++) {
-		f = menuItems[i];
-		generateAcceleratorString(accStr, f->modifiers, f->keysym);
-		*outPtr++ = '\t';
-		
-		for (auto ch : f->name) { // Copy the command name 
-			if (ch == QLatin1Char('\\')) {                // changing backslashes to "\\" 
-				*outPtr++ = '\\';
-				*outPtr++ = '\\';
-			} else if (ch == QLatin1Char('\n')) { // changing newlines to \n 
-				*outPtr++ = '\\';
-				*outPtr++ = 'n';
-			} else {
-				*outPtr++ = ch.toLatin1();
-			}
-		}
-		
-		*outPtr++ = ':';
-		strcpy(outPtr, accStr);
-		outPtr += strlen(accStr);
-		*outPtr++ = ':';
-		if (f->mnemonic != '\0')
-			*outPtr++ = f->mnemonic;
-		*outPtr++ = ':';
-		if (listType == SHELL_CMDS) {
-			if (f->input == FROM_SELECTION)
-				*outPtr++ = 'I';
-			else if (f->input == FROM_WINDOW)
-				*outPtr++ = 'A';
-			else if (f->input == FROM_EITHER)
-				*outPtr++ = 'E';
-			if (f->output == TO_DIALOG)
-				*outPtr++ = 'D';
-			else if (f->output == TO_NEW_WINDOW)
-				*outPtr++ = 'W';
-			if (f->repInput)
-				*outPtr++ = 'X';
-			if (f->saveFirst)
-				*outPtr++ = 'S';
-			if (f->loadAfter)
-				*outPtr++ = 'L';
-			*outPtr++ = ':';
-		} else {
-			if (f->input == FROM_SELECTION)
-				*outPtr++ = 'R';
-			*outPtr++ = ':';
-			*outPtr++ = ' ';
-			*outPtr++ = '{';
-		}
-		*outPtr++ = '\\';
-		*outPtr++ = 'n';
-		*outPtr++ = '\\';
-		*outPtr++ = '\n';
-		*outPtr++ = '\t';
-		*outPtr++ = '\t';
-		
-		for(QChar c : f->cmd) {
-			if (c == QLatin1Char('\\')) {                
-				*outPtr++ = '\\';                // Copy the command string, changing 
-				*outPtr++ = '\\';                // backslashes to double backslashes 
-			} else if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,    
-				*outPtr++ = '\\';			     // followed by real newlines and tab 
-				*outPtr++ = 'n';
-				*outPtr++ = '\\';
-				*outPtr++ = '\n';
-				*outPtr++ = '\t';
-				*outPtr++ = '\t';
-			} else
-				*outPtr++ = c.toLatin1();
-		}
-		
-		if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
-			if (*(outPtr - 1) == '\t') {
-				outPtr--;
-			}
-			*outPtr++ = '}';
-		}
-		
-		*outPtr++ = '\\';
-		*outPtr++ = 'n';
-		*outPtr++ = '\\';
-		*outPtr++ = '\n';
-	}
-	--outPtr;
-	*--outPtr = '\0';
-	return outStr;
-}
-
 static QString writeMenuItemStringEx(MenuData *menuItems, int nItems, int listType) {
-	QString str;
-	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
-		str = QLatin1String(s);
-		XtFree(s);
-	}
-	return str;
-}
-
-static QString writeMenuItemStringEx(MenuItem **menuItems, int nItems, int listType) {
-
 	QString str;
 	if(char *s = writeMenuItemString(menuItems, nItems, listType)) {
 		str = QLatin1String(s);
@@ -1617,160 +1461,6 @@ static int loadMenuItemString(const char *inString, MenuData *menuItems, int *nI
 		
 		if (i == *nItems) {
 			menuItems[(*nItems)++].item = f;
-		}
-	}
-}
-
-static int loadMenuItemString(const char *inString, MenuItem **menuItems, int *nItems, int listType) {
-
-	char *cmdStr;
-	const char *inPtr = inString;
-	char *nameStr;
-	char accStr[MAX_ACCEL_LEN];
-	char mneChar;
-	KeySym keysym;
-	unsigned int modifiers;
-	int i;
-	int nameLen;
-	int accLen;
-	int mneLen;
-	int cmdLen;
-
-	for (;;) {
-
-		// remove leading whitespace 
-		while (*inPtr == ' ' || *inPtr == '\t')
-			inPtr++;
-
-		// end of string in proper place 
-		if (*inPtr == '\0') {
-			return True;
-		}
-
-		// read name field 
-		nameLen = strcspn(inPtr, ":");
-		if (nameLen == 0)
-			return parseError("no name field");
-		nameStr = XtMalloc(nameLen + 1);
-		strncpy(nameStr, inPtr, nameLen);
-		nameStr[nameLen] = '\0';
-		inPtr += nameLen;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-		inPtr++;
-
-		// read accelerator field 
-		accLen = strcspn(inPtr, ":");
-		if (accLen >= MAX_ACCEL_LEN)
-			return parseError("accelerator field too long");
-		strncpy(accStr, inPtr, accLen);
-		accStr[accLen] = '\0';
-		inPtr += accLen;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-		inPtr++;
-
-		// read menemonic field 
-		mneLen = strcspn(inPtr, ":");
-		if (mneLen > 1)
-			return parseError("mnemonic field too long");
-		if (mneLen == 1)
-			mneChar = *inPtr++;
-		else
-			mneChar = '\0';
-		inPtr++;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-
-		// read flags field 
-		InSrcs input = FROM_NONE;
-		OutDests output = TO_SAME_WINDOW;
-		bool repInput = false;
-		bool saveFirst = false;
-		bool loadAfter = false;
-		for (; *inPtr != ':'; inPtr++) {
-			if (listType == SHELL_CMDS) {
-				if (*inPtr == 'I')
-					input = FROM_SELECTION;
-				else if (*inPtr == 'A')
-					input = FROM_WINDOW;
-				else if (*inPtr == 'E')
-					input = FROM_EITHER;
-				else if (*inPtr == 'W')
-					output = TO_NEW_WINDOW;
-				else if (*inPtr == 'D')
-					output = TO_DIALOG;
-				else if (*inPtr == 'X')
-					repInput = True;
-				else if (*inPtr == 'S')
-					saveFirst = True;
-				else if (*inPtr == 'L')
-					loadAfter = True;
-				else
-					return parseError("unreadable flag field");
-			} else {
-				if (*inPtr == 'R')
-					input = FROM_SELECTION;
-				else
-					return parseError("unreadable flag field");
-			}
-		}
-		inPtr++;
-
-		// read command field 
-		if (listType == SHELL_CMDS) {
-			if (*inPtr++ != '\n')
-				return parseError("command must begin with newline");
-			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
-				inPtr++;
-			cmdLen = strcspn(inPtr, "\n");
-			if (cmdLen == 0)
-				return parseError("shell command field is empty");
-			cmdStr = XtMalloc(cmdLen + 1);
-			strncpy(cmdStr, inPtr, cmdLen);
-			cmdStr[cmdLen] = '\0';
-			inPtr += cmdLen;
-		} else {
-			cmdStr = copyMacroToEnd(&inPtr);
-			if(!cmdStr)
-				return False;
-		}
-		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
-			inPtr++; // skip trailing whitespace & newline 
-		}
-
-		// parse the accelerator field 
-		if (!parseAcceleratorString(accStr, &modifiers, &keysym)) {
-			return parseError("couldn't read accelerator field");
-		}
-
-		// create a menu item record 
-		auto f = new MenuItem;
-		f->name      = QLatin1String(nameStr);
-		f->cmd       = QLatin1String(cmdStr);
-		f->mnemonic  = mneChar;
-		f->modifiers = modifiers;
-		f->input     = input;
-		f->output    = output;
-		f->repInput  = repInput;
-		f->saveFirst = saveFirst;
-		f->loadAfter = loadAfter;
-		f->keysym    = keysym;
-		
-		XtFree(nameStr);
-		XtFree(cmdStr);
-
-		// add/replace menu record in the list 
-		for (i = 0; i < *nItems; i++) {
-			if (menuItems[i]->name == f->name) {
-				delete menuItems[i];
-				menuItems[i] = f;
-				break;
-			}
-		}
-		
-		if (i == *nItems) {
-			menuItems[(*nItems)++] = f;
 		}
 	}
 }
@@ -2061,34 +1751,6 @@ void parseMenuItemList(MenuData *itemList, int nbrOfItems, userSubMenuCache *sub
 	}
 }
 
-void parseMenuItemList(MenuItem **itemList, int nbrOfItems, userMenuInfo **infoList, userSubMenuCache *subMenus) {
-	int i;
-	userMenuInfo *info;
-
-	// Allocate storage for structures to keep track of sub-menus 
-	allocSubMenuCache(subMenus, nbrOfItems);
-
-	/* 1st pass: setup user menu info: extract language modes, menu name &
-	   default indication; build user menu ID */
-	for (i = 0; i < nbrOfItems; i++) {
-		infoList[i] = parseMenuItemRec(itemList[i]);
-		generateUserMenuId(infoList[i], subMenus);
-	}
-
-	// 2nd pass: solve "default" dependencies 
-	for (i = 0; i < nbrOfItems; i++) {
-		info = infoList[i];
-
-		/* If the user menu item is a default one, then scan the list for
-		   items with the same name and a language mode specified.
-		   If one is found, then set the default index to the index of the
-		   current default item. */
-		if (info->umiIsDefault) {
-			setDefaultIndex(infoList, nbrOfItems, i);
-		}
-	}
-}
-
 /*
 ** Returns the sub-menu depth (i.e. nesting level) of given
 ** menu name.
@@ -2310,23 +1972,6 @@ static void setDefaultIndex(MenuData *infoList, int nbrOfItems, int defaultIdx) 
 	}
 }
 
-static void setDefaultIndex(userMenuInfo **infoList, int nbrOfItems, int defaultIdx) {
-	char *defaultMenuName = infoList[defaultIdx]->umiName;
-	int i;
-	userMenuInfo *info;
-
-	/* Scan the list for items with the same name and a language mode
-	   specified. If one is found, then set the default index to the
-	   index of the current default item. */
-	for (i = 0; i < nbrOfItems; i++) {
-		info = infoList[i];
-
-		if (!info->umiIsDefault && strcmp(info->umiName, defaultMenuName) == 0) {
-			info->umiDefaultIndex = defaultIdx;
-		}
-	}
-}
-
 /*
 ** Determine the info list menu items, which need to be managed
 ** for given language mode. Set / reset "to be managed" indication
@@ -2359,35 +2004,6 @@ static void applyLangModeToUserMenuInfo(MenuData *infoList, int nbrOfItems, int 
 	}
 }
 
-static void applyLangModeToUserMenuInfo(userMenuInfo **infoList, int nbrOfItems, int languageMode) {
-	int i;
-	userMenuInfo *info;
-
-	/* 1st pass: mark all items as "to be managed", which are applicable
-	   for all language modes or which are indicated as "default" items */
-	for (i = 0; i < nbrOfItems; i++) {
-		info = infoList[i];
-
-		info->umiToBeManaged = (info->umiNbrOfLanguageModes == 0 || info->umiIsDefault);
-	}
-
-	/* 2nd pass: mark language mode specific items matching given language
-	   mode as "to be managed". Reset "to be managed" indications of
-	   "default" items, if applicable */
-	for (i = 0; i < nbrOfItems; i++) {
-		info = infoList[i];
-
-		if (info->umiNbrOfLanguageModes != 0) {
-			if (doesLanguageModeMatch(info, languageMode)) {
-				info->umiToBeManaged = True;
-
-				if (info->umiDefaultIndex != -1)
-					infoList[info->umiDefaultIndex]->umiToBeManaged = False;
-			}
-		}
-	}
-}
-
 /*
 ** Returns true, if given user menu info is applicable for given language mode
 */
@@ -2405,12 +2021,6 @@ static int doesLanguageModeMatch(userMenuInfo *info, int languageMode) {
 void freeUserMenuInfoList(MenuData *infoList, int nbrOfItems) {
 	for (int i = 0; i < nbrOfItems; i++) {
 		freeUserMenuInfo(infoList[i].info);
-	}
-}
-
-void freeUserMenuInfoList(userMenuInfo **infoList, int nbrOfItems) {
-	for (int i = 0; i < nbrOfItems; i++) {
-		freeUserMenuInfo(infoList[i]);
 	}
 }
 
