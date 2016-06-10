@@ -1036,7 +1036,7 @@ static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer 
 	   correct syntax doesn't match) */
 	if (isRegexType(searchType)) {
 		try {
-			auto compiledRE = memory::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
+			auto compiledRE = mem::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
 		} catch(const regex_error &e) {
 			return;
 		}
@@ -1663,7 +1663,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	/* create a temporary buffer in which to do the replacements to hide the
 	   intermediate steps from the display routines, and so everything can
 	   be undone in a single operation */
-	auto tempBuf = memory::make_unique<TextBuffer>();
+	auto tempBuf = mem::make_unique<TextBuffer>();
 	tempBuf->BufSetAllEx(fileString);
 
 	// search the string and do the replacements in the temporary buffer 

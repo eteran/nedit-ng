@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace memory {
+namespace mem {
 
 template <class T> struct _Unique_if {
 	typedef std::unique_ptr<T> _Single_object;

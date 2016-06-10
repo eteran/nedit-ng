@@ -4247,7 +4247,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 	/* Create a text buffer with a good estimate of the size that adding
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
-	auto outBuf = memory::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
+	auto outBuf = mem::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
 	int outPos = 0;
 
 	/* Go (displayed) line by line through the buffer, adding newlines where
@@ -5089,7 +5089,7 @@ void TextDisplay::BeginBlockDrag() {
 	this->dragInsertPos = sel->start;
 	this->dragInserted = sel->end - sel->start;
 	if (sel->rectangular) {
-		auto testBuf = memory::make_unique<TextBuffer>();
+		auto testBuf = mem::make_unique<TextBuffer>();
 
 		std::string testText = buf->BufGetRangeEx(sel->start, sel->end);
 		testBuf->BufSetTabDistance(buf->tabDist_);

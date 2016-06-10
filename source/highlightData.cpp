@@ -202,7 +202,7 @@ QString WriteStylesStringEx(void) {
 	int i;
 	HighlightStyle *style;
 
-	auto outBuf = memory::make_unique<TextBuffer>();
+	auto outBuf = mem::make_unique<TextBuffer>();
 
 	for (i = 0; i < HighlightStyles.size(); i++) {
 		style = HighlightStyles[i];
@@ -279,7 +279,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 QString WriteHighlightStringEx(void) {
 
 	bool written = false;
-	auto outBuf = memory::make_unique<TextBuffer>();
+	auto outBuf = mem::make_unique<TextBuffer>();
 
 	for (int psn = 0; psn < NPatternSets; psn++) {
 		PatternSet *patSet = PatternSets[psn];
@@ -487,7 +487,7 @@ void RenameHighlightPattern(view::string_view oldName, view::string_view newName
 
 std::string createPatternsString(PatternSet *patSet, const char *indentStr) {
 
-	auto outBuf = memory::make_unique<TextBuffer>();
+	auto outBuf = mem::make_unique<TextBuffer>();
 
 	for(HighlightPattern &pat : patSet->patterns) {
 

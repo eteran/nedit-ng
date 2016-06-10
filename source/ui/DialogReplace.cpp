@@ -719,7 +719,7 @@ int DialogReplace::getReplaceDlogInfo(SearchDirection *direction, char *searchSt
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			auto compiledRE = memory::make_unique<regexp>(replaceText.toLatin1().data(), regexDefault);
+			auto compiledRE = mem::make_unique<regexp>(replaceText.toLatin1().data(), regexDefault);
 		} catch(const regex_error &e) {
 			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
 			return FALSE;

@@ -2090,7 +2090,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 static QString WriteLanguageModesStringEx() {
 	char numBuf[25];
 
-	auto outBuf = memory::make_unique<TextBuffer>();
+	auto outBuf = mem::make_unique<TextBuffer>();
 
 	for (int i = 0; i < NLanguageModes; i++) {
 		outBuf->BufAppendEx("\t");
