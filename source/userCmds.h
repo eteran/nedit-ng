@@ -137,8 +137,9 @@ int checkMacroText(const char *macro, Widget errorParent, Widget errFocus);
 int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 void freeSubMenuCache(userSubMenuCache *subMenus);
 void rebuildMenuOfAllWindows(int menuType);
+void freeUserMenuList(UserMenuList *list);
 
-void freeUserMenuInfoList(const QVector<MenuData> &infoList);
+void freeUserMenuInfoList(QVector<MenuData> &infoList);
 void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus);
 
 extern QVector<MenuData>  ShellMenuData;

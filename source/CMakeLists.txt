@@ -115,6 +115,7 @@ add_executable(nedit
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
+	UserMenuListElement.cpp
 	LanguageMode.cpp
 	MenuItem.cpp
 	Color.cpp

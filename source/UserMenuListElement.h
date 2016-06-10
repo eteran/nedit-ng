@@ -14,12 +14,19 @@ enum UserMenuManageMode {
 	UMMM_MANAGE_ALL    // user menu item is a sub menu and is completely managed
 };
 
-struct UserMenuListElement;
+class UserMenuListElement;
 
 typedef QVector<UserMenuListElement*> UserMenuList;
 
 // structure representing one user menu item
-struct UserMenuListElement {
+class UserMenuListElement {
+public:
+	UserMenuListElement(Widget menuItem, const QString &accKeys);
+	~UserMenuListElement();
+	UserMenuListElement(const UserMenuListElement &) = delete;
+	UserMenuListElement &operator=(const UserMenuListElement &) = delete;
+	
+public:
 	UserMenuManageMode umleManageMode;          // current manage mode
 	UserMenuManageMode umlePrevManageMode;      // previous manage mode
 	QString            umleAccKeys;             // accelerator keys of item

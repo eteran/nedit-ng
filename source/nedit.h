@@ -90,7 +90,6 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 
 class UndoInfo;
 class Document;
-struct UserMenuListElement;
 
 
 /* Identifiers for the different colors that can be adjusted. */
