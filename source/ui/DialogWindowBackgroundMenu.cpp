@@ -17,7 +17,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for (int i = 0; i < NBGMenuItems; i++) {
-		auto ptr  = new MenuItem(*BGMenuItems[i]);
+		auto ptr  = new MenuItem(*BGMenuData[i].item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -458,21 +458,21 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	// Update the menu information
 	for (int i = 0; i < NBGMenuItems; i++) {
-		delete BGMenuItems[i];
+		delete BGMenuData[i].item;
 	}
 
-	freeUserMenuInfoList(BGMenuInfo, NBGMenuItems);
+	freeUserMenuInfoList(BGMenuData, NBGMenuItems);
 	freeSubMenuCache(&BGSubMenus);
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		BGMenuItems[i] = new MenuItem(*ptr);
+		BGMenuData[i].item = new MenuItem(*ptr);
 	}
 
 	NBGMenuItems = count;
 
-	parseMenuItemList(BGMenuItems, NBGMenuItems, BGMenuInfo, &BGSubMenus);
+	parseMenuItemList(BGMenuData, NBGMenuItems, &BGSubMenus);
 
 	// Update the menus themselves in all of the NEdit windows
 	rebuildMenuOfAllWindows(BG_MENU_CMDS);

@@ -17,7 +17,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for (int i = 0; i < NMacroMenuItems; i++) {
-		auto ptr  = new MenuItem(*MacroMenuItems[i]);
+		auto ptr  = new MenuItem(*MacroMenuData[i].item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -459,21 +459,21 @@ bool DialogMacros::applyDialogChanges() {
 
 	// Update the menu information
 	for (int i = 0; i < NMacroMenuItems; i++) {
-		delete MacroMenuItems[i];
+		delete MacroMenuData[i].item;
 	}
 
-	freeUserMenuInfoList(MacroMenuInfo, NMacroMenuItems);
+	freeUserMenuInfoList(MacroMenuData, NMacroMenuItems);
 	freeSubMenuCache(&MacroSubMenus);
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		MacroMenuItems[i] = new MenuItem(*ptr);
+		MacroMenuData[i].item = new MenuItem(*ptr);
 	}
 
 	NMacroMenuItems = count;
 
-	parseMenuItemList(MacroMenuItems, NMacroMenuItems, MacroMenuInfo, &MacroSubMenus);
+	parseMenuItemList(MacroMenuData, NMacroMenuItems, &MacroSubMenus);
 	
 
 	// Update the menus themselves in all of the NEdit windows

@@ -147,22 +147,15 @@ void rebuildMenuOfAllWindows(int menuType);
 #define MAX_ITEMS_PER_MENU 400
 
 extern int NShellMenuItems;
-#if 0
-extern MenuItem *ShellMenuItems[MAX_ITEMS_PER_MENU];
-extern userMenuInfo *ShellMenuInfo[MAX_ITEMS_PER_MENU];
-#else
 extern MenuData ShellMenuData[MAX_ITEMS_PER_MENU];
-#endif
 extern userSubMenuCache ShellSubMenus;
 
 extern int NBGMenuItems;
-extern MenuItem *BGMenuItems[MAX_ITEMS_PER_MENU];
-extern userMenuInfo *BGMenuInfo[MAX_ITEMS_PER_MENU];
+extern MenuData BGMenuData[MAX_ITEMS_PER_MENU];
 extern userSubMenuCache BGSubMenus;
 
 extern int NMacroMenuItems;
-extern MenuItem *MacroMenuItems[MAX_ITEMS_PER_MENU];
-extern userMenuInfo *MacroMenuInfo[MAX_ITEMS_PER_MENU];
+extern MenuData MacroMenuData[MAX_ITEMS_PER_MENU];
 extern userSubMenuCache MacroSubMenus;
 
 #endif
