@@ -39,7 +39,6 @@
 #include "MotifHelper.h"
 #include "file.h"
 #include "fileUtils.h"
-#include "getfiles.h"
 #include "help.h"
 #include "interpret.h"
 #include "macro.h"

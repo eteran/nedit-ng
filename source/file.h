@@ -47,7 +47,7 @@ int CloseAllFilesAndWindows();
 int CloseFileAndWindow(Document *window, int preResponse);
 int IncludeFile(Document *window, const char *name);
 QString PromptForExistingFile(Document *window, const QString &prompt);
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
+bool PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
 int SaveWindowAs(Document *window, const char *newName, bool addWrap);
 int SaveWindow(Document *window);
 int WriteBackupFile(Document *window);

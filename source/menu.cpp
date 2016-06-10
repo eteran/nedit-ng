@@ -64,7 +64,6 @@
 #include "smartIndent.h"
 #include "MotifHelper.h"
 #include "Document.h"
-#include "getfiles.h"
 #include "misc.h"
 #include "fileUtils.h"
 #include "utils.h"
@@ -2465,15 +2464,16 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	Q_UNUSED(nArgs)
 
 	Document *window = Document::WidgetToWindow(w);
-	int response;
 	bool addWrap;
 	FileFormats fileFormat;
 	char fullname[MAXPATHLEN];
 	const char *params[2];
 
-	response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
-	if (response != GFN_OK)
+	bool response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
+	if (!response) {
 		return;
+	}
+	
 	window->fileFormat_ = fileFormat;
 	params[0] = fullname;
 	params[1] = "wrapped";

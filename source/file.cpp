@@ -56,7 +56,6 @@
 #include "Document.h"
 #include "misc.h"
 #include "fileUtils.h"
-#include "getfiles.h"
 #include "utils.h"
 
 #include <cerrno>
@@ -1388,11 +1387,11 @@ QString PromptForExistingFile(Document *window, const QString &prompt) {
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
+bool PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
 
 	*fileFormat = window->fileFormat_;
 
-	int retVal = GFN_CANCEL;
+	bool retVal = false;
 	QFileDialog dialog(nullptr /*parent*/, QLatin1String(prompt));
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -1475,7 +1474,7 @@ int PromptForNewFile(Document *window, const char *prompt, char *fullname, FileF
 
 				*addWrap = wrapCheck->isChecked();					
 				strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
-				retVal = GFN_OK;
+				retVal = true;
 			}
 
 		}

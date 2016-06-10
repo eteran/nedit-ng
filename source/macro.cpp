@@ -44,8 +44,6 @@
 
 #include "TextDisplay.h"
 #include "macro.h"
-#include "fileUtils.h"
-#include "getfiles.h"
 #include "misc.h"
 #include "utils.h"
 #include "MotifHelper.h"
@@ -2939,12 +2937,11 @@ static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValu
 static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[5][TYPE_INT_STR_SIZE(int)];
 	char filename[MAXPATHLEN + 1];
-	char *title = (String) "Choose Filename";
-	char *mode = (String) "exist";
+	char *title       = (String) "Choose Filename";
+	char *mode        = (String) "exist";
 	char *defaultPath = (String) "";
-	char *filter = (String) "";
+	char *filter      = (String) "";
 	char *defaultName = (String) "";
-	int gfnResult;
 	int titleLen;
 	int modeLen;
 	int defaultPathLen;
@@ -3003,17 +3000,17 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 		defaultFilter = QString::fromStdString(filter);
 	}
 
-	/*  Fork to one of the worker methods from util/getfiles.c.
-	    (This should obviously be refactored.)  */
+
+	bool gfnResult;
 	if (strcmp(mode, "exist") == 0) {
 		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
 		// TODO(eteran): default path doesn't seem to be able to be specified easily
 		QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
 		if(!existingFile.isNull()) {
 			strcpy(filename, existingFile.toLatin1().data());
-			gfnResult = GFN_OK;
+			gfnResult = true;
 		} else {
-			gfnResult = GFN_CANCEL;
+			gfnResult = false;
 		}
 	} else {
 		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
@@ -3021,15 +3018,15 @@ static int filenameDialogMS(Document *window, DataValue *argList, int nArgs, Dat
 		QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
 		if(!newFile.isNull()) {
 			strcpy(filename, newFile.toLatin1().data());
-			gfnResult = GFN_OK;
+			gfnResult = true;
 		} else {
-			gfnResult = GFN_CANCEL;
+			gfnResult = false;
 		}
 	} //  Invalid values are weeded out above.  
 
 
 	result->tag = STRING_TAG;
-	if (gfnResult == GFN_OK) {
+	if (gfnResult == true) {
 		//  Got a string, copy it to the result  
 		if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
 			M_FAILURE("failed to allocate return value: %s");
