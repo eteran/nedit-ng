@@ -468,7 +468,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		BGMenuData.push_back({new MenuItem(*ptr), {}});
+		BGMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
 

@@ -449,7 +449,7 @@ bool DialogShellMenu::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);		
-		ShellMenuData.push_back({new MenuItem(*ptr), {}});
+		ShellMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
 

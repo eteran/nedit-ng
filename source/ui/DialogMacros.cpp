@@ -469,7 +469,7 @@ bool DialogMacros::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		MacroMenuData.push_back({ new MenuItem(*ptr), {} });
+		MacroMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
 	parseMenuItemList(MacroMenuData, &MacroSubMenus);

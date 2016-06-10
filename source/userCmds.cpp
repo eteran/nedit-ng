@@ -950,6 +950,7 @@ static void createMenuItems(Document *window, selectedUserMenu *menu) {
 					btn = createUserMenuItem(subPane, namePtr, item, n, macroMenuCB, (XtPointer)window);
 					break;
 				case BG_MENU_CMDS:
+				default:
 					btn = createUserMenuItem(subPane, namePtr, item, n, bgMenuCB, (XtPointer)window);
 					break;
 				}
@@ -1477,7 +1478,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		}
 		
 		if (!found) {
-			menuItems.push_back({f, {}});
+			menuItems.push_back({f, nullptr});
 		}
 	}
 }
