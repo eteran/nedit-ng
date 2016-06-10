@@ -380,11 +380,22 @@ void UpdateUserMenuInfo(void) {
 */
 bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
 
-	for (int i = 0; i < ShellMenuData.size(); i++) {
-		if (ShellMenuData[i].item->name == QLatin1String(itemName)) {
-			if (ShellMenuData[i].item->output == TO_SAME_WINDOW && CheckReadOnly(window))
+	for(MenuData &data: ShellMenuData) {
+		if (data.item->name == QLatin1String(itemName)) {
+			if (data.item->output == TO_SAME_WINDOW && CheckReadOnly(window)) {
 				return false;
-			DoShellMenuCmd(window, ShellMenuData[i].item->cmd.toStdString(), ShellMenuData[i].item->input, ShellMenuData[i].item->output, ShellMenuData[i].item->repInput, ShellMenuData[i].item->saveFirst, ShellMenuData[i].item->loadAfter, fromMacro);
+			}
+			
+			DoShellMenuCmd(
+				window, 
+				data.item->cmd.toStdString(), 
+				data.item->input, 
+				data.item->output, 
+				data.item->repInput, 
+				data.item->saveFirst, 
+				data.item->loadAfter, 
+				fromMacro);
+				
 			return true;
 		}
 	}
@@ -398,9 +409,14 @@ bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) 
 */
 bool DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 
-	for (int i = 0; i < MacroMenuData.size(); i++) {
-		if (MacroMenuData[i].item->name == QLatin1String(itemName)) {
-			DoMacro(window, MacroMenuData[i].item->cmd.toStdString(), "macro menu command");
+	for(MenuData &data: MacroMenuData) {
+		if (data.item->name == QLatin1String(itemName)) {
+		
+			DoMacro(
+				window, 
+				data.item->cmd.toStdString(), 
+				"macro menu command");
+
 			return true;
 		}
 	}
@@ -409,9 +425,14 @@ bool DoNamedMacroMenuCmd(Document *window, const char *itemName) {
 
 bool DoNamedBGMenuCmd(Document *window, const char *itemName) {
 
-	for (int i = 0; i < BGMenuData.size(); i++) {
-		if (BGMenuData[i].item->name == QLatin1String(itemName)) {		
-			DoMacro(window, BGMenuData[i].item->cmd.toStdString(), "background menu macro");
+	for(MenuData &data: BGMenuData) {
+		if (data.item->name == QLatin1String(itemName)) {		
+
+			DoMacro(
+				window, 
+				data.item->cmd.toStdString(), 
+				"background menu macro");
+
 			return true;
 		}
 	}

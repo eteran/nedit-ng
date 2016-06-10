@@ -16,8 +16,8 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
-	for (int i = 0; i < BGMenuData.size(); i++) {
-		auto ptr  = new MenuItem(*BGMenuData[i].item);
+	for(MenuData &data : BGMenuData) {
+		auto ptr  = new MenuItem(*data.item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -457,8 +457,8 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for (int i = 0; i < BGMenuData.size(); i++) {
-		delete BGMenuData[i].item;
+	for(MenuData &data : BGMenuData) {
+		delete data.item;
 	}
 
 	freeUserMenuInfoList(BGMenuData);

@@ -16,8 +16,8 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 	ui.setupUi(this);
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
-	for (int i = 0; i < MacroMenuData.size(); i++) {
-		auto ptr  = new MenuItem(*MacroMenuData[i].item);
+	for(MenuData &data : MacroMenuData) {
+		auto ptr  = new MenuItem(*data.item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -458,9 +458,9 @@ bool DialogMacros::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for (int i = 0; i < MacroMenuData.size(); i++) {
-		delete MacroMenuData[i].item;
-	}
+	for(MenuData &data : MacroMenuData) {
+		delete data.item;
+	}	
 
 	freeUserMenuInfoList(MacroMenuData);
 	freeSubMenuCache(&MacroSubMenus);

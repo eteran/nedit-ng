@@ -141,10 +141,6 @@ void rebuildMenuOfAllWindows(int menuType);
 void freeUserMenuInfoList(const QVector<MenuData> &infoList);
 void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus);
 
-/* max. number of user programmable menu commands allowed per each of the
-   macro, shell, and background menus */
-#define MAX_ITEMS_PER_MENU 400
-
 extern QVector<MenuData>  ShellMenuData;
 extern userSubMenuCache ShellSubMenus;
 

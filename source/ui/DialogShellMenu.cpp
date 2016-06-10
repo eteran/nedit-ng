@@ -16,8 +16,8 @@
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
-	for (int i = 0; i < ShellMenuData.size(); i++) {
-		auto ptr  = new MenuItem(*ShellMenuData[i].item);
+	for(MenuData &data : ShellMenuData) {
+		auto ptr  = new MenuItem(*data.item);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -438,9 +438,9 @@ bool DialogShellMenu::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for (int i = 0; i < ShellMenuData.size(); i++) {
-		delete ShellMenuData[i].item;
-	}
+	for(MenuData &data : ShellMenuData) {
+		delete data.item;
+	}	
 
 	freeUserMenuInfoList(ShellMenuData);
 	freeSubMenuCache(&ShellSubMenus);
@@ -448,11 +448,8 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
-		auto ptr = itemFromIndex(i);
-		
-		ShellMenuData.push_back({
-			new MenuItem(*ptr), {}
-		});
+		auto ptr = itemFromIndex(i);		
+		ShellMenuData.push_back({new MenuItem(*ptr), {}});
 	}
 
 
