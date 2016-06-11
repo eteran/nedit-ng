@@ -613,7 +613,7 @@ static TextClassRec textClassRec = {
 	}
 };
 
-WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
+WidgetClass textWidgetClass = reinterpret_cast<WidgetClass>(&textClassRec);
 
 namespace {
 const int NEDIT_HIDE_CURSOR_MASK = (KeyPressMask);
@@ -873,8 +873,11 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	}
 
 	if (text_of(new_widget).P_fontStruct != text_of(current).P_fontStruct) {
-		if (text_of(new_widget).P_lineNumCols != 0)
+		
+		if (text_of(new_widget).P_lineNumCols != 0) {
 			reconfigure = true;
+		}
+		
 		textD_of(current)->TextDSetFont(text_of(new_widget).P_fontStruct);
 	}
 
@@ -897,9 +900,11 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	   which requires re-organizing the x coordinates of both the line
 	   number display and the main text display */
 	if (text_of(new_widget).P_lineNumCols != text_of(current).P_lineNumCols || reconfigure) {
+
 		int marginWidth = text_of(new_widget).P_marginWidth;
-		int charWidth = text_of(new_widget).P_fontStruct->max_bounds.width;
+		int charWidth   = text_of(new_widget).P_fontStruct->max_bounds.width;
 		int lineNumCols = text_of(new_widget).P_lineNumCols;
+
 		if (lineNumCols == 0) {
 			textD_of(new_widget)->TextDSetLineNumberArea(0, 0, marginWidth);
 			text_of(new_widget).P_columns = (new_widget->core.width - marginWidth * 2) / charWidth;

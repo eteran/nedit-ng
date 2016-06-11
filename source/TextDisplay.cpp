@@ -355,11 +355,11 @@ Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
 		if (text_of(w).P_readOnly)
-			return False;
+			return false;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
-			return False;
+			return false;
 		if (reqAtoms[1] != XA_STRING)
-			return False;
+			return false;
 		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
 		XFree((char *)reqAtoms);
 		while (result == INSERT_WAITING) {
@@ -385,7 +385,7 @@ Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 
 	/* targets TIMESTAMP and MULTIPLE are handled by the toolkit, any
 	   others are unrecognized, return False */
-	return False;
+	return false;
 }
 
 void loseSelectionCB(Widget w, Atom *selType) {
@@ -599,7 +599,7 @@ Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 
 	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
-		return False;
+		return false;
 
 	/* Return the contents of the secondary selection.  The memory allocated
 	   here is freed by the X toolkit */
@@ -727,11 +727,11 @@ Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 	   in the property, and WAIT until it completes */
 	if (*target == getAtom(display, A_INSERT_SELECTION)) {
 		if (text_of(w).P_readOnly)
-			return False;
+			return false;
 		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
-			return False;
+			return false;
 		if (reqAtoms[1] != XA_STRING)
-			return False;
+			return false;
 		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
 		XFree((char *)reqAtoms);
 		while (result == INSERT_WAITING) {
@@ -747,7 +747,7 @@ Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 
 	/* target TIMESTAMP is handled by the toolkit and not passed here, any
 	   others are unrecognized */
-	return False;
+	return false;
 }
 
 void loseMotifDestCB(Widget w, Atom *selType) {

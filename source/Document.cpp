@@ -4359,10 +4359,10 @@ int Document::WindowCount() {
 Widget Document::createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
 
 	// Create a text widget inside of a scrolled window widget 
-	Widget sw         = XtVaCreateManagedWidget("scrolledW", xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX, XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
-	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
-	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass, sw, XmNorientation, XmVERTICAL, XmNrepeatDelay, 10, nullptr);
-	Widget frame      = XtVaCreateManagedWidget("textFrame", xmFrameWidgetClass, sw, XmNshadowType, XmSHADOW_IN, nullptr);
+	Widget sw         = XtVaCreateManagedWidget("scrolledW",         xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX,     XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
+	Widget hScrollBar = XtVaCreateManagedWidget("textHorScrollBar",  xmScrollBarWidgetClass,      sw,     XmNorientation, XmHORIZONTAL, XmNrepeatDelay, 10, nullptr);
+	Widget vScrollBar = XtVaCreateManagedWidget("textVertScrollBar", xmScrollBarWidgetClass,      sw,     XmNorientation, XmVERTICAL,   XmNrepeatDelay, 10, nullptr);
+	Widget frame      = XtVaCreateManagedWidget("textFrame",         xmFrameWidgetClass,          sw,     XmNshadowType,  XmSHADOW_IN,  nullptr);
 	
 	Widget text = XtVaCreateManagedWidget(
 		"text", 
