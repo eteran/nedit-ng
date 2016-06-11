@@ -40,6 +40,7 @@
 #include <QRadioButton>
 #include <QtDebug>
 #include "ui/DialogPrint.h"
+#include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
@@ -100,8 +101,24 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	// create new window/document 
 	if (inWindow) {
 		window = inWindow->CreateDocument(name);
+#if 0
+		// TODO(eteran): to the tab one too
+#endif
 	} else {
 		window = new Document(name, geometry, iconic);
+#if 0
+		// TODO(eteran): this is an experiement in making a Qt main window along side
+		// the typical one...
+		auto win = new MainWindow();
+		win->on_action_New_triggered();
+		win->setWindowTitle(name);
+		//win->resize(...);
+		if(iconic) {
+			win->showMinimized();
+		} else {
+			win->show();
+		}
+#endif			
 	}
 
 	window->filename_ = name;
@@ -176,11 +193,20 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 	Document *window;
 	if(!inWindow) {
 		window = new Document(name, geometry, iconic);
+#if 0
+		// TODO(eteran): implement this using Qt MainWindow
+#endif
 	} else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
 		if (tabbed) {
 			window = inWindow->CreateDocument(name);
+#if 0
+		// TODO(eteran): implement this using Qt MainWindow
+#endif			
 		} else {
 			window = new Document(name, geometry, iconic);
+#if 0
+		// TODO(eteran): implement this using Qt MainWindow
+#endif
 		}
 	} else {
 		// open file in untitled document 
@@ -191,6 +217,9 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 		if (!iconic && !bgOpen) {
 			window->RaiseDocumentWindow();
 		}
+#if 0
+		// TODO(eteran): implement this using Qt MainWindow
+#endif		
 	}
 
 	// Open the file 

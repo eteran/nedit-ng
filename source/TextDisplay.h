@@ -27,10 +27,10 @@
 #ifndef TEXTDISP_H_
 #define TEXTDISP_H_
 
-#include "TextBuffer.h"
 #include "BlockDragTypes.h"
 #include "Point.h"
 #include "Rect.h"
+#include "string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
@@ -49,6 +49,7 @@ enum CursorStyles {
 class StyleTableEntry;
 class TextDisplay;
 class TextPart;
+class TextBuffer;
 
 struct graphicExposeTranslationEntry {
 	int horizontal;

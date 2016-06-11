@@ -4,7 +4,6 @@
 #include "ui/DialogReplace.h"
 #include "ui/DialogWindowTitle.h"
 #include "ui/DialogMoveDocument.h"
-#include "ui/MainWindow.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "RangesetTable.h"
@@ -24,6 +23,7 @@
 #include "shell.h"
 #include "smartIndent.h"
 #include "TextDisplay.h"
+#include "TextBuffer.h"
 #include "text.h"
 #include "UndoInfo.h"
 #include "userCmds.h"
@@ -3585,13 +3585,6 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	// cache user menus: init. user background menu cache 
 	InitUserBGMenuCache(&userBGMenuCache_);
 	
-#if 0
-	// TODO(eteran): this is an experiement in making a Qt main window along side
-	// the typical one...
-	auto win = new MainWindow();
-	win->setWindowTitle(name);
-	win->show();
-#endif	
 	
 	// ------------------------------------------------------------------------------
 	// NOTE(eteran): looks like at this point the UI is setup, now start creating the

@@ -632,19 +632,20 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	(void)num_args;
 
 	auto new_widget = reinterpret_cast<TextWidget>(newWidget);
+	auto& tw = text_of(new_widget);
 
-	XFontStruct *fs = text_of(new_widget).P_fontStruct;
+	XFontStruct *fs = tw.P_fontStruct;
 	int charWidth   = fs->max_bounds.width;
-	int marginWidth = text_of(new_widget).P_marginWidth;
-	int lineNumCols = text_of(new_widget).P_lineNumCols;
+	int marginWidth = tw.P_marginWidth;
+	int lineNumCols = tw.P_lineNumCols;
 
 	// Set the initial window size based on the rows and columns resources
 	if (request->core.width == 0) {
-		new_widget->core.width = charWidth * text_of(new_widget).P_columns + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+		new_widget->core.width = charWidth * tw.P_columns + marginWidth * 2 + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 	}
 
 	if (request->core.height == 0) {
-		new_widget->core.height = (fs->ascent + fs->descent) * text_of(new_widget).P_rows + text_of(new_widget).P_marginHeight * 2;
+		new_widget->core.height = (fs->ascent + fs->descent) * tw.P_rows + tw.P_marginHeight * 2;
 	}
 
 	/* The default colors work for B&W as well as color, except for
@@ -655,9 +656,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	Pixel white = WhitePixelOfScreen(XtScreen(newWidget));
 	Pixel black = BlackPixelOfScreen(XtScreen(newWidget));
 
-	if (text_of(new_widget).P_selectBGPixel == white && new_widget->core.background_pixel == white && text_of(new_widget).P_selectFGPixel == black && new_widget->primitive.foreground == black) {
-		text_of(new_widget).P_selectBGPixel = black;
-		text_of(new_widget).P_selectFGPixel = white;
+	if (tw.P_selectBGPixel == white && new_widget->core.background_pixel == white && tw.P_selectFGPixel == black && new_widget->primitive.foreground == black) {
+		tw.P_selectBGPixel = black;
+		tw.P_selectFGPixel = white;
 	}
 
 	/* Create the initial text buffer for the widget to display (which can
@@ -665,56 +666,58 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	auto buf = new TextBuffer;
 
 	// Create and initialize the text-display part of the widget
-	int textLeft = text_of(new_widget).P_marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+	int textLeft = tw.P_marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
 
-	textD_of(new_widget) = new TextDisplay(
+	auto textD = new TextDisplay(
 		newWidget,
-		text_of(new_widget).P_hScrollBar,
-		text_of(new_widget).P_vScrollBar,
+		tw.P_hScrollBar,
+		tw.P_vScrollBar,
 		textLeft,
-		text_of(new_widget).P_marginHeight,
+		tw.P_marginHeight,
 		new_widget->core.width - marginWidth - textLeft,
-	    new_widget->core.height - text_of(new_widget).P_marginHeight * 2,
+	    new_widget->core.height - tw.P_marginHeight * 2,
 		lineNumCols == 0 ? 0 : marginWidth,
 		lineNumCols == 0 ? 0 : lineNumCols * charWidth,
 		buf,
-		text_of(new_widget).P_fontStruct,
+		tw.P_fontStruct,
 		new_widget->core.background_pixel,
 	    new_widget->primitive.foreground,
-		text_of(new_widget).P_selectFGPixel,
-		text_of(new_widget).P_selectBGPixel,
-		text_of(new_widget).P_highlightFGPixel,
-		text_of(new_widget).P_highlightBGPixel,
-		text_of(new_widget).P_cursorFGPixel,
-	    text_of(new_widget).P_lineNumFGPixel,
-		text_of(new_widget).P_continuousWrap,
-		text_of(new_widget).P_wrapMargin,
-		text_of(new_widget).P_backlightCharTypes,
-		text_of(new_widget).P_calltipFGPixel,
-		text_of(new_widget).P_calltipBGPixel);
+		tw.P_selectFGPixel,
+		tw.P_selectBGPixel,
+		tw.P_highlightFGPixel,
+		tw.P_highlightBGPixel,
+		tw.P_cursorFGPixel,
+	    tw.P_lineNumFGPixel,
+		tw.P_continuousWrap,
+		tw.P_wrapMargin,
+		tw.P_backlightCharTypes,
+		tw.P_calltipFGPixel,
+		tw.P_calltipBGPixel);
+		
+	textD_of(new_widget) = textD;
 
 	/* Add mandatory delimiters blank, tab, and newline to the list of
 	   delimiters.  The memory use scheme here is that new values are
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
 
-    char *delimiters = XtMalloc(strlen(text_of(new_widget).P_delimiters) + 4);
-    sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).P_delimiters);
-    text_of(new_widget).P_delimiters = delimiters;
+    char *delimiters = XtMalloc(strlen(tw.P_delimiters) + 4);
+    sprintf(delimiters, "%s%s", " \t\n", tw.P_delimiters);
+    tw.P_delimiters = delimiters;
 
 	/* Start with the cursor blanked (widgets don't have focus on creation,
 	   the initial FocusIn event will unblank it and get blinking started) */
-	textD_of(new_widget)->cursorOn = false;
+	textD->cursorOn = false;
 
 	// Initialize the widget variables
-	textD_of(new_widget)->autoScrollProcID   = 0;
-	textD_of(new_widget)->cursorBlinkProcID  = 0;
-	textD_of(new_widget)->dragState          = NOT_CLICKED;
-	textD_of(new_widget)->multiClickState    = NO_CLICKS;
-	textD_of(new_widget)->lastBtnDown        = 0;
-	textD_of(new_widget)->selectionOwner     = false;
-	textD_of(new_widget)->motifDestOwner     = false;
-	textD_of(new_widget)->emTabsBeforeCursor = 0;
+	textD->autoScrollProcID   = 0;
+	textD->cursorBlinkProcID  = 0;
+	textD->dragState          = NOT_CLICKED;
+	textD->multiClickState    = NO_CLICKS;
+	textD->lastBtnDown        = 0;
+	textD->selectionOwner     = false;
+	textD->motifDestOwner     = false;
+	textD->emTabsBeforeCursor = 0;
 
 	// Register the widget to the input manager
 	XmImRegister(newWidget, 0);
@@ -723,7 +726,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 
 	XtAddEventHandler(newWidget, GraphicsExpose, true, (XtEventHandler)redisplayGE, nullptr);
 
-	if (text_of(new_widget).P_hidePointer) {
+	if (tw.P_hidePointer) {
 		Pixmap empty_pixmap;
 		XColor black_color;
 		// Set up the empty Cursor

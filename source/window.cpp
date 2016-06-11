@@ -31,7 +31,6 @@
 #include <QString>
 
 #include "window.h"
-#include "TextBuffer.h"
 #include "text.h"
 #include "Document.h"
 #include "UndoInfo.h"

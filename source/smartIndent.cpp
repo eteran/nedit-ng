@@ -77,7 +77,7 @@ DialogSmartIndent *SmartIndentDlg = nullptr;
 
 static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
-static void insertShiftedMacro(TextBuffer *buf, char *macro);
+static void insertShiftedMacro(QTextStream &ts, const QString &macro);
 static bool isDefaultIndentSpec(SmartIndent *indentSpec);
 static bool loadDefaultIndentSpec(const char *lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -652,29 +652,32 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 
 QString WriteSmartIndentStringEx() {
 
-	auto outBuf = new TextBuffer;
+	QString s;
+	QTextStream ts(&s);
+
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		SmartIndent *sis = SmartIndentSpecs[i];
+		SmartIndent *const sis = SmartIndentSpecs[i];
 		
-		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(sis->lmName.toStdString());
-		outBuf->BufAppendEx(":");
+		ts << QLatin1String("\t")
+		   << sis->lmName
+		   << QLatin1String(":");
+		
 		if (isDefaultIndentSpec(sis)) {
-			outBuf->BufAppendEx("Default\n");
+			ts << QLatin1String("Default\n");
 		} else {
-			insertShiftedMacro(outBuf, sis->initMacro.toLatin1().data());
-			insertShiftedMacro(outBuf, sis->newlineMacro.toLatin1().data());
-			insertShiftedMacro(outBuf, sis->modMacro.toLatin1().data());
+			insertShiftedMacro(ts, sis->initMacro);
+			insertShiftedMacro(ts, sis->newlineMacro);
+			insertShiftedMacro(ts, sis->modMacro);
 		}
 	}
-
+	
 	// Get the output string, and lop off the trailing newline 
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() > 0 ? outBuf->BufGetLength() - 1 : 0);
-	delete outBuf;
+	if(!s.isEmpty()) {
+		s.chop(1);
+	}
 
-	/* Protect newlines and backslashes from translation by the resource
-	   reader */
-	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
+	// Protect newlines and backslashes from translation by the resource reader
+	return EscapeSensitiveCharsEx(s);
 }
 
 QString WriteSmartIndentCommonStringEx() {
@@ -709,15 +712,16 @@ QString WriteSmartIndentCommonStringEx() {
 ** (so it looks nice in the .nedit file), and terminated with a macro-end-
 ** boundary string.
 */
-static void insertShiftedMacro(TextBuffer *buf, char *macro) {
+static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
-	if (macro) {
-		std::string shiftedMacro = ShiftTextEx(macro, SHIFT_RIGHT, True, 8, 8);
-		buf->BufAppendEx(shiftedMacro);
+	if (!macro.isNull()) {
+		std::string shiftedMacro = ShiftTextEx(macro.toStdString(), SHIFT_RIGHT, true, 8, 8);
+		ts << QString::fromStdString(shiftedMacro);
 	}
-	buf->BufAppendEx("\t");
-	buf->BufAppendEx(MacroEndBoundary);
-	buf->BufAppendEx("\n");
+	
+	ts << QLatin1String("\t");
+	ts << QLatin1String(MacroEndBoundary);
+	ts << QLatin1String("\n");
 }
 
 static bool isDefaultIndentSpec(SmartIndent *indentSpec) {

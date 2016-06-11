@@ -2439,6 +2439,42 @@ char *EscapeSensitiveChars(const char *string) {
 **
 ** Returns an allocated string which must be freed by the caller with XtFree.
 */
+QString EscapeSensitiveCharsEx(const QString &string) {
+
+	int length = 0;
+
+	// calculate length and allocate returned string 
+	for(QChar ch : string) {
+		if (ch == QLatin1Char('\\')) {
+			length++;
+		} else if (ch == QLatin1Char('\n')) {
+			length += 3;
+		}
+		
+		length++;
+	}
+	
+	QString outStr;
+	outStr.reserve(length);
+	auto outPtr = std::back_inserter(outStr);
+
+	// add backslashes 
+	for(QChar ch : string) {
+		if (ch == QLatin1Char('\\'))
+			*outPtr++ = QLatin1Char('\\');
+			
+		else if (ch == QLatin1Char('\n')) {
+		
+			*outPtr++ = QLatin1Char('\\');
+			*outPtr++ = QLatin1Char('n');
+			*outPtr++ = QLatin1Char('\\');
+		}
+		*outPtr++ = ch;
+	}
+
+	return outStr;
+}
+
 std::string EscapeSensitiveCharsEx(view::string_view string) {
 
 	int length = 0;

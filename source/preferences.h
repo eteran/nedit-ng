@@ -153,6 +153,7 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 std::string EscapeSensitiveCharsEx(view::string_view string);
+QString EscapeSensitiveCharsEx(const QString &string);
 std::string MakeQuotedStringEx(view::string_view string);
 QString ReadSymbolicFieldEx(const char **inPtr);
 QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);

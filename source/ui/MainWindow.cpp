@@ -38,7 +38,7 @@ void MainWindow::setupTabBar() {
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	deleteTabButton->setIcon(QIcon::fromTheme(QLatin1String("tab-close")));
+	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close")));
 	deleteTabButton->setAutoRaise(true);
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	

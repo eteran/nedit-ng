@@ -27,9 +27,6 @@
 #ifndef TEXTP_H_
 #define TEXTP_H_
 
-#include "TextBuffer.h"
-#include "Point.h"
-
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
