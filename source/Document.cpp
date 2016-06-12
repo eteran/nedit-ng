@@ -502,8 +502,8 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 
 			// Fix up the colors 
 			auto newTextD = textD_of(text);
-			XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-			newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+			XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
+			newTextD->TextDSetColors(textD->foregroundPixel(), textD->backgroundPixel(), textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 		}
 
 		// Set the minimum pane height in the new pane 
@@ -1462,7 +1462,7 @@ void Document::UpdateWMSizeHints() {
 
 	// Find the dimensions of a single character of the text font 
 	XtVaGetValues(textArea_, textNfont, &fs, nullptr);
-	fontHeight = textD->ascent + textD->descent;
+	fontHeight = textD->fontAscent() + textD->fontDescent();
 	fontWidth = fs->max_bounds.width;
 
 	/* Find the base (non-expandable) width and height of the editor this.
@@ -1898,7 +1898,7 @@ void Document::UpdateMinPaneHeights() {
 	XtVaGetValues(XtParent(textArea_), XmNshadowThickness, &frameShadowHeight, nullptr);
 	XtVaGetValues(textArea_, textNmarginHeight, &marginHeight, nullptr);
 	XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, nullptr);
-	minPaneHeight = textD->ascent + textD->descent + marginHeight * 2 + swMarginHeight * 2 + hsbHeight + 2 * frameShadowHeight;
+	minPaneHeight = textD->fontAscent() + textD->fontDescent() + marginHeight * 2 + swMarginHeight * 2 + hsbHeight + 2 * frameShadowHeight;
 
 	// Set it in all of the widgets in the this 
 	setPaneMinHeight(containingPane(textArea_), minPaneHeight);
@@ -2265,8 +2265,8 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	if (textD->TextDPositionToXY(left, &leftX, &y) && textD->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
-		if (leftX < margin + textD->lineNumLeft + textD->lineNumWidth)
-			horizOffset -= margin + textD->lineNumLeft + textD->lineNumWidth - leftX;
+		if (leftX < margin + textD->getLineNumLeft() + textD->getLineNumWidth())
+			horizOffset -= margin + textD->getLineNumLeft() + textD->getLineNumWidth() - leftX;
 		else if (rightX > width - margin)
 			horizOffset += rightX - (width - margin);
 		
@@ -2506,7 +2506,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   determine the correct this size after the font is changed */
 	XtVaGetValues(shell_, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
 	XtVaGetValues(textArea_, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
-	oldTextWidth = textD->rect.width + textD->lineNumWidth;
+	oldTextWidth = textD->rect.width + textD->getLineNumWidth();
 	oldTextHeight = textHeight - 2 * marginHeight;
 	for (i = 0; i < nPanes_; i++) {
 		XtVaGetValues(textPanes_[i], XmNheight, &textHeight, nullptr);
@@ -2515,7 +2515,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	borderWidth = oldWindowWidth - oldTextWidth;
 	borderHeight = oldWindowHeight - oldTextHeight;
 	oldFontWidth = oldFont->max_bounds.width;
-	oldFontHeight = textD->ascent + textD->descent;
+	oldFontHeight = textD->fontAscent() + textD->fontDescent();
 
 	/* Change the fonts in the this data structure.  If the primary font
 	   didn't work, use Motif's fallback mechanism by stealing it from the
@@ -2566,7 +2566,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   _one_ document in the this, in order to avoid growing-this bug */
 	if (TabCount() == 1) {
 		fontWidth = GetDefaultFontStruct(fontList_)->max_bounds.width;
-		fontHeight = textD->ascent + textD->descent;
+		fontHeight = textD->fontAscent() + textD->fontDescent();
 		newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
 		newWindowHeight = (oldTextHeight * fontHeight) / oldFontHeight + borderHeight;
 		XtVaSetValues(shell_, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
@@ -2865,7 +2865,7 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 	XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
 	XtVaGetValues(splitPane_, XmNheight, &paneHeight, nullptr);
 	totalHeight = paneHeight - 2 * marginHeight - hScrollBarHeight;
-	fontHeight = textD->ascent + textD->descent;
+	fontHeight = textD->fontAscent() + textD->fontDescent();
 	*nRows = totalHeight / fontHeight;
 }
 
@@ -2923,8 +2923,8 @@ void Document::SplitPane() {
 	// Fix up the colors 
 	textD = textD_of(textArea_);
 	newTextD = textD_of(text);
-	XtVaSetValues(text, XmNforeground, textD->fgPixel, XmNbackground, textD->bgPixel, nullptr);
-	newTextD->TextDSetColors(textD->fgPixel, textD->bgPixel, textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+	XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
+	newTextD->TextDSetColors(textD->foregroundPixel(), textD->backgroundPixel(), textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
 
 	// Set the minimum pane height in the new pane 
 	UpdateMinPaneHeights();

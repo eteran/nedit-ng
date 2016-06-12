@@ -131,7 +131,7 @@ int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos
 	textD->TextDKillCalltip(0);
 
 	// Expand any tabs in the calltip and make it an XmString 
-	std::string textCpy = expandAllTabsEx(text, textD->buffer->BufGetTabDistance());
+	std::string textCpy = expandAllTabsEx(text, textD->textBuffer()->BufGetTabDistance());
 
 	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
 

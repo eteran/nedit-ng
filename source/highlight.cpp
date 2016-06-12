@@ -2242,5 +2242,5 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 static int getFontHeight(Document *window) {
 	TextDisplay *textD = textD_of(window->textArea_);
 
-	return textD->ascent + textD->descent;
+	return textD->fontAscent() + textD->descent;
 }

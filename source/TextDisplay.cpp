@@ -5684,3 +5684,31 @@ void TextDisplay::TakeMotifDestination(Time time) {
 	}
 	textD_of(w)->motifDestOwner = true;
 }
+
+int TextDisplay::fontAscent() const {
+	return this->ascent;
+}
+
+int TextDisplay::fontDescent() const {
+	return this->descent;
+}
+
+Pixel TextDisplay::foregroundPixel() const {
+	return this->fgPixel;
+}
+
+Pixel TextDisplay::backgroundPixel() const {
+	return this->bgPixel;
+}
+
+TextBuffer *TextDisplay::textBuffer() const {
+	return this->buffer;
+}
+
+int TextDisplay::getLineNumWidth() const {
+	return this->lineNumWidth;
+}
+
+int TextDisplay::getLineNumLeft() const {
+	return this->lineNumLeft;
+}

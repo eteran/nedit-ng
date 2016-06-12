@@ -195,6 +195,15 @@ public:
 	void cancelDrag();
 	void checkAutoShowInsertPos();
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
+	
+public:
+	int fontAscent() const;
+	int fontDescent() const;
+	Pixel foregroundPixel() const;
+	Pixel backgroundPixel() const;
+	TextBuffer *textBuffer() const;
+	int getLineNumWidth() const;
+	int getLineNumLeft() const;
 
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
@@ -251,6 +260,23 @@ public:
 	static bool offscreenV(XWindowAttributes *screenAttr, int top, int height);
 
 public:
+	// COPY OF RESOURCE
+	Pixel          selectFGPixel;      // Foreground select color
+	Pixel          selectBGPixel;      // Background select color
+	Pixel          highlightFGPixel;   // Highlight colors are used when flashing matching parens
+	Pixel          highlightBGPixel;
+	Pixel          lineNumFGPixel;     // Color for drawing line numbers
+	Pixel          cursorFGPixel;
+	Pixel          calltipFGPixel;
+	Pixel          calltipBGPixel;	
+	XFontStruct *  fontStruct;         // Font structure for primary font	
+	Widget         hScrollBar; 
+	Widget         vScrollBar;
+	bool           continuousWrap;     // Wrap long lines when displaying
+	int            wrapMargin;         // Margin in # of char positions for wrapping in continuousWrap mode	
+	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit		
+
+public:
 	Widget w; // TextWidget
 	Rect rect;
 	int lineNumLeft;
@@ -267,8 +293,6 @@ public:
 	TextBuffer *styleBuffer;                     // Optional parallel buffer containing color and font information
 	int firstChar;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
 	int lastChar;
-	bool continuousWrap;                         // Wrap long lines when displaying
-	int wrapMargin;                              // Margin in # of char positions for wrapping in continuousWrap mode
 	int *lineStarts;
 	int topLineNum;                              // Line number of top displayed line of file (first line of file is 1)
 	int absTopLineNum;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
@@ -280,12 +304,9 @@ public:
 	char unfinishedStyle;                        // Style buffer entry which triggers on-the-fly reparsing of region
 	unfinishedStyleCBProc unfinishedHighlightCB; // Callback to parse "unfinished" regions
 	void *highlightCBArg;                        // Arg to unfinishedHighlightCB
-	XFontStruct *fontStruct;                     // Font structure for primary font
 	int ascent;                                  // Composite ascent and descent for primary font + all-highlight fonts
 	int descent;
 	int fixedFontWidth;                          // Font width if all current fonts are fixed and match in width, else -1
-	Widget hScrollBar;
-	Widget vScrollBar;
 
 	// GCs for drawing text
 	GC gc;
@@ -303,19 +324,11 @@ public:
 
 	Pixel fgPixel;                               // Foreground color
 	Pixel bgPixel;                               // Background color
-	Pixel selectFGPixel;                         // Foreground select color
-	Pixel selectBGPixel;                         // Background select color
-	Pixel highlightFGPixel;                      // Highlight colors are used when flashing matching parens
-	Pixel highlightBGPixel;
-	Pixel lineNumFGPixel;                        // Color for drawing line numbers
-	Pixel cursorFGPixel;
 	Pixel *bgClassPixel;                         // table of colors for each BG class
 	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
 	Widget calltipW;                             // The Label widget for the calltip
 	Widget calltipShell;                         // The Shell that holds the calltip
 	calltipStruct calltip;                       // The info for the calltip itself
-	Pixel calltipFGPixel;
-	Pixel calltipBGPixel;
 	int suppressResync;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int modifyingTabDist;                        // Whether tab distance is being modified
@@ -345,7 +358,6 @@ public:
 	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner;            // True if widget owns the selection
 	bool motifDestOwner;            // " "            owns the motif destination
-	int emTabsBeforeCursor;         // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit	
 	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
 	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink	
 };

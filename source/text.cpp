@@ -701,8 +701,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
 
-    char *delimiters = XtMalloc(strlen(tw.P_delimiters) + 4);
-    sprintf(delimiters, "%s%s", " \t\n", tw.P_delimiters);
+	size_t n = strlen(tw.P_delimiters) + 4;
+    char *delimiters = new char[n];
+    snprintf(delimiters, n, "%s%s", " \t\n", tw.P_delimiters);
     tw.P_delimiters = delimiters;
 
 	/* Start with the cursor blanked (widgets don't have focus on creation,
@@ -765,7 +766,7 @@ static void destroy(TextWidget w) {
 	auto textD = textD_of(w);
 	
 	textD->StopHandlingXSelections();
-	TextBuffer *buf = textD->buffer;
+	TextBuffer *buf = textD->textBuffer();
 	
 	
 	if (buf->modifyProcs_.empty()) {
@@ -889,9 +890,10 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	   tab, and newline to the list */
 	if (text_of(new_widget).P_delimiters != text_of(current).P_delimiters) {
 
-		char *delimiters = XtMalloc(strlen(text_of(new_widget).P_delimiters) + 4);
-		XtFree(text_of(current).P_delimiters);
-		sprintf(delimiters, "%s%s", " \t\n", text_of(new_widget).P_delimiters);
+		size_t n = strlen(text_of(new_widget).P_delimiters) + 4;
+		char *delimiters = new char[n];
+		delete [] text_of(current).P_delimiters;
+		snprintf(delimiters, n, "%s%s", " \t\n", text_of(new_widget).P_delimiters);
 		text_of(new_widget).P_delimiters = delimiters;
 	}
 
@@ -1019,7 +1021,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 				textD->callCursorMovementCBs(event);
 				return;
 			} else if (textD->multiClickState == THREE_CLICKS) {
-				textD->buffer->BufSelect(0, textD->buffer->BufGetLength());
+				textD->textBuffer()->BufSelect(0, textD->textBuffer()->BufGetLength());
 				return;
 			} else if (textD->multiClickState > THREE_CLICKS)
 				textD->multiClickState = NO_CLICKS;
@@ -1028,7 +1030,7 @@ static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	}
 
 	// Clear any existing selections
-	textD->buffer->BufUnselect();
+	textD->textBuffer()->BufUnselect();
 
 	// Move the cursor to the pointer location
 	moveDestinationAP(w, event, args, nArgs);
@@ -1654,7 +1656,7 @@ static void insertStringAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	textD->TextInsertAtCursorEx(args[0], event, true, true);
-	textD->buffer->BufUnselect();
+	textD->textBuffer()->BufUnselect();
 }
 
 static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1699,7 +1701,7 @@ static void selfInsertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	textD->TextInsertAtCursorEx(chars, event, true, true);
-	textD->buffer->BufUnselect();
+	textD->textBuffer()->BufUnselect();
 }
 
 static void newlineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1871,13 +1873,13 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 		return;
 
 	if (text_of(w).P_overstrike) {
-		c = textD->buffer->BufGetCharacter(insertPos - 1);
+		c = textD->textBuffer()->BufGetCharacter(insertPos - 1);
 		if (c == '\n')
-			textD->buffer->BufRemove(insertPos - 1, insertPos);
+			textD->textBuffer()->BufRemove(insertPos - 1, insertPos);
 		else if (c != '\t')
-			textD->buffer->BufReplaceEx(insertPos - 1, insertPos, " ");
+			textD->textBuffer()->BufReplaceEx(insertPos - 1, insertPos, " ");
 	} else {
-		textD->buffer->BufRemove(insertPos - 1, insertPos);
+		textD->textBuffer()->BufRemove(insertPos - 1, insertPos);
 	}
 
 	textD->TextDSetInsertPosition(insertPos - 1);
@@ -1897,11 +1899,11 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	textD->TakeMotifDestination(e->time);
 	if (deletePendingSelection(w, event))
 		return;
-	if (insertPos == textD->buffer->BufGetLength()) {
+	if (insertPos == textD->textBuffer()->BufGetLength()) {
 		ringIfNecessary(silent);
 		return;
 	}
-	textD->buffer->BufRemove(insertPos, insertPos + 1);
+	textD->textBuffer()->BufRemove(insertPos, insertPos + 1);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
 }
@@ -1910,8 +1912,8 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	XKeyEvent *e = &event->xkey;
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
-	int pos, lineStart = textD->buffer->BufStartOfLine(insertPos);
-	char *delimiters = text_of(w).P_delimiters;
+	int pos, lineStart = textD->textBuffer()->BufStartOfLine(insertPos);
+	const char *delimiters = text_of(w).P_delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -1930,12 +1932,12 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	}
 
 	pos = std::max<int>(insertPos - 1, 0);
-	while (strchr(delimiters, textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
+	while (strchr(delimiters, textD->textBuffer()->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
 		pos--;
 	}
 
 	pos = startOfWord(reinterpret_cast<TextWidget>(w), pos);
-	textD->buffer->BufRemove(pos, insertPos);
+	textD->textBuffer()->BufRemove(pos, insertPos);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
 }
@@ -1944,8 +1946,8 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	XKeyEvent *e = &event->xkey;
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
-	int pos, lineEnd = textD->buffer->BufEndOfLine(insertPos);
-	char *delimiters = text_of(w).P_delimiters;
+	int pos, lineEnd = textD->textBuffer()->BufEndOfLine(insertPos);
+	const char *delimiters = text_of(w).P_delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -1964,12 +1966,12 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	}
 
 	pos = insertPos;
-	while (strchr(delimiters, textD->buffer->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
+	while (strchr(delimiters, textD->textBuffer()->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
 		pos++;
 	}
 
 	pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
-	textD->buffer->BufRemove(insertPos, pos);
+	textD->textBuffer()->BufRemove(insertPos, pos);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
 }
@@ -1983,7 +1985,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 
 	silent = hasKey("nobell", args, nArgs);
 	if (hasKey("absolute", args, nArgs))
-		endOfLine = textD->buffer->BufEndOfLine(insertPos);
+		endOfLine = textD->textBuffer()->BufEndOfLine(insertPos);
 	else
 		endOfLine = textD->TextDEndOfLine(insertPos, false);
 	textD->cancelDrag();
@@ -1996,7 +1998,7 @@ static void deleteToEndOfLineAP(Widget w, XEvent *event, String *args, Cardinal 
 		ringIfNecessary(silent);
 		return;
 	}
-	textD->buffer->BufRemove(insertPos, endOfLine);
+	textD->textBuffer()->BufRemove(insertPos, endOfLine);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
 }
@@ -2012,7 +2014,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 	if (hasKey("wrap", args, nArgs))
 		startOfLine =textD->TextDStartOfLine(insertPos);
 	else
-		startOfLine = textD->buffer->BufStartOfLine(insertPos);
+		startOfLine = textD->textBuffer()->BufStartOfLine(insertPos);
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
 		return;
@@ -2023,7 +2025,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 		ringIfNecessary(silent);
 		return;
 	}
-	textD->buffer->BufRemove(startOfLine, insertPos);
+	textD->textBuffer()->BufRemove(startOfLine, insertPos);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
 }
@@ -2060,7 +2062,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
-	char *delimiters = text_of(w).P_delimiters;
+	const char *delimiters = text_of(w).P_delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -2100,7 +2102,7 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	auto textD = textD_of(w);
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
-	char *delimiters = text_of(w).P_delimiters;
+	const char *delimiters = text_of(w).P_delimiters;
 	int silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
@@ -2269,7 +2271,7 @@ static void beginningOfLineAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	textD->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
-		textD->TextDSetInsertPosition(textD->buffer->BufStartOfLine(insertPos));
+		textD->TextDSetInsertPosition(textD->textBuffer()->BufStartOfLine(insertPos));
 	else
 		textD->TextDSetInsertPosition(textD->TextDStartOfLine(insertPos));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
@@ -2284,7 +2286,7 @@ static void endOfLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	textD->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
-		textD->TextDSetInsertPosition(textD->buffer->BufEndOfLine(insertPos));
+		textD->TextDSetInsertPosition(textD->textBuffer()->BufEndOfLine(insertPos));
 	else
 		textD->TextDSetInsertPosition(textD->TextDEndOfLine(insertPos, false));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
@@ -2322,7 +2324,7 @@ static void endOfFileAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 			textD->TextDSetScroll(lastTopLine, textD->horizOffset);
 		}
 	} else {
-		textD->TextDSetInsertPosition(textD->buffer->BufGetLength());
+		textD->TextDSetInsertPosition(textD->textBuffer()->BufGetLength());
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		textD->checkAutoShowInsertPos();
 		textD->callCursorMovementCBs(event);
@@ -2708,7 +2710,7 @@ static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	auto textD = textD_of(w);
 	textD->cancelDrag();
-	textD->buffer->BufUnselect();
+	textD->textBuffer()->BufUnselect();
 }
 
 /*
@@ -3019,7 +3021,7 @@ static void selectWord(Widget w, int pointerX) {
 static int startOfWord(TextWidget w, int pos) {
 	int startPos;
 	TextBuffer *buf = textD_of(w)->buffer;
-	char *delimiters = text_of(w).P_delimiters;
+	const char *delimiters = text_of(w).P_delimiters;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
@@ -3038,7 +3040,7 @@ static int startOfWord(TextWidget w, int pos) {
 static int endOfWord(TextWidget w, int pos) {
 	int endPos;
 	TextBuffer *buf = textD_of(w)->buffer;
-	char *delimiters = text_of(w).P_delimiters;
+	const char *delimiters = text_of(w).P_delimiters;
 	char c = buf->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
@@ -3119,9 +3121,9 @@ static void selectLine(Widget w) {
 	int insertPos = textD->TextDGetInsertPosition();
 	int endPos, startPos;
 
-	endPos = textD->buffer->BufEndOfLine(insertPos);
-	startPos = textD->buffer->BufStartOfLine(insertPos);
-	textD->buffer->BufSelect(startPos, std::min<int>(endPos + 1, textD->buffer->BufGetLength()));
+	endPos = textD->textBuffer()->BufEndOfLine(insertPos);
+	startPos = textD->textBuffer()->BufStartOfLine(insertPos);
+	textD->textBuffer()->BufSelect(startPos, std::min<int>(endPos + 1, textD->textBuffer()->BufGetLength()));
 	textD->TextDSetInsertPosition(endPos);
 }
 
@@ -3228,7 +3230,7 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 		endPos   = buf->BufEndOfLine(std::max(textD_of(tw)->anchor, newPos));
 		buf->BufSecRectSelect(startPos, endPos, startCol, endCol);
 	} else {
-		textD->buffer->BufSecondarySelect(textD_of(tw)->anchor, newPos);
+		textD->textBuffer()->BufSecondarySelect(textD_of(tw)->anchor, newPos);
 	}
 }
 
@@ -3243,8 +3245,8 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 */
 static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
 	TextDisplay *textD = textD_of(tw);
-	int pos, indent = -1, tabDist = textD->buffer->tabDist_;
-	int i, useTabs = textD->buffer->useTabs_;
+	int pos, indent = -1, tabDist = textD->textBuffer()->tabDist_;
+	int i, useTabs = textD->textBuffer()->useTabs_;
 	char c;
 	smartIndentCBStruct smartIndent;
 
