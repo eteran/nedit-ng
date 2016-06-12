@@ -5712,3 +5712,52 @@ int TextDisplay::getLineNumWidth() const {
 int TextDisplay::getLineNumLeft() const {
 	return this->lineNumLeft;
 }
+
+Rect TextDisplay::getRect() const {
+	return this->rect;
+}
+
+Point TextDisplay::getMouseCoord() const {
+	return this->mouseCoord;
+}
+
+int TextDisplay::getBufferLinesCount() const {
+	return this->nBufferLines;
+}
+
+XtIntervalId TextDisplay::getCursorBlinkProcID() const {
+	return this->cursorBlinkProcID;
+}
+
+TextBuffer *TextDisplay::getStyleBuffer() const {
+	return this->styleBuffer;
+}
+
+
+void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
+	this->styleBuffer = buffer;
+}
+
+void TextDisplay::setModifyingTabDist(int tabDist) {
+	this->modifyingTabDist = tabDist;
+}
+
+calltipStruct &TextDisplay::getCalltip() {
+	return this->calltip;
+}
+
+int TextDisplay::getFirstChar() const {
+	return this->firstChar;
+}
+
+int TextDisplay::getLastChar() const {
+	return this->lastChar;
+}
+
+int TextDisplay::getCursorPos() const {
+	return this->cursorPos;
+}
+
+int TextDisplay::getAnchor() const {
+	return this->anchor;
+}

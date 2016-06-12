@@ -325,7 +325,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 	    for unfocussed panes.
 	    TextWidget have no state per se about focus, so we use the related
 	    ID for the blink procedure.  */
-	if (textD->cursorBlinkProcID != 0) {
+	if (textD->getCursorBlinkProcID() != 0) {
 		//  Start blinking the caret again.  
 		textD->ResetCursorBlink(false);
 	}
@@ -1225,7 +1225,7 @@ int Document::updateGutterWidth() {
 				maxCols = lineNumCols;
 			}
 
-			tmpReqCols = textD->nBufferLines < 1 ? 1 : static_cast<int>(log10(static_cast<double>(textD->nBufferLines) + 1)) + 1;
+			tmpReqCols = textD->getBufferLinesCount() < 1 ? 1 : static_cast<int>(log10(static_cast<double>(textD->getBufferLinesCount()) + 1)) + 1;
 
 			if (tmpReqCols > reqCols) {
 				reqCols = tmpReqCols;
@@ -1490,7 +1490,7 @@ void Document::UpdateWMSizeHints() {
 	}
 
 	XtVaGetValues(shell_, XmNwidth, &shellWidth, XmNheight, &shellHeight, nullptr);
-	nCols = textD->rect.width / fontWidth;
+	nCols = textD->getRect().width / fontWidth;
 	nRows = totalHeight / fontHeight;
 	baseWidth = shellWidth - nCols * fontWidth;
 	baseHeight = shellHeight - nRows * fontHeight;
@@ -1540,7 +1540,7 @@ void Document::SetTabDist(int tabDist) {
 
 			textD->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
 			saveCursorPositions[paneIndex] = textD->TextGetCursorPos();
-			textD->modifyingTabDist = 1;
+			textD->setModifyingTabDist(1);
 		}
 
 		buffer_->BufSetTabDistance(tabDist);
@@ -1549,7 +1549,7 @@ void Document::SetTabDist(int tabDist) {
 			Widget w = GetPaneByIndex(paneIndex);
 			auto textD = textD_of(w);
 
-			textD->modifyingTabDist = 0;
+			textD->setModifyingTabDist(0);
 			textD->TextSetCursorPos(saveCursorPositions[paneIndex]);
 			textD->TextDSetScroll(saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
 		}
@@ -2368,7 +2368,7 @@ void Document::ShowLineNumbers(bool state) {
 	} else {
 		XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
 		XtVaGetValues(textArea_, textNmarginWidth, &marginWidth, nullptr);
-		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->rect.left + marginWidth, nullptr);
+		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
 
 		for (i = 0; i <= nPanes_; i++) {
 			text = i == 0 ? textArea_ : textPanes_[i - 1];
@@ -2506,7 +2506,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	   determine the correct this size after the font is changed */
 	XtVaGetValues(shell_, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
 	XtVaGetValues(textArea_, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
-	oldTextWidth = textD->rect.width + textD->getLineNumWidth();
+	oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
 	oldTextHeight = textHeight - 2 * marginHeight;
 	for (i = 0; i < nPanes_; i++) {
 		XtVaGetValues(textPanes_[i], XmNheight, &textHeight, nullptr);

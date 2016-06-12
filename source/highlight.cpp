@@ -310,10 +310,10 @@ void FreeHighlightingData(Document *window) {
 
 	/* The text display may make a last desperate attempt to access highlight
 	   information when it is destroyed, which would be a disaster. */
-	textD_of(window->textArea_)->styleBuffer = nullptr;
+	textD_of(window->textArea_)->setStyleBuffer(nullptr);
 	
 	for (int i = 0; i < window->nPanes_; i++) {
-		textD_of(window->textPanes_[i])->styleBuffer = nullptr;
+		textD_of(window->textPanes_[i])->setStyleBuffer(nullptr);
 	}
 }
 
@@ -1224,7 +1224,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 ** Callback wrapper around the above function.
 */
 static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg) {
-	handleUnparsedRegion((Document *)cbArg, textD->styleBuffer, pos);
+	handleUnparsedRegion((Document *)cbArg, textD->getStyleBuffer(), pos);
 }
 
 /*
@@ -2242,5 +2242,5 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 static int getFontHeight(Document *window) {
 	TextDisplay *textD = textD_of(window->textArea_);
 
-	return textD->fontAscent() + textD->descent;
+	return textD->fontAscent() + textD->fontDescent();
 }

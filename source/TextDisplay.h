@@ -61,7 +61,7 @@ typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 
 struct calltipStruct {
 	int ID;           //  ID of displayed calltip.  Equals zero if none is displayed.
-	Boolean anchored; //  Is it anchored to a position
+	bool anchored; //  Is it anchored to a position
 	int pos;          //  Position tip is anchored to
 	int hAlign;       //  horizontal alignment
 	int vAlign;       //  vertical alignment
@@ -202,8 +202,20 @@ public:
 	Pixel foregroundPixel() const;
 	Pixel backgroundPixel() const;
 	TextBuffer *textBuffer() const;
+	TextBuffer *getStyleBuffer() const;
+	void setStyleBuffer(TextBuffer *buffer);
 	int getLineNumWidth() const;
 	int getLineNumLeft() const;
+	Rect getRect() const;
+	Point getMouseCoord() const;
+	int getBufferLinesCount() const;
+	XtIntervalId getCursorBlinkProcID() const;
+	void setModifyingTabDist(int tabDist);
+	calltipStruct &getCalltip();
+	int getFirstChar() const;
+	int getLastChar() const;
+	int getCursorPos() const;
+	int getAnchor() const;
 
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
@@ -278,6 +290,10 @@ public:
 
 public:
 	Widget w; // TextWidget
+	Widget calltipW;                             // The Label widget for the calltip
+	Widget calltipShell;                         // The Shell that holds the calltip	
+
+public:
 	Rect rect;
 	int lineNumLeft;
 	int lineNumWidth;
@@ -326,8 +342,6 @@ public:
 	Pixel bgPixel;                               // Background color
 	Pixel *bgClassPixel;                         // table of colors for each BG class
 	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
-	Widget calltipW;                             // The Label widget for the calltip
-	Widget calltipShell;                         // The Shell that holds the calltip
 	calltipStruct calltip;                       // The info for the calltip itself
 	int suppressResync;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)

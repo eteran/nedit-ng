@@ -63,9 +63,9 @@ void KillCalltip(Document *window, int calltipID) {
 int GetCalltipID(Document *window, int calltipID) {
 	TextDisplay *textD = window->lastFocus();
 	if (calltipID == 0)
-		return textD->calltip.ID;
+		return textD->getCalltip().ID;
 	else {
-		if (calltipID == textD->calltip.ID)
+		if (calltipID == textD->getCalltip().ID)
 			return calltipID;
 		else
 			return 0;
@@ -163,31 +163,31 @@ int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos
 	if (anchored) {
 		// Put it at the specified position 
 		// If position is not displayed, return 0 
-		if (pos < textD->firstChar || pos > textD->lastChar) {
+		if (pos < textD->getFirstChar() || pos > textD->getLastChar()) {
 			QApplication::beep();
 			return 0;
 		}
-		textD->calltip.pos = pos;
+		textD->getCalltip().pos = pos;
 	} else {
 		/* Put it next to the cursor, or in the center of the window if the
 		    cursor is offscreen and mode != strict */
-		if (!textD->TextDPositionToXY(textD->cursorPos, &rel_x, &rel_y)) {
+		if (!textD->TextDPositionToXY(textD->getCursorPos(), &rel_x, &rel_y)) {
 			if (alignMode == TIP_STRICT) {
 				QApplication::beep();
 				return 0;
 			}
-			textD->calltip.pos = -1;
+			textD->getCalltip().pos = -1;
 		} else
 			// Store the x-offset for use when redrawing 
-			textD->calltip.pos = rel_x;
+			textD->getCalltip().pos = rel_x;
 	}
 
 	// Should really bounds-check these enumerations... 
-	textD->calltip.ID = StaticCalltipID;
-	textD->calltip.anchored = anchored;
-	textD->calltip.hAlign = hAlign;
-	textD->calltip.vAlign = vAlign;
-	textD->calltip.alignMode = alignMode;
+	textD->getCalltip().ID        = StaticCalltipID;
+	textD->getCalltip().anchored  = anchored;
+	textD->getCalltip().hAlign    = hAlign;
+	textD->getCalltip().vAlign    = vAlign;
+	textD->getCalltip().alignMode = alignMode;
 
 	/* Increment the static calltip ID.  Macro variables can only be int,
 	    not unsigned, so have to work to keep it > 0 on overflow */
@@ -199,5 +199,5 @@ int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos
 	// Move the calltip and pop it up 
 	textD->TextDRedrawCalltip(0);
 	XtPopup(textD->calltipShell, XtGrabNone);
-	return textD->calltip.ID;
+	return textD->getCalltip().ID;
 }
