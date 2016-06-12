@@ -803,7 +803,7 @@ static void resize(TextWidget w) {
 	int lineNumAreaWidth = text_of(w).P_lineNumCols == 0 ? 0 : text_of(w).P_marginWidth + fs->max_bounds.width * text_of(w).P_lineNumCols;
 
 	text_of(w).P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
-	text_of(w).P_rows = (height - marginHeight * 2) / (fs->ascent + fs->descent);
+	text_of(w).P_rows    = (height - marginHeight * 2) / (fs->ascent + fs->descent);
 
 	/* Reject widths and heights less than a character, which the text
 	   display can't tolerate.  This is not strictly legal, but I've seen
