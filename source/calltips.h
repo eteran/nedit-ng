@@ -27,21 +27,9 @@
 #ifndef CALLTIPS_H_
 #define CALLTIPS_H_
 
-#include "string_view.h"
-#include <string>
-
-#define NEDIT_DEFAULT_CALLTIP_FG "black"
-#define NEDIT_DEFAULT_CALLTIP_BG "LemonChiffon1"
-#define CALLTIP_EDGE_GUARD 5
-
-class Document;
-
 enum TipHAlignMode { TIP_LEFT, TIP_CENTER, TIP_RIGHT };
 enum TipVAlignMode { TIP_ABOVE, TIP_BELOW };
 enum TipAlignStrict { TIP_SLOPPY, TIP_STRICT };
 
-int GetCalltipID(Document *window, int calltipID);
-int ShowCalltip(Document *window, view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
-void KillCalltip(Document *window, int calltipID);
 
 #endif

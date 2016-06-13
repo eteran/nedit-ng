@@ -2893,7 +2893,7 @@ static int killCalltipMS(Document *window, DataValue *argList, int nArgs, DataVa
 			return false;
 	}
 
-	KillCalltip(window, calltipID);
+	window->KillCalltip(calltipID);
 
 	result->tag = NO_TAG;
 	return true;
@@ -2909,7 +2909,7 @@ static int calltipIDMV(Document *window, DataValue *argList, int nArgs, DataValu
 	(void)argList;
 
 	result->tag = INT_TAG;
-	result->val.n = GetCalltipID(window, 0);
+	result->val.n = window->GetCalltipID(0);
 	return true;
 }
 

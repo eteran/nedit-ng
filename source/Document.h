@@ -7,6 +7,7 @@
 #include <list>
 #include "nedit.h"
 #include "fileUtils.h"
+#include "calltips.h"
 #include "string_view.h"
 #include "LockReasons.h"
 #include "Bookmark.h"
@@ -117,6 +118,11 @@ public:
 	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
 	void ClearUndoList();
 	void ClearRedoList();
+	
+public:
+	int GetCalltipID(int calltipID);
+	int ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
+	void KillCalltip(int calltipID);
 
 public:
 	static Document *GetTopDocument(Widget w);

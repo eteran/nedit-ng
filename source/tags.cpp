@@ -164,7 +164,7 @@ static int globAlignMode;
 // A wrapper for calling TextDShowCalltip 
 static int tagsShowCalltip(Document *window, char *text) {
 	if (text)
-		return ShowCalltip(window, text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
+		return window->ShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	else
 		return 0;
 }

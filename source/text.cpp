@@ -30,6 +30,8 @@
 #include "textP.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
+#include "MultiClickStates.h"
+#include "DragStates.h"
 #include "nedit.h"
 #include "Document.h"
 #include "calltips.h"
@@ -47,6 +49,9 @@
 #include <Xm/Xm.h>
 #include <Xm/XmP.h>
 #include <Xm/PrimitiveP.h>
+
+#define NEDIT_DEFAULT_CALLTIP_FG "black"
+#define NEDIT_DEFAULT_CALLTIP_BG "LemonChiffon1"
 
 namespace {
 
@@ -146,17 +151,16 @@ static int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, 
 static void selectLine(Widget w);
 static int startOfWord(TextWidget w, int pos);
 static int endOfWord(TextWidget w, int pos);
-static void checkAutoScroll(TextWidget w, int x, int y);
+static void checkAutoScroll(TextWidget w, const Point &coord);
 static void endDrag(Widget w);
 
 
-static void adjustSelection(TextWidget tw, int x, int y);
-static void adjustSecondarySelection(TextWidget tw, int x, int y);
+static void adjustSelection(TextWidget tw, const Point &coord);
+static void adjustSecondarySelection(TextWidget tw, const Point &coord);
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
 static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 static bool hasKey(const char *key, const String *args, const Cardinal *nArgs);
-static int strCaseCmp(const char *str1, const char *str2);
 static void ringIfNecessary(bool silent);
 
 static char defaultTranslations[] =
@@ -544,8 +548,8 @@ static XtResource resources[] = {
 	{ textNreadOnly,               textCReadOnly,               XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.P_readOnly),                XmRString, (String) "False"                          },
 	{ textNhidePointer,            textCHidePointer,            XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.P_hidePointer),             XmRString, (String) "False"                          },
 	{ textNwrapMargin,             textCWrapMargin,             XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_wrapMargin),              XmRString, (String) "0"                              },
-	{ textNhScrollBar,             textCHScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.P_hScrollBar),              XmRString, (String) ""                               },
-	{ textNvScrollBar,             textCVScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.P_vScrollBar),              XmRString, (String) ""                               },
+	{ textNhScrollBar,             textCHScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.P_hScrollBar),              XmRPointer, nullptr                                  },
+	{ textNvScrollBar,             textCVScrollBar,             XmRWidget,     sizeof(Widget),        XtOffset(TextWidget, text.P_vScrollBar),              XmRPointer, nullptr                                  },
 	{ textNlineNumCols,            textCLineNumCols,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_lineNumCols),             XmRString, (String) "0"                              },
 	{ textNautoShowInsertPos,      textCAutoShowInsertPos,      XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.P_autoShowInsertPos),       XmRString, (String) "True"                           },
 	{ textNautoWrapPastedText,     textCAutoWrapPastedText,     XmRBoolean,    sizeof(Boolean),       XtOffset(TextWidget, text.P_autoWrapPastedText),      XmRString, (String) "False"                          },
@@ -653,8 +657,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   much better without reverse video, so if we get here, and the
 	   selection is totally unreadable because of the bad default colors,
 	   swap the colors and make the selection reverse video */
-	Pixel white = WhitePixelOfScreen(XtScreen(newWidget));
-	Pixel black = BlackPixelOfScreen(XtScreen(newWidget));
+	Screen *screen = XtScreen(newWidget);
+	Pixel white = WhitePixelOfScreen(screen);
+	Pixel black = BlackPixelOfScreen(screen);
 
 	if (tw.P_selectBGPixel == white && new_widget->core.background_pixel == white && tw.P_selectFGPixel == black && new_widget->primitive.foreground == black) {
 		tw.P_selectBGPixel = black;
@@ -701,27 +706,15 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
 
-	size_t n = strlen(tw.P_delimiters) + 4;
+	const size_t n = strlen(tw.P_delimiters) + 4;
     char *delimiters = new char[n];
     snprintf(delimiters, n, "%s%s", " \t\n", tw.P_delimiters);
     tw.P_delimiters = delimiters;
 
-	/* Start with the cursor blanked (widgets don't have focus on creation,
-	   the initial FocusIn event will unblank it and get blinking started) */
-	textD->cursorOn = false;
-
-	// Initialize the widget variables
-	textD->autoScrollProcID   = 0;
-	textD->cursorBlinkProcID  = 0;
-	textD->dragState          = NOT_CLICKED;
-	textD->multiClickState    = NO_CLICKS;
-	textD->lastBtnDown        = 0;
-	textD->selectionOwner     = false;
-	textD->motifDestOwner     = false;
-	textD->emTabsBeforeCursor = 0;
 
 	// Register the widget to the input manager
 	XmImRegister(newWidget, 0);
+	
 	// In case some Resources for the IC need to be set, add them below
 	XmImVaSetValues(newWidget, nullptr);
 
@@ -798,13 +791,16 @@ static void destroy(TextWidget w) {
 ** Widget resize method.  Called when the size of the widget changes
 */
 static void resize(TextWidget w) {
-	XFontStruct *fs = text_of(w).P_fontStruct;
-	int height = w->core.height, width = w->core.width;
-	int marginWidth = text_of(w).P_marginWidth, marginHeight = text_of(w).P_marginHeight;
-	int lineNumAreaWidth = text_of(w).P_lineNumCols == 0 ? 0 : text_of(w).P_marginWidth + fs->max_bounds.width * text_of(w).P_lineNumCols;
 
-	text_of(w).P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
-	text_of(w).P_rows    = (height - marginHeight * 2) / (fs->ascent + fs->descent);
+	XFontStruct *fs      = w->text.P_fontStruct;
+	int height           = w->core.height;
+	int width            = w->core.width;
+	int marginWidth      = w->text.P_marginWidth;
+	int marginHeight     = w->text.P_marginHeight;
+	int lineNumAreaWidth = w->text.P_lineNumCols == 0 ? 0 : w->text.P_marginWidth + fs->max_bounds.width * w->text.P_lineNumCols;
+
+	w->text.P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
+	w->text.P_rows    = (height - marginHeight * 2) / (fs->ascent + fs->descent);
 
 	/* Reject widths and heights less than a character, which the text
 	   display can't tolerate.  This is not strictly legal, but I've seen
@@ -813,12 +809,13 @@ static void resize(TextWidget w) {
 	   splitting windows on Linux 2.0 systems (same Motif, why the change in
 	   behavior?), causes one or two resize calls with < 1 line of height.
 	   Fixing it here is 100x easier than re-designing TextDisplay.c */
-	if (text_of(w).P_columns < 1) {
-		text_of(w).P_columns = 1;
+	if (w->text.P_columns < 1) {
+		w->text.P_columns = 1;
 		w->core.width = width = fs->max_bounds.width + marginWidth * 2 + lineNumAreaWidth;
 	}
-	if (text_of(w).P_rows < 1) {
-		text_of(w).P_rows = 1;
+	
+	if (w->text.P_rows < 1) {
+		w->text.P_rows = 1;
 		w->core.height = height = fs->ascent + fs->descent + marginHeight * 2;
 	}
 
@@ -963,7 +960,7 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 	if (proposed->request_mode & CWHeight)
 		/* Accept a height no smaller than an exact multiple of the line height
 		   and at least one line high */
-		answer->height = std::max<int>(1, ((propHeight - 2 * marginHeight) / fontHeight)) * fontHeight + 2 * marginHeight;
+		answer->height = std::max(1, ((propHeight - 2 * marginHeight) / fontHeight)) * fontHeight + 2 * marginHeight;
 	else
 		answer->height = curHeight;
 
@@ -1093,10 +1090,10 @@ static void extendAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
-	checkAutoScroll(tw, e->x, e->y);
+	checkAutoScroll(tw, {e->x, e->y});
 
 	// Adjust the selection and move the cursor
-	adjustSelection(tw, e->x, e->y);
+	adjustSelection(tw, {e->x, e->y});
 }
 
 static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1133,9 +1130,9 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 
 	// Make the new selection
 	if (hasKey("rect", args, nArgs))
-		buf->BufRectSelect(buf->BufStartOfLine(std::min<int>(anchor, newPos)), buf->BufEndOfLine(std::max<int>(anchor, newPos)), std::min<int>(rectAnchor, column), std::max<int>(rectAnchor, column));
+		buf->BufRectSelect(buf->BufStartOfLine(std::min(anchor, newPos)), buf->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, column), std::max(rectAnchor, column));
 	else
-		buf->BufSelect(std::min<int>(anchor, newPos), std::max<int>(anchor, newPos));
+		buf->BufSelect(std::min(anchor, newPos), std::max(anchor, newPos));
 
 	/* Never mind the motion threshold, go right to dragging since
 	   extend-start is unambiguously the start of a selection */
@@ -1266,10 +1263,10 @@ static void secondaryAdjustAP(Widget w, XEvent *event, String *args, Cardinal *n
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
-	checkAutoScroll(tw, e->x, e->y);
+	checkAutoScroll(tw, {e->x, e->y});
 
 	// Adjust the selection
-	adjustSecondarySelection(tw, e->x, e->y);
+	adjustSecondarySelection(tw, {e->x, e->y});
 }
 
 static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -1298,7 +1295,7 @@ static void secondaryOrDragAdjustAP(Widget w, XEvent *event, String *args, Cardi
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
-	checkAutoScroll(tw, e->x, e->y);
+	checkAutoScroll(tw, {e->x, e->y});
 
 	// Adjust the selection
 	textD->BlockDragSelection(
@@ -1460,7 +1457,7 @@ static void exchangeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	int newPrimaryStart, newPrimaryEnd, secWasRect;
 	int dragState = textD_of(w)->dragState; // save before endDrag
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	endDrag(w);
 	if (textD->checkReadOnly())
@@ -1854,7 +1851,7 @@ static void deletePreviousCharacterAP(Widget w, XEvent *event, String *args, Car
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
 	char c;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
@@ -1891,7 +1888,7 @@ static void deleteNextCharacterAP(Widget w, XEvent *event, String *args, Cardina
 	XKeyEvent *e = &event->xkey;
 	auto textD = textD_of(w);
 	int insertPos = textD->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (textD->checkReadOnly())
@@ -1914,7 +1911,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineStart = textD->textBuffer()->BufStartOfLine(insertPos);
 	const char *delimiters = text_of(w).P_delimiters;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (textD->checkReadOnly()) {
@@ -1931,7 +1928,7 @@ static void deletePreviousWordAP(Widget w, XEvent *event, String *args, Cardinal
 		return;
 	}
 
-	pos = std::max<int>(insertPos - 1, 0);
+	pos = std::max(insertPos - 1, 0);
 	while (strchr(delimiters, textD->textBuffer()->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
 		pos--;
 	}
@@ -1948,7 +1945,7 @@ static void deleteNextWordAP(Widget w, XEvent *event, String *args, Cardinal *nA
 	int insertPos = textD->TextDGetInsertPosition();
 	int pos, lineEnd = textD->textBuffer()->BufEndOfLine(insertPos);
 	const char *delimiters = text_of(w).P_delimiters;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (textD->checkReadOnly()) {
@@ -2033,7 +2030,7 @@ static void deleteToStartOfLineAP(Widget w, XEvent *event, String *args, Cardina
 static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (!textD_of(w)->TextDMoveRight()) {
@@ -2047,7 +2044,7 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (!textD_of(w)->TextDMoveLeft()) {
@@ -2063,7 +2060,7 @@ static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
 	const char *delimiters = text_of(w).P_delimiters;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
@@ -2103,14 +2100,14 @@ static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	TextBuffer *buf = textD->buffer;
 	int pos, insertPos = textD->TextDGetInsertPosition();
 	const char *delimiters = text_of(w).P_delimiters;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (insertPos == 0) {
 		ringIfNecessary(silent);
 		return;
 	}
-	pos = std::max<int>(insertPos - 1, 0);
+	pos = std::max(insertPos - 1, 0);
 	while (strchr(delimiters, buf->BufGetCharacter(pos)) != nullptr && pos > 0)
 		pos--;
 	pos = startOfWord(reinterpret_cast<TextWidget>(w), pos);
@@ -2127,14 +2124,14 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 	TextBuffer *buf = textD->buffer;
 	char c;
 	static char whiteChars[] = " \t";
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (insertPos == buf->BufGetLength()) {
 		ringIfNecessary(silent);
 		return;
 	}
-	pos = std::min<int>(buf->BufEndOfLine(insertPos) + 1, buf->BufGetLength());
+	pos = std::min(buf->BufEndOfLine(insertPos) + 1, buf->BufGetLength());
 	while (pos < buf->BufGetLength()) {
 		c = buf->BufGetCharacter(pos);
 		if (c == '\n')
@@ -2142,9 +2139,9 @@ static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *
 		if (strchr(whiteChars, c) != nullptr)
 			pos++;
 		else
-			pos = std::min<int>(buf->BufEndOfLine(pos) + 1, buf->BufGetLength());
+			pos = std::min(buf->BufEndOfLine(pos) + 1, buf->BufGetLength());
 	}
-	textD->TextDSetInsertPosition(std::min<int>(pos + 1, buf->BufGetLength()));
+	textD->TextDSetInsertPosition(std::min(pos + 1, buf->BufGetLength()));
 	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 	textD->checkAutoShowInsertPos();
 	textD->callCursorMovementCBs(event);
@@ -2156,15 +2153,15 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 	TextBuffer *buf = textD->buffer;
 	char c;
 	static char whiteChars[] = " \t";
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (insertPos == 0) {
 		ringIfNecessary(silent);
 		return;
 	}
-	parStart = buf->BufStartOfLine(std::max<int>(insertPos - 1, 0));
-	pos = std::max<int>(parStart - 2, 0);
+	parStart = buf->BufStartOfLine(std::max(insertPos - 1, 0));
+	pos = std::max(parStart - 2, 0);
 	while (pos > 0) {
 		c = buf->BufGetCharacter(pos);
 		if (c == '\n')
@@ -2173,7 +2170,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 			pos--;
 		else {
 			parStart = buf->BufStartOfLine(pos);
-			pos = std::max<int>(parStart - 2, 0);
+			pos = std::max(parStart - 2, 0);
 		}
 	}
 	textD->TextDSetInsertPosition(parStart);
@@ -2185,7 +2182,7 @@ static void backwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal 
 static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int stat, insertPos = textD->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (hasKey("left", args, nArgs))
@@ -2212,7 +2209,7 @@ static void keySelectAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
 	textD->cancelDrag();
@@ -2226,7 +2223,7 @@ static void processUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
 	textD->cancelDrag();
@@ -2240,7 +2237,7 @@ static void processShiftUpAP(Widget w, XEvent *event, String *args, Cardinal *nA
 static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 	int abs    = hasKey("absolute", args, nArgs);
 
 	textD->cancelDrag();
@@ -2254,7 +2251,7 @@ static void processDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 static void processShiftDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	auto textD = textD_of(w);
 	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 	int abs = hasKey("absolute", args, nArgs);
 
 	textD->cancelDrag();
@@ -2338,14 +2335,14 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int insertPos = textD->TextDGetInsertPosition();
 	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
-	int pageForwardCount = std::max<int>(1, textD->nVisibleLines - 1);
+	int pageForwardCount = std::max(1, textD->nVisibleLines - 1);
 	int maintainColumn = 0;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	maintainColumn = hasKey("column", args, nArgs);
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only
-		targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
+		targetLine = std::min(textD->topLineNum + pageForwardCount, lastTopLine);
 
 		if (targetLine == textD->topLineNum) {
 			ringIfNecessary(silent);
@@ -2355,14 +2352,14 @@ static void nextPageAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	} else if (hasKey("stutter", args, nArgs)) { // Mac style
 		// move to bottom line of visible area
 		// if already there, page down maintaining preferrred column
-		targetLine = std::max<int>(std::min<int>(textD->nVisibleLines - 1, textD->getBufferLinesCount()), 0);
+		targetLine = std::max(std::min(textD->nVisibleLines - 1, textD->getBufferLinesCount()), 0);
 		column = textD->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == textD->lineStarts[targetLine]) {
 			if (insertPos >= buf->BufGetLength() || textD->topLineNum == lastTopLine) {
 				ringIfNecessary(silent);
 				return;
 			}
-			targetLine = std::min<int>(textD->topLineNum + pageForwardCount, lastTopLine);
+			targetLine = std::min(textD->topLineNum + pageForwardCount, lastTopLine);
 			pos = textD->TextDCountForwardNLines(insertPos, pageForwardCount, false);
 			if (maintainColumn) {
 				pos = textD->TextDPosOfPreferredCol(column, pos);
@@ -2427,14 +2424,14 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	int insertPos = textD->TextDGetInsertPosition();
 	int column = 0, visLineNum, lineStartPos;
 	int pos, targetLine;
-	int pageBackwardCount = std::max<int>(1, textD->nVisibleLines - 1);
+	int pageBackwardCount = std::max(1, textD->nVisibleLines - 1);
 	int maintainColumn = 0;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	maintainColumn = hasKey("column", args, nArgs);
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) { // scrollbar only
-		targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
+		targetLine = std::max(textD->topLineNum - pageBackwardCount, 1);
 
 		if (targetLine == textD->topLineNum) {
 			ringIfNecessary(silent);
@@ -2451,7 +2448,7 @@ static void previousPageAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 				ringIfNecessary(silent);
 				return;
 			}
-			targetLine = std::max<int>(textD->topLineNum - pageBackwardCount, 1);
+			targetLine = std::max(textD->topLineNum - pageBackwardCount, 1);
 			pos = textD->TextDCountBackwardNLines(insertPos, pageBackwardCount);
 			if (maintainColumn) {
 				pos = textD->TextDPosOfPreferredCol(column, pos);
@@ -2508,7 +2505,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	int maxCharWidth = textD->fontStruct->max_bounds.width;
 	int lineStartPos, indent, pos;
 	int horizOffset;
-	int silent = hasKey("nobell", args, nArgs);
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
@@ -2516,7 +2513,7 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			ringIfNecessary(silent);
 			return;
 		}
-		horizOffset = std::max<int>(0, textD->horizOffset - textD->rect.width);
+		horizOffset = std::max(0, textD->horizOffset - textD->rect.width);
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
 	} else {
 		lineStartPos = buf->BufStartOfLine(insertPos);
@@ -2525,9 +2522,9 @@ static void pageLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 			return;
 		}
 		indent = buf->BufCountDispChars(lineStartPos, insertPos);
-		pos = buf->BufCountForwardDispChars(lineStartPos, std::max<int>(0, indent - textD->rect.width / maxCharWidth));
+		pos = buf->BufCountForwardDispChars(lineStartPos, std::max(0, indent - textD->rect.width / maxCharWidth));
 		textD->TextDSetInsertPosition(pos);
-		textD->TextDSetScroll(textD->topLineNum, std::max<int>(0, textD->horizOffset - textD->rect.width));
+		textD->TextDSetScroll(textD->topLineNum, std::max(0, textD->horizOffset - textD->rect.width));
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		textD->checkAutoShowInsertPos();
 		textD->callCursorMovementCBs(event);
@@ -2540,32 +2537,38 @@ static void pageRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
-	auto textD = textD_of(w);
-	TextBuffer *buf = textD->buffer;
-	int insertPos = textD->TextDGetInsertPosition();
-	int maxCharWidth = textD->fontStruct->max_bounds.width;
+	auto textD         = textD_of(w);
+	TextBuffer *buf    = textD->buffer;
+	int insertPos      = textD->TextDGetInsertPosition();
+	int maxCharWidth   = textD->fontStruct->max_bounds.width;
 	int oldHorizOffset = textD->horizOffset;
-	int lineStartPos, indent, pos;
-	int horizOffset, sliderSize, sliderMax;
-	int silent = hasKey("nobell", args, nArgs);
+	int sliderSize;
+	int sliderMax;
+	bool silent = hasKey("nobell", args, nArgs);
 
 	textD->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
 		XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
-		horizOffset = std::min<int>(textD->horizOffset + textD->rect.width, sliderMax - sliderSize);
+		int horizOffset = std::min(textD->horizOffset + textD->rect.width, sliderMax - sliderSize);
+		
 		if (textD->horizOffset == horizOffset) {
 			ringIfNecessary(silent);
 			return;
 		}
+		
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
 	} else {
-		lineStartPos = buf->BufStartOfLine(insertPos);
-		indent = buf->BufCountDispChars(lineStartPos, insertPos);
-		pos = buf->BufCountForwardDispChars(lineStartPos, indent + textD->rect.width / maxCharWidth);
+		int lineStartPos = buf->BufStartOfLine(insertPos);
+		int indent       = buf->BufCountDispChars(lineStartPos, insertPos);
+		int pos          = buf->BufCountForwardDispChars(lineStartPos, indent + textD->rect.width / maxCharWidth);
+		
 		textD->TextDSetInsertPosition(pos);
 		textD->TextDSetScroll(textD->topLineNum, textD->horizOffset + textD->rect.width);
-		if (textD->horizOffset == oldHorizOffset && insertPos == pos)
+		
+		if (textD->horizOffset == oldHorizOffset && insertPos == pos) {
 			ringIfNecessary(silent);
+		}
+		
 		checkMoveSelectionChange(w, event, insertPos, args, nArgs);
 		textD->checkAutoShowInsertPos();
 		textD->callCursorMovementCBs(event);
@@ -2621,17 +2624,21 @@ static void scrollDownAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	auto textD = textD_of(w);
 	int topLineNum, horizOffset, nLines;
 
-	if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1)
+	if (*nArgs == 0 || sscanf(args[0], "%d", &nLines) != 1) {
 		return;
+	}
+
 	if (*nArgs == 2) {
 		// Allow both 'page' and 'pages'
-		if (strncmp(args[1], "page", 4) == 0)
+		if (strncmp(args[1], "page", 4) == 0) {
 			nLines *= textD->nVisibleLines;
 
 		// 'line' or 'lines' is the only other valid possibility
-		else if (strncmp(args[1], "line", 4) != 0)
+		} else if (strncmp(args[1], "line", 4) != 0) {
 			return;
+		}
 	}
+	
 	textD->TextDGetScroll(&topLineNum, &horizOffset);
 	textD->TextDSetScroll(topLineNum + nLines, horizOffset);
 }
@@ -2643,13 +2650,18 @@ static void scrollLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	(void)event;
 
 	auto textD = textD_of(w);
-	int horizOffset, nPixels;
-	int sliderMax, sliderSize;
+	int horizOffset;
+	int nPixels;
+	int sliderMax;
+	int sliderSize;
 
-	if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1)
+	if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1) {
 		return;
+	}
+	
 	XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
-	horizOffset = std::min<int>(std::max<int>(0, textD->horizOffset - nPixels), sliderMax - sliderSize);
+	horizOffset = std::min(std::max(0, textD->horizOffset - nPixels), sliderMax - sliderSize);
+	
 	if (textD->horizOffset != horizOffset) {
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
 	}
@@ -2662,13 +2674,18 @@ static void scrollRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	(void)event;
 
 	auto textD = textD_of(w);
-	int horizOffset, nPixels;
-	int sliderMax, sliderSize;
+	int horizOffset;
+	int nPixels;
+	int sliderMax;
+	int sliderSize;
 
-	if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1)
+	if (*nArgs == 0 || sscanf(args[0], "%d", &nPixels) != 1) {
 		return;
+	}
+	
 	XtVaGetValues(textD->hScrollBar, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
-	horizOffset = std::min<int>(std::max<int>(0, textD->horizOffset + nPixels), sliderMax - sliderSize);
+	horizOffset = std::min(std::max(0, textD->horizOffset + nPixels), sliderMax - sliderSize);
+	
 	if (textD->horizOffset != horizOffset) {
 		textD->TextDSetScroll(textD->topLineNum, horizOffset);
 	}
@@ -2819,10 +2836,10 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
 		// rect -> rect
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
-		startCol = std::min<int>(textD_of(tw)->rectAnchor, newCol);
-		endCol = std::max<int>(textD_of(tw)->rectAnchor, newCol);
-		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->getAnchor(), newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(textD_of(tw)->anchor, newPos));
+		startCol = std::min(textD_of(tw)->rectAnchor, newCol);
+		endCol = std::max(textD_of(tw)->rectAnchor, newCol);
+		startPos = buf->BufStartOfLine(std::min(textD_of(tw)->getAnchor(), newPos));
+		endPos = buf->BufEndOfLine(std::max(textD_of(tw)->anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 	} else if (sel->selected && rectangular) { // plain -> rect
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
@@ -2834,7 +2851,7 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
 		textD_of(tw)->anchor = anchor;
 		textD_of(tw)->rectAnchor = rectAnchor;
-		buf->BufRectSelect(buf->BufStartOfLine(std::min<int>(anchor, newPos)), buf->BufEndOfLine(std::max<int>(anchor, newPos)), std::min<int>(rectAnchor, newCol), std::max<int>(rectAnchor, newCol));
+		buf->BufRectSelect(buf->BufStartOfLine(std::min(anchor, newPos)), buf->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
 	} else if (sel->selected && sel->rectangular) { // rect -> plain
 		startPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->start), sel->rectStart);
 		endPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->end), sel->rectEnd);
@@ -2852,10 +2869,10 @@ static void keyMoveExtendSelection(Widget w, XEvent *event, int origPos, int rec
 	} else if (rectangular) { // no sel -> rect
 		origCol = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
-		startCol = std::min<int>(newCol, origCol);
-		endCol = std::max<int>(newCol, origCol);
-		startPos = buf->BufStartOfLine(std::min<int>(origPos, newPos));
-		endPos = buf->BufEndOfLine(std::max<int>(origPos, newPos));
+		startCol = std::min(newCol, origCol);
+		endCol = std::max(newCol, origCol);
+		startPos = buf->BufStartOfLine(std::min(origPos, newPos));
+		endPos = buf->BufEndOfLine(std::max(origPos, newPos));
 		textD_of(tw)->anchor = origPos;
 		textD_of(tw)->rectAnchor = origCol;
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
@@ -3034,7 +3051,7 @@ static int startOfWord(TextWidget w, int pos) {
 		if (!buf->BufSearchBackwardEx(pos, delimiters, &startPos))
 			return 0;
 	}
-	return std::min<int>(pos, startPos + 1);
+	return std::min(pos, startPos + 1);
 }
 
 static int endOfWord(TextWidget w, int pos) {
@@ -3063,10 +3080,10 @@ static int endOfWord(TextWidget w, int pos) {
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
 static int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
-	int pos;
+
 	const char *c;
 
-	pos = startPos;
+	int pos = startPos;
 	while (pos < buf->BufGetLength()) {
 		for (c = searchChars; *c != '\0'; c++)
 			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
@@ -3123,7 +3140,7 @@ static void selectLine(Widget w) {
 
 	endPos = textD->textBuffer()->BufEndOfLine(insertPos);
 	startPos = textD->textBuffer()->BufStartOfLine(insertPos);
-	textD->textBuffer()->BufSelect(startPos, std::min<int>(endPos + 1, textD->textBuffer()->BufGetLength()));
+	textD->textBuffer()->BufSelect(startPos, std::min(endPos + 1, textD->textBuffer()->BufGetLength()));
 	textD->TextDSetInsertPosition(endPos);
 }
 
@@ -3132,28 +3149,33 @@ static void selectLine(Widget w) {
 ** autoscroll timer routine, and make sure the timer is on when it's
 ** needed and off when it's not.
 */
-static void checkAutoScroll(TextWidget w, int x, int y) {
-	int inWindow;
+static void checkAutoScroll(TextWidget w, const Point &coord) {
 
 	// Is the pointer in or out of the window?
-	inWindow = x >= textD_of(w)->rect.left && x < w->core.width - text_of(w).P_marginWidth && y >= text_of(w).P_marginHeight && y < w->core.height - text_of(w).P_marginHeight;
+	bool inWindow = 
+		coord.x >= textD_of(w)->rect.left && 
+		coord.x < w->core.width - text_of(w).P_marginWidth && 
+		coord.y >= text_of(w).P_marginHeight && 
+		coord.y < w->core.height - text_of(w).P_marginHeight;
+
+	auto textD = textD_of(w);
 
 	// If it's in the window, cancel the timer procedure
 	if (inWindow) {
-		if (textD_of(w)->autoScrollProcID != 0)
-			XtRemoveTimeOut(textD_of(w)->autoScrollProcID);
-		;
-		textD_of(w)->autoScrollProcID = 0;
+		if (textD->autoScrollProcID != 0) {
+			XtRemoveTimeOut(textD->autoScrollProcID);
+		}
+		textD->autoScrollProcID = 0;
 		return;
 	}
 
 	// If the timer is not already started, start it
-	if (textD_of(w)->autoScrollProcID == 0) {
-		textD_of(w)->autoScrollProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), 0, autoScrollTimerProc, w);
+	if (textD->autoScrollProcID == 0) {
+		textD->autoScrollProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), 0, autoScrollTimerProc, w);
 	}
 
 	// Pass on the newest mouse location to the autoscroll routine
-	textD_of(w)->getMouseCoord() = {x, y};
+	textD->setMouseCoord(coord);
 }
 
 /*
@@ -3161,13 +3183,15 @@ static void checkAutoScroll(TextWidget w, int x, int y) {
 */
 static void endDrag(Widget w) {
 
-	if (textD_of(w)->autoScrollProcID != 0)
+	if (textD_of(w)->autoScrollProcID != 0) {
 		XtRemoveTimeOut(textD_of(w)->autoScrollProcID);
+	}
 
 	textD_of(w)->autoScrollProcID = 0;
 
-	if (textD_of(w)->dragState == MOUSE_PAN)
+	if (textD_of(w)->dragState == MOUSE_PAN) {
 		XUngrabPointer(XtDisplay(w), CurrentTime);
+	}
 
 	textD_of(w)->dragState = NOT_CLICKED;
 }
@@ -3179,33 +3203,33 @@ static void endDrag(Widget w) {
 /*
 ** Adjust the selection as the mouse is dragged to position: (x, y).
 */
-static void adjustSelection(TextWidget tw, int x, int y) {
+static void adjustSelection(TextWidget tw, const Point &coord) {
 	TextDisplay *textD = textD_of(tw);
 	TextBuffer *buf = textD->buffer;
 	int row, col, startCol, endCol, startPos, endPos;
-	int newPos = textD->TextDXYToPosition(Point{x, y});
+	int newPos = textD->TextDXYToPosition(coord);
 
 	// Adjust the selection
 	if (textD_of(tw)->dragState == PRIMARY_RECT_DRAG) {
 	
-		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
+		textD->TextDXYToUnconstrainedPosition(coord, &row, &col);
 		col      = textD->TextDOffsetWrappedColumn(row, col);
-		startCol = std::min<int>(textD_of(tw)->rectAnchor, col);
-		endCol   = std::max<int>(textD_of(tw)->rectAnchor, col);
-		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->getAnchor(), newPos));
-		endPos   = buf->BufEndOfLine(std::max<int>(textD_of(tw)->getAnchor(), newPos));
+		startCol = std::min(textD_of(tw)->rectAnchor, col);
+		endCol   = std::max(textD_of(tw)->rectAnchor, col);
+		startPos = buf->BufStartOfLine(std::min(textD_of(tw)->getAnchor(), newPos));
+		endPos   = buf->BufEndOfLine(std::max(textD_of(tw)->getAnchor(), newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 		
 	} else if (textD_of(tw)->multiClickState == ONE_CLICK) {
-		startPos = startOfWord(tw, std::min<int>(textD_of(tw)->getAnchor(), newPos));
-		endPos   = endOfWord(tw, std::max<int>(textD_of(tw)->getAnchor(), newPos));
+		startPos = startOfWord(tw, std::min(textD_of(tw)->getAnchor(), newPos));
+		endPos   = endOfWord(tw, std::max(textD_of(tw)->getAnchor(), newPos));
 		buf->BufSelect(startPos, endPos);
 		newPos   = newPos < textD_of(tw)->getAnchor() ? startPos : endPos;
 		
 	} else if (textD_of(tw)->multiClickState == TWO_CLICKS) {
-		startPos = buf->BufStartOfLine(std::min<int>(textD_of(tw)->getAnchor(), newPos));
-		endPos   = buf->BufEndOfLine(std::max<int>(textD_of(tw)->getAnchor(), newPos));
-		buf->BufSelect(startPos, std::min<int>(endPos + 1, buf->BufGetLength()));
+		startPos = buf->BufStartOfLine(std::min(textD_of(tw)->getAnchor(), newPos));
+		endPos   = buf->BufEndOfLine(std::max(textD_of(tw)->getAnchor(), newPos));
+		buf->BufSelect(startPos, std::min(endPos + 1, buf->BufGetLength()));
 		newPos   = newPos < textD_of(tw)->getAnchor() ? startPos : endPos;
 	} else
 		buf->BufSelect(textD_of(tw)->getAnchor(), newPos);
@@ -3215,14 +3239,14 @@ static void adjustSelection(TextWidget tw, int x, int y) {
 	textD->callCursorMovementCBs(nullptr);
 }
 
-static void adjustSecondarySelection(TextWidget tw, int x, int y) {
+static void adjustSecondarySelection(TextWidget tw, const Point &coord) {
 	TextDisplay *textD = textD_of(tw);
 	TextBuffer *buf = textD->buffer;
 	int row, col, startCol, endCol, startPos, endPos;
-	int newPos = textD->TextDXYToPosition(Point{x, y});
+	int newPos = textD->TextDXYToPosition(coord);
 
 	if (textD_of(tw)->dragState == SECONDARY_RECT_DRAG) {
-		textD->TextDXYToUnconstrainedPosition(Point{x, y}, &row, &col);
+		textD->TextDXYToUnconstrainedPosition(coord, &row, &col);
 		col      = textD->TextDOffsetWrappedColumn(row, col);
 		startCol = std::min(textD_of(tw)->rectAnchor, col);
 		endCol   = std::max(textD_of(tw)->rectAnchor, col);
@@ -3244,9 +3268,13 @@ static void adjustSecondarySelection(TextWidget tw, int x, int y) {
 ** and the indent column is returned in "column" (if non nullptr).
 */
 static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
+
 	TextDisplay *textD = textD_of(tw);
-	int pos, indent = -1, tabDist = textD->textBuffer()->tabDist_;
-	int i, useTabs = textD->textBuffer()->useTabs_;
+	int pos;
+	int indent = -1;
+	int tabDist = textD->textBuffer()->tabDist_;
+	int i;
+	int useTabs = textD->textBuffer()->useTabs_;
 	char c;
 	smartIndentCBStruct smartIndent;
 
@@ -3257,10 +3285,12 @@ static std::string createIndentStringEx(TextWidget tw, TextBuffer *buf, int bufO
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
 	if (text_of(tw).P_smartIndent && (lineStartPos == 0 || buf == textD->buffer)) {
-		smartIndent.reason = NEWLINE_INDENT_NEEDED;
-		smartIndent.pos = lineEndPos + bufOffset;
+		
+		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
+		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped = nullptr;
+		smartIndent.charsTyped    = nullptr;
+		
 		XtCallCallbacks((Widget)tw, textNsmartIndentCallback, &smartIndent);
 		indent = smartIndent.indentRequest;
 	}
@@ -3317,18 +3347,19 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	int horizOffset;
 	int cursorX;
 	int y;
-	int fontWidth  = textD->fontStruct->max_bounds.width;
-	int fontHeight = textD->fontStruct->ascent + textD->fontStruct->descent;
+	int fontWidth    = textD->fontStruct->max_bounds.width;
+	int fontHeight   = textD->fontStruct->ascent + textD->fontStruct->descent;
+	Point mouseCoord = textD->getMouseCoord();
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
-	int newPos = textD->TextDXYToPosition(textD_of(w)->getMouseCoord());
+	int newPos = textD->TextDXYToPosition(mouseCoord);
 	
-	if (textD_of(w)->dragState == PRIMARY_RECT_DRAG) {
-		cursorX = textD_of(w)->getMouseCoord().x;
+	if (textD->dragState == PRIMARY_RECT_DRAG) {
+		cursorX = mouseCoord.x;
 	} else if (!textD->TextDPositionToXY(newPos, &cursorX, &y)) {
-		cursorX = textD_of(w)->getMouseCoord().x;
+		cursorX = mouseCoord.x;
 	}
 
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
@@ -3337,46 +3368,46 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	
 	if (cursorX >= (int)w->core.width - text_of(w).P_marginWidth) {
 		horizOffset += fontWidth;
-	} else if (textD_of(w)->getMouseCoord().x < textD->rect.left) {
+	} else if (mouseCoord.x < textD->rect.left) {
 		horizOffset -= fontWidth;
 	}
 		
-	if (textD_of(w)->getMouseCoord().y >= (int)w->core.height - text_of(w).P_marginHeight) {
-		topLineNum += 1 + ((textD_of(w)->getMouseCoord().y - (int)w->core.height - text_of(w).P_marginHeight) / fontHeight) + 1;
-	} else if (textD_of(w)->getMouseCoord().y < text_of(w).P_marginHeight) {
-		topLineNum -= 1 + ((text_of(w).P_marginHeight - textD_of(w)->getMouseCoord().y) / fontHeight);
+	if (mouseCoord.y >= (int)w->core.height - text_of(w).P_marginHeight) {
+		topLineNum += 1 + ((mouseCoord.y - (int)w->core.height - text_of(w).P_marginHeight) / fontHeight) + 1;
+	} else if (mouseCoord.y < text_of(w).P_marginHeight) {
+		topLineNum -= 1 + ((text_of(w).P_marginHeight - mouseCoord.y) / fontHeight);
 	}
 	
 	textD->TextDSetScroll(topLineNum, horizOffset);
 
 	/* Continue the drag operation in progress.  If none is in progress
 	   (safety check) don't continue to re-establish the timer proc */
-	switch(textD_of(w)->dragState) {
+	switch(textD->dragState) {
 	case PRIMARY_DRAG:
-		adjustSelection(w, textD_of(w)->getMouseCoord().x, textD_of(w)->getMouseCoord().y);
+		adjustSelection(w, mouseCoord);
 		break;
 	case PRIMARY_RECT_DRAG:
-		adjustSelection(w, textD_of(w)->getMouseCoord().x, textD_of(w)->getMouseCoord().y);
+		adjustSelection(w, mouseCoord);
 		break;
 	case SECONDARY_DRAG:
-		adjustSecondarySelection(w, textD_of(w)->getMouseCoord().x, textD_of(w)->getMouseCoord().y);
+		adjustSecondarySelection(w, mouseCoord);
 		break;
 	case SECONDARY_RECT_DRAG:
-		adjustSecondarySelection(w, textD_of(w)->getMouseCoord().x, textD_of(w)->getMouseCoord().y);
+		adjustSecondarySelection(w, mouseCoord);
 		break;
 	case PRIMARY_BLOCK_DRAG:
-		textD->BlockDragSelection(textD_of(w)->getMouseCoord(), USE_LAST);
+		textD->BlockDragSelection(mouseCoord, USE_LAST);
 		break;
 	default:
-		textD_of(w)->autoScrollProcID = 0;
+		textD->autoScrollProcID = 0;
 		return;
 	}
 	   
 	// re-establish the timer proc (this routine) to continue processing
-	textD_of(w)->autoScrollProcID = XtAppAddTimeOut(
+	textD->autoScrollProcID = XtAppAddTimeOut(
 		XtWidgetToApplicationContext(
 		(Widget)w), 
-		textD_of(w)->getMouseCoord().y >= text_of(w).P_marginHeight && textD_of(w)->getMouseCoord().y < w->core.height - text_of(w).P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
+		mouseCoord.y >= text_of(w).P_marginHeight && mouseCoord.y < w->core.height - text_of(w).P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 		autoScrollTimerProc, w);
 }
 
@@ -3409,33 +3440,11 @@ static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
 static bool hasKey(const char *key, const String *args, const Cardinal *nArgs) {
 
 	for (int i = 0; i < (int)*nArgs; i++) {
-		if (!strCaseCmp(args[i], key)) {
+		if (strcasecmp(args[i], key) == 0) {
 			return true;
 		}
 	}
 	return false;
-}
-
-/*
-** strCaseCmp compares its arguments and returns 0 if the two strings
-** are equal IGNORING case differences.  Otherwise returns 1.
-*/
-
-static int strCaseCmp(const char *str1, const char *str2) {
-	unsigned const char *c1 = (unsigned const char *)str1;
-	unsigned const char *c2 = (unsigned const char *)str2;
-
-	for (; *c1 != '\0' && *c2 != '\0'; c1++, c2++) {
-		if (toupper(*c1) != toupper(*c2)) {
-			return 1;
-		}
-	}
-	
-	if (*c1 == *c2) {
-		return 0;
-	} else {
-		return 1;
-	}
 }
 
 static void ringIfNecessary(bool silent) {

@@ -127,7 +127,6 @@ add_executable(nedit
 	TextBuffer.cpp
 	TextSelection.cpp
 	UndoInfo.cpp
-	calltips.cpp
 	file.cpp
 	help.cpp
 	highlight.cpp

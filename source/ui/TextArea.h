@@ -10,6 +10,8 @@ class TextArea : public QAbstractScrollArea {
 public:
 	explicit TextArea(QWidget *parent = 0);
 	virtual ~TextArea();
+	
+private:
 };
 
 

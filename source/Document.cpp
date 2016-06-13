@@ -773,6 +773,50 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 	}
 }
 
+/*
+** Returns a new string with each \t replaced with tab_width spaces or
+** a pointer to text if there were no tabs.
+** Note that this is dumb replacement, not smart tab-like behavior!  The goal
+** is to prevent tabs from turning into squares in calltips, not to get the
+** formatting just right.
+*/
+std::string expandAllTabsEx(view::string_view text, int tab_width) {
+	int nTabs = 0;
+
+	// First count 'em
+	for(char ch : text) {
+		if (ch == '\t') {
+			++nTabs;
+		}
+	}
+	
+	if (nTabs == 0) {
+		return text.to_string();
+	}
+
+	// Allocate the new string
+	size_t len = text.size() + (tab_width - 1) * nTabs;
+	
+	std::string textCpy;
+	textCpy.reserve(len);
+	
+	auto cCpy = std::back_inserter(textCpy);
+	
+	// Now replace 'em
+	for(char ch : text) {
+		if (ch == '\t') {
+			for (int i = 0; i < tab_width; ++i) {
+				*cCpy++ = ' ';
+			}
+		} else {
+			*cCpy++ = ch;
+		}
+	}
+	
+	
+	return textCpy;
+}
+
 }
 
 /*
@@ -1939,8 +1983,10 @@ void Document::SetAutoWrap(int state) {
 	int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;
 
 	XtVaSetValues(textArea_, textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
-	for (int i = 0; i < nPanes_; i++)
+	for (int i = 0; i < nPanes_; i++) {
 		XtVaSetValues(textPanes_[i], textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
+	}
+	
 	wrapMode_ = state;
 
 	if (IsTopDocument()) {
@@ -4436,4 +4482,136 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 
 TextDisplay *Document::lastFocus() const {
 	return textD_of(lastFocus_);
+}
+
+/*
+** Is a calltip displayed?  Returns the calltip ID of the currently displayed
+** calltip, or 0 if there is no calltip displayed.  If called with
+** calltipID != 0, returns 0 unless there is a calltip being
+** displayed with that calltipID.
+*/
+int Document::GetCalltipID(int calltipID) {
+
+	TextDisplay *textD = textD_of(lastFocus_);
+	if (calltipID == 0)
+		return textD->getCalltip().ID;
+	else {
+		if (calltipID == textD->getCalltip().ID) {
+			return calltipID;
+		} else {
+			return 0;
+		}
+	}
+}
+
+/*
+** Pop-up a calltip.
+** If a calltip is already being displayed it is destroyed and replaced with
+** the new calltip.  Returns the ID of the calltip or 0 on failure.
+*/
+int Document::ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+	static int StaticCalltipID = 1;
+	
+	auto textD = textD_of(lastFocus_);
+	int rel_x;
+	int rel_y;
+	Position txtX;
+	Position txtY;
+
+	// Destroy any previous calltip 
+	textD->TextDKillCalltip(0);
+
+	// Expand any tabs in the calltip and make it an XmString 
+	std::string textCpy = expandAllTabsEx(text, textD->textBuffer()->BufGetTabDistance());
+
+	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
+
+	// Get the location/dimensions of the text area 
+	XtVaGetValues(textD->w, XmNx, &txtX, XmNy, &txtY, nullptr);
+
+	// Create the calltip widget on first request 
+	if (!textD->calltipW) {
+		Arg args[10];
+		int argcnt = 0;
+		XtSetArg(args[argcnt], XmNsaveUnder, True);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNallowShellResize, True);
+		argcnt++;
+
+		textD->calltipShell = CreatePopupShellWithBestVis((String) "calltipshell", overrideShellWidgetClass, textD->w, args, argcnt);
+
+		/* Might want to make this a read-only XmText eventually so that
+		    users can copy from it */
+		textD->calltipW = XtVaCreateManagedWidget(
+			"calltip", 
+			xmLabelWidgetClass, 
+			textD->calltipShell, 
+			XmNborderWidth, 
+			1, // Thin borders 
+			XmNhighlightThickness, 
+			0, 
+			XmNalignment, 
+			XmALIGNMENT_BEGINNING, 
+			XmNforeground, 
+			textD->calltipFGPixel, 
+			XmNbackground, 
+			textD->calltipBGPixel, 
+			nullptr);
+	}
+
+	// Set the text on the label 
+	XtVaSetValues(textD->calltipW, XmNlabelString, str, nullptr);
+	XmStringFree(str);
+
+	// Figure out where to put the tip 
+	if (anchored) {
+		// Put it at the specified position 
+		// If position is not displayed, return 0 
+		if (pos < textD->getFirstChar() || pos > textD->getLastChar()) {
+			QApplication::beep();
+			return 0;
+		}
+		textD->getCalltip().pos = pos;
+	} else {
+		/* Put it next to the cursor, or in the center of the window if the
+		    cursor is offscreen and mode != strict */
+		if (!textD->TextDPositionToXY(textD->getCursorPos(), &rel_x, &rel_y)) {
+			if (alignMode == TIP_STRICT) {
+				QApplication::beep();
+				return 0;
+			}
+			textD->getCalltip().pos = -1;
+		} else
+			// Store the x-offset for use when redrawing 
+			textD->getCalltip().pos = rel_x;
+	}
+
+	// Should really bounds-check these enumerations... 
+	textD->getCalltip().ID        = StaticCalltipID;
+	textD->getCalltip().anchored  = anchored;
+	textD->getCalltip().hAlign    = hAlign;
+	textD->getCalltip().vAlign    = vAlign;
+	textD->getCalltip().alignMode = alignMode;
+
+	/* Increment the static calltip ID.  Macro variables can only be int,
+	    not unsigned, so have to work to keep it > 0 on overflow */
+	if (++StaticCalltipID <= 0) {
+		StaticCalltipID = 1;
+	}
+
+	// Realize the calltip's shell so that its width & height are known 
+	XtRealizeWidget(textD->calltipShell);
+	
+	// Move the calltip and pop it up 
+	textD->TextDRedrawCalltip(0);
+	XtPopup(textD->calltipShell, XtGrabNone);
+	return textD->getCalltip().ID;
+}
+
+/*
+** Pop-down a calltip if one exists, else do nothing
+*/
+void Document::KillCalltip(int calltipID) {
+	TextDisplay *textD = textD_of(lastFocus_);
+	textD->TextDKillCalltip(calltipID);
 }

@@ -30,6 +30,8 @@
 #include "TextDisplay.h"
 #include "StyleTableEntry.h"
 #include "TextBuffer.h"
+#include "DragStates.h"
+#include "MultiClickStates.h"
 #include "text.h"
 #include "textP.h"
 #include "nedit.h"
@@ -57,6 +59,9 @@
 #include <X11/Shell.h>
 
 namespace {
+
+
+const int CALLTIP_EDGE_GUARD = 5;
 
 /* temporary structure for passing data to the event handler for completing
    selection requests (the hard way, via xlib calls) */
@@ -798,63 +803,68 @@ TextDisplay::TextDisplay(Widget widget,
 						 Pixel calltipFGPixel, 
 						 Pixel calltipBGPixel) {
 
-
-	XGCValues gcValues;
-
-	this->w = widget;
-	this->rect = { left, top, width, height };	
-	this->cursorOn = true;
-	this->cursorPos = 0;
-	this->cursor = Point{-100, -100};
-	this->cursorToHint = NO_HINT;
-	this->cursorStyle = NORMAL_CURSOR;
+	this->w                  = widget;
+	this->rect               = { left, top, width, height };	
+	this->cursorOn           = true;
+	this->cursorPos          = 0;
+	this->cursor             = Point{-100, -100};
+	this->cursorToHint       = NO_HINT;
+	this->cursorStyle        = NORMAL_CURSOR;
 	this->cursorPreferredCol = -1;
-	this->buffer = buffer;
-	this->firstChar = 0;
-	this->lastChar = 0;
-	this->nBufferLines = 0;
-	this->topLineNum = 1;
-	this->absTopLineNum = 1;
-	this->needAbsTopLineNum = false;
-	this->horizOffset = 0;
-	this->visibility = VisibilityUnobscured;
-	this->hScrollBar = hScrollBar;
-	this->vScrollBar = vScrollBar;
-	this->fontStruct = fontStruct;
-	this->ascent = fontStruct->ascent;
-	this->descent = fontStruct->descent;
-	this->fixedFontWidth = fontStruct->min_bounds.width == fontStruct->max_bounds.width ? fontStruct->min_bounds.width : -1;
-	this->styleBuffer = nullptr;
-	this->styleTable = nullptr;
-	this->nStyles = 0;
-	this->bgPixel = bgPixel;
-	this->fgPixel = fgPixel;
-	this->selectFGPixel = selectFGPixel;
-	this->highlightFGPixel = highlightFGPixel;
-	this->selectBGPixel = selectBGPixel;
-	this->highlightBGPixel = highlightBGPixel;
-	this->lineNumFGPixel = lineNumFGPixel;
-	this->cursorFGPixel = cursorFGPixel;
-	this->wrapMargin = wrapMargin;
-	this->continuousWrap = continuousWrap;
+	this->buffer             = buffer;
+	this->firstChar          = 0;
+	this->lastChar           = 0;
+	this->nBufferLines       = 0;
+	this->topLineNum         = 1;
+	this->absTopLineNum      = 1;
+	this->needAbsTopLineNum  = false;
+	this->horizOffset        = 0;
+	this->visibility         = VisibilityUnobscured;
+	this->hScrollBar         = hScrollBar;
+	this->vScrollBar         = vScrollBar;
+	this->fontStruct         = fontStruct;
+	this->ascent             = fontStruct->ascent;
+	this->descent            = fontStruct->descent;
+	this->fixedFontWidth     = fontStruct->min_bounds.width == fontStruct->max_bounds.width ? fontStruct->min_bounds.width : -1;
+	this->styleBuffer        = nullptr;
+	this->styleTable         = nullptr;
+	this->nStyles            = 0;
+	this->bgPixel            = bgPixel;
+	this->fgPixel            = fgPixel;
+	this->selectFGPixel      = selectFGPixel;
+	this->highlightFGPixel   = highlightFGPixel;
+	this->selectBGPixel      = selectBGPixel;
+	this->highlightBGPixel   = highlightBGPixel;
+	this->lineNumFGPixel     = lineNumFGPixel;
+	this->cursorFGPixel      = cursorFGPixel;
+	this->wrapMargin         = wrapMargin;
+	this->continuousWrap     = continuousWrap;	
+	this->styleGC            = allocateGC(this->w, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
+	this->lineNumLeft        = lineNumLeft;
+	this->lineNumWidth       = lineNumWidth;
+	this->nVisibleLines      = (height - 1) / (this->ascent + this->descent) + 1;
 	
-	allocateFixedFontGCs(fontStruct, bgPixel, fgPixel, selectFGPixel, selectBGPixel, highlightFGPixel, highlightBGPixel, lineNumFGPixel);
+	allocateFixedFontGCs(
+		fontStruct, 
+		bgPixel, 
+		fgPixel, 
+		selectFGPixel, 
+		selectBGPixel, 
+		highlightFGPixel, 
+		highlightBGPixel, 
+		lineNumFGPixel);
 	
-	this->styleGC       = allocateGC(this->w, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
-	this->lineNumLeft   = lineNumLeft;
-	this->lineNumWidth  = lineNumWidth;
-	this->nVisibleLines = (height - 1) / (this->ascent + this->descent) + 1;
-	
+	XGCValues gcValues;
 	gcValues.foreground = cursorFGPixel;
 	
-	this->cursorFGGC = XtGetGC(widget, GCForeground, &gcValues);
-	this->lineStarts = new int[this->nVisibleLines];
-	this->lineStarts[0] = 0;
-	this->calltipW = nullptr;
-	this->calltipShell = nullptr;
-	this->calltip.ID = 0;
-	this->calltipFGPixel = calltipFGPixel;
-	this->calltipBGPixel = calltipBGPixel;
+	this->cursorFGGC        = XtGetGC(widget, GCForeground, &gcValues);
+	this->lineStarts        = new int[this->nVisibleLines];
+	this->lineStarts[0]     = 0;
+	this->calltipW          = nullptr;
+	this->calltipShell      = nullptr;
+	this->calltip.ID        = 0;
+	this->calltipFGPixel    = calltipFGPixel;
+	this->calltipBGPixel    = calltipBGPixel;
 	
 	for (int i = 1; i < this->nVisibleLines; i++) {
 		this->lineStarts[i] = -1;
@@ -864,7 +874,7 @@ TextDisplay::TextDisplay(Widget widget,
 	this->bgClass = nullptr;
 	TextDSetupBGClasses(widget, bgClassString, &this->bgClassPixel, &this->bgClass, bgPixel);
 
-	this->suppressResync   = 0;
+	this->suppressResync   = false;
 	this->nLinesDeleted    = 0;
 	this->modifyingTabDist = 0;
 	this->pointerHidden    = false;
@@ -900,6 +910,20 @@ TextDisplay::TextDisplay(Widget widget,
 
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
+	
+	/* Start with the cursor blanked (widgets don't have focus on creation,
+	   the initial FocusIn event will unblank it and get blinking started) */
+	this->cursorOn = false;
+
+	// Initialize the widget variables
+	this->autoScrollProcID   = 0;
+	this->cursorBlinkProcID  = 0;
+	this->dragState          = NOT_CLICKED;
+	this->multiClickState    = NO_CLICKS;
+	this->lastBtnDown        = 0;
+	this->selectionOwner     = false;
+	this->motifDestOwner     = false;
+	this->emTabsBeforeCursor = 0;
 }
 
 /*
@@ -2035,7 +2059,7 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 		   of the text may be completely different. */
 		textD->measureDeletedLines(pos, nDeleted);
 	else
-		textD->suppressResync = 0; // Probably not needed, but just in case
+		textD->suppressResync = false; // Probably not needed, but just in case
 }
 
 /*
@@ -3260,8 +3284,9 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 void TextDisplay::updateVScrollBarRange() {
 	int sliderSize, sliderMax, sliderValue;
 
-	if (!this->vScrollBar)
+	if (!this->vScrollBar) {
 		return;
+	}
 
 	/* The Vert. scroll bar value and slider size directly represent the top
 	   line number, and the number of visible lines respectively.  The scroll
@@ -3718,7 +3743,7 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 	*/
 	if (this->suppressResync) {
 		*linesDeleted = this->nLinesDeleted;
-		this->suppressResync = 0;
+		this->suppressResync = false;
 		return;
 	}
 
@@ -3735,7 +3760,7 @@ void TextDisplay::findWrapRangeEx(view::string_view deletedText, int pos, int nI
 	wrappedLineCounter(deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 	delete deletedTextBuf;
 	*linesDeleted = retLines;
-	this->suppressResync = 0;
+	this->suppressResync = false;
 }
 
 /*
@@ -3813,7 +3838,7 @@ void TextDisplay::measureDeletedLines(int pos, int nDeleted) {
 		   font width). */
 	}
 	this->nLinesDeleted = nLines;
-	this->suppressResync = 1;
+	this->suppressResync = true;
 }
 
 /*
@@ -5721,6 +5746,10 @@ Point TextDisplay::getMouseCoord() const {
 	return this->mouseCoord;
 }
 
+void TextDisplay::setMouseCoord(const Point &point) {
+	this->mouseCoord = point;
+}
+
 int TextDisplay::getBufferLinesCount() const {
 	return this->nBufferLines;
 }
@@ -5733,7 +5762,6 @@ TextBuffer *TextDisplay::getStyleBuffer() const {
 	return this->styleBuffer;
 }
 
-
 void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
 	this->styleBuffer = buffer;
 }
@@ -5742,7 +5770,7 @@ void TextDisplay::setModifyingTabDist(int tabDist) {
 	this->modifyingTabDist = tabDist;
 }
 
-calltipStruct &TextDisplay::getCalltip() {
+CallTip &TextDisplay::getCalltip() {
 	return this->calltip;
 }
 

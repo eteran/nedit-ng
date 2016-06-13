@@ -59,7 +59,7 @@ struct graphicExposeTranslationEntry {
 
 typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 
-struct calltipStruct {
+struct CallTip {
 	int ID;           //  ID of displayed calltip.  Equals zero if none is displayed.
 	bool anchored; //  Is it anchored to a position
 	int pos;          //  Position tip is anchored to
@@ -208,10 +208,11 @@ public:
 	int getLineNumLeft() const;
 	Rect getRect() const;
 	Point getMouseCoord() const;
+	void setMouseCoord(const Point &point);
 	int getBufferLinesCount() const;
 	XtIntervalId getCursorBlinkProcID() const;
 	void setModifyingTabDist(int tabDist);
-	calltipStruct &getCalltip();
+	CallTip &getCalltip();
 	int getFirstChar() const;
 	int getLastChar() const;
 	int getCursorPos() const;
@@ -342,8 +343,8 @@ public:
 	Pixel bgPixel;                               // Background color
 	Pixel *bgClassPixel;                         // table of colors for each BG class
 	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
-	calltipStruct calltip;                       // The info for the calltip itself
-	int suppressResync;                          // Suppress resynchronization of line starts during buffer updates
+	CallTip calltip;                       // The info for the calltip itself
+	bool suppressResync;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int modifyingTabDist;                        // Whether tab distance is being modified
 	bool pointerHidden;                          // true if the mouse pointer is hidden
