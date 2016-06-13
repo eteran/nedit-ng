@@ -4595,7 +4595,6 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	auto tw = reinterpret_cast<TextWidget>(w);
 
 	int p;
-	int length;
 	int column;
 	
 	/* Scan backward for whitespace or BOL.  If BOL, return False, no
@@ -4606,8 +4605,9 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 		}
 
 		char c = buf->BufGetCharacter(p);
-		if (c == '\t' || c == ' ')
+		if (c == '\t' || c == ' ') {
 			break;
+		}
 	}
 
 	/* Create an auto-indent string to insert to do wrap.  If the auto
@@ -4615,13 +4615,12 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	   back off and return to the left margin */
 	std::string indentStr;
 	if (text_of(tw).P_autoIndent || text_of(tw).P_smartIndent) {
-		indentStr = createIndentStringEx(buf, bufOffset, lineStartPos, lineEndPos, &length, &column);
+		indentStr = createIndentStringEx(buf, bufOffset, lineStartPos, lineEndPos, &column);
 		if (column >= p - lineStartPos) {
 			indentStr.resize(1);
 		}
 	} else {
 		indentStr = "\n";
-		length = 1;
 	}
 
 	/* Replace the whitespace character with the auto-indent string
@@ -4629,7 +4628,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	buf->BufReplaceEx(p, p + 1, indentStr);
 
 	*breakAt = p;
-	*charsAdded = length - 1;
+	*charsAdded = indentStr.size() - 1;
 	return true;
 }
 
@@ -4643,12 +4642,14 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 ** string length is returned in "length" (or "length" can be passed as nullptr,
 ** and the indent column is returned in "column" (if non nullptr).
 */
-std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
+std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *column) {
 
 
 	auto tw = reinterpret_cast<TextWidget>(w);
-	int indent = -1, tabDist = this->buffer->tabDist_;
-	int i, useTabs = this->buffer->useTabs_;
+	int indent = -1;
+	int tabDist = this->buffer->tabDist_;
+	int i;
+	int useTabs = this->buffer->useTabs_;
 	smartIndentCBStruct smartIndent;
 
 	/* If smart indent is on, call the smart indent callback.  It is not
@@ -4658,10 +4659,10 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
 	if (text_of(tw).P_smartIndent && (lineStartPos == 0 || buf == this->buffer)) {
-		smartIndent.reason = NEWLINE_INDENT_NEEDED;
-		smartIndent.pos = lineEndPos + bufOffset;
+		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
+		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped = nullptr;
+		smartIndent.charsTyped    = nullptr;
 		XtCallCallbacks((Widget)tw, textNsmartIndentCallback, &smartIndent);
 		indent = smartIndent.indentRequest;
 	}
@@ -4671,12 +4672,15 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 		indent = 0;
 		for (int pos = lineStartPos; pos < lineEndPos; pos++) {
 			char c = buf->BufGetCharacter(pos);
-			if (c != ' ' && c != '\t')
+			if (c != ' ' && c != '\t') {
 				break;
-			if (c == '\t')
+			}
+				
+			if (c == '\t') {
 				indent += tabDist - (indent % tabDist);
-			else
+			} else {
 				indent++;
+			}
 		}
 	}
 
@@ -4698,10 +4702,9 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 	}
 
 	// Return any requested stats
-	if(length)
-		*length = indentStr.size();
-	if(column)
+	if(column) {
 		*column = indent;
+	}
 
 	return indentStr;
 }
@@ -4806,8 +4809,10 @@ void TextDisplay::handleShowPointer(Widget w, XtPointer unused, XEvent *event, B
 
 void TextDisplay::TextPasteClipboard(Time time) {
 	cancelDrag();
-	if (checkReadOnly())
+	if (checkReadOnly()) {
 		return;
+	}
+	
 	TakeMotifDestination(time);
 	InsertClipboard(false);
 	callCursorMovementCBs(nullptr);
@@ -4815,8 +4820,10 @@ void TextDisplay::TextPasteClipboard(Time time) {
 
 void TextDisplay::TextColPasteClipboard(Time time) {
 	cancelDrag();
-	if (checkReadOnly())
+	if (checkReadOnly()) {
 		return;
+	}
+	
 	TakeMotifDestination(time);
 	InsertClipboard(true);
 	callCursorMovementCBs(nullptr);

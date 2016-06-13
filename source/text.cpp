@@ -862,59 +862,73 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 
 	bool redraw = false;
 	bool reconfigure = false;
+	
+	auto &newText = text_of(new_widget);
+	auto &curText = text_of(current);
+	TextDisplay *newD = textD_of(new_widget);
+	TextDisplay *curD = textD_of(current);
 
-	if (text_of(new_widget).P_overstrike != text_of(current).P_overstrike) {
-		if (textD_of(current)->cursorStyle == BLOCK_CURSOR)
-			textD_of(current)->TextDSetCursorStyle(text_of(current).P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
-		else if (textD_of(current)->cursorStyle == NORMAL_CURSOR || textD_of(current)->cursorStyle == HEAVY_CURSOR)
-			textD_of(current)->TextDSetCursorStyle(BLOCK_CURSOR);
+	if (newText.P_overstrike != curText.P_overstrike) {
+	
+		switch(curD->cursorStyle) {
+		case BLOCK_CURSOR:
+			curD->TextDSetCursorStyle(curText.P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+			break;
+		case NORMAL_CURSOR:
+		case HEAVY_CURSOR:
+			curD->TextDSetCursorStyle(BLOCK_CURSOR);
+		default:
+			// NOTE(eteran): wasn't handled in the original code
+			break;
+		}
 	}
 
-	if (text_of(new_widget).P_fontStruct != text_of(current).P_fontStruct) {
+	if (newText.P_fontStruct != curText.P_fontStruct) {
 		
-		if (text_of(new_widget).P_lineNumCols != 0) {
+		if (newText.P_lineNumCols != 0) {
 			reconfigure = true;
 		}
 		
-		textD_of(current)->TextDSetFont(text_of(new_widget).P_fontStruct);
+		curD->TextDSetFont(newText.P_fontStruct);
 	}
 
-	if (text_of(new_widget).P_wrapMargin != text_of(current).P_wrapMargin || text_of(new_widget).P_continuousWrap != text_of(current).P_continuousWrap)
-		textD_of(current)->TextDSetWrapMode(text_of(new_widget).P_continuousWrap, text_of(new_widget).P_wrapMargin);
+	if (newText.P_wrapMargin != curText.P_wrapMargin || newText.P_continuousWrap != curText.P_continuousWrap) {
+		curD->TextDSetWrapMode(newText.P_continuousWrap, newText.P_wrapMargin);
+	}
 
 	/* When delimiters are changed, copy the memory, so that the caller
 	   doesn't have to manage it, and add mandatory delimiters blank,
 	   tab, and newline to the list */
-	if (text_of(new_widget).P_delimiters != text_of(current).P_delimiters) {
+	if (newText.P_delimiters != curText.P_delimiters) {
 
-		size_t n = strlen(text_of(new_widget).P_delimiters) + 4;
-		char *delimiters = new char[n];
-		delete [] text_of(current).P_delimiters;
-		snprintf(delimiters, n, "%s%s", " \t\n", text_of(new_widget).P_delimiters);
-		text_of(new_widget).P_delimiters = delimiters;
+		const size_t n = strlen(newText.P_delimiters) + 4;
+		char *delimiters = new char[n];	
+		delete [] curText.P_delimiters;
+		snprintf(delimiters, n, "%s%s", " \t\n", newText.P_delimiters);
+		newText.P_delimiters = delimiters;
 	}
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
 	   show, or change the number of columns of the line number display,
 	   which requires re-organizing the x coordinates of both the line
 	   number display and the main text display */
-	if (text_of(new_widget).P_lineNumCols != text_of(current).P_lineNumCols || reconfigure) {
+	if (newText.P_lineNumCols != curText.P_lineNumCols || reconfigure) {
 
-		int marginWidth = text_of(new_widget).P_marginWidth;
-		int charWidth   = text_of(new_widget).P_fontStruct->max_bounds.width;
-		int lineNumCols = text_of(new_widget).P_lineNumCols;
+		int marginWidth = newText.P_marginWidth;
+		int charWidth   = newText.P_fontStruct->max_bounds.width;
+		int lineNumCols = newText.P_lineNumCols;
 
 		if (lineNumCols == 0) {
-			textD_of(new_widget)->TextDSetLineNumberArea(0, 0, marginWidth);
-			text_of(new_widget).P_columns = (new_widget->core.width - marginWidth * 2) / charWidth;
+			newD->TextDSetLineNumberArea(0, 0, marginWidth);
+			newText.P_columns = (new_widget->core.width - marginWidth * 2) / charWidth;
 		} else {
-			textD_of(new_widget)->TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
-			text_of(new_widget).P_columns = (new_widget->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
+			newD->TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
+			newText.P_columns = (new_widget->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
 		}
 	}
 
-	if (text_of(new_widget).P_backlightCharTypes != text_of(current).P_backlightCharTypes) {
-		TextDisplay::TextDSetupBGClasses((Widget)new_widget, text_of(new_widget).P_backlightCharTypes, &textD_of(new_widget)->bgClassPixel, &textD_of(new_widget)->bgClass, textD_of(new_widget)->bgPixel);
+	if (newText.P_backlightCharTypes != curText.P_backlightCharTypes) {
+		TextDisplay::TextDSetupBGClasses((Widget)new_widget, newText.P_backlightCharTypes, &newD->bgClassPixel, &newD->bgClass, newD->bgPixel);
 		redraw = true;
 	}
 

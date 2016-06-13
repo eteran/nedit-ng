@@ -232,7 +232,7 @@ private:
 	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
 	int wrapUsesCharacter(int lineEndPos);
 	int xyToPos(int x, int y, int posType);
-	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
+	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *column);
 	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 	void allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
 	void calcLastChar();
