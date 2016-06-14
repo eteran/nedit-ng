@@ -729,18 +729,6 @@ static void destroy(Widget w) {
 	
 	auto textD = textD_of(w);
 	
-	textD->StopHandlingXSelections();
-	TextBuffer *buf = textD->textBuffer();
-	
-	
-	if (buf->modifyProcs_.empty()) {
-		delete buf;
-	}
-
-	if (textD->cursorBlinkProcID != 0) {
-		XtRemoveTimeOut(textD->cursorBlinkProcID);
-	}
-	
 	// NOTE(eteran): the delete was originally right below the TextBuffer line
 	//               but I moved it here, so the above cursor stuff was valid
 	//               maybe move that code to the textDisplay destructor? 

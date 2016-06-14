@@ -964,6 +964,20 @@ TextDisplay::TextDisplay(Widget widget,
 ** freed, nor are the style buffer or style table.
 */
 TextDisplay::~TextDisplay() {
+
+	this->StopHandlingXSelections();
+	TextBuffer *buf = this->textBuffer();
+	
+	
+	if (buf->modifyProcs_.empty()) {
+		delete buf;
+	}
+
+	if (this->cursorBlinkProcID != 0) {
+		XtRemoveTimeOut(this->cursorBlinkProcID);
+	}
+
+
 	this->buffer->BufRemoveModifyCB(bufModifiedCB, this);
 	this->buffer->BufRemovePreDeleteCB(bufPreDeleteCB, this);
 	releaseGC(this->w, this->gc);
@@ -974,7 +988,7 @@ TextDisplay::~TextDisplay() {
 	releaseGC(this->w, this->styleGC);
 	releaseGC(this->w, this->lineNumGC);
 
-	delete[] this -> lineStarts;
+	delete[] this->lineStarts;
 
 	while (TextDPopGraphicExposeQueueEntry()) {
 	}
