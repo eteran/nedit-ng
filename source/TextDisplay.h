@@ -252,29 +252,22 @@ private:
 	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
 
 public:
+	int maintainingAbsTopLineNum() const;
+	int updateHScrollBarRange();
+	void blankCursorProtrusions();
+	void extendRangeForStyleMods(int *start, int *end);
+	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 	void measureDeletedLines(int pos, int nDeleted);
 	void redrawLineNumbers(int clearAll);
-	void textDRedisplayRange(int start, int end);
-	void extendRangeForStyleMods(int *start, int *end);
-	void blankCursorProtrusions();
-	void updateVScrollBarRange();
-	int updateHScrollBarRange();
 	void resetAbsLineNum();
+	void textDRedisplayRange(int start, int end);
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
-	int maintainingAbsTopLineNum() const;
-	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
-	
+	void updateVScrollBarRange();
+
 public:
-	void focusInAP(XEvent *event, String *args, Cardinal *nArgs);
-	void focusOutAP(XEvent *event, String *args, Cardinal *nArgs);
-	void deselectAllAP(XEvent *event, String *args, Cardinal *nArgs);
-	void extendEndAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
-	void backwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
-	void forwardWordAP(XEvent *event, String *args, Cardinal *nArgs);	
-	
-public:	
 	void backwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
+	void backwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
 	void beginningOfFileAP(XEvent *event, String *args, Cardinal *nArgs);
 	void beginningOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
 	void copyClipboardAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -290,17 +283,22 @@ public:
 	void deleteSelectionAP(XEvent *event, String *args, Cardinal *nArgs);
 	void deleteToEndOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
 	void deleteToStartOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
+	void deselectAllAP(XEvent *event, String *args, Cardinal *nArgs);
 	void endDragAP(XEvent *event, String *args, Cardinal *nArgs);
-	void endOfFileAP(XEvent *event, String *args, Cardinal *nArgs);
-	void endOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
+	void endOfFileAP(XEvent *event, String *args, Cardinal *nArgs);	
+	void endOfLineAP(XEvent *event, String *args, Cardinal *nArgs);	
 	void exchangeAP(XEvent *event, String *args, Cardinal *nArgs);
 	void extendAdjustAP(XEvent *event, String *args, Cardinal *nArgs);
+	void extendEndAP(XEvent *event, String *args, Cardinal *nArgs);
 	void extendStartAP(XEvent *event, String *args, Cardinal *nArgs);
+	void focusInAP(XEvent *event, String *args, Cardinal *nArgs);
+	void focusOutAP(XEvent *event, String *args, Cardinal *nArgs);
 	void forwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
 	void forwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
+	void forwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
 	void grabFocusAP(XEvent *event, String *args, Cardinal *n_args);
 	void insertStringAP(XEvent *event, String *args, Cardinal *nArgs);
-	void keySelectAP(XEvent *event, String *args, Cardinal *nArgs);
+	void keySelectAP(XEvent *event, String *args, Cardinal *nArgs);	
 	void mousePanAP(XEvent *event, String *args, Cardinal *nArgs);
 	void moveDestinationAP(XEvent *event, String *args, Cardinal *nArgs);
 	void moveToAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -310,7 +308,7 @@ public:
 	void newlineNoIndentAP(XEvent *event, String *args, Cardinal *nArgs);
 	void nextPageAP(XEvent *event, String *args, Cardinal *nArgs);
 	void pageLeftAP(XEvent *event, String *args, Cardinal *nArgs);
-	void pageRightAP(XEvent *event, String *args, Cardinal *nArgs);
+	void pageRightAP(XEvent *event, String *args, Cardinal *nArgs);	
 	void pasteClipboardAP(XEvent *event, String *args, Cardinal *nArgs);
 	void previousPageAP(XEvent *event, String *args, Cardinal *nArgs);
 	void processCancelAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -331,13 +329,17 @@ public:
 	void selectAllAP(XEvent *event, String *args, Cardinal *nArgs);
 	void selfInsertAP(XEvent *event, String *args, Cardinal *n_args);
 	void toggleOverstrikeAP(XEvent *event, String *args, Cardinal *nArgs);
-	
+
 private:
 	void endDrag();
 	void checkMoveSelectionChange(XEvent *event, int startPos, String *args, Cardinal *nArgs);
 	void keyMoveExtendSelection(XEvent *event, int origPos, int rectangular);
 	int endOfWord(int pos);
 	int startOfWord(int pos);
+	int deletePendingSelection(XEvent *event);
+	int deleteEmulatedTab(XEvent *event);
+	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, int allowPendingDelete);
+	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 
 public:
 	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
