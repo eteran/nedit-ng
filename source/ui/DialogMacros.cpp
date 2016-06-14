@@ -248,7 +248,7 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 		}
 	} else {
 		ui.editName->setText(QString());
-		ui.editAccelerator->setKeySequence(QKeySequence());
+		ui.editAccelerator->clear();
 		ui.editMnemonic->setText(QString());
 		ui.checkRequiresSelection->setChecked(false);
 		ui.editMacro->setPlainText(QString());

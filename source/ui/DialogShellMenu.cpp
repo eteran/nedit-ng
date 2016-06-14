@@ -15,6 +15,7 @@
 //------------------------------------------------------------------------------
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
+	ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : ShellMenuData) {
 		auto ptr  = new MenuItem(*data.item);
@@ -213,7 +214,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		generateAcceleratorString(buf, ptr->modifiers, ptr->keysym);
 
 		ui.editName->setText(ptr->name);
-		ui.editAccelerator->setText(tr("%1").arg(QLatin1String(buf)));
+		ui.editAccelerator->setKeySequence(QKeySequence::fromString(QLatin1String(buf)));
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.editCommand->setPlainText(ptr->cmd);
 		
@@ -270,7 +271,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		}
 	} else {
 		ui.editName->setText(QString());
-		ui.editAccelerator->setText(QString());
+		ui.editAccelerator->clear();
 		ui.editMnemonic->setText(QString());
 		ui.editCommand->setPlainText(QString());
 
@@ -361,7 +362,7 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 		}
 	}
 
-	QString accText = ui.editAccelerator->text();
+	QString accText = ui.editAccelerator->keySequence().toString();
 	if(!accText.isEmpty()) {
 		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
 	}

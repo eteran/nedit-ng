@@ -172,7 +172,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
             </spacer>
            </item>
            <item row="1" column="0" colspan="2">
-            <widget class="QLineEdit" name="editAccelerator"/>
+            <widget class="KeySequenceEdit" name="editAccelerator"/>
            </item>
           </layout>
          </item>
@@ -346,6 +346,13 @@ Select &quot;New&quot; to add a new command to the menu.</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeySequenceEdit</class>
+   <extends>QLineEdit</extends>
+   <header>KeySequenceEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
