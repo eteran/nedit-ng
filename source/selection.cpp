@@ -120,7 +120,8 @@ void GotoLineNumber(Document *window) {
 
 	const int DF_MAX_PROMPT_LENGTH = 2048;
 
-	char lineNumText[DF_MAX_PROMPT_LENGTH], *params[1];
+	char lineNumText[DF_MAX_PROMPT_LENGTH];
+	char *params[1];
 	int lineNum;
 	int column;
 
@@ -128,17 +129,17 @@ void GotoLineNumber(Document *window) {
 	bool ok;
 	QString text = QInputDialog::getText(nullptr /*parent*/, QLatin1String("Goto Line Number"), QLatin1String("Goto Line (and/or Column)  Number:"), QLineEdit::Normal, QString(), &ok);
 
-	if (!ok)
-		return;
-
-	if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
-		QApplication::beep();
+	if (!ok) {
 		return;
 	}
 	
 	// TODO(eteran): this is temporary, until we have a better mechanism for this
-	snprintf(lineNumText, sizeof(lineNumText), "%s", text.toLatin1().data());
+	snprintf(lineNumText, sizeof(lineNumText), "%s", text.toLatin1().data());	
 	
+	if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
+		QApplication::beep();
+		return;
+	}
 	params[0] = lineNumText;
 	
 	// NOTE(eteran): XtCallActionProc seems to be roughly equivalent to Q_EMIT
