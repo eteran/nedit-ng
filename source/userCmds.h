@@ -33,8 +33,8 @@
 #include <X11/Intrinsic.h>
 
 class Document;
-class UserMenuCache;
-class UserBGMenuCache;
+struct UserMenuCache;
+struct UserBGMenuCache;
 class MenuItem;
 
 // types of current dialog and/or menu 
